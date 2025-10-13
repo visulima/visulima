@@ -18,6 +18,7 @@ describe("util/parse-raw-command", () => {
 
         // temporarily mock process.argv
         const backupArgv = [...process.argv];
+
         process.argv = ["node", "script.js", "command", "argument1", "argument2"];
 
         const result = parseRawCommand(process.argv);

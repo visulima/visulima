@@ -1,6 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
 
-// eslint-disable-next-line import/no-named-as-default
 import Cli from "../../src";
 
 describe("cli", () => {
@@ -16,7 +15,7 @@ describe("cli", () => {
     });
 
     it("should add a command and execute it successfully", async () => {
-        expect.assertions(1);
+        expect.assertions(2);
 
         const mockedExecute = vi.fn().mockResolvedValue(undefined);
 
@@ -30,7 +29,9 @@ describe("cli", () => {
 
         await cli.run({ shouldExitProcess: false });
 
-        expect(mockedExecute).toHaveBeenCalledOnce();
+        expect(mockedExecute).toHaveBeenCalledTimes(1);
+        // eslint-disable-next-line vitest/prefer-called-exactly-once-with
+        expect(mockedExecute).toHaveBeenCalledWith(expect.any(Object));
     });
 
     it("should set and retrieve command section", () => {
@@ -63,7 +64,7 @@ describe("cli", () => {
         cli.addCommand({ execute: vi.fn(), name: "duplicate" });
 
         expect(() => cli.addCommand({ execute: vi.fn(), name: "duplicate" })).toThrow(
-            'Ignored command with name "duplicate", it was found in the command list.',
+            "Ignored command with name \"duplicate\", it was found in the command list.",
         );
     });
 
@@ -82,7 +83,7 @@ describe("cli", () => {
             cli.run({
                 shouldExitProcess: false,
             }),
-        ).rejects.toThrow('You called the command "test" without the required options: requiredOption');
+        ).rejects.toThrow("You called the command \"test\" without the required options: requiredOption");
     });
 
     it("should throw error when running a command with unknown options", async () => {
@@ -96,7 +97,7 @@ describe("cli", () => {
             cli.run({
                 shouldExitProcess: false,
             }),
-        ).rejects.toThrow('Found unknown option "--unknownOption"');
+        ).rejects.toThrow("Found unknown option \"--unknownOption\"");
     });
 
     it("should throw error when running a command with conflicting options", async () => {
@@ -117,11 +118,11 @@ describe("cli", () => {
             cli.run({
                 shouldExitProcess: false,
             }),
-        ).rejects.toThrow('You called the command "test" with conflicting options: option1 and option2');
+        ).rejects.toThrow("You called the command \"test\" with conflicting options: option1 and option2");
     });
 
     it("should not throw a error when running a command with one options that dont conflict", async () => {
-        expect.assertions(1);
+        expect.assertions(2);
 
         const cli = new Cli("MyCLI", { argv: ["test", "--option1", "value1"] });
 
@@ -140,6 +141,8 @@ describe("cli", () => {
             shouldExitProcess: false,
         });
 
-        expect(execute).toHaveBeenCalledOnce();
+        expect(execute).toHaveBeenCalledTimes(1);
+        // eslint-disable-next-line vitest/prefer-called-exactly-once-with
+        expect(execute).toHaveBeenCalledWith(expect.any(Object));
     });
 });

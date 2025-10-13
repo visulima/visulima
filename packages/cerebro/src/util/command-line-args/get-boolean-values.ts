@@ -27,7 +27,7 @@ const convertType = <OD extends OptionDefinition<any>>(value: any, option: Possi
     return option.type(value);
 };
 
-const booleanValue = new Set(["1", "0", "true", "false"]);
+const booleanValue = new Set(["0", "1", "false", "true"]);
 
 /**
  * Gets the values of any boolean arguments that were specified on the command line with a value

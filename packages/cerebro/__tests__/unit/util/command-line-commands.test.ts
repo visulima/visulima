@@ -38,10 +38,12 @@ describe("util/command-line-commands", () => {
         let clc;
 
         clc = commandLineCommands(commands, []);
+
         expect(clc.command).toBeNull();
         expect(clc.argv).toStrictEqual([]);
 
         clc = commandLineCommands(commands, ["--flag"]);
+
         expect(clc.command).toBeNull();
         expect(clc.argv).toStrictEqual(["--flag"]);
     });
@@ -52,6 +54,7 @@ describe("util/command-line-commands", () => {
         const commands = ["eat", "sleep"];
 
         const error: Error & { command?: string | null | undefined } = new Error(`Command not recognised: cheese`);
+
         error.command = "cheese";
         error.name = "INVALID_COMMAND";
 

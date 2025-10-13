@@ -13,10 +13,8 @@ export type CliRunOptions = {
 export interface Cli {
     /**
      * Add an arbitrary command to the CLI.
-     *
      * @param command The command to add.
-     *
-     * @return self
+     * @returns self
      */
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     addCommand: <OD extends OptionDefinition<any> = any>(command: ICommand<OD>) => this;
@@ -26,10 +24,8 @@ export interface Cli {
      * the given name on the toolbox object passed to commands, but are able
      * to manipulate the toolbox object however they want. The second
      * parameter is a function that allows the extension to attach itself.
-     *
      * @param extension The extension to add.
-     *
-     * @return self
+     * @returns self
      */
     addExtension: (extension: IExtension) => this;
 
@@ -37,9 +33,9 @@ export interface Cli {
 
     getCliName: () => string;
 
-    getCommandSection: () => CommandSection;
-
     getCommands: () => Map<string, ICommand>;
+
+    getCommandSection: () => CommandSection;
 
     getCwd: () => string;
 
@@ -53,10 +49,8 @@ export interface Cli {
 
     /**
      * Set a default command, to display a different command if cli is call without command.
-     *
      * @param commandName
-     *
-     * @return self
+     * @returns self
      */
     setDefaultCommand: (commandName: string) => this;
 }

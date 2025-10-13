@@ -5,7 +5,7 @@ import isBoolean from "./option-is-boolean";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ArgumentsAndLastOption<OD extends OptionDefinition<any>> = { args: string[]; lastOption?: PossibleOptionDefinition<OD> };
 
-const booleanValue = new Set(["1", "0", "true", "false"]);
+const booleanValue = new Set(["0", "1", "false", "true"]);
 
 /**
  * commandLineArgs throws an error if we pass aa value for a boolean arg as follows:

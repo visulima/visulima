@@ -6,8 +6,8 @@ import HelpCommand from "../../../src/command/help";
 import globalOptions from "../../../src/default-options";
 import commandLineUsage from "../../../src/util/command-line-usage";
 
-vi.mock("../../../src/util/command-line-usage");
-vi.mock("../default-options", () => {
+vi.mock(import("../../../src/util/command-line-usage"));
+vi.mock(import("../default-options"), () => {
     return {
         default: [
             // Your default options structure here
@@ -32,7 +32,7 @@ const headerSection = {
 };
 
 const footerSection = {
-    content: 'Run "{cyan testcli} {green help <command>}" or "{cyan testcli} {green <command>} {yellow --help}" for help with a specific command.',
+    content: "Run \"{cyan testcli} {green help <command>}\" or \"{cyan testcli} {green <command>} {yellow --help}\" for help with a specific command.",
     raw: true,
 };
 
@@ -70,9 +70,9 @@ describe("command/help", () => {
 
         helpCommand.execute(toolboxMock as unknown as IToolbox);
 
-        expect(loggerMock.raw).toHaveBeenCalledWith("Test header");
+        expect(loggerMock.raw).toHaveBeenNthCalledWith(1, "Test header");
         expect(commandLineUsage).toMatchSnapshot();
-        expect(loggerMock.raw).toHaveBeenCalledWith("Test footer");
+        expect(loggerMock.raw).toHaveBeenNthCalledWith(3, "Test footer");
     });
 
     it("should print command-specific help", () => {
@@ -87,8 +87,8 @@ describe("command/help", () => {
 
         helpCommand.execute(toolboxMock as unknown as IToolbox);
 
-        expect(loggerMock.raw).toHaveBeenCalledWith("Test header");
-        expect(commandLineUsage).toHaveBeenCalledWith([
+        expect(loggerMock.raw).toHaveBeenNthCalledWith(1, "Test header");
+        expect(commandLineUsage).toHaveBeenCalledExactlyOnceWith([
             {
                 content: "{cyan testcli} {green test} [options]",
                 header: "{inverse.cyan  Usage }",
@@ -108,7 +108,7 @@ describe("command/help", () => {
             },
             globalOptionsOptionsList,
         ]);
-        expect(loggerMock.raw).toHaveBeenCalledWith("Test footer");
+        expect(loggerMock.raw).toHaveBeenNthCalledWith(3, "Test footer");
     });
 
     it("should print general help and not include hidden commands", () => {
@@ -144,8 +144,8 @@ describe("command/help", () => {
 
         helpCommand.execute(toolboxMock as unknown as IToolbox);
 
-        expect(loggerMock.raw).toHaveBeenCalledWith("Test header");
-        expect(commandLineUsage).toHaveBeenCalledWith([
+        expect(loggerMock.raw).toHaveBeenNthCalledWith(1, "Test header");
+        expect(commandLineUsage).toHaveBeenCalledExactlyOnceWith([
             headerSection,
             {
                 content: [["{green test} ", "A test command"]],
@@ -154,12 +154,12 @@ describe("command/help", () => {
             globalOptionsOptionsList,
             footerSection,
         ]);
-        expect(loggerMock.raw).toHaveBeenCalledWith("Test footer");
+        expect(loggerMock.raw).toHaveBeenNthCalledWith(3, "Test footer");
 
         // Ensure hidden commands are not included in the output
-        const usageCalls = (commandLineUsage as Mock).mock.calls[0][0];
+        const usageCalls = vi.mocked(commandLineUsage).mock.calls[0][0];
 
-        expect(usageCalls.some((section) => section.content?.includes("secret"))).toBeFalsy();
+        expect(usageCalls.some((section) => section.content?.includes("secret"))).toBe(false);
     });
 
     it("should display aliases if present", () => {
@@ -170,6 +170,7 @@ describe("command/help", () => {
             execute: () => {},
             name: "commandWithAlias",
         };
+
         commandsMap.set(commandWithAlias.name, commandWithAlias);
 
         const helpCommand = new HelpCommand(commandsMap);
@@ -181,9 +182,9 @@ describe("command/help", () => {
 
         helpCommand.execute(toolboxMock as unknown as IToolbox);
 
-        expect(loggerMock.raw).toHaveBeenCalledWith("Test header");
+        expect(loggerMock.raw).toHaveBeenNthCalledWith(1, "Test header");
         expect(commandLineUsage).toMatchSnapshot();
-        expect(loggerMock.raw).toHaveBeenCalledWith("Test footer");
+        expect(loggerMock.raw).toHaveBeenNthCalledWith(3, "Test footer");
     });
 
     it("should display command examples", () => {
@@ -206,8 +207,8 @@ describe("command/help", () => {
 
         helpCommand.execute(toolboxMock as unknown as IToolbox);
 
-        expect(loggerMock.raw).toHaveBeenCalledWith("Test header");
-        expect(commandLineUsage).toHaveBeenCalledWith([
+        expect(loggerMock.raw).toHaveBeenNthCalledWith(1, "Test header");
+        expect(commandLineUsage).toHaveBeenCalledExactlyOnceWith([
             {
                 content: "{cyan testcli} {green commandWithExamples}",
                 header: "{inverse.cyan  Usage }",
@@ -218,7 +219,7 @@ describe("command/help", () => {
                 header: "Examples",
             },
         ]);
-        expect(loggerMock.raw).toHaveBeenCalledWith("Test footer");
+        expect(loggerMock.raw).toHaveBeenNthCalledWith(3, "Test footer");
     });
 
     it("should display a empty help command if no commands exists", () => {
@@ -234,9 +235,9 @@ describe("command/help", () => {
 
         helpCommand.execute(toolboxMock as unknown as IToolbox);
 
-        expect(loggerMock.raw).toHaveBeenCalledWith("Test header");
+        expect(loggerMock.raw).toHaveBeenNthCalledWith(1, "Test header");
         expect(commandLineUsage).toMatchSnapshot();
-        expect(loggerMock.raw).toHaveBeenCalledWith("Test footer");
+        expect(loggerMock.raw).toHaveBeenNthCalledWith(3, "Test footer");
     });
 
     it("should display group of commands if the group option is passed", () => {
@@ -270,8 +271,8 @@ describe("command/help", () => {
 
         helpCommand.execute(toolboxMock as unknown as IToolbox);
 
-        expect(loggerMock.raw).toHaveBeenCalledWith("Test header");
+        expect(loggerMock.raw).toHaveBeenNthCalledWith(1, "Test header");
         expect(commandLineUsage).toMatchSnapshot();
-        expect(loggerMock.raw).toHaveBeenCalledWith("Test footer");
+        expect(loggerMock.raw).toHaveBeenNthCalledWith(3, "Test footer");
     });
 });

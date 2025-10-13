@@ -37,7 +37,6 @@ const defaultTableOptions: Partial<TableInstanceOptions> = {
  * 2. An array of strings (multiple lines of text)
  * 3. An array of objects (recordset-style data). In this case, the data will be rendered in table format. The property names of each object are not important, so long as they are consistent throughout the array.
  * 4. An object with two properties - `data` and `options`. In this case, the data and options will be passed directly to the underlying [table](https://github.com/cli-table/cli-table3) module for rendering.
- *
  * @property raw - Set to true to avoid indentation and wrapping. Useful for banners.
  * @example
  * Simple string of content. For ansi formatting, use [colorize template literal syntax](https://github.com/visulima/visulima/tree/main/packages/colorize#tagged-template-literals).
@@ -88,7 +87,6 @@ const defaultTableOptions: Partial<TableInstanceOptions> = {
  * ```
  */
 class ContentSection extends BaseSection {
-    // eslint-disable-next-line sonarjs/cognitive-complexity
     public constructor(section: IContent) {
         super();
 
@@ -120,7 +118,7 @@ class ContentSection extends BaseSection {
         }
     }
 
-    // eslint-disable-next-line sonarjs/cognitive-complexity,class-methods-use-this
+    // eslint-disable-next-line class-methods-use-this
     private getContentLines(content: IContent["content"]) {
         if (typeof content === "string") {
             const table = new CliTable3({
@@ -134,9 +132,9 @@ class ContentSection extends BaseSection {
         }
 
         if (
-            Array.isArray(content) &&
+            Array.isArray(content)
             // eslint-disable-next-line @typescript-eslint/no-shadow
-            content.every((value) => typeof value === "string" || (Array.isArray(value) && value.every((value) => typeof value === "string")))
+            && content.every((value) => typeof value === "string" || (Array.isArray(value) && value.every((value) => typeof value === "string")))
         ) {
             const table = new CliTable3({
                 ...defaultTableOptions,

@@ -7,7 +7,6 @@ const equals = (a: string[], b: string[]) => a.length === b.length && a.every((v
 
 /**
  * Parses the raw command into an array of strings.
- *
  * @param commandArray Command string or list of command parts.
  * @returns The command as an array of strings.
  */

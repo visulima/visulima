@@ -6,7 +6,6 @@ import templateFormat from "../../template-format";
 import BaseSection from "./base-section";
 
 class OptionListSection extends BaseSection {
-    // eslint-disable-next-line sonarjs/cognitive-complexity
     public constructor(data: IOptionList) {
         super();
 
@@ -106,17 +105,15 @@ class OptionListSection extends BaseSection {
 
 /**
  * An OptionList section adds a table displaying the supplied option definitions.
- *
  * @property {string} [header] - The section header, always bold and underlined.
  * @property optionList {OptionDefinition[]} - An array of [option definition](https://github.com/75lb/command-line-args/blob/master/doc/option-definition.md) objects. In addition to the regular definition properties, command-line-usage will look for:
  *
  * - `description` - a string describing the option.
- * - `typeLabel` - a string to replace the default type string (e.g. `<string>`). It's often more useful to set a more descriptive type label, like `<ms>`, `<files>`, `<command>` etc.
+ * - `typeLabel` - a string to replace the default type string (e.g. `&lt;string>`). It's often more useful to set a more descriptive type label, like `&lt;ms>`, `&lt;files>`, `&lt;command>` etc.
  * @property {string|string[]} [group] - If specified, only options from this particular group will be printed. [Example](https://github.com/75lb/command-line-usage/blob/master/example/groups.js).
  * @property {string|string[]} [hide] - The names of one of more option definitions to hide from the option list. [Example](https://github.com/75lb/command-line-usage/blob/master/example/hide.js).
  * @property {boolean} [reverseNameOrder] - If true, the option alias will be displayed after the name, i.e. `--verbose, -v` instead of `-v, --verbose`).
  * @property {object} [tableOptions] - An options object suitable for passing into [table-layout](https://github.com/75lb/table-layout#table-). See [here for an example](https://github.com/75lb/command-line-usage/blob/master/example/option-list-options.js).
- *
  * @example
  * {
  *   header: 'Options',

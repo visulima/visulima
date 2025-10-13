@@ -11,7 +11,6 @@ const EMPTY_GROUP_KEY = "__Other";
 
 const upperFirstChar = (string_: string): string => string_.charAt(0).toUpperCase() + string_.slice(1);
 
-// eslint-disable-next-line sonarjs/cognitive-complexity
 const printGeneralHelp = (logger: Pail<never, string>, runtime: ICli, commands: Map<string, ICommand>, groupOption: string | undefined) => {
     logger.debug("no command given, printing general help...");
 
@@ -70,9 +69,9 @@ const printGeneralHelp = (logger: Pail<never, string>, runtime: ICli, commands: 
                 }),
                 commands.has("help")
                     ? {
-                          header: "{inverse.yellow  Command Options }",
-                          optionList: (commands.get("help") as ICommand).options?.filter((option) => !option.hidden),
-                      }
+                        header: "{inverse.yellow  Command Options }",
+                        optionList: (commands.get("help") as ICommand).options?.filter((option) => !option.hidden),
+                    }
                     : undefined,
                 { header: "{inverse.yellow  Global Options }", optionList: defaultOptions },
                 {

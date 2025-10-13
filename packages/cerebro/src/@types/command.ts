@@ -9,7 +9,8 @@ type TypeConstructor<T> = (value: any) => T extends (infer R)[] ? R | undefined 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type MultiplePropertyOptions<T> = any[] extends T ? { lazyMultiple: true } | { multiple: true } : unknown;
 
-export type OptionDefinition<T> = MultiplePropertyOptions<T> & Omit<BaseOptionDefinition, "type|defaultValue"> & {
+export type OptionDefinition<T> = MultiplePropertyOptions<T>
+    & Omit<BaseOptionDefinition, "type|defaultValue"> & {
         // @internal
         __camelCaseName__?: string;
 
@@ -19,7 +20,6 @@ export type OptionDefinition<T> = MultiplePropertyOptions<T> & Omit<BaseOptionDe
         /**
          * A string or array of strings indicating the conflicting option(s).
          * Note: The default value for an option does not cause a conflict.
-         *
          * @TODO Upgrade this type to read given options keys
          */
         conflicts?: string[] | string;
@@ -46,18 +46,18 @@ export type OptionDefinition<T> = MultiplePropertyOptions<T> & Omit<BaseOptionDe
          */
         type?: TypeConstructor<T> | undefined;
 
-        /** A string to replace the default type string (e.g. <string>). It's often more useful to set a more descriptive type label, like <ms>, <files>, <command>, etc.. */
+        /** A string to replace the default type string (e.g. &lt;string>). It's often more useful to set a more descriptive type label, like &lt;ms>, &lt;files>, &lt;command>, etc.. */
         typeLabel?: string | undefined;
     };
 
-export type PossibleOptionDefinition<OD> =
-    | OD
-    | OptionDefinition<boolean[]>
-    | OptionDefinition<boolean>
-    | OptionDefinition<number[]>
-    | OptionDefinition<number>
-    | OptionDefinition<string[]>
-    | OptionDefinition<string>;
+export type PossibleOptionDefinition<OD>
+    = | OD
+        | OptionDefinition<boolean[]>
+        | OptionDefinition<boolean>
+        | OptionDefinition<number[]>
+        | OptionDefinition<number>
+        | OptionDefinition<string[]>
+        | OptionDefinition<string>;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type ArgumentDefinition<T = any> = Omit<OptionDefinition<T>, "multiple|lazyMultiple|defaultOption|alias|group|defaultValue">;

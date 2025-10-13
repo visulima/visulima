@@ -8,7 +8,7 @@ import getDistributionVersion from "../../../src/update-notifier/get-dist-versio
 
 const registryUrl = "https://registry.npmjs.org/-/package/__NAME__/dist-tags";
 
-vi.mock("https", async () => {
+vi.mock(import("node:https"), async () => {
     const actual = await vi.importActual("https");
 
     return {
@@ -24,10 +24,10 @@ describe("update-notifier/get-dist-version", () => {
 
         const st = new Stream();
 
-        (get as Mock).mockImplementation((_, callback) => {
+        vi.mocked(get).mockImplementation((_, callback) => {
             callback(st);
 
-            st.emit("data", '{"latest":"1.0.0"}');
+            st.emit("data", "{\"latest\":\"1.0.0\"}");
             st.emit("end");
         });
 
@@ -41,7 +41,7 @@ describe("update-notifier/get-dist-version", () => {
 
         const st = new Stream();
 
-        (get as Mock).mockImplementation((_, callback) => {
+        vi.mocked(get).mockImplementation((_, callback) => {
             callback(st);
 
             st.emit("data", "some invalid json");
