@@ -1,3 +1,4 @@
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { stringify } from "qs-esm";
 
 import type { PaginationMeta, PaginationResult, Paginator as IPaginator } from "./types";
@@ -40,14 +41,14 @@ export default class Paginator<T = unknown> extends Array<T> implements IPaginat
     }
 
     /**
-     * A reference to the result rows
+     * A reference to the result rows.
      */
     public all(): T[] {
         return this.rows;
     }
 
     /**
-     * Define base url for making the pagination links
+     * Define base url for making the pagination links.
      */
     public baseUrl(url: string): this {
         this.url = url;
@@ -56,7 +57,7 @@ export default class Paginator<T = unknown> extends Array<T> implements IPaginat
     }
 
     /**
-     * Returns JSON meta data
+     * Returns JSON meta data.
      */
     public getMeta(): PaginationMeta {
         return {
@@ -73,44 +74,46 @@ export default class Paginator<T = unknown> extends Array<T> implements IPaginat
     }
 
     /**
-     * Returns url for the next page
+     * Returns url for the next page.
      */
     public getNextPageUrl(): string | null {
         if (this.hasMorePages) {
             return this.getUrl(this.currentPage + 1);
         }
 
+        // eslint-disable-next-line unicorn/no-null
         return null;
     }
 
     /**
-     * Returns URL for the previous page
+     * Returns URL for the previous page.
      */
     public getPreviousPageUrl(): string | null {
         if (this.currentPage > 1) {
             return this.getUrl(this.currentPage - 1);
         }
 
+        // eslint-disable-next-line unicorn/no-null
         return null;
     }
 
     /**
      * Returns url for a given page. Doesn't validate the integrity of the
-     * page
+     * page.
      */
     public getUrl(page: number): string {
-        const qstring = stringify({ ...this.qs, page: page < 1 ? 1 : page });
+        const qstring = stringify({ ...this.qs, page: Math.max(page, 1) });
 
         return `${this.url}?${qstring}`;
     }
 
     /**
-     * Returns an array of urls under a given range
+     * Returns an array of urls under a given range.
      */
     public getUrlsForRange(start: number, end: number): UrlsForRange {
         const urls: UrlsForRange = [];
 
-        // eslint-disable-next-line no-plusplus,no-loops/no-loops
+        // eslint-disable-next-line no-plusplus
         for (let index = start; index <= end; index++) {
             urls.push({ isActive: index === this.currentPage, page: index, url: this.getUrl(index) });
         }
@@ -119,7 +122,7 @@ export default class Paginator<T = unknown> extends Array<T> implements IPaginat
     }
 
     /**
-     * Define query string to be appended to the pagination links
+     * Define query string to be appended to the pagination links.
      */
     public queryString(values: Record<string, unknown>): this {
         this.qs = values;
@@ -128,8 +131,7 @@ export default class Paginator<T = unknown> extends Array<T> implements IPaginat
     }
 
     /**
-     * Returns JSON representation of the paginated
-     * data
+     * Returns JSON representation of the paginated data.
      */
     public toJSON(): PaginationResult<T> {
         return {
@@ -139,14 +141,14 @@ export default class Paginator<T = unknown> extends Array<T> implements IPaginat
     }
 
     /**
-     * Find if there are more pages to come
+     * Find if there are more pages to come.
      */
     public get hasMorePages(): boolean {
         return this.lastPage > this.currentPage;
     }
 
     /**
-     * Find if there are enough results to be paginated or not
+     * Find if there are enough results to be paginated or not.
      */
     public get hasPages(): boolean {
         return this.lastPage !== 1;
@@ -164,7 +166,7 @@ export default class Paginator<T = unknown> extends Array<T> implements IPaginat
     }
 
     /**
-     * The Last page number
+     * The Last page number.
      */
     public get lastPage(): number {
         return Math.max(Math.ceil(this.total / this.perPage), 1);
@@ -172,7 +174,7 @@ export default class Paginator<T = unknown> extends Array<T> implements IPaginat
 
     /**
      * Casting `total` to a number. Later, we can think of situations
-     * to cast it to a bigint
+     * to cast it to a bigint.
      */
     public get total(): number {
         return Number(this.totalNumber);
