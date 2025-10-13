@@ -2,7 +2,6 @@ import { dirname } from "@visulima/path";
 
 class SameDirectoryError extends Error {
     public constructor(source: string, destination: string) {
-        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
         super(`Source directory "${dirname(source)}" does not match destination directory "${dirname(destination)}"`);
         this.name = "SameDirectoryError";
     }

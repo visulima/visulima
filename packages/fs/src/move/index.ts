@@ -5,7 +5,7 @@
  *
  * MIT License
  *
- * Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com)
+ * Copyright (c) Sindre Sorhus &lt;sindresorhus@gmail.com> (https://sindresorhus.com)
  */
 
 import { cwd as baseCwd } from "node:process";
@@ -18,12 +18,10 @@ import internalMoveFileSync from "./utils/internal-move-file-sync";
 
 /**
  * Move a file asynchronously.
- *
- * @param sourcePath - The file you want to move.
- * @param destinationPath - Where you want the file moved.
- * @param options - Configuration options.
+ * @param sourcePath The file you want to move.
+ * @param destinationPath Where you want the file moved.
+ * @param options Configuration options.
  * @returns A `Promise` that resolves when the file has been moved.
- *
  * @example
  * ```
  * import { move } from '@visulima/fs';
@@ -39,17 +37,16 @@ export const move = async (sourcePath: string, destinationPath: string, options:
         ...options,
         cwd: options.cwd ? toPath(options.cwd) : baseCwd(),
     };
+
     await internalMoveFile(sourcePath, destinationPath, internalOptions);
 };
 
 /**
  * Move a file synchronously.
- *
- * @param sourcePath - The file you want to move.
- * @param destinationPath - Where you want the file moved.
- * @param options - Configuration options.
- * @returns {void} Nothing is returned.
- *
+ * @param sourcePath The file you want to move.
+ * @param destinationPath Where you want the file moved.
+ * @param options Configuration options.
+ * @returns Nothing is returned.
  * @example
  * ```
  * import { moveSync } from '@visulima/fs';
@@ -68,12 +65,10 @@ export const moveSync = (sourcePath: string, destinationPath: string, options?: 
 
 /**
  * Rename a file asynchronously.
- *
- * @param source - The file you want to rename.
- * @param destination - The name of the renamed file.
- * @param options - Configuration options.
+ * @param source The file you want to rename.
+ * @param destination The name of the renamed file.
+ * @param options Configuration options.
  * @returns A `Promise` that resolves when the file has been renamed.
- *
  * @example
  * ```
  * import { rename } from '@visulima/fs';
@@ -92,12 +87,10 @@ export const rename = async (source: string, destination: string, options?: Opti
 
 /**
  * Rename a file synchronously.
- *
- * @param source - The file you want to rename.
- * @param destination - The name of the renamed file.
- * @param options - Configuration options.
+ * @param source The file you want to rename.
+ * @param destination The name of the renamed file.
+ * @param options Configuration options.
  * @returns A `Promise` that resolves when the file has been renamed.
- *
  * @example
  * ```
  * import { renameSync } from '@visulima/fs';

@@ -5,14 +5,14 @@ import readFileSync from "./read-file-sync";
 
 function readYamlSync<R = Record<string, unknown>>(path: URL | string, options?: ReadYamlOptions<"brotli" | "gzip" | "none">): R;
 function readYamlSync<R = Record<string, unknown>>(path: URL | string, reviver?: YamlReviver, options?: ReadYamlOptions<"brotli" | "gzip" | "none">): R;
+
 /**
  * Synchronously reads a YAML file and then parses it into an object.
- *
- * @template R The expected type of the parsed YAML object. Defaults to `Record<string, unknown>`.
+ * @template R The expected type of the parsed YAML object. Defaults to `Record&lt;string, unknown>`.
  * @param path The path to the YAML file to read. Can be a file URL or a string path.
  * @param reviver An optional reviver function (similar to `JSON.parse` reviver) or the options object.
  * @param options Optional configuration for reading and parsing the YAML file. See {@link ReadYamlOptions}.
- *                If `reviver` is an object, this argument is ignored.
+ * If `reviver` is an object, this argument is ignored.
  * @returns The parsed YAML object of type `R`.
  * @example
  * ```javascript
@@ -39,10 +39,10 @@ function readYamlSync<R = Record<string, unknown>>(path: URL | string, reviver?:
  * }
  * ```
  */
-// eslint-disable-next-line func-style
+
 function readYamlSync<R = Record<string, unknown>>(
     path: URL | string,
-    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+
     reviver?: ReadYamlOptions<"brotli" | "gzip" | "none"> | YamlReviver,
     options?: ReadYamlOptions<"brotli" | "gzip" | "none">,
 ): R {

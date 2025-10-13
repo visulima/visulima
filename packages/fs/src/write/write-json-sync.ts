@@ -11,7 +11,6 @@ import writeFileSync from "./write-file-sync";
 /**
  * Synchronously writes an object to a JSON file.
  * Handles indentation detection, custom stringifiers, and gracefully manages existing files.
- *
  * @param path The path to the JSON file to write. Can be a file URL or a string path.
  * @param data The data to serialize and write. Can be any JavaScript value that can be stringified by `JSON.stringify` or a custom stringifier.
  * @param options Optional configuration for writing the JSON file. See {@link WriteJsonOptions}.
@@ -56,7 +55,6 @@ const writeJsonSync = (path: URL | string, data: unknown, options: WriteJsonOpti
             trailingNewline = file.endsWith("\n") ? "\n" : "";
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             if (error.code !== "ENOENT") {
                 throw error;
             }

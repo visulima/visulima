@@ -16,38 +16,45 @@ export interface WalkOptions {
      * @default {undefined}
      */
     extensions?: string[];
+
     /**
      * Indicates whether symlinks should be resolved or not.
      * @default {false}
      */
     followSymlinks?: boolean;
+
     /**
      * Indicates whether directory entries should be included or not.
      * @default {true}
      */
     includeDirs?: boolean;
+
     /**
      * Indicates whether file entries should be included or not.
      * @default {true}
      */
     includeFiles?: boolean;
+
     /**
      * Indicates whether symlink entries should be included or not.
      * This option is meaningful only if `followSymlinks` is set to `false`.
      * @default {true}
      */
     includeSymlinks?: boolean;
+
     /**
      * List of regular expression or glob patterns used to filter entries.
      * If specified, entries that do not match the patterns specified by this option are excluded.
      * @default {undefined}
      */
     match?: (RegExp | string)[];
+
     /**
      * The maximum depth of the file tree to be walked recursively.
      * @default {Infinity}
      */
     maxDepth?: number;
+
     /**
      * List of regular expression or glob patterns used to filter entries.
      * If specified, entries matching the patterns specified by this option are excluded.
@@ -143,7 +150,7 @@ export type CodeFrameOptions = {
 export type ReadJsonOptions = CodeFrameOptions & {
     /**
      * A function to transform the string content before parsing.
-     * @param source - The raw string content of the file.
+     * @param source The raw string content of the file.
      * @returns The transformed string content.
      */
     beforeParse?: (source: string) => string;
@@ -238,16 +245,19 @@ export type FindUpOptions = {
      * @default undefined (behaves like `true` for `findUp`, `false` for `findUpSync` due to `fs.stat` vs `fs.lstat`)
      */
     allowSymlinks?: boolean;
+
     /**
      * The current working directory.
      * @default process.cwd()
      */
     cwd?: URL | string;
+
     /**
      * The directory to stop searching at.
      * @default path.parse(cwd).root
      */
     stopAt?: URL | string;
+
     /**
      * The type of path to find.
      * @default "file"
@@ -296,6 +306,7 @@ export type RetryOptions = {
      * @default 0
      */
     maxRetries?: number | undefined;
+
     /**
      * The amount of time in milliseconds to wait between retries.
      * This option is ignored if the `recursive` option is not `true` for operations that support it.
@@ -310,7 +321,7 @@ export type RetryOptions = {
  * and custom {@link ReadFileOptions}.
  * @template C - The type of compression used.
  */
-// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+
 export type ReadYamlOptions<C> = DocumentOptions & ParseOptions & ReadFileOptions<C> & SchemaOptions & ToJSOptions;
 
 /**
@@ -324,11 +335,17 @@ export type YamlReviver = (key: unknown, value: unknown) => unknown;
  * Options for writing YAML files.
  * Extends {@link WriteFileOptions} and includes options from the `yaml` library for stringification.
  */
-export type WriteYamlOptions = CreateNodeOptions & DocumentOptions & ParseOptions & SchemaOptions & ToStringOptions & WriteFileOptions & {
+export type WriteYamlOptions = CreateNodeOptions
+    & DocumentOptions
+    & ParseOptions
+    & SchemaOptions
+    & ToStringOptions
+    & WriteFileOptions & {
         /**
          * Passed into `yaml.stringify` as the replacer argument.
          */
         replacer?: YamlReplacer;
+
         /**
          * Passed into `yaml.stringify` as the space argument for indentation.
          * Can be a number of spaces or a string (e.g., a tab character).

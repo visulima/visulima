@@ -77,6 +77,7 @@ describe.each([
 
     it("should handle path as URL or string", async () => {
         expect.assertions(1);
+
         // eslint-disable-next-line compat/compat
         const path = new URL(`file:///${file as string}`);
 
@@ -87,6 +88,6 @@ describe.each([
             result = await result;
         }
 
-        expect(result).toBeTruthy();
+        expect(result).toBe(true);
     });
 });

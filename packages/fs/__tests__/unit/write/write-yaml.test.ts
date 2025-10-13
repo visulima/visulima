@@ -55,7 +55,7 @@ describe.each([
 
         const path = "test.yaml";
         const data = { test: { deep: "test" } };
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
         const replacer = (key: string, value: any) => (key === "test" ? "replaced" : value);
 
         // eslint-disable-next-line vitest/no-conditional-in-test
@@ -77,7 +77,7 @@ describe.each([
 
         const path = "test.yaml";
         const data = { test: { deep: "test" } };
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
         const replacer = (key: string, value: any) => (key === "deep" ? "replaced" : value);
         const options = { indent: 4 };
 

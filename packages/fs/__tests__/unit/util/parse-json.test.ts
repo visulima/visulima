@@ -30,7 +30,7 @@ describe("parse-json", () => {
     it("should parse a valid JSON string without a reviver function", () => {
         expect.assertions(1);
 
-        const jsonString = '{"name": "John", "age": 30}';
+        const jsonString = "{\"name\": \"John\", \"age\": 30}";
         const result = parseJson(jsonString);
 
         expect(result).toStrictEqual({ age: 30, name: "John" });
@@ -40,7 +40,7 @@ describe("parse-json", () => {
     it("should parse a valid JSON string with a reviver function", () => {
         expect.assertions(1);
 
-        const jsonString = '{"name": "John", "age": 30}';
+        const jsonString = "{\"name\": \"John\", \"age\": 30}";
         const reviver = (key: string, value: number) => {
             if (key === "age") {
                 return value + 10;
@@ -57,7 +57,7 @@ describe("parse-json", () => {
     it("should parse a JSON string with nested objects and arrays", () => {
         expect.assertions(1);
 
-        const jsonString = '{"name": "John", "age": 30, "hobbies": ["reading", "painting"], "address": {"street": "123 Main St", "city": "New York"}}';
+        const jsonString = "{\"name\": \"John\", \"age\": 30, \"hobbies\": [\"reading\", \"painting\"], \"address\": {\"street\": \"123 Main St\", \"city\": \"New York\"}}";
         const result = parseJson(jsonString);
 
         expect(result).toStrictEqual({
@@ -83,7 +83,7 @@ describe("parse-json", () => {
     it("should throw a JSONError when parsing an invalid JSON string", () => {
         expect.assertions(1);
 
-        const jsonString = '{"name": "John", "age": 30}';
+        const jsonString = "{\"name\": \"John\", \"age\": 30}";
         const invalidJsonString = jsonString.replace("}", "");
 
         expect(() => {
@@ -95,7 +95,7 @@ describe("parse-json", () => {
         expect.assertions(1);
 
         expect(() => {
-            parseJson('{"name": "John", "age": 30,}');
+            parseJson("{\"name\": \"John\", \"age\": 30,}");
         }).toThrow(JSONError);
     });
 
@@ -104,7 +104,6 @@ describe("parse-json", () => {
 
         try {
             parseJson(INVALID_JSON_STRING, "foo.json");
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
             // eslint-disable-next-line vitest/no-conditional-expect
             expect(error.codeFrame).toBe(`  1 | {
@@ -119,7 +118,6 @@ ${CODE_FRAME_POINTER as string} 3 |   }
 
         try {
             parseJson("{");
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
             let expectedCodeFrame: string | undefined = `${CODE_FRAME_POINTER as string} 1 | {
     |  ^`;
@@ -141,7 +139,6 @@ ${CODE_FRAME_POINTER as string} 3 |   }
 
         try {
             parseJson("a");
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
             // eslint-disable-next-line vitest/no-conditional-expect
             expect(error).toBeInstanceOf(JSONError);
@@ -150,10 +147,10 @@ ${CODE_FRAME_POINTER as string} 3 |   }
 
             if (NODE_JS_VERSION === 18) {
                 // eslint-disable-next-line vitest/no-conditional-expect
-                expect(firstLine).toBe('Unexpected token "a"(\\u{61}) in JSON at position 0');
+                expect(firstLine).toBe(String.raw`Unexpected token "a"(\u{61}) in JSON at position 0`);
             } else {
                 // eslint-disable-next-line vitest/no-conditional-expect
-                expect(firstLine).toBe('Unexpected token "a"(\\u{61}), "a" is not valid JSON');
+                expect(firstLine).toBe(String.raw`Unexpected token "a"(\u{61}), "a" is not valid JSON`);
             }
         }
     });
@@ -164,7 +161,6 @@ ${CODE_FRAME_POINTER as string} 3 |   }
         expect(() => {
             try {
                 parseJson(INVALID_JSON_STRING, "foo.json");
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
             } catch (error: any) {
                 // eslint-disable-next-line vitest/no-conditional-expect
                 expect(error.fileName).toBe("foo.json");
@@ -176,7 +172,6 @@ ${CODE_FRAME_POINTER as string} 3 |   }
         expect(() => {
             try {
                 parseJson(INVALID_JSON_STRING);
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
             } catch (error: any) {
                 error.fileName = "foo.json";
 
@@ -187,7 +182,6 @@ ${CODE_FRAME_POINTER as string} 3 |   }
         expect(() => {
             try {
                 parseJson(INVALID_JSON_STRING, "bar.json");
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
             } catch (error: any) {
                 // eslint-disable-next-line vitest/no-conditional-expect
                 expect(error.fileName).toBe("bar.json");
@@ -208,7 +202,6 @@ ${CODE_FRAME_POINTER as string} 3 |   }
                     gutter: (value) => `+++${value}`,
                 },
             });
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
             // eslint-disable-next-line vitest/no-conditional-expect
             expect(error.codeFrame).toBe(` +++ 1 | {

@@ -36,6 +36,7 @@ const relative: Record<string, string> = {
     fixtureDirectory: testName.fixtureDirectory,
     modulesDirectory: testName.modulesDirectory,
 };
+
 relative.baz = join(relative.fixtureDirectory as string, testName.packageDirectory, testName.baz);
 relative.qux = join(relative.fixtureDirectory as string, testName.packageDirectory, testName.qux);
 relative.barDirQux = join(relative.fixtureDirectory as string, testName.packageDirectory, testName.fooDirectory, testName.barDirectory, testName.qux);
@@ -44,6 +45,7 @@ relative.barDir = join(relative.fixtureDirectory as string, testName.packageDire
 const absolute: Record<string, string> = {
     packageDirectory: join(__dirname, "..", "..", ".."),
 };
+
 absolute.fixtureDirectory = join(absolute.packageDirectory as string, testName.fixtureDirectory, testName.packageDirectory);
 absolute.packageJson = join(absolute.fixtureDirectory, testName.packageJson);
 absolute.baz = join(absolute.fixtureDirectory, testName.baz);

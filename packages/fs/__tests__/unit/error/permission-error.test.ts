@@ -13,7 +13,7 @@ describe("permissionError", () => {
         expect(error.code).toBe("EPERM");
     });
 
-    it('should return "PermissionError" when accessing the name property', () => {
+    it("should return \"PermissionError\" when accessing the name property", () => {
         expect.assertions(1);
 
         const error = new PermissionError("Invalid operation");

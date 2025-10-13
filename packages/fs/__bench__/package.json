@@ -3,15 +3,15 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "test:bench": "vitest bench",
-        "postinstall": "node ./scripts/create-fixtures.mjs"
+        "postinstall": "node ./scripts/create-fixtures.mjs",
+        "test:bench": "vitest bench"
     },
     "dependencies": {
-        "fs-extra": "11.3.2",
-        "empathic": "2.0.0",
         "@visulima/fs": "workspace:*",
+        "empathic": "2.0.0",
         "find-up": "8.0.0",
         "find-up-simple": "1.0.1",
+        "fs-extra": "11.3.2",
         "walk": "2.3.15"
     },
     "devDependencies": {

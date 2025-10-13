@@ -14,9 +14,10 @@ export default createConfig(
             "packem.config.ts",
             ".secretlintrc.cjs",
             "tsconfig.eslint.json",
+            ".prettierrc.cjs",
             "package.json",
             "README.md",
-            ".prettierrc.cjs"
+            ".prettierrc.cjs",
         ],
     },
     {

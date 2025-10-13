@@ -10,7 +10,6 @@ import type { FindUpNameSync, FindUpOptions } from "../types";
 
 /**
  * Synchronously finds a file or directory by walking up parent directories.
- *
  * @param name The name(s) of the file or directory to find. Can be a string, an array of strings, or a function that returns a name or `FIND_UP_STOP`.
  * @param options Optional configuration for the search. See {@link FindUpOptions}.
  * @returns The absolute path of the first found file/directory, or `undefined` if not found.
@@ -94,14 +93,13 @@ const findUpSync = (
 
     // eslint-disable-next-line no-loops/no-loops
     while (directory && directory !== stopAt && directory !== root) {
-        // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
+        // eslint-disable-next-line no-loops/no-loops
         for (let fileName of getMatchers(directory)) {
             if (fileName === FIND_UP_STOP) {
                 return undefined;
             }
 
             if (fileName === undefined) {
-                // eslint-disable-next-line no-continue
                 continue;
             }
 

@@ -11,13 +11,12 @@ async function readJson<T extends JsonValue>(path: URL | string, reviver: JsonRe
 
 /**
  * Asynchronously reads a JSON file and then parses it into an object.
- *
  * @template T The expected type of the parsed JSON object.
  * @param path The path to the JSON file to read. Can be a file URL or a string path.
  * @param reviver A function to transform the results. This function is called for each member of the object.
- *                Alternatively, this can be the `options` object if no reviver function is provided.
+ * Alternatively, this can be the `options` object if no reviver function is provided.
  * @param options Optional configuration for reading and parsing the JSON file. See {@link ReadJsonOptions}.
- *                If `reviver` is an object, this argument is ignored.
+ * If `reviver` is an object, this argument is ignored.
  * @returns A promise that resolves with the parsed JSON object of type `T`.
  * @example
  * ```javascript
@@ -48,7 +47,7 @@ async function readJson<T extends JsonValue>(path: URL | string, reviver: JsonRe
  * readMyJson();
  * ```
  */
-// eslint-disable-next-line func-style
+
 async function readJson<T extends JsonValue>(path: URL | string, reviver: JsonReviver | ReadJsonOptions, options?: ReadJsonOptions): Promise<T> {
     if (typeof reviver === "object") {
         // eslint-disable-next-line no-param-reassign
