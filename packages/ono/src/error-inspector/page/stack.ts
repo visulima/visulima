@@ -26,9 +26,7 @@ const isErrorLike = (value: unknown): value is ErrorLike => {
 
     const record = value as Record<string, unknown>;
 
-    return typeof record.name === "string"
-        && typeof record.message === "string"
-        && (record.stack === undefined || typeof record.stack === "string");
+    return typeof record.name === "string" && typeof record.message === "string" && (record.stack === undefined || typeof record.stack === "string");
 };
 
 /**

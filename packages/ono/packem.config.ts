@@ -13,8 +13,8 @@ export default defineConfig({
             minifier: cssnanoMinifier,
         },
         requireCJS: {
-            builtinNodeModules: true
-        }
+            builtinNodeModules: true,
+        },
     },
     validation: {
         dependencies: {
