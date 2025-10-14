@@ -78,9 +78,9 @@
     },
     "dependencies": {
         "@jridgewell/trace-mapping": "^0.3.31",
+        "@shikijs/cli": "3.13.0",
         "@shikijs/langs": "3.13.0",
         "@shikijs/themes": "3.13.0",
-        "@visulima/boxen": "2.0.3",
         "@visulima/error": "4.6.2",
         "fastest-levenshtein": "^1.0.16",
         "shiki": "3.13.0"

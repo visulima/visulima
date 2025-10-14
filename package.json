@@ -287,7 +287,7 @@
         "typescript": "5.9.3",
         "vitest": "^3.2.4"
     },
-    "packageManager": "pnpm@10.18.2",
+    "packageManager": "pnpm@10.18.3",
     "engines": {
         "node": ">=20.19 <=24.*"
     }
