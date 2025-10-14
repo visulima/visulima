@@ -8,7 +8,6 @@ describe("border option", () => {
         expect.assertions(1);
 
         const box = boxen("foo", {
-
             borderColor: (border: string) => red(border),
         });
 
