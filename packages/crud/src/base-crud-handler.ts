@@ -38,7 +38,6 @@ async function baseHandler<R extends IncomingMessage, RResponse extends ServerRe
     options?: HandlerOptions<M>,
 ): Promise<ExecuteHandler<R, RResponse>>;
 
-// eslint-disable-next-line sonarjs/cognitive-complexity,func-style
 async function baseHandler<
     R extends { headers: { host?: string }; method: string; url: string },
     RResponse,
@@ -121,8 +120,15 @@ async function baseHandler<
                 let responseConfig: ResponseConfig;
 
                 switch (routeType) {
-                    case RouteType.READ_ONE: {
-                        responseConfig = await (config.handlers?.get ?? readHandler)<T, Q>({
+                    case RouteType.CREATE: {
+                        responseConfig = await (config.handlers?.create ?? createHandler)<T, Q, R>({
+                            ...parameters,
+                            request: request as R & { body: Record<string, any> },
+                        });
+                        break;
+                    }
+                    case RouteType.DELETE: {
+                        responseConfig = await (config.handlers?.delete ?? deleteHandler)<T, Q>({
                             ...parameters,
                             resourceId: resourceIdFormatted,
                         });
@@ -140,10 +146,10 @@ async function baseHandler<
                         });
                         break;
                     }
-                    case RouteType.CREATE: {
-                        responseConfig = await (config.handlers?.create ?? createHandler)<T, Q, R>({
+                    case RouteType.READ_ONE: {
+                        responseConfig = await (config.handlers?.get ?? readHandler)<T, Q>({
                             ...parameters,
-                            request: request as R & { body: Record<string, any> },
+                            resourceId: resourceIdFormatted,
                         });
                         break;
                     }
@@ -151,13 +157,6 @@ async function baseHandler<
                         responseConfig = await (config.handlers?.update ?? updateHandler)<T, Q, R>({
                             ...parameters,
                             request: request as R & { body: Partial<T> },
-                            resourceId: resourceIdFormatted,
-                        });
-                        break;
-                    }
-                    case RouteType.DELETE: {
-                        responseConfig = await (config.handlers?.delete ?? deleteHandler)<T, Q>({
-                            ...parameters,
                             resourceId: resourceIdFormatted,
                         });
                         break;

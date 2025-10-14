@@ -20,7 +20,7 @@ const baseMockAdapter: Adapter<any, any> = {
     update: vi.fn(),
 };
 
-describe("baseHandler", () => {
+describe(baseHandler, () => {
     it.todo("should handle GET request for reading all resources", async () => {
         expect.assertions(7);
 
@@ -53,18 +53,18 @@ describe("baseHandler", () => {
         await handler(request, response);
 
         // Assert that the necessary adapter methods were called with the correct parameters
-        expect(adapter.init).toHaveBeenCalledWith();
-        expect(adapter.connect).toHaveBeenCalledWith();
-        expect(adapter.getAll).toHaveBeenCalledWith("routeName", {
+        expect(adapter.init).toHaveBeenCalledExactlyOnceWith();
+        expect(adapter.connect).toHaveBeenCalledExactlyOnceWith();
+        expect(adapter.getAll).toHaveBeenCalledExactlyOnceWith("routeName", {
             limit: undefined,
             page: undefined,
         });
-        expect(adapter.parseQuery).toHaveBeenCalledWith();
-        expect(adapter.disconnect).toHaveBeenCalledWith();
+        expect(adapter.parseQuery).toHaveBeenCalledExactlyOnceWith();
+        expect(adapter.disconnect).toHaveBeenCalledExactlyOnceWith();
 
         // Assert that the responseExecutor and finalExecutor functions were called
-        expect(responseExecutor).toHaveBeenCalledWith();
-        expect(finalExecutor).toHaveBeenCalledWith();
+        expect(responseExecutor).toHaveBeenCalledExactlyOnceWith();
+        expect(finalExecutor).toHaveBeenCalledExactlyOnceWith();
     });
 
     // Tests that the handler correctly handles a GET request for reading one resource
@@ -101,15 +101,15 @@ describe("baseHandler", () => {
         await handler(request, response);
 
         // Assert that the necessary adapter methods were called with the correct parameters
-        expect(adapter.init).toHaveBeenCalledWith();
-        expect(adapter.connect).toHaveBeenCalledWith();
-        expect(adapter.getOne).toHaveBeenCalledWith("modelName", "1", {});
-        expect(adapter.parseQuery).toHaveBeenCalledWith();
-        expect(adapter.disconnect).toHaveBeenCalledWith();
+        expect(adapter.init).toHaveBeenCalledExactlyOnceWith();
+        expect(adapter.connect).toHaveBeenCalledExactlyOnceWith();
+        expect(adapter.getOne).toHaveBeenCalledExactlyOnceWith("modelName", "1", {});
+        expect(adapter.parseQuery).toHaveBeenCalledExactlyOnceWith();
+        expect(adapter.disconnect).toHaveBeenCalledExactlyOnceWith();
 
         // Assert that the responseExecutor and finalExecutor functions were called
-        expect(responseExecutor).toHaveBeenCalledWith();
-        expect(finalExecutor).toHaveBeenCalledWith();
+        expect(responseExecutor).toHaveBeenCalledExactlyOnceWith();
+        expect(finalExecutor).toHaveBeenCalledExactlyOnceWith();
     });
 
     // Tests that the handler correctly handles a POST request for creating a resource
@@ -147,15 +147,15 @@ describe("baseHandler", () => {
         await handler(request, response);
 
         // Assert that the necessary adapter methods were called with the correct parameters
-        expect(adapter.init).toHaveBeenCalledWith();
-        expect(adapter.connect).toHaveBeenCalledWith();
-        expect(adapter.create).toHaveBeenCalledWith("modelName", {}, {});
-        expect(adapter.parseQuery).toHaveBeenCalledWith();
-        expect(adapter.disconnect).toHaveBeenCalledWith();
+        expect(adapter.init).toHaveBeenCalledExactlyOnceWith();
+        expect(adapter.connect).toHaveBeenCalledExactlyOnceWith();
+        expect(adapter.create).toHaveBeenCalledExactlyOnceWith("modelName", {}, {});
+        expect(adapter.parseQuery).toHaveBeenCalledExactlyOnceWith();
+        expect(adapter.disconnect).toHaveBeenCalledExactlyOnceWith();
 
         // Assert that the responseExecutor and finalExecutor functions were called
-        expect(responseExecutor).toHaveBeenCalledWith();
-        expect(finalExecutor).toHaveBeenCalledWith();
+        expect(responseExecutor).toHaveBeenCalledExactlyOnceWith();
+        expect(finalExecutor).toHaveBeenCalledExactlyOnceWith();
     });
 
     // Tests that the handler correctly handles a PUT request for updating a resource
@@ -193,15 +193,15 @@ describe("baseHandler", () => {
         await handler(request, response);
 
         // Assert that the necessary adapter methods were called with the correct parameters
-        expect(adapter.init).toHaveBeenCalledWith();
-        expect(adapter.connect).toHaveBeenCalledWith();
-        expect(adapter.update).toHaveBeenCalledWith("modelName", "123", {}, {});
-        expect(adapter.parseQuery).toHaveBeenCalledWith();
-        expect(adapter.disconnect).toHaveBeenCalledWith();
+        expect(adapter.init).toHaveBeenCalledExactlyOnceWith();
+        expect(adapter.connect).toHaveBeenCalledExactlyOnceWith();
+        expect(adapter.update).toHaveBeenCalledExactlyOnceWith("modelName", "123", {}, {});
+        expect(adapter.parseQuery).toHaveBeenCalledExactlyOnceWith();
+        expect(adapter.disconnect).toHaveBeenCalledExactlyOnceWith();
 
         // Assert that the responseExecutor and finalExecutor functions were called
-        expect(responseExecutor).toHaveBeenCalledWith();
-        expect(finalExecutor).toHaveBeenCalledWith();
+        expect(responseExecutor).toHaveBeenCalledExactlyOnceWith();
+        expect(finalExecutor).toHaveBeenCalledExactlyOnceWith();
     });
 
     // Tests that the handler correctly handles a DELETE request for deleting a resource
@@ -238,14 +238,14 @@ describe("baseHandler", () => {
         await handler(request, response);
 
         // Assert that the necessary adapter methods were called with the correct parameters
-        expect(adapter.init).toHaveBeenCalledWith();
-        expect(adapter.connect).toHaveBeenCalledWith();
-        expect(adapter.delete).toHaveBeenCalledWith("modelName", "123", {});
-        expect(adapter.parseQuery).toHaveBeenCalledWith();
-        expect(adapter.disconnect).toHaveBeenCalledWith();
+        expect(adapter.init).toHaveBeenCalledExactlyOnceWith();
+        expect(adapter.connect).toHaveBeenCalledExactlyOnceWith();
+        expect(adapter.delete).toHaveBeenCalledExactlyOnceWith("modelName", "123", {});
+        expect(adapter.parseQuery).toHaveBeenCalledExactlyOnceWith();
+        expect(adapter.disconnect).toHaveBeenCalledExactlyOnceWith();
 
         // Assert that the responseExecutor and finalExecutor functions were called
-        expect(responseExecutor).toHaveBeenCalledWith();
-        expect(finalExecutor).toHaveBeenCalledWith();
+        expect(responseExecutor).toHaveBeenCalledExactlyOnceWith();
+        expect(finalExecutor).toHaveBeenCalledExactlyOnceWith();
     });
 });

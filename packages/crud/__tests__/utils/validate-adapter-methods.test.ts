@@ -9,7 +9,7 @@ import validateAdapterMethods from "../../src/utils/validate-adapter-methods";
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class
 class InvalidAdapter {}
 
-vi.mock("@prisma/client", () => {
+vi.mock(import("@prisma/client"), () => {
     return {
         // eslint-disable-next-line @typescript-eslint/no-extraneous-class
         PrismaClient: class {
@@ -26,7 +26,7 @@ vi.mock("@prisma/client", () => {
     };
 });
 
-describe("validateAdapterMethods", () => {
+describe(validateAdapterMethods, () => {
     it("should not throw a error for a valid adapter", () => {
         expect.assertions(1);
 
@@ -43,6 +43,6 @@ describe("validateAdapterMethods", () => {
     it("should throw a error for a invalid adapter", () => {
         expect.assertions(1);
         // @ts-expect-error
-        expect(() => validateAdapterMethods(new InvalidAdapter())).toThrow('Adapter must implement the "create" method.');
+        expect(() => validateAdapterMethods(new InvalidAdapter())).toThrow("Adapter must implement the \"create\" method.");
     });
 });

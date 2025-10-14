@@ -111,7 +111,7 @@ describe("parse where", () => {
     it("should parse a simple where condition", () => {
         expect.assertions(1);
 
-        const url = 'http://localhost/?where={"username": "foo"}';
+        const url = "http://localhost/?where={\"username\": \"foo\"}";
         const { originalQuery, ...result } = parseQuery(url);
 
         expect(result).toStrictEqual<ParsedQueryParameters>({
@@ -124,7 +124,7 @@ describe("parse where", () => {
     it("should parse where condition with operators", () => {
         expect.assertions(1);
 
-        const url = 'http://localhost/?where={"age": {"$gt": 18}}';
+        const url = "http://localhost/?where={\"age\": {\"$gt\": 18}}";
         const { originalQuery, ...result } = parseQuery(url);
 
         expect(result).toStrictEqual<ParsedQueryParameters>({
@@ -137,7 +137,7 @@ describe("parse where", () => {
     it("should parse where nested field", () => {
         expect.assertions(1);
 
-        const url = 'http://localhost/?where={"user.age": {"$gt": 18}}';
+        const url = "http://localhost/?where={\"user.age\": {\"$gt\": 18}}";
         const { originalQuery, ...result } = parseQuery(url);
 
         expect(result).toStrictEqual<ParsedQueryParameters>({
@@ -156,7 +156,7 @@ describe("parse orderBy", () => {
     it("should parse a correct orderBy", () => {
         expect.assertions(1);
 
-        const url = 'http://localhost/?orderBy={"username": "$asc"}';
+        const url = "http://localhost/?orderBy={\"username\": \"$asc\"}";
         const { originalQuery, ...result } = parseQuery(url);
 
         expect(result).toStrictEqual<ParsedQueryParameters>({
@@ -169,7 +169,7 @@ describe("parse orderBy", () => {
     it("should throw an error with invalid property", () => {
         expect.assertions(1);
 
-        const url = 'http://localhost/?orderBy={"id": "foo"}';
+        const url = "http://localhost/?orderBy={\"id\": \"foo\"}";
 
         expect(() => parseQuery(url)).toThrow("a");
     });

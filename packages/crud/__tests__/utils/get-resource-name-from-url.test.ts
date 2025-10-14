@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { ensureCamelCase, getResourceNameFromUrl } from "../../src/utils/get-resource-name-from-url";
 
-describe("getResourceNameFromUrl", () => {
+describe(getResourceNameFromUrl, () => {
     it("should get the correct matching resource name", () => {
         expect.assertions(1);
 

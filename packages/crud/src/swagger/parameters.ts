@@ -25,7 +25,7 @@ const queryParameters: Record<string, SwaggerParameter> = {
         },
     },
     orderBy: {
-        description: 'Field on which to order by a direction. See <a href="https://next-crud.js.org/query-params#orderBy">the docs</a>',
+        description: "Field on which to order by a direction. See <a href=\"https://next-crud.js.org/query-params#orderBy\">the docs</a>",
         name: "orderBy",
         schema: {
             type: "string",
@@ -55,7 +55,7 @@ const queryParameters: Record<string, SwaggerParameter> = {
         },
     },
     where: {
-        description: 'Fields to filter. See <a href="https://next-crud.js.org/query-params#where">the docs</a>',
+        description: "Fields to filter. See <a href=\"https://next-crud.js.org/query-params#where\">the docs</a>",
         name: "where",
         schema: {
             type: "string",

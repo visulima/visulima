@@ -94,6 +94,7 @@ export default class PrismaAdapter<T, M extends string, PrismaClient> implements
 
     public async getOne(resourceName: M, resourceId: number | string, query: PrismaParsedQueryParameters): Promise<T> {
         const delegate = this.getPrismaDelegate(resourceName);
+
         /**
          * On prisma v2.12, findOne has been deprecated in favor of findUnique
          * We use findUnique in priority only if it's available
