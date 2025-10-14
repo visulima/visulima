@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 import type { ExpressRequestHandler } from "../src";
 import { expressWrapper, NodeRouter } from "../src";
 
-describe("expressWrapper", () => {
+describe(expressWrapper, () => {
     const request = { url: "/" } as IncomingMessage;
     const response = {} as ServerResponse;
 
@@ -17,6 +17,7 @@ describe("expressWrapper", () => {
         const midd: ExpressRequestHandler<IncomingMessage, ServerResponse> = (reqq, ress, next) => {
             expect(reqq, "called with req").toStrictEqual(request);
             expect(ress, "called with res").toStrictEqual(response);
+
             next();
         };
 
@@ -35,6 +36,7 @@ describe("expressWrapper", () => {
         };
 
         context.use(expressWrapper(midd)).use(async () => "ok");
+
         await expect(context.run(request, response), "returned the last value").resolves.toBe("ok");
 
         const context2 = new NodeRouter();

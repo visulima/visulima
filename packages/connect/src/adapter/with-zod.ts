@@ -4,27 +4,27 @@ import { ZodError } from "zod";
 
 import type { Nextable, NextHandler } from "../types";
 
-const withZod =
-    <Request, Response, Handler extends Nextable<any>, Schema extends ZodObject<{ body?: AnyZodObject; headers?: AnyZodObject; query?: AnyZodObject }>>(
+const withZod
+    = <Request, Response, Handler extends Nextable<any>, Schema extends ZodObject<{ body?: AnyZodObject; headers?: AnyZodObject; query?: AnyZodObject }>>(
         schema: Schema,
         handler: Handler,
-    ): ((request: Request, response: Response, next: NextHandler) => Promise<Response>) =>
-    async (request: Request, response: Response, next) => {
-        let transformedRequest: Request = request;
+    ): (request: Request, response: Response, next: NextHandler) => Promise<Response> =>
+        async (request: Request, response: Response, next) => {
+            let transformedRequest: Request = request;
 
-        try {
-            transformedRequest = (await schema.parseAsync(request)) as Request;
-        } catch (error: any) {
-            let { message } = error as Error;
+            try {
+                transformedRequest = (await schema.parseAsync(request)) as Request;
+            } catch (error: any) {
+                let { message } = error as Error;
 
-            if (error instanceof ZodError && typeof error.format === "function") {
-                message = error.issues.map((issue) => `${issue.path.join("/")} - ${issue.message}`).join("/n");
+                if (error instanceof ZodError && typeof error.format === "function") {
+                    message = error.issues.map((issue) => `${issue.path.join("/")} - ${issue.message}`).join("/n");
+                }
+
+                throw createHttpError(422, message);
             }
 
-            throw createHttpError(422, message);
-        }
-
-        return handler(transformedRequest, response, next);
-    };
+            return handler(transformedRequest, response, next);
+        };
 
 export default withZod;

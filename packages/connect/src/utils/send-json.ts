@@ -2,9 +2,9 @@ import type { ServerResponse } from "node:http";
 
 /**
  * Send `JSON` object
- * @param {ServerResponse} response response object
- * @param {number} statusCode
- * @param {any} jsonBody of data
+ * @param response response object
+ * @param statusCode
+ * @param jsonBody of data
  */
 const sendJson = (response: ServerResponse, statusCode: number, jsonBody: unknown): void => {
     // Set header to application/json

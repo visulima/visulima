@@ -1,11 +1,23 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import express from "express";
 
+/**
+ *
+ * @param request
+ * @param response
+ * @param next
+ */
 function one(request, response, next) {
     request.one = true;
     next();
 }
 
+/**
+ *
+ * @param request
+ * @param response
+ * @param next
+ */
 function two(request, response, next) {
     request.two = true;
     next();

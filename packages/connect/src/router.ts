@@ -13,9 +13,9 @@ export type Route<H> = {
     method: HttpMethod | "";
 } & (
     | {
-          keys: string[] | false;
-          pattern: RegExp;
-      }
+        keys: string[] | false;
+        pattern: RegExp;
+    }
     | { matchAll: true }
 );
 
@@ -84,16 +84,15 @@ export class Router<H extends FunctionLike> {
         const parameters: Record<string, string> = {};
         const isHead = method === "HEAD";
 
-        // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
+        // eslint-disable-next-line no-loops/no-loops
         for (const route of this.routes) {
             if (
-                route.method !== method &&
+                route.method !== method
                 // matches any method
-                route.method !== "" &&
+                && route.method !== ""
                 // The HEAD method requests that the target resource transfer a representation of its state, as for a GET request...
-                !(isHead && route.method === "GET")
+                && !(isHead && route.method === "GET")
             ) {
-                // eslint-disable-next-line no-continue
                 continue;
             }
 
@@ -106,7 +105,6 @@ export class Router<H extends FunctionLike> {
                 const matches = route.pattern.exec(pathname);
 
                 if (matches === null) {
-                    // eslint-disable-next-line no-continue
                     continue;
                 }
 
@@ -124,12 +122,11 @@ export class Router<H extends FunctionLike> {
                 const matches = route.pattern.exec(pathname);
 
                 if (matches === null) {
-                    // eslint-disable-next-line no-continue
                     continue;
                 }
 
                 // eslint-disable-next-line no-loops/no-loops
-                for (let index = 0; index < route.keys.length; ) {
+                for (let index = 0; index < route.keys.length;) {
                     // eslint-disable-next-line security/detect-object-injection
                     const parameterKey = route.keys[index];
 
@@ -145,7 +142,7 @@ export class Router<H extends FunctionLike> {
 
             if (matched) {
                 fns.push(
-                    // eslint-disable-next-line @typescript-eslint/no-loop-func
+
                     ...route.fns.flatMap((function_) => {
                         if (function_ instanceof Router) {
                             const { base } = function_;
@@ -190,6 +187,7 @@ export class Router<H extends FunctionLike> {
             // eslint-disable-next-line no-param-reassign
             base = "/";
         }
+
         // mount subrouter
         // eslint-disable-next-line no-param-reassign
         fns = fns.map((function_) => {
@@ -200,6 +198,7 @@ export class Router<H extends FunctionLike> {
 
                 throw new Error("Mounting a router to RegExp base is not supported");
             }
+
             return function_;
         });
 
