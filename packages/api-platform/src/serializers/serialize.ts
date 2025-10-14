@@ -18,7 +18,7 @@ const serialize = <Request extends IncomingMessage, Response extends ServerRespo
     options: {
         defaultContentType: string;
     },
-    // eslint-disable-next-line sonarjs/cognitive-complexity
+
 ): Buffer | Uint8Array | string => {
     const contentType = response.getHeader(contentTypeKey) as string | undefined;
 

@@ -150,7 +150,7 @@ describe("express-path-parser", () => {
         const parsed = expressPathParser(app);
         const { method, path, pathParams } = parsed[0] as RouteMetaData;
 
-        expect(path).toBe("/\\/abc|\\/xyz/u");
+        expect(path).toBe(String.raw`/\/abc|\/xyz/u`);
         expect(method).toBe("post");
         expect(pathParams).toStrictEqual([]);
     });
@@ -163,7 +163,7 @@ describe("express-path-parser", () => {
         const parsed = expressPathParser(app);
         const { method, path, pathParams } = parsed[0] as RouteMetaData;
 
-        expect(path).toBe("/abcd,/xyza,/\\/lmn|\\/pqr/u");
+        expect(path).toBe(String.raw`/abcd,/xyza,/\/lmn|\/pqr/u`);
         expect(method).toBe("get");
         expect(pathParams).toStrictEqual([]);
     });

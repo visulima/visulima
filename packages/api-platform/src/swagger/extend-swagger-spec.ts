@@ -19,9 +19,9 @@ const prepareStatusContent = (methodSpec: OpenAPIV3.OperationObject, status: str
         // prettier-ignore
         // eslint-disable-next-line no-param-reassign
         (((methodSpec.responses as unknown as OpenAPIV3.ResponsesObject)[status] as OpenAPIV3.ResponseObject).content as Record<
-                string,
-                OpenAPIV3.MediaTypeObject
-            >)[
+            string,
+            OpenAPIV3.MediaTypeObject
+        >)[
             mediaType
         ] = {} as OpenAPIV3.MediaTypeObject;
     }
@@ -51,32 +51,32 @@ const extendResponseSchema = (methodSpec: OpenAPIV3.OperationObject, status: str
         // prettier-ignore
         // eslint-disable-next-line no-param-reassign
         ((((methodSpec.responses as unknown as OpenAPIV3.ResponsesObject)[status] as OpenAPIV3.ResponseObject).content as Record<
-                    string,
-                    OpenAPIV3.MediaTypeObject
-                >)[
-                mediaType
-            ] as OpenAPIV3.MediaTypeObject).schema =
-            {} as OpenAPIV3.SchemaObject;
+            string,
+            OpenAPIV3.MediaTypeObject
+        >)[
+            mediaType
+        ] as OpenAPIV3.MediaTypeObject).schema
+            = {} as OpenAPIV3.SchemaObject;
     }
 
     // prettier-ignore
     // eslint-disable-next-line no-param-reassign
     ((((methodSpec.responses as unknown as OpenAPIV3.ResponsesObject)[status] as OpenAPIV3.ResponseObject).content as Record<
-                string,
-                OpenAPIV3.MediaTypeObject
-            >)[
-            mediaType
-        ] as OpenAPIV3.MediaTypeObject).schema =
-        schemaIsArray
+        string,
+        OpenAPIV3.MediaTypeObject
+    >)[
+        mediaType
+    ] as OpenAPIV3.MediaTypeObject).schema
+        = schemaIsArray
             ? {
-                  items: {
-                      $ref: `#/components/schemas/${schemaName}`,
-                  },
-                  type: "array",
-              }
+                items: {
+                    $ref: `#/components/schemas/${schemaName}`,
+                },
+                type: "array",
+            }
             : {
-                  $ref: `#/components/schemas/${schemaName}`,
-              };
+                $ref: `#/components/schemas/${schemaName}`,
+            };
 };
 
 const extendSwaggerWithMediaTypeSchema = (
@@ -93,7 +93,6 @@ const extendSwaggerWithMediaTypeSchema = (
     let example: any | undefined;
     let examples: Record<string, OpenAPIV3.ExampleObject | OpenAPIV3.ReferenceObject> | undefined;
 
-    // eslint-disable-next-line sonarjs/cognitive-complexity
     Object.entries(responseSpec.content as object).forEach(([mediaName, contentSpec]) => {
         if (typeof contentSpec.schema === "object") {
             const { schema } = contentSpec;
@@ -155,12 +154,12 @@ const extendSwaggerWithMediaTypeExample = (
                 // prettier-ignore
                 // eslint-disable-next-line no-param-reassign
                 ((((methodSpec.responses as unknown as OpenAPIV3.ResponsesObject)[status] as OpenAPIV3.ResponseObject).content as Record<
-                            string,
-                            OpenAPIV3.MediaTypeObject
-                        >)[
-                        mediaType
-                    ] as OpenAPIV3.MediaTypeObject).example =
-                    {};
+                    string,
+                    OpenAPIV3.MediaTypeObject
+                >)[
+                    mediaType
+                ] as OpenAPIV3.MediaTypeObject).example
+                    = {};
             }
 
             let transformed = false;
@@ -170,12 +169,12 @@ const extendSwaggerWithMediaTypeExample = (
                     // prettier-ignore
                     // eslint-disable-next-line no-param-reassign
                     ((((methodSpec.responses as unknown as OpenAPIV3.ResponsesObject)[status] as OpenAPIV3.ResponseObject).content as Record<
-                                string,
-                                OpenAPIV3.MediaTypeObject
-                            >)[
-                            mediaType
-                        ] as OpenAPIV3.MediaTypeObject).example =
-                        transformer(example);
+                        string,
+                        OpenAPIV3.MediaTypeObject
+                    >)[
+                        mediaType
+                    ] as OpenAPIV3.MediaTypeObject).example
+                        = transformer(example);
 
                     transformed = true;
                 }
@@ -185,12 +184,12 @@ const extendSwaggerWithMediaTypeExample = (
                 // prettier-ignore
                 // eslint-disable-next-line no-param-reassign
                 ((((methodSpec.responses as unknown as OpenAPIV3.ResponsesObject)[status] as OpenAPIV3.ResponseObject).content as Record<
-                            string,
-                            OpenAPIV3.MediaTypeObject
-                        >)[
-                        mediaType
-                    ] as OpenAPIV3.MediaTypeObject).example =
-                    example;
+                    string,
+                    OpenAPIV3.MediaTypeObject
+                >)[
+                    mediaType
+                ] as OpenAPIV3.MediaTypeObject).example
+                    = example;
             }
         });
     });
@@ -224,7 +223,7 @@ const prepareResponseExamples = (
     mediaType: string,
     transformers: Transformers,
     examples: Record<string, OpenAPIV3.ExampleObject | OpenAPIV3.ReferenceObject>,
-    // eslint-disable-next-line sonarjs/cognitive-complexity
+
 ) => {
     prepareStatusContent(methodSpec, status, mediaType);
 
@@ -232,12 +231,12 @@ const prepareResponseExamples = (
         // prettier-ignore
         // eslint-disable-next-line no-param-reassign
         ((((methodSpec.responses as unknown as OpenAPIV3.ResponsesObject)[status] as OpenAPIV3.ResponseObject).content as Record<
-                    string,
-                    OpenAPIV3.MediaTypeObject
-                >)[
-                mediaType
-            ] as OpenAPIV3.MediaTypeObject).examples =
-            {};
+            string,
+            OpenAPIV3.MediaTypeObject
+        >)[
+            mediaType
+        ] as OpenAPIV3.MediaTypeObject).examples
+            = {};
     }
 
     const transformedExamples: Record<string, OpenAPIV3.ExampleObject | OpenAPIV3.ReferenceObject> = {};
@@ -270,24 +269,24 @@ const prepareResponseExamples = (
         });
 
         if (!transformed) {
-            transformedExamples[exampleName] =
-                spec.components?.examples?.[exampleName] === undefined
+            transformedExamples[exampleName]
+                = spec.components?.examples?.[exampleName] === undefined
                     ? example
                     : {
-                          $ref: `#/components/examples/${exampleName}`,
-                      };
+                        $ref: `#/components/examples/${exampleName}`,
+                    };
         }
     });
 
     // prettier-ignore
     // eslint-disable-next-line no-param-reassign
     ((((methodSpec.responses as unknown as OpenAPIV3.ResponsesObject)[status] as OpenAPIV3.ResponseObject).content as Record<
-                string,
-                OpenAPIV3.MediaTypeObject
-            >)[
-            mediaType
-        ] as OpenAPIV3.MediaTypeObject).examples =
-        transformedExamples;
+        string,
+        OpenAPIV3.MediaTypeObject
+    >)[
+        mediaType
+    ] as OpenAPIV3.MediaTypeObject).examples
+        = transformedExamples;
 };
 
 const extendSwaggerWithMediaTypeExamples = (
@@ -319,7 +318,6 @@ const extendSwaggerWithMediaTypeExamples = (
     });
 };
 
-// eslint-disable-next-line sonarjs/cognitive-complexity
 export default function extendSwaggerSpec(
     spec: Partial<OpenAPIV3.Document>,
     allowedMediaTypes?: Record<string, boolean>,

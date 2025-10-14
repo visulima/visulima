@@ -6,9 +6,9 @@ import { addStatusCodeToResponse, sendJson, setErrorHeaders } from "./utils";
 
 const defaultType = "https://tools.ietf.org/html/rfc2616#section-10";
 const defaultTitle = "An error occurred";
+
 /**
  * Normalizes errors according to the API Problem spec (RFC 7807).
- *
  * @see https://tools.ietf.org/html/rfc7807
  */
 const problemErrorHandler: ErrorHandler = (error: Error | HttpError, _request, response) => {
@@ -27,7 +27,7 @@ const problemErrorHandler: ErrorHandler = (error: Error | HttpError, _request, r
             title: title || getReasonPhrase(statusCode) || defaultTitle,
             // eslint-disable-next-line perfectionist/sort-objects
             details: message,
-            ...(expose ? { trace: stack } : {}),
+            ...expose ? { trace: stack } : {},
         });
     } else {
         addStatusCodeToResponse(response, error);
@@ -38,7 +38,7 @@ const problemErrorHandler: ErrorHandler = (error: Error | HttpError, _request, r
             title: getReasonPhrase(response.statusCode) || defaultTitle,
             // eslint-disable-next-line perfectionist/sort-objects
             details: message,
-            ...((error as Error & { expose: boolean }).expose ? { trace: stack } : {}),
+            ...(error as Error & { expose: boolean }).expose ? { trace: stack } : {},
         });
     }
 };

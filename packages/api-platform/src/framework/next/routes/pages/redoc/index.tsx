@@ -12,23 +12,23 @@ const RedocApiDocument: (
         },
         "spec"
     >,
-) => NextPage<InferGetStaticPropsType<typeof getStaticProps>> =
-    (name, swagger = {}) =>
-    ({ swaggerData }: InferGetStaticPropsType<typeof getStaticProps>) => (
-        <>
-            <Head>
-                <title>{name}</title>
-                <style>
-                    {`
+) => NextPage<InferGetStaticPropsType<typeof getStaticProps>>
+    = (name, swagger = {}) =>
+        ({ swaggerData }: InferGetStaticPropsType<typeof getStaticProps>) => (
+            <>
+                <Head>
+                    <title>{name}</title>
+                    <style>
+                        {`
 body {
     background: #fafafa !important;
 }
 `}
-                </style>
-            </Head>
-            {/* eslint-disable-next-line react/jsx-props-no-spreading */}
-            <RedocStandalone {...swagger} spec={swaggerData} />
-        </>
-    );
+                    </style>
+                </Head>
+                {/* eslint-disable-next-line react/jsx-props-no-spreading */}
+                <RedocStandalone {...swagger} spec={swaggerData} />
+            </>
+        );
 
 export default RedocApiDocument;

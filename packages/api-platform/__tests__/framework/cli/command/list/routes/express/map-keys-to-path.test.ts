@@ -4,7 +4,7 @@ import { oneDynamicPath, staticPath, twoDynamicPaths } from "../../../../../../.
 import mapKeysToPath from "../../../../../../../src/framework/cli/command/list/routes/express/map-keys-to-path";
 import type { ExpressRegex } from "../../../../../../../src/framework/cli/command/list/routes/express/types.d";
 
-describe("mapKeysToPath", () => {
+describe(mapKeysToPath, () => {
     it("handles one dynamic path parameter", () => {
         expect.assertions(1);
 

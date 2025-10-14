@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import serialize from "../../src/serializers/serialize";
 
-describe("serialize", () => {
+describe(serialize, () => {
     it("should correctly sets the Content-Type header in the response when a serializer is found for the given type in the accept header", () => {
         expect.assertions(1);
 
@@ -32,8 +32,7 @@ describe("serialize", () => {
 
         serialize(serializers, request, response, data, options);
 
-        // eslint-disable-next-line @typescript-eslint/unbound-method
-        expect(response.setHeader).toHaveBeenCalledWith("Content-Type", "application/json");
+        expect(response.setHeader).toHaveBeenNthCalledWith(1, "Content-Type", "application/json");
     });
 
     it.each([
@@ -42,7 +41,7 @@ describe("serialize", () => {
         {
             accept: "application/x-xml",
             data: { test: "data" },
-            expected: '<?xml version="1.0" encoding="UTF-8"?>\n<Undefined>\n  <test>data</test>\n</Undefined>',
+            expected: "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<Undefined>\n  <test>data</test>\n</Undefined>",
         },
     ])("should correctly serializes the data using the correct serializer when a serializer is found for the given type in the accept header", (test) => {
         expect.assertions(1);
@@ -70,6 +69,7 @@ describe("serialize", () => {
         expect.assertions(2);
 
         const request = {} as IncomingMessage;
+
         request.headers = { accept: "application/json" };
 
         const response = {
@@ -92,7 +92,6 @@ describe("serialize", () => {
 
         const result = serialize(serializers, request, response, data, options);
 
-        // eslint-disable-next-line @typescript-eslint/unbound-method
         expect(response.setHeader).not.toHaveBeenCalled();
         expect(result).toStrictEqual(data);
     });
@@ -101,6 +100,7 @@ describe("serialize", () => {
         expect.assertions(2);
 
         const request = {} as IncomingMessage;
+
         request.headers = { accept: "application/text" };
 
         const response = {
@@ -123,8 +123,7 @@ describe("serialize", () => {
 
         const result = serialize(serializers, request, response, data, options);
 
-        // eslint-disable-next-line @typescript-eslint/unbound-method
-        expect(response.setHeader).toHaveBeenCalledWith("Content-Type", "application/json");
+        expect(response.setHeader).toHaveBeenCalledExactlyOnceWith("Content-Type", "application/json");
         expect(result).toStrictEqual(JSON.stringify(data));
     });
 });

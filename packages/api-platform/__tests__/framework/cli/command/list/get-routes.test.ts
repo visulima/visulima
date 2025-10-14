@@ -4,15 +4,14 @@ import Router from "@koa/router";
 import type { Express } from "express";
 import express from "express";
 import type { FastifyInstance } from "fastify";
-// eslint-disable-next-line import/no-named-as-default
 import fastify from "fastify";
 import Koa from "koa";
 import { beforeEach, describe, expect, it } from "vitest";
 
 import { getRoutes } from "../../../../../src/framework/cli/command/list/get-routes";
 
-describe("getRoutes", () => {
-    describe("express", () => {
+describe(getRoutes, () => {
+    describe(express, () => {
         let app: Express;
 
         beforeEach(() => {
@@ -127,7 +126,7 @@ describe("getRoutes", () => {
         });
     });
 
-    describe("fastify", () => {
+    describe(fastify, () => {
         let app: FastifyInstance;
 
         beforeEach(() => {

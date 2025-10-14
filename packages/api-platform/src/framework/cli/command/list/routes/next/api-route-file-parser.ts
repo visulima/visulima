@@ -7,7 +7,6 @@ import { toNamespacedPath } from "@visulima/path";
 
 import type { Route } from "../types";
 
-// eslint-disable-next-line regexp/no-unused-capturing-group
 const extensionRegex = /\.(js|ts|mjs|cjs)$/u;
 
 const apiRouteFileParser = (apiRouteFile: string, cwd: string, verbose = false): Route[] => {

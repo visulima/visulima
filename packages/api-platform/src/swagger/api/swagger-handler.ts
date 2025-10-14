@@ -16,7 +16,7 @@ const swaggerCrudDebug = debug("visulima:api-platform:swagger:crud:get-static-pr
 
 const swaggerHandler = <M extends string, PrismaClient>(
     options: Partial<SwaggerHandlerOptions<M, PrismaClient>> = {},
-): ((request: IncomingMessage, response: ServerResponse) => Promise<void>) => {
+): (request: IncomingMessage, response: ServerResponse) => Promise<void> => {
     const {
         allowedMediaTypes = {
             "application/json": true,

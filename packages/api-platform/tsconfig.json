@@ -1,14 +1,14 @@
 {
     "$schema": "https://json.schemastore.org/tsconfig",
     "extends": "../../tsconfig.base.json",
-    "include": ["src/**/*", "*.d.ts"],
     "compilerOptions": {
-        "baseUrl": ".",
         "jsx": "react-jsx",
-        "verbatimModuleSyntax": false,
+        "baseUrl": ".",
+        "moduleResolution": "bundler",
         "paths": {
             "zod": ["node_modules/zod"]
         },
-        "moduleResolution": "bundler"
-    }
+        "verbatimModuleSyntax": false
+    },
+    "include": ["src/**/*", "*.d.ts"]
 }

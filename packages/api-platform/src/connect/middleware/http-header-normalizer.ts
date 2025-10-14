@@ -18,11 +18,11 @@ const exceptions = {
     "last-event-id": "Last-Event-ID",
     "mime-version": "MIME-Version",
     "optional-www-authenticate": "Optional-WWW-Authenticate",
+    "sec-websocket-accept": "Sec-WebSocket-Accept",
+    "sec-websocket-extensions": "Sec-WebSocket-Extensions",
     "sec-webSocket-key": "Sec-WebSocket-Key",
     "sec-webSocket-protocol": "Sec-WebSocket-Protocol",
     "sec-webSocket-version": "Sec-WebSocket-Version",
-    "sec-websocket-accept": "Sec-WebSocket-Accept",
-    "sec-websocket-extensions": "Sec-WebSocket-Extensions",
     slug: "SLUG",
     tcn: "TCN",
     te: "TE",
@@ -66,7 +66,7 @@ const defaults = {
 const httpHeaderNormalizerMiddleware = (options_?: {
     canonical?: boolean;
     normalizeHeaderKey?: (key: string, canonical: boolean) => string;
-}): ((request: IncomingMessage, response: ServerResponse, next: NextHandler) => ValueOrPromise<void>) => {
+}): (request: IncomingMessage, response: ServerResponse, next: NextHandler) => ValueOrPromise<void> => {
     const options = { ...defaults, ...options_ };
 
     return async <Request extends IncomingMessage>(request: Request, _: any, next: NextHandler) => {

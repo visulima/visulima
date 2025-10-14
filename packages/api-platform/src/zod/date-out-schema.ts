@@ -25,6 +25,7 @@ export class ZodDateOut extends ZodType<string, ZodDateOutDef, Date> {
                 expected: ZodParsedType.date,
                 received: ctx.parsedType,
             });
+
             return INVALID;
         }
 
@@ -32,6 +33,7 @@ export class ZodDateOut extends ZodType<string, ZodDateOutDef, Date> {
             addIssueToContext(ctx, {
                 code: ZodIssueCode.invalid_date,
             });
+
             return INVALID;
         }
 

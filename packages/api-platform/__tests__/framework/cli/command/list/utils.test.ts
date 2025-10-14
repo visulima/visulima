@@ -7,7 +7,7 @@ const baseDirectory = __dirname;
 const fixturesDirectory = join(baseDirectory, "../../../../../__fixtures__");
 
 describe("utils", () => {
-    describe("getAppWorkingDirectoryPath", () => {
+    describe(getAppWorkingDirectoryPath, () => {
         it("should return the path to the directory containing the package.json file", () => {
             expect.assertions(1);
 
@@ -25,7 +25,7 @@ describe("utils", () => {
         });
     });
 
-    describe("getFrameworkName", () => {
+    describe(getFrameworkName, () => {
         it("should return 'express' if the directory contains an express package in the dependencies field of the package.json file", () => {
             expect.assertions(1);
 
@@ -75,7 +75,7 @@ describe("utils", () => {
         });
     });
 
-    describe("getApp", () => {
+    describe(getApp, () => {
         it("returns null when appExport is empty", async () => {
             expect.assertions(1);
 

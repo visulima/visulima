@@ -8,7 +8,7 @@ describe("has-json-structure", () => {
 
         const result = hasJsonStructure(null);
 
-        expect(result).toBeFalsy();
+        expect(result).toBe(false);
     });
 
     it("should return true if the data is a valid json structure", () => {
@@ -16,6 +16,6 @@ describe("has-json-structure", () => {
 
         const result = hasJsonStructure(JSON.stringify({ test: "data" }));
 
-        expect(result).toBeTruthy();
+        expect(result).toBe(true);
     });
 });

@@ -5,7 +5,7 @@ import httpHeaderNormalizer from "../../../src/connect/middleware/http-header-no
 
 const normalizeHeaderKey = (key: string) => key.toUpperCase();
 
-describe("httpHeaderNormalizer", () => {
+describe(httpHeaderNormalizer, () => {
     it("should normalize (lowercase) all the headers and create a copy in rawHeaders", async () => {
         expect.assertions(2);
 
