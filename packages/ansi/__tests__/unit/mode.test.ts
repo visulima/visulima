@@ -29,6 +29,7 @@ import {
     GraphemeClusteringMode,
     HideCursor,
     HighlightMouseMode,
+    InBandResizeMode,
     InsertReplaceMode,
     IRM,
     isModeNotRecognized,
@@ -40,6 +41,7 @@ import {
     // ANSI Modes
     KeyboardActionMode,
     LeftRightMarginMode,
+    LightDarkMode,
     LineFeedNewLineMode,
     LNM,
     LocalEchoMode,
@@ -60,9 +62,11 @@ import {
     RequestFocusEventMode,
     RequestGraphemeClusteringMode,
     RequestHighlightMouseMode,
+    RequestInBandResizeMode,
     RequestInsertReplaceMode,
     RequestKeyboardActionMode,
     RequestLeftRightMarginMode,
+    RequestLightDarkMode,
     RequestLineFeedNewLineMode,
     RequestLocalEchoMode,
     requestMode,
@@ -75,6 +79,7 @@ import {
     RequestSgrPixelExtMouseMode as RequestSgrPixelExtensionMouseMode,
     RequestSynchronizedOutputMode,
     RequestTextCursorEnableMode,
+    RequestUnicodeCoreMode,
     RequestUrxvtExtMouseMode as RequestUrxvtExtensionMouseMode,
     RequestUtf8ExtMouseMode as RequestUtf8ExtensionMouseMode,
     RequestWin32InputMode,
@@ -91,9 +96,11 @@ import {
     ResetFocusEventMode,
     ResetGraphemeClusteringMode,
     ResetHighlightMouseMode,
+    ResetInBandResizeMode,
     ResetInsertReplaceMode,
     ResetKeyboardActionMode,
     ResetLeftRightMarginMode,
+    ResetLightDarkMode,
     ResetLineFeedNewLineMode,
     ResetLocalEchoMode,
     resetMode,
@@ -106,6 +113,7 @@ import {
     ResetSgrPixelExtMouseMode as ResetSgrPixelExtensionMouseMode,
     ResetSynchronizedOutputMode,
     ResetTextCursorEnableMode,
+    ResetUnicodeCoreMode,
     ResetUrxvtExtMouseMode as ResetUrxvtExtensionMouseMode,
     ResetUtf8ExtMouseMode as ResetUtf8ExtensionMouseMode,
     ResetWin32InputMode,
@@ -125,9 +133,11 @@ import {
     SetFocusEventMode,
     SetGraphemeClusteringMode,
     SetHighlightMouseMode,
+    SetInBandResizeMode,
     SetInsertReplaceMode,
     SetKeyboardActionMode,
     SetLeftRightMarginMode,
+    SetLightDarkMode,
     SetLineFeedNewLineMode,
     SetLocalEchoMode,
     setMode,
@@ -140,6 +150,7 @@ import {
     SetSgrPixelExtMouseMode as SetSgrPixelExtensionMouseMode,
     SetSynchronizedOutputMode,
     SetTextCursorEnableMode,
+    SetUnicodeCoreMode,
     SetUrxvtExtMouseMode as SetUrxvtExtensionMouseMode,
     SetUtf8ExtMouseMode as SetUtf8ExtensionMouseMode,
     SetWin32InputMode,
@@ -151,6 +162,7 @@ import {
     SRM,
     SynchronizedOutputMode,
     TextCursorEnableMode,
+    UnicodeCoreMode,
     UrxvtExtMouseMode as UrxvtExtensionMouseMode,
     Utf8ExtMouseMode as Utf8ExtensionMouseMode,
     Win32InputMode,
@@ -750,7 +762,20 @@ describe("mode Utilities", () => {
             expect(RequestSynchronizedOutputMode).toBe(`${CSI}?2026$p`);
         });
 
-        it("graphemeClusteringMode - DEC Mode 2027", () => {
+        it("unicodeCoreMode - DEC Mode 2027", () => {
+            expect.assertions(8);
+
+            expect(UnicodeCoreMode.code).toBe(2027);
+            expect(UnicodeCoreMode.isDecMode).toBe(true);
+            expect(setMode(UnicodeCoreMode)).toBe(SetUnicodeCoreMode);
+            expect(resetMode(UnicodeCoreMode)).toBe(ResetUnicodeCoreMode);
+            expect(requestMode(UnicodeCoreMode)).toBe(RequestUnicodeCoreMode);
+            expect(SetUnicodeCoreMode).toBe(`${CSI}?2027h`);
+            expect(ResetUnicodeCoreMode).toBe(`${CSI}?2027l`);
+            expect(RequestUnicodeCoreMode).toBe(`${CSI}?2027$p`);
+        });
+
+        it("graphemeClusteringMode - DEC Mode 2027 (deprecated alias)", () => {
             expect.assertions(8);
 
             expect(GraphemeClusteringMode.code).toBe(2027);
@@ -775,7 +800,31 @@ describe("mode Utilities", () => {
             expect(ResetWin32InputMode).toBe(`${CSI}?9001l`);
             expect(RequestWin32InputMode).toBe(`${CSI}?9001$p`);
         });
-    });
 
-    // Remove tests for TerminalModes class as it's no longer exported/used
+        it("lightDarkMode - DEC Mode 2031", () => {
+            expect.assertions(8);
+
+            expect(LightDarkMode.code).toBe(2031);
+            expect(LightDarkMode.isDecMode).toBe(true);
+            expect(setMode(LightDarkMode)).toBe(SetLightDarkMode);
+            expect(resetMode(LightDarkMode)).toBe(ResetLightDarkMode);
+            expect(requestMode(LightDarkMode)).toBe(RequestLightDarkMode);
+            expect(SetLightDarkMode).toBe(`${CSI}?2031h`);
+            expect(ResetLightDarkMode).toBe(`${CSI}?2031l`);
+            expect(RequestLightDarkMode).toBe(`${CSI}?2031$p`);
+        });
+
+        it("inBandResizeMode - DEC Mode 2048", () => {
+            expect.assertions(8);
+
+            expect(InBandResizeMode.code).toBe(2048);
+            expect(InBandResizeMode.isDecMode).toBe(true);
+            expect(setMode(InBandResizeMode)).toBe(SetInBandResizeMode);
+            expect(resetMode(InBandResizeMode)).toBe(ResetInBandResizeMode);
+            expect(requestMode(InBandResizeMode)).toBe(RequestInBandResizeMode);
+            expect(SetInBandResizeMode).toBe(`${CSI}?2048h`);
+            expect(ResetInBandResizeMode).toBe(`${CSI}?2048l`);
+            expect(RequestInBandResizeMode).toBe(`${CSI}?2048$p`);
+        });
+    });
 });

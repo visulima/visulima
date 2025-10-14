@@ -16,6 +16,7 @@ import {
     DSR_TerminalStatus,
     DSR_UDKStatusDEC,
     extendedCursorPositionReport,
+    LightDarkReport,
     reportKeyboardLanguageDEC,
     reportPrimaryDeviceAttributes,
     reportPrinterNoPaperDEC,
@@ -28,6 +29,7 @@ import {
     requestCursorPositionReport,
     requestExtendedCursorPositionReport,
     requestKeyboardLanguageDEC,
+    RequestLightDarkReport,
     RequestNameVersion,
     requestPrimaryDeviceAttributes,
     requestPrimaryDeviceAttributesParam0 as requestPrimaryDeviceAttributesParameter0,
@@ -235,6 +237,23 @@ describe("status Reports", () => {
         it("reportPrimaryDeviceAttributes should return empty string if no attributes are provided", () => {
             expect.assertions(1);
             expect(reportPrimaryDeviceAttributes()).toBe("");
+        });
+    });
+
+    describe("lightDarkReport", () => {
+        it("requestLightDarkReport should be correct", () => {
+            expect.assertions(1);
+            expect(RequestLightDarkReport).toBe(`${CSI}?996n`);
+        });
+
+        it("lightDarkReport should generate correct sequence for dark mode", () => {
+            expect.assertions(1);
+            expect(LightDarkReport(true)).toBe(`${CSI}?997${SEP}1n`);
+        });
+
+        it("lightDarkReport should generate correct sequence for light mode", () => {
+            expect.assertions(1);
+            expect(LightDarkReport(false)).toBe(`${CSI}?997${SEP}2n`);
         });
     });
 });

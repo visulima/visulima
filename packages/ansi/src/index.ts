@@ -3,18 +3,8 @@
  */
 export const beep = "\u0007";
 
-export {
-    ALT_SCREEN_OFF,
-    ALT_SCREEN_ON,
-    alternativeScreenOff,
-    alternativeScreenOn,
-} from "./alternative-screen";
-export {
-    clearLineAndHomeCursor,
-    clearScreenAndHomeCursor,
-    clearScreenFromTopLeft,
-    resetTerminal,
-} from "./clear";
+export { ALT_SCREEN_OFF, ALT_SCREEN_ON, alternativeScreenOff, alternativeScreenOn } from "./alternative-screen";
+export { clearLineAndHomeCursor, clearScreenAndHomeCursor, clearScreenFromTopLeft, resetTerminal } from "./clear";
 export type { CursorStyle } from "./cursor"; // Enum
 export {
     CURSOR_BACKWARD_1,
@@ -64,30 +54,19 @@ export { default as hyperlink } from "./hyperlink";
 export type { ImageOptions } from "./image";
 export { image } from "./image";
 export type { IITerm2Payload, ITerm2FileProperties } from "./iterm2";
-export {
-    IT2_AUTO,
-    it2Cells,
-    it2Percent,
-    it2Pixels,
-    iTerm2,
-    ITerm2File,
-    ITerm2FileEnd,
-    ITerm2FilePart,
-    ITerm2MultipartFileStart,
-} from "./iterm2";
-export type {
-    AnsiMode,
-    DecMode,
-    Mode,
-    ModeSetting,
-} from "./mode";
+export { IT2_AUTO, it2Cells, it2Percent, it2Pixels, iTerm2, ITerm2File, ITerm2FileEnd, ITerm2FilePart, ITerm2MultipartFileStart } from "./iterm2";
+export type { AnsiMode, DecMode, Mode, ModeSetting } from "./mode";
 export {
     BDSM,
     BiDirectionalSupportMode,
+    // Added modes for compatibility with charmbracelet/x and other terminal libraries
+    BracketedPasteMode,
     createAnsiMode,
     createDecMode,
     DECRPM,
     DECRQM,
+    DisableModifiersMode,
+    InBandResizeMode,
     InsertReplaceMode,
     IRM,
     isModeNotRecognized,
@@ -97,39 +76,47 @@ export {
     isModeSet,
     KAM,
     KeyboardActionMode,
+    LightDarkMode,
     LineFeedNewLineMode,
     LNM,
     LocalEchoMode,
+    OriginMode,
     reportMode,
     RequestBiDirectionalSupportMode,
+    RequestInBandResizeMode,
     RequestInsertReplaceMode,
     RequestKeyboardActionMode,
     RequestLineFeedNewLineMode,
     RequestLocalEchoMode,
     requestMode,
     RequestSendReceiveMode,
+    RequestUnicodeCoreMode,
     ResetBiDirectionalSupportMode,
+    ResetInBandResizeMode,
     ResetInsertReplaceMode,
     ResetKeyboardActionMode,
     ResetLineFeedNewLineMode,
     ResetLocalEchoMode,
     resetMode,
     ResetSendReceiveMode,
+    ResetUnicodeCoreMode,
     RM,
+    SendFocusEventsMode,
     SendReceiveMode,
     SetBiDirectionalSupportMode,
+    SetInBandResizeMode,
     SetInsertReplaceMode,
     SetKeyboardActionMode,
     SetLineFeedNewLineMode,
     SetLocalEchoMode,
     setMode,
     SetSendReceiveMode,
+    SetUnicodeCoreMode,
+    SGRMouseMode,
     SM,
     SRM,
-    // User added: BracketedPasteMode, DisableModifiersMode, OriginMode, SendFocusEventsMode, SGRMouseMode, TextCursorEnableMode.
-    // These specific constants need to be verified if they are exported from mode.ts.
-    // If they are, they should be added here. Example:
-    // BracketedPasteMode, (if exported from mode.ts)
+    TextCursorEnableMode,
+    UnicodeCoreMode,
 } from "./mode";
 export type { MouseButtonType, MouseModifiers } from "./mouse";
 export {
@@ -150,16 +137,9 @@ export {
     mouseSgrSequence,
     mouseX10Sequence,
 } from "./mouse";
-export {
-    SCREEN_MAX_LEN_DEFAULT,
-    SCREEN_TYPICAL_LIMIT,
-    screenPassthrough,
-    tmuxPassthrough,
-} from "./passthrough";
-export {
-    RESET_INITIAL_STATE,
-    RIS,
-} from "./reset";
+export { SCREEN_MAX_LEN_DEFAULT, SCREEN_TYPICAL_LIMIT, screenPassthrough, tmuxPassthrough } from "./passthrough";
+export { resetProgressBar, setErrorProgressBar, setIndeterminateProgressBar, setProgressBar, setWarningProgressBar } from "./progress";
+export { RESET_INITIAL_STATE, RIS } from "./reset";
 export {
     clearTabStop,
     deleteCharacter,
@@ -171,12 +151,7 @@ export {
     setLeftRightMargins,
     setTopBottomMargins,
 } from "./screen";
-export {
-    SCROLL_DOWN_1,
-    SCROLL_UP_1,
-    scrollDown,
-    scrollUp,
-} from "./scroll";
+export { SCROLL_DOWN_1, SCROLL_UP_1, scrollDown, scrollUp } from "./scroll";
 export type { AnsiStatusReport, DecStatusReport, StatusReport } from "./status";
 export {
     CPR,
@@ -194,6 +169,7 @@ export {
     DSR_TerminalStatus,
     DSR_UDKStatusDEC,
     extendedCursorPositionReport,
+    LightDarkReport,
     reportKeyboardLanguageDEC,
     reportPrimaryDeviceAttributes,
     reportPrinterNoPaperDEC,
@@ -208,6 +184,7 @@ export {
     requestCursorPositionReport,
     requestExtendedCursorPositionReport,
     requestKeyboardLanguageDEC,
+    RequestLightDarkReport,
     RequestNameVersion,
     requestPrimaryDeviceAttributes,
     requestPrimaryDeviceAttributesParam0,
@@ -221,11 +198,7 @@ export {
     XTVERSION,
 } from "./status";
 export { default as strip } from "./strip";
-export {
-    requestTermcap,
-    requestTerminfo,
-    XTGETTCAP,
-} from "./termcap";
+export { requestTermcap, requestTerminfo, XTGETTCAP } from "./termcap";
 export {
     decsin,
     decswt,
