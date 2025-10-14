@@ -17,7 +17,7 @@ const badFunction = () => {
 
 const METHODS = ["GET", "HEAD", "PATCH", "DELETE", "POST", "PUT", "OPTIONS", "CONNECT", "TRACE"];
 
-describe("createRouter", () => {
+describe(createRouter, () => {
     it("internals", () => {
         expect.assertions(12);
 
@@ -44,6 +44,7 @@ describe("createRouter", () => {
         expect.assertions(2);
 
         const context = new NodeRouter();
+
         // @ts-expect-error: private property
         vi.spyOn(context.router, "add").mockImplementation((...values) => {
             expect(values, "call router.add()").toStrictEqual(["GET", "/", noop]);
@@ -65,7 +66,7 @@ describe("createRouter", () => {
 
             context.use(noop);
 
-            expect(useSpy).toHaveBeenCalledWith("/", noop);
+            expect(useSpy).toHaveBeenCalledExactlyOnceWith("/", noop);
         });
 
         it("call this.router.use() with fn", async () => {
@@ -78,7 +79,7 @@ describe("createRouter", () => {
 
             context.use("/test", noop, noop);
 
-            expect(useSpy).toHaveBeenCalledWith("/test", noop, noop);
+            expect(useSpy).toHaveBeenCalledExactlyOnceWith("/test", noop, noop);
         });
 
         it("call this.router.use() with fn.router", async () => {
@@ -93,7 +94,7 @@ describe("createRouter", () => {
             context.use("/test", context2, context2);
 
             // @ts-expect-error: private field
-            expect(useSpy).toHaveBeenCalledWith("/test", context2.router, context2.router);
+            expect(useSpy).toHaveBeenCalledExactlyOnceWith("/test", context2.router, context2.router);
         });
     });
 
@@ -101,6 +102,7 @@ describe("createRouter", () => {
         expect.assertions(3);
 
         const context = new NodeRouter();
+
         // @ts-expect-error: private property
         context.router.routes = [noop, noop] as any[];
 
@@ -146,6 +148,7 @@ describe("createRouter", () => {
 
             return "ok";
         });
+
         await expect(context.run(request, response)).resolves.toBe("ok");
     });
 
@@ -320,9 +323,10 @@ describe("createRouter", () => {
                 expect(response.statusCode).toBe(500);
                 expect(chunk).toBe("Internal Server Error");
                 // eslint-disable-next-line security/detect-object-injection
-                expect(consoleSpy.mock.calls[index], 'called console.error with ""').toStrictEqual([""]);
+                expect(consoleSpy.mock.calls[index], "called console.error with \"\"").toStrictEqual([""]);
             },
         } as ServerResponse;
+
         await createRouter()
             .use(baseFunction)
             .get(() => {
@@ -336,6 +340,7 @@ describe("createRouter", () => {
 
     it("handler() - calls onError if error thrown (async)", async () => {
         expect.assertions(6);
+
         const error = new Error("💥");
         const consoleSpy = vi.spyOn(globalThis.console, "error").mockImplementation(() => {});
 
@@ -437,7 +442,7 @@ describe("createRouter", () => {
 
         await createRouter({
             onNoMatch() {
-                expect(true, "onNoMatch called").toBeTruthy();
+                expect(true, "onNoMatch called").toBe(true);
             },
         }).handler()({ method: "GET", url: "/foo/bar" } as IncomingMessage, {} as ServerResponse);
     });
@@ -450,7 +455,8 @@ describe("createRouter", () => {
                 expect((error as Error).message).toBe("💥");
             },
             onNoMatch() {
-                expect(true, "onNoMatch called").toBeTruthy();
+                expect(true, "onNoMatch called").toBe(true);
+
                 throw new Error("💥");
             },
         }).handler()({ method: "GET", url: "/foo/bar" } as IncomingMessage, {} as never);
@@ -462,35 +468,41 @@ describe("createRouter", () => {
         const request = {} as IncomingMessage;
 
         const context2 = createRouter().get("/hello/:name");
+
         // @ts-expect-error: internal
         context2.prepareRequest(
             request,
             // @ts-expect-error: internal
             context2.router.find("GET", "/hello/world"),
         );
+
         // @ts-expect-error: extra prop
         expect(request.params, "params are attached").toStrictEqual({ name: "world" });
 
         const requestWithParameters = {
             params: { age: "20" },
         };
+
         // @ts-expect-error: internal
         context2.prepareRequest(
             requestWithParameters as unknown as IncomingMessage,
             // @ts-expect-error: internal
             context2.router.find("GET", "/hello/world"),
         );
+
         expect(requestWithParameters.params, "params are merged").toStrictEqual({ age: "20", name: "world" });
 
         const requestWithParameters2 = {
             params: { name: "sunshine" },
         };
+
         // @ts-expect-error: internal
         context2.prepareRequest(
             requestWithParameters2 as unknown as IncomingMessage,
             // @ts-expect-error: internal
             context2.router.find("GET", "/hello/world"),
         );
+
         expect(requestWithParameters2.params, "params are merged (existing takes precedence)").toStrictEqual({ name: "sunshine" });
     });
 

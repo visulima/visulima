@@ -2,11 +2,23 @@ import { createServer } from "node:http";
 
 import { createRouter } from "../src";
 
+/**
+ *
+ * @param request
+ * @param response
+ * @param next
+ */
 function one(request, response, next) {
     request.one = true;
     next();
 }
 
+/**
+ *
+ * @param request
+ * @param response
+ * @param next
+ */
 function two(request, response, next) {
     request.two = true;
     next();

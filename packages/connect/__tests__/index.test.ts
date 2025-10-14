@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { createRouter } from "../src";
 
-describe("createRouter", () => {
+describe(createRouter, () => {
     it("imports", async () => {
         expect.assertions(1);
 

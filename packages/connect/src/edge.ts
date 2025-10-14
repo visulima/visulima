@@ -64,12 +64,12 @@ export class EdgeRouter<R extends Request = Request, Context = unknown, RRespons
 
     public constructor(options: HandlerOptions<RoutesExtendedRequestHandler<R, Context, RResponse, Route<Nextable<FunctionLike>>[]>> = {}) {
         this.onNoMatch = options.onNoMatch ?? (onNoMatch as unknown as RoutesExtendedRequestHandler<R, Context, RResponse, Route<Nextable<FunctionLike>>[]>);
-        this.onError =
-            options.onError ??
-            (onError as unknown as (
-                error: unknown,
-                ...arguments_: Parameters<RoutesExtendedRequestHandler<R, Context, RResponse, Route<Nextable<FunctionLike>>[]>>
-            ) => ReturnType<RoutesExtendedRequestHandler<R, Context, RResponse, Route<Nextable<FunctionLike>>[]>>);
+        this.onError
+            = options.onError
+                ?? (onError as unknown as (
+                    error: unknown,
+                    ...arguments_: Parameters<RoutesExtendedRequestHandler<R, Context, RResponse, Route<Nextable<FunctionLike>>[]>>
+                ) => ReturnType<RoutesExtendedRequestHandler<R, Context, RResponse, Route<Nextable<FunctionLike>>[]>>);
     }
 
     public clone(): EdgeRouter<R, Context, RResponse, Schema> {
@@ -80,7 +80,6 @@ export class EdgeRouter<R extends Request = Request, Context = unknown, RRespons
         return r;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     public handler(): (request: R, context_: Context) => Promise<any> | ReturnType<FunctionLike> | ValueOrPromise<RResponse> {
         const { routes } = this.router as Router<FunctionLike>;
 
@@ -124,7 +123,7 @@ export class EdgeRouter<R extends Request = Request, Context = unknown, RRespons
             base = "/";
         }
 
-        this.router.use(base, ...fns.map((function_) => (function_ instanceof EdgeRouter ? function_.router : function_)));
+        this.router.use(base, ...fns.map((function_) => function_ instanceof EdgeRouter ? function_.router : function_));
 
         return this;
     }
