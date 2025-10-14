@@ -34,7 +34,8 @@
 - **Enhanced Error Display** - Rich, interactive error overlays with syntax highlighting
 - **Source Map Integration** - Shows original `.tsx`/`.ts` files instead of compiled paths
 - **Cause Chain Navigation** - Navigate through multi-level error chains with original source locations
-- **Beautiful UI** - Modern, accessible interface with light/dark theme support
+- **Console Method Forwarding** - Intercept and display console.error, console.warn, and other console methods
+- **Beautiful UI** - Modern, accessible interface with light/dark theme support and floating balloon button
 - **Intelligent Solutions** - AI-powered error analysis and suggested fixes
 - **Real-time Updates** - Hot Module Replacement (HMR) integration for instant error feedback
 - **Comprehensive Testing** - Extensive e2e test coverage for reliability
@@ -78,13 +79,25 @@ export default defineConfig({
     plugins: [
         errorOverlay({
             // Whether to log/display client-side runtime errors (default: true)
-            logClientRuntimeError: true,
+            forwardClientLogs: true,
+
+            // Array of console method names to forward (default: ["error"])
+            forwardedConsoleMethods: ["error", "warn"],
 
             // Custom React plugin name for detection (optional)
             reactPluginName: "@vitejs/plugin-react",
 
+            // Custom Vue plugin name for detection (optional)
+            vuePluginName: "@vitejs/plugin-vue",
+
+            // Whether to show the balloon button in the overlay (default: true)
+            showBallonButton: true,
+
             // Custom solution finder functions (optional)
             solutionFinders: [],
+
+            // @deprecated Use forwardClientLogs instead
+            logClientRuntimeError: true,
         }),
     ],
 });
@@ -92,11 +105,15 @@ export default defineConfig({
 
 #### Options
 
-| Option                  | Type               | Default     | Description                                                              |
-| ----------------------- | ------------------ | ----------- | ------------------------------------------------------------------------ |
-| `logClientRuntimeError` | `boolean`          | `true`      | Enable/disable client-side runtime error logging and overlay display     |
-| `reactPluginName`       | `string`           | `undefined` | Custom React plugin name for detection (useful for custom React plugins) |
-| `solutionFinders`       | `SolutionFinder[]` | `[]`        | Array of custom solution finder functions for enhanced error analysis    |
+| Option                    | Type               | Default     | Description                                                              |
+| ------------------------- | ------------------ | ----------- | ------------------------------------------------------------------------ |
+| `forwardClientLogs`       | `boolean`          | `true`      | Enable/disable client-side runtime error logging and overlay display     |
+| `forwardedConsoleMethods` | `string[]`         | `["error"]` | Array of console method names to intercept and forward to overlay        |
+| `reactPluginName`         | `string`           | `undefined` | Custom React plugin name for detection (useful for custom React plugins) |
+| `vuePluginName`           | `string`           | `undefined` | Custom Vue plugin name for detection (useful for custom Vue plugins)     |
+| `showBallonButton`        | `boolean`          | `true`      | Whether to show the floating balloon button for error navigation         |
+| `solutionFinders`         | `SolutionFinder[]` | `[]`        | Array of custom solution finder functions for enhanced error analysis    |
+| `logClientRuntimeError`   | `boolean`          | `undefined` | **@deprecated** Use `forwardClientLogs` instead                          |
 
 ## Error Handling
 
@@ -106,6 +123,7 @@ The plugin automatically handles various types of errors:
 
 - Runtime JavaScript errors
 - Unhandled promise rejections
+- Console method interception (configurable via `forwardedConsoleMethods`)
 - React component errors (when React plugin is detected)
 - Async context errors
 
@@ -124,6 +142,16 @@ The plugin automatically handles various types of errors:
 - **Framework-Specific Issues** - Detection and handling for React, Vue, Svelte, and Astro
 
 ## User Interface
+
+### Floating Balloon Button
+
+When errors occur, a floating balloon button appears in the bottom-right corner of the screen. Click it to:
+
+- View the most recent error details
+- Navigate through multiple errors
+- Access error overlay controls
+
+The balloon button can be disabled by setting `showBallonButton: false` in the plugin options.
 
 ### Keyboard Shortcuts
 
@@ -175,6 +203,34 @@ export default defineConfig({
     plugins: [
         errorOverlay({
             reactPluginName: "my-custom-react-plugin",
+        }),
+    ],
+});
+```
+
+### Vue Plugin Detection
+
+Similar to React detection, you can specify a custom Vue plugin name:
+
+```typescript
+export default defineConfig({
+    plugins: [
+        errorOverlay({
+            vuePluginName: "my-custom-vue-plugin",
+        }),
+    ],
+});
+```
+
+### Console Method Forwarding
+
+By default, only `console.error` calls are intercepted and displayed in the overlay. You can customize which console methods to forward:
+
+```typescript
+export default defineConfig({
+    plugins: [
+        errorOverlay({
+            forwardedConsoleMethods: ["error", "warn", "log"],
         }),
     ],
 });

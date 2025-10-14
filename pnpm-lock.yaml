@@ -3890,15 +3890,15 @@ importers:
       '@jridgewell/trace-mapping':
         specifier: ^0.3.31
         version: 0.3.31
+      '@shikijs/cli':
+        specifier: 3.13.0
+        version: 3.13.0
       '@shikijs/langs':
         specifier: 3.13.0
         version: 3.13.0
       '@shikijs/themes':
         specifier: 3.13.0
         version: 3.13.0
-      '@visulima/boxen':
-        specifier: 2.0.3
-        version: 2.0.3
       '@visulima/error':
         specifier: 4.6.2
         version: 4.6.2(ai@5.0.68(zod@4.1.12))
@@ -5581,7 +5581,7 @@ packages:
     resolution: {integrity: sha512-iBuhh+uaaggeAuf+TftcjZyWh2GEgZcVGXkNtskLVoWaXhnJtC5HLHrU8W1KHDoucqO1MswwglmkWLFyiDn4WQ==}
     engines: {node: '>=18.14.1'}
     peerDependencies:
-      hono: '>=4.9.6'
+      hono: '>=4.9.7'
 
   '@html-eslint/eslint-plugin@0.47.0':
     resolution: {integrity: sha512-eZWk+qVDwYBs7HWDEo4WyprseqbUGyyCw/+sk4/C+0gQ8e4PsaeMPeKyttUwtrqkLBBh2YoGHAwrQUbwG7m2Fw==}
@@ -7638,6 +7638,10 @@ packages:
 
   '@semrel-extra/topo@1.14.1':
     resolution: {integrity: sha512-V7hlOQoBXgqLSa4ai9S0LGOO7cKTqRu5dh0T83xfE+VqZQmDkuRm956ooJ2/M8y62kWIxS2VEfePnEoB74x6fg==}
+
+  '@shikijs/cli@3.13.0':
+    resolution: {integrity: sha512-0cE8hHP5vAaFE37HEbPZd/RK1rk6wziDtS4jC8I0Dkvo/DJlaLYY/0SaZvtP1MKELkRTXdAEqPwmhI2MqRq96g==}
+    hasBin: true
 
   '@shikijs/core@3.13.0':
     resolution: {integrity: sha512-3P8rGsg2Eh2qIHekwuQjzWhKI4jV97PhvYjYUzGqjvJfqdQPz+nMlfWahU24GZAyW1FxFI1sYjyhfh5CoLmIUA==}
@@ -24209,6 +24213,13 @@ snapshots:
       fast-glob: 3.3.3
       js-yaml: 4.1.0
       toposource: 1.2.0
+
+  '@shikijs/cli@3.13.0':
+    dependencies:
+      '@shikijs/vscode-textmate': 10.0.2
+      ansis: 4.2.0
+      cac: 6.7.14
+      shiki: 3.13.0
 
   '@shikijs/core@3.13.0':
     dependencies:
