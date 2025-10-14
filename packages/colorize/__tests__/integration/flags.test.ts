@@ -1,5 +1,5 @@
-import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 
 import { describe, expect, it } from "vitest";
 
@@ -41,8 +41,8 @@ describe("enable colors", () => {
         expect.assertions(1);
 
         const received = execScriptSync(filename, [], ["FORCE_COLOR=true"]);
-        const expected =
-            "\u001B[31mred\u001B[39m|\u001B[38;2;80;80;80mrgb\u001B[39m|\u001B[48;2;80;80;80mbgRgb\u001B[49m|\u001B[38;2;255;255;255mhex\u001B[39m|\u001B[48;2;255;255;255mbgHex\u001B[49m";
+        const expected
+            = "\u001B[31mred\u001B[39m|\u001B[38;2;80;80;80mrgb\u001B[39m|\u001B[48;2;80;80;80mbgRgb\u001B[49m|\u001B[38;2;255;255;255mhex\u001B[39m|\u001B[48;2;255;255;255mbgHex\u001B[49m";
 
         expect(esc(received)).toStrictEqual(esc(expected));
     });

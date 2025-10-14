@@ -24,7 +24,6 @@ type ColorizeProperties = { css: string; cssStack: string; props: ColorizeProper
 const createStyle = (
     { props }: { props?: ColorizeProperties },
     css: string,
-
 ): { (strings: ArrayLike<string> | ReadonlyArray<string> | string, ...values: string[]): string[] | ""; css: string; props: ColorizeProperties } => {
     let cssStack = css;
 
