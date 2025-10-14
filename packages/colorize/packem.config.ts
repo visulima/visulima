@@ -39,10 +39,10 @@ export default defineConfig({
                     },
                 },
             },
-            requireCJS: {
-                builtinNodeModules: true,
-            },
         ],
+        requireCJS: {
+            builtinNodeModules: true,
+        },
     },
     transformer,
     cjsInterop: true,
