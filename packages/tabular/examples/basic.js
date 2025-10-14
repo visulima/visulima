@@ -1,5 +1,5 @@
-import { createTable } from "../dist";
-import { DEFAULT_BORDER, DOUBLE_BORDER, NO_BORDER, ROUNDED_BORDER } from "../dist/style.mjs";
+import { createTable } from "../dist/index.js";
+import { DEFAULT_BORDER, DOUBLE_BORDER, NO_BORDER, ROUNDED_BORDER } from "../dist/style.js";
 
 const OSC = "\u001B]";
 const BEL = "\u0007";

@@ -1,6 +1,6 @@
 import { blue, cyan, gray, green, magenta, red, yellow } from "@visulima/colorize";
 
-import { Table } from "../dist";
+import { Table } from "../dist/index.js";
 
 // Example 1: Basic table with colors and alignment
 console.log("Example 1: Basic table with colors and alignment");
