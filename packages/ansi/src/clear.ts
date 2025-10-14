@@ -1,11 +1,6 @@
 import { CSI, ESC } from "./constants";
 import { cursorTo } from "./cursor";
-import {
-    eraseDisplay,
-    EraseDisplayMode,
-    eraseInLine,
-    EraseLineMode,
-} from "./erase";
+import { eraseDisplay, EraseDisplayMode, eraseInLine, EraseLineMode } from "./erase";
 import { isWindows } from "./helpers";
 
 /**
@@ -89,8 +84,10 @@ export const clearScreenAndHomeCursor: string = `${CSI}H${eraseDisplay(EraseDisp
  */
 export const resetTerminal: string = isWindows
     ? `${eraseDisplay(EraseDisplayMode.EntireScreen) + CSI}0f` // `0f` for cursor to (0,0) might be specific or non-standard
+    // eslint-disable-next-line @stylistic/operator-linebreak
+    :
     // 1. Erases the screen (as a fallback/part of comprehensive clear)
     // 2. Erases the whole screen including scrollback buffer (XTerm)
     // 3. Moves cursor to the top-left position
     // 4. RIS - Hard Reset (most comprehensive reset)
-    : `${eraseDisplay(EraseDisplayMode.EntireScreen) + eraseDisplay(EraseDisplayMode.EntireScreenAndScrollback) + CSI}H${ESC}c`;
+    `${eraseDisplay(EraseDisplayMode.EntireScreen) + eraseDisplay(EraseDisplayMode.EntireScreenAndScrollback) + CSI}H${ESC}c`;

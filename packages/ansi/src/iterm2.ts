@@ -4,18 +4,8 @@ import type { IITerm2Payload } from "./iterm2/iterm2-properties";
 
 // Re-export specific payload types and props for easier use by consumers
 export type { IITerm2Payload, ITerm2FileProperties } from "./iterm2/iterm2-properties";
-export {
-    IT2_AUTO,
-    it2Cells,
-    it2Percent,
-    it2Pixels,
-} from "./iterm2/iterm2-properties";
-export {
-    ITerm2File,
-    ITerm2FileEnd,
-    ITerm2FilePart,
-    ITerm2MultipartFileStart,
-} from "./iterm2/iterm2-sequences";
+export { IT2_AUTO, it2Cells, it2Percent, it2Pixels } from "./iterm2/iterm2-properties";
+export { ITerm2File, ITerm2FileEnd, ITerm2FilePart, ITerm2MultipartFileStart } from "./iterm2/iterm2-sequences";
 
 /**
  * Generates a complete iTerm2 proprietary escape sequence (OSC 1337).

@@ -220,8 +220,7 @@ export const resizeTextAreaChars = (height: number, width: number): string => xt
  * // Expect response like: "\x1b[4;24;80t" if terminal is 24x80
  * ```
  */
-export const requestTextAreaSizeChars = (): string => xtermWindowOp(XTermWindowOp.REQUEST_WINDOW_SIZE_WIN_OP_COMPAT) // This is 14, same as REPORT_TEXT_AREA_SIZE_CHARS
-;
+export const requestTextAreaSizeChars = (): string => xtermWindowOp(XTermWindowOp.REQUEST_WINDOW_SIZE_WIN_OP_COMPAT); // This is 14, same as REPORT_TEXT_AREA_SIZE_CHARS
 
 /**
  * Requests a report of the terminal's character cell size in pixels.

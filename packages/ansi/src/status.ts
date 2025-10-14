@@ -398,8 +398,7 @@ export const DA3: string = requestTertiaryDeviceAttributes;
  * console.log(reportTertiaryDeviceAttributes(""));
  * ```
  */
-export const reportTertiaryDeviceAttributes = (unitID: string): string =>
-    `${DCS}!|${unitID}${ST}`;
+export const reportTertiaryDeviceAttributes = (unitID: string): string => `${DCS}!|${unitID}${ST}`;
 
 // For user convenience, re-exporting some constants if they are direct requests
 // This part is more about aligning with other direct constants if they differ from the `request*` functions.
@@ -654,3 +653,28 @@ export const DSR_KeyboardLanguageDEC: string = deviceStatusReport(requestKeyboar
  * ```
  */
 export const reportKeyboardLanguageDEC: (langCode: number) => string = (langCode: number): string => `${CSI}?27${SEP}${langCode.toString()}n`;
+
+/**
+ * ANSI escape sequence `CSI ? 996 n` to request the terminal to report its operating system light/dark color preference.
+ * Supported terminals should respond with a LightDarkReport sequence.
+ * @see {@link https://contour-terminal.org/vt-extensions/color-palette-update-notifications/}
+ */
+export const RequestLightDarkReport: string = `${CSI}?996n`;
+
+/**
+ * Generates a Light/Dark Color Scheme Report sequence.
+ * This sequence reports the terminal's operating system light/dark color preference.
+ * - `CSI ? 997 ; 1 n` for dark mode
+ * - `CSI ? 997 ; 2 n` for light mode
+ * @param dark Whether the color scheme is dark mode (true) or light mode (false).
+ * @returns The light/dark report sequence string.
+ * @see {@link https://contour-terminal.org/vt-extensions/color-palette-update-notifications/}
+ * @example
+ * ```typescript
+ * import { LightDarkReport } from "@visulima/ansi";
+ *
+ * console.log(LightDarkReport(true));  // Dark mode: "\x1b[?997;1n"
+ * console.log(LightDarkReport(false)); // Light mode: "\x1b[?997;2n"
+ * ```
+ */
+export const LightDarkReport = (dark: boolean): string => `${CSI}?997${SEP}${dark ? "1" : "2"}n`;

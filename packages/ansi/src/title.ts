@@ -38,8 +38,7 @@ const validateTitle = (title: string): string => {
  * // Sends: "\x1b]0;My Application\x07"
  * ```
  */
-export const setIconNameAndWindowTitle = (title: string): string =>
-    `${OSC}0;${validateTitle(title)}${BEL}`;
+export const setIconNameAndWindowTitle = (title: string): string => `${OSC}0;${validateTitle(title)}${BEL}`;
 
 /**
  * Sets the icon name using an OSC (Operating System Command) sequence.

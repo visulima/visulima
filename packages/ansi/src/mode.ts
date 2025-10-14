@@ -811,6 +811,37 @@ export const ResetSgrPixelExtMouseMode: string = `${CSI}?1016l`;
 export const RequestSgrPixelExtMouseMode: string = `${CSI}?1016$p`;
 
 /**
+ * DEC Private Mode 1006: SGR Extended Mouse Mode (alias for SgrExtMouseMode).
+ * Mouse events reported with SGR parameters: `CSI < Cb ; Cx ; Py M` (press) / `m` (release).
+ * Robust and recommended for modern applications.
+ * @see {@link https://invisible-island.net/xterm/ctlseqs/ctlseqs.html#h2-Mouse-Tracking}
+ */
+export const SGRMouseMode: AnsiMode = SgrExtMouseMode;
+
+/**
+ * DEC Private Mode 1004: Send Focus Events Mode (alias for FocusEventMode).
+ * Reports terminal focus (FocusIn `CSI I`) and blur (FocusOut `CSI O`) events.
+ * @see {@link https://invisible-island.net/xterm/ctlseqs/ctlseqs.html#h2-Focus-Tracking}
+ */
+export const SendFocusEventsMode: AnsiMode = FocusEventMode;
+
+/**
+ * DEC Private Mode 1035: Disable Modifiers Mode.
+ * Disables modifier key reporting in mouse events.
+ * @see {@link https://invisible-island.net/xterm/ctlseqs/ctlseqs.html#h2-Mouse-Tracking}
+ */
+export const DisableModifiersMode: AnsiMode = createDecMode(1035);
+
+/** Sequence to set Disable Modifiers Mode: `CSI ? 1035 h` */
+export const SetDisableModifiersMode: string = `${CSI}?1035h`;
+
+/** Sequence to reset Disable Modifiers Mode: `CSI ? 1035 l` */
+export const ResetDisableModifiersMode: string = `${CSI}?1035l`;
+
+/** Sequence to request Disable Modifiers Mode state: `CSI ? 1035 $ p` */
+export const RequestDisableModifiersMode: string = `${CSI}?1035$p`;
+
+/**
  * DEC Private Mode 1047: Alternate Screen Mode.
  * Switches to alternate screen buffer and clears it.
  * @see {@link https://invisible-island.net/xterm/ctlseqs/ctlseqs.html#h2-The-Alternate-Screen-Buffer}
@@ -895,21 +926,39 @@ export const ResetSynchronizedOutputMode: string = `${CSI}?2026l`;
 export const RequestSynchronizedOutputMode: string = `${CSI}?2026$p`;
 
 /**
+ * DEC Private Mode 2027: Unicode Core Mode.
+ * Determines whether the terminal should use Unicode grapheme clustering to calculate
+ * the width of glyphs for each terminal cell.
+ * @see {@link https://github.com/contour-terminal/terminal-unicode-core}
+ */
+export const UnicodeCoreMode: AnsiMode = createDecMode(2027);
+
+/** Sequence to set Unicode Core Mode: `CSI ? 2027 h` */
+export const SetUnicodeCoreMode: string = `${CSI}?2027h`;
+
+/** Sequence to reset Unicode Core Mode: `CSI ? 2027 l` */
+export const ResetUnicodeCoreMode: string = `${CSI}?2027l`;
+
+/** Sequence to request Unicode Core Mode state: `CSI ? 2027 $ p` */
+export const RequestUnicodeCoreMode: string = `${CSI}?2027$p`;
+
+/**
  * DEC Private Mode 2027: Grapheme Clustering Mode.
  * Instructs the terminal to treat grapheme clusters as single units for rendering and cursor movement.
  * Important for correct display of complex scripts and emojis.
+ * @deprecated Use {@link UnicodeCoreMode} instead.
  * @see {@link https://github.com/contour-terminal/terminal-unicode-core}
  */
-export const GraphemeClusteringMode: AnsiMode = createDecMode(2027);
+export const GraphemeClusteringMode: AnsiMode = UnicodeCoreMode;
 
-/** Sequence to set Grapheme Clustering Mode: `CSI ? 2027 h` */
-export const SetGraphemeClusteringMode: string = `${CSI}?2027h`;
+/** @deprecated Use {@link SetUnicodeCoreMode} instead. */
+export const SetGraphemeClusteringMode: string = SetUnicodeCoreMode;
 
-/** Sequence to reset Grapheme Clustering Mode: `CSI ? 2027 l` */
-export const ResetGraphemeClusteringMode: string = `${CSI}?2027l`;
+/** @deprecated Use {@link ResetUnicodeCoreMode} instead. */
+export const ResetGraphemeClusteringMode: string = ResetUnicodeCoreMode;
 
-/** Sequence to request Grapheme Clustering Mode state: `CSI ? 2027 $ p` */
-export const RequestGraphemeClusteringMode: string = `${CSI}?2027$p`;
+/** @deprecated Use {@link RequestUnicodeCoreMode} instead. */
+export const RequestGraphemeClusteringMode: string = RequestUnicodeCoreMode;
 
 /**
  * DEC Private Mode 9001: Win32 Input Mode.
@@ -926,3 +975,41 @@ export const ResetWin32InputMode: string = `${CSI}?9001l`;
 
 /** Sequence to request Win32 Input Mode state: `CSI ? 9001 $ p` */
 export const RequestWin32InputMode: string = `${CSI}?9001$p`;
+
+/**
+ * DEC Private Mode 2031: Light/Dark Mode.
+ * Enables reporting the operating system's color scheme (light or dark) preference.
+ * Reports the color scheme as DSR sequences encoded as follows:
+ * - `CSI ? 997 ; 1 n` for dark mode
+ * - `CSI ? 997 ; 2 n` for light mode
+ * The color preference can also be requested via `CSI ? 996 n`.
+ * @see {@link https://contour-terminal.org/vt-extensions/color-palette-update-notifications/}
+ */
+export const LightDarkMode: AnsiMode = createDecMode(2031);
+
+/** Sequence to set Light/Dark Mode: `CSI ? 2031 h` */
+export const SetLightDarkMode: string = `${CSI}?2031h`;
+
+/** Sequence to reset Light/Dark Mode: `CSI ? 2031 l` */
+export const ResetLightDarkMode: string = `${CSI}?2031l`;
+
+/** Sequence to request Light/Dark Mode state: `CSI ? 2031 $ p` */
+export const RequestLightDarkMode: string = `${CSI}?2031$p`;
+
+/**
+ * DEC Private Mode 2048: In-Band Resize Mode.
+ * Reports terminal resize events as escape sequences.
+ * This is useful for systems that do not support SIGWINCH like Windows.
+ * The terminal sends: `CSI 48 ; cellsHeight ; cellsWidth ; pixelHeight ; pixelWidth t`
+ * @see {@link https://gist.github.com/rockorager/e695fb2924d36b2bcf1fff4a3704bd83}
+ */
+export const InBandResizeMode: AnsiMode = createDecMode(2048);
+
+/** Sequence to set In-Band Resize Mode: `CSI ? 2048 h` */
+export const SetInBandResizeMode: string = `${CSI}?2048h`;
+
+/** Sequence to reset In-Band Resize Mode: `CSI ? 2048 l` */
+export const ResetInBandResizeMode: string = `${CSI}?2048l`;
+
+/** Sequence to request In-Band Resize Mode state: `CSI ? 2048 $ p` */
+export const RequestInBandResizeMode: string = `${CSI}?2048$p`;
