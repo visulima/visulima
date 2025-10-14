@@ -20,9 +20,25 @@ const getRouteType = (method: string, url: string, resourceName: string): GetRou
     });
 
     switch (method) {
+        case "DELETE": {
+            const pathMatch = entityMatcher(realPath);
+
+            if (typeof pathMatch === "object" && pathMatch.params.id) {
+                return {
+                    resourceId: pathMatch.params.id as string,
+                    routeType: RouteType.DELETE,
+                };
+            }
+
+            return {
+                routeType: null,
+            };
+        }
         case "GET": {
             const pathMatch = entityMatcher(realPath);
+
             console.log(pathMatch);
+
             // If we got a /something after the resource name, we are reading 1 entity
             if (typeof pathMatch === "object" && pathMatch.params !== null && pathMatch.params.id) {
                 return {
@@ -35,21 +51,8 @@ const getRouteType = (method: string, url: string, resourceName: string): GetRou
                 routeType: RouteType.READ_ALL,
             };
         }
-        case "POST": {
-            const pathMatch = simpleMatcher(realPath);
-
-            if (pathMatch) {
-                return {
-                    routeType: RouteType.CREATE,
-                };
-            }
-
-            return {
-                routeType: null,
-            };
-        }
-        case "PUT":
-        case "PATCH": {
+        case "PATCH":
+        case "PUT": {
             const pathMatch = entityMatcher(realPath);
 
             if (typeof pathMatch === "object" && pathMatch.params.id) {
@@ -63,13 +66,12 @@ const getRouteType = (method: string, url: string, resourceName: string): GetRou
                 routeType: null,
             };
         }
-        case "DELETE": {
-            const pathMatch = entityMatcher(realPath);
+        case "POST": {
+            const pathMatch = simpleMatcher(realPath);
 
-            if (typeof pathMatch === "object" && pathMatch.params.id) {
+            if (pathMatch) {
                 return {
-                    resourceId: pathMatch.params.id as string,
-                    routeType: RouteType.DELETE,
+                    routeType: RouteType.CREATE,
                 };
             }
 

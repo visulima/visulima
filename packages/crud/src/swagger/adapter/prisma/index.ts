@@ -10,9 +10,7 @@ import getSwaggerPaths from "../../utils/get-swagger-paths";
 import getSwaggerTags from "../../utils/get-swagger-tags";
 
 const overwritePathsExampleWithModel = (swaggerPaths: OpenAPIV3.PathsObject, examples: Record<string, OpenAPIV3.ExampleObject>): OpenAPIV3.PathsObject => {
-    // eslint-disable-next-line sonarjs/cognitive-complexity
     Object.values(swaggerPaths).forEach((pathSpec) => {
-        // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
         Object.values(pathSpec as OpenAPIV3.OperationObject & OpenAPIV3.PathsObject).forEach((methodSpec) => {
             if (typeof (methodSpec as OpenAPIV3.OperationObject).responses === "object") {
                 Object.values((methodSpec as OpenAPIV3.OperationObject).responses).forEach((responseSpec) => {
@@ -45,10 +43,10 @@ const modelsToOpenApi = async <M extends string = string, PrismaClient = FakePri
     prismaClient,
     swagger = { allowedMediaTypes: { "application/json": true }, models: {} },
 }: ModelsToOpenApiParameters<M, PrismaClient>): Promise<{
-    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+
     examples: Record<string, OpenAPIV3.ExampleObject | OpenAPIV3.ReferenceObject>;
     paths: OpenAPIV3.PathsObject;
-    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+
     schemas: Record<string, OpenAPIV3.ReferenceObject | OpenAPIV3.SchemaObject>;
     tags: OpenAPIV3.TagObject[];
 }> => {

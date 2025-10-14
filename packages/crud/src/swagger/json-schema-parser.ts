@@ -7,24 +7,24 @@ import formatSchemaReference from "./utils/format-schema-ref";
 
 const getJSONSchemaScalar = (fieldType: object | string) => {
     switch (fieldType) {
-        case "Int":
-        case "BigInt": {
+        case "BigInt":
+        case "Int": {
             return "integer";
         }
-        case "DateTime":
+        case "Boolean": {
+            return "boolean";
+        }
         case "Bytes":
+        case "DateTime":
         case "String": {
             return "string";
         }
-        case "Float":
-        case "Decimal": {
+        case "Decimal":
+        case "Float": {
             return "number";
         }
         case "Json": {
             return "object";
-        }
-        case "Boolean": {
-            return "boolean";
         }
         case "Null": {
             return "null";
@@ -90,7 +90,7 @@ class PrismaJsonSchemaParser {
     public getExampleModelsSchemas(
         modelNames: string[],
         schemas: Record<string, OpenAPIV3.SchemaObject>,
-        // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+
     ): Record<string, OpenAPIV3.ExampleObject | OpenAPIV3.ReferenceObject> {
         const referenceToSchema = (reference: string) => {
             const name = reference.replace("#/components/schemas/", "");
@@ -98,7 +98,6 @@ class PrismaJsonSchemaParser {
 
             const values: Record<string, object[] | string> = {};
 
-            // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
             Object.entries((model.properties as OpenAPIV3.SchemaObject | undefined) ?? {}).forEach(([key, v]) => {
                 const type = (v as OpenAPIV3.SchemaObject).type as string;
 
@@ -109,13 +108,12 @@ class PrismaJsonSchemaParser {
             return values;
         };
 
-        // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
         const objectPropertiesToSchema = (objectProperties: Record<string, OpenAPIV3.ReferenceObject | OpenAPIV3.SchemaObject>) => {
             const values: Record<string, object[] | object | string> = {};
 
             Object.entries(objectProperties).forEach(([key, value]) => {
-                values[key] =
-                    (value as { $ref?: string }).$ref === undefined
+                values[key]
+                    = (value as { $ref?: string }).$ref === undefined
                         ? ((value as OpenAPIV3.SchemaObject).type as string)
                         : referenceToSchema((value as OpenAPIV3.ReferenceObject).$ref);
             });
@@ -216,12 +214,11 @@ class PrismaJsonSchemaParser {
 
     // eslint-disable-next-line class-methods-use-this
     public getPaginationDataSchema(): Record<string, OpenAPIV3.SchemaObject> {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return createPaginationMetaSchemaObject(PAGINATION_SCHEMA_NAME);
     }
 
     public parseInputTypes(models: string[]): Record<string, JSONSchema7> {
-        // eslint-disable-next-line sonarjs/cognitive-complexity,unicorn/no-array-reduce
+        // eslint-disable-next-line unicorn/no-array-reduce
         const definitions = models.reduce((accumulator: Record<string, any>, modelName) => {
             const methods = methodsNames.map((method) => {
                 return {
@@ -256,6 +253,7 @@ class PrismaJsonSchemaParser {
                                     nullable: true,
                                     type: schemaType.filter((type: string) => type !== "null"),
                                 };
+
                                 if (propertiesAccumulator[field.name].type.length === 1) {
                                     // eslint-disable-next-line no-param-reassign
                                     propertiesAccumulator[field.name] = {
@@ -283,7 +281,7 @@ class PrismaJsonSchemaParser {
                     }
 
                     // TODO: find the correct type
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+
                     return propertiesAccumulator;
                 }, {});
 
@@ -341,7 +339,7 @@ class PrismaJsonSchemaParser {
         return modelsDefinitions;
     }
 
-    // eslint-disable-next-line sonarjs/cognitive-complexity,@typescript-eslint/explicit-module-boundary-types
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
     public parseObjectInputType(fieldType: any): { $ref?: string; type?: string } {
         if (fieldType.kind === "object") {
             if (!this.schemaInputTypes.has(fieldType.type.name)) {
@@ -375,7 +373,6 @@ class PrismaJsonSchemaParser {
                             fieldData.anyOf = anyOf;
                         }
 
-                        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                         if (nullable) {
                             fieldData.nullable = true;
                         }

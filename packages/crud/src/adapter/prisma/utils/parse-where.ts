@@ -94,7 +94,7 @@ const parseRelation = (
     // eslint-disable-next-line no-param-reassign
     parsed[initialFieldKey] = {
         some: {
-            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
             ...(oldParsed?.some as object),
             ...formatFields[initialFieldKey]?.some,
         },
@@ -129,18 +129,12 @@ const basicParse = (value: Condition | Date | WhereCondition | boolean | number 
         parsed[key] = getSearchValue(value);
     } else {
         switch (key) {
-            case "$or": {
-                if (isObject(value)) {
-                    // eslint-disable-next-line no-param-reassign
-                    parsed.OR = parseObjectCombination(value as Condition, manyRelations);
-                }
-                break;
-            }
             case "$and": {
                 if (isObject(value)) {
                     // eslint-disable-next-line no-param-reassign
                     parsed.AND = parseObjectCombination(value as Condition, manyRelations);
                 }
+
                 break;
             }
             case "$not": {
@@ -148,6 +142,15 @@ const basicParse = (value: Condition | Date | WhereCondition | boolean | number 
                     // eslint-disable-next-line no-param-reassign
                     parsed.NOT = parseObjectCombination(value as Condition, manyRelations);
                 }
+
+                break;
+            }
+            case "$or": {
+                if (isObject(value)) {
+                    // eslint-disable-next-line no-param-reassign
+                    parsed.OR = parseObjectCombination(value as Condition, manyRelations);
+                }
+
                 break;
             }
             default: {
@@ -164,6 +167,7 @@ const parsePrismaWhere = (where: WhereField, manyRelations: string[]): PrismaWhe
 
     Object.keys(where).forEach((key) => {
         const value = where[key];
+
         /**
          * If the key without property name is a relation
          *
