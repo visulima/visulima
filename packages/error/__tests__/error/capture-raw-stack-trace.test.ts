@@ -1,15 +1,16 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, expectTypeOf, it } from "vitest";
 
 import captureRawStackTrace from "../../src/error/capture-raw-stack-trace";
 
-describe("captureRawStackTrace", () => {
+describe(captureRawStackTrace, () => {
     it("should return stack trace when Error.captureStackTrace is available", () => {
-        expect.assertions(2);
+        expect.assertions(1);
 
         const stackTrace = captureRawStackTrace();
 
         expect(stackTrace).toBeDefined();
-        expect(typeof stackTrace).toBe("string");
+
+        expectTypeOf(stackTrace).toBeString();
     });
 
     it("should return undefined when Error.captureStackTrace is not available", () => {
@@ -27,10 +28,10 @@ describe("captureRawStackTrace", () => {
     });
 
     it("should return stack trace in string format", () => {
-        expect.assertions(1);
+        expect.assertions(0);
 
         const stackTrace = captureRawStackTrace();
 
-        expect(typeof stackTrace).toBe("string");
+        expectTypeOf(stackTrace).toBeString();
     });
 });

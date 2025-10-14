@@ -107,7 +107,6 @@ describe("parse-stacktrace", () => {
             expect(stackFrames[5]).toMatchStackFrame(["<unknown>", "index.js", 23, undefined]);
 
             const stackFrames2 = parseStacktrace({
-                // eslint-disable-next-line no-secrets/no-secrets
                 stack: `ReferenceError: a is not defined
     at $$.onStart (eval at <anonymous> (http://localhost:8080/hg/html/js/homegenie.webapp.js?version=r525:6851:25), <anonymous>:32:7)
     at $$.RenderWidget (http://localhost:8080/hg/html/js/homegenie.webapp.js?version=r525:6770:36)
@@ -207,7 +206,7 @@ describe("parse-stacktrace", () => {
             expect(stackFrames[1]).toMatchStackFrame(["TESTTESTTEST.render", "webpack:///./src/components/test/test.jsx?", 272, 32]);
             expect(stackFrames[2]).toMatchStackFrame(["TESTTESTTEST.tryRender", "webpack:///./~/react-transform-catch-errors/lib/index.js?", 34, 31]);
             expect(stackFrames[3]).toMatchStackFrame(["TESTTESTTEST.proxiedMethod", "webpack:///./~/react-proxy/modules/createPrototypeProxy.js?", 44, 30]);
-            expect(stackFrames[4]).toMatchStackFrame(["Module../pages/index.js", "C:\\root\\server\\development\\pages\\index.js", 182, 7]);
+            expect(stackFrames[4]).toMatchStackFrame(["Module../pages/index.js", String.raw`C:\root\server\development\pages\index.js`, 182, 7]);
         });
 
         it("should parses Chrome error with blob URLs", () => {
@@ -219,7 +218,7 @@ describe("parse-stacktrace", () => {
             expect(stackFrames[0]).toMatchStackFrame(["Error", "native", undefined, undefined, "native"]);
             expect(stackFrames[1]).toMatchStackFrame(["s", "blob:http%3A//localhost%3A8080/abfc40e9-4742-44ed-9dcd-af8f99a29379", 31, 29_146]);
             expect(stackFrames[2]).toMatchStackFrame(["Object.d [as add]", "blob:http%3A//localhost%3A8080/abfc40e9-4742-44ed-9dcd-af8f99a29379", 31, 30_039]);
-            // eslint-disable-next-line no-secrets/no-secrets
+
             expect(stackFrames[3]).toMatchStackFrame(["<unknown>", "blob:http%3A//localhost%3A8080/d4eefe0f-361a-4682-b217-76587d9f712a", 15, 10_978]);
             expect(stackFrames[4]).toMatchStackFrame(["<unknown>", "blob:http%3A//localhost%3A8080/abfc40e9-4742-44ed-9dcd-af8f99a29379", 1, 6911]);
             expect(stackFrames[5]).toMatchStackFrame(["n.fire", "blob:http%3A//localhost%3A8080/abfc40e9-4742-44ed-9dcd-af8f99a29379", 7, 3019]);
@@ -330,7 +329,7 @@ describe("parse-stacktrace", () => {
             const stackFrames = parseStacktrace(capturedErrors.CHROME_ELECTRON_RENDERER as unknown as Error);
 
             expect(stackFrames).toHaveLength(1);
-            expect(stackFrames[0]).toMatchStackFrame(["TESTTESTTEST.someMethod", "C:\\Users\\user\\path\\to\\file.js", 295, 108]);
+            expect(stackFrames[0]).toMatchStackFrame(["TESTTESTTEST.someMethod", String.raw`C:\Users\user\path\to\file.js`, 295, 108]);
         });
 
         it("should parse exceptions with frames without full paths", () => {
@@ -529,7 +528,7 @@ describe("parse-stacktrace", () => {
             const stackFrames = parseStacktrace(capturedErrors.FIREFOX_43_FUNCTION_NAME_WITH_AT_SIGN as unknown as Error);
 
             expect(stackFrames).toHaveLength(2);
-            expect(stackFrames[0]).toMatchStackFrame(['obj["@fn"]', "Scratchpad/1", 10, 29]);
+            expect(stackFrames[0]).toMatchStackFrame(["obj[\"@fn\"]", "Scratchpad/1", 10, 29]);
             expect(stackFrames[1]).toMatchStackFrame(["<unknown>", "Scratchpad/1", 11, 1]);
         });
 
@@ -577,7 +576,7 @@ describe("parse-stacktrace", () => {
             const stackFrames = parseStacktrace(capturedErrors.FIREFOX_60_URL_AND_FUNCTION_NAME_WITH_AT_SIGN as unknown as Error);
 
             expect(stackFrames).toHaveLength(5);
-            expect(stackFrames[0]).toMatchStackFrame(['obj["@who"]', "http://localhost:5000/misc/@stuff/foo.js", 4, 9, undefined]);
+            expect(stackFrames[0]).toMatchStackFrame(["obj[\"@who\"]", "http://localhost:5000/misc/@stuff/foo.js", 4, 9, undefined]);
             expect(stackFrames[1]).toMatchStackFrame(["what", "http://localhost:5000/misc/@stuff/foo.js", 8, 3, undefined]);
         });
 
@@ -644,10 +643,10 @@ describe("parse-stacktrace", () => {
 
             const stackFrames = parseStacktrace({
                 stack:
-                    "App@http://localhost:3000/App.jsx?t=1589606715125:31:9\n" +
-                    "E@http://localhost:3000/@modules/preact/dist/preact.mjs?import:1:7584\n" +
-                    "b/l.__k<@http://localhost:3000/@modules/preact/dist/preact.mjs?import:1:1908\n" +
-                    "@http://localhost:3000/main.js:52:7\n",
+                    "App@http://localhost:3000/App.jsx?t=1589606715125:31:9\n"
+                    + "E@http://localhost:3000/@modules/preact/dist/preact.mjs?import:1:7584\n"
+                    + "b/l.__k<@http://localhost:3000/@modules/preact/dist/preact.mjs?import:1:1908\n"
+                    + "@http://localhost:3000/main.js:52:7\n",
             } as unknown as Error);
 
             expect(stackFrames).toHaveLength(4);
@@ -713,25 +712,23 @@ describe("parse-stacktrace", () => {
 
             const stackFrames = parseStacktrace({
                 stack:
-                    "at tryRunOrWebpackError (/usr/local/xxxxxxx/cli-reproductions/showwcase-v14-rc0/node_modules/webpack/lib/HookWebpackError.js:88:9)\n" +
-                    "at __webpack_require_module__ (/usr/local/xxxxxxx/cli-reproductions/showwcase-v14-rc0/node_modules/webpack/lib/Compilation.js:5051:12)\n" +
-                    "at __webpack_require__ (/usr/local/xxxxxxx/cli-reproductions/showwcase-v14-rc0/node_modules/webpack/lib/Compilation.js:5008:18)\n" +
-                    // eslint-disable-next-line no-secrets/no-secrets
-                    "at /usr/local/xxxxxxx/cli-reproductions/showwcase-v14-rc0/node_modules/webpack/lib/Compilation.js:5079:20\n" +
-                    "at symbolIterator (/usr/local/xxxxxxx/cli-reproductions/showwcase-v14-rc0/node_modules/neo-async/async.js:3485:9)\n" +
-                    "at done (/usr/local/xxxxxxx/cli-reproductions/showwcase-v14-rc0/node_modules/neo-async/async.js:3527:9)\n" +
-                    "at Hook.eval [as callAsync] (eval at create (/usr/local/xxxxxxx/cli-reproductions/showwcase-v14-rc0/node_modules/tapable/lib/HookCodeFactory.js:33:10), <anonymous>:15:1)\n" +
-                    "at Hook.CALL_ASYNC_DELEGATE [as _callAsync] (/usr/local/xxxxxxx/cli-reproductions/showwcase-v14-rc0/node_modules/tapable/lib/Hook.js:18:14)\n" +
-                    // eslint-disable-next-line no-secrets/no-secrets
-                    "at /usr/local/xxxxxxx/cli-reproductions/showwcase-v14-rc0/node_modules/webpack/lib/Compilation.js:4986:43\n" +
-                    "at symbolIterator (/usr/local/xxxxxxx/cli-reproductions/showwcase-v14-rc0/node_modules/neo-async/async.js:3482:9)\n",
+                    "at tryRunOrWebpackError (/usr/local/xxxxxxx/cli-reproductions/showwcase-v14-rc0/node_modules/webpack/lib/HookWebpackError.js:88:9)\n"
+                    + "at __webpack_require_module__ (/usr/local/xxxxxxx/cli-reproductions/showwcase-v14-rc0/node_modules/webpack/lib/Compilation.js:5051:12)\n"
+                    + "at __webpack_require__ (/usr/local/xxxxxxx/cli-reproductions/showwcase-v14-rc0/node_modules/webpack/lib/Compilation.js:5008:18)\n"
+                    + "at /usr/local/xxxxxxx/cli-reproductions/showwcase-v14-rc0/node_modules/webpack/lib/Compilation.js:5079:20\n"
+                    + "at symbolIterator (/usr/local/xxxxxxx/cli-reproductions/showwcase-v14-rc0/node_modules/neo-async/async.js:3485:9)\n"
+                    + "at done (/usr/local/xxxxxxx/cli-reproductions/showwcase-v14-rc0/node_modules/neo-async/async.js:3527:9)\n"
+                    + "at Hook.eval [as callAsync] (eval at create (/usr/local/xxxxxxx/cli-reproductions/showwcase-v14-rc0/node_modules/tapable/lib/HookCodeFactory.js:33:10), <anonymous>:15:1)\n"
+                    + "at Hook.CALL_ASYNC_DELEGATE [as _callAsync] (/usr/local/xxxxxxx/cli-reproductions/showwcase-v14-rc0/node_modules/tapable/lib/Hook.js:18:14)\n"
+                    + "at /usr/local/xxxxxxx/cli-reproductions/showwcase-v14-rc0/node_modules/webpack/lib/Compilation.js:4986:43\n"
+                    + "at symbolIterator (/usr/local/xxxxxxx/cli-reproductions/showwcase-v14-rc0/node_modules/neo-async/async.js:3482:9)\n",
             } as unknown as Error);
 
             expect(stackFrames).toHaveLength(10);
 
             expect(stackFrames[0]).toMatchStackFrame([
                 "tryRunOrWebpackError",
-                // eslint-disable-next-line no-secrets/no-secrets
+
                 "/usr/local/xxxxxxx/cli-reproductions/showwcase-v14-rc0/node_modules/webpack/lib/HookWebpackError.js",
                 88,
                 9,
@@ -768,7 +765,7 @@ describe("parse-stacktrace", () => {
             ]);
             expect(stackFrames[6]).toMatchStackFrame([
                 "Hook.eval [as callAsync]",
-                // eslint-disable-next-line no-secrets/no-secrets
+
                 "/usr/local/xxxxxxx/cli-reproductions/showwcase-v14-rc0/node_modules/tapable/lib/HookCodeFactory.js",
                 33,
                 10,
@@ -806,17 +803,17 @@ describe("parse-stacktrace", () => {
 
             const stackFrames = parseStacktrace({
                 stack:
-                    "ReferenceError: chilxdren is not defined\n" +
-                    "at new Layout (webpack:///./src/Layout.js?:25:5)\n" +
-                    "at eval (webpack:///../react-hot-loader/~/react-proxy/modules/createClassProxy.js?:90:24)\n" +
-                    "at instantiate (webpack:///../react-hot-loader/~/react-proxy/modules/createClassProxy.js?:98:9)\n" +
-                    "at Layout (eval at proxyClass (webpack:///../react-hot-loader/~/react-proxy/modules/createClassProxy.js?), <anonymous>:4:17)\n" +
-                    "at ReactCompositeComponentMixin.mountComponent (webpack:///./~/react/lib/ReactCompositeComponent.js?:170:18)\n" +
-                    "at wrapper [as mountComponent] (webpack:///./~/react/lib/ReactPerf.js?:66:21)\n" +
-                    "at Object.ReactReconciler.mountComponent (webpack:///./~/react/lib/ReactReconciler.js?:39:35)\n" +
-                    "at ReactCompositeComponentMixin.performInitialMount (webpack:///./~/react/lib/ReactCompositeComponent.js?:289:34)\n" +
-                    "at ReactCompositeComponentMixin.mountComponent (webpack:///./~/react/lib/ReactCompositeComponent.js?:237:21)\n" +
-                    "at wrapper [as mountComponent] (webpack:///./~/react/lib/ReactPerf.js?:66:21)\n",
+                    "ReferenceError: chilxdren is not defined\n"
+                    + "at new Layout (webpack:///./src/Layout.js?:25:5)\n"
+                    + "at eval (webpack:///../react-hot-loader/~/react-proxy/modules/createClassProxy.js?:90:24)\n"
+                    + "at instantiate (webpack:///../react-hot-loader/~/react-proxy/modules/createClassProxy.js?:98:9)\n"
+                    + "at Layout (eval at proxyClass (webpack:///../react-hot-loader/~/react-proxy/modules/createClassProxy.js?), <anonymous>:4:17)\n"
+                    + "at ReactCompositeComponentMixin.mountComponent (webpack:///./~/react/lib/ReactCompositeComponent.js?:170:18)\n"
+                    + "at wrapper [as mountComponent] (webpack:///./~/react/lib/ReactPerf.js?:66:21)\n"
+                    + "at Object.ReactReconciler.mountComponent (webpack:///./~/react/lib/ReactReconciler.js?:39:35)\n"
+                    + "at ReactCompositeComponentMixin.performInitialMount (webpack:///./~/react/lib/ReactCompositeComponent.js?:289:34)\n"
+                    + "at ReactCompositeComponentMixin.mountComponent (webpack:///./~/react/lib/ReactCompositeComponent.js?:237:21)\n"
+                    + "at wrapper [as mountComponent] (webpack:///./~/react/lib/ReactPerf.js?:66:21)\n",
             } as unknown as Error);
 
             expect(stackFrames).toHaveLength(10);
@@ -973,28 +970,28 @@ react-dom.development.js:67 Warning: Each child in a list should have a unique "
             expect(stackFrames).toHaveLength(5);
             expect(stackFrames[0]).toMatchStackFrame([
                 "onPress",
-                // eslint-disable-next-line no-secrets/no-secrets
+
                 "/data/user/0/com.sentrytest/files/.expo-internal/bundle-613EDD44F3305B9D75D4679663900F2BCDDDC326F247CA3202A3A4219FD412D3",
                 595,
                 658,
             ]);
             expect(stackFrames[1]).toMatchStackFrame([
                 "value",
-                // eslint-disable-next-line no-secrets/no-secrets
+
                 "/data/user/0/com.sentrytest/files/.expo-internal/bundle-613EDD44F3305B9D75D4679663900F2BCDDDC326F247CA3202A3A4219FD412D3",
                 221,
                 7656,
             ]);
             expect(stackFrames[2]).toMatchStackFrame([
                 "onResponderRelease",
-                // eslint-disable-next-line no-secrets/no-secrets
+
                 "/data/user/0/com.sentrytest/files/.expo-internal/bundle-613EDD44F3305B9D75D4679663900F2BCDDDC326F247CA3202A3A4219FD412D3",
                 221,
                 5666,
             ]);
             expect(stackFrames[3]).toMatchStackFrame([
                 "p",
-                // eslint-disable-next-line no-secrets/no-secrets
+
                 "/data/user/0/com.sentrytest/files/.expo-internal/bundle-613EDD44F3305B9D75D4679663900F2BCDDDC326F247CA3202A3A4219FD412D3",
                 96,
                 385,
@@ -1130,9 +1127,9 @@ react-dom.development.js:67 Warning: Each child in a list should have a unique "
 
             const stackFrames = parseStacktrace({
                 stack:
-                    "Error: Problem at this\nlocation. Error code:1234\n" +
-                    "    at http://path/to/file.js:47:22\n" +
-                    "    at foo (http://path/to/file.js:52:15)",
+                    "Error: Problem at this\nlocation. Error code:1234\n"
+                    + "    at http://path/to/file.js:47:22\n"
+                    + "    at foo (http://path/to/file.js:52:15)",
             } as unknown as Error);
 
             expect(stackFrames).toHaveLength(2);
@@ -1173,16 +1170,16 @@ react-dom.development.js:67 Warning: Each child in a list should have a unique "
             const stackFrames = parseStacktrace(capturedErrors.NODE_SPACE as unknown as Error);
 
             expect(stackFrames).toHaveLength(10);
-            expect(stackFrames[0]).toMatchStackFrame(["Spect.get", "C:\\project files\\spect\\src\\index.js", 161, 26]);
-            expect(stackFrames[1]).toMatchStackFrame(["Object.get", "C:\\project files\\spect\\src\\index.js", 43, 36]);
+            expect(stackFrames[0]).toMatchStackFrame(["Spect.get", String.raw`C:\project files\spect\src\index.js`, 161, 26]);
+            expect(stackFrames[1]).toMatchStackFrame(["Object.get", String.raw`C:\project files\spect\src\index.js`, 43, 36]);
             expect(stackFrames[2]).toMatchStackFrame(["<unknown>", "<anonymous>", undefined, undefined]);
-            expect(stackFrames[3]).toMatchStackFrame(["(anonymous function).then", "C:\\project files\\spect\\src\\index.js", 165, 33]);
+            expect(stackFrames[3]).toMatchStackFrame(["(anonymous function).then", String.raw`C:\project files\spect\src\index.js`, 165, 33]);
             expect(stackFrames[4]).toMatchStackFrame(["process.runNextTicks [as _tickCallback]", "internal/process/task_queues.js", 52, 5]);
-            expect(stackFrames[5]).toMatchStackFrame(["<unknown>", "C:\\project files\\spect\\node_modules\\esm\\esm.js", 1, 34_535]);
-            expect(stackFrames[6]).toMatchStackFrame(["<unknown>", "C:\\project files\\spect\\node_modules\\esm\\esm.js", 1, 34_176]);
-            expect(stackFrames[7]).toMatchStackFrame(["process.<anonymous>", "C:\\project files\\spect\\node_modules\\esm\\esm.js", 1, 34_506]);
-            expect(stackFrames[8]).toMatchStackFrame(["Function.<anonymous>", "C:\\project files\\spect\\node_modules\\esm\\esm.js", 1, 296_856]);
-            expect(stackFrames[9]).toMatchStackFrame(["Function.<anonymous>", "C:\\project files\\spect\\node_modules\\esm\\esm.js", 1, 296_555]);
+            expect(stackFrames[5]).toMatchStackFrame(["<unknown>", String.raw`C:\project files\spect\node_modules\esm\esm.js`, 1, 34_535]);
+            expect(stackFrames[6]).toMatchStackFrame(["<unknown>", String.raw`C:\project files\spect\node_modules\esm\esm.js`, 1, 34_176]);
+            expect(stackFrames[7]).toMatchStackFrame(["process.<anonymous>", String.raw`C:\project files\spect\node_modules\esm\esm.js`, 1, 34_506]);
+            expect(stackFrames[8]).toMatchStackFrame(["Function.<anonymous>", String.raw`C:\project files\spect\node_modules\esm\esm.js`, 1, 296_856]);
+            expect(stackFrames[9]).toMatchStackFrame(["Function.<anonymous>", String.raw`C:\project files\spect\node_modules\esm\esm.js`, 1, 296_555]);
         });
 
         it("should parses node.js async errors available with version 12", () => {
@@ -1201,10 +1198,10 @@ react-dom.development.js:67 Warning: Each child in a list should have a unique "
             const stackFrames = parseStacktrace(capturedErrors.NODE_ANONYM as unknown as Error);
 
             expect(stackFrames).toHaveLength(10);
-            expect(stackFrames[0]).toMatchStackFrame(["Spect.get", "C:\\projects\\spect\\src\\index.js", 161, 26]);
-            expect(stackFrames[3]).toMatchStackFrame(["(anonymous function).then", "C:\\projects\\spect\\src\\index.js", 165, 33]);
-            expect(stackFrames[5]).toMatchStackFrame(["<unknown>", "C:\\projects\\spect\\node_modules\\esm\\esm.js", 1, 34_535]);
-            expect(stackFrames[7]).toMatchStackFrame(["process.<anonymous>", "C:\\projects\\spect\\node_modules\\esm\\esm.js", 1, 34_506]);
+            expect(stackFrames[0]).toMatchStackFrame(["Spect.get", String.raw`C:\projects\spect\src\index.js`, 161, 26]);
+            expect(stackFrames[3]).toMatchStackFrame(["(anonymous function).then", String.raw`C:\projects\spect\src\index.js`, 165, 33]);
+            expect(stackFrames[5]).toMatchStackFrame(["<unknown>", String.raw`C:\projects\spect\node_modules\esm\esm.js`, 1, 34_535]);
+            expect(stackFrames[7]).toMatchStackFrame(["process.<anonymous>", String.raw`C:\projects\spect\node_modules\esm\esm.js`, 1, 34_506]);
         });
 
         it("should parses anonymous sources", () => {
@@ -1287,13 +1284,13 @@ react-dom.development.js:67 Warning: Each child in a list should have a unique "
             expect.assertions(3);
 
             // eslint-disable-next-line no-eval
-            const stackFrames = parseStacktrace(eval('new Error("foo:eval")'));
+            const stackFrames = parseStacktrace(eval("new Error(\"foo:eval\")"));
 
             expect(stackFrames).toHaveLength(10);
             expect(stackFrames[0]).toMatchStackFrame([
                 "eval",
                 `${dirname(fileURLToPath(import.meta.url))}${isWin ? "\\" : "/"}parse-stacktrace.test.ts`,
-                1290,
+                1287,
                 49,
                 "eval",
                 { column: 1, file: "<anonymous>", line: 1, methodName: "eval", type: "eval" },
@@ -1301,7 +1298,7 @@ react-dom.development.js:67 Warning: Each child in a list should have a unique "
             expect(stackFrames[1]).toMatchStackFrame([
                 "<unknown>",
                 `${dirname(fileURLToPath(import.meta.url))}${isWin ? "\\" : "/"}parse-stacktrace.test.ts`,
-                1290,
+                1287,
                 49,
             ]);
         });
@@ -1416,23 +1413,23 @@ If you used to conditionally omit it with %s={condition && value}, pass %s={cond
             expect.assertions(13);
 
             const SECURITY_ERROR = {
-                message: 'Blocked a frame with origin "https://SENTRY_URL.sentry.io" from accessing a cross-origin frame.',
+                message: "Blocked a frame with origin \"https://SENTRY_URL.sentry.io\" from accessing a cross-origin frame.",
                 name: "SecurityError",
                 stack:
-                    'SecurityError: Blocked a frame with origin "https://SENTRY_URL.sentry.io" from accessing a cross-origin frame.\n' +
-                    '   at Error: Blocked a frame with origin "(https://SENTRY_URL.sentry.io" from accessing a cross-origin frame.)\n' +
-                    "   at castFn(../node_modules/@sentry-internal/rrweb/es/rrweb/packages/rrweb/src/replay/index.js:368:76)\n" +
-                    "   at castFn(../node_modules/@sentry-internal/rrweb/es/rrweb/packages/rrweb/src/replay/index.js:409:17)\n" +
-                    "   at Replayer.applyEventsSynchronously(../node_modules/@sentry-internal/rrweb/es/rrweb/packages/rrweb/src/replay/index.js:325:13)\n" +
-                    "   at <object>.actions.play(../node_modules/@sentry-internal/rrweb/es/rrweb/packages/rrweb/src/replay/machine.js:132:17)\n" +
-                    "   at <anonymous>(../node_modules/@sentry-internal/rrweb/es/rrweb/ext/@xstate/fsm/es/index.js:15:2595)\n" +
-                    "   at Array.forEach(<anonymous>)\n" +
-                    "   at l(../node_modules/@sentry-internal/rrweb/es/rrweb/ext/@xstate/fsm/es/index.js:15:2551)\n" +
-                    "   at c.send(../node_modules/@sentry-internal/rrweb/es/rrweb/ext/@xstate/fsm/es/index.js:15:2741)\n" +
-                    "   at Replayer.play(../node_modules/@sentry-internal/rrweb/es/rrweb/packages/rrweb/src/replay/index.js:220:26)\n" +
-                    "   at Replayer.pause(../node_modules/@sentry-internal/rrweb/es/rrweb/packages/rrweb/src/replay/index.js:235:18)\n" +
-                    "   at playTimer.current(./app/components/replays/replayContext.tsx:397:62)\n" +
-                    "   at sentryWrapped(../node_modules/@sentry/browser/esm/helpers.js:90:17)",
+                    "SecurityError: Blocked a frame with origin \"https://SENTRY_URL.sentry.io\" from accessing a cross-origin frame.\n"
+                    + "   at Error: Blocked a frame with origin \"(https://SENTRY_URL.sentry.io\" from accessing a cross-origin frame.)\n"
+                    + "   at castFn(../node_modules/@sentry-internal/rrweb/es/rrweb/packages/rrweb/src/replay/index.js:368:76)\n"
+                    + "   at castFn(../node_modules/@sentry-internal/rrweb/es/rrweb/packages/rrweb/src/replay/index.js:409:17)\n"
+                    + "   at Replayer.applyEventsSynchronously(../node_modules/@sentry-internal/rrweb/es/rrweb/packages/rrweb/src/replay/index.js:325:13)\n"
+                    + "   at <object>.actions.play(../node_modules/@sentry-internal/rrweb/es/rrweb/packages/rrweb/src/replay/machine.js:132:17)\n"
+                    + "   at <anonymous>(../node_modules/@sentry-internal/rrweb/es/rrweb/ext/@xstate/fsm/es/index.js:15:2595)\n"
+                    + "   at Array.forEach(<anonymous>)\n"
+                    + "   at l(../node_modules/@sentry-internal/rrweb/es/rrweb/ext/@xstate/fsm/es/index.js:15:2551)\n"
+                    + "   at c.send(../node_modules/@sentry-internal/rrweb/es/rrweb/ext/@xstate/fsm/es/index.js:15:2741)\n"
+                    + "   at Replayer.play(../node_modules/@sentry-internal/rrweb/es/rrweb/packages/rrweb/src/replay/index.js:220:26)\n"
+                    + "   at Replayer.pause(../node_modules/@sentry-internal/rrweb/es/rrweb/packages/rrweb/src/replay/index.js:235:18)\n"
+                    + "   at playTimer.current(./app/components/replays/replayContext.tsx:397:62)\n"
+                    + "   at sentryWrapped(../node_modules/@sentry/browser/esm/helpers.js:90:17)",
             };
 
             const stackFrames = parseStacktrace(SECURITY_ERROR as unknown as Error);
@@ -1494,13 +1491,12 @@ If you used to conditionally omit it with %s={condition && value}, pass %s={cond
 
             const stackFrames = parseStacktrace({
                 stack:
-                    "AssertionError@http://localhost:8000/node_modules/chai/chai.js:9449:22\n" +
-                    "http://localhost:8000/node_modules/chai/chai.js:239:31\n" +
-                    "assertEqual@http://localhost:8000/node_modules/chai/chai.js:1387:18\n" +
-                    "methodWrapper@http://localhost:8000/node_modules/chai/chai.js:7824:30\n" +
-                    "[native code]\n" +
-                    // eslint-disable-next-line no-secrets/no-secrets
-                    "http://localhost:8000/mytest.test.js?wtr-session-id=05c3d9b6-ea4b-467b-ac23-de275675ee27:13:46\n",
+                    "AssertionError@http://localhost:8000/node_modules/chai/chai.js:9449:22\n"
+                    + "http://localhost:8000/node_modules/chai/chai.js:239:31\n"
+                    + "assertEqual@http://localhost:8000/node_modules/chai/chai.js:1387:18\n"
+                    + "methodWrapper@http://localhost:8000/node_modules/chai/chai.js:7824:30\n"
+                    + "[native code]\n"
+                    + "http://localhost:8000/mytest.test.js?wtr-session-id=05c3d9b6-ea4b-467b-ac23-de275675ee27:13:46\n",
             } as unknown as Error);
 
             expect(stackFrames).toHaveLength(6);
@@ -1511,7 +1507,7 @@ If you used to conditionally omit it with %s={condition && value}, pass %s={cond
             expect(stackFrames[4]).toMatchStackFrame(["<unknown>", "[native code]", undefined, undefined, "native"]);
             expect(stackFrames[5]).toMatchStackFrame([
                 "<unknown>",
-                // eslint-disable-next-line no-secrets/no-secrets
+
                 "http://localhost:8000/mytest.test.js?wtr-session-id=05c3d9b6-ea4b-467b-ac23-de275675ee27",
                 13,
                 46,
@@ -1523,13 +1519,13 @@ If you used to conditionally omit it with %s={condition && value}, pass %s={cond
 
             const stackFrames = parseStacktrace({
                 stack:
-                    "module code@http://localhost:8000/my-test.js:1:16\n" +
-                    "evaluate@[native code]\n" +
-                    "moduleEvaluation@[native code]\n" +
-                    "moduleEvaluation@[native code]\n" +
-                    "[native code]\n" +
-                    "promiseReactionJobWithoutPromise@[native code]\n" +
-                    "promiseReactionJob@[native code]",
+                    "module code@http://localhost:8000/my-test.js:1:16\n"
+                    + "evaluate@[native code]\n"
+                    + "moduleEvaluation@[native code]\n"
+                    + "moduleEvaluation@[native code]\n"
+                    + "[native code]\n"
+                    + "promiseReactionJobWithoutPromise@[native code]\n"
+                    + "promiseReactionJob@[native code]",
             } as unknown as Error);
 
             expect(stackFrames).toHaveLength(7);
@@ -1638,7 +1634,7 @@ If you used to conditionally omit it with %s={condition && value}, pass %s={cond
                 expect(stackFrames).toHaveLength(2);
                 expect(stackFrames[0]).toMatchStackFrame([
                     "ClipperError",
-                    // eslint-disable-next-line no-secrets/no-secrets
+
                     "safari-extension://3284871F-A480-4FFC-8BC4-3F362C752446/2665fee0/commons.js",
                     223_036,
                     10,
@@ -1659,14 +1655,14 @@ If you used to conditionally omit it with %s={condition && value}, pass %s={cond
                 expect(stackFrames).toHaveLength(3);
                 expect(stackFrames[0]).toMatchStackFrame([
                     "isClaimed",
-                    // eslint-disable-next-line no-secrets/no-secrets
+
                     "safari-extension://com.grammarly.safari.extension.ext2-W8F64X92K3/ee7759dd/Grammarly.js",
                     2,
                     929_865,
                 ]);
                 expect(stackFrames[1]).toMatchStackFrame([
                     "<unknown>",
-                    // eslint-disable-next-line no-secrets/no-secrets
+
                     "safari-extension://com.grammarly.safari.extension.ext2-W8F64X92K3/ee7759dd/Grammarly.js",
                     2,
                     1_588_410,
@@ -1682,14 +1678,14 @@ If you used to conditionally omit it with %s={condition && value}, pass %s={cond
                 expect(stackFrames).toHaveLength(2);
                 expect(stackFrames[0]).toMatchStackFrame([
                     "ClipperError",
-                    // eslint-disable-next-line no-secrets/no-secrets
+
                     "safari-web-extension://3284871F-A480-4FFC-8BC4-3F362C752446/2665fee0/commons.js",
                     223_036,
                     10,
                 ]);
                 expect(stackFrames[1]).toMatchStackFrame([
                     "<unknown>",
-                    // eslint-disable-next-line no-secrets/no-secrets
+
                     "safari-web-extension://3284871F-A480-4FFC-8BC4-3F362C752446/2665fee0/topee-content.js",
                     3313,
                     26,
@@ -1704,14 +1700,14 @@ If you used to conditionally omit it with %s={condition && value}, pass %s={cond
                 expect(stackFrames).toHaveLength(3);
                 expect(stackFrames[0]).toMatchStackFrame([
                     "p_",
-                    // eslint-disable-next-line no-secrets/no-secrets
+
                     "safari-web-extension://46434E60-F5BD-48A4-80C8-A422C5D16897/scripts/content-script.js",
                     29,
                     33_314,
                 ]);
                 expect(stackFrames[1]).toMatchStackFrame([
                     "<unknown>",
-                    // eslint-disable-next-line no-secrets/no-secrets
+
                     "safari-web-extension://46434E60-F5BD-48A4-80C8-A422C5D16897/scripts/content-script.js",
                     29,
                     56_027,
@@ -1720,7 +1716,7 @@ If you used to conditionally omit it with %s={condition && value}, pass %s={cond
         });
     });
 
-    it.skipIf(!global.AggregateError)("should parse AggregateError stack", () => {
+    it.skipIf(!globalThis.AggregateError)("should parse AggregateError stack", () => {
         expect.assertions(2);
 
         const stackFrames = parseStacktrace(new AggregateError([new Error("foo"), new Error("bar"), new Error("baz")], "test"));
@@ -1729,12 +1725,12 @@ If you used to conditionally omit it with %s={condition && value}, pass %s={cond
         expect(stackFrames[0]).toMatchStackFrame([
             "<unknown>",
             `${dirname(fileURLToPath(import.meta.url))}${isWin ? "\\" : "/"}parse-stacktrace.test.ts`,
-            1726,
+            1722,
             45,
         ]);
     });
 
-    it.skipIf(!global.AggregateError)("should parse AggregateError stack with empty message", () => {
+    it.skipIf(!globalThis.AggregateError)("should parse AggregateError stack with empty message", () => {
         expect.assertions(2);
 
         // eslint-disable-next-line unicorn/error-message
@@ -1744,13 +1740,14 @@ If you used to conditionally omit it with %s={condition && value}, pass %s={cond
         expect(stackFrames[0]).toMatchStackFrame([
             "<unknown>",
             `${dirname(fileURLToPath(import.meta.url))}${isWin ? "\\" : "/"}parse-stacktrace.test.ts`,
-            1741,
+            1737,
             45,
         ]);
     });
 
-    it.skipIf(!global.AggregateError)("should parse AggregateError stack with nested AggregateError", () => {
+    it.skipIf(!globalThis.AggregateError)("should parse AggregateError stack with nested AggregateError", () => {
         expect.assertions(2);
+
         // eslint-disable-next-line unicorn/error-message
         const nestedError = new AggregateError([new Error("Nested Error")]);
 
@@ -1761,7 +1758,7 @@ If you used to conditionally omit it with %s={condition && value}, pass %s={cond
         expect(stackFrames[0]).toMatchStackFrame([
             "<unknown>",
             `${dirname(fileURLToPath(import.meta.url))}${isWin ? "\\" : "/"}parse-stacktrace.test.ts`,
-            1758,
+            1755,
             45,
         ]);
     });
@@ -1783,9 +1780,9 @@ If you used to conditionally omit it with %s={condition && value}, pass %s={cond
         const stackFrames = parseStacktrace(
             {
                 stack:
-                    "Error: Default error\n" +
-                    "    at dumpExceptionError (http://localhost:8080/file.js:41:27)\n" +
-                    "    at dumpExceptionError (http://localhost:8080/file.js:50:21)\n",
+                    "Error: Default error\n"
+                    + "    at dumpExceptionError (http://localhost:8080/file.js:41:27)\n"
+                    + "    at dumpExceptionError (http://localhost:8080/file.js:50:21)\n",
             } as unknown as Error,
             {
                 frameLimit: 1,
@@ -1810,7 +1807,7 @@ If you used to conditionally omit it with %s={condition && value}, pass %s={cond
         expect(stackFrames[0]).toMatchStackFrame([
             "<unknown>",
             `${dirname(fileURLToPath(import.meta.url))}${isWin ? "\\" : "/"}parse-stacktrace.test.ts`,
-            1803,
+            1800,
             13,
         ]);
     });
@@ -1828,14 +1825,16 @@ If you used to conditionally omit it with %s={condition && value}, pass %s={cond
         expect(stackFrames[0]).toMatchStackFrame([
             "<unknown>",
             `${dirname(fileURLToPath(import.meta.url))}${isWin ? "\\" : "/"}parse-stacktrace.test.ts`,
-            1821,
+            1818,
             23,
         ]);
     });
 
     it("should not create a stacktrace if the stack is broken", () => {
+        expect.assertions(1);
+
         const stackFrames = parseStacktrace({
-            stack: "Error\n no such file or directory, rename '/home/prisis/WebstormProjects/visulima/visulima/packages/is-ansi-color-supported/package.json.tmp' -> '/home/prisis/WebstormProjects/visulima/visulima/packages/is-ansi-color-supported/package.json'",
+            stack: "Error\n no such file or directory, rename '/home/prisis/visulima/visulima/packages/is-ansi-color-supported/package.json.tmp' -> '/home/prisis/visulima/visulima/packages/is-ansi-color-supported/package.json'",
         } as unknown as Error);
 
         expect(stackFrames).toHaveLength(0);

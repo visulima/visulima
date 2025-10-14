@@ -42,6 +42,6 @@ describe("get-error-causes", () => {
 
         expect(getErrorCauses(error)).toStrictEqual([error, error2, error3]);
 
-        expect(consoleLogMock).toHaveBeenCalledWith(`Circular reference detected in error causes: ${inspect(error)}`);
+        expect(consoleLogMock).toHaveBeenCalledExactlyOnceWith(`Circular reference detected in error causes: ${inspect(error)}`);
     });
 });

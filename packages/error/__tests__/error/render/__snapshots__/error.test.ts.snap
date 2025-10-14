@@ -3,49 +3,49 @@
 exports[`renderError > should handle nested cause errors 1`] = `
 "Error: This is an error message
 
-at <unknown> __tests__/error/render/error.test.ts:185
+at <unknown> __tests__/error/render/error.test.ts:188
 
 Caused by:
 
 Error: This is the cause of the error
-at <unknown> __tests__/error/render/error.test.ts:186
+at <unknown> __tests__/error/render/error.test.ts:189
 
     Caused by:
 
     Error: This is the cause of the cause of the error
-    at <unknown> __tests__/error/render/error.test.ts:187"
+    at <unknown> __tests__/error/render/error.test.ts:190"
 `;
 
 exports[`renderError > should handle nested errors within AggregateError 1`] = `
 "AggregateError
 
-at <unknown> __tests__/error/render/error.test.ts:171
+at <unknown> __tests__/error/render/error.test.ts:173
 
 Errors:
 
     AggregateError
 
-    at <unknown> __tests__/error/render/error.test.ts:169
+    at <unknown> __tests__/error/render/error.test.ts:171
 
     Errors:
 
         Error: Nested Error
 
-        at <unknown> __tests__/error/render/error.test.ts:169"
+        at <unknown> __tests__/error/render/error.test.ts:171"
 `;
 
 exports[`renderError > should respect base prefix option 1`] = `
 "prefixError: This is an error message
 
-prefixat <unknown> __tests__/error/render/error.test.ts:206
+prefixat <unknown> __tests__/error/render/error.test.ts:209
 
 prefixCaused by:
 
 prefixError: This is the cause of the error
-prefixat <unknown> __tests__/error/render/error.test.ts:207
+prefixat <unknown> __tests__/error/render/error.test.ts:210
 
 prefix    Caused by:
 
 prefix    Error: This is the cause of the cause of the error
-prefix    at <unknown> __tests__/error/render/error.test.ts:208"
+prefix    at <unknown> __tests__/error/render/error.test.ts:211"
 `;

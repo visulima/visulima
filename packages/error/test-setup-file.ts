@@ -1,4 +1,4 @@
-// eslint-disable-next-line import/no-extraneous-dependencies,import/no-unused-modules
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { expect } from "vitest";
 
 import type { Trace } from "./src";
@@ -28,23 +28,23 @@ const toMatchStackFrame: (
     message: () => string;
     pass: boolean;
 } => {
-    let pass =
-        received.methodName === function_ &&
-        received.file === file &&
-        received.line === lineNumber &&
-        received.column === columnNumber &&
-        received.type === type;
+    let pass
+        = received.methodName === function_
+            && received.file === file
+            && received.line === lineNumber
+            && received.column === columnNumber
+            && received.type === type;
 
     if ((received.evalOrigin !== undefined && evalOrigin === undefined) || (received.evalOrigin === undefined && evalOrigin !== undefined)) {
         pass = false;
     } else if (received.evalOrigin !== undefined && evalOrigin !== undefined) {
-        pass =
-            pass &&
-            received.evalOrigin.methodName === evalOrigin.methodName &&
-            received.evalOrigin.file === evalOrigin.file &&
-            received.evalOrigin.line === evalOrigin.line &&
-            received.evalOrigin.column === evalOrigin.column &&
-            received.evalOrigin.type === evalOrigin.type;
+        pass
+            = pass
+                && received.evalOrigin.methodName === evalOrigin.methodName
+                && received.evalOrigin.file === evalOrigin.file
+                && received.evalOrigin.line === evalOrigin.line
+                && received.evalOrigin.column === evalOrigin.column
+                && received.evalOrigin.type === evalOrigin.type;
     }
 
     if (pass) {
