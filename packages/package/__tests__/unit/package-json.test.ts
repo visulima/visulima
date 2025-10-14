@@ -1063,7 +1063,7 @@ dependencies:
                 expect(result.path).toBe(join(distribution, "package.yaml"));
             });
 
-            it("should prefer package.json over package.yaml when both exist", async () => {
+            it("should prefer package.yaml over package.json when both exist (new default order)", async () => {
                 expect.assertions(2);
 
                 const jsonContent = { name: "json-package", version: "2.0.0" };
@@ -1075,8 +1075,8 @@ version: 1.0.0`;
 
                 const result = await findPackageJson(distribution, { yaml: true });
 
-                expect(result.packageJson.name).toBe("json-package");
-                expect(result.path).toBe(join(distribution, "package.json"));
+                expect(result.packageJson.name).toBe("yaml-package");
+                expect(result.path).toBe(join(distribution, "package.yaml"));
             });
 
             it("should not find package.yaml when yaml is false", async () => {
@@ -1088,7 +1088,7 @@ version: 1.0.0`;
                 writeFileSync(join(distribution, "package.yaml"), yamlContent);
 
                 await expect(findPackageJson(distribution, { yaml: false })).rejects.toThrow(
-                    "No such file or directory, for package.json or package.json5 found.",
+                    "No such file or directory, for package.json5 or package.json found.",
                 );
             });
         });
@@ -1136,7 +1136,7 @@ version: 1.0.0`;
                 expect(result.path).toBe(join(distribution, "package.json5"));
             });
 
-            it("should prefer package.json over package.json5 when both exist", async () => {
+            it("should prefer package.json5 over package.json when both exist (new default order)", async () => {
                 expect.assertions(2);
 
                 const jsonContent = { name: "json-package", version: "2.0.0" };
@@ -1150,8 +1150,8 @@ version: 1.0.0`;
 
                 const result = await findPackageJson(distribution, { json5: true });
 
-                expect(result.packageJson.name).toBe("json-package");
-                expect(result.path).toBe(join(distribution, "package.json"));
+                expect(result.packageJson.name).toBe("json5-package");
+                expect(result.path).toBe(join(distribution, "package.json5"));
             });
 
             it("should not find package.json5 when json5 is false", async () => {
@@ -1165,7 +1165,7 @@ version: 1.0.0`;
                 writeFileSync(join(distribution, "package.json5"), json5Content);
 
                 await expect(findPackageJson(distribution, { json5: false })).rejects.toThrow(
-                    "No such file or directory, for package.json or package.yaml found.",
+                    "No such file or directory, for package.yaml, package.yml or package.json found.",
                 );
             });
         });
@@ -1311,7 +1311,7 @@ version: 1.0.0`;
         });
 
         describe("file search priority", () => {
-            it("should search files in correct priority order: package.json > package.yaml > package.json5", async () => {
+            it("should search files in correct priority order: package.yaml > package.json5 > package.json (new default)", async () => {
                 expect.assertions(1);
 
                 const jsonContent = { name: "json-package", version: "1.0.0" };
@@ -1328,7 +1328,7 @@ version: 2.0.0`;
 
                 const result = await findPackageJson(distribution);
 
-                expect(result.packageJson.name).toBe("json-package");
+                expect(result.packageJson.name).toBe("yaml-package");
             });
 
             it("should find package.yaml when package.json doesn't exist", async () => {
@@ -1349,7 +1349,7 @@ version: 2.0.0`;
                 expect(result.packageJson.name).toBe("yaml-package");
             });
 
-            it("should find package.json5 when package.json and package.yaml don't exist", async () => {
+            it("should find package.json5 when package.yaml and package.json don't exist", async () => {
                 expect.assertions(1);
 
                 const json5Content = `{
@@ -1362,6 +1362,229 @@ version: 2.0.0`;
                 const result = await findPackageJson(distribution);
 
                 expect(result.packageJson.name).toBe("json5-package");
+            });
+
+            it("should find package.json when only package.json exists", async () => {
+                expect.assertions(1);
+
+                const jsonContent = { name: "json-package", version: "1.0.0" };
+
+                writeJsonSync(join(distribution, "package.json"), jsonContent);
+
+                const result = await findPackageJson(distribution);
+
+                expect(result.packageJson.name).toBe("json-package");
+            });
+        });
+
+        describe("mixed file scenarios", () => {
+            it("should prefer package.yaml over package.json when both exist", async () => {
+                expect.assertions(2);
+
+                const jsonContent = { name: "json-package", version: "1.0.0" };
+                const yamlContent = `name: yaml-package
+version: 2.0.0`;
+
+                writeJsonSync(join(distribution, "package.json"), jsonContent);
+                writeFileSync(join(distribution, "package.yaml"), yamlContent);
+
+                const result = await findPackageJson(distribution);
+
+                expect(result.packageJson.name).toBe("yaml-package");
+                expect(result.path).toBe(join(distribution, "package.yaml"));
+            });
+
+            it("should prefer package.yaml over package.json5 when both exist", async () => {
+                expect.assertions(2);
+
+                const yamlContent = `name: yaml-package
+version: 2.0.0`;
+                const json5Content = `{
+  name: 'json5-package',
+  version: '3.0.0'
+}`;
+
+                writeFileSync(join(distribution, "package.yaml"), yamlContent);
+                writeFileSync(join(distribution, "package.json5"), json5Content);
+
+                const result = await findPackageJson(distribution);
+
+                expect(result.packageJson.name).toBe("yaml-package");
+                expect(result.path).toBe(join(distribution, "package.yaml"));
+            });
+
+            it("should prefer package.json5 over package.json when both exist", async () => {
+                expect.assertions(2);
+
+                const jsonContent = { name: "json-package", version: "1.0.0" };
+                const json5Content = `{
+  name: 'json5-package',
+  version: '3.0.0'
+}`;
+
+                writeJsonSync(join(distribution, "package.json"), jsonContent);
+                writeFileSync(join(distribution, "package.json5"), json5Content);
+
+                const result = await findPackageJson(distribution);
+
+                expect(result.packageJson.name).toBe("json5-package");
+                expect(result.path).toBe(join(distribution, "package.json5"));
+            });
+
+            it("should work with all three file types present", async () => {
+                expect.assertions(2);
+
+                const jsonContent = { name: "json-package", version: "1.0.0" };
+                const yamlContent = `name: yaml-package
+version: 2.0.0`;
+                const json5Content = `{
+  name: 'json5-package',
+  version: '3.0.0'
+}`;
+
+                writeJsonSync(join(distribution, "package.json"), jsonContent);
+                writeFileSync(join(distribution, "package.yaml"), yamlContent);
+                writeFileSync(join(distribution, "package.json5"), json5Content);
+
+                const result = await findPackageJson(distribution);
+
+                expect(result.packageJson.name).toBe("yaml-package");
+                expect(result.path).toBe(join(distribution, "package.yaml"));
+            });
+        });
+
+        describe("custom file order", () => {
+            it("should respect custom file order: json5 > yaml > json", async () => {
+                expect.assertions(2);
+
+                const jsonContent = { name: "json-package", version: "1.0.0" };
+                const yamlContent = `name: yaml-package
+version: 2.0.0`;
+                const json5Content = `{
+  name: 'json5-package',
+  version: '3.0.0'
+}`;
+
+                writeJsonSync(join(distribution, "package.json"), jsonContent);
+                writeFileSync(join(distribution, "package.yaml"), yamlContent);
+                writeFileSync(join(distribution, "package.json5"), json5Content);
+
+                const result = await findPackageJson(distribution, {
+                    fileOrder: ["json5", "yaml", "json"]
+                });
+
+                expect(result.packageJson.name).toBe("json5-package");
+                expect(result.path).toBe(join(distribution, "package.json5"));
+            });
+
+            it("should respect custom file order: json > yaml > json5", async () => {
+                expect.assertions(2);
+
+                const jsonContent = { name: "json-package", version: "1.0.0" };
+                const yamlContent = `name: yaml-package
+version: 2.0.0`;
+                const json5Content = `{
+  name: 'json5-package',
+  version: '3.0.0'
+}`;
+
+                writeJsonSync(join(distribution, "package.json"), jsonContent);
+                writeFileSync(join(distribution, "package.yaml"), yamlContent);
+                writeFileSync(join(distribution, "package.json5"), json5Content);
+
+                const result = await findPackageJson(distribution, {
+                    fileOrder: ["json", "yaml", "json5"]
+                });
+
+                expect(result.packageJson.name).toBe("json-package");
+                expect(result.path).toBe(join(distribution, "package.json"));
+            });
+
+            it("should respect custom file order with only yaml and json5", async () => {
+                expect.assertions(2);
+
+                const yamlContent = `name: yaml-package
+version: 2.0.0`;
+                const json5Content = `{
+  name: 'json5-package',
+  version: '3.0.0'
+}`;
+
+                writeFileSync(join(distribution, "package.yaml"), yamlContent);
+                writeFileSync(join(distribution, "package.json5"), json5Content);
+
+                const result = await findPackageJson(distribution, {
+                    fileOrder: ["json5", "yaml"]
+                });
+
+                expect(result.packageJson.name).toBe("json5-package");
+                expect(result.path).toBe(join(distribution, "package.json5"));
+            });
+
+            it("should work synchronously with custom file order", () => {
+                expect.assertions(2);
+
+                const jsonContent = { name: "json-package", version: "1.0.0" };
+                const yamlContent = `name: yaml-package
+version: 2.0.0`;
+                const json5Content = `{
+  name: 'json5-package',
+  version: '3.0.0'
+}`;
+
+                writeJsonSync(join(distribution, "package.json"), jsonContent);
+                writeFileSync(join(distribution, "package.yaml"), yamlContent);
+                writeFileSync(join(distribution, "package.json5"), json5Content);
+
+                const result = findPackageJsonSync(distribution, {
+                    fileOrder: ["json5", "yaml", "json"]
+                });
+
+                expect(result.packageJson.name).toBe("json5-package");
+                expect(result.path).toBe(join(distribution, "package.json5"));
+            });
+
+            it("should filter out disabled formats in custom file order", async () => {
+                expect.assertions(2);
+
+                const jsonContent = { name: "json-package", version: "1.0.0" };
+                const yamlContent = `name: yaml-package
+version: 2.0.0`;
+                const json5Content = `{
+  name: 'json5-package',
+  version: '3.0.0'
+}`;
+
+                writeJsonSync(join(distribution, "package.json"), jsonContent);
+                writeFileSync(join(distribution, "package.yaml"), yamlContent);
+                writeFileSync(join(distribution, "package.json5"), json5Content);
+
+                const result = await findPackageJson(distribution, {
+                    fileOrder: ["yaml", "json5", "json"],
+                    yaml: false // Disable yaml
+                });
+
+                expect(result.packageJson.name).toBe("json5-package");
+                expect(result.path).toBe(join(distribution, "package.json5"));
+            });
+
+            it("should fall back to json when custom order has disabled formats", async () => {
+                expect.assertions(2);
+
+                const jsonContent = { name: "json-package", version: "1.0.0" };
+                const yamlContent = `name: yaml-package
+version: 2.0.0`;
+
+                writeJsonSync(join(distribution, "package.json"), jsonContent);
+                writeFileSync(join(distribution, "package.yaml"), yamlContent);
+
+                const result = await findPackageJson(distribution, {
+                    fileOrder: ["yaml", "json5", "json"], // yaml disabled, json5 doesn't exist, json should be used
+                    yaml: false
+                });
+
+                expect(result.packageJson.name).toBe("json-package");
+                expect(result.path).toBe(join(distribution, "package.json"));
             });
         });
     });
