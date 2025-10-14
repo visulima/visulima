@@ -70,6 +70,7 @@
         "@visulima/fs": "3.1.9",
         "@visulima/path": "1.4.0",
         "jsonc-parser": "^3.3.1",
+        "type-fest": "^5.0.1",
         "resolve-pkg-maps": "^1.0.0"
     },
     "devDependencies": {
@@ -94,7 +95,6 @@
         "secretlint": "11.2.5",
         "semantic-release": "^24.2.9",
         "tempy": "^3.1.0",
-        "type-fest": "^5.0.1",
         "typedoc": "0.28.14",
         "typedoc-plugin-markdown": "4.9.0",
         "typedoc-plugin-rename-defaults": "0.7.3",
