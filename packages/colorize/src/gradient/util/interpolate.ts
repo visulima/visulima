@@ -70,13 +70,7 @@ export const interpolateRgb = (stop1: StopOutput, stop2: StopOutput, steps: numb
     return gradient;
 };
 
-export const interpolateHsv = (
-    stop1: StopOutput,
-    stop2: StopOutput,
-    steps: number,
-    mode: boolean | "long" | "short",
-
-): RGB[] => {
+export const interpolateHsv = (stop1: StopOutput, stop2: StopOutput, steps: number, mode: boolean | "long" | "short"): RGB[] => {
     const start = rgbToHsv({ b: (stop1.color as number[])[2] as number, g: (stop1.color as number[])[1] as number, r: (stop1.color as number[])[0] as number });
     const end = rgbToHsv({ b: (stop2.color as number[])[2] as number, g: (stop2.color as number[])[1] as number, r: (stop2.color as number[])[0] as number });
 

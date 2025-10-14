@@ -46,6 +46,10 @@ log(picocolors.red`red ${picocolors.yellow`yellow ${picocolors.green`green`} yel
 log(ansis.red`red ${ansis.yellow`yellow ${ansis.green`green`} yellow`} red`); // OK
 log(colorize.red`red ${colorize.yellow`yellow ${colorize.green`green`} yellow`} red`); // OK
 
+/**
+ *
+ * @param c
+ */
 function deepNestedFixture(c) {
     return c.green(
         `green ${c.cyan(
@@ -58,6 +62,10 @@ function deepNestedFixture(c) {
     );
 }
 
+/**
+ *
+ * @param c
+ */
 function complexNestedFixture(c) {
     return c.red(
         `red ${c.yellow("yellow")} red ${c.italic.cyan("italic cyan")} red ${c.underline.green(
@@ -66,6 +74,9 @@ function complexNestedFixture(c) {
     );
 }
 
+/**
+ *
+ */
 function showSupportOfDeepNestedStyling() {
     log("logcolors.js: ", deepNestedFixture(colorsJs));
     log("logcolorette: ", deepNestedFixture(colorette));
@@ -80,12 +91,18 @@ function showSupportOfDeepNestedStyling() {
     log("@visulima/colorize: ", deepNestedFixture(colorize));
 }
 
+/**
+ *
+ */
 function showSupportOfDeepNestedChainedStyling() {
     log("chalk: ", complexNestedFixture(chalk));
     log("ansis: ", complexNestedFixture(ansis));
     log("@visulima/colorize: ", complexNestedFixture(colorize));
 }
 
+/**
+ *
+ */
 function showSupportOfBreakStyleAtNewLine() {
     log("colors.js: ", colorsJs.bgGreen(`\nColor\nNEW LINE\nNEXT NEW LINE\n`)); // OK
     log("colorette: ", colorette.bgGreen(`\nColor\nNEW LINE\nNEXT NEW LINE\n`)); // (not supported)

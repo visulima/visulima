@@ -4,17 +4,16 @@
  * MIT License
  *
  * Copyright (c) Josh Junon
- * Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com)
+ * Copyright (c) Sindre Sorhus &lt;sindresorhus@gmail.com> (https://sindresorhus.com)
  */
 
 import { describe, expect, it } from "vitest";
 
 // @ts-expect-error - this is a test file
 import { blue, magenta, red } from "../../src/index.server.mts";
-// eslint-disable-next-line import/no-named-as-default
 import template from "../../src/template";
 
-describe("template", () => {
+describe(template, () => {
     it.each([["stdout", template]])("[%s] should return an empty string for an empty literal", (_, function_) => {
         expect.assertions(1);
 
@@ -25,15 +24,15 @@ describe("template", () => {
         expect.assertions(2);
 
         expect(function_`{bold.rgb(144,10,178).inverse Hello, {~inverse there!}}`).toBe(
-            "\u001B[1m\u001B[38;2;144;10;178m\u001B[7mHello, " +
-                "\u001B[27m\u001B[39m\u001B[22m\u001B[1m" +
-                "\u001B[38;2;144;10;178mthere!\u001B[39m\u001B[22m",
+            "\u001B[1m\u001B[38;2;144;10;178m\u001B[7mHello, "
+            + "\u001B[27m\u001B[39m\u001B[22m\u001B[1m"
+            + "\u001B[38;2;144;10;178mthere!\u001B[39m\u001B[22m",
         );
 
         expect(function_`{bold.bgRgb(144,10,178).inverse Hello, {~inverse there!}}`).toBe(
-            "\u001B[1m\u001B[48;2;144;10;178m\u001B[7mHello, " +
-                "\u001B[27m\u001B[49m\u001B[22m\u001B[1m" +
-                "\u001B[48;2;144;10;178mthere!\u001B[49m\u001B[22m",
+            "\u001B[1m\u001B[48;2;144;10;178m\u001B[7mHello, "
+            + "\u001B[27m\u001B[49m\u001B[22m\u001B[1m"
+            + "\u001B[48;2;144;10;178mthere!\u001B[49m\u001B[22m",
         );
     });
 
@@ -47,12 +46,10 @@ describe("template", () => {
         expect.assertions(2);
 
         expect(() => {
-            // eslint-disable-next-line @typescript-eslint/no-unused-expressions
             function_`{bold this shouldn't work ever\}`;
         }).toThrow("template literal is missing 1 closing bracket (`}`)");
 
         expect(() => {
-            // eslint-disable-next-line @typescript-eslint/no-unused-expressions
             function_`{bold this shouldn't {inverse appear {underline ever\} :) \}`;
         }).toThrow("template literal is missing 3 closing brackets (`}`)");
     });
@@ -61,7 +58,6 @@ describe("template", () => {
         expect.assertions(1);
 
         expect(() => {
-            // eslint-disable-next-line @typescript-eslint/no-unused-expressions
             function_`{abadstylethatdoesntexist this shouldn't work ever}`;
         }).toThrow("Unknown style: abadstylethatdoesntexist");
     });
@@ -78,13 +74,13 @@ describe("template", () => {
 			I hope you enjoy
 		}`,
         ).toBe(
-            "\u001B[1m\u001B[22m\n" +
-                "\u001B[1m\t\t\tHello! This is a\u001B[22m\n" +
-                "\u001B[1m\t\t\tmultiline block!\u001B[22m\n" +
-                "\u001B[1m\t\t\t:)\u001B[22m\n" +
-                "\u001B[1m\t\t\u001B[22m \u001B[4m\u001B[24m\n" +
-                "\u001B[4m\t\t\tI hope you enjoy\u001B[24m\n" +
-                "\u001B[4m\t\t\u001B[24m",
+            "\u001B[1m\u001B[22m\n"
+            + "\u001B[1m\t\t\tHello! This is a\u001B[22m\n"
+            + "\u001B[1m\t\t\tmultiline block!\u001B[22m\n"
+            + "\u001B[1m\t\t\t:)\u001B[22m\n"
+            + "\u001B[1m\t\t\u001B[22m \u001B[4m\u001B[24m\n"
+            + "\u001B[4m\t\t\tI hope you enjoy\u001B[24m\n"
+            + "\u001B[4m\t\t\u001B[24m",
         );
     });
 
@@ -127,7 +123,7 @@ describe("template", () => {
         expect.assertions(1);
 
         await expect(function_`{bold Hello, {cyan World!} This is a} test. {green Woo!}`).toMatchFileSnapshot(
-            "__snapshots__/template[" + name + "-template-parsing].test.ts.snap",
+            `__snapshots__/template[${name}-template-parsing].test.ts.snap`,
         );
     });
 
@@ -138,7 +134,7 @@ describe("template", () => {
         const exclamation = "Neat";
 
         await expect(function_`{bold Hello, {cyan.inverse ${name}!} This is a} test. {green ${exclamation}!}`).toMatchFileSnapshot(
-            "__snapshots__/template[" + name + "-template-substitutions].test.ts.snap",
+            `__snapshots__/template[${name}-template-substitutions].test.ts.snap`,
         );
     });
 
@@ -148,14 +144,14 @@ describe("template", () => {
         const name = "Sindre";
         const exclamation = "Neat";
 
-        await expect(function_`{bold Hello, {cyan.inverse ${name}!} This is a}` + " test. " + function_`{green ${exclamation}!}`).toMatchFileSnapshot(
-            "__snapshots__/template[" + name + "-nested-template-substitutions-1].test.ts.snap",
+        await expect(`${function_`{bold Hello, {cyan.inverse ${name}!} This is a}`} test. ${function_`{green ${exclamation}!}`}`).toMatchFileSnapshot(
+            `__snapshots__/template[${name}-nested-template-substitutions-1].test.ts.snap`,
         );
         await expect(function_`{red.bgGreen.bold Hello {italic.blue ${name}}}`).toMatchFileSnapshot(
-            "__snapshots__/template[" + name + "-nested-template-substitutions-2].test.ts.snap",
+            `__snapshots__/template[${name}-nested-template-substitutions-2].test.ts.snap`,
         );
         await expect(function_`{strikethrough.cyanBright.bgBlack Works with {reset {bold numbers}} {bold.red ${1}}}`).toMatchFileSnapshot(
-            "__snapshots__/template[" + name + "-nested-template-substitutions-3].test.ts.snap",
+            `__snapshots__/template[${name}-nested-template-substitutions-3].test.ts.snap`,
         );
     });
 
@@ -193,7 +189,6 @@ ${red("there")}`);
         expect.assertions(1);
 
         expect(() => {
-            // eslint-disable-next-line @typescript-eslint/no-unused-expressions
             function_`{red hi!}}`;
         }).toThrow("Found extraneous } in template literal");
     });
