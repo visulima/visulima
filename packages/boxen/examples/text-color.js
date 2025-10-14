@@ -6,7 +6,6 @@ const text = "This text has a custom color!";
 
 console.log("\n--- Custom Text Color (bgRed) ---");
 const customColorBox = boxen(text, {
-
     headerText: "Custom Color (bgRed)",
     textColor: (t) => bgRed(t),
 });
