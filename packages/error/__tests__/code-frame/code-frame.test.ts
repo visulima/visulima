@@ -1,4 +1,3 @@
-// eslint-disable-next-line no-secrets/no-secrets
 /**
  * This is a copy of the codeFrameColumns tests from Babel
  * @see https://github.com/babel/babel/blob/85e649203b61b7c908eb04c05511a0d35f893e8e/packages/babel-code-frame/test/index.js#L316-L565
@@ -16,7 +15,7 @@ import process from "../../src/util/process";
 
 const POINTER = process.platform === "win32" && !process.env?.WT_SESSION ? ">" : "❯";
 
-vi.mock("./utils", () => {
+vi.mock(import("./utils"), () => {
     return {
         normalizeLF: (string_: string) => string_,
     };
@@ -49,8 +48,8 @@ ${POINTER} 2 | const error = x.y;
     it("should handle long result", () => {
         expect.assertions(1);
 
-        const source =
-            "function getUser () {\n    const error = new Error('Unable to find user', {\n        cause: new Error('foo')\n    })\n    error.help = [\n    'We tried looking for using inside the \"users\" table',\n    'The search was performed using the where (email = user.email) and (is_active = true)'\n   ]\n\n    throw error\n}";
+        const source
+            = "function getUser () {\n    const error = new Error('Unable to find user', {\n        cause: new Error('foo')\n    })\n    error.help = [\n    'We tried looking for using inside the \"users\" table',\n    'The search was performed using the where (email = user.email) and (is_active = true)'\n   ]\n\n    throw error\n}";
         const loc = { column: 5, line: 8 };
         const result = codeFrame(source, { start: loc });
 
@@ -66,8 +65,8 @@ ${POINTER}  8 |    ]
     it("should be possible to change the visible lines", () => {
         expect.assertions(1);
 
-        const source =
-            "function getUser () {\n    const error = new Error('Unable to find user', {\n        cause: new Error('foo')\n    })\n    error.help = [\n    'We tried looking for using inside the \"users\" table',\n    'The search was performed using the where (email = user.email) and (is_active = true)'\n   ]\n\n    throw error\n}";
+        const source
+            = "function getUser () {\n    const error = new Error('Unable to find user', {\n        cause: new Error('foo')\n    })\n    error.help = [\n    'We tried looking for using inside the \"users\" table',\n    'The search was performed using the where (email = user.email) and (is_active = true)'\n   ]\n\n    throw error\n}";
         const loc = { column: 5, line: 8 };
         const result = codeFrame(
             source,
@@ -131,8 +130,8 @@ marker-${POINTER}gutter- 2 | const error = x.y;
     it("should colorize the error line", () => {
         expect.assertions(1);
 
-        const source =
-            "function getUser () {\n    const error = new Error('Unable to find user', {\n        cause: new Error('foo')\n    })\n    error.help = [\n    'We tried looking for using inside the \"users\" table',\n    'The search was performed using the where (email = user.email) and (is_active = true)'\n   ]\n\n    throw error\n}";
+        const source
+            = "function getUser () {\n    const error = new Error('Unable to find user', {\n        cause: new Error('foo')\n    })\n    error.help = [\n    'We tried looking for using inside the \"users\" table',\n    'The search was performed using the where (email = user.email) and (is_active = true)'\n   ]\n\n    throw error\n}";
         const loc = { column: 5, line: 8 };
         const result = codeFrame(
             source,
