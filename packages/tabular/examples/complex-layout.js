@@ -1,4 +1,4 @@
-import { createTable } from "../dist";
+import { createTable } from "../dist/index.js";
 
 /**
  * This example demonstrates a complex table layout with:

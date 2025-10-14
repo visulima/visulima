@@ -121,9 +121,9 @@ import { createGrid } from "@visulima/tabular";
 // Create a grid with 3 columns
 const grid = createGrid({
     columns: 3,
-    gap: 1, // Gap between cells
     paddingLeft: 1,
     paddingRight: 1,
+    border: DEFAULT_BORDER,
 });
 
 // Add items with complex layouts
@@ -142,15 +142,13 @@ console.log(grid.toString());
 Output:
 
 ```
-┌────────────────────────────┐
-│           Header           │
-├─────────┬─────────┬────────┤
-│ Left    │ Center  │ Right  │
-│         │Multiline│        │
-├─────────┤         ├────────┤
-│ Bottom  │         │ Bottom │
-│ Left    │         │ Right  │
-└─────────┴─────────┴────────┘
+┌────────────────────────────────────────┐
+│                 Header                 │
+├─────────────┬───────────┬──────────────┤
+│ Left        │           │ Right        │
+├─────────────┤ Center    ├──────────────┤
+│ Bottom Left │ Multiline │ Bottom Right │
+└─────────────┴───────────┴──────────────┘
 ```
 
 ### Advanced Features
@@ -1739,6 +1737,7 @@ type VerticalAlignment = "bottom" | "middle" | "top";
 ```
 
 Defined in: [types.ts:149](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L149)
+
 # style
 
 ## Variables
