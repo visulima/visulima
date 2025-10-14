@@ -26,12 +26,14 @@ export class ZodDateIn extends ZodType<Date, ZodDateInDef, string> {
     public _parse(input: ParseInput): ParseReturnType<Date> {
         // eslint-disable-next-line no-underscore-dangle
         const { ctx, status } = this._processInputParams(input);
+
         if (ctx.parsedType !== ZodParsedType.string) {
             addIssueToContext(ctx, {
                 code: ZodIssueCode.invalid_type,
                 expected: ZodParsedType.string,
                 received: ctx.parsedType,
             });
+
             return INVALID;
         }
 
@@ -49,6 +51,7 @@ export class ZodDateIn extends ZodType<Date, ZodDateInDef, string> {
             addIssueToContext(ctx, {
                 code: ZodIssueCode.invalid_date,
             });
+
             return INVALID;
         }
 

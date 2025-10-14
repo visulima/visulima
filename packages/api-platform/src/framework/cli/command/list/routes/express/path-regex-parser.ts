@@ -1,8 +1,8 @@
 import mapKeysToPath from "./map-keys-to-path";
 import type { ExpressRegex, Key } from "./types";
 
-/** Parses an express layer's regex and converts it to the original format seen in code.
- *
+/**
+ * Parses an express layer's regex and converts it to the original format seen in code.
  * @param layerRegexPath The layer's regex pattern
  * @param keys The keys that represent the layer's path parameters
  * @returns The path string for that layer
@@ -29,7 +29,7 @@ const pathRegexParser = (layerRegexPath: ExpressRegex | string, keys: Key[]): st
     }
 
     const match = /^\/\^((?:\\[$()*+./?[\\\]^{|}]|[^$()*+./?[\\\]^{|}])*)\$\//u.exec(
-        layerRegexPath.toString().replace("\\/?", "").replace("(?=\\/|$)", "$"),
+        layerRegexPath.toString().replace(String.raw`\/?`, "").replace(String.raw`(?=\/|$)`, "$"),
     ) as string[];
 
     if (Array.isArray(match) && match.length > 1) {

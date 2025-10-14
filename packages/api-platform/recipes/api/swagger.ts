@@ -4,8 +4,8 @@ export default swaggerApiRoute({
     swaggerDefinition: {
         servers: [
             {
-                url: "/",
                 description: "",
+                url: "/",
             },
         ],
     },
