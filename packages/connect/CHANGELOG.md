@@ -1,3 +1,17 @@
+## @visulima/connect [3.0.21](https://github.com/visulima/visulima/compare/@visulima/connect@3.0.20...@visulima/connect@3.0.21) (2025-10-15)
+
+### Bug Fixes
+
+* consolidate ESLint configuration and remove obsolete files for improved maintainability ([670cc9e](https://github.com/visulima/visulima/commit/670cc9e2a16aaf43aafddc5b00bb3d34144bb1df))
+* update @visulima/packem to 2.0.0-alpha.30 across multiple packages for improved compatibility ([27b346e](https://github.com/visulima/visulima/commit/27b346eaa1c0fb0e420d9a9824482028307f4249))
+* update @visulima/packem to version 2.0.0-alpha.29 and adjust packem.config.ts settings ([e505bcf](https://github.com/visulima/visulima/commit/e505bcfba65e8fede4286b8cd08557d976081de5))
+
+### Miscellaneous Chores
+
+* **deps:** update build scripts and remove cross-env dependency ([7510e82](https://github.com/visulima/visulima/commit/7510e826b9235a0013fe61c82a7eb333bc4cbb78))
+* update package dependencies across multiple packages for improved compatibility and performance ([9567591](https://github.com/visulima/visulima/commit/9567591c415da3002f3a4fe08f8caf7ce01ca5f7))
+* update package.json and pnpm-lock.yaml to include publint@0.3.12 and adjust build/test commands to exclude shared-utils ([1f7b3c0](https://github.com/visulima/visulima/commit/1f7b3c0381d77edfeec80ea1bf57b3469e929414))
+
 ## @visulima/connect [3.0.20](https://github.com/visulima/visulima/compare/@visulima/connect@3.0.19...@visulima/connect@3.0.20) (2025-05-30)
 
 ### Bug Fixes
