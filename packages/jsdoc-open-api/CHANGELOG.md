@@ -1,3 +1,9 @@
+## @visulima/jsdoc-open-api [2.0.87](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@2.0.86...@visulima/jsdoc-open-api@2.0.87) (2025-10-15)
+
+### Bug Fixes
+
+* downgraded `@visulima/fs` to version 3.1.9. ([42ab6eb](https://github.com/visulima/visulima/commit/42ab6eb2470c583e30510d2970431b0216ab45fb))
+
 ## @visulima/jsdoc-open-api [2.0.86](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@2.0.85...@visulima/jsdoc-open-api@2.0.86) (2025-10-15)
 
 ### Bug Fixes
