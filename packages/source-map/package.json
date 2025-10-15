@@ -1,6 +1,6 @@
 {
     "name": "@visulima/source-map",
-    "version": "1.0.20",
+    "version": "2.0.0",
     "description": "Provides functionality related to source maps.",
     "keywords": [
         "visulima",
@@ -78,7 +78,7 @@
         "@total-typescript/ts-reset": "^0.6.1",
         "@types/node": "24.7.2",
         "@visulima/packem": "2.0.0-alpha.30",
-        "@visulima/path": "1.4.0",
+        "@visulima/path": "2.0.0",
         "@vitest/coverage-v8": "^3.2.4",
         "@vitest/ui": "^3.2.4",
         "conventional-changelog-conventionalcommits": "9.1.0",
