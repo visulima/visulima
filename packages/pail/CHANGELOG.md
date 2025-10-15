@@ -1,3 +1,10 @@
+## @visulima/pail [2.1.31](https://github.com/visulima/visulima/compare/@visulima/pail@2.1.30...@visulima/pail@2.1.31) (2025-10-15)
+
+### Bug Fixes
+
+* downgrade @visulima/redact to version 1.0.15 ([3c2a8c2](https://github.com/visulima/visulima/commit/3c2a8c26c1e8ea5988a45cdea83811e200e4b99b))
+* Downgraded `@visulima/error` to version 4.6.2. ([069e946](https://github.com/visulima/visulima/commit/069e94648aef5d965e8499b55b48c504c2048967))
+
 ## @visulima/pail [2.1.30](https://github.com/visulima/visulima/compare/@visulima/pail@2.1.29...@visulima/pail@2.1.30) (2025-10-15)
 
 ### Bug Fixes
