@@ -1,3 +1,29 @@
+## @visulima/tsconfig [2.0.0](https://github.com/visulima/visulima/compare/@visulima/tsconfig@1.2.0...@visulima/tsconfig@2.0.0) (2025-10-15)
+
+### ⚠ BREAKING CHANGES
+
+* Adjusted the node engine requirement to support versions 20.19 and above.
+
+### Bug Fixes
+
+* Adjusted the node engine requirement to support versions 20.19 and above. ([1719cc3](https://github.com/visulima/visulima/commit/1719cc3104d67cfaeb15b49fc9e4538ad320c283))
+* update @visulima/packem to 2.0.0-alpha.30 across multiple packages for improved compatibility ([27b346e](https://github.com/visulima/visulima/commit/27b346eaa1c0fb0e420d9a9824482028307f4249))
+
+### Miscellaneous Chores
+
+* add runtime configuration for Node.js in packem.config.ts ([0371420](https://github.com/visulima/visulima/commit/0371420f21d23bf2acbfd25b26426474bf606262))
+* enhance linting commands and update configuration files ([b3200db](https://github.com/visulima/visulima/commit/b3200db7f914d60e2a149f2eb7e4521588455ba4))
+* **tsconfig:** remove unused ESLint plugins and configuration settings from package.json ([906e9e6](https://github.com/visulima/visulima/commit/906e9e6aba57cf0a0129ef97ecbec69a3f446445))
+* update package dependencies across multiple packages for improved compatibility and performance ([9567591](https://github.com/visulima/visulima/commit/9567591c415da3002f3a4fe08f8caf7ce01ca5f7))
+* update type-fest dependency and adjust package configurations ([e8a1d89](https://github.com/visulima/visulima/commit/e8a1d8969f5e15f9323b1ca2a4bcff1beb8446fb))
+* update type-fest dependency in package.json for inspector and tsconfig ([3a44850](https://github.com/visulima/visulima/commit/3a4485048b4a1ab760d0f05d49cde95c40b82652))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 4.0.0
+* **@visulima/path:** upgraded to 2.0.0
+
 ## @visulima/tsconfig [1.2.0](https://github.com/visulima/visulima/compare/@visulima/tsconfig@1.1.23...@visulima/tsconfig@1.2.0) (2025-09-24)
 
 ### Features
