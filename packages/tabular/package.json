@@ -77,7 +77,7 @@
         "test:watch": "vitest"
     },
     "devDependencies": {
-        "@anolilab/eslint-config": "^16.3.3",
+        "@anolilab/eslint-config": "^16.4.1",
         "@anolilab/semantic-release-pnpm": "2.0.4",
         "@anolilab/semantic-release-preset": "^11.0.4",
         "@arethetypeswrong/cli": "^0.18.2",
@@ -91,7 +91,7 @@
         "@vitest/ui": "^3.2.4",
         "ansi-regex": "^6.2.2",
         "conventional-changelog-conventionalcommits": "9.1.0",
-        "esbuild": "^0.25.10",
+        "esbuild": "^0.25.11",
         "eslint": "9.37.0",
         "jiti": "2.6.1",
         "publint": "^0.3.14",
@@ -99,7 +99,7 @@
         "secretlint": "11.2.5",
         "semantic-release": "^24.2.9",
         "terminal-size": "4.0.0",
-        "type-fest": "^5.0.1",
+        "type-fest": "^5.1.0",
         "typedoc": "0.28.14",
         "typedoc-plugin-markdown": "4.9.0",
         "typedoc-plugin-rename-defaults": "0.7.3",

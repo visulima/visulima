@@ -96,12 +96,12 @@
         "@shikijs/langs": "^3.13.0",
         "@shikijs/themes": "^3.13.0",
         "@visulima/error": "4.6.2",
-        "isomorphic-dompurify": "^2.28.0",
+        "isomorphic-dompurify": "^2.29.0",
         "shiki": "^3.13.0"
     },
     "devDependencies": {
-        "@anolilab/eslint-config": "^16.3.3",
-        "@anolilab/prettier-config": "^6.0.6",
+        "@anolilab/eslint-config": "^16.4.1",
+        "@anolilab/prettier-config": "^6.0.7",
         "@anolilab/semantic-release-preset": "^11.0.4",
         "@arethetypeswrong/cli": "^0.18.2",
         "@eslint/css": "0.13.0",

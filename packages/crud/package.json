@@ -87,8 +87,8 @@
         "path-to-regexp": "^8.3.0"
     },
     "devDependencies": {
-        "@anolilab/eslint-config": "^16.3.3",
-        "@anolilab/prettier-config": "^6.0.6",
+        "@anolilab/eslint-config": "^16.4.1",
+        "@anolilab/prettier-config": "^6.0.7",
         "@anolilab/semantic-release-pnpm": "^2.0.4",
         "@anolilab/semantic-release-preset": "^11.0.4",
         "@babel/core": "^7.28.4",
@@ -109,9 +109,9 @@
         "eslint-plugin-react": "7.37.5",
         "eslint-plugin-react-hooks": "7.0.0",
         "eslint-plugin-react-perf": "3.3.3",
-        "eslint-plugin-react-refresh": "^0.4.23",
+        "eslint-plugin-react-refresh": "^0.4.24",
         "eslint-plugin-react-you-might-not-need-an-effect": "0.5.6",
-        "eslint-plugin-testing-library": "^7.13.1",
+        "eslint-plugin-testing-library": "^7.13.3",
         "eslint-plugin-validate-jsx-nesting": "^0.1.1",
         "next": "^15.5.4",
         "next-test-api-route-handler": "^5.0.3",
