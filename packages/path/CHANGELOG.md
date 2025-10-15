@@ -1,3 +1,23 @@
+## @visulima/path [2.0.0](https://github.com/visulima/visulima/compare/@visulima/path@1.4.0...@visulima/path@2.0.0) (2025-10-15)
+
+### ⚠ BREAKING CHANGES
+
+* Adjusted the node engine requirement to support versions 20.19 and above
+
+### Bug Fixes
+
+* Adjusted the node engine requirement to support versions 20.19 and above ([ffeb2d4](https://github.com/visulima/visulima/commit/ffeb2d4ceff773f742c4f4f57b760588404e7434))
+* allowed node 24 ([6397e2e](https://github.com/visulima/visulima/commit/6397e2e9a172a31d0983b0f34e9feabcc7bcf339))
+* restore require exports in package.json for compatibility ([8b993fd](https://github.com/visulima/visulima/commit/8b993fd267cf4c02ef94420e520001076057c781))
+* update @visulima/packem to 2.0.0-alpha.30 across multiple packages for improved compatibility ([27b346e](https://github.com/visulima/visulima/commit/27b346eaa1c0fb0e420d9a9824482028307f4249))
+
+### Miscellaneous Chores
+
+* **deps:** update build scripts and remove cross-env dependency ([7510e82](https://github.com/visulima/visulima/commit/7510e826b9235a0013fe61c82a7eb333bc4cbb78))
+* remove unused helper test file to streamline codebase ([c096d97](https://github.com/visulima/visulima/commit/c096d97769814f9df16c1a39e41305ddb8358a3e))
+* update package dependencies across multiple packages for improved compatibility and performance ([9567591](https://github.com/visulima/visulima/commit/9567591c415da3002f3a4fe08f8caf7ce01ca5f7))
+* update package.json and pnpm-lock.yaml to include publint@0.3.12 and adjust build/test commands to exclude shared-utils ([1f7b3c0](https://github.com/visulima/visulima/commit/1f7b3c0381d77edfeec80ea1bf57b3469e929414))
+
 ## @visulima/path [1.4.0](https://github.com/visulima/visulima/compare/@visulima/path@1.3.6...@visulima/path@1.4.0) (2025-06-04)
 
 ### Features
