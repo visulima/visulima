@@ -31,9 +31,7 @@ describe("jsonReporter browser", () => {
         reporter.log(meta as unknown as ReadonlyMeta<string>);
 
         expect(logSpy).toHaveBeenCalledExactlyOnceWith(
-            `{"badge":"informational","context":[],"date":"${
-                meta.date.toISOString()
-            }","groups":["group1"],"message":"Test message","scope":["scope1"],"label":" test ","type":{"level":"informational","name":"test"}}`,
+            `{"badge":"informational","context":[],"date":"${meta.date.toISOString()}","groups":["group1"],"message":"Test message","scope":["scope1"],"label":" test ","type":{"level":"informational","name":"test"}}`,
             "informational",
         );
     });

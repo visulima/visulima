@@ -6,9 +6,11 @@
     },
     "dependencies": {
         "@dynamicabot/signales": "^2.1.2",
+        "@ogma/logger": "3.4.0",
         "@visulima/pail": "workspace:*",
         "bunyan": "^1.8.15",
         "consola": "^3.4.2",
+        "diary": "0.4.5",
         "pino": "^10.0.0",
         "tslog": "^4.10.2",
         "winston": "^3.18.3"

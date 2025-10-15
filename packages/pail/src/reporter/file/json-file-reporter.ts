@@ -5,7 +5,6 @@ import { AbstractJsonReporter } from "../json/abstract-json-reporter";
 import RotatingFileStream from "./utils/rotating-file-stream";
 
 export type FileReporterOptions = AbstractJsonReporterOptions
-
     & RfsOptions & {
         filePath: string;
         writeImmediately?: boolean;
