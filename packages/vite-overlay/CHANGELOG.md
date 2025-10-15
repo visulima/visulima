@@ -1,3 +1,30 @@
+## @visulima/vite-overlay [1.3.0](https://github.com/visulima/visulima/compare/@visulima/vite-overlay@1.2.1...@visulima/vite-overlay@1.3.0) (2025-10-15)
+
+### Features
+
+* enhance error overlay with location extraction and comprehensive docs ([13c6336](https://github.com/visulima/visulima/commit/13c63366c6e4a462f89da56fe10ad4f5d7cf875f))
+
+### Bug Fixes
+
+* enhance linting commands and update package dependencies for improved performance ([cdbda6b](https://github.com/visulima/visulima/commit/cdbda6bd693d0618b58525e8fe10eb45d90eb6f5))
+* update @visulima/packem to 2.0.0-alpha.30 across multiple packages for improved compatibility ([27b346e](https://github.com/visulima/visulima/commit/27b346eaa1c0fb0e420d9a9824482028307f4249))
+* update devDependencies and packem configuration ([db05ef1](https://github.com/visulima/visulima/commit/db05ef1f50c6efa73be2ab8f1362fa90587fafeb))
+
+### Miscellaneous Chores
+
+* update package dependencies across multiple packages for improved compatibility and performance ([9567591](https://github.com/visulima/visulima/commit/9567591c415da3002f3a4fe08f8caf7ce01ca5f7))
+* update package versions in examples and pnpm-lock.yaml for improved compatibility ([af9b5b5](https://github.com/visulima/visulima/commit/af9b5b563c8bcff0ad8da3c51278a13b320cfe96))
+
+### Code Refactoring
+
+* rename forwardClientLogs to forwardConsole in error overlay configuration ([98389e7](https://github.com/visulima/visulima/commit/98389e7e7ef63d8fbbd48fb4595bdeb34c636b37))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 5.0.0
+* **@visulima/path:** upgraded to 2.0.0
+
 ## @visulima/vite-overlay [1.2.1](https://github.com/visulima/visulima/compare/@visulima/vite-overlay@1.2.0...@visulima/vite-overlay@1.2.1) (2025-10-02)
 
 ### Bug Fixes
