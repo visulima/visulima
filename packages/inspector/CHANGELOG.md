@@ -1,3 +1,22 @@
+## @visulima/inspector [1.0.25](https://github.com/visulima/visulima/compare/@visulima/inspector@1.0.24...@visulima/inspector@1.0.25) (2025-10-15)
+
+### Bug Fixes
+
+* update @visulima/packem to 2.0.0-alpha.30 across multiple packages for improved compatibility ([27b346e](https://github.com/visulima/visulima/commit/27b346eaa1c0fb0e420d9a9824482028307f4249))
+* update package dependencies and improve ESLint configuration for enhanced performance ([7bf2429](https://github.com/visulima/visulima/commit/7bf24299c144f6833b48639db3894b086e33a154))
+
+### Miscellaneous Chores
+
+* **deps:** update build scripts and remove cross-env dependency ([7510e82](https://github.com/visulima/visulima/commit/7510e826b9235a0013fe61c82a7eb333bc4cbb78))
+* update package dependencies across multiple packages for improved compatibility and performance ([9567591](https://github.com/visulima/visulima/commit/9567591c415da3002f3a4fe08f8caf7ce01ca5f7))
+* update package.json and pnpm-lock.yaml to include publint@0.3.12 and adjust build/test commands to exclude shared-utils ([1f7b3c0](https://github.com/visulima/visulima/commit/1f7b3c0381d77edfeec80ea1bf57b3469e929414))
+* update type-fest dependency in package.json for inspector and tsconfig ([3a44850](https://github.com/visulima/visulima/commit/3a4485048b4a1ab760d0f05d49cde95c40b82652))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.24
+
 ## @visulima/inspector [1.0.24](https://github.com/visulima/visulima/compare/@visulima/inspector@1.0.23...@visulima/inspector@1.0.24) (2025-06-04)
 
 ### Styles
