@@ -89,7 +89,7 @@
         "test:watch": "vitest"
     },
     "devDependencies": {
-        "@anolilab/eslint-config": "^16.4.1",
+        "@anolilab/eslint-config": "^16.4.2",
         "@anolilab/prettier-config": "^6.0.7",
         "@anolilab/semantic-release-pnpm": "^2.0.4",
         "@anolilab/semantic-release-preset": "^11.0.4",
@@ -102,7 +102,7 @@
         "@vitest/coverage-v8": "^3.2.4",
         "@vitest/ui": "^3.2.4",
         "conventional-changelog-conventionalcommits": "9.1.0",
-        "esbuild": "0.25.10",
+        "esbuild": "0.25.11",
         "eslint": "9.37.0",
         "prettier": "^3.6.2",
         "publint": "^0.3.14",

@@ -159,7 +159,7 @@
         "ts-japi": "^1.12.0"
     },
     "devDependencies": {
-        "@anolilab/eslint-config": "^16.4.1",
+        "@anolilab/eslint-config": "^16.4.2",
         "@anolilab/semantic-release-pnpm": "2.0.4",
         "@anolilab/semantic-release-preset": "^11.0.4",
         "@arethetypeswrong/cli": "^0.18.2",
