@@ -1,3 +1,24 @@
+## @visulima/string [2.0.0](https://github.com/visulima/visulima/compare/@visulima/string@1.5.2...@visulima/string@2.0.0) (2025-10-15)
+
+### ⚠ BREAKING CHANGES
+
+* Adjusted the node engine requirement to support versions 20.19 and above
+
+### Bug Fixes
+
+* Adjusted the node engine requirement to support versions 20.19 and above ([7a2a2c0](https://github.com/visulima/visulima/commit/7a2a2c003a3627ee3052095b5624e6bf20db28d9))
+* update @visulima/packem to 2.0.0-alpha.30 across multiple packages for improved compatibility ([27b346e](https://github.com/visulima/visulima/commit/27b346eaa1c0fb0e420d9a9824482028307f4249))
+
+### Miscellaneous Chores
+
+* update linting commands and dependencies for improved performance ([73250f6](https://github.com/visulima/visulima/commit/73250f65dd2296ddfb39e12408009e7554b4f801))
+* update package.json and pnpm-lock.yaml to include publint@0.3.12 and adjust build/test commands to exclude shared-utils ([1f7b3c0](https://github.com/visulima/visulima/commit/1f7b3c0381d77edfeec80ea1bf57b3469e929414))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.24
+
 ## @visulima/string [1.5.2](https://github.com/visulima/visulima/compare/@visulima/string@1.5.1...@visulima/string@1.5.2) (2025-09-12)
 
 ### Bug Fixes
