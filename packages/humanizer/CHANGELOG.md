@@ -1,3 +1,23 @@
+## @visulima/humanizer [2.0.0](https://github.com/visulima/visulima/compare/@visulima/humanizer@1.3.0...@visulima/humanizer@2.0.0) (2025-10-15)
+
+### ⚠ BREAKING CHANGES
+
+* Changed the node engine requirement to min 20.19
+
+### Features
+
+* Changed the node engine requirement to support newer versions. ([6566972](https://github.com/visulima/visulima/commit/6566972f7ba11603739da8cfbae35e26a419bbac))
+
+### Bug Fixes
+
+* update @visulima/packem to 2.0.0-alpha.30 across multiple packages for improved compatibility ([27b346e](https://github.com/visulima/visulima/commit/27b346eaa1c0fb0e420d9a9824482028307f4249))
+
+### Miscellaneous Chores
+
+* refine ESLint commands and improve packem.config.ts formatting ([459c417](https://github.com/visulima/visulima/commit/459c417eff734df032e133e73e00111082651251))
+* remove deprecated @babel/core dependency and update packem configuration ([7c89a4f](https://github.com/visulima/visulima/commit/7c89a4f840ec273a8da6c88c0ec1b9cc2101ef0d))
+* update package dependencies across multiple packages for improved compatibility and performance ([9567591](https://github.com/visulima/visulima/commit/9567591c415da3002f3a4fe08f8caf7ce01ca5f7))
+
 ## @visulima/humanizer [1.3.0](https://github.com/visulima/visulima/compare/@visulima/humanizer@1.2.2...@visulima/humanizer@1.3.0) (2025-09-24)
 
 ### Features
