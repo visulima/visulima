@@ -244,7 +244,7 @@
                 "test:watch": "pnpm run generate:charmap && vitest"
         },
         "devDependencies": {
-                "@anolilab/eslint-config": "16.3.3",
+                "@anolilab/eslint-config": "16.4.2",
                 "@anolilab/semantic-release-pnpm": "2.0.4",
                 "@anolilab/semantic-release-preset": "11.0.4",
                 "@arethetypeswrong/cli": "0.18.2",
@@ -257,7 +257,7 @@
                 "@vitest/ui": "3.2.4",
                 "conventional-changelog-conventionalcommits": "9.1.0",
                 "emoji-regex-xs": "2.0.1",
-                "esbuild": "0.25.10",
+                "esbuild": "0.25.11",
                 "eslint": "9.37.0",
                 "eslint-plugin-you-dont-need-lodash-underscore": "6.14.0",
                 "fastest-levenshtein": "1.0.16",
