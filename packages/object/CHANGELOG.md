@@ -1,3 +1,25 @@
+## @visulima/object [2.0.0](https://github.com/visulima/visulima/compare/@visulima/object@1.0.12...@visulima/object@2.0.0) (2025-10-15)
+
+### ⚠ BREAKING CHANGES
+
+* Adjusted the node engine requirement to support versions 20.19 and above.
+
+### Bug Fixes
+
+* Adjusted the node engine requirement to support versions 20.19 and above ([6773ae4](https://github.com/visulima/visulima/commit/6773ae42e12453389298dea329016a8b30e8cfe8))
+* update @visulima/packem to 2.0.0-alpha.30 across multiple packages for improved compatibility ([27b346e](https://github.com/visulima/visulima/commit/27b346eaa1c0fb0e420d9a9824482028307f4249))
+
+### Miscellaneous Chores
+
+* add type-fest dependency to package.json ([45aee19](https://github.com/visulima/visulima/commit/45aee196a7991a22631ba258f65551c9d9dcdef7))
+* **deps:** update build scripts and remove cross-env dependency ([7510e82](https://github.com/visulima/visulima/commit/7510e826b9235a0013fe61c82a7eb333bc4cbb78))
+* update @visulima/packem dependency to version 2.0.0-alpha.29 ([f768d6d](https://github.com/visulima/visulima/commit/f768d6d26ebd825fd8685b6845bd33969d2f9dce))
+* update dependencies and fix linting issues ([0e802fe](https://github.com/visulima/visulima/commit/0e802fe02bb9ed791659cb5f3c77605ae5b42ec8))
+* update ESLint and Prettier configurations for improved consistency and performance ([1584130](https://github.com/visulima/visulima/commit/1584130ff5184a6b86ceb79e4bca51c9bf67dfeb))
+* update LICENSE.md and packem configuration ([79a0378](https://github.com/visulima/visulima/commit/79a0378af00d06b136111d7b2079238639fdeba1))
+* update package dependencies across multiple packages for improved compatibility and performance ([9567591](https://github.com/visulima/visulima/commit/9567591c415da3002f3a4fe08f8caf7ce01ca5f7))
+* update package.json and pnpm-lock.yaml to include publint@0.3.12 and adjust build/test commands to exclude shared-utils ([1f7b3c0](https://github.com/visulima/visulima/commit/1f7b3c0381d77edfeec80ea1bf57b3469e929414))
+
 ## @visulima/object [1.0.12](https://github.com/visulima/visulima/compare/@visulima/object@1.0.11...@visulima/object@1.0.12) (2025-09-10)
 
 ### Bug Fixes
