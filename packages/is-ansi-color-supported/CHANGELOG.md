@@ -1,3 +1,21 @@
+## @visulima/is-ansi-color-supported [2.3.0](https://github.com/visulima/visulima/compare/@visulima/is-ansi-color-supported@2.2.14...@visulima/is-ansi-color-supported@2.3.0) (2025-10-15)
+
+### Features
+
+* added ghostty and wezterm, moved CIRCLECI to true colors, allowed node version 24 ([2b100da](https://github.com/visulima/visulima/commit/2b100da7d9db5129688d0f1cd458f1648a39f3b7))
+
+### Bug Fixes
+
+* restore require exports in package.json and update packem configuration ([c38aafb](https://github.com/visulima/visulima/commit/c38aafbedebf0557ad05b1e181940f256e76bf2a))
+* update @visulima/packem to 2.0.0-alpha.30 across multiple packages for improved compatibility ([27b346e](https://github.com/visulima/visulima/commit/27b346eaa1c0fb0e420d9a9824482028307f4249))
+
+### Miscellaneous Chores
+
+* **deps:** update build scripts and remove cross-env dependency ([7510e82](https://github.com/visulima/visulima/commit/7510e826b9235a0013fe61c82a7eb333bc4cbb78))
+* update ESLint and Prettier configurations for improved consistency and performance ([a13384d](https://github.com/visulima/visulima/commit/a13384d4a4f1939e956e34336b19ca675f8d8687))
+* update package dependencies across multiple packages for improved compatibility and performance ([9567591](https://github.com/visulima/visulima/commit/9567591c415da3002f3a4fe08f8caf7ce01ca5f7))
+* update package.json and pnpm-lock.yaml to include publint@0.3.12 and adjust build/test commands to exclude shared-utils ([1f7b3c0](https://github.com/visulima/visulima/commit/1f7b3c0381d77edfeec80ea1bf57b3469e929414))
+
 ## @visulima/is-ansi-color-supported [2.2.14](https://github.com/visulima/visulima/compare/@visulima/is-ansi-color-supported@2.2.13...@visulima/is-ansi-color-supported@2.2.14) (2025-05-30)
 
 ### Bug Fixes
