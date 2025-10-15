@@ -19,12 +19,10 @@ const defaultInspectorConfig: Partial<Options> = {
             undefined: grey,
         };
 
-        // eslint-disable-next-line security/detect-object-injection
         if (styles[style] === undefined) {
             return string_;
         }
 
-        // eslint-disable-next-line security/detect-object-injection
         return (styles[style] as ColorizeType)(string_);
     },
 };

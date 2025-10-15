@@ -21,7 +21,7 @@ export const cursorShow: string = `${ESC}?25h`;
 export const eraseLines = (count: number): string => {
     let clear = "";
 
-    // eslint-disable-next-line no-loops/no-loops,no-plusplus
+    // eslint-disable-next-line no-plusplus
     for (let index = 0; index < count; index++) {
         clear += eraseLine + (index < count - 1 ? cursorUp() : "");
     }

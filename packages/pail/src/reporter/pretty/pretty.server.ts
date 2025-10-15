@@ -97,15 +97,15 @@ export class PrettyReporter<T extends string = string, L extends string = string
 
         let size = columns;
 
-        if (typeof this._styles.messageLength === "number") {
-            size = this._styles.messageLength;
+        if (typeof this.styles.messageLength === "number") {
+            size = this.styles.messageLength;
         }
 
         // @ts-ignore - @TODO: check rollup-plugin-dts
         const { badge, context, date, error, file, groups, label, message, prefix, repeated, scope, suffix, traceError, type } = data;
 
-        const { color } = this._loggerTypes[type.name as keyof typeof this._loggerTypes];
-        // eslint-disable-next-line security/detect-object-injection
+        const { color } = this.loggerTypes[type.name as keyof typeof this.loggerTypes];
+
         const colorized = color ? colorize[color] : white;
 
         const groupSpaces: string = groups.map(() => "    ").join("");
@@ -116,23 +116,23 @@ export class PrettyReporter<T extends string = string, L extends string = string
         }
 
         if (date) {
-            items.push(`${grey(this._styles.dateFormatter(typeof date === "string" ? new Date(date) : date))} `);
+            items.push(`${grey(this.styles.dateFormatter(typeof date === "string" ? new Date(date) : date))} `);
         }
 
         if (badge) {
             items.push(colorized(badge) as string);
         } else {
-            const longestBadge: string = getLongestBadge<L, T>(this._loggerTypes);
+            const longestBadge: string = getLongestBadge<L, T>(this.loggerTypes);
 
             if (longestBadge.length > 0) {
                 items.push(`${grey(".".repeat(longestBadge.length))} `);
             }
         }
 
-        const longestLabel: string = getLongestLabel<L, T>(this._loggerTypes);
+        const longestLabel: string = getLongestLabel<L, T>(this.loggerTypes);
 
         if (label) {
-            items.push(`${colorized(formatLabel(label as string, this._styles))} `, grey(".".repeat(longestLabel.length - stringLength(label as string))));
+            items.push(`${colorized(formatLabel(label as string, this.styles))} `, grey(".".repeat(longestLabel.length - stringLength(label as string))));
         } else {
             // plus 2 for the space and the dot
             items.push(grey(".".repeat(longestLabel.length + 2)));
@@ -148,12 +148,7 @@ export class PrettyReporter<T extends string = string, L extends string = string
 
         if (prefix) {
             items.push(
-                `${grey(
-                    `${Array.isArray(scope) && scope.length > 0 ? ". " : " "
-                    }[${
-                        this._styles.underline.prefix ? underline(prefix as string) : prefix
-                    }]`,
-                )} `,
+                `${grey(`${Array.isArray(scope) && scope.length > 0 ? ". " : " "}[${this.styles.underline.prefix ? underline(prefix as string) : prefix}]`)} `,
             );
         }
 
@@ -197,14 +192,11 @@ export class PrettyReporter<T extends string = string, L extends string = string
                     if (value instanceof Error) {
                         hasError = true;
 
-                        return (
-                            `\n\n${
-                                renderError(value as Error, {
-                                    ...this.#errorOptions,
-                                    filterStacktrace: pailFileFilter,
-                                    prefix: groupSpaces,
-                                })}`
-                        );
+                        return `\n\n${renderError(value as Error, {
+                            ...this.#errorOptions,
+                            filterStacktrace: pailFileFilter,
+                            prefix: groupSpaces,
+                        })}`;
                     }
 
                     if (typeof value === "object") {
@@ -232,21 +224,20 @@ export class PrettyReporter<T extends string = string, L extends string = string
 
         if (traceError) {
             items.push(
-                `\n\n${
-                    renderError(traceError as Error, {
-                        ...this.#errorOptions,
-                        filterStacktrace: pailFileFilter,
-                        hideErrorCauseCodeView: true,
-                        hideErrorCodeView: true,
-                        hideErrorErrorsCodeView: true,
-                        hideMessage: true,
-                        prefix: groupSpaces,
-                    })}`,
+                `\n\n${renderError(traceError as Error, {
+                    ...this.#errorOptions,
+                    filterStacktrace: pailFileFilter,
+                    hideErrorCauseCodeView: true,
+                    hideErrorCodeView: true,
+                    hideErrorErrorsCodeView: true,
+                    hideMessage: true,
+                    prefix: groupSpaces,
+                })}`,
             );
         }
 
         if (suffix) {
-            items.push("\n", groupSpaces + grey(this._styles.underline.suffix ? underline(suffix as string) : suffix));
+            items.push("\n", groupSpaces + grey(this.styles.underline.suffix ? underline(suffix as string) : suffix));
         }
 
         return `${items.join("")}\n`;

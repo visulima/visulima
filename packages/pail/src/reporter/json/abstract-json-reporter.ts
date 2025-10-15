@@ -54,7 +54,6 @@ export abstract class AbstractJsonReporter<L extends string = string> implements
         if (context) {
             const newContext: ReadonlyMeta<L>["context"] = [];
 
-            // eslint-disable-next-line no-loops/no-loops
             for (const item of context) {
                 if (item === EMPTY_SYMBOL) {
                     continue;

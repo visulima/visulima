@@ -5,7 +5,7 @@ import { EMPTY_SYMBOL } from "../../constants";
 import type { ReadonlyMeta } from "../../types";
 import getLongestBadge from "../../utils/get-longest-badge";
 import getLongestLabel from "../../utils/get-longest-label";
-import writeConsoleLogBasedOnLevel from "../../utils/write-console-log";
+import writeConsoleLogBasedOnLevel from "../../utils/write-console-log-based-on-level";
 import type { PrettyStyleOptions } from "./abstract-pretty-reporter";
 import { AbstractPrettyReporter } from "./abstract-pretty-reporter";
 
@@ -28,8 +28,8 @@ class PrettyReporter<T extends string = string, L extends string = string> exten
 
         const { badge, context, date, error, groups, label, message, prefix, repeated, scope, suffix, type } = meta;
 
-        const { color } = this._loggerTypes[type.name as keyof typeof this._loggerTypes];
-        // eslint-disable-next-line security/detect-object-injection
+        const { color } = this.loggerTypes[type.name as keyof typeof this.loggerTypes];
+
         const colorized = color ? colorize[color] : white;
 
         const items = [];
@@ -42,7 +42,7 @@ class PrettyReporter<T extends string = string, L extends string = string> exten
         }
 
         if (date) {
-            const cDate = grey(this._styles.dateFormatter(typeof date === "string" ? new Date(date) : date));
+            const cDate = grey(this.styles.dateFormatter(typeof date === "string" ? new Date(date) : date));
 
             if (isNotBrowser) {
                 items.push(format(cDate[0] as string, cDate.slice(1) as unknown as string[]));
@@ -60,7 +60,7 @@ class PrettyReporter<T extends string = string, L extends string = string> exten
                 items.push([`${cBadge[0]} `, ...cBadge.slice(1)]);
             }
         } else {
-            const longestBadge: string = getLongestBadge<L, T>(this._loggerTypes);
+            const longestBadge: string = getLongestBadge<L, T>(this.loggerTypes);
 
             if (longestBadge.length > 0) {
                 const cBadgePlaceholder = grey(".".repeat(longestBadge.length));
@@ -73,7 +73,7 @@ class PrettyReporter<T extends string = string, L extends string = string> exten
             }
         }
 
-        const longestLabel = getLongestLabel<L, T>(this._loggerTypes);
+        const longestLabel = getLongestLabel<L, T>(this.loggerTypes);
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let repeatedMessage: any[] | string | undefined;
@@ -87,7 +87,7 @@ class PrettyReporter<T extends string = string, L extends string = string> exten
         }
 
         if (label) {
-            const cLabel = colorized(this._formatLabel(label as string));
+            const cLabel = colorized(this.#formatLabel(label as string));
 
             if (isNotBrowser) {
                 items.push(format(cLabel[0] as string, cLabel.slice(1) as unknown as string[]));
@@ -138,7 +138,7 @@ class PrettyReporter<T extends string = string, L extends string = string> exten
 
         if (prefix) {
             const cPrefix = grey(
-                `${Array.isArray(scope) && scope.length > 0 ? ". " : " "}[${this._styles.underline.prefix ? underline(prefix as string) : prefix}] `,
+                `${Array.isArray(scope) && scope.length > 0 ? ". " : " "}[${this.styles.underline.prefix ? underline(prefix as string) : prefix}] `,
             );
 
             if (isNotBrowser) {
@@ -161,12 +161,12 @@ class PrettyReporter<T extends string = string, L extends string = string> exten
         }
 
         if (suffix) {
-            const cSuffix = grey((this._styles.underline.suffix ? underline(suffix as string) : suffix) as string);
+            const cSuffix = grey((this.styles.underline.suffix ? underline(suffix as string) : suffix) as string);
 
             if (isNotBrowser) {
-                items.push(format((`\n${cSuffix[0] as string}`) as string, cSuffix.slice(1) as unknown as string[]));
+                items.push(format(`\n${cSuffix[0] as string}` as string, cSuffix.slice(1) as unknown as string[]));
             } else {
-                items.push([(`\n${cSuffix[0] as string}`) as string, ...cSuffix.slice(1)]);
+                items.push([`\n${cSuffix[0] as string}` as string, ...cSuffix.slice(1)]);
             }
         }
 
@@ -179,7 +179,6 @@ class PrettyReporter<T extends string = string, L extends string = string> exten
             // eslint-disable-next-line @typescript-eslint/naming-convention
             const arguments_ = [];
 
-            // eslint-disable-next-line no-loops/no-loops
             for (const value of items) {
                 if (Array.isArray(value) && value.length > 1 && (value[0] as string).includes("%c")) {
                     logMessage += value[0];
@@ -194,12 +193,12 @@ class PrettyReporter<T extends string = string, L extends string = string> exten
         }
     }
 
-    private _formatLabel(label: string): string {
-        let formattedLabel = this._styles.uppercase.label ? label.toUpperCase() : label;
+    #formatLabel(label: string): string {
+        let formattedLabel = this.styles.uppercase.label ? label.toUpperCase() : label;
 
-        formattedLabel = this._styles.underline.label ? underline(formattedLabel) : formattedLabel;
+        formattedLabel = this.styles.underline.label ? underline(formattedLabel) : formattedLabel;
 
-        if (this._styles.bold.label) {
+        if (this.styles.bold.label) {
             formattedLabel = bold(formattedLabel);
         }
 

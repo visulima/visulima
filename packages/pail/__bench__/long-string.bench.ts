@@ -2,9 +2,11 @@ import { randomBytes } from "node:crypto";
 import { createWriteStream } from "node:fs";
 
 import { createPail as createBrowserPail } from "@visulima/pail/browser";
+import { diary } from "diary";
 import { JsonReporter as BrowserJsonReporter } from "@visulima/pail/browser/reporter";
 import { createPail as createServerPail } from "@visulima/pail/server";
 import { JsonReporter as ServerJsonReporter } from "@visulima/pail/server/reporter";
+import { Ogma } from "@ogma/logger";
 import bunyan from "bunyan";
 import { createConsola as createBrowserConsola, createConsola as createServerConsola } from "consola";
 import pino from "pino";
@@ -40,7 +42,16 @@ const browserConsola = createBrowserConsola({
 
 const tsLog = new Logger<ILogObj>({
     hideLogPositionForProduction: true,
-    type: "json",
+    type: "hidden", // Don't log anything to console
+    minLevel: 0,
+    // Write to /dev/null stream to match other loggers
+    transport: [
+        {
+            write: (logObject) => {
+                wsDevelopmentNull.write(JSON.stringify(logObject) + '\n');
+            },
+        },
+    ],
 });
 
 const pinoNodeStream = pino(wsDevelopmentNull);
@@ -64,6 +75,17 @@ const bunyanNodeStream = bunyan.createLogger({
         },
     ],
 });
+
+const ogmaStream = createWriteStream("/dev/null");
+
+const ogmaLogger = new Ogma({ stream: ogmaStream });
+const ogmaJsonLogger = new Ogma({ json: true, stream: ogmaStream });
+
+const diaryStream = createWriteStream("/dev/null");
+const diarySink = (event) => {
+    diaryStream.write(JSON.stringify(event));
+};
+const diaryLogger = diary("standard", diarySink);
 
 const longString = randomBytes(2000).toString();
 
@@ -162,6 +184,36 @@ describe("long-string", async () => {
         "pino min length",
         async () => {
             pinoMinLength.info(longString);
+        },
+        {
+            iterations: 10_000,
+        },
+    );
+
+    bench(
+        "ogma logger",
+        async () => {
+            ogmaLogger.log(longString);
+        },
+        {
+            iterations: 10_000,
+        },
+    );
+
+    bench(
+        "ogma json logger",
+        async () => {
+            ogmaJsonLogger.log(longString);
+        },
+        {
+            iterations: 10_000,
+        },
+    );
+
+    bench(
+        "diary",
+        async () => {
+            diaryLogger.info("info message");
         },
         {
             iterations: 10_000,

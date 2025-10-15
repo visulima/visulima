@@ -34,9 +34,7 @@ describe("jsonFileReporter", () => {
         reporter.log(meta);
 
         expect(writeSpy).toHaveBeenCalledExactlyOnceWith(
-            `{"badge":"informational","date":"${
-                meta.date.toISOString()
-            }","groups":["group1"],"label":"Test Label","scope":["scope1"],"message":"Test message","context":[]}\n`,
+            `{"badge":"informational","date":"${meta.date.toISOString()}","groups":["group1"],"label":"Test Label","scope":["scope1"],"message":"Test message","context":[]}\n`,
         );
     });
 

@@ -1,5 +1,5 @@
 import type { ReadonlyMeta, Reporter } from "../../types";
-import writeConsoleLogBasedOnLevel from "../../utils/write-console-log";
+import writeConsoleLogBasedOnLevel from "../../utils/write-console-log-based-on-level";
 
 class RawReporter<L extends string = string> implements Reporter<L> {
     // eslint-disable-next-line class-methods-use-this

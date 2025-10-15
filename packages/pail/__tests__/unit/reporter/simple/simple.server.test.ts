@@ -195,7 +195,7 @@ describe("simpleReporter", () => {
         };
 
         // @ts-expect-error - just for testing
-        const formattedMessage = simpleReporter._formatMessage(meta as ReadonlyMeta<string>);
+        const formattedMessage = simpleReporter.formatMessage(meta as ReadonlyMeta<string>);
 
         expect(formattedMessage).toContain("This is a sample message");
     });
@@ -216,7 +216,7 @@ describe("simpleReporter", () => {
             },
         };
         // @ts-expect-error - just for testing
-        const formattedMessage = simpleReporter._formatMessage(meta as ReadonlyMeta<string>);
+        const formattedMessage = simpleReporter.formatMessage(meta as ReadonlyMeta<string>);
 
         expect(formattedMessage.split("\n").length).toBeGreaterThan(1);
     });

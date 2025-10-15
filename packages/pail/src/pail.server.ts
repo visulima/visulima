@@ -63,13 +63,13 @@ class PailServerImpl<T extends string = string, L extends string = string> exten
     }
 
     public wrapStd() {
-        this._wrapStream(this.stdout, "log");
-        this._wrapStream(this.stderr, "log");
+        this.#wrapStream(this.stdout, "log");
+        this.#wrapStream(this.stderr, "log");
     }
 
     public restoreStd() {
-        this._restoreStream(this.stdout);
-        this._restoreStream(this.stderr);
+        this.#restoreStream(this.stdout);
+        this.#restoreStream(this.stderr);
     }
 
     public wrapAll(): void {
@@ -115,7 +115,7 @@ class PailServerImpl<T extends string = string, L extends string = string> exten
         return reporter;
     }
 
-    private _wrapStream(stream: NodeJS.WriteStream | undefined, type: LiteralUnion<DefaultLogTypes, L>) {
+    #wrapStream(stream: NodeJS.WriteStream | undefined, type: LiteralUnion<DefaultLogTypes, L>) {
         if (!stream) {
             return;
         }
@@ -132,13 +132,12 @@ class PailServerImpl<T extends string = string, L extends string = string> exten
         (stream as any).write = (data: any): void => {
             // @TODO: Fix typings
             // @ts-expect-error - dynamic property
-            // eslint-disable-next-line security/detect-object-injection
             (this as unknown as PailServerImpl)[type](String(data).trim());
         };
     }
 
     // eslint-disable-next-line class-methods-use-this
-    private _restoreStream(stream?: NodeJS.WriteStream): void {
+    #restoreStream(stream?: NodeJS.WriteStream): void {
         if (!stream) {
             return;
         }
@@ -154,10 +153,12 @@ class PailServerImpl<T extends string = string, L extends string = string> exten
     }
 }
 
-export type PailServerType<T extends string = string, L extends string = string> = (new<TC extends string = string, LC extends string = string>(options?: ServerConstructorOptions<TC, LC>) => PailServerType<TC, LC>)
-    & PailServerImpl<T, L>
-    & Record<DefaultLogTypes, LoggerFunction>
-    & Record<T, LoggerFunction>;
+export type PailServerType<T extends string = string, L extends string = string> = (new<TC extends string = string, LC extends string = string>(
+    options?: ServerConstructorOptions<TC, LC>,
+) => PailServerType<TC, LC>)
+& PailServerImpl<T, L>
+& Record<DefaultLogTypes, LoggerFunction>
+& Record<T, LoggerFunction>;
 
 export type PailConstructor<T extends string = string, L extends string = string> = new (options?: ServerConstructorOptions<T, L>) => PailServerType<T, L>;
 

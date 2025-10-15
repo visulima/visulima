@@ -88,51 +88,60 @@ export class SimpleReporter<T extends string = string, L extends string = string
     }
 
     public log(meta: ReadonlyMeta<L>): void {
-        this._log(this._formatMessage(meta as ReadonlyMeta<L>), meta.type.level);
+        const message = this.formatMessage(meta as ReadonlyMeta<L>);
+        const logLevel = meta.type.level as LiteralUnion<ExtendedRfc5424LogLevels, L>;
+
+        const streamType = ["error", "trace", "warn"].includes(logLevel as string) ? "stderr" : "stdout";
+        const stream = streamType === "stderr" ? this.#stderr : this.#stdout;
+
+        if (this.#interactive && this.#interactiveManager !== undefined && stream.isTTY) {
+            this.#interactiveManager.update(streamType, message.split("\n"), 0);
+        } else {
+            writeStream(`${message}\n`, stream);
+        }
     }
 
     // eslint-disable-next-line sonarjs/cognitive-complexity
-    protected _formatMessage(data: ReadonlyMeta<L>): string {
+    protected formatMessage(data: ReadonlyMeta<L>): string {
         const { columns } = terminalSize();
 
         let size = columns;
 
-        if (typeof this._styles.messageLength === "number") {
-            size = this._styles.messageLength;
+        if (typeof this.styles.messageLength === "number") {
+            size = this.styles.messageLength;
         }
 
         // @ts-ignore - @TODO: check rollup-plugin-dts
         const { badge, context, date, error, file, groups, label, message, prefix, repeated, scope, suffix, traceError, type } = data;
 
-        const { color } = this._loggerTypes[type.name as keyof typeof this._loggerTypes];
-        // eslint-disable-next-line security/detect-object-injection
+        const { color } = this.loggerTypes[type.name as keyof typeof this.loggerTypes];
         const colorized = color ? colorize[color] : white;
 
         const groupSpaces: string = groups.map(() => "    ").join("");
         const items: string[] = [];
 
         if (groups.length > 0) {
-            items.push((`${groupSpaces + grey(`[${groups.at(-1)}]`)} `) as string);
+            items.push(`${groupSpaces + grey(`[${groups.at(-1)}]`)} ` as string);
         }
 
         if (date) {
-            items.push(`${grey(this._styles.dateFormatter(typeof date === "string" ? new Date(date) : date))} `);
+            items.push(`${grey(this.styles.dateFormatter(typeof date === "string" ? new Date(date) : date))} `);
         }
 
         if (badge) {
             items.push(bold(colorized(badge) as string));
         } else {
-            const longestBadge: string = getLongestBadge<L, T>(this._loggerTypes);
+            const longestBadge: string = getLongestBadge<L, T>(this.loggerTypes);
 
             if (longestBadge.length > 0) {
                 items.push(grey(" ".repeat(longestBadge.length)));
             }
         }
 
-        const longestLabel: string = getLongestLabel<L, T>(this._loggerTypes);
+        const longestLabel: string = getLongestLabel<L, T>(this.loggerTypes);
 
         if (label) {
-            items.push(`${bold(colorized(formatLabel(label as string, this._styles)))} `, " ".repeat(longestLabel.length - stringLength(label as string)));
+            items.push(`${bold(colorized(formatLabel(label as string, this.styles)))} `, " ".repeat(longestLabel.length - stringLength(label as string)));
         } else {
             items.push(" ".repeat(longestLabel.length + 1));
         }
@@ -146,7 +155,7 @@ export class SimpleReporter<T extends string = string, L extends string = string
         }
 
         if (prefix) {
-            items.push(`${grey(`[${this._styles.underline.prefix ? underline(prefix as string) : prefix}]`)} `);
+            items.push(`${grey(`[${this.styles.underline.prefix ? underline(prefix as string) : prefix}]`)} `);
         }
 
         const titleSize = stringLength(items.join(""));
@@ -172,14 +181,11 @@ export class SimpleReporter<T extends string = string, L extends string = string
                     if (value instanceof Error) {
                         hasError = true;
 
-                        return (
-                            `\n\n${
-                                renderError(value as Error, {
-                                    ...this.#errorOptions,
-                                    filterStacktrace: pailFileFilter,
-                                    prefix: groupSpaces,
-                                })}`
-                        );
+                        return `\n\n${renderError(value as Error, {
+                            ...this.#errorOptions,
+                            filterStacktrace: pailFileFilter,
+                            prefix: groupSpaces,
+                        })}`;
                     }
 
                     if (typeof value === "object") {
@@ -207,21 +213,20 @@ export class SimpleReporter<T extends string = string, L extends string = string
 
         if (traceError) {
             items.push(
-                `\n\n${
-                    renderError(traceError as Error, {
-                        ...this.#errorOptions,
-                        filterStacktrace: pailFileFilter,
-                        hideErrorCauseCodeView: true,
-                        hideErrorCodeView: true,
-                        hideErrorErrorsCodeView: true,
-                        hideMessage: true,
-                        prefix: groupSpaces,
-                    })}`,
+                `\n\n${renderError(traceError as Error, {
+                    ...this.#errorOptions,
+                    filterStacktrace: pailFileFilter,
+                    hideErrorCauseCodeView: true,
+                    hideErrorCodeView: true,
+                    hideErrorErrorsCodeView: true,
+                    hideMessage: true,
+                    prefix: groupSpaces,
+                })}`,
             );
         }
 
         if (suffix) {
-            items.push(` ${groupSpaces}${grey(this._styles.underline.suffix ? underline(suffix as string) : suffix)}`);
+            items.push(` ${groupSpaces}${grey(this.styles.underline.suffix ? underline(suffix as string) : suffix)}`);
         }
 
         if (file) {
@@ -231,16 +236,5 @@ export class SimpleReporter<T extends string = string, L extends string = string
         }
 
         return items.join("");
-    }
-
-    protected _log(message: string, logLevel: LiteralUnion<ExtendedRfc5424LogLevels, L>): void {
-        const streamType = ["error", "trace", "warn"].includes(logLevel as string) ? "stderr" : "stdout";
-        const stream = streamType === "stderr" ? this.#stderr : this.#stdout;
-
-        if (this.#interactive && this.#interactiveManager !== undefined && stream.isTTY) {
-            this.#interactiveManager.update(streamType, message.split("\n"), 0);
-        } else {
-            writeStream(`${message}\n`, stream);
-        }
     }
 }

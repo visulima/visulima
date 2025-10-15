@@ -37,27 +37,27 @@ class MessageFormatterProcessor<L extends string = string> implements StringifyA
 
         if (meta.message !== undefined) {
             // eslint-disable-next-line no-param-reassign
-            meta.message = this._format(formatter, meta.message, meta.context ?? []);
+            meta.message = this.#format(formatter, meta.message, meta.context ?? []);
         }
 
         return meta;
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    private _format(formatter: typeof format, data: any, arguments_: unknown[] = []): any {
+    #format(formatter: typeof format, data: any, arguments_: unknown[] = []): any {
         if (typeof data === "string") {
             return formatter(data as string, arguments_);
         }
 
         if (typeof data === "object" && data !== null) {
-            // eslint-disable-next-line guard-for-in,no-loops/no-loops,no-restricted-syntax
+            // eslint-disable-next-line guard-for-in,no-restricted-syntax
             for (const index in data as Record<string, unknown> | [string, unknown[]]) {
-                // eslint-disable-next-line security/detect-object-injection,@typescript-eslint/no-explicit-any
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const value = (data as any)[index];
 
                 if (typeof value === "string" || Array.isArray(value) || typeof value === "object") {
-                    // eslint-disable-next-line no-param-reassign,security/detect-object-injection
-                    data[index] = this._format(formatter, value, arguments_);
+                    // eslint-disable-next-line no-param-reassign
+                    data[index] = this.#format(formatter, value, arguments_);
                 }
             }
         }
