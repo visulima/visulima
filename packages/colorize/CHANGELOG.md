@@ -1,3 +1,30 @@
+## @visulima/colorize [1.4.24](https://github.com/visulima/visulima/compare/@visulima/colorize@1.4.23...@visulima/colorize@1.4.24) (2025-10-15)
+
+### Bug Fixes
+
+* enhance ESLint configuration and improve code readability ([adc640b](https://github.com/visulima/visulima/commit/adc640b2abddd73a4a961914b1eb44b1c2f07183))
+* update @visulima/packem to 2.0.0-alpha.30 across multiple packages for improved compatibility ([27b346e](https://github.com/visulima/visulima/commit/27b346eaa1c0fb0e420d9a9824482028307f4249))
+* upgrade @visulima/packem to 2.0.0-alpha.29 and refine packem.config.ts settings ([bef233d](https://github.com/visulima/visulima/commit/bef233d98baeee325ccd84ceb9cf6e5bcbd10110))
+
+### Miscellaneous Chores
+
+* correct formatting in packem.config.ts for requireCJS settings ([6413894](https://github.com/visulima/visulima/commit/6413894c15554a3415a81b7dfd285ed04b410e3d))
+* **deps:** update build scripts and remove cross-env dependency ([7510e82](https://github.com/visulima/visulima/commit/7510e826b9235a0013fe61c82a7eb333bc4cbb78))
+* refactor ESLint configuration and update dependencies in colorize package ([3e5a30c](https://github.com/visulima/visulima/commit/3e5a30c487cee5bc3f96af9679c285fcab3c1db9))
+* update dependencies and fix linting issues ([0e802fe](https://github.com/visulima/visulima/commit/0e802fe02bb9ed791659cb5f3c77605ae5b42ec8))
+* update dependencies and improve linting commands ([478843d](https://github.com/visulima/visulima/commit/478843d9652962813c4b3fdd1c9ea7e1735376f6))
+* update package dependencies across multiple packages for improved compatibility and performance ([9567591](https://github.com/visulima/visulima/commit/9567591c415da3002f3a4fe08f8caf7ce01ca5f7))
+* update package.json and pnpm-lock.yaml to include publint@0.3.12 and adjust build/test commands to exclude shared-utils ([1f7b3c0](https://github.com/visulima/visulima/commit/1f7b3c0381d77edfeec80ea1bf57b3469e929414))
+
+### Tests
+
+* enhance color output in integration tests for colorize package ([e7975f8](https://github.com/visulima/visulima/commit/e7975f8da48e3f006330fb46e095e0c0bcce4476))
+
+
+### Dependencies
+
+* **@visulima/is-ansi-color-supported:** upgraded to 2.3.0
+
 ## @visulima/colorize [1.4.23](https://github.com/visulima/visulima/compare/@visulima/colorize@1.4.22...@visulima/colorize@1.4.23) (2025-06-04)
 
 
