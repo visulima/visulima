@@ -1,3 +1,20 @@
+## @visulima/crud [2.0.40](https://github.com/visulima/visulima/compare/@visulima/crud@2.0.39...@visulima/crud@2.0.40) (2025-10-15)
+
+### Bug Fixes
+
+* consolidate ESLint configuration and remove obsolete files for improved maintainability ([c1fde1c](https://github.com/visulima/visulima/commit/c1fde1cf884507d62103ab5d1857444d44f33039))
+
+### Miscellaneous Chores
+
+* update package dependencies across multiple packages for improved compatibility and performance ([9567591](https://github.com/visulima/visulima/commit/9567591c415da3002f3a4fe08f8caf7ce01ca5f7))
+* update package.json and pnpm-lock.yaml to include publint@0.3.12 and adjust build/test commands to exclude shared-utils ([1f7b3c0](https://github.com/visulima/visulima/commit/1f7b3c0381d77edfeec80ea1bf57b3469e929414))
+
+
+### Dependencies
+
+* **@visulima/pagination:** upgraded to 4.0.0
+* **@visulima/prisma-dmmf-transformer:** upgraded to 2.0.31
+
 ## @visulima/crud [2.0.39](https://github.com/visulima/visulima/compare/@visulima/crud@2.0.38...@visulima/crud@2.0.39) (2025-09-10)
 
 
