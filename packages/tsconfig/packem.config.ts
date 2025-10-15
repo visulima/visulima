@@ -19,6 +19,13 @@ export default defineConfig({
         // TODO: add it back after its fixed in the alpha
         //typedoc: typedocBuilder,
     },
+    validation: {
+        dependencies: {
+            unused: {
+                exclude: ["type-fest"],
+            },
+        }
+    },
     typedoc: {
         format: "inline",
         readmePath: "./README.md",

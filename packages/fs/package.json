@@ -130,7 +130,8 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@visulima/path": "1.4.0"
+        "@visulima/path": "1.4.0",
+        "type-fest": "^5.1.0"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "^16.4.1",
@@ -157,7 +158,6 @@
         "safe-regex2": "^5.0.0",
         "semantic-release": "24.2.9",
         "tempy": "^3.1.0",
-        "type-fest": "^5.1.0",
         "typescript": "5.9.3",
         "vitest": "^3.2.4",
         "yaml": "^2.8.1"
