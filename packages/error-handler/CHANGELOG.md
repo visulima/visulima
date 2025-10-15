@@ -1,3 +1,22 @@
+## @visulima/error-handler [1.0.6](https://github.com/visulima/visulima/compare/@visulima/error-handler@1.0.5...@visulima/error-handler@1.0.6) (2025-10-15)
+
+### Bug Fixes
+
+* update @visulima/packem dependency and modify packem configuration ([fe6c29b](https://github.com/visulima/visulima/commit/fe6c29bc3ac7e9ef7d484d3998b2e1adb75164ea))
+* update @visulima/packem to 2.0.0-alpha.30 across multiple packages for improved compatibility ([27b346e](https://github.com/visulima/visulima/commit/27b346eaa1c0fb0e420d9a9824482028307f4249))
+* update package dependencies and enhance ESLint configuration for improved performance ([1a20ead](https://github.com/visulima/visulima/commit/1a20eadaf0a563ed5e6f621eb7649b5629f44164))
+
+### Miscellaneous Chores
+
+* restore lint:types command in package.json and remove deprecated @babel/core dependency ([7bffd47](https://github.com/visulima/visulima/commit/7bffd473b40705b7f27b863521fbd21351e464b5))
+* update package dependencies across multiple packages for improved compatibility and performance ([9567591](https://github.com/visulima/visulima/commit/9567591c415da3002f3a4fe08f8caf7ce01ca5f7))
+
+
+### Dependencies
+
+* **@visulima/boxen:** upgraded to 2.0.4
+* **@visulima/error:** upgraded to 5.0.0
+
 ## @visulima/error-handler [1.0.5](https://github.com/visulima/visulima/compare/@visulima/error-handler@1.0.4...@visulima/error-handler@1.0.5) (2025-09-23)
 
 
