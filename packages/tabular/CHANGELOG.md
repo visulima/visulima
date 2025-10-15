@@ -1,3 +1,31 @@
+## @visulima/tabular [2.0.0](https://github.com/visulima/visulima/compare/@visulima/tabular@1.0.11...@visulima/tabular@2.0.0) (2025-10-15)
+
+### ⚠ BREAKING CHANGES
+
+* fix: Adjusted the node engine requirement to support versions 20.19 and above
+
+### Bug Fixes
+
+* Adjusted the node engine requirement to support versions 20.19 and above. ([c5f787b](https://github.com/visulima/visulima/commit/c5f787b26ef900b0568f51d220172eff9e387a38))
+* update @visulima/packem to 2.0.0-alpha.30 across multiple packages for improved compatibility ([27b346e](https://github.com/visulima/visulima/commit/27b346eaa1c0fb0e420d9a9824482028307f4249))
+
+### Documentation
+
+* update import paths in examples and README for consistency ([d0fee6c](https://github.com/visulima/visulima/commit/d0fee6ced40118bd306df895dc451fd5cd70860f))
+
+### Miscellaneous Chores
+
+* **deps:** update build scripts and remove cross-env dependency ([7510e82](https://github.com/visulima/visulima/commit/7510e826b9235a0013fe61c82a7eb333bc4cbb78))
+* update linting commands and dependencies for improved performance ([b9073d5](https://github.com/visulima/visulima/commit/b9073d5d24ba0440b25109f7be8a9c4d7fa4e948))
+* update package dependencies across multiple packages for improved compatibility and performance ([9567591](https://github.com/visulima/visulima/commit/9567591c415da3002f3a4fe08f8caf7ce01ca5f7))
+* update package.json and pnpm-lock.yaml to include publint@0.3.12 and adjust build/test commands to exclude shared-utils ([1f7b3c0](https://github.com/visulima/visulima/commit/1f7b3c0381d77edfeec80ea1bf57b3469e929414))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.24
+* **@visulima/string:** upgraded to 2.0.0
+
 ## @visulima/tabular [1.0.11](https://github.com/visulima/visulima/compare/@visulima/tabular@1.0.10...@visulima/tabular@1.0.11) (2025-09-12)
 
 
