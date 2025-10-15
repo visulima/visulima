@@ -1,3 +1,24 @@
+## @visulima/api-platform [3.0.50](https://github.com/visulima/visulima/compare/@visulima/api-platform@3.0.49...@visulima/api-platform@3.0.50) (2025-10-15)
+
+### Bug Fixes
+
+* consolidate ESLint configuration and remove obsolete files for improved maintainability ([7cc5f7c](https://github.com/visulima/visulima/commit/7cc5f7c8e9256f133f0ad259c30bc1f02ebaeb15))
+
+### Miscellaneous Chores
+
+* downgrade express dependency to version 4.21.2 for compatibility ([23468be](https://github.com/visulima/visulima/commit/23468be0087f738420fd7e4006ad4f9d67c4ac6d))
+* update package dependencies across multiple packages for improved compatibility and performance ([9567591](https://github.com/visulima/visulima/commit/9567591c415da3002f3a4fe08f8caf7ce01ca5f7))
+* update type-fest dependency and adjust package configurations ([e8a1d89](https://github.com/visulima/visulima/commit/e8a1d8969f5e15f9323b1ca2a4bcff1beb8446fb))
+
+
+### Dependencies
+
+* **@visulima/connect:** upgraded to 3.0.21
+* **@visulima/jsdoc-open-api:** upgraded to 2.0.86
+* **@visulima/crud:** upgraded to 2.0.40
+* **@visulima/fs:** upgraded to 4.0.0
+* **@visulima/path:** upgraded to 2.0.0
+
 ## @visulima/api-platform [3.0.49](https://github.com/visulima/visulima/compare/@visulima/api-platform@3.0.48...@visulima/api-platform@3.0.49) (2025-09-23)
 
 ### Miscellaneous Chores
