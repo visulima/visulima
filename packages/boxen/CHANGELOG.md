@@ -1,3 +1,22 @@
+## @visulima/boxen [2.0.4](https://github.com/visulima/visulima/compare/@visulima/boxen@2.0.3...@visulima/boxen@2.0.4) (2025-10-15)
+
+### Bug Fixes
+
+* add Prettier configuration and update ESLint settings for improved code formatting ([0039641](https://github.com/visulima/visulima/commit/0039641662fd2e9f55f07e4956666aac9e943bca))
+* update @visulima/packem to 2.0.0-alpha.30 across multiple packages for improved compatibility ([27b346e](https://github.com/visulima/visulima/commit/27b346eaa1c0fb0e420d9a9824482028307f4249))
+
+### Miscellaneous Chores
+
+* update package dependencies across multiple packages for improved compatibility and performance ([9567591](https://github.com/visulima/visulima/commit/9567591c415da3002f3a4fe08f8caf7ce01ca5f7))
+* update package.json and pnpm-lock.yaml to include publint@0.3.12 and adjust build/test commands to exclude shared-utils ([1f7b3c0](https://github.com/visulima/visulima/commit/1f7b3c0381d77edfeec80ea1bf57b3469e929414))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.24
+* **@visulima/path:** upgraded to 2.0.0
+* **@visulima/string:** upgraded to 2.0.0
+
 ## @visulima/boxen [2.0.3](https://github.com/visulima/visulima/compare/@visulima/boxen@2.0.2...@visulima/boxen@2.0.3) (2025-09-12)
 
 
