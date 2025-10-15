@@ -1,3 +1,27 @@
+## @visulima/cerebro [1.1.52](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.1.51...@visulima/cerebro@1.1.52) (2025-10-15)
+
+### Bug Fixes
+
+* update @visulima/packem to 2.0.0-alpha.29 and refine packem.config.ts settings ([63f14a1](https://github.com/visulima/visulima/commit/63f14a1c11bd7c004e76874ed0b3938ad4740da6))
+* update @visulima/packem to 2.0.0-alpha.30 across multiple packages for improved compatibility ([27b346e](https://github.com/visulima/visulima/commit/27b346eaa1c0fb0e420d9a9824482028307f4249))
+
+### Miscellaneous Chores
+
+* update package dependencies across multiple packages for improved compatibility and performance ([9567591](https://github.com/visulima/visulima/commit/9567591c415da3002f3a4fe08f8caf7ce01ca5f7))
+
+### Code Refactoring
+
+* consolidate ESLint configuration and remove obsolete files for improved maintainability ([76d27af](https://github.com/visulima/visulima/commit/76d27afba1dd1946820dc28ae8add2aa1b0ec288))
+
+
+### Dependencies
+
+* **@visulima/boxen:** upgraded to 2.0.4
+* **@visulima/colorize:** upgraded to 1.4.24
+* **@visulima/find-cache-dir:** upgraded to 2.0.0
+* **@visulima/pail:** upgraded to 2.1.30
+* **@visulima/path:** upgraded to 2.0.0
+
 ## @visulima/cerebro [1.1.51](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.1.50...@visulima/cerebro@1.1.51) (2025-09-23)
 
 ### Miscellaneous Chores
