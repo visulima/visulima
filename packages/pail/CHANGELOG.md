@@ -1,3 +1,23 @@
+## @visulima/pail [2.1.30](https://github.com/visulima/visulima/compare/@visulima/pail@2.1.29...@visulima/pail@2.1.30) (2025-10-15)
+
+### Bug Fixes
+
+* consolidate ESLint configuration and remove obsolete files for improved maintainability ([5b3e825](https://github.com/visulima/visulima/commit/5b3e825f3f2f428c9fb0950c300de10b42b657f9))
+* update @visulima/packem to 2.0.0-alpha.30 across multiple packages for improved compatibility ([27b346e](https://github.com/visulima/visulima/commit/27b346eaa1c0fb0e420d9a9824482028307f4249))
+
+### Miscellaneous Chores
+
+* update package dependencies across multiple packages for improved compatibility and performance ([9567591](https://github.com/visulima/visulima/commit/9567591c415da3002f3a4fe08f8caf7ce01ca5f7))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.24
+* **@visulima/error:** upgraded to 5.0.0
+* **@visulima/fmt:** upgraded to 1.1.16
+* **@visulima/inspector:** upgraded to 1.0.25
+* **@visulima/redact:** upgraded to 2.0.0
+
 ## @visulima/pail [2.1.29](https://github.com/visulima/visulima/compare/@visulima/pail@2.1.28...@visulima/pail@2.1.29) (2025-09-23)
 
 ### Miscellaneous Chores
