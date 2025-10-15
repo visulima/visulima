@@ -1,3 +1,19 @@
+## @visulima/jsdoc-open-api [2.0.86](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@2.0.85...@visulima/jsdoc-open-api@2.0.86) (2025-10-15)
+
+### Bug Fixes
+
+* refactor ESLint configuration and update package dependencies for improved maintainability ([32f2970](https://github.com/visulima/visulima/commit/32f29700ef3d55c5ec6feeb038afe4c5aaf506ab))
+* update node engine requirement to support versions up to 24.x ([525c6a4](https://github.com/visulima/visulima/commit/525c6a4fafc844fff6b2396938a0b8c8ab3953ef))
+
+### Miscellaneous Chores
+
+* update package dependencies across multiple packages for improved compatibility and performance ([9567591](https://github.com/visulima/visulima/commit/9567591c415da3002f3a4fe08f8caf7ce01ca5f7))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 4.0.0
+
 ## @visulima/jsdoc-open-api [2.0.85](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@2.0.84...@visulima/jsdoc-open-api@2.0.85) (2025-09-23)
 
 ### Miscellaneous Chores
