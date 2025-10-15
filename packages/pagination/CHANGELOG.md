@@ -1,3 +1,31 @@
+## @visulima/pagination [4.0.0](https://github.com/visulima/visulima/compare/@visulima/pagination@3.0.27...@visulima/pagination@4.0.0) (2025-10-15)
+
+### ⚠ BREAKING CHANGES
+
+* Adjusted the node engine requirement to support versions 20.19 and above.
+
+### Features
+
+* Adjusted the node engine requirement to support versions 20.19 and above ([86ae4c4](https://github.com/visulima/visulima/commit/86ae4c4c7ed71328d819603dd5c2a87ab8f4d030))
+
+### Bug Fixes
+
+* update @visulima/packem to 2.0.0-alpha.30 across multiple packages for improved compatibility ([27b346e](https://github.com/visulima/visulima/commit/27b346eaa1c0fb0e420d9a9824482028307f4249))
+
+### Styles
+
+* cs fixes ([6570d56](https://github.com/visulima/visulima/commit/6570d568a80bd3fd4bfd73c824dc78f7e3a372f8))
+
+### Miscellaneous Chores
+
+* add Secretlint configuration and refine ESLint settings for improved code quality ([25f0c3c](https://github.com/visulima/visulima/commit/25f0c3c9fdb98dc2f732521faa4e808182278694))
+* **deps:** update build scripts and remove cross-env dependency ([7510e82](https://github.com/visulima/visulima/commit/7510e826b9235a0013fe61c82a7eb333bc4cbb78))
+* **pagination:** update devDependencies ([dc28d9f](https://github.com/visulima/visulima/commit/dc28d9ff81d29a72103b58fb7f05441eb16f1708))
+* update dependencies and fix linting issues ([0e802fe](https://github.com/visulima/visulima/commit/0e802fe02bb9ed791659cb5f3c77605ae5b42ec8))
+* update package dependencies across multiple packages for improved compatibility and performance ([9567591](https://github.com/visulima/visulima/commit/9567591c415da3002f3a4fe08f8caf7ce01ca5f7))
+* update package.json and pnpm-lock.yaml to include publint@0.3.12 and adjust build/test commands to exclude shared-utils ([1f7b3c0](https://github.com/visulima/visulima/commit/1f7b3c0381d77edfeec80ea1bf57b3469e929414))
+* updated dev dependencies ([2433ed5](https://github.com/visulima/visulima/commit/2433ed5fb662e0303c37edee8ddc21b46c21263f))
+
 ## @visulima/pagination [3.0.27](https://github.com/visulima/visulima/compare/@visulima/pagination@3.0.26...@visulima/pagination@3.0.27) (2025-03-07)
 
 ### Bug Fixes
