@@ -1,3 +1,20 @@
+## @visulima/health-check [3.0.0](https://github.com/visulima/visulima/compare/@visulima/health-check@2.0.22...@visulima/health-check@3.0.0) (2025-10-15)
+
+### ⚠ BREAKING CHANGES
+
+* Adjusted the node engine requirement to support versions 20.19 and above
+
+### Bug Fixes
+
+* Adjusted the node engine requirement to support versions 20.19 and above ([7026e7e](https://github.com/visulima/visulima/commit/7026e7ea4b42c691696c059c3d07aa41c24c171d))
+* update @visulima/packem to 2.0.0-alpha.30 across multiple packages for improved compatibility ([27b346e](https://github.com/visulima/visulima/commit/27b346eaa1c0fb0e420d9a9824482028307f4249))
+
+### Miscellaneous Chores
+
+* **deps:** update build scripts and remove cross-env dependency ([7510e82](https://github.com/visulima/visulima/commit/7510e826b9235a0013fe61c82a7eb333bc4cbb78))
+* update package dependencies across multiple packages for improved compatibility and performance ([9567591](https://github.com/visulima/visulima/commit/9567591c415da3002f3a4fe08f8caf7ce01ca5f7))
+* update package.json and pnpm-lock.yaml to include publint@0.3.12 and adjust build/test commands to exclude shared-utils ([1f7b3c0](https://github.com/visulima/visulima/commit/1f7b3c0381d77edfeec80ea1bf57b3469e929414))
+
 ## @visulima/health-check [2.0.22](https://github.com/visulima/visulima/compare/@visulima/health-check@2.0.21...@visulima/health-check@2.0.22) (2025-05-30)
 
 ### Bug Fixes
