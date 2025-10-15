@@ -79,7 +79,7 @@ export default defineConfig({
     plugins: [
         errorOverlay({
             // Whether to log/display client-side runtime errors (default: true)
-            forwardClientLogs: true,
+            forwardConsole: true,
 
             // Array of console method names to forward (default: ["error"])
             forwardedConsoleMethods: ["error", "warn"],
@@ -96,7 +96,7 @@ export default defineConfig({
             // Custom solution finder functions (optional)
             solutionFinders: [],
 
-            // @deprecated Use forwardClientLogs instead
+            // @deprecated Use forwardConsole instead
             logClientRuntimeError: true,
         }),
     ],
@@ -107,13 +107,13 @@ export default defineConfig({
 
 | Option                    | Type               | Default     | Description                                                              |
 | ------------------------- | ------------------ | ----------- | ------------------------------------------------------------------------ |
-| `forwardClientLogs`       | `boolean`          | `true`      | Enable/disable client-side runtime error logging and overlay display     |
+| `forwardConsole`       | `boolean`          | `true`      | Enable/disable client-side runtime error logging and overlay display     |
 | `forwardedConsoleMethods` | `string[]`         | `["error"]` | Array of console method names to intercept and forward to overlay        |
 | `reactPluginName`         | `string`           | `undefined` | Custom React plugin name for detection (useful for custom React plugins) |
 | `vuePluginName`           | `string`           | `undefined` | Custom Vue plugin name for detection (useful for custom Vue plugins)     |
 | `showBallonButton`        | `boolean`          | `true`      | Whether to show the floating balloon button for error navigation         |
 | `solutionFinders`         | `SolutionFinder[]` | `[]`        | Array of custom solution finder functions for enhanced error analysis    |
-| `logClientRuntimeError`   | `boolean`          | `undefined` | **@deprecated** Use `forwardClientLogs` instead                          |
+| `logClientRuntimeError`   | `boolean`          | `undefined` | **@deprecated** Use `forwardConsole` instead                          |
 
 ## Error Handling
 

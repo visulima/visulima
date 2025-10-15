@@ -554,7 +554,7 @@ const setupWebSocketInterception = (
  * @param recentErrors Map of recent error signatures
  * @param rootPath The root path of the project
  * @param solutionFinders Array of solution finder handlers
- * @param forwardClientLogs Whether to log/display runtime errors
+ * @param forwardConsole Whether to log/display runtime errors
  */
 const setupHMRHandler = (
     server: ViteDevServer,
@@ -563,12 +563,12 @@ const setupHMRHandler = (
     recentErrors: Map<string, number>,
     rootPath: string,
     solutionFinders: SolutionFinder[],
-    forwardClientLogs: boolean,
+    forwardConsole: boolean,
     framework: string | undefined,
 ): void => {
     server.ws.on(MESSAGE_TYPE, async (data: unknown, client: WebSocketClient) => {
-        // Skip processing client runtime errors if forwardClientLogs is disabled
-        if (!forwardClientLogs) {
+        // Skip processing client runtime errors if forwardConsole is disabled
+        if (!forwardConsole) {
             return;
         }
 
@@ -718,9 +718,9 @@ const hasVuePlugin = (plugins: PluginOption[], vuePluginName?: string): boolean 
  * Main Vite plugin for error overlay functionality.
  * Intercepts runtime errors and displays them in a user-friendly overlay.
  * @param options Plugin configuration options
- * @param options.forwardClientLogs Whether to log client runtime errors (optional)
+ * @param options.forwardConsole Whether to log client runtime errors (optional)
  * @param options.forwardedConsoleMethods Array of console method names to forward (optional)
- * @param options.logClientRuntimeError @deprecated Use forwardClientLogs instead
+ * @param options.logClientRuntimeError @deprecated Use forwardConsole instead
  * @param options.reactPluginName Custom React plugin name (optional)
  * @param options.solutionFinders Custom solution finders (optional)
  * @param options.vuePluginName Custom Vue plugin name (optional)
@@ -729,9 +729,9 @@ const hasVuePlugin = (plugins: PluginOption[], vuePluginName?: string): boolean 
  */
 const errorOverlayPlugin = (
     options: {
-        forwardClientLogs?: boolean;
+        forwardConsole?: boolean;
         forwardedConsoleMethods?: string[];
-        // @deprecated Please use the new forwardClientLogs option
+        // @deprecated Please use the new forwardConsole option
         logClientRuntimeError?: boolean;
         reactPluginName?: string;
         showBallonButton?: boolean;
@@ -744,7 +744,7 @@ const errorOverlayPlugin = (
     let isVueProject: boolean;
 
     // Handle deprecated option for backward compatibility
-    const forwardClientLogs = (options.logClientRuntimeError === undefined ? options.forwardClientLogs : options.logClientRuntimeError) ?? true;
+    const forwardConsole = (options.logClientRuntimeError === undefined ? options.forwardConsole : options.logClientRuntimeError) ?? true;
     const forwardedConsoleMethods = options.forwardedConsoleMethods ?? ["error"];
 
     if (forwardedConsoleMethods.lenght === 0) {
@@ -805,7 +805,7 @@ const errorOverlayPlugin = (
 
             setupWebSocketInterception(server, shouldSkip, recentErrors, rootPath, options?.solutionFinders ?? [], framework);
 
-            setupHMRHandler(server, developmentLogger, shouldSkip, recentErrors, rootPath, options?.solutionFinders ?? [], forwardClientLogs, framework);
+            setupHMRHandler(server, developmentLogger, shouldSkip, recentErrors, rootPath, options?.solutionFinders ?? [], forwardConsole, framework);
 
             const handleUnhandledRejection = createUnhandledRejectionHandler(server, rootPath, developmentLogger);
 
