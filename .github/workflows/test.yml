@@ -167,7 +167,7 @@ jobs:
                   codecov-token: "${{ secrets.CODECOV_TOKEN }}"
                   use-affected: "true"
                   affected-files: "${{ steps.files.outputs.all_changed_files }}"
-                  exclude-affected-projects: "pail-bench,redact-bench,colorize-bench,inspector-bench,docs,storybook,nextra-theme-docs"
+                  exclude-affected-projects: "pail-bench,redact-bench,colorize-bench,inspector-bench,docs,storybook"
 
     # This check runs once all dependant jobs have passed
     # It symbolizes that all required checks have successfully passed (Or skipped)
