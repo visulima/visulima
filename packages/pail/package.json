@@ -1,6 +1,6 @@
 {
     "name": "@visulima/pail",
-    "version": "2.1.29",
+    "version": "2.1.30",
     "description": "Highly configurable Logger for Node.js, Edge and Browser.",
     "keywords": [
         "ansi",
@@ -242,10 +242,10 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@visulima/colorize": "1.4.23",
-        "@visulima/error": "4.6.2",
-        "@visulima/fmt": "1.1.15",
-        "@visulima/inspector": "1.0.24",
+        "@visulima/colorize": "1.4.24",
+        "@visulima/error": "5.0.0",
+        "@visulima/fmt": "1.1.16",
+        "@visulima/inspector": "1.0.25",
         "safe-stable-stringify": "^2.5.0",
         "type-fest": "^5.1.0"
     },
@@ -260,7 +260,7 @@
         "@total-typescript/ts-reset": "^0.6.1",
         "@types/node": "24.7.2",
         "@visulima/packem": "2.0.0-alpha.30",
-        "@visulima/redact": "1.0.15",
+        "@visulima/redact": "2.0.0",
         "@vitest/coverage-v8": "^3.2.4",
         "@vitest/ui": "^3.2.4",
         "conventional-changelog-conventionalcommits": "9.1.0",
@@ -279,7 +279,7 @@
         "wrap-ansi": "^9.0.2"
     },
     "peerDependencies": {
-        "@visulima/redact": "1.0.15",
+        "@visulima/redact": "2.0.0",
         "rotating-file-stream": "^3.1.1"
     },
     "peerDependenciesMeta": {
