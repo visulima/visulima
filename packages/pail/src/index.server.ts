@@ -6,8 +6,7 @@ import MessageFormatterProcessor from "./processor/message-formatter-processor";
 import { PrettyReporter } from "./reporter/pretty/pretty.server";
 import type { ConstructorOptions, ExtendedRfc5424LogLevels } from "./types";
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
-const _getDefaultLogLevel = (): ExtendedRfc5424LogLevels => {
+const getDefaultLogLevel = (): ExtendedRfc5424LogLevels => {
     if (env.NODE_ENV === "debug" || env.DEBUG !== undefined) {
         return "debug";
     }
@@ -20,7 +19,7 @@ const _getDefaultLogLevel = (): ExtendedRfc5424LogLevels => {
 };
 
 export const createPail = <T extends string = string, L extends string = string>(options?: ConstructorOptions<T, L>): PailServerType<T, L> => {
-    let logLevel: ExtendedRfc5424LogLevels = _getDefaultLogLevel();
+    let logLevel: ExtendedRfc5424LogLevels = getDefaultLogLevel();
 
     if (env.PAIL_LOG_LEVEL !== undefined) {
         logLevel = env.PAIL_LOG_LEVEL as ExtendedRfc5424LogLevels;

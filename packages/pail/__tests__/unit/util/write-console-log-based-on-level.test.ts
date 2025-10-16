@@ -1,6 +1,6 @@
 import { describe, expect, expectTypeOf, it, vi } from "vitest";
 
-import writeConsoleLogBasedOnLevel from "../../../src/utils/write-console-log";
+import writeConsoleLogBasedOnLevel from "../../../src/utils/write-console-log-based-on-level";
 
 describe(writeConsoleLogBasedOnLevel, () => {
     it("should return a function that logs to console based on the provided log level", () => {

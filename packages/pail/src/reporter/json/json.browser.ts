@@ -1,7 +1,7 @@
 import type { LiteralUnion } from "type-fest";
 
 import type { ExtendedRfc5424LogLevels } from "../../types";
-import writeConsoleLogBasedOnLevel from "../../utils/write-console-log";
+import writeConsoleLogBasedOnLevel from "../../utils/write-console-log-based-on-level";
 import type { AbstractJsonReporterOptions } from "./abstract-json-reporter";
 import { AbstractJsonReporter } from "./abstract-json-reporter";
 

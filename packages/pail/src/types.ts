@@ -60,7 +60,7 @@ export type DefaultLogTypes
 
 export interface LoggerFunction {
     (message: Message): void;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     (...message: any[]): void;
 }
 

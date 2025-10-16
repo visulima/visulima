@@ -27,7 +27,7 @@ class SafeStreamHandler {
     /**
      * Calls `end` on this instance's internal stream
      */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     public end(...arguments_: any[]): void {
         this.#stream.end(...arguments_);
     }

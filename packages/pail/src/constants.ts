@@ -2,7 +2,9 @@ import type { DefaultLoggerTypes } from "./types";
 
 /**
  * Log Levels
- * The log levels pail uses are those defined in the syslog protocol @see https://datatracker.ietf.org/doc/html/rfc5424#page-36, which are:
+ * The log levels pail uses are those defined in the syslog protocol
+ * @see https://datatracker.ietf.org/doc/html/rfc5424#page-36
+ * which are:
  */
 export const EXTENDED_RFC_5424_LOG_LEVELS = {
     alert: 7, // Action must be taken immediately. Example: Entire website down, database unavailable, etc. This should trigger the SMS alerts and wake you up.

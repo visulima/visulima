@@ -62,12 +62,10 @@ class InteractiveManager {
      * @param count lines count to remove
      */
     public erase(stream: StreamType, count = this.#lastLength): void {
-        // eslint-disable-next-line security/detect-object-injection
         if (this.#stream[stream] === undefined) {
             throw new TypeError(`Stream "${stream}" is not available`);
         }
 
-        // eslint-disable-next-line security/detect-object-injection
         this.#stream[stream].erase(count);
     }
 
@@ -79,7 +77,7 @@ class InteractiveManager {
         if (!this.#isActive) {
             Object.values(this.#stream).forEach((hook) => hook.active());
 
-            this._clear(true);
+            this.#clear(true);
         }
 
         return this.#isActive;
@@ -130,7 +128,7 @@ class InteractiveManager {
         if (this.#isActive) {
             Object.values(this.#stream).forEach((hook) => hook.inactive(separateHistory));
 
-            this._clear();
+            this.#clear();
         }
 
         return !this.#isActive;
@@ -144,12 +142,10 @@ class InteractiveManager {
      */
     public update(stream: StreamType, rows: string[], from = 0): void {
         if (rows.length > 0) {
-            // eslint-disable-next-line security/detect-object-injection
             if (this.#stream[stream] === undefined) {
                 throw new TypeError(`Stream "${stream}" is not available`);
             }
 
-            // eslint-disable-next-line security/detect-object-injection
             const hook = this.#stream[stream];
 
             const { columns: width, rows: height } = terminalSize();
@@ -188,7 +184,7 @@ class InteractiveManager {
         }
     }
 
-    private _clear(status = false): void {
+    #clear(status = false): void {
         this.#isActive = status;
         this.#lastLength = 0;
         this.#outside = 0;

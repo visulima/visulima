@@ -6,12 +6,12 @@ import type { DefaultLogTypes, LoggerTypesAwareReporter, LoggerTypesConfig, Read
 export const dateFormatter = (date: Date): string => [date.getHours(), date.getMinutes(), date.getSeconds()].map((n) => String(n).padStart(2, "0")).join(":");
 
 export abstract class AbstractPrettyReporter<T extends string = string, L extends string = string> implements LoggerTypesAwareReporter<T, L> {
-    protected readonly _styles: PrettyStyleOptions;
+    protected readonly styles: PrettyStyleOptions;
 
-    protected _loggerTypes: LoggerTypesConfig<LiteralUnion<DefaultLogTypes, T>, L>;
+    protected loggerTypes: LoggerTypesConfig<LiteralUnion<DefaultLogTypes, T>, L>;
 
     protected constructor(options: Partial<PrettyStyleOptions>) {
-        this._styles = {
+        this.styles = {
             bold: {
                 label: false,
             },
@@ -28,11 +28,11 @@ export abstract class AbstractPrettyReporter<T extends string = string, L extend
             ...options,
         } as PrettyStyleOptions;
 
-        this._loggerTypes = LOG_TYPES as LoggerTypesConfig<LiteralUnion<DefaultLogTypes, T>, L>;
+        this.loggerTypes = LOG_TYPES as LoggerTypesConfig<LiteralUnion<DefaultLogTypes, T>, L>;
     }
 
     public setLoggerTypes(types: LoggerTypesConfig<LiteralUnion<DefaultLogTypes, T>, L>): void {
-        this._loggerTypes = types;
+        this.loggerTypes = types;
     }
 
     public abstract log(meta: ReadonlyMeta<L>): void;

@@ -1,3 +1,15 @@
+## @visulima/api-platform [3.0.51](https://github.com/visulima/visulima/compare/@visulima/api-platform@3.0.50...@visulima/api-platform@3.0.51) (2025-10-15)
+
+### Bug Fixes
+
+* downgraded visulima fs and path ([ae93369](https://github.com/visulima/visulima/commit/ae93369ed14fd0b9f7d0652969c00df8515506fb))
+
+
+### Dependencies
+
+* **@visulima/jsdoc-open-api:** upgraded to 2.0.87
+* **@visulima/crud:** upgraded to 2.0.41
+
 ## @visulima/api-platform [3.0.50](https://github.com/visulima/visulima/compare/@visulima/api-platform@3.0.49...@visulima/api-platform@3.0.50) (2025-10-15)
 
 ### Bug Fixes
