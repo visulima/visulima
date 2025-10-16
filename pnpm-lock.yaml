@@ -738,7 +738,7 @@ importers:
         specifier: ^5.102.1
         version: 5.102.1(@swc/core@1.13.5)
       zod:
-        specifier: ^3.25
+        specifier: ^3.25.76
         version: 3.25.76
 
   packages/boxen:

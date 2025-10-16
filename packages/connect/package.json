@@ -118,7 +118,7 @@
         "zod": "^4.1.12"
     },
     "peerDependencies": {
-        "zod": "^3.25.76"
+        "zod": "^3.22.5"
     },
     "engines": {
         "node": ">=18.0.0 <=24.x"
