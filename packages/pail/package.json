@@ -280,7 +280,7 @@
     },
     "peerDependencies": {
         "@visulima/redact": "2.0.0",
-        "rotating-file-stream": "^3.1.1"
+        "rotating-file-stream": "^3.2.7"
     },
     "peerDependenciesMeta": {
         "@visulima/redact": {
