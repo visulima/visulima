@@ -163,7 +163,7 @@
         "yaml": "^2.8.1"
     },
     "peerDependencies": {
-        "yaml": "^2.7.0"
+        "yaml": "^2.8.1"
     },
     "peerDependenciesMeta": {
         "yaml": {
