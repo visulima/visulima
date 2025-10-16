@@ -6,12 +6,9 @@ import { renderError } from "@visulima/error";
 import type { Options as InspectorOptions } from "@visulima/inspector";
 import { inspect } from "@visulima/inspector";
 // eslint-disable-next-line import/no-extraneous-dependencies
-import stringLength from "string-length";
-// eslint-disable-next-line import/no-extraneous-dependencies
 import terminalSize from "terminal-size";
 import type { LiteralUnion } from "type-fest";
-// eslint-disable-next-line import/no-extraneous-dependencies
-import wrapAnsi from "wrap-ansi";
+import { getStringWidth, wordWrap, WrapMode } from "@visulima/string";
 
 import { EMPTY_SYMBOL } from "../../constants";
 import type InteractiveManager from "../../interactive/interactive-manager";
@@ -141,7 +138,7 @@ export class SimpleReporter<T extends string = string, L extends string = string
         const longestLabel: string = getLongestLabel<L, T>(this.loggerTypes);
 
         if (label) {
-            items.push(`${bold(colorized(formatLabel(label as string, this.styles)))} `, " ".repeat(longestLabel.length - stringLength(label as string)));
+            items.push(`${bold(colorized(formatLabel(label as string, this.styles)))} `, " ".repeat(longestLabel.length - getStringWidth(label as string)));
         } else {
             items.push(" ".repeat(longestLabel.length + 1));
         }
@@ -158,17 +155,17 @@ export class SimpleReporter<T extends string = string, L extends string = string
             items.push(`${grey(`[${this.styles.underline.prefix ? underline(prefix as string) : prefix}]`)} `);
         }
 
-        const titleSize = stringLength(items.join(""));
+        const titleSize = getStringWidth(items.join(""));
 
         if (message !== EMPTY_SYMBOL) {
             const formattedMessage: string = typeof message === "string" ? message : inspect(message, this.#inspectOptions);
 
             items.push(
                 groupSpaces
-                + wrapAnsi(formattedMessage, size - 3, {
-                    hard: true,
+                + wordWrap(formattedMessage, {
                     trim: false,
-                    wordWrap: true,
+                    width: size - 3,
+                    wrapMode: WrapMode.STRICT_WIDTH,
                 }),
             );
         }

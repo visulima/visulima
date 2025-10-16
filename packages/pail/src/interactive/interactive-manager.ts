@@ -1,7 +1,6 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import terminalSize from "terminal-size";
-// eslint-disable-next-line import/no-extraneous-dependencies
-import wrapAnsi from "wrap-ansi";
+import { wordWrap, WrapMode } from "@visulima/string";
 
 import type InteractiveStreamHook from "./interactive-stream-hook";
 
@@ -158,11 +157,11 @@ class InteractiveManager {
             let output = rows.reduce<string[]>(
                 (accumulator, row) => [
                     ...accumulator,
-                    wrapAnsi(row, width, {
-                        hard: true,
+                    wordWrap(row, {
                         trim: false,
-                        wordWrap: true,
-                    }),
+                        width,
+                        wrapMode: WrapMode.STRICT_WIDTH,
+                    }).split('\n'),
                 ],
                 [],
             );

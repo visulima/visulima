@@ -5,11 +5,10 @@
 
 [@visulima/fmt][fmt],
 [@visulima/colorize](https://github.com/visulima/visulima/tree/main/packages/colorize),
+[@visulima/string](https://github.com/visulima/visulima/tree/main/packages/string),
 [ansi-escapes](https://www.npmjs.com/package/ansi-escapes),
-[safe-stable-stringify](https://www.npmjs.com/package/safe-stable-stringify),
-[string-length](https://www.npmjs.com/package/string-length),
-[terminal-size](https://www.npmjs.com/package/terminal-size) and
-[wrap-ansi](https://www.npmjs.com/package/wrap-ansi)
+[safe-stable-stringify](https://www.npmjs.com/package/safe-stable-stringify), and
+[terminal-size](https://www.npmjs.com/package/terminal-size)
 
   </p>
 </div>
@@ -31,6 +30,12 @@
         </sup>
     </p>
 </div>
+
+---
+
+## 📋 Migration Guide
+
+If you're upgrading from an earlier version of pail, check out our [Migration Guide](MIGRATION.md) for breaking changes and upgrade instructions.
 
 ---
 

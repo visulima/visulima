@@ -1,4 +1,5 @@
 import type { RedactOptions, Rules } from "@visulima/redact";
+import { redact, standardRules } from "@visulima/redact";
 
 import type { Meta, Processor } from "../types";
 
@@ -6,14 +7,7 @@ class RedactProcessor<L extends string = string> implements Processor<L> {
     readonly #redact: <T>(input: T) => T;
 
     public constructor(rules?: Rules, options?: RedactOptions) {
-        try {
-            // eslint-disable-next-line @typescript-eslint/no-require-imports,global-require
-            const { redact, standardRules } = require("@visulima/redact");
-
-            this.#redact = <T>(input: T) => redact(input, rules || standardRules, options);
-        } catch {
-            throw new Error("The '@visulima/redact' package is missing. Make sure to install the '@visulima/redact' package.");
-        }
+        this.#redact = <T>(input: T) => redact(input, rules || standardRules, options);
     }
 
     public process(meta: Meta<L>): Meta<L> {
