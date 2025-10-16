@@ -6,12 +6,9 @@ import { renderError } from "@visulima/error/error";
 import type { Options as InspectorOptions } from "@visulima/inspector";
 import { inspect } from "@visulima/inspector";
 // eslint-disable-next-line import/no-extraneous-dependencies
-import stringLength from "string-length";
-// eslint-disable-next-line import/no-extraneous-dependencies
 import terminalSize from "terminal-size";
 import type { LiteralUnion } from "type-fest";
-// eslint-disable-next-line import/no-extraneous-dependencies
-import wrapAnsi from "wrap-ansi";
+import { getStringWidth, wordWrap, WrapMode } from "@visulima/string";
 
 import { EMPTY_SYMBOL } from "../../constants";
 import type InteractiveManager from "../../interactive/interactive-manager";
@@ -132,7 +129,7 @@ export class PrettyReporter<T extends string = string, L extends string = string
         const longestLabel: string = getLongestLabel<L, T>(this.loggerTypes);
 
         if (label) {
-            items.push(`${colorized(formatLabel(label as string, this.styles))} `, grey(".".repeat(longestLabel.length - stringLength(label as string))));
+            items.push(`${colorized(formatLabel(label as string, this.styles))} `, grey(".".repeat(longestLabel.length - getStringWidth(label as string))));
         } else {
             // plus 2 for the space and the dot
             items.push(grey(".".repeat(longestLabel.length + 2)));
@@ -152,11 +149,11 @@ export class PrettyReporter<T extends string = string, L extends string = string
             );
         }
 
-        const titleSize = stringLength(items.join(" "));
+        const titleSize = getStringWidth(items.join(" "));
 
         if (file) {
             const fileMessage = file.name + (file.line ? `:${file.line}` : "");
-            const fileMessageSize = stringLength(fileMessage);
+            const fileMessageSize = getStringWidth(fileMessage);
 
             if (fileMessageSize + titleSize + 2 > size) {
                 items.push(grey(` ${fileMessage}`));
@@ -176,10 +173,10 @@ export class PrettyReporter<T extends string = string, L extends string = string
 
             items.push(
                 groupSpaces
-                + wrapAnsi(formattedMessage, size - 3, {
-                    hard: true,
+                + wordWrap(formattedMessage, {
                     trim: false,
-                    wordWrap: true,
+                    width: size - 3,
+                    wrapMode: WrapMode.STRICT_WIDTH,
                 }),
             );
         }
