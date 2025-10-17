@@ -1,4 +1,5 @@
 import colorize, { bold, grey, underline, white } from "@visulima/colorize/browser";
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { format } from "@visulima/fmt";
 
 import { EMPTY_SYMBOL } from "../../constants";
