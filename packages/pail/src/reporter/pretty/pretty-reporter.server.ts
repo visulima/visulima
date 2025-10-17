@@ -181,7 +181,12 @@ export class PrettyReporter<T extends string = string, L extends string = string
         const longestLabel: string = getLongestLabel<L, T>(this.loggerTypes);
 
         if (label) {
-            items.push(`${colorized(formatLabel(label as string, this.styles))} `, grey(".".repeat(longestLabel.length - getStringWidth(label as string))));
+            const longestLabelWidth = getStringWidth(longestLabel);
+            const labelWidth = getStringWidth(label as string);
+            items.push(
+                `${colorized(formatLabel(label as string, this.styles))} `,
+                grey(".".repeat(Math.max(0, longestLabelWidth - labelWidth))),
+            );
         } else {
             // plus 2 for the space and the dot
             items.push(grey(".".repeat(longestLabel.length + 2)));
@@ -210,10 +215,11 @@ export class PrettyReporter<T extends string = string, L extends string = string
             if (fileMessageSize + titleSize + 2 > size) {
                 items.push(grey(` ${fileMessage}`));
             } else {
-                items.push(grey(`${".".repeat(size - titleSize - fileMessageSize - 2)} ${fileMessage}`));
+                const dots = Math.max(0, size - titleSize - fileMessageSize - 2);
+                items.push(grey(`${".".repeat(dots)} ${fileMessage}`));
             }
         } else {
-            items.push(grey(".".repeat(size - titleSize - 1)));
+            items.push(grey(".".repeat(Math.max(0, size - titleSize - 1))));
         }
 
         if (items.length > 0) {
@@ -289,7 +295,7 @@ export class PrettyReporter<T extends string = string, L extends string = string
             items.push("\n", groupSpaces + grey(this.styles.underline.suffix ? underline(suffix as string) : suffix));
         }
 
-        return `${items.join("")}\n`;
+        return items.join("");
     }
 
     // eslint-disable-next-line no-underscore-dangle
