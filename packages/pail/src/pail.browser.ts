@@ -389,35 +389,62 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
         meta.scope = this.scopeName;
         meta.date = new Date();
 
-        if (arguments_.length === 1 && typeof arguments_[0] === "object" && arguments_[0] !== null) {
-            if (arguments_[0] instanceof Error) {
-                // eslint-disable-next-line prefer-destructuring
-                meta.error = arguments_[0];
-            } else if ("message" in arguments_[0]) {
-                const { context, message, prefix, suffix } = arguments_[0] as Message;
+        // Handle different argument patterns to mimic console method behavior
 
-                if (context) {
-                    meta.context = context;
-                }
+        // Check if first argument is an Error object (highest priority for error handling)
+        if (arguments_.length > 0 && arguments_[0] instanceof Error) {
+            // First argument is an Error - set as error
+            // eslint-disable-next-line prefer-destructuring
+            meta.error = arguments_[0];
 
-                if (prefix) {
-                    meta.prefix = prefix;
-                }
-
-                if (suffix) {
-                    meta.suffix = suffix;
-                }
-
-                meta.message = message;
-            } else {
-                meta.message = arguments_[0] as Primitive | ReadonlyArray<unknown> | Record<PropertyKey, unknown>;
+            // If there are additional arguments, add them to context
+            if (arguments_.length > 1) {
+                meta.context = arguments_.slice(1);
             }
-        } else if (arguments_.length > 1 && typeof arguments_[0] === "string") {
-            meta.message = arguments_[0] as string;
+            // Check if first argument is a structured Message object (has "message" property)
+        } else if (arguments_.length > 0 && typeof arguments_[0] === "object" && arguments_[0] !== null && "message" in arguments_[0]) {
+            // First argument is a Message object - destructure it for structured logging
+            const { context, message, prefix, suffix } = arguments_[0] as Message;
+
+            if (context) {
+                meta.context = context;
+            }
+
+            if (prefix) {
+                meta.prefix = prefix;
+            }
+
+            if (suffix) {
+                meta.suffix = suffix;
+            }
+
+            meta.message = message;
+
+            // If there are additional arguments beyond the Message object, add them to context
+            if (arguments_.length > 1) {
+                const additionalContext = arguments_.slice(1);
+
+                if (meta.context) {
+                    // If context already exists, combine it with additional arguments
+                    meta.context = Array.isArray(meta.context) ? [...meta.context, ...additionalContext] : [meta.context, ...additionalContext];
+                } else {
+                    meta.context = additionalContext;
+                }
+            }
+            // Handle multiple arguments where first is not Error or Message object
+        } else if (arguments_.length > 1) {
+            // Multiple arguments: treat first as primary message, rest as additional context
+            meta.message = arguments_[0] as Primitive | ReadonlyArray<unknown> | Record<PropertyKey, unknown>;
             meta.context = arguments_.slice(1);
-        } else {
+            // Handle single arguments
+        } else if (arguments_.length === 1) {
+            // Single argument - set as message (not wrapped in array)
             // eslint-disable-next-line prefer-destructuring
             meta.message = arguments_[0];
+            // Handle empty arguments (edge case)
+        } else {
+            // No arguments provided
+            meta.message = undefined;
         }
 
         if (type.logLevel === "trace") {
