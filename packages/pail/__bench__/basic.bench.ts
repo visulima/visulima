@@ -12,6 +12,7 @@ import { diary } from "diary";
 import pino from "pino";
 import type { ILogObj } from "tslog";
 import { Logger } from "tslog";
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { bench, describe } from "vitest";
 import { createLogger, transports } from "winston";
 
@@ -34,6 +35,7 @@ const browserPail = createBrowserPail({
 const wsDevelopmentNull2 = createWriteStream("/dev/null");
 
 wsDevelopmentNull2.on("finish", () => {
+    // eslint-disable-next-line no-console
     console.log("finish");
 });
 

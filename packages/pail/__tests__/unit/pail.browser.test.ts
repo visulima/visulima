@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { PailBrowser } from "../../src/pail.browser";
-import RawReporter from "../../src/reporter/raw/raw.browser";
+import RawReporter from "../../src/reporter/raw/raw-reporter.browser";
 
 describe("pailBrowserImpl", () => {
     it("should log different types of messages correctly", () => {
@@ -106,6 +106,7 @@ describe("pailBrowserImpl", () => {
         logger.timeEnd("testTimer");
 
         expect(consoleSpy).toHaveBeenNthCalledWith(1, "Initialized timer...");
+        // eslint-disable-next-line sonarjs/slow-regex
         expect(consoleSpy).toHaveBeenNthCalledWith(2, expect.stringMatching(/(.*) ms/), "Intermediate log");
         expect(consoleSpy).toHaveBeenNthCalledWith(3, expect.stringMatching(/Timer run for: (.*)ms/));
 

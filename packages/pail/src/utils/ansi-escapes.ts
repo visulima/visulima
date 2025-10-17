@@ -6,13 +6,16 @@ const eraseLine = `${ESC}2K`;
 const cursorLeft = `${ESC}G`;
 const cursorUp = (count = 1) => `${ESC + count}A`;
 
+// prettier-ignore
 export const clearTerminal: string
     = process.platform === "win32"
         ? `${eraseScreen}${ESC}0f`
-        : // 1. Erases the screen (Only done in case `2` is not supported)
-    // 2. Erases the whole screen including scrollback buffer
-    // 3. Moves cursor to the top-left position
-    // More info: https://www.real-world-systems.com/docs/ANSIcode.html
+        // eslint-disable-next-line @stylistic/operator-linebreak
+        :
+        // 1. Erases the screen (Only done in case `2` is not supported)
+        // 2. Erases the whole screen including scrollback buffer
+        // 3. Moves cursor to the top-left position
+        // More info: https://www.real-world-systems.com/docs/ANSIcode.html
         `${eraseScreen}${ESC}3J${ESC}H`;
 
 export const cursorHide: string = `${ESC}?25l`;

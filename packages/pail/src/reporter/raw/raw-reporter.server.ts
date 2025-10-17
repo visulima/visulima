@@ -1,6 +1,7 @@
 import { stderr, stdout } from "node:process";
 
 import type { Options as InspectorOptions } from "@visulima/inspector";
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { inspect } from "@visulima/inspector";
 
 import { EMPTY_SYMBOL } from "../../constants";

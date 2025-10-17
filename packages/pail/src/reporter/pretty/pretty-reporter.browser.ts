@@ -9,7 +9,34 @@ import writeConsoleLogBasedOnLevel from "../../utils/write-console-log-based-on-
 import type { PrettyStyleOptions } from "./abstract-pretty-reporter";
 import { AbstractPrettyReporter } from "./abstract-pretty-reporter";
 
+/**
+ * Browser Pretty Reporter.
+ *
+ * A pretty-printing reporter for browser environments that formats log messages
+ * with colors and structured layout for console output. Uses browser-compatible
+ * color formatting and console APIs.
+ * @template T - Custom logger type names
+ * @template L - Log level types
+ * @example
+ * ```typescript
+ * import { createPail } from "@visulima/pail";
+ *
+ * const logger = createPail({
+ *   reporters: [new PrettyReporter({
+ *     bold: { label: true },
+ *     uppercase: { label: true }
+ *   })]
+ * });
+ *
+ * logger.info("Application started");
+ * logger.error("Something went wrong", error);
+ * ```
+ */
 class PrettyReporter<T extends string = string, L extends string = string> extends AbstractPrettyReporter<T, L> {
+    /**
+     * Creates a new Browser Pretty Reporter instance.
+     * @param options Styling options for pretty formatting
+     */
     public constructor(options: Partial<PrettyStyleOptions> = {}) {
         super({
             uppercase: {
@@ -176,7 +203,7 @@ class PrettyReporter<T extends string = string, L extends string = string> exten
             let logMessage = "";
 
             const css = [];
-            // eslint-disable-next-line @typescript-eslint/naming-convention
+            // eslint-disable-next-line @typescript-eslint/naming-convention, no-underscore-dangle
             const arguments_ = [];
 
             for (const value of items) {
@@ -193,6 +220,12 @@ class PrettyReporter<T extends string = string, L extends string = string> exten
         }
     }
 
+    /**
+     * Formats a label according to styling options.
+     * @param label The label to format
+     * @returns The formatted label string
+     * @private
+     */
     #formatLabel(label: string): string {
         let formattedLabel = this.styles.uppercase.label ? label.toUpperCase() : label;
 

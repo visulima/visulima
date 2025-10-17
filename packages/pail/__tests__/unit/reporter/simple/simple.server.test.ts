@@ -4,7 +4,7 @@ import { blueBright, bold, grey, red } from "@visulima/colorize";
 import { describe, expect, it, vi } from "vitest";
 
 import { dateFormatter } from "../../../../src/reporter/pretty/abstract-pretty-reporter";
-import { SimpleReporter } from "../../../../src/reporter/simple/simple.server";
+import { SimpleReporter } from "../../../../src/reporter/simple/simple-reporter.server";
 import type { Meta, ReadonlyMeta } from "../../../../src/types";
 
 vi.mock(import("terminal-size"), () => {

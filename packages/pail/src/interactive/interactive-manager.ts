@@ -1,11 +1,39 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { wordWrap, WrapMode } from "@visulima/string";
+// eslint-disable-next-line import/no-extraneous-dependencies
 import terminalSize from "terminal-size";
 
 import type InteractiveStreamHook from "./interactive-stream-hook";
 
+/** Supported stream types for interactive output */
 type StreamType = "stderr" | "stdout";
 
+/**
+ * Interactive Manager.
+ *
+ * Manages interactive terminal output by coordinating stdout and stderr streams.
+ * Enables features like progress bars, spinners, and dynamic updates by temporarily
+ * capturing and controlling terminal output. Supports suspending and resuming
+ * interactive mode for external output.
+ * @example
+ * ```typescript
+ * const manager = new InteractiveManager(stdoutHook, stderrHook);
+ *
+ * // Start interactive mode
+ * manager.hook();
+ *
+ * // Update output dynamically
+ * manager.update("stdout", ["Processing...", "50% complete"]);
+ *
+ * // Temporarily suspend for external output
+ * manager.suspend("stdout");
+ * console.log("External message");
+ * manager.resume("stdout");
+ *
+ * // End interactive mode and show final output
+ * manager.unhook();
+ * ```
+ */
 class InteractiveManager {
     readonly #stream: {
         stderr: InteractiveStreamHook;
@@ -20,6 +48,11 @@ class InteractiveManager {
 
     #outside = 0;
 
+    /**
+     * Creates a new InteractiveManager with the given stream hooks.
+     * @param stdout Hook for stdout stream
+     * @param stderr Hook for stderr stream
+     */
     public constructor(stdout: InteractiveStreamHook, stderr: InteractiveStreamHook) {
         this.#stream = {
             stderr,
@@ -28,37 +61,54 @@ class InteractiveManager {
     }
 
     /**
-     * Last printed rows count
+     * Last printed rows count.
+     *
+     * Tracks the number of rows that were last written to the terminal.
+     * Used internally for managing cursor positioning and output updates.
      */
     public get lastLength(): number {
         return this.#lastLength;
     }
 
     /**
-     * Rows count outside editable area
+     * Rows count outside editable area.
+     *
+     * Tracks the number of rows that extend beyond the current terminal height.
+     * Used for managing scrolling and ensuring all output remains visible.
      */
     public get outside(): number {
         return this.#outside;
     }
 
     /**
-     * Hook activity status
+     * Hook activity status.
+     *
+     * Indicates whether the interactive hooks are currently active.
+     * When true, streams are being intercepted for interactive output.
      */
     public get isHooked(): boolean {
         return this.#isActive;
     }
 
     /**
-     * Suspend status for active hooks
+     * Suspend status for active hooks.
+     *
+     * Indicates whether interactive mode is temporarily suspended.
+     * When suspended, external output can be written without interference.
      */
     public get isSuspended(): boolean {
         return this.#isSuspended;
     }
 
     /**
-     * Removes from the bottom of output up the specified count of lines
-     * @param stream Stream to remove lines from
-     * @param count lines count to remove
+     * Removes lines from the terminal output.
+     *
+     * Erases the specified number of lines from the bottom of the output,
+     * moving the cursor up and clearing the lines. Useful for removing
+     * previous interactive output before displaying new content.
+     * @param stream The stream to erase lines from ("stdout" or "stderr")
+     * @param count Number of lines to remove (defaults to lastLength)
+     * @throws {TypeError} If the specified stream is not available
      */
     public erase(stream: StreamType, count = this.#lastLength): void {
         if (this.#stream[stream] === undefined) {
@@ -69,7 +119,7 @@ class InteractiveManager {
     }
 
     /**
-     * Hook stdout and stderr streams
+     * Hook stdout and stderr streams.
      * @returns Success status
      */
     public hook(): boolean {
@@ -83,7 +133,7 @@ class InteractiveManager {
     }
 
     /**
-     * Resume suspend hooks
+     * Resume suspend hooks.
      * @param stream Stream to resume
      * @param eraseRowCount erase output rows count
      */
@@ -102,7 +152,7 @@ class InteractiveManager {
     }
 
     /**
-     * Suspend active hooks for external output
+     * Suspend active hooks for external output.
      * @param stream Stream to suspend
      * @param erase erase output
      */
@@ -119,7 +169,7 @@ class InteractiveManager {
     }
 
     /**
-     * Unhooks both stdout and stderr streams and print their story of logs
+     * Unhooks both stdout and stderr streams and print their story of logs.
      * @param separateHistory If `true`, will add an empty line to the history output for individual recorded lines and console logs
      * @returns Success status
      */
@@ -134,7 +184,7 @@ class InteractiveManager {
     }
 
     /**
-     * Update output
+     * Update output.
      * @param stream Stream to write to
      * @param rows Text lines to write to standard output
      * @param from Index of the line starting from which the contents of the terminal are being overwritten
