@@ -1,0 +1,91 @@
+---
+title: Introduction
+description: Highly configurable Logger for Node.js, Edge and Browser
+---
+
+# Pail
+
+Highly configurable Logger for Node.js, Edge and Browser.
+
+## Why Pail?
+
+- **Easy to use** - Simple and intuitive API that works out of the box
+- **Hackable to the core** - Customize everything from log types to reporters
+- **Integrated timers** - Built-in performance measurement tools
+- **Custom pluggable processors and reporters** - Extend functionality with custom processors
+- **TypeScript support** - Full TypeScript support with comprehensive type definitions
+- **Interactive and regular modes** - Support for dynamic, overwriting log messages
+- **Secrets filtering** - Redact sensitive information automatically
+- **Filename, date and timestamp support** - Rich metadata in every log
+- **Scoped loggers and timers** - Organize logs by scope and context
+- **Scaled logging levels mechanism** - RFC 5424 compliant log levels
+- **String interpolation** - Printf-style string formatting
+- **Object and error interpolation** - Smart handling of objects and errors
+- **Stack trace and pretty errors** - Beautiful error formatting
+- **Simple and minimal syntax** - Write logs with minimal boilerplate
+- **Spam prevention** - Throttle repeated log messages
+- **Browser and Server support** - Works everywhere JavaScript runs
+- **Console redirection** - Redirect console and stdout/stderr to pail
+- **Pretty or JSON output** - Choose the format that works for you
+- **CJS & ESM** - Full module format support with tree shaking
+- **Circular structures** - Safely handles circular references
+- **Fast and powerful** - Optimized for performance
+
+## Quick Start
+
+Install pail using your package manager:
+
+```bash npm2yarn
+npm install @visulima/pail
+```
+
+Start logging immediately:
+
+```typescript
+import { pail } from "@visulima/pail";
+
+pail.success("Operation successful");
+pail.info("Server started on port 3000");
+pail.error("Failed to connect to database");
+```
+
+## Features at a Glance
+
+### Log Levels
+
+Pail supports RFC 5424 log levels plus a trace level:
+
+- `trace` - Very detailed and fine-grained information
+- `debug` - Detailed debug information
+- `info` - Interesting events
+- `notice` - Normal but significant events
+- `warning` - Exceptional occurrences
+- `error` - Runtime errors
+- `critical` - Critical conditions
+- `alert` - Action must be taken immediately
+- `emergency` - System is unusable
+
+### Reporters
+
+Multiple built-in reporters for different output formats:
+
+- **PrettyReporter** - Colorful, human-readable output
+- **JsonReporter** - Structured JSON logs
+- **SimpleReporter** - Minimal text output (Node.js only)
+- **FileReporter** - Write logs to files (Node.js only)
+
+### Processors
+
+Enhance log messages with metadata:
+
+- **CallerProcessor** - Add file, line, and column information
+- **RedactProcessor** - Remove sensitive data from logs
+- **MessageFormatterProcessor** - Printf-style string formatting
+- **ErrorProcessor** - Serialize error objects with causes
+
+## Next Steps
+
+- [Installation](./installation) - Detailed installation instructions
+- [Basic Usage](./usage/basic) - Learn the fundamentals
+- [Configuration](./configuration) - Configure pail for your needs
+- [API Reference](./api) - Complete API documentation

@@ -1,0 +1,285 @@
+---
+title: Reporters
+description: Understanding reporters in Pail
+---
+
+# Reporters
+
+Reporters are responsible for writing log messages to their destination, whether that's the console, a file, or a custom output. Pail comes with several built-in reporters that you can use or extend.
+
+## Built-in Reporters
+
+### PrettyReporter
+
+The default reporter that produces colorful, human-readable output with visual badges and labels.
+
+**Available in**: Browser, Node.js
+
+```typescript
+import { createPail } from "@visulima/pail";
+import { PrettyReporter } from "@visulima/pail/reporter";
+
+const pail = createPail({
+    reporters: [new PrettyReporter()],
+});
+```
+
+**Features**:
+- Color-coded log levels
+- Visual badges for different log types
+- Formatted timestamps
+- Pretty-printed objects and errors
+- Stack trace formatting
+
+### JsonReporter
+
+Outputs structured JSON logs, ideal for log aggregation and analysis tools.
+
+**Available in**: Browser, Node.js
+
+```typescript
+import { createPail } from "@visulima/pail";
+import { JsonReporter } from "@visulima/pail/reporter";
+
+const pail = createPail({
+    reporters: [new JsonReporter()],
+});
+
+pail.info("User logged in", { userId: 123 });
+// Output: {"type":"info","level":"informational","message":"User logged in","context":[{"userId":123}],"date":"2025-10-12T10:30:00.000Z"}
+```
+
+**Features**:
+- Machine-readable format
+- Structured log data
+- Easy parsing for log aggregators
+- Includes all metadata
+
+### SimpleReporter
+
+A minimal text-based reporter without colors or formatting.
+
+**Available in**: Node.js only
+
+```typescript
+import { createPail } from "@visulima/pail";
+import { SimpleReporter } from "@visulima/pail/server/reporter";
+
+const pail = createPail({
+    reporters: [new SimpleReporter()],
+});
+```
+
+**Features**:
+- Plain text output
+- No ANSI colors
+- Minimal formatting
+- Ideal for log files
+
+### FileReporter
+
+Writes logs directly to files with optional JSON formatting.
+
+**Available in**: Node.js only
+
+```typescript
+import { createPail } from "@visulima/pail";
+import { FileReporter } from "@visulima/pail/server/reporter";
+
+const pail = createPail({
+    reporters: [
+        new FileReporter({
+            path: "./logs/app.log",
+        }),
+    ],
+});
+```
+
+**Options**:
+
+```typescript
+interface FileReporterOptions {
+    // File path or rotating file stream configuration
+    path: string | RotatingFileStreamOptions;
+    
+    // Output format: 'json' or 'pretty'
+    format?: "json" | "pretty";
+}
+```
+
+**With rotation** (requires `rotating-file-stream` package):
+
+```typescript
+import { FileReporter } from "@visulima/pail/server/reporter";
+
+new FileReporter({
+    path: {
+        path: "./logs",
+        filename: "app.log",
+        size: "10M",        // Rotate when file reaches 10MB
+        interval: "1d",     // Rotate daily
+        compress: "gzip",   // Compress old logs
+    },
+    format: "json",
+});
+```
+
+## Using Multiple Reporters
+
+You can use multiple reporters simultaneously to output logs to different destinations:
+
+```typescript
+import { createPail } from "@visulima/pail";
+import { PrettyReporter, FileReporter } from "@visulima/pail/server/reporter";
+
+const pail = createPail({
+    reporters: [
+        new PrettyReporter(),              // Console output
+        new FileReporter({                 // File output
+            path: "./logs/app.log",
+            format: "json",
+        }),
+    ],
+});
+```
+
+## Custom Reporters
+
+Create custom reporters by implementing the `Reporter` interface:
+
+```typescript
+import type { Reporter, ReadonlyMeta } from "@visulima/pail";
+
+class CustomReporter implements Reporter<string> {
+    log(meta: ReadonlyMeta<string>): void {
+        // Custom logging logic
+        console.log(`[${meta.type.name}] ${meta.message}`);
+    }
+}
+
+const pail = createPail({
+    reporters: [new CustomReporter()],
+});
+```
+
+### Advanced Custom Reporter
+
+For more control, implement additional interfaces:
+
+```typescript
+import type {
+    StreamAwareReporter,
+    LoggerTypesAwareReporter,
+    ReadonlyMeta,
+    LoggerTypesConfig,
+} from "@visulima/pail";
+
+class AdvancedReporter 
+    implements StreamAwareReporter<string>, LoggerTypesAwareReporter<string, string> {
+    
+    private stdout: NodeJS.WriteStream = process.stdout;
+    private stderr: NodeJS.WriteStream = process.stderr;
+    private types?: LoggerTypesConfig<string, string>;
+
+    setStdout(stdout: NodeJS.WriteStream): void {
+        this.stdout = stdout;
+    }
+
+    setStderr(stderr: NodeJS.WriteStream): void {
+        this.stderr = stderr;
+    }
+
+    setLoggerTypes(types: LoggerTypesConfig<string, string>): void {
+        this.types = types;
+    }
+
+    log(meta: ReadonlyMeta<string>): void {
+        const stream = meta.type.level === "error" ? this.stderr : this.stdout;
+        stream.write(`${meta.message}\n`);
+    }
+}
+```
+
+## Reporter Interfaces
+
+### Base Reporter
+
+```typescript
+interface Reporter<L extends string> {
+    log: (meta: ReadonlyMeta<L>) => void;
+}
+```
+
+### StreamAwareReporter
+
+For reporters that need access to stdout/stderr:
+
+```typescript
+interface StreamAwareReporter<L extends string> extends Reporter<L> {
+    setStderr: (stderr: NodeJS.WriteStream) => void;
+    setStdout: (stdout: NodeJS.WriteStream) => void;
+}
+```
+
+### LoggerTypesAwareReporter
+
+For reporters that need access to logger type configurations:
+
+```typescript
+interface LoggerTypesAwareReporter<T extends string, L extends string> extends Reporter<L> {
+    setLoggerTypes: (types: LoggerTypesConfig<T, L>) => void;
+}
+```
+
+### StringifyAwareReporter
+
+For reporters that need a custom JSON stringify function:
+
+```typescript
+interface StringifyAwareReporter<L extends string> extends Reporter<L> {
+    setStringify: (stringify: typeof JSON.stringify) => void;
+}
+```
+
+### InteractiveStreamReporter
+
+For reporters that support interactive mode:
+
+```typescript
+interface InteractiveStreamReporter<L extends string> extends StreamAwareReporter<L> {
+    setInteractiveManager: (manager?: InteractiveManager) => void;
+    setIsInteractive: (interactive: boolean) => void;
+}
+```
+
+## Raw Reporter
+
+Access the raw reporter for low-level logging:
+
+```typescript
+import { createPail } from "@visulima/pail";
+import { RawReporter } from "@visulima/pail/reporter";
+
+const pail = createPail({
+    rawReporter: new RawReporter(),
+});
+
+// Raw reporter is called before processors
+pail.info("This goes through the raw reporter first");
+```
+
+The raw reporter receives log messages before they're processed, allowing you to capture logs before any transformations.
+
+## Best Practices
+
+1. **Console in development, files in production** - Use PrettyReporter for development and FileReporter for production
+2. **JSON for aggregation** - Use JsonReporter when sending logs to aggregation services
+3. **Multiple reporters** - Combine reporters for different use cases
+4. **Custom reporters for special needs** - Create custom reporters for services like Sentry, DataDog, etc.
+5. **Performance** - Be mindful of performance when using multiple reporters
+
+## Next Steps
+
+- [Processors](./processors) - Transform log data before reporting
+- [Configuration](../configuration) - Configure reporters globally
+- [Advanced Features](../usage/interactive) - Interactive logging
