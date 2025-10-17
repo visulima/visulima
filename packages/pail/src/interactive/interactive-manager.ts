@@ -1,6 +1,6 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
-import terminalSize from "terminal-size";
 import { wordWrap, WrapMode } from "@visulima/string";
+import terminalSize from "terminal-size";
 
 import type InteractiveStreamHook from "./interactive-stream-hook";
 
@@ -161,7 +161,7 @@ class InteractiveManager {
                         trim: false,
                         width,
                         wrapMode: WrapMode.STRICT_WIDTH,
-                    }).split('\n'),
+                    }).split("\n"),
                 ],
                 [],
             );

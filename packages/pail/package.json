@@ -126,11 +126,11 @@
             "types": "./dist/processor/redact-processor.d.ts",
             "default": "./dist/processor/redact-processor.js"
         },
-        "./processor/message-formatter":{
+        "./processor/message-formatter": {
             "types": "./dist/processor/message-formatter-processor.d.ts",
             "default": "./dist/processor/message-formatter-processor.js"
         },
-        "./processor/caller":{
+        "./processor/caller": {
             "types": "./dist/processor/caller/caller-processor.d.ts",
             "default": "./dist/processor/caller/caller-processor.js"
         },
