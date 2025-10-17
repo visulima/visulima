@@ -59,7 +59,7 @@ const getCallerFilename = (): {
 
             accumulator.push({
                 columnNumber: x.getColumnNumber(),
-                fileName: x.getFileName(),
+                fileName: x.getFileName() ?? undefined,
                 lineNumber: x.getLineNumber(),
             });
 
