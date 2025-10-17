@@ -1,0 +1,33 @@
+{
+  "title": "Vite Overlay Documentation",
+  "pages": [
+    {
+      "title": "Introduction",
+      "href": "/docs"
+    },
+    {
+      "title": "Installation",
+      "href": "/docs/installation"
+    },
+    {
+      "title": "Usage Guide",
+      "href": "/docs/usage"
+    },
+    {
+      "title": "Configuration",
+      "href": "/docs/configuration"
+    },
+    {
+      "title": "API Reference",
+      "href": "/docs/api-reference"
+    },
+    {
+      "title": "Examples",
+      "href": "/docs/examples"
+    },
+    {
+      "title": "Troubleshooting",
+      "href": "/docs/troubleshooting"
+    }
+  ]
+}

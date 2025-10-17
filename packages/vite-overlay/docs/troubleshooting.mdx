@@ -1,0 +1,503 @@
+---
+title: Troubleshooting
+description: Common issues and solutions when using the Vite error overlay plugin.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# Troubleshooting
+
+This guide helps you resolve common issues when using `@visulima/vite-overlay`.
+
+## Installation Issues
+
+### Module Not Found
+
+**Problem:** Error saying `@visulima/vite-overlay` cannot be found.
+
+**Solution:**
+
+1. Verify the package is installed:
+   ```bash
+   npm list @visulima/vite-overlay
+   ```
+
+2. Clear cache and reinstall:
+   ```bash
+   rm -rf node_modules package-lock.json
+   npm install
+   ```
+
+3. For pnpm users:
+   ```bash
+   pnpm store prune
+   pnpm install
+   ```
+
+### Version Conflicts
+
+**Problem:** Peer dependency warnings or version conflicts.
+
+**Solution:**
+
+Check your Vite version is compatible:
+
+```json title="package.json"
+{
+    "dependencies": {
+        "vite": "^6.0.0 || ^7.0.0",
+        "@visulima/vite-overlay": "^1.0.0"
+    }
+}
+```
+
+Supported versions:
+- Vite: 6.x or 7.x
+- Node.js: 20.19+ to 24.x
+
+## Plugin Not Working
+
+### Overlay Not Appearing
+
+**Problem:** The error overlay doesn't show up when errors occur.
+
+**Checklist:**
+
+1. Verify plugin is added to config:
+   ```typescript title="vite.config.ts"
+   import errorOverlay from "@visulima/vite-overlay";
+   
+   export default defineConfig({
+       plugins: [errorOverlay()], // Plugin is here
+   });
+   ```
+
+2. Ensure you're in development mode:
+   ```bash
+   npm run dev
+   # NOT: npm run build
+   ```
+
+3. Check if `logClientRuntimeError` is disabled:
+   ```typescript
+   errorOverlay({
+       logClientRuntimeError: true, // Should be true
+   });
+   ```
+
+4. Open browser console for any plugin errors
+
+5. Try hard refresh: `Ctrl+Shift+R` (Windows/Linux) or `Cmd+Shift+R` (Mac)
+
+### Errors Not Caught
+
+**Problem:** Some errors don't trigger the overlay.
+
+**Common Causes:**
+
+1. **Syntax Errors:** Some syntax errors prevent the script from loading entirely. Check the browser console.
+
+2. **Async Errors:** Ensure async errors are properly thrown:
+   ```typescript
+   // Bad - error swallowed
+   async function bad() {
+       try {
+           await fetch("/api");
+       } catch (e) {
+           console.log(e); // Only logged, not thrown
+       }
+   }
+   
+   // Good - error propagates
+   async function good() {
+       const response = await fetch("/api");
+       if (!response.ok) throw new Error("Fetch failed");
+       return response.json();
+   }
+   ```
+
+3. **Error Boundaries:** React error boundaries might catch errors before the overlay. Ensure errors are re-thrown if needed.
+
+## Source Map Issues
+
+### Showing Compiled Code Instead of Original
+
+**Problem:** Overlay shows transpiled JavaScript instead of TypeScript/JSX.
+
+**Solution:**
+
+1. Enable source maps in your Vite config:
+   ```typescript title="vite.config.ts"
+   export default defineConfig({
+       build: {
+           sourcemap: true,
+       },
+   });
+   ```
+
+2. For TypeScript, check `tsconfig.json`:
+   ```json title="tsconfig.json"
+   {
+       "compilerOptions": {
+           "sourceMap": true
+       }
+   }
+   ```
+
+3. Verify source map files are being generated (`.map` files)
+
+4. Clear Vite cache:
+   ```bash
+   rm -rf node_modules/.vite
+   ```
+
+### Incorrect File Paths
+
+**Problem:** File paths in stack traces are wrong or missing.
+
+**Solution:**
+
+1. Check project root configuration:
+   ```typescript title="vite.config.ts"
+   export default defineConfig({
+       root: process.cwd(), // Should point to project root
+   });
+   ```
+
+2. Verify symlinks are resolved correctly
+
+3. For monorepos, ensure workspace configuration is correct
+
+## Performance Issues
+
+### Slow Error Processing
+
+**Problem:** Overlay takes a long time to appear.
+
+**Solutions:**
+
+1. Reduce number of custom solution finders
+
+2. Optimize solution finder logic:
+   ```typescript
+   const optimized: SolutionFinder = {
+       name: "optimized",
+       priority: 10,
+       async handle(error, context) {
+           // Early return for irrelevant errors
+           if (!error.message.includes("specific-pattern")) {
+               return undefined;
+           }
+           
+           // Actual processing only for relevant errors
+           return { header: "...", body: "..." };
+       },
+   };
+   ```
+
+3. Check for slow network requests in solution finders
+
+4. Disable client error logging if not needed:
+   ```typescript
+   errorOverlay({
+       logClientRuntimeError: false,
+   });
+   ```
+
+### Memory Issues
+
+**Problem:** High memory usage or memory leaks.
+
+**Solution:**
+
+1. The plugin automatically cleans up old errors after 5 seconds
+
+2. If you suspect leaks, check custom solution finders for retained references
+
+3. Restart dev server periodically during heavy development
+
+## Framework-Specific Issues
+
+### React Issues
+
+**Problem:** React errors not showing proper component stack.
+
+**Solution:**
+
+1. Ensure React plugin is loaded before overlay:
+   ```typescript title="vite.config.ts"
+   export default defineConfig({
+       plugins: [
+           react(), // Load first
+           errorOverlay(),
+       ],
+   });
+   ```
+
+2. For custom React plugins, specify the name:
+   ```typescript
+   errorOverlay({
+       reactPluginName: "my-custom-react-plugin",
+   });
+   ```
+
+3. Enable React DevTools for additional debugging
+
+### Vue Issues
+
+**Problem:** Vue SFC errors not properly formatted.
+
+**Solution:**
+
+1. Ensure Vue plugin is loaded first:
+   ```typescript title="vite.config.ts"
+   export default defineConfig({
+       plugins: [
+           vue(),
+           errorOverlay(),
+       ],
+   });
+   ```
+
+2. For custom Vue plugins:
+   ```typescript
+   errorOverlay({
+       vuePluginName: "my-custom-vue-plugin",
+   });
+   ```
+
+3. Check Vue version compatibility (Vue 3 recommended)
+
+### SSR Issues
+
+**Problem:** Server-side rendering errors not displayed correctly.
+
+**Solution:**
+
+1. Configure SSR properly:
+   ```typescript title="vite.config.ts"
+   export default defineConfig({
+       ssr: {
+           noExternal: ["@visulima/vite-overlay"],
+       },
+   });
+   ```
+
+2. Ensure errors are thrown, not just logged:
+   ```typescript
+   export async function render() {
+       try {
+           return renderToString(<App />);
+       } catch (error) {
+           throw error; // Don't catch and ignore
+       }
+   }
+   ```
+
+## Browser Compatibility
+
+### Older Browser Issues
+
+**Problem:** Overlay doesn't work in older browsers.
+
+**Solution:**
+
+The plugin requires modern browsers (2021+). Supported minimum versions:
+- Chrome 91+
+- Firefox 91+
+- Safari 14.1+
+- Edge 91+
+
+For older browsers:
+1. Errors will still appear in console
+2. Consider using browser polyfills
+3. Upgrade to supported browsers for development
+
+### Safari-Specific Issues
+
+**Problem:** Issues in Safari but not other browsers.
+
+**Solutions:**
+
+1. Enable Safari Developer Tools
+2. Check for Safari-specific console errors
+3. Verify Shadow DOM support
+4. Test in Safari Technology Preview
+
+## Configuration Issues
+
+### Type Errors in Config
+
+**Problem:** TypeScript errors in `vite.config.ts`.
+
+**Solution:**
+
+1. Import types correctly:
+   ```typescript
+   import type { SolutionFinder } from "@visulima/error/solution";
+   ```
+
+2. Ensure proper TypeScript setup:
+   ```json title="tsconfig.json"
+   {
+       "compilerOptions": {
+           "moduleResolution": "bundler",
+           "types": ["vite/client", "node"]
+       }
+   }
+   ```
+
+### Solution Finder Not Working
+
+**Problem:** Custom solution finder doesn't execute.
+
+**Checklist:**
+
+1. Verify priority is set correctly (higher = runs first)
+
+2. Check that `handle` function returns proper format:
+   ```typescript
+   async handle(error, context) {
+       return {
+           header: "Title", // Required
+           body: "Description", // Required
+       };
+   }
+   ```
+
+3. Ensure function returns `undefined` for non-matching errors:
+   ```typescript
+   if (!condition) {
+       return undefined; // Not null or empty object
+   }
+   ```
+
+4. Check for errors in the solution finder logic
+
+5. Enable debug mode:
+   ```bash
+   DEBUG=* npm run dev
+   ```
+
+## Build Issues
+
+### Production Build Errors
+
+**Problem:** Errors during production build.
+
+**Solution:**
+
+The plugin only runs in development mode. If you see build errors:
+
+1. Check if the error is actually from another plugin
+
+2. Verify the plugin isn't being included in build:
+   ```typescript
+   // This is automatic, but you can be explicit:
+   errorOverlay({
+       // Plugin already has apply: "serve"
+   })
+   ```
+
+3. Ensure `@visulima/vite-overlay` is in `dependencies`, not `devDependencies`
+
+## Debugging Tips
+
+### Enable Verbose Logging
+
+Set environment variable:
+
+```bash
+DEBUG=visulima:* npm run dev
+```
+
+### Check Browser Console
+
+Always check browser console for:
+- JavaScript errors
+- Network errors
+- WebSocket connection issues
+- Plugin warnings
+
+### Verify Plugin Loading
+
+Check if plugin is loaded:
+
+```bash
+# Start dev server with --debug flag
+npm run dev -- --debug
+```
+
+### Test with Minimal Config
+
+Create a minimal reproduction:
+
+```typescript title="vite.config.ts"
+import { defineConfig } from "vite";
+import errorOverlay from "@visulima/vite-overlay";
+
+export default defineConfig({
+    plugins: [errorOverlay()], // Only this plugin
+});
+```
+
+If this works, gradually add other plugins to find conflicts.
+
+## Common Error Messages
+
+### "Plugin 'visulima:vite-overlay' not found"
+
+Reinstall the package:
+```bash
+npm install @visulima/vite-overlay
+```
+
+### "WebSocket connection failed"
+
+1. Check if dev server is running
+2. Verify port isn't blocked by firewall
+3. Check for proxy configuration issues
+
+### "Source map parsing failed"
+
+1. Regenerate source maps
+2. Clear Vite cache
+3. Check for corrupted `.map` files
+
+## Getting Help
+
+If you're still experiencing issues:
+
+1. **Check Documentation:** Review all docs sections
+
+2. **Search Issues:** Look for similar issues on [GitHub](https://github.com/visulima/visulima/issues)
+
+3. **Create Minimal Reproduction:** Create a minimal example that reproduces the issue
+
+4. **Open Issue:** Include:
+   - Node.js version
+   - Vite version
+   - Package version
+   - Full error message
+   - Steps to reproduce
+   - Minimal reproduction repo
+
+5. **Community Support:** Ask in discussions or Discord
+
+## Known Limitations
+
+1. **Production Mode:** Overlay only works in development
+2. **Browser Support:** Requires modern browsers (2021+)
+3. **Source Maps:** Requires proper source map configuration
+4. **Error Deduplication:** Identical errors within 5 seconds are deduplicated
+
+<Callout type="info">
+Most issues can be resolved by ensuring you're using the latest version and have proper configuration. Always check the changelog for breaking changes when updating.
+</Callout>
+
+## Next Steps
+
+- [Installation](/docs/installation) - Review installation steps
+- [Configuration](/docs/configuration) - Check configuration options
+- [API Reference](/docs/api-reference) - Understand the API
+- [Examples](/docs/examples) - See working examples
