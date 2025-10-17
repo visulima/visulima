@@ -196,7 +196,6 @@
     },
     "peerDependencies": {
         "@visulima/redact": "2.0.0",
-        "@visulima/fmt": "1.1.16",
         "rotating-file-stream": "^3.2.7"
     },
     "peerDependenciesMeta": {
