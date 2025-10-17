@@ -31,7 +31,7 @@ const pailFileFilter = (line: string) => !/[\\/]pail[\\/]dist/.test(line);
  */
 export type PrettyReporterOptions = PrettyStyleOptions & {
     /** Error rendering options */
-    error: Partial<Omit<RenderErrorOptions, "color | prefix | indentation">>;
+    error: Partial<Omit<RenderErrorOptions, "color" | "prefix" | "indentation">>;
     /** Object inspection options */
     inspect: Partial<InspectorOptions>;
 };
