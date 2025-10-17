@@ -1,0 +1,292 @@
+---
+title: Getting Started
+description: Learn the basics of using Visulima Redact to protect sensitive data
+---
+
+# Getting Started
+
+This guide will help you understand the core concepts of Visulima Redact and get you started with basic usage.
+
+## Basic Usage
+
+The primary function is `redact()`, which takes an input value, an array of rules, and optional configuration:
+
+```typescript
+import { redact } from '@visulima/redact';
+
+const data = {
+  user: {
+    email: 'john@example.com',
+    password: 'supersecret',
+  },
+};
+
+const result = redact(data, ['password', 'user.email']);
+
+console.log(result);
+// {
+//   user: {
+//     email: '<USER.EMAIL>',
+//     password: '<PASSWORD>',
+//   },
+// }
+```
+
+## Understanding Rules
+
+Rules define what should be redacted. They can be specified in multiple formats:
+
+### String Rules
+
+The simplest form - just specify the key name:
+
+```typescript
+const data = { password: 'secret', apiKey: 'key123' };
+const result = redact(data, ['password', 'apiKey']);
+// { password: '<PASSWORD>', apiKey: '<APIKEY>' }
+```
+
+### Dot Notation
+
+Use dot notation to target nested properties:
+
+```typescript
+const data = {
+  user: {
+    profile: {
+      email: 'user@example.com',
+    },
+  },
+};
+
+const result = redact(data, ['user.profile.email']);
+// { user: { profile: { email: '<USER.PROFILE.EMAIL>' } } }
+```
+
+### Wildcard Rules
+
+Use wildcards to match multiple keys:
+
+```typescript
+const data = {
+  adminPassword: 'secret1',
+  userPassword: 'secret2',
+  dbPassword: 'secret3',
+};
+
+const result = redact(data, ['*password']);
+// {
+//   adminPassword: '<ADMINPASSWORD>',
+//   userPassword: '<USERPASSWORD>',
+//   dbPassword: '<DBPASSWORD>',
+// }
+```
+
+### Number Rules
+
+Redact array indices:
+
+```typescript
+const data = ['public', 'secret', 'public'];
+const result = redact(data, [1]);
+// ['public', '<REDACTED>', 'public']
+```
+
+### Object Rules
+
+Use object rules for advanced customization:
+
+```typescript
+const data = { token: 'abc123', apiKey: 'key456' };
+
+const result = redact(data, [
+  { key: 'token', replacement: '[HIDDEN]' },
+  { key: 'apiKey', replacement: '[REMOVED]' },
+]);
+// { token: '[HIDDEN]', apiKey: '[REMOVED]' }
+```
+
+## String Anonymization
+
+For anonymizing natural language text, use `stringAnonymize()`:
+
+```typescript
+import { stringAnonymize, standardRules } from '@visulima/redact';
+
+const text = 'Contact John Doe at john@example.com or call 555-123-4567.';
+const result = stringAnonymize(text, standardRules);
+
+console.log(result);
+// 'Contact <FIRSTNAME> <LASTNAME> at <EMAIL> or call <PHONENUMBER>.'
+```
+
+This uses Natural Language Processing (NLP) to identify and redact:
+- Names (first and last)
+- Email addresses
+- Phone numbers
+- Dates and times
+- Organizations
+- Monetary values
+- And more...
+
+## Working with Different Data Types
+
+Visulima Redact handles various data types:
+
+### Objects
+
+```typescript
+const obj = { secret: 'value', public: 'info' };
+const result = redact(obj, ['secret']);
+// { secret: '<SECRET>', public: 'info' }
+```
+
+### Arrays
+
+```typescript
+const arr = [
+  { password: 'secret1' },
+  { password: 'secret2' },
+];
+const result = redact(arr, ['password']);
+// [{ password: '<PASSWORD>' }, { password: '<PASSWORD>' }]
+```
+
+### Errors
+
+```typescript
+const error = new Error('Connection failed');
+error.credentials = { password: 'secret' };
+
+const result = redact(error, ['credentials.password']);
+// Error object with credentials.password redacted
+```
+
+### Maps
+
+```typescript
+const map = new Map([
+  ['password', 'secret'],
+  ['username', 'john'],
+]);
+
+const result = redact(map, ['password']);
+// Map with password value redacted
+```
+
+### Sets
+
+```typescript
+const set = new Set([
+  { password: 'secret' },
+  { token: 'abc123' },
+]);
+
+const result = redact(set, ['password', 'token']);
+// Set with sensitive values redacted
+```
+
+### JSON Strings
+
+Automatically detects and redacts JSON strings:
+
+```typescript
+const jsonString = '{"password":"secret","user":"john"}';
+const result = redact(jsonString, ['password']);
+// '{"password":"<PASSWORD>","user":"john"}'
+```
+
+### URL Parameters
+
+Automatically detects and redacts URL query parameters:
+
+```typescript
+const url = 'https://api.example.com?token=abc123&user=john';
+const result = redact(url, ['token']);
+// 'https://api.example.com?token=<TOKEN>&user=john'
+```
+
+## Standard Rules
+
+Visulima Redact includes 40+ built-in rules for common sensitive data:
+
+```typescript
+import { redact, standardRules } from '@visulima/redact';
+
+const data = {
+  email: 'user@example.com',
+  creditCard: '4532-1234-5678-9010',
+  ssn: '123-45-6789',
+  ipAddress: '192.168.1.1',
+};
+
+const result = redact(data, standardRules);
+// All sensitive data automatically redacted
+```
+
+The standard rules include patterns for:
+- API keys and tokens
+- AWS credentials
+- Credit card numbers
+- Social security numbers
+- Email addresses
+- Phone numbers
+- IP addresses
+- MAC addresses
+- Dates and times
+- URLs and domains
+- And many more...
+
+## Excluding Rules
+
+You can exclude specific rules from being applied:
+
+```typescript
+const data = {
+  email: 'public@example.com',
+  password: 'secret',
+};
+
+const result = redact(data, ['email', 'password'], {
+  exclude: ['email'],
+});
+// { email: 'public@example.com', password: '<PASSWORD>' }
+```
+
+## Immutability
+
+Visulima Redact never modifies the original input:
+
+```typescript
+const original = { password: 'secret' };
+const redacted = redact(original, ['password']);
+
+console.log(original); // { password: 'secret' }
+console.log(redacted); // { password: '<PASSWORD>' }
+```
+
+## Circular References
+
+Circular references are handled safely:
+
+```typescript
+const obj: any = { name: 'test' };
+obj.self = obj; // Circular reference
+
+const result = redact(obj, ['name']);
+// Circular reference preserved in result
+```
+
+## Next Steps
+
+<Cards>
+  <Card title="API Reference" href="/docs/api">
+    Explore the complete API documentation
+  </Card>
+  <Card title="Examples" href="/docs/examples">
+    See practical examples and use cases
+  </Card>
+  <Card title="Advanced Topics" href="/docs/advanced">
+    Learn about advanced features and patterns
+  </Card>
+</Cards>
