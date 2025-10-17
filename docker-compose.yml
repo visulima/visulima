@@ -2,7 +2,7 @@ version: "3.7"
 
 services:
     db:
-        image: "postgres:16.3-alpine@sha256:36ed71227ae36305d26382657c0b96cbaf298427b3f1eaeb10d77a6dea3eec41"
+        image: "postgres:18.0-alpine@sha256:f898ac406e1a9e05115cc2efcb3c3abb3a92a4c0263f3b6f6aaae354cbb1953a"
         volumes:
             - "data:/var/lib/postgresql/data"
         ports:
