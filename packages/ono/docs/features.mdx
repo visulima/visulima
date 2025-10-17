@@ -1,0 +1,543 @@
+---
+title: Features
+description: Explore all features Ono provides for better error handling
+---
+
+# Features
+
+Ono provides comprehensive error debugging features for both web and terminal environments.
+
+## Beautiful Error Pages
+
+### Theme Support
+
+Automatic theme detection with manual override support.
+
+```typescript
+const html = await ono.toHTML(error, {
+  theme: "auto", // Respects user's system preference
+  // theme: 'dark',  // Force dark theme
+  // theme: 'light', // Force light theme
+});
+```
+
+The theme selector in the error page allows users to toggle between themes, with their preference persisted in `localStorage`.
+
+### Sticky Header
+
+The error page features a sticky header that:
+
+- Remains visible while scrolling through stack traces
+- Shows the error name and message at all times
+- Provides quick access to theme toggle and editor selector
+- Includes keyboard shortcuts button
+
+### Copy to Clipboard
+
+One-click copying for:
+
+- Error title and message
+- Stack traces
+- Request context (cURL commands, headers, body)
+- Solution suggestions
+- Any custom context data
+
+All copy buttons provide visual feedback when clicked.
+
+## Stack Trace Viewer
+
+### Syntax Highlighting
+
+Powered by Shiki, the stack trace viewer provides:
+
+- Beautiful syntax highlighting for all frame types
+- Support for JavaScript, TypeScript, and other languages
+- Consistent colors across light and dark themes
+- Line number highlighting
+
+### Frame Grouping
+
+Stack frames are intelligently grouped into:
+
+- **Application**: Your application code
+- **Node Modules**: Third-party dependencies
+- **Internal**: Node.js internal modules
+
+Each group is collapsible for easier navigation.
+
+### Frame Details
+
+Each stack frame shows:
+
+- File path with "Open in editor" button
+- Function name
+- Line and column numbers
+- Code context with syntax highlighting
+- Source map support
+
+### Tabbed Interface
+
+Switch between different views:
+
+- **Stack**: Complete stack trace with all frames
+- **Context**: Request debugging information
+- Custom tabs you add via `content` option
+
+## Request Context Panel
+
+### Request Overview
+
+The context panel shows comprehensive request information:
+
+```typescript
+const contextPage = await createRequestContextPage(request, {
+  context: {
+    request: {
+      method: request.method,
+      url: request.url,
+      headers: request.headers,
+    },
+  },
+});
+```
+
+Features:
+
+- Complete cURL command for reproducing the request
+- HTTP method and full URL
+- One-click copy for the cURL command
+- Syntax-highlighted command display
+
+### Headers
+
+Display HTTP headers with smart masking:
+
+- Automatic masking of sensitive headers (Authorization, Cookie, etc.)
+- Custom allowlist/denylist support
+- Copy all headers as JSON
+- Clean, organized display
+
+```typescript
+const contextPage = await createRequestContextPage(request, {
+  headerAllowlist: ["content-type", "accept", "user-agent"],
+  headerDenylist: ["x-internal-secret"],
+  maskValue: "[REDACTED]",
+});
+```
+
+### Request Body
+
+Shows the request body with:
+
+- JSON formatting for JSON content
+- Plain text display for other content types
+- Size limits to prevent huge bodies
+- Truncation indicators when needed
+- Copy to clipboard functionality
+
+### Session Data
+
+Display session information in organized tables:
+
+- Key-value pairs
+- Nested object support
+- Copy as JSON
+
+### Cookies
+
+Parse and display cookies:
+
+- Clean table format
+- Individual cookie values
+- Copy functionality
+
+### Custom Context Sections
+
+Add any context data you need:
+
+```typescript
+const contextPage = await createRequestContextPage(request, {
+  context: {
+    database: {
+      connection: "postgresql://...",
+      queries: ["SELECT * FROM users", "INSERT INTO logs"],
+      pool: {
+        active: 5,
+        idle: 3,
+        max: 10,
+      },
+    },
+    cache: {
+      status: "healthy",
+      keys: 1250,
+      hitRate: 0.95,
+    },
+    performance: {
+      uptime: process.uptime(),
+      memory: process.memoryUsage(),
+    },
+  },
+});
+```
+
+All custom sections:
+
+- Automatically rendered with proper formatting
+- Include copy buttons
+- Support deep nesting (up to 3 levels)
+- Handle arrays and complex objects
+- Added to sidebar navigation
+
+### Deep Object Support
+
+The context panel intelligently renders:
+
+- Nested objects with visual hierarchy
+- Arrays with indexed items
+- Complex data types (strings, numbers, booleans, null, undefined)
+- Performance-optimized with depth limits
+- Smart truncation for large datasets (first 10 items/keys shown)
+
+## Error Causes Viewer
+
+### Nested Causes
+
+Display error cause chains:
+
+```typescript
+const rootCause = new Error("Database connection failed");
+const serviceError = new Error("User service unavailable", {
+  cause: rootCause,
+});
+const apiError = new Error("API request failed", { cause: serviceError });
+
+// Shows all three errors in a nested view
+const html = await ono.toHTML(apiError);
+```
+
+Each cause displays:
+
+- Complete stack trace
+- Error message and name
+- Code context
+- Its own causes (if any)
+
+### Visual Hierarchy
+
+Causes are displayed with:
+
+- Clear visual separation
+- Indentation to show nesting
+- Collapsible sections
+- Individual copy buttons
+
+## Solution Finders
+
+### Built-in Solutions
+
+Ono includes intelligent solution finders for common errors:
+
+#### ESM/CJS Interop
+
+Detects module system issues and suggests:
+
+- Converting to ESM or CJS
+- Using proper import/require syntax
+- Updating package.json configuration
+
+#### Export Mismatch
+
+Identifies missing exports:
+
+- Suggests checking the module's exports
+- Recommends correct import syntax
+- Links to module documentation
+
+#### Missing Files
+
+Helps with file not found errors:
+
+- Case sensitivity hints
+- Suggests checking file paths
+- Recommends verifying imports
+
+#### TypeScript Path Mapping
+
+Detects TypeScript path issues:
+
+- Suggests tsconfig.json configuration
+- Recommends path mapping setup
+- Links to TypeScript documentation
+
+#### Network Errors
+
+Identifies connectivity issues:
+
+- DNS resolution failures
+- Connection timeouts
+- Port conflicts
+
+#### React Hydration
+
+Detects SSR hydration mismatches:
+
+- Explains common causes
+- Suggests debugging approaches
+- Recommends best practices
+
+### Custom Solution Finders
+
+Create application-specific solutions:
+
+```typescript
+const authErrorFinder: SolutionFinder = {
+  name: "auth-error-finder",
+  priority: 100, // Higher = checked first
+  handle: async (error, context) => {
+    if (error.message.includes("JWT")) {
+      return {
+        header: "Authentication Token Issue",
+        body: `
+## Problem
+The JWT token is invalid or expired.
+
+## Solutions
+1. Check if the token has expired
+2. Verify the JWT secret matches your configuration
+3. Ensure the token format is correct
+
+\`\`\`typescript
+// Verify token expiration
+const decoded = jwt.decode(token);
+console.log('Expires at:', new Date(decoded.exp * 1000));
+\`\`\`
+        `,
+      };
+    }
+    return undefined;
+  },
+};
+
+const html = await ono.toHTML(error, {
+  solutionFinders: [authErrorFinder],
+});
+```
+
+Solution finders support:
+
+- Markdown formatting
+- Code blocks with syntax highlighting
+- Multiple solutions per error
+- Priority-based ordering
+- Async operations (API calls, file reads, etc.)
+
+## Editor Integration
+
+### Open in Editor
+
+Click any stack frame to open the file in your editor:
+
+- 30+ editors supported
+- Server-side handler for secure file opening
+- Client-side URL schemes as fallback
+- Editor selection persisted across sessions
+
+### Editor Selector
+
+Always visible in the header:
+
+- Dropdown with all supported editors
+- Persists choice in localStorage
+- Works with both server and client-side opening
+- No configuration needed for common editors
+
+### Setup
+
+```typescript
+import { createNodeHttpHandler } from "@visulima/ono/server/open-in-editor";
+
+const openInEditorHandler = createNodeHttpHandler({
+  projectRoot: process.cwd(),
+  allowOutsideProject: false, // Security
+});
+
+// Add route
+if (url.pathname === "/__open-in-editor") {
+  return openInEditorHandler(request, response);
+}
+
+// Configure in error options
+const html = await ono.toHTML(error, {
+  openInEditorUrl: "/__open-in-editor",
+  editor: "code", // Default editor
+});
+```
+
+## Terminal Output (ANSI)
+
+### CLI Error Display
+
+For command-line applications:
+
+```typescript
+const { errorAnsi, solutionBox } = await ono.toANSI(error, {
+  solutionFinders: [customFinder],
+});
+
+console.log(errorAnsi);
+if (solutionBox) {
+  console.log("\n" + solutionBox);
+}
+```
+
+Features:
+
+- Colored output using ANSI escape codes
+- Formatted stack traces
+- Code context with line numbers
+- Solution suggestions in a formatted box
+
+### Solution Box
+
+The solution box includes:
+
+- Header with the solution title
+- Formatted solution body
+- Markdown rendering (headers, lists, code blocks)
+- Visual separators
+
+## Accessibility
+
+### Keyboard Navigation
+
+Full keyboard support:
+
+- Tab through all interactive elements
+- Enter/Space to activate buttons
+- Escape to close dialogs
+- Focus trap in modals
+
+### ARIA Labels
+
+Proper ARIA attributes:
+
+- Labeled controls
+- Described buttons
+- Announced state changes
+- Screen reader friendly
+
+### Keyboard Shortcuts
+
+Built-in shortcuts with help dialog:
+
+- **Shift+/**: Show shortcuts help
+- **Escape**: Close dialogs
+- **Enter/Space**: Activate focused element
+
+### Focus Management
+
+- Clear focus indicators
+- Logical tab order
+- Focus restoration on dialog close
+- No keyboard traps
+
+## Performance
+
+### Code Splitting
+
+- Minimal JavaScript in error pages
+- Self-contained HTML with inline CSS
+- No external dependencies loaded
+- Fast initial render
+
+### Syntax Highlighting
+
+- Singleton highlighter instance
+- Cached theme loading
+- Efficient code rendering
+- Async loading
+
+### Size Optimization
+
+- Inline critical CSS
+- Minimal JavaScript footprint
+- CSP-compatible implementation
+- Gzipped HTML output
+
+## Security
+
+### Content Security Policy
+
+Full CSP support:
+
+```typescript
+const nonce = generateNonce();
+
+const html = await ono.toHTML(error, {
+  cspNonce: nonce,
+});
+
+// Set CSP header
+response.setHeader(
+  "Content-Security-Policy",
+  `script-src 'nonce-${nonce}'; style-src 'nonce-${nonce}'`
+);
+```
+
+### Data Sanitization
+
+- HTML sanitization for all user content
+- Attribute escaping
+- URL validation
+- XSS prevention
+
+### Sensitive Data Masking
+
+Automatic masking of sensitive headers:
+
+- Authorization
+- Cookie
+- API keys
+- Tokens
+- Custom patterns
+
+```typescript
+const contextPage = await createRequestContextPage(request, {
+  headerDenylist: ["x-api-key", "x-secret"],
+  maskValue: "[MASKED]",
+});
+```
+
+### File Access Control
+
+Editor integration includes:
+
+- Project root enforcement
+- Path traversal prevention
+- Configurable file access
+- No arbitrary file opening
+
+## Raw Stack Trace
+
+View the raw, unformatted stack trace:
+
+- Collapsible section
+- Copy to clipboard
+- Useful for sharing or logging
+- Preserves original formatting
+
+## Tooltips
+
+Helpful tooltips throughout:
+
+- Frame type indicators
+- Button descriptions
+- Feature explanations
+- Context-sensitive help
+
+## Responsive Design
+
+- Works on all screen sizes
+- Sticky sidebar navigation
+- Smooth scrolling
+- Mobile-friendly interface
