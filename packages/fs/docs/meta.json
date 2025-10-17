@@ -1,0 +1,24 @@
+{
+  "title": "@visulima/fs",
+  "pages": [
+    "index",
+    "getting-started",
+    {
+      "title": "API Reference",
+      "pages": [
+        "api-reference/index",
+        "api-reference/file-operations",
+        "api-reference/directory-operations",
+        "api-reference/json-operations",
+        "api-reference/yaml-operations",
+        "api-reference/file-discovery",
+        "api-reference/size-utilities",
+        "api-reference/eol-utilities",
+        "api-reference/utility-functions",
+        "api-reference/error-types"
+      ]
+    },
+    "examples/index",
+    "advanced/index"
+  ]
+}
