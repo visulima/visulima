@@ -211,7 +211,7 @@ class InteractiveManager {
                         trim: false,
                         width,
                         wrapMode: WrapMode.STRICT_WIDTH,
-                    }).split("\n"),
+                    }),
                 ],
                 [],
             );
