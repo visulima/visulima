@@ -5,11 +5,10 @@
 
 [@visulima/fmt][fmt],
 [@visulima/colorize](https://github.com/visulima/visulima/tree/main/packages/colorize),
+[@visulima/string](https://github.com/visulima/visulima/tree/main/packages/string),
 [ansi-escapes](https://www.npmjs.com/package/ansi-escapes),
-[safe-stable-stringify](https://www.npmjs.com/package/safe-stable-stringify),
-[string-length](https://www.npmjs.com/package/string-length),
-[terminal-size](https://www.npmjs.com/package/terminal-size) and
-[wrap-ansi](https://www.npmjs.com/package/wrap-ansi)
+[safe-stable-stringify](https://www.npmjs.com/package/safe-stable-stringify), and
+[terminal-size](https://www.npmjs.com/package/terminal-size)
 
   </p>
 </div>
@@ -34,6 +33,12 @@
 
 ---
 
+## 📋 Migration Guide
+
+If you're upgrading from an earlier version of pail, check out our [Migration Guide](MIGRATION-GUIDE.md) for breaking changes and upgrade instructions.
+
+---
+
 ## Why Pail?
 
 - Easy to use
@@ -54,7 +59,7 @@
 - [Browser](./__assets__/header-browser.png) and [Server](./__assets__/header-server.png) support
 - Redirect console and stdout/stderr to pail and easily restore redirect.
 - `Pretty` or `JSON` output
-- CJS & ESM with tree shaking support
+- ESM‑only with tree‑shaking support (Node.js ≥ 20.19)
 - Supports circular structures
 - Fast and powerful, see the [benchmarks](__bench__/README.md)
 

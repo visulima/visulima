@@ -5,8 +5,24 @@ import type { createStream as createRotatingStream, Options as RfsOptions } from
 import SafeStreamHandler from "../../../utils/stream/safe-stream-handler";
 
 /**
- * A wrapper for the `rfs` module that will optionally write to disk immediately
- * by creating and closing a new stream on each write.
+ * Rotating File Stream.
+ *
+ * A wrapper for the `rotating-file-stream` module that provides optional immediate
+ * writing to disk by creating and closing a new stream on each write operation.
+ * This is useful for ensuring log messages are written immediately rather than buffered.
+ * @example
+ * ```typescript
+ * // Buffered writing (default)
+ * const bufferedStream = new RotatingFileStream("/var/log/app.log", false, {
+ *   interval: "1d",
+ *   size: "10M"
+ * });
+ *
+ * // Immediate writing
+ * const immediateStream = new RotatingFileStream("/var/log/app.log", true, {
+ *   interval: "1d"
+ * });
+ * ```
  */
 class RotatingFileStream {
     readonly #filePath: string;
@@ -19,6 +35,13 @@ class RotatingFileStream {
 
     readonly #createRfsStream: typeof createRotatingStream | undefined;
 
+    /**
+     * Creates a new RotatingFileStream instance.
+     * @param filePath Path to the log file
+     * @param writeImmediately Whether to write immediately or buffer writes
+     * @param options Options for the rotating file stream
+     * @throws {Error} If the 'rotating-file-stream' package is not installed
+     */
     public constructor(filePath: string, writeImmediately = false, options: RfsOptions = {}) {
         this.#filePath = filePath;
         this.#immediate = writeImmediately;
@@ -37,8 +60,11 @@ class RotatingFileStream {
     }
 
     /**
-     * Writes `message` to the instance's internal #stream
-     * @param message Message to write
+     * Writes a message to the rotating file stream.
+     *
+     * If writeImmediately was set to true in the constructor, a new stream
+     * is created for each write operation. Otherwise, uses the buffered stream.
+     * @param message The message to write to the file
      */
     public write(message: string): void {
         let fileStream = this.#stream;
@@ -57,10 +83,10 @@ class RotatingFileStream {
     }
 
     /**
-     * Ends the instance's internal #stream
+     * Ends the rotating file stream.
      *
-     * When `immediate` is not `true`, a call to `write` after calling this method
-     * will throw an error.
+     * Closes the underlying stream. When `writeImmediately` is not `true`,
+     * calling `write` after calling this method will throw an error.
      */
     public end(): void {
         if (this.#stream !== undefined) {

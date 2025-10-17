@@ -2,7 +2,7 @@ import { stderr, stdout } from "node:process";
 
 import { describe, expect, it, vi } from "vitest";
 
-import RawReporter from "../../../../src/reporter/raw/raw.server";
+import RawReporter from "../../../../src/reporter/raw/raw-reporter.server";
 import type { ReadonlyMeta } from "../../../../src/types";
 
 describe("raw-reporter", () => {

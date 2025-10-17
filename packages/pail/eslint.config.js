@@ -17,15 +17,18 @@ export default createConfig(
             "playwright-setup.js",
             ".prettierrc.cjs",
             "README.md",
+            "MIGRATION-GUIDE.md",
         ],
     },
     {
-        files: ["**/*.test.ts"],
+        files: ["**/*.test.ts", "**/*.mock.ts"],
         rules: {
             "@typescript-eslint/no-explicit-any": "off",
             "no-secrets/no-secrets": "off",
+            "no-underscore-dangle": "off",
             "sonarjs/no-nested-functions": "off",
             "unicorn/no-null": "off",
+            "vitest/require-mock-type-parameters": "off",
         },
     },
 );

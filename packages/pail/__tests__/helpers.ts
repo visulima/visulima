@@ -15,6 +15,7 @@ export const execScriptSync = async (file: string, flags: string[] = [], environ
         cmd = `${crossEnvironment ? "cross-env " : ""}${environmentVariables}${cmd}`;
     }
 
+    // eslint-disable-next-line sonarjs/os-command
     const result = execSync(cmd, { encoding: "buffer" });
 
     // replace last newline in result
