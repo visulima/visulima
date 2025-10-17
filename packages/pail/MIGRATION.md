@@ -10,10 +10,10 @@ In version 3.0.0, we consolidated external dependencies by replacing them with i
 
 #### Replaced Dependencies
 
-| Previous | New | Reason |
-|----------|-----|--------|
-| `wrap-ansi` | `@visulima/string` (wordWrap) | Consolidated text wrapping functionality |
-| `string-length` | `@visulima/string` (getStringWidth) | Consolidated string width calculation |
+| Previous        | New                                 | Reason                                   |
+| --------------- | ----------------------------------- | ---------------------------------------- |
+| `wrap-ansi`     | `@visulima/string` (wordWrap)       | Consolidated text wrapping functionality |
+| `string-length` | `@visulima/string` (getStringWidth) | Consolidated string width calculation    |
 
 #### Benefits
 

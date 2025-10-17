@@ -5,10 +5,10 @@ import type { RenderErrorOptions } from "@visulima/error";
 import { renderError } from "@visulima/error";
 import type { Options as InspectorOptions } from "@visulima/inspector";
 import { inspect } from "@visulima/inspector";
+import { getStringWidth, wordWrap, WrapMode } from "@visulima/string";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import terminalSize from "terminal-size";
 import type { LiteralUnion } from "type-fest";
-import { getStringWidth, wordWrap, WrapMode } from "@visulima/string";
 
 import { EMPTY_SYMBOL } from "../../constants";
 import type InteractiveManager from "../../interactive/interactive-manager";

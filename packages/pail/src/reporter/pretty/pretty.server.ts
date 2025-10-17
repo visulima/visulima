@@ -2,13 +2,16 @@ import { stderr, stdout } from "node:process";
 
 import colorize, { bgGrey, cyan, green, greenBright, grey, red, underline, white } from "@visulima/colorize";
 import type { RenderErrorOptions } from "@visulima/error/error";
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { renderError } from "@visulima/error/error";
 import type { Options as InspectorOptions } from "@visulima/inspector";
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { inspect } from "@visulima/inspector";
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { getStringWidth, wordWrap, WrapMode } from "@visulima/string";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import terminalSize from "terminal-size";
 import type { LiteralUnion } from "type-fest";
-import { getStringWidth, wordWrap, WrapMode } from "@visulima/string";
 
 import { EMPTY_SYMBOL } from "../../constants";
 import type InteractiveManager from "../../interactive/interactive-manager";

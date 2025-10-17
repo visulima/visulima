@@ -12,8 +12,6 @@ export class JsonServerConsolaReporter implements ConsolaReporter {
 }
 
 export class JsonBrowserConsolaReporter implements ConsolaReporter {
-
-
     public log(logObject, context): void {
         const json = JSON.stringify(logObject);
 

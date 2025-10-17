@@ -1,14 +1,14 @@
 import { createWriteStream } from "node:fs";
 
+import { Ogma } from "@ogma/logger";
 import { createPail as createBrowserPail } from "@visulima/pail/browser";
-import { diary } from "diary";
 import { JsonReporter as BrowserJsonReporter } from "@visulima/pail/browser/reporter";
 import package_ from "@visulima/pail/package.json";
 import { createPail as createServerPail } from "@visulima/pail/server";
 import { JsonReporter as ServerJsonReporter } from "@visulima/pail/server/reporter";
-import { Ogma } from "@ogma/logger";
 import bunyan from "bunyan";
 import { createConsola as createBrowserConsola, createConsola as createServerConsola } from "consola";
+import { diary } from "diary";
 import pino from "pino";
 import type { ILogObj } from "tslog";
 import { Logger } from "tslog";
@@ -43,16 +43,16 @@ const browserConsola = createBrowserConsola({
 
 const tsLog = new Logger<ILogObj>({
     hideLogPositionForProduction: true,
-    type: "hidden", // Don't log anything to console
     minLevel: 0,
     // Write to /dev/null stream to match other loggers
     transport: [
         {
             write: (logObject) => {
-                wsDevelopmentNull.write(JSON.stringify(logObject) + '\n');
+                wsDevelopmentNull.write(`${JSON.stringify(logObject)}\n`);
             },
         },
     ],
+    type: "hidden", // Don't log anything to console
 });
 
 const pinoNodeStream = pino(wsDevelopmentNull);
