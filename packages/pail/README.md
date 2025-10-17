@@ -59,7 +59,7 @@ If you're upgrading from an earlier version of pail, check out our [Migration Gu
 - [Browser](./__assets__/header-browser.png) and [Server](./__assets__/header-server.png) support
 - Redirect console and stdout/stderr to pail and easily restore redirect.
 - `Pretty` or `JSON` output
-- CJS & ESM with tree shaking support
+- ESM‑only with tree‑shaking support (Node.js ≥ 20.19)
 - Supports circular structures
 - Fast and powerful, see the [benchmarks](__bench__/README.md)
 

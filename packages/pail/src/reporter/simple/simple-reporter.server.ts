@@ -139,11 +139,15 @@ export class SimpleReporter<T extends string = string, L extends string = string
         }
 
         const longestLabel: string = getLongestLabel<L, T>(this.loggerTypes);
+        const longestWidth: number = getStringWidth(longestLabel);
 
         if (label) {
-            items.push(`${bold(colorized(formatLabel(label as string, this.styles)))} `, " ".repeat(longestLabel.length - getStringWidth(label as string)));
+            const labelWidth: number = getStringWidth(label as string);
+            const pad: number = Math.max(0, longestWidth - labelWidth);
+
+            items.push(`${bold(colorized(formatLabel(label as string, this.styles)))} `, " ".repeat(pad));
         } else {
-            items.push(" ".repeat(longestLabel.length + 1));
+            items.push(" ".repeat(longestWidth + 1));
         }
 
         if (repeated) {
@@ -232,7 +236,8 @@ export class SimpleReporter<T extends string = string, L extends string = string
         if (file) {
             const fileMessage = file.name + (file.line ? `:${file.line}` : "");
 
-            items.push("\n", grey("Caller: "), " ".repeat(titleSize - 8), fileMessage, "\n");
+            const callerPad = Math.max(0, titleSize - getStringWidth("Caller: "));
+            items.push("\n", grey("Caller: "), " ".repeat(callerPad), fileMessage, "\n");
         }
 
         return items.join("");
