@@ -11,6 +11,7 @@ import { diary } from "diary";
 import pino from "pino";
 import type { ILogObj } from "tslog";
 import { Logger } from "tslog";
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { bench, describe } from "vitest";
 import { createLogger, transports } from "winston";
 

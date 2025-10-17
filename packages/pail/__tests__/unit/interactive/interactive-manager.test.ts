@@ -55,7 +55,6 @@ describe("updateManager", (): void => {
         const position = 10;
         let index = 0;
 
-        // eslint-disable-next-line no-loops/no-loops
         while (index <= rows) {
             // eslint-disable-next-line no-plusplus
             list.push(`line ${index++}`);

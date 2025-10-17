@@ -35,7 +35,7 @@
 
 ## 📋 Migration Guide
 
-If you're upgrading from an earlier version of pail, check out our [Migration Guide](MIGRATION.md) for breaking changes and upgrade instructions.
+If you're upgrading from an earlier version of pail, check out our [Migration Guide](MIGRATION-GUIDE.md) for breaking changes and upgrade instructions.
 
 ---
 

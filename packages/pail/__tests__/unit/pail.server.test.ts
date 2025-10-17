@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import InteractiveManager from "../../src/interactive/interactive-manager";
 import { PailServer } from "../../src/pail.server";
-import RawReporter from "../../src/reporter/raw/raw.server";
+import RawReporter from "../../src/reporter/raw/raw-reporter.server";
 
 describe("pailServerImpl", () => {
     it("should log messages correctly using different log levels", () => {

@@ -1,9 +1,10 @@
 import type { stringify } from "safe-stable-stringify";
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { configure as stringifyConfigure } from "safe-stable-stringify";
 import type { LiteralUnion, Primitive } from "type-fest";
 
 import { EMPTY_SYMBOL, EXTENDED_RFC_5424_LOG_LEVELS, LOG_TYPES } from "./constants";
-import RawReporter from "./reporter/raw/raw.browser";
+import RawReporter from "./reporter/raw/raw-reporter.browser";
 import type {
     ConstructorOptions,
     DefaultLoggerTypes,
@@ -24,6 +25,29 @@ import arrayify from "./utils/arrayify";
 import getLongestLabel from "./utils/get-longest-label";
 import mergeTypes from "./utils/merge-types";
 
+/**
+ * Pail Browser Implementation.
+ *
+ * A comprehensive logging library for browser environments with support for
+ * multiple log levels, custom types, processors, reporters, and advanced features
+ * like throttling, scoping, timers, and counters.
+ * @template T - Custom logger types (string union)
+ * @template L - Log level types (string union)
+ * @example
+ * ```typescript
+ * const logger = new PailBrowserImpl({
+ *   logLevel: "debug",
+ *   types: {
+ *     http: { color: "blue", label: "HTTP", logLevel: "info" }
+ *   },
+ *   reporters: [new JsonReporter()]
+ * });
+ *
+ * logger.info("Application started");
+ * logger.http("GET /api/users 200");
+ * logger.error("Something went wrong", error);
+ * ```
+ */
 export class PailBrowserImpl<T extends string = string, L extends string = string> {
     protected timersMap: Map<string, number>;
 
@@ -69,6 +93,13 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
 
     protected rawReporter: Reporter<L>;
 
+    /**
+     * Creates a new Pail browser logger instance.
+     *
+     * Initializes the logger with the provided configuration options,
+     * setting up reporters, processors, log levels, and other internal state.
+     * @param options Configuration options for the logger
+     */
     public constructor(options: ConstructorOptions<T, L>) {
         this.throttle = options.throttle ?? 1000;
         this.throttleMin = options.throttleMin ?? 5;
@@ -120,6 +151,23 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
         }
     }
 
+    /**
+     * Wraps the global console methods to redirect them through the logger.
+     *
+     * This method replaces console methods (log, info, warn, error, etc.) with
+     * calls to the corresponding logger methods. The original console methods
+     * are backed up and can be restored using restoreConsole().
+     * @example
+     * ```typescript
+     * const logger = createPail();
+     * logger.wrapConsole();
+     *
+     * console.log("This will go through the logger");
+     * console.error("This too!");
+     *
+     * logger.restoreConsole(); // Restore original console methods
+     * ```
+     */
     public wrapConsole(): void {
         // eslint-disable-next-line guard-for-in,no-restricted-syntax
         for (const type in this.types) {
@@ -137,6 +185,21 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
         }
     }
 
+    /**
+     * Restores the original global console methods.
+     *
+     * This method restores the console methods that were backed up by wrapConsole().
+     * After calling this, console methods will work as they did before wrapping.
+     * @example
+     * ```typescript
+     * const logger = createPail();
+     * logger.wrapConsole();
+     *
+     * // Console methods are now wrapped
+     * logger.restoreConsole();
+     * // Console methods are restored to original behavior
+     * ```
+     */
     public restoreConsole(): void {
         // eslint-disable-next-line no-restricted-syntax
         for (const type in this.types) {
@@ -152,6 +215,21 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
         }
     }
 
+    /**
+     * Wraps uncaught exception and unhandled rejection handlers.
+     *
+     * This method sets up global error handlers that will log uncaught exceptions
+     * and unhandled promise rejections through the logger. This is useful for
+     * capturing and logging application crashes.
+     * @example
+     * ```typescript
+     * const logger = createPail();
+     * logger.wrapException();
+     *
+     * // Now uncaught errors will be logged
+     * throw new Error("This will be logged");
+     * ```
+     */
     public wrapException(): void {
         if (typeof process !== "undefined") {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -171,23 +249,76 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
     }
 
     /**
-     * Disables logging
+     * Disables all logging output.
+     *
+     * When disabled, all log calls will be silently ignored and no output
+     * will be produced by any reporters. This can be useful for temporarily
+     * suppressing log output in production or during testing.
+     * @example
+     * ```typescript
+     * const logger = createPail();
+     * logger.disable();
+     * logger.info("This won't be logged"); // Silent
+     * logger.enable();
+     * logger.info("This will be logged"); // Output produced
+     * ```
      */
     public disable(): void {
         this.disabled = true;
     }
 
     /**
-     * Enables logging
+     * Enables logging output.
+     *
+     * Re-enables logging after it has been disabled. All subsequent log calls
+     * will produce output according to the configured reporters.
+     * @example
+     * ```typescript
+     * const logger = createPail();
+     * logger.disable();
+     * logger.info("This won't be logged");
+     * logger.enable(); // Re-enable logging
+     * logger.info("This will be logged");
+     * ```
      */
     public enable(): void {
         this.disabled = false;
     }
 
+    /**
+     * Checks if logging is currently enabled.
+     *
+     * Returns true if logging is enabled and false if it has been disabled.
+     * @returns True if logging is enabled, false if disabled
+     * @example
+     * ```typescript
+     * const logger = createPail();
+     * console.log(logger.isEnabled()); // true
+     * logger.disable();
+     * console.log(logger.isEnabled()); // false
+     * ```
+     */
     public isEnabled(): boolean {
         return !this.disabled;
     }
 
+    /**
+     * Creates a scoped logger instance.
+     *
+     * Returns a new logger instance that inherits all configuration but adds
+     * the specified scope names to all log messages. This is useful for
+     * categorizing logs by component, module, or feature.
+     * @template N - The new custom logger type names
+     * @param name Scope names to apply to all log messages
+     * @returns A new scoped logger instance
+     * @throws {Error} If no scope name is provided
+     * @example
+     * ```typescript
+     * const logger = createPail();
+     * const scopedLogger = logger.scope("auth", "login");
+     * scopedLogger.info("User logged in"); // Will include scope: ["auth", "login"]
+     * ```
+     */
     public scope<N extends string = T>(...name: string[]): PailBrowserType<N, L> {
         if (name.length === 0) {
             throw new Error("No scope name was defined.");
@@ -198,10 +329,38 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
         return this as unknown as PailBrowserType<N, L>;
     }
 
+    /**
+     * Removes the current scope from the logger.
+     *
+     * Clears all scope names that were set by previous scope() calls.
+     * After calling this, log messages will no longer include scope information.
+     * @example
+     * ```typescript
+     * const logger = createPail();
+     * const scopedLogger = logger.scope("auth");
+     * scopedLogger.info("Scoped message"); // Has scope
+     * scopedLogger.unscope();
+     * scopedLogger.info("Unscoped message"); // No scope
+     * ```
+     */
     public unscope(): void {
         this.scopeName = [];
     }
 
+    /**
+     * Starts a timer with the specified label.
+     *
+     * Records the current timestamp and associates it with the given label.
+     * Multiple timers can be active simultaneously with different labels.
+     * @param label The timer label (defaults to "default")
+     * @example
+     * ```typescript
+     * const logger = createPail();
+     * logger.time("operation");
+     * // ... some operation ...
+     * logger.timeEnd("operation"); // Logs: "Timer run for: X ms"
+     * ```
+     */
     public time(label = "default"): void {
         if (this.seqTimers.has(label)) {
             this.#logger("warn", false, {
@@ -219,6 +378,24 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
         }
     }
 
+    /**
+     * Logs the current elapsed time for a timer without stopping it.
+     *
+     * Calculates and logs the time elapsed since the timer was started,
+     * but keeps the timer running. If no label is provided, uses the
+     * most recently started timer.
+     * @param label The timer label (uses last timer if not specified)
+     * @param data Additional data to include in the log message
+     * @example
+     * ```typescript
+     * const logger = createPail();
+     * logger.time("task");
+     * // ... some work ...
+     * logger.timeLog("task"); // Logs current elapsed time
+     * // ... more work ...
+     * logger.timeEnd("task"); // Logs final time and stops timer
+     * ```
+     */
     public timeLog(label?: string, ...data: unknown[]): void {
         if (!label && this.seqTimers.size > 0) {
             // eslint-disable-next-line no-param-reassign
@@ -243,6 +420,21 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
         }
     }
 
+    /**
+     * Stops a timer and logs the final elapsed time.
+     *
+     * Calculates the total time elapsed since the timer was started,
+     * logs the result, and removes the timer. If no label is provided,
+     * uses the most recently started timer.
+     * @param label The timer label (uses last timer if not specified)
+     * @example
+     * ```typescript
+     * const logger = createPail();
+     * logger.time("operation");
+     * // ... perform operation ...
+     * logger.timeEnd("operation"); // Logs: "Timer run for: X ms"
+     * ```
+     */
     public timeEnd(label?: string): void {
         if (!label && this.seqTimers.size > 0) {
             // eslint-disable-next-line no-param-reassign
@@ -267,6 +459,22 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
         }
     }
 
+    /**
+     * Starts a log group with the specified label.
+     *
+     * Groups related log messages together. In browser environments,
+     * this uses the native console.group() functionality. In other
+     * environments, it tracks group nesting internally.
+     * @param label The group label (defaults to "console.group")
+     * @example
+     * ```typescript
+     * const logger = createPail();
+     * logger.group("Database Operations");
+     * logger.info("Connecting to database");
+     * logger.info("Running migration");
+     * logger.groupEnd(); // End the group
+     * ```
+     */
     public group(label = "console.group"): void {
         if (globalThis.window === undefined) {
             this.groups.push(label);
@@ -276,6 +484,20 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
         }
     }
 
+    /**
+     * Ends the current log group.
+     *
+     * Closes the most recently opened log group. In browser environments,
+     * this uses the native console.groupEnd() functionality.
+     * @example
+     * ```typescript
+     * const logger = createPail();
+     * logger.group("Processing");
+     * logger.info("Step 1");
+     * logger.info("Step 2");
+     * logger.groupEnd(); // Closes the "Processing" group
+     * ```
+     */
     public groupEnd(): void {
         if (globalThis.window === undefined) {
             this.groups.pop();
@@ -285,6 +507,21 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
         }
     }
 
+    /**
+     * Increments and logs a counter with the specified label.
+     *
+     * Maintains an internal counter for each label and logs the current count
+     * each time it's called. Useful for tracking how many times certain
+     * code paths are executed.
+     * @param label The counter label (defaults to "default")
+     * @example
+     * ```typescript
+     * const logger = createPail();
+     * logger.count("requests"); // Logs: "requests: 1"
+     * logger.count("requests"); // Logs: "requests: 2"
+     * logger.count("errors");   // Logs: "errors: 1"
+     * ```
+     */
     public count(label = "default"): void {
         const current = this.countMap.get(label) ?? 0;
 
@@ -296,6 +533,20 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
         });
     }
 
+    /**
+     * Resets a counter to zero.
+     *
+     * Removes the counter with the specified label, effectively resetting
+     * it to zero. If the counter doesn't exist, logs a warning.
+     * @param label The counter label to reset (defaults to "default")
+     * @example
+     * ```typescript
+     * const logger = createPail();
+     * logger.count("requests"); // Logs: "requests: 1"
+     * logger.countReset("requests"); // Resets counter
+     * logger.count("requests"); // Logs: "requests: 1" (starts over)
+     * ```
+     */
     public countReset(label = "default"): void {
         if (this.countMap.has(label)) {
             this.countMap.delete(label);
@@ -307,12 +558,39 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
         }
     }
 
+    /**
+     * Clears the console output.
+     *
+     * Calls the native console.clear() method to clear all output from
+     * the console. This is a convenience method that wraps the native
+     * console.clear() functionality.
+     * @example
+     * ```typescript
+     * const logger = createPail();
+     * logger.info("Some message");
+     * logger.clear(); // Clears the console
+     * ```
+     */
     // eslint-disable-next-line class-methods-use-this
     public clear(): void {
         // eslint-disable-next-line no-console
         console.clear();
     }
 
+    /**
+     * Logs a raw message bypassing normal processing.
+     *
+     * Sends a message directly to the raw reporter without going through
+     * the normal logging pipeline (processors, throttling, etc.). This is
+     * useful for logging that needs to bypass all formatting and processing.
+     * @param message The raw message to log
+     * @param arguments_ Additional arguments to include
+     * @example
+     * ```typescript
+     * const logger = createPail();
+     * logger.raw("Direct message", { data: "value" });
+     * ```
+     */
     public raw(message: string, ...arguments_: unknown[]): void {
         if (this.disabled) {
             return;

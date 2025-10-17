@@ -5,7 +5,7 @@ import terminalSize from "terminal-size";
 import { describe, expect, it, vi } from "vitest";
 
 import { dateFormatter } from "../../../../src/reporter/pretty/abstract-pretty-reporter";
-import { PrettyReporter } from "../../../../src/reporter/pretty/pretty.server";
+import { PrettyReporter } from "../../../../src/reporter/pretty/pretty-reporter.server";
 import type { ReadonlyMeta } from "../../../../src/types";
 
 vi.mock(import("terminal-size"), () => {

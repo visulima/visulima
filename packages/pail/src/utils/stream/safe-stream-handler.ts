@@ -17,7 +17,7 @@ class SafeStreamHandler {
     }
 
     /**
-     * Writes `message` to the instance's internal stream
+     * Writes `message` to the instance's internal stream.
      * @param message Message to write
      */
     public write(message: string): void {

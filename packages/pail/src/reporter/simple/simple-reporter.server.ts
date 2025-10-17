@@ -1,7 +1,7 @@
 import { stderr, stdout } from "node:process";
 
-import colorize, { bgGrey, cyan, green, greenBright, grey, red, underline, white } from "@visulima/colorize";
-import type { RenderErrorOptions } from "@visulima/error/error";
+import colorize, { bgGrey, bold, cyan, green, greenBright, grey, red, underline, white } from "@visulima/colorize";
+import type { RenderErrorOptions } from "@visulima/error";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { renderError } from "@visulima/error/error";
 import type { Options as InspectorOptions } from "@visulima/inspector";
@@ -19,19 +19,19 @@ import type { ExtendedRfc5424LogLevels, InteractiveStreamReporter, ReadonlyMeta 
 import getLongestBadge from "../../utils/get-longest-badge";
 import getLongestLabel from "../../utils/get-longest-label";
 import writeStream from "../../utils/write-stream";
+import type { PrettyStyleOptions } from "../pretty/abstract-pretty-reporter";
+import { AbstractPrettyReporter } from "../pretty/abstract-pretty-reporter";
 import defaultInspectorConfig from "../utils/default-inspector-config";
 import formatLabel from "../utils/format-label";
-import type { PrettyStyleOptions } from "./abstract-pretty-reporter";
-import { AbstractPrettyReporter } from "./abstract-pretty-reporter";
 
 const pailFileFilter = (line: string) => !/[\\/]pail[\\/]dist/.test(line);
 
-export type PrettyReporterOptions = PrettyStyleOptions & {
+export type SimpleReporterOptions = PrettyStyleOptions & {
     error: Partial<Omit<RenderErrorOptions, "color | prefix | indentation">>;
     inspect: Partial<InspectorOptions>;
 };
 
-export class PrettyReporter<T extends string = string, L extends string = string> extends AbstractPrettyReporter<T, L> implements InteractiveStreamReporter<L> {
+export class SimpleReporter<T extends string = string, L extends string = string> extends AbstractPrettyReporter<T, L> implements InteractiveStreamReporter<L> {
     #stdout: NodeJS.WriteStream;
 
     #stderr: NodeJS.WriteStream;
@@ -44,7 +44,7 @@ export class PrettyReporter<T extends string = string, L extends string = string
 
     readonly #errorOptions: Partial<Omit<RenderErrorOptions, "message | prefix">>;
 
-    public constructor(options: Partial<PrettyReporterOptions> = {}) {
+    public constructor(options: Partial<SimpleReporterOptions> = {}) {
         const { error: errorOptions, inspect: inspectOptions, ...rest } = options;
 
         super({
@@ -55,7 +55,7 @@ export class PrettyReporter<T extends string = string, L extends string = string
             ...rest,
         });
 
-        this.#inspectOptions = { ...defaultInspectorConfig, ...inspectOptions };
+        this.#inspectOptions = { ...defaultInspectorConfig, indent: undefined, ...inspectOptions };
         this.#errorOptions = {
             ...errorOptions,
             color: {
@@ -88,11 +88,21 @@ export class PrettyReporter<T extends string = string, L extends string = string
     }
 
     public log(meta: ReadonlyMeta<L>): void {
-        this._log(this._formatMessage(meta as ReadonlyMeta<L>), meta.type.level);
+        const message = this.formatMessage(meta as ReadonlyMeta<L>);
+        const logLevel = meta.type.level as LiteralUnion<ExtendedRfc5424LogLevels, L>;
+
+        const streamType = ["error", "trace", "warn"].includes(logLevel as string) ? "stderr" : "stdout";
+        const stream = streamType === "stderr" ? this.#stderr : this.#stdout;
+
+        if (this.#interactive && this.#interactiveManager !== undefined && stream.isTTY) {
+            this.#interactiveManager.update(streamType, message.split("\n"), 0);
+        } else {
+            writeStream(`${message}\n`, stream);
+        }
     }
 
     // eslint-disable-next-line sonarjs/cognitive-complexity
-    protected _formatMessage(data: ReadonlyMeta<L>): string {
+    protected formatMessage(data: ReadonlyMeta<L>): string {
         const { columns } = terminalSize();
 
         let size = columns;
@@ -105,14 +115,13 @@ export class PrettyReporter<T extends string = string, L extends string = string
         const { badge, context, date, error, file, groups, label, message, prefix, repeated, scope, suffix, traceError, type } = data;
 
         const { color } = this.loggerTypes[type.name as keyof typeof this.loggerTypes];
-
         const colorized = color ? colorize[color] : white;
 
         const groupSpaces: string = groups.map(() => "    ").join("");
         const items: string[] = [];
 
         if (groups.length > 0) {
-            items.push(`${groupSpaces + grey(`[${groups.at(-1)}]`)} `);
+            items.push(`${groupSpaces + grey(`[${groups.at(-1)}]`)} ` as string);
         }
 
         if (date) {
@@ -120,22 +129,21 @@ export class PrettyReporter<T extends string = string, L extends string = string
         }
 
         if (badge) {
-            items.push(colorized(badge) as string);
+            items.push(bold(colorized(badge) as string));
         } else {
             const longestBadge: string = getLongestBadge<L, T>(this.loggerTypes);
 
             if (longestBadge.length > 0) {
-                items.push(`${grey(".".repeat(longestBadge.length))} `);
+                items.push(grey(" ".repeat(longestBadge.length)));
             }
         }
 
         const longestLabel: string = getLongestLabel<L, T>(this.loggerTypes);
 
         if (label) {
-            items.push(`${colorized(formatLabel(label as string, this.styles))} `, grey(".".repeat(longestLabel.length - getStringWidth(label as string))));
+            items.push(`${bold(colorized(formatLabel(label as string, this.styles)))} `, " ".repeat(longestLabel.length - getStringWidth(label as string)));
         } else {
-            // plus 2 for the space and the dot
-            items.push(grey(".".repeat(longestLabel.length + 2)));
+            items.push(" ".repeat(longestLabel.length + 1));
         }
 
         if (repeated) {
@@ -143,33 +151,14 @@ export class PrettyReporter<T extends string = string, L extends string = string
         }
 
         if (Array.isArray(scope) && scope.length > 0) {
-            items.push(` ${grey(`[${scope.join(" > ")}]`)} `);
+            items.push(`${grey(`[${scope.join(" > ")}]`)} `);
         }
 
         if (prefix) {
-            items.push(
-                `${grey(`${Array.isArray(scope) && scope.length > 0 ? ". " : " "}[${this.styles.underline.prefix ? underline(prefix as string) : prefix}]`)} `,
-            );
+            items.push(`${grey(`[${this.styles.underline.prefix ? underline(prefix as string) : prefix}]`)} `);
         }
 
-        const titleSize = getStringWidth(items.join(" "));
-
-        if (file) {
-            const fileMessage = file.name + (file.line ? `:${file.line}` : "");
-            const fileMessageSize = getStringWidth(fileMessage);
-
-            if (fileMessageSize + titleSize + 2 > size) {
-                items.push(grey(` ${fileMessage}`));
-            } else {
-                items.push(grey(`${".".repeat(size - titleSize - fileMessageSize - 2)} ${fileMessage}`));
-            }
-        } else {
-            items.push(grey(".".repeat(size - titleSize - 1)));
-        }
-
-        if (items.length > 0) {
-            items.push("\n\n");
-        }
+        const titleSize = getStringWidth(items.join(""));
 
         if (message !== EMPTY_SYMBOL) {
             const formattedMessage: string = typeof message === "string" ? message : inspect(message, this.#inspectOptions);
@@ -237,20 +226,15 @@ export class PrettyReporter<T extends string = string, L extends string = string
         }
 
         if (suffix) {
-            items.push("\n", groupSpaces + grey(this.styles.underline.suffix ? underline(suffix as string) : suffix));
+            items.push(` ${groupSpaces}${grey(this.styles.underline.suffix ? underline(suffix as string) : suffix)}`);
         }
 
-        return `${items.join("")}\n`;
-    }
+        if (file) {
+            const fileMessage = file.name + (file.line ? `:${file.line}` : "");
 
-    protected _log(message: string, logLevel: LiteralUnion<ExtendedRfc5424LogLevels, L>): void {
-        const streamType = ["error", "trace", "warn"].includes(logLevel as string) ? "stderr" : "stdout";
-        const stream = streamType === "stderr" ? this.#stderr : this.#stdout;
-
-        if (this.#interactive && this.#interactiveManager !== undefined && stream.isTTY) {
-            this.#interactiveManager.update(streamType, message.split("\n"), 0);
-        } else {
-            writeStream(`${message}\n`, stream);
+            items.push("\n", grey("Caller: "), " ".repeat(titleSize - 8), fileMessage, "\n");
         }
+
+        return items.join("");
     }
 }

@@ -7,7 +7,6 @@ class WriteStream {
 
     public rows: number;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public _stack: any[] = [];
 
     public constructor(columns: number = WriteStream.COLUMNS, rows: number = WriteStream.ROWS) {
