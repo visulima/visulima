@@ -183,10 +183,8 @@ export class PrettyReporter<T extends string = string, L extends string = string
         if (label) {
             const longestLabelWidth = getStringWidth(longestLabel);
             const labelWidth = getStringWidth(label as string);
-            items.push(
-                `${colorized(formatLabel(label as string, this.styles))} `,
-                grey(".".repeat(Math.max(0, longestLabelWidth - labelWidth))),
-            );
+
+            items.push(`${colorized(formatLabel(label as string, this.styles))} `, grey(".".repeat(Math.max(0, longestLabelWidth - labelWidth))));
         } else {
             // plus 2 for the space and the dot
             items.push(grey(".".repeat(longestLabel.length + 2)));
@@ -216,6 +214,7 @@ export class PrettyReporter<T extends string = string, L extends string = string
                 items.push(grey(` ${fileMessage}`));
             } else {
                 const dots = Math.max(0, size - titleSize - fileMessageSize - 2);
+
                 items.push(grey(`${".".repeat(dots)} ${fileMessage}`));
             }
         } else {

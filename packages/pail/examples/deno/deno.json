@@ -1,0 +1,8 @@
+{
+    "name": "@visulima/pail-deno-example",
+    "version": "1.0.0",
+    "exports": "./example.ts",
+    "imports": {
+        "@visulima/pail": "npm:@visulima/pail@^2.1.31"
+    }
+}

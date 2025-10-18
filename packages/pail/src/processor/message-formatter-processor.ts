@@ -1,4 +1,5 @@
 import type { format, FormatterFunction, Options } from "@visulima/fmt";
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { build } from "@visulima/fmt";
 import type { stringify } from "safe-stable-stringify";
 

@@ -4,7 +4,8 @@ import { Buffer } from "node:buffer";
 
 import { pail, createPail } from "@visulima/pail";
 import { CallerProcessor } from "@visulima/pail/processor";
-import { JsonReporter, JsonFileReporter } from "@visulima/pail/reporter";
+import { JsonReporter } from "@visulima/pail/reporter/json";
+import { JsonFileReporter } from "@visulima/pail/reporter/file";
 
 const __dirname = new URL(".", import.meta.url).pathname;
 

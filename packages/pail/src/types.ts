@@ -93,6 +93,7 @@ export type DefaultLogTypes
         | "trace"
         | "wait"
         | "warn"
+        | "warning"
         | "watch";
 
 /**

@@ -24,7 +24,33 @@ In version 3.0.0, we consolidated external dependencies by replacing them with i
 
 #### Backward Compatibility
 
-The dependency consolidation changes are **backward compatible** for pail users. The internal API changes don't affect the public pail API. The CJS export removal is a **breaking change** that requires migration to ESM or dynamic imports for continued CJS usage.
+The dependency consolidation changes are **backward compatible** for pail users. The internal API changes don't affect the public pail API. The CJS export removal and reporter export structure changes are **breaking changes** that require migration.
+
+### Reporter Export Structure Changes
+
+The reporter export structure has been reorganized to provide more granular access to individual reporter types.
+
+#### Old Export Structure
+
+```javascript
+import { JsonReporter, JsonFileReporter, PrettyReporter, SimpleReporter } from "@visulima/pail/reporter";
+```
+
+#### New Granular Export Structure
+
+```javascript
+import { JsonReporter } from "@visulima/pail/reporter/json";
+import { JsonFileReporter } from "@visulima/pail/reporter/file";
+import { PrettyReporter } from "@visulima/pail/reporter/pretty";
+import { SimpleReporter } from "@visulima/pail/reporter/simple";
+```
+
+#### Benefits
+
+- **Smaller bundle sizes**: Only import the reporters you need
+- **Better tree-shaking**: Unused reporters are excluded from bundles
+- **Clearer dependencies**: Explicit imports make dependencies obvious
+- **Improved performance**: Reduced bundle size and faster loading
 
 ### CommonJS (CJS) Export Removed
 
@@ -77,9 +103,24 @@ logger.info("Hello ESM world!");
 - **Future-Proof**: ESM is the standard for modern JavaScript
 - **Bundle Optimization**: Smaller bundle sizes with better optimization
 
-### Migration Steps for CJS Users
+### Migration Steps
 
-#### 1. Use Dynamic Imports
+#### 1. Update Reporter Imports
+
+Replace old reporter imports with new granular imports:
+
+```javascript
+// Before
+import { JsonReporter, JsonFileReporter, PrettyReporter, SimpleReporter } from "@visulima/pail/reporter";
+
+// After
+import { JsonReporter } from "@visulima/pail/reporter/json";
+import { JsonFileReporter } from "@visulima/pail/reporter/file";
+import { PrettyReporter } from "@visulima/pail/reporter/pretty";
+import { SimpleReporter } from "@visulima/pail/reporter/simple";
+```
+
+#### 2. Use Dynamic Imports for CJS
 
 Replace `require()` calls with dynamic `import()`:
 
@@ -91,7 +132,7 @@ const { createPail } = require("@visulima/pail");
 const { createPail } = await import("@visulima/pail");
 ```
 
-#### 2. Convert to ESM (Recommended)
+#### 3. Convert to ESM (Recommended)
 
 For the best experience, convert your project to use ESM:
 
@@ -109,6 +150,7 @@ For the best experience, convert your project to use ESM:
 ```typescript
 // src/index.ts
 import { createPail, pail } from "@visulima/pail";
+import { JsonReporter } from "@visulima/pail/reporter/json";
 
 async function main() {
     const logger = createPail({
@@ -123,7 +165,24 @@ main().catch(console.error);
 
 ### Migration Issues & Solutions
 
-#### 1. require() Calls No Longer Work
+#### 1. Old Reporter Imports No Longer Work
+
+**Problem**: `import { JsonReporter } from "@visulima/pail/reporter"` throws "module not found" error.
+
+**Solution**: Use new granular reporter imports:
+
+```javascript
+// Before
+import { JsonReporter, JsonFileReporter, PrettyReporter, SimpleReporter } from "@visulima/pail/reporter";
+
+// After
+import { JsonReporter } from "@visulima/pail/reporter/json";
+import { JsonFileReporter } from "@visulima/pail/reporter/file";
+import { PrettyReporter } from "@visulima/pail/reporter/pretty";
+import { SimpleReporter } from "@visulima/pail/reporter/simple";
+```
+
+#### 2. require() Calls No Longer Work
 
 **Problem**: `require('@visulima/pail')` throws "module not found" error.
 
@@ -134,7 +193,7 @@ main().catch(console.error);
 const { createPail, pail } = await import("@visulima/pail");
 ```
 
-#### 2. Async Context Required
+#### 3. Async Context Required
 
 **Problem**: Functions using pail must be async when using dynamic imports.
 
@@ -158,15 +217,33 @@ async function setupLogger() {
 
 ### Verification Steps
 
-1. **Test ESM imports**:
+1. **Test new reporter imports**:
+
+    ```javascript
+    // test-reporters.mjs
+    import { JsonReporter } from "@visulima/pail/reporter/json";
+    import { JsonFileReporter } from "@visulima/pail/reporter/file";
+    import { PrettyReporter } from "@visulima/pail/reporter/pretty";
+    import { SimpleReporter } from "@visulima/pail/reporter/simple";
+    import { createPail } from "@visulima/pail";
+
+    async function test() {
+        const logger = createPail({
+            reporters: [new JsonReporter(), new JsonFileReporter({ filePath: "/tmp/test.log" }), new PrettyReporter(), new SimpleReporter()],
+        });
+
+        logger.info("All reporter imports successful");
+    }
+
+    test().catch(console.error);
+    ```
+
+2. **Test ESM imports**:
 
     ```javascript
     // test.mjs
     import { createPail } from "@visulima/pail";
 
-    /**
-     *
-     */
     async function test() {
         const logger = createPail();
 
@@ -176,13 +253,10 @@ async function setupLogger() {
     test().catch(console.error);
     ```
 
-2. **Test dynamic imports from CJS**:
+3. **Test dynamic imports from CJS**:
 
     ```javascript
     // test.cjs
-    /**
-     *
-     */
     async function test() {
         const { createPail } = await import("@visulima/pail");
         const logger = createPail();
@@ -194,6 +268,15 @@ async function setupLogger() {
     ```
 
 ### Migration Benefits
+
+#### Reporter Import Benefits
+
+- **Smaller bundle sizes**: Only import the reporters you need
+- **Better tree-shaking**: Unused reporters are excluded from bundles
+- **Clearer dependencies**: Explicit imports make dependencies obvious
+- **Improved performance**: Reduced bundle size and faster loading
+
+#### ESM Migration Benefits
 
 - **Better Performance**: ESM's improved module caching in Node.js 20.19+
 - **Modern JavaScript**: Consistent module syntax across environments

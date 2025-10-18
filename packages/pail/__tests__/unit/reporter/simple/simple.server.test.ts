@@ -252,6 +252,7 @@ describe("simpleReporter", () => {
 
         // Create a reporter with custom types that include Unicode characters
         const simpleReporter = new SimpleReporter();
+
         // Override the logger types to include a wide Unicode character
         (simpleReporter as any).loggerTypes = {
             info: {
@@ -296,6 +297,7 @@ describe("simpleReporter", () => {
 
         // Create a reporter with types that have different display widths
         const simpleReporter = new SimpleReporter();
+
         (simpleReporter as any).loggerTypes = {
             debug: {
                 color: "grey",

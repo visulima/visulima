@@ -124,6 +124,11 @@ export const LOG_TYPES: DefaultLoggerTypes = {
         label: "warning",
         logLevel: "warning",
     },
+    warning: {
+        color: "yellow",
+        label: "warning",
+        logLevel: "warning",
+    },
     watch: {
         color: "yellowBright",
         label: "watching",

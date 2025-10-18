@@ -237,6 +237,7 @@ export class SimpleReporter<T extends string = string, L extends string = string
             const fileMessage = file.name + (file.line ? `:${file.line}` : "");
 
             const callerPad = Math.max(0, titleSize - getStringWidth("Caller: "));
+
             items.push("\n", grey("Caller: "), " ".repeat(callerPad), fileMessage, "\n");
         }
 

@@ -1,8 +1,8 @@
 import { createPail } from "@visulima/pail";
-import { PrettyReporter } from "@visulima/pail/reporter";
+import { SimpleReporter } from "@visulima/pail/reporter/simple";
 
 const pail = createPail({
-    reporters: [new PrettyReporter()],
+    reporters: [new SimpleReporter()],
 });
 
 console.log("------------------ DEFAULT ------------------", "\n");
@@ -92,7 +92,7 @@ function wait(delay) {
 
 const repeaterLogger = createPail({
     throttle: 100,
-    reporters: [new PrettyReporter()],
+    reporters: [new SimpleReporter()],
 });
 
 for (let i = 0; i < 10; i++) {

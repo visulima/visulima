@@ -1,5 +1,5 @@
 {
-    "name": "node_example_pail",
+    "name": "pail-node-example",
     "version": "1.0.0",
     "private": true,
     "type": "module",
