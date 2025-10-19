@@ -365,6 +365,126 @@ pail.time("test");
 pail.timeEnd("test");
 ```
 
+## Progress Bars (Server Only)
+
+Pail includes a comprehensive progress bar system inspired by cli-progress, with support for single and multi-bar modes, various styles, and interactive terminal output.
+
+### Single Progress Bar
+
+```typescript
+import { createPail } from "@visulima/pail";
+
+const logger = createPail({ interactive: true });
+const bar = logger.createProgressBar({
+    total: 100,
+    format: "Downloading [{bar}] {percentage}% | ETA: {eta}s | {value}/{total}",
+});
+
+bar.start();
+bar.update(50);
+bar.increment(10);
+bar.stop();
+```
+
+### Styled Progress Bars
+
+Pail supports various built-in progress bar styles:
+
+```typescript
+import { createPail } from "@visulima/pail";
+
+const logger = createPail({ interactive: true });
+
+// Shades classic (default)
+const bar1 = logger.createProgressBar({
+    total: 100,
+    style: "shades_classic",
+    format: "Progress [{bar}] {percentage}%",
+});
+
+// Shades grey
+const bar2 = logger.createProgressBar({
+    total: 100,
+    style: "shades_grey",
+    format: "Progress [{bar}] {percentage}%",
+});
+
+// Rect style
+const bar3 = logger.createProgressBar({
+    total: 100,
+    style: "rect",
+    format: "Progress [{bar}] {percentage}%",
+});
+
+// ASCII style
+const bar4 = logger.createProgressBar({
+    total: 100,
+    style: "ascii",
+    format: "Progress [{bar}] {percentage}%",
+});
+
+// You can still override individual style settings
+const bar5 = logger.createProgressBar({
+    total: 100,
+    style: "shades_classic",
+    barCompleteChar: "🚀", // Override the complete character
+    format: "Progress [{bar}] {percentage}%",
+});
+```
+
+Available styles: `shades_classic`, `shades_grey`, `rect`, `filled`, `solid`, `ascii`, `custom`
+
+### Multi Progress Bars
+
+Display multiple progress bars simultaneously:
+
+```typescript
+import { createPail } from "@visulima/pail";
+
+const logger = createPail({ interactive: true });
+const multiBar = logger.createMultiProgressBar({
+    style: "shades_classic", // Apply style to all bars
+});
+
+const bar1 = multiBar.create(100);
+const bar2 = multiBar.create(200);
+const bar3 = multiBar.create(150);
+
+// Update bars as needed
+bar1.update(50);
+bar2.update(75);
+bar3.update(25);
+
+// Clean up when done
+multiBar.stop();
+```
+
+### Custom Progress Bar
+
+Create fully customized progress bars with your own characters and formatting:
+
+```typescript
+import { createPail } from "@visulima/pail";
+
+const logger = createPail({ interactive: true });
+const bar = logger.createProgressBar({
+    total: 100,
+    format: "🚀 Downloading {filename}: [{bar}] {percentage}% | Speed: {speed} MB/s | ETA: {eta}s",
+    barCompleteChar: "🚀",
+    barIncompleteChar: "⚪",
+    width: 20,
+});
+
+bar.start(0, 0, {
+    filename: "large-file.zip",
+    speed: "0.0",
+});
+
+// Update with payload data
+bar.update(50, { speed: "2.5" });
+bar.stop();
+```
+
 ## Disable and Enable Loggers
 
 To disable a logger, use the `disable()` function, which will prevent any log messages from being written to the console or a file.

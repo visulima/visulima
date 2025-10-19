@@ -3,6 +3,8 @@ import type { LiteralUnion } from "type-fest";
 import InteractiveManager from "./interactive/interactive-manager";
 import InteractiveStreamHook from "./interactive/interactive-stream-hook";
 import { PailBrowserImpl } from "./pail.browser";
+import type { MultiBarOptions, SingleBarOptions } from "./progress-bar";
+import { applyStyleToOptions, MultiProgressBar, ProgressBar } from "./progress-bar";
 import RawReporter from "./reporter/raw/raw-reporter.server";
 import type {
     ConstructorOptions,
@@ -167,6 +169,54 @@ class PailServerImpl<T extends string = string, L extends string = string> exten
     public restoreAll(): void {
         this.restoreConsole();
         this.restoreStd();
+    }
+
+    /**
+     * Creates a single progress bar.
+     * @param options Configuration options for the progress bar
+     * @returns A new ProgressBar instance
+     * @example
+     * ```typescript
+     * const logger = createPail({ interactive: true });
+     * const bar = logger.createProgressBar({
+     *   total: 100,
+     *   format: 'Downloading [{bar}] {percentage}% | ETA: {eta}s | {value}/{total}'
+     * });
+     *
+     * bar.start();
+     * // ... do work and update progress
+     * bar.update(50);
+     * bar.stop();
+     * ```
+     */
+    public createProgressBar(options: SingleBarOptions): ProgressBar {
+        const styledOptions = applyStyleToOptions(options);
+
+        return new ProgressBar(styledOptions, this.interactiveManager);
+    }
+
+    /**
+     * Creates a multi-bar progress manager for displaying multiple progress bars.
+     * @param options Configuration options for the multi-bar manager
+     * @returns A new MultiProgressBar instance
+     * @example
+     * ```typescript
+     * const logger = createPail({ interactive: true });
+     * const multiBar = logger.createMultiProgressBar();
+     *
+     * const bar1 = multiBar.create(100);
+     * const bar2 = multiBar.create(200);
+     *
+     * bar1.start();
+     * bar2.start();
+     * // ... update bars as needed
+     * multiBar.stop();
+     * ```
+     */
+    public createMultiProgressBar(options: MultiBarOptions = {}): MultiProgressBar {
+        const styledOptions = applyStyleToOptions(options);
+
+        return new MultiProgressBar(styledOptions, this.interactiveManager);
     }
 
     /**
