@@ -1,27 +1,29 @@
-import { stderr, stdout } from "node:process";
-
 import { describe, expect, it } from "vitest";
 
-import InteractiveManager from "../../src/interactive/interactive-manager";
-import { MultiProgressBar, ProgressBar, applyStyleToOptions, getBarChar } from "../../src/progress-bar";
+import { applyStyleToOptions, getBarChar, MultiProgressBar, ProgressBar } from "../../src/progress-bar";
 
-describe("ProgressBar", () => {
+describe(ProgressBar, () => {
     describe("constructor", () => {
         it("should create a progress bar with default options", () => {
+            expect.assertions(1);
+
             const bar = new ProgressBar({ total: 100 });
 
             expect(bar).toBeInstanceOf(ProgressBar);
         });
 
         it("should create a progress bar with custom options", () => {
+            expect.assertions(2);
+
             const bar = new ProgressBar({
-                total: 50,
                 current: 10,
-                width: 20,
                 format: "Custom: [{bar}] {percentage}%",
+                total: 50,
+                width: 20,
             });
 
             const result = bar.render();
+
             expect(result).toContain("Custom:");
             expect(result).toContain("20%"); // 10/50 = 20%
         });
@@ -29,9 +31,11 @@ describe("ProgressBar", () => {
 
     describe("render", () => {
         it("should render progress correctly", () => {
+            expect.assertions(4);
+
             const bar = new ProgressBar({
-                total: 10,
                 format: "Progress: [{bar}] {percentage}% | {value}/{total}",
+                total: 10,
             });
 
             bar.update(5);
@@ -44,6 +48,8 @@ describe("ProgressBar", () => {
         });
 
         it("should handle 0% progress", () => {
+            expect.assertions(3);
+
             const bar = new ProgressBar({ total: 10 });
             const result = bar.render();
 
@@ -53,7 +59,10 @@ describe("ProgressBar", () => {
         });
 
         it("should handle 100% progress", () => {
+            expect.assertions(3);
+
             const bar = new ProgressBar({ total: 10 });
+
             bar.update(10);
             const result = bar.render();
 
@@ -63,10 +72,12 @@ describe("ProgressBar", () => {
         });
 
         it("should handle payload replacement", () => {
+            expect.assertions(3);
+
             const bar = new ProgressBar(
                 {
-                    total: 100,
                     format: "Downloading {filename}: [{bar}] {percentage}% | Speed: {speed}",
+                    total: 100,
                 },
                 undefined,
                 { filename: "test.zip", speed: "1.5 MB/s" },
@@ -81,6 +92,8 @@ describe("ProgressBar", () => {
         });
 
         it("should handle custom width", () => {
+            expect.assertions(2);
+
             const bar = new ProgressBar({
                 total: 10,
                 width: 20,
@@ -96,27 +109,36 @@ describe("ProgressBar", () => {
 
     describe("update", () => {
         it("should update progress correctly", () => {
+            expect.assertions(2);
+
             const bar = new ProgressBar({ total: 100 });
 
             bar.update(25);
+
             expect(bar.render()).toContain("25%");
 
             bar.update(75);
+
             expect(bar.render()).toContain("75%");
         });
 
         it("should not exceed total", () => {
+            expect.assertions(1);
+
             const bar = new ProgressBar({ total: 10 });
 
             bar.update(15); // Try to go over total
+
             expect(bar.render()).toContain("10/10"); // Should be capped at total
         });
 
         it("should update payload", () => {
+            expect.assertions(2);
+
             const bar = new ProgressBar(
                 {
-                    total: 100,
                     format: "Progress: {percentage}% | {status}",
+                    total: 100,
                 },
                 undefined,
                 { status: "initial" },
@@ -132,20 +154,26 @@ describe("ProgressBar", () => {
 
     describe("increment", () => {
         it("should increment progress correctly", () => {
+            expect.assertions(2);
+
             const bar = new ProgressBar({ total: 100 });
 
             bar.increment(10);
+
             expect(bar.render()).toContain("10%");
 
             bar.increment(20);
+
             expect(bar.render()).toContain("30%");
         });
 
         it("should increment with payload", () => {
+            expect.assertions(2);
+
             const bar = new ProgressBar(
                 {
-                    total: 100,
                     format: "Progress: {percentage}% | {phase}",
+                    total: 100,
                 },
                 undefined,
                 { phase: "start" },
@@ -161,6 +189,8 @@ describe("ProgressBar", () => {
 
     describe("start/stop", () => {
         it("should handle start with new total", () => {
+            expect.assertions(2);
+
             const bar = new ProgressBar({ total: 50 });
 
             bar.start(100); // Change total to 100
@@ -171,64 +201,78 @@ describe("ProgressBar", () => {
         });
 
         it("should handle start with start value", () => {
+            expect.assertions(1);
+
             const bar = new ProgressBar({ total: 100 });
 
             bar.start(100, 50); // Start at 50
+
             expect(bar.render()).toContain("50%");
         });
     });
 });
 
-describe("getBarChar", () => {
+describe(getBarChar, () => {
     it("should return custom char if provided", () => {
+        expect.assertions(1);
         expect(getBarChar("🚀", "shades_classic", true)).toBe("🚀");
     });
 
     it("should return correct chars for shades_classic style", () => {
+        expect.assertions(2);
         expect(getBarChar(undefined, "shades_classic", true)).toBe("█");
         expect(getBarChar(undefined, "shades_classic", false)).toBe("░");
     });
 
     it("should return correct chars for shades_grey style", () => {
+        expect.assertions(2);
         expect(getBarChar(undefined, "shades_grey", true)).toBe("▓");
         expect(getBarChar(undefined, "shades_grey", false)).toBe("░");
     });
 
     it("should return correct chars for rect style", () => {
+        expect.assertions(2);
         expect(getBarChar(undefined, "rect", true)).toBe("▬");
         expect(getBarChar(undefined, "rect", false)).toBe("▭");
     });
 
     it("should return correct chars for filled style", () => {
+        expect.assertions(2);
         expect(getBarChar(undefined, "filled", true)).toBe("█");
         expect(getBarChar(undefined, "filled", false)).toBe(" ");
     });
 
     it("should return correct chars for solid style", () => {
+        expect.assertions(2);
         expect(getBarChar(undefined, "solid", true)).toBe("█");
         expect(getBarChar(undefined, "solid", false)).toBe(" ");
     });
 
     it("should return correct chars for ascii style", () => {
+        expect.assertions(2);
         expect(getBarChar(undefined, "ascii", true)).toBe("#");
         expect(getBarChar(undefined, "ascii", false)).toBe("-");
     });
 });
 
-describe("applyStyleToOptions", () => {
+describe(applyStyleToOptions, () => {
     it("should return options unchanged if no style", () => {
-        const options = { total: 100, width: 20 };
-        const result = applyStyleToOptions(options);
+        expect.assertions(1);
 
-        expect(result).toEqual(options);
+        const options = { total: 100, width: 20 };
+        const result = applyStyleToOptions(options) as any;
+
+        expect(result).toStrictEqual(options);
     });
 
     it("should apply style defaults", () => {
+        expect.assertions(3);
+
         const options = {
-            total: 100,
             style: "ascii" as const,
+            total: 100,
         };
-        const result = applyStyleToOptions(options);
+        const result = applyStyleToOptions(options) as any;
 
         expect(result.barCompleteChar).toBe("#");
         expect(result.barIncompleteChar).toBe("-");
@@ -236,13 +280,15 @@ describe("applyStyleToOptions", () => {
     });
 
     it("should allow overrides of style defaults", () => {
+        expect.assertions(3);
+
         const options = {
-            total: 100,
-            style: "ascii" as const,
             barCompleteChar: "🚀",
             barIncompleteChar: "🌟",
+            style: "ascii" as const,
+            total: 100,
         };
-        const result = applyStyleToOptions(options);
+        const result = applyStyleToOptions(options) as any;
 
         expect(result.barCompleteChar).toBe("🚀"); // Override preserved
         expect(result.barIncompleteChar).toBe("🌟"); // Override preserved
@@ -250,22 +296,27 @@ describe("applyStyleToOptions", () => {
     });
 });
 
-describe("MultiProgressBar", () => {
+describe(MultiProgressBar, () => {
     it("should create a multi progress bar", () => {
+        expect.assertions(1);
+
         const multiBar = new MultiProgressBar();
 
         expect(multiBar).toBeInstanceOf(MultiProgressBar);
     });
 
     it("should create bars with correct options", () => {
+        expect.assertions(3);
+
         const multiBar = new MultiProgressBar({
-            style: "ascii",
             format: "Task {task}: [{bar}] {percentage}%",
+            style: "ascii",
         });
 
         const bar = multiBar.create(100, 0, { task: "test" });
 
         expect(bar).toBeInstanceOf(ProgressBar);
+
         bar.update(50);
         const result = bar.render();
 
@@ -274,9 +325,11 @@ describe("MultiProgressBar", () => {
     });
 
     it("should handle multiple bars", () => {
+        expect.assertions(4);
+
         const multiBar = new MultiProgressBar({
-            style: "rect",
             format: "{task}: [{bar}] {percentage}%",
+            style: "rect",
         });
 
         const bar1 = multiBar.create(10, 0, { task: "A" });
@@ -295,6 +348,8 @@ describe("MultiProgressBar", () => {
     });
 
     it("should remove bars correctly", () => {
+        expect.assertions(3);
+
         const multiBar = new MultiProgressBar();
         const bar1 = multiBar.create(10);
         const bar2 = multiBar.create(10);
@@ -305,19 +360,16 @@ describe("MultiProgressBar", () => {
     });
 });
 
-describe("Integration with PailServer", () => {
+describe("integration with PailServer", () => {
     it("should create progress bars through PailServer", () => {
-        const mockInteractiveManager = {} as InteractiveManager;
-
-        // Mock the PailServer creation - we can't easily import it due to dependencies
-        // but we can test the core functionality
+        expect.assertions(3);
 
         const options = {
-            total: 100,
             style: "ascii" as const,
+            total: 100,
         };
 
-        const styledOptions = applyStyleToOptions(options);
+        const styledOptions = applyStyleToOptions(options) as any;
 
         expect(styledOptions.barCompleteChar).toBe("#");
         expect(styledOptions.barIncompleteChar).toBe("-");
