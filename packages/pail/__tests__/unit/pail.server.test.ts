@@ -50,6 +50,33 @@ describe("pailServerImpl", () => {
         expect(console.log).toBe(originalConsoleLog);
     });
 
+    it("should avoid infinite loop when wrapping console", () => {
+        expect.assertions(2);
+
+        const pailServer = new PailServer({ reporters: [new RawReporter()], stderr, stdout });
+        const logStdoutSpy = vi.spyOn(stdout, "write");
+
+        pailServer.wrapConsole();
+
+        const object = {
+            get value() {
+                // eslint-disable-next-line no-console
+                console.warn(object);
+
+                return "anything";
+            },
+        };
+
+        // This should complete without hanging (no infinite loop)
+        pailServer.warn(object);
+        pailServer.restoreConsole();
+
+        // Should have at least one log call (the original warn call)
+        expect(logStdoutSpy.mock.calls.length).toBeGreaterThan(0);
+        // Should not have hundreds of calls (which would indicate infinite looping)
+        expect(logStdoutSpy.mock.calls.length).toBeLessThan(100);
+    });
+
     it("should wrap and restore stdout and stderr streams", () => {
         expect.assertions(4);
 
@@ -140,5 +167,106 @@ describe("pailServerImpl", () => {
         expect(logStdoutSpy).toHaveBeenNthCalledWith(5, "        More of level 3");
         expect(logStdoutSpy).toHaveBeenNthCalledWith(6, "    Back to level 2");
         expect(logStdoutSpy).toHaveBeenNthCalledWith(7, "Back to the outer level");
+    });
+
+    describe("pause and resume", () => {
+        it("should queue messages when paused and flush them on resume", () => {
+            expect.assertions(3);
+
+            const pailServer = new PailServer({ reporters: [new RawReporter()], stderr, stdout });
+            const logStdoutSpy = vi.spyOn(stdout, "write");
+
+            // Pause the logger
+            pailServer.pause();
+
+            // These messages should be queued
+            pailServer.info("Message 1");
+            pailServer.warn("Message 2");
+            pailServer.debug("Message 3");
+
+            // No messages should have been logged yet
+            expect(logStdoutSpy).not.toHaveBeenCalled();
+
+            // Resume the logger
+            pailServer.resume();
+
+            // All three messages should now be logged in order
+            expect(logStdoutSpy).toHaveBeenCalledTimes(3);
+            expect(logStdoutSpy).toHaveBeenNthCalledWith(1, "Message 1");
+        });
+
+        it("should not queue messages when not paused", () => {
+            expect.assertions(2);
+
+            const pailServer = new PailServer({ reporters: [new RawReporter()], stderr, stdout });
+            const logStdoutSpy = vi.spyOn(stdout, "write");
+
+            // Log without pausing
+            pailServer.info("Immediate message");
+
+            // Message should be logged immediately
+            expect(logStdoutSpy).toHaveBeenCalledTimes(1);
+            expect(logStdoutSpy).toHaveBeenCalledWith("Immediate message");
+        });
+
+        it("should handle multiple pause/resume cycles", () => {
+            expect.assertions(3);
+
+            const pailServer = new PailServer({ reporters: [new RawReporter()], stderr, stdout });
+            const logStdoutSpy = vi.spyOn(stdout, "write");
+
+            // First cycle
+            pailServer.pause();
+            pailServer.info("Queued 1");
+            pailServer.resume();
+
+            expect(logStdoutSpy).toHaveBeenCalledTimes(1);
+
+            // Second cycle
+            pailServer.pause();
+            pailServer.info("Queued 2");
+            pailServer.info("Queued 3");
+            pailServer.resume();
+
+            expect(logStdoutSpy).toHaveBeenCalledTimes(3);
+
+            // Third cycle - immediate log
+            pailServer.info("Immediate");
+
+            expect(logStdoutSpy).toHaveBeenCalledTimes(4);
+        });
+
+        it("should preserve message order when flushing queue", () => {
+            expect.assertions(4);
+
+            const pailServer = new PailServer({ reporters: [new RawReporter()], stderr, stdout });
+            const logStdoutSpy = vi.spyOn(stdout, "write");
+
+            pailServer.pause();
+            pailServer.info("First");
+            pailServer.warn("Second");
+            pailServer.debug("Third");
+            pailServer.resume();
+
+            expect(logStdoutSpy).toHaveBeenCalledTimes(3);
+            expect(logStdoutSpy).toHaveBeenNthCalledWith(1, "First");
+            expect(logStdoutSpy).toHaveBeenNthCalledWith(2, "Second");
+            expect(logStdoutSpy).toHaveBeenNthCalledWith(3, "Third");
+        });
+
+        it("should not output messages when disabled even if queued", () => {
+            expect.assertions(1);
+
+            const pailServer = new PailServer({ reporters: [new RawReporter()], stderr, stdout });
+            const logStdoutSpy = vi.spyOn(stdout, "write");
+
+            pailServer.pause();
+            pailServer.info("Queued message");
+            pailServer.disable();
+            pailServer.resume();
+
+            // Message should not be logged because logger is disabled
+            expect(logStdoutSpy).not.toHaveBeenCalled();
+        });
     });
 });

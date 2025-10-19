@@ -913,7 +913,7 @@ importers:
         version: 2.0.0
       '@visulima/pail':
         specifier: 2.1.31
-        version: 2.1.31(ai@5.0.72(zod@4.1.12))(rotating-file-stream@3.2.7)
+        version: 2.1.31(@visulima/redact@2.0.0)(ai@5.0.72(zod@4.1.12))(rotating-file-stream@3.2.7)
       cli-table3:
         specifier: ^0.6.5
         version: 0.6.5
@@ -2989,6 +2989,12 @@ importers:
       '@visulima/pail':
         specifier: workspace:*
         version: link:../../..
+
+  packages/pail/examples/bun:
+    dependencies:
+      '@visulima/pail':
+        specifier: ^2.1.31
+        version: 2.1.31(@visulima/redact@2.0.0)(ai@5.0.72(zod@4.1.12))(rotating-file-stream@3.2.7)
 
   packages/pail/examples/nextjs:
     dependencies:
@@ -26845,7 +26851,7 @@ snapshots:
     transitivePeerDependencies:
       - ai
 
-  '@visulima/pail@2.1.31(ai@5.0.72(zod@4.1.12))(rotating-file-stream@3.2.7)':
+  '@visulima/pail@2.1.31(@visulima/redact@2.0.0)(ai@5.0.72(zod@4.1.12))(rotating-file-stream@3.2.7)':
     dependencies:
       '@visulima/colorize': 1.4.24
       '@visulima/error': 5.0.0(ai@5.0.72(zod@4.1.12))
@@ -26854,6 +26860,7 @@ snapshots:
       safe-stable-stringify: 2.5.0
       type-fest: 5.1.0
     optionalDependencies:
+      '@visulima/redact': 2.0.0
       rotating-file-stream: 3.2.7
     transitivePeerDependencies:
       - ai

@@ -25,6 +25,31 @@ import arrayify from "./utils/arrayify";
 import getLongestLabel from "./utils/get-longest-label";
 import mergeTypes from "./utils/merge-types";
 
+const preventLoop = <T extends (this: ThisType<T>, ...args: Parameters<T>) => ReturnType<T>>(function_: T): (...args: Parameters<T>) => ReturnType<T> => {
+    let doing = false;
+
+    // eslint-disable-next-line func-names
+    return function (...args: Parameters<T>): ReturnType<T> {
+        if (doing) {
+            return undefined as ReturnType<T>;
+        }
+
+        doing = true;
+
+        try {
+            // @ts-expect-error - this is the correct type
+            const result = function_.apply(this, args);
+
+            doing = false;
+
+            return result as ReturnType<T>;
+        } catch (error) {
+            doing = false;
+            throw error;
+        }
+    };
+};
+
 /**
  * Pail Browser Implementation.
  *
@@ -66,6 +91,11 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
     protected readonly logLevels: Record<string, number>;
 
     protected disabled: boolean;
+
+    protected paused: boolean;
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    protected messageQueue: { messageObject: any[]; raw: boolean; type: LiteralUnion<DefaultLogTypes, T> }[];
 
     protected scopeName: string[];
 
@@ -120,6 +150,8 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
         this.processors = new Set();
 
         this.disabled = options.disabled ?? false;
+        this.paused = false;
+        this.messageQueue = [];
 
         this.scopeName = arrayify(options.scope).filter(Boolean) as string[];
 
@@ -130,15 +162,18 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
 
         this.seqTimers = new Set();
 
+        // Track of last log
+        this.lastLog = {};
+
+        // Prevent infinite loop on logging
+        this.logger = preventLoop(this.logger).bind(this);
+
         // eslint-disable-next-line no-restricted-syntax,guard-for-in
         for (const type in this.types) {
             // @ts-expect-error - dynamic property
 
-            this[type] = this.#logger.bind(this, type as T, false);
+            this[type] = this.logger.bind(this, type as T, false);
         }
-
-        // Track of last log
-        this.lastLog = {};
 
         if (Array.isArray(options.reporters)) {
             this.registerReporters(options.reporters);
@@ -303,6 +338,52 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
     }
 
     /**
+     * Pauses logging and starts queuing messages.
+     *
+     * When paused, all log calls will be queued instead of being output immediately.
+     * The queued messages will be processed when resume() is called. This is useful
+     * for temporarily buffering log output during critical operations.
+     * @example
+     * ```typescript
+     * const logger = createPail();
+     * logger.pause();
+     * logger.info("This will be queued"); // Queued, not output yet
+     * logger.warn("This too"); // Also queued
+     * logger.resume(); // Now both messages are output
+     * ```
+     */
+    public pause(): void {
+        this.paused = true;
+    }
+
+    /**
+     * Resumes logging and flushes all queued messages.
+     *
+     * Processes all messages that were queued during the pause period and
+     * resumes normal logging behavior. Messages are output in the order
+     * they were originally called.
+     * @example
+     * ```typescript
+     * const logger = createPail();
+     * logger.pause();
+     * logger.info("Message 1"); // Queued
+     * logger.info("Message 2"); // Queued
+     * logger.resume(); // Both messages are now output in order
+     * logger.info("Message 3"); // Output immediately
+     * ```
+     */
+    public resume(): void {
+        this.paused = false;
+
+        // Flush all queued messages
+        const queue = this.messageQueue.splice(0);
+
+        for (const { messageObject, raw, type } of queue) {
+            this.logger(type, raw, ...messageObject);
+        }
+    }
+
+    /**
      * Creates a scoped logger instance.
      *
      * Returns a new logger instance that inherits all configuration but adds
@@ -363,7 +444,7 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
      */
     public time(label = "default"): void {
         if (this.seqTimers.has(label)) {
-            this.#logger("warn", false, {
+            this.logger("warn", false, {
                 message: `Timer '${label}' already exists`,
                 prefix: label,
             });
@@ -371,7 +452,7 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
             this.seqTimers.add(label);
             this.timersMap.set(label, Date.now());
 
-            this.#logger("start", false, {
+            this.logger("start", false, {
                 message: this.startTimerMessage,
                 prefix: label,
             });
@@ -406,13 +487,13 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             const span = Date.now() - this.timersMap.get(label)!;
 
-            this.#logger("info", false, {
+            this.logger("info", false, {
                 context: data,
                 message: span < 1000 ? `${span} ms` : `${(span / 1000).toFixed(2)} s`,
                 prefix: label,
             });
         } else {
-            this.#logger("warn", false, {
+            this.logger("warn", false, {
                 context: data,
                 message: "Timer not found",
                 prefix: label,
@@ -447,12 +528,12 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
 
             this.timersMap.delete(label);
 
-            this.#logger("stop", false, {
+            this.logger("stop", false, {
                 message: `${this.endTimerMessage} ${span < 1000 ? `${span} ms` : `${(span / 1000).toFixed(2)} s`}`,
                 prefix: label,
             });
         } else {
-            this.#logger("warn", false, {
+            this.logger("warn", false, {
                 message: "Timer not found",
                 prefix: label,
             });
@@ -527,7 +608,7 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
 
         this.countMap.set(label, current + 1);
 
-        this.#logger("log", false, {
+        this.logger("log", false, {
             message: `${label}: ${current + 1}`,
             prefix: label,
         });
@@ -551,7 +632,7 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
         if (this.countMap.has(label)) {
             this.countMap.delete(label);
         } else {
-            this.#logger("warn", false, {
+            this.logger("warn", false, {
                 message: `Count for ${label} does not exist`,
                 prefix: label,
             });
@@ -596,7 +677,7 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
             return;
         }
 
-        this.#logger("log", true, {
+        this.logger("log", true, {
             context: arguments_,
             message,
         });
@@ -741,8 +822,15 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
     }
 
     // eslint-disable-next-line sonarjs/cognitive-complexity
-    #logger(type: LiteralUnion<DefaultLogTypes, T>, raw: boolean, ...messageObject: any[]): void {
+    protected logger(type: LiteralUnion<DefaultLogTypes, T>, raw: boolean, ...messageObject: any[]): void {
         if (this.disabled) {
+            return;
+        }
+
+        // Queue messages when paused
+        if (this.paused) {
+            this.messageQueue.push({ messageObject, raw, type });
+
             return;
         }
 

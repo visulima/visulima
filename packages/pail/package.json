@@ -91,16 +91,12 @@
             }
         },
         "./browser": {
-            "import": {
-                "types": "./dist/index.browser.d.ts",
-                "default": "./dist/index.browser.js"
-            }
+            "types": "./dist/index.browser.d.ts",
+            "default": "./dist/index.browser.js"
         },
         "./server": {
-            "import": {
-                "types": "./dist/index.server.d.ts",
-                "default": "./dist/index.server.js"
-            }
+            "types": "./dist/index.server.d.ts",
+            "default": "./dist/index.server.js"
         },
         "./processor/redact": {
             "types": "./dist/processor/redact-processor.d.ts",
@@ -115,10 +111,8 @@
             "default": "./dist/processor/caller/caller-processor.js"
         },
         "./reporter/file": {
-            "import": {
-                "types": "./dist/reporter/file/json-file-reporter.d.ts",
-                "default": "./dist/reporter/file/json-file-reporter.js"
-            }
+            "types": "./dist/reporter/file/json-file-reporter.d.ts",
+            "default": "./dist/reporter/file/json-file-reporter.js"
         },
         "./reporter/json": {
             "browser": "./dist/reporter/json/index.browser.js",
@@ -135,10 +129,8 @@
             }
         },
         "./reporter/simple": {
-            "import": {
-                "types": "./dist/reporter/simple/simple-reporter.server.d.ts",
-                "default": "./dist/reporter/simple/simple-reporter.server.js"
-            }
+            "types": "./dist/reporter/simple/simple-reporter.server.d.ts",
+            "default": "./dist/reporter/simple/simple-reporter.server.js"
         },
         "./package.json": "./package.json"
     },

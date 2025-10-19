@@ -387,6 +387,31 @@ pail.enable();
 pail.success("This message will be logged");
 ```
 
+## Pause and Resume Loggers
+
+The `pause()` and `resume()` functions allow you to temporarily queue log messages and then flush them all at once. This is similar to how consola works and is useful when you need to buffer output during critical operations.
+
+When paused, all log calls will be queued instead of being output immediately. When you call `resume()`, all queued messages will be processed in the order they were called.
+
+```typescript
+import { pail } from "@visulima/pail";
+
+pail.pause();
+
+// These messages will be queued
+pail.info("First message");
+pail.warn("Second message");
+pail.success("Third message");
+
+// Resume logging - all queued messages are now output in order
+pail.resume();
+
+// This message is output immediately
+pail.info("Fourth message");
+```
+
+**Note:** Unlike `disable()`, which discards log messages, `pause()` queues them for later output. This makes it ideal for scenarios where you want to control when messages appear without losing them.
+
 ## Api
 
 ## Supported Node.js Versions
