@@ -83,7 +83,6 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
     protected readonly lastLog: {
         count?: number;
         object?: Meta<L>;
-        serialized?: string;
         time?: Date;
         timeout?: ReturnType<typeof setTimeout>;
     };
@@ -878,10 +877,18 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
 
             if (diffTime < this.throttle) {
                 try {
-                    const serializedLog = JSON.stringify([meta.label, meta.scope, meta.type, meta.message, meta.prefix, meta.suffix, meta.context]);
-                    const isSameLog = this.lastLog.serialized === serializedLog;
-
-                    this.lastLog.serialized = serializedLog;
+                    const isSameLog
+                        = this.lastLog.object
+                            && JSON.stringify([meta.label, meta.scope, meta.type, meta.message, meta.prefix, meta.suffix, meta.context])
+                            === JSON.stringify([
+                                this.lastLog.object.label,
+                                this.lastLog.object.scope,
+                                this.lastLog.object.type,
+                                this.lastLog.object.message,
+                                this.lastLog.object.prefix,
+                                this.lastLog.object.suffix,
+                                this.lastLog.object.context,
+                            ]);
 
                     if (isSameLog) {
                         this.lastLog.count = (this.lastLog.count || 0) + 1;

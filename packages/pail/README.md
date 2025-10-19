@@ -313,8 +313,8 @@ const id = setInterval(() => {
     if (--ticks < 0) {
         clearInterval(id);
 
-        interactiveManager.update(["✔ Success", "", "Messages:", "this line will be deleted!!!"]);
-        interactiveManager.erase(1);
+        interactiveManager.update("stdout", ["✔ Success", "", "Messages:", "this line will be deleted!!!"]);
+        interactiveManager.erase("stdout", 1);
         interactiveManager.unhook(false);
     } else {
         const frame = frames[(i = ++i % frames.length)];
@@ -322,7 +322,7 @@ const id = setInterval(() => {
         const message = messages[index];
 
         if (message) {
-            interactiveManager.update([`${frame} Some process...`, message]);
+            interactiveManager.update("stdout", [`${frame} Some process...`, message]);
         }
     }
 }, TIMEOUT);

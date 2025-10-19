@@ -3,7 +3,7 @@ import Stream from "node:stream";
 import { Buffer } from "node:buffer";
 
 import { pail, createPail } from "@visulima/pail";
-import { CallerProcessor } from "@visulima/pail/processor";
+import CallerProcessor from "@visulima/pail/processor/caller";
 import { JsonReporter } from "@visulima/pail/reporter/json";
 import { JsonFileReporter } from "@visulima/pail/reporter/file";
 
@@ -171,8 +171,8 @@ const id = setInterval(() => {
     if (--ticks < 0) {
         clearInterval(id);
 
-        interactiveManager.update(["✔ Success", "", "Messages:", "this line is be deleted!!!"]);
-        interactiveManager.erase(1);
+        interactiveManager.update("stdout", ["✔ Success", "", "Messages:", "this line is be deleted!!!"]);
+        interactiveManager.erase("stdout", 1);
         interactiveManager.unhook(false);
     } else {
         const frame = frames[(i = ++i % frames.length)];
@@ -180,7 +180,7 @@ const id = setInterval(() => {
         const message = messages[index];
 
         if (message) {
-            interactiveManager.update([`${frame} Some process...`, message]);
+            interactiveManager.update("stdout", [`${frame} Some process...`, message]);
         }
     }
 }, TIMEOUT);
