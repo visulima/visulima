@@ -47,14 +47,11 @@ SOFTWARE.
 <!-- DEPENDENCIES -->
 
 # Licenses of bundled dependencies
-
 The published @visulima/command-line-args artifact additionally contains code with the following licenses:
 MIT
 
 # Bundled dependencies:
-
 ## args-tokens
-
 License: MIT
 By: kazuya kawaguchi
 Repository: git+https://github.com/kazupon/args-tokens.git

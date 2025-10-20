@@ -180,117 +180,130 @@ export const commandLineArgs = (optionDefinitions: OptionDefinition[] | OptionDe
         // Convert args-tokens result to command-line-args format
         const output: CommandLineOptions = {};
 
-        // Process tokens to extract values
+        // Process tokens to extract values - optimized single pass
         const values: Record<string, any> = {};
+        const unknownArgs: string[] = [];
+        const consumedPositionalIndices = new Set<number>();
 
-        // First, collect values from tokens
+        // Build fast lookup maps for option definitions
+        const defMap = new Map<string, any>();
+        const aliasMap = new Map<string, any>();
+
+        for (const def of definitions) {
+            defMap.set(def.name, def);
+
+            if (def.alias) {
+                aliasMap.set(def.alias, def);
+            }
+        }
+
+        // Build token index map for fast lookups
+        const tokenIndexMap = new Map<number, any>();
+
+        for (const token of result.tokens) {
+            tokenIndexMap.set(token.index, token);
+        }
+
+        // Single optimized pass through tokens
         for (let i = 0; i < result.tokens.length; i++) {
             const token = result.tokens[i];
 
             if (token.kind === "option" && token.name) {
-                // Find the option definition to get the actual name (not alias)
-                const def = definitions.find((d) => d.name === token.name || d.alias === token.name);
+                // Fast lookup for option definition
+                const def = defMap.get(token.name) || aliasMap.get(token.name);
                 const optionName = def ? def.name : token.name;
 
-                // In partial mode, skip processing unknown options (they'll be handled in _unknown)
+                // In partial mode, collect unknown options and skip processing them
                 if (!def && options.partial) {
+                    unknownArgs.push(argv[token.index]);
                     continue;
                 }
 
                 if (token.value === undefined) {
-                    // Option without inline value, check if next token is a positional
+                    // Option without inline value
                     const nextToken = result.tokens[i + 1];
 
                     if (nextToken && nextToken.kind === "positional") {
-                        if (values[optionName] === undefined) {
-                            values[optionName] = nextToken.value;
-                        } else if (def && (def.multiple || def.lazyMultiple)) {
-                            // Handle multiple values
-                            if (!Array.isArray(values[optionName])) {
-                                values[optionName] = [values[optionName]];
+                        if (def && (def.multiple || def.lazyMultiple)) {
+                            // For multiple options, collect consecutive positionals
+                            let currentIndex = i + 1;
+                            const collectedValues: any[] = [];
+
+                            while (currentIndex < result.tokens.length && result.tokens[currentIndex].kind === "positional") {
+                                collectedValues.push(result.tokens[currentIndex].value);
+                                consumedPositionalIndices.add(result.tokens[currentIndex].index);
+                                currentIndex++;
                             }
 
-                            values[optionName].push(nextToken.value);
-                        }
+                            if (values[optionName] === undefined) {
+                                values[optionName] = collectedValues;
+                            } else {
+                                // If already exists, append
+                                if (!Array.isArray(values[optionName])) {
+                                    values[optionName] = [values[optionName]];
+                                }
 
-                        i++; // Skip the next token since we used it
+                                values[optionName].push(...collectedValues);
+                            }
+
+                            // Skip consumed tokens
+                            i = currentIndex - 1;
+                        } else {
+                            // Single value - take first positional
+                            values[optionName] = nextToken.value;
+                            consumedPositionalIndices.add(nextToken.index);
+                            i++; // Skip the consumed positional
+                        }
                     } else {
                         // Option without value - check if it should be boolean or null
                         values[optionName] = def && def.type === Boolean ? true : null;
                     }
                 } else {
                     // Option with inline value (--option=value)
+                    let { value } = token;
+
+                    // Special handling for boolean options with empty inline values
+                    if (def && def.type === Boolean && value === "") {
+                        value = true;
+                    }
+
+                    // For multiple options, collect consecutive positional values after inline value
+                    const collectedValues: any[] = [value];
+
+                    if (def && (def.multiple || def.lazyMultiple)) {
+                        // Collect consecutive positional tokens after this option
+                        let currentIndex = i + 1;
+
+                        while (currentIndex < result.tokens.length && result.tokens[currentIndex].kind === "positional") {
+                            collectedValues.push(result.tokens[currentIndex].value);
+                            consumedPositionalIndices.add(result.tokens[currentIndex].index);
+                            currentIndex++;
+                        }
+                        i = currentIndex - 1; // Skip consumed tokens
+                    }
+
                     if (values[optionName] === undefined) {
-                        values[optionName] = token.value;
+                        values[optionName] = def && (def.multiple || def.lazyMultiple) ? collectedValues : value;
                     } else if (def && (def.multiple || def.lazyMultiple)) {
                         // Handle multiple values
                         if (!Array.isArray(values[optionName])) {
                             values[optionName] = [values[optionName]];
                         }
 
-                        values[optionName].push(token.value);
+                        values[optionName].push(...collectedValues);
                     }
                 }
             }
         }
 
-        // Handle multiple values for options that expect them
-        // This handles cases like --colours value1 value2 value3
-        definitions.forEach((def) => {
-            if (def.multiple || def.lazyMultiple) {
-                const optionName = def.name;
-                const optionTokens = result.tokens.filter(
-                    (token) =>
-                        token.kind === "option" && token.name && definitions.find((d) => d.name === token.name || d.alias === token.name)?.name === optionName,
-                );
+        // Ensure multiple values are arrays
+        for (const [key, value] of Object.entries(values)) {
+            const def = defMap.get(key);
 
-                if (optionTokens.length > 0) {
-                    const multipleValues: any[] = [];
-
-                    // Find the index of the first occurrence of this option
-                    const firstOptionIndex = result.tokens.findIndex(
-                        (token) =>
-                            token.kind === "option"
-                            && token.name
-                            && definitions.find((d) => d.name === token.name || d.alias === token.name)?.name === optionName,
-                    );
-
-                    if (firstOptionIndex !== -1) {
-                        let currentIndex = firstOptionIndex + 1;
-
-                        // Collect consecutive positional values after this option
-                        while (currentIndex < result.tokens.length) {
-                            const currentToken = result.tokens[currentIndex];
-
-                            if (currentToken.kind === "positional") {
-                                multipleValues.push(currentToken.value);
-                                currentIndex++;
-                            } else if (currentToken.kind === "option") {
-                                // Stop if we hit another option
-                                break;
-                            } else {
-                                break;
-                            }
-                        }
-                    }
-
-                    if (multipleValues.length > 0) {
-                        values[optionName] = multipleValues;
-                    }
-                }
+            if (def && (def.multiple || def.lazyMultiple) && !Array.isArray(value)) {
+                values[key] = [value];
             }
-        });
-
-        // Handle multiple values - ensure they are arrays when multiple is set
-        definitions.forEach((def) => {
-            if (def.multiple || def.lazyMultiple) {
-                const key = def.name;
-
-                if (values[key] !== undefined && !Array.isArray(values[key])) {
-                    values[key] = [values[key]];
-                }
-            }
-        });
+        }
 
         // Handle defaultOption - collect positional arguments that weren't consumed by options
         const defaultOptionDef = definitions.find((d) => d.defaultOption);
@@ -356,6 +369,19 @@ export const commandLineArgs = (optionDefinitions: OptionDefinition[] | OptionDe
 
                         if (firstPositionalIndex !== -1) {
                             consumedIndices.add(firstPositionalIndex);
+                        }
+
+                        // Add remaining positionals to unknownArgs since in partial mode only first goes to defaultOption
+                        for (let i = 1; i < positionalValues.length; i++) {
+                            const remainingValue = positionalValues[i];
+                            const remainingIndex = result.tokens.findIndex(
+                                (token, index) => token.kind === "positional" && !consumedIndices.has(index) && token.value === remainingValue,
+                            );
+
+                            if (remainingIndex !== -1) {
+                                unknownArgs.push(argv[result.tokens[remainingIndex].index]);
+                                consumedIndices.add(remainingIndex); // Mark as processed
+                            }
                         }
                     }
                 } else {
@@ -528,107 +554,36 @@ export const commandLineArgs = (optionDefinitions: OptionDefinition[] | OptionDe
 
         // Handle unknown arguments for partial mode
         if (options.partial) {
-            const unknownArgs: string[] = [];
-
-            // Collect unknown arguments in argv order
-            argv.forEach((argument, index) => {
-                const token = result.tokens.find((t) => t.index === index);
-
-                if (!token) {
-                    // Argument not tokenized - add to unknown
-                    unknownArgs.push(argument);
-                } else if (token.kind === "option" && token.name) {
-                    const def = definitions.find((d) => d.name === token.name || d.alias === token.name);
-
-                    if (!def) {
-                        // Unknown option
-                        unknownArgs.push(argument);
-                    }
-                } else if (token.kind === "positional") {
-                    // Check if this positional should be unknown
-                    let isConsumed = false;
-
-                    // Check if consumed by a known option
-                    for (let i = 0; i < index; i++) {
-                        const previousToken = result.tokens.find((t) => t.index === i);
-
-                        if (previousToken && previousToken.kind === "option" && previousToken.name) {
-                            const def = definitions.find((d) => d.name === previousToken.name || d.alias === previousToken.name);
-
-                            if (def) {
-                                // Check if this option consumes the positional
-                                if (def.type !== Boolean && i + 1 === index) {
-                                    isConsumed = true;
-                                    break;
-                                }
-
-                                if (def.multiple && !def.defaultOption) {
-                                    // Multiple options consume consecutive positionals
-                                    let j = i + 1;
-
-                                    while (j < result.tokens.length) {
-                                        const nextToken = result.tokens.find((t) => t.index === j);
-
-                                        if (nextToken && nextToken.kind === "positional") {
-                                            if (j === index) {
-                                                isConsumed = true;
-                                                break;
-                                            }
-
-                                            j++;
-                                        } else {
-                                            break;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    // Check defaultOption consumption
-                    const defaultOptionDef = definitions.find((d) => d.defaultOption);
-
-                    if (!isConsumed && defaultOptionDef && options.partial) {
-                        // In partial mode, only first positional goes to defaultOption
-                        const positionalIndices = argv
-                            .map((a, i) => {
-                                return { arg: a, index: i };
-                            })
-                            .filter(({ arg: a, index: i }) => {
-                                const t = result.tokens.find((t) => t.index === i);
-
-                                return t && t.kind === "positional" && !isConsumed;
-                            })
-                            .map(({ index: i }) => i);
-
-                        if (positionalIndices.indexOf(index) > 0) {
-                            unknownArgs.push(argument);
-                        }
-                    } else if (!isConsumed && !defaultOptionDef) {
-                        // No defaultOption, all positionals are unknown
-                        unknownArgs.push(argument);
+            // Add unconsumed positional arguments as unknown when there's no defaultOption
+            if (!definitions.some((d) => d.defaultOption)) {
+                for (const token of result.tokens) {
+                    if (token.kind === "positional" && !consumedPositionalIndices.has(token.index)) {
+                        unknownArgs.push(argv[token.index]);
                     }
                 }
-            });
+            }
 
-            // Handle options with empty inline values in partial mode
-            // Some options with = followed by empty values should be treated as unknown
+            // Handle special cases for boolean options with empty inline values
             argv.forEach((argument) => {
                 if (argument.includes("=") && argument.endsWith("=")) {
                     const optionName = argument.split("=")[0].replace(/^--/, "");
-                    const def = definitions.find((d) => d.name === optionName);
+                    const def = defMap.get(optionName) || aliasMap.get(optionName);
 
                     // For boolean options with empty inline values, treat as unknown
                     // but still set the option to true (preserving the test behavior)
                     if (def && def.type === Boolean) {
                         unknownArgs.push(argument);
-                        output[optionName] = true;
                     }
                 }
             });
 
-            // Remove duplicates
-            const uniqueUnknown = [...new Set(unknownArgs)];
+            // Remove duplicates and sort by argv order
+            const uniqueUnknown = [...new Set(unknownArgs)].sort((a, b) => {
+                const indexA = argv.indexOf(a);
+                const indexB = argv.indexOf(b);
+
+                return indexA - indexB;
+            });
 
             if (uniqueUnknown.length > 0) {
                 output._unknown = uniqueUnknown;
