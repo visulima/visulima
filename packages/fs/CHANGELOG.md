@@ -1,3 +1,20 @@
+## @visulima/fs [4.0.1](https://github.com/visulima/visulima/compare/@visulima/fs@4.0.0...@visulima/fs@4.0.1) (2025-10-20)
+
+### Bug Fixes
+
+* **deps:** update minor updates ([#455](https://github.com/visulima/visulima/issues/455)) ([cebf7dc](https://github.com/visulima/visulima/commit/cebf7dcdc7f6ca423ad141f90f6c30279f5fa392))
+* **deps:** update patch updates ([#452](https://github.com/visulima/visulima/issues/452)) ([4da5cbd](https://github.com/visulima/visulima/commit/4da5cbd411ccd961be7fd6f454aaec841e220b5e))
+
+### Miscellaneous Chores
+
+* **deps:** update package versions and dependencies ([88d8d32](https://github.com/visulima/visulima/commit/88d8d32c4629a7a06c8770369191da2cc81087cc))
+* update package dependencies across multiple packages ([17e3f23](https://github.com/visulima/visulima/commit/17e3f2377c8a3f98e2eed2192c5adaf6e32558b5))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 5.0.1
+
 ## @visulima/fs [4.0.0](https://github.com/visulima/visulima/compare/@visulima/fs@3.1.9...@visulima/fs@4.0.0) (2025-10-15)
 
 ### ⚠ BREAKING CHANGES
