@@ -8,7 +8,7 @@ describe("ambiguous input", () => {
 
         const optionDefinitions = [{ alias: "c", name: "colour", type: String }];
 
-        expect(commandLineArgs(optionDefinitions, { argv: ["-c", "red"] })).toEqual({
+        expect(commandLineArgs(optionDefinitions, { argv: ["-c", "red"] })).toStrictEqual({
             colour: "red",
         });
     });
@@ -19,10 +19,7 @@ describe("ambiguous input", () => {
         const optionDefinitions = [{ alias: "c", name: "colour", type: String }];
         const argv = ["--colour", "--red"];
 
-        expect(
-            () => () => commandLineArgs(optionDefinitions, { argv }),
-            (error) => error.name === "UNKNOWN_OPTION",
-        );
+        expect(() => commandLineArgs(optionDefinitions, { argv })).toThrow((error) => error.name === "UNKNOWN_OPTION");
     });
 
     it("value looks like an option 3", () => {
@@ -30,9 +27,9 @@ describe("ambiguous input", () => {
 
         const optionDefinitions = [{ alias: "c", name: "colour", type: String }];
 
-        expect(() => () => {
+        expect(() => {
             commandLineArgs(optionDefinitions, { argv: ["--colour=--red"] });
-        });
+        }).toThrow();
     });
 
     it("value looks like an option 4", () => {
@@ -40,7 +37,7 @@ describe("ambiguous input", () => {
 
         const optionDefinitions = [{ alias: "c", name: "colour", type: String }];
 
-        expect(commandLineArgs(optionDefinitions, { argv: ["--colour=--red"] })).toEqual({
+        expect(commandLineArgs(optionDefinitions, { argv: ["--colour=--red"] })).toStrictEqual({
             colour: "--red",
         });
     });

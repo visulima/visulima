@@ -1,15 +1,19 @@
 import { createRequire } from "node:module";
 import { parseArgs as nodeParseArgs } from "node:util";
 
+import { parse as bombArgsParse } from "@bomb.sh/args";
 import { commandLineArgs } from "@visulima/command-line-args";
 import { ArgumentParser } from "argparse";
 import { parse as parseArgsTokens } from "args-tokens";
 import { jack as jackspeakParseArgs } from "jackspeak";
+import minimist from "minimist";
+import mri from "mri";
 import { bench, describe } from "vitest";
 import yargsParser from "yargs-parser";
 
 const require = createRequire(import.meta.url);
 const args = require("args");
+const commandLineArgsOriginal = require("command-line-args");
 
 // Benchmark scenarios - using simpler, more compatible args
 const simpleArgs = ["--verbose", "--count", "5", "--name", "test"];
@@ -27,6 +31,16 @@ describe("Command Line Args Benchmark", () => {
             ];
 
             commandLineArgs(optionDefinitions, { argv: simpleArgs });
+        });
+
+        bench("command-line-args", () => {
+            const optionDefinitions = [
+                { name: "verbose", type: Boolean },
+                { name: "count", type: Number },
+                { name: "name", type: String },
+            ];
+
+            commandLineArgsOriginal(optionDefinitions, { argv: simpleArgs });
         });
 
         bench("jackspeak", () => {
@@ -81,6 +95,28 @@ describe("Command Line Args Benchmark", () => {
             parser.add_argument("-n", "--name");
             parser.parse_args(simpleArgs);
         });
+
+        bench("mri", () => {
+            mri(simpleArgs, {
+                boolean: ["verbose"],
+                string: ["name"],
+            });
+        });
+
+        bench("@bomb.sh/args", () => {
+            bombArgsParse(simpleArgs, {
+                count: Number,
+                name: String,
+                verbose: Boolean,
+            });
+        });
+
+        bench("minimist", () => {
+            minimist(simpleArgs, {
+                boolean: ["verbose"],
+                string: ["name"],
+            });
+        });
     });
 
     describe("Boolean flags only", () => {
@@ -93,6 +129,17 @@ describe("Command Line Args Benchmark", () => {
             ];
 
             commandLineArgs(optionDefinitions, { argv: booleanArgs });
+        });
+
+        bench("command-line-args", () => {
+            const optionDefinitions = [
+                { name: "verbose", type: Boolean },
+                { name: "quiet", type: Boolean },
+                { name: "debug", type: Boolean },
+                { name: "color", type: Boolean },
+            ];
+
+            commandLineArgsOriginal(optionDefinitions, { argv: booleanArgs });
         });
 
         bench("jackspeak", () => {
@@ -152,6 +199,27 @@ describe("Command Line Args Benchmark", () => {
             parser.add_argument("-d", "--debug", { action: "store_true" });
             parser.add_argument("--color", { action: "store_true" });
             parser.parse_args(booleanArgs);
+        });
+
+        bench("mri", () => {
+            mri(booleanArgs, {
+                boolean: ["verbose", "quiet", "debug", "color"],
+            });
+        });
+
+        bench("@bomb.sh/args", () => {
+            bombArgsParse(booleanArgs, {
+                color: Boolean,
+                debug: Boolean,
+                quiet: Boolean,
+                verbose: Boolean,
+            });
+        });
+
+        bench("minimist", () => {
+            minimist(booleanArgs, {
+                boolean: ["verbose", "quiet", "debug", "color"],
+            });
         });
     });
 });

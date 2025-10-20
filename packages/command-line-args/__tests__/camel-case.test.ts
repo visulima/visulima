@@ -10,7 +10,7 @@ describe("camel case", () => {
         const argv = ["--one-two", "1", "--three"];
         const result = commandLineArgs(optionDefinitions, { argv, camelCase: true });
 
-        expect(result, {
+        expect(result).toStrictEqual({
             oneTwo: "1",
             three: true,
         });
@@ -28,7 +28,7 @@ describe("camel case", () => {
         const argv = ["--one-one", "1", "--two-two", "2", "--three-three", "--four-four", "4"];
         const result = commandLineArgs(optionDefinitions, { argv, camelCase: true });
 
-        expect(result, {
+        expect(result).toStrictEqual({
             _all: {
                 fourFour: "4",
                 oneOne: "1",
@@ -60,7 +60,7 @@ describe("camel case", () => {
         const argv = ["--one-one", "1", "--two-two", "2", "--three-three", "--four-four", "4", "--five"];
         const result = commandLineArgs(optionDefinitions, { argv, camelCase: true, partial: true });
 
-        expect(result, {
+        expect(result).toStrictEqual({
             _all: {
                 fourFour: "4",
                 oneOne: "1",

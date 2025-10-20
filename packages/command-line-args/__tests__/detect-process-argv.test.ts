@@ -8,7 +8,7 @@ describe("detect process argv", () => {
 
         process.argv = ["node", "filename", "--one", "eins"];
 
-        expect(commandLineArgs({ name: "one" }), {
+        expect(commandLineArgs({ name: "one" })).toStrictEqual({
             one: "eins",
         });
     });
@@ -18,7 +18,7 @@ describe("detect process argv", () => {
 
         process.argv = ["node", "filename", "--one", "eins"];
 
-        expect(commandLineArgs({ name: "one" }, { argv: process.argv.slice(2) })).toEqual({
+        expect(commandLineArgs({ name: "one" }, { argv: process.argv.slice(2) })).toStrictEqual({
             one: "eins",
         });
     });
@@ -28,7 +28,7 @@ describe("detect process argv", () => {
 
         process.argv = ["node", "filename", "--one", "eins"];
 
-        expect(commandLineArgs({ name: "one" }), {
+        expect(commandLineArgs({ name: "one" })).toStrictEqual({
             one: "eins",
         });
         expect(process.argv).toStrictEqual(["node", "filename", "--one", "eins"]);

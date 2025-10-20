@@ -40,7 +40,7 @@ describe("multiple", () => {
         const argv = ["--one", "1", "2"];
         const result = commandLineArgs(optionDefinitions, { argv });
 
-        expect(result, {
+        expect(result).toStrictEqual({
             one: ["1", "2"],
         });
     });
@@ -52,7 +52,7 @@ describe("multiple", () => {
         const argv = ["--one=1", "--one=2"];
         const result = commandLineArgs(optionDefinitions, { argv });
 
-        expect(result, {
+        expect(result).toStrictEqual({
             one: ["1", "2"],
         });
     });
@@ -64,7 +64,7 @@ describe("multiple", () => {
         const argv = ["--one=1", "--one=2", "3"];
         const result = commandLineArgs(optionDefinitions, { argv });
 
-        expect(result, {
+        expect(result).toStrictEqual({
             one: ["1", "2", "3"],
         });
     });
@@ -76,7 +76,7 @@ describe("multiple", () => {
         const argv = ["1", "2"];
         const result = commandLineArgs(optionDefinitions, { argv });
 
-        expect(result, {
+        expect(result).toStrictEqual({
             one: ["1", "2"],
         });
     });

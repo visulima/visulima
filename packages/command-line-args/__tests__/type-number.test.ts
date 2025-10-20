@@ -8,13 +8,13 @@ describe("type number", () => {
 
         const optionDefinitions = [{ name: "one", type: Number }];
 
-        expect(commandLineArgs(optionDefinitions, { argv: ["--one", "1"] }), { one: 1 });
-        expect(commandLineArgs(optionDefinitions, { argv: ["--one"] }), { one: null });
-        expect(commandLineArgs(optionDefinitions, { argv: ["--one", "-1"] }), { one: -1 });
+        expect(commandLineArgs(optionDefinitions, { argv: ["--one", "1"] })).toStrictEqual({ one: 1 });
+        expect(commandLineArgs(optionDefinitions, { argv: ["--one"] })).toStrictEqual({ one: null });
+        expect(commandLineArgs(optionDefinitions, { argv: ["--one", "-1"] })).toStrictEqual({ one: -1 });
 
         const result = commandLineArgs(optionDefinitions, { argv: ["--one", "asdf"] });
 
-        expect(isNaN(result.one));
+        expect(Number.isNaN(result.one)).toBe(true);
     });
 
     it("number multiple: 1", () => {
@@ -24,10 +24,10 @@ describe("type number", () => {
         const argv = ["--array", "1", "2", "3"];
         const result = commandLineArgs(optionDefinitions, { argv });
 
-        expect(result, {
+        expect(result).toStrictEqual({
             array: [1, 2, 3],
         });
-        expect(result, {
+        expect(result).toStrictEqual({
             array: ["1", "2", "3"],
         });
     });
@@ -39,10 +39,10 @@ describe("type number", () => {
         const argv = ["--array", "1", "--array", "2", "--array", "3"];
         const result = commandLineArgs(optionDefinitions, { argv });
 
-        expect(result, {
+        expect(result).toStrictEqual({
             array: [1, 2, 3],
         });
-        expect(result, {
+        expect(result).toStrictEqual({
             array: ["1", "2", "3"],
         });
     });

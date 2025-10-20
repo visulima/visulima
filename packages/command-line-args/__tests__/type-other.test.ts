@@ -13,8 +13,8 @@ describe("type other", () => {
             },
         ];
 
-        expect(commandLineArgs(definitions, { argv: ["--file", "one.js"] }), { file: "one.js" });
-        expect(commandLineArgs(definitions, { argv: ["--file"] }), { file: null });
+        expect(commandLineArgs(definitions, { argv: ["--file", "one.js"] })).toStrictEqual({ file: "one.js" });
+        expect(commandLineArgs(definitions, { argv: ["--file"] })).toStrictEqual({ file: null });
     });
 
     it("broken custom type function", () => {
@@ -29,9 +29,9 @@ describe("type other", () => {
             },
         ];
 
-        expect(() => () => {
+        expect(() => {
             commandLineArgs(definitions, { argv: ["--file", "one.js"] });
-        });
+        }).toThrow();
     });
 
     it("multiple: different values", () => {
@@ -45,8 +45,8 @@ describe("type other", () => {
             },
         ];
 
-        expect(commandLineArgs(definitions, { argv: ["--file", "one.js"] }), { file: ["one.js"] });
-        expect(commandLineArgs(definitions, { argv: ["--file", "one.js", "two.js"] }), { file: ["one.js", "two.js"] });
-        expect(commandLineArgs(definitions, { argv: ["--file"] }), { file: [] });
+        expect(commandLineArgs(definitions, { argv: ["--file", "one.js"] })).toStrictEqual({ file: ["one.js"] });
+        expect(commandLineArgs(definitions, { argv: ["--file", "one.js", "two.js"] })).toStrictEqual({ file: ["one.js", "two.js"] });
+        expect(commandLineArgs(definitions, { argv: ["--file"] })).toStrictEqual({ file: [] });
     });
 });

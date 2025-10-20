@@ -12,7 +12,7 @@ describe("detect process execArgv", () => {
         process.argv = ["node", "--one", "eins"];
         process.execArgv = ["-e", "something"];
 
-        expect(commandLineArgs({ name: "one" }), {
+        expect(commandLineArgs({ name: "one" })).toStrictEqual({
             one: "eins",
         });
 

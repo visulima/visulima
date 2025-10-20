@@ -13,7 +13,7 @@ describe("stop at first unknown", () => {
         const argv = ["--one", "a", "--two"];
         const result = commandLineArgs(optionDefinitions, { argv, partial: true, stopAtFirstUnknown: true });
 
-        expect(result, {
+        expect(result).toStrictEqual({
             _unknown: ["a", "--two"],
             one: true,
         });
@@ -26,7 +26,7 @@ describe("stop at first unknown", () => {
         const argv = ["--one", "1", "--", "--two", "2"];
         const result = commandLineArgs(optionDefinitions, { argv, stopAtFirstUnknown: true });
 
-        expect(result, {
+        expect(result).toStrictEqual({
             _unknown: ["--", "--two", "2"],
             one: "1",
         });
@@ -39,7 +39,7 @@ describe("stop at first unknown", () => {
         const argv = ["--one", "1", "--", "--two", "2"];
         const result = commandLineArgs(optionDefinitions, { argv, partial: true, stopAtFirstUnknown: true });
 
-        expect(result, {
+        expect(result).toStrictEqual({
             _unknown: ["--", "--two", "2"],
             one: "1",
         });

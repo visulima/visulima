@@ -9,7 +9,7 @@ describe("alias", () => {
         const optionDefinitions = [{ alias: "v", name: "verbose" }];
         const argv = ["-v"];
 
-        expect(commandLineArgs(optionDefinitions, { argv })).toEqual({
+        expect(commandLineArgs(optionDefinitions, { argv })).toStrictEqual({
             verbose: null,
         });
     });
@@ -20,7 +20,7 @@ describe("alias", () => {
         const optionDefinitions = [{ alias: "d", name: "dry-run", type: Boolean }];
         const argv = ["-d"];
 
-        expect(commandLineArgs(optionDefinitions, { argv })).toEqual({
+        expect(commandLineArgs(optionDefinitions, { argv })).toStrictEqual({
             "dry-run": true,
         });
     });
@@ -34,7 +34,7 @@ describe("alias", () => {
         ];
         const argv = ["-v", "-c"];
 
-        expect(commandLineArgs(optionDefinitions, { argv })).toEqual({
+        expect(commandLineArgs(optionDefinitions, { argv })).toStrictEqual({
             colour: null,
             verbose: true,
         });

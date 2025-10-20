@@ -9,14 +9,10 @@ describe("case insensitive", () => {
 
         const optionDefinitions = [{ alias: "d", name: "dryRun", type: Boolean }];
 
-        expect(
-            () => () => commandLineArgs(optionDefinitions, { argv: ["--DRYrun"] }),
+        expect(() => commandLineArgs(optionDefinitions, { argv: ["--DRYrun"] })).toThrow(
             (error) => error.name === "UNKNOWN_OPTION" && error.optionName === "--DRYrun",
         );
-        expect(
-            () => () => commandLineArgs(optionDefinitions, { argv: ["-D"] }),
-            (error) => error.name === "UNKNOWN_OPTION" && error.optionName === "-D",
-        );
+        expect(() => commandLineArgs(optionDefinitions, { argv: ["-D"] })).toThrow((error) => error.name === "UNKNOWN_OPTION" && error.optionName === "-D");
     });
 
     it("option no value", () => {
@@ -26,7 +22,7 @@ describe("case insensitive", () => {
         const argv = ["--DRYrun"];
         const result = commandLineArgs(optionDefinitions, { argv, caseInsensitive: true });
 
-        expect(result, {
+        expect(result).toStrictEqual({
             dryRun: true,
         });
     });
@@ -38,7 +34,7 @@ describe("case insensitive", () => {
         const argv = ["--coLour", "red"];
         const result = commandLineArgs(optionDefinitions, { argv, caseInsensitive: true });
 
-        expect(result, {
+        expect(result).toStrictEqual({
             colour: "red",
         });
     });
@@ -50,7 +46,7 @@ describe("case insensitive", () => {
         const argv = ["-D"];
         const result = commandLineArgs(optionDefinitions, { argv, caseInsensitive: true });
 
-        expect(result, {
+        expect(result).toStrictEqual({
             dryRun: true,
         });
     });
@@ -62,7 +58,7 @@ describe("case insensitive", () => {
         const argv = ["--colour=red", "--COLOUR", "green", "--colOUR", "blue"];
         const result = commandLineArgs(optionDefinitions, { argv, caseInsensitive: true });
 
-        expect(result, {
+        expect(result).toStrictEqual({
             colour: ["red", "green", "blue"],
         });
     });
@@ -74,7 +70,7 @@ describe("case insensitive", () => {
         const argv = ["--dry-RUN"];
         const result = commandLineArgs(optionDefinitions, { argv, camelCase: true, caseInsensitive: true });
 
-        expect(result, {
+        expect(result).toStrictEqual({
             dryRun: true,
         });
     });

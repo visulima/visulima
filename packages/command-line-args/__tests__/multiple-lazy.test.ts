@@ -10,7 +10,7 @@ describe("multiple lazy", () => {
         const optionDefinitions = [{ lazyMultiple: true, name: "one" }];
         const result = commandLineArgs(optionDefinitions, { argv });
 
-        expect(result, {
+        expect(result).toStrictEqual({
             one: ["a", "b", "d"],
         });
     });
@@ -32,7 +32,7 @@ describe("multiple lazy", () => {
         const argv = ["--one=1", "--one=2"];
         const result = commandLineArgs(optionDefinitions, { argv });
 
-        expect(result, {
+        expect(result).toStrictEqual({
             one: ["1", "2"],
         });
     });
@@ -44,7 +44,7 @@ describe("multiple lazy", () => {
         const argv = ["--one=1", "--one=2", "--one", "3"];
         const result = commandLineArgs(optionDefinitions, { argv });
 
-        expect(result, {
+        expect(result).toStrictEqual({
             one: ["1", "2", "3"],
         });
     });
@@ -56,7 +56,7 @@ describe("multiple lazy", () => {
         const argv = ["1", "2"];
         const result = commandLineArgs(optionDefinitions, { argv });
 
-        expect(result, {
+        expect(result).toStrictEqual({
             one: ["1", "2"],
         });
     });
@@ -67,10 +67,7 @@ describe("multiple lazy", () => {
         const optionDefinitions = [{ lazyMultiple: true, name: "one" }];
         const argv = ["--one", "1", "2"];
 
-        expect(
-            () => () => commandLineArgs(optionDefinitions, { argv }),
-            (error) => error.name === "UNKNOWN_VALUE" && error.value === "2",
-        );
+        expect(() => commandLineArgs(optionDefinitions, { argv })).toThrow((error) => error.name === "UNKNOWN_VALUE" && error.value === "2");
     });
 
     it("greedy style, string, --option=value", () => {
@@ -80,7 +77,7 @@ describe("multiple lazy", () => {
         const argv = ["--one=1", "--one=2"];
         const result = commandLineArgs(optionDefinitions, { argv });
 
-        expect(result, {
+        expect(result).toStrictEqual({
             one: ["1", "2"],
         });
     });
@@ -91,9 +88,6 @@ describe("multiple lazy", () => {
         const optionDefinitions = [{ lazyMultiple: true, name: "one" }];
         const argv = ["--one=1", "--one=2", "3"];
 
-        expect(
-            () => () => commandLineArgs(optionDefinitions, { argv }),
-            (error) => error.name === "UNKNOWN_VALUE" && error.value === "3",
-        );
+        expect(() => commandLineArgs(optionDefinitions, { argv })).toThrow((error) => error.name === "UNKNOWN_VALUE" && error.value === "3");
     });
 });

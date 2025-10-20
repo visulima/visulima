@@ -9,10 +9,7 @@ describe("exceptions invalid definition", () => {
         const optionDefinitions = [{ something: "one" }, { something: "two" }];
         const argv = ["--one", "--two"];
 
-        expect(
-            () => () => commandLineArgs(optionDefinitions, { argv }),
-            (error) => error.name === "INVALID_DEFINITIONS",
-        );
+        expect(() => commandLineArgs(optionDefinitions, { argv })).toThrow((error) => error.name === "INVALID_DEFINITIONS");
     });
 
     it("throws if dev set a numeric alias", () => {
@@ -21,10 +18,7 @@ describe("exceptions invalid definition", () => {
         const optionDefinitions = [{ alias: "1", name: "colours" }];
         const argv = ["--colours", "red"];
 
-        expect(
-            () => () => commandLineArgs(optionDefinitions, { argv }),
-            (error) => error.name === "INVALID_DEFINITIONS",
-        );
+        expect(() => commandLineArgs(optionDefinitions, { argv })).toThrow((error) => error.name === "INVALID_DEFINITIONS");
     });
 
     it("throws if dev set an alias of \"-\"", () => {
@@ -33,10 +27,7 @@ describe("exceptions invalid definition", () => {
         const optionDefinitions = [{ alias: "-", name: "colours" }];
         const argv = ["--colours", "red"];
 
-        expect(
-            () => () => commandLineArgs(optionDefinitions, { argv }),
-            (error) => error.name === "INVALID_DEFINITIONS",
-        );
+        expect(() => commandLineArgs(optionDefinitions, { argv })).toThrow((error) => error.name === "INVALID_DEFINITIONS");
     });
 
     it("multi-character alias", () => {
@@ -45,10 +36,7 @@ describe("exceptions invalid definition", () => {
         const optionDefinitions = [{ alias: "aa", name: "one" }];
         const argv = ["--one", "red"];
 
-        expect(
-            () => () => commandLineArgs(optionDefinitions, { argv }),
-            (error) => error.name === "INVALID_DEFINITIONS",
-        );
+        expect(() => commandLineArgs(optionDefinitions, { argv })).toThrow((error) => error.name === "INVALID_DEFINITIONS");
     });
 
     it("invalid type values 1", () => {
@@ -56,10 +44,7 @@ describe("exceptions invalid definition", () => {
 
         const argv = ["--one", "something"];
 
-        expect(
-            () => () => commandLineArgs([{ name: "one", type: "string" }], { argv }),
-            (error) => error.name === "INVALID_DEFINITIONS",
-        );
+        expect(() => commandLineArgs([{ name: "one", type: "string" }], { argv })).toThrow((error) => error.name === "INVALID_DEFINITIONS");
     });
 
     it("invalid type values 2", () => {
@@ -67,11 +52,7 @@ describe("exceptions invalid definition", () => {
 
         const argv = ["--one", "something"];
 
-        expect(
-            () => () => commandLineArgs([{ name: "one", type: 234 }], { argv }),
-
-            (error) => error.name === "INVALID_DEFINITIONS",
-        );
+        expect(() => commandLineArgs([{ name: "one", type: 234 }], { argv })).toThrow((error) => error.name === "INVALID_DEFINITIONS");
     });
 
     it("invalid type values 3", () => {
@@ -79,11 +60,7 @@ describe("exceptions invalid definition", () => {
 
         const argv = ["--one", "something"];
 
-        expect(
-            () => () => commandLineArgs([{ name: "one", type: {} }], { argv }),
-
-            (error) => error.name === "INVALID_DEFINITIONS",
-        );
+        expect(() => commandLineArgs([{ name: "one", type: {} }], { argv })).toThrow((error) => error.name === "INVALID_DEFINITIONS");
     });
 
     it("invalid type values 4", () => {
@@ -91,12 +68,9 @@ describe("exceptions invalid definition", () => {
 
         const argv = ["--one", "something"];
 
-        expect(
-            () => () => {
-                commandLineArgs([{ name: "one", type: () => {} }], { argv });
-            },
-            /invalid/i,
-        );
+        expect(() => {
+            commandLineArgs([{ name: "one", type: () => {} }], { argv });
+        }).toThrow(/invalid/i);
     });
 
     it("duplicate name", () => {
@@ -105,10 +79,7 @@ describe("exceptions invalid definition", () => {
         const optionDefinitions = [{ name: "colours" }, { name: "colours" }];
         const argv = ["--colours", "red"];
 
-        expect(
-            () => () => commandLineArgs(optionDefinitions, { argv }),
-            (error) => error.name === "INVALID_DEFINITIONS",
-        );
+        expect(() => commandLineArgs(optionDefinitions, { argv })).toThrow((error) => error.name === "INVALID_DEFINITIONS");
     });
 
     it("duplicate name caused by case insensitivity", () => {
@@ -117,10 +88,7 @@ describe("exceptions invalid definition", () => {
         const optionDefinitions = [{ name: "colours" }, { name: "coloURS" }];
         const argv = ["--colours", "red"];
 
-        expect(
-            () => () => commandLineArgs(optionDefinitions, { argv, caseInsensitive: true }),
-            (error) => error.name === "INVALID_DEFINITIONS",
-        );
+        expect(() => commandLineArgs(optionDefinitions, { argv, caseInsensitive: true })).toThrow((error) => error.name === "INVALID_DEFINITIONS");
     });
 
     it("case sensitive names in different case", () => {
@@ -129,7 +97,7 @@ describe("exceptions invalid definition", () => {
         const optionDefinitions = [{ name: "colours" }, { name: "coloURS" }];
         const argv = ["--colours", "red", "--coloURS", "green"];
 
-        expect(commandLineArgs(optionDefinitions, { argv })).toEqual({
+        expect(commandLineArgs(optionDefinitions, { argv })).toStrictEqual({
             colours: "red",
             coloURS: "green",
         });
@@ -144,10 +112,7 @@ describe("exceptions invalid definition", () => {
         ];
         const argv = ["--one", "red"];
 
-        expect(
-            () => () => commandLineArgs(optionDefinitions, { argv }),
-            (error) => error.name === "INVALID_DEFINITIONS",
-        );
+        expect(() => commandLineArgs(optionDefinitions, { argv })).toThrow((error) => error.name === "INVALID_DEFINITIONS");
     });
 
     it("duplicate alias caused by case insensitivity", () => {
@@ -159,11 +124,7 @@ describe("exceptions invalid definition", () => {
         ];
         const argv = ["-a", "red"];
 
-        expect(
-            () => () => commandLineArgs(optionDefinitions, { argv, caseInsensitive: true }),
-
-            (error) => error.name === "INVALID_DEFINITIONS",
-        );
+        expect(() => commandLineArgs(optionDefinitions, { argv, caseInsensitive: true })).toThrow((error) => error.name === "INVALID_DEFINITIONS");
     });
 
     it("case sensitive aliases in different case", () => {
@@ -175,7 +136,7 @@ describe("exceptions invalid definition", () => {
         ];
         const argv = ["-a", "red"];
 
-        expect(commandLineArgs(optionDefinitions, { argv })).toEqual({
+        expect(commandLineArgs(optionDefinitions, { argv })).toStrictEqual({
             one: "red",
         });
     });
@@ -189,10 +150,7 @@ describe("exceptions invalid definition", () => {
         ];
         const argv = ["--one", "red"];
 
-        expect(
-            () => () => commandLineArgs(optionDefinitions, { argv }),
-            (error) => error.name === "INVALID_DEFINITIONS",
-        );
+        expect(() => commandLineArgs(optionDefinitions, { argv })).toThrow((error) => error.name === "INVALID_DEFINITIONS");
     });
 
     it("multiple defaultOptions 2", () => {
@@ -206,10 +164,7 @@ describe("exceptions invalid definition", () => {
         ];
         const argv = ["--one", "1", "file1", "file2", "--two", "2"];
 
-        expect(
-            () => () => commandLineArgs(optionDefinitions, { argv }),
-            (error) => error.name === "INVALID_DEFINITIONS",
-        );
+        expect(() => commandLineArgs(optionDefinitions, { argv })).toThrow((error) => error.name === "INVALID_DEFINITIONS");
     });
 
     it("defaultOption on a Boolean type", () => {
@@ -218,9 +173,6 @@ describe("exceptions invalid definition", () => {
         const optionDefinitions = [{ defaultOption: true, name: "one", type: Boolean }];
         const argv = ["--one", "red"];
 
-        expect(
-            () => () => commandLineArgs(optionDefinitions, { argv }),
-            (error) => error.name === "INVALID_DEFINITIONS",
-        );
+        expect(() => commandLineArgs(optionDefinitions, { argv })).toThrow((error) => error.name === "INVALID_DEFINITIONS");
     });
 });

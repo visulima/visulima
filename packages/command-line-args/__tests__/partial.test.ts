@@ -10,7 +10,7 @@ describe("partial", () => {
         const argv = ["--two", "two", "--one", "two"];
         const options = commandLineArgs(definitions, { argv, partial: true });
 
-        expect(options, {
+        expect(options).toStrictEqual({
             _unknown: ["--two", "two", "two"],
             one: true,
         });
@@ -23,7 +23,7 @@ describe("partial", () => {
         const argv = ["--files", "file1", "--one", "file2"];
         const options = commandLineArgs(definitions, { argv, partial: true });
 
-        expect(options, {
+        expect(options).toStrictEqual({
             _unknown: ["--one"],
             files: ["file1", "file2"],
         });
@@ -34,7 +34,7 @@ describe("partial", () => {
 
         const definitions = [{ name: "one", type: Boolean }];
 
-        expect(commandLineArgs(definitions, { argv: ["aaa", "--one", "aaa", "aaa"], partial: true }), {
+        expect(commandLineArgs(definitions, { argv: ["aaa", "--one", "aaa", "aaa"], partial: true })).toStrictEqual({
             _unknown: ["aaa", "aaa", "aaa"],
             one: true,
         });
@@ -50,7 +50,7 @@ describe("partial", () => {
         const argv = ["-ab"];
         const options = commandLineArgs(definitions, { argv, partial: true });
 
-        expect(options, {
+        expect(options).toStrictEqual({
             _unknown: ["-a", "-b"],
         });
     });
@@ -65,7 +65,7 @@ describe("partial", () => {
         const argv = ["-ob"];
         const options = commandLineArgs(definitions, { argv, partial: true });
 
-        expect(options, {
+        expect(options).toStrictEqual({
             _unknown: ["-b"],
             one: null,
         });
@@ -82,7 +82,7 @@ describe("partial", () => {
         const argv = ["file1", "--one", "file2", "-t", "--two=3", "file3", "-ab"];
         const options = commandLineArgs(definitions, { argv, partial: true });
 
-        expect(options, {
+        expect(options).toStrictEqual({
             _unknown: ["-a", "-b"],
             files: ["file1", "file2", "file3"],
             one: true,
@@ -97,7 +97,7 @@ describe("partial", () => {
         const argv = ["file1", "--two=3", "--four", "5"];
         const options = commandLineArgs(definitions, { argv, partial: true });
 
-        expect(options, {
+        expect(options).toStrictEqual({
             _unknown: ["--two=3", "--four", "5"],
             file: "file1",
         });
@@ -110,7 +110,7 @@ describe("partial", () => {
         const argv = ["--file", "--file=file2", "--two=3", "--four", "5"];
         const options = commandLineArgs(definitions, { argv, partial: true });
 
-        expect(options, {
+        expect(options).toStrictEqual({
             _unknown: ["--two=3", "--four", "5"],
             file: "file2",
         });
@@ -123,7 +123,7 @@ describe("partial", () => {
         const argv = ["--file", "--file=file2", "--two=3", "--four", "5", "file3"];
         const options = commandLineArgs(definitions, { argv, partial: true });
 
-        expect(options, {
+        expect(options).toStrictEqual({
             _unknown: ["--two=3", "--four", "5", "file3"],
             file: "file2",
         });
@@ -136,7 +136,7 @@ describe("partial", () => {
         const argv = ["file1", "file2", "--two=3", "--four", "5"];
         const options = commandLineArgs(definitions, { argv, partial: true });
 
-        expect(options, {
+        expect(options).toStrictEqual({
             _unknown: ["file2", "--two=3", "--four", "5"],
             file: "file1",
         });
@@ -149,7 +149,7 @@ describe("partial", () => {
         const argv = ["file1", "--files", "file2", "-t", "--two=3", "file3", "-ab", "--files=file4"];
         const options = commandLineArgs(definitions, { argv, partial: true });
 
-        expect(options, {
+        expect(options).toStrictEqual({
             _unknown: ["file1", "-t", "--two=3", "file3", "-a", "-b"],
             files: ["file2", "file4"],
         });
@@ -166,7 +166,7 @@ describe("partial", () => {
         const argv = ["--foo", "bar", "-v", "libfn", "--libarg", "val1", "-r"];
         const options = commandLineArgs(definitions, { argv, partial: true });
 
-        expect(options, {
+        expect(options).toStrictEqual({
             _unknown: ["--libarg", "val1", "-r"],
             foo: "bar",
             libs: "libfn",
@@ -181,7 +181,7 @@ describe("partial", () => {
         const argv = ["file1", "file2", "--unknown=something"];
         const options = commandLineArgs(definitions, { argv, partial: true });
 
-        expect(options, {
+        expect(options).toStrictEqual({
             _unknown: ["--unknown=something"],
             files: ["file1", "file2"],
         });
@@ -194,7 +194,7 @@ describe("partial", () => {
         const argv = ["file1", "file2", "--unknown=something", "--files", "file3", "--files=file4"];
         const options = commandLineArgs(definitions, { argv, partial: true });
 
-        expect(options, {
+        expect(options).toStrictEqual({
             _unknown: ["--unknown=something"],
             files: ["file1", "file2", "file3", "file4"],
         });
@@ -207,7 +207,7 @@ describe("partial", () => {
         const argv = ["--unknown", "file1", "--another", "something", "file2", "--unknown=something", "--files", "file3", "--files=file4"];
         const options = commandLineArgs(definitions, { argv, partial: true });
 
-        expect(options, {
+        expect(options).toStrictEqual({
             _unknown: ["--unknown", "--another", "--unknown=something"],
             files: ["file1", "something", "file2", "file3", "file4"],
         });
@@ -220,7 +220,7 @@ describe("partial", () => {
         const argv = ["--unknown", "--unknown=something", "--file=file1", "--unknown"];
         const options = commandLineArgs(definitions, { argv, partial: true });
 
-        expect(options, {
+        expect(options).toStrictEqual({
             _unknown: ["--unknown", "--unknown=something", "--unknown"],
             file: "file1",
         });
@@ -232,7 +232,7 @@ describe("partial", () => {
         const optionDefinitions = [{ defaultOption: true, name: "files" }];
         const argv = ["file1", "file2"];
 
-        expect(commandLineArgs(optionDefinitions, { argv, partial: true })).toEqual({
+        expect(commandLineArgs(optionDefinitions, { argv, partial: true })).toStrictEqual({
             _unknown: ["file2"],
             files: "file1",
         });

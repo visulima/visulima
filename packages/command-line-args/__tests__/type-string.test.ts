@@ -8,8 +8,8 @@ describe("type string", () => {
 
         const optionDefinitions = [{ name: "one", type: String }];
 
-        expect(commandLineArgs(optionDefinitions, { argv: ["--one", "yeah"] }), { one: "yeah" });
-        expect(commandLineArgs(optionDefinitions, { argv: ["--one"] }), { one: null });
-        expect(commandLineArgs(optionDefinitions, { argv: ["--one", "3"] }), { one: "3" });
+        expect(commandLineArgs(optionDefinitions, { argv: ["--one", "yeah"] })).toStrictEqual({ one: "yeah" });
+        expect(commandLineArgs(optionDefinitions, { argv: ["--one"] })).toStrictEqual({ one: null });
+        expect(commandLineArgs(optionDefinitions, { argv: ["--one", "3"] })).toStrictEqual({ one: "3" });
     });
 });

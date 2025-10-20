@@ -14,7 +14,7 @@ describe("grouping", () => {
         const argv = ["--one", "1", "--two", "2", "--three", "3"];
         const output = commandLineArgs(definitions, { argv });
 
-        expect(output, {
+        expect(output).toStrictEqual({
             _all: {
                 one: "1",
                 three: "3",
@@ -35,7 +35,7 @@ describe("grouping", () => {
 
         const definitions = [{ group: ["a", "f"], name: "one" }, { group: ["a", "g"], name: "two" }, { name: "three" }];
 
-        expect(commandLineArgs(definitions, { argv: ["--one", "1", "--two", "2", "--three", "3"] })).toEqual({
+        expect(commandLineArgs(definitions, { argv: ["--one", "1", "--two", "2", "--three", "3"] })).toStrictEqual({
             _all: {
                 one: "1",
                 three: "3",
@@ -68,7 +68,7 @@ describe("grouping", () => {
         const argv = [];
         const output = commandLineArgs(definitions, { argv });
 
-        expect(output, {
+        expect(output).toStrictEqual({
             _all: {},
             a: {},
             b: {},
@@ -82,7 +82,7 @@ describe("grouping", () => {
         const argv = [];
         const output = commandLineArgs(definitions, { argv });
 
-        expect(output, {
+        expect(output).toStrictEqual({
             _all: {},
             a: {},
         });
@@ -95,7 +95,7 @@ describe("grouping", () => {
         const argv = ["--three", "3"];
         const output = commandLineArgs(definitions, { argv });
 
-        expect(output, {
+        expect(output).toStrictEqual({
             _all: { three: "3" },
             _none: { three: "3" },
             a: {},
@@ -109,7 +109,7 @@ describe("grouping", () => {
         const argv = ["--three", "3", "--four", "4"];
         const output = commandLineArgs(definitions, { argv });
 
-        expect(output, {
+        expect(output).toStrictEqual({
             _all: { four: "4", three: "3" },
             _none: { four: "4", three: "3" },
             a: {},
@@ -126,7 +126,7 @@ describe("grouping", () => {
         ];
         const argv = ["--one", "1", "--two", "2", "--three", "3", "ham", "--cheese"];
 
-        expect(commandLineArgs(definitions, { argv, partial: true })).toEqual({
+        expect(commandLineArgs(definitions, { argv, partial: true })).toStrictEqual({
             _all: {
                 one: "1",
                 three: "3",
@@ -149,7 +149,7 @@ describe("grouping", () => {
         const definitions = [{ group: ["a", "f"], name: "one" }, { group: ["a", "g"], name: "two" }, { name: "three" }];
         const argv = ["--cheese", "--one", "1", "ham", "--two", "2", "--three", "3", "-c"];
 
-        expect(commandLineArgs(definitions, { argv, partial: true })).toEqual({
+        expect(commandLineArgs(definitions, { argv, partial: true })).toStrictEqual({
             _all: {
                 one: "1",
                 three: "3",

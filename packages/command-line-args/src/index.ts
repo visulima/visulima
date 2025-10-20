@@ -1,3 +1,4 @@
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { parse as parseArgsTokens } from "args-tokens";
 
 /**
@@ -93,6 +94,7 @@ export interface OptionDefinition {
 export const commandLineArgs = (optionDefinitions: OptionDefinition[] | OptionDefinition, options: ParseOptions = {}): CommandLineOptions => {
     // Handle stopAtFirstUnknown implying partial
     if (options.stopAtFirstUnknown) {
+        // eslint-disable-next-line no-param-reassign
         options.partial = true;
     }
 
@@ -165,20 +167,23 @@ export const commandLineArgs = (optionDefinitions: OptionDefinition[] | OptionDe
     }
 
     // Build fast lookup maps for option definitions and pre-compute camelCase names
-    const defMap = new Map<string, any>();
+    const definitionMap = new Map<string, any>();
     const aliasMap = new Map<string, any>();
     const camelCaseMap = new Map<string, string>(); // Cache camelCase transformations
 
-    for (const def of definitions) {
-        defMap.set(def.name, def);
+    for (const definition of definitions) {
+        definitionMap.set(definition.name, definition);
 
-        if (def.alias) {
-            aliasMap.set(def.alias, def);
+        if (definition.alias) {
+            aliasMap.set(definition.alias, definition);
         }
 
-        // Pre-compute camelCase version if needed
+        // Pre-compute camelCase version if needed (optimized regex)
         if (options.camelCase) {
-            camelCaseMap.set(def.name, def.name.replaceAll(/-([a-z])/g, (_, letter) => letter.toUpperCase()));
+            camelCaseMap.set(
+                definition.name,
+                definition.name.replaceAll(/-([a-z])/g, (_, letter) => letter.toUpperCase()),
+            );
         }
     }
 
@@ -186,12 +191,7 @@ export const commandLineArgs = (optionDefinitions: OptionDefinition[] | OptionDe
 
     try {
         // Use args-tokens for parsing
-        result = parseArgsTokens(argvForTokens, {
-            options: schema,
-            // args-tokens doesn't have direct equivalents for partial/stopAtFirstUnknown
-            // We'll handle unknown arguments in post-processing
-        });
-
+        result = parseArgsTokens(argvForTokens);
         // Convert args-tokens result to command-line-args format
         const output: CommandLineOptions = {};
 
@@ -200,19 +200,18 @@ export const commandLineArgs = (optionDefinitions: OptionDefinition[] | OptionDe
         const unknownArgs: string[] = [];
         const consumedPositionalIndices = new Set<number>();
 
-
         // Single optimized pass through tokens
         for (let i = 0; i < result.tokens.length; i++) {
             const token = result.tokens[i];
 
             if (token.kind === "option" && token.name) {
                 // Fast lookup for option definition
-                const def = defMap.get(token.name) || aliasMap.get(token.name);
-                const optionName = def ? def.name : token.name;
-                const isMultiple = def && (def.multiple || def.lazyMultiple);
+                const definition = definitionMap.get(token.name) || aliasMap.get(token.name);
+                const optionName = definition ? definition.name : token.name;
+                const isMultiple = definition && (definition.multiple || definition.lazyMultiple);
 
                 // In partial mode, collect unknown options and skip processing them
-                if (!def && options.partial) {
+                if (!definition && options.partial) {
                     unknownArgs.push(argv[token.index]);
                     continue;
                 }
@@ -254,14 +253,14 @@ export const commandLineArgs = (optionDefinitions: OptionDefinition[] | OptionDe
                         }
                     } else {
                         // Option without value - check if it should be boolean or null
-                        values[optionName] = def && def.type === Boolean ? true : null;
+                        values[optionName] = definition && definition.type === Boolean ? true : null;
                     }
                 } else {
                     // Option with inline value (--option=value)
                     let { value } = token;
 
                     // Special handling for boolean options with empty inline values
-                    if (def && def.type === Boolean && value === "") {
+                    if (definition && definition.type === Boolean && value === "") {
                         value = true;
                     }
 
@@ -296,21 +295,21 @@ export const commandLineArgs = (optionDefinitions: OptionDefinition[] | OptionDe
 
         // Ensure multiple values are arrays
         for (const [key, value] of Object.entries(values)) {
-            const def = defMap.get(key);
+            const definition = definitionMap.get(key);
 
-            if (def && (def.multiple || def.lazyMultiple) && !Array.isArray(value)) {
+            if (definition && (definition.multiple || definition.lazyMultiple) && !Array.isArray(value)) {
                 values[key] = [value];
             }
         }
 
         // Handle defaultOption - collect positional arguments that weren't consumed by options (cached lookup)
-        const defaultOptionDef = definitions.find((d) => d.defaultOption);
-        const hasDefaultOption = !!defaultOptionDef;
+        const defaultOptionDefinition = definitions.find((d) => d.defaultOption);
+        const hasDefaultOption = !!defaultOptionDefinition;
 
-        if (defaultOptionDef) {
+        if (defaultOptionDefinition) {
             const positionalValues: any[] = [];
             const consumedIndices = new Set<number>();
-            const isDefaultOptionMultiple = defaultOptionDef.multiple || defaultOptionDef.lazyMultiple;
+            const isDefaultOptionMultiple = defaultOptionDefinition.multiple || defaultOptionDefinition.lazyMultiple;
 
             // Mark indices that were consumed by options or their values
             for (let i = 0; i < result.tokens.length; i++) {
@@ -320,12 +319,12 @@ export const commandLineArgs = (optionDefinitions: OptionDefinition[] | OptionDe
                     consumedIndices.add(i); // Mark option itself as consumed
 
                     // For multiple options, mark all following positional args as consumed (use O(1) lookup)
-                    const def = defMap.get(token.name) || aliasMap.get(token.name);
+                    const definition = definitionMap.get(token.name) || aliasMap.get(token.name);
 
-                    if (def && (def.multiple || def.lazyMultiple)) {
+                    if (definition && (definition.multiple || definition.lazyMultiple)) {
                         // Special case: if this option is also a defaultOption, don't consume positional args
                         // They should all go to the defaultOption instead
-                        if (!def.defaultOption) {
+                        if (!definition.defaultOption) {
                             let j = i + 1;
 
                             while (j < result.tokens.length && result.tokens[j].kind === "positional") {
@@ -336,7 +335,7 @@ export const commandLineArgs = (optionDefinitions: OptionDefinition[] | OptionDe
                         }
                     } else {
                         // Mark single value if present (only for non-boolean options)
-                        if (def && def.type !== Boolean) {
+                        if (definition && definition.type !== Boolean) {
                             const nextToken = result.tokens[i + 1];
 
                             if (nextToken && nextToken.kind === "positional") {
@@ -358,7 +357,7 @@ export const commandLineArgs = (optionDefinitions: OptionDefinition[] | OptionDe
             if (positionalValues.length > 0) {
                 if (options.partial) {
                     // In partial mode, only the first positional goes to defaultOption, rest are unknown
-                    values[defaultOptionDef.name] = isDefaultOptionMultiple ? [positionalValues[0]] : positionalValues[0];
+                    values[defaultOptionDefinition.name] = isDefaultOptionMultiple ? [positionalValues[0]] : positionalValues[0];
 
                     // Mark the first positional as consumed so it doesn't appear in _unknown
                     if (positionalValues.length > 0) {
@@ -386,7 +385,7 @@ export const commandLineArgs = (optionDefinitions: OptionDefinition[] | OptionDe
                     }
                 } else {
                     // Normal mode - all positionals go to defaultOption
-                    values[defaultOptionDef.name] = isDefaultOptionMultiple ? positionalValues : positionalValues[0];
+                    values[defaultOptionDefinition.name] = isDefaultOptionMultiple ? positionalValues : positionalValues[0];
                     // Mark all positionals as consumed since they all go to defaultOption
                     result.tokens.forEach((token, index) => {
                         if (token.kind === "positional" && positionalValues.includes(token.value)) {
@@ -440,10 +439,10 @@ export const commandLineArgs = (optionDefinitions: OptionDefinition[] | OptionDe
             const finalKey = options.camelCase ? camelCaseMap.get(key) || key : key;
 
             // Handle custom type functions (use O(1) lookup instead of O(n) search)
-            const def = defMap.get(key);
+            const definition = definitionMap.get(key);
 
-            if (def && def.type && typeof def.type === "function") {
-                output[finalKey] = convertValue(value, def.type);
+            if (definition && definition.type && typeof definition.type === "function") {
+                output[finalKey] = convertValue(value, definition.type);
             } else {
                 // Use value as-is, but convert undefined to null for consistency
                 output[finalKey] = value === undefined ? null : value;
@@ -451,16 +450,17 @@ export const commandLineArgs = (optionDefinitions: OptionDefinition[] | OptionDe
         });
 
         // Handle default values that weren't provided
-        definitions.forEach((def) => {
-            const key = options.camelCase ? camelCaseMap.get(def.name) || def.name : def.name;
+        definitions.forEach((definition) => {
+            const key = options.camelCase ? camelCaseMap.get(definition.name) || definition.name : definition.name;
 
-            if (!(key in output) && def.defaultValue !== undefined) {
-                const isMultipleDef = def.multiple || def.lazyMultiple;
-                if (isMultipleDef) {
+            if (!(key in output) && definition.defaultValue !== undefined) {
+                const isMultipleDefinition = definition.multiple || definition.lazyMultiple;
+
+                if (isMultipleDefinition) {
                     // For multiple options, ensure default value is an array
-                    output[key] = Array.isArray(def.defaultValue) ? def.defaultValue : [def.defaultValue];
+                    output[key] = Array.isArray(definition.defaultValue) ? definition.defaultValue : [definition.defaultValue];
                 } else {
-                    output[key] = def.defaultValue;
+                    output[key] = definition.defaultValue;
                 }
             }
         });
@@ -468,9 +468,9 @@ export const commandLineArgs = (optionDefinitions: OptionDefinition[] | OptionDe
         // Handle grouping
         const groups: Record<string, Record<string, any>> = {};
 
-        definitions.forEach((def) => {
-            if (def.group) {
-                const groupArray = Array.isArray(def.group) ? def.group : [def.group];
+        definitions.forEach((definition) => {
+            if (definition.group) {
+                const groupArray = Array.isArray(definition.group) ? definition.group : [definition.group];
 
                 groupArray.forEach((group) => {
                     if (!groups[group]) {
@@ -489,10 +489,10 @@ export const commandLineArgs = (optionDefinitions: OptionDefinition[] | OptionDe
                 allOptions[key] = output[key];
 
                 // Find the definition for this key to see if it's grouped (use O(1) lookup)
-                const def = defMap.get(key);
+                const definition = definitionMap.get(key);
 
-                if (def && def.group) {
-                    const groupArray = Array.isArray(def.group) ? def.group : [def.group];
+                if (definition && definition.group) {
+                    const groupArray = Array.isArray(definition.group) ? definition.group : [definition.group];
 
                     groupArray.forEach((group) => {
                         if (groups[group]) {
@@ -548,23 +548,33 @@ export const commandLineArgs = (optionDefinitions: OptionDefinition[] | OptionDe
             argv.forEach((argument) => {
                 if (argument.includes("=") && argument.endsWith("=")) {
                     const optionName = argument.split("=")[0].replace(/^--/, "");
-                    const def = defMap.get(optionName) || aliasMap.get(optionName);
+                    const definition = definitionMap.get(optionName) || aliasMap.get(optionName);
 
                     // For boolean options with empty inline values, treat as unknown
                     // but still set the option to true (preserving the test behavior)
-                    if (def && def.type === Boolean) {
+                    if (definition && definition.type === Boolean) {
                         unknownArgs.push(argument);
                     }
                 }
             });
 
-            // Remove duplicates and sort by argv order
-            const uniqueUnknown = [...new Set(unknownArgs)].sort((a, b) => {
-                const indexA = argv.indexOf(a);
-                const indexB = argv.indexOf(b);
+            // Remove duplicates and sort by argv order (optimized)
+            const argvIndexMap = new Map<string, number>();
 
-                return indexA - indexB;
-            });
+            argv.forEach((argument, index) => argvIndexMap.set(argument, index));
+
+            // Efficient deduplication using Set, then sort
+            const seen = new Set<string>();
+            const uniqueUnknown: string[] = [];
+
+            for (const argument of unknownArgs) {
+                if (!seen.has(argument)) {
+                    seen.add(argument);
+                    uniqueUnknown.push(argument);
+                }
+            }
+
+            uniqueUnknown.sort((a, b) => argvIndexMap.get(a)! - argvIndexMap.get(b)!);
 
             if (uniqueUnknown.length > 0) {
                 output._unknown = uniqueUnknown;
@@ -583,7 +593,7 @@ export const commandLineArgs = (optionDefinitions: OptionDefinition[] | OptionDe
                 if (argument.startsWith("--")) {
                     const optionName = argument.slice(2);
 
-                    if (!defMap.has(optionName)) {
+                    if (!definitionMap.has(optionName)) {
                         firstUnknownIndex = i;
                         break;
                     }
@@ -653,9 +663,9 @@ export const commandLineArgs = (optionDefinitions: OptionDefinition[] | OptionDe
             // Find the first option and its value, and preserve the original type
             if (argv.length >= 2 && typeof argv[0] === "string" && argv[0].startsWith("--")) {
                 const optionName = argv[0].slice(2); // Remove '--' prefix
-                const def = defMap.get(optionName);
+                const definition = definitionMap.get(optionName);
 
-                if (def && argv[1] !== undefined) {
+                if (definition && argv[1] !== undefined) {
                     // Return the result with preserved type for the first argument
                     return { [optionName]: argv[1] };
                 }

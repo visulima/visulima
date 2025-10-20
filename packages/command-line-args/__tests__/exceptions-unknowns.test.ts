@@ -8,8 +8,7 @@ describe("exceptions unknowns", () => {
 
         const optionDefinitions = [{ name: "one", type: Number }];
 
-        expect(
-            () => () => commandLineArgs(optionDefinitions, { argv: ["--one", "--two"] }),
+        expect(() => commandLineArgs(optionDefinitions, { argv: ["--one", "--two"] })).toThrow(
             (error) => error.name === "UNKNOWN_OPTION" && error.optionName === "--two",
         );
     });
@@ -19,8 +18,7 @@ describe("exceptions unknowns", () => {
 
         const optionDefinitions = [{ name: "one", type: Number }];
 
-        expect(
-            () => () => commandLineArgs(optionDefinitions, { argv: ["--one", "2", "--two", "two"] }),
+        expect(() => commandLineArgs(optionDefinitions, { argv: ["--one", "2", "--two", "two"] })).toThrow(
             (error) => error.name === "UNKNOWN_OPTION" && error.optionName === "--two",
         );
     });
@@ -30,8 +28,7 @@ describe("exceptions unknowns", () => {
 
         const optionDefinitions = [{ name: "one", type: Number }];
 
-        expect(
-            () => () => commandLineArgs(optionDefinitions, { argv: ["-a", "2"] }),
+        expect(() => commandLineArgs(optionDefinitions, { argv: ["-a", "2"] })).toThrow(
             (error) => error.name === "UNKNOWN_OPTION" && error.optionName === "-a",
         );
     });
@@ -41,10 +38,7 @@ describe("exceptions unknowns", () => {
 
         const optionDefinitions = [{ name: "one", type: Number }];
 
-        expect(
-            () => () => commandLineArgs(optionDefinitions, { argv: ["-sdf"] }),
-            (error) => error.name === "UNKNOWN_OPTION" && error.optionName === "-s",
-        );
+        expect(() => commandLineArgs(optionDefinitions, { argv: ["-sdf"] })).toThrow((error) => error.name === "UNKNOWN_OPTION" && error.optionName === "-s");
     });
 
     it("unknown value", () => {
@@ -53,10 +47,7 @@ describe("exceptions unknowns", () => {
         const optionDefinitions = [{ name: "one" }];
         const argv = ["--one", "arg1", "arg2"];
 
-        expect(
-            () => () => commandLineArgs(optionDefinitions, { argv }),
-            (error) => error.name === "UNKNOWN_VALUE" && error.value === "arg2",
-        );
+        expect(() => commandLineArgs(optionDefinitions, { argv })).toThrow((error) => error.name === "UNKNOWN_VALUE" && error.value === "arg2");
     });
 
     it("unknown value with singular defaultOption", () => {
@@ -65,11 +56,7 @@ describe("exceptions unknowns", () => {
         const optionDefinitions = [{ defaultOption: true, name: "one" }];
         const argv = ["arg1", "arg2"];
 
-        expect(
-            () => () => commandLineArgs(optionDefinitions, { argv }),
-
-            (error) => error.name === "UNKNOWN_VALUE" && error.value === "arg2",
-        );
+        expect(() => commandLineArgs(optionDefinitions, { argv })).toThrow((error) => error.name === "UNKNOWN_VALUE" && error.value === "arg2");
     });
 
     it("no unknown value exception with multiple defaultOption", () => {
@@ -78,9 +65,9 @@ describe("exceptions unknowns", () => {
         const optionDefinitions = [{ defaultOption: true, multiple: true, name: "one" }];
         const argv = ["arg1", "arg2"];
 
-        expect(() => () => {
+        expect(() => {
             commandLineArgs(optionDefinitions, { argv });
-        });
+        }).toThrow();
     });
 
     it("non-multiple defaultOption should take first value 2", () => {
@@ -93,9 +80,6 @@ describe("exceptions unknowns", () => {
         ];
         const argv = ["--two", "file1", "--one", "file2"];
 
-        expect(
-            () => () => commandLineArgs(optionDefinitions, { argv }),
-            (error) => error.name === "UNKNOWN_VALUE" && error.value === "file2",
-        );
+        expect(() => commandLineArgs(optionDefinitions, { argv })).toThrow((error) => error.name === "UNKNOWN_VALUE" && error.value === "file2");
     });
 });

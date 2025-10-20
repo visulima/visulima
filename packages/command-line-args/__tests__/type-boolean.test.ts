@@ -9,7 +9,7 @@ describe("type boolean", () => {
 
             const optionDefinitions = [{ name: "one", type: Boolean }];
 
-            expect(commandLineArgs(optionDefinitions, { argv: ["--one"] }), { one: true });
+            expect(commandLineArgs(optionDefinitions, { argv: ["--one"] })).toStrictEqual({ one: true });
         });
 
         const origBoolean = Boolean;
@@ -24,7 +24,7 @@ describe("type boolean", () => {
 
             const optionDefinitions = [{ name: "one", type: Boolean }];
 
-            expect(commandLineArgs(optionDefinitions, { argv: ["--one"] }), { one: true });
+            expect(commandLineArgs(optionDefinitions, { argv: ["--one"] })).toStrictEqual({ one: true });
         });
 
         it("type-boolean-multiple: 1", () => {
@@ -34,7 +34,7 @@ describe("type boolean", () => {
             const argv = ["--array", "--array", "--array"];
             const result = commandLineArgs(optionDefinitions, { argv });
 
-            expect(result, {
+            expect(result).toStrictEqual({
                 array: [true, true, true],
             });
         });

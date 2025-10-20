@@ -8,10 +8,10 @@ describe("bad input", () => {
 
         const optionDefinitions = [{ name: "colour", type: String }, { name: "files" }];
 
-        expect(commandLineArgs(optionDefinitions, { argv: ["--colour"] })).toEqual({
+        expect(commandLineArgs(optionDefinitions, { argv: ["--colour"] })).toStrictEqual({
             colour: null,
         });
-        expect(commandLineArgs(optionDefinitions, { argv: ["--colour", "--files", "yeah"] })).toEqual({
+        expect(commandLineArgs(optionDefinitions, { argv: ["--colour", "--files", "yeah"] })).toStrictEqual({
             colour: null,
             files: "yeah",
         });
@@ -23,7 +23,7 @@ describe("bad input", () => {
         const optionDefinitions = [{ multiple: true, name: "colours", type: String }];
         const argv = ["--colours", "../what", "../ever"];
 
-        expect(commandLineArgs(optionDefinitions, { argv })).toEqual({
+        expect(commandLineArgs(optionDefinitions, { argv })).toStrictEqual({
             colours: ["../what", "../ever"],
         });
     });
@@ -40,10 +40,10 @@ describe("bad input", () => {
         ];
         const argv = ["--one", "", "", "--two", "0", "--three=", "", "--four=", "--five="];
 
-        expect(() => () => {
+        expect(() => {
             commandLineArgs(optionDefinitions, { argv });
-        });
-        expect(commandLineArgs(optionDefinitions, { argv, partial: true })).toEqual({
+        }).toThrow();
+        expect(commandLineArgs(optionDefinitions, { argv, partial: true })).toStrictEqual({
             _unknown: ["", "--five="],
             five: true,
             four: "",

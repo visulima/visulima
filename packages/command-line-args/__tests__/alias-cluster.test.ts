@@ -15,7 +15,7 @@ describe("alias cluster", () => {
 
             const argv = ["-abc", "yeah"];
 
-            expect(commandLineArgs(optionDefinitions, { argv })).toEqual({
+            expect(commandLineArgs(optionDefinitions, { argv })).toStrictEqual({
                 flagA: true,
                 flagB: true,
                 three: "yeah",
@@ -33,7 +33,7 @@ describe("alias cluster", () => {
 
             const argv = ["-c", "yeah", "-ab"];
 
-            expect(commandLineArgs(optionDefinitions, { argv })).toEqual({
+            expect(commandLineArgs(optionDefinitions, { argv })).toStrictEqual({
                 flagA: true,
                 flagB: true,
                 three: "yeah",
@@ -51,7 +51,7 @@ describe("alias cluster", () => {
 
             const argv = ["-abc", "yeah"];
 
-            expect(commandLineArgs(optionDefinitions, { argv })).toEqual({
+            expect(commandLineArgs(optionDefinitions, { argv })).toStrictEqual({
                 flagA: null,
                 flagB: null,
                 three: "yeah",

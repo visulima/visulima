@@ -9,7 +9,7 @@ describe("default value", () => {
         const defs = [{ name: "one" }, { defaultValue: "two", name: "two" }];
         const argv = ["--one", "1"];
 
-        expect(commandLineArgs(defs, { argv })).toEqual({
+        expect(commandLineArgs(defs, { argv })).toStrictEqual({
             one: "1",
             two: "two",
         });
@@ -21,7 +21,7 @@ describe("default value", () => {
         const defs = [{ defaultValue: "two", name: "two" }];
         const argv = [];
 
-        expect(commandLineArgs(defs, { argv })).toEqual({ two: "two" });
+        expect(commandLineArgs(defs, { argv })).toStrictEqual({ two: "two" });
     });
 
     it("default value 3", () => {
@@ -30,7 +30,7 @@ describe("default value", () => {
         const defs = [{ defaultValue: "two", name: "two" }];
         const argv = ["--two", "zwei"];
 
-        expect(commandLineArgs(defs, { argv })).toEqual({ two: "zwei" });
+        expect(commandLineArgs(defs, { argv })).toStrictEqual({ two: "zwei" });
     });
 
     it("default value 4", () => {
@@ -39,7 +39,7 @@ describe("default value", () => {
         const defs = [{ defaultValue: ["two", "zwei"], multiple: true, name: "two" }];
         const argv = ["--two", "duo"];
 
-        expect(commandLineArgs(defs, { argv })).toEqual({ two: ["duo"] });
+        expect(commandLineArgs(defs, { argv })).toStrictEqual({ two: ["duo"] });
     });
 
     it("default value 5", () => {
@@ -58,7 +58,7 @@ describe("default value", () => {
         const defs = [{ defaultOption: true, defaultValue: ["two", "zwei"], multiple: true, name: "two" }];
         const argv = ["duo"];
 
-        expect(commandLineArgs(defs, { argv })).toEqual({ two: ["duo"] });
+        expect(commandLineArgs(defs, { argv })).toStrictEqual({ two: ["duo"] });
     });
 
     it("default value: falsy default values", () => {
@@ -71,7 +71,7 @@ describe("default value", () => {
 
         const argv = [];
 
-        expect(commandLineArgs(defs, { argv })).toEqual({
+        expect(commandLineArgs(defs, { argv })).toStrictEqual({
             one: 0,
             two: false,
         });
@@ -84,13 +84,13 @@ describe("default value", () => {
 
         let argv = [];
 
-        expect(commandLineArgs(defs, { argv })).toEqual({
+        expect(commandLineArgs(defs, { argv })).toStrictEqual({
             one: [0],
         });
 
         argv = ["--one", "2"];
 
-        expect(commandLineArgs(defs, { argv })).toEqual({
+        expect(commandLineArgs(defs, { argv })).toStrictEqual({
             one: ["2"],
         });
     });
@@ -102,19 +102,19 @@ describe("default value", () => {
 
         let argv = ["--path", "test"];
 
-        expect(commandLineArgs(defs, { argv })).toEqual({
+        expect(commandLineArgs(defs, { argv })).toStrictEqual({
             path: "test",
         });
 
         argv = ["test"];
 
-        expect(commandLineArgs(defs, { argv })).toEqual({
+        expect(commandLineArgs(defs, { argv })).toStrictEqual({
             path: "test",
         });
 
         argv = [];
 
-        expect(commandLineArgs(defs, { argv })).toEqual({
+        expect(commandLineArgs(defs, { argv })).toStrictEqual({
             path: "./",
         });
     });
@@ -126,31 +126,31 @@ describe("default value", () => {
 
         let argv = ["--path", "test1", "test2"];
 
-        expect(commandLineArgs(defs, { argv })).toEqual({
+        expect(commandLineArgs(defs, { argv })).toStrictEqual({
             path: ["test1", "test2"],
         });
 
         argv = ["--path", "test"];
 
-        expect(commandLineArgs(defs, { argv })).toEqual({
+        expect(commandLineArgs(defs, { argv })).toStrictEqual({
             path: ["test"],
         });
 
         argv = ["test1", "test2"];
 
-        expect(commandLineArgs(defs, { argv })).toEqual({
+        expect(commandLineArgs(defs, { argv })).toStrictEqual({
             path: ["test1", "test2"],
         });
 
         argv = ["test"];
 
-        expect(commandLineArgs(defs, { argv })).toEqual({
+        expect(commandLineArgs(defs, { argv })).toStrictEqual({
             path: ["test"],
         });
 
         argv = [];
 
-        expect(commandLineArgs(defs, { argv })).toEqual({
+        expect(commandLineArgs(defs, { argv })).toStrictEqual({
             path: ["./"],
         });
     });
@@ -162,31 +162,31 @@ describe("default value", () => {
 
         let argv = ["--path", "test1", "test2"];
 
-        expect(commandLineArgs(defs, { argv })).toEqual({
+        expect(commandLineArgs(defs, { argv })).toStrictEqual({
             path: ["test1", "test2"],
         });
 
         argv = ["--path", "test"];
 
-        expect(commandLineArgs(defs, { argv })).toEqual({
+        expect(commandLineArgs(defs, { argv })).toStrictEqual({
             path: ["test"],
         });
 
         argv = ["test1", "test2"];
 
-        expect(commandLineArgs(defs, { argv })).toEqual({
+        expect(commandLineArgs(defs, { argv })).toStrictEqual({
             path: ["test1", "test2"],
         });
 
         argv = ["test"];
 
-        expect(commandLineArgs(defs, { argv })).toEqual({
+        expect(commandLineArgs(defs, { argv })).toStrictEqual({
             path: ["test"],
         });
 
         argv = [];
 
-        expect(commandLineArgs(defs, { argv })).toEqual({
+        expect(commandLineArgs(defs, { argv })).toStrictEqual({
             path: ["./"],
         });
     });

@@ -20,7 +20,7 @@ describe("type none", () => {
         const argv = ["--one", "--two"];
         const result = commandLineArgs(definitions, { argv });
 
-        expect(result, {
+        expect(result).toStrictEqual({
             one: null,
             two: null,
         });
@@ -32,7 +32,7 @@ describe("type none", () => {
         const argv = ["--one", "one", "--two"];
         const result = commandLineArgs(definitions, { argv });
 
-        expect(result, {
+        expect(result).toStrictEqual({
             one: "one",
             two: null,
         });
@@ -44,7 +44,7 @@ describe("type none", () => {
         const argv = ["--one", "one", "--two", "two"];
         const result = commandLineArgs(definitions, { argv });
 
-        expect(result, {
+        expect(result).toStrictEqual({
             one: "one",
             two: "two",
         });

@@ -9,7 +9,7 @@ describe("default option", () => {
         const optionDefinitions = [{ defaultOption: true, multiple: true, name: "files" }];
         const argv = ["file1", "file2"];
 
-        expect(commandLineArgs(optionDefinitions, { argv })).toEqual({
+        expect(commandLineArgs(optionDefinitions, { argv })).toStrictEqual({
             files: ["file1", "file2"],
         });
     });
@@ -22,7 +22,7 @@ describe("default option", () => {
             { defaultOption: true, name: "two" },
         ];
 
-        expect(commandLineArgs(definitions, { argv: ["--one", "sfsgf"] }), { one: true, two: "sfsgf" });
+        expect(commandLineArgs(definitions, { argv: ["--one", "sfsgf"] })).toStrictEqual({ one: true, two: "sfsgf" });
     });
 
     it("multiple-defaultOption values spread out", () => {
@@ -31,7 +31,7 @@ describe("default option", () => {
         const optionDefinitions = [{ name: "one" }, { name: "two" }, { defaultOption: true, multiple: true, name: "files" }];
         const argv = ["--one", "1", "file1", "file2", "--two", "2"];
 
-        expect(commandLineArgs(optionDefinitions, { argv })).toEqual({
+        expect(commandLineArgs(optionDefinitions, { argv })).toStrictEqual({
             files: ["file1", "file2"],
             one: "1",
             two: "2",
@@ -48,7 +48,7 @@ describe("default option", () => {
         ];
         const argv = ["--one", "1", "file1", "file2", "--two", "2"];
 
-        expect(commandLineArgs(optionDefinitions, { argv })).toEqual({
+        expect(commandLineArgs(optionDefinitions, { argv })).toStrictEqual({
             files: ["file1", "file2"],
 
             one: "1",
@@ -62,7 +62,7 @@ describe("default option", () => {
         const optionDefinitions = [{ name: "one", type: Boolean }, { name: "two" }, { defaultOption: true, multiple: true, name: "files" }];
         const argv = ["file0", "--one", "file1", "--files", "file2", "--two", "2", "file3"];
 
-        expect(commandLineArgs(optionDefinitions, { argv })).toEqual({
+        expect(commandLineArgs(optionDefinitions, { argv })).toStrictEqual({
             files: ["file0", "file1", "file2", "file3"],
             one: true,
             two: "2",
