@@ -10,6 +10,13 @@
         "apps/*"
     ],
     "scripts": {
+        "lint:eslint:command-line-args": "pnpm --filter \"command-line-args\" run lint:eslint",
+        "lint:eslint:fix:command-line-args": "pnpm --filter \"command-line-args\" run lint:eslint:fix",
+        "lint:types:command-line-args": "pnpm --filter \"command-line-args\" run lint:types",
+        "test:command-line-args": "pnpm --filter \"command-line-args\" run test",
+        "test:coverage:command-line-args": "pnpm --filter \"command-line-args\" run test:coverage",
+        "test:ui:command-line-args": "pnpm --filter \"command-line-args\" run test:ui",
+
         "audit": "audit-ci --config ./audit-ci.jsonc",
         "bench:colorize": "pnpm --filter \"colorize-bench\" run test:bench",
         "bench:deep-clone": "pnpm --filter \"deep-clone\" run test:bench",

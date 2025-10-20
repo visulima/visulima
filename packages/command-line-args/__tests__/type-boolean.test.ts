@@ -1,0 +1,42 @@
+import { describe, expect, it } from "vitest";
+
+import commandLineArgs from "../src";
+
+describe("type boolean", () => {
+    describe("boolean type handling", () => {
+        it("type-boolean: simple", () => {
+            expect.assertions(1);
+
+            const optionDefinitions = [{ name: "one", type: Boolean }];
+
+            expect(commandLineArgs(optionDefinitions, { argv: ["--one"] }), { one: true });
+        });
+
+        const origBoolean = Boolean;
+
+        /* test in contexts which override the standard global Boolean constructor */
+        it("type-boolean: global Boolean overridden", () => {
+            expect.assertions(1);
+
+            function Boolean() {
+                return origBoolean.apply(origBoolean, arguments);
+            }
+
+            const optionDefinitions = [{ name: "one", type: Boolean }];
+
+            expect(commandLineArgs(optionDefinitions, { argv: ["--one"] }), { one: true });
+        });
+
+        it("type-boolean-multiple: 1", () => {
+            expect.assertions(1);
+
+            const optionDefinitions = [{ multiple: true, name: "array", type: Boolean }];
+            const argv = ["--array", "--array", "--array"];
+            const result = commandLineArgs(optionDefinitions, { argv });
+
+            expect(result, {
+                array: [true, true, true],
+            });
+        });
+    });
+});

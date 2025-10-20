@@ -1,10 +1,10 @@
 {
-    "name": "@visulima/{{packageName}}",
+    "name": "@visulima/command-line-args",
     "version": "0.0.0",
-    "description": "{{description}}",
+    "description": "A mature, feature-complete library to parse command-line options.",
     "keywords": [
         "visulima",
-        "{{packageName}}"
+        "command-line-args"
     ],
     "author": {
         "name": "Daniel Bannert",
@@ -20,7 +20,7 @@
             "url": "https://anolilab.com/support"
         }
     ],
-    "homepage": "https://visulima.com/packages/{{packageName}}",
+    "homepage": "https://visulima.com/packages/command-line-args",
     "license": "MIT",
     "sideEffects": false,
     "type": "module",
@@ -39,7 +39,7 @@
     "repository": {
         "type": "git",
         "url": "git+https://github.com/visulima/visulima.git",
-        "directory": "packages/{{packageName}}"
+        "directory": "packages/command-line-args"
     },
     "bugs": {
         "url": "https://github.com/visulima/visulima/issues"
@@ -68,26 +68,33 @@
         "access": "public",
         "provenance": true
     },
+    "dependencies": {
+        "array-back": "^6.2.2",
+        "find-replace": "^5.0.2",
+        "lodash.camelcase": "^4.3.0",
+        "typical": "^7.3.0"
+    },
     "devDependencies": {
-        "publint": "^0.3.12",
-        "@anolilab/eslint-config": "^16.2.4",
-        "@anolilab/semantic-release-pnpm": "1.1.11",
-        "@anolilab/semantic-release-preset": "^10.0.5",
-        "@arethetypeswrong/cli": "^0.18.1",
-        "@secretlint/secretlint-rule-preset-recommend": "^9.3.3",
+        "@anolilab/eslint-config": "^16.4.2",
+        "@anolilab/semantic-release-pnpm": "2.0.4",
+        "@anolilab/semantic-release-preset": "^11.0.4",
+        "@arethetypeswrong/cli": "^0.18.2",
+        "@secretlint/secretlint-rule-preset-recommend": "^11.2.5",
         "@total-typescript/ts-reset": "^0.6.1",
-        "@types/node": "22.15.27",
+        "@types/node": "24.8.1",
         "@visulima/packem": "2.0.0-alpha.30",
-        "@vitest/coverage-v8": "^3.1.4",
-        "@vitest/ui": "^3.1.4",
-        "conventional-changelog-conventionalcommits": "9.0.0",
-        "esbuild": "^0.25.5",
-        "eslint": "9.27.0",
-        "prettier": "^3.5.3",
+        "@vitest/coverage-v8": "^3.2.4",
+        "@vitest/ui": "^3.2.4",
+        "conventional-changelog-conventionalcommits": "9.1.0",
+        "esbuild": "^0.25.11",
+        "eslint": "9.38.0",
+        "prettier": "^3.6.2",
+        "publint": "^0.3.15",
         "rimraf": "^6.0.1",
-        "secretlint": "9.3.3",
-        "semantic-release": "^24.2.5",
-        "typescript": "^5.8.3",
-        "vitest": "^3.1.4"
+        "secretlint": "11.2.5",
+        "semantic-release": "^25.0.1",
+        "test-runner": "0.11.1",
+        "typescript": "^5.9.3",
+        "vitest": "^3.2.4"
     }
 }

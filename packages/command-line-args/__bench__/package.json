@@ -1,0 +1,20 @@
+{
+    "name": "@visulima/command-line-args-bench",
+    "version": "0.0.0",
+    "private": true,
+    "description": "Benchmark suite for command-line-args",
+    "type": "module",
+    "scripts": {
+        "test:bench": "vitest bench"
+    },
+    "dependencies": {
+        "@visulima/command-line-args": "workspace:*",
+        "argparse": "^2.0.1",
+        "jackspeak": "^4.0.1",
+        "yargs-parser": "^21.1.1"
+    },
+    "devDependencies": {
+        "typescript": "^5.9.3",
+        "vitest": "^3.2.4"
+    }
+}
