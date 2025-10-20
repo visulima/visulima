@@ -3983,15 +3983,7 @@ importers:
         version: link:../..
       '@vitejs/plugin-react':
         specifier: ^5.0.4
-<<<<<<< HEAD
-<<<<<<< HEAD
-        version: 5.0.4(rolldown-vite@7.1.18(@types/node@24.7.2)(esbuild@0.25.11)(jiti@2.6.1)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
-=======
-        version: 5.0.4(rolldown-vite@7.1.17(@types/node@24.8.1)(esbuild@0.25.11)(jiti@2.6.1)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
->>>>>>> 0473b0359 (chore: update dependencies and enhance migration documentation)
-=======
         version: 5.0.4(rolldown-vite@7.1.18(@types/node@24.8.1)(esbuild@0.25.11)(jiti@2.6.1)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
->>>>>>> f918e7764 (chore: update Node.js version in workflows to 22.x)
       eslint:
         specifier: ^9.37.0
         version: 9.38.0(jiti@2.6.1)
@@ -4012,15 +4004,7 @@ importers:
         version: 8.46.1(eslint@9.38.0(jiti@2.6.1))(typescript@5.9.3)
       vite:
         specifier: npm:rolldown-vite@latest
-<<<<<<< HEAD
-<<<<<<< HEAD
-        version: rolldown-vite@7.1.18(@types/node@24.7.2)(esbuild@0.25.11)(jiti@2.6.1)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
-=======
-        version: rolldown-vite@7.1.17(@types/node@24.8.1)(esbuild@0.25.11)(jiti@2.6.1)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
->>>>>>> 0473b0359 (chore: update dependencies and enhance migration documentation)
-=======
         version: rolldown-vite@7.1.18(@types/node@24.8.1)(esbuild@0.25.11)(jiti@2.6.1)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
->>>>>>> f918e7764 (chore: update Node.js version in workflows to 22.x)
 
   packages/vite-overlay/examples/vite-react-swc:
     dependencies:
@@ -26983,15 +26967,7 @@ snapshots:
     transitivePeerDependencies:
       - '@swc/helpers'
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-  '@vitejs/plugin-react@5.0.4(rolldown-vite@7.1.18(@types/node@24.7.2)(esbuild@0.25.11)(jiti@2.6.1)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))':
-=======
-  '@vitejs/plugin-react@5.0.4(rolldown-vite@7.1.17(@types/node@24.8.1)(esbuild@0.25.11)(jiti@2.6.1)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))':
->>>>>>> 0473b0359 (chore: update dependencies and enhance migration documentation)
-=======
   '@vitejs/plugin-react@5.0.4(rolldown-vite@7.1.18(@types/node@24.8.1)(esbuild@0.25.11)(jiti@2.6.1)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))':
->>>>>>> f918e7764 (chore: update Node.js version in workflows to 22.x)
     dependencies:
       '@babel/core': 7.28.4
       '@babel/plugin-transform-react-jsx-self': 7.27.1(@babel/core@7.28.4)
@@ -26999,15 +26975,7 @@ snapshots:
       '@rolldown/pluginutils': 1.0.0-beta.38
       '@types/babel__core': 7.20.5
       react-refresh: 0.17.0
-<<<<<<< HEAD
-<<<<<<< HEAD
-      vite: rolldown-vite@7.1.18(@types/node@24.7.2)(esbuild@0.25.11)(jiti@2.6.1)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
-=======
-      vite: rolldown-vite@7.1.17(@types/node@24.8.1)(esbuild@0.25.11)(jiti@2.6.1)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
->>>>>>> 0473b0359 (chore: update dependencies and enhance migration documentation)
-=======
       vite: rolldown-vite@7.1.18(@types/node@24.8.1)(esbuild@0.25.11)(jiti@2.6.1)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
->>>>>>> f918e7764 (chore: update Node.js version in workflows to 22.x)
     transitivePeerDependencies:
       - supports-color
 
@@ -37489,15 +37457,7 @@ snapshots:
       glob: 11.0.0
       package-json-from-dist: 1.0.0
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-  rolldown-vite@7.1.18(@types/node@24.7.2)(esbuild@0.25.11)(jiti@2.6.1)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1):
-=======
-  rolldown-vite@7.1.17(@types/node@24.8.1)(esbuild@0.25.11)(jiti@2.6.1)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1):
->>>>>>> 0473b0359 (chore: update dependencies and enhance migration documentation)
-=======
   rolldown-vite@7.1.18(@types/node@24.8.1)(esbuild@0.25.11)(jiti@2.6.1)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1):
->>>>>>> f918e7764 (chore: update Node.js version in workflows to 22.x)
     dependencies:
       '@oxc-project/runtime': 0.92.0
       fdir: 6.5.0(picomatch@4.0.3)
