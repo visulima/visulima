@@ -102,10 +102,7 @@ export const commandLineArgs = (optionDefinitions: OptionDefinition[] | OptionDe
     // Get argv to parse
     const argv = options.argv || process.argv.slice(2);
 
-    // Check if argv contains non-strings - if so, we'll handle it in the catch block
-    const hasNonStrings = argv.some((argument) => typeof argument !== "string");
     const argvForTokens = argv; // Use original argv, handle conversion in catch if needed
-    const originalArgv = argv; // Keep original for type preservation
 
     // Convert option definitions to args-tokens schema
     const schema: Record<string, any> = {};
@@ -167,6 +164,24 @@ export const commandLineArgs = (optionDefinitions: OptionDefinition[] | OptionDe
         schema[optionName] = schemaEntry;
     }
 
+    // Build fast lookup maps for option definitions and pre-compute camelCase names
+    const defMap = new Map<string, any>();
+    const aliasMap = new Map<string, any>();
+    const camelCaseMap = new Map<string, string>(); // Cache camelCase transformations
+
+    for (const def of definitions) {
+        defMap.set(def.name, def);
+
+        if (def.alias) {
+            aliasMap.set(def.alias, def);
+        }
+
+        // Pre-compute camelCase version if needed
+        if (options.camelCase) {
+            camelCaseMap.set(def.name, def.name.replaceAll(/-([a-z])/g, (_, letter) => letter.toUpperCase()));
+        }
+    }
+
     let result;
 
     try {
@@ -185,24 +200,6 @@ export const commandLineArgs = (optionDefinitions: OptionDefinition[] | OptionDe
         const unknownArgs: string[] = [];
         const consumedPositionalIndices = new Set<number>();
 
-        // Build fast lookup maps for option definitions
-        const defMap = new Map<string, any>();
-        const aliasMap = new Map<string, any>();
-
-        for (const def of definitions) {
-            defMap.set(def.name, def);
-
-            if (def.alias) {
-                aliasMap.set(def.alias, def);
-            }
-        }
-
-        // Build token index map for fast lookups
-        const tokenIndexMap = new Map<number, any>();
-
-        for (const token of result.tokens) {
-            tokenIndexMap.set(token.index, token);
-        }
 
         // Single optimized pass through tokens
         for (let i = 0; i < result.tokens.length; i++) {
@@ -212,6 +209,7 @@ export const commandLineArgs = (optionDefinitions: OptionDefinition[] | OptionDe
                 // Fast lookup for option definition
                 const def = defMap.get(token.name) || aliasMap.get(token.name);
                 const optionName = def ? def.name : token.name;
+                const isMultiple = def && (def.multiple || def.lazyMultiple);
 
                 // In partial mode, collect unknown options and skip processing them
                 if (!def && options.partial) {
@@ -224,7 +222,7 @@ export const commandLineArgs = (optionDefinitions: OptionDefinition[] | OptionDe
                     const nextToken = result.tokens[i + 1];
 
                     if (nextToken && nextToken.kind === "positional") {
-                        if (def && (def.multiple || def.lazyMultiple)) {
+                        if (isMultiple) {
                             // For multiple options, collect consecutive positionals
                             let currentIndex = i + 1;
                             const collectedValues: any[] = [];
@@ -270,7 +268,7 @@ export const commandLineArgs = (optionDefinitions: OptionDefinition[] | OptionDe
                     // For multiple options, collect consecutive positional values after inline value
                     const collectedValues: any[] = [value];
 
-                    if (def && (def.multiple || def.lazyMultiple)) {
+                    if (isMultiple) {
                         // Collect consecutive positional tokens after this option
                         let currentIndex = i + 1;
 
@@ -283,8 +281,8 @@ export const commandLineArgs = (optionDefinitions: OptionDefinition[] | OptionDe
                     }
 
                     if (values[optionName] === undefined) {
-                        values[optionName] = def && (def.multiple || def.lazyMultiple) ? collectedValues : value;
-                    } else if (def && (def.multiple || def.lazyMultiple)) {
+                        values[optionName] = isMultiple ? collectedValues : value;
+                    } else if (isMultiple) {
                         // Handle multiple values
                         if (!Array.isArray(values[optionName])) {
                             values[optionName] = [values[optionName]];
@@ -305,12 +303,14 @@ export const commandLineArgs = (optionDefinitions: OptionDefinition[] | OptionDe
             }
         }
 
-        // Handle defaultOption - collect positional arguments that weren't consumed by options
+        // Handle defaultOption - collect positional arguments that weren't consumed by options (cached lookup)
         const defaultOptionDef = definitions.find((d) => d.defaultOption);
+        const hasDefaultOption = !!defaultOptionDef;
 
         if (defaultOptionDef) {
             const positionalValues: any[] = [];
             const consumedIndices = new Set<number>();
+            const isDefaultOptionMultiple = defaultOptionDef.multiple || defaultOptionDef.lazyMultiple;
 
             // Mark indices that were consumed by options or their values
             for (let i = 0; i < result.tokens.length; i++) {
@@ -319,8 +319,8 @@ export const commandLineArgs = (optionDefinitions: OptionDefinition[] | OptionDe
                 if (token.kind === "option" && token.name) {
                     consumedIndices.add(i); // Mark option itself as consumed
 
-                    // For multiple options, mark all following positional args as consumed
-                    const def = definitions.find((d) => d.name === token.name || d.alias === token.name);
+                    // For multiple options, mark all following positional args as consumed (use O(1) lookup)
+                    const def = defMap.get(token.name) || aliasMap.get(token.name);
 
                     if (def && (def.multiple || def.lazyMultiple)) {
                         // Special case: if this option is also a defaultOption, don't consume positional args
@@ -358,7 +358,7 @@ export const commandLineArgs = (optionDefinitions: OptionDefinition[] | OptionDe
             if (positionalValues.length > 0) {
                 if (options.partial) {
                     // In partial mode, only the first positional goes to defaultOption, rest are unknown
-                    values[defaultOptionDef.name] = defaultOptionDef.multiple || defaultOptionDef.lazyMultiple ? [positionalValues[0]] : positionalValues[0];
+                    values[defaultOptionDef.name] = isDefaultOptionMultiple ? [positionalValues[0]] : positionalValues[0];
 
                     // Mark the first positional as consumed so it doesn't appear in _unknown
                     if (positionalValues.length > 0) {
@@ -386,7 +386,7 @@ export const commandLineArgs = (optionDefinitions: OptionDefinition[] | OptionDe
                     }
                 } else {
                     // Normal mode - all positionals go to defaultOption
-                    values[defaultOptionDef.name] = defaultOptionDef.multiple || defaultOptionDef.lazyMultiple ? positionalValues : positionalValues[0];
+                    values[defaultOptionDef.name] = isDefaultOptionMultiple ? positionalValues : positionalValues[0];
                     // Mark all positionals as consumed since they all go to defaultOption
                     result.tokens.forEach((token, index) => {
                         if (token.kind === "positional" && positionalValues.includes(token.value)) {
@@ -397,71 +397,53 @@ export const commandLineArgs = (optionDefinitions: OptionDefinition[] | OptionDe
             }
         }
 
-        // Process collected values
-        Object.entries(values).forEach(([key, value]) => {
-            // Apply camelCase conversion if requested
-            let finalKey = key;
-
-            if (options.camelCase) {
-                finalKey = key.replaceAll(/-([a-z])/g, (_, letter) => letter.toUpperCase());
-            }
-
-            // Handle custom type functions
-            const def = definitions.find((d) => d.name === key);
-
-            if (def && def.type && typeof def.type === "function") {
-                if (Array.isArray(value)) {
-                    // For multiple values, apply type conversion to each element
-                    switch (def.type) {
-                        case Boolean: {
-                            output[finalKey] = value.map(Boolean);
-
-                            break;
-                        }
-                        case Number: {
-                            output[finalKey] = value.map(Number);
-
-                            break;
-                        }
-                        case String: {
-                            output[finalKey] = value.map(String);
-
-                            break;
-                        }
-                        default: {
-                            // Custom type function
-                            output[finalKey] = value.map((v) => def.type(String(v)));
-                        }
+        // Helper function for type conversion (handles both single values and arrays)
+        const convertValue = (value: any, type: any): any => {
+            if (Array.isArray(value)) {
+                switch (type) {
+                    case Boolean: {
+                        return value.map(Boolean);
                     }
-                } else {
-                    // Single value
-                    if (value === null) {
-                        // Preserve null values (missing option values)
-                        output[finalKey] = null;
-                    } else {
-                        switch (def.type) {
-                            case Boolean: {
-                                output[finalKey] = Boolean(value);
-
-                                break;
-                            }
-                            case Number: {
-                                output[finalKey] = Number(value);
-
-                                break;
-                            }
-                            case String: {
-                                output[finalKey] = String(value);
-
-                                break;
-                            }
-                            default: {
-                                // Custom type function
-                                output[finalKey] = def.type(String(value));
-                            }
-                        }
+                    case Number: {
+                        return value.map(Number);
+                    }
+                    case String: {
+                        return value.map(String);
+                    }
+                    default: {
+                        return value.map((v: any) => type(String(v)));
                     }
                 }
+            } else if (value === null) {
+                return null; // Preserve null values
+            } else {
+                switch (type) {
+                    case Boolean: {
+                        return Boolean(value);
+                    }
+                    case Number: {
+                        return Number(value);
+                    }
+                    case String: {
+                        return String(value);
+                    }
+                    default: {
+                        return type(String(value));
+                    }
+                }
+            }
+        };
+
+        // Process collected values
+        Object.entries(values).forEach(([key, value]) => {
+            // Apply camelCase conversion if requested (use cached version)
+            const finalKey = options.camelCase ? camelCaseMap.get(key) || key : key;
+
+            // Handle custom type functions (use O(1) lookup instead of O(n) search)
+            const def = defMap.get(key);
+
+            if (def && def.type && typeof def.type === "function") {
+                output[finalKey] = convertValue(value, def.type);
             } else {
                 // Use value as-is, but convert undefined to null for consistency
                 output[finalKey] = value === undefined ? null : value;
@@ -470,10 +452,11 @@ export const commandLineArgs = (optionDefinitions: OptionDefinition[] | OptionDe
 
         // Handle default values that weren't provided
         definitions.forEach((def) => {
-            const key = options.camelCase ? def.name.replaceAll(/-([a-z])/g, (_, letter) => letter.toUpperCase()) : def.name;
+            const key = options.camelCase ? camelCaseMap.get(def.name) || def.name : def.name;
 
             if (!(key in output) && def.defaultValue !== undefined) {
-                if (def.multiple || def.lazyMultiple) {
+                const isMultipleDef = def.multiple || def.lazyMultiple;
+                if (isMultipleDef) {
                     // For multiple options, ensure default value is an array
                     output[key] = Array.isArray(def.defaultValue) ? def.defaultValue : [def.defaultValue];
                 } else {
@@ -484,7 +467,6 @@ export const commandLineArgs = (optionDefinitions: OptionDefinition[] | OptionDe
 
         // Handle grouping
         const groups: Record<string, Record<string, any>> = {};
-        const groupedOptionNames = new Set<string>();
 
         definitions.forEach((def) => {
             if (def.group) {
@@ -495,7 +477,6 @@ export const commandLineArgs = (optionDefinitions: OptionDefinition[] | OptionDe
                         groups[group] = {};
                     }
                 });
-                groupedOptionNames.add(def.name);
             }
         });
 
@@ -504,11 +485,11 @@ export const commandLineArgs = (optionDefinitions: OptionDefinition[] | OptionDe
         const ungroupedOptions: Record<string, any> = {};
 
         Object.keys(output).forEach((key) => {
-            if (!key.startsWith("_")) {
+            if (key.charAt(0) !== "_") {
                 allOptions[key] = output[key];
 
-                // Find the definition for this key to see if it's grouped
-                const def = definitions.find((d) => d.name === key);
+                // Find the definition for this key to see if it's grouped (use O(1) lookup)
+                const def = defMap.get(key);
 
                 if (def && def.group) {
                     const groupArray = Array.isArray(def.group) ? def.group : [def.group];
@@ -555,7 +536,7 @@ export const commandLineArgs = (optionDefinitions: OptionDefinition[] | OptionDe
         // Handle unknown arguments for partial mode
         if (options.partial) {
             // Add unconsumed positional arguments as unknown when there's no defaultOption
-            if (!definitions.some((d) => d.defaultOption)) {
+            if (!hasDefaultOption) {
                 for (const token of result.tokens) {
                     if (token.kind === "positional" && !consumedPositionalIndices.has(token.index)) {
                         unknownArgs.push(argv[token.index]);
@@ -594,14 +575,7 @@ export const commandLineArgs = (optionDefinitions: OptionDefinition[] | OptionDe
         if (options.stopAtFirstUnknown) {
             // Find the first unknown argument in the original argv
             // This is a simplified implementation - in practice we'd need more sophisticated logic
-            const knownOptions = new Set();
-
-            definitions.forEach((def) => {
-                knownOptions.add(def.name);
-
-                if (def.alias)
-                    knownOptions.add(def.alias);
-            });
+            // Use existing maps instead of rebuilding the set
 
             let firstUnknownIndex = -1;
 
@@ -609,14 +583,14 @@ export const commandLineArgs = (optionDefinitions: OptionDefinition[] | OptionDe
                 if (argument.startsWith("--")) {
                     const optionName = argument.slice(2);
 
-                    if (!knownOptions.has(optionName)) {
+                    if (!defMap.has(optionName)) {
                         firstUnknownIndex = i;
                         break;
                     }
                 } else if (argument.startsWith("-") && argument.length > 1) {
                     const shortOption = argument.slice(1);
 
-                    if (!knownOptions.has(shortOption)) {
+                    if (!aliasMap.has(shortOption)) {
                         firstUnknownIndex = i;
                         break;
                     }
@@ -679,7 +653,7 @@ export const commandLineArgs = (optionDefinitions: OptionDefinition[] | OptionDe
             // Find the first option and its value, and preserve the original type
             if (argv.length >= 2 && typeof argv[0] === "string" && argv[0].startsWith("--")) {
                 const optionName = argv[0].slice(2); // Remove '--' prefix
-                const def = definitions.find((d) => d.name === optionName);
+                const def = defMap.get(optionName);
 
                 if (def && argv[1] !== undefined) {
                     // Return the result with preserved type for the first argument
