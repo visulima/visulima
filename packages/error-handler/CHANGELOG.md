@@ -1,3 +1,15 @@
+## @visulima/error-handler [1.0.7](https://github.com/visulima/visulima/compare/@visulima/error-handler@1.0.6...@visulima/error-handler@1.0.7) (2025-10-20)
+
+### Miscellaneous Chores
+
+* **deps:** update package versions and dependencies ([88d8d32](https://github.com/visulima/visulima/commit/88d8d32c4629a7a06c8770369191da2cc81087cc))
+* update package dependencies across multiple packages ([17e3f23](https://github.com/visulima/visulima/commit/17e3f2377c8a3f98e2eed2192c5adaf6e32558b5))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 5.0.1
+
 ## @visulima/error-handler [1.0.6](https://github.com/visulima/visulima/compare/@visulima/error-handler@1.0.5...@visulima/error-handler@1.0.6) (2025-10-15)
 
 ### Bug Fixes
