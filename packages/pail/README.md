@@ -485,6 +485,72 @@ bar.update(50, { speed: "2.5" });
 bar.stop();
 ```
 
+## Integrations
+
+### Use with @visulima/boxen
+
+Create nicely framed messages with `@visulima/boxen` and log them with Pail:
+
+```typescript
+import { pail } from "@visulima/pail";
+import { boxen } from "@visulima/boxen";
+
+const output = boxen("Build completed successfully", {
+    headerText: "Success",
+    padding: 1,
+    borderStyle: "round",
+});
+
+pail.success(output);
+```
+
+You can also include multi‑line content; Pail preserves newlines:
+
+```typescript
+import { pail } from "@visulima/pail";
+import { boxen } from "@visulima/boxen";
+
+const details = [
+    "Service: api",
+    "Env: production",
+    "Commit: a1b2c3",
+].join("\n");
+
+pail.info(
+    boxen(details, {
+        headerText: "Deploy Info",
+        padding: { top: 0, right: 2, bottom: 0, left: 2 },
+        borderStyle: "classic",
+    }),
+);
+```
+
+### Use with @visulima/tabular
+
+Render tables with `@visulima/tabular` and send them through Pail:
+
+```typescript
+import { pail } from "@visulima/pail";
+import { createTable } from "@visulima/tabular";
+
+const table = createTable({
+    showHeader: true,
+    style: {
+        // optional: customize colors/border via @visulima/colorize
+    },
+});
+
+table
+    .setHeaders(["Task", "Status", "Duration"])
+    .addRow(["build", "ok", "1.2s"])
+    .addRow(["test", "ok", "3.4s"])
+    .addRow(["lint", "warn", "0.8s"]);
+
+pail.info("\n" + table.toString());
+```
+
+For dynamic dashboards, combine `tabular` with Pail's interactive mode and update the rendered table as your process runs.
+
 ## Disable and Enable Loggers
 
 To disable a logger, use the `disable()` function, which will prevent any log messages from being written to the console or a file.
