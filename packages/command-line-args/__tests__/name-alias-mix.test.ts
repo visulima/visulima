@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import commandLineArgs from "../src";
+import { commandLineArgs } from "../src";
 
 describe("name alias mix", () => {
     it("one of each", () => {

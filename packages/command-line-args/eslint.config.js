@@ -11,6 +11,7 @@ export default createConfig({
         "vitest.config.ts",
         "packem.config.ts",
         ".secretlintrc.cjs",
+        ".prettierrc.cjs",
         "package.json",
         "README.md",
     ],

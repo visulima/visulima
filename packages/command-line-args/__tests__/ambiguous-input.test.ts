@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import commandLineArgs from "../src";
+import { commandLineArgs } from "../src";
 
 describe("ambiguous input", () => {
     it("value looks like an option 1", () => {

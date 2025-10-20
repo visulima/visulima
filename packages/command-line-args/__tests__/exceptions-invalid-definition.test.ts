@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import commandLineArgs from "../src";
+import { commandLineArgs } from "../src";
 
 describe("exceptions invalid definition", () => {
     it("throws when no definition.name specified", () => {

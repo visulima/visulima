@@ -10,10 +10,13 @@
     "dependencies": {
         "@visulima/command-line-args": "workspace:*",
         "argparse": "^2.0.1",
+        "args": "^5.0.3",
+        "args-tokens": "^0.23.0",
         "jackspeak": "^4.0.1",
         "yargs-parser": "^21.1.1"
     },
     "devDependencies": {
+        "@types/argparse": "^2.0.2",
         "typescript": "^5.9.3",
         "vitest": "^3.2.4"
     }

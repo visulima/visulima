@@ -68,12 +68,6 @@
         "access": "public",
         "provenance": true
     },
-    "dependencies": {
-        "array-back": "^6.2.2",
-        "find-replace": "^5.0.2",
-        "lodash.camelcase": "^4.3.0",
-        "typical": "^7.3.0"
-    },
     "devDependencies": {
         "@anolilab/eslint-config": "^16.4.2",
         "@anolilab/semantic-release-pnpm": "2.0.4",
@@ -85,6 +79,7 @@
         "@visulima/packem": "2.0.0-alpha.30",
         "@vitest/coverage-v8": "^3.2.4",
         "@vitest/ui": "^3.2.4",
+        "args-tokens": "^0.23.0",
         "conventional-changelog-conventionalcommits": "9.1.0",
         "esbuild": "^0.25.11",
         "eslint": "9.38.0",
@@ -96,5 +91,6 @@
         "test-runner": "0.11.1",
         "typescript": "^5.9.3",
         "vitest": "^3.2.4"
-    }
+    },
+    "dependencies": {}
 }

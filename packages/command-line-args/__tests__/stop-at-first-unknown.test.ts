@@ -1,10 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import commandLineArgs from "../src";
+import { commandLineArgs } from "../src";
 
 describe("stop at first unknown", () => {
     it("stopAtFirstUnknown", () => {
         expect.assertions(1);
+
         const optionDefinitions = [
             { name: "one", type: Boolean },
             { name: "two", type: Boolean },
@@ -20,6 +21,7 @@ describe("stop at first unknown", () => {
 
     it("with a singlular defaultOption", () => {
         expect.assertions(1);
+
         const optionDefinitions = [{ defaultOption: true, name: "one" }, { name: "two" }];
         const argv = ["--one", "1", "--", "--two", "2"];
         const result = commandLineArgs(optionDefinitions, { argv, stopAtFirstUnknown: true });
@@ -32,6 +34,7 @@ describe("stop at first unknown", () => {
 
     it("with a singlular defaultOption and partial", () => {
         expect.assertions(1);
+
         const optionDefinitions = [{ defaultOption: true, name: "one" }, { name: "two" }];
         const argv = ["--one", "1", "--", "--two", "2"];
         const result = commandLineArgs(optionDefinitions, { argv, partial: true, stopAtFirstUnknown: true });

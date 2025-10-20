@@ -1,12 +1,21 @@
-import commandLineArgs from "@visulima/command-line-args/src/index.ts";
+import { createRequire } from "node:module";
+import { parseArgs as nodeParseArgs } from "node:util";
+
+import { commandLineArgs } from "@visulima/command-line-args";
 import { ArgumentParser } from "argparse";
-import { parseArgs } from "jackspeak";
+import { parse as parseArgsTokens } from "args-tokens";
+import { jack as jackspeakParseArgs } from "jackspeak";
 import { bench, describe } from "vitest";
 import yargsParser from "yargs-parser";
+
+const require = createRequire(import.meta.url);
+const args = require("args");
 
 // Benchmark scenarios - using simpler, more compatible args
 const simpleArgs = ["--verbose", "--count", "5", "--name", "test"];
 const booleanArgs = ["--verbose", "--quiet", "--debug", "--color"];
+const argsSimpleArgs = ["node", "script.js", "--verbose", "--count", "5", "--name", "test"];
+const argsBooleanArgs = ["node", "script.js", "--verbose", "--quiet", "--debug", "--color"];
 
 describe("Command Line Args Benchmark", () => {
     describe("Simple arguments parsing", () => {
@@ -21,18 +30,39 @@ describe("Command Line Args Benchmark", () => {
         });
 
         bench("jackspeak", () => {
-            try {
-                parseArgs({
-                    args: simpleArgs,
-                    options: {
-                        count: { type: "string" },
-                        name: { type: "string" },
-                        verbose: { type: "boolean" },
-                    },
-                });
-            } catch {
-                // Ignore errors for benchmark
-            }
+            const parser = jackspeakParseArgs()
+                .opt({ name: { type: "string" } })
+                .flag({ verbose: { type: "boolean" } })
+                .opt({ count: { type: "string" } });
+
+            parser.parse(simpleArgs);
+        });
+
+        bench("node:util.parseArgs", () => {
+            nodeParseArgs({
+                args: simpleArgs,
+                options: {
+                    count: { type: "string" },
+                    name: { type: "string" },
+                    verbose: { type: "boolean" },
+                },
+            });
+        });
+
+        bench("args", () => {
+            const parser = new args.Args().option("verbose", "Enable verbose output").option("count", "Count value", 0).option("name", "Name value", "");
+
+            parser.parse(argsSimpleArgs);
+        });
+
+        bench("args-tokens", () => {
+            parseArgsTokens(simpleArgs, {
+                options: {
+                    count: { type: "number" },
+                    name: { type: "string" },
+                    verbose: { type: "boolean" },
+                },
+            });
         });
 
         bench("yargs-parser", () => {
@@ -44,16 +74,12 @@ describe("Command Line Args Benchmark", () => {
         });
 
         bench("argparse", () => {
-            try {
-                const parser = new ArgumentParser({ prog: "test" });
+            const parser = new ArgumentParser({ prog: "test" });
 
-                parser.add_argument("-v", "--verbose", { action: "store_true" });
-                parser.add_argument("-c", "--count", { type: "int" });
-                parser.add_argument("-n", "--name");
-                parser.parse_args(simpleArgs);
-            } catch {
-                // Ignore errors for benchmark
-            }
+            parser.add_argument("-v", "--verbose", { action: "store_true" });
+            parser.add_argument("-c", "--count", { type: "int" });
+            parser.add_argument("-n", "--name");
+            parser.parse_args(simpleArgs);
         });
     });
 
@@ -70,19 +96,46 @@ describe("Command Line Args Benchmark", () => {
         });
 
         bench("jackspeak", () => {
-            try {
-                parseArgs({
-                    args: booleanArgs,
-                    options: {
-                        color: { type: "boolean" },
-                        debug: { type: "boolean" },
-                        quiet: { type: "boolean" },
-                        verbose: { type: "boolean" },
-                    },
-                });
-            } catch {
-                // Ignore errors for benchmark
-            }
+            const parser = jackspeakParseArgs()
+                .flag({ verbose: { type: "boolean" } })
+                .flag({ quiet: { type: "boolean" } })
+                .flag({ debug: { type: "boolean" } })
+                .flag({ color: { type: "boolean" } });
+
+            parser.parse(booleanArgs);
+        });
+
+        bench("node:util.parseArgs", () => {
+            nodeParseArgs({
+                args: booleanArgs,
+                options: {
+                    color: { type: "boolean" },
+                    debug: { type: "boolean" },
+                    quiet: { type: "boolean" },
+                    verbose: { type: "boolean" },
+                },
+            });
+        });
+
+        bench("args", () => {
+            const parser = new args.Args()
+                .option("verbose", "Enable verbose output")
+                .option("quiet", "Enable quiet mode")
+                .option("debug", "Enable debug output")
+                .option("color", "Enable color output");
+
+            parser.parse(argsBooleanArgs);
+        });
+
+        bench("args-tokens", () => {
+            parseArgsTokens(booleanArgs, {
+                options: {
+                    color: { type: "boolean" },
+                    debug: { type: "boolean" },
+                    quiet: { type: "boolean" },
+                    verbose: { type: "boolean" },
+                },
+            });
         });
 
         bench("yargs-parser", () => {
@@ -92,17 +145,13 @@ describe("Command Line Args Benchmark", () => {
         });
 
         bench("argparse", () => {
-            try {
-                const parser = new ArgumentParser({ prog: "test" });
+            const parser = new ArgumentParser({ prog: "test" });
 
-                parser.add_argument("-v", "--verbose", { action: "store_true" });
-                parser.add_argument("-q", "--quiet", { action: "store_true" });
-                parser.add_argument("-d", "--debug", { action: "store_true" });
-                parser.add_argument("--color", { action: "store_true" });
-                parser.parse_args(booleanArgs);
-            } catch {
-                // Ignore errors for benchmark
-            }
+            parser.add_argument("-v", "--verbose", { action: "store_true" });
+            parser.add_argument("-q", "--quiet", { action: "store_true" });
+            parser.add_argument("-d", "--debug", { action: "store_true" });
+            parser.add_argument("--color", { action: "store_true" });
+            parser.parse_args(booleanArgs);
         });
     });
 });
