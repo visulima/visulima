@@ -9,7 +9,7 @@ const getLongestBadge = <L extends string, T extends string>(types: LoggerTypesC
         return "";
     }
 
-    // eslint-disable-next-line unicorn/no-array-reduce
+    // eslint-disable-next-line unicorn/no-array-reduce, @stylistic/no-extra-parens
     return badges.reduce((x, y) => (x.length > y.length ? x : y));
 };
 

@@ -59,7 +59,7 @@ jobs:
             matrix:
                 os:
                     - "ubuntu-latest"
-                node_version: ["20", "21", "22", "23"]
+                node_version: ["20", "22", "23", "24"]
                 # On the other platforms, we only test the lts node version
                 include:
                     - os: "macos-latest"

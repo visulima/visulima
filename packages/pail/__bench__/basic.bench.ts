@@ -1,17 +1,18 @@
 import { createWriteStream } from "node:fs";
 
 import { Signale } from "@dynamicabot/signales";
-import { diary } from "diary";
+import { Ogma } from "@ogma/logger";
 import { createPail as createBrowserPail } from "@visulima/pail/browser";
 import { JsonReporter as BrowserJsonReporter } from "@visulima/pail/browser/reporter";
 import { createPail as createServerPail } from "@visulima/pail/server";
 import { JsonReporter as ServerJsonReporter } from "@visulima/pail/server/reporter";
-import { Ogma } from "@ogma/logger";
 import bunyan from "bunyan";
 import { createConsola as createBrowserConsola, createConsola as createServerConsola } from "consola";
+import { diary } from "diary";
 import pino from "pino";
 import type { ILogObj } from "tslog";
 import { Logger } from "tslog";
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { bench, describe } from "vitest";
 import { createLogger, transports } from "winston";
 
@@ -34,6 +35,7 @@ const browserPail = createBrowserPail({
 const wsDevelopmentNull2 = createWriteStream("/dev/null");
 
 wsDevelopmentNull2.on("finish", () => {
+    // eslint-disable-next-line no-console
     console.log("finish");
 });
 
@@ -51,16 +53,16 @@ const browserConsola = createBrowserConsola({
 
 const tsLog = new Logger<ILogObj>({
     hideLogPositionForProduction: true,
-    type: "hidden", // Don't log anything to console
     minLevel: 0,
     // Write to /dev/null stream to match other loggers
     transport: [
         {
             write: (logObject) => {
-                wsDevelopmentNull.write(JSON.stringify(logObject) + '\n');
+                wsDevelopmentNull.write(`${JSON.stringify(logObject)}\n`);
             },
         },
     ],
+    type: "hidden", // Don't log anything to console
 });
 
 const pinoNodeStream = pino(wsDevelopmentNull);

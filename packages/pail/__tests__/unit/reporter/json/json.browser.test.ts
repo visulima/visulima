@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import JsonReporter from "../../../../src/reporter/json/json.browser";
+import JsonReporter from "../../../../src/reporter/json/json-reporter.browser";
 import type { ReadonlyMeta } from "../../../../src/types";
 
 const baseMeta = {

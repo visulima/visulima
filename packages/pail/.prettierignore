@@ -7,3 +7,5 @@ CHANGELOG.md
 coverage
 node_modules
 .eslintcache
+
+examples/nextjs/.next

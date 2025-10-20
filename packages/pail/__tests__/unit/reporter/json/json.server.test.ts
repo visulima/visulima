@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import JsonReporter from "../../../../src/reporter/json/json.server";
+import JsonReporter from "../../../../src/reporter/json/json-reporter.server";
 
 const baseMeta = {
     badge: "informational",

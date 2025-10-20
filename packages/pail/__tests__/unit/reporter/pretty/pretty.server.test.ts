@@ -5,7 +5,7 @@ import terminalSize from "terminal-size";
 import { describe, expect, it, vi } from "vitest";
 
 import { dateFormatter } from "../../../../src/reporter/pretty/abstract-pretty-reporter";
-import { PrettyReporter } from "../../../../src/reporter/pretty/pretty.server";
+import { PrettyReporter } from "../../../../src/reporter/pretty/pretty-reporter.server";
 import type { ReadonlyMeta } from "../../../../src/types";
 
 vi.mock(import("terminal-size"), () => {
@@ -45,7 +45,7 @@ describe("prettyReporter", () => {
         prettyReporter.log(meta as ReadonlyMeta<string>);
 
         expect(stdoutSpy).toHaveBeenCalledExactlyOnceWith(
-            `    ${`${grey("[Group1]")} ${grey(dateFormatter(date))}`} ${blueBright("INFO") + blueBright("LABEL")} ${grey("....")} ${grey("[Scope1 > Scope2]")} ${grey(". [Prefix]")} ${grey(".......")}\n\n    This is a sample message\n    ${grey("Suffix")}\n\n`,
+            `    ${`${grey("[Group1]")} ${grey(dateFormatter(date))}`} ${blueBright("INFO") + blueBright("LABEL")} ${grey("....")} ${grey("[Scope1 > Scope2]")} ${grey(". [Prefix]")} ${grey(".......")}\n\n    This is a sample message\n    ${grey("Suffix")}\n`,
         );
 
         stdoutSpy.mockRestore();
@@ -74,7 +74,7 @@ describe("prettyReporter", () => {
         prettyReporter.log(meta as ReadonlyMeta<string>);
 
         expect(stderrSpy).toHaveBeenCalledExactlyOnceWith(
-            `    ${`${grey("[Group1]")} ${grey(dateFormatter(date))}`} ${red("ERROR") + red("LABEL")} ${grey("....")} ${grey("[Scope1 > Scope2]")} ${grey(". [Prefix]")} ${grey("......")}\n\n    This is an error message\n    ${grey("Suffix")}\n\n`,
+            `    ${`${grey("[Group1]")} ${grey(dateFormatter(date))}`} ${red("ERROR") + red("LABEL")} ${grey("....")} ${grey("[Scope1 > Scope2]")} ${grey(". [Prefix]")} ${grey("......")}\n\n    This is an error message\n    ${grey("Suffix")}\n`,
         );
 
         stderrSpy.mockRestore();
@@ -106,7 +106,7 @@ describe("prettyReporter", () => {
         prettyReporter.log(meta as ReadonlyMeta<string>);
 
         expect(newStdout.write).toHaveBeenCalledExactlyOnceWith(
-            `    ${`${grey("[Group1]")} ${grey(dateFormatter(date))}`} ${blueBright("INFO") + blueBright("LABEL")} ${grey("....")} ${grey("[Scope1 > Scope2]")} ${grey(". [Prefix]")} ${grey(".......")}\n\n    This is a sample message\n    ${grey("Suffix")}\n\n`,
+            `    ${`${grey("[Group1]")} ${grey(dateFormatter(date))}`} ${blueBright("INFO") + blueBright("LABEL")} ${grey("....")} ${grey("[Scope1 > Scope2]")} ${grey(". [Prefix]")} ${grey(".......")}\n\n    This is a sample message\n    ${grey("Suffix")}\n`,
         );
     });
 
@@ -136,7 +136,7 @@ describe("prettyReporter", () => {
         prettyReporter.log(meta as ReadonlyMeta<string>);
 
         expect(newStderr.write).toHaveBeenCalledExactlyOnceWith(
-            `    ${`${grey("[Group1]")} ${grey(dateFormatter(date))}`} ${red("ERROR") + red("LABEL")} ${grey("....")} ${grey("[Scope1 > Scope2]")} ${grey(". [Prefix]")} ${grey("......")}\n\n    This is an error message\n    ${grey("Suffix")}\n\n`,
+            `    ${`${grey("[Group1]")} ${grey(dateFormatter(date))}`} ${red("ERROR") + red("LABEL")} ${grey("....")} ${grey("[Scope1 > Scope2]")} ${grey(". [Prefix]")} ${grey("......")}\n\n    This is an error message\n    ${grey("Suffix")}\n`,
         );
     });
 
@@ -164,7 +164,7 @@ describe("prettyReporter", () => {
         prettyReporter.log(meta as ReadonlyMeta<string>);
 
         expect(stdoutSpy).toHaveBeenCalledExactlyOnceWith(
-            `    ${`${grey("[Group1]")} ${grey(dateFormatter(date))}`} ${blueBright("INFO") + blueBright("LABEL")} ${grey("....")} ${grey("[Scope1 > Scope2]")} ${grey(". [Prefix]")} ${grey(".......")}\n\n    ${bold("null")}\n    ${grey("Suffix")}\n\n`,
+            `    ${`${grey("[Group1]")} ${grey(dateFormatter(date))}`} ${blueBright("INFO") + blueBright("LABEL")} ${grey("....")} ${grey("[Scope1 > Scope2]")} ${grey(". [Prefix]")} ${grey(".......")}\n\n    ${bold("null")}\n    ${grey("Suffix")}\n`,
         );
 
         stdoutSpy.mockRestore();
@@ -295,7 +295,7 @@ describe("prettyReporter", () => {
         prettyReporter.log(meta as ReadonlyMeta<string>);
 
         expect(stdoutSpy).toHaveBeenCalledExactlyOnceWith(
-            `${grey(dateFormatter(date))} ${blueBright("INFO") + blueBright("LABEL")} ${grey("....")} ${grey("[Scope1 > Scope2]")} ${grey(". [Prefix]")} ${grey(".....................")}\n\n  a  This is a sample message\n${grey("Suffix")}\n\n`,
+            `${grey(dateFormatter(date))} ${blueBright("INFO") + blueBright("LABEL")} ${grey("....")} ${grey("[Scope1 > Scope2]")} ${grey(". [Prefix]")} ${grey(".....................")}\n\n  a  This is a sample message\n${grey("Suffix")}\n`,
         );
 
         stdoutSpy.mockRestore();

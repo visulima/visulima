@@ -1,5 +1,5 @@
 import { createPail } from "@visulima/pail";
-import { JsonReporter } from "@visulima/pail/reporter";
+import { JsonReporter } from "@visulima/pail/reporter/json";
 
 const pail = createPail({
     reporters: [new JsonReporter()],

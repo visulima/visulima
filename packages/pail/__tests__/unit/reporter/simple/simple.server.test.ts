@@ -4,7 +4,7 @@ import { blueBright, bold, grey, red } from "@visulima/colorize";
 import { describe, expect, it, vi } from "vitest";
 
 import { dateFormatter } from "../../../../src/reporter/pretty/abstract-pretty-reporter";
-import { SimpleReporter } from "../../../../src/reporter/simple/simple.server";
+import { SimpleReporter } from "../../../../src/reporter/simple/simple-reporter.server";
 import type { Meta, ReadonlyMeta } from "../../../../src/types";
 
 vi.mock(import("terminal-size"), () => {
@@ -243,6 +243,94 @@ describe("simpleReporter", () => {
         expect(stdoutSpy).toHaveBeenCalledExactlyOnceWith(
             `    ${`${grey("[Group1]")} ${grey(dateFormatter(date))}`} ${bold(blueBright("INFO")) + bold(blueBright("LABEL"))}           a  This is a sample message1\n`,
         );
+
+        stdoutSpy.mockRestore();
+    });
+
+    it("should handle width-safe padding correctly with Unicode characters", () => {
+        expect.assertions(1);
+
+        // Create a reporter with custom types that include Unicode characters
+        const simpleReporter = new SimpleReporter();
+
+        // Override the logger types to include a wide Unicode character
+        (simpleReporter as any).loggerTypes = {
+            info: {
+                color: "blueBright",
+                label: "信息", // Chinese characters (3 bytes but 2 display width)
+                logLevel: "informational",
+            },
+            warn: {
+                color: "yellow",
+                label: "WARN", // ASCII characters (4 bytes, 4 display width)
+                logLevel: "warning",
+            },
+        };
+
+        const meta = {
+            badge: "信息",
+            date,
+            groups: [],
+            label: "信息", // This should be padded to match the longest label width
+            message: "Test message",
+            type: {
+                level: "informational",
+                name: "info",
+            },
+        };
+        const stdoutSpy = vi.spyOn(stdout, "write").mockImplementation(() => true);
+
+        simpleReporter.log(meta as ReadonlyMeta<string>);
+
+        // The padding should be calculated based on display width, not string length
+        // "信息" has display width of 4, "WARN" has display width of 4
+        // So there should be no padding needed
+        const expectedOutput = `${grey(dateFormatter(date))} ${bold(blueBright("信息")) + bold(blueBright("信息"))} Test message\n`;
+
+        expect(stdoutSpy).toHaveBeenCalledExactlyOnceWith(expectedOutput);
+
+        stdoutSpy.mockRestore();
+    });
+
+    it("should handle width-safe padding with mixed character widths", () => {
+        expect.assertions(1);
+
+        // Create a reporter with types that have different display widths
+        const simpleReporter = new SimpleReporter();
+
+        (simpleReporter as any).loggerTypes = {
+            debug: {
+                color: "grey",
+                label: "DBG", // 3 characters, 3 display width
+                logLevel: "debug",
+            },
+            error: {
+                color: "red",
+                label: "🚨ERROR", // 7 characters but 7 display width (emoji + text)
+                logLevel: "error",
+            },
+        };
+
+        const meta = {
+            badge: undefined,
+            date,
+            groups: [],
+            label: "DBG", // Shorter label should be padded to match longest
+            message: "Debug message",
+            type: {
+                level: "debug",
+                name: "debug",
+            },
+        };
+        const stdoutSpy = vi.spyOn(stdout, "write").mockImplementation(() => true);
+
+        simpleReporter.log(meta as ReadonlyMeta<string>);
+
+        // "🚨ERROR" has display width of 7, "DBG" has display width of 3
+        // So "DBG" should be padded with 4 spaces to match, but there might be additional spacing
+        const expectedOutput = `${grey(dateFormatter(date))} ${bold(grey("DBG"))}     Debug message\n`;
+
+        expect(stdoutSpy).toHaveBeenCalledExactlyOnceWith(expectedOutput);
 
         stdoutSpy.mockRestore();
     });

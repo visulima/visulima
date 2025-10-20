@@ -1,0 +1,13 @@
+{
+    "name": "@visulima/pail-bun-example",
+    "version": "1.0.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "start": "bun run example.ts",
+        "dev": "bun --hot example.ts"
+    },
+    "dependencies": {
+        "@visulima/pail": "^2.1.31"
+    }
+}
