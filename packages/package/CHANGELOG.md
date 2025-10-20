@@ -1,3 +1,19 @@
+## @visulima/package [4.1.1](https://github.com/visulima/visulima/compare/@visulima/package@4.1.0...@visulima/package@4.1.1) (2025-10-20)
+
+### Documentation
+
+* update migration guide for @visulima/package v4.0.0 ([695b8c3](https://github.com/visulima/visulima/commit/695b8c38c3291d4f060a22d4b53f0bf647c82cb8))
+
+### Miscellaneous Chores
+
+* **deps:** update package versions and dependencies ([88d8d32](https://github.com/visulima/visulima/commit/88d8d32c4629a7a06c8770369191da2cc81087cc))
+* update package dependencies across multiple packages ([17e3f23](https://github.com/visulima/visulima/commit/17e3f2377c8a3f98e2eed2192c5adaf6e32558b5))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 4.0.1
+
 ## @visulima/package [4.1.0](https://github.com/visulima/visulima/compare/@visulima/package@4.0.2...@visulima/package@4.1.0) (2025-10-15)
 
 ### Features
