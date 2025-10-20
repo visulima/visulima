@@ -1,7 +1,7 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { PailBrowser } from "../../src/pail.browser";
-import RawReporter from "../../src/reporter/raw/raw.browser";
+import RawReporter from "../../src/reporter/raw/raw-reporter.browser";
 
 describe("pailBrowserImpl", () => {
     it("should log different types of messages correctly", () => {
@@ -106,6 +106,7 @@ describe("pailBrowserImpl", () => {
         logger.timeEnd("testTimer");
 
         expect(consoleSpy).toHaveBeenNthCalledWith(1, "Initialized timer...");
+        // eslint-disable-next-line sonarjs/slow-regex
         expect(consoleSpy).toHaveBeenNthCalledWith(2, expect.stringMatching(/(.*) ms/), "Intermediate log");
         expect(consoleSpy).toHaveBeenNthCalledWith(3, expect.stringMatching(/Timer run for: (.*)ms/));
 
@@ -264,5 +265,370 @@ describe("pailBrowserImpl", () => {
         logger.disable();
 
         expect(logger.isEnabled()).toBe(false);
+    });
+
+    describe("argument handling", () => {
+        let logger: PailBrowser;
+        let rawReporter: RawReporter;
+
+        beforeEach(() => {
+            rawReporter = new RawReporter();
+            logger = new PailBrowser({
+                logLevel: "debug",
+                processors: [],
+                rawReporter,
+                reporters: [rawReporter],
+                scope: ["test"],
+                throttle: 1000,
+                throttleMin: 5,
+            });
+        });
+
+        it("should handle multiple arguments correctly", () => {
+            expect.assertions(2);
+
+            const loggedMeta: any[] = [];
+
+            rawReporter.log = (meta) => {
+                loggedMeta.push(meta);
+            };
+
+            logger.info({ context: { test: "test1" } }, "Hello World", { context: { test: "test2" } });
+
+            expect(loggedMeta).toHaveLength(1);
+            expect(loggedMeta[0]).toMatchObject({
+                context: ["Hello World", { context: { test: "test2" } }],
+                message: { context: { test: "test1" } },
+                type: { level: "informational", name: "info" },
+            });
+        });
+
+        it("should handle structured Message objects correctly", () => {
+            expect.assertions(2);
+
+            const loggedMeta: any[] = [];
+
+            rawReporter.log = (meta) => {
+                loggedMeta.push(meta);
+            };
+
+            logger.info({
+                context: { user: "alice" },
+                message: "Structured message",
+                prefix: "User Action",
+            });
+
+            expect(loggedMeta).toHaveLength(1);
+            expect(loggedMeta[0]).toMatchObject({
+                context: { user: "alice" },
+                message: "Structured message",
+                prefix: "User Action",
+                type: { level: "informational", name: "info" },
+            });
+        });
+
+        it("should handle Message objects with additional arguments", () => {
+            expect.assertions(2);
+
+            const loggedMeta: any[] = [];
+
+            rawReporter.log = (meta) => {
+                loggedMeta.push(meta);
+            };
+
+            logger.info(
+                {
+                    context: { user: "alice" },
+                    message: "Structured message",
+                    prefix: "User Action",
+                },
+                "Additional info",
+                { extra: "data" },
+            );
+
+            expect(loggedMeta).toHaveLength(1);
+            expect(loggedMeta[0]).toMatchObject({
+                context: [{ user: "alice" }, "Additional info", { extra: "data" }],
+                message: "Structured message",
+                prefix: "User Action",
+                type: { level: "informational", name: "info" },
+            });
+        });
+
+        it("should handle Error objects correctly", () => {
+            expect.assertions(2);
+
+            const loggedMeta: any[] = [];
+
+            rawReporter.log = (meta) => {
+                loggedMeta.push(meta);
+            };
+
+            const testError = new Error("Test error");
+
+            logger.error(testError);
+
+            expect(loggedMeta).toHaveLength(1);
+            expect(loggedMeta[0]).toMatchObject({
+                error: testError,
+                type: { level: "error", name: "error" },
+            });
+        });
+
+        it("should handle Error objects with additional context", () => {
+            expect.assertions(2);
+
+            const loggedMeta: any[] = [];
+
+            rawReporter.log = (meta) => {
+                loggedMeta.push(meta);
+            };
+
+            const testError = new Error("Test error");
+
+            logger.error(testError, "Additional context", { code: 500 });
+
+            expect(loggedMeta).toHaveLength(1);
+            expect(loggedMeta[0]).toMatchObject({
+                context: ["Additional context", { code: 500 }],
+                error: testError,
+                type: { level: "error", name: "error" },
+            });
+        });
+
+        it("should handle single object arguments", () => {
+            expect.assertions(2);
+
+            const loggedMeta: any[] = [];
+
+            rawReporter.log = (meta) => {
+                loggedMeta.push(meta);
+            };
+
+            logger.info({ key: "value" });
+
+            expect(loggedMeta).toHaveLength(1);
+            expect(loggedMeta[0]).toMatchObject({
+                message: { key: "value" },
+                type: { level: "informational", name: "info" },
+            });
+        });
+
+        it("should handle single primitive arguments", () => {
+            expect.assertions(2);
+
+            const loggedMeta: any[] = [];
+
+            rawReporter.log = (meta) => {
+                loggedMeta.push(meta);
+            };
+
+            logger.info("Simple message");
+
+            expect(loggedMeta).toHaveLength(1);
+            expect(loggedMeta[0]).toMatchObject({
+                message: "Simple message",
+                type: { level: "informational", name: "info" },
+            });
+        });
+
+        it("should handle empty arguments gracefully", () => {
+            expect.assertions(2);
+
+            const loggedMeta: any[] = [];
+
+            rawReporter.log = (meta) => {
+                loggedMeta.push(meta);
+            };
+
+            // @ts-expect-error - testing edge case
+            logger.info();
+
+            expect(loggedMeta).toHaveLength(1);
+            expect(loggedMeta[0]).toMatchObject({
+                type: { level: "informational", name: "info" },
+            });
+        });
+
+        it("should avoid infinite loop when wrapping console", () => {
+            expect.assertions(2);
+
+            const loggedMeta: any[] = [];
+
+            rawReporter.log = (meta) => {
+                loggedMeta.push(meta);
+            };
+
+            logger.wrapConsole();
+
+            const object = {
+                get value() {
+                    // eslint-disable-next-line no-console
+                    console.warn(object);
+
+                    return "anything";
+                },
+            };
+
+            // This should complete without hanging (no infinite loop)
+            logger.warn(object);
+            logger.restoreConsole();
+
+            // Should have at least one log (the original warn call)
+            expect(loggedMeta.length).toBeGreaterThan(0);
+            // Should not have hundreds of logs (which would indicate infinite looping)
+            expect(loggedMeta.length).toBeLessThan(100);
+        });
+    });
+
+    describe("pause and resume", () => {
+        it("should queue messages when paused and flush them on resume", () => {
+            expect.assertions(3);
+
+            const logger = new PailBrowser({
+                logLevel: "debug",
+                processors: [],
+                rawReporter: new RawReporter(),
+                reporters: [new RawReporter()],
+                throttle: 1000,
+                throttleMin: 5,
+            });
+
+            const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+
+            // Pause the logger
+            logger.pause();
+
+            // These messages should be queued
+            logger.info("Message 1");
+            logger.warn("Message 2");
+            logger.debug("Message 3");
+
+            // No messages should have been logged yet
+            expect(consoleSpy).not.toHaveBeenCalled();
+
+            // Resume the logger
+            logger.resume();
+
+            // All three messages should now be logged in order
+            expect(consoleSpy).toHaveBeenCalledTimes(3);
+            expect(consoleSpy).toHaveBeenNthCalledWith(1, "Message 1");
+
+            consoleSpy.mockRestore();
+        });
+
+        it("should not queue messages when not paused", () => {
+            expect.assertions(2);
+
+            const logger = new PailBrowser({
+                logLevel: "debug",
+                processors: [],
+                rawReporter: new RawReporter(),
+                reporters: [new RawReporter()],
+                throttle: 1000,
+                throttleMin: 5,
+            });
+
+            const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+
+            // Log without pausing
+            logger.info("Immediate message");
+
+            // Message should be logged immediately
+            expect(consoleSpy).toHaveBeenCalledTimes(1);
+            expect(consoleSpy).toHaveBeenCalledWith("Immediate message");
+
+            consoleSpy.mockRestore();
+        });
+
+        it("should handle multiple pause/resume cycles", () => {
+            expect.assertions(3);
+
+            const logger = new PailBrowser({
+                logLevel: "debug",
+                processors: [],
+                rawReporter: new RawReporter(),
+                reporters: [new RawReporter()],
+                throttle: 1000,
+                throttleMin: 5,
+            });
+
+            const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+
+            // First cycle
+            logger.pause();
+            logger.info("Queued 1");
+            logger.resume();
+
+            expect(consoleSpy).toHaveBeenCalledTimes(1);
+
+            // Second cycle
+            logger.pause();
+            logger.info("Queued 2");
+            logger.info("Queued 3");
+            logger.resume();
+
+            expect(consoleSpy).toHaveBeenCalledTimes(3);
+
+            // Third cycle - immediate log
+            logger.info("Immediate");
+
+            expect(consoleSpy).toHaveBeenCalledTimes(4);
+
+            consoleSpy.mockRestore();
+        });
+
+        it("should preserve message order when flushing queue", () => {
+            expect.assertions(4);
+
+            const logger = new PailBrowser({
+                logLevel: "debug",
+                processors: [],
+                rawReporter: new RawReporter(),
+                reporters: [new RawReporter()],
+                throttle: 1000,
+                throttleMin: 5,
+            });
+
+            const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+
+            logger.pause();
+            logger.info("First");
+            logger.warn("Second");
+            logger.debug("Third");
+            logger.resume();
+
+            expect(consoleSpy).toHaveBeenCalledTimes(3);
+            expect(consoleSpy).toHaveBeenNthCalledWith(1, "First");
+            expect(consoleSpy).toHaveBeenNthCalledWith(2, "Second");
+            expect(consoleSpy).toHaveBeenNthCalledWith(3, "Third");
+
+            consoleSpy.mockRestore();
+        });
+
+        it("should not output messages when disabled even if queued", () => {
+            expect.assertions(1);
+
+            const logger = new PailBrowser({
+                logLevel: "debug",
+                processors: [],
+                rawReporter: new RawReporter(),
+                reporters: [new RawReporter()],
+                throttle: 1000,
+                throttleMin: 5,
+            });
+
+            const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+
+            logger.pause();
+            logger.info("Queued message");
+            logger.disable();
+            logger.resume();
+
+            // Message should not be logged because logger is disabled
+            expect(consoleSpy).not.toHaveBeenCalled();
+
+            consoleSpy.mockRestore();
+        });
     });
 });

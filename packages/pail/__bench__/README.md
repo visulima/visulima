@@ -19,51 +19,51 @@ This benchmark compares various JavaScript/TypeScript logging libraries across d
 ### Tested Loggers
 
 - **pail server/browser**: Visulima's own pail logger (the library being benchmarked)
-  - **Synchronous API** - Logging calls return immediately without blocking the event loop
-  - Handles stream backpressure asynchronously through event listeners
-  - Feature-rich with structured logging, custom reporters, and browser support
-  - Designed for both server and client-side usage
-  - Great developer experience with colored console output
+    - **Synchronous API** - Logging calls return immediately without blocking the event loop
+    - Handles stream backpressure asynchronously through event listeners
+    - Feature-rich with structured logging, custom reporters, and browser support
+    - Designed for both server and client-side usage
+    - Great developer experience with colored console output
 
 - **consola server/browser**: Universal logger with beautiful output
-  - Great developer experience with colored console output
-  - Supports both server and browser environments
-  - Known for its clean, readable log formatting
+    - Great developer experience with colored console output
+    - Supports both server and browser environments
+    - Known for its clean, readable log formatting
 
 - **tslog**: TypeScript-first logger with JSON output
-  - Strong TypeScript integration and type safety
-  - Outputs structured JSON logs
-  - Good for production environments needing structured data
+    - Strong TypeScript integration and type safety
+    - Outputs structured JSON logs
+    - Good for production environments needing structured data
 
 - **pino**: High-performance JSON logger
-  - Extremely fast JSON logging optimized for production
-  - Low overhead and high throughput
-  - Excellent for high-volume logging scenarios
+    - Extremely fast JSON logging optimized for production
+    - Low overhead and high throughput
+    - Excellent for high-volume logging scenarios
 
 - **bunyan**: Mature JSON logging library
-  - Battle-tested with good ecosystem support
-  - Structured logging with JSON output
-  - Good choice for enterprise applications
+    - Battle-tested with good ecosystem support
+    - Structured logging with JSON output
+    - Good choice for enterprise applications
 
 - **winston**: Feature-rich logging framework
-  - Highly configurable with multiple transports
-  - Supports various output formats and storage backends
-  - Popular choice with extensive plugin ecosystem
+    - Highly configurable with multiple transports
+    - Supports various output formats and storage backends
+    - Popular choice with extensive plugin ecosystem
 
 - **ogma logger/json**: Modern logger with beautiful output
-  - Focuses on developer experience and readability
-  - Supports both human-readable and JSON formats
-  - Good balance of performance and usability
+    - Focuses on developer experience and readability
+    - Supports both human-readable and JSON formats
+    - Good balance of performance and usability
 
 - **diary**: Simple and fast structured logger
-  - Lightweight with focus on performance
-  - JSON output with minimal overhead
-  - Good for applications needing simple, fast logging
+    - Lightweight with focus on performance
+    - JSON output with minimal overhead
+    - Good for applications needing simple, fast logging
 
 - **signale**: Beautiful console logging
-  - Excellent for CLI tools and development
-  - Highly customizable visual output
-  - Not optimized for production/structured logging
+    - Excellent for CLI tools and development
+    - Highly customizable visual output
+    - Not optimized for production/structured logging
 
 ### Blocking vs Non-Blocking Behavior
 
@@ -88,22 +88,22 @@ pnpm --filter "pail" run test:bench
 
 ### basic logging
 
-| Name                | Hz             | Min    | Max     | Mean   | P75    | P99    | P995   | P999   | RME     | Samples |
-| ------------------- | -------------- | ------ | ------- | ------ | ------ | ------ | ------ | ------ | ------- | ------- |
-| pail server         | 12,290,665.53  | 0.0001 | 1.4513  | 0.0001 | 0.0001 | 0.0002 | 0.0003 | 0.0006 | ±0.58%  | 6145333 |
-| pail browser        | 1,097,515.64   | 0.0008 | 0.4108  | 0.0009 | 0.0009 | 0.0017 | 0.0018 | 0.0028 | ±0.40%  | 548758  |
-| consola server      | 12,902,679.02  | 0.0001 | 0.4080  | 0.0001 | 0.0001 | 0.0001 | 0.0002 | 0.0007 | ±0.67%  | 6451340 |
-| consola browser     | 12,585,814.39  | 0.0001 | 3.8451  | 0.0001 | 0.0001 | 0.0002 | 0.0002 | 0.0007 | ±1.98%  | 6292908 |
-| tslog               | 1,959,956.40   | 0.0004 | 0.2665  | 0.0005 | 0.0005 | 0.0010 | 0.0012 | 0.0015 | ±0.45%  | 979979  |
-| bunyan node stream  | 515,100.34     | 0.0016 | 2.7677  | 0.0019 | 0.0018 | 0.0032 | 0.0036 | 0.0073 | ±2.00%  | 257551  |
-| winston node stream | 549,091.82     | 0.0011 | 40.5901 | 0.0018 | 0.0013 | 0.0027 | 0.0032 | 0.0067 | ±18.60% | 282351  |
-| pino destination    | 1,911,173.56   | 0.0003 | 12.5170 | 0.0005 | 0.0003 | 0.0007 | 0.0009 | 0.0013 | ±17.12% | 960745  |
-| pino node stream    | 1,287,182.89   | 0.0005 | 3.2815  | 0.0008 | 0.0006 | 0.0036 | 0.0040 | 0.0080 | ±3.92%  | 643594  |
-| pino min length     | 1,940,377.58   | 0.0003 | 11.0352 | 0.0005 | 0.0003 | 0.0007 | 0.0009 | 0.0013 | ±15.66% | 970189  |
-| ogma logger         | 991,721.31     | 0.0008 | 3.6747  | 0.0010 | 0.0009 | 0.0024 | 0.0026 | 0.0055 | ±3.49%  | 495863  |
-| ogma json logger    | 1,080,907.16   | 0.0005 | 5.2984  | 0.0009 | 0.0007 | 0.0033 | 0.0042 | 0.0317 | ±3.99%  | 540454  |
-| diary               | 12,303,855.06  | 0.0001 | 0.6664  | 0.0001 | 0.0001 | 0.0001 | 0.0002 | 0.0005 | ±0.40%  | 6151928 |
-| signale             | 1,997,379.11   | 0.0003 | 9.7696  | 0.0005 | 0.0004 | 0.0020 | 0.0023 | 0.0052 | ±6.93%  | 998690  |
+| Name                | Hz            | Min    | Max     | Mean   | P75    | P99    | P995   | P999   | RME     | Samples |
+| ------------------- | ------------- | ------ | ------- | ------ | ------ | ------ | ------ | ------ | ------- | ------- |
+| pail server         | 12,290,665.53 | 0.0001 | 1.4513  | 0.0001 | 0.0001 | 0.0002 | 0.0003 | 0.0006 | ±0.58%  | 6145333 |
+| pail browser        | 1,097,515.64  | 0.0008 | 0.4108  | 0.0009 | 0.0009 | 0.0017 | 0.0018 | 0.0028 | ±0.40%  | 548758  |
+| consola server      | 12,902,679.02 | 0.0001 | 0.4080  | 0.0001 | 0.0001 | 0.0001 | 0.0002 | 0.0007 | ±0.67%  | 6451340 |
+| consola browser     | 12,585,814.39 | 0.0001 | 3.8451  | 0.0001 | 0.0001 | 0.0002 | 0.0002 | 0.0007 | ±1.98%  | 6292908 |
+| tslog               | 1,959,956.40  | 0.0004 | 0.2665  | 0.0005 | 0.0005 | 0.0010 | 0.0012 | 0.0015 | ±0.45%  | 979979  |
+| bunyan node stream  | 515,100.34    | 0.0016 | 2.7677  | 0.0019 | 0.0018 | 0.0032 | 0.0036 | 0.0073 | ±2.00%  | 257551  |
+| winston node stream | 549,091.82    | 0.0011 | 40.5901 | 0.0018 | 0.0013 | 0.0027 | 0.0032 | 0.0067 | ±18.60% | 282351  |
+| pino destination    | 1,911,173.56  | 0.0003 | 12.5170 | 0.0005 | 0.0003 | 0.0007 | 0.0009 | 0.0013 | ±17.12% | 960745  |
+| pino node stream    | 1,287,182.89  | 0.0005 | 3.2815  | 0.0008 | 0.0006 | 0.0036 | 0.0040 | 0.0080 | ±3.92%  | 643594  |
+| pino min length     | 1,940,377.58  | 0.0003 | 11.0352 | 0.0005 | 0.0003 | 0.0007 | 0.0009 | 0.0013 | ±15.66% | 970189  |
+| ogma logger         | 991,721.31    | 0.0008 | 3.6747  | 0.0010 | 0.0009 | 0.0024 | 0.0026 | 0.0055 | ±3.49%  | 495863  |
+| ogma json logger    | 1,080,907.16  | 0.0005 | 5.2984  | 0.0009 | 0.0007 | 0.0033 | 0.0042 | 0.0317 | ±3.99%  | 540454  |
+| diary               | 12,303,855.06 | 0.0001 | 0.6664  | 0.0001 | 0.0001 | 0.0001 | 0.0002 | 0.0005 | ±0.40%  | 6151928 |
+| signale             | 1,997,379.11  | 0.0003 | 9.7696  | 0.0005 | 0.0004 | 0.0020 | 0.0023 | 0.0052 | ±6.93%  | 998690  |
 
 ### object logging
 
@@ -125,21 +125,21 @@ pnpm --filter "pail" run test:bench
 
 ### deep object logging
 
-| Name                | Hz            | Min    | Max     | Mean   | P75    | P99    | P995   | P999   | RME     | Samples |
-| ------------------- | ------------- | ------ | ------- | ------ | ------ | ------ | ------ | ------ | ------- | ------- |
-| pail server         | 12,387,823.75 | 0.0001 | 9.0259  | 0.0001 | 0.0001 | 0.0002 | 0.0003 | 0.0014 | ±4.03%  | 6193912 |
-| pail browser        | 114,466.72    | 0.0077 | 0.6090  | 0.0087 | 0.0085 | 0.0143 | 0.0164 | 0.0442 | ±0.40%  | 57234   |
-| consola server      | 12,380,250.91 | 0.0001 | 0.3265  | 0.0001 | 0.0001 | 0.0002 | 0.0003 | 0.0014 | ±0.48%  | 6190126 |
-| consola browser     | 12,893,958.66 | 0.0001 | 0.2711  | 0.0001 | 0.0001 | 0.0001 | 0.0002 | 0.0007 | ±0.45%  | 6446980 |
-| tslog               | 46,758.80     | 0.0191 | 0.3404  | 0.0214 | 0.0207 | 0.0377 | 0.0403 | 0.1848 | ±0.52%  | 23380   |
-| bunyan node stream  | 86,254.19     | 0.0105 | 0.7543  | 0.0116 | 0.0113 | 0.0189 | 0.0208 | 0.0391 | ±0.39%  | 43128   |
+| Name                | Hz            | Min    | Max     | Mean   | P75    | P99    | P995   | P999    | RME     | Samples |
+| ------------------- | ------------- | ------ | ------- | ------ | ------ | ------ | ------ | ------- | ------- | ------- |
+| pail server         | 12,387,823.75 | 0.0001 | 9.0259  | 0.0001 | 0.0001 | 0.0002 | 0.0003 | 0.0014  | ±4.03%  | 6193912 |
+| pail browser        | 114,466.72    | 0.0077 | 0.6090  | 0.0087 | 0.0085 | 0.0143 | 0.0164 | 0.0442  | ±0.40%  | 57234   |
+| consola server      | 12,380,250.91 | 0.0001 | 0.3265  | 0.0001 | 0.0001 | 0.0002 | 0.0003 | 0.0014  | ±0.48%  | 6190126 |
+| consola browser     | 12,893,958.66 | 0.0001 | 0.2711  | 0.0001 | 0.0001 | 0.0001 | 0.0002 | 0.0007  | ±0.45%  | 6446980 |
+| tslog               | 46,758.80     | 0.0191 | 0.3404  | 0.0214 | 0.0207 | 0.0377 | 0.0403 | 0.1848  | ±0.52%  | 23380   |
+| bunyan node stream  | 86,254.19     | 0.0105 | 0.7543  | 0.0116 | 0.0113 | 0.0189 | 0.0208 | 0.0391  | ±0.39%  | 43128   |
 | winston node stream | 19,012.20     | 0.0259 | 23.7780 | 0.0526 | 0.0335 | 0.0908 | 0.1110 | 12.5720 | ±18.96% | 10000   |
-| pino destination    | 79,177.29     | 0.0081 | 11.5115 | 0.0126 | 0.0093 | 0.0160 | 0.0176 | 0.0409 | ±13.83% | 39589   |
-| pino node stream    | 51,440.48     | 0.0134 | 10.1162 | 0.0194 | 0.0177 | 0.0507 | 0.0592 | 0.1073 | ±4.51%  | 25721   |
-| pino min length     | 80,469.28     | 0.0082 | 10.2504 | 0.0124 | 0.0094 | 0.0163 | 0.0184 | 0.0439 | ±12.52% | 40235   |
-| ogma logger         | 22,845.44     | 0.0301 | 11.9149 | 0.0438 | 0.0460 | 0.0998 | 0.1123 | 0.1784 | ±4.94%  | 11423   |
-| ogma json logger    | 28,832.74     | 0.0264 | 11.4514 | 0.0347 | 0.0323 | 0.0784 | 0.0842 | 0.1073 | ±4.70%  | 14417   |
-| diary               | 10,791,310.62 | 0.0001 | 1.0526  | 0.0001 | 0.0001 | 0.0002 | 0.0003 | 0.0008 | ±0.71%  | 5395656 |
+| pino destination    | 79,177.29     | 0.0081 | 11.5115 | 0.0126 | 0.0093 | 0.0160 | 0.0176 | 0.0409  | ±13.83% | 39589   |
+| pino node stream    | 51,440.48     | 0.0134 | 10.1162 | 0.0194 | 0.0177 | 0.0507 | 0.0592 | 0.1073  | ±4.51%  | 25721   |
+| pino min length     | 80,469.28     | 0.0082 | 10.2504 | 0.0124 | 0.0094 | 0.0163 | 0.0184 | 0.0439  | ±12.52% | 40235   |
+| ogma logger         | 22,845.44     | 0.0301 | 11.9149 | 0.0438 | 0.0460 | 0.0998 | 0.1123 | 0.1784  | ±4.94%  | 11423   |
+| ogma json logger    | 28,832.74     | 0.0264 | 11.4514 | 0.0347 | 0.0323 | 0.0784 | 0.0842 | 0.1073  | ±4.70%  | 14417   |
+| diary               | 10,791,310.62 | 0.0001 | 1.0526  | 0.0001 | 0.0001 | 0.0002 | 0.0003 | 0.0008  | ±0.71%  | 5395656 |
 
 ### child creation
 

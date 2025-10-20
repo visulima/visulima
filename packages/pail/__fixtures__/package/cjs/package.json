@@ -1,9 +1,0 @@
-{
-    "name": "pail-cjs",
-    "description": "CommonJS version",
-    "private": true,
-    "type": "commonjs",
-    "dependencies": {
-        "@visulima/pail": "workspace:*"
-    }
-}

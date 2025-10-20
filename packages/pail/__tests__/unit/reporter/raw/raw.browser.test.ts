@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import RawReporter from "../../../../src/reporter/raw/raw.browser";
+import RawReporter from "../../../../src/reporter/raw/raw-reporter.browser";
 import type { ReadonlyMeta } from "../../../../src/types";
 
 describe("raw-reporter", () => {
