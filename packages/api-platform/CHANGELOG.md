@@ -1,3 +1,22 @@
+## @visulima/api-platform [3.0.52](https://github.com/visulima/visulima/compare/@visulima/api-platform@3.0.51...@visulima/api-platform@3.0.52) (2025-10-20)
+
+### Bug Fixes
+
+* **deps:** update dependency @hapi/hapi to ^21.4.3 ([#551](https://github.com/visulima/visulima/issues/551)) ([11c1471](https://github.com/visulima/visulima/commit/11c147138fd15c69c3f20f5be07c6cf412c836bf))
+* **deps:** update minor updates ([#455](https://github.com/visulima/visulima/issues/455)) ([cebf7dc](https://github.com/visulima/visulima/commit/cebf7dcdc7f6ca423ad141f90f6c30279f5fa392))
+* **deps:** update patch updates ([#452](https://github.com/visulima/visulima/issues/452)) ([4da5cbd](https://github.com/visulima/visulima/commit/4da5cbd411ccd961be7fd6f454aaec841e220b5e))
+
+### Miscellaneous Chores
+
+* **deps:** update package versions and dependencies ([88d8d32](https://github.com/visulima/visulima/commit/88d8d32c4629a7a06c8770369191da2cc81087cc))
+
+
+### Dependencies
+
+* **@visulima/connect:** upgraded to 3.0.22
+* **@visulima/jsdoc-open-api:** upgraded to 2.0.88
+* **@visulima/fs:** upgraded to 4.0.1
+
 ## @visulima/api-platform [3.0.51](https://github.com/visulima/visulima/compare/@visulima/api-platform@3.0.50...@visulima/api-platform@3.0.51) (2025-10-15)
 
 ### Bug Fixes
