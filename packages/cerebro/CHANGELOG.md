@@ -1,3 +1,9 @@
+## @visulima/cerebro [1.1.55](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.1.54...@visulima/cerebro@1.1.55) (2025-10-20)
+
+### Bug Fixes
+
+* downgrade @visulima/pail to version 2.1.31 in cerebro package.json ([3518bd4](https://github.com/visulima/visulima/commit/3518bd4b0f7a6cc7a6bf862ebf9dcf129798c1e2))
+
 ## @visulima/cerebro [1.1.54](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.1.53...@visulima/cerebro@1.1.54) (2025-10-20)
 
 ### Miscellaneous Chores
