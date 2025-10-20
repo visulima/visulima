@@ -9,6 +9,6 @@
     "dependencies": {
         "@hono/node-server": "^1.19.5",
         "@visulima/ono": "workspace:*",
-        "hono": "^4.9.12"
+        "hono": "^4.10.1"
     }
 }
