@@ -1,4 +1,4 @@
-import Option from "./option.js";
+import Option from "./option";
 
 class FlagOption extends Option {
     set(value: any): void {

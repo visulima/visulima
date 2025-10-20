@@ -1,8 +1,8 @@
 import arrayify from "array-back";
 import t from "typical";
 
-import { getOptionName, isOption, re } from "./argv-tools.js";
-import Definition from "./option-definition.js";
+import { getOptionName, isOption, re } from "./argv-tools";
+import Definition from "./option-definition";
 
 /**
  * @module option-definitions
@@ -160,18 +160,18 @@ class Definitions extends Array {
     }
 }
 
-function halt(name: string, message: string): never {
+const halt = (name: string, message: string): never => {
     const error = new Error(message);
 
     error.name = name;
     throw error;
-}
+};
 
-function containsValidGroup(def: any): boolean {
+const containsValidGroup = (def: any): boolean => {
     return arrayify(def.group).some(Boolean);
-}
+};
 
-function hasDuplicates(array: any[]): boolean {
+const hasDuplicates = (array: any[]): boolean => {
     const items: Record<string, boolean> = {};
 
     for (const value of array) {
@@ -182,6 +182,8 @@ function hasDuplicates(array: any[]): boolean {
         if (t.isDefined(value))
             items[value] = true;
     }
-}
+
+    return false;
+};
 
 export default Definitions;

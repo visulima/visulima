@@ -1,8 +1,8 @@
-import ArgvParser from "./lib/argv-parser.js";
-import Option from "./lib/option.js";
-import Definitions from "./lib/option-definitions.js";
-import Output from "./lib/output.js";
-import OutputGrouped from "./lib/output-grouped.js";
+import ArgvParser from "./lib/argv-parser";
+import Option from "./lib/option";
+import Definitions from "./lib/option-definitions";
+import Output from "./lib/output";
+import OutputGrouped from "./lib/output-grouped";
 
 /**
  * @module command-line-args
@@ -33,7 +33,7 @@ import OutputGrouped from "./lib/output-grouped.js";
  *   - If a `Boolean` option is also set as the `defaultOption`.
  * @alias module:command-line-args
  */
-function commandLineArgs(optionDefinitions: any[], options?: any): any {
+const commandLineArgs = (optionDefinitions: any[], options?: any): any => {
     options = options || {};
 
     if (options.stopAtFirstUnknown)
@@ -87,6 +87,6 @@ function commandLineArgs(optionDefinitions: any[], options?: any): any {
     }
 
     return output.toObject({ camelCase: options.camelCase, skipUnknown: !options.partial });
-}
+};
 
 export default commandLineArgs;

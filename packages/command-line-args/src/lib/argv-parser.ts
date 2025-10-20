@@ -1,8 +1,8 @@
 import findReplace from "find-replace";
 import t from "typical";
 
-import { ArgvArray, isOption, isOptionEqualsNotation, isValue, re } from "./argv-tools.js";
-import Definitions from "./option-definitions.js";
+import { ArgvArray, isOption, isOptionEqualsNotation, isValue, re } from "./argv-tools";
+import Definitions from "./option-definitions";
 
 /**
  * @module argv-parser

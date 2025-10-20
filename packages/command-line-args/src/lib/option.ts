@@ -1,7 +1,7 @@
 import arrayify from "array-back";
 import t from "typical";
 
-import Definition from "./option-definition.js";
+import Definition from "./option-definition";
 
 const _value = new WeakMap();
 

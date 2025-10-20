@@ -105,12 +105,12 @@ class ArgvArray extends Array {
  * @returns
  * @static
  */
-function expandCombinedShortArgument(argument: string): string[] {
+const expandCombinedShortArgument = (argument: string): string[] => {
     /* remove initial hypen */
     argument = argument.slice(1);
 
     return argument.split("").map((letter: string) => `-${letter}`);
-}
+};
 
 /**
  * Returns true if the supplied arg matches `--option=value` notation.
@@ -118,9 +118,9 @@ function expandCombinedShortArgument(argument: string): string[] {
  * @returns
  * @static
  */
-function isOptionEqualsNotation(argument: string): boolean {
+const isOptionEqualsNotation = (argument: string): boolean => {
     return re.optEquals.test(argument);
-}
+};
 
 /**
  * Returns true if the supplied arg is in either long (`--one`) or short (`-o`) format.
@@ -128,9 +128,9 @@ function isOptionEqualsNotation(argument: string): boolean {
  * @returns
  * @static
  */
-function isOption(argument: string): boolean {
+const isOption = (argument: string): boolean => {
     return (re.short.test(argument) || re.long.test(argument)) && !re.optEquals.test(argument);
-}
+};
 
 /**
  * Returns true if the supplied arg is in long (`--one`) format.
@@ -138,9 +138,9 @@ function isOption(argument: string): boolean {
  * @returns
  * @static
  */
-function isLongOption(argument: string): boolean {
+const isLongOption = (argument: string): boolean => {
     return re.long.test(argument) && !isOptionEqualsNotation(argument);
-}
+};
 
 /**
  * Returns the name from a long, short or `--options=value` arg.
@@ -148,7 +148,7 @@ function isLongOption(argument: string): boolean {
  * @returns
  * @static
  */
-function getOptionName(argument: string): string | null {
+const getOptionName = (argument: string): string | null => {
     if (re.short.test(argument)) {
         return argument.match(re.short)![1];
     }
@@ -162,14 +162,14 @@ function getOptionName(argument: string): string | null {
     }
 
     return null;
-}
+};
 
-function isValue(argument: string): boolean {
+const isValue = (argument: string): boolean => {
     return !(isOption(argument) || re.combinedShort.test(argument) || re.optEquals.test(argument));
-}
+};
 
-function isExecArgument(argument: string): boolean {
+const isExecArgument = (argument: string): boolean => {
     return ["--eval", "-e"].includes(argument) || argument.startsWith("--eval=");
-}
+};
 
 export { ArgvArray, expandCombinedShortArgument as expandCombinedShortArg, getOptionName, isLongOption, isOption, isOptionEqualsNotation, isValue, re };

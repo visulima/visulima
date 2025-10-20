@@ -2,7 +2,7 @@ import arrayify from "array-back";
 import camelCase from "lodash.camelcase";
 import t from "typical";
 
-import Output from "./output.js";
+import Output from "./output";
 
 class GroupedOutput extends Output {
     toObject(options: any): any {

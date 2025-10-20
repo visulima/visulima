@@ -1,7 +1,7 @@
 import camelCase from "lodash.camelcase";
 
-import Option from "./option.js";
-import Definitions from "./option-definitions.js";
+import Option from "./option";
+import Definitions from "./option-definitions";
 
 /**
  * A map of { DefinitionNameString: Option }. By default, an Output has an `_unknown` property and any options with defaultValues.
