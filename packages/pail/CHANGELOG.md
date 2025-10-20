@@ -1,3 +1,42 @@
+## @visulima/pail [3.0.0](https://github.com/visulima/visulima/compare/@visulima/pail@2.1.31...@visulima/pail@3.0.0) (2025-10-20)
+
+### ⚠ BREAKING CHANGES
+
+* **pail:** - Public import paths for reporters changed. Use new scoped reporter entrypoints:
+  Before:
+    import { PrettyReporter } from '@visulima/pail/src/reporter/pretty/pretty.server';
+  After:
+    import { PrettyReporter } from '@visulima/pail/reporter/pretty';
+  (Similar changes for raw, simple, json reporters. Browser/server-specific files were
+  renamed e.g. pretty-reporter.server.ts / pretty-reporter.browser.ts and re-exported
+  via reporter/* index files.)
+- Deprecated top-level reporter and processor entrypoints removed:
+  - Removed: 'src/reporter.server.ts', 'src/reporter.browser.ts'
+  - Removed: 'src/processor.server.ts', 'src/processor.browser.ts'
+  Use the dedicated reporter imports under '@visulima/pail/reporter/*' and the
+  processor modules under 'src/processor/*' as re-exported by the package entrypoints.
+- Interactive manager API and types were adjusted (see migration guide). Update usage of
+  interactiveManager and related hooks to the new signatures.
+- Types in 'src/types.ts' updated; consuming TypeScript projects may need to adjust
+  imports/usages to match the refined reporter and progress bar types.
+
+### Features
+
+* **pail:** restructure reporters/API and add progress bar ([164420a](https://github.com/visulima/visulima/commit/164420a272ba3b6ac0ef773f202099d19c27a329))
+
+### Bug Fixes
+
+* **deps:** update minor updates ([#455](https://github.com/visulima/visulima/issues/455)) ([cebf7dc](https://github.com/visulima/visulima/commit/cebf7dcdc7f6ca423ad141f90f6c30279f5fa392))
+
+### Miscellaneous Chores
+
+* add new logging dependencies and benchmarks ([9633019](https://github.com/visulima/visulima/commit/963301910db84b2a78674f083331dad744fc8122))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 5.0.1
+
 ## @visulima/pail [2.1.31](https://github.com/visulima/visulima/compare/@visulima/pail@2.1.30...@visulima/pail@2.1.31) (2025-10-15)
 
 ### Bug Fixes

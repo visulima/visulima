@@ -1,6 +1,6 @@
 {
     "name": "@visulima/pail",
-    "version": "2.1.31",
+    "version": "3.0.0",
     "description": "Highly configurable Logger for Node.js, Edge and Browser.",
     "keywords": [
         "ansi",
@@ -166,7 +166,7 @@
         "@visulima/inspector": "1.0.25",
         "@visulima/redact": "2.0.0",
         "safe-stable-stringify": "^2.5.0",
-        "@visulima/error": "5.0.0",
+        "@visulima/error": "5.0.1",
         "@anolilab/eslint-config": "^16.4.2",
         "@anolilab/prettier-config": "^6.0.7",
         "@anolilab/semantic-release-pnpm": "^2.0.4",
