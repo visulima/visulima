@@ -211,6 +211,12 @@ export class ProgressBar {
             return 0;
 
         const elapsed = (Date.now() - this.startTime) / 1000;
+
+        // Guard against very small elapsed time
+        if (elapsed < 0.1) {
+            return 0;
+        }
+
         const rate = this.current / elapsed;
         const remaining = this.options.total - this.current;
 
