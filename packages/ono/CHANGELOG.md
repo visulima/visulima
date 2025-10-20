@@ -1,3 +1,15 @@
+## @visulima/ono [1.0.6](https://github.com/visulima/visulima/compare/@visulima/ono@1.0.5...@visulima/ono@1.0.6) (2025-10-20)
+
+### Bug Fixes
+
+* **deps:** update minor updates ([#455](https://github.com/visulima/visulima/issues/455)) ([cebf7dc](https://github.com/visulima/visulima/commit/cebf7dcdc7f6ca423ad141f90f6c30279f5fa392))
+* **deps:** update patch updates ([#452](https://github.com/visulima/visulima/issues/452)) ([4da5cbd](https://github.com/visulima/visulima/commit/4da5cbd411ccd961be7fd6f454aaec841e220b5e))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 5.0.1
+
 ## @visulima/ono [1.0.5](https://github.com/visulima/visulima/compare/@visulima/ono@1.0.4...@visulima/ono@1.0.5) (2025-10-15)
 
 ### Bug Fixes
