@@ -2864,7 +2864,7 @@ importers:
         version: 2.0.4(@types/node@24.8.1)(yaml@2.8.1)
       '@anolilab/semantic-release-preset':
         specifier: ^11.0.4
-        version: 11.0.4(@anolilab/semantic-release-pnpm@2.0.4(@types/node@24.8.1)(yaml@2.8.1))(@semantic-release/npm@12.0.2(semantic-release@25.0.0(typescript@5.9.3)))(semantic-release@25.0.0(typescript@5.9.3))(yaml@2.8.1)
+        version: 11.0.4(@anolilab/semantic-release-pnpm@2.0.4(@types/node@24.8.1)(yaml@2.8.1))(@semantic-release/npm@12.0.2(semantic-release@25.0.1(typescript@5.9.3)))(semantic-release@25.0.1(typescript@5.9.3))(yaml@2.8.1)
       '@arethetypeswrong/cli':
         specifier: ^0.18.2
         version: 0.18.2
@@ -2929,8 +2929,8 @@ importers:
         specifier: 11.2.5
         version: 11.2.5
       semantic-release:
-        specifier: 25.0.0
-        version: 25.0.0(typescript@5.9.3)
+        specifier: 25.0.1
+        version: 25.0.1(typescript@5.9.3)
       terminal-size:
         specifier: ^4.0.0
         version: 4.0.0
@@ -2978,12 +2978,6 @@ importers:
         specifier: ^3.2.4
         version: 3.2.4(@types/debug@4.1.12)(@types/node@24.8.1)(@vitest/browser@3.2.4)(@vitest/ui@3.2.4)(jiti@2.6.1)(jsdom@27.0.0(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.5(@types/node@24.8.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 
-  packages/pail/__fixtures__/package/cjs:
-    dependencies:
-      '@visulima/pail':
-        specifier: workspace:*
-        version: link:../../..
-
   packages/pail/__fixtures__/package/mjs:
     dependencies:
       '@visulima/pail':
@@ -3003,13 +2997,13 @@ importers:
         version: link:../..
       next:
         specifier: 15.5.6
-        version: 15.5.6(@babel/core@7.28.4)(@opentelemetry/api@1.9.0)(@playwright/test@1.56.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+        version: 15.5.6(@babel/core@7.28.4)(@opentelemetry/api@1.9.0)(@playwright/test@1.56.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       react:
-        specifier: 19.1.0
-        version: 19.1.0
+        specifier: 19.2.0
+        version: 19.2.0
       react-dom:
-        specifier: 19.1.0
-        version: 19.1.0(react@19.1.0)
+        specifier: 19.2.0
+        version: 19.2.0(react@19.2.0)
     devDependencies:
       '@eslint/eslintrc':
         specifier: ^3
@@ -3018,8 +3012,8 @@ importers:
         specifier: ^4
         version: 4.1.14
       '@types/node':
-        specifier: ^20
-        version: 20.14.11
+        specifier: ^24
+        version: 24.8.1
       '@types/react':
         specifier: ^19
         version: 19.2.2
@@ -3990,10 +3984,14 @@ importers:
       '@vitejs/plugin-react':
         specifier: ^5.0.4
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 5.0.4(rolldown-vite@7.1.18(@types/node@24.7.2)(esbuild@0.25.11)(jiti@2.6.1)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
 =======
         version: 5.0.4(rolldown-vite@7.1.17(@types/node@24.8.1)(esbuild@0.25.11)(jiti@2.6.1)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
 >>>>>>> 0473b0359 (chore: update dependencies and enhance migration documentation)
+=======
+        version: 5.0.4(rolldown-vite@7.1.18(@types/node@24.8.1)(esbuild@0.25.11)(jiti@2.6.1)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
+>>>>>>> f918e7764 (chore: update Node.js version in workflows to 22.x)
       eslint:
         specifier: ^9.37.0
         version: 9.38.0(jiti@2.6.1)
@@ -4015,10 +4013,14 @@ importers:
       vite:
         specifier: npm:rolldown-vite@latest
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: rolldown-vite@7.1.18(@types/node@24.7.2)(esbuild@0.25.11)(jiti@2.6.1)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
         version: rolldown-vite@7.1.17(@types/node@24.8.1)(esbuild@0.25.11)(jiti@2.6.1)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> 0473b0359 (chore: update dependencies and enhance migration documentation)
+=======
+        version: rolldown-vite@7.1.18(@types/node@24.8.1)(esbuild@0.25.11)(jiti@2.6.1)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> f918e7764 (chore: update Node.js version in workflows to 22.x)
 
   packages/vite-overlay/examples/vite-react-swc:
     dependencies:
@@ -7396,8 +7398,8 @@ packages:
     peerDependencies:
       semantic-release: '>=20.1.0'
 
-  '@semantic-release/npm@13.0.0':
-    resolution: {integrity: sha512-7RIx9nUdUekYbIZ0dG7k7G/iSvUCZb03LmmBPFqAQEhPVC+BnHfhFxj5ewSNP6zMUsYaEQSckcOhKD8AuS/EzQ==}
+  '@semantic-release/npm@13.1.1':
+    resolution: {integrity: sha512-c4tlp3STYaTYORmMcLjiTaI8SLoxJ0Uf7IXkem8EyihuOM624wnaGuH4OuY2HHcsHDerNAQNzZ8VO6d4PMHSzA==}
     engines: {node: ^22.14.0 || >= 24.10.0}
     peerDependencies:
       semantic-release: '>=20.1.0'
@@ -11650,8 +11652,8 @@ packages:
     resolution: {integrity: sha512-FDWG5cmEYf2Z00IkYRhbFrwIwvdFKH07uV8dvNy0omp/Qb1xcyCWp2UDtcwJF4QZZvk0sLudP6/hAu42TaqVhQ==}
     engines: {node: '>=0.12'}
 
-  env-ci@11.0.0:
-    resolution: {integrity: sha512-apikxMgkipkgTvMdRT9MNqWx5VLOci79F4VBd7Op/7OPjjoanjdAvn6fglMCCEf/1bAh8eOiuEVCUs4V3qP3nQ==}
+  env-ci@11.2.0:
+    resolution: {integrity: sha512-D5kWfzkmaOQDioPmiviWAVtKmpPT4/iJmMVQxWxMPJTFyTkdc5JQUfc5iXEeWxcOdsYTKSAiA/Age4NUOqKsRA==}
     engines: {node: ^18.17 || >=20.6.1}
 
   env-paths@2.2.1:
@@ -17025,11 +17027,6 @@ packages:
     resolution: {integrity: sha512-kQKsqPLplY3Hx4jGnM3jpQcG3FQDt7ySz32uTHt3C9HAe45kNXG+3o16Eqn3Fw1GtMfHoN3b4J/z2e6cZJCmqQ==}
     engines: {node: ^20.9.0 || >=22}
 
-  react-dom@19.1.0:
-    resolution: {integrity: sha512-Xs1hdnE+DyKgeHJeJznQmYMIBG3TKIHJJT95Q58nHLSrElKlGQqDTR2HQ9fx5CN/Gk6Vh/kupBTDLU11/nDk/g==}
-    peerDependencies:
-      react: ^19.1.0
-
   react-dom@19.2.0:
     resolution: {integrity: sha512-UlbRu4cAiGaIewkPyiRGJk0imDN2T3JjieT6spoL2UeSf5od4n5LB/mQ4ejmxhCFT1tYe8IvaFulzynWovsEFQ==}
     peerDependencies:
@@ -17125,10 +17122,6 @@ packages:
     resolution: {integrity: sha512-aQXTKolnM28k3KguGDBSAbJvcowOQr23A+CUJdzJtOSDOtTwzEaJA+1U4KwhNL9+Obe+jFS7geuvA7ICQPXOnQ==}
     peerDependencies:
       react: ^18.0.0
-
-  react@19.1.0:
-    resolution: {integrity: sha512-FS+XFBNvn3GTAWq26joslQgWNoFu08F4kl0J4CgdNKADkdSGXQyTCnKteIAJy96Br6YbpEU1LSzV5dYtjMkMDg==}
-    engines: {node: '>=0.10.0'}
 
   react@19.2.0:
     resolution: {integrity: sha512-tmbWg6W31tQLeB5cdIBOicJDJRR2KzXsV7uSK9iNfLWQ5bIZfxuPEHp7M8wiHyHnn0DD1i7w3Zmin0FtkrwoCQ==}
@@ -17694,9 +17687,6 @@ packages:
     resolution: {integrity: sha512-xAg7SOnEhrm5zI3puOOKyy1OMcMlIJZYNJY7xLBwSze0UjhPLnWfj2GF2EpT0jmzaJKIWKHLsaSSajf35bcYnA==}
     engines: {node: '>=v12.22.7'}
 
-  scheduler@0.26.0:
-    resolution: {integrity: sha512-NlHwttCI/l5gCPR3D1nNXtWABUmBwvZpEQiD4IXSbIDq8BzLIK/7Ir5gTFSGZDUu37K5cMNp0hFtzO38sC7gWA==}
-
   scheduler@0.27.0:
     resolution: {integrity: sha512-eNv+WrVbKu1f3vbYJT/xtiF5syA5HPIMtf9IgY/nKg0sWqzAUEvqY/xm7OcZc/qafLx/iO9FgOmeSAp4v5ti/Q==}
 
@@ -17730,8 +17720,8 @@ packages:
     engines: {node: '>=20.8.1'}
     hasBin: true
 
-  semantic-release@25.0.0:
-    resolution: {integrity: sha512-JL2hY7b1hBli5FS98nAXH0OwfRsgdywuUVhKktyJOHu9tUO0wJGWNpQL69SDhJ5Uwp63rtIvGvy7ZDy4C3RsXg==}
+  semantic-release@25.0.1:
+    resolution: {integrity: sha512-0OCYLm0AfVilNGukM+w0C4aptITfuW1Mhvmz8LQliLeYbPOTFRCIJzoltWWx/F5zVFe6np9eNatBUHdAvMFeZg==}
     engines: {node: ^22.14.0 || >= 24.10.0}
     hasBin: true
 
@@ -20502,20 +20492,20 @@ snapshots:
       - supports-color
       - yaml
 
-  '@anolilab/semantic-release-preset@11.0.4(@anolilab/semantic-release-pnpm@2.0.4(@types/node@24.8.1)(yaml@2.8.1))(@semantic-release/npm@12.0.2(semantic-release@25.0.0(typescript@5.9.3)))(semantic-release@25.0.0(typescript@5.9.3))(yaml@2.8.1)':
+  '@anolilab/semantic-release-preset@11.0.4(@anolilab/semantic-release-pnpm@2.0.4(@types/node@24.8.1)(yaml@2.8.1))(@semantic-release/npm@12.0.2(semantic-release@25.0.1(typescript@5.9.3)))(semantic-release@25.0.1(typescript@5.9.3))(yaml@2.8.1)':
     dependencies:
       '@anolilab/semantic-release-clean-package-json': 3.0.4(yaml@2.8.1)
-      '@semantic-release/changelog': 6.0.3(semantic-release@25.0.0(typescript@5.9.3))
-      '@semantic-release/commit-analyzer': 13.0.1(semantic-release@25.0.0(typescript@5.9.3))
-      '@semantic-release/exec': 7.1.0(semantic-release@25.0.0(typescript@5.9.3))
-      '@semantic-release/git': 10.0.1(semantic-release@25.0.0(typescript@5.9.3))
-      '@semantic-release/github': 11.0.6(semantic-release@25.0.0(typescript@5.9.3))
-      '@semantic-release/release-notes-generator': 14.1.0(semantic-release@25.0.0(typescript@5.9.3))
+      '@semantic-release/changelog': 6.0.3(semantic-release@25.0.1(typescript@5.9.3))
+      '@semantic-release/commit-analyzer': 13.0.1(semantic-release@25.0.1(typescript@5.9.3))
+      '@semantic-release/exec': 7.1.0(semantic-release@25.0.1(typescript@5.9.3))
+      '@semantic-release/git': 10.0.1(semantic-release@25.0.1(typescript@5.9.3))
+      '@semantic-release/github': 11.0.6(semantic-release@25.0.1(typescript@5.9.3))
+      '@semantic-release/release-notes-generator': 14.1.0(semantic-release@25.0.1(typescript@5.9.3))
       conventional-changelog-conventionalcommits: 9.1.0
-      semantic-release: 25.0.0(typescript@5.9.3)
+      semantic-release: 25.0.1(typescript@5.9.3)
     optionalDependencies:
       '@anolilab/semantic-release-pnpm': 2.0.4(@types/node@24.8.1)(yaml@2.8.1)
-      '@semantic-release/npm': 12.0.2(semantic-release@25.0.0(typescript@5.9.3))
+      '@semantic-release/npm': 12.0.2(semantic-release@25.0.1(typescript@5.9.3))
     transitivePeerDependencies:
       - supports-color
       - yaml
@@ -23710,13 +23700,13 @@ snapshots:
       lodash: 4.17.21
       semantic-release: 24.2.9(typescript@5.9.3)
 
-  '@semantic-release/changelog@6.0.3(semantic-release@25.0.0(typescript@5.9.3))':
+  '@semantic-release/changelog@6.0.3(semantic-release@25.0.1(typescript@5.9.3))':
     dependencies:
       '@semantic-release/error': 3.0.0
       aggregate-error: 3.1.0
       fs-extra: 11.3.2
       lodash: 4.17.21
-      semantic-release: 25.0.0(typescript@5.9.3)
+      semantic-release: 25.0.1(typescript@5.9.3)
 
   '@semantic-release/commit-analyzer@13.0.1(semantic-release@24.2.9(typescript@5.9.3))':
     dependencies:
@@ -23732,7 +23722,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@semantic-release/commit-analyzer@13.0.1(semantic-release@25.0.0(typescript@5.9.3))':
+  '@semantic-release/commit-analyzer@13.0.1(semantic-release@25.0.1(typescript@5.9.3))':
     dependencies:
       conventional-changelog-angular: 8.0.0
       conventional-changelog-writer: 8.0.0
@@ -23742,7 +23732,7 @@ snapshots:
       import-from-esm: 2.0.0
       lodash-es: 4.17.21
       micromatch: 4.0.8
-      semantic-release: 25.0.0(typescript@5.9.3)
+      semantic-release: 25.0.1(typescript@5.9.3)
     transitivePeerDependencies:
       - supports-color
 
@@ -23762,7 +23752,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@semantic-release/exec@7.1.0(semantic-release@25.0.0(typescript@5.9.3))':
+  '@semantic-release/exec@7.1.0(semantic-release@25.0.1(typescript@5.9.3))':
     dependencies:
       '@semantic-release/error': 4.0.0
       aggregate-error: 3.1.0
@@ -23770,7 +23760,7 @@ snapshots:
       execa: 9.6.0
       lodash-es: 4.17.21
       parse-json: 8.1.0
-      semantic-release: 25.0.0(typescript@5.9.3)
+      semantic-release: 25.0.1(typescript@5.9.3)
     transitivePeerDependencies:
       - supports-color
 
@@ -23788,7 +23778,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@semantic-release/git@10.0.1(semantic-release@25.0.0(typescript@5.9.3))':
+  '@semantic-release/git@10.0.1(semantic-release@25.0.1(typescript@5.9.3))':
     dependencies:
       '@semantic-release/error': 3.0.0
       aggregate-error: 3.1.0
@@ -23798,7 +23788,7 @@ snapshots:
       lodash: 4.17.21
       micromatch: 4.0.8
       p-reduce: 2.1.0
-      semantic-release: 25.0.0(typescript@5.9.3)
+      semantic-release: 25.0.1(typescript@5.9.3)
     transitivePeerDependencies:
       - supports-color
 
@@ -23824,7 +23814,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@semantic-release/github@11.0.6(semantic-release@25.0.0(typescript@5.9.3))':
+  '@semantic-release/github@11.0.6(semantic-release@25.0.1(typescript@5.9.3))':
     dependencies:
       '@octokit/core': 7.0.2
       '@octokit/plugin-paginate-rest': 13.0.1(@octokit/core@7.0.2)
@@ -23840,13 +23830,13 @@ snapshots:
       lodash-es: 4.17.21
       mime: 4.1.0
       p-filter: 4.1.0
-      semantic-release: 25.0.0(typescript@5.9.3)
+      semantic-release: 25.0.1(typescript@5.9.3)
       tinyglobby: 0.2.15
       url-join: 5.0.0
     transitivePeerDependencies:
       - supports-color
 
-  '@semantic-release/github@12.0.0(semantic-release@25.0.0(typescript@5.9.3))':
+  '@semantic-release/github@12.0.0(semantic-release@25.0.1(typescript@5.9.3))':
     dependencies:
       '@octokit/core': 7.0.2
       '@octokit/plugin-paginate-rest': 13.0.1(@octokit/core@7.0.2)
@@ -23862,7 +23852,7 @@ snapshots:
       lodash-es: 4.17.21
       mime: 4.1.0
       p-filter: 4.1.0
-      semantic-release: 25.0.0(typescript@5.9.3)
+      semantic-release: 25.0.1(typescript@5.9.3)
       tinyglobby: 0.2.15
       url-join: 5.0.0
     transitivePeerDependencies:
@@ -23885,7 +23875,7 @@ snapshots:
       semver: 7.7.3
       tempy: 3.1.0
 
-  '@semantic-release/npm@12.0.2(semantic-release@25.0.0(typescript@5.9.3))':
+  '@semantic-release/npm@12.0.2(semantic-release@25.0.1(typescript@5.9.3))':
     dependencies:
       '@semantic-release/error': 4.0.0
       aggregate-error: 5.0.0
@@ -23898,15 +23888,17 @@ snapshots:
       rc: 1.2.8
       read-pkg: 9.0.1
       registry-auth-token: 5.1.0
-      semantic-release: 25.0.0(typescript@5.9.3)
+      semantic-release: 25.0.1(typescript@5.9.3)
       semver: 7.7.3
       tempy: 3.1.0
     optional: true
 
-  '@semantic-release/npm@13.0.0(semantic-release@25.0.0(typescript@5.9.3))':
+  '@semantic-release/npm@13.1.1(semantic-release@25.0.1(typescript@5.9.3))':
     dependencies:
+      '@actions/core': 1.11.1
       '@semantic-release/error': 4.0.0
       aggregate-error: 5.0.0
+      env-ci: 11.2.0
       execa: 9.6.0
       fs-extra: 11.3.2
       lodash-es: 4.17.21
@@ -23916,7 +23908,7 @@ snapshots:
       rc: 1.2.8
       read-pkg: 9.0.1
       registry-auth-token: 5.1.0
-      semantic-release: 25.0.0(typescript@5.9.3)
+      semantic-release: 25.0.1(typescript@5.9.3)
       semver: 7.7.3
       tempy: 3.1.0
 
@@ -23936,7 +23928,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@semantic-release/release-notes-generator@14.1.0(semantic-release@25.0.0(typescript@5.9.3))':
+  '@semantic-release/release-notes-generator@14.1.0(semantic-release@25.0.1(typescript@5.9.3))':
     dependencies:
       conventional-changelog-angular: 8.0.0
       conventional-changelog-writer: 8.0.0
@@ -23948,7 +23940,7 @@ snapshots:
       into-stream: 7.0.0
       lodash-es: 4.17.21
       read-package-up: 11.0.0
-      semantic-release: 25.0.0(typescript@5.9.3)
+      semantic-release: 25.0.1(typescript@5.9.3)
     transitivePeerDependencies:
       - supports-color
 
@@ -26992,10 +26984,14 @@ snapshots:
       - '@swc/helpers'
 
 <<<<<<< HEAD
+<<<<<<< HEAD
   '@vitejs/plugin-react@5.0.4(rolldown-vite@7.1.18(@types/node@24.7.2)(esbuild@0.25.11)(jiti@2.6.1)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))':
 =======
   '@vitejs/plugin-react@5.0.4(rolldown-vite@7.1.17(@types/node@24.8.1)(esbuild@0.25.11)(jiti@2.6.1)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))':
 >>>>>>> 0473b0359 (chore: update dependencies and enhance migration documentation)
+=======
+  '@vitejs/plugin-react@5.0.4(rolldown-vite@7.1.18(@types/node@24.8.1)(esbuild@0.25.11)(jiti@2.6.1)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))':
+>>>>>>> f918e7764 (chore: update Node.js version in workflows to 22.x)
     dependencies:
       '@babel/core': 7.28.4
       '@babel/plugin-transform-react-jsx-self': 7.27.1(@babel/core@7.28.4)
@@ -27004,10 +27000,14 @@ snapshots:
       '@types/babel__core': 7.20.5
       react-refresh: 0.17.0
 <<<<<<< HEAD
+<<<<<<< HEAD
       vite: rolldown-vite@7.1.18(@types/node@24.7.2)(esbuild@0.25.11)(jiti@2.6.1)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
       vite: rolldown-vite@7.1.17(@types/node@24.8.1)(esbuild@0.25.11)(jiti@2.6.1)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> 0473b0359 (chore: update dependencies and enhance migration documentation)
+=======
+      vite: rolldown-vite@7.1.18(@types/node@24.8.1)(esbuild@0.25.11)(jiti@2.6.1)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> f918e7764 (chore: update Node.js version in workflows to 22.x)
     transitivePeerDependencies:
       - supports-color
 
@@ -29581,7 +29581,7 @@ snapshots:
 
   entities@7.0.0: {}
 
-  env-ci@11.0.0:
+  env-ci@11.2.0:
     dependencies:
       execa: 8.0.1
       java-properties: 1.0.2
@@ -35343,31 +35343,6 @@ snapshots:
       - '@babel/core'
       - babel-plugin-macros
 
-  next@15.5.6(@babel/core@7.28.4)(@opentelemetry/api@1.9.0)(@playwright/test@1.56.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0):
-    dependencies:
-      '@next/env': 15.5.6
-      '@swc/helpers': 0.5.15
-      caniuse-lite: 1.0.30001750
-      postcss: 8.4.31
-      react: 19.1.0
-      react-dom: 19.1.0(react@19.1.0)
-      styled-jsx: 5.1.6(@babel/core@7.28.4)(react@19.1.0)
-    optionalDependencies:
-      '@next/swc-darwin-arm64': 15.5.6
-      '@next/swc-darwin-x64': 15.5.6
-      '@next/swc-linux-arm64-gnu': 15.5.6
-      '@next/swc-linux-arm64-musl': 15.5.6
-      '@next/swc-linux-x64-gnu': 15.5.6
-      '@next/swc-linux-x64-musl': 15.5.6
-      '@next/swc-win32-arm64-msvc': 15.5.6
-      '@next/swc-win32-x64-msvc': 15.5.6
-      '@opentelemetry/api': 1.9.0
-      '@playwright/test': 1.56.0
-      sharp: 0.34.3
-    transitivePeerDependencies:
-      - '@babel/core'
-      - babel-plugin-macros
-
   next@15.5.6(@babel/core@7.28.4)(@opentelemetry/api@1.9.0)(@playwright/test@1.56.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0):
     dependencies:
       '@next/env': 15.5.6
@@ -36934,11 +36909,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  react-dom@19.1.0(react@19.1.0):
-    dependencies:
-      react: 19.1.0
-      scheduler: 0.26.0
-
   react-dom@19.2.0(react@19.2.0):
     dependencies:
       react: 19.2.0
@@ -37025,8 +36995,6 @@ snapshots:
       clsx: 2.1.1
       prop-types: 15.8.1
       react: 19.2.0
-
-  react@19.1.0: {}
 
   react@19.2.0: {}
 
@@ -37522,10 +37490,14 @@ snapshots:
       package-json-from-dist: 1.0.0
 
 <<<<<<< HEAD
+<<<<<<< HEAD
   rolldown-vite@7.1.18(@types/node@24.7.2)(esbuild@0.25.11)(jiti@2.6.1)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1):
 =======
   rolldown-vite@7.1.17(@types/node@24.8.1)(esbuild@0.25.11)(jiti@2.6.1)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1):
 >>>>>>> 0473b0359 (chore: update dependencies and enhance migration documentation)
+=======
+  rolldown-vite@7.1.18(@types/node@24.8.1)(esbuild@0.25.11)(jiti@2.6.1)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1):
+>>>>>>> f918e7764 (chore: update Node.js version in workflows to 22.x)
     dependencies:
       '@oxc-project/runtime': 0.92.0
       fdir: 6.5.0(picomatch@4.0.3)
@@ -37736,8 +37708,6 @@ snapshots:
     dependencies:
       xmlchars: 2.2.0
 
-  scheduler@0.26.0: {}
-
   scheduler@0.27.0: {}
 
   schema-dts@1.1.5: {}
@@ -37787,7 +37757,7 @@ snapshots:
       aggregate-error: 5.0.0
       cosmiconfig: 9.0.0(typescript@5.9.3)
       debug: 4.4.3
-      env-ci: 11.0.0
+      env-ci: 11.2.0
       execa: 9.6.0
       figures: 6.1.0
       find-versions: 6.0.0
@@ -37812,17 +37782,17 @@ snapshots:
       - supports-color
       - typescript
 
-  semantic-release@25.0.0(typescript@5.9.3):
+  semantic-release@25.0.1(typescript@5.9.3):
     dependencies:
-      '@semantic-release/commit-analyzer': 13.0.1(semantic-release@25.0.0(typescript@5.9.3))
+      '@semantic-release/commit-analyzer': 13.0.1(semantic-release@25.0.1(typescript@5.9.3))
       '@semantic-release/error': 4.0.0
-      '@semantic-release/github': 12.0.0(semantic-release@25.0.0(typescript@5.9.3))
-      '@semantic-release/npm': 13.0.0(semantic-release@25.0.0(typescript@5.9.3))
-      '@semantic-release/release-notes-generator': 14.1.0(semantic-release@25.0.0(typescript@5.9.3))
+      '@semantic-release/github': 12.0.0(semantic-release@25.0.1(typescript@5.9.3))
+      '@semantic-release/npm': 13.1.1(semantic-release@25.0.1(typescript@5.9.3))
+      '@semantic-release/release-notes-generator': 14.1.0(semantic-release@25.0.1(typescript@5.9.3))
       aggregate-error: 5.0.0
       cosmiconfig: 9.0.0(typescript@5.9.3)
       debug: 4.4.3
-      env-ci: 11.0.0
+      env-ci: 11.2.0
       execa: 9.6.0
       figures: 6.1.0
       find-versions: 6.0.0
@@ -38655,13 +38625,6 @@ snapshots:
       shallowequal: 1.1.0
       stylis: 4.3.2
       tslib: 2.6.2
-
-  styled-jsx@5.1.6(@babel/core@7.28.4)(react@19.1.0):
-    dependencies:
-      client-only: 0.0.1
-      react: 19.1.0
-    optionalDependencies:
-      '@babel/core': 7.28.4
 
   styled-jsx@5.1.6(@babel/core@7.28.4)(react@19.2.0):
     dependencies:

@@ -187,7 +187,7 @@
         "rimraf": "6.0.1",
         "rotating-file-stream": "^3.2.7",
         "secretlint": "11.2.5",
-        "semantic-release": "25.0.0",
+        "semantic-release": "25.0.1",
         "terminal-size": "^4.0.0",
         "typescript": "5.9.3",
         "vitest": "^3.2.4"
@@ -198,9 +198,6 @@
     },
     "peerDependenciesMeta": {
         "@visulima/redact": {
-            "optional": true
-        },
-        "@visulima/fmt": {
             "optional": true
         },
         "rotating-file-stream": {

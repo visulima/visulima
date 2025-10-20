@@ -23,10 +23,13 @@ logger.success("Task completed successfully");
 // Timer examples
 pail.time("deno-timer");
 
-setTimeout(() => {
-    pail.timeEnd("deno-timer");
-    pail.info("Timer example completed");
-}, 1000);
+await new Promise((resolve) => {
+    setTimeout(() => {
+        pail.timeEnd("deno-timer");
+        pail.info("Timer example completed");
+        resolve(undefined);
+    }, 1000);
+});
 
 // Custom types
 const customLogger = pail.scope("custom", {
@@ -54,9 +57,8 @@ if (Deno.stdout.isTerminal()) {
     const interactive = pail.scope("interactive", { interactive: true });
     interactive.await("Processing in Deno...");
 
-    setTimeout(() => {
-        interactive.success("Processing completed!");
-    }, 1500);
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+    interactive.success("Processing completed!");
 } else {
     pail.info("Non-interactive environment detected, skipping interactive demo");
 }

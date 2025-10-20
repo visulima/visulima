@@ -3,6 +3,6 @@
     "version": "1.0.0",
     "exports": "./example.ts",
     "imports": {
-        "@visulima/pail": "npm:@visulima/pail@^2.1.31"
+        "@visulima/pail": "npm:@visulima/pail@^3.0.0"
     }
 }

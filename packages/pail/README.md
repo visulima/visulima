@@ -510,11 +510,7 @@ You can also include multi‑line content; Pail preserves newlines:
 import { pail } from "@visulima/pail";
 import { boxen } from "@visulima/boxen";
 
-const details = [
-    "Service: api",
-    "Env: production",
-    "Commit: a1b2c3",
-].join("\n");
+const details = ["Service: api", "Env: production", "Commit: a1b2c3"].join("\n");
 
 pail.info(
     boxen(details, {
@@ -540,11 +536,7 @@ const table = createTable({
     },
 });
 
-table
-    .setHeaders(["Task", "Status", "Duration"])
-    .addRow(["build", "ok", "1.2s"])
-    .addRow(["test", "ok", "3.4s"])
-    .addRow(["lint", "warn", "0.8s"]);
+table.setHeaders(["Task", "Status", "Duration"]).addRow(["build", "ok", "1.2s"]).addRow(["test", "ok", "3.4s"]).addRow(["lint", "warn", "0.8s"]);
 
 pail.info("\n" + table.toString());
 ```

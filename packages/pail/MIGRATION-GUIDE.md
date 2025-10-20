@@ -4,6 +4,13 @@ This guide documents breaking changes and migration steps for the `@visulima/pai
 
 ## Version 3.0.0
 
+### Breaking Changes Summary
+
+- **Minimum Node.js version**: 20.19+ required
+- **Module format**: ESM-only (CommonJS removed)
+- **Reporter imports**: Changed to granular paths
+- **Internal dependencies**: Consolidated with @visulima/string
+
 ### Dependency Consolidation
 
 In version 3.0.0, we consolidated external dependencies by replacing them with internal `@visulima/string` package utilities.

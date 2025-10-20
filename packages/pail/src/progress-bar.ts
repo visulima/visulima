@@ -154,17 +154,20 @@ export class ProgressBar {
     }
 
     public render(): string {
-        const percentage = Math.round((this.current / this.options.total) * 100);
-        const filled = Math.round((this.current / this.options.total) * (this.options.width ?? 40));
-        const empty = (this.options.width ?? 40) - filled;
+        const total = this.options.total > 0 ? this.options.total : 1;
+        const width = Math.max(0, this.options.width ?? 40);
+        const percentage = Math.max(0, Math.min(100, Math.round((this.current / total) * 100)));
+        const filled = Math.max(0, Math.min(width, Math.round((this.current / total) * width)));
+        const empty = width - filled;
 
         const bar = (this.options.barCompleteChar ?? "█").repeat(filled) + (this.options.barIncompleteChar ?? "░").repeat(empty);
 
         let format = this.options.format ?? "progress [{bar}] {percentage}% | ETA: {eta}s | {value}/{total}";
 
         if (this.payload) {
-            // eslint-disable-next-line unicorn/no-array-reduce
-            format = Object.keys(this.payload).reduce((string_, key) => string_.replaceAll(new RegExp(`{${key}}`, "g"), String(this.payload[key])), format);
+            for (const [k, v] of Object.entries(this.payload)) {
+                format = format.replaceAll(`{${k}}`, String(v));
+            }
         }
 
         const eta = this.calculateETA();
@@ -218,11 +221,10 @@ export class ProgressBar {
 class MultiBarInstance extends ProgressBar {
     private multiBar: MultiProgressBar;
 
-    public constructor(multiBar: MultiProgressBar, barId: string, options: ProgressBarOptions, payload?: ProgressBarPayload) {
+    public constructor(multiBar: MultiProgressBar, options: ProgressBarOptions, payload?: ProgressBarPayload) {
         // Don't pass interactiveManager to prevent individual bar updates
         super(options, undefined, payload);
         this.multiBar = multiBar;
-        this.barId = barId;
     }
 
     public override update(current: number, payload?: ProgressBarPayload): void {
@@ -266,7 +268,6 @@ export class MultiProgressBar {
 
         const bar = new MultiBarInstance(
             this,
-            barId,
             {
                 barCompleteChar: this.options.barCompleteChar,
                 barGlue: this.options.barGlue,
@@ -298,7 +299,16 @@ export class MultiProgressBar {
         for (const [id, existingBar] of this.bars.entries()) {
             if (existingBar === bar) {
                 this.bars.delete(id);
-                this.renderAll();
+
+                if (this.bars.size === 0) {
+                    if (this.interactiveManager) {
+                        this.interactiveManager.unhook(false);
+                    }
+
+                    this.isActive = false;
+                } else {
+                    this.renderAll();
+                }
 
                 return true;
             }
