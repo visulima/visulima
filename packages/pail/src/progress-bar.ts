@@ -47,8 +47,9 @@ export interface ProgressBarPayload {
 // Helper functions for bar styles
 // eslint-disable-next-line sonarjs/cognitive-complexity
 export const getBarChar = (char: string | undefined, style: ProgressBarStyle, complete = true): string => {
-    if (char)
+    if (char) {
         return char;
+    }
 
     switch (style) {
         case "ascii": {
@@ -77,8 +78,9 @@ export const getBarChar = (char: string | undefined, style: ProgressBarStyle, co
 
 // Apply style settings to options, allowing overrides
 export const applyStyleToOptions = <T extends ProgressBarOptions | MultiBarOptions>(options: T): T => {
-    if (!options.style)
+    if (!options.style) {
         return options;
+    }
 
     const { style } = options;
     const result = { ...options };
@@ -207,8 +209,9 @@ export class ProgressBar {
     }
 
     private calculateETA(): number {
-        if (this.current === 0)
+        if (this.current === 0) {
             return 0;
+        }
 
         const elapsed = (Date.now() - this.startTime) / 1000;
 
@@ -324,8 +327,9 @@ export class MultiProgressBar {
     }
 
     public renderAll(): void {
-        if (!this.interactiveManager || !this.isActive)
+        if (!this.interactiveManager || !this.isActive) {
             return;
+        }
 
         const lines: string[] = [];
 
