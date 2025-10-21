@@ -47,14 +47,11 @@ SOFTWARE.
 <!-- DEPENDENCIES -->
 
 # Licenses of bundled dependencies
-
 The published @visulima/command-line-args artifact additionally contains code with the following licenses:
 MIT
 
 # Bundled dependencies:
-
 ## @visulima/error
-
 License: MIT
 By: Daniel Bannert
 Repository: git+https://github.com/visulima/visulima.git
@@ -81,15 +78,14 @@ Repository: git+https://github.com/visulima/visulima.git
 > OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 > SOFTWARE.
 >
-> # Licenses of bundled dependencies
 >
+>
+> # Licenses of bundled dependencies
 > The published @visulima/error artifact additionally contains code with the following licenses:
 > MIT
 >
 > # Bundled dependencies:
->
 > ## @visulima/path
->
 > License: MIT
 > By: Daniel Bannert
 > Repository: git+https://github.com/visulima/visulima.git
@@ -189,15 +185,14 @@ Repository: git+https://github.com/visulima/visulima.git
 > > FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 > > DEALINGS IN THE SOFTWARE.
 > >
-> > # Licenses of bundled dependencies
 > >
+> >
+> > # Licenses of bundled dependencies
 > > The published @visulima/path artifact additionally contains code with the following licenses:
 > > MIT
 > >
 > > # Bundled dependencies:
-> >
 > > ## binary-extensions
-> >
 > > License: MIT
 > > By: Sindre Sorhus
 > > Repository: sindresorhus/binary-extensions
@@ -213,10 +208,9 @@ Repository: git+https://github.com/visulima/visulima.git
 > > >
 > > > THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 >
-> ---
+> ---------------------------------------
 >
 > ## is-plain-obj
->
 > License: MIT
 > By: Sindre Sorhus
 > Repository: sindresorhus/is-plain-obj
@@ -236,14 +230,11 @@ Repository: git+https://github.com/visulima/visulima.git
 <!-- TYPE_DEPENDENCIES -->
 
 # Licenses of bundled types
-
 The published @visulima/command-line-args artifact additionally contains code with the following licenses:
 MIT
 
 # Bundled types:
-
 ## @visulima/error
-
 License: MIT
 By: Daniel Bannert
 Repository: git+https://github.com/visulima/visulima.git
@@ -273,14 +264,11 @@ Repository: git+https://github.com/visulima/visulima.git
 > <!-- DEPENDENCIES -->
 >
 > # Licenses of bundled dependencies
->
 > The published @visulima/error artifact additionally contains code with the following licenses:
 > MIT
 >
 > # Bundled dependencies:
->
 > ## @visulima/path
->
 > License: MIT
 > By: Daniel Bannert
 > Repository: git+https://github.com/visulima/visulima.git
@@ -380,15 +368,14 @@ Repository: git+https://github.com/visulima/visulima.git
 > > FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 > > DEALINGS IN THE SOFTWARE.
 > >
-> > # Licenses of bundled dependencies
 > >
+> >
+> > # Licenses of bundled dependencies
 > > The published @visulima/path artifact additionally contains code with the following licenses:
 > > MIT
 > >
 > > # Bundled dependencies:
-> >
 > > ## binary-extensions
-> >
 > > License: MIT
 > > By: Sindre Sorhus
 > > Repository: sindresorhus/binary-extensions
@@ -404,10 +391,9 @@ Repository: git+https://github.com/visulima/visulima.git
 > > >
 > > > THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 >
-> ---
+> ---------------------------------------
 >
 > ## is-plain-obj
->
 > License: MIT
 > By: Sindre Sorhus
 > Repository: sindresorhus/is-plain-obj

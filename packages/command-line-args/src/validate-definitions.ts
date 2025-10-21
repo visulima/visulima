@@ -9,6 +9,28 @@ import debugLog from "./utils/debug";
 const isBooleanType = (type: any): boolean => type && (type === Boolean || (typeof type === "function" && type.name?.startsWith("Boolean")));
 
 /**
+ * Check if a custom type function is valid by safely testing its signature.
+ * @param typeFunction The custom type function to validate
+ * @returns True if the function appears to be a valid type converter
+ */
+const isValidCustomTypeFunction = (typeFunction: unknown): boolean => {
+    if (typeof typeFunction !== "function") {
+        return false;
+    }
+
+    try {
+        // Safely test the function with a sample input
+        // A valid type converter should return a value (not undefined)
+        const result = typeFunction("sample");
+        return result !== undefined;
+    } catch {
+        // If the function throws, it's likely a validation error, not a type converter
+        // Type converters should accept arbitrary inputs for validation
+        return false;
+    }
+};
+
+/**
  * Validate option definitions and throw errors for invalid configurations.
  * Checks for naming conflicts, invalid aliases, duplicate options, type validity,
  * and other definition issues.
@@ -54,6 +76,11 @@ const validateDefinitions = (definitions: ReadonlyArray<OptionDefinition>, caseI
             throw new InvalidDefinitionsError(`Invalid option definition: duplicate name '${definition.name}'`);
         }
 
+        // Check if name conflicts with existing aliases
+        if (aliases.has(definition.name) || (caseInsensitive && aliasesLower.has(nameLower))) {
+            throw new InvalidDefinitionsError(`Invalid option definition: name '${definition.name}' conflicts with an existing alias`);
+        }
+
         names.add(definition.name);
 
         if (caseInsensitive) {
@@ -85,6 +112,11 @@ const validateDefinitions = (definitions: ReadonlyArray<OptionDefinition>, caseI
                 throw new InvalidDefinitionsError(`Invalid option definition: duplicate alias '${definition.alias}'`);
             }
 
+            // Check if alias conflicts with existing names
+            if (names.has(definition.alias) || (caseInsensitive && namesLower.has(aliasLower))) {
+                throw new InvalidDefinitionsError(`Invalid option definition: alias '${definition.alias}' conflicts with an existing option name`);
+            }
+
             aliases.add(definition.alias);
 
             if (caseInsensitive) {
@@ -112,7 +144,7 @@ const validateDefinitions = (definitions: ReadonlyArray<OptionDefinition>, caseI
                     || (typeof definition.type === "function" && definition.type.name === "Boolean")
                     || (typeof definition.type === "function" && definition.type.name === "Number")
                     || (typeof definition.type === "function" && definition.type.name === "String")
-                    || (typeof definition.type === "function" && definition.type("test") !== undefined); // Test custom function
+                    || (typeof definition.type === "function" && isValidCustomTypeFunction(definition.type));
 
             if (!isValidType) {
                 throw new InvalidDefinitionsError("Invalid option definition: invalid type");

@@ -5,7 +5,6 @@ import { UnknownOptionError } from "../src/errors";
 
 describe("case insensitive", () => {
     it("disabled", () => {
-        expect.assertions(1);
         expect.assertions(2);
 
         const optionDefinitions = [{ alias: "d", name: "dryRun", type: Boolean }];

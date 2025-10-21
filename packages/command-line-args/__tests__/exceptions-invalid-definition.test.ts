@@ -176,4 +176,55 @@ describe("exceptions invalid definition", () => {
 
         expect(() => commandLineArgs(optionDefinitions, { argv })).toThrow(InvalidDefinitionsError);
     });
+
+    it("alias conflicts with another option name", () => {
+        expect.assertions(1);
+
+        const optionDefinitions = [
+            { alias: "b", name: "alpha" },
+            { name: "b" },
+        ];
+        const argv = ["--alpha"];
+
+        expect(() => commandLineArgs(optionDefinitions, { argv })).toThrow(InvalidDefinitionsError);
+    });
+
+    it("option name conflicts with another option alias", () => {
+        expect.assertions(1);
+
+        const optionDefinitions = [
+            { alias: "b", name: "alpha" },
+            { alias: "c", name: "b" },
+        ];
+        const argv = ["--alpha"];
+
+        expect(() => commandLineArgs(optionDefinitions, { argv })).toThrow(InvalidDefinitionsError);
+    });
+
+    it("name alias conflict caused by case insensitivity", () => {
+        expect.assertions(1);
+
+        const optionDefinitions = [
+            { alias: "B", name: "alpha" },
+            { name: "b" },
+        ];
+        const argv = ["--alpha"];
+
+        expect(() => commandLineArgs(optionDefinitions, { argv, caseInsensitive: true })).toThrow(InvalidDefinitionsError);
+    });
+
+    it("case sensitive alias and name with same letter allowed", () => {
+        expect.assertions(1);
+
+        const optionDefinitions = [
+            { alias: "B", name: "alpha" },
+            { name: "b" },
+        ];
+        const argv = ["-B", "value1", "--b", "value2"];
+
+        expect(commandLineArgs(optionDefinitions, { argv })).toStrictEqual({
+            alpha: "value1",
+            b: "value2",
+        });
+    });
 });
