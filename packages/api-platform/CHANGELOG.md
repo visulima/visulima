@@ -1,3 +1,23 @@
+## @visulima/api-platform [3.0.53](https://github.com/visulima/visulima/compare/@visulima/api-platform@3.0.52...@visulima/api-platform@3.0.53) (2025-10-21)
+
+### Bug Fixes
+
+* allow node v25 and updated dev deps ([8158cc5](https://github.com/visulima/visulima/commit/8158cc53ec92bd0331e8c6bd0fcbc8ab61b9320f))
+* update error handling for Node.js versions ([e0a12f4](https://github.com/visulima/visulima/commit/e0a12f4d56af3814ce1f5325e632a794b0894882))
+
+### Miscellaneous Chores
+
+* update license years and add validation rules ([b97811e](https://github.com/visulima/visulima/commit/b97811ed2d253d908c0d86b4579a0a6bc33673a8))
+
+
+### Dependencies
+
+* **@visulima/connect:** upgraded to 3.0.23
+* **@visulima/jsdoc-open-api:** upgraded to 2.0.89
+* **@visulima/fs:** upgraded to 4.0.2
+* **@visulima/path:** upgraded to 2.0.1
+* **@visulima/crud:** upgraded to 2.0.42
+
 ## @visulima/api-platform [3.0.52](https://github.com/visulima/visulima/compare/@visulima/api-platform@3.0.51...@visulima/api-platform@3.0.52) (2025-10-20)
 
 ### Bug Fixes
