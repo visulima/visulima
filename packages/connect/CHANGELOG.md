@@ -1,3 +1,13 @@
+## @visulima/connect [3.0.23](https://github.com/visulima/visulima/compare/@visulima/connect@3.0.22...@visulima/connect@3.0.23) (2025-10-21)
+
+### Bug Fixes
+
+* allow node v25 and updated dev deps ([8158cc5](https://github.com/visulima/visulima/commit/8158cc53ec92bd0331e8c6bd0fcbc8ab61b9320f))
+
+### Miscellaneous Chores
+
+* update license years and add validation rules ([b97811e](https://github.com/visulima/visulima/commit/b97811ed2d253d908c0d86b4579a0a6bc33673a8))
+
 ## @visulima/connect [3.0.22](https://github.com/visulima/visulima/compare/@visulima/connect@3.0.21...@visulima/connect@3.0.22) (2025-10-20)
 
 ### Bug Fixes
