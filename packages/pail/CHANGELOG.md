@@ -1,3 +1,25 @@
+## @visulima/pail [3.0.1](https://github.com/visulima/visulima/compare/@visulima/pail@3.0.0...@visulima/pail@3.0.1) (2025-10-21)
+
+### Bug Fixes
+
+* allow node v25 and updated dev deps ([8158cc5](https://github.com/visulima/visulima/commit/8158cc53ec92bd0331e8c6bd0fcbc8ab61b9320f))
+
+### Miscellaneous Chores
+
+* update @visulima/pail dependency to version 3.0.0 in bun package.json ([0d5e1de](https://github.com/visulima/visulima/commit/0d5e1de116b34b8ef09fd2822857e107942ec16a))
+* update copyright year in LICENSE.md files ([c46a28d](https://github.com/visulima/visulima/commit/c46a28d2afb4cc7d73a7edde9a271a7156f87eae))
+* update license years and add validation rules ([b97811e](https://github.com/visulima/visulima/commit/b97811ed2d253d908c0d86b4579a0a6bc33673a8))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.25
+* **@visulima/fmt:** upgraded to 1.1.17
+* **@visulima/inspector:** upgraded to 1.0.26
+* **@visulima/redact:** upgraded to 2.0.1
+* **@visulima/error:** upgraded to 5.0.2
+* **@visulima/string:** upgraded to 2.0.1
+
 ## @visulima/pail [3.0.0](https://github.com/visulima/visulima/compare/@visulima/pail@2.1.31...@visulima/pail@3.0.0) (2025-10-20)
 
 ### ⚠ BREAKING CHANGES

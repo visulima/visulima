@@ -1,6 +1,6 @@
 {
     "name": "@visulima/pail",
-    "version": "3.0.0",
+    "version": "3.0.1",
     "description": "Highly configurable Logger for Node.js, Edge and Browser.",
     "keywords": [
         "ansi",
@@ -158,15 +158,15 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@visulima/colorize": "1.4.24",
+        "@visulima/colorize": "1.4.25",
         "type-fest": "^5.1.0"
     },
     "devDependencies": {
-        "@visulima/fmt": "1.1.16",
-        "@visulima/inspector": "1.0.25",
-        "@visulima/redact": "2.0.0",
+        "@visulima/fmt": "1.1.17",
+        "@visulima/inspector": "1.0.26",
+        "@visulima/redact": "2.0.1",
         "safe-stable-stringify": "^2.5.0",
-        "@visulima/error": "5.0.1",
+        "@visulima/error": "5.0.2",
         "@anolilab/eslint-config": "^16.4.2",
         "@anolilab/prettier-config": "^6.0.7",
         "@anolilab/semantic-release-pnpm": "^2.0.4",
@@ -176,7 +176,7 @@
         "@total-typescript/ts-reset": "^0.6.1",
         "@types/node": "24.9.1",
         "@visulima/packem": "2.0.0-alpha.30",
-        "@visulima/string": "2.0.0",
+        "@visulima/string": "2.0.1",
         "@vitest/coverage-v8": "^3.2.4",
         "@vitest/ui": "^3.2.4",
         "conventional-changelog-conventionalcommits": "9.1.0",
@@ -193,7 +193,7 @@
         "vitest": "^3.2.4"
     },
     "peerDependencies": {
-        "@visulima/redact": "2.0.0",
+        "@visulima/redact": "2.0.1",
         "rotating-file-stream": "^3.2.7"
     },
     "peerDependenciesMeta": {
