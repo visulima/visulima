@@ -1,6 +1,6 @@
 import type { VisulimaError } from "@visulima/error/error";
 
-export class AlreadySetError extends Error implements VisulimaError {
+class AlreadySetError extends Error implements VisulimaError {
     public readonly loc: undefined;
 
     public readonly title: string;
@@ -39,3 +39,5 @@ export class AlreadySetError extends Error implements VisulimaError {
         (this as any).hint = hint;
     }
 }
+
+export default AlreadySetError;

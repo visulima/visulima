@@ -1,18 +1,10 @@
+import debugLog from "./debug";
 import { resolveArgs } from "./resolver";
 import { parseArgsTokens } from "./tokenizer";
 import { validateDefinitions } from "./validation";
 
 // Export error classes for better error handling
 export { AlreadySetError, InvalidDefinitionsError, UnknownOptionError, UnknownValueError } from "./errors";
-
-/**
- * Debug logging utility.
- */
-const debugLog = (enabled: boolean, message: string, ...args: any[]) => {
-    if (enabled) {
-        console.debug(`[command-line-args] ${message}`, ...args);
-    }
-};
 
 /**
  * @module command-line-args
@@ -108,25 +100,28 @@ export interface OptionDefinition {
 /**
  * Returns an object containing option values parsed from the command line. By default it parses the global `process.argv` array.
  * Parsing is strict by default. To be more permissive, enable `partial` or `stopAtFirstUnknown` modes.
+ * @param optionDefinitions Single definition or array of option definitions
+ * @param options Parsing options (argv, camelCase, caseInsensitive, debug, partial, stopAtFirstUnknown)
+ * @returns Parsed command-line arguments as key-value pairs
  */
+export const commandLineArgs = (optionDefinitions: OptionDefinition | ReadonlyArray<OptionDefinition>, options: ParseOptions = {}): CommandLineOptions => {
+    const debugEnabled = options.debug || false;
 
-export const commandLineArgs = (optionDefinitions: OptionDefinition[] | OptionDefinition, options: ParseOptions = {}): CommandLineOptions => {
-    debugLog(options?.debug || false, "Starting command-line-args parsing");
-    debugLog(options?.debug || false, "Options:", options);
+    debugLog(debugEnabled, "Starting command-line-args parsing", "index");
+    debugLog(debugEnabled, "Options:", "index", options);
 
     // Handle stopAtFirstUnknown implying partial
     if (options.stopAtFirstUnknown) {
-        // eslint-disable-next-line no-param-reassign
         options.partial = true;
     }
 
     // Normalize optionDefinitions to always be an array
     const definitions = Array.isArray(optionDefinitions) ? optionDefinitions : [optionDefinitions];
 
-    debugLog(options?.debug || false, "Normalized definitions:", definitions);
+    debugLog(debugEnabled, "Normalized definitions:", "index", definitions);
 
     // Validate definitions
-    validateDefinitions(definitions, options.caseInsensitive, options.debug ? options : undefined);
+    validateDefinitions(definitions, options.caseInsensitive, debugEnabled ? options : undefined);
 
     // Get argv to parse
     let { argv } = options;
@@ -135,7 +130,7 @@ export const commandLineArgs = (optionDefinitions: OptionDefinition[] | OptionDe
         // Automatically detect and skip Node.js exec args
         argv = process.argv.slice(2);
 
-        if (process.execArgv && process.execArgv.length > 0) {
+        if (process.execArgv?.length) {
             // Skip exec args that appear in argv
             const execArgs = new Set(process.execArgv);
 
@@ -143,33 +138,23 @@ export const commandLineArgs = (optionDefinitions: OptionDefinition[] | OptionDe
         }
     }
 
-    debugLog(options?.debug || false, "Using argv:", argv);
+    debugLog(debugEnabled, "Using argv:", "index", argv);
 
     // Handle case insensitive option matching
     let normalizedArgv = argv;
 
     if (options.caseInsensitive) {
-        // Create a mapping from normalized option names to original names
-        const normalizedToOriginal = new Map<string, string>();
-
-        // Process argv to normalize option names
         normalizedArgv = argv.map((argument) => {
             if (argument.startsWith("--")) {
                 const equalsIndex = argument.indexOf("=");
                 const optionName = equalsIndex === -1 ? argument.slice(2) : argument.slice(2, equalsIndex);
                 const normalizedName = optionName.toLowerCase();
 
-                normalizedToOriginal.set(normalizedName, optionName);
-
                 return equalsIndex === -1 ? `--${normalizedName}` : `--${normalizedName}${argument.slice(equalsIndex)}`;
             }
 
             if (argument.startsWith("-") && argument.length > 1) {
-                // Handle single character aliases
-                const alias = argument.slice(1, 2);
-                const normalizedAlias = alias.toLowerCase();
-
-                normalizedToOriginal.set(normalizedAlias, alias);
+                const normalizedAlias = argument[1].toLowerCase();
 
                 return `-${normalizedAlias}${argument.slice(2)}`;
             }
@@ -178,15 +163,15 @@ export const commandLineArgs = (optionDefinitions: OptionDefinition[] | OptionDe
         });
     }
 
-    // Tokenize arguments - convert to strings first for tokenizer compatibility
+    // Tokenize arguments
     const tokens = parseArgsTokens(normalizedArgv.map(String));
 
-    debugLog(options?.debug || false, "Tokenized arguments:", tokens);
+    debugLog(debugEnabled, "Tokenized arguments:", "index", tokens);
 
     // Resolve tokens into final parsed arguments
     const result = resolveArgs(tokens, definitions, options, argv);
 
-    debugLog(options?.debug || false, "Command-line-args parsing completed");
+    debugLog(debugEnabled, "Command-line-args parsing completed", "index");
 
     return result;
 };

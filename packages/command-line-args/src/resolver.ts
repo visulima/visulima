@@ -1,40 +1,105 @@
+import debugLog from "./debug";
 import { AlreadySetError, UnknownOptionError, UnknownValueError } from "./errors/index";
-import type { CommandLineOptions, OptionDefinition, ParseOptions } from "./index.js";
-import type { ArgToken as ArgumentToken } from "./tokenizer/index.js";
-import { convertValue } from "./type-conversion";
+import type { CommandLineOptions, OptionDefinition, ParseOptions } from "./index";
+import type { ArgToken as ArgumentToken } from "./tokenizer";
+import convertValue from "./type-conversion";
+
+const CAMEL_CASE_PATTERN = /-([a-z])/g;
 
 /**
- * Debug logging utility.
+ * Check if a type is Boolean.
+ * @param type The type to check
+ * @returns True if the type is Boolean or BooleanConstructor
  */
-const debugLog = (enabled: boolean, message: string, ...args: any[]) => {
-    if (enabled) {
-        console.log(`[command-line-args:resolver] ${message}`, ...args);
+const isBooleanType = (type: unknown): type is BooleanConstructor => type === Boolean || (typeof type === "function" && type.name?.startsWith("Boolean"));
+
+/**
+ * Check if a key is special (starts with underscore).
+ * @param key The key to check
+ * @returns True if the key starts with underscore (ASCII 95)
+ */
+const isSpecialKey = (key: string): boolean => key.charCodeAt(0) === 95;
+
+/**
+ * Append multiple values to array or create new array.
+ * @param existingValue The existing value (array or single value)
+ * @param newValues The new values to append
+ * @returns Array containing all values
+ */
+const appendToArrayMultiple = (existingValue: unknown, newValues: unknown[]): unknown[] => {
+    if (Array.isArray(existingValue)) {
+        existingValue.push(...newValues);
+
+        return existingValue;
+    }
+
+    return [existingValue, ...newValues];
+};
+
+/**
+ * Create or append to array property in object.
+ * @param object The object to modify
+ * @param key The property key
+ * @param value The value to add or assign
+ * @param isArray Whether to create an array for this value
+ */
+const createOrAppendArray = (object: Record<string, unknown>, key: string, value: unknown, isArray: boolean = false): void => {
+    if (object[key] === undefined) {
+        object[key] = isArray ? [value] : value;
+    } else if (isArray && Array.isArray(object[key])) {
+        object[key].push(value);
+    } else {
+        object[key] = [object[key], value];
     }
 };
 
-// Helper function for type checking
-const isBooleanType = (type: any): boolean => {
-    const result = type && (type === Boolean || (typeof type === "function" && type.name?.startsWith("Boolean")));
+/**
+ * Get option definition by name with optional case-insensitive lookup.
+ * @param name The option name to look up
+ * @param definitionMap Map of name to definition
+ * @param aliasMap Map of alias to definition
+ * @param caseInsensitiveNameMap Optional map for case-insensitive name lookup
+ * @param caseInsensitiveAliasMap Optional map for case-insensitive alias lookup
+ * @returns The matching option definition or undefined
+ */
+const getDefinition = (
+    name: string,
+    definitionMap: Map<string, OptionDefinition>,
+    aliasMap: Map<string, OptionDefinition>,
+    caseInsensitiveNameMap: Map<string, OptionDefinition> | null,
+    caseInsensitiveAliasMap: Map<string, OptionDefinition> | null,
+): OptionDefinition | undefined => {
+    let definition = definitionMap.get(name) || aliasMap.get(name);
 
-    return result;
+    if (!definition && caseInsensitiveNameMap) {
+        definition = caseInsensitiveNameMap.get(name) || caseInsensitiveAliasMap!.get(name);
+    }
+
+    return definition;
 };
 
 /**
  * Resolved arguments from tokens according to option definitions.
  */
 export const resolveArgs = (tokens: ArgumentToken[], definitions: OptionDefinition[], options: ParseOptions, argv: string[]): CommandLineOptions => {
-    debugLog(options.debug || false, `resolveArgs called with options:`, { partial: options.partial, stopAtFirstUnknown: options.stopAtFirstUnknown });
-    debugLog(options.debug || false, "Starting argument resolution");
-    debugLog(options.debug || false, "Tokens:", tokens);
-    debugLog(options.debug || false, "Definitions:", definitions);
-    debugLog(options.debug || false, "Processing tokens...");
+    const debugEnabled = options.debug || false;
 
-    // Build fast lookup maps for option definitions and pre-compute camelCase names
+    debugLog(debugEnabled, `resolveArgs called with options:`, "resolver", {
+        partial: options.partial,
+        stopAtFirstUnknown: options.stopAtFirstUnknown,
+    });
+    debugLog(debugEnabled, "Starting argument resolution", "resolver");
+    debugLog(debugEnabled, "Tokens:", "resolver", tokens);
+    debugLog(debugEnabled, "Definitions:", "resolver", definitions);
+    debugLog(debugEnabled, "Processing tokens...", "resolver");
+
+    // Build fast lookup maps - cache for single pass lookups
     const definitionMap = new Map<string, OptionDefinition>();
     const aliasMap = new Map<string, OptionDefinition>();
-    const caseInsensitiveNameMap = new Map<string, OptionDefinition>();
-    const caseInsensitiveAliasMap = new Map<string, OptionDefinition>();
-    const camelCaseMap = new Map<string, string>(); // Cache camelCase transformations
+    const caseInsensitiveNameMap = options.caseInsensitive ? new Map<string, OptionDefinition>() : null;
+    const caseInsensitiveAliasMap = options.caseInsensitive ? new Map<string, OptionDefinition>() : null;
+    const camelCaseMap = options.camelCase ? new Map<string, string>() : null;
+    const camelCaseReverseMap = options.camelCase ? new Map<string, string>() : null;
 
     for (const definition of definitions) {
         definitionMap.set(definition.name, definition);
@@ -43,41 +108,37 @@ export const resolveArgs = (tokens: ArgumentToken[], definitions: OptionDefiniti
             aliasMap.set(definition.alias, definition);
         }
 
-        // Build case insensitive maps if needed
         if (options.caseInsensitive) {
-            caseInsensitiveNameMap.set(definition.name.toLowerCase(), definition);
+            caseInsensitiveNameMap!.set(definition.name.toLowerCase(), definition);
 
             if (definition.alias) {
-                caseInsensitiveAliasMap.set(definition.alias.toLowerCase(), definition);
+                caseInsensitiveAliasMap!.set(definition.alias.toLowerCase(), definition);
             }
         }
 
-        // Pre-compute camelCase version if needed (optimized regex)
         if (options.camelCase) {
-            camelCaseMap.set(
-                definition.name,
-                definition.name.replaceAll(/-([a-z])/g, (_, letter) => letter.toUpperCase()),
-            );
+            const camelCase = definition.name.replaceAll(CAMEL_CASE_PATTERN, (_, letter) => letter.toUpperCase());
+
+            camelCaseMap!.set(definition.name, camelCase);
+            camelCaseReverseMap!.set(camelCase, definition.name);
         }
     }
 
-    // Convert args-tokens result to command-line-args format
     const output: CommandLineOptions = {};
-
-    // Process tokens to extract values - optimized single pass
     const values: Record<string, any> = {};
-    const unknownArgs: Array<{ index: number; value: string }> = [];
+    const unknownArgs: { index: number; value: string }[] = [];
     const consumedPositionalIndices = new Set<number>();
     let stoppedByTerminator = false;
 
     const defaultOptionDefinition = definitions.find((d) => d.defaultOption);
+    const hasGroups = definitions.some((d) => d.group);
+    const hasNumberType = definitions.some((d) => d.type === Number);
 
     // Single optimized pass through tokens
     for (let i = 0; i < tokens.length; i++) {
         const token = tokens[i];
 
         if (token.kind === "option-terminator") {
-            // Stop processing further tokens and collect everything from here onward
             output._unknown = argv.slice(token.index);
             stoppedByTerminator = true;
             break;
@@ -85,21 +146,14 @@ export const resolveArgs = (tokens: ArgumentToken[], definitions: OptionDefiniti
 
         if (token.kind === "option" && token.name) {
             // Fast lookup for option definition
-            let definition = definitionMap.get(token.name) || aliasMap.get(token.name);
+            let definition = getDefinition(token.name, definitionMap, aliasMap, caseInsensitiveNameMap, caseInsensitiveAliasMap);
 
-            if (!definition && options.caseInsensitive) {
-                definition = caseInsensitiveNameMap.get(token.name) || caseInsensitiveAliasMap.get(token.name);
-            }
-
-            // Handle numeric option names (e.g., --1 should set a Number type option)
-            if (!definition && token.value === undefined && /^\d+$/.test(token.name)) {
-                const numberDefinition = definitions.find(
-                    (def) => def.type && (def.type === Number || (typeof def.type === "function" && def.type.name === "Number")),
-                );
+            // Handle numeric option names
+            if (!definition && token.value === undefined && hasNumberType && /^\d+$/.test(token.name)) {
+                const numberDefinition = definitions.find((def) => def.type === Number);
 
                 if (numberDefinition) {
                     definition = numberDefinition;
-                    // Modify the token to have the numeric value and correct name
                     (token as any).value = token.name;
                     (token as any).name = numberDefinition.name;
                 }
@@ -109,42 +163,33 @@ export const resolveArgs = (tokens: ArgumentToken[], definitions: OptionDefiniti
             const isMultiple = definition && definition.multiple;
             const isLazyMultiple = definition && definition.lazyMultiple;
 
-            // Check if option is already set (not allowed for non-multiple options, except in partial mode)
             if (values[optionName] !== undefined && !isMultiple && !isLazyMultiple && !options.partial) {
                 throw new AlreadySetError(optionName);
             }
 
-            // In partial mode, collect unknown options and skip processing them
             if (!definition && options.partial) {
-                // For unknown options, use the raw argument from the token
-                const rawArg = token.rawName || `--${token.name}${token.value !== undefined && token.inlineValue ? `=${token.value}` : ""}`;
-                unknownArgs.push({ index: token.index, value: rawArg });
+                const rawArgument = token.rawName || `--${token.name}${token.value !== undefined && token.inlineValue ? `=${token.value}` : ""}`;
+
+                unknownArgs.push({ index: token.index, value: rawArgument });
                 continue;
             }
 
-            // For stopAtFirstUnknown, treat unknown options as unknown and stop processing further tokens
             if (!definition && options.stopAtFirstUnknown) {
-                // Collect this and all remaining args as unknown
                 output._unknown = argv.slice(token.index);
                 break;
             }
 
-            // Throw error for unknown options when not in partial mode
             if (!definition && !options.partial) {
                 throw new UnknownOptionError(token.name);
             }
 
             if (token.value === undefined) {
-                // Option without inline value
                 const nextToken = tokens[i + 1];
-
-                // For defaultOption, don't consume positional arguments as values unless it's non-multiple
-                // Also don't consume positionals for unknown options (they might be unknown arguments)
                 const shouldConsumeValue = nextToken && nextToken.kind === "positional" && definition && !(definition.type && isBooleanType(definition.type));
                 const isDefaultOptionNonMultiple = definition && definition.defaultOption && !definition.multiple && !definition.lazyMultiple;
+
                 if (shouldConsumeValue && (!definition?.defaultOption || isDefaultOptionNonMultiple)) {
                     if (isMultiple) {
-                        // For multiple options, collect consecutive positionals
                         let currentIndex = i + 1;
                         const collectedValues: any[] = [];
 
@@ -154,77 +199,37 @@ export const resolveArgs = (tokens: ArgumentToken[], definitions: OptionDefiniti
                             currentIndex++;
                         }
 
-                        if (values[optionName] === undefined) {
-                            values[optionName] = collectedValues;
-                        } else {
-                            // If already exists, append
-                            if (!Array.isArray(values[optionName])) {
-                                values[optionName] = [values[optionName]];
-                            }
+                        values[optionName] = values[optionName] === undefined ? collectedValues : appendToArrayMultiple(values[optionName], collectedValues);
 
-                            values[optionName].push(...collectedValues);
-                        }
-
-                        // Skip consumed tokens
                         i = currentIndex - 1;
                     } else if (isLazyMultiple) {
-                        // For lazyMultiple options, only consume one positional
-                        if (values[optionName] === undefined) {
-                            values[optionName] = [nextToken.value];
-                        } else {
-                            // If already exists, append
-                            if (!Array.isArray(values[optionName])) {
-                                values[optionName] = [values[optionName]];
-                            }
-
-                            values[optionName].push(nextToken.value);
-                        }
-
+                        createOrAppendArray(values, optionName, nextToken.value, true);
                         consumedPositionalIndices.add(nextToken.index);
-                        i++; // Skip the consumed positional
+                        i++;
                     } else {
-                        // Single value - take first positional
                         values[optionName] = nextToken.value;
                         consumedPositionalIndices.add(nextToken.index);
-                        i++; // Skip the consumed positional
+                        i++;
                     }
+                } else if (definition && definition.type && isBooleanType(definition.type)) {
+                    createOrAppendArray(values, optionName, true, isMultiple);
                 } else {
-                    // Option without value - check if it should be boolean or null
-                    if (definition && definition.type && isBooleanType(definition.type)) {
-                        // For boolean options, handle multiple values
-                        if (isMultiple) {
-                            if (values[optionName] === undefined) {
-                                values[optionName] = [true];
-                            } else if (Array.isArray(values[optionName])) {
-                                values[optionName].push(true);
-                            } else {
-                                values[optionName] = [values[optionName], true];
-                            }
-                        } else {
-                            values[optionName] = true;
-                        }
-                    } else {
-                        // For multiple options without values, initialize as empty array
-                        values[optionName] = isMultiple ? [] : null;
-                    }
+                    values[optionName] = isMultiple ? [] : null;
                 }
             } else {
-                // Option with inline value (--option=value)
+                // Option with inline value
                 let { value } = token;
 
-                // Special handling for boolean options with inline values
                 if (definition && definition.type && isBooleanType(definition.type)) {
                     switch (value) {
                         case "": {
-                            // Empty value for boolean option in inline notation
                             if (options.partial) {
-                                // In partial mode, set the value AND add to unknown
                                 if (!values._unknown) {
                                     values._unknown = [];
                                 }
 
                                 values._unknown.push(`${token.rawName || `--${token.name}`}${token.value ? `=${token.value}` : ""}`);
-                                value = true; // Still set the boolean value
+                                value = true;
                             } else {
                                 throw new UnknownOptionError(token.name);
                             }
@@ -233,26 +238,21 @@ export const resolveArgs = (tokens: ArgumentToken[], definitions: OptionDefiniti
                         }
                         case "false": {
                             value = false;
-
                             break;
                         }
                         case "true": {
                             value = true;
-
                             break;
                         }
                         default: {
-                            // Invalid boolean value
-                            value = true; // Default to true for boolean options
+                            value = true;
                         }
                     }
                 }
 
-                // For multiple options, collect consecutive positional values
-                const collectedValues: any[] = value !== undefined ? [value] : [];
+                const collectedValues: any[] = value === undefined ? [] : [value];
 
                 if (isMultiple) {
-                    // Collect consecutive positional tokens after this option
                     let currentIndex = i + 1;
 
                     while (currentIndex < tokens.length && tokens[currentIndex].kind === "positional") {
@@ -260,31 +260,23 @@ export const resolveArgs = (tokens: ArgumentToken[], definitions: OptionDefiniti
                         consumedPositionalIndices.add(tokens[currentIndex].index);
                         currentIndex++;
                     }
-                    i = currentIndex - 1; // Skip consumed tokens
+                    i = currentIndex - 1;
                 }
 
                 if (values[optionName] === undefined) {
                     values[optionName] = isMultiple || isLazyMultiple ? collectedValues : value;
                 } else if (isMultiple || isLazyMultiple) {
-                    // Handle multiple values
-                    if (!Array.isArray(values[optionName])) {
-                        values[optionName] = [values[optionName]];
-                    }
-
-                    values[optionName].push(...collectedValues);
+                    values[optionName] = appendToArrayMultiple(values[optionName], collectedValues);
                 } else {
-                    // For singular options, allow inline values to override existing values
                     values[optionName] = value;
                 }
             }
         } else if (token.kind === "positional" && options.stopAtFirstUnknown && !consumedPositionalIndices.has(token.index)) {
-            // Found unconsumed positional token - collect everything from here onward as unknown
-            debugLog(options.debug || false, `Found unconsumed positional token at index ${token.index}, stopping processing`);
+            debugLog(debugEnabled, `Found unconsumed positional token at index ${token.index}, stopping processing`, "resolver");
             output._unknown = argv.slice(token.index);
             break;
         }
     }
-
 
     // Ensure multiple values are arrays
     for (const [key, value] of Object.entries(values)) {
@@ -295,107 +287,93 @@ export const resolveArgs = (tokens: ArgumentToken[], definitions: OptionDefiniti
         }
     }
 
-    // Handle defaultOption - collect remaining positional arguments
+    // Handle defaultOption
     if (defaultOptionDefinition) {
         const positionalValues: any[] = [];
         const positionalTokens: ArgumentToken[] = [];
 
-        tokens.forEach((token) => {
+        for (const token of tokens) {
             if (token.kind === "positional" && !consumedPositionalIndices.has(token.index)) {
                 positionalValues.push(token.value);
                 positionalTokens.push(token);
             }
-        });
+        }
 
         if (positionalValues.length > 0) {
             const existingValue = values[defaultOptionDefinition.name];
             const isMultiple = defaultOptionDefinition.multiple || defaultOptionDefinition.lazyMultiple;
 
             if (existingValue === undefined) {
-                // For multiple defaultOption, take all values and mark as consumed
                 if (isMultiple) {
-                    positionalValues.forEach((_, idx) => {
-                        consumedPositionalIndices.add(positionalTokens[idx].index);
-                    });
+                    positionalTokens.forEach((token) => consumedPositionalIndices.add(token.index));
                     values[defaultOptionDefinition.name] = positionalValues;
                 } else {
-                    // For singular defaultOption, only take and mark first value as consumed
                     consumedPositionalIndices.add(positionalTokens[0].index);
                     values[defaultOptionDefinition.name] = positionalValues[0];
                 }
             } else if (isMultiple) {
-                // Multiple already has a value, append remaining positionals first, then existing values
-                positionalValues.forEach((_, idx) => {
-                    consumedPositionalIndices.add(positionalTokens[idx].index);
-                });
-                if (!Array.isArray(existingValue)) {
-                    values[defaultOptionDefinition.name] = [...positionalValues, existingValue];
-                } else {
-                    values[defaultOptionDefinition.name] = [...positionalValues, ...existingValue];
-                }
+                positionalTokens.forEach((token) => consumedPositionalIndices.add(token.index));
+                values[defaultOptionDefinition.name] = Array.isArray(existingValue)
+                    ? [...positionalValues, ...existingValue]
+                    : [...positionalValues, existingValue];
             }
-            // For singular, keep existing value if already set (don't consume remaining positionals)
         }
     }
 
     // In non-partial mode, throw error for unconsumed positional arguments
     if (!options.partial) {
-        tokens.forEach((token) => {
+        for (const token of tokens) {
             if (token.kind === "positional" && !consumedPositionalIndices.has(token.index)) {
                 throw new UnknownValueError(argv[token.index]);
             }
-        });
+        }
     }
 
-    // In partial mode, collect any remaining unconsumed positional arguments as unknown
+    // In partial mode, collect remaining unconsumed positional arguments as unknown
     if (options.partial && !options.stopAtFirstUnknown) {
-        const allUnknownItems: { index: number; value: string }[] = [];
+        const allUnknownItems: { index: number; value: string }[] = [...unknownArgs];
 
-        // Collect already found unknown options from unknownArgs
-        unknownArgs.forEach((item) => {
-            allUnknownItems.push(item);
-        });
-
-        // Also collect unknown options that were added during processing
         if (values._unknown) {
-            values._unknown.forEach((argument: string) => {
-                const index = argv.indexOf(argument);
-                if (index !== -1) {
+            const valueUnknownMap = new Map<string, number>();
+
+            for (const [i, element] of argv.entries()) {
+                valueUnknownMap.set(element, i);
+            }
+
+            for (const argument of values._unknown) {
+                const index = valueUnknownMap.get(argument);
+
+                if (index !== undefined) {
                     allUnknownItems.push({ index, value: argument });
                 }
-            });
+            }
         }
 
-        // Collect unconsumed positional tokens
-        tokens.forEach((token) => {
+        for (const token of tokens) {
             if (token.kind === "positional" && !consumedPositionalIndices.has(token.index)) {
                 allUnknownItems.push({ index: token.index, value: argv[token.index] });
             }
-        });
+        }
 
-        // Sort by index and output
         if (allUnknownItems.length > 0) {
             allUnknownItems.sort((a, b) => a.index - b.index);
-            output._unknown = allUnknownItems.map(item => item.value);
+            output._unknown = allUnknownItems.map((item) => item.value);
         }
     }
 
-    // Handle stopAtFirstUnknown - collect remaining unknown args
+    // Handle stopAtFirstUnknown
     if (options.stopAtFirstUnknown && !stoppedByTerminator) {
-        // Find the first unknown option
         const firstUnknownOptionIndex = tokens.findIndex(
             (token) =>
-                token.kind === "option" &&
-                !definitionMap.has(token.name || "") &&
-                !aliasMap.has(token.name || "") &&
-                (!options.caseInsensitive ||
-                    (!caseInsensitiveNameMap.has(token.name?.toLowerCase() || "") && !caseInsensitiveAliasMap.has(token.name?.toLowerCase() || ""))),
+                token.kind === "option"
+                && !definitionMap.has(token.name || "")
+                && !aliasMap.has(token.name || "")
+                && (!options.caseInsensitive
+                    || (!caseInsensitiveNameMap?.has(token.name?.toLowerCase() || "") && !caseInsensitiveAliasMap?.has(token.name?.toLowerCase() || ""))),
         );
 
-        // Find the first unconsumed positional argument
         const firstUnconsumedPositionalIndex = tokens.findIndex((token) => token.kind === "positional" && !consumedPositionalIndices.has(token.index));
 
-        // Use the earliest unknown
         let firstUnknownIndex = -1;
 
         if (firstUnknownOptionIndex !== -1 && firstUnconsumedPositionalIndex !== -1) {
@@ -410,124 +388,95 @@ export const resolveArgs = (tokens: ArgumentToken[], definitions: OptionDefiniti
             output._unknown = argv.slice(firstUnknownIndex);
         }
     } else if (unknownArgs.length > 0 && !options.partial) {
-        // Only set unknownArgs as unknown if we're not in partial mode
-        // (in partial mode, _unknown was already set in the partial block above)
-        output._unknown = unknownArgs.map(item => item.value);
+        output._unknown = unknownArgs.map((item) => item.value);
     }
 
     // Process collected values
-    Object.entries(values).forEach(([key, value]) => {
-        // Apply camelCase conversion if requested (use cached version)
-        const finalKey = options.camelCase ? camelCaseMap.get(key) || key : key;
-
-        // Handle type conversion for all types
+    for (const [key, value] of Object.entries(values)) {
+        const finalKey = options.camelCase ? camelCaseMap?.get(key) || key : key;
         const definition = definitionMap.get(key);
 
-        if (definition && definition.type) {
-            output[finalKey] = convertValue(value, definition.type);
-        } else {
-            // Use value as-is, but convert undefined to null for consistency
-            output[finalKey] = value === undefined ? null : value;
-        }
-    });
+        output[finalKey] = definition && definition.type ? convertValue(value, definition.type) : value === undefined ? null : value;
+    }
 
-    // Handle default values that weren't provided
-    definitions.forEach((definition) => {
-        const key = options.camelCase ? camelCaseMap.get(definition.name) || definition.name : definition.name;
+    // Handle default values
+    for (const definition of definitions) {
+        const key = options.camelCase ? camelCaseMap?.get(definition.name) || definition.name : definition.name;
 
         if (!(key in output) && definition.defaultValue !== undefined) {
             const isMultipleDefinition = definition.multiple || definition.lazyMultiple;
 
-            if (isMultipleDefinition) {
-                // For multiple options, defaultValue should be an array or we wrap it
-                output[key] = Array.isArray(definition.defaultValue) ? [...definition.defaultValue] : [definition.defaultValue];
-            } else {
-                output[key] = definition.defaultValue;
-            }
+            output[key] = isMultipleDefinition
+                ? Array.isArray(definition.defaultValue)
+                    ? [...definition.defaultValue]
+                    : [definition.defaultValue]
+                : definition.defaultValue;
         }
-    });
+    }
 
     // Handle grouping
-    const groups: Record<string, Record<string, any>> = {};
+    if (hasGroups) {
+        const groups: Record<string, Record<string, any>> = {};
+        const allOptions: Record<string, any> = {};
+        const ungroupedOptions: Record<string, any> = {};
 
-    definitions.forEach((definition) => {
-        if (definition.group) {
-            const groupArray = Array.isArray(definition.group) ? definition.group : [definition.group];
-
-            groupArray.forEach((group) => {
-                if (!groups[group]) {
-                    groups[group] = {};
-                }
-            });
-        }
-    });
-
-    // Add options to their groups and collect all options
-    const allOptions: Record<string, any> = {};
-    const ungroupedOptions: Record<string, any> = {};
-
-    Object.keys(output).forEach((key) => {
-        if (key.charAt(0) !== "_") {
-            allOptions[key] = output[key];
-
-            // Find the definition for this key to see if it's grouped
-            // When camelCase is enabled, we need to find the original name from the camelCased key
-            let originalKey = key;
-            if (options.camelCase) {
-                // Find the original key that maps to this camelCased key
-                for (const [orig, camel] of camelCaseMap) {
-                    if (camel === key) {
-                        originalKey = orig;
-                        break;
-                    }
-                }
-            }
-            const definition = definitionMap.get(originalKey);
-
-            if (definition && definition.group) {
+        for (const definition of definitions) {
+            if (definition.group) {
                 const groupArray = Array.isArray(definition.group) ? definition.group : [definition.group];
 
-                groupArray.forEach((group) => {
-                    if (groups[group]) {
-                        groups[group][key] = output[key];
+                for (const group of groupArray) {
+                    if (!groups[group]) {
+                        groups[group] = {};
                     }
-                });
-            } else {
-                // Ungrouped option
-                ungroupedOptions[key] = output[key];
+                }
             }
         }
-    });
 
-    // Add grouping to output
-    if (Object.keys(groups).length > 0) {
-        // When grouping is present, replace the output with only grouped results
-        const groupedOutput: CommandLineOptions = {};
+        for (const key of Object.keys(output)) {
+            if (!isSpecialKey(key)) {
+                allOptions[key] = output[key];
 
-        groupedOutput._all = allOptions;
+                let originalKey = key;
 
-        // Add group objects
-        Object.keys(groups).forEach((group) => {
-            groupedOutput[group] = groups[group];
-        });
+                if (options.camelCase) {
+                    originalKey = camelCaseReverseMap?.get(key) || key;
+                }
 
-        // Handle _none group (ungrouped options) - only if there are ungrouped options
+                const definition = definitionMap.get(originalKey);
+
+                if (definition && definition.group) {
+                    const groupArray = Array.isArray(definition.group) ? definition.group : [definition.group];
+
+                    for (const group of groupArray) {
+                        if (groups[group]) {
+                            groups[group][key] = output[key];
+                        }
+                    }
+                } else {
+                    ungroupedOptions[key] = output[key];
+                }
+            }
+        }
+
+        const groupedOutput: CommandLineOptions = { _all: allOptions };
+
+        for (const [group, options_] of Object.entries(groups)) {
+            groupedOutput[group] = options_;
+        }
+
         if (Object.keys(ungroupedOptions).length > 0) {
             groupedOutput._none = ungroupedOptions;
         }
 
-        // Preserve _unknown if it exists
         if (output._unknown) {
             groupedOutput._unknown = output._unknown;
         }
 
-        // Replace the output with the grouped version
         Object.keys(output).forEach((key) => delete output[key]);
         Object.assign(output, groupedOutput);
     }
 
-    debugLog(options.debug || false, "Final parsed result:", output);
+    debugLog(debugEnabled, "Final parsed result:", "resolver", output);
 
     return output;
 };
-

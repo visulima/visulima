@@ -247,4 +247,3 @@ const isShortOptionGroup = (argument: string): boolean => {
 
     return true;
 };
-

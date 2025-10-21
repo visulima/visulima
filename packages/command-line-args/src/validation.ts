@@ -1,34 +1,31 @@
-import { InvalidDefinitionsError } from "./errors/index.js";
-import type { OptionDefinition, ParseOptions } from "./index.js";
-
-/**
- * Debug logging utility.
- */
-const debugLog = (enabled: boolean, message: string, ...args: any[]) => {
-    if (enabled) {
-        console.log(`[command-line-args:validation] ${message}`, ...args);
-    }
-};
+import debugLog from "./debug";
+import { InvalidDefinitionsError } from "./errors/index";
+import type { OptionDefinition, ParseOptions } from "./index";
 
 /**
  * Validate option definitions and throw errors for invalid configurations.
+ * @param definitions Array of option definitions to validate
+ * @param caseInsensitive Whether to check for case-insensitive duplicates
+ * @param debugOptions Optional debug options containing debug flag
+ * @throws {InvalidDefinitionsError} If any validation rule is violated
  */
-export const validateDefinitions = (definitions: OptionDefinition[], caseInsensitive?: boolean, debugOptions?: ParseOptions): void => {
-    debugLog(debugOptions?.debug || false, "Validating definitions:", definitions, "caseInsensitive:", caseInsensitive);
+export const validateDefinitions = (definitions: ReadonlyArray<OptionDefinition>, caseInsensitive?: boolean, debugOptions?: ParseOptions): void => {
+    const debugEnabled = debugOptions?.debug || false;
+
+    debugLog(debugEnabled, "Validating definitions:", "validation", definitions, "caseInsensitive:", caseInsensitive);
     const names = new Set<string>();
     const aliases = new Set<string>();
     const namesLower = new Set<string>();
     const aliasesLower = new Set<string>();
 
     let defaultOptionCount = 0;
-    let defaultOptionDefinition: OptionDefinition | undefined;
 
     for (const definition of definitions) {
-        debugLog(debugOptions?.debug || false, "Checking definition:", definition);
+        debugLog(debugEnabled, "Checking definition:", "validation", definition);
 
         // Check required name property
         if (!definition.name) {
-            debugLog(debugOptions?.debug || false, "Validation failed: name is required");
+            debugLog(debugEnabled, "Validation failed: name is required", "validation");
             throw new InvalidDefinitionsError("Invalid option definition: name is required");
         }
 
@@ -88,7 +85,6 @@ export const validateDefinitions = (definitions: OptionDefinition[], caseInsensi
         // Check defaultOption
         if (definition.defaultOption) {
             defaultOptionCount++;
-            defaultOptionDefinition = definition;
 
             // defaultOption cannot be Boolean type
             if (definition.type !== undefined && isBooleanType(definition.type)) {
@@ -115,11 +111,11 @@ export const validateDefinitions = (definitions: OptionDefinition[], caseInsensi
 
     // Check for multiple defaultOptions
     if (defaultOptionCount > 1) {
-        debugLog(debugOptions?.debug || false, "Validation failed: multiple defaultOptions not allowed");
+        debugLog(debugEnabled, "Validation failed: multiple defaultOptions not allowed", "validation");
         throw new InvalidDefinitionsError("Invalid option definition: multiple defaultOptions not allowed");
     }
 
-    debugLog(debugOptions?.debug || false, "Validation completed successfully");
+    debugLog(debugEnabled, "Validation completed successfully", "validation");
 };
 
 /**

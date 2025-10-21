@@ -1,7 +1,36 @@
 /**
- * Convert a value to the specified type.
+ * Type constructor function that converts a string to a typed value.
  */
-export const convertValue = (value: any, type: any): any => {
+type TypeConstructor = (input: string) => unknown;
+
+/**
+ * Check if a type is boolean.
+ * @param type The type to check
+ * @returns True if the type is Boolean or BooleanConstructor
+ */
+const isBooleanType = (type: unknown): type is BooleanConstructor => type === Boolean || (typeof type === "function" && type.name?.startsWith("Boolean"));
+
+/**
+ * Check if a type is number.
+ * @param type The type to check
+ * @returns True if the type is Number or NumberConstructor
+ */
+const isNumberType = (type: unknown): type is NumberConstructor => type === Number || (typeof type === "function" && type.name === "Number");
+
+/**
+ * Check if a type is string.
+ * @param type The type to check
+ * @returns True if the type is String or StringConstructor
+ */
+const isStringType = (type: unknown): type is StringConstructor => type === String || (typeof type === "function" && type.name === "String");
+
+/**
+ * Convert a value to the specified type.
+ * @param value The value to convert (can be a single value or array)
+ * @param type The target type constructor or custom conversion function
+ * @returns The converted value
+ */
+const convertValue = (value: unknown, type: TypeConstructor | BooleanConstructor | NumberConstructor | StringConstructor): unknown => {
     if (Array.isArray(value)) {
         if (isBooleanType(type)) {
             return value.map(Boolean);
@@ -15,11 +44,11 @@ export const convertValue = (value: any, type: any): any => {
             return value.map(String);
         }
 
-        return value.map((v: any) => type(String(v)));
+        return value.map((item: unknown) => (type as TypeConstructor)(String(item)));
     }
 
     if (value === null) {
-        return null; // Preserve null values
+        return null;
     }
 
     if (isBooleanType(type)) {
@@ -34,20 +63,7 @@ export const convertValue = (value: any, type: any): any => {
         return String(value);
     }
 
-    return type(String(value));
+    return (type as TypeConstructor)(String(value));
 };
 
-/**
- * Check if a type is boolean.
- */
-const isBooleanType = (type: any): boolean => type && (type === Boolean || (typeof type === "function" && type.name?.startsWith("Boolean")));
-
-/**
- * Check if a type is number.
- */
-const isNumberType = (type: any): boolean => type && (type === Number || (typeof type === "function" && type.name === "Number"));
-
-/**
- * Check if a type is string.
- */
-const isStringType = (type: any): boolean => type && (type === String || (typeof type === "function" && type.name === "String"));
+export default convertValue;
