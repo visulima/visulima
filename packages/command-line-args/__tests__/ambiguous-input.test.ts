@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { commandLineArgs } from "../src";
+import { UnknownOptionError } from "../src/errors";
 
 describe("ambiguous input", () => {
     it("value looks like an option 1", () => {
@@ -19,7 +20,7 @@ describe("ambiguous input", () => {
         const optionDefinitions = [{ alias: "c", name: "colour", type: String }];
         const argv = ["--colour", "--red"];
 
-        expect(() => commandLineArgs(optionDefinitions, { argv })).toThrow();
+        expect(() => commandLineArgs(optionDefinitions, { argv })).toThrow(UnknownOptionError);
     });
 
     it("value looks like an option 3", () => {

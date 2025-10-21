@@ -8,11 +8,14 @@ import { parse as parseArgsTokens } from "args-tokens";
 import { jack as jackspeakParseArgs } from "jackspeak";
 import minimist from "minimist";
 import mri from "mri";
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { bench, describe } from "vitest";
 import yargsParser from "yargs-parser";
 
 const require = createRequire(import.meta.url);
+// eslint-disable-next-line import/no-commonjs
 const args = require("args");
+// eslint-disable-next-line import/no-commonjs
 const commandLineArgsOriginal = require("command-line-args");
 
 // Benchmark scenarios - using simpler, more compatible args

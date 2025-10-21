@@ -18,9 +18,8 @@ describe("type boolean", () => {
         it("type-boolean: global Boolean overridden", () => {
             expect.assertions(1);
 
-            function Boolean() {
-                return origBoolean.apply(origBoolean, arguments);
-            }
+            // eslint-disable-next-line sonarjs/no-globals-shadowing
+            const Boolean = (...args: any[]) => origBoolean.apply(origBoolean, args);
 
             const optionDefinitions = [{ name: "one", type: Boolean }];
 

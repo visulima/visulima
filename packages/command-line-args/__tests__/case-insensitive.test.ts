@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { commandLineArgs } from "../src";
+import { UnknownOptionError } from "../src/errors";
 
 describe("case insensitive", () => {
     it("disabled", () => {
@@ -9,8 +10,8 @@ describe("case insensitive", () => {
 
         const optionDefinitions = [{ alias: "d", name: "dryRun", type: Boolean }];
 
-        expect(() => commandLineArgs(optionDefinitions, { argv: ["--DRYrun"] })).toThrow();
-        expect(() => commandLineArgs(optionDefinitions, { argv: ["-D"] })).toThrow();
+        expect(() => commandLineArgs(optionDefinitions, { argv: ["--DRYrun"] })).toThrow(UnknownOptionError);
+        expect(() => commandLineArgs(optionDefinitions, { argv: ["-D"] })).toThrow(UnknownOptionError);
     });
 
     it("option no value", () => {

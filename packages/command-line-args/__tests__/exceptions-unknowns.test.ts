@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { commandLineArgs } from "../src";
+import { UnknownOptionError, UnknownValueError } from "../src/errors";
 
 describe("exceptions unknowns", () => {
     it("unknown option", () => {
@@ -8,7 +9,7 @@ describe("exceptions unknowns", () => {
 
         const optionDefinitions = [{ name: "one", type: Number }];
 
-        expect(() => commandLineArgs(optionDefinitions, { argv: ["--one", "--two"] })).toThrow();
+        expect(() => commandLineArgs(optionDefinitions, { argv: ["--one", "--two"] })).toThrow(UnknownOptionError);
     });
 
     it("1 unknown option, 1 unknown value", () => {
@@ -16,7 +17,7 @@ describe("exceptions unknowns", () => {
 
         const optionDefinitions = [{ name: "one", type: Number }];
 
-        expect(() => commandLineArgs(optionDefinitions, { argv: ["--one", "2", "--two", "two"] })).toThrow();
+        expect(() => commandLineArgs(optionDefinitions, { argv: ["--one", "2", "--two", "two"] })).toThrow(UnknownOptionError);
     });
 
     it("unknown alias", () => {
@@ -24,7 +25,7 @@ describe("exceptions unknowns", () => {
 
         const optionDefinitions = [{ name: "one", type: Number }];
 
-        expect(() => commandLineArgs(optionDefinitions, { argv: ["-a", "2"] })).toThrow();
+        expect(() => commandLineArgs(optionDefinitions, { argv: ["-a", "2"] })).toThrow(UnknownOptionError);
     });
 
     it("unknown combined aliases", () => {
@@ -32,7 +33,7 @@ describe("exceptions unknowns", () => {
 
         const optionDefinitions = [{ name: "one", type: Number }];
 
-        expect(() => commandLineArgs(optionDefinitions, { argv: ["-sdf"] })).toThrow();
+        expect(() => commandLineArgs(optionDefinitions, { argv: ["-sdf"] })).toThrow(UnknownOptionError);
     });
 
     it("unknown value", () => {
@@ -41,7 +42,7 @@ describe("exceptions unknowns", () => {
         const optionDefinitions = [{ name: "one" }];
         const argv = ["--one", "arg1", "arg2"];
 
-        expect(() => commandLineArgs(optionDefinitions, { argv })).toThrow();
+        expect(() => commandLineArgs(optionDefinitions, { argv })).toThrow(UnknownValueError);
     });
 
     it("unknown value with singular defaultOption", () => {
@@ -50,7 +51,7 @@ describe("exceptions unknowns", () => {
         const optionDefinitions = [{ defaultOption: true, name: "one" }];
         const argv = ["arg1", "arg2"];
 
-        expect(() => commandLineArgs(optionDefinitions, { argv })).toThrow();
+        expect(() => commandLineArgs(optionDefinitions, { argv })).toThrow(UnknownValueError);
     });
 
     it("no unknown value exception with multiple defaultOption", () => {
@@ -74,6 +75,6 @@ describe("exceptions unknowns", () => {
         ];
         const argv = ["--two", "file1", "--one", "file2"];
 
-        expect(() => commandLineArgs(optionDefinitions, { argv })).toThrow();
+        expect(() => commandLineArgs(optionDefinitions, { argv })).toThrow(UnknownValueError);
     });
 });

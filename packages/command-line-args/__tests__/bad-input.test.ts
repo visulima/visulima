@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { commandLineArgs } from "../src";
+import { UnknownOptionError } from "../src/errors";
 
 describe("bad input", () => {
     it("missing option value should be null", () => {
@@ -42,7 +43,7 @@ describe("bad input", () => {
 
         expect(() => {
             commandLineArgs(optionDefinitions, { argv });
-        }).toThrow();
+        }).toThrow(UnknownOptionError);
         expect(commandLineArgs(optionDefinitions, { argv, partial: true })).toStrictEqual({
             _unknown: ["--five="],
             five: true,

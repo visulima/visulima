@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { commandLineArgs } from "../src";
+import { UnknownValueError } from "../src/errors";
 
 describe("multiple lazy", () => {
     it("string", () => {
@@ -67,7 +68,7 @@ describe("multiple lazy", () => {
         const optionDefinitions = [{ lazyMultiple: true, name: "one" }];
         const argv = ["--one", "1", "2"];
 
-        expect(() => commandLineArgs(optionDefinitions, { argv })).toThrow();
+        expect(() => commandLineArgs(optionDefinitions, { argv })).toThrow(UnknownValueError);
     });
 
     it("greedy style, string, --option=value", () => {
@@ -88,6 +89,6 @@ describe("multiple lazy", () => {
         const optionDefinitions = [{ lazyMultiple: true, name: "one" }];
         const argv = ["--one=1", "--one=2", "3"];
 
-        expect(() => commandLineArgs(optionDefinitions, { argv })).toThrow();
+        expect(() => commandLineArgs(optionDefinitions, { argv })).toThrow(UnknownValueError);
     });
 });
