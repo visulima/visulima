@@ -87,3 +87,9 @@ export const commandLineArgs = (optionDefinitions: OptionDefinition | ReadonlyAr
 
     return result;
 };
+
+/**
+ * Alias for commandLineArgs with a more concise name.
+ * @see commandLineArgs
+ */
+export const parseArgs = commandLineArgs;

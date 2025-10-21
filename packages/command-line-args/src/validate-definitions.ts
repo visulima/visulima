@@ -17,8 +17,7 @@ const isBooleanType = (type: any): boolean => type && (type === Boolean || (type
 const isValidCustomTypeFunction = (typeFunction: unknown): boolean =>
     // Accept any function as a valid type converter (Boolean, Number, String, or custom functions)
     // We check only the type without invoking the function to avoid side effects
-    typeof typeFunction === "function"
-;
+    typeof typeFunction === "function";
 
 /**
  * Validate option definitions and throw errors for invalid configurations.
