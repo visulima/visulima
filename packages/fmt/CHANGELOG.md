@@ -1,3 +1,15 @@
+## @visulima/fmt [1.1.17](https://github.com/visulima/visulima/compare/@visulima/fmt@1.1.16...@visulima/fmt@1.1.17) (2025-10-21)
+
+### Bug Fixes
+
+* allow node v25 and updated dev deps ([8158cc5](https://github.com/visulima/visulima/commit/8158cc53ec92bd0331e8c6bd0fcbc8ab61b9320f))
+
+### Miscellaneous Chores
+
+* **deps:** update package versions and dependencies ([88d8d32](https://github.com/visulima/visulima/commit/88d8d32c4629a7a06c8770369191da2cc81087cc))
+* update license years and add validation rules ([b97811e](https://github.com/visulima/visulima/commit/b97811ed2d253d908c0d86b4579a0a6bc33673a8))
+* update package dependencies across multiple packages ([17e3f23](https://github.com/visulima/visulima/commit/17e3f2377c8a3f98e2eed2192c5adaf6e32558b5))
+
 ## @visulima/fmt [1.1.16](https://github.com/visulima/visulima/compare/@visulima/fmt@1.1.15...@visulima/fmt@1.1.16) (2025-10-15)
 
 ### Bug Fixes
