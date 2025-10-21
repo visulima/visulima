@@ -94,7 +94,7 @@
         "@anolilab/semantic-release-pnpm": "^2.0.4",
         "@anolilab/semantic-release-preset": "^11.0.4",
         "@arethetypeswrong/cli": "^0.18.2",
-        "@types/node": "24.8.1",
+        "@types/node": "24.9.1",
         "@visulima/colorize": "1.4.24",
         "@visulima/packem": "2.0.0-alpha.30",
         "@visulima/path": "2.0.0",
@@ -105,7 +105,7 @@
         "esbuild": "0.25.11",
         "eslint": "9.38.0",
         "prettier": "^3.6.2",
-        "publint": "^0.3.14",
+        "publint": "^0.3.15",
         "rimraf": "6.0.1",
         "semantic-release": "25.0.1",
         "terminal-size": "^4.0.0",
@@ -113,7 +113,7 @@
         "vitest": "^3.2.4"
     },
     "engines": {
-        "node": ">=20.18 <=24.x"
+        "node": ">=20.18 <=25.x"
     },
     "os": [
         "darwin",
