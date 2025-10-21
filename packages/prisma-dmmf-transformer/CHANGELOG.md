@@ -1,3 +1,14 @@
+## @visulima/prisma-dmmf-transformer [2.0.33](https://github.com/visulima/visulima/compare/@visulima/prisma-dmmf-transformer@2.0.32...@visulima/prisma-dmmf-transformer@2.0.33) (2025-10-21)
+
+### Bug Fixes
+
+* allow node v25 and updated dev deps ([8158cc5](https://github.com/visulima/visulima/commit/8158cc53ec92bd0331e8c6bd0fcbc8ab61b9320f))
+
+### Miscellaneous Chores
+
+* **deps:** update package versions and dependencies ([88d8d32](https://github.com/visulima/visulima/commit/88d8d32c4629a7a06c8770369191da2cc81087cc))
+* update license years and add validation rules ([b97811e](https://github.com/visulima/visulima/commit/b97811ed2d253d908c0d86b4579a0a6bc33673a8))
+
 ## @visulima/prisma-dmmf-transformer [2.0.32](https://github.com/visulima/visulima/compare/@visulima/prisma-dmmf-transformer@2.0.31...@visulima/prisma-dmmf-transformer@2.0.32) (2025-10-15)
 
 ### Bug Fixes
