@@ -1,3 +1,15 @@
+## @visulima/ono [1.0.7](https://github.com/visulima/visulima/compare/@visulima/ono@1.0.6...@visulima/ono@1.0.7) (2025-10-21)
+
+### Bug Fixes
+
+* allowed node v25 ([4b3023b](https://github.com/visulima/visulima/commit/4b3023bf2423b85e118af49ade096aec7534653f))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 5.0.2
+* **@visulima/path:** upgraded to 2.0.1
+
 ## @visulima/ono [1.0.6](https://github.com/visulima/visulima/compare/@visulima/ono@1.0.5...@visulima/ono@1.0.6) (2025-10-20)
 
 ### Bug Fixes
