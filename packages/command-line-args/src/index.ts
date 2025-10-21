@@ -20,10 +20,11 @@ export const commandLineArgs = (optionDefinitions: OptionDefinition | ReadonlyAr
     debugLog(debugEnabled, "Starting command-line-args parsing", "index");
     debugLog(debugEnabled, "Options:", "index", options);
 
-    // Handle stopAtFirstUnknown implying partial
-    if (options.stopAtFirstUnknown) {
-        // eslint-disable-next-line no-param-reassign
-        options.partial = true;
+    // Handle stopAtFirstUnknown implying partial - avoid mutating input
+    const effectiveOptions = { ...options };
+
+    if (effectiveOptions.stopAtFirstUnknown) {
+        effectiveOptions.partial = true;
     }
 
     // Normalize optionDefinitions to always be an array
@@ -32,10 +33,10 @@ export const commandLineArgs = (optionDefinitions: OptionDefinition | ReadonlyAr
     debugLog(debugEnabled, "Normalized definitions:", "index", definitions);
 
     // Validate definitions
-    validateDefinitions(definitions as OptionDefinition[], options.caseInsensitive, debugEnabled ? options : undefined);
+    validateDefinitions(definitions as OptionDefinition[], effectiveOptions.caseInsensitive, debugEnabled ? effectiveOptions : undefined);
 
     // Get argv to parse
-    let { argv } = options;
+    let { argv } = effectiveOptions;
 
     if (!argv) {
         // Automatically detect and skip Node.js exec args
@@ -54,7 +55,7 @@ export const commandLineArgs = (optionDefinitions: OptionDefinition | ReadonlyAr
     // Handle case insensitive option matching
     let normalizedArgv = argv;
 
-    if (options.caseInsensitive) {
+    if (effectiveOptions.caseInsensitive) {
         normalizedArgv = argv.map((argument) => {
             if (argument.startsWith("--")) {
                 const equalsIndex = argument.indexOf("=");
@@ -81,7 +82,7 @@ export const commandLineArgs = (optionDefinitions: OptionDefinition | ReadonlyAr
     debugLog(debugEnabled, "Tokenized arguments:", "index", tokens);
 
     // Resolve tokens into final parsed arguments
-    const result = resolveArgs(tokens, definitions as OptionDefinition[], options, argv);
+    const result = resolveArgs(tokens, definitions as OptionDefinition[], effectiveOptions, argv);
 
     debugLog(debugEnabled, "Command-line-args parsing completed", "index");
 

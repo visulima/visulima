@@ -13,12 +13,9 @@ class UnknownValueError extends VisulimaError {
      */
     public constructor(value: string) {
         super({
-            cause: undefined,
             hint: "Use a defined option or add a defaultOption to capture this value.",
-            location: undefined,
             message: `Unknown value: ${value}`,
             name: "UNKNOWN_VALUE",
-            stack: undefined,
             title: "Unknown Value",
         });
 

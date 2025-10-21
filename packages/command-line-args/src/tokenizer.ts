@@ -149,12 +149,12 @@ export const parseArgsTokens = (args: string[]): ArgumentToken[] => {
                 kind: "option-terminator",
             });
 
-            const mapped = remainings.map((argument_) => {
-                // eslint-disable-next-line no-plusplus
-                return { index: ++index, kind: "positional", value: argument_ };
+            const mapped = remainings.map((argument_, index_) => {
+                return { index: index + index_ + 1, kind: "positional", value: argument_ };
             }) as ArgumentToken[];
 
             tokens.push(...mapped);
+            index += remainings.length;
             break;
         }
 
@@ -257,11 +257,9 @@ export const parseArgsTokens = (args: string[]): ArgumentToken[] => {
 
             tokens.push({
                 index,
-                inlineValue: undefined,
                 kind: "option",
                 name: longOption,
                 rawName: argument,
-                value: undefined,
             });
 
             continue;

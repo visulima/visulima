@@ -36,6 +36,14 @@ const appendToArrayMultiple = (existingValue: unknown, newValues: unknown[]): un
 };
 
 /**
+ * Checks for prototype-polluting keys.
+ * Prevents injection of dangerous keys like __proto__, constructor, or prototype.
+ * @param key The key to validate
+ * @returns True if key is unsafe and should be skipped
+ */
+const isUnsafeKey = (key: string): boolean => key === "__proto__" || key === "constructor" || key === "prototype";
+
+/**
  * Create or append to array property in object.
  * @param object The object to modify
  * @param key The property key
@@ -476,6 +484,10 @@ const resolveArgs = (tokens: ArgumentToken[], definitions: OptionDefinition[], o
                 const groupArray = Array.isArray(definition.group) ? definition.group : [definition.group];
 
                 for (const group of groupArray) {
+                    if (isUnsafeKey(group)) {
+                        continue;
+                    }
+
                     if (!groups[group]) {
                         groups[group] = {};
                     }
@@ -499,6 +511,10 @@ const resolveArgs = (tokens: ArgumentToken[], definitions: OptionDefinition[], o
                     const groupArray = Array.isArray(definition.group) ? definition.group : [definition.group];
 
                     for (const group of groupArray) {
+                        if (isUnsafeKey(group)) {
+                            continue;
+                        }
+
                         if (groups[group]) {
                             groups[group][key] = output[key];
                         }
