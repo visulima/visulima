@@ -4,5 +4,5 @@
     "sourceRoot": "packages/command-line-args/src",
     "projectType": "library",
     "tags": ["command-line-args", "type:package"],
-    "implicitDependencies": []
+    "implicitDependencies": ["error"]
 }
