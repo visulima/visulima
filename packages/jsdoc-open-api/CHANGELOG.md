@@ -1,3 +1,18 @@
+## @visulima/jsdoc-open-api [2.0.89](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@2.0.88...@visulima/jsdoc-open-api@2.0.89) (2025-10-21)
+
+### Bug Fixes
+
+* allow node v25 and updated dev deps ([8158cc5](https://github.com/visulima/visulima/commit/8158cc53ec92bd0331e8c6bd0fcbc8ab61b9320f))
+
+### Miscellaneous Chores
+
+* update license years and add validation rules ([b97811e](https://github.com/visulima/visulima/commit/b97811ed2d253d908c0d86b4579a0a6bc33673a8))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 4.0.2
+
 ## @visulima/jsdoc-open-api [2.0.88](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@2.0.87...@visulima/jsdoc-open-api@2.0.88) (2025-10-20)
 
 ### Miscellaneous Chores
