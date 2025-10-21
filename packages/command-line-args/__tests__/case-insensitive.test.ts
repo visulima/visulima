@@ -72,4 +72,107 @@ describe("case insensitive", () => {
             dryRun: true,
         });
     });
+
+    it("short option group lowercase", () => {
+        expect.assertions(1);
+
+        const optionDefinitions = [
+            { alias: "a", name: "alpha", type: Boolean },
+            { alias: "b", name: "beta", type: Boolean },
+        ];
+        const argv = ["-ab"];
+        const result = commandLineArgs(optionDefinitions, { argv, caseInsensitive: true });
+
+        expect(result).toStrictEqual({
+            alpha: true,
+            beta: true,
+        });
+    });
+
+    it("short option group uppercase", () => {
+        expect.assertions(1);
+
+        const optionDefinitions = [
+            { alias: "a", name: "alpha", type: Boolean },
+            { alias: "b", name: "beta", type: Boolean },
+        ];
+        const argv = ["-AB"];
+        const result = commandLineArgs(optionDefinitions, { argv, caseInsensitive: true });
+
+        expect(result).toStrictEqual({
+            alpha: true,
+            beta: true,
+        });
+    });
+
+    it("short option group mixed case", () => {
+        expect.assertions(1);
+
+        const optionDefinitions = [
+            { alias: "a", name: "alpha", type: Boolean },
+            { alias: "b", name: "beta", type: Boolean },
+            { alias: "c", name: "gamma", type: Boolean },
+        ];
+        const argv = ["-AbC"];
+        const result = commandLineArgs(optionDefinitions, { argv, caseInsensitive: true });
+
+        expect(result).toStrictEqual({
+            alpha: true,
+            beta: true,
+            gamma: true,
+        });
+    });
+
+    it("short option group all uppercase two chars", () => {
+        expect.assertions(1);
+
+        // Tests the specific case: -AB should normalize to -ab, not -aB
+        const optionDefinitions = [
+            { alias: "a", name: "flagA", type: Boolean },
+            { alias: "b", name: "flagB", type: Boolean },
+        ];
+        const argv = ["-AB"];
+        const result = commandLineArgs(optionDefinitions, { argv, caseInsensitive: true });
+
+        expect(result).toStrictEqual({
+            flagA: true,
+            flagB: true,
+        });
+    });
+
+    it("short option group all uppercase three chars", () => {
+        expect.assertions(1);
+
+        // Tests the specific case: -ABC should normalize to -abc, not -aBc
+        const optionDefinitions = [
+            { alias: "a", name: "flagA", type: Boolean },
+            { alias: "b", name: "flagB", type: Boolean },
+            { alias: "c", name: "flagC", type: Boolean },
+        ];
+        const argv = ["-ABC"];
+        const result = commandLineArgs(optionDefinitions, { argv, caseInsensitive: true });
+
+        expect(result).toStrictEqual({
+            flagA: true,
+            flagB: true,
+            flagC: true,
+        });
+    });
+
+    it("short option group with trailing value consumed correctly", () => {
+        expect.assertions(1);
+
+        // Tests that value-only tokens from short option groups are consumed
+        const optionDefinitions = [
+            { alias: "a", name: "alpha", type: Boolean },
+            { alias: "b", name: "beta" },
+        ];
+        const argv = ["-ab", "value"];
+        const result = commandLineArgs(optionDefinitions, { argv });
+
+        expect(result).toStrictEqual({
+            alpha: true,
+            beta: "value",
+        });
+    });
 });

@@ -6,7 +6,7 @@ This directory contains performance benchmarks comparing `@visulima/command-line
 
 - **@visulima/command-line-args** - The library being developed
 - **command-line-args** - Original npm command-line-args library
-- **jackspeak** - Node.js core argument parser (fastest)
+- **jackspeak** - Fast third-party argument parser
 - **yargs-parser** - Popular argument parser from yargs
 - **argparse** - Python-style argument parser
 - **args** - Simple argument parser

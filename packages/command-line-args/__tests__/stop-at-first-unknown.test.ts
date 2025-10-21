@@ -19,7 +19,7 @@ describe("stop at first unknown", () => {
         });
     });
 
-    it("with a singlular defaultOption", () => {
+    it("with a singular defaultOption", () => {
         expect.assertions(1);
 
         const optionDefinitions = [{ defaultOption: true, name: "one" }, { name: "two" }];
@@ -32,7 +32,7 @@ describe("stop at first unknown", () => {
         });
     });
 
-    it("with a singlular defaultOption and partial", () => {
+    it("with a singular defaultOption and partial", () => {
         expect.assertions(1);
 
         const optionDefinitions = [{ defaultOption: true, name: "one" }, { name: "two" }];
@@ -42,6 +42,26 @@ describe("stop at first unknown", () => {
         expect(result).toStrictEqual({
             _unknown: ["--", "--two", "2"],
             one: "1",
+        });
+    });
+
+    it("with short option group should use correct argv index", () => {
+        expect.assertions(1);
+
+        // Test that stopAtFirstUnknown uses token.index (argv position) not token array index
+        // When -ab is tokenized, it creates multiple tokens but they map to argv index 0
+        // The _unknown should slice from the correct argv position
+        const optionDefinitions = [
+            { alias: "a", name: "alpha", type: Boolean },
+            { alias: "b", name: "beta", type: Boolean },
+        ];
+        const argv = ["-ab", "unknown"];
+        const result = commandLineArgs(optionDefinitions, { argv, stopAtFirstUnknown: true });
+
+        expect(result).toStrictEqual({
+            _unknown: ["unknown"],
+            alpha: true,
+            beta: true,
         });
     });
 });

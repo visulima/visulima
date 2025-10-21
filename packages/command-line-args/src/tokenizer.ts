@@ -36,7 +36,7 @@ const isLongOptionAndValue = (argument: string) => hasLongOptionPrefix(argument)
  * @param value The value to check
  * @returns True if value is defined and doesn't start with hyphen
  */
-const hasOptionValue = (value: string | undefined): boolean => value !== undefined && value.codePointAt(0) !== HYPHEN_CODE;
+const hasOptionValue = (value: string | undefined): boolean => value !== undefined && value.length > 0 && value.codePointAt(0) !== HYPHEN_CODE;
 
 /**
  * Check if argument is a short option (e.g., `-f`).
@@ -166,10 +166,15 @@ export const parseArgsTokens = (args: string[]): ArgumentToken[] => {
                 });
 
                 if (groupCount === 1 && hasOptionValue(nextArgument)) {
+                    // Consume the value from remainings, but do NOT increment index
+                    // because this value is associated with the current short option,
+                    // which is part of the current argv index (e.g., in "-abc value",
+                    // value belongs to index of the whole "-abc" argument, not a new index)
                     value = remainings.shift();
 
                     if (hasShortValueSeparator) {
                         inlineValue = true;
+                        // eslint-disable-next-line sonarjs/no-redundant-assignments
                         hasShortValueSeparator = false;
                     }
 
@@ -199,25 +204,37 @@ export const parseArgsTokens = (args: string[]): ArgumentToken[] => {
             continue;
         }
 
-        if (isShortOptionGroup(argument)) {
-            const expanded = [];
+        if (isShortOptionGroup(argument) // Skip if this looks like a short option with inline value (e.g., "-o=value")
+            // These should be handled by the inline value handler, not expanded as groups
+            && !argument.includes(EQUAL_CHAR)) {
+            const expanded: string[] = [];
             let shortValue = "";
+            let localHasShortValueSeparator = false;
 
             // eslint-disable-next-line no-plusplus
             for (let i = 1; i < argument.length; i++) {
                 const shortableOption = argument.charAt(i);
 
-                if (hasShortValueSeparator) {
+                if (localHasShortValueSeparator) {
                     shortValue += shortableOption;
                 } else if (shortableOption.codePointAt(0) === EQUAL_CODE) {
-                    hasShortValueSeparator = true;
+                    localHasShortValueSeparator = true;
                 } else {
                     expanded.push(`${SHORT_OPTION_PREFIX}${shortableOption}`);
                 }
             }
 
-            if (shortValue) {
-                expanded.push(shortValue);
+            // If '=' was present, push the collected value even if empty (e.g., "-o=" -> value = "")
+            // This maintains parity with long options like "--opt=" which emit a value token
+            if (localHasShortValueSeparator) {
+                if (expanded.length > 0) {
+                    const lastOption = expanded.pop() as string;
+
+                    expanded.push(`${lastOption}=${shortValue}`);
+                } else {
+                    // Edge case: just "-=" with no option before it
+                    expanded.push(shortValue);
+                }
             }
 
             remainings.unshift(...expanded);
@@ -250,6 +267,23 @@ export const parseArgsTokens = (args: string[]): ArgumentToken[] => {
                 inlineValue: true,
                 kind: "option",
                 name: longOption,
+                rawName: argument,
+                value,
+            });
+            continue;
+        }
+
+        // Handle short option with inline value (e.g., -b=cd)
+        if (argument.length > 2 && argument.codePointAt(0) === HYPHEN_CODE && argument.codePointAt(1) !== HYPHEN_CODE && argument.includes(EQUAL_CHAR)) {
+            const equalIndex = argument.indexOf(EQUAL_CHAR);
+            const shortOption = argument.charAt(1);
+            const value = argument.slice(equalIndex + 1);
+
+            tokens.push({
+                index,
+                inlineValue: true,
+                kind: "option",
+                name: shortOption,
                 rawName: argument,
                 value,
             });

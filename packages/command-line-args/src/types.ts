@@ -21,7 +21,7 @@ export interface ParseOptions {
     argv?: string[] | undefined;
 
     /**
-     * If `true`, options with hypenated names (e.g. `move-to`) will be returned in camel-case (e.g. `moveTo`).
+     * If `true`, options with hyphenated names (e.g. `move-to`) will be returned in camelCase (e.g. `moveTo`).
      */
     camelCase?: boolean | undefined;
 

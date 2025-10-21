@@ -9,26 +9,16 @@ import debugLog from "./utils/debug";
 const isBooleanType = (type: any): boolean => type && (type === Boolean || (typeof type === "function" && type.name?.startsWith("Boolean")));
 
 /**
- * Check if a custom type function is valid by safely testing its signature.
+ * Check if a custom type function is valid by checking its shape only.
+ * Does not invoke the function to avoid side effects from user-supplied code.
  * @param typeFunction The custom type function to validate
- * @returns True if the function appears to be a valid type converter
+ * @returns True if the function is a valid function type (no runtime invocation)
  */
-const isValidCustomTypeFunction = (typeFunction: unknown): boolean => {
-    if (typeof typeFunction !== "function") {
-        return false;
-    }
-
-    try {
-        // Safely test the function with a sample input
-        // A valid type converter should return a value (not undefined)
-        const result = typeFunction("sample");
-        return result !== undefined;
-    } catch {
-        // If the function throws, it's likely a validation error, not a type converter
-        // Type converters should accept arbitrary inputs for validation
-        return false;
-    }
-};
+const isValidCustomTypeFunction = (typeFunction: unknown): boolean =>
+    // Accept any function as a valid type converter (Boolean, Number, String, or custom functions)
+    // We check only the type without invoking the function to avoid side effects
+    typeof typeFunction === "function"
+;
 
 /**
  * Validate option definitions and throw errors for invalid configurations.
@@ -141,9 +131,6 @@ const validateDefinitions = (definitions: ReadonlyArray<OptionDefinition>, caseI
                 = definition.type === Boolean
                     || definition.type === Number
                     || definition.type === String
-                    || (typeof definition.type === "function" && definition.type.name === "Boolean")
-                    || (typeof definition.type === "function" && definition.type.name === "Number")
-                    || (typeof definition.type === "function" && definition.type.name === "String")
                     || (typeof definition.type === "function" && isValidCustomTypeFunction(definition.type));
 
             if (!isValidType) {

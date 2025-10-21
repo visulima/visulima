@@ -51,6 +51,9 @@ describe("alias cluster", () => {
 
             const argv = ["-abc", "yeah"];
 
+            // Note: When parsing "-abc", the short options are split into separate flags.
+            // -a and -b are string options with no following values, so they default to null.
+            // -c is the last flag and consumes the following positional argument "yeah".
             expect(commandLineArgs(optionDefinitions, { argv })).toStrictEqual({
                 flagA: null,
                 flagB: null,

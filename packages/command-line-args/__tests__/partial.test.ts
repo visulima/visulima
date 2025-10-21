@@ -213,7 +213,7 @@ describe("partial", () => {
         });
     });
 
-    it("mulitple unknowns with same name", () => {
+    it("multiple unknowns with same name", () => {
         expect.assertions(1);
 
         const definitions = [{ name: "file" }];

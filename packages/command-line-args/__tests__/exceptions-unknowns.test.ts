@@ -65,7 +65,7 @@ describe("exceptions unknowns", () => {
         });
     });
 
-    it("non-multiple defaultOption should take first value 2", () => {
+    it("non-multiple defaultOption throws UnknownValueError when multiple positional values provided", () => {
         expect.assertions(1);
 
         const optionDefinitions = [
@@ -75,6 +75,9 @@ describe("exceptions unknowns", () => {
         ];
         const argv = ["--two", "file1", "--one", "file2"];
 
+        // Note: Boolean flags (--two, --one) don't consume the following values.
+        // Both positional values (file1, file2) bind to the non-multiple defaultOption.
+        // The first value (file1) is consumed, but the second value (file2) throws UnknownValueError.
         expect(() => commandLineArgs(optionDefinitions, { argv })).toThrow(UnknownValueError);
     });
 });

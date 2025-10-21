@@ -32,6 +32,8 @@ describe("type none", () => {
         const argv = ["--one", "one", "--two"];
         const result = commandLineArgs(definitions, { argv });
 
+        // Note: --one consumes "one" (a positional argument), but --two is recognized as an option flag,
+        // not a positional argument. Options only consume positional arguments, not other option flags.
         expect(result).toStrictEqual({
             one: "one",
             two: null,

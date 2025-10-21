@@ -29,9 +29,7 @@ const isSpecialKey = (key: string): boolean => key.codePointAt(0) === 95;
  */
 const appendToArrayMultiple = (existingValue: unknown, newValues: unknown[]): unknown[] => {
     if (Array.isArray(existingValue)) {
-        existingValue.push(...newValues);
-
-        return existingValue;
+        return [...existingValue, ...newValues];
     }
 
     return [existingValue, ...newValues];
@@ -72,10 +70,16 @@ const getDefinition = (
     caseInsensitiveNameMap: Map<string, OptionDefinition> | undefined,
     caseInsensitiveAliasMap: Map<string, OptionDefinition> | undefined,
 ): OptionDefinition | undefined => {
+    // Try exact match first (case-sensitive)
     let definition = definitionMap.get(name) || aliasMap.get(name);
 
+    // If no exact match and case-insensitive mode is enabled, try lowercase lookup
     if (!definition && caseInsensitiveNameMap) {
-        definition = caseInsensitiveNameMap.get(name) || caseInsensitiveAliasMap?.get(name);
+        // Normalize the probe key to lowercase before lookups so names and grouped short options
+        // are matched correctly (e.g., -AB becomes -ab and matches aliases a and b)
+        const lowercasedKey = name.toLowerCase();
+
+        definition = caseInsensitiveNameMap.get(lowercasedKey) || caseInsensitiveAliasMap?.get(lowercasedKey);
     }
 
     return definition;
@@ -200,8 +204,14 @@ const resolveArgs = (tokens: ArgumentToken[], definitions: OptionDefinition[], o
             }
 
             if (token.value === undefined) {
-                const nextToken = tokens[i + 1];
-                const shouldConsumeValue = nextToken && nextToken.kind === "positional" && definition && !(definition.type && isBooleanType(definition.type));
+                const nextToken = tokens[i + 1] as ArgumentToken | undefined;
+                // Check if next token is a value-only option token (from short option groups like -ab=value)
+                const isValueOnlyOptionToken = nextToken && nextToken.kind === "option" && !("name" in nextToken) && nextToken.value !== undefined;
+                const shouldConsumeValue
+                    = nextToken
+                        && definition
+                        && !(definition.type && isBooleanType(definition.type))
+                        && (nextToken.kind === "positional" || isValueOnlyOptionToken);
                 const isDefaultOptionNonMultiple = definition && definition.defaultOption && !definition.multiple && !definition.lazyMultiple;
 
                 if (shouldConsumeValue && (!definition?.defaultOption || isDefaultOptionNonMultiple)) {
@@ -210,7 +220,13 @@ const resolveArgs = (tokens: ArgumentToken[], definitions: OptionDefinition[], o
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         const collectedValues: any[] = [];
 
-                        while (currentIndex < tokens.length && (tokens[currentIndex] as ArgumentToken).kind === "positional") {
+                        while (
+                            currentIndex < tokens.length
+                            && ((tokens[currentIndex] as ArgumentToken).kind === "positional"
+                                || ((tokens[currentIndex] as ArgumentToken).kind === "option"
+                                    && !("name" in (tokens[currentIndex] as ArgumentToken))
+                                    && (tokens[currentIndex] as ArgumentToken).value !== undefined))
+                        ) {
                             collectedValues.push((tokens[currentIndex] as ArgumentToken).value);
                             consumedPositionalIndices.add((tokens[currentIndex] as ArgumentToken).index);
                             // eslint-disable-next-line no-plusplus
@@ -391,7 +407,7 @@ const resolveArgs = (tokens: ArgumentToken[], definitions: OptionDefinition[], o
 
     // Handle stopAtFirstUnknown
     if (options.stopAtFirstUnknown && !stoppedByTerminator) {
-        const firstUnknownOptionIndex = tokens.findIndex(
+        const firstUnknownOptionTokenIndex = tokens.findIndex(
             (token) =>
                 token.kind === "option"
                 && !definitionMap.has(token.name || "")
@@ -400,20 +416,23 @@ const resolveArgs = (tokens: ArgumentToken[], definitions: OptionDefinition[], o
                     || (!caseInsensitiveNameMap?.has(token.name?.toLowerCase() || "") && !caseInsensitiveAliasMap?.has(token.name?.toLowerCase() || ""))),
         );
 
-        const firstUnconsumedPositionalIndex = tokens.findIndex((token) => token.kind === "positional" && !consumedPositionalIndices.has(token.index));
+        const firstUnconsumedPositionalTokenIndex = tokens.findIndex((token) => token.kind === "positional" && !consumedPositionalIndices.has(token.index));
 
-        let firstUnknownIndex = -1;
+        let firstTokenIndex = -1;
 
-        if (firstUnknownOptionIndex !== -1 && firstUnconsumedPositionalIndex !== -1) {
-            firstUnknownIndex = Math.min(firstUnknownOptionIndex, firstUnconsumedPositionalIndex);
-        } else if (firstUnknownOptionIndex !== -1) {
-            firstUnknownIndex = firstUnknownOptionIndex;
-        } else if (firstUnconsumedPositionalIndex !== -1) {
-            firstUnknownIndex = firstUnconsumedPositionalIndex;
+        if (firstUnknownOptionTokenIndex !== -1 && firstUnconsumedPositionalTokenIndex !== -1) {
+            firstTokenIndex = Math.min(firstUnknownOptionTokenIndex, firstUnconsumedPositionalTokenIndex);
+        } else if (firstUnknownOptionTokenIndex !== -1) {
+            firstTokenIndex = firstUnknownOptionTokenIndex;
+        } else if (firstUnconsumedPositionalTokenIndex !== -1) {
+            firstTokenIndex = firstUnconsumedPositionalTokenIndex;
         }
 
-        if (firstUnknownIndex >= 0) {
-            output._unknown = argv.slice(firstUnknownIndex);
+        if (firstTokenIndex >= 0) {
+            // Use the token's index field (actual argv index) instead of token array index
+            const argvIndex = (tokens[firstTokenIndex] as ArgumentToken).index;
+
+            output._unknown = argv.slice(argvIndex);
         }
     } else if (unknownArgs.length > 0 && !options.partial) {
         output._unknown = unknownArgs.map((item) => item.value);

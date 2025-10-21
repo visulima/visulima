@@ -64,6 +64,9 @@ describe("multiple", () => {
         const argv = ["--one=1", "--one=2", "3"];
         const result = commandLineArgs(optionDefinitions, { argv });
 
+        // Note: multiple: true allows the option to consume following positional arguments
+        // even without defaultOption: true. The positional "3" is consumed by --one because
+        // multiple options greedily collect all following positional arguments.
         expect(result).toStrictEqual({
             one: ["1", "2", "3"],
         });

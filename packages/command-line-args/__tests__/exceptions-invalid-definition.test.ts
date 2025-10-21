@@ -67,11 +67,13 @@ describe("exceptions invalid definition", () => {
     it("invalid type values 4", () => {
         expect.assertions(1);
 
+        // Functions are now accepted as valid types without invoking them to avoid side effects
         const argv = ["--one", "something"];
 
-        expect(() => {
-            commandLineArgs([{ name: "one", type: () => {} }], { argv });
-        }).toThrow(InvalidDefinitionsError);
+        const result = commandLineArgs([{ name: "one", type: () => {} }], { argv });
+
+        // Should not throw, function types are valid
+        expect(result).toBeDefined();
     });
 
     it("duplicate name", () => {
@@ -180,10 +182,7 @@ describe("exceptions invalid definition", () => {
     it("alias conflicts with another option name", () => {
         expect.assertions(1);
 
-        const optionDefinitions = [
-            { alias: "b", name: "alpha" },
-            { name: "b" },
-        ];
+        const optionDefinitions = [{ alias: "b", name: "alpha" }, { name: "b" }];
         const argv = ["--alpha"];
 
         expect(() => commandLineArgs(optionDefinitions, { argv })).toThrow(InvalidDefinitionsError);
@@ -204,10 +203,7 @@ describe("exceptions invalid definition", () => {
     it("name alias conflict caused by case insensitivity", () => {
         expect.assertions(1);
 
-        const optionDefinitions = [
-            { alias: "B", name: "alpha" },
-            { name: "b" },
-        ];
+        const optionDefinitions = [{ alias: "B", name: "alpha" }, { name: "b" }];
         const argv = ["--alpha"];
 
         expect(() => commandLineArgs(optionDefinitions, { argv, caseInsensitive: true })).toThrow(InvalidDefinitionsError);
@@ -216,10 +212,7 @@ describe("exceptions invalid definition", () => {
     it("case sensitive alias and name with same letter allowed", () => {
         expect.assertions(1);
 
-        const optionDefinitions = [
-            { alias: "B", name: "alpha" },
-            { name: "b" },
-        ];
+        const optionDefinitions = [{ alias: "B", name: "alpha" }, { name: "b" }];
         const argv = ["-B", "value1", "--b", "value2"];
 
         expect(commandLineArgs(optionDefinitions, { argv })).toStrictEqual({

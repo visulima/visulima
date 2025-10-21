@@ -64,10 +64,11 @@ export const commandLineArgs = (optionDefinitions: OptionDefinition | ReadonlyAr
                 return equalsIndex === -1 ? `--${normalizedName}` : `--${normalizedName}${argument.slice(equalsIndex)}`;
             }
 
-            if (argument.startsWith("-") && argument.length > 1) {
-                const normalizedAlias = argument[1]?.toLowerCase();
+            if (argument.startsWith("-") && !argument.startsWith("--") && argument.length > 1) {
+                const [flags, rest] = argument.slice(1).split("=", 2);
+                const lowered = flags.toLowerCase();
 
-                return `-${normalizedAlias}${argument.slice(2)}`;
+                return rest === undefined ? `-${lowered}` : `-${lowered}=${rest}`;
             }
 
             return argument;
