@@ -1,3 +1,23 @@
+## @visulima/cerebro [1.1.56](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.1.55...@visulima/cerebro@1.1.56) (2025-10-21)
+
+### Bug Fixes
+
+* allow node v25 and updated dev deps ([8158cc5](https://github.com/visulima/visulima/commit/8158cc53ec92bd0331e8c6bd0fcbc8ab61b9320f))
+
+### Miscellaneous Chores
+
+* update copyright year in LICENSE.md files ([c46a28d](https://github.com/visulima/visulima/commit/c46a28d2afb4cc7d73a7edde9a271a7156f87eae))
+* update license years and add validation rules ([b97811e](https://github.com/visulima/visulima/commit/b97811ed2d253d908c0d86b4579a0a6bc33673a8))
+
+
+### Dependencies
+
+* **@visulima/boxen:** upgraded to 2.0.5
+* **@visulima/colorize:** upgraded to 1.4.25
+* **@visulima/find-cache-dir:** upgraded to 2.0.2
+* **@visulima/pail:** upgraded to 3.0.1
+* **@visulima/path:** upgraded to 2.0.1
+
 ## @visulima/cerebro [1.1.55](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.1.54...@visulima/cerebro@1.1.55) (2025-10-20)
 
 ### Bug Fixes

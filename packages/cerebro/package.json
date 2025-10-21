@@ -1,6 +1,6 @@
 {
     "name": "@visulima/cerebro",
-    "version": "1.1.55",
+    "version": "1.1.56",
     "description": "A delightful toolkit for building Node-powered CLIs.",
     "keywords": [
         "command",
@@ -103,10 +103,10 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@visulima/boxen": "2.0.4",
-        "@visulima/colorize": "1.4.24",
-        "@visulima/find-cache-dir": "2.0.1",
-        "@visulima/pail": "2.1.31",
+        "@visulima/boxen": "2.0.5",
+        "@visulima/colorize": "1.4.25",
+        "@visulima/find-cache-dir": "2.0.2",
+        "@visulima/pail": "3.0.1",
         "cli-table3": "^0.6.5",
         "command-line-args": "^6.0.1",
         "fastest-levenshtein": "^1.0.16"
@@ -121,7 +121,7 @@
         "@types/command-line-args": "^5.2.3",
         "@types/node": "24.9.1",
         "@visulima/packem": "2.0.0-alpha.30",
-        "@visulima/path": "2.0.0",
+        "@visulima/path": "2.0.1",
         "@vitest/coverage-v8": "^3.2.4",
         "camelcase": "8.0.0",
         "conventional-changelog-conventionalcommits": "9.1.0",
