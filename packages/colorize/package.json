@@ -192,7 +192,7 @@
         "@rushstack/eslint-plugin-security": "^0.13.0",
         "@secretlint/secretlint-rule-preset-recommend": "^11.2.5",
         "@total-typescript/ts-reset": "^0.6.1",
-        "@types/node": "24.8.1",
+        "@types/node": "24.9.1",
         "@visulima/packem": "2.0.0-alpha.30",
         "@vitest/coverage-v8": "^3.2.4",
         "@vitest/ui": "^3.2.4",
@@ -202,7 +202,7 @@
         "esbuild": "0.25.11",
         "eslint": "9.38.0",
         "prettier": "^3.6.2",
-        "publint": "^0.3.14",
+        "publint": "^0.3.15",
         "rimraf": "6.0.1",
         "rollup": "4.52.5",
         "secretlint": "11.2.5",
@@ -211,7 +211,7 @@
         "vitest": "^3.2.4"
     },
     "engines": {
-        "node": ">=18.0.0 <=24.x"
+        "node": ">=18.0.0 <=25.x"
     },
     "os": [
         "darwin",

@@ -269,7 +269,7 @@
         "@commitlint/config-conventional": "^20.0.0",
         "@octokit/rest": "^22.0.0",
         "@secretlint/secretlint-rule-preset-recommend": "^11.2.5",
-        "@types/node": "24.8.1",
+        "@types/node": "24.9.1",
         "audit-ci": "^7.1.0",
         "browserslist-config-anolilab": "^6.0.6",
         "commitizen": "^4.3.1",
@@ -277,7 +277,7 @@
         "cross-env": "^10.1.0",
         "husky": "^9.1.7",
         "is-ci": "^4.1.0",
-        "lint-staged": "^16.2.4",
+        "lint-staged": "^16.2.5",
         "nx": "21.6.5",
         "pkg-pr-new": "^0.0.60",
         "plop": "^4.0.4",
@@ -293,7 +293,7 @@
         "typescript": "5.9.3",
         "vitest": "^3.2.4"
     },
-    "packageManager": "pnpm@10.18.3",
+    "packageManager": "pnpm@10.19.0",
     "engines": {
         "node": ">=20.19 <=24.*"
     }
