@@ -9,7 +9,7 @@ describe("type other", () => {
         const definitions = [
             {
                 name: "file",
-                type: (file) => file,
+                type: (_file) => _file,
             },
         ];
 
@@ -23,7 +23,7 @@ describe("type other", () => {
         const definitions = [
             {
                 name: "file",
-                type: (file) => {
+                type: (_file) => {
                     throw new Error("broken");
                 },
             },
@@ -31,7 +31,7 @@ describe("type other", () => {
 
         expect(() => {
             commandLineArgs(definitions, { argv: ["--file", "one.js"] });
-        }).toThrow();
+        }).toThrow(Error);
     });
 
     it("multiple: different values", () => {
@@ -41,7 +41,7 @@ describe("type other", () => {
             {
                 multiple: true,
                 name: "file",
-                type: (file) => file,
+                type: (_file) => _file,
             },
         ];
 

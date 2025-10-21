@@ -1,18 +1,28 @@
-import debugLog from "./debug";
 import { InvalidDefinitionsError } from "./errors/index";
-import type { OptionDefinition, ParseOptions } from "./index";
+import type { OptionDefinition, ParseOptions } from "./types";
+import debugLog from "./utils/debug";
+
+/**
+ * Check if a type is boolean.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const isBooleanType = (type: any): boolean => type && (type === Boolean || (typeof type === "function" && type.name?.startsWith("Boolean")));
 
 /**
  * Validate option definitions and throw errors for invalid configurations.
+ * Checks for naming conflicts, invalid aliases, duplicate options, type validity,
+ * and other definition issues.
  * @param definitions Array of option definitions to validate
- * @param caseInsensitive Whether to check for case-insensitive duplicates
+ * @param caseInsensitive Whether to check for case-insensitive conflicts
  * @param debugOptions Optional debug options containing debug flag
  * @throws {InvalidDefinitionsError} If any validation rule is violated
  */
-export const validateDefinitions = (definitions: ReadonlyArray<OptionDefinition>, caseInsensitive?: boolean, debugOptions?: ParseOptions): void => {
+// eslint-disable-next-line sonarjs/cognitive-complexity
+const validateDefinitions = (definitions: ReadonlyArray<OptionDefinition>, caseInsensitive?: boolean, debugOptions?: ParseOptions): void => {
     const debugEnabled = debugOptions?.debug || false;
 
     debugLog(debugEnabled, "Validating definitions:", "validation", definitions, "caseInsensitive:", caseInsensitive);
+
     const names = new Set<string>();
     const aliases = new Set<string>();
     const namesLower = new Set<string>();
@@ -84,6 +94,7 @@ export const validateDefinitions = (definitions: ReadonlyArray<OptionDefinition>
 
         // Check defaultOption
         if (definition.defaultOption) {
+            // eslint-disable-next-line no-plusplus
             defaultOptionCount++;
 
             // defaultOption cannot be Boolean type
@@ -118,7 +129,4 @@ export const validateDefinitions = (definitions: ReadonlyArray<OptionDefinition>
     debugLog(debugEnabled, "Validation completed successfully", "validation");
 };
 
-/**
- * Check if a type is boolean.
- */
-const isBooleanType = (type: any): boolean => type && (type === Boolean || (typeof type === "function" && type.name?.startsWith("Boolean")));
+export default validateDefinitions;

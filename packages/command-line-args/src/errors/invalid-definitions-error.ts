@@ -1,39 +1,28 @@
-import type { VisulimaError } from "@visulima/error/error";
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { VisulimaError } from "@visulima/error/error";
 
-class InvalidDefinitionsError extends Error implements VisulimaError {
-    public readonly loc: undefined;
-
-    public readonly title: string;
-
-    public readonly hint?: string;
-
-    public readonly type = "VisulimaError";
-
+/**
+ * Error thrown when option definitions are invalid.
+ */
+class InvalidDefinitionsError extends VisulimaError {
+    /**
+     * Creates a new InvalidDefinitionsError instance.
+     * @param message The error message describing the invalid definition
+     * @param hint Optional hint for resolving the error
+     */
     public constructor(message: string, hint?: string) {
-        super(message);
-
-        this.name = "INVALID_DEFINITIONS";
-        this.title = "Invalid Option Definition";
-        this.hint = hint;
+        super({
+            cause: undefined,
+            hint,
+            location: undefined,
+            message,
+            name: "INVALID_DEFINITIONS",
+            stack: undefined,
+            title: "Invalid Option Definition",
+        });
 
         // Ensure proper prototype chain for test compatibility
         Object.setPrototypeOf(this, InvalidDefinitionsError.prototype);
-    }
-
-    public setLocation(): void {
-        // No-op for this error type
-    }
-
-    public setName(name: string): void {
-        this.name = name;
-    }
-
-    public setMessage(message: string): void {
-        this.message = message;
-    }
-
-    public setHint(hint: string): void {
-        (this as any).hint = hint;
     }
 }
 

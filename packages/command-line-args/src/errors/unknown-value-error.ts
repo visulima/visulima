@@ -1,42 +1,31 @@
-import type { VisulimaError } from "@visulima/error/error";
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { VisulimaError } from "@visulima/error/error";
 
-class UnknownValueError extends Error implements VisulimaError {
-    public readonly loc: undefined;
-
-    public readonly title: string;
-
-    public readonly hint: string;
-
-    public readonly type = "VisulimaError";
-
+/**
+ * Error thrown when an unknown value is encountered.
+ */
+class UnknownValueError extends VisulimaError {
     public readonly value: string;
 
+    /**
+     * Creates a new UnknownValueError instance.
+     * @param value The unknown value encountered
+     */
     public constructor(value: string) {
-        super(`Unknown value: ${value}`);
+        super({
+            cause: undefined,
+            hint: "Use a defined option or add a defaultOption to capture this value.",
+            location: undefined,
+            message: `Unknown value: ${value}`,
+            name: "UNKNOWN_VALUE",
+            stack: undefined,
+            title: "Unknown Value",
+        });
 
-        this.name = "UNKNOWN_VALUE";
-        this.title = "Unknown Value";
-        this.hint = `Use a defined option or add a defaultOption to capture this value.`;
         this.value = value;
 
         // Ensure proper prototype chain for test compatibility
         Object.setPrototypeOf(this, UnknownValueError.prototype);
-    }
-
-    public setLocation(): void {
-        // No-op for this error type
-    }
-
-    public setName(name: string): void {
-        this.name = name;
-    }
-
-    public setMessage(message: string): void {
-        this.message = message;
-    }
-
-    public setHint(hint: string): void {
-        (this as any).hint = hint;
     }
 }
 

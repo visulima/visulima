@@ -48,6 +48,7 @@ const convertValue = (value: unknown, type: TypeConstructor | BooleanConstructor
     }
 
     if (value === null) {
+        // eslint-disable-next-line unicorn/no-null
         return null;
     }
 

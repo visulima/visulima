@@ -1,42 +1,31 @@
-import type { VisulimaError } from "@visulima/error/error";
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { VisulimaError } from "@visulima/error/error";
 
-class AlreadySetError extends Error implements VisulimaError {
-    public readonly loc: undefined;
-
-    public readonly title: string;
-
-    public readonly hint: string;
-
-    public readonly type = "VisulimaError";
-
+/**
+ * Error thrown when an option is already set (duplicate assignment).
+ */
+class AlreadySetError extends VisulimaError {
     public readonly optionName: string;
 
+    /**
+     * Creates a new AlreadySetError instance.
+     * @param optionName The name of the option that was already set
+     */
     public constructor(optionName: string) {
-        super(`Option '${optionName}' is already set`);
+        super({
+            cause: undefined,
+            hint: `Remove the duplicate option '${optionName}' from your command line arguments.`,
+            location: undefined,
+            message: `Option '${optionName}' is already set`,
+            name: "ALREADY_SET",
+            stack: undefined,
+            title: "Option Already Set",
+        });
 
-        this.name = "ALREADY_SET";
-        this.title = "Option Already Set";
-        this.hint = `Remove the duplicate option '${optionName}' from your command line arguments.`;
         this.optionName = optionName;
 
         // Ensure proper prototype chain for test compatibility
         Object.setPrototypeOf(this, AlreadySetError.prototype);
-    }
-
-    public setLocation(): void {
-        // No-op for this error type
-    }
-
-    public setName(name: string): void {
-        this.name = name;
-    }
-
-    public setMessage(message: string): void {
-        this.message = message;
-    }
-
-    public setHint(hint: string): void {
-        (this as any).hint = hint;
     }
 }
 
