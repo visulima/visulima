@@ -1,0 +1,30 @@
+{
+    "name": "@visulima/command-line-args-bench",
+    "version": "0.0.0",
+    "private": true,
+    "description": "Benchmark suite for command-line-args",
+    "type": "module",
+    "scripts": {
+        "test:bench": "vitest bench"
+    },
+    "dependencies": {
+        "@bomb.sh/args": "^0.3.1",
+        "@visulima/command-line-args": "workspace:*",
+        "argparse": "^2.0.1",
+        "args": "^5.0.3",
+        "args-tokens": "^0.23.0",
+        "command-line-args": "^6.0.1",
+        "jackspeak": "^4.1.1",
+        "minimist": "^1.2.8",
+        "mri": "^1.2.0",
+        "yargs-parser": "^22.0.0"
+    },
+    "devDependencies": {
+        "@types/argparse": "^2.0.17",
+        "@types/command-line-args": "^5.2.3",
+        "@types/minimist": "1.2.5",
+        "@types/yargs-parser": "21.0.3",
+        "typescript": "^5.9.3",
+        "vitest": "^3.2.4"
+    }
+}
