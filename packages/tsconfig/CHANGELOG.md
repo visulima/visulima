@@ -1,3 +1,19 @@
+## @visulima/tsconfig [2.0.2](https://github.com/visulima/visulima/compare/@visulima/tsconfig@2.0.1...@visulima/tsconfig@2.0.2) (2025-10-21)
+
+### Bug Fixes
+
+* allow node v25 and updated dev deps ([8158cc5](https://github.com/visulima/visulima/commit/8158cc53ec92bd0331e8c6bd0fcbc8ab61b9320f))
+
+### Miscellaneous Chores
+
+* update license years and add validation rules ([b97811e](https://github.com/visulima/visulima/commit/b97811ed2d253d908c0d86b4579a0a6bc33673a8))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 4.0.2
+* **@visulima/path:** upgraded to 2.0.1
+
 ## @visulima/tsconfig [2.0.1](https://github.com/visulima/visulima/compare/@visulima/tsconfig@2.0.0...@visulima/tsconfig@2.0.1) (2025-10-20)
 
 ### Miscellaneous Chores
