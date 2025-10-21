@@ -9,7 +9,7 @@ describe("detect process execArgv", () => {
         const origArgv = process.argv;
         const origExecArgv = process.execArgv;
 
-        process.argv = ["node", "--one", "eins"];
+        process.argv = ["node", "-e", "something", "--one", "eins"];
         process.execArgv = ["-e", "something"];
 
         expect(commandLineArgs({ name: "one" })).toStrictEqual({

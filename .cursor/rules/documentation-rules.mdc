@@ -1,0 +1,40 @@
+---
+description: Documentation and commenting guidelines
+globs: ["*.ts", "*.tsx", "*.js", "*.jsx", "*.md"]
+alwaysApply: true
+---
+
+# Documentation Rules
+
+These rules apply when writing documentation or comments.
+
+## JSDoc Comments
+
+Always include JSDoc comments for exported functions with parameter types and return types:
+
+```typescript
+/**
+ * Processes user input and returns formatted result
+ * @param input - The raw user input string
+ * @param options - Processing options
+ * @returns The processed and formatted result
+ * @throws {ValidationError} When input validation fails
+ */
+export const processUserInput = (
+  input: string,
+  options: ProcessingOptions
+): Promise<string> => {
+  // implementation
+};
+```
+
+## Inline Comments
+
+Use inline comments sparingly and only for complex business logic:
+
+```typescript
+// Calculate compound interest using formula: A = P(1 + r/n)^(nt)
+const compoundInterest = (principal: number, rate: number, time: number): number => {
+  return principal * Math.pow(1 + rate / 12, 12 * time);
+};
+```

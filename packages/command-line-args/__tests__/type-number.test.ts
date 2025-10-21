@@ -18,7 +18,7 @@ describe("type number", () => {
     });
 
     it("number multiple: 1", () => {
-        expect.assertions(2);
+        expect.assertions(1);
 
         const optionDefinitions = [{ multiple: true, name: "array", type: Number }];
         const argv = ["--array", "1", "2", "3"];
@@ -27,13 +27,10 @@ describe("type number", () => {
         expect(result).toStrictEqual({
             array: [1, 2, 3],
         });
-        expect(result).toStrictEqual({
-            array: ["1", "2", "3"],
-        });
     });
 
     it("number multiple: 2", () => {
-        expect.assertions(2);
+        expect.assertions(1);
 
         const optionDefinitions = [{ multiple: true, name: "array", type: Number }];
         const argv = ["--array", "1", "--array", "2", "--array", "3"];
@@ -41,9 +38,6 @@ describe("type number", () => {
 
         expect(result).toStrictEqual({
             array: [1, 2, 3],
-        });
-        expect(result).toStrictEqual({
-            array: ["1", "2", "3"],
         });
     });
 });

@@ -1165,6 +1165,9 @@ importers:
       '@types/node':
         specifier: 24.9.0
         version: 24.9.0
+      '@visulima/error':
+        specifier: workspace:*
+        version: link:../error
       '@visulima/packem':
         specifier: 2.0.0-alpha.30
         version: 2.0.0-alpha.30(@arethetypeswrong/core@0.18.2)(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@swc/core@1.13.5)(@tailwindcss/node@4.1.14)(@tailwindcss/oxide@4.1.14)(@types/node@24.9.0)(ai@5.0.76(zod@4.1.12))(cssnano@7.1.1(postcss@8.5.6))(esbuild@0.25.11)(icss-utils@5.1.0(postcss@8.5.6))(lightningcss@1.30.2)(package-manager-detector@1.5.0)(postcss-load-config@6.0.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.20.6)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rolldown@1.0.0-beta.44)(rotating-file-stream@3.2.7)(sucrase@3.35.0)(typedoc-plugin-markdown@4.9.0(typedoc@0.28.14(typescript@5.9.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.14(typescript@5.9.3)))(typedoc@0.28.14(typescript@5.9.3))(typescript@5.9.3)(yaml@2.8.1)
@@ -1174,9 +1177,6 @@ importers:
       '@vitest/ui':
         specifier: ^3.2.4
         version: 3.2.4(vitest@3.2.4)
-      args-tokens:
-        specifier: ^0.23.0
-        version: 0.23.0
       conventional-changelog-conventionalcommits:
         specifier: 9.1.0
         version: 9.1.0

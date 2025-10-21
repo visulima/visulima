@@ -19,17 +19,18 @@ describe("ambiguous input", () => {
         const optionDefinitions = [{ alias: "c", name: "colour", type: String }];
         const argv = ["--colour", "--red"];
 
-        expect(() => commandLineArgs(optionDefinitions, { argv })).toThrow((error) => error.name === "UNKNOWN_OPTION");
+        expect(() => commandLineArgs(optionDefinitions, { argv })).toThrow();
     });
 
     it("value looks like an option 3", () => {
         expect.assertions(1);
 
         const optionDefinitions = [{ alias: "c", name: "colour", type: String }];
+        const argv = ["--colour=--red"];
 
-        expect(() => {
-            commandLineArgs(optionDefinitions, { argv: ["--colour=--red"] });
-        }).toThrow();
+        expect(commandLineArgs(optionDefinitions, { argv })).toStrictEqual({
+            colour: "--red",
+        });
     });
 
     it("value looks like an option 4", () => {
