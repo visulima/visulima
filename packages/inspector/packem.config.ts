@@ -16,6 +16,13 @@ export default defineConfig({
             builtinNodeModules: true,
         },
     },
+    validation: {
+        dependencies: {
+            unused: {
+                exclude: ["type-fest"],
+            },
+        },
+    },
     transformer,
     cjsInterop: true,
 }) as BuildConfig;
