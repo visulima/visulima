@@ -18,7 +18,7 @@ export default defineConfig({
     validation: {
         dependencies: {
             unused: {
-                exclude: ["yaml"],
+                exclude: ["yaml", "type-fest"],
             },
         },
     },
