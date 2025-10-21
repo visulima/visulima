@@ -35,4 +35,28 @@ describe("option=value notation", () => {
 
         expect(result["my-url"]).toBe("my-url?q=123=1");
     });
+
+    it("long option with empty value", () => {
+        expect.assertions(1);
+
+        const optionDefinitions = [{ name: "option", type: String }];
+        const argv = ["--option="];
+        const result = commandLineArgs(optionDefinitions, { argv });
+
+        expect(result).toStrictEqual({
+            option: "",
+        });
+    });
+
+    it("short option with empty inline value", () => {
+        expect.assertions(1);
+
+        const optionDefinitions = [{ alias: "o", name: "option", type: String }];
+        const argv = ["-o="];
+        const result = commandLineArgs(optionDefinitions, { argv });
+
+        expect(result).toStrictEqual({
+            option: "",
+        });
+    });
 });
