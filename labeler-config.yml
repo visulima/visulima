@@ -16,6 +16,9 @@
 "package: colorize":
     - changed-files:
           - any-glob-to-any-file: "packages/colorize/**/*"
+"package: command-line-args":
+    - changed-files:
+          - any-glob-to-any-file: "packages/command-line-args/**/*"
 "package: connect":
     - changed-files:
           - any-glob-to-any-file: "packages/connect/**/*"
