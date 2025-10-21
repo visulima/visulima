@@ -1,3 +1,15 @@
+## @visulima/vite-overlay [1.3.2](https://github.com/visulima/visulima/compare/@visulima/vite-overlay@1.3.1...@visulima/vite-overlay@1.3.2) (2025-10-21)
+
+### Bug Fixes
+
+* allowed node v25 ([ffaa4b1](https://github.com/visulima/visulima/commit/ffaa4b1ce46b7153594f051f08f9ab7b2686d6ee))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 5.0.2
+* **@visulima/path:** upgraded to 2.0.1
+
 ## @visulima/vite-overlay [1.3.1](https://github.com/visulima/visulima/compare/@visulima/vite-overlay@1.3.0...@visulima/vite-overlay@1.3.1) (2025-10-20)
 
 ### Miscellaneous Chores
