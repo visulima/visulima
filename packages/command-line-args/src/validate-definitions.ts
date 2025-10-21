@@ -60,7 +60,7 @@ const validateDefinitions = (definitions: ReadonlyArray<OptionDefinition>, caseI
         }
 
         // Check for duplicate names (case-sensitive and case-insensitive)
-        const nameLower = definition.name.toLowerCase();
+        const nameLower = caseInsensitive ? definition.name.toLowerCase() : "";
 
         if (names.has(definition.name) || (caseInsensitive && namesLower.has(nameLower))) {
             throw new InvalidDefinitionsError(`Invalid option definition: duplicate name '${definition.name}'`);
@@ -96,7 +96,7 @@ const validateDefinitions = (definitions: ReadonlyArray<OptionDefinition>, caseI
             }
 
             // Check for duplicate aliases (case-sensitive and case-insensitive)
-            const aliasLower = definition.alias.toLowerCase();
+            const aliasLower = caseInsensitive ? definition.alias.toLowerCase() : "";
 
             if (aliases.has(definition.alias) || (caseInsensitive && aliasesLower.has(aliasLower))) {
                 throw new InvalidDefinitionsError(`Invalid option definition: duplicate alias '${definition.alias}'`);

@@ -15,7 +15,7 @@ const LONG_OPTION_PREFIX = "--";
  * @param argument The argument to check
  * @returns True if argument starts with `--` and has length > 2
  */
-const hasLongOptionPrefix = (argument: string): boolean => argument.length > 2 && argument.indexOf(LONG_OPTION_PREFIX) === 0;
+const hasLongOptionPrefix = (argument: string): boolean => argument.length > 2 && argument.startsWith(LONG_OPTION_PREFIX);
 
 /**
  * Check if argument is a long option (e.g., `--foo`).
@@ -43,8 +43,16 @@ const hasOptionValue = (value: string | undefined): boolean => value !== undefin
  * @param argument The argument to check
  * @returns True if argument is exactly 2 characters, starts with hyphen, and second char is not hyphen or digit
  */
-const isShortOption = (argument: string): boolean =>
-    argument.length === 2 && argument.codePointAt(0) === HYPHEN_CODE && argument.codePointAt(1) !== HYPHEN_CODE && !/\d/.test(argument.charAt(1));
+const isShortOption = (argument: string): boolean => {
+    if (argument.length !== 2 || argument.codePointAt(0) !== HYPHEN_CODE || argument.codePointAt(1) === HYPHEN_CODE) {
+        return false;
+    }
+
+    // Check if second character is NOT a digit (48-57 are ASCII codes for 0-9)
+    const secondCharCode = argument.codePointAt(1);
+
+    return secondCharCode !== undefined && (secondCharCode < 48 || secondCharCode > 57);
+};
 
 /**
  * Check if argument is a short option group (e.g., `-abc`).
