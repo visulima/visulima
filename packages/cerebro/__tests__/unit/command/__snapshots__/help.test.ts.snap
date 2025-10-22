@@ -1,7 +1,7 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`command/help > should display a empty help command if no commands exists 1`] = `
-[MockFunction commandLineUsage] {
+[MockFunction] {
   "calls": [
     [
       [
@@ -76,7 +76,7 @@ exports[`command/help > should display a empty help command if no commands exist
 `;
 
 exports[`command/help > should display aliases if present 1`] = `
-[MockFunction commandLineUsage] {
+[MockFunction] {
   "calls": [
     [
       [
@@ -154,7 +154,7 @@ exports[`command/help > should display aliases if present 1`] = `
 `;
 
 exports[`command/help > should display group of commands if the group option is passed 1`] = `
-[MockFunction commandLineUsage] {
+[MockFunction] {
   "calls": [
     [
       [
@@ -242,7 +242,7 @@ exports[`command/help > should display group of commands if the group option is 
 `;
 
 exports[`command/help > should print general help 1`] = `
-[MockFunction commandLineUsage] {
+[MockFunction] {
   "calls": [
     [
       [
