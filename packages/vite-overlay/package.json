@@ -104,8 +104,8 @@
         "@types/node": "24.9.1",
         "@visulima/packem": "2.0.0-alpha.30",
         "@visulima/path": "2.0.1",
-        "@vitest/coverage-v8": "^3.2.4",
-        "@vitest/ui": "^3.2.4",
+        "@vitest/coverage-v8": "^4.0.1",
+        "@vitest/ui": "^4.0.1",
         "conventional-changelog-conventionalcommits": "9.1.0",
         "cssnano": "7.1.1",
         "esbuild": "^0.25.11",
@@ -122,7 +122,7 @@
         "tailwindcss": "^4.1.15",
         "typescript": "^5.9.3",
         "vite": "^7.1.11",
-        "vitest": "^3.2.4"
+        "vitest": "^4.0.1"
     },
     "peerDependencies": {
         "vite": "^6 || ^7 || ^8"

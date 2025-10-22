@@ -10,9 +10,9 @@
     },
     "dependencies": {
         "@tailwindcss/vite": "^4.1.15",
-        "@tanstack/react-router": "^1.133.21",
-        "@tanstack/react-router-devtools": "^1.133.21",
-        "@tanstack/router-plugin": "^1.133.21",
+        "@tanstack/react-router": "^1.133.22",
+        "@tanstack/react-router-devtools": "^1.133.22",
+        "@tanstack/router-plugin": "^1.133.22",
         "react": "^19.2.0",
         "react-dom": "^19.2.0",
         "tailwindcss": "^4.1.15"
@@ -27,7 +27,7 @@
         "jsdom": "^27.0.1",
         "typescript": "^5.9.3",
         "vite": "^7.1.11",
-        "vitest": "^3.2.4",
+        "vitest": "^4.0.1",
         "web-vitals": "^5.1.0"
     }
 }
