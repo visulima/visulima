@@ -482,11 +482,11 @@ importers:
         specifier: 3.0.23
         version: 3.0.23(zod@3.25.76)
       '@visulima/fs':
-        specifier: ^3.1.9
-        version: 3.1.9(yaml@2.8.1)
+        specifier: 4.0.2
+        version: 4.0.2(yaml@2.8.1)
       '@visulima/jsdoc-open-api':
-        specifier: 2.0.89
-        version: 2.0.89(@swc/core@1.13.5)(openapi-types@12.1.3)
+        specifier: 2.0.90
+        version: 2.0.90(@swc/core@1.13.5)(openapi-types@12.1.3)
       '@visulima/path':
         specifier: 2.0.1
         version: 2.0.1
@@ -765,8 +765,8 @@ importers:
         specifier: 2.0.1
         version: 2.0.1
       '@visulima/string':
-        specifier: 2.0.1
-        version: 2.0.1
+        specifier: 2.0.2
+        version: 2.0.2
       '@vitest/coverage-v8':
         specifier: ^4.0.1
         version: 4.0.1(@vitest/browser@4.0.1(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(vite@7.1.11(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.1))(vitest@4.0.1)
@@ -903,8 +903,8 @@ importers:
   packages/cerebro:
     dependencies:
       '@visulima/boxen':
-        specifier: 2.0.5
-        version: 2.0.5
+        specifier: 2.0.6
+        version: 2.0.6
       '@visulima/colorize':
         specifier: 1.4.25
         version: 1.4.25
@@ -1674,8 +1674,8 @@ importers:
         specifier: ^2.2.4
         version: 2.2.4
       '@visulima/boxen':
-        specifier: 2.0.5
-        version: 2.0.5
+        specifier: 2.0.6
+        version: 2.0.6
       '@visulima/error':
         specifier: 5.0.2
         version: 5.0.2(ai@5.0.76(zod@4.1.12))
@@ -3014,8 +3014,8 @@ importers:
         specifier: 2.0.1
         version: 2.0.1
       '@visulima/string':
-        specifier: 2.0.1
-        version: 2.0.1
+        specifier: 2.0.2
+        version: 2.0.2
       '@vitest/coverage-v8':
         specifier: ^4.0.1
         version: 4.0.1(@vitest/browser@4.0.1(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(vite@7.1.11(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.1))(vitest@4.0.1)
@@ -3677,8 +3677,8 @@ importers:
         specifier: 2.0.0-alpha.30
         version: 2.0.0-alpha.30(@arethetypeswrong/core@0.18.2)(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@swc/core@1.13.5)(@tailwindcss/node@4.1.15)(@tailwindcss/oxide@4.1.15)(@types/node@24.9.1)(@visulima/redact@2.0.1)(ai@5.0.76(zod@4.1.12))(cssnano@7.1.1(postcss@8.5.6))(esbuild@0.25.11)(icss-utils@5.1.0(postcss@8.5.6))(lightningcss@1.30.2)(package-manager-detector@1.5.0)(postcss-load-config@6.0.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.20.6)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rolldown@1.0.0-beta.44)(rotating-file-stream@3.2.7)(sucrase@3.35.0)(typedoc-plugin-markdown@4.9.0(typedoc@0.28.14(typescript@5.9.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.14(typescript@5.9.3)))(typedoc@0.28.14(typescript@5.9.3))(typescript@5.9.3)(yaml@2.8.1)
       '@visulima/string':
-        specifier: 2.0.1
-        version: 2.0.1
+        specifier: 2.0.2
+        version: 2.0.2
       '@vitest/coverage-v8':
         specifier: ^4.0.1
         version: 4.0.1(@vitest/browser@4.0.1(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(vite@7.1.11(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.1))(vitest@4.0.1)
@@ -9077,8 +9077,8 @@ packages:
     engines: {node: '>=20.18 <=24.x'}
     os: [darwin, linux, win32]
 
-  '@visulima/boxen@2.0.5':
-    resolution: {integrity: sha512-rWh17HN1uCkcjRyCI0EbnjMX1E8yQpUY+MOsLN461AdCQN5s3wcrRS4hPrG5DRlBmKG9lC2vWucLZKqRKtWWSw==}
+  '@visulima/boxen@2.0.6':
+    resolution: {integrity: sha512-S2ZfUdeMlOjM/keHwU7hNoXrY/miPB9cA5tPQTj19BtvoY2+ZOAUlGo6HU6/bUInFKA9iWNN04qqMePOEamrZA==}
     engines: {node: '>=20.18 <=25.x'}
     os: [darwin, linux, win32]
 
@@ -9228,8 +9228,8 @@ packages:
     engines: {node: '>=18.0.0 <=25.x'}
     os: [darwin, linux, win32]
 
-  '@visulima/jsdoc-open-api@2.0.89':
-    resolution: {integrity: sha512-ln4h6A9zDGNkt5oKaTAWxr7jzQKA5Y7sL4WSm7u4dGezSq00ymZ2HXxBEFW9Wh8Ro5lkaS5EAHgxkj99/O/Epw==}
+  '@visulima/jsdoc-open-api@2.0.90':
+    resolution: {integrity: sha512-7ZZdbEiYSseYnEvpC066MJB7xYM96/cAlt39y02IqBEKxiHLmlunxUJV6quMrvJvIMqeRfXEc0RBsJFL0Ya7hA==}
     engines: {node: '>=18.0.0 <=25.x'}
     os: [darwin, linux, win32]
     hasBin: true
@@ -9525,8 +9525,8 @@ packages:
     resolution: {integrity: sha512-7sdq1fBTJr2Hut6MOUHkLzmFhuem7S5UZGu2DvNqhTtSEHkXXz1D6/Mny/gYf39FZ/B19QW5y0QVAgw7cLLB/w==}
     engines: {node: '>=18.0.0 <=23.x'}
 
-  '@visulima/string@2.0.1':
-    resolution: {integrity: sha512-e9OiFhyI2JgccUcvKcsgJp1GUHPKu13Z+wPVRaUYAe5bq0WNG6CTGXeciPl3lb+bv7IuKYJNScnY9PFFPVNtkg==}
+  '@visulima/string@2.0.2':
+    resolution: {integrity: sha512-MGt1Or0xwdr797r+7mUrwh1U3EGR9tYUxgrgjE0pn7vPDyrLpoquVzBHEh+M7S6Onp0ndcW1NEUtjvKpvuu4kw==}
     engines: {node: '>=20.19 <=25.x'}
 
   '@visulima/tabular@1.0.11':
@@ -26113,7 +26113,7 @@ snapshots:
 
   '@visulima/boxen@2.0.3': {}
 
-  '@visulima/boxen@2.0.5': {}
+  '@visulima/boxen@2.0.6': {}
 
   '@visulima/cerebro@1.1.50(@visulima/redact@2.0.1)(ai@5.0.76(zod@4.1.12))(rotating-file-stream@3.2.7)(yaml@2.8.1)':
     dependencies:
@@ -26223,10 +26223,9 @@ snapshots:
 
   '@visulima/is-ansi-color-supported@2.3.1': {}
 
-  '@visulima/jsdoc-open-api@2.0.89(@swc/core@1.13.5)(openapi-types@12.1.3)':
+  '@visulima/jsdoc-open-api@2.0.90(@swc/core@1.13.5)(openapi-types@12.1.3)':
     dependencies:
       '@apidevtools/swagger-parser': 12.1.0(openapi-types@12.1.3)
-      '@visulima/fs': 4.0.2(yaml@2.8.1)
       comment-parser: 1.4.1
       lodash.mergewith: 4.6.2
       publint: 0.3.15
@@ -26495,7 +26494,7 @@ snapshots:
       '@jridgewell/trace-mapping': 0.3.31
       '@visulima/path': 1.4.0
 
-  '@visulima/string@2.0.1': {}
+  '@visulima/string@2.0.2': {}
 
   '@visulima/tabular@1.0.11': {}
 
