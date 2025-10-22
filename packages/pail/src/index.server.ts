@@ -113,8 +113,6 @@ export const createPail = <T extends string = string, L extends string = string>
  */
 export const pail = createPail();
 
-export type { ObjectTreeOptions, TreeRenderFn, TreeSortFn } from "./object-tree";
-export { renderObjectTree } from "./object-tree";
 export type { PailServerType as Pail } from "./pail.server";
 export type { MultiBarOptions, ProgressBarOptions, ProgressBarPayload, ProgressBarStyle, SingleBarOptions } from "./progress-bar";
 export { getBarChar, MultiProgressBar, ProgressBar } from "./progress-bar";
