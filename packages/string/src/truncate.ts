@@ -129,14 +129,6 @@ export const truncate = (input: string, limit: number, options: TruncateOptions 
         }).width;
     }
 
-    if (limit === 1 && ellipsisWidth === 1) {
-        return ellipsis;
-    }
-
-    if (limit === 1) {
-        return "";
-    }
-
     // Get the total width of the input string
     const { width } = getStringTruncatedWidth(input, {
         ...options.width,
