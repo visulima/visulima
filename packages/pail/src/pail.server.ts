@@ -6,6 +6,8 @@ import { PailBrowserImpl } from "./pail.browser";
 import type { MultiBarOptions, SingleBarOptions } from "./progress-bar";
 import { applyStyleToOptions, MultiProgressBar, ProgressBar } from "./progress-bar";
 import RawReporter from "./reporter/raw/raw-reporter.server";
+import type { SpinnerOptions, SpinnerStartOptions } from "./spinner";
+import { MultiSpinner, Spinner } from "./spinner";
 import type {
     ConstructorOptions,
     DefaultLogTypes,
@@ -217,6 +219,49 @@ class PailServerImpl<T extends string = string, L extends string = string> exten
         const styledOptions = applyStyleToOptions(options);
 
         return new MultiProgressBar(styledOptions, this.interactiveManager);
+    }
+
+    /**
+     * Creates a single spinner.
+     * @param options Configuration options for the spinner
+     * @returns A new Spinner instance
+     * @example
+     * ```typescript
+     * const logger = createPail({ interactive: true });
+     * const spinner = logger.createSpinner({
+     *   text: 'Loading...',
+     *   format: 'Spinning [{spinner}] {text}'
+     * });
+     *
+     * spinner.start();
+     * // ... do work and update spinner
+     * spinner.stop();
+     * ```
+     */
+    public createSpinner(options: SpinnerOptions): Spinner {
+        return new Spinner(options, this.interactiveManager);
+    }
+
+    /**
+     * Creates a multi-spinner progress manager for displaying multiple spinners.
+     * @param options Configuration options for the multi-spinner manager
+     * @returns A new MultiSpinner instance
+     * @example
+     * ```typescript
+     * const logger = createPail({ interactive: true });
+     * const multiSpinner = logger.createMultiSpinner();
+     *
+     * const spinner1 = multiSpinner.create({ text: 'Loading 1' });
+     * const spinner2 = multiSpinner.create({ text: 'Loading 2' });
+     *
+     * spinner1.start();
+     * spinner2.start();
+     * // ... update spinners as needed
+     * multiSpinner.stop();
+     * ```
+     */
+    public createMultiSpinner(options: SpinnerOptions = {}): MultiSpinner {
+        return new MultiSpinner(options, this.interactiveManager);
     }
 
     /**

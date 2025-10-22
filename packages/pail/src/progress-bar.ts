@@ -1,4 +1,3 @@
-/* eslint-disable import/exports-last */
 /* eslint-disable max-classes-per-file */
 
 import type InteractiveManager from "./interactive/interactive-manager";
@@ -6,9 +5,9 @@ import type InteractiveManager from "./interactive/interactive-manager";
 export type ProgressBarStyle = "shades_classic" | "shades_grey" | "rect" | "filled" | "solid" | "ascii" | "custom";
 
 export interface ProgressBarOptions {
-    barCompleteChar?: string;
+    barCompleteChar?: string | string[];
     barGlue?: string;
-    barIncompleteChar?: string;
+    barIncompleteChar?: string | string[];
     barsize?: number;
     clear?: boolean;
     current?: number;
@@ -29,10 +28,11 @@ export interface SingleBarOptions extends ProgressBarOptions {
 }
 
 export interface MultiBarOptions {
-    barCompleteChar?: string;
+    barCompleteChar?: string | string[];
     barGlue?: string;
-    barIncompleteChar?: string;
+    barIncompleteChar?: string | string[];
     clearOnComplete?: boolean;
+    composite?: boolean;
     format?: string;
     fps?: number;
     hideCursor?: boolean;
@@ -102,9 +102,9 @@ export const applyStyleToOptions = <T extends ProgressBarOptions | MultiBarOptio
 };
 
 export class ProgressBar {
-    private options: ProgressBarOptions;
+    protected options: ProgressBarOptions;
 
-    private current: number;
+    protected current: number;
 
     private startTime: number;
 
@@ -116,9 +116,11 @@ export class ProgressBar {
 
     public constructor(options: ProgressBarOptions, interactiveManager?: InteractiveManager, payload?: ProgressBarPayload) {
         this.options = {
-            barCompleteChar: getBarChar(options.barCompleteChar, "shades_classic"),
+            barCompleteChar: Array.isArray(options.barCompleteChar) ? options.barCompleteChar : getBarChar(options.barCompleteChar, "shades_classic"),
             barGlue: "",
-            barIncompleteChar: getBarChar(options.barIncompleteChar, "shades_classic", false),
+            barIncompleteChar: Array.isArray(options.barIncompleteChar)
+                ? options.barIncompleteChar
+                : getBarChar(options.barIncompleteChar, "shades_classic", false),
             barsize: 40,
             clear: false,
             current: 0,
@@ -155,6 +157,7 @@ export class ProgressBar {
         this.update(this.current + step, payload);
     }
 
+    // eslint-disable-next-line sonarjs/cognitive-complexity
     public render(): string {
         const total = this.options.total > 0 ? this.options.total : 1;
         const width = Math.max(0, this.options.width ?? 40);
@@ -162,7 +165,45 @@ export class ProgressBar {
         const filled = Math.max(0, Math.min(width, Math.round((this.current / total) * width)));
         const empty = width - filled;
 
-        const bar = (this.options.barCompleteChar ?? "█").repeat(filled) + (this.options.barIncompleteChar ?? "░").repeat(empty);
+        // Handle both string and array types for bar characters
+        let bar: string;
+
+        if (Array.isArray(this.options.barCompleteChar) || Array.isArray(this.options.barIncompleteChar)) {
+            // Gradient array mode
+            const completeChars = Array.isArray(this.options.barCompleteChar) ? this.options.barCompleteChar : undefined;
+            const incompleteChars = Array.isArray(this.options.barIncompleteChar) ? this.options.barIncompleteChar : undefined;
+
+            const completeChar
+                = completeChars?.[completeChars.length - 1] ?? (typeof this.options.barCompleteChar === "string" ? this.options.barCompleteChar : "█");
+            const incompleteChar = incompleteChars?.[0] ?? (typeof this.options.barIncompleteChar === "string" ? this.options.barIncompleteChar : "░");
+            const completeLength = completeChars?.length ?? 1;
+
+            // Calculate fractional position for gradient animation
+            const progressRatio = this.current / total;
+            const totalSteps = width * completeLength;
+            const currentStep = Math.round(progressRatio * totalSteps);
+            const fractional = currentStep % completeLength;
+
+            let barContent = "";
+
+            for (let i = 0; i < width; i += 1) {
+                if (i < filled) {
+                    const isGradientBoundary = i === filled - 1 && fractional > 0 && completeChars;
+
+                    barContent += isGradientBoundary ? completeChars[fractional - 1] : completeChar;
+                } else {
+                    barContent += incompleteChar;
+                }
+            }
+
+            bar = barContent;
+        } else {
+            // Standard mode with string characters
+            const completeChar = typeof this.options.barCompleteChar === "string" ? this.options.barCompleteChar : "█";
+            const incompleteChar = typeof this.options.barIncompleteChar === "string" ? this.options.barIncompleteChar : "░";
+
+            bar = completeChar.repeat(filled) + incompleteChar.repeat(empty);
+        }
 
         let format = this.options.format ?? "progress [{bar}] {percentage}% | ETA: {eta}s | {value}/{total}";
 
@@ -227,7 +268,7 @@ export class ProgressBar {
     }
 }
 
-class MultiBarInstance extends ProgressBar {
+export class MultiBarInstance extends ProgressBar {
     private multiBar: MultiProgressBar;
 
     public constructor(multiBar: MultiProgressBar, options: ProgressBarOptions, payload?: ProgressBarPayload) {
@@ -243,6 +284,16 @@ class MultiBarInstance extends ProgressBar {
         // Let the multi-bar handle the coordinated display
         this.multiBar.renderAll();
     }
+
+    public getBarState(): { char: string; current: number; total: number } {
+        const completeChar = typeof this.options.barCompleteChar === "string" ? this.options.barCompleteChar : "█";
+
+        return {
+            char: completeChar,
+            current: this.current,
+            total: this.options.total,
+        };
+    }
 }
 
 export class MultiProgressBar {
@@ -256,6 +307,10 @@ export class MultiProgressBar {
 
     private nextBarId: number = 0;
 
+    private composite: boolean = false;
+
+    private barColors = new Map<MultiBarInstance, (text: string) => string>();
+
     public constructor(options: MultiBarOptions = {}, interactiveManager?: InteractiveManager) {
         this.options = {
             barCompleteChar: getBarChar(undefined, "shades_classic"),
@@ -268,6 +323,7 @@ export class MultiProgressBar {
             stream: process.stdout,
             ...options,
         };
+        this.composite = options.composite ?? false;
         this.interactiveManager = interactiveManager;
     }
 
@@ -333,14 +389,160 @@ export class MultiProgressBar {
 
         const lines: string[] = [];
 
-        for (const bar of this.bars.values()) {
-            lines.push(bar.render());
+        if (this.composite) {
+            // Composite mode: render all bars as a single composite line
+            const barsArray = [...this.bars.values()];
+
+            if (barsArray.length > 0) {
+                const compositeOutput = this.renderComposite(barsArray);
+
+                lines.push(compositeOutput);
+            }
+        } else {
+            // Standard mode: render each bar on its own line
+            for (const bar of this.bars.values()) {
+                lines.push(bar.render());
+            }
         }
 
         this.interactiveManager.update("stdout", lines);
     }
 
-    // eslint-disable-next-line sonarjs/no-identical-functions
+    private renderComposite(bars: MultiBarInstance[]): string {
+        if (bars.length === 0) {
+            return "";
+        }
+
+        const firstBar = bars[0];
+
+        if (!firstBar) {
+            return "";
+        }
+
+        const output = firstBar.render();
+
+        // Extract the bar portion
+        const barMatch = output.match(/\[([^\]]*)\]/u);
+
+        if (!barMatch || !barMatch[1]) {
+            return output;
+        }
+
+        const width = barMatch[1].length;
+
+        // Create grid for each position with number arrays
+        const grid: number[][] = Array.from({ length: width }, () => []);
+
+        // Build grid with all progress bars
+        bars.forEach((bar, index) => {
+            const state = bar.getBarState();
+            const filled = Math.round((state.current / state.total) * width);
+
+            for (let i = 0; i < width; i += 1) {
+                if (i < filled) {
+                    grid[i]?.push(index);
+                }
+            }
+        });
+
+        // Render with z-index layering and colors
+        const composite = Array.from({ length: width }, (_, i) => this.getCompositeChar(bars, grid[i], i, width)).join("");
+
+        // Replace the bar portion with composite
+        return output.replace(/\[([^\]]*)\]/u, `[${composite}]`);
+    }
+
+    private getCompositeChar(bars: MultiBarInstance[], stack?: number[], position: number = 0, width: number = 40): string {
+        if (!stack || stack.length === 0) {
+            return "█";
+        }
+
+        let char: string;
+        let barIndex: number | undefined;
+
+        // Choose character based on stack depth (deeper stacks = lighter characters)
+        switch (stack.length) {
+            case 1: {
+                char = "█"; // Solid for single layer
+
+                break;
+            }
+            case 2: {
+                char = "▓"; // Medium shade for 2 layers
+
+                break;
+            }
+            case 3: {
+                char = "▒"; // Lighter for 3 layers
+
+                break;
+            }
+            default: {
+                char = "░"; // Lightest for 4+ layers
+            }
+        }
+
+        // For layering, show the highest-indexed bar that's filled at this position
+        // This creates smooth color transitions based on actual progress
+        // Calculate what percentage this position represents
+        const positionPercent = (position / width) * 100;
+
+        // Find the highest-indexed bar that's filled at this position
+        let selectedBar: number | undefined;
+
+        for (let i = stack.length - 1; i >= 0; i -= 1) {
+            const barIndex_ = stack[i];
+            const bar = bars[barIndex_];
+
+            if (bar) {
+                const barState = bar.getBarState();
+                const barPercent = (barState.current / barState.total) * 100;
+
+                if (positionPercent < barPercent) {
+                    selectedBar = barIndex_;
+                    break;
+                }
+            }
+        }
+
+        // Fallback to first bar in stack if none matched
+        barIndex = selectedBar === undefined ? stack[0] : selectedBar;
+
+        if (barIndex === undefined) {
+            return char;
+        }
+
+        const targetBar = bars[barIndex];
+
+        if (targetBar === undefined) {
+            return char;
+        }
+
+        const barColor = this.barColors.get(targetBar);
+
+        if (barColor) {
+            return barColor(char);
+        }
+
+        return char;
+    }
+
+    public setBarColor(bar: ProgressBar, color: ((text: string) => string) | undefined): void {
+        // Find the MultiBarInstance for this bar and set its color
+        for (const instance of this.bars.values()) {
+            if (instance === bar) {
+                if (color) {
+                    this.barColors.set(instance, color);
+                } else {
+                    this.barColors.delete(instance);
+                }
+
+                // Don't render here - let update() trigger the render
+                break;
+            }
+        }
+    }
+
     public stop(): void {
         this.isActive = false;
 

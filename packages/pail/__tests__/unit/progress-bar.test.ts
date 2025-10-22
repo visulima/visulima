@@ -1,5 +1,6 @@
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 
+import type { MultiBarInstance } from "../../src/progress-bar";
 import { applyStyleToOptions, getBarChar, MultiProgressBar, ProgressBar } from "../../src/progress-bar";
 
 describe(ProgressBar, () => {
@@ -374,5 +375,92 @@ describe("integration with PailServer", () => {
         expect(styledOptions.barCompleteChar).toBe("#");
         expect(styledOptions.barIncompleteChar).toBe("-");
         expect(styledOptions.total).toBe(100);
+    });
+});
+
+describe("getCompositeChar", () => {
+    let multiBar: MultiProgressBar;
+    let mockBars: MultiBarInstance[];
+
+    beforeEach(() => {
+        multiBar = new MultiProgressBar();
+        // Create mock bars with different indices and getBarState method
+        mockBars = [
+            {
+                bar: new ProgressBar({ total: 100 }),
+                getBarState: () => { return { char: "█", current: 50, total: 100 }; },
+                index: 0,
+            } as any as MultiBarInstance,
+            {
+                bar: new ProgressBar({ total: 100 }),
+                getBarState: () => { return { char: "█", current: 70, total: 100 }; },
+                index: 1,
+            } as any as MultiBarInstance,
+            {
+                bar: new ProgressBar({ total: 100 }),
+                getBarState: () => { return { char: "█", current: 90, total: 100 }; },
+                index: 2,
+            } as any as MultiBarInstance,
+        ];
+    });
+
+    it("should return solid block for single bar", () => {
+        expect.assertions(1);
+
+        const result = (multiBar as any).getCompositeChar(mockBars, [0], 0, 40);
+
+        expect(result).toBe("█");
+    });
+
+    it("should return medium shade for two bars and use highest index", () => {
+        expect.assertions(2);
+
+        const result = (multiBar as any).getCompositeChar(mockBars, [0, 1], 0, 40);
+
+        expect(result).toBe("▓");
+        // The result should be colored, but we can't easily test the color here
+        expect(result.length).toBeGreaterThan(0);
+    });
+
+    it("should return lighter shade for three bars", () => {
+        expect.assertions(1);
+
+        const result = (multiBar as any).getCompositeChar(mockBars, [0, 1, 2], 0, 40);
+
+        expect(result).toBe("▒");
+    });
+
+    it("should return lightest shade for four or more bars", () => {
+        expect.assertions(2);
+
+        const result4 = (multiBar as any).getCompositeChar(mockBars, [0, 1, 2, 3], 0, 40);
+        const result5 = (multiBar as any).getCompositeChar(mockBars, [0, 1, 2, 3, 4], 0, 40);
+
+        expect(result4).toBe("░");
+        expect(result5).toBe("░");
+    });
+
+    it("should handle undefined stack", () => {
+        expect.assertions(1);
+
+        const result = (multiBar as any).getCompositeChar(mockBars, undefined, 0, 40);
+
+        expect(result).toBe("█");
+    });
+
+    it("should handle empty stack", () => {
+        expect.assertions(1);
+
+        const result = (multiBar as any).getCompositeChar(mockBars, [], 0, 40);
+
+        expect(result).toBe("█");
+    });
+
+    it("should handle out of bounds bar index", () => {
+        expect.assertions(1);
+
+        const result = (multiBar as any).getCompositeChar(mockBars, [99], 0, 40);
+
+        expect(result).toBe("█");
     });
 });
