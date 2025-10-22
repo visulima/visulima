@@ -1,3 +1,9 @@
+## @visulima/cerebro [1.1.58](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.1.57...@visulima/cerebro@1.1.58) (2025-10-22)
+
+### Bug Fixes
+
+* Downgraded '@visulima/pail' from 3.0.2 to 2.1.31 in package.json ([e910dcd](https://github.com/visulima/visulima/commit/e910dcd29eec9b451d3ec2c6d19ffd04082b0b7b))
+
 ## @visulima/cerebro [1.1.57](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.1.56...@visulima/cerebro@1.1.57) (2025-10-22)
 
 ### Bug Fixes
