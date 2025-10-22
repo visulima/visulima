@@ -104,4 +104,47 @@ describe(renderObjectTree, () => {
 
         expect(result).toBe("");
     });
+
+    it("should not false-positive on deep nesting without cycles", () => {
+        expect.assertions(2);
+
+        const object = {
+            level1: {
+                level2: {
+                    level3: {
+                        level4: { level5: { level6: {} } },
+                    },
+                },
+            },
+        };
+
+        const result = renderObjectTree(object);
+        const resultString = typeof result === "string" ? result : result.join("\n");
+
+        expect(resultString).toBeDefined();
+        expect(resultString).not.toContain("(circular ref.)");
+    });
+
+    it("should handle objects with null and undefined values", () => {
+        expect.assertions(1);
+
+        const object = { a: null, b: undefined, c: { d: "value" } };
+
+        const result = renderObjectTree(object);
+
+        expect(result).toBeDefined();
+    });
+
+    it("should detect circular references on current path only", () => {
+        expect.assertions(1);
+
+        const object: Record<string, unknown> = { a: { b: {} } };
+
+        (object.a as Record<string, unknown>).b = object.a; // circular reference
+
+        const result = renderObjectTree(object);
+        const resultString = typeof result === "string" ? result : result.join("\n");
+
+        expect(resultString).toContain("(circular ref.)");
+    });
 });

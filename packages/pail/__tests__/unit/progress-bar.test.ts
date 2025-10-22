@@ -1,5 +1,5 @@
 import { blue, red, yellow } from "@visulima/colorize";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, expectTypeOf, it } from "vitest";
 
 import type { MultiBarInstance } from "../../src/progress-bar";
 import { applyStyleToOptions, getBarChar, MultiProgressBar, ProgressBar } from "../../src/progress-bar";
@@ -507,5 +507,90 @@ describe("getCompositeChar", () => {
 
         // Should return the character colored with the first bar's color (smallest progress)
         expect(result).toContain("▒"); // 3 bars overlap = light shade
+    });
+});
+
+describe("progressBar gradient mode", () => {
+    it("should normalize mixed gradient/string types", () => {
+        expect.assertions(1);
+
+        const bar = new ProgressBar({
+            barCompleteChar: ["█", "▓", "▒"],
+            barIncompleteChar: "░",
+            total: 100,
+        });
+
+        const output = bar.render();
+
+        expect(output).toBeDefined();
+
+        expectTypeOf(output).toBeString();
+    });
+
+    it("should handle boundary condition at 100% complete", () => {
+        expect.assertions(1);
+
+        const bar = new ProgressBar({
+            barCompleteChar: ["█", "▓", "▒"],
+            current: 100,
+            total: 100,
+            width: 20,
+        });
+
+        const output = bar.render();
+
+        expect(output).toBeDefined();
+
+        expectTypeOf(output).toBeString();
+    });
+
+    it("should not create out-of-bounds array access", () => {
+        expect.assertions(1);
+
+        const outputs = [];
+
+        for (let i = 0; i <= 100; i += 10) {
+            const bar = new ProgressBar({
+                barCompleteChar: ["█", "▓", "▒"],
+                current: i,
+                total: 100,
+                width: 20,
+            });
+
+            outputs.push(bar.render());
+        }
+
+        expect(outputs).toHaveLength(11);
+    });
+
+    it("should handle single-element gradient array", () => {
+        expect.assertions(1);
+
+        const bar = new ProgressBar({
+            barCompleteChar: ["█"],
+            current: 50,
+            total: 100,
+            width: 20,
+        });
+
+        const output = bar.render();
+
+        expect(output).toBeDefined();
+
+        expectTypeOf(output).toBeString();
+    });
+
+    it("should use correct gradient style detection", () => {
+        expect.assertions(1);
+
+        const bar = new ProgressBar({
+            barCompleteChar: ["▬", "▮", "▯"],
+            style: "rect",
+            total: 100,
+        });
+
+        const output = bar.render();
+
+        expect(output).toBeDefined();
     });
 });

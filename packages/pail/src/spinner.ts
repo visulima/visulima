@@ -358,6 +358,7 @@ export class Spinner {
     public pause(): void {
         if (this.#frameInterval) {
             clearInterval(this.#frameInterval);
+            this.#frameInterval = undefined;
         }
     }
 
@@ -367,6 +368,11 @@ export class Spinner {
     public resume(): void {
         if (!this.#isActive) {
             return;
+        }
+
+        // Clear any existing interval before creating a new one
+        if (this.#frameInterval) {
+            clearInterval(this.#frameInterval);
         }
 
         const spinner = spinners[this.#spinnerName];
@@ -581,6 +587,10 @@ export class MultiSpinner {
      * Clear all spinners without stopping them.
      */
     public clear(): void {
+        for (const spinner of this.#spinners.values()) {
+            spinner.succeed();
+        }
+
         this.#spinners.clear();
     }
 

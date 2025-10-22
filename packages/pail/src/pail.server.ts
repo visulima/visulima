@@ -192,6 +192,10 @@ class PailServerImpl<T extends string = string, L extends string = string> exten
      * ```
      */
     public createProgressBar(options: SingleBarOptions): ProgressBar {
+        if (!this.interactiveManager) {
+            throw new Error("Interactive mode is not enabled. Create Pail with { interactive: true } to use progress bars.");
+        }
+
         const styledOptions = applyStyleToOptions(options);
 
         return new ProgressBar(styledOptions, this.interactiveManager);
@@ -216,6 +220,10 @@ class PailServerImpl<T extends string = string, L extends string = string> exten
      * ```
      */
     public createMultiProgressBar(options: MultiBarOptions = {}): MultiProgressBar {
+        if (!this.interactiveManager) {
+            throw new Error("Interactive mode is not enabled. Create Pail with { interactive: true } to use progress bars.");
+        }
+
         const styledOptions = applyStyleToOptions(options);
 
         return new MultiProgressBar(styledOptions, this.interactiveManager);
@@ -228,22 +236,22 @@ class PailServerImpl<T extends string = string, L extends string = string> exten
      * @example
      * ```typescript
      * const logger = createPail({ interactive: true });
-     * const spinner = logger.createSpinner({
-     *   text: 'Loading...',
-     *   format: 'Spinning [{spinner}] {text}'
-     * });
-     *
-     * spinner.start();
-     * // ... do work and update spinner
-     * spinner.stop();
+     * const spinner = logger.createSpinner({ name: 'dots' });
+     * spinner.start('Loading...');
+     * // ... do work
+     * spinner.succeed('Done');
      * ```
      */
-    public createSpinner(options: SpinnerOptions): Spinner {
+    public createSpinner(options: SpinnerOptions = {}): Spinner {
+        if (!this.interactiveManager) {
+            throw new Error("Interactive mode is not enabled. Create Pail with { interactive: true } to use spinners.");
+        }
+
         return new Spinner(options, this.interactiveManager);
     }
 
     /**
-     * Creates a multi-spinner progress manager for displaying multiple spinners.
+     * Creates a multi-spinner manager for displaying multiple spinners.
      * @param options Configuration options for the multi-spinner manager
      * @returns A new MultiSpinner instance
      * @example
@@ -251,8 +259,8 @@ class PailServerImpl<T extends string = string, L extends string = string> exten
      * const logger = createPail({ interactive: true });
      * const multiSpinner = logger.createMultiSpinner();
      *
-     * const spinner1 = multiSpinner.create({ text: 'Loading 1' });
-     * const spinner2 = multiSpinner.create({ text: 'Loading 2' });
+     * const spinner1 = multiSpinner.create('Loading 1');
+     * const spinner2 = multiSpinner.create('Loading 2');
      *
      * spinner1.start();
      * spinner2.start();
@@ -261,6 +269,10 @@ class PailServerImpl<T extends string = string, L extends string = string> exten
      * ```
      */
     public createMultiSpinner(options: SpinnerOptions = {}): MultiSpinner {
+        if (!this.interactiveManager) {
+            throw new Error("Interactive mode is not enabled. Create Pail with { interactive: true } to use spinners.");
+        }
+
         return new MultiSpinner(options, this.interactiveManager);
     }
 
