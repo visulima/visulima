@@ -1,12 +1,17 @@
 import { stderr, stdout } from "node:process";
 
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import InteractiveManager from "../../src/interactive/interactive-manager";
 import { PailServer } from "../../src/pail.server";
 import RawReporter from "../../src/reporter/raw/raw-reporter.server";
 
 describe("pailServerImpl", () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+        vi.restoreAllMocks();
+    });
+
     it("should log messages correctly using different log levels", () => {
         expect.assertions(3);
 
