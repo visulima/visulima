@@ -6,7 +6,7 @@ import { describe, expect, it } from "vitest";
 import { jsonResponse, parseBody, parseQuery, toHeaderCase } from "../src/utils";
 
 describe("utils", () => {
-    describe("toHeaderCase", () => {
+    describe(toHeaderCase, () => {
         it("should convert a string to header case", () => {
             expect.assertions(4);
 
@@ -37,7 +37,7 @@ describe("utils", () => {
         });
     });
 
-    describe("jsonResponse", () => {
+    describe(jsonResponse, () => {
         it("sets statusCode of response to specified status value", async () => {
             expect.assertions(1);
 
@@ -88,7 +88,7 @@ describe("utils", () => {
         });
     });
 
-    describe("parseBody", () => {
+    describe(parseBody, () => {
         it("returns request.body when it is provided", async () => {
             expect.assertions(1);
 
@@ -104,11 +104,11 @@ describe("utils", () => {
         expect.assertions(1);
 
         const request = {
+            body: null,
             // prettier-ignore
             * [Symbol.asyncIterator]() {
                 yield Buffer.from(JSON.stringify({ message: "Hello" }));
             },
-            body: null,
         };
 
         const expected = { message: "Hello" };
@@ -121,11 +121,11 @@ describe("utils", () => {
         expect.assertions(1);
 
         const request = {
+            body: null,
             // prettier-ignore
             * [Symbol.asyncIterator]() {
                 yield Buffer.from("");
             },
-            body: null,
         };
         const expected = null;
         const actual = await parseBody(request as unknown as IncomingMessage);
@@ -137,25 +137,25 @@ describe("utils", () => {
         expect.assertions(1);
 
         const request = {
+            body: null,
             // prettier-ignore
             * [Symbol.asyncIterator]() {
                 yield Buffer.from("invalid JSON");
             },
-            body: null,
         };
 
         let errorMessage = "Unexpected token i in JSON at position 0";
 
         if (process.version.includes("v19") || process.version.includes("v20")) {
             errorMessage = "Unexpected token 'i', \"invalid JSON\" is not valid JSON";
-        } else if (process.version.includes("v21") || process.version.includes("v22") || process.version.includes("v23")) {
+        } else if (process.version.includes("v21") || process.version.includes("v22") || process.version.includes("v23") || process.version.includes("v24") || process.version.includes("v25")) {
             errorMessage = `Unexpected token 'i', "invalid JSON" is not valid JSON`;
         }
 
         await expect(parseBody(request as unknown as IncomingMessage)).rejects.toThrow(errorMessage);
     });
 
-    describe("parseQuery", () => {
+    describe(parseQuery, () => {
         it("returns request.query when it is provided", async () => {
             expect.assertions(1);
 

@@ -1,3 +1,51 @@
+## @visulima/jsdoc-open-api [2.0.89](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@2.0.88...@visulima/jsdoc-open-api@2.0.89) (2025-10-21)
+
+### Bug Fixes
+
+* allow node v25 and updated dev deps ([8158cc5](https://github.com/visulima/visulima/commit/8158cc53ec92bd0331e8c6bd0fcbc8ab61b9320f))
+
+### Miscellaneous Chores
+
+* update license years and add validation rules ([b97811e](https://github.com/visulima/visulima/commit/b97811ed2d253d908c0d86b4579a0a6bc33673a8))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 4.0.2
+
+## @visulima/jsdoc-open-api [2.0.88](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@2.0.87...@visulima/jsdoc-open-api@2.0.88) (2025-10-20)
+
+### Miscellaneous Chores
+
+* **deps:** update package versions and dependencies ([88d8d32](https://github.com/visulima/visulima/commit/88d8d32c4629a7a06c8770369191da2cc81087cc))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 4.0.1
+
+## @visulima/jsdoc-open-api [2.0.87](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@2.0.86...@visulima/jsdoc-open-api@2.0.87) (2025-10-15)
+
+### Bug Fixes
+
+* downgraded `@visulima/fs` to version 3.1.9. ([42ab6eb](https://github.com/visulima/visulima/commit/42ab6eb2470c583e30510d2970431b0216ab45fb))
+
+## @visulima/jsdoc-open-api [2.0.86](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@2.0.85...@visulima/jsdoc-open-api@2.0.86) (2025-10-15)
+
+### Bug Fixes
+
+* refactor ESLint configuration and update package dependencies for improved maintainability ([32f2970](https://github.com/visulima/visulima/commit/32f29700ef3d55c5ec6feeb038afe4c5aaf506ab))
+* update node engine requirement to support versions up to 24.x ([525c6a4](https://github.com/visulima/visulima/commit/525c6a4fafc844fff6b2396938a0b8c8ab3953ef))
+
+### Miscellaneous Chores
+
+* update package dependencies across multiple packages for improved compatibility and performance ([9567591](https://github.com/visulima/visulima/commit/9567591c415da3002f3a4fe08f8caf7ce01ca5f7))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 4.0.0
+
 ## @visulima/jsdoc-open-api [2.0.85](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@2.0.84...@visulima/jsdoc-open-api@2.0.85) (2025-09-23)
 
 ### Miscellaneous Chores

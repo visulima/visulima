@@ -6,7 +6,6 @@ import assertValidFileOrDirectoryPath from "../utils/assert-valid-file-or-direct
 /**
  * Asynchronously removes a file or directory (recursively).
  * If the path does not exist, it does nothing.
- *
  * @param path The path to the file or directory to remove.
  * @param options Optional configuration for the operation. See {@link RetryOptions}.
  * @returns A promise that resolves when the path has been removed.
@@ -44,7 +43,6 @@ const remove = async (path: URL | string, options: RetryOptions = {}): Promise<v
     }
 
     try {
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         await rm(path, { force: true, maxRetries: options?.maxRetries, recursive: true, retryDelay: options?.retryDelay });
     } catch {
         /* empty */

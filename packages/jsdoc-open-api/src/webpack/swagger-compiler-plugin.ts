@@ -58,7 +58,7 @@ class SwaggerCompilerPlugin {
 
             const spec = new SpecBuilder(this.swaggerDefinition);
 
-            // eslint-disable-next-line no-restricted-syntax,unicorn/prevent-abbreviations,no-loops/no-loops
+            // eslint-disable-next-line unicorn/prevent-abbreviations,no-loops/no-loops
             for await (const dir of this.sources) {
                 const files: string[] = await collect(dir, {
                     extensions: [".js", ".cjs", ".mjs", ".ts", ".tsx", ".jsx", ".yaml", ".yml"],

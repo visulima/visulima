@@ -1,0 +1,95 @@
+{
+    "name": "@visulima/command-line-args",
+    "version": "1.0.0",
+    "description": "A mature, feature-complete library to parse command-line options.",
+    "keywords": [
+        "visulima",
+        "command-line-args"
+    ],
+    "homepage": "https://visulima.com/packages/command-line-args",
+    "bugs": {
+        "url": "https://github.com/visulima/visulima/issues"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/visulima/visulima.git",
+        "directory": "packages/command-line-args"
+    },
+    "funding": [
+        {
+            "type": "github",
+            "url": "https://github.com/sponsors/prisis"
+        },
+        {
+            "type": "consulting",
+            "url": "https://anolilab.com/support"
+        }
+    ],
+    "license": "MIT",
+    "author": {
+        "name": "Daniel Bannert",
+        "email": "d.bannert@anolilab.de"
+    },
+    "sideEffects": false,
+    "type": "module",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "default": "./dist/index.js"
+        },
+        "./package.json": "./package.json"
+    },
+    "files": [
+        "dist",
+        "README.md",
+        "CHANGELOG.md"
+    ],
+    "scripts": {
+        "build": "packem build --development",
+        "build:prod": "packem build --production",
+        "clean": "rimraf node_modules dist .eslintcache",
+        "dev": "pnpm run build --watch",
+        "lint:attw": "attw --pack",
+        "lint:eslint": "eslint .",
+        "lint:eslint:fix": "eslint . --fix",
+        "lint:package-json": "publint --strict",
+        "lint:prettier": "prettier --config=.prettierrc.cjs --check .",
+        "lint:prettier:fix": "prettier --config=.prettierrc.cjs --write .",
+        "lint:types": "tsc --noEmit",
+        "test": "vitest run",
+        "test:coverage": "vitest run --coverage",
+        "test:ui": "vitest --ui --coverage.enabled=true",
+        "test:watch": "vitest"
+    },
+    "devDependencies": {
+        "@anolilab/eslint-config": "^16.4.2",
+        "@anolilab/semantic-release-pnpm": "2.0.4",
+        "@anolilab/semantic-release-preset": "^11.0.4",
+        "@arethetypeswrong/cli": "^0.18.2",
+        "@secretlint/secretlint-rule-preset-recommend": "^11.2.5",
+        "@total-typescript/ts-reset": "^0.6.1",
+        "@types/node": "24.9.1",
+        "@visulima/error": "5.0.2",
+        "@visulima/packem": "2.0.0-alpha.30",
+        "@vitest/coverage-v8": "^4.0.1",
+        "@vitest/ui": "^4.0.1",
+        "conventional-changelog-conventionalcommits": "9.1.0",
+        "esbuild": "^0.25.11",
+        "eslint": "9.38.0",
+        "prettier": "^3.6.2",
+        "publint": "^0.3.15",
+        "rimraf": "^6.0.1",
+        "secretlint": "11.2.5",
+        "semantic-release": "^25.0.1",
+        "test-runner": "0.11.1",
+        "typescript": "^5.9.3",
+        "vitest": "^4.0.1"
+    },
+    "engines": {
+        "node": ">=20.19 <=25.x"
+    },
+    "publishConfig": {
+        "access": "public",
+        "provenance": true
+    }
+}

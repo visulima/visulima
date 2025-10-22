@@ -225,7 +225,7 @@ describe("swagger/extend-swagger-spec", () => {
                                     "text/xml": {
                                         examples: {
                                             Test: {
-                                                value: '<?xml version="1.0" encoding="UTF-8"?>\n<test>test</test>',
+                                                value: "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<test>test</test>",
                                             },
                                         },
                                         schema: {
@@ -266,7 +266,7 @@ describe("swagger/extend-swagger-spec", () => {
                                     "text/xml": {
                                         examples: {
                                             Test2: {
-                                                value: '<?xml version="1.0" encoding="UTF-8"?>\n<test>test</test>',
+                                                value: "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<test>test</test>",
                                             },
                                         },
                                         schema: {
@@ -299,7 +299,7 @@ describe("swagger/extend-swagger-spec", () => {
                                         },
                                     },
                                     "text/xml": {
-                                        example: '<?xml version="1.0" encoding="UTF-8"?>\n<test>test</test>',
+                                        example: "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<test>test</test>",
                                         schema: {
                                             $ref: "#/components/schemas/Test3",
                                         },

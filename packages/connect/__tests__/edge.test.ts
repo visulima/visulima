@@ -45,6 +45,7 @@ describe("edge", () => {
         expect.assertions(2);
 
         const context = new EdgeRouter();
+
         // @ts-expect-error: private property
         vi.spyOn(context.router, "add").mockImplementation((...values) => {
             expect(values, "call router.add()").toStrictEqual(["GET", "/", noop]);
@@ -66,7 +67,7 @@ describe("edge", () => {
 
             context.use(noop);
 
-            expect(useSpy).toHaveBeenCalledWith("/", noop);
+            expect(useSpy).toHaveBeenCalledExactlyOnceWith("/", noop);
         });
 
         it("call this.router.use() with fn", async () => {
@@ -79,7 +80,7 @@ describe("edge", () => {
 
             context.use("/test", noop, noop);
 
-            expect(useSpy).toHaveBeenCalledWith("/test", noop, noop);
+            expect(useSpy).toHaveBeenCalledExactlyOnceWith("/test", noop, noop);
         });
 
         it("call this.router.use() with fn.router", async () => {
@@ -94,7 +95,7 @@ describe("edge", () => {
             context.use("/test", context2, context2);
 
             // @ts-expect-error: private field
-            expect(useSpy).toHaveBeenCalledWith("/test", context2.router, context2.router);
+            expect(useSpy).toHaveBeenCalledExactlyOnceWith("/test", context2.router, context2.router);
         });
     });
 
@@ -102,6 +103,7 @@ describe("edge", () => {
         expect.assertions(3);
 
         const context = new EdgeRouter();
+
         // @ts-expect-error: private property
         context.router.routes = [noop, noop] as any[];
 
@@ -148,6 +150,7 @@ describe("edge", () => {
 
             return "ok";
         });
+
         await expect(context.run(request, event)).resolves.toBe("ok");
     });
 
@@ -262,7 +265,6 @@ describe("edge", () => {
                 // eslint-disable-next-line no-plusplus
                 expect(++index).toBe(1);
 
-                // eslint-disable-next-line @typescript-eslint/return-await
                 return await next();
             })
 
@@ -301,6 +303,7 @@ describe("edge", () => {
             await expect(response.text()).resolves.toBe("Internal Server Error");
             // eslint-disable-next-line security/detect-object-injection
             expect(consoleSpy.mock.calls[index], `called console.error ${index}`).toStrictEqual([error]);
+
             index += 1;
         };
 
@@ -342,7 +345,7 @@ describe("edge", () => {
                 await expect(response.text()).resolves.toBe("Internal Server Error");
 
                 // eslint-disable-next-line security/detect-object-injection
-                expect(consoleSpy.mock.calls[index], 'called console.error with ""').toStrictEqual([""]);
+                expect(consoleSpy.mock.calls[index], "called console.error with \"\"").toStrictEqual([""]);
             });
     });
 
@@ -435,7 +438,7 @@ describe("edge", () => {
 
         await createEdgeRouter({
             onNoMatch() {
-                expect(true, "onNoMatch called").toBeTruthy();
+                expect(true, "onNoMatch called").toBe(true);
             },
         }).handler()({ method: "GET", url: testUrl } as Request, {} as any);
     });
@@ -448,7 +451,7 @@ describe("edge", () => {
                 expect((error as Error).message).toBe("💥");
             },
             onNoMatch() {
-                expect(true, "onNoMatch called").toBeTruthy();
+                expect(true, "onNoMatch called").toBe(true);
 
                 throw new Error("💥");
             },
@@ -470,6 +473,7 @@ describe("edge", () => {
         const requestWithParameters = {
             params: { age: "20" },
         };
+
         // @ts-expect-error: internal
         context2.prepareRequest(
             requestWithParameters as unknown as Request,
@@ -482,6 +486,7 @@ describe("edge", () => {
         const requestWithParameters2 = {
             params: { name: "sunshine" },
         };
+
         // @ts-expect-error: internal
         context2.prepareRequest(
             requestWithParameters2 as unknown as Request,

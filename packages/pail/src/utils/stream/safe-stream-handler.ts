@@ -17,7 +17,7 @@ class SafeStreamHandler {
     }
 
     /**
-     * Writes `message` to the instance's internal stream
+     * Writes `message` to the instance's internal stream.
      * @param message Message to write
      */
     public write(message: string): void {
@@ -27,7 +27,7 @@ class SafeStreamHandler {
     /**
      * Calls `end` on this instance's internal stream
      */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     public end(...arguments_: any[]): void {
         this.#stream.end(...arguments_);
     }
@@ -39,7 +39,8 @@ class SafeStreamHandler {
     protected writeStream(message: string): void {
         if (!this.#ready) {
             // eslint-disable-next-line no-console
-            console.warn("Stream busy: " + this.#name + '. Write will be dropped: "' + message + '"');
+            console.warn(`Stream busy: ${this.#name}. Write will be dropped: "${message}"`);
+
             return;
         }
 

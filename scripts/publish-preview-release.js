@@ -13,7 +13,9 @@ if (!env.CHANGED_FILES) {
     exit(0);
 }
 
-const json = execSync(`pnpm exec nx show projects --affected --exclude=*-bench,docs,storybook,shared-utils --files=${process.env.CHANGED_FILES} --json`).toString("utf8");
+const json = execSync(
+    `pnpm exec nx show projects --affected --exclude=*-bench,docs,storybook,shared-utils --files=${process.env.CHANGED_FILES} --json`,
+).toString("utf8");
 
 /** @type {Array<{ path: string, private: boolean, peerDependencies?: Record<string, string> }>} */
 const affectedRepoPackages = JSON.parse(json);

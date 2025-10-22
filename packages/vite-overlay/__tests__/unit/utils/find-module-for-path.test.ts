@@ -18,7 +18,7 @@ describe(findModuleForPath, () => {
     });
 
     it("should return module when found by exact id", () => {
-        expect.assertions(2);
+        expect.assertions(3);
 
         const mockModule = { id: "/src/App.tsx" };
 
@@ -28,7 +28,10 @@ describe(findModuleForPath, () => {
         const result = findModuleForPath(mockServer, ["/src/App.tsx"]);
 
         expect(result).toBe(mockModule);
+        // eslint-disable-next-line vitest/prefer-called-exactly-once-with
         expect(mockServer.moduleGraph.getModuleById).toHaveBeenCalledWith("/src/App.tsx");
+        // eslint-disable-next-line vitest/prefer-called-exactly-once-with
+        expect(mockServer.moduleGraph.getModuleById).toHaveBeenCalledWith("src/App.tsx");
     });
 
     it("should return module when found by url", () => {

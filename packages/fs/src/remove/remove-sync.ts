@@ -6,7 +6,6 @@ import assertValidFileOrDirectoryPath from "../utils/assert-valid-file-or-direct
 /**
  * Synchronously removes a file or directory (recursively).
  * If the path does not exist, it does nothing.
- *
  * @param path The path to the file or directory to remove.
  * @param options Optional configuration for the operation. See {@link RetryOptions}.
  * @returns void
@@ -40,7 +39,6 @@ const removeSync = (path: URL | string, options: RetryOptions = {}): void => {
     }
 
     try {
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         rmSync(path, { force: true, maxRetries: options?.maxRetries, recursive: true, retryDelay: options?.retryDelay });
     } catch {
         /* empty */

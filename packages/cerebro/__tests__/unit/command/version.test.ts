@@ -18,8 +18,8 @@ describe("command/version", () => {
 
         await versionCommand.execute({ logger: loggerMock as unknown as ILogger, runtime: runtimeMock as unknown as ICli } as IToolbox);
 
-        expect(runtimeMock.getPackageVersion).toHaveBeenCalledWith();
-        expect(loggerMock.info).toHaveBeenCalledWith("1.0.0");
+        expect(runtimeMock.getPackageVersion).toHaveBeenCalledExactlyOnceWith();
+        expect(loggerMock.info).toHaveBeenCalledExactlyOnceWith("1.0.0");
         expect(loggerMock.warning).not.toHaveBeenCalled();
         expect(loggerMock.debug).not.toHaveBeenCalled();
     });
@@ -38,9 +38,9 @@ describe("command/version", () => {
 
         await versionCommand.execute({ logger: loggerMock as unknown as ILogger, runtime: runtimeMock as unknown as ICli } as IToolbox);
 
-        expect(runtimeMock.getPackageVersion).toHaveBeenCalledWith();
-        expect(loggerMock.warn).toHaveBeenCalledWith("Unknown version");
-        expect(loggerMock.debug).toHaveBeenCalledWith("The version number was not provided by the cli constructor.");
+        expect(runtimeMock.getPackageVersion).toHaveBeenCalledExactlyOnceWith();
+        expect(loggerMock.warn).toHaveBeenCalledExactlyOnceWith("Unknown version");
+        expect(loggerMock.debug).toHaveBeenCalledExactlyOnceWith("The version number was not provided by the cli constructor.");
         expect(loggerMock.info).not.toHaveBeenCalled();
     });
 });

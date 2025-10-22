@@ -19,6 +19,7 @@ const recursiveOmit = <T extends { [key in string]: unknown }, OmittedKeys exten
     // eslint-disable-next-line unicorn/no-array-reduce
     return Object.entries(object).reduce<{ [key in string]: unknown }>((carry, [key, value]) => {
         let path = pathUntilNow;
+
         if (path) {
             path += ".";
         }
@@ -31,13 +32,13 @@ const recursiveOmit = <T extends { [key in string]: unknown }, OmittedKeys exten
 
         // no further recursion needed
         if (!isPlainObject(value)) {
-            // eslint-disable-next-line no-param-reassign,security/detect-object-injection
+            // eslint-disable-next-line no-param-reassign
             carry[key] = value;
 
             return carry;
         }
 
-        // eslint-disable-next-line no-param-reassign,@typescript-eslint/no-explicit-any,security/detect-object-injection
+        // eslint-disable-next-line no-param-reassign,@typescript-eslint/no-explicit-any
         carry[key] = recursiveOmit<T, OmittedKeys>(object[key] as any, omittedKeys, path);
 
         return carry;

@@ -1,19 +1,21 @@
-import { bench, describe, beforeEach, afterEach } from "vitest";
-import { writeFile as nodeWriteFile, readFile as nodeReadFile, rename as nodeRename, rm as nodeRm } from "node:fs/promises";
-import * as fsExtra from "fs-extra";
+import { existsSync, readFileSync as nodeReadFileSync, renameSync as nodeRenameSync, rmSync as nodeRmSync, writeFileSync as nodeWriteFileSync } from "node:fs";
+import { readFile as nodeReadFile, rename as nodeRename, rm as nodeRm, writeFile as nodeWriteFile } from "node:fs/promises";
+
+import { ensureFile, ensureFileSync, move, moveSync, readFile, readFileSync, remove, removeSync, writeFile, writeFileSync } from "fs-extra";
+import { afterEach, beforeEach, bench, describe } from "vitest";
+
 import {
     ensureFile as visulimaEnsureFile,
-    move as visulimaMove,
-    readFile as visulimaReadFile,
-    remove as visulimaRemove,
-    writeFile as visulimaWriteFile,
-    removeSync as visulimaRemoveSync,
     ensureFileSync as visulimaEnsureFileSync,
-    writeFileSync as visulimaWriteFileSync,
-    readFileSync as visulimaReadFileSync,
+    move as visulimaMove,
     moveSync as visulimaMoveSync,
+    readFile as visulimaReadFile,
+    readFileSync as visulimaReadFileSync,
+    remove as visulimaRemove,
+    removeSync as visulimaRemoveSync,
+    writeFile as visulimaWriteFile,
+    writeFileSync as visulimaWriteFileSync,
 } from "../src";
-import { existsSync, writeFileSync as nodeWriteFileSync, readFileSync as nodeReadFileSync, renameSync as nodeRenameSync, rmSync as nodeRmSync } from "node:fs";
 
 const testFile = "./bench-test.txt";
 const testFile2 = "./bench-test2.txt";
@@ -39,7 +41,7 @@ describe("ensureFile (async)", () => {
     });
 
     bench("fs-extra", async () => {
-        await fsExtra.ensureFile(testFile);
+        await ensureFile(testFile);
     });
 
     bench("@visulima/fs", async () => {
@@ -57,7 +59,7 @@ describe("ensureFile (sync)", () => {
     });
 
     bench("fs-extra (sync)", () => {
-        fsExtra.ensureFileSync(testFile);
+        ensureFileSync(testFile);
     });
 
     bench("@visulima/fs (sync)", () => {
@@ -83,7 +85,7 @@ describe("writeFile (async)", () => {
     });
 
     bench("fs-extra", async () => {
-        await fsExtra.writeFile(testFile, testData);
+        await writeFile(testFile, testData);
     });
 
     bench("@visulima/fs", async () => {
@@ -101,7 +103,7 @@ describe("writeFile (sync)", () => {
     });
 
     bench("fs-extra (sync)", () => {
-        fsExtra.writeFileSync(testFile, testData);
+        writeFileSync(testFile, testData);
     });
 
     bench("@visulima/fs (sync)", () => {
@@ -126,7 +128,7 @@ describe("readFile (async)", () => {
     });
 
     bench("fs-extra", async () => {
-        await fsExtra.readFile(testFile);
+        await readFile(testFile);
     });
 
     bench("@visulima/fs", async () => {
@@ -144,7 +146,7 @@ describe("readFile (sync)", () => {
     });
 
     bench("fs-extra (sync)", () => {
-        fsExtra.readFileSync(testFile);
+        readFileSync(testFile);
     });
 
     bench("@visulima/fs (sync)", () => {
@@ -172,8 +174,8 @@ describe("move (async)", () => {
     });
 
     bench("fs-extra", async () => {
-        await fsExtra.move(testFile, testFile2, { overwrite: true });
-        await fsExtra.move(testFile2, testFile, { overwrite: true });
+        await move(testFile, testFile2, { overwrite: true });
+        await move(testFile2, testFile, { overwrite: true });
     });
 
     bench("@visulima/fs", async () => {
@@ -193,8 +195,8 @@ describe("move (sync)", () => {
     });
 
     bench("fs-extra (sync)", () => {
-        fsExtra.moveSync(testFile, testFile2, { overwrite: true });
-        fsExtra.moveSync(testFile2, testFile, { overwrite: true });
+        moveSync(testFile, testFile2, { overwrite: true });
+        moveSync(testFile2, testFile, { overwrite: true });
     });
 
     bench("@visulima/fs (sync)", () => {
@@ -220,7 +222,7 @@ describe("remove (async)", () => {
     });
 
     bench("fs-extra", async () => {
-        await fsExtra.remove(testFile);
+        await remove(testFile);
     });
 
     bench("@visulima/fs", async () => {
@@ -244,7 +246,7 @@ describe("remove (sync)", () => {
     });
 
     bench("fs-extra (sync)", () => {
-        fsExtra.removeSync(testFile);
+        removeSync(testFile);
     });
 
     bench("@visulima/fs (sync)", () => {

@@ -40,7 +40,7 @@ describe.each([
     });
 
     afterEach(async () => {
-        // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
+        // eslint-disable-next-line no-loops/no-loops
         for await (const directory of [
             "./foo.txt",
             "./real-symlink.txt",
@@ -98,7 +98,7 @@ describe.each([
         const destinationBasename = basename(destinationPath);
 
         // eslint-disable-next-line security/detect-non-literal-fs-filename
-        expect(lstatSync(destinationPath).isFile()).toBeTruthy();
+        expect(lstatSync(destinationPath).isFile()).toBe(true);
         // eslint-disable-next-line security/detect-non-literal-fs-filename
         expect(sourceContent).toStrictEqual(readFileSync(destinationPath, "utf8"));
         // eslint-disable-next-line security/detect-non-literal-fs-filename

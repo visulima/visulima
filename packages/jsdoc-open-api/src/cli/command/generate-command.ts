@@ -24,7 +24,7 @@ const generateCommand = async (
         verbose?: boolean;
         veryVerbose?: boolean;
     },
-    // eslint-disable-next-line sonarjs/cognitive-complexity
+
 ): Promise<void> => {
     let openapiConfig: {
         exclude: string[];
@@ -61,7 +61,7 @@ const generateCommand = async (
     const spec = new SpecBuilder(openapiConfig.swaggerDefinition);
     const skip = new Set<RegExp | string>([...DEFAULT_EXCLUDE, ...openapiConfig.exclude]);
 
-    // eslint-disable-next-line no-restricted-syntax,unicorn/prevent-abbreviations,no-loops/no-loops
+    // eslint-disable-next-line unicorn/prevent-abbreviations,no-loops/no-loops
     for await (const dir of paths) {
         // Check if the path is a directory
         // eslint-disable-next-line security/detect-non-literal-fs-filename,unicorn/no-await-expression-member

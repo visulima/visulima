@@ -33,6 +33,7 @@ describe("path-regex-parser", () => {
         expect.assertions(1);
 
         const fastSlash = /test/ as ExpressRegex;
+
         fastSlash.fast_slash = true;
         fastSlash.fast_star = false;
 
@@ -43,6 +44,7 @@ describe("path-regex-parser", () => {
         expect.assertions(1);
 
         const fastStar = /test/ as ExpressRegex;
+
         fastStar.fast_slash = false;
         fastStar.fast_star = true;
 

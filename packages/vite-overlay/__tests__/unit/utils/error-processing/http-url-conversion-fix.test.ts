@@ -9,7 +9,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import buildExtendedErrorData from "../../../../src/utils/error-processing";
 
-vi.mock("@visulima/error", () => {
+vi.mock(import("@visulima/error"), () => {
     return {
         codeFrame: vi.fn(() => ""),
         formatStacktrace: vi.fn(() => ""),

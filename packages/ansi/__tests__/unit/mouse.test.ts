@@ -81,7 +81,7 @@ describe(encodeMouseButtonByte, () => {
 
     it("should return 0xFF for invalid button", () => {
         expect.assertions(1);
-        expect(encodeMouseButtonByte(99 as MouseButtonType, false)).toBe(0xFF);
+        expect(encodeMouseButtonByte(99 as MouseButtonType, false)).toBe(0xff);
     });
 });
 
@@ -118,7 +118,7 @@ describe(mouseX10Sequence, () => {
 
     it("should return empty string for invalid Cb in X10", () => {
         expect.assertions(1);
-        expect(mouseX10Sequence(0xFF, 0, 0)).toBe("");
+        expect(mouseX10Sequence(0xff, 0, 0)).toBe("");
     });
 
     it("should generate correct X10 sequence for max coordinates (222,222)", () => {
@@ -188,7 +188,7 @@ describe(mouseSgrSequence, () => {
 
     it("should return empty string for invalid Cb in SGR", () => {
         expect.assertions(1);
-        expect(mouseSgrSequence(0xFF, 0, 0, false)).toBe("");
+        expect(mouseSgrSequence(0xff, 0, 0, false)).toBe("");
     });
 
     it("should generate correct SGR sequence with high coordinates (e.g., 1000, 1000)", () => {

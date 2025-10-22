@@ -99,7 +99,7 @@ describe("server middleware", () => {
             await middleware(mockRequest, mockResponse, next);
 
             expect(mockResponse.statusCode).toBe(400);
-            expect(mockResponse.end).toHaveBeenCalledWith("Failed to open editor");
+            expect(mockResponse.end).toHaveBeenCalledExactlyOnceWith("Failed to open editor");
         });
 
         it("should respect project root configuration", async () => {

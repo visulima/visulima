@@ -41,7 +41,7 @@ const emptyDirSync = (dir: URL | string, options?: RetryOptions): void => {
         return;
     }
 
-    // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax,security/detect-non-literal-fs-filename
+    // eslint-disable-next-line no-loops/no-loops,security/detect-non-literal-fs-filename
     for (const item of readdirSync(dir)) {
         rmSync(join(toPath(dir), item), { ...options, force: true, recursive: true });
     }

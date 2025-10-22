@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import arrayify from "../../../src/utils/arrayify";
 
-describe("arrayify", () => {
+describe(arrayify, () => {
     it("should return an empty array when input is undefined", () => {
         expect.assertions(1);
 

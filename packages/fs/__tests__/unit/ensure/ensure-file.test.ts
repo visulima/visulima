@@ -34,7 +34,7 @@ describe.each([
         }
 
         // eslint-disable-next-line security/detect-non-literal-fs-filename
-        expect(existsSync(path)).toBeTruthy();
+        expect(existsSync(path)).toBe(true);
     });
 
     it("should create a file in a child dir if it does not exist", async () => {
@@ -50,7 +50,7 @@ describe.each([
         }
 
         // eslint-disable-next-line security/detect-non-literal-fs-filename
-        expect(existsSync(path)).toBeTruthy();
+        expect(existsSync(path)).toBe(true);
     });
 
     it("should ensure existing file exists", async () => {
@@ -69,7 +69,7 @@ describe.each([
         }
 
         // eslint-disable-next-line security/detect-non-literal-fs-filename
-        expect(existsSync(path)).toBeTruthy();
+        expect(existsSync(path)).toBe(true);
     });
 
     it("should throw a error if input is a dir", async () => {

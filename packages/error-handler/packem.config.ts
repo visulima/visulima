@@ -9,13 +9,8 @@ export default defineConfig({
         license: {
             path: "./LICENSE.md",
         },
-    },
-    validation: {
-        dependencies: {
-            // TODO: remove after bug is fixed in packem, after the cache is writen, this fails
-            unused: {
-                exclude: ["@tinyhttp/accepts", "@visulima/boxen", "@visulima/error", "http-errors", "http-status-codes", "jstoxml", "ts-japi"],
-            },
+        requireCJS: {
+            builtinNodeModules: true,
         },
     },
     transformer,

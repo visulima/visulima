@@ -10,12 +10,12 @@
         "check": "svelte-check --tsconfig ./tsconfig.app.json && tsc -p tsconfig.node.json"
     },
     "devDependencies": {
-        "@visulima/vite-overlay": "workspace:*",
         "@sveltejs/vite-plugin-svelte": "^6.2.1",
         "@tsconfig/svelte": "^5.0.5",
-        "svelte": "^5.39.8",
-        "svelte-check": "^4.3.2",
+        "@visulima/vite-overlay": "workspace:*",
+        "svelte": "^5.41.2",
+        "svelte-check": "^4.3.3",
         "typescript": "~5.9.3",
-        "vite": "^7.1.8"
+        "vite": "^7.1.11"
     }
 }

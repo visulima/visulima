@@ -1,3 +1,91 @@
+## @visulima/pail [3.0.1](https://github.com/visulima/visulima/compare/@visulima/pail@3.0.0...@visulima/pail@3.0.1) (2025-10-21)
+
+### Bug Fixes
+
+* allow node v25 and updated dev deps ([8158cc5](https://github.com/visulima/visulima/commit/8158cc53ec92bd0331e8c6bd0fcbc8ab61b9320f))
+
+### Miscellaneous Chores
+
+* update @visulima/pail dependency to version 3.0.0 in bun package.json ([0d5e1de](https://github.com/visulima/visulima/commit/0d5e1de116b34b8ef09fd2822857e107942ec16a))
+* update copyright year in LICENSE.md files ([c46a28d](https://github.com/visulima/visulima/commit/c46a28d2afb4cc7d73a7edde9a271a7156f87eae))
+* update license years and add validation rules ([b97811e](https://github.com/visulima/visulima/commit/b97811ed2d253d908c0d86b4579a0a6bc33673a8))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.25
+* **@visulima/fmt:** upgraded to 1.1.17
+* **@visulima/inspector:** upgraded to 1.0.26
+* **@visulima/redact:** upgraded to 2.0.1
+* **@visulima/error:** upgraded to 5.0.2
+* **@visulima/string:** upgraded to 2.0.1
+
+## @visulima/pail [3.0.0](https://github.com/visulima/visulima/compare/@visulima/pail@2.1.31...@visulima/pail@3.0.0) (2025-10-20)
+
+### ⚠ BREAKING CHANGES
+
+* **pail:** - Public import paths for reporters changed. Use new scoped reporter entrypoints:
+  Before:
+    import { PrettyReporter } from '@visulima/pail/src/reporter/pretty/pretty.server';
+  After:
+    import { PrettyReporter } from '@visulima/pail/reporter/pretty';
+  (Similar changes for raw, simple, json reporters. Browser/server-specific files were
+  renamed e.g. pretty-reporter.server.ts / pretty-reporter.browser.ts and re-exported
+  via reporter/* index files.)
+- Deprecated top-level reporter and processor entrypoints removed:
+  - Removed: 'src/reporter.server.ts', 'src/reporter.browser.ts'
+  - Removed: 'src/processor.server.ts', 'src/processor.browser.ts'
+  Use the dedicated reporter imports under '@visulima/pail/reporter/*' and the
+  processor modules under 'src/processor/*' as re-exported by the package entrypoints.
+- Interactive manager API and types were adjusted (see migration guide). Update usage of
+  interactiveManager and related hooks to the new signatures.
+- Types in 'src/types.ts' updated; consuming TypeScript projects may need to adjust
+  imports/usages to match the refined reporter and progress bar types.
+
+### Features
+
+* **pail:** restructure reporters/API and add progress bar ([164420a](https://github.com/visulima/visulima/commit/164420a272ba3b6ac0ef773f202099d19c27a329))
+
+### Bug Fixes
+
+* **deps:** update minor updates ([#455](https://github.com/visulima/visulima/issues/455)) ([cebf7dc](https://github.com/visulima/visulima/commit/cebf7dcdc7f6ca423ad141f90f6c30279f5fa392))
+
+### Miscellaneous Chores
+
+* add new logging dependencies and benchmarks ([9633019](https://github.com/visulima/visulima/commit/963301910db84b2a78674f083331dad744fc8122))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 5.0.1
+
+## @visulima/pail [2.1.31](https://github.com/visulima/visulima/compare/@visulima/pail@2.1.30...@visulima/pail@2.1.31) (2025-10-15)
+
+### Bug Fixes
+
+* downgrade @visulima/redact to version 1.0.15 ([3c2a8c2](https://github.com/visulima/visulima/commit/3c2a8c26c1e8ea5988a45cdea83811e200e4b99b))
+* Downgraded `@visulima/error` to version 4.6.2. ([069e946](https://github.com/visulima/visulima/commit/069e94648aef5d965e8499b55b48c504c2048967))
+
+## @visulima/pail [2.1.30](https://github.com/visulima/visulima/compare/@visulima/pail@2.1.29...@visulima/pail@2.1.30) (2025-10-15)
+
+### Bug Fixes
+
+* consolidate ESLint configuration and remove obsolete files for improved maintainability ([5b3e825](https://github.com/visulima/visulima/commit/5b3e825f3f2f428c9fb0950c300de10b42b657f9))
+* update @visulima/packem to 2.0.0-alpha.30 across multiple packages for improved compatibility ([27b346e](https://github.com/visulima/visulima/commit/27b346eaa1c0fb0e420d9a9824482028307f4249))
+
+### Miscellaneous Chores
+
+* update package dependencies across multiple packages for improved compatibility and performance ([9567591](https://github.com/visulima/visulima/commit/9567591c415da3002f3a4fe08f8caf7ce01ca5f7))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.24
+* **@visulima/error:** upgraded to 5.0.0
+* **@visulima/fmt:** upgraded to 1.1.16
+* **@visulima/inspector:** upgraded to 1.0.25
+* **@visulima/redact:** upgraded to 2.0.0
+
 ## @visulima/pail [2.1.29](https://github.com/visulima/visulima/compare/@visulima/pail@2.1.28...@visulima/pail@2.1.29) (2025-09-23)
 
 ### Miscellaneous Chores

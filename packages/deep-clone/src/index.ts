@@ -10,7 +10,7 @@ import { copyRegExpLoose, copyRegExpStrict } from "./handler/copy-regexp";
 import { copySetLoose, copySetStrict } from "./handler/copy-set";
 import type { Options, State } from "./types";
 
-// eslint-disable-next-line @typescript-eslint/ban-types
+// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 const canValueHaveProperties = (value: unknown): value is NonNullable<Function | object> =>
     (typeof value === "object" && value !== null) || typeof value === "function";
 
@@ -24,7 +24,7 @@ const handlers = {
     DataView: copyDataView,
     Date: copyDate,
     Error: copyError,
-    // eslint-disable-next-line @typescript-eslint/ban-types,@typescript-eslint/no-unused-vars
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type, @typescript-eslint/no-unused-vars
     Function: (object: Function, _state: State) => object,
     Map: copyMapLoose,
     Object: copyObjectLoose,
@@ -37,9 +37,11 @@ const handlers = {
     SharedArrayBuffer: (object: SharedArrayBuffer, _state: State) => {
         throw new TypeError(`${object.constructor.name} objects cannot be cloned`);
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     WeakMap: (object: WeakMap<any, any>) => {
         throw new TypeError(`${object.constructor.name} objects cannot be cloned`);
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     WeakSet: (object: WeakSet<any>) => {
         throw new TypeError(`${object.constructor.name} objects cannot be cloned`);
     },
@@ -54,13 +56,12 @@ interface FakeJSDOM {
 
 /**
  * Function that creates a deep clone of an object or array.
- *
  * @template T - The type of the original data.
- * @param originalData - The original data to be cloned. It uses the generic parameter `T`.
- * @param options - Optional. The cloning options. Type of this parameter is `Options`.
- * @returns The deep cloned data with its type as `DeepReadwrite<T>`.
+ * @param originalData The original data to be cloned. It uses the generic parameter `T`.
+ * @param options Optional. The cloning options. Type of this parameter is `Options`.
+ * @returns The deep cloned data with its type as `DeepReadwrite&lt;T>`.
  */
-// eslint-disable-next-line sonarjs/cognitive-complexity
+
 export const deepClone = <T>(originalData: T, options?: Options): DeepReadwrite<T> => {
     if (!canValueHaveProperties(originalData)) {
         return originalData as DeepReadwrite<T>;
@@ -68,12 +69,14 @@ export const deepClone = <T>(originalData: T, options?: Options): DeepReadwrite<
 
     const cloner = {
         ...handlers,
-        ...(options?.strict ? { Array: copyArrayStrict, Map: copyMapStrict, Object: copyObjectStrict, RegExp: copyRegExpStrict, Set: copySetStrict } : {}),
+        ...options?.strict ? { Array: copyArrayStrict, Map: copyMapStrict, Object: copyObjectStrict, RegExp: copyRegExpStrict, Set: copySetStrict } : {},
         ...options?.handler,
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let cache: WeakMap<any, any> | null = new WeakMap();
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const clone = (value: any, state: State): any => {
         if (!canValueHaveProperties(value)) {
             return value as DeepReadwrite<T>;
@@ -112,20 +115,21 @@ export const deepClone = <T>(originalData: T, options?: Options): DeepReadwrite<
         }
 
         if (value instanceof Error) {
+            // eslint-disable-next-line unicorn/throw-new-error
             return cloner.Error(value, state);
         }
 
         if (
-            value instanceof ArrayBuffer ||
-            value instanceof Uint8Array ||
-            value instanceof Uint8ClampedArray ||
-            value instanceof Int8Array ||
-            value instanceof Uint16Array ||
-            value instanceof Int16Array ||
-            value instanceof Uint32Array ||
-            value instanceof Int32Array ||
-            value instanceof Float32Array ||
-            value instanceof Float64Array
+            value instanceof ArrayBuffer
+            || value instanceof Uint8Array
+            || value instanceof Uint8ClampedArray
+            || value instanceof Int8Array
+            || value instanceof Uint16Array
+            || value instanceof Int16Array
+            || value instanceof Uint32Array
+            || value instanceof Int32Array
+            || value instanceof Float32Array
+            || value instanceof Float64Array
         ) {
             return cloner.ArrayBuffer(value, state);
         }
@@ -154,7 +158,7 @@ export const deepClone = <T>(originalData: T, options?: Options): DeepReadwrite<
             return cloner.WeakSet(value, state);
         }
 
-        if (value instanceof Function) {
+        if (typeof value === "function") {
             return cloner.Function(value, state);
         }
 
@@ -165,14 +169,12 @@ export const deepClone = <T>(originalData: T, options?: Options): DeepReadwrite<
         throw new TypeError(`Type of ${typeof value} cannot be cloned`, value);
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const cloned = clone(originalData, { cache, clone });
 
     // Reset the cache to free up memory
-    cache = null;
+    cache = undefined;
 
     return cloned as DeepReadwrite<T>;
 };
 
-// eslint-disable-next-line import/no-unused-modules
 export type { Options, State } from "./types";

@@ -18,7 +18,6 @@ const isWindows = process.platform === "win32" || /^(?:msys|cygwin)$/.test(<stri
  * Ensures that the link exists, and points to a valid file.
  * If the directory structure does not exist, it is created.
  * If the link already exists, it is not modified but error is thrown if it is not point to the given target.
- *
  * @param target the source file path
  * @param linkName the destination link path
  * @param type the type of the symlink, or null to use automatic detection
@@ -35,7 +34,7 @@ const isWindows = process.platform === "win32" || /^(?:msys|cygwin)$/.test(<stri
  * ensureSymlinkSync(join("/tmp", "foo", "baz-dir"), join("/tmp", "foo", "link-to-baz-dir"), "dir");
  * ```
  */
-// eslint-disable-next-line sonarjs/cognitive-complexity
+
 const ensureSymlinkSync = (target: URL | string, linkName: URL | string, type?: symlink.Type): void => {
     assertValidFileOrDirectoryPath(target);
     assertValidFileOrDirectoryPath(linkName);
@@ -50,9 +49,9 @@ const ensureSymlinkSync = (target: URL | string, linkName: URL | string, type?: 
         const linkStatInfo = lstatSync(linkName);
 
         if (
-            linkStatInfo.isSymbolicLink() &&
+            linkStatInfo.isSymbolicLink()
             // eslint-disable-next-line security/detect-non-literal-fs-filename
-            isStatsIdentical(statSync(targetRealPath), statSync(linkName))
+            && isStatsIdentical(statSync(targetRealPath), statSync(linkName))
         ) {
             // eslint-disable-next-line security/detect-non-literal-fs-filename
             const sourceStat = statSync(targetRealPath);
@@ -82,7 +81,6 @@ const ensureSymlinkSync = (target: URL | string, linkName: URL | string, type?: 
         symlinkSync(toNamespacedPath(toPath(targetRealPath)), linkName, symlinkType);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (error.code !== "EEXIST") {
             throw error;
         }
@@ -91,8 +89,7 @@ const ensureSymlinkSync = (target: URL | string, linkName: URL | string, type?: 
         const linkStatInfo = lstatSync(linkName);
 
         if (!linkStatInfo.isSymbolicLink()) {
-            // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
-            throw new AlreadyExistsError("A " + getFileInfoType(linkStatInfo) + " already exists at the path: " + (linkName as string));
+            throw new AlreadyExistsError(`A ${getFileInfoType(linkStatInfo)} already exists at the path: ${linkName as string}`);
         }
 
         // eslint-disable-next-line security/detect-non-literal-fs-filename
@@ -100,10 +97,7 @@ const ensureSymlinkSync = (target: URL | string, linkName: URL | string, type?: 
         const linkRealPath = toNamespacedPath(resolve(linkPath));
 
         if (linkRealPath !== targetRealPath) {
-            throw new AlreadyExistsError(
-                // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
-                ("A symlink targeting to an undesired path already exists: " + (linkName as string) + " -> " + linkRealPath) as string,
-            );
+            throw new AlreadyExistsError(`A symlink targeting to an undesired path already exists: ${linkName as string} -> ${linkRealPath}` as string);
         }
     }
 };

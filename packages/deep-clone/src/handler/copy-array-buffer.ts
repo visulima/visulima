@@ -6,7 +6,7 @@ const copyArrayBuffer = <Value extends ArrayBuffer | ArrayBufferView | Buffer | 
         BigInt64Array,
         BigUint64Array,
         // @ts-expect-error - Buffer has no constructor
-        // eslint-disable-next-line @typescript-eslint/unbound-method
+
         Buffer: Buffer.from,
         Float32Array,
         Float64Array,
@@ -32,12 +32,11 @@ const copyArrayBuffer = <Value extends ArrayBuffer | ArrayBufferView | Buffer | 
     const Ctor = typeHandlers[arrayBuffer.constructor.name] ?? undefined;
 
     if (Ctor) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return new Ctor(arrayBuffer);
     }
 
     // @ts-expect-error - Fallback to ArrayBufferView
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+
     return new (arrayBuffer as ArrayBufferView).constructor([...arrayBuffer.buffer], arrayBuffer.byteOffset, arrayBuffer.length);
 };
 

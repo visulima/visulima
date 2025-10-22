@@ -100,7 +100,6 @@ const generateSwaggerResponse = (routeType: RouteType, modelName: string): { con
         };
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (routeType === RouteType.UPDATE) {
         return {
             content: {
@@ -136,15 +135,15 @@ const getRouteTypeMethod = (routeType: RouteType): HttpMethod => {
         case RouteType.CREATE: {
             return "post";
         }
+        case RouteType.DELETE: {
+            return "delete";
+        }
         case RouteType.READ_ALL:
         case RouteType.READ_ONE: {
             return "get";
         }
         case RouteType.UPDATE: {
             return "put";
-        }
-        case RouteType.DELETE: {
-            return "delete";
         }
         default: {
             throw new TypeError(`Method for route type ${routeType as string} was not found.`);
@@ -163,7 +162,6 @@ const generateSwaggerPathObject = <M extends string>({
 
     routeTypes.forEach((routeType) => {
         if (routeTypes.includes(routeType)) {
-            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
             const returnType = modelsConfig?.[modelName]?.routeTypes?.[routeType]?.response.name ?? modelsConfig?.[modelName]?.type?.name ?? modelName;
             const method: HttpMethod = getRouteTypeMethod(routeType);
             const response = generateSwaggerResponse(routeType, returnType);
@@ -180,10 +178,9 @@ const generateSwaggerPathObject = <M extends string>({
                 responses: {
                     [response.statusCode]: response.content,
 
-                    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                     ...modelsConfig?.[modelName]?.routeTypes?.[routeType]?.responses,
                 },
-                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
                 summary: modelsConfig?.[modelName]?.routeTypes?.[routeType]?.summary,
                 tags: [tag],
             };
@@ -216,10 +213,8 @@ const getSwaggerPaths = <M extends string>({ models, modelsConfig, routes, route
     Object.keys(routes).reduce((accumulator: Record<string, any>, value: M | string) => {
         const routeTypes = routes[value] as RouteType[];
 
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        const resourceName = models?.[value]?.name ? (models[value] as ModelOption).name : (routesMap?.[value as M] ?? value);
+        const resourceName = models?.[value]?.name ? (models[value] as ModelOption).name : routesMap?.[value as M] ?? value;
 
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         const tag = modelsConfig?.[value]?.tag.name ?? value;
 
         if (routeTypes.includes(RouteType.CREATE) || routeTypes.includes(RouteType.READ_ALL)) {

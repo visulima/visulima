@@ -222,7 +222,7 @@ describe("grid core tests", () => {
             grid.toString();
 
             expect(consoleWarnSpy).toHaveBeenCalledTimes(1);
-            expect(consoleWarnSpy).toHaveBeenCalledWith(expect.stringContaining("Could not find position for item"));
+            expect(consoleWarnSpy).toHaveBeenCalledExactlyOnceWith(expect.stringContaining("Could not find position for item"));
         });
 
         it("should warn when an item cannot be placed (grid full, autoFlow: column)", () => {
@@ -235,7 +235,7 @@ describe("grid core tests", () => {
             grid.toString();
 
             expect(consoleWarnSpy).toHaveBeenCalledTimes(1);
-            expect(consoleWarnSpy).toHaveBeenCalledWith(expect.stringContaining("Could not find position for item"));
+            expect(consoleWarnSpy).toHaveBeenCalledExactlyOnceWith(expect.stringContaining("Could not find position for item"));
         });
 
         it("should warn when an item cannot be placed due to existing spans", () => {
@@ -248,7 +248,7 @@ describe("grid core tests", () => {
             grid.toString();
 
             expect(consoleWarnSpy).toHaveBeenCalledTimes(1);
-            expect(consoleWarnSpy).toHaveBeenCalledWith(expect.stringContaining("Could not find position for item"));
+            expect(consoleWarnSpy).toHaveBeenCalledExactlyOnceWith(expect.stringContaining("Could not find position for item"));
         });
     });
 });

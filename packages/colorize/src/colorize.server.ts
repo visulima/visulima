@@ -28,7 +28,7 @@ const wrapText = (
 
     let string
         = (strings as { raw?: ArrayLike<string> | ReadonlyArray<string> | null }).raw == undefined
-            ? ((`${strings as number | string}`) as string)
+            ? (`${strings as number | string}` as string)
             : String.raw(strings as { raw: ArrayLike<string> | ReadonlyArray<string> }, ...values);
 
     if (string.includes("\u001B")) {

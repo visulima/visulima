@@ -1,3 +1,63 @@
+## @visulima/fs [4.0.2](https://github.com/visulima/visulima/compare/@visulima/fs@4.0.1...@visulima/fs@4.0.2) (2025-10-21)
+
+### Bug Fixes
+
+* allow node v25 and updated dev deps ([8158cc5](https://github.com/visulima/visulima/commit/8158cc53ec92bd0331e8c6bd0fcbc8ab61b9320f))
+
+### Miscellaneous Chores
+
+* update copyright year in LICENSE.md files ([c46a28d](https://github.com/visulima/visulima/commit/c46a28d2afb4cc7d73a7edde9a271a7156f87eae))
+* update license years and add validation rules ([b97811e](https://github.com/visulima/visulima/commit/b97811ed2d253d908c0d86b4579a0a6bc33673a8))
+
+
+### Dependencies
+
+* **@visulima/path:** upgraded to 2.0.1
+* **@visulima/error:** upgraded to 5.0.2
+
+## @visulima/fs [4.0.1](https://github.com/visulima/visulima/compare/@visulima/fs@4.0.0...@visulima/fs@4.0.1) (2025-10-20)
+
+### Bug Fixes
+
+* **deps:** update minor updates ([#455](https://github.com/visulima/visulima/issues/455)) ([cebf7dc](https://github.com/visulima/visulima/commit/cebf7dcdc7f6ca423ad141f90f6c30279f5fa392))
+* **deps:** update patch updates ([#452](https://github.com/visulima/visulima/issues/452)) ([4da5cbd](https://github.com/visulima/visulima/commit/4da5cbd411ccd961be7fd6f454aaec841e220b5e))
+
+### Miscellaneous Chores
+
+* **deps:** update package versions and dependencies ([88d8d32](https://github.com/visulima/visulima/commit/88d8d32c4629a7a06c8770369191da2cc81087cc))
+* update package dependencies across multiple packages ([17e3f23](https://github.com/visulima/visulima/commit/17e3f2377c8a3f98e2eed2192c5adaf6e32558b5))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 5.0.1
+
+## @visulima/fs [4.0.0](https://github.com/visulima/visulima/compare/@visulima/fs@3.1.9...@visulima/fs@4.0.0) (2025-10-15)
+
+### ⚠ BREAKING CHANGES
+
+* Adjusted the node engine requirement to support versions 20.19 and above
+
+### Features
+
+* Adjusted the node engine requirement to support versions 20.19 and above ([cd2a95f](https://github.com/visulima/visulima/commit/cd2a95fd5af8c551ed8a26f9e19f647075a6a374))
+
+### Bug Fixes
+
+* update @visulima/packem to 2.0.0-alpha.30 across multiple packages for improved compatibility ([27b346e](https://github.com/visulima/visulima/commit/27b346eaa1c0fb0e420d9a9824482028307f4249))
+
+### Miscellaneous Chores
+
+* update ESLint configuration and improve linting commands ([97bcdbf](https://github.com/visulima/visulima/commit/97bcdbf1430d3a6859a2aacb42403f74c19bde4e))
+* update package dependencies across multiple packages for improved compatibility and performance ([9567591](https://github.com/visulima/visulima/commit/9567591c415da3002f3a4fe08f8caf7ce01ca5f7))
+* update type-fest dependency and adjust package configurations ([e8a1d89](https://github.com/visulima/visulima/commit/e8a1d8969f5e15f9323b1ca2a4bcff1beb8446fb))
+
+
+### Dependencies
+
+* **@visulima/path:** upgraded to 2.0.0
+* **@visulima/error:** upgraded to 5.0.0
+
 ## @visulima/fs [3.1.9](https://github.com/visulima/visulima/compare/@visulima/fs@3.1.8...@visulima/fs@3.1.9) (2025-09-23)
 
 ### Miscellaneous Chores

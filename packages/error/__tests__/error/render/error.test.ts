@@ -9,7 +9,7 @@ const hoisted = vi.hoisted(() => {
     };
 });
 
-vi.mock("node:fs", async () => {
+vi.mock(import("node:fs"), async () => {
     const original = await vi.importActual("node:fs");
 
     return {
@@ -18,12 +18,13 @@ vi.mock("node:fs", async () => {
     };
 });
 
-describe("renderError", () => {
+describe(renderError, () => {
     it("should render error message with default options", () => {
         expect.assertions(1);
 
         const error = new Error("This is an example error message");
         const errorOutput = renderError(error);
+
         expect(errorOutput).toContain("Error: This is an example error message");
     });
 
@@ -40,6 +41,7 @@ describe("renderError", () => {
             },
         };
         const errorOutput = renderError(error, options);
+
         expect(errorOutput).toContain("\u001B[31mError: This is an example error message\u001B[39m");
     });
 
@@ -147,7 +149,7 @@ describe("renderError", () => {
         expect(found).toBeLessThanOrEqual(2);
     });
 
-    it.skipIf(!global.AggregateError)("should render error messages for multiple errors in AggregateError", () => {
+    it.skipIf(!globalThis.AggregateError)("should render error messages for multiple errors in AggregateError", () => {
         expect.assertions(3);
 
         const error1 = new Error("Error 1");
@@ -162,7 +164,7 @@ describe("renderError", () => {
         expect(errorsOutput).toContain("Error 2");
     });
 
-    it.skipIf(!global.AggregateError)("should handle nested errors within AggregateError", () => {
+    it.skipIf(!globalThis.AggregateError)("should handle nested errors within AggregateError", () => {
         expect.assertions(1);
 
         // eslint-disable-next-line unicorn/error-message
@@ -175,6 +177,7 @@ describe("renderError", () => {
             hideErrorCodeView: true,
             hideErrorErrorsCodeView: true,
         });
+
         expect(errorsOutput).toMatchSnapshot();
     });
 

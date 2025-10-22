@@ -596,7 +596,7 @@ export class Grid {
                         remainder: (availableWidth * proportion) % 1,
                     };
                 })
-                .sort((a, b) => b.remainder - a.remainder);
+                .toSorted((a, b) => b.remainder - a.remainder);
 
             for (const { index } of indices) {
                 if (remainingWidth <= 0) {
@@ -1000,6 +1000,7 @@ export class Grid {
             processedLines = processedLines.map((line) => truncate(line, baseContentWidth, truncateOptions));
         } else {
             // Ensure lines fit even if truncate/wrap are off
+            // eslint-disable-next-line @stylistic/no-extra-parens
             processedLines = processedLines.map((line) => (getStringWidth(line) > baseContentWidth ? truncate(line, baseContentWidth, {}) : line));
         }
 
@@ -1124,13 +1125,13 @@ export class Grid {
             // cellAbove starts here (isStartCol is true)
             // = cellAbove;
 
-            const colSpan = definingCell.colSpan ?? 1;
+            const colSpan = definingCell?.colSpan ?? 1;
             const isVerticalSpan = borderType === "middle" && cellBelow && cellAbove === cellBelow;
 
             // Determine segment: content, spaces, or dashes
-            if (borderType === "middle" && isVerticalSpan) {
+            if (borderType === "middle" && isVerticalSpan && definingCell) {
                 // CASE: Cell spans vertically across this MIDDLE border
-                const isMiddleAligned = definingCell.vAlign === "middle";
+                const isMiddleAligned = definingCell?.vAlign === "middle";
                 // Use cached vertical position
                 const { firstRow, lastRow } = this.getCachedCellVerticalPosition(gridLayout, rowIndex, col, definingCell);
                 const rowSpanCount = lastRow - firstRow + 1;

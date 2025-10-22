@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import RawReporter from "../../../../src/reporter/raw/raw.browser";
+import RawReporter from "../../../../src/reporter/raw/raw-reporter.browser";
 import type { ReadonlyMeta } from "../../../../src/types";
 
 describe("raw-reporter", () => {
@@ -30,11 +30,11 @@ describe("raw-reporter", () => {
 
         const consoleLogFunction = vi.fn();
 
-        vi.spyOn(global.console, "log").mockImplementation(consoleLogFunction);
+        vi.spyOn(globalThis.console, "log").mockImplementation(consoleLogFunction);
 
         rawReporter.log(meta as unknown as ReadonlyMeta<string>);
 
-        expect(consoleLogFunction).toHaveBeenCalledWith("This is a message");
+        expect(consoleLogFunction).toHaveBeenCalledExactlyOnceWith("This is a message");
     });
 
     it("should log a message to stdout when given a message and context", () => {
@@ -63,11 +63,11 @@ describe("raw-reporter", () => {
 
         const consoleLogFunction = vi.fn();
 
-        vi.spyOn(global.console, "log").mockImplementation(consoleLogFunction);
+        vi.spyOn(globalThis.console, "log").mockImplementation(consoleLogFunction);
 
         rawReporter.log(meta as unknown as ReadonlyMeta<string>);
 
-        expect(consoleLogFunction).toHaveBeenCalledWith("This is a message", 1, 2, 3);
+        expect(consoleLogFunction).toHaveBeenCalledExactlyOnceWith("This is a message", 1, 2, 3);
     });
 
     it("should log a message to stderr when given a message with level 'error'", () => {
@@ -96,11 +96,11 @@ describe("raw-reporter", () => {
 
         const consoleLogFunction = vi.fn();
 
-        vi.spyOn(global.console, "error").mockImplementation(consoleLogFunction);
+        vi.spyOn(globalThis.console, "error").mockImplementation(consoleLogFunction);
 
         rawReporter.log(meta as unknown as ReadonlyMeta<string>);
 
-        expect(consoleLogFunction).toHaveBeenCalledWith("This is an error message");
+        expect(consoleLogFunction).toHaveBeenCalledExactlyOnceWith("This is an error message");
     });
 
     it("should log a message to stderr when given a message with level 'trace'", () => {
@@ -129,11 +129,11 @@ describe("raw-reporter", () => {
 
         const consoleLogFunction = vi.fn();
 
-        vi.spyOn(global.console, "trace").mockImplementation(consoleLogFunction);
+        vi.spyOn(globalThis.console, "trace").mockImplementation(consoleLogFunction);
 
         rawReporter.log(meta as unknown as ReadonlyMeta<string>);
 
-        expect(consoleLogFunction).toHaveBeenCalledWith("This is a trace message");
+        expect(consoleLogFunction).toHaveBeenCalledExactlyOnceWith("This is a trace message");
     });
 
     it("should log a message to stdout when given an empty message", () => {
@@ -162,10 +162,10 @@ describe("raw-reporter", () => {
 
         const consoleLogFunction = vi.fn();
 
-        vi.spyOn(global.console, "log").mockImplementation(consoleLogFunction);
+        vi.spyOn(globalThis.console, "log").mockImplementation(consoleLogFunction);
 
         rawReporter.log(meta as unknown as ReadonlyMeta<string>);
 
-        expect(consoleLogFunction).toHaveBeenCalledWith("");
+        expect(consoleLogFunction).toHaveBeenCalledExactlyOnceWith("");
     });
 });

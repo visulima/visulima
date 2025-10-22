@@ -1,3 +1,51 @@
+## @visulima/error [5.0.2](https://github.com/visulima/visulima/compare/@visulima/error@5.0.1...@visulima/error@5.0.2) (2025-10-21)
+
+### Bug Fixes
+
+* allow node v25 and updated dev deps ([8158cc5](https://github.com/visulima/visulima/commit/8158cc53ec92bd0331e8c6bd0fcbc8ab61b9320f))
+
+### Miscellaneous Chores
+
+* update copyright year in LICENSE.md files ([c46a28d](https://github.com/visulima/visulima/commit/c46a28d2afb4cc7d73a7edde9a271a7156f87eae))
+* update license years and add validation rules ([b97811e](https://github.com/visulima/visulima/commit/b97811ed2d253d908c0d86b4579a0a6bc33673a8))
+
+
+### Dependencies
+
+* **@visulima/path:** upgraded to 2.0.1
+
+## @visulima/error [5.0.1](https://github.com/visulima/visulima/compare/@visulima/error@5.0.0...@visulima/error@5.0.1) (2025-10-20)
+
+### Bug Fixes
+
+* **deps:** update patch updates ([#452](https://github.com/visulima/visulima/issues/452)) ([4da5cbd](https://github.com/visulima/visulima/commit/4da5cbd411ccd961be7fd6f454aaec841e220b5e))
+
+### Miscellaneous Chores
+
+* **deps:** update package versions and dependencies ([88d8d32](https://github.com/visulima/visulima/commit/88d8d32c4629a7a06c8770369191da2cc81087cc))
+* update package dependencies across multiple packages ([17e3f23](https://github.com/visulima/visulima/commit/17e3f2377c8a3f98e2eed2192c5adaf6e32558b5))
+
+## @visulima/error [5.0.0](https://github.com/visulima/visulima/compare/@visulima/error@4.6.2...@visulima/error@5.0.0) (2025-10-15)
+
+### ⚠ BREAKING CHANGES
+
+* Adjusted the node engine requirement to support versions 20.19 and above
+
+### Bug Fixes
+
+* Adjusted the node engine requirement to support versions 20.19 and above ([92fb543](https://github.com/visulima/visulima/commit/92fb543b04652a46e108e3d831ccf3f7c0957293))
+* update @visulima/packem to 2.0.0-alpha.30 across multiple packages for improved compatibility ([27b346e](https://github.com/visulima/visulima/commit/27b346eaa1c0fb0e420d9a9824482028307f4249))
+* update ESLint configuration and enhance package dependencies for improved performance ([5b5196f](https://github.com/visulima/visulima/commit/5b5196f85f93ad4219967331c8965d2e2a39d72a))
+
+### Miscellaneous Chores
+
+* update package dependencies across multiple packages for improved compatibility and performance ([9567591](https://github.com/visulima/visulima/commit/9567591c415da3002f3a4fe08f8caf7ce01ca5f7))
+
+
+### Dependencies
+
+* **@visulima/path:** upgraded to 2.0.0
+
 ## @visulima/error [4.6.2](https://github.com/visulima/visulima/compare/@visulima/error@4.6.1...@visulima/error@4.6.2) (2025-09-23)
 
 ### Bug Fixes

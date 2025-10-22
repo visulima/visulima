@@ -1,3 +1,41 @@
+## @visulima/ono [1.0.7](https://github.com/visulima/visulima/compare/@visulima/ono@1.0.6...@visulima/ono@1.0.7) (2025-10-21)
+
+### Bug Fixes
+
+* allowed node v25 ([4b3023b](https://github.com/visulima/visulima/commit/4b3023bf2423b85e118af49ade096aec7534653f))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 5.0.2
+* **@visulima/path:** upgraded to 2.0.1
+
+## @visulima/ono [1.0.6](https://github.com/visulima/visulima/compare/@visulima/ono@1.0.5...@visulima/ono@1.0.6) (2025-10-20)
+
+### Bug Fixes
+
+* **deps:** update minor updates ([#455](https://github.com/visulima/visulima/issues/455)) ([cebf7dc](https://github.com/visulima/visulima/commit/cebf7dcdc7f6ca423ad141f90f6c30279f5fa392))
+* **deps:** update patch updates ([#452](https://github.com/visulima/visulima/issues/452)) ([4da5cbd](https://github.com/visulima/visulima/commit/4da5cbd411ccd961be7fd6f454aaec841e220b5e))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 5.0.1
+
+## @visulima/ono [1.0.5](https://github.com/visulima/visulima/compare/@visulima/ono@1.0.4...@visulima/ono@1.0.5) (2025-10-15)
+
+### Bug Fixes
+
+* update @visulima/packem to 2.0.0-alpha.30 across multiple packages for improved compatibility ([27b346e](https://github.com/visulima/visulima/commit/27b346eaa1c0fb0e420d9a9824482028307f4249))
+* update dependencies and lock file ([1ad755e](https://github.com/visulima/visulima/commit/1ad755e4a4b68fb194631cf8fe5f9ddb312bc261))
+* update dependencies and packem configuration ([d4fbbc2](https://github.com/visulima/visulima/commit/d4fbbc20dc92426437ff1769f5f8364328f5ddbe))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 5.0.0
+* **@visulima/path:** upgraded to 2.0.0
+
 ## @visulima/ono [1.0.4](https://github.com/visulima/visulima/compare/@visulima/ono@1.0.3...@visulima/ono@1.0.4) (2025-09-23)
 
 

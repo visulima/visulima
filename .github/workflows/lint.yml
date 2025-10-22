@@ -83,7 +83,7 @@ jobs:
               id: "setup"
               uses: "anolilab/workflows/step/setup@main"
               with:
-                  node-version: "20.x"
+                  node-version: "22.x"
                   cache-prefix: "lint"
 
             # Temporary solution until Nx solve this https://github.com/nrwl/nx/issues/22259
@@ -135,7 +135,7 @@ jobs:
               id: "setup"
               uses: "anolilab/workflows/step/setup@main"
               with:
-                  node-version: "20.x"
+                  node-version: "22.x"
                   cache-prefix: "lint"
 
             # Temporary solution until Nx solve this https://github.com/nrwl/nx/issues/22259
@@ -187,7 +187,7 @@ jobs:
               id: "setup"
               uses: "anolilab/workflows/step/setup@main"
               with:
-                  node-version: "20.x"
+                  node-version: "22.x"
                   cache-prefix: "lint"
 
             # Temporary solution until Nx solve this https://github.com/nrwl/nx/issues/22259
@@ -239,7 +239,7 @@ jobs:
               id: "setup"
               uses: "anolilab/workflows/step/setup@main"
               with:
-                  node-version: "20.x"
+                  node-version: "22.x"
                   cache-prefix: "lint"
 
             # Temporary solution until Nx solve this https://github.com/nrwl/nx/issues/22259
@@ -328,11 +328,11 @@ jobs:
                   GIT_AUTHOR_NAME: "GitHub Actions Shell"
                   EMAIL: "github-actions[bot]@users.noreply.github.com"
 
-            - uses: "pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda" # v4.1.0
+            - uses: "pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061" # v4.2.0
               with:
                   run_install: false
 
-            - name: "Use Node.js 20.x"
+            - name: "Use Node.js 22.x"
               uses: "actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020" # v4.4.0
               with:
                   node-version: "20.19.5"

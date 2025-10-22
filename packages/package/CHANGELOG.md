@@ -1,3 +1,58 @@
+## @visulima/package [4.1.2](https://github.com/visulima/visulima/compare/@visulima/package@4.1.1...@visulima/package@4.1.2) (2025-10-21)
+
+### Bug Fixes
+
+* allow node v25 and updated dev deps ([8158cc5](https://github.com/visulima/visulima/commit/8158cc53ec92bd0331e8c6bd0fcbc8ab61b9320f))
+
+### Miscellaneous Chores
+
+* update license years and add validation rules ([b97811e](https://github.com/visulima/visulima/commit/b97811ed2d253d908c0d86b4579a0a6bc33673a8))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 4.0.2
+* **@visulima/path:** upgraded to 2.0.1
+
+## @visulima/package [4.1.1](https://github.com/visulima/visulima/compare/@visulima/package@4.1.0...@visulima/package@4.1.1) (2025-10-20)
+
+### Documentation
+
+* update migration guide for @visulima/package v4.0.0 ([695b8c3](https://github.com/visulima/visulima/commit/695b8c38c3291d4f060a22d4b53f0bf647c82cb8))
+
+### Miscellaneous Chores
+
+* **deps:** update package versions and dependencies ([88d8d32](https://github.com/visulima/visulima/commit/88d8d32c4629a7a06c8770369191da2cc81087cc))
+* update package dependencies across multiple packages ([17e3f23](https://github.com/visulima/visulima/commit/17e3f2377c8a3f98e2eed2192c5adaf6e32558b5))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 4.0.1
+
+## @visulima/package [4.1.0](https://github.com/visulima/visulima/compare/@visulima/package@4.0.2...@visulima/package@4.1.0) (2025-10-15)
+
+### Features
+
+* Support pnpm package yaml and json5 ([#531](https://github.com/visulima/visulima/issues/531)) ([3b6591c](https://github.com/visulima/visulima/commit/3b6591c400be2ee435929f34f2560dac06b7cd3d))
+
+### Bug Fixes
+
+* update @visulima/packem to 2.0.0-alpha.30 across multiple packages for improved compatibility ([27b346e](https://github.com/visulima/visulima/commit/27b346eaa1c0fb0e420d9a9824482028307f4249))
+* update LICENSE.md and package.json dependencies ([cea0533](https://github.com/visulima/visulima/commit/cea0533dda1161c2280a823d2ecaefb814818535))
+
+### Miscellaneous Chores
+
+* update linting commands and dependencies in package.json ([6a479b0](https://github.com/visulima/visulima/commit/6a479b04251d2bdde39ace13548b067b86d00c86))
+* update package dependencies across multiple packages for improved compatibility and performance ([9567591](https://github.com/visulima/visulima/commit/9567591c415da3002f3a4fe08f8caf7ce01ca5f7))
+* update type-fest dependency and adjust package configurations ([e8a1d89](https://github.com/visulima/visulima/commit/e8a1d8969f5e15f9323b1ca2a4bcff1beb8446fb))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 4.0.0
+* **@visulima/path:** upgraded to 2.0.0
+
 ## @visulima/package [4.0.2](https://github.com/visulima/visulima/compare/@visulima/package@4.0.1...@visulima/package@4.0.2) (2025-10-02)
 
 ### Bug Fixes

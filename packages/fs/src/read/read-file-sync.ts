@@ -18,13 +18,12 @@ const decompressionMethods = {
 /**
  * Synchronously reads the entire contents of a file.
  * It can also decompress the file content if a `compression` option is provided.
- *
  * @template O - The type of the options object, extending {@link ReadFileOptions}.
  * @param path The path to the file to read. Can be a file URL or a string path.
  * @param options Optional configuration for reading the file. See {@link ReadFileOptions}.
- *                Available `compression` methods: "brotli", "gzip", "none" (default).
+ * Available `compression` methods: "brotli", "gzip", "none" (default).
  * @returns The file content. The type of the content (string or Buffer)
- *          depends on the `buffer` option (defaults to string if `buffer` is false or not set).
+ * depends on the `buffer` option (defaults to string if `buffer` is false or not set).
  * @example
  * ```javascript
  * import { readFileSync } from "@visulima/fs";

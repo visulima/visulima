@@ -1,5 +1,6 @@
-import * as walk from "empathic/walk";
 import { dirname, isAbsolute, resolve, sep } from "node:path";
+
+import { up } from "empathic/walk";
 import { bench, describe } from "vitest";
 
 import visulimaWalk from "../src/find/walk";
@@ -9,41 +10,43 @@ import visulimaWalkSync from "../src/find/walk-sync";
 // let start = resolve('fixtures/a/b/c/d/e/f/g/h/i/j/start.txt');
 const start = "fixtures/a/b/c/d/e/f/g/h/i/j/start.txt";
 
-const absolute = (input: string, root?: string): string => {
-    return isAbsolute(input) ? input : resolve(root || ".", input);
-};
+const absolute = (input: string, root?: string): string => (isAbsolute(input) ? input : resolve(root || ".", input));
 
 function alt1(base: string) {
-    let prev = absolute(base);
-    let tmp = dirname(prev);
-    let arr: string[] = [];
+    let previous = absolute(base);
+    let temporary = dirname(previous);
+    const array: string[] = [];
 
     while (true) {
-        arr.push(tmp);
-        tmp = dirname((prev = tmp));
-        if (tmp === prev) return arr;
+        array.push(temporary);
+        temporary = dirname(previous = temporary);
+
+        if (temporary === previous)
+            return array;
     }
 }
 
 function split1(input: string) {
-    let arr = (isAbsolute(input) ? input : resolve(input)).split(sep);
-    let i = 0,
-        len = arr.length,
-        output = Array<string>(len);
-    for (; i < len; i++) {
-        output[i] = arr.slice(0, len - i).join(sep);
+    const array = (isAbsolute(input) ? input : resolve(input)).split(sep);
+    let index = 0;
+    const length_ = array.length;
+    const output = new Array<string>(length_);
+
+    for (; index < length_; index++) {
+        output[index] = array.slice(0, length_ - index).join(sep);
     }
+
     return output;
 }
 
 function split2(input: string) {
-    let output: string[] = [];
-    let base = isAbsolute(input) ? input : resolve(input);
+    const output: string[] = [];
+    const base = isAbsolute(input) ? input : resolve(input);
 
     let match: RegExpExecArray | null;
-    let rgx = new RegExp("[" + sep + "]+", "g");
+    const rgx = new RegExp(`[${sep}]+`, "g");
 
-    while ((match = rgx.exec(base))) {
+    while (match = rgx.exec(base)) {
         output.push(base.slice(0, match.index) || "/");
     }
 
@@ -51,13 +54,13 @@ function split2(input: string) {
 }
 
 function split3(input: string) {
-    let base = isAbsolute(input) ? input : resolve(input);
-    let len = base.length,
-        output: string[] = [];
+    const base = isAbsolute(input) ? input : resolve(input);
+    let length_ = base.length;
+    const output: string[] = [];
 
-    while (len-- > 0) {
-        if (base.charCodeAt(len) === 47) {
-            output.push(base.slice(0, len) || "/");
+    while (length_-- > 0) {
+        if (base.charCodeAt(length_) === 47) {
+            output.push(base.slice(0, length_) || "/");
         }
     }
 
@@ -65,13 +68,13 @@ function split3(input: string) {
 }
 
 function split4(input: string) {
-    let base = isAbsolute(input) ? input : resolve(input);
-    let len = base.length,
-        output: string[] = [];
+    const base = isAbsolute(input) ? input : resolve(input);
+    let length_ = base.length;
+    const output: string[] = [];
 
-    while (len-- > 0) {
-        if (base.charAt(len) === sep) {
-            output.push(base.slice(0, len) || sep);
+    while (length_-- > 0) {
+        if (base.charAt(length_) === sep) {
+            output.push(base.slice(0, length_) || sep);
         }
     }
 
@@ -81,56 +84,64 @@ function split4(input: string) {
 describe("walk.up and split variants", () => {
     bench("empathic/walk.up (no options)", () => {
         let total = 0;
-        for (let _ of alt1(start)) {
+
+        for (const _ of alt1(start)) {
             total += 1;
         }
     });
 
     bench("empathic/walk.up", () => {
         let total = 0;
-        for (let _ of walk.up(start)) {
+
+        for (const _ of up(start)) {
             total += 1;
         }
     });
 
     bench("@visulima/fs walk", async () => {
         let total = 0;
-        for await (let _ of visulimaWalk(dirname(start), {})) {
+
+        for await (const _ of visulimaWalk(dirname(start), {})) {
             total += 1;
         }
     });
 
     bench("@visulima/fs walk-sync", () => {
         let total = 0;
-        for (let _ of visulimaWalkSync(dirname(start), {})) {
+
+        for (const _ of visulimaWalkSync(dirname(start), {})) {
             total += 1;
         }
     });
 
     bench("split1", () => {
         let total = 0;
-        for (let _ of split1(start)) {
+
+        for (const _ of split1(start)) {
             total += 1;
         }
     });
 
     bench("split2", () => {
         let total = 0;
-        for (let _ of split2(start)) {
+
+        for (const _ of split2(start)) {
             total += 1;
         }
     });
 
     bench("split3", () => {
         let total = 0;
-        for (let _ of split3(start)) {
+
+        for (const _ of split3(start)) {
             total += 1;
         }
     });
 
     bench("split4", () => {
         let total = 0;
-        for (let _ of split4(start)) {
+
+        for (const _ of split4(start)) {
             total += 1;
         }
     });

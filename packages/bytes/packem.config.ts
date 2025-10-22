@@ -8,18 +8,16 @@ export default defineConfig({
         license: {
             path: "./LICENSE.md",
         },
-        node10Compatibility: {
-            writeToPackageJson: true,
-            typeScriptVersion: ">=5.0",
+        requireCJS: {
+            builtinNodeModules: true,
         },
     },
     validation: {
         dependencies: {
             hoisted: {
-                exclude: ["@jsr/std__bytes"]
-            }
-        }
+                exclude: ["@jsr/std__bytes"],
+            },
+        },
     },
     transformer,
-    cjsInterop: true,
 }) as BuildConfig;

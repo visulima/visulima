@@ -1,3 +1,35 @@
+## @visulima/prisma-dmmf-transformer [2.0.33](https://github.com/visulima/visulima/compare/@visulima/prisma-dmmf-transformer@2.0.32...@visulima/prisma-dmmf-transformer@2.0.33) (2025-10-21)
+
+### Bug Fixes
+
+* allow node v25 and updated dev deps ([8158cc5](https://github.com/visulima/visulima/commit/8158cc53ec92bd0331e8c6bd0fcbc8ab61b9320f))
+
+### Miscellaneous Chores
+
+* **deps:** update package versions and dependencies ([88d8d32](https://github.com/visulima/visulima/commit/88d8d32c4629a7a06c8770369191da2cc81087cc))
+* update license years and add validation rules ([b97811e](https://github.com/visulima/visulima/commit/b97811ed2d253d908c0d86b4579a0a6bc33673a8))
+
+## @visulima/prisma-dmmf-transformer [2.0.32](https://github.com/visulima/visulima/compare/@visulima/prisma-dmmf-transformer@2.0.31...@visulima/prisma-dmmf-transformer@2.0.32) (2025-10-15)
+
+### Bug Fixes
+
+* update dependencies in prisma-dmmf-transformer ([b36bcae](https://github.com/visulima/visulima/commit/b36bcae3f7afe7bbfad8c573e70f9d97c3b7ae35))
+
+## @visulima/prisma-dmmf-transformer [2.0.31](https://github.com/visulima/visulima/compare/@visulima/prisma-dmmf-transformer@2.0.30...@visulima/prisma-dmmf-transformer@2.0.31) (2025-10-15)
+
+### Bug Fixes
+
+* update @visulima/packem to 2.0.0-alpha.30 across multiple packages for improved compatibility ([27b346e](https://github.com/visulima/visulima/commit/27b346eaa1c0fb0e420d9a9824482028307f4249))
+* update dependencies and improve code structure for JSON schema transformation ([88947c4](https://github.com/visulima/visulima/commit/88947c47b1bb7d55a7b2650a9e6c1ac99882b66e))
+
+### Miscellaneous Chores
+
+* **deps:** update build scripts and remove cross-env dependency ([7510e82](https://github.com/visulima/visulima/commit/7510e826b9235a0013fe61c82a7eb333bc4cbb78))
+* update dependencies and fix linting issues ([0e802fe](https://github.com/visulima/visulima/commit/0e802fe02bb9ed791659cb5f3c77605ae5b42ec8))
+* update package dependencies across multiple packages for improved compatibility and performance ([9567591](https://github.com/visulima/visulima/commit/9567591c415da3002f3a4fe08f8caf7ce01ca5f7))
+* update package.json and pnpm-lock.yaml to include publint@0.3.12 and adjust build/test commands to exclude shared-utils ([1f7b3c0](https://github.com/visulima/visulima/commit/1f7b3c0381d77edfeec80ea1bf57b3469e929414))
+* update package.json scripts and vitest configuration ([6006ddf](https://github.com/visulima/visulima/commit/6006ddf468a500abb3f13223ea6e3a9876c0c31b))
+
 ## @visulima/prisma-dmmf-transformer [2.0.30](https://github.com/visulima/visulima/compare/@visulima/prisma-dmmf-transformer@2.0.29...@visulima/prisma-dmmf-transformer@2.0.30) (2025-09-10)
 
 ### Bug Fixes

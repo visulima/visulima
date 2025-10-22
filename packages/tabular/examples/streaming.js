@@ -1,5 +1,5 @@
-import { createTable } from "../dist";
-import { ROUNDED_BORDER } from "../dist/style.mjs";
+import { createTable } from "../dist/index.js";
+import { ROUNDED_BORDER } from "../dist/style.js";
 
 // Helper function to simulate streaming data
 const simulateDataStream = async (onData, interval = 1000, maxItems = 5) => {

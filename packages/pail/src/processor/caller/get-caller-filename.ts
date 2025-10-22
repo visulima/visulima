@@ -1,11 +1,39 @@
+/** Type alias for Node.js CallSite */
 type CallSite = NodeJS.CallSite;
 
-type CallSiteWithFileName = { columnNumber: number | null; fileName: string | undefined; lineNumber: number | null };
-
-const getCallerFilename = (): {
-    columnNumber?: number;
+/**
+ * Extended CallSite information with file details.
+ */
+type CallSiteWithFileName = {
+    /** Column number in the source file (nullable) */
+    columnNumber: number | null;
+    /** File name/path */
     fileName: string | undefined;
-    lineNumber: number | undefined;
+    /** Line number in the source file (nullable) */
+    lineNumber: number | null;
+};
+
+/**
+ * Gets the file location information of the caller.
+ *
+ * Uses Node.js stack trace API to analyze the call stack and determine
+ * the file, line, and column where this function was called from.
+ * Filters out internal pail files and native code.
+ * @returns Object containing file location information
+ * @example
+ * ```typescript
+ * const location = getCallerFilename();
+ * console.log(location);
+ * // { fileName: "/path/to/file.js", lineNumber: 42, columnNumber: 10 }
+ * ```
+ */
+const getCallerFilename = (): {
+    /** Column number where the call originated */
+    columnNumber?: number;
+    /** File name/path where the call originated */
+    fileName: string | undefined;
+    /** Line number where the call originated */
+    lineNumber?: number;
 } => {
     const errorStack = Error.prepareStackTrace;
 
@@ -20,7 +48,7 @@ const getCallerFilename = (): {
             return callSitesWithoutCurrent;
         };
 
-        // eslint-disable-next-line unicorn/error-message,@typescript-eslint/no-unused-expressions
+        // eslint-disable-next-line unicorn/error-message
         new Error().stack;
 
         // eslint-disable-next-line unicorn/no-array-reduce
@@ -31,7 +59,7 @@ const getCallerFilename = (): {
 
             accumulator.push({
                 columnNumber: x.getColumnNumber(),
-                fileName: x.getFileName(),
+                fileName: x.getFileName() ?? undefined,
                 lineNumber: x.getLineNumber(),
             });
 

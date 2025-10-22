@@ -2,7 +2,7 @@ import { stderr, stdout } from "node:process";
 
 import { describe, expect, it, vi } from "vitest";
 
-import RawReporter from "../../../../src/reporter/raw/raw.server";
+import RawReporter from "../../../../src/reporter/raw/raw-reporter.server";
 import type { ReadonlyMeta } from "../../../../src/types";
 
 describe("raw-reporter", () => {
@@ -37,7 +37,7 @@ describe("raw-reporter", () => {
 
         rawReporter.log(meta as unknown as ReadonlyMeta<string>);
 
-        expect(stdoutWriteSpy).toHaveBeenCalledWith("This is a message");
+        expect(stdoutWriteSpy).toHaveBeenCalledExactlyOnceWith("This is a message");
     });
 
     it("should log a message to stdout when given a message, groups and no context", () => {
@@ -71,7 +71,7 @@ describe("raw-reporter", () => {
 
         rawReporter.log(meta as unknown as ReadonlyMeta<string>);
 
-        expect(stdoutWriteSpy).toHaveBeenCalledWith("    This is a message");
+        expect(stdoutWriteSpy).toHaveBeenCalledExactlyOnceWith("    This is a message");
     });
 
     it("should log a message to stdout when given a message and context", () => {
@@ -105,13 +105,14 @@ describe("raw-reporter", () => {
 
         rawReporter.log(meta as unknown as ReadonlyMeta<string>);
 
-        expect(stdoutWriteSpy).toHaveBeenCalledWith("This is a message 1 2 3");
+        expect(stdoutWriteSpy).toHaveBeenCalledExactlyOnceWith("This is a message 1 2 3");
     });
 
     it("should log a message to stderr when given a message with level 'error'", () => {
         expect.assertions(1);
 
         const rawReporter = new RawReporter();
+
         rawReporter.setStdout(stdout);
         rawReporter.setStderr(stderr);
 
@@ -138,13 +139,14 @@ describe("raw-reporter", () => {
 
         rawReporter.log(meta as unknown as ReadonlyMeta<string>);
 
-        expect(stderrWriteSpy).toHaveBeenCalledWith("This is an error message");
+        expect(stderrWriteSpy).toHaveBeenCalledExactlyOnceWith("This is an error message");
     });
 
     it("should log a message to stderr when given a message with level 'trace'", () => {
         expect.assertions(1);
 
         const rawReporter = new RawReporter();
+
         rawReporter.setStdout(stdout);
         rawReporter.setStderr(stderr);
 
@@ -171,13 +173,14 @@ describe("raw-reporter", () => {
 
         rawReporter.log(meta as unknown as ReadonlyMeta<string>);
 
-        expect(stderrWriteSpy).toHaveBeenCalledWith("This is a trace message");
+        expect(stderrWriteSpy).toHaveBeenCalledExactlyOnceWith("This is a trace message");
     });
 
     it("should log a message to stdout when given an empty message", () => {
         expect.assertions(1);
 
         const rawReporter = new RawReporter();
+
         rawReporter.setStdout(stdout);
         rawReporter.setStderr(stderr);
 
@@ -204,6 +207,6 @@ describe("raw-reporter", () => {
 
         rawReporter.log(meta as unknown as ReadonlyMeta<string>);
 
-        expect(stdoutWriteSpy).toHaveBeenCalledWith("");
+        expect(stdoutWriteSpy).toHaveBeenCalledExactlyOnceWith("");
     });
 });

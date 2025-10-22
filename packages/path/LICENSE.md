@@ -1,6 +1,6 @@
 MIT License
 
-Copyright (c) 2024 visulima
+Copyright (c) 2025 visulima
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -96,14 +96,11 @@ DEALINGS IN THE SOFTWARE.
 <!-- DEPENDENCIES -->
 
 # Licenses of bundled dependencies
-
 The published @visulima/path artifact additionally contains code with the following licenses:
 MIT
 
 # Bundled dependencies:
-
 ## binary-extensions
-
 License: MIT
 By: Sindre Sorhus
 Repository: sindresorhus/binary-extensions

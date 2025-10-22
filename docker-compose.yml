@@ -2,14 +2,14 @@ version: "3.7"
 
 services:
     db:
-        image: "postgres:16.3-alpine@sha256:36ed71227ae36305d26382657c0b96cbaf298427b3f1eaeb10d77a6dea3eec41"
+        image: "postgres:18.0-alpine@sha256:f898ac406e1a9e05115cc2efcb3c3abb3a92a4c0263f3b6f6aaae354cbb1953a"
         volumes:
             - "data:/var/lib/postgresql/data"
         ports:
             - "5432:5432"
 
     redis:
-        image: "redis:8.0.0-alpine@sha256:0779069b3c24a47a2f681855c1c01d046793e7c5f7d2b079c2aa0652c42eaf0e"
+        image: "redis:8.2.2-alpine@sha256:59b6e694653476de2c992937ebe1c64182af4728e54bb49e9b7a6c26614d8933"
         ports:
             - "6379:6379"
 

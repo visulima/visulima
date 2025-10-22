@@ -1,7 +1,7 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { PailBrowser } from "../../src/pail.browser";
-import RawReporter from "../../src/reporter/raw/raw.browser";
+import RawReporter from "../../src/reporter/raw/raw-reporter.browser";
 
 describe("pailBrowserImpl", () => {
     it("should log different types of messages correctly", () => {
@@ -30,8 +30,8 @@ describe("pailBrowserImpl", () => {
         logger.info("Info message");
         logger.customType("Custom log message", { key: "value" });
 
-        expect(consoleSpy).toHaveBeenCalledWith("Info message");
-        expect(consoleSpy).toHaveBeenCalledWith("Custom log message", { key: "value" });
+        expect(consoleSpy).toHaveBeenNthCalledWith(1, "Info message");
+        expect(consoleSpy).toHaveBeenNthCalledWith(2, "Custom log message", { key: "value" });
 
         consoleSpy.mockRestore();
     });
@@ -76,10 +76,12 @@ describe("pailBrowserImpl", () => {
         const originalConsoleLog = console.log;
 
         logger.wrapConsole();
+
         // eslint-disable-next-line no-console
         expect(console.log).not.toBe(originalConsoleLog);
 
         logger.restoreConsole();
+
         // eslint-disable-next-line no-console
         expect(console.log).toBe(originalConsoleLog);
     });
@@ -103,14 +105,15 @@ describe("pailBrowserImpl", () => {
         logger.timeLog("testTimer", "Intermediate log");
         logger.timeEnd("testTimer");
 
-        expect(consoleSpy).toHaveBeenCalledWith("Initialized timer...");
-        expect(consoleSpy).toHaveBeenCalledWith(expect.stringMatching(/(.*) ms/), "Intermediate log");
-        expect(consoleSpy).toHaveBeenCalledWith(expect.stringMatching(/Timer run for: (.*)ms/));
+        expect(consoleSpy).toHaveBeenNthCalledWith(1, "Initialized timer...");
+        // eslint-disable-next-line sonarjs/slow-regex
+        expect(consoleSpy).toHaveBeenNthCalledWith(2, expect.stringMatching(/(.*) ms/), "Intermediate log");
+        expect(consoleSpy).toHaveBeenNthCalledWith(3, expect.stringMatching(/Timer run for: (.*)ms/));
 
         consoleSpy.mockRestore();
     });
 
-    it.skipIf(typeof window === "undefined")("should group and ungroup logs correctly", () => {
+    it.skipIf(globalThis.window === undefined)("should group and ungroup logs correctly", () => {
         expect.assertions(2);
 
         const logger = new PailBrowser({
@@ -127,10 +130,12 @@ describe("pailBrowserImpl", () => {
         const consoleGroupEndSpy = vi.spyOn(console, "groupEnd").mockImplementation(() => {});
 
         logger.group("Test Group");
-        expect(consoleGroupSpy).toHaveBeenCalledWith("Test Group");
+
+        expect(consoleGroupSpy).toHaveBeenCalledExactlyOnceWith("Test Group");
 
         logger.groupEnd();
-        expect(consoleGroupEndSpy).toHaveBeenCalledWith();
+
+        expect(consoleGroupEndSpy).toHaveBeenCalledExactlyOnceWith();
 
         consoleGroupSpy.mockRestore();
         consoleGroupEndSpy.mockRestore();
@@ -177,8 +182,8 @@ describe("pailBrowserImpl", () => {
         logger.info(undefined);
         logger.info(null);
 
-        expect(consoleSpy).toHaveBeenCalledWith(undefined);
-        expect(consoleSpy).toHaveBeenCalledWith(null);
+        expect(consoleSpy).toHaveBeenNthCalledWith(1, undefined);
+        expect(consoleSpy).toHaveBeenNthCalledWith(2, null);
 
         consoleSpy.mockRestore();
     });
@@ -201,7 +206,7 @@ describe("pailBrowserImpl", () => {
         logger.time("testTimer");
         logger.time("testTimer");
 
-        expect(consoleSpy).toHaveBeenCalledWith("Timer 'testTimer' already exists");
+        expect(consoleSpy).toHaveBeenNthCalledWith(2, "Timer 'testTimer' already exists");
 
         consoleSpy.mockRestore();
     });
@@ -223,7 +228,7 @@ describe("pailBrowserImpl", () => {
 
         logger.timeEnd("nonExistentTimer");
 
-        expect(consoleSpy).toHaveBeenCalledWith("Timer not found");
+        expect(consoleSpy).toHaveBeenCalledExactlyOnceWith("Timer not found");
 
         consoleSpy.mockRestore();
     });
@@ -245,7 +250,7 @@ describe("pailBrowserImpl", () => {
 
         logger.count();
 
-        expect(consoleSpy).toHaveBeenCalledWith("default: 1");
+        expect(consoleSpy).toHaveBeenCalledExactlyOnceWith("default: 1");
 
         consoleSpy.mockRestore();
     });
@@ -255,9 +260,375 @@ describe("pailBrowserImpl", () => {
 
         const logger = new PailBrowser({});
 
-        expect(logger.isEnabled()).toBeTruthy();
+        expect(logger.isEnabled()).toBe(true);
 
         logger.disable();
-        expect(logger.isEnabled()).toBeFalsy();
+
+        expect(logger.isEnabled()).toBe(false);
+    });
+
+    describe("argument handling", () => {
+        let logger: PailBrowser;
+        let rawReporter: RawReporter;
+
+        beforeEach(() => {
+            rawReporter = new RawReporter();
+            logger = new PailBrowser({
+                logLevel: "debug",
+                processors: [],
+                rawReporter,
+                reporters: [rawReporter],
+                scope: ["test"],
+                throttle: 1000,
+                throttleMin: 5,
+            });
+        });
+
+        it("should handle multiple arguments correctly", () => {
+            expect.assertions(2);
+
+            const loggedMeta: any[] = [];
+
+            rawReporter.log = (meta) => {
+                loggedMeta.push(meta);
+            };
+
+            logger.info({ context: { test: "test1" } }, "Hello World", { context: { test: "test2" } });
+
+            expect(loggedMeta).toHaveLength(1);
+            expect(loggedMeta[0]).toMatchObject({
+                context: ["Hello World", { context: { test: "test2" } }],
+                message: { context: { test: "test1" } },
+                type: { level: "informational", name: "info" },
+            });
+        });
+
+        it("should handle structured Message objects correctly", () => {
+            expect.assertions(2);
+
+            const loggedMeta: any[] = [];
+
+            rawReporter.log = (meta) => {
+                loggedMeta.push(meta);
+            };
+
+            logger.info({
+                context: { user: "alice" },
+                message: "Structured message",
+                prefix: "User Action",
+            });
+
+            expect(loggedMeta).toHaveLength(1);
+            expect(loggedMeta[0]).toMatchObject({
+                context: { user: "alice" },
+                message: "Structured message",
+                prefix: "User Action",
+                type: { level: "informational", name: "info" },
+            });
+        });
+
+        it("should handle Message objects with additional arguments", () => {
+            expect.assertions(2);
+
+            const loggedMeta: any[] = [];
+
+            rawReporter.log = (meta) => {
+                loggedMeta.push(meta);
+            };
+
+            logger.info(
+                {
+                    context: { user: "alice" },
+                    message: "Structured message",
+                    prefix: "User Action",
+                },
+                "Additional info",
+                { extra: "data" },
+            );
+
+            expect(loggedMeta).toHaveLength(1);
+            expect(loggedMeta[0]).toMatchObject({
+                context: [{ user: "alice" }, "Additional info", { extra: "data" }],
+                message: "Structured message",
+                prefix: "User Action",
+                type: { level: "informational", name: "info" },
+            });
+        });
+
+        it("should handle Error objects correctly", () => {
+            expect.assertions(2);
+
+            const loggedMeta: any[] = [];
+
+            rawReporter.log = (meta) => {
+                loggedMeta.push(meta);
+            };
+
+            const testError = new Error("Test error");
+
+            logger.error(testError);
+
+            expect(loggedMeta).toHaveLength(1);
+            expect(loggedMeta[0]).toMatchObject({
+                error: testError,
+                type: { level: "error", name: "error" },
+            });
+        });
+
+        it("should handle Error objects with additional context", () => {
+            expect.assertions(2);
+
+            const loggedMeta: any[] = [];
+
+            rawReporter.log = (meta) => {
+                loggedMeta.push(meta);
+            };
+
+            const testError = new Error("Test error");
+
+            logger.error(testError, "Additional context", { code: 500 });
+
+            expect(loggedMeta).toHaveLength(1);
+            expect(loggedMeta[0]).toMatchObject({
+                context: ["Additional context", { code: 500 }],
+                error: testError,
+                type: { level: "error", name: "error" },
+            });
+        });
+
+        it("should handle single object arguments", () => {
+            expect.assertions(2);
+
+            const loggedMeta: any[] = [];
+
+            rawReporter.log = (meta) => {
+                loggedMeta.push(meta);
+            };
+
+            logger.info({ key: "value" });
+
+            expect(loggedMeta).toHaveLength(1);
+            expect(loggedMeta[0]).toMatchObject({
+                message: { key: "value" },
+                type: { level: "informational", name: "info" },
+            });
+        });
+
+        it("should handle single primitive arguments", () => {
+            expect.assertions(2);
+
+            const loggedMeta: any[] = [];
+
+            rawReporter.log = (meta) => {
+                loggedMeta.push(meta);
+            };
+
+            logger.info("Simple message");
+
+            expect(loggedMeta).toHaveLength(1);
+            expect(loggedMeta[0]).toMatchObject({
+                message: "Simple message",
+                type: { level: "informational", name: "info" },
+            });
+        });
+
+        it("should handle empty arguments gracefully", () => {
+            expect.assertions(2);
+
+            const loggedMeta: any[] = [];
+
+            rawReporter.log = (meta) => {
+                loggedMeta.push(meta);
+            };
+
+            // @ts-expect-error - testing edge case
+            logger.info();
+
+            expect(loggedMeta).toHaveLength(1);
+            expect(loggedMeta[0]).toMatchObject({
+                type: { level: "informational", name: "info" },
+            });
+        });
+
+        it("should avoid infinite loop when wrapping console", () => {
+            expect.assertions(2);
+
+            const loggedMeta: any[] = [];
+
+            rawReporter.log = (meta) => {
+                loggedMeta.push(meta);
+            };
+
+            logger.wrapConsole();
+
+            const object = {
+                get value() {
+                    // eslint-disable-next-line no-console
+                    console.warn(object);
+
+                    return "anything";
+                },
+            };
+
+            // This should complete without hanging (no infinite loop)
+            logger.warn(object);
+            logger.restoreConsole();
+
+            // Should have at least one log (the original warn call)
+            expect(loggedMeta.length).toBeGreaterThan(0);
+            // Should not have hundreds of logs (which would indicate infinite looping)
+            expect(loggedMeta.length).toBeLessThan(100);
+        });
+    });
+
+    describe("pause and resume", () => {
+        it("should queue messages when paused and flush them on resume", () => {
+            expect.assertions(3);
+
+            const logger = new PailBrowser({
+                logLevel: "debug",
+                processors: [],
+                rawReporter: new RawReporter(),
+                reporters: [new RawReporter()],
+                throttle: 1000,
+                throttleMin: 5,
+            });
+
+            const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+
+            // Pause the logger
+            logger.pause();
+
+            // These messages should be queued
+            logger.info("Message 1");
+            logger.warn("Message 2");
+            logger.debug("Message 3");
+
+            // No messages should have been logged yet
+            expect(consoleSpy).not.toHaveBeenCalled();
+
+            // Resume the logger
+            logger.resume();
+
+            // All three messages should now be logged in order
+            expect(consoleSpy).toHaveBeenCalledTimes(3);
+            expect(consoleSpy).toHaveBeenNthCalledWith(1, "Message 1");
+
+            consoleSpy.mockRestore();
+        });
+
+        it("should not queue messages when not paused", () => {
+            expect.assertions(2);
+
+            const logger = new PailBrowser({
+                logLevel: "debug",
+                processors: [],
+                rawReporter: new RawReporter(),
+                reporters: [new RawReporter()],
+                throttle: 1000,
+                throttleMin: 5,
+            });
+
+            const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+
+            // Log without pausing
+            logger.info("Immediate message");
+
+            // Message should be logged immediately
+            expect(consoleSpy).toHaveBeenCalledTimes(1);
+            expect(consoleSpy).toHaveBeenCalledWith("Immediate message");
+
+            consoleSpy.mockRestore();
+        });
+
+        it("should handle multiple pause/resume cycles", () => {
+            expect.assertions(3);
+
+            const logger = new PailBrowser({
+                logLevel: "debug",
+                processors: [],
+                rawReporter: new RawReporter(),
+                reporters: [new RawReporter()],
+                throttle: 1000,
+                throttleMin: 5,
+            });
+
+            const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+
+            // First cycle
+            logger.pause();
+            logger.info("Queued 1");
+            logger.resume();
+
+            expect(consoleSpy).toHaveBeenCalledTimes(1);
+
+            // Second cycle
+            logger.pause();
+            logger.info("Queued 2");
+            logger.info("Queued 3");
+            logger.resume();
+
+            expect(consoleSpy).toHaveBeenCalledTimes(3);
+
+            // Third cycle - immediate log
+            logger.info("Immediate");
+
+            expect(consoleSpy).toHaveBeenCalledTimes(4);
+
+            consoleSpy.mockRestore();
+        });
+
+        it("should preserve message order when flushing queue", () => {
+            expect.assertions(4);
+
+            const logger = new PailBrowser({
+                logLevel: "debug",
+                processors: [],
+                rawReporter: new RawReporter(),
+                reporters: [new RawReporter()],
+                throttle: 1000,
+                throttleMin: 5,
+            });
+
+            const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+
+            logger.pause();
+            logger.info("First");
+            logger.warn("Second");
+            logger.debug("Third");
+            logger.resume();
+
+            expect(consoleSpy).toHaveBeenCalledTimes(3);
+            expect(consoleSpy).toHaveBeenNthCalledWith(1, "First");
+            expect(consoleSpy).toHaveBeenNthCalledWith(2, "Second");
+            expect(consoleSpy).toHaveBeenNthCalledWith(3, "Third");
+
+            consoleSpy.mockRestore();
+        });
+
+        it("should not output messages when disabled even if queued", () => {
+            expect.assertions(1);
+
+            const logger = new PailBrowser({
+                logLevel: "debug",
+                processors: [],
+                rawReporter: new RawReporter(),
+                reporters: [new RawReporter()],
+                throttle: 1000,
+                throttleMin: 5,
+            });
+
+            const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+
+            logger.pause();
+            logger.info("Queued message");
+            logger.disable();
+            logger.resume();
+
+            // Message should not be logged because logger is disabled
+            expect(consoleSpy).not.toHaveBeenCalled();
+
+            consoleSpy.mockRestore();
+        });
     });
 });

@@ -1,6 +1,6 @@
 MIT License
 
-Copyright (c) 2024 visulima
+Copyright (c) 2025 visulima
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,14 +23,11 @@ SOFTWARE.
 <!-- DEPENDENCIES -->
 
 # Licenses of bundled dependencies
-
 The published @visulima/redact artifact additionally contains code with the following licenses:
 MIT
 
 # Bundled dependencies:
-
 ## dot-prop
-
 License: MIT
 By: Sindre Sorhus
 Repository: sindresorhus/dot-prop

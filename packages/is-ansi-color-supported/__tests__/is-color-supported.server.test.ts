@@ -39,7 +39,7 @@ describe("node.JS", () => {
         expect(received).toBe(0);
     });
 
-    it.each(["TRAVIS", "CIRCLECI", "APPVEYOR", "GITLAB_CI", "BUILDKITE", "DRONE"])(`should return 1 if "%s" is in env`, (ci) => {
+    it.each(["TRAVIS", "APPVEYOR", "GITLAB_CI", "BUILDKITE", "DRONE"])(`should return 1 if "%s" is in env`, (ci) => {
         expect.assertions(1);
 
         vi.stubGlobal("process", {
@@ -55,7 +55,7 @@ describe("node.JS", () => {
         expect(received).toBe(1);
     });
 
-    it.each(["GITHUB_ACTIONS", "GITHUB_WORKFLOW", "GITEA_ACTIONS"])(`should return 3 if "%s" is in env`, (ci) => {
+    it.each(["GITHUB_ACTIONS", "GITHUB_WORKFLOW", "GITEA_ACTIONS", "CIRCLECI"])(`should return 3 if "%s" is in env`, (ci) => {
         expect.assertions(1);
 
         vi.stubGlobal("process", {
@@ -364,8 +364,8 @@ describe("node.JS", () => {
             argv: [],
             env: {
                 PM2_HOME: "/var/www/",
-                TERM: "dumb",
                 pm_id: "1",
+                TERM: "dumb",
             },
             platform: "linux",
             stdout: { isTTY: true },
@@ -911,6 +911,7 @@ describe("deno", () => {
 
     it(`should support deno platform win`, () => {
         expect.assertions(2);
+
         vi.stubGlobal("process", undefined);
         vi.stubGlobal("Deno", {
             args: [],

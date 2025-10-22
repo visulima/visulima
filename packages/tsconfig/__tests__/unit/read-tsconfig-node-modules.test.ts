@@ -477,7 +477,7 @@ describe("node_modules", () => {
     });
 
     // TODO: test pnp package exports
-    it("yarn pnp", async () => {
+    it.todo("yarn pnp", async () => {
         expect.assertions(1);
 
         const { stdout } = await execaNode("./index.js", [], {

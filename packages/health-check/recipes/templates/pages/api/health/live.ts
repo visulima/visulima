@@ -1,4 +1,4 @@
-import type { NextApiResponse, NextApiRequest } from "next";
+import type { NextApiRequest, NextApiResponse } from "next";
 
 /**
  * @openapi

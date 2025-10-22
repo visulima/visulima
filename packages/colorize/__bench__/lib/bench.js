@@ -3,7 +3,7 @@ import chalk from "chalk";
 
 /**
  *
- * @typedef {Object} BenchOptions
+ * @typedef {object} BenchOptions
  * @property {number?} minNameWidth Minimal width of the name.
  *   The name string pads with space until the resulting string reaches the given width.
  * @property {number?} minOpsWidth Minimal width of the ops (Operations Pro Seconds).
@@ -64,6 +64,7 @@ const onComplete = (event) => {
 
 const onError = function (event) {
     const { error, name } = event.target;
+
     errors[name] = error;
 };
 
@@ -83,7 +84,9 @@ class Bench {
         showResult = showResult.bind(this);
 
         return (suiteName) => {
-            if (suiteName) this.name = suiteName;
+            if (suiteName)
+                this.name = suiteName;
+
             this.suite = new Benchmark.Suite(suiteName);
 
             return this;
@@ -92,9 +95,9 @@ class Bench {
 
     /**
      * Add the benchmark to suite.
-     *
      * @param {string} name The name of benchmark.
      * @param {Function} fn The function of benchmark.
+     * @param function_
      * @returns {Bench}
      */
     add(name, function_) {
@@ -106,6 +109,7 @@ class Bench {
             onError,
             onStart: () => {},
         });
+
         return this;
     }
 
@@ -114,6 +118,7 @@ class Bench {
      */
     run() {
         const { suiteNameColor } = this.options;
+
         this.maxNameWidth = Math.max(...this.benchNames.map((name) => name.length));
         this.benchNames = [];
 

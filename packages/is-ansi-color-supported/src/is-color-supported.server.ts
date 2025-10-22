@@ -6,24 +6,24 @@ import { SPACE_16_COLORS, SPACE_256_COLORS, SPACE_MONO, SPACE_TRUE_COLORS } from
 import type { ColorSupportLevel } from "./types";
 
 /**
- * @param {string} stdName The standard name of the stream, either "err" or "out".
+ * @param stdName The standard name of the stream, either "err" or "out".
  */
 // eslint-disable-next-line sonarjs/cognitive-complexity
 const isColorSupportedFactory = (stdName: "err" | "out"): ColorSupportLevel => {
-    // eslint-disable-next-line @typescript-eslint/naming-convention,@typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/naming-convention,@typescript-eslint/no-explicit-any, no-underscore-dangle
     const _this = globalThis as any;
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    const isDeno = _this.Deno != null;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/no-unsafe-member-access
+
+    // eslint-disable-next-line eqeqeq
+    const isDeno = _this.Deno != undefined;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const proc: Record<string, any> = _this.process ?? _this.Deno ?? {};
     // Node -> `argv`, Deno -> `args`
     const argv: string[] = (proc.argv ?? proc.args ?? []) as string[];
 
     /**
      * Detect whether flags exist with `-` or `--` prefix in command-line arguments.
-     *
-     * @param {RegExp} regex The RegEx to match all possible flags.
-     * @return {boolean}
+     * @param regex The RegEx to match all possible flags.
+     * @returns
      */
     const oneOfFlags = (regex: RegExp): boolean => {
         const terminatorPosition = argv.indexOf("--");
@@ -37,15 +37,14 @@ const isColorSupportedFactory = (stdName: "err" | "out"): ColorSupportLevel => {
 
     try {
         // Deno requires the permission for the access to env, use the `--allow-env` flag: deno run --allow-env ./app.js
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-member-access
-        environment = isDeno ? proc.env.toObject() : (proc.env ?? {});
+
+        environment = isDeno ? proc.env.toObject() : proc.env ?? {};
     } catch {
         // Deno: if interactive permission is not granted, do nothing, no colors
     }
 
     const FORCE_COLOR = "FORCE_COLOR";
     const hasForceColor = FORCE_COLOR in environment;
-    // eslint-disable-next-line security/detect-object-injection
     const forceColorValue = environment[FORCE_COLOR] ? String(environment[FORCE_COLOR]) : undefined;
     const forceColorValueIsString = Object.prototype.toString.call(forceColorValue).slice(8, -1) === "String";
 
@@ -65,9 +64,9 @@ const isColorSupportedFactory = (stdName: "err" | "out"): ColorSupportLevel => {
         return forceColor;
     }
 
-    const isForceDisabled =
+    const isForceDisabled
         // eslint-disable-next-line regexp/no-unused-capturing-group
-        "NO_COLOR" in environment || (hasForceColor && forceColor === 0) || oneOfFlags(/^-{1,2}(no-color|no-colors|color=false|color=never)$/);
+        = "NO_COLOR" in environment || (hasForceColor && forceColor === 0) || oneOfFlags(/^-{1,2}(no-color|no-colors|color=false|color=never)$/);
 
     if (isForceDisabled) {
         return SPACE_MONO;
@@ -93,7 +92,7 @@ const isColorSupportedFactory = (stdName: "err" | "out"): ColorSupportLevel => {
     // note: the order of checks is important
     // many terminals that support truecolor have TERM as `xterm-256colors` but do not set COLORTERM to `truecolor`
     // therefore they can be detected by specific EVN variables
-    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+
     const minColorLevel = forceColor || SPACE_MONO;
 
     // Check for Azure DevOps pipelines.
@@ -108,19 +107,16 @@ const isColorSupportedFactory = (stdName: "err" | "out"): ColorSupportLevel => {
         return minColorLevel;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     if ((isDeno ? _this.Deno.build.os : proc.platform) === "win32") {
         try {
             // Deno requires the permission for the access to the operating system, use the `--allow-sys` flag: deno run --allow-sys ./app.js
 
             // Windows 10 build 10586 is the first Windows release that supports 256 colors.
             // Windows 10 build 14931 is the first release that supports 16m/TrueColor.
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-member-access
+
             const osRelease = (isDeno ? _this.Deno.osRelease() : proc.os.release()).split(".");
 
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             if (Number(osRelease[0]) >= 10 && Number(osRelease[2]) >= 10_586) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 return Number(osRelease[2]) >= 14_931 ? SPACE_TRUE_COLORS : SPACE_256_COLORS;
             }
 
@@ -131,14 +127,11 @@ const isColorSupportedFactory = (stdName: "err" | "out"): ColorSupportLevel => {
     }
 
     if ("CI" in environment) {
-        if ("GITHUB_ACTIONS" in environment || "GITHUB_WORKFLOW" in environment || "GITEA_ACTIONS" in environment) {
+        if (["GITEA_ACTIONS", "CIRCLECI", "GITHUB_WORKFLOW", "GITHUB_ACTIONS"].some((sign) => sign in environment)) {
             return SPACE_TRUE_COLORS;
         }
 
-        if (
-            ["TRAVIS", "CIRCLECI", "APPVEYOR", "GITLAB_CI", "BUILDKITE", "DRONE", "GITLAB_CI"].some((sign) => sign in environment) ||
-            environment.CI_NAME === "codeship"
-        ) {
+        if (["TRAVIS", "APPVEYOR", "GITLAB_CI", "BUILDKITE", "DRONE"].some((sign) => sign in environment) || environment.CI_NAME === "codeship") {
             return SPACE_16_COLORS;
         }
 
@@ -165,8 +158,15 @@ const isColorSupportedFactory = (stdName: "err" | "out"): ColorSupportLevel => {
         return SPACE_TRUE_COLORS;
     }
 
+    if (environment.TERM === "xterm-ghostty") {
+        return SPACE_TRUE_COLORS;
+    }
+
+    if (environment.TERM === "wezterm") {
+        return SPACE_TRUE_COLORS;
+    }
+
     if ("TERM_PROGRAM" in environment) {
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         const version = Number.parseInt(((environment.TERM_PROGRAM_VERSION as string) ?? "").split(".")[0] as string, 10);
 
         if (environment.TERM_PROGRAM === "iTerm.app") {
@@ -187,18 +187,15 @@ const isColorSupportedFactory = (stdName: "err" | "out"): ColorSupportLevel => {
 
     if (isDeno) {
         if (stdName === "out") {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-call
             isTTY = _this.Deno.stdout.isTerminal();
-            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         } else if (stdName === "err") {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-call
             isTTY = _this.Deno.stderr.isTerminal();
         }
     } else if ("PM2_HOME" in environment && "pm_id" in environment) {
         // PM2 does not set process.stdout.isTTY, but colors may be supported (depends on actual terminal)
         isTTY = true;
     } else {
-        isTTY = proc["std" + stdName] && "isTTY" in proc["std" + stdName];
+        isTTY = proc[`std${stdName}`] && "isTTY" in proc[`std${stdName}`];
     }
 
     if (isTTY && /^screen|^tmux|^xterm|^vt[1-5]\d\d|^ansi|color|mintty|rxvt|cygwin|linux/i.test(<string>environment.TERM)) {
@@ -215,7 +212,6 @@ const isColorSupportedFactory = (stdName: "err" | "out"): ColorSupportLevel => {
 export const isStdoutColorSupported = (): ColorSupportLevel => isColorSupportedFactory("out");
 
 export const isStderrColorSupported = (): ColorSupportLevel => isColorSupportedFactory("err");
-// eslint-disable-next-line import/no-unused-modules
+
 export { SPACE_16_COLORS, SPACE_256_COLORS, SPACE_MONO, SPACE_TRUE_COLORS } from "./color-spaces";
-// eslint-disable-next-line import/no-unused-modules
 export type { ColorSupportLevel } from "./types";

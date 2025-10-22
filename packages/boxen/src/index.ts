@@ -19,23 +19,27 @@ const NEWLINE = "\n";
 const PAD = " ";
 const NONE = "none";
 
-const getObject = (detail: Partial<Spacer> | number | undefined): Spacer =>
-    (typeof detail === "number"
-        ? {
+const getObject = (detail: Partial<Spacer> | number | undefined): Spacer => {
+    if (typeof detail === "number") {
+        return {
             bottom: detail,
             left: detail * 3,
             right: detail * 3,
             top: detail,
-        }
-        : {
-            bottom: 0,
-            left: 0,
-            right: 0,
-            top: 0,
-            ...detail,
-        });
+        };
+    }
 
-const getBorderWidth = (borderStyle: BorderStyle | string) => (borderStyle === NONE ? 0 : 2);
+    return {
+        bottom: 0,
+        left: 0,
+        right: 0,
+        top: 0,
+        ...detail,
+    };
+};
+
+// eslint-disable-next-line no-confusing-arrow
+const getBorderWidth = (borderStyle: BorderStyle | string) => borderStyle === NONE ? 0 : 2;
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
 const getBorderChars = (borderStyle: BorderStyle | string): BorderStyle => {
@@ -127,7 +131,8 @@ const wrapText = (
                 // eslint-disable-next-line no-param-reassign
                 horizontal = horizontal.slice(Math.floor(horizontal.length / 2));
 
-                title = colorizeBorder(horizontal.slice(1), getStringWidth(horizontal.slice(1))) + text + colorizeBorder(horizontal, getStringWidth(horizontal)); // We reduce the left part of one character to avoid the bar to go beyond its limit
+                title
+                    = colorizeBorder(horizontal.slice(1), getStringWidth(horizontal.slice(1))) + text + colorizeBorder(horizontal, getStringWidth(horizontal)); // We reduce the left part of one character to avoid the bar to go beyond its limit
             } else {
                 // eslint-disable-next-line no-param-reassign
                 horizontal = horizontal.slice(horizontal.length / 2);
@@ -234,10 +239,14 @@ const makeContentText = (
 };
 
 const boxContent = (content: string, contentWidth: number, columnsWidth: number, options: DimensionOptions): string => {
+    // eslint-disable-next-line no-confusing-arrow
     const colorizeBorder = (border: string, position: BorderPosition, length: number): string =>
-        (options.borderColor ? options.borderColor(border, position, length) : border);
+        options.borderColor ? options.borderColor(border, position, length) : border;
+    // eslint-disable-next-line @stylistic/no-extra-parens
     const colorizeHeaderText = (title: string): string => (options.headerTextColor ? options.headerTextColor(title) : title);
+    // eslint-disable-next-line @stylistic/no-extra-parens
     const colorizeFooterText = (title: string): string => (options.footerTextColor ? options.footerTextColor(title) : title);
+    // eslint-disable-next-line @stylistic/no-extra-parens
     const colorizeContent = (value: string): string => (options.textColor ? options.textColor(value) : value);
 
     const chars = getBorderChars(options.borderStyle) as Required<BorderStyle>;
@@ -360,7 +369,10 @@ const determineDimensions = (text: string, columnsWidth: number, options: Dimens
     const borderWidth = getBorderWidth(options.borderStyle);
     const maxWidth = columnsWidth - options.margin.left - options.margin.right - borderWidth;
 
-    const widest = widestLine(wordWrap(text, { trim: false, width: columnsWidth - borderWidth, wrapMode: WrapMode.BREAK_WORDS })) + options.padding.left + options.padding.right;
+    const widest
+        = widestLine(wordWrap(text, { trim: false, width: columnsWidth - borderWidth, wrapMode: WrapMode.BREAK_WORDS }))
+            + options.padding.left
+            + options.padding.right;
 
     // If title and width are provided, title adheres to fixed width
     if (options.headerText && widthOverride) {

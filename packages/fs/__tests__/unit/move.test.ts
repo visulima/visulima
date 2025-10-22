@@ -44,9 +44,11 @@ describe.each([
         expect.assertions(1);
 
         const exdevError = new Error("exdevError") as Error & { code: "EXDEV" };
+
         exdevError.code = "EXDEV";
 
         const originalRenameSync = fs.renameSync;
+
         try {
             vi.spyOn(fs, "renameSync").mockImplementation(() => {
                 throw exdevError;
@@ -68,7 +70,6 @@ describe.each([
 
         try {
             await function_(join(distribution, "x"), join(distribution, "y"), { overwrite: false });
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
             // eslint-disable-next-line vitest/no-conditional-expect
             expect(error.message).toContain("ENOENT: no such file or directory, rename");
@@ -92,7 +93,7 @@ describe.each([
         expect.assertions(2);
 
         const root = temporaryDirectory();
-        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+
         const directory = `${root}/dir`;
         const destination = `${directory}/file`;
         const directoryMode = isWindows ? 0o600 : 0o700;
@@ -101,7 +102,7 @@ describe.each([
 
         // Verify directory exists
         // eslint-disable-next-line security/detect-non-literal-fs-filename
-        expect(existsSync(directory)).toBeTruthy();
+        expect(existsSync(directory)).toBe(true);
 
         // eslint-disable-next-line security/detect-non-literal-fs-filename
         const stat = statSync(directory);
@@ -152,9 +153,8 @@ describe.each([
 
         try {
             await function_(file, renamedFile);
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
-            // eslint-disable-next-line vitest/no-conditional-expect,@typescript-eslint/restrict-template-expressions
+            // eslint-disable-next-line vitest/no-conditional-expect
             expect(error.message).toBe(`Source directory "${directory}" does not match destination directory "${resolve(directory, "dir2")}"`);
         }
     });

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { gradient } from "../../src/gradient";
 
-describe("gradient", () => {
+describe(gradient, () => {
     it("should generate a gradient for a string", () => {
         expect.assertions(6);
 

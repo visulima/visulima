@@ -1,7 +1,7 @@
 // eslint-disable-next-line max-classes-per-file
 import Stream from "node:stream";
 
-import { describe, expect, it } from "vitest";
+import { describe, expect, expectTypeOf, it } from "vitest";
 
 import type { SerializedError } from "../../../src";
 import { addKnownErrorConstructor, deserializeError, isErrorLike, NonError, serializeError } from "../../../src";
@@ -32,7 +32,7 @@ describe("error serializer", () => {
         expect(serialized.stack).toContain("serialize.test.ts:");
     });
 
-    it('serializes Error objects with subclass "name"', () => {
+    it("serializes Error objects with subclass \"name\"", () => {
         expect.assertions(1);
 
         class MyError extends Error {}
@@ -677,7 +677,7 @@ describe("error serializer", () => {
 
             expect(deserialized).toBeInstanceOf(NonError);
             expect(deserialized).toBeInstanceOf(Error);
-            expect(deserialized.message).toBe('"test"');
+            expect(deserialized.message).toBe("\"test\"");
         });
 
         it("should deserialize array", () => {
@@ -839,10 +839,10 @@ describe("error serializer", () => {
 
             // Test deserializing an error with a property that was serialized as "[object Buffer]"
             const deserialized = deserializeError({
-                name: "Error",
-                message: "Test error",
-                data: "[object Buffer]",
                 bufferInfo: "[object Buffer]",
+                data: "[object Buffer]",
+                message: "Test error",
+                name: "Error",
                 streamData: "[object Stream]",
             });
 
@@ -859,14 +859,14 @@ describe("error serializer", () => {
             expect.assertions(9);
 
             const deserialized = deserializeError({
-                name: "Error",
+                booleanValue: true,
                 message: "Mixed data error",
-                serializedBuffer: "[object Buffer]",
-                serializedStream: "[object Stream]",
-                regularString: "normal string",
+                name: "Error",
                 nestedObject: { key: "value" },
                 numberValue: 42,
-                booleanValue: true,
+                regularString: "normal string",
+                serializedBuffer: "[object Buffer]",
+                serializedStream: "[object Stream]",
             });
 
             expect(deserialized).toBeInstanceOf(Error);
@@ -883,14 +883,15 @@ describe("error serializer", () => {
 
             // Plain objects should be wrapped in NonError during deserialization (expected behavior)
             expect((deserialized as any).nestedObject).toBeInstanceOf(NonError);
-            expect(((deserialized as any).nestedObject as NonError).message).toBe('{"key":"value"}');
+            expect(((deserialized as any).nestedObject as NonError).message).toBe("{\"key\":\"value\"}");
         });
 
         it("should demonstrate round-trip serialization preserving serialized values", () => {
-            expect.assertions(5);
+            expect.assertions(4);
 
             // Create an error with a Buffer property (this would normally be serialized)
             const originalError = new Error("💩") as Error & { data: Buffer };
+
             originalError.data = Buffer.from([1, 2, 3]);
 
             // Serialize the error (Buffer becomes "[object Buffer]")
@@ -908,7 +909,7 @@ describe("error serializer", () => {
             expect((deserialized as any).data).toBe("[object Buffer]");
 
             // The string should remain exactly as it was during serialization
-            expect(typeof (deserialized as any).data).toBe("string");
+            expectTypeOf((deserialized as any).data).toBeString();
         });
 
         it("should not process or drop serialized string representations during deserialization", () => {
@@ -917,15 +918,15 @@ describe("error serializer", () => {
             // This simulates what happens when you deserialize an error that was serialized
             // with various non-serializable types
             const serializedData = {
-                name: "Error",
-                message: "Serialization test",
                 bufferData: "[object Buffer]",
-                streamData: "[object Stream]",
                 functionData: "[Function: anonymous]",
-                undefinedData: undefined,
+                message: "Serialization test",
+                name: "Error",
                 nullData: null,
                 numberData: 42,
+                streamData: "[object Stream]",
                 stringData: "plain string",
+                undefinedData: undefined,
             };
 
             const deserialized = deserializeError(serializedData);
@@ -978,7 +979,7 @@ describe("error serializer", () => {
 
             expect(() => {
                 addKnownErrorConstructor(BadError as any);
-            }).toThrow('The error constructor "BadError" is not compatible');
+            }).toThrow("The error constructor \"BadError\" is not compatible");
         });
 
         it("should throw error for already known constructor", () => {
@@ -986,7 +987,7 @@ describe("error serializer", () => {
 
             expect(() => {
                 addKnownErrorConstructor(Error);
-            }).toThrow('The error constructor "Error" is already known.');
+            }).toThrow("The error constructor \"Error\" is already known.");
         });
 
         it("should validate constructor works without arguments and use instance.name over constructor.name", () => {
@@ -1002,14 +1003,15 @@ describe("error serializer", () => {
 
             // Simulate minified constructor name
             const originalName = NormalError.name;
+
             Object.defineProperty(NormalError, "name", { value: "a" }); // Minified name
 
             addKnownErrorConstructor(NormalError);
 
             // Verify it uses instance.name (NormalError) not constructor.name (a)
             const deserialized = deserializeError({
-                name: "NormalError",
                 message: "test",
+                name: "NormalError",
             });
 
             expect(deserialized).toBeInstanceOf(NormalError);
@@ -1022,10 +1024,11 @@ describe("error serializer", () => {
         it("should throw error when constructor requires arguments", () => {
             expect.assertions(1);
 
-            class RequiresArgsError extends Error {
+            class RequiresArgumentsError extends Error {
                 public constructor(message?: string, code?: number) {
                     super(message || "default");
                     this.name = "RequiresArgsError";
+
                     // This constructor will work without arguments, but let's make it fail
                     if (code === undefined) {
                         throw new Error("Code is required");
@@ -1034,8 +1037,8 @@ describe("error serializer", () => {
             }
 
             expect(() => {
-                addKnownErrorConstructor(RequiresArgsError);
-            }).toThrow('The error constructor "RequiresArgsError" is not compatible');
+                addKnownErrorConstructor(RequiresArgumentsError);
+            }).toThrow("The error constructor \"RequiresArgumentsError\" is not compatible");
         });
 
         it("should throw error when constructor throws in constructor", () => {
@@ -1051,7 +1054,7 @@ describe("error serializer", () => {
 
             expect(() => {
                 addKnownErrorConstructor(ThrowsInConstructorError);
-            }).toThrow('The error constructor "ThrowsInConstructorError" is not compatible');
+            }).toThrow("The error constructor \"ThrowsInConstructorError\" is not compatible");
         });
 
         it("should handle minified constructor names correctly", () => {
@@ -1066,14 +1069,15 @@ describe("error serializer", () => {
 
             // Simulate minification - constructor name becomes something like 't' or 'e'
             const originalConstructorName = MinifiedError.name;
+
             Object.defineProperty(MinifiedError, "name", { value: "x" }); // Minified to 'x'
 
             // The function should still work because it uses instance.name
             addKnownErrorConstructor(MinifiedError);
 
             const deserialized = deserializeError({
-                name: "MinifiedError", // Uses instance.name, not constructor.name
                 message: "test",
+                name: "MinifiedError", // Uses instance.name, not constructor.name
             });
 
             expect(deserialized).toBeInstanceOf(MinifiedError);
@@ -1097,7 +1101,7 @@ describe("error serializer", () => {
 
             expect(() => {
                 addKnownErrorConstructor(IncompatibleError);
-            }).toThrow('The error constructor "IncompatibleError" is not compatible');
+            }).toThrow("The error constructor \"IncompatibleError\" is not compatible");
         });
 
         it("should allow specifying custom name to override instance.name", () => {
@@ -1114,8 +1118,8 @@ describe("error serializer", () => {
             addKnownErrorConstructor(CustomNamedError, "CustomName");
 
             const deserialized = deserializeError({
-                name: "CustomName", // Uses the custom registration name for lookup
                 message: "test",
+                name: "CustomName", // Uses the custom registration name for lookup
             });
 
             expect(deserialized).toBeInstanceOf(CustomNamedError);

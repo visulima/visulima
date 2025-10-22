@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import JsonReporter from "../../../../src/reporter/json/json.browser";
+import JsonReporter from "../../../../src/reporter/json/json-reporter.browser";
 import type { ReadonlyMeta } from "../../../../src/types";
 
 const baseMeta = {
@@ -30,10 +30,8 @@ describe("jsonReporter browser", () => {
 
         reporter.log(meta as unknown as ReadonlyMeta<string>);
 
-        expect(logSpy).toHaveBeenCalledWith(
-            '{"badge":"informational","context":[],"date":"' +
-                meta.date.toISOString() +
-                '","groups":["group1"],"message":"Test message","scope":["scope1"],"label":" test ","type":{"level":"informational","name":"test"}}',
+        expect(logSpy).toHaveBeenCalledExactlyOnceWith(
+            `{"badge":"informational","context":[],"date":"${meta.date.toISOString()}","groups":["group1"],"message":"Test message","scope":["scope1"],"label":" test ","type":{"level":"informational","name":"test"}}`,
             "informational",
         );
     });
@@ -60,7 +58,7 @@ describe("jsonReporter browser", () => {
         reporter.setStringify(stringifyMock);
         reporter.log(meta as unknown as ReadonlyMeta<string>);
 
-        expect(stringifyMock).toHaveBeenCalledWith(expect.objectContaining({ label: "test" }));
+        expect(stringifyMock).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ label: "test" }));
     });
 
     it("should format file property correctly if present when log is called", () => {
@@ -73,7 +71,7 @@ describe("jsonReporter browser", () => {
         reporter.setStringify(stringifyMock);
         reporter.log(meta as unknown as ReadonlyMeta<string>);
 
-        expect(stringifyMock).toHaveBeenCalledWith(expect.objectContaining({ file: "test.js:10:5" }));
+        expect(stringifyMock).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ file: "test.js:10:5" }));
     });
 
     it("should handle meta without file property when log is called", () => {
@@ -86,7 +84,7 @@ describe("jsonReporter browser", () => {
         reporter.setStringify(stringifyMock);
         reporter.log(meta as unknown as ReadonlyMeta<string>);
 
-        expect(stringifyMock).toHaveBeenCalledWith(expect.not.objectContaining({ file: expect.anything() }));
+        expect(stringifyMock).toHaveBeenCalledExactlyOnceWith(expect.not.objectContaining({ file: expect.anything() }));
     });
 
     it("should handle meta without label property when log is called", () => {
@@ -99,7 +97,7 @@ describe("jsonReporter browser", () => {
         reporter.setStringify(stringifyMock);
         reporter.log(meta as unknown as ReadonlyMeta<string>);
 
-        expect(stringifyMock).toHaveBeenCalledWith(expect.not.objectContaining({ label: expect.anything() }));
+        expect(stringifyMock).toHaveBeenCalledExactlyOnceWith(expect.not.objectContaining({ label: expect.anything() }));
     });
 
     it("should handle meta with empty label when log is called", () => {
@@ -112,6 +110,6 @@ describe("jsonReporter browser", () => {
         reporter.setStringify(stringifyMock);
         reporter.log(meta as unknown as ReadonlyMeta<string>);
 
-        expect(stringifyMock).toHaveBeenCalledWith(expect.objectContaining({ label: "" }));
+        expect(stringifyMock).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ label: "" }));
     });
 });

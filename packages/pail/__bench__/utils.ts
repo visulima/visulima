@@ -1,10 +1,19 @@
-import type { ConsolaReporter } from "consola";
+/* eslint-disable max-classes-per-file */
+import type { ConsolaOptions, ConsolaReporter, LogObject } from "consola";
 
 export class JsonServerConsolaReporter implements ConsolaReporter {
-    public log(logObj, ctx): void {
-        const json = JSON.stringify(logObj);
+    // eslint-disable-next-line class-methods-use-this
+    public log(
+        logObject: LogObject,
+        context: {
+            options: ConsolaOptions;
+        },
+    ): void {
+        const json = JSON.stringify(logObject);
 
-        const stream = logObj.level < 2 ? ctx.options.stderr || process.stderr : ctx.options.stdout || process.stdout;
+        const stream = logObject.level < 2 ? context.options.stderr || process.stderr : context.options.stdout || process.stdout;
+        // @ts-expect-error - dynamic property
+        // eslint-disable-next-line no-underscore-dangle
         const write = stream.__write || stream.write;
 
         write.call(stream, json);
@@ -12,21 +21,20 @@ export class JsonServerConsolaReporter implements ConsolaReporter {
 }
 
 export class JsonBrowserConsolaReporter implements ConsolaReporter {
-    _getLogFn(level: number) {
-        if (level < 1) {
-            return (console as any).__error || console.error;
-        }
-        if (level === 1) {
-            return (console as any).__warn || console.warn;
-        }
-        return (console as any).__log || console.log;
-    }
+    // eslint-disable-next-line class-methods-use-this, sonarjs/no-identical-functions
+    public log(
+        logObject: LogObject,
+        context: {
+            options: ConsolaOptions;
+        },
+    ): void {
+        const json = JSON.stringify(logObject);
 
-    public log(logObj, ctx): void {
-        const json = JSON.stringify(logObj);
+        const stream = logObject.level < 2 ? context.options.stderr || process.stderr : context.options.stdout || process.stdout;
+        // @ts-expect-error - dynamic property
+        // eslint-disable-next-line no-underscore-dangle
+        const write = stream.__write || stream.write;
 
-        const consoleLogFn = this._getLogFn(logObj.level);
-
-        consoleLogFn(json);
+        write.call(stream, json);
     }
 }

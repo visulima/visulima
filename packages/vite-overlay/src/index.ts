@@ -1,11 +1,13 @@
-import { getErrorCauses } from "@visulima/error/error";
+import { styleText } from "node:util";
+
+import { codeToANSI } from "@shikijs/cli";
+import { getErrorCauses, renderError } from "@visulima/error/error";
 import type { Solution, SolutionFinder } from "@visulima/error/solution";
 import { errorHintFinder, ruleBasedFinder } from "@visulima/error/solution";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { parse } from "marked";
 import type { IndexHtmlTransformResult, Plugin, PluginOption, TransformOptions, ViteDevServer, WebSocketClient } from "vite";
 
-import { terminalOutput } from "../../../shared/utils/cli-error-builder";
 import findLanguageBasedOnExtension from "../../../shared/utils/find-language-based-on-extension";
 import { DEFAULT_ERROR_MESSAGE, DEFAULT_ERROR_NAME, MESSAGE_TYPE, PLUGIN_NAME, RECENT_ERROR_TTL_MS } from "./constants";
 import { patchOverlay } from "./overlay/patch-overlay";
@@ -83,22 +85,6 @@ const createRecentErrorTracker = (): RecentErrorTracker => {
 const createErrorSignature = (raw: Error | RawErrorData): string => `${String(raw?.message || "")}\n${String(raw?.stack || "")}`;
 
 /**
- * Processes a runtime error by cleaning its stack trace and outputting it to the terminal.
- * @param runtimeError The runtime error to process
- * @param rootPath The root path of the project
- * @param developmentLogger The development logger to use
- */
-const processRuntimeError = async (runtimeError: Error, rootPath: string, developmentLogger: DevelopmentLogger): Promise<void> => {
-    try {
-        runtimeError.stack = absolutizeStackUrls(cleanErrorStack(String(runtimeError.stack || "")), rootPath);
-    } catch {
-        // Ignore stack cleaning errors
-    }
-
-    await terminalOutput(runtimeError, { logger: developmentLogger });
-};
-
-/**
  * Creates a handler for unhandled promise rejections.
  * @param server The Vite dev server instance
  * @param rootPath The root path of the project
@@ -128,7 +114,8 @@ const createUnhandledRejectionHandler = (server: ViteDevServer, rootPath: string
         // Ignore stack cleaning errors
     }
 
-    await terminalOutput(runtimeError, { logger: developmentLogger });
+    await developmentLogger.error(renderError(runtimeError));
+
     server.ws.send({ err: runtimeError, type: "error" } as any);
 };
 
@@ -278,13 +265,18 @@ const buildExtendedError = async (
 /**
  * Generates the client-side script for error interception and reporting.
  * @param mode The current Vite mode (development/production)
- * @param isReact Whether the project is using React
+ * @param forwardedConsoleMethods Array of console method names to forward
  * @returns The client-side JavaScript code as a string
  */
-const generateClientScript = (mode: string, isReact: boolean): string => {
-    const reactLogger = String.raw`var orig = console.error;
+const generateClientScript = (mode: string, forwardedConsoleMethods: string[]): string => {
+    const consoleInterceptors = forwardedConsoleMethods
+        .map((method) => {
+            const capitalizedMethod = method.charAt(0).toUpperCase() + method.slice(1);
 
-console.error = function() {
+            return `
+var orig${capitalizedMethod} = console.${method};
+
+console.${method} = function(args) {
     function parseConsoleArgs(args) {
         if (
             args.length > 3 &&
@@ -314,18 +306,20 @@ console.error = function() {
     }
 
     try {
-        if (${mode} !== 'production') {
+        var maybeError;
+
+        if (${JSON.stringify(mode)} !== 'production') {
             const { error: replayedError } = parseConsoleArgs(args)
 
             if (replayedError) {
                 maybeError = replayedError
-            } else if ((args[isError0])) {
+            } else if (args.length > 0 && isError(args[0])) {
                 maybeError = args[0]
-            } else {
+            } else if (args.length > 1 && isError(args[1])) {
                 maybeError = args[1]
             }
         } else {
-            maybeError = args[0]
+            maybeError = args.length > 0 && isError(args[0]) ? args[0] : null
         }
 
         if (maybeError) {
@@ -333,13 +327,15 @@ console.error = function() {
         }
     } catch {}
 
-    return orig.apply(console, arguments);
-}`;
+    return orig${capitalizedMethod}.apply(console, args);
+};`;
+        })
+        .join("\n");
 
     return String.raw`
- import { createHotContext } from '/@vite/client';
+import { createHotContext } from '/@vite/client';
 
- const hot = createHotContext('/@visulima/vite-overlay');
+const hot = createHotContext('/@visulima/vite-overlay');
 
 async function sendError(error, loc) {
     if (!(error instanceof Error)) {
@@ -424,7 +420,7 @@ window.addEventListener("unhandledrejection", function (evt) {
 
 window.__flameSendError = sendError;
 
-${isReact ? reactLogger : ""}
+${consoleInterceptors}
 `;
 };
 
@@ -558,7 +554,7 @@ const setupWebSocketInterception = (
  * @param recentErrors Map of recent error signatures
  * @param rootPath The root path of the project
  * @param solutionFinders Array of solution finder handlers
- * @param logClientRuntimeError Whether to log/display runtime errors
+ * @param forwardConsole Whether to log/display runtime errors
  */
 const setupHMRHandler = (
     server: ViteDevServer,
@@ -567,12 +563,12 @@ const setupHMRHandler = (
     recentErrors: Map<string, number>,
     rootPath: string,
     solutionFinders: SolutionFinder[],
-    logClientRuntimeError: boolean,
+    forwardConsole: boolean,
     framework: string | undefined,
 ): void => {
     server.ws.on(MESSAGE_TYPE, async (data: unknown, client: WebSocketClient) => {
-        // Skip processing client runtime errors if logClientRuntimeError is disabled
-        if (!logClientRuntimeError) {
+        // Skip processing client runtime errors if forwardConsole is disabled
+        if (!forwardConsole) {
             return;
         }
 
@@ -604,8 +600,6 @@ const setupHMRHandler = (
         }
 
         try {
-            await processRuntimeError(syntaicError, rootPath, developmentLogger);
-
             const extensionPayload = await buildExtendedError(
                 syntaicError,
                 server,
@@ -623,11 +617,45 @@ const setupHMRHandler = (
 
             recentErrors.set(JSON.stringify(extensionPayload), Date.now());
 
-            const payload: any = { err: extensionPayload, type: "error" };
+            const payload: any = { err: { ...extensionPayload }, type: "error" };
 
             if (extensionPayload.solution) {
                 payload.solutions = extensionPayload.solution;
             }
+
+            const errors = [...extensionPayload.errors];
+            const mainError = errors.shift();
+
+            const consoleMessage = [
+                `${styleText("red", "[client]")} ${mainError.name}: ${mainError.message}`,
+                ...mainError.originalFilePath.includes("-extension://")
+                    ? []
+                    : [
+                        "",
+                        styleText("blue", `${mainError.originalFilePath}:${mainError.originalFileLine}:${mainError.originalFileColumn}`),
+                        "",
+                        await codeToANSI(mainError.originalSnippet, findLanguageBasedOnExtension(mainError.originalFilePath), "nord"),
+                        "",
+                        "Raw stack trace:",
+                        "",
+                        mainError.originalStack,
+                    ],
+            ];
+
+            // add error cause
+            errors.forEach((error, index) => {
+                const spacer = " ".repeat(2 * index);
+
+                consoleMessage.push(
+                    "",
+                    `${spacer}Caused by: `,
+                    "",
+                    `${spacer}${mainError.name}: ${mainError.message}`,
+                    `${spacer}at ${mainError.originalFilePath}:${mainError.originalFileLine}:${mainError.originalFileColumn}`,
+                );
+            });
+
+            await developmentLogger.error(consoleMessage.join("\n"));
 
             client.send(payload);
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -690,23 +718,38 @@ const hasVuePlugin = (plugins: PluginOption[], vuePluginName?: string): boolean 
  * Main Vite plugin for error overlay functionality.
  * Intercepts runtime errors and displays them in a user-friendly overlay.
  * @param options Plugin configuration options
- * @param options.logClientRuntimeError Whether to log client runtime errors (optional)
+ * @param options.forwardConsole Whether to log client runtime errors (optional)
+ * @param options.forwardedConsoleMethods Array of console method names to forward (optional)
+ * @param options.logClientRuntimeError @deprecated Use forwardConsole instead
  * @param options.reactPluginName Custom React plugin name (optional)
  * @param options.solutionFinders Custom solution finders (optional)
  * @param options.vuePluginName Custom Vue plugin name (optional)
  * @param options.showBallonButton Whether to show the balloon button (optional)
  * @returns The Vite plugin configuration
  */
-const errorOverlayPlugin = (options: {
-    logClientRuntimeError?: boolean;
-    reactPluginName?: string;
-    showBallonButton?: boolean;
-    solutionFinders?: SolutionFinder[];
-    vuePluginName?: string;
-} = {}): Plugin => {
+const errorOverlayPlugin = (
+    options: {
+        forwardConsole?: boolean;
+        forwardedConsoleMethods?: string[];
+        // @deprecated Please use the new forwardConsole option
+        logClientRuntimeError?: boolean;
+        reactPluginName?: string;
+        showBallonButton?: boolean;
+        solutionFinders?: SolutionFinder[];
+        vuePluginName?: string;
+    } = {},
+): Plugin => {
     let mode: string;
     let isReactProject: boolean;
     let isVueProject: boolean;
+
+    // Handle deprecated option for backward compatibility
+    const forwardConsole = (options.logClientRuntimeError === undefined ? options.forwardConsole : options.logClientRuntimeError) ?? true;
+    const forwardedConsoleMethods = options.forwardedConsoleMethods ?? ["error"];
+
+    if (forwardedConsoleMethods.lenght === 0) {
+        throw new Error("forwardedConsoleMethods must be an array of console method names");
+    }
 
     return {
         apply: "serve",
@@ -762,16 +805,7 @@ const errorOverlayPlugin = (options: {
 
             setupWebSocketInterception(server, shouldSkip, recentErrors, rootPath, options?.solutionFinders ?? [], framework);
 
-            setupHMRHandler(
-                server,
-                developmentLogger,
-                shouldSkip,
-                recentErrors,
-                rootPath,
-                options?.solutionFinders ?? [],
-                options?.logClientRuntimeError ?? true,
-                framework,
-            );
+            setupHMRHandler(server, developmentLogger, shouldSkip, recentErrors, rootPath, options?.solutionFinders ?? [], forwardConsole, framework);
 
             const handleUnhandledRejection = createUnhandledRejectionHandler(server, rootPath, developmentLogger);
 
@@ -801,7 +835,14 @@ const errorOverlayPlugin = (options: {
         transformIndexHtml(): IndexHtmlTransformResult {
             return {
                 html: "",
-                tags: [{ attrs: { type: "module" }, children: generateClientScript(mode, isReactProject), injectTo: "head" as const, tag: "script" }],
+                tags: [
+                    {
+                        attrs: { type: "module" },
+                        children: generateClientScript(mode, forwardedConsoleMethods),
+                        injectTo: "head" as const,
+                        tag: "script",
+                    },
+                ],
             };
         },
     };

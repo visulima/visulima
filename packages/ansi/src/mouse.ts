@@ -169,7 +169,7 @@ export const encodeMouseButtonByte = (button: MouseButtonType, motion: boolean, 
         // eslint-disable-next-line no-bitwise
         callback |= MOUSE_BIT_ADDITIONAL;
     } else {
-        return 0xFF; // Invalid button
+        return 0xff; // Invalid button
     }
 
     if (modifiers.shift) {
@@ -217,7 +217,7 @@ export const encodeMouseButtonByte = (button: MouseButtonType, motion: boolean, 
  * ```
  */
 export const mouseX10Sequence = (callback: number, x: number, y: number): string => {
-    if (callback === 0xFF) {
+    if (callback === 0xff) {
         return ""; // Don't generate sequence for invalid button byte
     }
 
@@ -269,7 +269,7 @@ export const mouseX10Sequence = (callback: number, x: number, y: number): string
  * ```
  */
 export const mouseSgrSequence = (callback: number, x: number, y: number, isRelease: boolean): string => {
-    if (callback === 0xFF) {
+    if (callback === 0xff) {
         return ""; // Don't generate sequence for invalid button byte
     }
 

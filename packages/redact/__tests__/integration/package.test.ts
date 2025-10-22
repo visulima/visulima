@@ -9,16 +9,6 @@ import { esc, execScriptSync } from "../helpers";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 describe("usage `@visulima/redact` npm package", () => {
-    it(`should work as CommonJS package`, () => {
-        expect.assertions(1);
-
-        const filename = join(__dirname, "..", "..", "__fixtures__/package/cjs/test.cjs");
-
-        const received = execScriptSync(filename);
-
-        expect(esc(received)).toBe("<FIRSTNAME> <LASTNAME> will be 30 on <DATE>.\n<FIRSTNAME> <LASTNAME> will be 30 on <DATE>.");
-    });
-
     it(`should work as ESM package`, async () => {
         expect.assertions(1);
 

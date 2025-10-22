@@ -1,56 +1,68 @@
-import * as fs from "node:fs";
 import { randomBytes } from "node:crypto";
+import { createWriteStream } from "node:fs";
 
-import { Logger, ILogObj } from "tslog";
-import { bench, describe } from "vitest";
-import pino from "pino";
-import { createConsola as createServerConsola } from "consola";
-import { createConsola as createBrowserConsola } from "consola/browser";
-import * as winston from "winston";
-import bunyan from "bunyan";
-
-import { createPail as createServerPail } from "@visulima/pail/server";
+import { Ogma } from "@ogma/logger";
 import { createPail as createBrowserPail } from "@visulima/pail/browser";
-import { JsonReporter as ServerJsonReporter } from "@visulima/pail/server/reporter";
 import { JsonReporter as BrowserJsonReporter } from "@visulima/pail/browser/reporter";
+import { createPail as createServerPail } from "@visulima/pail/server";
+import { JsonReporter as ServerJsonReporter } from "@visulima/pail/server/reporter";
+import bunyan from "bunyan";
+import { createConsola as createBrowserConsola, createConsola as createServerConsola } from "consola";
+import { diary } from "diary";
+import pino from "pino";
+import type { ILogObj } from "tslog";
+import { Logger } from "tslog";
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { bench, describe } from "vitest";
+import { createLogger, transports } from "winston";
+
 import { JsonBrowserConsolaReporter, JsonServerConsolaReporter } from "./utils";
 
-const wsDevNull = fs.createWriteStream("/dev/null");
+const wsDevelopmentNull = createWriteStream("/dev/null");
 
 const serverPail = createServerPail({
-    throttle: 999999999,
     reporters: [new ServerJsonReporter()],
+    throttle: 999_999_999,
 });
 const browserPail = createBrowserPail({
-    throttle: 999999999,
     reporters: [new BrowserJsonReporter()],
+    throttle: 999_999_999,
 });
 
 const serverConsola = createServerConsola({
-    throttle: 999999999,
-    stderr: wsDevNull,
-    stdout: wsDevNull,
     reporters: [new JsonServerConsolaReporter()],
+    stderr: wsDevelopmentNull,
+    stdout: wsDevelopmentNull,
+    throttle: 999_999_999,
 });
 
 const browserConsola = createBrowserConsola({
-    throttle: 999999999,
     reporters: [new JsonBrowserConsolaReporter()],
+    throttle: 999_999_999,
 });
 
-const tsLog: Logger<ILogObj> = new Logger({
+const tsLog = new Logger<ILogObj>({
     hideLogPositionForProduction: true,
-    type: "json",
+    minLevel: 0,
+    // Write to /dev/null stream to match other loggers
+    transport: [
+        {
+            write: (logObject) => {
+                wsDevelopmentNull.write(`${JSON.stringify(logObject)}\n`);
+            },
+        },
+    ],
+    type: "hidden", // Don't log anything to console
 });
 
-const pinoNodeStream = pino(wsDevNull);
+const pinoNodeStream = pino(wsDevelopmentNull);
 const pinoDestination = pino(pino.destination("/dev/null"));
-const pinoMinLength = pino(pino.destination({ dest: "/dev/null", sync: false, minLength: 4096 }));
+const pinoMinLength = pino(pino.destination({ dest: "/dev/null", minLength: 4096, sync: false }));
 
-const winstonNodeStream = winston.createLogger({
+const winstonNodeStream = createLogger({
     transports: [
-        new winston.transports.Stream({
-            stream: fs.createWriteStream("/dev/null"),
+        new transports.Stream({
+            stream: createWriteStream("/dev/null"),
         }),
     ],
 });
@@ -60,111 +72,152 @@ const bunyanNodeStream = bunyan.createLogger({
     streams: [
         {
             level: "trace",
-            stream: wsDevNull,
+            stream: wsDevelopmentNull,
         },
     ],
 });
 
-const longStr = randomBytes(2000).toString();
+const ogmaStream = createWriteStream("/dev/null");
+
+const ogmaLogger = new Ogma({ stream: ogmaStream });
+const ogmaJsonLogger = new Ogma({ json: true, stream: ogmaStream });
+
+const diaryStream = createWriteStream("/dev/null");
+const diarySink = (event) => {
+    diaryStream.write(JSON.stringify(event));
+};
+const diaryLogger = diary("standard", diarySink);
+
+const longString = randomBytes(2000).toString();
 
 describe("long-string", async () => {
     bench(
         "pail server",
         async () => {
-            serverPail.info(longStr);
+            serverPail.info(longString);
         },
         {
-            iterations: 10000,
+            iterations: 10_000,
         },
     );
 
     bench(
         "pail browser",
         async () => {
-            browserPail.info(longStr);
+            browserPail.info(longString);
         },
         {
-            iterations: 10000,
+            iterations: 10_000,
         },
     );
 
     bench(
         "consola server",
         async () => {
-            serverConsola.info(longStr);
+            serverConsola.info(longString);
         },
         {
-            iterations: 10000,
+            iterations: 10_000,
         },
     );
 
     bench(
         "consola browser",
         async () => {
-            browserConsola.info(longStr);
+            browserConsola.info(longString);
         },
         {
-            iterations: 10000,
+            iterations: 10_000,
         },
     );
 
     bench(
         "tslog",
         async () => {
-            tsLog.info(longStr);
+            tsLog.info(longString);
         },
         {
-            iterations: 10000,
+            iterations: 10_000,
         },
     );
 
     bench(
         "bunyan node stream",
         async () => {
-            bunyanNodeStream.info(longStr);
+            bunyanNodeStream.info(longString);
         },
         {
-            iterations: 10000,
+            iterations: 10_000,
         },
     );
 
     bench(
         "winston node stream",
         async () => {
-            winstonNodeStream.info(longStr);
+            winstonNodeStream.info(longString);
         },
         {
-            iterations: 10000,
+            iterations: 10_000,
         },
     );
 
     bench(
         "pino destination",
         async () => {
-            pinoDestination.info(longStr);
+            pinoDestination.info(longString);
         },
         {
-            iterations: 10000,
+            iterations: 10_000,
         },
     );
 
     bench(
         "pino node stream",
         async () => {
-            pinoNodeStream.info(longStr);
+            pinoNodeStream.info(longString);
         },
         {
-            iterations: 10000,
+            iterations: 10_000,
         },
     );
 
     bench(
         "pino min length",
         async () => {
-            pinoMinLength.info(longStr);
+            pinoMinLength.info(longString);
         },
         {
-            iterations: 10000,
+            iterations: 10_000,
+        },
+    );
+
+    bench(
+        "ogma logger",
+        async () => {
+            ogmaLogger.log(longString);
+        },
+        {
+            iterations: 10_000,
+        },
+    );
+
+    bench(
+        "ogma json logger",
+        async () => {
+            ogmaJsonLogger.log(longString);
+        },
+        {
+            iterations: 10_000,
+        },
+    );
+
+    bench(
+        "diary",
+        async () => {
+            diaryLogger.info("info message");
+        },
+        {
+            iterations: 10_000,
         },
     );
 });

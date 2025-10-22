@@ -9,12 +9,12 @@ describe("fmt", () => {
         ["%s", [true], "true"],
         ["%s", [null], "null"],
         ["%s", [undefined], "undefined"],
-        ["%s", [BigInt(9_007_199_254_740_991)], "9007199254740991"],
-        ["%s", [BigInt(0b1_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111)], "9007199254740991"],
-        ["%s", ['"quoted"'], '"quoted"'],
+        ["%s", [9_007_199_254_740_991n], "9007199254740991"],
+        ["%s", [0b1_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111n], "9007199254740991"],
+        ["%s", ["\"quoted\""], "\"quoted\""],
         ["%s", [{}], "{}"],
-        ["%s", [{ foo: "bar" }], '{"foo":"bar"}'],
-        ["%s", [{ baz: "qux", foo: "bar" }], '{"baz":"qux","foo":"bar"}'],
+        ["%s", [{ foo: "bar" }], "{\"foo\":\"bar\"}"],
+        ["%s", [{ baz: "qux", foo: "bar" }], "{\"baz\":\"qux\",\"foo\":\"bar\"}"],
         ["%s:%s", [], "%s:%s"],
         ["%s:%s", [undefined], "undefined:%s"],
         ["%s:%s", ["foo"], "foo:%s"],
@@ -57,10 +57,10 @@ describe("fmt", () => {
         ["foo %d", ["42"], "foo 42"],
         ["%d%d", [11, 22], "1122"],
         ["%d%s", [11, 22], "1122"],
-        ["%d%o", [11, { aa: 22 }], '11{"aa":22}'],
+        ["%d%o", [11, { aa: 22 }], "11{\"aa\":22}"],
         ["%d%d%d", [11, 22, 33], "112233"],
         ["%d%d%s", [11, 22, 33], "112233"],
-        ["%d%o%d%s", [11, { aa: 22 }, 33, "sss"], '11{"aa":22}33sss'],
+        ["%d%o%d%s", [11, { aa: 22 }, 33, "sss"], "11{\"aa\":22}33sss"],
         ["%d%%%d", [11, 22], "11%22"],
         ["%d%%%s", [11, 22], "11%22"],
     ])("should format %s", (f, a, expected) => {
@@ -93,14 +93,14 @@ describe("fmt", () => {
         ["%j", [undefined], "%j"],
         ["%j", [null], "null"],
         ["%j", ["42"], "'42'"],
-        ["%j", [{ s: '"quoted"' }], '{"s":"\\"quoted\\""}'],
-        ["foo %j", [{ foo: "foo" }], 'foo {"foo":"foo"}'],
-        ["foo %j %j", [{ foo: "foo" }], 'foo {"foo":"foo"} %j'],
+        ["%j", [{ s: "\"quoted\"" }], String.raw`{"s":"\"quoted\""}`],
+        ["foo %j", [{ foo: "foo" }], "foo {\"foo\":\"foo\"}"],
+        ["foo %j %j", [{ foo: "foo" }], "foo {\"foo\":\"foo\"} %j"],
         ["foo %j", ["foo"], "foo 'foo'"],
         ["foo %j", [function foo() {}], "foo [Function: foo]"], // util.format returns "foo undefined" here
         // eslint-disable-next-line func-names
         ["foo %j", [function () {}], "foo [Function: <anonymous>]"],
-        ["foo %j", [{ foo: "foo" }, "not-printed"], 'foo {"foo":"foo"}'],
+        ["foo %j", [{ foo: "foo" }, "not-printed"], "foo {\"foo\":\"foo\"}"],
     ])("should format %s", (f, a, expected) => {
         expect.assertions(1);
 
@@ -122,8 +122,8 @@ describe("fmt", () => {
     it("should format %O", () => {
         expect.assertions(2);
 
-        expect(format("foo %o", [{ foo: "foo" }])).toBe('foo {"foo":"foo"}');
-        expect(format("foo %O", [{ foo: "foo" }])).toBe('foo {"foo":"foo"}');
+        expect(format("foo %o", [{ foo: "foo" }])).toBe("foo {\"foo\":\"foo\"}");
+        expect(format("foo %O", [{ foo: "foo" }])).toBe("foo {\"foo\":\"foo\"}");
     });
 
     it("should format empty args", () => {
@@ -145,7 +145,7 @@ describe("fmt", () => {
         const emptyObject = {};
 
         expect(format(emptyObject, [])).toBe("{}");
-        expect(format(emptyObject, ["a", "b", "c"])).toBe('{} "a" "b" "c"');
+        expect(format(emptyObject, ["a", "b", "c"])).toBe("{} \"a\" \"b\" \"c\"");
     });
 
     it("should format ES6 Symbol", () => {
@@ -165,11 +165,12 @@ describe("fmt", () => {
         expect.assertions(2);
 
         const circularObject = {};
+
         // @ts-expect-error - circular reference
         circularObject.foo = circularObject;
 
-        expect(format("%j", [circularObject])).toBe('"[Circular]"');
-        expect(format("foo %j", [circularObject])).toBe('foo "[Circular]"');
+        expect(format("%j", [circularObject])).toBe("\"[Circular]\"");
+        expect(format("foo %j", [circularObject])).toBe("foo \"[Circular]\"");
     });
 
     it("should handle multiple", () => {
@@ -199,10 +200,10 @@ describe("fmt", () => {
 
         expect(format("%d%d", [11, 22])).toBe("1122");
         expect(format("%d%s", [11, 22])).toBe("1122");
-        expect(format("%d%o", [11, { aa: 22 }])).toBe('11{"aa":22}');
+        expect(format("%d%o", [11, { aa: 22 }])).toBe("11{\"aa\":22}");
         expect(format("%d%d%d", [11, 22, 33])).toBe("112233");
         expect(format("%d%d%s", [11, 22, 33])).toBe("112233");
-        expect(format("%d%o%d%s", [11, { aa: 22 }, 33, "sss"])).toBe('11{"aa":22}33sss');
+        expect(format("%d%o%d%s", [11, { aa: 22 }, 33, "sss"])).toBe("11{\"aa\":22}33sss");
         expect(format("%d%%%d", [11, 22])).toBe("11%22");
         expect(format("%d%%%s", [11, 22])).toBe("11%22");
     });
@@ -211,19 +212,18 @@ describe("fmt", () => {
         expect.assertions(2);
 
         // @ts-expect-error - invalid fmt
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+
         expect(() => format(1)).toThrow("fmt must be a string or object, got number");
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+
         expect(() => format(null)).toThrow("fmt must be a string or object, got null");
     });
 
     it("should be possible to build a custom formatter", () => {
         expect.assertions(3);
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         expect(() => build({ formatters: { haha: () => "Jonathan" } })).toThrow("Formatter %haha has more than one character");
         // @ts-expect-error - invalid formatter
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+
         expect(() => build({ formatters: { t: "Jonathan" } })).toThrow("Formatter for %t is not a function");
 
         const customFormatter = build({

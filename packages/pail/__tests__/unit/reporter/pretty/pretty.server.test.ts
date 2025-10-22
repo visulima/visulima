@@ -5,10 +5,10 @@ import terminalSize from "terminal-size";
 import { describe, expect, it, vi } from "vitest";
 
 import { dateFormatter } from "../../../../src/reporter/pretty/abstract-pretty-reporter";
-import { PrettyReporter } from "../../../../src/reporter/pretty/pretty.server";
+import { PrettyReporter } from "../../../../src/reporter/pretty/pretty-reporter.server";
 import type { ReadonlyMeta } from "../../../../src/types";
 
-vi.mock("terminal-size", () => {
+vi.mock(import("terminal-size"), () => {
     return {
         default: () => {
             return {
@@ -44,8 +44,8 @@ describe("prettyReporter", () => {
 
         prettyReporter.log(meta as ReadonlyMeta<string>);
 
-        expect(stdoutSpy).toHaveBeenCalledWith(
-            `    ${grey("[Group1]") + " " + grey(dateFormatter(date))} ${blueBright("INFO") + blueBright("LABEL")} ${grey("....")} ${grey("[Scope1 > Scope2]")} ${grey(". [Prefix]")} ${grey(".......")}\n\n    This is a sample message\n    ${grey("Suffix")}\n\n`,
+        expect(stdoutSpy).toHaveBeenCalledExactlyOnceWith(
+            `    ${`${grey("[Group1]")} ${grey(dateFormatter(date))}`} ${blueBright("INFO") + blueBright("LABEL")} ${grey("....")} ${grey("[Scope1 > Scope2]")} ${grey(". [Prefix]")} ${grey(".......")}\n\n    This is a sample message\n    ${grey("Suffix")}\n`,
         );
 
         stdoutSpy.mockRestore();
@@ -73,8 +73,8 @@ describe("prettyReporter", () => {
 
         prettyReporter.log(meta as ReadonlyMeta<string>);
 
-        expect(stderrSpy).toHaveBeenCalledWith(
-            `    ${grey("[Group1]") + " " + grey(dateFormatter(date))} ${red("ERROR") + red("LABEL")} ${grey("....")} ${grey("[Scope1 > Scope2]")} ${grey(". [Prefix]")} ${grey("......")}\n\n    This is an error message\n    ${grey("Suffix")}\n\n`,
+        expect(stderrSpy).toHaveBeenCalledExactlyOnceWith(
+            `    ${`${grey("[Group1]")} ${grey(dateFormatter(date))}`} ${red("ERROR") + red("LABEL")} ${grey("....")} ${grey("[Scope1 > Scope2]")} ${grey(". [Prefix]")} ${grey("......")}\n\n    This is an error message\n    ${grey("Suffix")}\n`,
         );
 
         stderrSpy.mockRestore();
@@ -105,9 +105,8 @@ describe("prettyReporter", () => {
 
         prettyReporter.log(meta as ReadonlyMeta<string>);
 
-        // eslint-disable-next-line @typescript-eslint/unbound-method
-        expect(newStdout.write).toHaveBeenCalledWith(
-            `    ${grey("[Group1]") + " " + grey(dateFormatter(date))} ${blueBright("INFO") + blueBright("LABEL")} ${grey("....")} ${grey("[Scope1 > Scope2]")} ${grey(". [Prefix]")} ${grey(".......")}\n\n    This is a sample message\n    ${grey("Suffix")}\n\n`,
+        expect(newStdout.write).toHaveBeenCalledExactlyOnceWith(
+            `    ${`${grey("[Group1]")} ${grey(dateFormatter(date))}`} ${blueBright("INFO") + blueBright("LABEL")} ${grey("....")} ${grey("[Scope1 > Scope2]")} ${grey(". [Prefix]")} ${grey(".......")}\n\n    This is a sample message\n    ${grey("Suffix")}\n`,
         );
     });
 
@@ -136,9 +135,8 @@ describe("prettyReporter", () => {
 
         prettyReporter.log(meta as ReadonlyMeta<string>);
 
-        // eslint-disable-next-line @typescript-eslint/unbound-method
-        expect(newStderr.write).toHaveBeenCalledWith(
-            `    ${grey("[Group1]") + " " + grey(dateFormatter(date))} ${red("ERROR") + red("LABEL")} ${grey("....")} ${grey("[Scope1 > Scope2]")} ${grey(". [Prefix]")} ${grey("......")}\n\n    This is an error message\n    ${grey("Suffix")}\n\n`,
+        expect(newStderr.write).toHaveBeenCalledExactlyOnceWith(
+            `    ${`${grey("[Group1]")} ${grey(dateFormatter(date))}`} ${red("ERROR") + red("LABEL")} ${grey("....")} ${grey("[Scope1 > Scope2]")} ${grey(". [Prefix]")} ${grey("......")}\n\n    This is an error message\n    ${grey("Suffix")}\n`,
         );
     });
 
@@ -165,8 +163,8 @@ describe("prettyReporter", () => {
 
         prettyReporter.log(meta as ReadonlyMeta<string>);
 
-        expect(stdoutSpy).toHaveBeenCalledWith(
-            `    ${grey("[Group1]") + " " + grey(dateFormatter(date))} ${blueBright("INFO") + blueBright("LABEL")} ${grey("....")} ${grey("[Scope1 > Scope2]")} ${grey(". [Prefix]")} ${grey(".......")}\n\n    ${bold("null")}\n    ${grey("Suffix")}\n\n`,
+        expect(stdoutSpy).toHaveBeenCalledExactlyOnceWith(
+            `    ${`${grey("[Group1]")} ${grey(dateFormatter(date))}`} ${blueBright("INFO") + blueBright("LABEL")} ${grey("....")} ${grey("[Scope1 > Scope2]")} ${grey(". [Prefix]")} ${grey(".......")}\n\n    ${bold("null")}\n    ${grey("Suffix")}\n`,
         );
 
         stdoutSpy.mockRestore();
@@ -222,7 +220,7 @@ describe("prettyReporter", () => {
 
         prettyReporter.log(meta as ReadonlyMeta<string>);
 
-        expect(writeStreamSpy).toHaveBeenCalledWith(expect.any(String), "informational");
+        expect(writeStreamSpy).toHaveBeenCalledExactlyOnceWith(expect.any(String), "informational");
     });
 
     it("should handle large messages that exceed terminal width when _formatMessage is called", () => {
@@ -296,8 +294,8 @@ describe("prettyReporter", () => {
 
         prettyReporter.log(meta as ReadonlyMeta<string>);
 
-        expect(stdoutSpy).toHaveBeenCalledWith(
-            `${grey(dateFormatter(date))} ${blueBright("INFO") + blueBright("LABEL")} ${grey("....")} ${grey("[Scope1 > Scope2]")} ${grey(". [Prefix]")} ${grey(".....................")}\n\n  a  This is a sample message\n${grey("Suffix")}\n\n`,
+        expect(stdoutSpy).toHaveBeenCalledExactlyOnceWith(
+            `${grey(dateFormatter(date))} ${blueBright("INFO") + blueBright("LABEL")} ${grey("....")} ${grey("[Scope1 > Scope2]")} ${grey(". [Prefix]")} ${grey(".....................")}\n\n  a  This is a sample message\n${grey("Suffix")}\n`,
         );
 
         stdoutSpy.mockRestore();

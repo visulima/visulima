@@ -1,3 +1,48 @@
+## @visulima/crud [2.0.42](https://github.com/visulima/visulima/compare/@visulima/crud@2.0.41...@visulima/crud@2.0.42) (2025-10-21)
+
+### Bug Fixes
+
+* allow node v25 and updated dev deps ([8158cc5](https://github.com/visulima/visulima/commit/8158cc53ec92bd0331e8c6bd0fcbc8ab61b9320f))
+
+### Miscellaneous Chores
+
+* **deps:** update package versions and dependencies ([88d8d32](https://github.com/visulima/visulima/commit/88d8d32c4629a7a06c8770369191da2cc81087cc))
+* update license years and add validation rules ([b97811e](https://github.com/visulima/visulima/commit/b97811ed2d253d908c0d86b4579a0a6bc33673a8))
+
+
+### Dependencies
+
+* **@visulima/pagination:** upgraded to 4.0.1
+* **@visulima/prisma-dmmf-transformer:** upgraded to 2.0.33
+
+## @visulima/crud [2.0.41](https://github.com/visulima/visulima/compare/@visulima/crud@2.0.40...@visulima/crud@2.0.41) (2025-10-15)
+
+### Bug Fixes
+
+* Downgraded `@visulima/pagination` to version 3.0.27 in the crud package ([874e5df](https://github.com/visulima/visulima/commit/874e5df513bfc84bd3147fca4c8c1e35a394e665))
+
+
+### Dependencies
+
+* **@visulima/prisma-dmmf-transformer:** upgraded to 2.0.32
+
+## @visulima/crud [2.0.40](https://github.com/visulima/visulima/compare/@visulima/crud@2.0.39...@visulima/crud@2.0.40) (2025-10-15)
+
+### Bug Fixes
+
+* consolidate ESLint configuration and remove obsolete files for improved maintainability ([c1fde1c](https://github.com/visulima/visulima/commit/c1fde1cf884507d62103ab5d1857444d44f33039))
+
+### Miscellaneous Chores
+
+* update package dependencies across multiple packages for improved compatibility and performance ([9567591](https://github.com/visulima/visulima/commit/9567591c415da3002f3a4fe08f8caf7ce01ca5f7))
+* update package.json and pnpm-lock.yaml to include publint@0.3.12 and adjust build/test commands to exclude shared-utils ([1f7b3c0](https://github.com/visulima/visulima/commit/1f7b3c0381d77edfeec80ea1bf57b3469e929414))
+
+
+### Dependencies
+
+* **@visulima/pagination:** upgraded to 4.0.0
+* **@visulima/prisma-dmmf-transformer:** upgraded to 2.0.31
+
 ## @visulima/crud [2.0.39](https://github.com/visulima/visulima/compare/@visulima/crud@2.0.38...@visulima/crud@2.0.39) (2025-09-10)
 
 

@@ -1,7 +1,7 @@
 declare global {
     // eslint-disable-next-line @typescript-eslint/no-namespace
     namespace Cerebro {
-        // eslint-disable-next-line import/no-unused-modules
+
         export interface ExtensionOverrides {}
     }
 }

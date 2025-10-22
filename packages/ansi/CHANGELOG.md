@@ -1,3 +1,51 @@
+## @visulima/ansi [3.0.1](https://github.com/visulima/visulima/compare/@visulima/ansi@3.0.0...@visulima/ansi@3.0.1) (2025-10-21)
+
+### Bug Fixes
+
+* allow node v25 and updated dev deps ([8158cc5](https://github.com/visulima/visulima/commit/8158cc53ec92bd0331e8c6bd0fcbc8ab61b9320f))
+
+### Miscellaneous Chores
+
+* **deps:** update package versions and dependencies ([88d8d32](https://github.com/visulima/visulima/commit/88d8d32c4629a7a06c8770369191da2cc81087cc))
+* update license years and add validation rules ([b97811e](https://github.com/visulima/visulima/commit/b97811ed2d253d908c0d86b4579a0a6bc33673a8))
+* update package dependencies across multiple packages ([17e3f23](https://github.com/visulima/visulima/commit/17e3f2377c8a3f98e2eed2192c5adaf6e32558b5))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.25
+* **@visulima/path:** upgraded to 2.0.1
+
+## @visulima/ansi [3.0.0](https://github.com/visulima/visulima/compare/@visulima/ansi@2.0.1...@visulima/ansi@3.0.0) (2025-10-15)
+
+### ⚠ BREAKING CHANGES
+
+* this package now is a full esm package, min version of node now is 20.19
+* - Adjusted the node engine requirement to support versions 20.19 and above.
+- removed common js support
+
+### Features
+
+* add Prettier and ESLint configurations, enhance code structure, and introduce progress bar functionality ([397b8b6](https://github.com/visulima/visulima/commit/397b8b66ffb954ac887eca1279792ba6c7818fb9))
+
+### Bug Fixes
+
+* streamline package.json and packem configuration ([ff49f16](https://github.com/visulima/visulima/commit/ff49f165fd11ea088aceb0df8fb5b0e0e6521b89))
+* update @visulima/packem to 2.0.0-alpha.30 across multiple packages for improved compatibility ([27b346e](https://github.com/visulima/visulima/commit/27b346eaa1c0fb0e420d9a9824482028307f4249))
+
+### Miscellaneous Chores
+
+* **deps:** update build scripts and remove cross-env dependency ([7510e82](https://github.com/visulima/visulima/commit/7510e826b9235a0013fe61c82a7eb333bc4cbb78))
+* update package dependencies across multiple packages for improved compatibility and performance ([9567591](https://github.com/visulima/visulima/commit/9567591c415da3002f3a4fe08f8caf7ce01ca5f7))
+* update package.json and pnpm-lock.yaml to include publint@0.3.12 and adjust build/test commands to exclude shared-utils ([1f7b3c0](https://github.com/visulima/visulima/commit/1f7b3c0381d77edfeec80ea1bf57b3469e929414))
+* update type-fest dependency and adjust package configurations ([e8a1d89](https://github.com/visulima/visulima/commit/e8a1d8969f5e15f9323b1ca2a4bcff1beb8446fb))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.24
+* **@visulima/path:** upgraded to 2.0.0
+
 ## @visulima/ansi [2.0.1](https://github.com/visulima/visulima/compare/@visulima/ansi@2.0.0...@visulima/ansi@2.0.1) (2025-06-04)
 
 ### Miscellaneous Chores

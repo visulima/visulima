@@ -1,12 +1,39 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
-import terminalSize from "terminal-size";
+import { wordWrap, WrapMode } from "@visulima/string";
 // eslint-disable-next-line import/no-extraneous-dependencies
-import wrapAnsi from "wrap-ansi";
+import terminalSize from "terminal-size";
 
 import type InteractiveStreamHook from "./interactive-stream-hook";
 
+/** Supported stream types for interactive output */
 type StreamType = "stderr" | "stdout";
 
+/**
+ * Interactive Manager.
+ *
+ * Manages interactive terminal output by coordinating stdout and stderr streams.
+ * Enables features like progress bars, spinners, and dynamic updates by temporarily
+ * capturing and controlling terminal output. Supports suspending and resuming
+ * interactive mode for external output.
+ * @example
+ * ```typescript
+ * const manager = new InteractiveManager(stdoutHook, stderrHook);
+ *
+ * // Start interactive mode
+ * manager.hook();
+ *
+ * // Update output dynamically
+ * manager.update("stdout", ["Processing...", "50% complete"]);
+ *
+ * // Temporarily suspend for external output
+ * manager.suspend("stdout");
+ * console.log("External message");
+ * manager.resume("stdout");
+ *
+ * // End interactive mode and show final output
+ * manager.unhook();
+ * ```
+ */
 class InteractiveManager {
     readonly #stream: {
         stderr: InteractiveStreamHook;
@@ -21,6 +48,11 @@ class InteractiveManager {
 
     #outside = 0;
 
+    /**
+     * Creates a new InteractiveManager with the given stream hooks.
+     * @param stdout Hook for stdout stream
+     * @param stderr Hook for stderr stream
+     */
     public constructor(stdout: InteractiveStreamHook, stderr: InteractiveStreamHook) {
         this.#stream = {
             stderr,
@@ -29,68 +61,81 @@ class InteractiveManager {
     }
 
     /**
-     * Last printed rows count
+     * Last printed rows count.
+     *
+     * Tracks the number of rows that were last written to the terminal.
+     * Used internally for managing cursor positioning and output updates.
      */
     public get lastLength(): number {
         return this.#lastLength;
     }
 
     /**
-     * Rows count outside editable area
+     * Rows count outside editable area.
+     *
+     * Tracks the number of rows that extend beyond the current terminal height.
+     * Used for managing scrolling and ensuring all output remains visible.
      */
     public get outside(): number {
         return this.#outside;
     }
 
     /**
-     * Hook activity status
+     * Hook activity status.
+     *
+     * Indicates whether the interactive hooks are currently active.
+     * When true, streams are being intercepted for interactive output.
      */
     public get isHooked(): boolean {
         return this.#isActive;
     }
 
     /**
-     * Suspend status for active hooks
+     * Suspend status for active hooks.
+     *
+     * Indicates whether interactive mode is temporarily suspended.
+     * When suspended, external output can be written without interference.
      */
     public get isSuspended(): boolean {
         return this.#isSuspended;
     }
 
     /**
-     * Removes from the bottom of output up the specified count of lines
+     * Removes lines from the terminal output.
      *
-     * @param stream - Stream to remove lines from
-     * @param count - lines count to remove
+     * Erases the specified number of lines from the bottom of the output,
+     * moving the cursor up and clearing the lines. Useful for removing
+     * previous interactive output before displaying new content.
+     * @param stream The stream to erase lines from ("stdout" or "stderr")
+     * @param count Number of lines to remove (defaults to lastLength)
+     * @throws {TypeError} If the specified stream is not available
      */
     public erase(stream: StreamType, count = this.#lastLength): void {
-        // eslint-disable-next-line security/detect-object-injection,@typescript-eslint/no-unnecessary-condition
         if (this.#stream[stream] === undefined) {
             throw new TypeError(`Stream "${stream}" is not available`);
         }
 
-        // eslint-disable-next-line security/detect-object-injection
         this.#stream[stream].erase(count);
     }
 
     /**
-     * Hook stdout and stderr streams
+     * Hook stdout and stderr streams.
      * @returns Success status
      */
     public hook(): boolean {
         if (!this.#isActive) {
             Object.values(this.#stream).forEach((hook) => hook.active());
 
-            this._clear(true);
+            this.#clear(true);
         }
 
         return this.#isActive;
     }
 
     /**
-     * Resume suspend hooks
-     *
-     * @param stream - Stream to resume
-     * @param eraseRowCount - erase output rows count
+     * Resume suspend hooks.
+     * @param stream Stream to resume
+     * @param eraseRowCount erase output rows count
      */
     public resume(stream: StreamType, eraseRowCount?: number): void {
         if (this.#isSuspended) {
@@ -107,10 +152,9 @@ class InteractiveManager {
     }
 
     /**
-     * Suspend active hooks for external output
-     *
-     * @param stream - Stream to suspend
-     * @param erase - erase output
+     * Suspend active hooks for external output.
+     * @param stream Stream to suspend
+     * @param erase erase output
      */
     public suspend(stream: StreamType, erase = true): void {
         if (!this.#isSuspended) {
@@ -125,37 +169,32 @@ class InteractiveManager {
     }
 
     /**
-     * Unhooks both stdout and stderr streams and print their story of logs
-     *
-     * @param separateHistory - If `true`, will add an empty line to the history output for individual recorded lines and console logs
-     *
+     * Unhooks both stdout and stderr streams and print their story of logs.
+     * @param separateHistory If `true`, will add an empty line to the history output for individual recorded lines and console logs
      * @returns Success status
      */
     public unhook(separateHistory = true): boolean {
         if (this.#isActive) {
             Object.values(this.#stream).forEach((hook) => hook.inactive(separateHistory));
 
-            this._clear();
+            this.#clear();
         }
 
         return !this.#isActive;
     }
 
     /**
-     * Update output
-     *
-     * @param stream - Stream to write to
-     * @param rows - Text lines to write to standard output
-     * @param from - Index of the line starting from which the contents of the terminal are being overwritten
+     * Update output.
+     * @param stream Stream to write to
+     * @param rows Text lines to write to standard output
+     * @param from Index of the line starting from which the contents of the terminal are being overwritten
      */
     public update(stream: StreamType, rows: string[], from = 0): void {
         if (rows.length > 0) {
-            // eslint-disable-next-line security/detect-object-injection,@typescript-eslint/no-unnecessary-condition
             if (this.#stream[stream] === undefined) {
                 throw new TypeError(`Stream "${stream}" is not available`);
             }
 
-            // eslint-disable-next-line security/detect-object-injection
             const hook = this.#stream[stream];
 
             const { columns: width, rows: height } = terminalSize();
@@ -168,10 +207,10 @@ class InteractiveManager {
             let output = rows.reduce<string[]>(
                 (accumulator, row) => [
                     ...accumulator,
-                    wrapAnsi(row, width, {
-                        hard: true,
+                    wordWrap(row, {
                         trim: false,
-                        wordWrap: true,
+                        width,
+                        wrapMode: WrapMode.STRICT_WIDTH,
                     }),
                 ],
                 [],
@@ -187,14 +226,14 @@ class InteractiveManager {
                 hook.erase(actualLength);
             }
 
-            hook.write(output.join("\n") + "\n");
+            hook.write(`${output.join("\n")}\n`);
 
             this.#lastLength = outside ? outside + output.length + 1 : output.length;
             this.#outside = Math.max(this.lastLength - height, this.outside);
         }
     }
 
-    private _clear(status = false): void {
+    #clear(status = false): void {
         this.#isActive = status;
         this.#lastLength = 0;
         this.#outside = 0;

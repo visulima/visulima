@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import normalizeLF from "../src/util/normalize-lf";
 
 describe("utils", () => {
-    describe("normalizeLF", () => {
+    describe(normalizeLF, () => {
         it("should normalize line endings to LF", () => {
             expect.assertions(1);
 

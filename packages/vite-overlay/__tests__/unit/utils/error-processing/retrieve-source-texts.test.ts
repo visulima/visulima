@@ -6,8 +6,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import retrieveSourceTexts from "../../../../src/utils/error-processing/retrieve-source-texts";
 
 // Mock dependencies
-vi.mock("node:fs/promises");
-vi.mock("../source-map-utils");
+vi.mock(import("node:fs/promises"));
+vi.mock(import("../source-map-utils"));
 
 describe(retrieveSourceTexts, () => {
     const mockServer = {
@@ -69,7 +69,7 @@ describe(retrieveSourceTexts, () => {
 
             const result = await retrieveSourceTexts(mockServer, module_, filePath, idCandidates);
 
-            expect(mockServer.transformRequest).toHaveBeenCalledWith("/src/App.tsx");
+            expect(mockServer.transformRequest).toHaveBeenCalledExactlyOnceWith("/src/App.tsx");
             expect(result.compiledSourceText).toBe("compiled code");
         });
 
@@ -90,7 +90,7 @@ describe(retrieveSourceTexts, () => {
 
             const result = await retrieveSourceTexts(mockServer, module_, filePath, idCandidates);
 
-            expect(mockServer.transformRequest).toHaveBeenCalledWith("/src/components/Button.tsx");
+            expect(mockServer.transformRequest).toHaveBeenCalledExactlyOnceWith("/src/components/Button.tsx");
             expect(result.compiledSourceText).toBe("button compiled code");
         });
 
@@ -109,7 +109,7 @@ describe(retrieveSourceTexts, () => {
 
             const result = await retrieveSourceTexts(mockServer, module_, filePath, idCandidates);
 
-            expect(mockServer.transformRequest).toHaveBeenCalledWith("/src/utils/helpers.ts");
+            expect(mockServer.transformRequest).toHaveBeenCalledExactlyOnceWith("/src/utils/helpers.ts");
             expect(result.compiledSourceText).toBe("helpers compiled code");
         });
 
@@ -144,7 +144,7 @@ describe(retrieveSourceTexts, () => {
 
             const result = await retrieveSourceTexts(mockServer, module_, filePath, idCandidates);
 
-            expect(mockReadFile).toHaveBeenCalledWith("/home/project/src/App.tsx", "utf8");
+            expect(mockReadFile).toHaveBeenCalledExactlyOnceWith("/home/project/src/App.tsx", "utf8");
             expect(result.originalSourceText).toBe("file content from disk");
         });
 

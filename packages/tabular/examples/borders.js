@@ -1,5 +1,5 @@
-import { createTable } from "../dist";
-import { ASCII_BORDER, DEFAULT_BORDER, DOTS_BORDER, DOUBLE_BORDER, MARKDOWN_BORDER, MINIMAL_BORDER, NO_BORDER, ROUNDED_BORDER } from "../dist/style.mjs";
+import { createTable } from "../dist/index.js";
+import { ASCII_BORDER, DEFAULT_BORDER, DOTS_BORDER, DOUBLE_BORDER, MARKDOWN_BORDER, MINIMAL_BORDER, NO_BORDER, ROUNDED_BORDER } from "../dist/style.js";
 
 const data = {
     headers: ["Name", "Age", "City"],

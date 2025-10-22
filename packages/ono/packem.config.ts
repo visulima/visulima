@@ -12,6 +12,9 @@ export default defineConfig({
             loaders: [tailwindcssLoader],
             minifier: cssnanoMinifier,
         },
+        requireCJS: {
+            builtinNodeModules: true,
+        },
     },
     validation: {
         dependencies: {

@@ -17,11 +17,13 @@ const assertWriteFile = async (path: URL | string, content: string, options?: Wr
 
     // Assert that the file exists at the specified path
     const fileExists = await isAccessible(path, F_OK);
-    expect(fileExists).toBeTruthy();
+
+    expect(fileExists).toBe(true);
 
     // Assert that the file content matches the expected content
     // eslint-disable-next-line security/detect-non-literal-fs-filename
     const fileContent = await readFile(path, "utf8");
+
     expect(fileContent).toBe(content);
 };
 
@@ -31,11 +33,12 @@ const assertWriteFileSync = (path: URL | string, content: string, options?: Writ
     // Assert that the file exists at the specified path
     const fileExists = isAccessibleSync(path, F_OK);
 
-    expect(fileExists).toBeTruthy();
+    expect(fileExists).toBe(true);
 
     // Assert that the file content matches the expected content
     // eslint-disable-next-line security/detect-non-literal-fs-filename
     const fileContent = readFileSync(path, "utf8");
+
     expect(fileContent).toBe(content);
 };
 
@@ -127,7 +130,8 @@ describe.each(["writeFile", "writeFileSync"])("%s", (name) => {
 
     it("should handle path as URL or string", async () => {
         expect.assertions(2);
-        // eslint-disable-next-line compat/compat,@typescript-eslint/restrict-template-expressions
+
+        // eslint-disable-next-line compat/compat
         const path = new URL(`file:///${join(distribution, "file.txt")}`);
         const content = "Hello, World!";
 
@@ -141,6 +145,7 @@ describe.each(["writeFile", "writeFileSync"])("%s", (name) => {
 
     it("should throw error if path is invalid", async () => {
         expect.assertions(1);
+
         const path = null;
         const content = "Hello, World!";
 

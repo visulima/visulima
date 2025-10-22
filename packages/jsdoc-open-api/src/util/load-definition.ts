@@ -7,6 +7,7 @@ import type { BaseDefinition } from "../exported";
 
 const parseFile = (file: string): BaseDefinition => {
     const extension = path.extname(file);
+
     if (extension !== ".yaml" && extension !== ".yml" && extension !== ".json") {
         throw new Error("OpenAPI definition path must be YAML or JSON.");
     }

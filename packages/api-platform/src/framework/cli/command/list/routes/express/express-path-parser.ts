@@ -5,7 +5,6 @@ import type { Key, Layer, Parameter, Route, RouteMetaData } from "./types";
 
 /**
  * Parses a route object. Route objects are the leafs of an express router tree
- *
  * @param layer The layer of this route object - represents the stack of middleware and other metadata
  * @param keys The full set of keys for this particular route
  * @param basePath The base path as it was initial declared for this route
@@ -39,7 +38,6 @@ const parseRouteLayer = (layer: Required<Layer>, keys: Key[], basePath: string):
 
 /**
  * Recursive traversal method for the express router and middleware tree.
- *
  * @param routes The array of routes to add to
  * @param path The current path segment that we have traversed so far
  * @param layer The current 'layer' of the router tree
@@ -72,14 +70,12 @@ const traverse = (routes: RouteMetaData[], path: string, layer: Layer, keys: Key
  * Parses an Express app and generates list of routes with metadata.
  *
  * Can Parse:
- *  - Nested Routers and Complex Express Projects
- *  - Optional parameters e.g. /:name?
- *  - Complex Matching routes e.g. /ma*tch, /ex(ab)?mple
- *  - Regex routes e.g. /\/abc|\/xyz/
- *  - Array of paths e.g. app.get(['/abc', '/xyz']) -> /abc,xyz/
- *
+ * - Nested Routers and Complex Express Projects
+ * - Optional parameters e.g. /:name?
+ * - Complex Matching routes e.g. /ma*tch, /ex(ab)?mple
+ * - Regex routes e.g. /\/abc|\/xyz/
+ * - Array of paths e.g. app.get(['/abc', '/xyz']) -> /abc,xyz/
  * @param app The Express app reference. Must be used after all routes have been attached
- *
  * @returns List of routes for this express app with meta-data that has been picked up
  */
 const expressPathParser = (app: Express): RouteMetaData[] => {

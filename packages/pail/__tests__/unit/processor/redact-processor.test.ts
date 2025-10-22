@@ -56,14 +56,17 @@ describe("redactProcessor", () => {
 
         let meta = { message: undefined } as Meta<string>;
         let result = processor.process(meta);
+
         expect(result.message).toBeUndefined();
 
         meta = { context: undefined } as Meta<string>;
         result = processor.process(meta);
+
         expect(result.context).toBeUndefined();
 
         meta = { error: undefined } as Meta<string>;
         result = processor.process(meta);
+
         expect(result.error).toBeUndefined();
     });
 });

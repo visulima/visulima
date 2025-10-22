@@ -34,6 +34,7 @@ picocolors             2.862.501 ops/sec ± 0.69%
 
 ```js
 const colors = ["black", "red", "green", "yellow", "blue", "magenta", "cyan", "white"];
+
 colors.forEach((color) => c[color]("foo"));
 ```
 
@@ -56,6 +57,7 @@ kleur/colors           1.870.813 ops/sec ± 0.37%
 
 ```js
 const colors = ["black", "red", "green", "yellow", "blue", "magenta", "cyan", "white"];
+
 colors.forEach((color) => c[color].bold.underline.italic("foo"));
 ```
 
@@ -78,6 +80,7 @@ picocolors (not supported)            FAIL
 
 ```js
 const colors = ["black", "red", "green", "yellow", "blue", "magenta", "cyan", "white"];
+
 colors.forEach((color) => c[color](c.bold(c.underline(c.italic("foo")))));
 ```
 

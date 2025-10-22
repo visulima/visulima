@@ -2,15 +2,13 @@ type RollbackString = { index: number; string: string };
 
 /**
  * When a match doesn't continue to the end of the string, this function rolls back to try again with the rest of the string
- *
- * @param {string[]} rollbackStrings The list of substrings that appeared prior to the current match
- * @param {string[]} patternSubstrings The matching list of pattens that need to be matched before the current pattern
- *
- * @returns {boolean} True if the match was successful, false if it was not
+ * @param rollbackStrings The list of substrings that appeared prior to the current match
+ * @param patternSubstrings The matching list of pattens that need to be matched before the current pattern
+ * @returns True if the match was successful, false if it was not
  */
 // eslint-disable-next-line sonarjs/cognitive-complexity
 const checkRollbackStrings = (rollbackStrings: RollbackString[], patternSubstrings: string[]): boolean => {
-    // eslint-disable-next-line @typescript-eslint/prefer-for-of,no-plusplus
+    // eslint-disable-next-line no-plusplus
     for (let s = 0; s < rollbackStrings.length; ++s) {
         // eslint-disable-next-line security/detect-object-injection
         let currentString = (rollbackStrings[s] as RollbackString).string; // starting with the rolled back string
@@ -64,11 +62,9 @@ const checkRollbackStrings = (rollbackStrings: RollbackString[], patternSubstrin
  * The same is true for the end. Best* would match Best Thing or just Best
  * If you want to match text in the middle of the string, it works the same way.
  * Best*Thing matches both BestThing and Best and crazy Thing.
- *
- * @param {string} input
- * @param {string} pattern
- *
- * @returns {boolean}
+ * @param input
+ * @param pattern
+ * @returns
  */
 const wildcard = (
     input: string,
@@ -90,6 +86,7 @@ const wildcard = (
     while (patternSubstrings[patternIndex] === "") {
         // eslint-disable-next-line no-plusplus
         patternIndex++;
+
         // if the pattern is just wildcards, it matches
         if (patternIndex === pattern.length) {
             return true;

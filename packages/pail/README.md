@@ -5,11 +5,10 @@
 
 [@visulima/fmt][fmt],
 [@visulima/colorize](https://github.com/visulima/visulima/tree/main/packages/colorize),
+[@visulima/string](https://github.com/visulima/visulima/tree/main/packages/string),
 [ansi-escapes](https://www.npmjs.com/package/ansi-escapes),
-[safe-stable-stringify](https://www.npmjs.com/package/safe-stable-stringify),
-[string-length](https://www.npmjs.com/package/string-length),
-[terminal-size](https://www.npmjs.com/package/terminal-size) and
-[wrap-ansi](https://www.npmjs.com/package/wrap-ansi)
+[safe-stable-stringify](https://www.npmjs.com/package/safe-stable-stringify), and
+[terminal-size](https://www.npmjs.com/package/terminal-size)
 
   </p>
 </div>
@@ -34,6 +33,12 @@
 
 ---
 
+## 📋 Migration Guide
+
+If you're upgrading from an earlier version of pail, check out our [Migration Guide](MIGRATION-GUIDE.md) for breaking changes and upgrade instructions.
+
+---
+
 ## Why Pail?
 
 - Easy to use
@@ -54,7 +59,7 @@
 - [Browser](./__assets__/header-browser.png) and [Server](./__assets__/header-server.png) support
 - Redirect console and stdout/stderr to pail and easily restore redirect.
 - `Pretty` or `JSON` output
-- CJS & ESM with tree shaking support
+- ESM‑only with tree‑shaking support (Node.js ≥ 20.19)
 - Supports circular structures
 - Fast and powerful, see the [benchmarks](__bench__/README.md)
 
@@ -308,8 +313,8 @@ const id = setInterval(() => {
     if (--ticks < 0) {
         clearInterval(id);
 
-        interactiveManager.update(["✔ Success", "", "Messages:", "this line will be deleted!!!"]);
-        interactiveManager.erase(1);
+        interactiveManager.update("stdout", ["✔ Success", "", "Messages:", "this line will be deleted!!!"]);
+        interactiveManager.erase("stdout", 1);
         interactiveManager.unhook(false);
     } else {
         const frame = frames[(i = ++i % frames.length)];
@@ -317,7 +322,7 @@ const id = setInterval(() => {
         const message = messages[index];
 
         if (message) {
-            interactiveManager.update([`${frame} Some process...`, message]);
+            interactiveManager.update("stdout", [`${frame} Some process...`, message]);
         }
     }
 }, TIMEOUT);
@@ -360,6 +365,184 @@ pail.time("test");
 pail.timeEnd("test");
 ```
 
+## Progress Bars (Server Only)
+
+Pail includes a comprehensive progress bar system inspired by cli-progress, with support for single and multi-bar modes, various styles, and interactive terminal output.
+
+### Single Progress Bar
+
+```typescript
+import { createPail } from "@visulima/pail";
+
+const logger = createPail({ interactive: true });
+const bar = logger.createProgressBar({
+    total: 100,
+    format: "Downloading [{bar}] {percentage}% | ETA: {eta}s | {value}/{total}",
+});
+
+bar.start();
+bar.update(50);
+bar.increment(10);
+bar.stop();
+```
+
+### Styled Progress Bars
+
+Pail supports various built-in progress bar styles:
+
+```typescript
+import { createPail } from "@visulima/pail";
+
+const logger = createPail({ interactive: true });
+
+// Shades classic (default)
+const bar1 = logger.createProgressBar({
+    total: 100,
+    style: "shades_classic",
+    format: "Progress [{bar}] {percentage}%",
+});
+
+// Shades grey
+const bar2 = logger.createProgressBar({
+    total: 100,
+    style: "shades_grey",
+    format: "Progress [{bar}] {percentage}%",
+});
+
+// Rect style
+const bar3 = logger.createProgressBar({
+    total: 100,
+    style: "rect",
+    format: "Progress [{bar}] {percentage}%",
+});
+
+// ASCII style
+const bar4 = logger.createProgressBar({
+    total: 100,
+    style: "ascii",
+    format: "Progress [{bar}] {percentage}%",
+});
+
+// You can still override individual style settings
+const bar5 = logger.createProgressBar({
+    total: 100,
+    style: "shades_classic",
+    barCompleteChar: "🚀", // Override the complete character
+    format: "Progress [{bar}] {percentage}%",
+});
+```
+
+Available styles: `shades_classic`, `shades_grey`, `rect`, `filled`, `solid`, `ascii`, `custom`
+
+### Multi Progress Bars
+
+Display multiple progress bars simultaneously:
+
+```typescript
+import { createPail } from "@visulima/pail";
+
+const logger = createPail({ interactive: true });
+const multiBar = logger.createMultiProgressBar({
+    style: "shades_classic", // Apply style to all bars
+});
+
+const bar1 = multiBar.create(100);
+const bar2 = multiBar.create(200);
+const bar3 = multiBar.create(150);
+
+// Update bars as needed
+bar1.update(50);
+bar2.update(75);
+bar3.update(25);
+
+// Clean up when done
+multiBar.stop();
+```
+
+### Custom Progress Bar
+
+Create fully customized progress bars with your own characters and formatting:
+
+```typescript
+import { createPail } from "@visulima/pail";
+
+const logger = createPail({ interactive: true });
+const bar = logger.createProgressBar({
+    total: 100,
+    format: "🚀 Downloading {filename}: [{bar}] {percentage}% | Speed: {speed} MB/s | ETA: {eta}s",
+    barCompleteChar: "🚀",
+    barIncompleteChar: "⚪",
+    width: 20,
+});
+
+bar.start(0, 0, {
+    filename: "large-file.zip",
+    speed: "0.0",
+});
+
+// Update with payload data
+bar.update(50, { speed: "2.5" });
+bar.stop();
+```
+
+## Integrations
+
+### Use with @visulima/boxen
+
+Create nicely framed messages with `@visulima/boxen` and log them with Pail:
+
+```typescript
+import { pail } from "@visulima/pail";
+import { boxen } from "@visulima/boxen";
+
+const output = boxen("Build completed successfully", {
+    headerText: "Success",
+    padding: 1,
+    borderStyle: "round",
+});
+
+pail.success(output);
+```
+
+You can also include multi‑line content; Pail preserves newlines:
+
+```typescript
+import { pail } from "@visulima/pail";
+import { boxen } from "@visulima/boxen";
+
+const details = ["Service: api", "Env: production", "Commit: a1b2c3"].join("\n");
+
+pail.info(
+    boxen(details, {
+        headerText: "Deploy Info",
+        padding: { top: 0, right: 2, bottom: 0, left: 2 },
+        borderStyle: "classic",
+    }),
+);
+```
+
+### Use with @visulima/tabular
+
+Render tables with `@visulima/tabular` and send them through Pail:
+
+```typescript
+import { pail } from "@visulima/pail";
+import { createTable } from "@visulima/tabular";
+
+const table = createTable({
+    showHeader: true,
+    style: {
+        // optional: customize colors/border via @visulima/colorize
+    },
+});
+
+table.setHeaders(["Task", "Status", "Duration"]).addRow(["build", "ok", "1.2s"]).addRow(["test", "ok", "3.4s"]).addRow(["lint", "warn", "0.8s"]);
+
+pail.info("\n" + table.toString());
+```
+
+For dynamic dashboards, combine `tabular` with Pail's interactive mode and update the rendered table as your process runs.
+
 ## Disable and Enable Loggers
 
 To disable a logger, use the `disable()` function, which will prevent any log messages from being written to the console or a file.
@@ -381,6 +564,31 @@ pail.success("This message will not be logged");
 pail.enable();
 pail.success("This message will be logged");
 ```
+
+## Pause and Resume Loggers
+
+The `pause()` and `resume()` functions allow you to temporarily queue log messages and then flush them all at once. This is similar to how consola works and is useful when you need to buffer output during critical operations.
+
+When paused, all log calls will be queued instead of being output immediately. When you call `resume()`, all queued messages will be processed in the order they were called.
+
+```typescript
+import { pail } from "@visulima/pail";
+
+pail.pause();
+
+// These messages will be queued
+pail.info("First message");
+pail.warn("Second message");
+pail.success("Third message");
+
+// Resume logging - all queued messages are now output in order
+pail.resume();
+
+// This message is output immediately
+pail.info("Fourth message");
+```
+
+**Note:** Unlike `disable()`, which discards log messages, `pause()` queues them for later output. This makes it ideal for scenarios where you want to control when messages appear without losing them.
 
 ## Api
 
