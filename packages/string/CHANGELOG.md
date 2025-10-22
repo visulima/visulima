@@ -1,3 +1,13 @@
+## @visulima/string [2.0.2](https://github.com/visulima/visulima/compare/@visulima/string@2.0.1...@visulima/string@2.0.2) (2025-10-22)
+
+### Bug Fixes
+
+* **string/truncate:** don't replace single-character strings with the ellipsis ([#559](https://github.com/visulima/visulima/issues/559)) ([91f185d](https://github.com/visulima/visulima/commit/91f185d669240986da883035e59432050058272e))
+
+### Miscellaneous Chores
+
+* update package dependencies and configurations ([7bfe7e7](https://github.com/visulima/visulima/commit/7bfe7e71869580900aab50efb064b4293994ed9a))
+
 ## @visulima/string [2.0.1](https://github.com/visulima/visulima/compare/@visulima/string@2.0.0...@visulima/string@2.0.1) (2025-10-21)
 
 ### Bug Fixes
