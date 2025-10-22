@@ -1,3 +1,9 @@
+## @visulima/ono [1.0.8](https://github.com/visulima/visulima/compare/@visulima/ono@1.0.7...@visulima/ono@1.0.8) (2025-10-22)
+
+### Bug Fixes
+
+* updated isomorphic-dompurify to 2.30.1 ([c5d125d](https://github.com/visulima/visulima/commit/c5d125dc00405b501b7e1b095de1ab387da6cfe3))
+
 ## @visulima/ono [1.0.7](https://github.com/visulima/visulima/compare/@visulima/ono@1.0.6...@visulima/ono@1.0.7) (2025-10-21)
 
 ### Bug Fixes
