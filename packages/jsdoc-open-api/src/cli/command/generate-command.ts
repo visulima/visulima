@@ -24,7 +24,6 @@ const generateCommand = async (
         verbose?: boolean;
         veryVerbose?: boolean;
     },
-
 ): Promise<void> => {
     let openapiConfig: {
         exclude: string[];

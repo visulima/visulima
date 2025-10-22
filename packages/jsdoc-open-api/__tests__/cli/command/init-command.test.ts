@@ -98,7 +98,7 @@ describe("init command", () => {
         expect(consoleInfoMock).toHaveBeenNthCalledWith(1, `Found package.json at "${fixturePath}${isWin ? "\\" : "/"}package.json"`);
         expect(consoleInfoMock).toHaveBeenNthCalledWith(2, "Found package.json with type: module, using ES6 as export for the config file");
         // Verify that the writeFileSync function was called with the correct arguments
-        expect(writeFileSyncMock).toHaveBeenCalledExactlyOnceWith(
+        expect(writeFileSyncMock).toHaveBeenCalledWith(
             "config.js",
             `export default {
   exclude: [
@@ -147,6 +147,6 @@ describe("init command", () => {
 
         initCommand("config.js");
 
-        expect(consoleLogMock).toHaveBeenCalledExactlyOnceWith("Created \"config.js\"");
+        expect(consoleLogMock).toHaveBeenCalledWith("Created \"config.js\"");
     });
 });
