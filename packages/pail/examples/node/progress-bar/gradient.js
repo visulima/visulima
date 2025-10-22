@@ -1,4 +1,3 @@
-// examples/node/progress-bar-gradient.js
 /**
  * Custom Gradient Progress Bars Example
  *

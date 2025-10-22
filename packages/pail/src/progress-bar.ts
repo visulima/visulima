@@ -1,8 +1,6 @@
 /* eslint-disable max-classes-per-file */
-
 import type InteractiveManager from "./interactive/interactive-manager";
 
-// Character gradients for different bar styles
 const CHAR_GRADIENTS: Record<string, string[]> = {
     default: ["█", "▓", "▒", "░"],
     rect: ["▬", "▮", "▯", "▭"],
@@ -10,7 +8,6 @@ const CHAR_GRADIENTS: Record<string, string[]> = {
 
 const BAR_REGEX = /\[([^[\]]*)\]/u;
 
-// Progress bar styles and types
 export type ProgressBarStyle = "shades_classic" | "shades_grey" | "rect" | "filled" | "solid" | "ascii" | "custom";
 
 export interface ProgressBarOptions {

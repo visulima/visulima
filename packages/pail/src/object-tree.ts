@@ -20,7 +20,7 @@ export type TreeSortFunction = (a: string, b: string) => number;
  */
 export interface ObjectTreeOptions {
     /** Text to display for circular references (default: " (circular ref.)") */
-    breakCircularWith?: string | undefined;
+    breakCircularWith?: string | null | undefined;
     /** Whether to return as single string or array of lines (default: true) */
     joined?: boolean;
     /** Connector for neighbor keys (default: "├─ ") */
@@ -92,7 +92,7 @@ const buildContext = (options?: ObjectTreeOptions) => {
     }
 
     if (context.sortFn !== undefined && typeof context.sortFn !== "function") {
-        throw new TypeError("Option \"sortFn\" must be a function, null, or undefined");
+        throw new TypeError("Option \"sortFn\" must be a function or undefined");
     }
 
     if (context.breakCircularWith !== null && typeof context.breakCircularWith !== "string") {
@@ -164,7 +164,7 @@ export const renderObjectTree = (tree: Record<string, unknown> | unknown[], opti
     while (keys.length > 0) {
         const key = keys.pop() ?? [];
         const node = (lookup[key.length - 1] as Record<string, unknown>)[key[key.length - 1] ?? ""];
-        const isCircular = context.breakCircularWith !== null && lookup.includes(node);
+        const isCircular = context.breakCircularWith !== null && lookup.slice(0, key.length).includes(node);
 
         // Check if this key has siblings at the same level (neighbors)
         neighbours[key.length - 1] = keys.length > 0 && (keys[keys.length - 1]?.length ?? 0) === key.length;
@@ -189,7 +189,7 @@ export const renderObjectTree = (tree: Record<string, unknown> | unknown[], opti
         result.push(`${indent}${connector}${keyName}${value}${circular}`);
 
         // Add nested keys if node is an object (but not array, and not circular)
-        if (node instanceof Object && !Array.isArray(node) && !isCircular) {
+        if (node !== null && typeof node === "object" && !Array.isArray(node) && !isCircular) {
             keys.push(...sort(Object.keys(node as Record<string, unknown>)).map((k) => [...key, k]));
             lookup[key.length] = node;
         }
