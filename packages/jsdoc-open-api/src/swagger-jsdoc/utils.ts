@@ -9,7 +9,7 @@ import mergeWith from "lodash.mergewith";
  * @param {object} second the second object to get merged
  */
 
-export const mergeDeep = (first?: object, second?: object): object => mergeWith({}, first, second, (a, b) => b === null ? a : undefined);
+export const mergeDeep = (first?: object, second?: object): object => mergeWith({}, first, second, (a, b) => (b === null ? a : undefined));
 
 /**
  * Checks if there is any properties of the input object which are an empty object

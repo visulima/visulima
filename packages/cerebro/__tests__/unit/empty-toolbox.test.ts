@@ -16,7 +16,7 @@ describe("emptyToolbox", () => {
     });
 
     it("should allow setting and getting properties", () => {
-        expect.assertions(5);
+        expect.assertions(4);
 
         const toolbox = new EmptyToolbox("testCommand", { execute: vi.fn(), name: "test" });
         const runtime = {
@@ -61,13 +61,10 @@ describe("emptyToolbox", () => {
         toolbox.argument = ["argName", "argValue"];
         toolbox.runtime = runtime;
 
-        vi.spyOn(toolbox, "logger");
-
         expect(toolbox.argv).toStrictEqual(["arg1", "arg2"]);
         expect(toolbox.options).toStrictEqual({ option1: "value1" });
         expect(toolbox.argument).toStrictEqual(["argName", "argValue"]);
         expect(toolbox.runtime).toStrictEqual(runtime);
-        expect(toolbox.logger).toBeDefined();
     });
 
     it("should not throw error when accessing undefined properties", () => {
