@@ -139,3 +139,57 @@ for (let i = 0; i < 100; i++) {
 incrementBar.stop();
 
 console.log("\n✨ Progress Bar Demo Complete!\n");
+
+// Demo 6: Custom Gradient Character Arrays
+console.log("🌈 Custom Gradient Arrays:\n");
+
+const gradientShades = logger.createProgressBar({
+    total: 30,
+    barCompleteChar: ["░", "▒", "▓", "█"],
+    barIncompleteChar: " ",
+    format: "Shades Gradient: [{bar}] {percentage}%",
+    width: 30,
+});
+
+gradientShades.start();
+for (let i = 0; i <= 30; i++) {
+    gradientShades.update(i);
+    await doWork(50);
+}
+gradientShades.stop();
+console.log();
+
+// Emoji gradient
+const emojiGradient = logger.createProgressBar({
+    total: 30,
+    barCompleteChar: ["🟡", "🟠", "🔴"],
+    barIncompleteChar: "⚫",
+    format: "Emoji Gradient: [{bar}] {percentage}%",
+    width: 30,
+});
+
+emojiGradient.start();
+for (let i = 0; i <= 30; i++) {
+    emojiGradient.update(i);
+    await doWork(50);
+}
+emojiGradient.stop();
+console.log();
+
+// Temperature gradient
+const tempGradient = logger.createProgressBar({
+    total: 30,
+    barCompleteChar: ["🔵", "🟢", "🟡", "🟠", "🔴"],
+    barIncompleteChar: "·",
+    format: "Temperature: [{bar}] {percentage}%",
+    width: 30,
+});
+
+tempGradient.start();
+for (let i = 0; i <= 30; i++) {
+    tempGradient.update(i);
+    await doWork(50);
+}
+tempGradient.stop();
+
+console.log("\n✨ Progress Bar Demo Complete!\n");

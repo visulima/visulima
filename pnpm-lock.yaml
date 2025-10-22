@@ -2117,6 +2117,8 @@ importers:
 
   packages/fs/__bench__/fixtures/a/b: {}
 
+  packages/fs/__bench__/fixtures/a/b: {}
+
   packages/fs/__fixtures__/find-up: {}
 
   packages/fs/__fixtures__/package/cjs:
@@ -3080,8 +3082,21 @@ importers:
         specifier: ^4.0.7
         version: 4.0.7(@vitest/browser@4.0.7(msw@2.12.0(@types/node@24.10.0)(typescript@5.9.3))(vite@7.2.0(@types/node@24.10.0)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.7))(vitest@4.0.7)
       '@vitest/ui':
+<<<<<<< HEAD
         specifier: ^4.0.7
         version: 4.0.7(vitest@4.0.7)
+=======
+<<<<<<< HEAD
+        specifier: ^4.0.4
+        version: 4.0.4(vitest@4.0.4)
+=======
+        specifier: ^3.2.4
+        version: 3.2.4(vitest@3.2.4)
+      cli-spinners:
+        specifier: ^3.3.0
+        version: 3.3.0
+>>>>>>> 089bc46f1 (chore: update dependencies and add new features to pail)
+>>>>>>> 721b05310 (chore: update dependencies and add new features to pail)
       conventional-changelog-conventionalcommits:
         specifier: 9.1.0
         version: 9.1.0
@@ -10969,6 +10984,10 @@ packages:
   cli-spinners@2.9.2:
     resolution: {integrity: sha512-ywqV+5MmyL4E7ybXgKys4DugZbX0FC6LnwrhjuykIjnK9k8OQacQ7axGKnjDXWNhns0xot3bZI5h55H8yo9cJg==}
     engines: {node: '>=6'}
+
+  cli-spinners@3.3.0:
+    resolution: {integrity: sha512-/+40ljC3ONVnYIttjMWrlL51nItDAbBrq2upN8BPyvGU/2n5Oxw3tbNwORCaNuNqLJnxGqOfjUuhsv7l5Q4IsQ==}
+    engines: {node: '>=18.20'}
 
   cli-table3@0.6.5:
     resolution: {integrity: sha512-+W/5efTR7y5HRD7gACw9yQjqMVvEMLBHmboM/kPWam+H+Hmyrgjh6YncVKK122YZkXrLudzTuAukUw9FnMf7IQ==}
@@ -28138,6 +28157,8 @@ snapshots:
   cli-spinners@2.6.1: {}
 
   cli-spinners@2.9.2: {}
+
+  cli-spinners@3.3.0: {}
 
   cli-table3@0.6.5:
     dependencies:

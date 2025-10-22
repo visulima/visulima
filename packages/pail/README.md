@@ -485,6 +485,158 @@ bar.update(50, { speed: "2.5" });
 bar.stop();
 ```
 
+### Gradient Character Arrays
+
+Create smooth gradient animations by providing arrays of characters that progressively fill:
+
+```typescript
+import { createPail } from "@visulima/pail";
+
+const logger = createPail({ interactive: true });
+
+// Shade gradient (light to dark)
+const bar = logger.createProgressBar({
+    total: 100,
+    barCompleteChar: ["░", "▒", "▓", "█"], // Gradient array
+    barIncompleteChar: " ",
+    format: "Downloading [{bar}] {percentage}%",
+});
+
+bar.start();
+for (let i = 0; i <= 100; i++) {
+    bar.update(i);
+}
+bar.stop();
+```
+
+Supported gradients:
+
+- **Shades**: `["░", "▒", "▓", "█"]` (light to dark)
+- **Blocks**: `["▁", "▂", "▃", "▄", "▅", "▆", "▇", "█"]` (small to large)
+- **Temperature**: `["🔵", "🟢", "🟡", "🟠", "🔴"]` (cold to hot)
+- **Custom**: Any array of characters for your own gradient effect
+
+### Composite Progress Bars
+
+Track multiple related progress bars simultaneously, perfect for operations with multiple stages or parallel tasks:
+
+```typescript
+import { createPail } from "@visulima/pail";
+
+const logger = createPail({ interactive: true });
+
+// Upload and processing
+const uploadBar = logger.createProgressBar({
+    total: 100,
+    style: "shades_grey",
+    format: "Upload:     [{bar}] {percentage}%",
+    width: 30,
+});
+
+const processingBar = logger.createProgressBar({
+    total: 100,
+    style: "rect",
+    format: "Processing: [{bar}] {percentage}%",
+    width: 30,
+});
+
+uploadBar.start();
+processingBar.start();
+
+// Upload phase
+for (let i = 0; i <= 100; i++) {
+    uploadBar.update(i);
+    processingBar.update(Math.max(0, i - 20)); // Processing lags behind
+}
+
+uploadBar.stop();
+processingBar.stop();
+```
+
+**Common Use Cases:**
+
+1. **Upload & Processing**: Track file upload alongside processing
+2. **Read & Write**: Monitor simultaneous read/write operations
+3. **Multi-source Download**: Show progress from multiple sources with different speeds
+4. **Batch Processing Stages**: Parse → Validate → Compile → Optimize
+5. **Parallel Tasks**: Display progress for multiple concurrent operations
+
+Each progress bar:
+
+- Updates independently
+- Can have different styles, widths, and formats
+- Displays on separate lines in the terminal
+- Updates smoothly without flickering
+
+## Spinners (Server Only)
+
+Pail includes a comprehensive spinner system inspired by cli-progress, with support for single and multi-spinner modes, various styles, and interactive terminal output.
+
+### Single Spinner
+
+```typescript
+import { createPail } from "@visulima/pail";
+
+const logger = createPail({ interactive: true });
+const spinner = logger.createSpinner({
+    text: "Loading...",
+    color: "blue",
+});
+
+spinner.start();
+spinner.succeed("Loaded!");
+spinner.fail("Failed!");
+spinner.stop();
+```
+
+### Multi Spinner
+
+```typescript
+import { createPail } from "@visulima/pail";
+
+const logger = createPail({ interactive: true });
+const multiSpinner = logger.createMultiSpinner({
+    style: "dots", // Apply style to all spinners
+});
+
+const spinner1 = multiSpinner.create("Loading A");
+const spinner2 = multiSpinner.create("Loading B");
+const spinner3 = multiSpinner.create("Loading C");
+
+// Update spinners as needed
+spinner1.succeed("Loaded A!");
+spinner2.succeed("Loaded B!");
+spinner3.succeed("Loaded C!");
+
+// Clean up when done
+multiSpinner.stop();
+```
+
+### Custom Spinner
+
+Create fully customized spinners with your own characters and formatting:
+
+```typescript
+import { createPail } from "@visulima/pail";
+
+const logger = createPail({ interactive: true });
+const spinner = logger.createSpinner({
+    text: "🚀 Downloading {filename}: [{bar}] {percentage}% | Speed: {speed} MB/s | ETA: {eta}s",
+    barCompleteChar: "🚀",
+    barIncompleteChar: "⚪",
+    width: 20,
+});
+
+spinner.start(0, 0, {
+    filename: "large-file.zip",
+    speed: "0.0",
+});
+
+// Update with payload data
+spinner.update(50, { speed: "2.5" });
+spinner.succeed();
+```
+
 ## Integrations
 
 ### Use with @visulima/boxen
