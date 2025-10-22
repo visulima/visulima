@@ -1,4 +1,3 @@
-// examples/pail/spinner/colors.js
 import { createPail } from "@visulima/pail";
 
 async function delay(ms) {

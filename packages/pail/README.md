@@ -554,7 +554,7 @@ multiBar.stop();
 
 **Output example:**
 
-```
+```txt
 [▒▒▒▒▒▒▒▒▒▒▓▓▓▓▓▓▓▓██████████████████████]  ① 100%  ② 70%  ③ 40%
 ```
 
@@ -699,7 +699,7 @@ console.log(renderObjectTree(data));
 
 **Output:**
 
-```
+```txt
 ├─ user:
 │  ├─ name: John Doe
 │  ├─ email: john@example.com

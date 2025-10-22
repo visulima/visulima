@@ -1,4 +1,3 @@
-// examples/node/progress-bar/composite.js
 import { createPail } from "@visulima/pail";
 import colorize from "@visulima/colorize";
 
