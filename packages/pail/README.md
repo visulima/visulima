@@ -661,7 +661,7 @@ spinner.update(50, { speed: "2.5" });
 spinner.succeed();
 ```
 
-## Object Tree (Server Only)
+## Object Tree
 
 Render objects and data structures as formatted ASCII trees for better terminal visualization and debugging:
 
@@ -700,6 +700,8 @@ console.log(renderObjectTree(data));
 │  ├─ theme: dark
 │  └─ notifications: true
 ```
+
+> **Note:** `renderObjectTree` works in both **Node.js** and **Browser** environments. It's a pure utility function with no platform-specific dependencies.
 
 ### Custom Rendering
 
