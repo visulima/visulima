@@ -518,55 +518,79 @@ Supported gradients:
 
 ### Composite Progress Bars
 
-Track multiple related progress bars simultaneously, perfect for operations with multiple stages or parallel tasks:
+Track multiple related progress bars simultaneously with automatic color layering based on progress percentage. This is perfect for operations with multiple parallel sources or stages:
 
 ```typescript
 import { createPail } from "@visulima/pail";
+import colorize from "@visulima/colorize";
 
 const logger = createPail({ interactive: true });
 
-// Upload and processing
-const uploadBar = logger.createProgressBar({
-    total: 100,
-    style: "shades_grey",
-    format: "Upload:     [{bar}] {percentage}%",
-    width: 30,
+// Create a composite multi-bar that displays all bars as a single layered composite
+const multiBar = logger.createMultiProgressBar({
+    composite: true, // Enable composite mode
+    format: "[{bar}]  ① {r}%  ② {y}%  ③ {b}%",
 });
 
-const processingBar = logger.createProgressBar({
-    total: 100,
-    style: "rect",
-    format: "Processing: [{bar}] {percentage}%",
-    width: 30,
-});
+const source1 = multiBar.create(100, 0, { r: "0", y: "0", b: "0" });
+const source2 = multiBar.create(100, 0, { r: "0", y: "0", b: "0" });
+const source3 = multiBar.create(100, 0, { r: "0", y: "0", b: "0" });
 
-uploadBar.start();
-processingBar.start();
+// Apply colors to each source
+multiBar.setBarColor(source1, colorize.red);
+multiBar.setBarColor(source2, colorize.yellow);
+multiBar.setBarColor(source3, colorize.blue);
 
-// Upload phase
+// Update sources with different speeds
 for (let i = 0; i <= 100; i++) {
-    uploadBar.update(i);
-    processingBar.update(Math.max(0, i - 20)); // Processing lags behind
+    source1.update(i);                          // Red: 100% progress
+    source2.update(Math.floor(i * 0.7));       // Yellow: 70% progress
+    source3.update(Math.floor(i * 0.4));       // Blue: 40% progress
+    await new Promise(r => setTimeout(r, 40));
 }
 
-uploadBar.stop();
-processingBar.stop();
+multiBar.stop();
 ```
 
-**Common Use Cases:**
+**Output example:**
+```
+[▒▒▒▒▒▒▒▒▒▒▓▓▓▓▓▓▓▓██████████████████████]  ① 100%  ② 70%  ③ 40%
+```
 
-1. **Upload & Processing**: Track file upload alongside processing
-2. **Read & Write**: Monitor simultaneous read/write operations
-3. **Multi-source Download**: Show progress from multiple sources with different speeds
-4. **Batch Processing Stages**: Parse → Validate → Compile → Optimize
-5. **Parallel Tasks**: Display progress for multiple concurrent operations
+#### Color Layering & Character Shading
+
+The composite bar uses character shading to represent overlapping progress bars:
+
+| Character | Meaning | Example |
+|-----------|---------|---------|
+| **█** (solid) | One bar visible | Red at 100% |
+| **▓** (medium) | Two bars overlap | Red + Yellow |
+| **▒** (light) | Three bars overlap | Red + Yellow + Blue |
+| **░** (lightest) | Four+ bars overlap | All bars present |
+
+#### How It Works
+
+The composite bar renders based on **progress percentage at each position**:
+
+1. **At position 0-40%**: Only Red (①) is filled → shows **█** with red color
+2. **At position 40-70%**: Red + Yellow (①+②) filled → shows **▓** with yellow color (highest index shown)
+3. **At position 70-100%**: All three (①+②+③) filled → shows **▒** with blue color (highest index)
+
+The **highest-indexed bar's color** is used at each position, creating a natural progression.
+
+#### Use Cases
+
+1. **Multi-source Download**: Show progress from multiple download sources
+2. **Parallel Tasks**: Monitor concurrent operations (build, test, lint)
+3. **Pipeline Stages**: Upload → Process → Finalize with different completion times
+4. **Batch Operations**: Parse → Validate → Compile at different speeds
+5. **Resource Tracking**: CPU, Memory, Disk usage in parallel
 
 Each progress bar:
-
-- Updates independently
-- Can have different styles, widths, and formats
-- Displays on separate lines in the terminal
-- Updates smoothly without flickering
+- Updates independently at its own speed
+- Can have different total values and progress rates
+- Uses color to distinguish sources
+- Shows through character shading when overlapping
 
 ## Spinners (Server Only)
 
@@ -636,6 +660,99 @@ spinner.start(0, 0, {
 spinner.update(50, { speed: "2.5" });
 spinner.succeed();
 ```
+
+## Object Tree (Server Only)
+
+Render objects and data structures as formatted ASCII trees for better terminal visualization and debugging:
+
+```typescript
+import { renderObjectTree } from "@visulima/pail";
+
+const data = {
+    user: {
+        name: "John Doe",
+        email: "john@example.com",
+        profile: {
+            age: 30,
+            location: "New York",
+            skills: ["JavaScript", "TypeScript", "Node.js"]
+        }
+    },
+    settings: {
+        theme: "dark",
+        notifications: true
+    }
+};
+
+console.log(renderObjectTree(data));
+```
+
+**Output:**
+```
+├─ user:
+│  ├─ name: John Doe
+│  ├─ email: john@example.com
+│  └─ profile:
+│     ├─ age: 30
+│     ├─ location: New York
+│     └─ skills:
+├─ settings:
+│  ├─ theme: dark
+│  └─ notifications: true
+```
+
+### Custom Rendering
+
+Customize how object trees are rendered:
+
+```typescript
+import { renderObjectTree } from "@visulima/pail";
+
+const obj = {
+    name: "John",
+    age: 30,
+    address: {
+        street: "Main St",
+        city: "New York"
+    }
+};
+
+// Custom rendering with sorting and formatting
+const tree = renderObjectTree(obj, {
+    sortFn: (a, b) => a.localeCompare(b), // Sort keys alphabetically
+    renderFn: (node) => {
+        if (typeof node === 'string') return node.toUpperCase();
+        return ['boolean', 'string', 'number'].includes(typeof node)
+            ? String(node)
+            : undefined;
+    },
+    joined: true, // Return as single string (false for array of lines)
+});
+
+console.log(tree);
+```
+
+### Configuration Options
+
+| Option | Description | Default |
+|--------|-------------|---------|
+| `joined` | Return as single string or array of lines | `true` |
+| `sortFn` | Function to sort object keys (null for natural order) | `null` |
+| `renderFn` | Function to render node values | Renders primitives |
+| `separator` | Separator between key and value | `": "` |
+| `keyNeighbour` | Connector for keys with siblings | `"├─ "` |
+| `keyNoNeighbour` | Connector for last keys | `"└─ "` |
+| `spacerNeighbour` | Spacer for branches with siblings | `"│  "` |
+| `spacerNoNeighbour` | Spacer for branches without siblings | `"   "` |
+| `breakCircularWith` | Text for circular references | `" (circular ref.)"` |
+
+### Use Cases
+
+1. **Debugging**: Visualize complex object structures during development
+2. **Logging**: Pretty-print objects for better readability in logs
+3. **API Responses**: Display JSON API responses in tree format
+4. **Configuration Display**: Show configuration trees in terminal applications
+5. **Data Inspection**: Inspect deeply nested data structures
 
 ## Integrations
 

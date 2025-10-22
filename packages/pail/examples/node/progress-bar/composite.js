@@ -71,10 +71,13 @@ multiBar3.setBarColor(source2, colorize.yellow);
 multiBar3.setBarColor(source3, colorize.blue);
 
 for (let i = 0; i <= 100; i += 1) {
-    // All bars overlap during middle section
-    source1.update(i, { s1: i, s2: Math.min(100, i + 10), s3: Math.max(0, i - 10) });
-    source2.update(Math.min(100, i - 30), { s1: i, s2: Math.min(100, i + 10), s3: Math.max(0, i - 10) });
-    source3.update(Math.max(0, i - 10), { s1: i, s2: Math.min(100, i + 10), s3: Math.max(0, i - 10) });
+    // Different speeds for each source to show color transitions clearly
+    // source1 (red): fast, completes early
+    // source2 (yellow): medium speed, completes mid-way
+    // source3 (blue): slow, completes last
+    source1.update(i, { s1: i, s2: Math.min(100, Math.floor(i * 0.7)), s3: Math.min(100, Math.floor(i * 0.4)) });
+    source2.update(Math.min(100, Math.floor(i * 0.7)), { s1: i, s2: Math.min(100, Math.floor(i * 0.7)), s3: Math.min(100, Math.floor(i * 0.4)) });
+    source3.update(Math.min(100, Math.floor(i * 0.4)), { s1: i, s2: Math.min(100, Math.floor(i * 0.7)), s3: Math.min(100, Math.floor(i * 0.4)) });
     await doWork(40);
 }
 
