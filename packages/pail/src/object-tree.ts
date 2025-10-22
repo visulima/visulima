@@ -40,16 +40,21 @@ export interface ObjectTreeOptions {
 }
 
 /**
- * Validates and builds the context object with all options
+ * Validates and builds the context object with all options.
  */
 const buildContext = (options?: ObjectTreeOptions) => {
-    const context: Required<ObjectTreeOptions> = {
+    const context: Required<Omit<ObjectTreeOptions, "sortFn">> & { sortFn?: TreeSortFunction | undefined } = {
         breakCircularWith: " (circular ref.)",
         joined: true,
         keyNeighbour: "├─ ",
         keyNoNeighbour: "└─ ",
+        renderFn: (node) => {
+            if (["boolean", "number", "string"].includes(typeof node)) {
+                return String(node);
+            }
 
-        renderFn: (node) => (["boolean", "number", "string"].includes(typeof node) ? String(node) : undefined),
+            return undefined;
+        },
         separator: ": ",
         sortFn: undefined,
         spacerNeighbour: "│  ",
@@ -86,8 +91,8 @@ const buildContext = (options?: ObjectTreeOptions) => {
         throw new TypeError("Option \"renderFn\" must be a function");
     }
 
-    if (context.sortFn !== null && typeof context.sortFn !== "function") {
-        throw new TypeError("Option \"sortFn\" must be a function or null");
+    if (context.sortFn !== undefined && typeof context.sortFn !== "function") {
+        throw new TypeError("Option \"sortFn\" must be a function, null, or undefined");
     }
 
     if (context.breakCircularWith !== null && typeof context.breakCircularWith !== "string") {
@@ -98,9 +103,9 @@ const buildContext = (options?: ObjectTreeOptions) => {
 };
 
 /**
- * Renders an object as an ASCII tree structure
+ * Renders an object as an ASCII tree structure.
  * @param tree The object to render as a tree
- * @param opts Configuration options for tree rendering
+ * @param options Configuration options for tree rendering
  * @returns Formatted tree as string or array of lines
  * @example
  * ```typescript
@@ -144,8 +149,8 @@ export const renderObjectTree = (tree: Record<string, unknown> | unknown[], opti
 
     // Sort function matching original implementation
     const sort = (input: string[]): string[] => {
-        if (context.sortFn === null) {
-            return input.toReversed(); // In-place reverse
+        if (context.sortFn === undefined) {
+            return input; // Keep natural order (stack will reverse via pop)
         }
 
         return input.toSorted((a, b) => context?.sortFn?.(b, a) ?? 0); // In-place sort with reversed comparison
@@ -167,8 +172,13 @@ export const renderObjectTree = (tree: Record<string, unknown> | unknown[], opti
         // Build the line with tree structure
         const indent = neighbours
             .slice(0, key.length - 1)
+            .map((n) => {
+                if (n) {
+                    return context.spacerNeighbour;
+                }
 
-            .map((n) => (n ? context.spacerNeighbour : context.spacerNoNeighbour))
+                return context.spacerNoNeighbour;
+            })
             .join("");
         const connector = neighbours[key.length - 1] ? context.keyNeighbour : context.keyNoNeighbour;
         const keyName = key[key.length - 1];

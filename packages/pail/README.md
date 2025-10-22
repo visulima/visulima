@@ -579,6 +579,14 @@ The composite bar renders based on **progress percentage at each position**:
 
 The **highest-indexed bar's color** is used at each position, creating a natural progression.
 
+**Dynamic Visibility Based on Progress:**
+
+The bar with the **smallest progress percentage** is shown on top for maximum visibility:
+
+- Red at 30%, Yellow at 60% → Red is visible first (30% < 60%)
+- When Red reaches 30% and Yellow is only at 20% → Yellow becomes visible (20% < 30%)
+- This ensures slower-progressing operations are always visible and not hidden beneath faster ones
+
 #### Use Cases
 
 1. **Multi-source Download**: Show progress from multiple download sources
