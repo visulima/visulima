@@ -8,7 +8,7 @@ describe(truncate, () => {
 
     describe("basic functionality", () => {
         it("should handle basic strings with default position (end)", () => {
-            expect.assertions(8);
+            expect.assertions(9);
 
             expect(truncate("unicorn", 4)).toBe("uni…");
             expect(truncate("unicorn", 4, { position: "end" })).toBe("uni…");
@@ -18,6 +18,7 @@ describe(truncate, () => {
             expect(truncate("unicorn", 20)).toBe("unicorn");
             expect(truncate("unicorn", 7)).toBe("unicorn");
             expect(truncate("unicorn", 6)).toBe("unico…");
+            expect(truncate("y", 1)).toBe("y");
         });
 
         it("should handle ANSI escape codes", () => {
