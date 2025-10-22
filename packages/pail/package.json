@@ -132,6 +132,10 @@
             "types": "./dist/reporter/simple/simple-reporter.server.d.ts",
             "default": "./dist/reporter/simple/simple-reporter.server.js"
         },
+        "./object-tree": {
+            "types": "./dist/object-tree.d.ts",
+            "default": "./dist/object-tree.js"
+        },
         "./package.json": "./package.json"
     },
     "files": [
@@ -179,6 +183,7 @@
         "@visulima/string": "2.0.1",
         "@vitest/coverage-v8": "^3.2.4",
         "@vitest/ui": "^3.2.4",
+        "cli-spinners": "^3.3.0",
         "conventional-changelog-conventionalcommits": "9.1.0",
         "esbuild": "0.25.11",
         "eslint": "9.38.0",
