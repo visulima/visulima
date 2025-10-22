@@ -1,3 +1,4 @@
+import { blue, red, yellow } from "@visulima/colorize";
 import { beforeEach, describe, expect, it } from "vitest";
 
 import type { MultiBarInstance } from "../../src/progress-bar";
@@ -468,5 +469,43 @@ describe("getCompositeChar", () => {
         const result = (multiBar as any).getCompositeChar(mockBars, [99], 0, 40);
 
         expect(result).toBe("█");
+    });
+
+    it("should show bar with lowest progress percentage on top", () => {
+        expect.assertions(1);
+
+        // Create bars with different progress rates
+        const bars: any = [
+            {
+                getBarState: () => {
+                    return { char: "█", current: 10, total: 100 };
+                },
+                index: 0,
+            }, // 10% progress
+            {
+                getBarState: () => {
+                    return { char: "█", current: 20, total: 100 };
+                },
+                index: 1,
+            }, // 20% progress
+            {
+                getBarState: () => {
+                    return { char: "█", current: 50, total: 100 };
+                },
+                index: 2,
+            }, // 50% progress
+        ];
+
+        // When multiple bars are in stack, show the one with SMALLEST progress percentage
+        // At position 5, all three bars are filled (5 < 10, 5 < 20, 5 < 50)
+        // Bar 0 has smallest % (10%), so it should be selected
+        multiBar.setBarColor(bars[0], red);
+        multiBar.setBarColor(bars[1], yellow);
+        multiBar.setBarColor(bars[2], blue);
+
+        const result = (multiBar as any).getCompositeChar(bars, [0, 1, 2], 5, 40);
+
+        // Should return the character colored with the first bar's color (smallest progress)
+        expect(result).toContain("▒"); // 3 bars overlap = light shade
     });
 });

@@ -40,7 +40,7 @@ describe(renderObjectTree, () => {
             value: 42,
         };
 
-        const result = renderObjectTree(object, { joined: false });
+        const result = renderObjectTree(object, { joined: false, sortFn: (a, b) => a.localeCompare(b) });
 
         expect(result).toBeInstanceOf(Array);
         expect(result).toStrictEqual(["├─ name: Test", "└─ value: 42"]);
@@ -58,6 +58,7 @@ describe(renderObjectTree, () => {
             keyNeighbour: "+-- ",
             keyNoNeighbour: String.raw`\-- `,
             separator: " = ",
+            sortFn: (a, b) => a.localeCompare(b),
         });
 
         expect(result).toBe("+-- key1 = value1\n\\-- key2 = value2");

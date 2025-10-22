@@ -6,7 +6,7 @@ import { PailBrowserImpl } from "./pail.browser";
 import type { MultiBarOptions, SingleBarOptions } from "./progress-bar";
 import { applyStyleToOptions, MultiProgressBar, ProgressBar } from "./progress-bar";
 import RawReporter from "./reporter/raw/raw-reporter.server";
-import type { SpinnerOptions, SpinnerStartOptions } from "./spinner";
+import type { SpinnerOptions } from "./spinner";
 import { MultiSpinner, Spinner } from "./spinner";
 import type {
     ConstructorOptions,

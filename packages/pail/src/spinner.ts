@@ -1,6 +1,6 @@
-/* eslint-disable import/exports-last */
-/* eslint-disable max-classes-per-file */
+/* eslint-disable import/exports-last, max-classes-per-file */
 
+import type { ColorizeType } from "@visulima/colorize";
 import colorize from "@visulima/colorize";
 import type { SpinnerName } from "cli-spinners";
 // eslint-disable-next-line import/no-extraneous-dependencies
@@ -15,7 +15,7 @@ export interface SpinnerStyle {
     /** Background color name (e.g., "bgRed", "bgBlue") */
     bgColor?: string;
     /** Background color as hex (e.g., "#FF0000") */
-    bgHex?: string;
+    bgHex?: `#${string}`;
     /** Background color as RGB (e.g., [255, 0, 0]) */
     bgRgb?: [number, number, number];
     /** Apply bold style */
@@ -25,7 +25,7 @@ export interface SpinnerStyle {
     /** Apply dim/faint style */
     dim?: boolean;
     /** Foreground color as hex (e.g., "#FF0000") */
-    hex?: string;
+    hex?: `#${string}`;
     /** Apply inverse style (swap fg/bg) */
     inverse?: boolean;
     /** Apply italic style */
@@ -96,7 +96,7 @@ const applyStyle = (text: string, style?: SpinnerStyle): string => {
         return text;
     }
 
-    let styled: any = colorize;
+    let styled = colorize;
 
     // Apply styles
     if (style.bold)
@@ -122,7 +122,7 @@ const applyStyle = (text: string, style?: SpinnerStyle): string => {
 
     // Apply foreground color
     if (style.color) {
-        styled = (styled as any)[style.color];
+        styled = styled[style.color as keyof typeof styled] as ColorizeType;
     } else if (style.hex) {
         styled = styled.hex(style.hex);
     } else if (style.rgb) {
@@ -131,7 +131,7 @@ const applyStyle = (text: string, style?: SpinnerStyle): string => {
 
     // Apply background color
     if (style.bgColor) {
-        styled = (styled as any)[style.bgColor];
+        styled = styled[style.bgColor as keyof typeof styled] as ColorizeType;
     } else if (style.bgHex) {
         styled = styled.bgHex(style.bgHex);
     } else if (style.bgRgb) {
@@ -266,7 +266,8 @@ export class Spinner {
     /**
      * Start the spinner with optional text.
      * @param text Optional text to display
-     * @param options Start options
+     * @param options
+     * @param options.prefixText Optional prefix text to display
      * @returns The spinner instance for chaining
      */
     public start(text?: string, options?: SpinnerStartOptions): this {
@@ -294,9 +295,9 @@ export class Spinner {
 
         if (manager) {
             if (this.#multiSpinner) {
-                manager.renderAll();
+                (manager as MultiSpinner).renderAll();
             } else {
-                manager.hook();
+                (manager as InteractiveManager).hook();
                 this.#render();
             }
         }
@@ -396,7 +397,7 @@ export class Spinner {
         const spinner = spinners[this.#spinnerName];
         const frame = spinner.frames[this.#frame];
 
-        let output = applyStyle(frame, this.#style);
+        let output = applyStyle(frame as string, this.#style);
 
         if (this.#prefixText) {
             output = `${this.#prefixText} ${output}`;
@@ -519,7 +520,10 @@ export class MultiSpinner {
     /**
      * Create a new spinner instance.
      * @param text Initial text for the spinner
-     * @param options Spinner options
+     * @param options
+     * @param options.prefixText Optional prefix text to display
+     * @param options.style Optional style for the spinner
+     * @param options.verbose Whether to output spinner (default: true)
      * @returns A new Spinner instance
      */
     public create(text?: string, options: SpinnerOptions = {}): Spinner {
