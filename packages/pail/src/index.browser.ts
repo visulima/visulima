@@ -54,8 +54,6 @@ export const createPail = <T extends string = string, L extends string = string>
  */
 export const pail = createPail();
 
-export type { ObjectTreeOptions, TreeRenderFn, TreeSortFn } from "./object-tree";
-export { renderObjectTree } from "./object-tree";
 export type { PailBrowserType as Pail } from "./pail.browser";
 export type {
     ConstructorOptions,

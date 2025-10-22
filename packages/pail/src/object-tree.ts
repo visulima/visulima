@@ -5,7 +5,7 @@
  * @param node The node to render
  * @returns A string representation or undefined if should not render
  */
-export type TreeRenderFn = (node: unknown) => string | undefined;
+export type TreeRenderFunction = (node: unknown) => string | undefined;
 
 /**
  * Function to sort keys during tree traversal
@@ -13,14 +13,14 @@ export type TreeRenderFn = (node: unknown) => string | undefined;
  * @param b Second key for comparison
  * @returns Negative if a < b, positive if a > b, 0 if equal
  */
-export type TreeSortFn = (a: string, b: string) => number;
+export type TreeSortFunction = (a: string, b: string) => number;
 
 /**
  * Configuration options for object tree rendering
  */
 export interface ObjectTreeOptions {
     /** Text to display for circular references (default: " (circular ref.)") */
-    breakCircularWith?: string | null;
+    breakCircularWith?: string | undefined;
     /** Whether to return as single string or array of lines (default: true) */
     joined?: boolean;
     /** Connector for neighbor keys (default: "├─ ") */
@@ -28,11 +28,11 @@ export interface ObjectTreeOptions {
     /** Connector for non-neighbor keys (default: "└─ ") */
     keyNoNeighbour?: string;
     /** Function to render node values (default: renders primitives) */
-    renderFn?: TreeRenderFn;
+    renderFn?: TreeRenderFunction;
     /** Separator between key and value (default: ": ") */
     separator?: string;
     /** Function to sort object keys (default: natural order) */
-    sortFn?: TreeSortFn | null;
+    sortFn?: TreeSortFunction | undefined;
     /** Spacer for neighbor branches (default: "│  ") */
     spacerNeighbour?: string;
     /** Spacer for non-neighbor branches (default: "   ") */
@@ -48,9 +48,10 @@ const buildContext = (options?: ObjectTreeOptions) => {
         joined: true,
         keyNeighbour: "├─ ",
         keyNoNeighbour: "└─ ",
-        renderFn: (node) => ["boolean", "string", "number"].includes(typeof node) ? String(node) : undefined,
+
+        renderFn: (node) => (["boolean", "number", "string"].includes(typeof node) ? String(node) : undefined),
         separator: ": ",
-        sortFn: null,
+        sortFn: undefined,
         spacerNeighbour: "│  ",
         spacerNoNeighbour: "   ",
         ...options,
@@ -144,10 +145,10 @@ export const renderObjectTree = (tree: Record<string, unknown> | unknown[], opti
     // Sort function matching original implementation
     const sort = (input: string[]): string[] => {
         if (context.sortFn === null) {
-            return input.reverse(); // In-place reverse
+            return input.toReversed(); // In-place reverse
         }
 
-        return input.sort((a, b) => context.sortFn!(b, a)); // In-place sort with reversed comparison
+        return input.toSorted((a, b) => context?.sortFn?.(b, a) ?? 0); // In-place sort with reversed comparison
     };
 
     const neighbours: boolean[] = [];
@@ -156,17 +157,18 @@ export const renderObjectTree = (tree: Record<string, unknown> | unknown[], opti
 
     // Traverse tree depth-first using stack (LIFO)
     while (keys.length > 0) {
-        const key = keys.pop()!;
-        const node = (lookup[key.length - 1] as Record<string, unknown>)[key[key.length - 1]];
+        const key = keys.pop() ?? [];
+        const node = (lookup[key.length - 1] as Record<string, unknown>)[key[key.length - 1] ?? ""];
         const isCircular = context.breakCircularWith !== null && lookup.includes(node);
 
         // Check if this key has siblings at the same level (neighbors)
-        neighbours[key.length - 1] = keys.length > 0 && keys[keys.length - 1].length === key.length;
+        neighbours[key.length - 1] = keys.length > 0 && (keys[keys.length - 1]?.length ?? 0) === key.length;
 
         // Build the line with tree structure
         const indent = neighbours
             .slice(0, key.length - 1)
-            .map((n) => n ? context.spacerNeighbour : context.spacerNoNeighbour)
+
+            .map((n) => (n ? context.spacerNeighbour : context.spacerNoNeighbour))
             .join("");
         const connector = neighbours[key.length - 1] ? context.keyNeighbour : context.keyNoNeighbour;
         const keyName = key[key.length - 1];
@@ -178,7 +180,7 @@ export const renderObjectTree = (tree: Record<string, unknown> | unknown[], opti
 
         // Add nested keys if node is an object (but not array, and not circular)
         if (node instanceof Object && !Array.isArray(node) && !isCircular) {
-            keys.push(...sort(Object.keys(node as Record<string, unknown>)).map((k) => key.concat(k)));
+            keys.push(...sort(Object.keys(node as Record<string, unknown>)).map((k) => [...key, k]));
             lookup[key.length] = node;
         }
     }

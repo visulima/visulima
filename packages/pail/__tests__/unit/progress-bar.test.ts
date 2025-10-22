@@ -388,17 +388,23 @@ describe("getCompositeChar", () => {
         mockBars = [
             {
                 bar: new ProgressBar({ total: 100 }),
-                getBarState: () => { return { char: "█", current: 50, total: 100 }; },
+                getBarState: () => {
+                    return { char: "█", current: 50, total: 100 };
+                },
                 index: 0,
             } as any as MultiBarInstance,
             {
                 bar: new ProgressBar({ total: 100 }),
-                getBarState: () => { return { char: "█", current: 70, total: 100 }; },
+                getBarState: () => {
+                    return { char: "█", current: 70, total: 100 };
+                },
                 index: 1,
             } as any as MultiBarInstance,
             {
                 bar: new ProgressBar({ total: 100 }),
-                getBarState: () => { return { char: "█", current: 90, total: 100 }; },
+                getBarState: () => {
+                    return { char: "█", current: 90, total: 100 };
+                },
                 index: 2,
             } as any as MultiBarInstance,
         ];

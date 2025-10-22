@@ -4,6 +4,8 @@ import { renderObjectTree } from "../../src/object-tree";
 
 describe(renderObjectTree, () => {
     it("should render a simple object", () => {
+        expect.assertions(1);
+
         const object = {
             age: 30,
             name: "John",
@@ -15,6 +17,8 @@ describe(renderObjectTree, () => {
     });
 
     it("should render nested objects", () => {
+        expect.assertions(1);
+
         const object = {
             active: true,
             user: {
@@ -29,6 +33,8 @@ describe(renderObjectTree, () => {
     });
 
     it("should return array when joined is false", () => {
+        expect.assertions(2);
+
         const object = {
             name: "Test",
             value: 42,
@@ -37,10 +43,12 @@ describe(renderObjectTree, () => {
         const result = renderObjectTree(object, { joined: false });
 
         expect(result).toBeInstanceOf(Array);
-        expect(result).toEqual(["├─ name: Test", "└─ value: 42"]);
+        expect(result).toStrictEqual(["├─ name: Test", "└─ value: 42"]);
     });
 
     it("should use custom separators", () => {
+        expect.assertions(1);
+
         const object = {
             key1: "value1",
             key2: "value2",
@@ -56,6 +64,8 @@ describe(renderObjectTree, () => {
     });
 
     it("should use custom render function", () => {
+        expect.assertions(1);
+
         const object = {
             count: 5,
             message: "hello",
@@ -75,6 +85,8 @@ describe(renderObjectTree, () => {
     });
 
     it("should handle circular references", () => {
+        expect.assertions(1);
+
         const object: any = { name: "circular" };
 
         object.self = object;
@@ -85,6 +97,8 @@ describe(renderObjectTree, () => {
     });
 
     it("should handle empty objects", () => {
+        expect.assertions(1);
+
         const result = renderObjectTree({});
 
         expect(result).toBe("");

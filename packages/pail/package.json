@@ -132,6 +132,10 @@
             "types": "./dist/reporter/simple/simple-reporter.server.d.ts",
             "default": "./dist/reporter/simple/simple-reporter.server.js"
         },
+        "./object-tree": {
+            "types": "./dist/object-tree.d.ts",
+            "default": "./dist/object-tree.js"
+        },
         "./package.json": "./package.json"
     },
     "files": [

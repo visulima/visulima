@@ -543,16 +543,17 @@ multiBar.setBarColor(source3, colorize.blue);
 
 // Update sources with different speeds
 for (let i = 0; i <= 100; i++) {
-    source1.update(i);                          // Red: 100% progress
-    source2.update(Math.floor(i * 0.7));       // Yellow: 70% progress
-    source3.update(Math.floor(i * 0.4));       // Blue: 40% progress
-    await new Promise(r => setTimeout(r, 40));
+    source1.update(i); // Red: 100% progress
+    source2.update(Math.floor(i * 0.7)); // Yellow: 70% progress
+    source3.update(Math.floor(i * 0.4)); // Blue: 40% progress
+    await new Promise((r) => setTimeout(r, 40));
 }
 
 multiBar.stop();
 ```
 
 **Output example:**
+
 ```
 [▒▒▒▒▒▒▒▒▒▒▓▓▓▓▓▓▓▓██████████████████████]  ① 100%  ② 70%  ③ 40%
 ```
@@ -561,12 +562,12 @@ multiBar.stop();
 
 The composite bar uses character shading to represent overlapping progress bars:
 
-| Character | Meaning | Example |
-|-----------|---------|---------|
-| **█** (solid) | One bar visible | Red at 100% |
-| **▓** (medium) | Two bars overlap | Red + Yellow |
-| **▒** (light) | Three bars overlap | Red + Yellow + Blue |
-| **░** (lightest) | Four+ bars overlap | All bars present |
+| Character        | Meaning            | Example             |
+| ---------------- | ------------------ | ------------------- |
+| **█** (solid)    | One bar visible    | Red at 100%         |
+| **▓** (medium)   | Two bars overlap   | Red + Yellow        |
+| **▒** (light)    | Three bars overlap | Red + Yellow + Blue |
+| **░** (lightest) | Four+ bars overlap | All bars present    |
 
 #### How It Works
 
@@ -587,6 +588,7 @@ The **highest-indexed bar's color** is used at each position, creating a natural
 5. **Resource Tracking**: CPU, Memory, Disk usage in parallel
 
 Each progress bar:
+
 - Updates independently at its own speed
 - Can have different total values and progress rates
 - Uses color to distinguish sources
@@ -666,7 +668,7 @@ spinner.succeed();
 Render objects and data structures as formatted ASCII trees for better terminal visualization and debugging:
 
 ```typescript
-import { renderObjectTree } from "@visulima/pail";
+import { renderObjectTree } from "@visulima/pail/object-tree";
 
 const data = {
     user: {
@@ -675,19 +677,20 @@ const data = {
         profile: {
             age: 30,
             location: "New York",
-            skills: ["JavaScript", "TypeScript", "Node.js"]
-        }
+            skills: ["JavaScript", "TypeScript", "Node.js"],
+        },
     },
     settings: {
         theme: "dark",
-        notifications: true
-    }
+        notifications: true,
+    },
 };
 
 console.log(renderObjectTree(data));
 ```
 
 **Output:**
+
 ```
 ├─ user:
 │  ├─ name: John Doe
@@ -701,32 +704,30 @@ console.log(renderObjectTree(data));
 │  └─ notifications: true
 ```
 
-> **Note:** `renderObjectTree` works in both **Node.js** and **Browser** environments. It's a pure utility function with no platform-specific dependencies.
+> **Note:** `renderObjectTree` is exported as a separate module (`@visulima/pail/object-tree`) to reduce main bundle size. It works in both **Node.js** and **Browser** environments and is a pure utility function with no platform-specific dependencies.
 
 ### Custom Rendering
 
 Customize how object trees are rendered:
 
 ```typescript
-import { renderObjectTree } from "@visulima/pail";
+import { renderObjectTree } from "@visulima/pail/object-tree";
 
 const obj = {
     name: "John",
     age: 30,
     address: {
         street: "Main St",
-        city: "New York"
-    }
+        city: "New York",
+    },
 };
 
 // Custom rendering with sorting and formatting
 const tree = renderObjectTree(obj, {
     sortFn: (a, b) => a.localeCompare(b), // Sort keys alphabetically
     renderFn: (node) => {
-        if (typeof node === 'string') return node.toUpperCase();
-        return ['boolean', 'string', 'number'].includes(typeof node)
-            ? String(node)
-            : undefined;
+        if (typeof node === "string") return node.toUpperCase();
+        return ["boolean", "string", "number"].includes(typeof node) ? String(node) : undefined;
     },
     joined: true, // Return as single string (false for array of lines)
 });
@@ -736,17 +737,17 @@ console.log(tree);
 
 ### Configuration Options
 
-| Option | Description | Default |
-|--------|-------------|---------|
-| `joined` | Return as single string or array of lines | `true` |
-| `sortFn` | Function to sort object keys (null for natural order) | `null` |
-| `renderFn` | Function to render node values | Renders primitives |
-| `separator` | Separator between key and value | `": "` |
-| `keyNeighbour` | Connector for keys with siblings | `"├─ "` |
-| `keyNoNeighbour` | Connector for last keys | `"└─ "` |
-| `spacerNeighbour` | Spacer for branches with siblings | `"│  "` |
-| `spacerNoNeighbour` | Spacer for branches without siblings | `"   "` |
-| `breakCircularWith` | Text for circular references | `" (circular ref.)"` |
+| Option              | Description                                           | Default              |
+| ------------------- | ----------------------------------------------------- | -------------------- |
+| `joined`            | Return as single string or array of lines             | `true`               |
+| `sortFn`            | Function to sort object keys (null for natural order) | `null`               |
+| `renderFn`          | Function to render node values                        | Renders primitives   |
+| `separator`         | Separator between key and value                       | `": "`               |
+| `keyNeighbour`      | Connector for keys with siblings                      | `"├─ "`              |
+| `keyNoNeighbour`    | Connector for last keys                               | `"└─ "`              |
+| `spacerNeighbour`   | Spacer for branches with siblings                     | `"│  "`              |
+| `spacerNoNeighbour` | Spacer for branches without siblings                  | `"   "`              |
+| `breakCircularWith` | Text for circular references                          | `" (circular ref.)"` |
 
 ### Use Cases
 
