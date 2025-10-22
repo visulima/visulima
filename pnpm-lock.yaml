@@ -312,12 +312,6 @@ importers:
         specifier: 5.9.3
         version: 5.9.3
 
-  examples/cerebro:
-    dependencies:
-      '@visulima/cerebro':
-        specifier: workspace:*
-        version: link:../../packages/cerebro
-
   examples/colorize/next15:
     dependencies:
       '@visulima/colorize':
@@ -911,9 +905,6 @@ importers:
       cli-table3:
         specifier: ^0.6.5
         version: 0.6.5
-      command-line-args:
-        specifier: ^6.0.1
-        version: 6.0.1
       fastest-levenshtein:
         specifier: ^1.0.16
         version: 1.0.16
@@ -936,12 +927,17 @@ importers:
       '@total-typescript/ts-reset':
         specifier: ^0.6.1
         version: 0.6.1
-      '@types/command-line-args':
-        specifier: ^5.2.3
-        version: 5.2.3
       '@types/node':
+<<<<<<< HEAD
         specifier: 24.9.2
         version: 24.9.2
+=======
+        specifier: 24.9.1
+        version: 24.9.1
+      '@visulima/command-line-args':
+        specifier: workspace:*
+        version: link:../command-line-args
+>>>>>>> d3686cd09 (refactor: update cerebro package structure and dependencies)
       '@visulima/packem':
         specifier: 2.0.0-alpha.32
         version: 2.0.0-alpha.32(@arethetypeswrong/core@0.18.2)(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@swc/core@1.13.5)(@tailwindcss/node@4.1.16)(@tailwindcss/oxide@4.1.16)(@types/node@24.9.2)(@visulima/redact@2.0.1)(ai@5.0.81(zod@4.1.12))(cssnano@7.1.1(postcss@8.5.6))(esbuild@0.25.11)(icss-utils@5.1.0(postcss@8.5.6))(lightningcss@1.30.2)(package-manager-detector@1.5.0)(postcss-load-config@6.0.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.20.6)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rolldown@1.0.0-beta.45)(rotating-file-stream@3.2.7)(sucrase@3.35.0)(typedoc-plugin-markdown@4.9.0(typedoc@0.28.14(typescript@5.9.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.14(typescript@5.9.3)))(typedoc@0.28.14(typescript@5.9.3))(typescript@5.9.3)(yaml@2.8.1)
@@ -982,17 +978,17 @@ importers:
         specifier: ^4.0.4
         version: 4.0.4(@types/debug@4.1.12)(@types/node@24.9.2)(@vitest/ui@4.0.4)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.2)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 
-  packages/cerebro/__fixtures__/package/cjs:
-    dependencies:
-      '@visulima/cerebro':
-        specifier: workspace:*
-        version: link:../../..
-
   packages/cerebro/__fixtures__/package/mjs:
     dependencies:
       '@visulima/cerebro':
         specifier: workspace:*
         version: link:../../..
+
+  packages/cerebro/examples:
+    dependencies:
+      '@visulima/cerebro':
+        specifier: workspace:*
+        version: link:..
 
   packages/colorize:
     dependencies:
@@ -2025,6 +2021,13 @@ importers:
         specifier: ^4.0.4
         version: 4.0.4(@types/debug@4.1.12)(@types/node@24.9.2)(@vitest/ui@4.0.4)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.2)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 
+<<<<<<< HEAD
+=======
+  packages/fs/__bench__/fixtures/a/b: {}
+
+  packages/fs/__bench__/fixtures/a/b: {}
+
+>>>>>>> 8932349ba (refactor: update cerebro package structure and dependencies)
   packages/fs/__fixtures__/find-up: {}
 
   packages/fs/__fixtures__/package/cjs:

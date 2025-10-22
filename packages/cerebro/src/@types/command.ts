@@ -1,4 +1,4 @@
-import type { OptionDefinition as BaseOptionDefinition } from "command-line-args";
+import type { OptionDefinition as BaseOptionDefinition } from "@visulima/command-line-args";
 
 import type { Content } from "./command-line-usage";
 import type { Toolbox as IToolbox } from "./toolbox";

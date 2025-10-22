@@ -2,13 +2,15 @@ import { argv as process_argv, cwd as process_cwd, env, execArgv, execPath, exit
 
 import { boxen } from "@visulima/boxen";
 import { dim, green, reset, yellow } from "@visulima/colorize";
+import type { CommandLineOptions } from "@visulima/command-line-args";
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { commandLineArgs } from "@visulima/command-line-args";
 import type { ConstructorOptions, ExtendedRfc5424LogLevels, Pail, Processor } from "@visulima/pail";
-import { CallerProcessor, MessageFormatterProcessor } from "@visulima/pail/processor";
+import CallerProcessor from "@visulima/pail/processor/caller";
+import MessageFormatterProcessor from "@visulima/pail/processor/message-formatter";
 import { createPail } from "@visulima/pail/server";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import camelCase from "camelcase";
-import type { CommandLineOptions } from "command-line-args";
-import commandLineArgs from "command-line-args";
 
 import type {
     Cli as ICli,
@@ -365,7 +367,6 @@ export class Cli implements ICli {
             ];
         }
 
-        // eslint-disable-next-line unicorn/prevent-abbreviations
         const parsedArgs = commandLineArgs(arguments_, {
             argv: removeBooleanValues(commandArguments, command.options ?? []),
             camelCase: true,
@@ -375,7 +376,7 @@ export class Cli implements ICli {
 
         const booleanValues = getBooleanValues(commandArguments, command.options ?? []);
 
-        // eslint-disable-next-line unicorn/prevent-abbreviations,no-underscore-dangle
+        // eslint-disable-next-line no-underscore-dangle
         const commandArgs = { ...parsedArgs, _all: { ...parsedArgs._all, ...booleanValues } } as typeof parsedArgs;
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -482,7 +483,7 @@ export class Cli implements ICli {
         });
     }
 
-    // eslint-disable-next-line unicorn/prevent-abbreviations,@typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private async prepareToolboxResult<OD extends OptionDefinition<any>>(commandArgs: CommandLineOptions, toolbox: IToolbox, command: ICommand<OD>) {
         // Help is a special argument for displaying help for the given command.
         // If found, run the help command instead, with the given command name as
