@@ -125,16 +125,35 @@ export class ProgressBar {
      * @param payload Optional initial payload data for format placeholders
      */
     public constructor(options: ProgressBarOptions, interactiveManager?: InteractiveManager, payload?: ProgressBarPayload) {
+        const isCompleteArray = Array.isArray(options.barCompleteChar);
+        const isIncompleteArray = Array.isArray(options.barIncompleteChar);
+        const isGradientMode = isCompleteArray || isIncompleteArray;
+
+        const completeChar = isCompleteArray ? options.barCompleteChar : getBarChar(options.barCompleteChar as string | undefined, "shades_classic");
+        const incompleteChar = isIncompleteArray
+            ? options.barIncompleteChar
+            : getBarChar(options.barIncompleteChar as string | undefined, "shades_classic", false);
+
         this.options = {
-            barCompleteChar: Array.isArray(options.barCompleteChar) ? options.barCompleteChar : getBarChar(options.barCompleteChar, "shades_classic"),
-            barIncompleteChar: Array.isArray(options.barIncompleteChar)
-                ? options.barIncompleteChar
-                : getBarChar(options.barIncompleteChar, "shades_classic", false),
+            barCompleteChar: completeChar,
+            barIncompleteChar: incompleteChar,
             current: 0,
             fps: 10,
             width: 40,
             ...options,
         };
+
+        // Normalize: if one is array but not the other, convert string to single-element array
+        if (isGradientMode) {
+            if (!Array.isArray(this.options.barCompleteChar)) {
+                this.options.barCompleteChar = [this.options.barCompleteChar as string];
+            }
+
+            if (!Array.isArray(this.options.barIncompleteChar)) {
+                this.options.barIncompleteChar = [this.options.barIncompleteChar as string];
+            }
+        }
+
         this.current = this.options.current ?? 0;
         this.startTime = Date.now();
         this.interactiveManager = interactiveManager;
@@ -206,7 +225,7 @@ export class ProgressBar {
                 if (i < filled) {
                     const isGradientBoundary = i === filled - 1 && fractional > 0 && completeChars;
 
-                    barContent += isGradientBoundary ? completeChars[fractional - 1] : completeChar;
+                    barContent += isGradientBoundary ? completeChars[Math.max(0, fractional - 1)] : completeChar;
                 } else {
                     barContent += incompleteChar;
                 }
@@ -311,10 +330,12 @@ export class MultiBarInstance extends ProgressBar {
     }
 
     public getBarState(): { char: string; current: number; total: number } {
-        const completeChar = typeof this.options.barCompleteChar === "string" ? this.options.barCompleteChar : "█";
+        const completeChar = Array.isArray(this.options.barCompleteChar)
+            ? this.options.barCompleteChar[this.options.barCompleteChar.length - 1]
+            : getBarChar(this.options.barCompleteChar, this.options.style ?? "shades_classic", true);
 
         return {
-            char: completeChar,
+            char: completeChar ?? "█",
             current: this.current,
             total: this.options.total,
         };
@@ -450,11 +471,10 @@ export class MultiProgressBar {
 
     /**
      * Sets or removes a color function for a specific bar.
-     * @param bar The progress bar instance to color
+     * @param bar The progress bar instance to color (must be from this MultiProgressBar)
      * @param color Color function or undefined to remove color
      */
-    public setBarColor(bar: ProgressBar, color: ((text: string) => string) | undefined): void {
-        // Find the MultiBarInstance for this bar and set its color
+    public setBarColor(bar: MultiBarInstance, color: ((text: string) => string) | undefined): void {
         for (const instance of this.bars.values()) {
             if (instance === bar) {
                 if (color) {
@@ -534,9 +554,7 @@ export class MultiProgressBar {
         }
 
         // Get character gradient based on bar style
-        const firstBar = bars[stack[0] ?? 0];
-        const baseChar = firstBar?.getBarState().char ?? "█";
-        const charGradient = CHAR_GRADIENTS[baseChar === "▬" || baseChar === "▭" ? "rect" : "default"];
+        const charGradient = CHAR_GRADIENTS[this.options.style === "rect" ? "rect" : "default"];
         const char = charGradient?.[Math.min(stack.length - 1, charGradient.length - 1)] ?? "█";
 
         // Find bar with smallest progress (highest priority for visibility)
