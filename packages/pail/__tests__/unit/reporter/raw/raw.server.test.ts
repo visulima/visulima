@@ -1,11 +1,16 @@
 import { stderr, stdout } from "node:process";
 
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import RawReporter from "../../../../src/reporter/raw/raw-reporter.server";
 import type { ReadonlyMeta } from "../../../../src/types";
 
 describe("raw-reporter", () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+        vi.restoreAllMocks();
+    });
+
     it("should log a message to stdout when given a message and no context or groups", () => {
         expect.assertions(1);
 
