@@ -1,3 +1,13 @@
+## @visulima/vite-overlay [1.3.3](https://github.com/visulima/visulima/compare/@visulima/vite-overlay@1.3.2...@visulima/vite-overlay@1.3.3) (2025-10-22)
+
+### Bug Fixes
+
+* **vite-overlay:** fix [#556](https://github.com/visulima/visulima/issues/556) broken args split on the console overwrite ([6e68419](https://github.com/visulima/visulima/commit/6e684196e66e772ebb3f4d842cf2b97ffc211d29))
+
+### Miscellaneous Chores
+
+* update package dependencies and configurations ([7bfe7e7](https://github.com/visulima/visulima/commit/7bfe7e71869580900aab50efb064b4293994ed9a))
+
 ## @visulima/vite-overlay [1.3.2](https://github.com/visulima/visulima/compare/@visulima/vite-overlay@1.3.1...@visulima/vite-overlay@1.3.2) (2025-10-21)
 
 ### Bug Fixes
