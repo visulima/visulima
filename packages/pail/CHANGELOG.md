@@ -1,3 +1,18 @@
+## @visulima/pail [3.0.2](https://github.com/visulima/visulima/compare/@visulima/pail@3.0.1...@visulima/pail@3.0.2) (2025-10-22)
+
+### Miscellaneous Chores
+
+* update package dependencies and configurations ([7bfe7e7](https://github.com/visulima/visulima/commit/7bfe7e71869580900aab50efb064b4293994ed9a))
+
+### Tests
+
+* enhance unit tests with beforeEach for mock cleanup ([aba2a50](https://github.com/visulima/visulima/commit/aba2a50d5031193fbb0902cfa407b5e226c43ced))
+
+
+### Dependencies
+
+* **@visulima/string:** upgraded to 2.0.2
+
 ## @visulima/pail [3.0.1](https://github.com/visulima/visulima/compare/@visulima/pail@3.0.0...@visulima/pail@3.0.1) (2025-10-21)
 
 ### Bug Fixes
