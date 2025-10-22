@@ -1,3 +1,19 @@
+## @visulima/cerebro [1.1.57](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.1.56...@visulima/cerebro@1.1.57) (2025-10-22)
+
+### Bug Fixes
+
+* Downgraded @visulima/pail dependency from version 3.0.1 to 2.1.31 in package.json. ([ef8ca71](https://github.com/visulima/visulima/commit/ef8ca714f6e64d6a00b57c120bbb88fd13573997))
+
+### Miscellaneous Chores
+
+* update package dependencies and configurations ([7bfe7e7](https://github.com/visulima/visulima/commit/7bfe7e71869580900aab50efb064b4293994ed9a))
+
+
+### Dependencies
+
+* **@visulima/boxen:** upgraded to 2.0.6
+* **@visulima/pail:** upgraded to 3.0.2
+
 ## @visulima/cerebro [1.1.56](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.1.55...@visulima/cerebro@1.1.56) (2025-10-21)
 
 ### Bug Fixes
