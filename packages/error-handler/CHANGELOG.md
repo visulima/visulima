@@ -1,3 +1,14 @@
+## @visulima/error-handler [1.0.9](https://github.com/visulima/visulima/compare/@visulima/error-handler@1.0.8...@visulima/error-handler@1.0.9) (2025-10-22)
+
+### Miscellaneous Chores
+
+* update package dependencies and configurations ([7bfe7e7](https://github.com/visulima/visulima/commit/7bfe7e71869580900aab50efb064b4293994ed9a))
+
+
+### Dependencies
+
+* **@visulima/boxen:** upgraded to 2.0.6
+
 ## @visulima/error-handler [1.0.8](https://github.com/visulima/visulima/compare/@visulima/error-handler@1.0.7...@visulima/error-handler@1.0.8) (2025-10-21)
 
 ### Bug Fixes
