@@ -1,6 +1,6 @@
 import { describe, expect, expectTypeOf, it } from "vitest";
 
-import { MESSAGE_TYPE, PLUGIN_NAME, RECENT_ERROR_TTL_MS } from "../../src/constants.js";
+import { MESSAGE_TYPE, PLUGIN_NAME, RECENT_ERROR_TTL_MS } from "../../src/constants";
 
 describe(RECENT_ERROR_TTL_MS, () => {
     it("should be a positive number", () => {

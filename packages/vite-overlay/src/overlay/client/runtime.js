@@ -1067,8 +1067,8 @@ class ErrorOverlay extends HTMLElement {
             const balloonWidth = balloonRect.width;
             const balloonHeight = balloonRect.height;
 
-            let newX = event.clientX - startX;
-            let newY = event.clientY - startY;
+            const newX = event.clientX - startX;
+            const newY = event.clientY - startY;
 
             const padding = ErrorOverlay.SCROLL_PADDING;
             const corners = [
