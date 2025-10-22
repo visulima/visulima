@@ -1,3 +1,14 @@
+## @visulima/boxen [2.0.6](https://github.com/visulima/visulima/compare/@visulima/boxen@2.0.5...@visulima/boxen@2.0.6) (2025-10-22)
+
+### Miscellaneous Chores
+
+* update package dependencies and configurations ([7bfe7e7](https://github.com/visulima/visulima/commit/7bfe7e71869580900aab50efb064b4293994ed9a))
+
+
+### Dependencies
+
+* **@visulima/string:** upgraded to 2.0.2
+
 ## @visulima/boxen [2.0.5](https://github.com/visulima/visulima/compare/@visulima/boxen@2.0.4...@visulima/boxen@2.0.5) (2025-10-21)
 
 ### Bug Fixes

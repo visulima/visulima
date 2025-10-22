@@ -1,6 +1,6 @@
 {
     "name": "@visulima/boxen",
-    "version": "2.0.5",
+    "version": "2.0.6",
     "description": "Util.format-like string formatting utility.",
     "keywords": [
         "anolilab",
@@ -98,7 +98,7 @@
         "@visulima/colorize": "1.4.25",
         "@visulima/packem": "2.0.0-alpha.30",
         "@visulima/path": "2.0.1",
-        "@visulima/string": "2.0.1",
+        "@visulima/string": "2.0.2",
         "@vitest/coverage-v8": "^4.0.1",
         "@vitest/ui": "^4.0.1",
         "conventional-changelog-conventionalcommits": "9.1.0",
