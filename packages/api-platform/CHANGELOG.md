@@ -1,3 +1,18 @@
+## @visulima/api-platform [3.0.54](https://github.com/visulima/visulima/compare/@visulima/api-platform@3.0.53...@visulima/api-platform@3.0.54) (2025-10-22)
+
+### Bug Fixes
+
+* update dependencies in api-platform package.json ([49eaafa](https://github.com/visulima/visulima/commit/49eaafa3e3229c1260f0d88c5dbfed95b7c0aac0))
+
+### Miscellaneous Chores
+
+* update pnpm-lock.yaml and package.json for vitest upgrade ([b4e91ce](https://github.com/visulima/visulima/commit/b4e91ceb917fa51824c994ed6448365f419b8ade))
+
+
+### Dependencies
+
+* **@visulima/jsdoc-open-api:** upgraded to 2.0.90
+
 ## @visulima/api-platform [3.0.53](https://github.com/visulima/visulima/compare/@visulima/api-platform@3.0.52...@visulima/api-platform@3.0.53) (2025-10-21)
 
 ### Bug Fixes

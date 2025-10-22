@@ -1,6 +1,6 @@
 {
     "name": "@visulima/api-platform",
-    "version": "3.0.53",
+    "version": "3.0.54",
     "description": "Visulima API platform is a set of tools to build and consume web APIs",
     "keywords": [
         "anolilab",
@@ -142,8 +142,8 @@
     },
     "dependencies": {
         "@visulima/connect": "3.0.23",
-        "@visulima/fs": "^3.1.9",
-        "@visulima/jsdoc-open-api": "2.0.89",
+        "@visulima/fs": "4.0.2",
+        "@visulima/jsdoc-open-api": "2.0.90",
         "@visulima/path": "2.0.1",
         "accepts": "^1.3.8",
         "debug": "^4.4.3",
