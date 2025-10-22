@@ -1,4 +1,5 @@
-import CliTable3 from "cli-table3";
+import { createTable } from "@visulima/tabular";
+import { NO_BORDER } from "@visulima/tabular/style";
 
 import type { ArgumentDefinition, OptionDefinition as IOptionDefinition } from "../../../@types/command";
 import type { OptionList as IOptionList } from "../../../@types/command-line-usage";
@@ -32,31 +33,18 @@ class OptionListSection extends BaseSection {
             });
         }
 
-        const table = new CliTable3({
-            chars: {
-                bottom: "",
-                "bottom-left": "",
-                "bottom-mid": "",
-                "bottom-right": "",
-                left: " ",
-                "left-mid": "",
-                mid: "",
-                "mid-mid": "",
-                middle: " ",
-                right: "",
-                "right-mid": "",
-                top: "",
-                "top-left": "",
-                "top-mid": "",
-                "top-right": "",
+        const table = createTable({
+            showHeader: false,
+            style: {
+                border: NO_BORDER,
+                paddingLeft: 2,
+                paddingRight: 1,
             },
-            colWidths: [40, 40],
-            style: { "padding-left": 2, "padding-right": 1 },
             wordWrap: true,
         });
 
         definitions.forEach((definition) =>
-            table.push([this.getOptionNames(definition, data.reverseNameOrder ?? false, data.isArgument ?? false), templateFormat(definition.description)]),
+            table.addRow([this.getOptionNames(definition, data.reverseNameOrder ?? false, data.isArgument ?? false), templateFormat(definition.description)]),
         );
 
         this.add(table.toString());

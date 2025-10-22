@@ -900,11 +900,19 @@ importers:
         specifier: 2.0.2
         version: 2.0.2
       '@visulima/pail':
+<<<<<<< HEAD
         specifier: 3.0.2
         version: 3.0.2(@visulima/redact@2.0.1)(rotating-file-stream@3.2.7)
       cli-table3:
         specifier: ^0.6.5
         version: 0.6.5
+=======
+        specifier: 3.0.1
+        version: 3.0.1(rotating-file-stream@3.2.7)
+      '@visulima/tabular':
+        specifier: workspace:*
+        version: link:../tabular
+>>>>>>> 656a3c094 (chore: update dependencies and refactor command-line usage in cerebro)
       fastest-levenshtein:
         specifier: ^1.0.16
         version: 1.0.16
@@ -2025,9 +2033,12 @@ importers:
 =======
   packages/fs/__bench__/fixtures/a/b: {}
 
+<<<<<<< HEAD
   packages/fs/__bench__/fixtures/a/b: {}
 
 >>>>>>> 8932349ba (refactor: update cerebro package structure and dependencies)
+=======
+>>>>>>> 656a3c094 (chore: update dependencies and refactor command-line usage in cerebro)
   packages/fs/__fixtures__/find-up: {}
 
   packages/fs/__fixtures__/package/cjs:
@@ -9304,8 +9315,29 @@ packages:
       rotating-file-stream:
         optional: true
 
+<<<<<<< HEAD
+=======
+  '@visulima/pail@3.0.0':
+    resolution: {integrity: sha512-Wy5Egjz7GwpVAsJpwJ1YsxmNZZpPOsH10c5j2dlqto5yg/ASTv6KZtysywceADuBAchmHa1VfckRQ66lsx/Www==}
+    engines: {node: '>=20.19 <=24.x'}
+    os: [darwin, linux, win32]
+    peerDependencies:
+      '@visulima/redact': 2.0.0
+      rotating-file-stream: ^3.2.7
+    peerDependenciesMeta:
+      '@visulima/redact':
+        optional: true
+      rotating-file-stream:
+        optional: true
+
+<<<<<<< HEAD
+>>>>>>> 97068724a (chore: update dependencies and refactor command-line usage in cerebro)
   '@visulima/pail@3.0.2':
     resolution: {integrity: sha512-z1EhpXmf0NgPVXMxX25HwOsq+tT3hjyjMzZ7g7I6gvCLcn5Fc+R8m9iECovKyxtiIJWmEfVLv0uVq1sDJ6Zd5w==}
+=======
+  '@visulima/pail@3.0.1':
+    resolution: {integrity: sha512-Ff8BXxqDDTAw5G1u1tewTzT0qgpqNyDckp2mi/oJ0aMlMf0SHP/EEi7/Qa8/IylP6sGgXcE9r/Yxw2GkSklBIA==}
+>>>>>>> 656a3c094 (chore: update dependencies and refactor command-line usage in cerebro)
     engines: {node: '>=20.19 <=25.x'}
     os: [darwin, linux, win32]
     peerDependencies:
@@ -26059,7 +26091,22 @@ snapshots:
     transitivePeerDependencies:
       - ai
 
+<<<<<<< HEAD
   '@visulima/pail@3.0.2(@visulima/redact@2.0.1)(rotating-file-stream@3.2.7)':
+=======
+  '@visulima/pail@3.0.0(rotating-file-stream@3.2.7)':
+    dependencies:
+      '@visulima/colorize': 1.4.24
+      type-fest: 5.1.0
+    optionalDependencies:
+      rotating-file-stream: 3.2.7
+
+<<<<<<< HEAD
+  '@visulima/pail@3.0.2(rotating-file-stream@3.2.7)':
+=======
+  '@visulima/pail@3.0.1(rotating-file-stream@3.2.7)':
+>>>>>>> 656a3c094 (chore: update dependencies and refactor command-line usage in cerebro)
+>>>>>>> 97068724a (chore: update dependencies and refactor command-line usage in cerebro)
     dependencies:
       '@visulima/colorize': 1.4.25
       type-fest: 5.1.0
