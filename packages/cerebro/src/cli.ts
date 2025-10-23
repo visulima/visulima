@@ -302,6 +302,7 @@ export class Cli implements ICli {
         this.logger.debug(`process.argv: ${process_argv.join(" ")}`);
 
         try {
+            // eslint-disable-next-line unicorn/no-null
             parsedArguments = commandLineCommands([null, ...commandNames], this.argv);
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
@@ -396,13 +397,11 @@ export class Cli implements ICli {
         // eslint-disable-next-line @typescript-eslint/naming-convention
         const { _all, positionals } = commandArgs;
 
-        // eslint-disable-next-line security/detect-object-injection
         if (_all[POSITIONALS_KEY]) {
-            // eslint-disable-next-line @typescript-eslint/no-dynamic-delete,security/detect-object-injection
+            // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
             delete _all[POSITIONALS_KEY];
         }
 
-        // eslint-disable-next-line security/detect-object-injection
         toolbox.argument = positionals?.[POSITIONALS_KEY] ?? [];
         toolbox.argv = this.argv;
         toolbox.options = { ..._all, ...otherExtraOptions };
@@ -413,8 +412,10 @@ export class Cli implements ICli {
         this.validateCommandArgsForConflicts(arguments_, toolbox.options, command);
 
         this.logger.debug("command options parsed from options:");
+        // eslint-disable-next-line unicorn/no-null
         this.logger.debug(JSON.stringify(toolbox.options, null, 2));
         this.logger.debug("command argument parsed from argument:");
+        // eslint-disable-next-line unicorn/no-null
         this.logger.debug(JSON.stringify(toolbox.argument, null, 2));
 
         await this.prepareToolboxResult(commandArgs, toolbox, command);
@@ -429,13 +430,10 @@ export class Cli implements ICli {
             const groupedDuplicatedOption = command.options.reduce<Record<string, OptionDefinition<OD>[]>>((accumulator, object) => {
                 const key = `${object.name}-${object.alias}`;
 
-                // eslint-disable-next-line security/detect-object-injection
                 if (!accumulator[key]) {
-                    // eslint-disable-next-line security/detect-object-injection
                     accumulator[key] = [];
                 }
 
-                // eslint-disable-next-line security/detect-object-injection
                 (accumulator[key] as OptionDefinition<OD>[]).push(object as OptionDefinition<OD>);
 
                 return accumulator;
@@ -602,7 +600,6 @@ export class Cli implements ICli {
         if (conflicts.length > 0) {
             const conflict = conflicts.find((argument) => {
                 if (Array.isArray(argument.conflicts)) {
-                    // eslint-disable-next-line security/detect-object-injection
                     return argument.conflicts.some((c) => commandArguments[c] !== undefined) && commandArguments[argument.name] !== undefined;
                 }
 
@@ -647,15 +644,14 @@ export class Cli implements ICli {
             if (typeof extension.execute !== "function") {
                 this.logger.warn(`Skipped ${extension.name} because execute is not a function.`);
 
-                return null;
+                return undefined;
             }
 
             await extension.execute(toolbox as IToolbox);
 
-            return null;
+            return undefined;
         };
 
-        // eslint-disable-next-line no-loops/no-loops
         for (const extension of this.extensions) {
             // eslint-disable-next-line no-await-in-loop
             await callback(extension);
@@ -671,7 +667,7 @@ export class Cli implements ICli {
 
                 this.logger.debug(`mapping negated option "${key}" to "${nonNegatedKey}"`);
 
-                // eslint-disable-next-line security/detect-object-injection,no-param-reassign
+                // eslint-disable-next-line no-param-reassign
                 (toolbox.options as IOptions["options"])[nonNegatedKey] = !value;
 
                 command.options?.forEach((option) => {
@@ -697,16 +693,14 @@ export class Cli implements ICli {
                 const implies = option.implies as Record<string, unknown>;
 
                 Object.entries(implies).forEach(([key, value]) => {
-                    // eslint-disable-next-line security/detect-object-injection
                     if (toolbox.options[key] === undefined) {
-                        // eslint-disable-next-line no-param-reassign,security/detect-object-injection
+                        // eslint-disable-next-line no-param-reassign
                         toolbox.options[key] = value;
                     } else {
                         const impliedOption = command.options?.find((cOption) => cOption.name === key);
 
-                        // eslint-disable-next-line security/detect-object-injection
                         if (impliedOption?.defaultValue === undefined || toolbox.options[key] === impliedOption.defaultValue) {
-                            // eslint-disable-next-line no-param-reassign,security/detect-object-injection
+                            // eslint-disable-next-line no-param-reassign
                             toolbox.options[key] = value;
                         }
                     }

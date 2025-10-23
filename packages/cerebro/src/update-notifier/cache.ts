@@ -31,12 +31,10 @@ export const getLastUpdate = (packageName: string): number | undefined => {
     const configFile = getConfigFile(packageName);
 
     try {
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         if (!existsSync(configFile)) {
             return undefined;
         }
 
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         const { lastUpdateCheck } = JSON.parse(readFileSync(configFile, "utf8")) as { lastUpdateCheck: number };
 
         return lastUpdateCheck as number;
@@ -47,19 +45,15 @@ export const getLastUpdate = (packageName: string): number | undefined => {
 
 /**
  * Saves the last update time for a given package.
- * @param packageName The name of the package.
- * @returns
+ * @param packageName
  */
 export const saveLastUpdate = (packageName: string): void => {
     const configFile = getConfigFile(packageName);
     const configDirectory = dirname(configFile);
 
-    // eslint-disable-next-line security/detect-non-literal-fs-filename
     if (!existsSync(configDirectory)) {
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         mkdirSync(configDirectory, { recursive: true });
     }
 
-    // eslint-disable-next-line security/detect-non-literal-fs-filename
     writeFileSync(configFile, JSON.stringify({ lastUpdateCheck: Date.now() }));
 };

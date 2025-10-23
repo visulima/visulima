@@ -30,7 +30,7 @@ describe("cli", () => {
         await cli.run({ shouldExitProcess: false });
 
         expect(mockedExecute).toHaveBeenCalledTimes(1);
-        // eslint-disable-next-line vitest/prefer-called-exactly-once-with
+
         expect(mockedExecute).toHaveBeenCalledWith(expect.any(Object));
     });
 
@@ -142,7 +142,7 @@ describe("cli", () => {
         });
 
         expect(execute).toHaveBeenCalledTimes(1);
-        // eslint-disable-next-line vitest/prefer-called-exactly-once-with
+
         expect(execute).toHaveBeenCalledWith(expect.any(Object));
     });
 });

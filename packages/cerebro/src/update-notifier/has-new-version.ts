@@ -9,7 +9,7 @@ const hasNewVersion = async ({
     pkg,
     registryUrl = "https://registry.npmjs.org/-/package/__NAME__/dist-tags",
     updateCheckInterval = 1000 * 60 * 60 * 24,
-}: UpdateNotifierOptions): Promise<string | null> => {
+}: UpdateNotifierOptions): Promise<string | undefined> => {
     const lastUpdateCheck = getLastUpdate(pkg.name);
 
     if (alwaysRun || !lastUpdateCheck || lastUpdateCheck < Date.now() - updateCheckInterval) {
@@ -34,7 +34,7 @@ const hasNewVersion = async ({
         );
     }
 
-    return null;
+    return undefined;
 };
 
 export type UpdateNotifierOptions = {

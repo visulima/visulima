@@ -1,6 +1,5 @@
 import type { OptionDefinition, PossibleOptionDefinition } from "../../@types/command";
 
-// eslint-disable-next-line security/detect-unsafe-regex
 const argumentNameRegExp = /^-{1,2}(\w+)(=(\w+))?$/;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

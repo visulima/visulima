@@ -42,7 +42,7 @@ describe("update-notifier/has-new-version", () => {
 
         const newVersion = await hasNewVersion(defaultArguments);
 
-        expect(newVersion).toBe(null);
+        expect(newVersion).toBeNull();
     });
 
     it("should trigger update for patch version bump", async () => {
@@ -82,7 +82,7 @@ describe("update-notifier/has-new-version", () => {
 
         const newVersion = await hasNewVersion(defaultArguments);
 
-        expect(newVersion).toBe(null);
+        expect(newVersion).toBeNull();
     });
 
     it("should trigger update check if last update older than config", async () => {
@@ -97,7 +97,7 @@ describe("update-notifier/has-new-version", () => {
             shouldNotifyInNpmScript: true,
         });
 
-        expect(newVersion).toBe(null);
+        expect(newVersion).toBeNull();
         expect(getDistributionVersion).toHaveBeenCalledExactlyOnceWith("has-new-version", "latest", "https://registry.npmjs.org/-/package/__NAME__/dist-tags");
     });
 
@@ -113,7 +113,7 @@ describe("update-notifier/has-new-version", () => {
             shouldNotifyInNpmScript: true,
         });
 
-        expect(newVersion).toBe(null);
+        expect(newVersion).toBeNull();
         expect(getDistributionVersion).not.toHaveBeenCalled();
     });
 });

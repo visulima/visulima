@@ -30,8 +30,8 @@ const convertType = <OD extends OptionDefinition<any>>(value: any, option: Possi
 const booleanValue = new Set(["0", "1", "false", "true"]);
 
 /**
- * Gets the values of any boolean arguments that were specified on the command line with a value
- * These arguments were removed by removeBooleanValues
+ * Gets the values of any boolean arguments that were specified on the command line with a value.
+ * These arguments were removed by removeBooleanValues.
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const getBooleanValues = <OD extends OptionDefinition<any>>(arguments_: string[], options: PossibleOptionDefinition<OD>[]): Partial<OD> => {

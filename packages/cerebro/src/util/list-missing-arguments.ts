@@ -1,4 +1,4 @@
-import type { CommandLineOptions } from "command-line-args";
+import type { CommandLineOptions } from "@visulima/command-line-args";
 
 import type { OptionDefinition, PossibleOptionDefinition } from "../@types/command";
 

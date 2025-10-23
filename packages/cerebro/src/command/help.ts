@@ -24,13 +24,10 @@ const printGeneralHelp = (logger: Pail<never, string>, runtime: ICli, commands: 
     const groupedCommands: Record<string, ICommand[]> = filteredCommands.reduce<Record<string, ICommand[]>>((accumulator, command) => {
         const group = command.group ?? EMPTY_GROUP_KEY;
 
-        // eslint-disable-next-line security/detect-object-injection
         if (!accumulator[group]) {
-            // eslint-disable-next-line security/detect-object-injection
             accumulator[group] = [];
         }
 
-        // eslint-disable-next-line security/detect-object-injection
         (accumulator[group] as ICommand[]).push(command);
 
         return accumulator;
@@ -45,7 +42,6 @@ const printGeneralHelp = (logger: Pail<never, string>, runtime: ICli, commands: 
                 },
                 ...Object.keys(groupedCommands).map((key) => {
                     return {
-                        // eslint-disable-next-line security/detect-object-injection
                         content: (groupedCommands[key] as ICommand[]).map((command) => {
                             let aliases = "";
 

@@ -1,4 +1,4 @@
-import Cli from "@visulima/cerebro";
+import { Cerebro } from "../dist/index.js";
 
 import optionsDefault from "./commands/options-defaults.js";
 import optionsConflicts from "./commands/options-conflicts.js";
@@ -8,7 +8,7 @@ import optionsImplies from "./commands/options-implies.js";
 import optionsRequired from "./commands/options-required.js";
 import optionsBooleanOrValue from "./commands/options-boolean-or-value.js";
 
-const cli = new Cli("cerebro");
+const cli = new Cerebro("cerebro");
 
 optionsCommon(cli);
 optionsConflicts(cli);

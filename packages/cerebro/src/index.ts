@@ -1,6 +1,5 @@
-// TODO: Uncomment this in the next major release
-// import type { CliOptions } from "./cli";
-// import { Cli as Cerebro } from "./cli";
+import type { CliOptions } from "./cli";
+import { Cli as Cerebro } from "./cli";
 
 // eslint-disable-next-line @typescript-eslint/no-namespace,@typescript-eslint/no-unused-vars
 declare namespace NodeJS {
@@ -28,6 +27,5 @@ export type OutputType = 1 | 2 | 4;
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export type VERBOSITY_LEVEL = 16 | 32 | 64 | 128 | 256;
 
-export { Cli as default } from "./cli";
-// TODO: Uncomment this in the next major release
-// export const createCerebro = (name: string, options: CliOptions): Cerebro => new Cerebro(name, options);
+export { Cli as Cerebro } from "./cli";
+export const createCerebro = (name: string, options: CliOptions): Cerebro => new Cerebro(name, options);
