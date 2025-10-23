@@ -912,8 +912,8 @@ importers:
         specifier: 2.0.2
         version: 2.0.2
       '@visulima/pail':
-        specifier: 2.1.31
-        version: 2.1.31(ai@5.0.76(zod@4.1.12))(rotating-file-stream@3.2.7)
+        specifier: 3.0.2
+        version: 3.0.2(rotating-file-stream@3.2.7)
       cli-table3:
         specifier: ^0.6.5
         version: 0.6.5
@@ -2045,8 +2045,6 @@ importers:
       vitest:
         specifier: ^4.0.1
         version: 4.0.1(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.1)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
-
-  packages/fs/__bench__/fixtures/a/b: {}
 
   packages/fs/__fixtures__/find-up: {}
 
@@ -9124,16 +9122,6 @@ packages:
       ai:
         optional: true
 
-  '@visulima/error@5.0.0':
-    resolution: {integrity: sha512-p+HwJNtDUVxOOjOD4ijCDl/LT7kzw5KZZ6/pyuGg0Hyj/r8spyA+jswUEdTrKA77s6DS9A8AA5+Gjxb7w3LrvA==}
-    engines: {node: '>=20.19 <=24.x'}
-    os: [darwin, linux, win32]
-    peerDependencies:
-      ai: ^5.0.30
-    peerDependenciesMeta:
-      ai:
-        optional: true
-
   '@visulima/error@5.0.2':
     resolution: {integrity: sha512-3WAnDfL9MgIqrhxmdRCXAiiglCGFyAYII4NcsmQTrvc6yVlvMr+UAljbKcjQiUqNr9iabjvmWar0wPFuZWCl+A==}
     engines: {node: '>=20.19 <=25.x'}
@@ -9155,11 +9143,6 @@ packages:
   '@visulima/fmt@1.1.15':
     resolution: {integrity: sha512-r0+HmEwvbgz2ey+I7NyNfaDF6qHmsUYxmZ2nUl9nWUunyLQO2f1IYy/ZJFLBnsaYpbhqWXG32lFlUtmar4c3rQ==}
     engines: {node: '>=18.0.0 <=23.x'}
-    os: [darwin, linux, win32]
-
-  '@visulima/fmt@1.1.16':
-    resolution: {integrity: sha512-0kDEt1VI9CGTu6hpQhBsOjl9p9s4c3uPa3oQGJEvxtm4qqc/7WzFzLkutvwyWuaYv+3SQNaPOTthkrsBAwadcA==}
-    engines: {node: '>=18.0.0 <=24.x'}
     os: [darwin, linux, win32]
 
   '@visulima/fmt@1.1.17':
@@ -9204,10 +9187,6 @@ packages:
   '@visulima/inspector@1.0.24':
     resolution: {integrity: sha512-qV8+tm35NY1XBKbfMoygvgx1Nz05zBeyoyjV6Fi/JMouUHOhpFkX79tHRtg1IWj8c42OR8FLCmP5WFDLcrUGKg==}
     engines: {node: '>=18.0.0 <=23.x'}
-
-  '@visulima/inspector@1.0.25':
-    resolution: {integrity: sha512-y2qmH42ByWTNt3pc38NZF2TC5HB+S7iBhr8qEDwV2IuBZGqZ5G6HqjQtdESSZBDL1QcMdKiCN2Y2TUrBXQLT+g==}
-    engines: {node: '>=18.0.0 <=24.x'}
 
   '@visulima/inspector@1.0.26':
     resolution: {integrity: sha512-tK9sKQxmH5eeTGgWTkTp0nzCW/sUC639gXturFNz+3ighjJV0r7cpaa+CLaRHsXxCup0Rj5HomzXOU3qL4q18A==}
@@ -9387,25 +9366,25 @@ packages:
       rotating-file-stream:
         optional: true
 
-  '@visulima/pail@2.1.31':
-    resolution: {integrity: sha512-qQSDV61XSuEaALtZH1yipibogIzQ1qU4pv0e9YmUpCX+DUPte7ycICVDpVmv7SHuTk9qYK7OAqHqLfMCk8V/hw==}
-    engines: {node: '>=18.0.0 <=24.x'}
-    os: [darwin, linux, win32]
-    peerDependencies:
-      '@visulima/redact': 2.0.0
-      rotating-file-stream: ^3.1.1
-    peerDependenciesMeta:
-      '@visulima/redact':
-        optional: true
-      rotating-file-stream:
-        optional: true
-
   '@visulima/pail@3.0.0':
     resolution: {integrity: sha512-Wy5Egjz7GwpVAsJpwJ1YsxmNZZpPOsH10c5j2dlqto5yg/ASTv6KZtysywceADuBAchmHa1VfckRQ66lsx/Www==}
     engines: {node: '>=20.19 <=24.x'}
     os: [darwin, linux, win32]
     peerDependencies:
       '@visulima/redact': 2.0.0
+      rotating-file-stream: ^3.2.7
+    peerDependenciesMeta:
+      '@visulima/redact':
+        optional: true
+      rotating-file-stream:
+        optional: true
+
+  '@visulima/pail@3.0.2':
+    resolution: {integrity: sha512-z1EhpXmf0NgPVXMxX25HwOsq+tT3hjyjMzZ7g7I6gvCLcn5Fc+R8m9iECovKyxtiIJWmEfVLv0uVq1sDJ6Zd5w==}
+    engines: {node: '>=20.19 <=25.x'}
+    os: [darwin, linux, win32]
+    peerDependencies:
+      '@visulima/redact': 2.0.1
       rotating-file-stream: ^3.2.7
     peerDependenciesMeta:
       '@visulima/redact':
@@ -26163,10 +26142,6 @@ snapshots:
     optionalDependencies:
       ai: 5.0.76(zod@4.1.12)
 
-  '@visulima/error@5.0.0(ai@5.0.76(zod@4.1.12))':
-    optionalDependencies:
-      ai: 5.0.76(zod@4.1.12)
-
   '@visulima/error@5.0.2(ai@5.0.76(zod@4.1.12))':
     optionalDependencies:
       ai: 5.0.76(zod@4.1.12)
@@ -26181,8 +26156,6 @@ snapshots:
   '@visulima/find-cache-dir@2.0.2': {}
 
   '@visulima/fmt@1.1.15': {}
-
-  '@visulima/fmt@1.1.16': {}
 
   '@visulima/fmt@1.1.17': {}
 
@@ -26208,10 +26181,6 @@ snapshots:
   '@visulima/humanizer@1.2.2': {}
 
   '@visulima/inspector@1.0.24': {}
-
-  '@visulima/inspector@1.0.25':
-    dependencies:
-      type-fest: 5.1.0
 
   '@visulima/inspector@1.0.26':
     dependencies:
@@ -26416,22 +26385,16 @@ snapshots:
     transitivePeerDependencies:
       - ai
 
-  '@visulima/pail@2.1.31(ai@5.0.76(zod@4.1.12))(rotating-file-stream@3.2.7)':
-    dependencies:
-      '@visulima/colorize': 1.4.24
-      '@visulima/error': 5.0.0(ai@5.0.76(zod@4.1.12))
-      '@visulima/fmt': 1.1.16
-      '@visulima/inspector': 1.0.25
-      safe-stable-stringify: 2.5.0
-      type-fest: 5.1.0
-    optionalDependencies:
-      rotating-file-stream: 3.2.7
-    transitivePeerDependencies:
-      - ai
-
   '@visulima/pail@3.0.0(rotating-file-stream@3.2.7)':
     dependencies:
       '@visulima/colorize': 1.4.24
+      type-fest: 5.1.0
+    optionalDependencies:
+      rotating-file-stream: 3.2.7
+
+  '@visulima/pail@3.0.2(rotating-file-stream@3.2.7)':
+    dependencies:
+      '@visulima/colorize': 1.4.25
       type-fest: 5.1.0
     optionalDependencies:
       rotating-file-stream: 3.2.7
