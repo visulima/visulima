@@ -1,0 +1,21 @@
+{
+    "name": "cerebro-bench",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "test:bench": "vitest bench"
+    },
+    "dependencies": {
+        "@visulima/cerebro": "workspace:*",
+        "@oclif/core": "^4.7.2",
+        "commander": "^14.0.1",
+        "gunshi": "^0.26.3",
+        "vitest": "^4.0.2",
+        "yargs": "^18.0.0"
+    },
+    "devDependencies": {
+        "@types/yargs": "^17.0.33",
+        "typescript": "^5.9.3",
+        "vitest": "^4.0.2"
+    }
+}
