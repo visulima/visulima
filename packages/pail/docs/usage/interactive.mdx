@@ -1,0 +1,469 @@
+---
+title: Interactive Mode
+description: Dynamic, updating log messages
+---
+
+# Interactive Mode
+
+Interactive mode allows you to create log messages that update in place instead of creating new lines. This is perfect for progress indicators, status updates, and dynamic content.
+
+## Availability
+
+Interactive mode only works when:
+- The output stream is a TTY (terminal)
+- Not in a CI/CD environment
+- `stdout` and `stderr` support cursor movement
+
+In non-interactive environments, logs will display normally without updating.
+
+## Creating an Interactive Logger
+
+Enable interactive mode when creating a logger:
+
+```typescript
+import { createPail } from "@visulima/pail";
+
+const pail = createPail({ 
+    interactive: true 
+});
+```
+
+## Basic Usage
+
+### Updating Logs
+
+Interactive logs overwrite the previous line:
+
+```typescript
+const interactive = createPail({ interactive: true });
+
+interactive.info("Processing step 1...");
+// Wait a bit
+setTimeout(() => {
+    interactive.info("Processing step 2...");
+    // Wait more
+    setTimeout(() => {
+        interactive.success("Processing complete!");
+    }, 1000);
+}, 1000);
+```
+
+The output updates in place instead of creating new lines.
+
+### Mixed Interactive and Regular Logs
+
+Regular loggers are not affected by interactive loggers:
+
+```typescript
+const regular = createPail();
+const interactive = createPail({ interactive: true });
+
+regular.info("This is a permanent log");
+interactive.info("This updates in place");
+interactive.success("This also updates in place");
+regular.info("This is another permanent log");
+```
+
+## Progress Indicators
+
+### Simple Progress
+
+```typescript
+const interactive = createPail({ interactive: true });
+
+const total = 100;
+for (let i = 0; i <= total; i++) {
+    interactive.info(`Progress: ${i}/${total}`);
+    await sleep(50);
+}
+interactive.success("Complete!");
+```
+
+### Percentage Progress
+
+```typescript
+async function processWithProgress(items: any[]) {
+    const interactive = createPail({ interactive: true });
+    const total = items.length;
+    
+    for (let i = 0; i < total; i++) {
+        const percent = Math.round((i / total) * 100);
+        interactive.info(`Processing: ${percent}% (${i}/${total})`);
+        
+        await processItem(items[i]);
+    }
+    
+    interactive.success(`Processed ${total} items!`);
+}
+```
+
+### Spinner Animation
+
+```typescript
+const frames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
+const interactive = createPail({ interactive: true });
+
+let i = 0;
+const interval = setInterval(() => {
+    const frame = frames[i % frames.length];
+    interactive.info(`${frame} Loading...`);
+    i++;
+}, 80);
+
+// Stop after 3 seconds
+setTimeout(() => {
+    clearInterval(interval);
+    interactive.success("✓ Loaded!");
+}, 3000);
+```
+
+## Interactive Manager
+
+For advanced control, use the interactive manager:
+
+```typescript
+import { createPail } from "@visulima/pail";
+
+const interactive = createPail({ interactive: true });
+const manager = interactive.getInteractiveManager();
+
+// Hook into stdout/stderr
+manager.hook();
+
+// Update multiple lines
+manager.update([
+    "Line 1: Processing...",
+    "Line 2: Still working...",
+    "Line 3: Almost done..."
+]);
+
+// Erase lines
+manager.erase(1); // Remove last line
+
+// Final update
+manager.update([
+    "Line 1: Complete!",
+    "Line 2: Success!"
+]);
+
+// Unhook when done
+manager.unhook(false);
+```
+
+### Manager Methods
+
+#### hook()
+
+Start intercepting console output:
+
+```typescript
+manager.hook();
+```
+
+#### unhook()
+
+Stop intercepting console output:
+
+```typescript
+// Keep interactive lines visible
+manager.unhook(false);
+
+// Clear interactive lines
+manager.unhook(true);
+```
+
+#### update()
+
+Update displayed lines:
+
+```typescript
+manager.update([
+    "First line",
+    "Second line",
+    "Third line"
+]);
+```
+
+#### erase()
+
+Remove lines from bottom:
+
+```typescript
+// Remove last 2 lines
+manager.erase(2);
+```
+
+## Advanced Examples
+
+### Download Progress
+
+```typescript
+async function downloadFile(url: string) {
+    const interactive = createPail({ interactive: true });
+    const response = await fetch(url);
+    const total = parseInt(response.headers.get("content-length") || "0");
+    
+    let downloaded = 0;
+    
+    for await (const chunk of response.body) {
+        downloaded += chunk.length;
+        const percent = Math.round((downloaded / total) * 100);
+        const mb = (downloaded / 1024 / 1024).toFixed(2);
+        const totalMb = (total / 1024 / 1024).toFixed(2);
+        
+        interactive.info(`Downloading: ${percent}% (${mb}/${totalMb} MB)`);
+    }
+    
+    interactive.success("Download complete!");
+}
+```
+
+### Multi-line Progress
+
+```typescript
+const interactive = createPail({ interactive: true });
+const manager = interactive.getInteractiveManager();
+
+manager.hook();
+
+async function processMultipleTasks() {
+    const tasks = ["Task A", "Task B", "Task C"];
+    const status = tasks.map(t => `${t}: pending`);
+    
+    manager.update(status);
+    
+    for (let i = 0; i < tasks.length; i++) {
+        status[i] = `${tasks[i]}: processing...`;
+        manager.update(status);
+        
+        await processTask(tasks[i]);
+        
+        status[i] = `${tasks[i]}: ✓ complete`;
+        manager.update(status);
+    }
+    
+    manager.unhook(false);
+}
+```
+
+### Rotating Messages
+
+```typescript
+const messages = [
+    "Swapping time and space...",
+    "Generating witty dialog...",
+    "Spinning violently around the y-axis...",
+    "Tokenizing real life...",
+    "Bending the spoon...",
+    "Filtering morale..."
+];
+
+const interactive = createPail({ interactive: true });
+let index = 0;
+
+const interval = setInterval(() => {
+    interactive.info(messages[index % messages.length]);
+    index++;
+}, 2000);
+
+// Stop after 12 seconds
+setTimeout(() => {
+    clearInterval(interval);
+    interactive.success("Done!");
+}, 12000);
+```
+
+### Build Progress
+
+```typescript
+const interactive = createPail({ interactive: true });
+
+async function build() {
+    const steps = [
+        { name: "Cleaning", duration: 500 },
+        { name: "Compiling TypeScript", duration: 2000 },
+        { name: "Bundling", duration: 1500 },
+        { name: "Minifying", duration: 1000 },
+        { name: "Generating source maps", duration: 800 },
+    ];
+    
+    for (let i = 0; i < steps.length; i++) {
+        const step = steps[i];
+        const current = i + 1;
+        const total = steps.length;
+        
+        interactive.await(`[${current}/${total}] ${step.name}...`);
+        await sleep(step.duration);
+        interactive.success(`[${current}/${total}] ${step.name}`);
+    }
+}
+```
+
+### Complex Status Display
+
+```typescript
+const interactive = createPail({ interactive: true });
+const manager = interactive.getInteractiveManager();
+
+manager.hook();
+
+interface TaskStatus {
+    name: string;
+    status: "pending" | "running" | "complete" | "failed";
+    progress?: number;
+}
+
+function renderTasks(tasks: TaskStatus[]): string[] {
+    return tasks.map(task => {
+        let icon = "○";
+        if (task.status === "running") icon = "◐";
+        if (task.status === "complete") icon = "●";
+        if (task.status === "failed") icon = "✖";
+        
+        let line = `${icon} ${task.name}`;
+        
+        if (task.progress !== undefined) {
+            line += ` (${task.progress}%)`;
+        }
+        
+        return line;
+    });
+}
+
+async function runTasks() {
+    const tasks: TaskStatus[] = [
+        { name: "Initialize", status: "pending" },
+        { name: "Load data", status: "pending" },
+        { name: "Process", status: "pending" },
+        { name: "Save results", status: "pending" },
+    ];
+    
+    manager.update(renderTasks(tasks));
+    
+    for (let i = 0; i < tasks.length; i++) {
+        tasks[i].status = "running";
+        manager.update(renderTasks(tasks));
+        
+        // Simulate work with progress
+        for (let p = 0; p <= 100; p += 10) {
+            tasks[i].progress = p;
+            manager.update(renderTasks(tasks));
+            await sleep(100);
+        }
+        
+        tasks[i].status = "complete";
+        delete tasks[i].progress;
+        manager.update(renderTasks(tasks));
+    }
+    
+    manager.unhook(false);
+}
+```
+
+## Console Redirection
+
+Interactive mode can redirect console methods:
+
+```typescript
+const interactive = createPail({ interactive: true });
+const manager = interactive.getInteractiveManager();
+
+// Hook console methods
+manager.hook();
+
+// Now console.log goes through pail
+console.log("This is captured");
+console.error("This is also captured");
+console.warn("This too");
+
+// Unhook when done
+manager.unhook(false);
+```
+
+## Use Cases
+
+### CLI Tools
+
+Perfect for command-line tools with progress:
+
+```typescript
+const interactive = createPail({ interactive: true });
+
+interactive.await("Installing dependencies...");
+// ... npm install ...
+interactive.success("Dependencies installed");
+
+interactive.await("Building project...");
+// ... build ...
+interactive.success("Build complete");
+
+interactive.await("Running tests...");
+// ... tests ...
+interactive.success("All tests passed");
+```
+
+### File Processing
+
+Show progress when processing files:
+
+```typescript
+async function processFiles(files: string[]) {
+    const interactive = createPail({ interactive: true });
+    
+    for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const percent = Math.round(((i + 1) / files.length) * 100);
+        
+        interactive.await(`Processing ${file} (${percent}%)`);
+        await processFile(file);
+    }
+    
+    interactive.success(`Processed ${files.length} files`);
+}
+```
+
+### Server Startup
+
+Display startup progress:
+
+```typescript
+const interactive = createPail({ interactive: true });
+
+interactive.await("Starting server...");
+await initializeDatabase();
+
+interactive.info("Connecting to database...");
+await connectDatabase();
+
+interactive.info("Loading configuration...");
+await loadConfig();
+
+interactive.info("Starting HTTP server...");
+await startServer();
+
+interactive.success("Server running on port 3000");
+```
+
+## Best Practices
+
+1. **Check TTY** - Interactive mode automatically falls back to regular mode
+2. **Don't mix with regular** - Use one logger type per section
+3. **Always unhook** - Call `unhook()` when using manager
+4. **Keep updates brief** - Long messages may wrap and cause issues
+5. **Use for progress** - Best for operations with clear progress
+6. **Test in terminals** - Behavior varies across terminal types
+7. **Graceful fallback** - Design works even without interactive mode
+
+## Limitations
+
+- Only works in TTY environments
+- May not work in all terminals
+- Doesn't work in CI/CD environments
+- Can't go back more than screen height
+- May have issues with very long lines
+
+## Next Steps
+
+- [Timers](./timers) - Combine with timers for timed progress
+- [Custom Types](./custom-types) - Custom progress indicators
+- [Configuration](../configuration) - Configure interactive behavior
