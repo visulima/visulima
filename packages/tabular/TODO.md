@@ -1,30 +1,3 @@
-columnWidths + maxWidth on cell do not have the correct width
-
-```
-const table2 = createTable({ columnWidths: 25 });
-
-// Test end truncation
-table2.addRow([
-    {
-        content: colorize.red("This is some ") + colorize.blue("colored text") + colorize.green(" that will be truncated"),
-        truncate: {
-            position: "end",
-            space: true,
-        },
-    },
-    {
-        content: colorize.red("This is some ") + colorize.blue("colored text") + colorize.green(" that will be truncated"),
-        maxWidth: 20,
-        truncate: {
-            position: "end",
-            space: true,
-        },
-    },
-]);
-
-console.log(table2.toString());
-```
-
 The "Very Long Content Here" has one space to much
 
 ```

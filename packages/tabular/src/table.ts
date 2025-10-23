@@ -166,6 +166,33 @@ export class Table {
             fixedGridRowHeights = Array.from<number>({ length: numberTotalRows }).fill(this.#options.rowHeights);
         }
 
+        // Adjust fixedColumnWidths based on cell maxWidth constraints before creating grid
+        if (fixedGridWidths && Array.isArray(fixedGridWidths)) {
+            const adjustedWidths = [...fixedGridWidths];
+
+            // Find minimum maxWidth for each column across all cells
+            for (const rowIndex in allRows) {
+                const row = allRows[rowIndex];
+
+                for (const [cellIndex, cellInput] of row.entries()) {
+                    let cellOptions: Omit<GridItem, "content"> = {};
+
+                    if (typeof cellInput === "object" && cellInput !== null && !Array.isArray(cellInput)) {
+                        const { content, href, ...rest } = cellInput as TableItem;
+
+                        cellOptions = rest;
+                    }
+
+                    if (cellOptions.maxWidth !== undefined && adjustedWidths[cellIndex] !== undefined) {
+                        adjustedWidths[cellIndex] = Math.min(adjustedWidths[cellIndex], cellOptions.maxWidth);
+                    }
+                }
+            }
+
+            // Update fixedGridWidths with adjusted widths
+            fixedGridWidths = adjustedWidths;
+        }
+
         const options = {
             autoFlow: "row",
             backgroundColor: this.#options.style?.backgroundColor,
@@ -233,17 +260,8 @@ export class Table {
                         ? cellInput.replaceAll("\t", " ".repeat(this.#options.transformTabToSpace))
                         : cellInput;
 
-                let maxWidth: number | undefined;
-
-                // Table-level columnWidths override cell-specific maxWidth if defined
-
-                if (fixedGridWidths?.[cellIndex] !== undefined) {
-                    maxWidth = fixedGridWidths[cellIndex];
-                }
-
-                if (cellOptions.maxWidth) {
-                    maxWidth = cellOptions.maxWidth;
-                }
+                // For cell maxWidth, use the cell-specific value (table-level columnWidths are handled separately)
+                const { maxWidth } = cellOptions;
 
                 gridItems.push({
                     backgroundColor: cellOptions.backgroundColor,
@@ -253,7 +271,7 @@ export class Table {
                     hAlign: cellOptions.hAlign,
                     maxWidth, // Use the determined maxWidth
                     rowSpan: cellOptions.rowSpan,
-                    truncate: cellOptions.truncate || maxWidth !== undefined,
+                    truncate: cellOptions.truncate ?? (maxWidth === undefined ? undefined : true),
                     vAlign: cellOptions.vAlign,
                     wordWrap: cellOptions.wordWrap, // Enable wrap if maxWidth > 0
                 } satisfies GridItem);

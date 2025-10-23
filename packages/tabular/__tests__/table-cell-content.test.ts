@@ -468,6 +468,37 @@ describe("table Cell Content Handling", () => {
                 `);
             });
         });
+
+        describe("columnWidths and maxWidth interaction", () => {
+            it("should respect both columnWidths and cell maxWidth, using the smaller value", () => {
+                expect.assertions(2);
+
+                const table = createTable({ columnWidths: 25 });
+
+                table.addRow([
+                    {
+                        content: "This is some colored text that will be truncated",
+                        truncate: {
+                            position: "end",
+                        },
+                    },
+                    {
+                        content: "This is some colored text that will be truncated",
+                        maxWidth: 10,
+                        truncate: {
+                            position: "end",
+                        },
+                    },
+                ]);
+
+                const output = table.toString();
+                const lines = output.split("\n");
+
+                // The second cell should be truncated to maxWidth: 10, not the table columnWidths: 25
+                expect(lines[1]).toContain("…"); // Should contain truncation ellipsis
+                expect(output).toMatchSnapshot();
+            });
+        });
     });
 
     describe("empty and nullish content", () => {

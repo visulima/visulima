@@ -20,6 +20,12 @@ exports[`table Cell Content Handling > formatting (ANSI colors, Unicode, Newline
 └────────┴───────────┴─────┘"
 `;
 
+exports[`table Cell Content Handling > truncation > columnWidths and maxWidth interaction > should respect both columnWidths and cell maxWidth, using the smaller value 1`] = `
+"┌─────────────────────────┬──────────┐
+│ This is some colored t… │ This is… │
+└─────────────────────────┴──────────┘"
+`;
+
 exports[`table Cell Content Handling > truncation > global truncation and complex scenarios > should handle empty and whitespace cells correctly in a truncated table 1`] = `
 "┌─────┬─────┬───────────────┐
 │     │     │Hello world th…│
