@@ -1,0 +1,593 @@
+---
+title: Error Rendering
+description: Pretty print errors with formatting, colors, and context
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
+
+Learn how to render errors with pretty formatting, colors, and context using `@visulima/error`.
+
+## Overview
+
+Error rendering transforms raw error objects into human-friendly, formatted output with:
+
+- Pretty formatting
+- Syntax-highlighted code frames
+- Stack trace display
+- Error causes visualization
+- Helpful hints
+- Customizable colors
+
+## Basic Usage
+
+### Simple Error Rendering
+
+```typescript
+import { renderError } from "@visulima/error";
+
+const error = new Error("Something went wrong");
+
+console.log(renderError(error));
+```
+
+Output:
+```
+Error: Something went wrong
+
+at myFunction file:///path/to/file.js:10
+  8 | function myFunction() {
+  9 |     const data = null;
+❯ 10|     throw new Error("Something went wrong");
+    |           ^
+  11| }
+
+at main file:///path/to/file.js:20
+at Module._compile node:internal/modules/cjs/loader:1108
+```
+
+### VisulimaError with Hints
+
+```typescript
+import { renderError, VisulimaError } from "@visulima/error";
+
+const error = new VisulimaError({
+    name: "DatabaseError",
+    message: "Connection failed"
+});
+
+error.hint = [
+    "Check your database credentials",
+    "Ensure the database server is running",
+    "Verify network connectivity"
+];
+
+console.log(renderError(error));
+```
+
+Output:
+```
+DatabaseError: Connection failed
+
+Hint:
+  • Check your database credentials
+  • Ensure the database server is running
+  • Verify network connectivity
+
+at connectDatabase file:///app/database.ts:25
+  ...
+```
+
+## Colorized Output
+
+### Using @visulima/colorize
+
+```typescript title="Rendering with colors"
+import { renderError } from "@visulima/error";
+import { red, cyan, yellow, dim } from "@visulima/colorize";
+
+const coloredOutput = renderError(error, {
+    color: {
+        title: red,           // Error name and title
+        message: red,         // Error message
+        hint: cyan,          // Hint text
+        marker: red,         // Code frame marker (>)
+        method: yellow,      // Function/method names
+        fileLine: dim        // File paths and line numbers
+    }
+});
+
+console.log(coloredOutput);
+```
+
+### Using Chalk
+
+```typescript
+import { renderError } from "@visulima/error";
+import chalk from "chalk";
+
+const output = renderError(error, {
+    color: {
+        title: chalk.red.bold,
+        message: chalk.red,
+        hint: chalk.cyan,
+        marker: chalk.red,
+        method: chalk.yellow,
+        fileLine: chalk.dim
+    }
+});
+```
+
+## Configuration Options
+
+### displayShortPath
+
+Show relative paths instead of absolute paths:
+
+```typescript
+const output = renderError(error, {
+    cwd: process.cwd(),
+    displayShortPath: true
+});
+
+// Instead of: /Users/john/projects/myapp/src/index.ts
+// Shows: src/index.ts
+```
+
+### framesMaxLimit
+
+Limit the number of stack frames displayed:
+
+```typescript
+const output = renderError(error, {
+    framesMaxLimit: 5  // Only show top 5 frames
+});
+```
+
+### hideErrorCodeView
+
+Hide the code frame around error locations:
+
+```typescript
+const output = renderError(error, {
+    hideErrorCodeView: true
+});
+
+// Shows only stack trace without code snippets
+```
+
+### hideErrorCauseCodeView
+
+Hide code frames for error causes:
+
+```typescript
+const output = renderError(error, {
+    hideErrorCauseCodeView: true
+});
+```
+
+### hideErrorTitle
+
+Hide the error title/name:
+
+```typescript
+const output = renderError(error, {
+    hideErrorTitle: true
+});
+
+// Hides "DatabaseError:" prefix
+```
+
+### hideMessage
+
+Hide the error message:
+
+```typescript
+const output = renderError(error, {
+    hideMessage: true
+});
+```
+
+## Error Types
+
+### Standard Error
+
+```typescript
+import { renderError } from "@visulima/error";
+
+const error = new Error("Standard error");
+console.log(renderError(error));
+```
+
+### TypeError, RangeError, etc.
+
+```typescript
+const typeError = new TypeError("Invalid type");
+console.log(renderError(typeError));
+
+const rangeError = new RangeError("Out of bounds");
+console.log(renderError(rangeError));
+```
+
+### Error with Cause
+
+```typescript
+const cause = new Error("Root cause");
+const error = new Error("Top level error", { cause });
+
+console.log(renderError(error));
+// Shows both errors in hierarchy
+```
+
+### AggregateError
+
+```typescript
+const errors = [
+    new Error("Error 1"),
+    new Error("Error 2"),
+    new Error("Error 3")
+];
+
+const aggregate = new AggregateError(
+    errors,
+    "Multiple errors occurred"
+);
+
+console.log(renderError(aggregate));
+// Shows main error and all aggregated errors
+```
+
+### VisulimaError
+
+```typescript
+import { renderError, VisulimaError } from "@visulima/error";
+
+const error = new VisulimaError({
+    name: "CustomError",
+    message: "Something went wrong",
+    title: "Application Error",
+    location: {
+        file: "/app/src/index.ts",
+        line: 42,
+        column: 10
+    }
+});
+
+error.hint = "Check your configuration";
+
+console.log(renderError(error));
+```
+
+## Practical Examples
+
+### Development Error Handler
+
+```typescript
+import { renderError } from "@visulima/error";
+import { red, cyan, yellow } from "@visulima/colorize";
+
+function developmentErrorHandler(error: Error) {
+    console.clear();
+    console.error("\n" + "=".repeat(80) + "\n");
+    
+    const rendered = renderError(error, {
+        color: {
+            title: red,
+            message: red,
+            hint: cyan,
+            marker: red,
+            method: yellow,
+            fileLine: (text) => text
+        },
+        displayShortPath: true,
+        framesMaxLimit: 10
+    });
+    
+    console.error(rendered);
+    console.error("\n" + "=".repeat(80) + "\n");
+}
+
+process.on("uncaughtException", developmentErrorHandler);
+```
+
+### Production Error Handler
+
+```typescript
+import { renderError } from "@visulima/error";
+import { writeFileSync } from "fs";
+
+function productionErrorHandler(error: Error) {
+    // Log detailed error to file
+    const detailed = renderError(error, {
+        hideErrorCodeView: false,
+        framesMaxLimit: Infinity
+    });
+    
+    writeFileSync(
+        `errors/${Date.now()}.log`,
+        detailed
+    );
+    
+    // Show minimal error to user
+    const minimal = renderError(error, {
+        hideErrorCodeView: true,
+        hideErrorTitle: false,
+        framesMaxLimit: 0
+    });
+    
+    console.error(minimal);
+    console.error("\nAn error report has been saved.");
+}
+```
+
+### Express.js Error Middleware
+
+```typescript
+import express from "express";
+import { renderError } from "@visulima/error";
+import { red } from "@visulima/colorize";
+
+const app = express();
+
+app.use((error: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
+    // Log to console with colors
+    const rendered = renderError(error, {
+        color: { title: red, message: red },
+        displayShortPath: true,
+        framesMaxLimit: 5
+    });
+    
+    console.error(rendered);
+    
+    // Send plain text to client
+    res.status(500).text(renderError(error, {
+        hideErrorCodeView: true,
+        hideErrorTitle: false
+    }));
+});
+```
+
+### Test Reporter
+
+```typescript
+import { renderError } from "@visulima/error";
+import { red, green, dim } from "@visulima/colorize";
+
+function reportTestError(testName: string, error: Error) {
+    console.log(red(`✗ ${testName}`));
+    
+    const rendered = renderError(error, {
+        color: {
+            message: red,
+            marker: red,
+            method: dim,
+            fileLine: dim
+        },
+        displayShortPath: true,
+        framesMaxLimit: 3,
+        hideErrorTitle: true
+    });
+    
+    console.log(rendered);
+    console.log();
+}
+```
+
+### CLI Tool Error Display
+
+```typescript
+import { renderError, VisulimaError } from "@visulima/error";
+import { red, cyan, yellow } from "@visulima/colorize";
+
+function displayCliError(error: Error) {
+    const rendered = renderError(error, {
+        color: {
+            title: red,
+            message: red,
+            hint: cyan
+        },
+        hideErrorCodeView: true,
+        framesMaxLimit: 0
+    });
+    
+    console.error(rendered);
+    
+    if (error instanceof VisulimaError && error.hint) {
+        console.error();
+        console.error(cyan("How to fix:"));
+        const hints = Array.isArray(error.hint) ? error.hint : [error.hint];
+        hints.forEach(hint => console.error(`  ${hint}`));
+    }
+    
+    console.error();
+    console.error(yellow("Run with --verbose for more details"));
+}
+```
+
+### Logging Integration
+
+```typescript
+import { renderError } from "@visulima/error";
+import winston from "winston";
+
+const logger = winston.createLogger({
+    transports: [
+        new winston.transports.File({ filename: "errors.log" })
+    ]
+});
+
+function logError(error: Error) {
+    const rendered = renderError(error, {
+        hideErrorCodeView: false,
+        framesMaxLimit: Infinity
+    });
+    
+    logger.error(rendered);
+}
+```
+
+## Custom Rendering
+
+### Minimal Renderer
+
+```typescript
+function minimalRender(error: Error): string {
+    return renderError(error, {
+        hideErrorCodeView: true,
+        hideErrorCauseCodeView: true,
+        framesMaxLimit: 0
+    });
+}
+
+console.log(minimalRender(error));
+// Only shows: ErrorName: message
+```
+
+### Verbose Renderer
+
+```typescript
+function verboseRender(error: Error): string {
+    return renderError(error, {
+        hideErrorCodeView: false,
+        hideErrorCauseCodeView: false,
+        framesMaxLimit: Infinity
+    });
+}
+
+console.log(verboseRender(error));
+// Shows everything: code frames, full stack, causes
+```
+
+### Custom Color Scheme
+
+```typescript
+import { blue, magenta, green, gray } from "@visulima/colorize";
+
+function customColorRender(error: Error): string {
+    return renderError(error, {
+        color: {
+            title: magenta,
+            message: blue,
+            hint: green,
+            marker: magenta,
+            method: green,
+            fileLine: gray
+        }
+    });
+}
+```
+
+## Performance Considerations
+
+### Skip Code Frames for Performance
+
+```typescript
+// Fast rendering without reading source files
+const output = renderError(error, {
+    hideErrorCodeView: true,
+    hideErrorCauseCodeView: true
+});
+```
+
+### Limit Stack Frames
+
+```typescript
+// Render faster by limiting frames
+const output = renderError(error, {
+    framesMaxLimit: 5
+});
+```
+
+### Cache Rendered Errors
+
+```typescript
+const renderCache = new WeakMap<Error, string>();
+
+function getCachedRender(error: Error, options?: RenderErrorOptions): string {
+    const cacheKey = JSON.stringify(options || {});
+    
+    if (!renderCache.has(error)) {
+        renderCache.set(error, renderError(error, options));
+    }
+    
+    return renderCache.get(error)!;
+}
+```
+
+## Comparison: Before and After
+
+### Standard console.error
+
+```typescript
+try {
+    throw new Error("Something failed");
+} catch (error) {
+    console.error(error);
+}
+```
+
+Output:
+```
+Error: Something failed
+    at Object.<anonymous> (/path/to/file.js:2:11)
+    at Module._compile (node:internal/modules/cjs/loader:1108:14)
+    ...
+```
+
+### With renderError
+
+```typescript
+try {
+    throw new Error("Something failed");
+} catch (error) {
+    console.error(renderError(error));
+}
+```
+
+Output:
+```
+Error: Something failed
+
+at <anonymous> file:///path/to/file.js:2
+  1 | try {
+❯ 2 |     throw new Error("Something failed");
+    |           ^
+  3 | } catch (error) {
+  4 |     console.error(renderError(error));
+
+at Module._compile node:internal/modules/cjs/loader:1108
+...
+```
+
+## TypeScript Integration
+
+```typescript
+import type { RenderErrorOptions, ColorizeMethod } from "@visulima/error";
+
+const options: RenderErrorOptions = {
+    color: {
+        title: (text: string) => text,
+        message: (text: string) => text,
+        hint: (text: string) => text,
+        marker: (text: string) => text,
+        method: (text: string) => text,
+        fileLine: (text: string) => text
+    },
+    cwd: process.cwd(),
+    displayShortPath: true,
+    framesMaxLimit: 10,
+    hideErrorCodeView: false,
+    hideErrorCauseCodeView: false,
+    hideErrorTitle: false,
+    hideMessage: false
+};
+
+const output = renderError(error, options);
+```
+
+## See Also
+
+- [VisulimaError Class](./visulima-error.md)
+- [Code Frames](./code-frames.md)
+- [Stack Trace Parsing](./stacktrace.md)
+- [API Reference](./api-reference.md)
