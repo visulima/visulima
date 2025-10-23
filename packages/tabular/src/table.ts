@@ -41,11 +41,13 @@ export class Table {
      * @returns The Table instance for chaining.
      */
     public setHeaders(headers: TableCell[] | TableCell[][]): this {
-        this.#headers
-            = headers.length > 0 && !Array.isArray(headers[0])
-                ? [headers as TableCell[]]
-                // eslint-disable-next-line @stylistic/no-extra-parens
-                : (headers as TableCell[][]).map((row) => (Array.isArray(row) ? row : [row]));
+        // eslint-disable-next-line unicorn/prefer-ternary
+        if (headers.length > 0 && !Array.isArray(headers[0])) {
+            this.#headers = [headers as TableCell[]];
+        } else {
+            // eslint-disable-next-line @stylistic/no-extra-parens
+            this.#headers = (headers as TableCell[][]).map((row) => (Array.isArray(row) ? row : [row]));
+        }
 
         this.#isDirty = true;
         this.#cachedString = undefined;
@@ -155,13 +157,13 @@ export class Table {
             fixedGridRowHeights = Array.from<number>({ length: numberTotalRows }).fill(this.#options.rowHeights);
         }
 
-        const grid = new Grid({
+        const options = {
             autoFlow: "row",
             backgroundColor: this.#options.style?.backgroundColor,
+            balancedWidths: this.#options.balancedWidths ?? false,
             border: this.#options.style?.border,
             borderColor: this.#options.style?.borderColor,
             columns: numberColumns,
-            defaultTerminalWidth: this.#options.defaultTerminalWidth,
             fixedColumnWidths: fixedGridWidths,
             fixedRowHeights: fixedGridRowHeights,
             foregroundColor: this.#options.style?.foregroundColor,
@@ -170,9 +172,11 @@ export class Table {
             paddingLeft: this.#options.style?.paddingLeft,
             paddingRight: this.#options.style?.paddingRight,
             terminalWidth: this.#options.terminalWidth,
-            truncate: this.#options.truncate || fixedGridWidths !== undefined || this.#options.maxWidth !== undefined,
+            truncate: this.#options.truncate || fixedGridWidths !== undefined || (this.#options.maxWidth !== undefined && !this.#options.balancedWidths),
             wordWrap: this.#options.wordWrap ?? false,
-        } satisfies GridOptions);
+        } satisfies GridOptions;
+
+        const grid = new Grid(options);
 
         const gridItems: GridItem[] = [];
 

@@ -34,6 +34,7 @@
 - **ANSI Colors**: Works with ANSI escape codes and colors
 - **Flexible Styling**: Customizable borders, padding, and alignment
 - **Column Configuration**: Individual column width and alignment settings
+- **Balanced Widths**: Automatically balance column widths for visual consistency
 - **Header Support**: Optional headers with custom styling
 - **Border Styles**: Multiple pre-defined border styles and custom border options
 - **Cell Spanning**: Support for rowSpan and colSpan
@@ -110,6 +111,51 @@ Output:
 │ Alice    │ 28  │ Boston      │
 └──────────┴─────┴─────────────┘
 ```
+
+#### Balanced Column Widths
+
+When you want columns to be visually balanced regardless of content length, use `balancedWidths: true`:
+
+```typescript
+import { createTable } from "@visulima/tabular";
+
+const table = createTable({
+    balancedWidths: true, // Enable balanced column widths
+    wordWrap: true, // Recommended for balanced layouts
+    style: {
+        paddingLeft: 1,
+        paddingRight: 1,
+    },
+});
+
+table.addRow(["Short", "Medium length text", "Very long column content here"]);
+
+// Without balancedWidths: columns sized by content
+// With balancedWidths: columns equally distributed
+```
+
+**Output:**
+
+```
+┌───────────────────────────────────────┬──────────────────────────────────────┐
+│ Short                                 │ Medium length text                   │
+│                                       │ Very long column content here        │
+└───────────────────────────────────────┴──────────────────────────────────────┘
+```
+
+**When to use `balancedWidths`:**
+
+- ✅ **Presentational tables** where visual balance matters
+- ✅ **Dashboards and reports** with varying content lengths
+- ✅ **CLI tools** where consistent column spacing is important
+- ✅ **Tables with mixed content types** (short/long text)
+
+**When NOT to use `balancedWidths`:**
+
+- ❌ **Data tables** requiring content-based column sizing
+- ❌ **Tables with fixed-width data** (IDs, dates, numbers)
+- ❌ **Performance-critical** applications
+- ❌ **Tables needing precise alignment** with external content
 
 ### Grid Usage
 
@@ -523,7 +569,7 @@ Converts the grid to a string representation
 
 A string containing the rendered grid
 
-***
+---
 
 ### Table
 
@@ -672,7 +718,7 @@ Configuration options for the grid
 
 A new Grid instance
 
-***
+---
 
 ### createTable()
 
@@ -722,7 +768,7 @@ width: number;
 
 Defined in: [types.ts:72](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L72)
 
-***
+---
 
 ### BorderStyle
 
@@ -882,7 +928,7 @@ Defined in: [types.ts:108](https://github.com/visulima/visulima/blob/afe199ce97e
 
 Box top right character.
 
-***
+---
 
 ### GridItem
 
@@ -994,7 +1040,7 @@ Defined in: [types.ts:50](https://github.com/visulima/visulima/blob/afe199ce97ec
 
 Options for controlling word wrapping (takes precedence over truncate)
 
-***
+---
 
 ### GridOptions
 
@@ -1089,22 +1135,6 @@ columns: number;
 Defined in: [types.ts:165](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L165)
 
 Number of columns in the grid
-
-##### defaultTerminalWidth?
-
-```ts
-optional defaultTerminalWidth: number;
-```
-
-Defined in: [types.ts:6](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L6)
-
-Default terminal width if detection fails (defaults to 80)
-
-###### Inherited from
-
-```ts
-BaseRenderingOptions.defaultTerminalWidth;
-```
 
 ##### fixedColumnWidths?
 
@@ -1236,6 +1266,22 @@ Explicit terminal width (overrides detected)
 BaseRenderingOptions.terminalWidth;
 ```
 
+##### balancedWidths?
+
+```ts
+optional balancedWidths: boolean;
+```
+
+Defined in: [types.ts:4](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L4)
+
+Automatically balance column widths for optimal content fit when no fixed widths are specified. When enabled, columns are distributed equally across the available terminal width, prioritizing visual balance over content-based sizing.
+
+###### Inherited from
+
+```ts
+BaseRenderingOptions.balancedWidths;
+```
+
 ##### truncate?
 
 ```ts
@@ -1268,7 +1314,7 @@ Global word wrap options/flag
 BaseRenderingOptions.wordWrap;
 ```
 
-***
+---
 
 ### Style
 
@@ -1342,7 +1388,7 @@ Defined in: [types.ts:124](https://github.com/visulima/visulima/blob/afe199ce97e
 
 Global right padding
 
-***
+---
 
 ### TableItem
 
@@ -1504,7 +1550,7 @@ Options for controlling word wrapping (takes precedence over truncate)
 
 [`GridItem`](#griditem).[`wordWrap`](#wordwrap)
 
-***
+---
 
 ### TableOptions
 
@@ -1528,22 +1574,6 @@ Defined in: [types.ts:135](https://github.com/visulima/visulima/blob/afe199ce97e
 
 Fixed column widths.
 Can be a single number for all columns or an array for specific columns.
-
-##### defaultTerminalWidth?
-
-```ts
-optional defaultTerminalWidth: number;
-```
-
-Defined in: [types.ts:6](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L6)
-
-Default terminal width if detection fails (defaults to 80)
-
-###### Inherited from
-
-```ts
-BaseRenderingOptions.defaultTerminalWidth;
-```
 
 ##### gap?
 
@@ -1676,7 +1706,7 @@ type AutoFlowDirection = "column" | "row";
 
 Defined in: [types.ts:151](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L151)
 
-***
+---
 
 ### BorderType
 
@@ -1686,7 +1716,7 @@ type BorderType = "bottom" | "middle" | "top";
 
 Defined in: [types.ts:152](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L152)
 
-***
+---
 
 ### Content
 
@@ -1696,7 +1726,7 @@ type Content = bigint | boolean | number | string | null | undefined;
 
 Defined in: [types.ts:27](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L27)
 
-***
+---
 
 ### GridCell
 
@@ -1708,7 +1738,7 @@ Defined in: [types.ts:54](https://github.com/visulima/visulima/blob/afe199ce97ec
 
 Input type for a cell, can be primitive or an options object
 
-***
+---
 
 ### HorizontalAlignment
 
@@ -1718,7 +1748,7 @@ type HorizontalAlignment = "center" | "left" | "right";
 
 Defined in: [types.ts:150](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L150)
 
-***
+---
 
 ### TableCell
 
@@ -1728,7 +1758,7 @@ type TableCell = Content | TableItem;
 
 Defined in: [types.ts:68](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L68)
 
-***
+---
 
 ### VerticalAlignment
 
@@ -1742,7 +1772,7 @@ Defined in: [types.ts:149](https://github.com/visulima/visulima/blob/afe199ce97e
 
 ## Variables
 
-### ASCII\_BORDER
+### ASCII_BORDER
 
 ```ts
 const ASCII_BORDER: BorderStyle;
@@ -1752,9 +1782,9 @@ Defined in: [style.ts:132](https://github.com/visulima/visulima/blob/afe199ce97e
 
 ASCII border style using only ASCII characters.
 
-***
+---
 
-### BLOCK\_BORDER
+### BLOCK_BORDER
 
 ```ts
 const BLOCK_BORDER: BorderStyle;
@@ -1764,9 +1794,9 @@ Defined in: [style.ts:174](https://github.com/visulima/visulima/blob/afe199ce97e
 
 Block border style.
 
-***
+---
 
-### DEFAULT\_BORDER
+### DEFAULT_BORDER
 
 ```ts
 const DEFAULT_BORDER: BorderStyle;
@@ -1776,9 +1806,9 @@ Defined in: [style.ts:6](https://github.com/visulima/visulima/blob/afe199ce97ec3
 
 Default border style using standard box-drawing characters.
 
-***
+---
 
-### DOTS\_BORDER
+### DOTS_BORDER
 
 ```ts
 const DOTS_BORDER: BorderStyle;
@@ -1788,9 +1818,9 @@ Defined in: [style.ts:90](https://github.com/visulima/visulima/blob/afe199ce97ec
 
 Border style using dots for the border.
 
-***
+---
 
-### DOUBLE\_BORDER
+### DOUBLE_BORDER
 
 ```ts
 const DOUBLE_BORDER: BorderStyle;
@@ -1800,9 +1830,9 @@ Defined in: [style.ts:48](https://github.com/visulima/visulima/blob/afe199ce97ec
 
 Double-line border style using Unicode box-drawing characters.
 
-***
+---
 
-### INNER\_HALF\_BLOCK\_BORDER
+### INNER_HALF_BLOCK_BORDER
 
 ```ts
 const INNER_HALF_BLOCK_BORDER: BorderStyle;
@@ -1812,9 +1842,9 @@ Defined in: [style.ts:216](https://github.com/visulima/visulima/blob/afe199ce97e
 
 Inner half block border style.
 
-***
+---
 
-### MARKDOWN\_BORDER
+### MARKDOWN_BORDER
 
 ```ts
 const MARKDOWN_BORDER: BorderStyle;
@@ -1824,9 +1854,9 @@ Defined in: [style.ts:111](https://github.com/visulima/visulima/blob/afe199ce97e
 
 Border style using Markdown syntax.
 
-***
+---
 
-### MINIMAL\_BORDER
+### MINIMAL_BORDER
 
 ```ts
 const MINIMAL_BORDER: BorderStyle;
@@ -1836,9 +1866,9 @@ Defined in: [style.ts:27](https://github.com/visulima/visulima/blob/afe199ce97ec
 
 Minimal border style using only horizontal lines.
 
-***
+---
 
-### NO\_BORDER
+### NO_BORDER
 
 ```ts
 const NO_BORDER: BorderStyle;
@@ -1848,9 +1878,9 @@ Defined in: [style.ts:153](https://github.com/visulima/visulima/blob/afe199ce97e
 
 No border style.
 
-***
+---
 
-### OUTER\_HALF\_BLOCK\_BORDER
+### OUTER_HALF_BLOCK_BORDER
 
 ```ts
 const OUTER_HALF_BLOCK_BORDER: BorderStyle;
@@ -1860,9 +1890,9 @@ Defined in: [style.ts:195](https://github.com/visulima/visulima/blob/afe199ce97e
 
 Outer half block border style.
 
-***
+---
 
-### ROUNDED\_BORDER
+### ROUNDED_BORDER
 
 ```ts
 const ROUNDED_BORDER: BorderStyle;
@@ -1872,9 +1902,9 @@ Defined in: [style.ts:69](https://github.com/visulima/visulima/blob/afe199ce97ec
 
 Border style with rounded corners using Unicode box-drawing characters.
 
-***
+---
 
-### THICK\_BORDER
+### THICK_BORDER
 
 ```ts
 const THICK_BORDER: BorderStyle;

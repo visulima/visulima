@@ -2046,6 +2046,8 @@ importers:
         specifier: ^4.0.1
         version: 4.0.1(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.1)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 
+  packages/fs/__bench__/fixtures/a/b: {}
+
   packages/fs/__fixtures__/find-up: {}
 
   packages/fs/__fixtures__/package/cjs:
@@ -3650,6 +3652,9 @@ importers:
       '@anolilab/eslint-config':
         specifier: ^16.4.2
         version: 16.4.2(ec0e2c848876b9487f35c2781ca101e4)
+      '@anolilab/prettier-config':
+        specifier: 6.0.7
+        version: 6.0.7(prettier@3.6.2)
       '@anolilab/semantic-release-pnpm':
         specifier: 2.0.4
         version: 2.0.4(@types/node@24.9.1)(yaml@2.8.1)

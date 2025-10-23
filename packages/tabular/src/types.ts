@@ -2,8 +2,8 @@ import type { TruncateOptions, WordWrapOptions } from "@visulima/string";
 
 /** Base options common to Table and Grid */
 interface BaseRenderingOptions {
-    /** Default terminal width if detection fails (defaults to 80) */
-    defaultTerminalWidth?: number;
+    /** Automatically balance column widths for optimal content fit when no fixed widths are specified */
+    balancedWidths?: boolean;
 
     /** Gap between cells */
     gap?: number;

@@ -44,8 +44,8 @@ export type GridOptionsWithDefaults = Omit<GridOptions, "border" | "fixedRowHeig
     autoColumns: number;
     autoFlow: AutoFlowDirection;
     autoRows: number;
+    balancedWidths: boolean;
     border?: BorderStyle;
-    defaultTerminalWidth: number;
     fixedRowHeights?: number[];
     gap: number;
     maxWidth?: number;
@@ -94,7 +94,7 @@ export class Grid {
             autoColumns: 1,
             autoFlow: "row",
             autoRows: 1,
-            defaultTerminalWidth: 80,
+            balancedWidths: false,
             gap: 0,
             // maxWidth is optional, handled later
             paddingLeft: 1,
@@ -129,13 +129,9 @@ export class Grid {
         let { terminalWidth } = this.#options;
 
         if (terminalWidth === undefined) {
-            let { columns } = terminalSize();
+            const { columns } = terminalSize();
 
-            if (columns === 80) {
-                columns = this.#options.defaultTerminalWidth;
-            }
-
-            terminalWidth = columns;
+            terminalWidth = columns ?? 80;
         }
 
         this.#terminalWidth = terminalWidth;
@@ -616,6 +612,501 @@ export class Grid {
     }
 
     /**
+     * Calculate balanced column widths that optimally distribute available width across columns.
+     * Considers content requirements and distributes remaining width proportionally.
+     * @param gridLayout {GridItem[][]} The grid layout.
+     * @returns Array of balanced column widths.
+     */
+    // eslint-disable-next-line sonarjs/cognitive-complexity
+    private calculateBalancedColumnWidths(gridLayout: (GridItem | null)[][]): number[] {
+        // First calculate minimum widths and collect growable column info
+        const minWidthsResult = this.calculateMinimumColumnWidthsWithGrowableInfo(gridLayout);
+        const minColumnWidths = minWidthsResult.widths;
+        const { growableColumns } = minWidthsResult;
+
+        // Calculate available width for content distribution
+        const effectiveMaxWidth = this.#terminalWidth;
+
+        // Calculate structural width (borders and gaps)
+        const borderStyle = this.#options.showBorders ? this.#options.border : null;
+        let structuralWidth = 0;
+
+        if (borderStyle) {
+            structuralWidth += borderStyle.bodyLeft.width;
+            structuralWidth += borderStyle.bodyRight.width;
+        }
+
+        if (this.#options.columns > 1) {
+            structuralWidth += (this.#options.columns - 1) * this.#options.gap;
+
+            const innerBorderJoinWidth = borderStyle?.bodyJoin.width ?? 0;
+
+            structuralWidth += (this.#options.columns - 1) * innerBorderJoinWidth;
+        }
+
+        const availableContentWidth = Math.max(0, effectiveMaxWidth - structuralWidth);
+
+        // Always try to distribute available width proportionally, even if current total is less
+        const totalMinWidth = minColumnWidths.reduce((sum, width) => sum + width, 0);
+
+        if (totalMinWidth > 0) {
+            // For balanced widths, we prioritize equal column distribution over content-based minimums
+            // This ensures columns are visually balanced even when content varies significantly
+
+            // Calculate equal width distribution (ignoring content for now)
+            const equalWidth = Math.floor(availableContentWidth / this.#options.columns);
+            const equalWidths = Array.from<number>({ length: this.#options.columns }).fill(equalWidth);
+
+            // Distribute any remaining space
+            const totalEqualWidth = equalWidth * this.#options.columns;
+            let remainingToDistribute = availableContentWidth - totalEqualWidth;
+
+            for (let i = 0; i < equalWidths.length && remainingToDistribute > 0; i += 1) {
+                equalWidths[i] = (equalWidths[i] ?? 0) + 1;
+                remainingToDistribute -= 1;
+            }
+
+            // Now check if this equal distribution would violate any minimum content requirements
+            // If so, we need to adjust to ensure content can be displayed
+            const adjustedWidths = [];
+            let totalAdjustedWidth = 0;
+
+            for (let i = 0; i < this.#options.columns; i += 1) {
+                const equalWidthForColumn = equalWidths[i] ?? 0;
+                const minWidthForColumn = minColumnWidths[i] ?? 0;
+
+                // Use the maximum of: equal width distribution OR minimum content requirement
+                const adjustedWidth = Math.max(equalWidthForColumn, minWidthForColumn);
+
+                adjustedWidths.push(adjustedWidth);
+                totalAdjustedWidth += adjustedWidth;
+            }
+
+            // If the adjusted widths exceed available space, scale them down proportionally
+            if (totalAdjustedWidth > availableContentWidth) {
+                const scaleFactor = availableContentWidth / totalAdjustedWidth;
+                const scaledWidths = adjustedWidths.map((width) => Math.max(3, Math.floor(width * scaleFactor))); // Min 3 chars for readability
+
+                // Distribute any remaining space after scaling
+                const totalScaled = scaledWidths.reduce((sum, width) => sum + width, 0);
+
+                let remainingToDistributeWidth = availableContentWidth - totalScaled;
+
+                for (let i = 0; i < scaledWidths.length && remainingToDistributeWidth > 0; i += 1) {
+                    scaledWidths[i] = (scaledWidths[i] ?? 0) + 1;
+                    remainingToDistributeWidth -= 1;
+                }
+
+                return scaledWidths;
+            }
+
+            // Adjusted widths fit, but we might have extra space to distribute
+            let remainingWidth = availableContentWidth - totalAdjustedWidth;
+
+            if (remainingWidth > 0) {
+                // Use the pre-calculated growable columns information
+                const columnsToGrow = growableColumns.length > 0 ? growableColumns : adjustedWidths.map((_, i) => i);
+
+                // Distribute remaining width one by one to growable columns
+                while (remainingWidth > 0 && columnsToGrow.length > 0) {
+                    for (const colIndex of columnsToGrow) {
+                        if (remainingWidth <= 0) {
+                            break;
+                        }
+
+                        adjustedWidths[colIndex] = (adjustedWidths[colIndex] ?? 0) + 1;
+                        remainingWidth -= 1;
+                    }
+                }
+            }
+
+            return adjustedWidths;
+        }
+
+        // Fallback: distribute evenly
+        const widthPerColumn = Math.floor(availableContentWidth / this.#options.columns);
+
+        return Array.from<number>({ length: this.#options.columns }).fill(widthPerColumn);
+    }
+
+    /**
+     * Calculate minimum column widths required for content and identify growable columns.
+     * @param gridLayout {GridItem[][]} The grid layout.
+     * @returns Object with widths array and growableColumns array.
+     */
+    // eslint-disable-next-line sonarjs/cognitive-complexity
+    private calculateMinimumColumnWidthsWithGrowableInfo(gridLayout: (GridItem | null)[][]): { growableColumns: number[]; widths: number[] } {
+        const columnWidths: number[] = Array.from<number>({ length: this.#options.columns }).fill(0);
+        const growableColumns: number[] = [];
+        const totalPadding = this.#options.paddingLeft + this.#options.paddingRight;
+        const singleInternalJoinWidth = this.#options.gap + (this.#options.showBorders ? this.#options.border?.bodyJoin.width ?? 0 : 0);
+
+        // Calculate minimum width needed for non-spanning cells
+        for (let colIndex = 0; colIndex < this.#options.columns; colIndex += 1) {
+            for (let rowIndex = 0; rowIndex < gridLayout.length; rowIndex += 1) {
+                const cell = gridLayout[rowIndex]?.[colIndex];
+
+                // Skip if not a cell start position
+                if (
+                    !cell
+                    || findFirstOccurrenceRow(gridLayout, rowIndex, colIndex, cell) !== rowIndex
+                    || (colIndex > 0 && gridLayout[rowIndex]?.[colIndex - 1] === cell)
+                ) {
+                    continue;
+                }
+
+                const colSpan = cell.colSpan ?? 1;
+                const cellMaxWidth = cell.maxWidth ?? Number.POSITIVE_INFINITY;
+                const lines = String(cell.content ?? "").split(/\r?\n/);
+
+                // Determine if this cell can word wrap
+                const canWordWrap = this.#options.wordWrap && cell.wordWrap !== false;
+
+                let contentWidth = 0;
+
+                // First, calculate the full content width needed
+                for (const line of lines) {
+                    contentWidth = Math.max(contentWidth, Math.min(getStringWidth(line), cellMaxWidth));
+                }
+
+                // Determine appropriate minimum width based on wrapping capability
+                if (canWordWrap) {
+                    if (contentWidth > 20) {
+                        // For long word-wrappable content, minimum width is based on longest word
+                        // since words cannot be broken across lines
+                        let wordBasedWidth = 0;
+
+                        for (const line of lines) {
+                            const words = line.split(/\s+/);
+
+                            for (const word of words) {
+                                wordBasedWidth = Math.max(wordBasedWidth, Math.min(getStringWidth(word), cellMaxWidth));
+                            }
+                        }
+
+                        // Use the smaller of: full content width or word-based width + some buffer
+                        // But ensure at least 12 chars for readability when wrapping is expected
+                        contentWidth = Math.min(contentWidth, Math.max(wordBasedWidth + 4, 12));
+                    }
+                    // Short wrappable content keeps full width
+                } else {
+                    // For non-wrappable content, cap at a reasonable maximum based on longest word + buffer
+                    // This prevents one column from dominating while ensuring readability
+                    let maxWordWidth = 0;
+
+                    for (const line of lines) {
+                        const words = line.split(/\s+/);
+
+                        for (const word of words) {
+                            maxWordWidth = Math.max(maxWordWidth, Math.min(getStringWidth(word), cellMaxWidth));
+                        }
+                    }
+
+                    // Cap at longest word + generous buffer, but ensure at least 20 chars for readability
+                    contentWidth = Math.min(contentWidth, Math.max(maxWordWidth + 12, 20));
+                }
+
+                if (colSpan === 1) {
+                    columnWidths[colIndex] = Math.max(columnWidths[colIndex] ?? 0, contentWidth + totalPadding);
+
+                    // Track if this column can grow (has wrappable content)
+                    if (canWordWrap && !growableColumns.includes(colIndex)) {
+                        growableColumns.push(colIndex);
+                    }
+                }
+            }
+        }
+
+        // Handle spanning cells (similar logic but simplified)
+        for (let rowIndex = 0; rowIndex < gridLayout.length; rowIndex += 1) {
+            for (let colIndex = 0; colIndex < this.#options.columns; colIndex += 1) {
+                const cell = gridLayout[rowIndex]?.[colIndex];
+
+                // Skip if not a cell start position
+                if (
+                    !cell
+                    || findFirstOccurrenceRow(gridLayout, rowIndex, colIndex, cell) !== rowIndex
+                    || (colIndex > 0 && gridLayout[rowIndex]?.[colIndex - 1] === cell)
+                ) {
+                    continue;
+                }
+
+                const colSpan = cell.colSpan ?? 1;
+
+                if (colSpan > 1) {
+                    const cellMaxWidth = cell.maxWidth ?? Number.POSITIVE_INFINITY;
+                    const lines = String(cell.content ?? "").split(/\r?\n/);
+
+                    // Determine if this cell can word wrap
+                    const canWordWrap = this.#options.wordWrap && cell.wordWrap !== false;
+
+                    let contentWidth = 0;
+
+                    // First, calculate the full content width needed
+                    for (const line of lines) {
+                        contentWidth = Math.max(contentWidth, Math.min(getStringWidth(line), cellMaxWidth));
+                    }
+
+                    // Determine appropriate minimum width based on wrapping capability
+                    if (canWordWrap) {
+                        if (contentWidth > 20) {
+                            // For long word-wrappable content, minimum width is based on longest word
+                            // since words cannot be broken across lines
+                            let wordBasedWidth = 0;
+
+                            for (const line of lines) {
+                                const words = line.split(/\s+/);
+
+                                for (const word of words) {
+                                    wordBasedWidth = Math.max(wordBasedWidth, Math.min(getStringWidth(word), cellMaxWidth));
+                                }
+                            }
+
+                            // Use the smaller of: full content width or word-based width + some buffer
+                            // But ensure at least 12 chars for readability when wrapping is expected
+                            contentWidth = Math.min(contentWidth, Math.max(wordBasedWidth + 4, 12));
+                        }
+                        // Short wrappable content keeps full width
+                    } else {
+                        // For non-wrappable content, cap at a reasonable maximum based on longest word + buffer
+                        // This prevents one column from dominating while ensuring readability
+                        let maxWordWidth = 0;
+
+                        for (const line of lines) {
+                            const words = line.split(/\s+/);
+
+                            for (const word of words) {
+                                maxWordWidth = Math.max(maxWordWidth, Math.min(getStringWidth(word), cellMaxWidth));
+                            }
+                        }
+
+                        // Cap at longest word + generous buffer, but ensure at least 20 chars for readability
+                        contentWidth = Math.min(contentWidth, Math.max(maxWordWidth + 12, 20));
+                    }
+
+                    // For spanning cells, distribute the required width across the spanned columns
+                    const internalJoinWidth = (colSpan - 1) * singleInternalJoinWidth;
+                    const totalWidthNeeded = contentWidth + totalPadding + internalJoinWidth;
+
+                    // Calculate current total width of spanned columns
+                    let currentWidthOfSpannedColumns = 0;
+
+                    for (const width of columnWidths.slice(colIndex, colIndex + colSpan)) {
+                        currentWidthOfSpannedColumns += width ?? 0;
+                    }
+
+                    if (totalWidthNeeded > currentWidthOfSpannedColumns) {
+                        const additionalWidthNeeded = totalWidthNeeded - currentWidthOfSpannedColumns;
+                        const additionalWidthPerColumn = Math.ceil(additionalWidthNeeded / colSpan);
+
+                        for (let i = 0; i < colSpan && colIndex + i < this.#options.columns; i += 1) {
+                            columnWidths[colIndex + i] = Math.max(columnWidths[colIndex + i] ?? 0, additionalWidthPerColumn);
+                        }
+                    }
+                }
+            }
+        }
+
+        return { growableColumns, widths: columnWidths };
+    }
+
+    /**
+     * Calculate minimum column widths required for content.
+     * This is similar to the original logic but extracted for reuse.
+     * @param gridLayout {GridItem[][]} The grid layout.
+     * @returns Array of minimum column widths.
+     */
+    // eslint-disable-next-line sonarjs/cognitive-complexity
+    private calculateMinimumColumnWidths(gridLayout: (GridItem | null)[][]): number[] {
+        const columnWidths: number[] = Array.from<number>({ length: this.#options.columns }).fill(0);
+        const totalPadding = this.#options.paddingLeft + this.#options.paddingRight;
+        const singleInternalJoinWidth = this.#options.gap + (this.#options.showBorders ? this.#options.border?.bodyJoin.width ?? 0 : 0);
+
+        // Calculate minimum width needed for non-spanning cells
+        for (let colIndex = 0; colIndex < this.#options.columns; colIndex += 1) {
+            for (let rowIndex = 0; rowIndex < gridLayout.length; rowIndex += 1) {
+                const cell = gridLayout[rowIndex]?.[colIndex];
+
+                // Skip if not a cell start position
+                if (
+                    !cell
+                    || findFirstOccurrenceRow(gridLayout, rowIndex, colIndex, cell) !== rowIndex
+                    || (colIndex > 0 && gridLayout[rowIndex]?.[colIndex - 1] === cell)
+                ) {
+                    continue;
+                }
+
+                const colSpan = cell.colSpan ?? 1;
+                const cellMaxWidth = cell.maxWidth ?? Number.POSITIVE_INFINITY;
+                const lines = String(cell.content ?? "").split(/\r?\n/);
+
+                // Determine if this cell can word wrap
+                const canWordWrap = this.#options.wordWrap && cell.wordWrap !== false;
+
+                let contentWidth = 0;
+
+                // First, calculate the full content width needed
+                for (const line of lines) {
+                    contentWidth = Math.max(contentWidth, Math.min(getStringWidth(line), cellMaxWidth));
+                }
+
+                // Determine appropriate minimum width based on wrapping capability
+                if (canWordWrap) {
+                    if (contentWidth > 20) {
+                        // For long word-wrappable content, minimum width is based on longest word
+                        // since words cannot be broken across lines
+                        let wordBasedWidth = 0;
+
+                        for (const line of lines) {
+                            const words = line.split(/\s+/);
+
+                            for (const word of words) {
+                                wordBasedWidth = Math.max(wordBasedWidth, Math.min(getStringWidth(word), cellMaxWidth));
+                            }
+                        }
+
+                        // Use the smaller of: full content width or word-based width + some buffer
+                        // But ensure at least 12 chars for readability when wrapping is expected
+                        contentWidth = Math.min(contentWidth, Math.max(wordBasedWidth + 4, 12));
+                    }
+                    // Short wrappable content keeps full width
+                } else {
+                    // For non-wrappable content, cap at a reasonable maximum based on longest word + buffer
+                    // This prevents one column from dominating while ensuring readability
+                    let maxWordWidth = 0;
+
+                    for (const line of lines) {
+                        const words = line.split(/\s+/);
+
+                        for (const word of words) {
+                            maxWordWidth = Math.max(maxWordWidth, Math.min(getStringWidth(word), cellMaxWidth));
+                        }
+                    }
+
+                    // Cap at longest word + generous buffer, but ensure at least 20 chars for readability
+                    contentWidth = Math.min(contentWidth, Math.max(maxWordWidth + 12, 20));
+                }
+
+                if (colSpan === 1) {
+                    columnWidths[colIndex] = Math.max(columnWidths[colIndex] ?? 0, contentWidth + totalPadding);
+                }
+            }
+        }
+
+        // Handle spanning cells
+        for (let rowIndex = 0; rowIndex < gridLayout.length; rowIndex += 1) {
+            for (let colIndex = 0; colIndex < this.#options.columns; colIndex += 1) {
+                const cell = gridLayout[rowIndex]?.[colIndex];
+
+                // Skip if not a cell start position
+                if (
+                    !cell
+                    || findFirstOccurrenceRow(gridLayout, rowIndex, colIndex, cell) !== rowIndex
+                    || (colIndex > 0 && gridLayout[rowIndex]?.[colIndex - 1] === cell)
+                ) {
+                    continue;
+                }
+
+                const colSpan = cell.colSpan ?? 1;
+
+                if (colSpan > 1) {
+                    const cellMaxWidth = cell.maxWidth ?? Number.POSITIVE_INFINITY;
+                    const lines = String(cell.content ?? "").split(/\r?\n/);
+                    // Determine if this cell can word wrap
+                    const canWordWrap = this.#options.wordWrap && cell.wordWrap !== false;
+
+                    let contentWidth = 0;
+
+                    // First, calculate the full content width needed
+                    for (const line of lines) {
+                        contentWidth = Math.max(contentWidth, Math.min(getStringWidth(line), cellMaxWidth));
+                    }
+
+                    // Determine appropriate minimum width based on wrapping capability
+                    if (canWordWrap) {
+                        if (contentWidth > 20) {
+                            // For long word-wrappable content, minimum width is based on longest word
+                            // since words cannot be broken across lines
+                            let wordBasedWidth = 0;
+
+                            for (const line of lines) {
+                                const words = line.split(/\s+/);
+
+                                for (const word of words) {
+                                    wordBasedWidth = Math.max(wordBasedWidth, Math.min(getStringWidth(word), cellMaxWidth));
+                                }
+                            }
+
+                            // Use the smaller of: full content width or word-based width + some buffer
+                            // But ensure at least 12 chars for readability when wrapping is expected
+                            contentWidth = Math.min(contentWidth, Math.max(wordBasedWidth + 4, 12));
+                        }
+                        // Short wrappable content keeps full width
+                    } else {
+                        // For non-wrappable content, cap at a reasonable maximum based on longest word + buffer
+                        // This prevents one column from dominating while ensuring readability
+                        let maxWordWidth = 0;
+
+                        for (const line of lines) {
+                            const words = line.split(/\s+/);
+
+                            for (const word of words) {
+                                maxWordWidth = Math.max(maxWordWidth, Math.min(getStringWidth(word), cellMaxWidth));
+                            }
+                        }
+
+                        // Cap at longest word + generous buffer, but ensure at least 20 chars for readability
+                        contentWidth = Math.min(contentWidth, Math.max(maxWordWidth + 12, 20));
+                    }
+
+                    // Calculate total width currently occupied by the columns this cell will span
+                    let currentWidthOfSpannedColumns = 0;
+
+                    for (const width of columnWidths.slice(colIndex, colIndex + colSpan)) {
+                        currentWidthOfSpannedColumns += width ?? 0;
+                    }
+
+                    // Calculate the structural width (gaps, borders) within the span
+                    const structuralWidthWithinSpan = colSpan > 1 ? (colSpan - 1) * singleInternalJoinWidth : 0;
+
+                    // Calculate the minimum width required by the content itself, including padding
+                    const requiredWidthForContent = contentWidth + totalPadding;
+
+                    // Calculate the total width required by the spanning cell (content + structure)
+                    const requiredTotalWidthForSpan = requiredWidthForContent + structuralWidthWithinSpan;
+
+                    // Calculate the current total width available across the spanned columns + internal structure
+                    const currentTotalAvailableWidthForSpan = currentWidthOfSpannedColumns + structuralWidthWithinSpan;
+
+                    // Only adjust if the required total width exceeds the current total available width
+                    if (requiredTotalWidthForSpan > currentTotalAvailableWidthForSpan) {
+                        const additionalWidthNeeded = requiredTotalWidthForSpan - currentTotalAvailableWidthForSpan;
+
+                        // Distribute additional width needed proportionally
+                        const baseAdditionalWidth = Math.floor(additionalWidthNeeded / colSpan);
+
+                        let totalAdded = 0;
+
+                        for (let index = 0; index < colSpan && colIndex + index < this.#options.columns; index += 1) {
+                            const widthToAdd = Math.min(baseAdditionalWidth, additionalWidthNeeded - totalAdded);
+                            const currentWidth = columnWidths[colIndex + index] ?? 0;
+
+                            columnWidths[colIndex + index] = currentWidth + widthToAdd;
+                            totalAdded += widthToAdd;
+
+                            if (totalAdded >= additionalWidthNeeded) {
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return columnWidths;
+    }
+
+    /**
      * Calculate column widths based on content, handling colSpan iteratively.
      * This version prioritizes minimum width based on single-cell content first,
      * then iteratively adjusts for cells spanning multiple columns.
@@ -627,6 +1118,11 @@ export class Grid {
         // If fixed column widths are provided and match the column count, use them
         if (this.#options.fixedColumnWidths && this.#options.fixedColumnWidths.length === this.#options.columns) {
             return [...this.#options.fixedColumnWidths];
+        }
+
+        // Use balanced width calculation if enabled
+        if (this.#options.balancedWidths) {
+            return this.calculateBalancedColumnWidths(gridLayout);
         }
 
         const columnWidths: number[] = Array.from<number>({ length: this.#options.columns }).fill(0);
@@ -643,7 +1139,6 @@ export class Grid {
                 if (
                     !cell
                     || findFirstOccurrenceRow(gridLayout, rowIndex, colIndex, cell) !== rowIndex
-
                     || (colIndex > 0 && gridLayout[rowIndex]?.[colIndex - 1] === cell)
                 ) {
                     continue;
@@ -674,7 +1169,6 @@ export class Grid {
                 if (
                     !cell
                     || findFirstOccurrenceRow(gridLayout, rowIndex, colIndex, cell) !== rowIndex
-
                     || (colIndex > 0 && gridLayout[rowIndex]?.[colIndex - 1] === cell)
                 ) {
                     continue;
@@ -685,10 +1179,51 @@ export class Grid {
                 if (colSpan > 1) {
                     const cellMaxWidth = cell.maxWidth ?? Number.POSITIVE_INFINITY;
                     const lines = String(cell.content ?? "").split(/\r?\n/);
+                    // Determine if this cell can word wrap
+                    const canWordWrap = this.#options.wordWrap && cell.wordWrap !== false;
+
                     let contentWidth = 0;
 
+                    // First, calculate the full content width needed
                     for (const line of lines) {
                         contentWidth = Math.max(contentWidth, Math.min(getStringWidth(line), cellMaxWidth));
+                    }
+
+                    // Determine appropriate minimum width based on wrapping capability
+                    if (canWordWrap) {
+                        if (contentWidth > 20) {
+                            // For long word-wrappable content, minimum width is based on longest word
+                            // since words cannot be broken across lines
+                            let wordBasedWidth = 0;
+
+                            for (const line of lines) {
+                                const words = line.split(/\s+/);
+
+                                for (const word of words) {
+                                    wordBasedWidth = Math.max(wordBasedWidth, Math.min(getStringWidth(word), cellMaxWidth));
+                                }
+                            }
+
+                            // Use the smaller of: full content width or word-based width + some buffer
+                            // But ensure at least 12 chars for readability when wrapping is expected
+                            contentWidth = Math.min(contentWidth, Math.max(wordBasedWidth + 4, 12));
+                        }
+                        // Short wrappable content keeps full width
+                    } else {
+                        // For non-wrappable content, cap at a reasonable maximum based on longest word + buffer
+                        // This prevents one column from dominating while ensuring readability
+                        let maxWordWidth = 0;
+
+                        for (const line of lines) {
+                            const words = line.split(/\s+/);
+
+                            for (const word of words) {
+                                maxWordWidth = Math.max(maxWordWidth, Math.min(getStringWidth(word), cellMaxWidth));
+                            }
+                        }
+
+                        // Cap at longest word + generous buffer, but ensure at least 20 chars for readability
+                        contentWidth = Math.min(contentWidth, Math.max(maxWordWidth + 12, 20));
                     }
 
                     // Calculate total width currently occupied by the columns this cell will span
@@ -1172,7 +1707,6 @@ export class Grid {
                         // No content line falls here, render spaces covering the full width including internal structure
                         const segmentWidth
                             = columnWidths.slice(col, col + colSpan).reduce((sum, w) => sum + w, 0)
-
                                 + (colSpan - 1) * (this.#options.gap + (this.#options.showBorders ? this.#options.border.bodyJoin.width : 0));
 
                         segment = applyColor(" ".repeat(segmentWidth), this.#options.borderColor);
