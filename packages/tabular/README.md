@@ -122,13 +122,18 @@ import { createTable } from "@visulima/tabular";
 const table = createTable({
     balancedWidths: true, // Enable balanced column widths
     wordWrap: true, // Recommended for balanced layouts
+    terminalWidth: 45, // Optional
     style: {
-        paddingLeft: 1,
-        paddingRight: 1,
+        paddingLeft: 0,
+        paddingRight: 0,
     },
 });
 
-table.addRow(["Short", "Medium length text", "Very long column content here"]);
+table.addRow([
+    "Short text",
+    { content: "Long content that can wrap", wordWrap: false }, // Explicitly disable wrapping
+    "Another wrappable text here",
+]);
 
 // Without balancedWidths: columns sized by content
 // With balancedWidths: columns equally distributed
@@ -137,10 +142,11 @@ table.addRow(["Short", "Medium length text", "Very long column content here"]);
 **Output:**
 
 ```
-┌───────────────────────────────────────┬──────────────────────────────────────┐
-│ Short                                 │ Medium length text                   │
-│                                       │ Very long column content here        │
-└───────────────────────────────────────┴──────────────────────────────────────┘
+┌─────────────┬─────────────────┬───────────┐
+│Short text   │Long content tha…│Another    │
+│             │                 │wrappable  │
+│             │                 │text here  │
+└─────────────┴─────────────────┴───────────┘
 ```
 
 **When to use `balancedWidths`:**
