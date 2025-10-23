@@ -260,9 +260,6 @@
         "@visulima/crud": {
             "optional": true
         },
-        "@visulima/readdir": {
-            "optional": true
-        },
         "chalk": {
             "optional": true
         },

@@ -14,7 +14,8 @@ export default defineConfig({
             path: "./LICENSE.md",
         },
         requireCJS: {
-            builtinNodeModules: true,
+            // TODO: enable after packem has fixed the global __cjs_require
+            //builtinNodeModules: true,
         },
     },
     validation: {
@@ -25,5 +26,4 @@ export default defineConfig({
         },
     },
     transformer,
-    cjsInterop: true,
 }) as BuildConfig;

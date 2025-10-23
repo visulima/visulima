@@ -40,9 +40,15 @@ packages:
   - packages/tsconfig/__fixtures__/package/cjs
   - packages/tsconfig/__fixtures__/package/mjs
 
-ignoredBuiltDependencies:
-  - '@anolilab/eslint-config'
-  - '@anolilab/prettier-config'
+linkWorkspacePackages: true
+injectWorkspacePackages: false
+dedupeInjectedDeps: true
+preferWorkspacePackages: true
+sharedWorkspaceLockfile: true
+saveWorkspaceProtocol: true
+includeWorkspaceRoot: false
+ignoreWorkspaceCycles: false
+disallowWorkspaceCycles: true
 
 onlyBuiltDependencies:
   - '@parcel/watcher'
@@ -71,6 +77,22 @@ onlyBuiltDependencies:
   - tree-sitter-json
   - unrs-resolver
   - yarn
+
+# Ignored optional dependencies - skip problematic optional deps
+ignoredOptionalDependencies:
+  - fsevents
+  - dtrace-provider
+
+# Minimum release age - prefer stable packages (3 days = 4,320 minutes)
+# minimumReleaseAge: 4320
+
+# Exclusions from minimum release age - allow fresh versions for dev tools
+minimumReleaseAgeExclude:
+  - vitest
+  - '@vitest/*'
+  - typescript
+  - '@types/*'
+  - '@tanstack/*'
 
 overrides:
   '@eslint/plugin-kit@<0.3.4': '>=0.4.0'
