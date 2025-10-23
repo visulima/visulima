@@ -58,6 +58,84 @@ describe("table core functionality", () => {
         `);
     });
 
+    it("should handle tables with short character content", () => {
+        expect.assertions(1);
+
+        const table = createTable({ style: { paddingLeft: 0, paddingRight: 0 } });
+
+        table.setHeaders(["A", "B", "C"]);
+        table.addRow(["x", "y", "z"]);
+        table.addRow(["1", "2", "3"]);
+
+        expect(table.toString()).toMatchInlineSnapshot(`
+            "┌─┬─┬─┐
+            │A│B│C│
+            ├─┼─┼─┤
+            │x│y│z│
+            ├─┼─┼─┤
+            │1│2│3│
+            └─┴─┴─┘"
+        `);
+    });
+
+    it("should handle tables with single character cells and padding", () => {
+        expect.assertions(1);
+
+        const table = new Table({ style: { paddingLeft: 1, paddingRight: 1 } });
+
+        table.setHeaders(["X", "Y", "Z"]);
+        table.addRow(["a", "b", "c"]);
+
+        expect(table.toString()).toMatchInlineSnapshot(`
+            "┌───┬───┬───┐
+            │ X │ Y │ Z │
+            ├───┼───┼───┤
+            │ a │ b │ c │
+            └───┴───┴───┘"
+        `);
+    });
+
+    it("should handle tables with mixed character sizes", () => {
+        expect.assertions(1);
+
+        const table = createTable({ style: { paddingLeft: 1, paddingRight: 1 } });
+
+        table.setHeaders(["Short", "X", "Medium Text"]);
+        table.addRow(["a", "VeryLongContent", "Hi"]);
+        table.addRow(["Hello", "b", "OK"]);
+
+        expect(table.toString()).toMatchInlineSnapshot(`
+            "┌───────┬─────────────────┬─────────────┐
+            │ Short │ X               │ Medium Text │
+            ├───────┼─────────────────┼─────────────┤
+            │ a     │ VeryLongContent │ Hi          │
+            ├───────┼─────────────────┼─────────────┤
+            │ Hello │ b               │ OK          │
+            └───────┴─────────────────┴─────────────┘"
+        `);
+    });
+
+    it("should handle tables with mixed ASCII and Unicode characters", () => {
+        expect.assertions(1);
+
+        const table = createTable({ style: { paddingLeft: 0, paddingRight: 0 } });
+
+        // eslint-disable-next-line unicorn/text-encoding-identifier-case
+        table.setHeaders(["ASCII", "Unicode", "Emoji"]);
+        table.addRow(["x", "é", "😀"]);
+        table.addRow(["Hello", "中文", "🎉"]);
+
+        expect(table.toString()).toMatchInlineSnapshot(`
+            "┌─────┬───────┬─────┐
+            │ASCII│Unicode│Emoji│
+            ├─────┼───────┼─────┤
+            │x    │é      │😀   │
+            ├─────┼───────┼─────┤
+            │Hello│中文   │🎉   │
+            └─────┴───────┴─────┘"
+        `);
+    });
+
     describe("content type handling", () => {
         it("should allow numbers as content in object notation", () => {
             expect.assertions(1);
