@@ -955,7 +955,7 @@ export class Grid {
                         break;
                     }
 
-                    seed[i] += 1;
+                    (seed[i] as number) += 1;
                     remaining -= 1;
                 }
 
