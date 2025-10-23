@@ -2,8 +2,8 @@ import type { TruncateOptions, WordWrapOptions } from "@visulima/string";
 
 /** Base options common to Table and Grid */
 interface BaseRenderingOptions {
-    /** Default terminal width if detection fails (defaults to 80) */
-    defaultTerminalWidth?: number;
+    /** Automatically balance column widths for optimal content fit when no fixed widths are specified */
+    balancedWidths?: boolean;
 
     /** Gap between cells */
     gap?: number;
@@ -59,6 +59,9 @@ export interface GridItem {
 
     /** Vertical alignment of the content */
     vAlign?: VerticalAlignment;
+
+    /** Exact width for this cell, overrides table-level columnWidths */
+    width?: number;
 
     /** Options for controlling word wrapping (takes precedence over truncate) */
     wordWrap?: Omit<WordWrapOptions, "width"> | boolean;
@@ -164,8 +167,9 @@ export interface TableOptions extends BaseRenderingOptions {
     /**
      * Fixed column widths.
      * Can be a single number for all columns or an array for specific columns.
+     * Array entries can be undefined to allow automatic width calculation for that column.
      */
-    columnWidths?: number[] | number;
+    columnWidths?: (number | undefined)[] | number;
 
     /**
      * Fixed row heights.
@@ -204,8 +208,8 @@ export interface GridOptions extends BaseRenderingOptions, Style {
     /** Number of columns in the grid */
     columns: number;
 
-    /** Fixed column widths */
-    fixedColumnWidths?: number[];
+    /** Fixed column widths. Undefined entries allow automatic width calculation for that column. */
+    fixedColumnWidths?: (number | undefined)[];
 
     /** Fixed row heights */
     fixedRowHeights?: number[];

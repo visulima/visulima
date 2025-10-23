@@ -468,6 +468,82 @@ describe("table Cell Content Handling", () => {
                 `);
             });
         });
+
+        describe("columnWidths and maxWidth interaction", () => {
+            it("should respect both columnWidths and cell maxWidth, using the smaller value", () => {
+                expect.assertions(2);
+
+                const table = createTable({ columnWidths: 25 });
+
+                table.addRow([
+                    {
+                        content: "This is some colored text that will be truncated",
+                        truncate: {
+                            position: "end",
+                        },
+                    },
+                    {
+                        content: "This is some colored text that will be truncated",
+                        maxWidth: 10,
+                        truncate: {
+                            position: "end",
+                        },
+                    },
+                ]);
+
+                const output = table.toString();
+                const lines = output.split("\n");
+
+                // The second cell should be truncated to maxWidth: 10, not the table columnWidths: 25
+                expect(lines[1]).toContain("…"); // Should contain truncation ellipsis
+                expect(output).toMatchSnapshot();
+            });
+        });
+
+        describe("width property", () => {
+            it("should allow cell width to override table columnWidths", () => {
+                expect.assertions(1);
+
+                const table = createTable({ columnWidths: 20 });
+
+                table.addRow([
+                    {
+                        content: "Short",
+                        width: 10,
+                    },
+                    {
+                        content: "This is a longer text that should be constrained",
+                        truncate: true,
+                    },
+                ]);
+
+                const output = table.toString();
+
+                // First cell should be exactly 10 characters wide due to width override
+                // Second cell should be 20 characters wide due to table columnWidths
+                expect(output).toMatchSnapshot();
+            });
+
+            it("should prioritize width over maxWidth when both are specified", () => {
+                expect.assertions(1);
+
+                const table = createTable({ columnWidths: 15 });
+
+                table.addRow([
+                    {
+                        content: "Very long content that would normally be truncated",
+                        maxWidth: 8, // This should be ignored due to width taking precedence
+                        truncate: true,
+                        width: 12,
+                    },
+                ]);
+
+                const output = table.toString();
+
+                // Cell should be exactly 12 characters wide, not constrained by maxWidth
+                expect(output).toMatchSnapshot();
+            });
+        });
     });
 
     describe("empty and nullish content", () => {

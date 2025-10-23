@@ -41,11 +41,13 @@ export class Table {
      * @returns The Table instance for chaining.
      */
     public setHeaders(headers: TableCell[] | TableCell[][]): this {
-        this.#headers
-            = headers.length > 0 && !Array.isArray(headers[0])
-                ? [headers as TableCell[]]
-                // eslint-disable-next-line @stylistic/no-extra-parens
-                : (headers as TableCell[][]).map((row) => (Array.isArray(row) ? row : [row]));
+        // eslint-disable-next-line unicorn/prefer-ternary
+        if (headers.length > 0 && !Array.isArray(headers[0])) {
+            this.#headers = [headers as TableCell[]];
+        } else {
+            // eslint-disable-next-line @stylistic/no-extra-parens
+            this.#headers = (headers as TableCell[][]).map((row) => (Array.isArray(row) ? row : [row]));
+        }
 
         this.#isDirty = true;
         this.#cachedString = undefined;
@@ -133,10 +135,19 @@ export class Table {
         let fixedGridWidths: number[] | undefined;
 
         if (Array.isArray(this.#options.columnWidths)) {
-            fixedGridWidths
+            const widthArray
                 = this.#options.columnWidths.length >= numberColumns
                     ? this.#options.columnWidths.slice(0, numberColumns)
-                    : [...this.#options.columnWidths, ...Array.from<number>({ length: numberColumns - this.#options.columnWidths.length }).fill(1)];
+                    : [
+                        ...this.#options.columnWidths,
+                        ...Array.from<number | undefined>({ length: numberColumns - this.#options.columnWidths.length }).fill(undefined),
+                    ];
+
+            // Only treat as fully fixed if all entries are defined numbers
+            const allDefined = widthArray.every((w) => typeof w === "number" && Number.isFinite(w));
+
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            fixedGridWidths = allDefined ? (widthArray as number[]) : (widthArray as any);
         } else if (typeof this.#options.columnWidths === "number") {
             // If a single number is provided, create an array with that width for all columns
             fixedGridWidths = Array.from<number>({ length: numberColumns }).fill(this.#options.columnWidths);
@@ -155,13 +166,42 @@ export class Table {
             fixedGridRowHeights = Array.from<number>({ length: numberTotalRows }).fill(this.#options.rowHeights);
         }
 
-        const grid = new Grid({
+        // Adjust fixedColumnWidths based on cell maxWidth constraints before creating grid
+        if (fixedGridWidths && Array.isArray(fixedGridWidths)) {
+            const adjustedWidths = [...fixedGridWidths];
+
+            // Find minimum maxWidth for each column across all cells
+            for (const row of allRows) {
+                for (const [cellIndex, cellInput] of row.entries()) {
+                    let cellOptions: Omit<GridItem, "content"> = {};
+
+                    if (typeof cellInput === "object" && cellInput !== null && !Array.isArray(cellInput)) {
+                        const { content, href, ...rest } = cellInput as TableItem;
+
+                        cellOptions = rest;
+                    }
+
+                    // width takes precedence - sets exact width, overriding table columnWidths
+                    if (cellOptions.width !== undefined) {
+                        adjustedWidths[cellIndex] = cellOptions.width;
+                        // maxWidth constrains the width but doesn't override table columnWidths unless smaller than table columnWidths
+                    } else if (cellOptions.maxWidth !== undefined && adjustedWidths[cellIndex] !== undefined) {
+                        adjustedWidths[cellIndex] = Math.min(adjustedWidths[cellIndex], cellOptions.maxWidth);
+                    }
+                }
+            }
+
+            // Update fixedGridWidths with adjusted widths
+            fixedGridWidths = adjustedWidths;
+        }
+
+        const options = {
             autoFlow: "row",
             backgroundColor: this.#options.style?.backgroundColor,
+            balancedWidths: this.#options.balancedWidths ?? false,
             border: this.#options.style?.border,
             borderColor: this.#options.style?.borderColor,
             columns: numberColumns,
-            defaultTerminalWidth: this.#options.defaultTerminalWidth,
             fixedColumnWidths: fixedGridWidths,
             fixedRowHeights: fixedGridRowHeights,
             foregroundColor: this.#options.style?.foregroundColor,
@@ -170,9 +210,14 @@ export class Table {
             paddingLeft: this.#options.style?.paddingLeft,
             paddingRight: this.#options.style?.paddingRight,
             terminalWidth: this.#options.terminalWidth,
-            truncate: this.#options.truncate || fixedGridWidths !== undefined || this.#options.maxWidth !== undefined,
+            truncate:
+                this.#options.truncate
+                || (fixedGridWidths !== undefined && fixedGridWidths.every((w) => typeof w === "number"))
+                || (this.#options.maxWidth !== undefined && !this.#options.balancedWidths),
             wordWrap: this.#options.wordWrap ?? false,
-        } satisfies GridOptions);
+        } satisfies GridOptions;
+
+        const grid = new Grid(options);
 
         const gridItems: GridItem[] = [];
 
@@ -191,8 +236,8 @@ export class Table {
             const isHeaderRow = this.#options.showHeader && Number.parseInt(rowIndex, 10) < this.#headers.length;
             const applyHeaderColspan = isHeaderRow && row.length === 1 && numberColumns > 1;
 
-            // eslint-disable-next-line prefer-const
-            for (let [cellIndex, cellInput] of row.entries()) {
+            for (let cellInput of row) {
+                // End of Selection
                 let cellOptions: Omit<GridItem, "content"> = {};
 
                 if (typeof cellInput === "object" && cellInput !== null && !Array.isArray(cellInput)) {
@@ -211,33 +256,26 @@ export class Table {
                     cellOptions.colSpan = numberColumns;
                 }
 
-                if (this.#options.transformTabToSpace && typeof cellInput === "string") {
-                    // eslint-disable-next-line sonarjs/updated-loop-counter
-                    cellInput = cellInput.replaceAll(String.raw`\t`, " ".repeat(this.#options.transformTabToSpace));
-                }
+                // Replace real tab characters with spaces if needed
+                const processedContent
+                    = this.#options.transformTabToSpace && typeof cellInput === "string"
+                        ? cellInput.replaceAll("\t", " ".repeat(this.#options.transformTabToSpace))
+                        : cellInput;
 
-                let maxWidth: number | undefined;
-
-                // Table-level columnWidths override cell-specific maxWidth if defined
-
-                if (fixedGridWidths?.[cellIndex] !== undefined) {
-                    maxWidth = fixedGridWidths[cellIndex];
-                }
-
-                if (cellOptions.maxWidth) {
-                    maxWidth = cellOptions.maxWidth;
-                }
+                // For cell maxWidth and width, use the cell-specific values (table-level columnWidths are handled separately)
+                const { maxWidth, width } = cellOptions;
 
                 gridItems.push({
                     backgroundColor: cellOptions.backgroundColor,
                     colSpan: cellOptions.colSpan,
-                    content: cellInput as Content,
+                    content: processedContent as Content,
                     foregroundColor: cellOptions.foregroundColor,
                     hAlign: cellOptions.hAlign,
                     maxWidth, // Use the determined maxWidth
                     rowSpan: cellOptions.rowSpan,
-                    truncate: cellOptions.truncate || maxWidth !== undefined,
+                    truncate: cellOptions.truncate ?? (maxWidth === undefined ? undefined : true),
                     vAlign: cellOptions.vAlign,
+                    width, // Exact width override for this cell
                     wordWrap: cellOptions.wordWrap, // Enable wrap if maxWidth > 0
                 } satisfies GridItem);
             }

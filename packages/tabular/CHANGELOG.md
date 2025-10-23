@@ -30,7 +30,26 @@
 
 ### ⚠ BREAKING CHANGES
 
-* fix: Adjusted the node engine requirement to support versions 20.19 and above
+* **removed `defaultTerminalWidth` option** — Use `balancedWidths: true` for proportional column distribution or set `terminalWidth` explicitly for fixed terminal constraints.
+* **added `balancedWidths` option** — Enable automatic proportional column width distribution across terminal width. This replaces the behavior previously driven by `defaultTerminalWidth`.
+
+### Migration Guide
+
+If you were relying on `defaultTerminalWidth`:
+
+**Before (v1.x):**
+```typescript
+const table = createTable({ defaultTerminalWidth: 120 });
+```
+
+**After (v2.0):**
+```typescript
+// For proportional/balanced column widths:
+const table = createTable({ balancedWidths: true, terminalWidth: 120 });
+
+// Or for content-based sizing with terminal constraint:
+const table = createTable({ terminalWidth: 120 });
+```
 
 ### Bug Fixes
 

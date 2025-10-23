@@ -50,7 +50,13 @@ describe("Table Rendering 1763 rows (5 columns)", () => {
 
         // Generate 1763 rows of mock data
         for (let index = 1; index <= 1763; index++) {
-            table.addRow([index.toString(), `User ${index}`, `user${index}@example.com`, index % 2 === 0 ? "Active" : "Inactive", new Date(2024, 0, 1, 0, index).toISOString()]);
+            table.addRow([
+                index.toString(),
+                `User ${index}`,
+                `user${index}@example.com`,
+                index % 2 === 0 ? "Active" : "Inactive",
+                new Date(2024, 0, 1, 0, index).toISOString(),
+            ]);
         }
 
         // Render the table
@@ -68,7 +74,13 @@ describe("Table Rendering 1763 rows (5 columns)", () => {
 
         // Generate 1763 rows of mock data
         for (let index = 1; index <= 1763; index++) {
-            table.push([index.toString(), `User ${index}`, `user${index}@example.com`, index % 2 === 0 ? "Active" : "Inactive", new Date(2024, 0, 1, 0, index).toISOString()]);
+            table.push([
+                index.toString(),
+                `User ${index}`,
+                `user${index}@example.com`,
+                index % 2 === 0 ? "Active" : "Inactive",
+                new Date(2024, 0, 1, 0, index).toISOString(),
+            ]);
         }
 
         // Render the table
@@ -80,7 +92,13 @@ describe("Table Rendering 1763 rows (5 columns)", () => {
 
         // Generate 1763 rows of mock data
         for (let index = 1; index <= 1763; index++) {
-            data.push([index.toString(), `User ${index}`, `user${index}@example.com`, index % 2 === 0 ? "Active" : "Inactive", new Date(2024, 0, 1, 0, index).toISOString()]);
+            data.push([
+                index.toString(),
+                `User ${index}`,
+                `user${index}@example.com`,
+                index % 2 === 0 ? "Active" : "Inactive",
+                new Date(2024, 0, 1, 0, index).toISOString(),
+            ]);
         }
 
         // Render the table
@@ -100,7 +118,13 @@ describe("Table Rendering 1763 rows (5 columns)", () => {
 
         // Generate 1763 rows of mock data
         for (let index = 1; index <= 1763; index++) {
-            table.push([index.toString(), `User ${index}`, `user${index}@example.com`, index % 2 === 0 ? "Active" : "Inactive", new Date(2024, 0, 1, 0, index).toISOString()]);
+            table.push([
+                index.toString(),
+                `User ${index}`,
+                `user${index}@example.com`,
+                index % 2 === 0 ? "Active" : "Inactive",
+                new Date(2024, 0, 1, 0, index).toISOString(),
+            ]);
         }
 
         // Render the table
