@@ -1,0 +1,216 @@
+---
+title: Installation
+description: Learn how to install and set up @visulima/vite-overlay in your Vite project.
+---
+
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# Installation
+
+This guide will help you install and set up `@visulima/vite-overlay` in your Vite project.
+
+## Prerequisites
+
+Before installing, ensure you have:
+
+- Node.js version 20.19 or higher (up to 24.x)
+- Vite 6.x or 7.x installed in your project
+- A package manager (npm, yarn, or pnpm)
+
+## Package Installation
+
+Choose your preferred package manager to install `@visulima/vite-overlay`:
+
+<Tabs items={['npm', 'yarn', 'pnpm', 'bun']}>
+  <Tab value="npm">
+    ```bash
+    npm install @visulima/vite-overlay
+    ```
+  </Tab>
+  <Tab value="yarn">
+    ```bash
+    yarn add @visulima/vite-overlay
+    ```
+  </Tab>
+  <Tab value="pnpm">
+    ```bash
+    pnpm add @visulima/vite-overlay
+    ```
+  </Tab>
+  <Tab value="bun">
+    ```bash
+    bun add @visulima/vite-overlay
+    ```
+  </Tab>
+</Tabs>
+
+## Basic Setup
+
+After installation, add the plugin to your Vite configuration file:
+
+```typescript title="vite.config.ts"
+import { defineConfig } from "vite";
+import errorOverlay from "@visulima/vite-overlay";
+
+export default defineConfig({
+    plugins: [errorOverlay()],
+});
+```
+
+That's it! The error overlay is now active in your development environment.
+
+## Framework-Specific Setup
+
+The plugin automatically detects popular frameworks. Here are examples for common setups:
+
+### React
+
+```typescript title="vite.config.ts"
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import errorOverlay from "@visulima/vite-overlay";
+
+export default defineConfig({
+    plugins: [
+        react(),
+        errorOverlay(), // Add after your framework plugin
+    ],
+});
+```
+
+### Vue
+
+```typescript title="vite.config.ts"
+import { defineConfig } from "vite";
+import vue from "@vitejs/plugin-vue";
+import errorOverlay from "@visulima/vite-overlay";
+
+export default defineConfig({
+    plugins: [
+        vue(),
+        errorOverlay(),
+    ],
+});
+```
+
+### Svelte
+
+```typescript title="vite.config.ts"
+import { defineConfig } from "vite";
+import { svelte } from "@sveltejs/vite-plugin-svelte";
+import errorOverlay from "@visulima/vite-overlay";
+
+export default defineConfig({
+    plugins: [
+        svelte(),
+        errorOverlay(),
+    ],
+});
+```
+
+### Preact
+
+```typescript title="vite.config.ts"
+import { defineConfig } from "vite";
+import preact from "@preact/preset-vite";
+import errorOverlay from "@visulima/vite-overlay";
+
+export default defineConfig({
+    plugins: [
+        preact(),
+        errorOverlay(),
+    ],
+});
+```
+
+## Verification
+
+To verify the installation is working:
+
+1. Start your development server:
+
+<Tabs items={['npm', 'yarn', 'pnpm', 'bun']}>
+  <Tab value="npm">
+    ```bash
+    npm run dev
+    ```
+  </Tab>
+  <Tab value="yarn">
+    ```bash
+    yarn dev
+    ```
+  </Tab>
+  <Tab value="pnpm">
+    ```bash
+    pnpm dev
+    ```
+  </Tab>
+  <Tab value="bun">
+    ```bash
+    bun dev
+    ```
+  </Tab>
+</Tabs>
+
+2. Introduce a deliberate error in your code (e.g., reference an undefined variable)
+3. You should see the enhanced error overlay with detailed information
+
+<Callout type="info">
+The error overlay only appears in development mode. It is automatically disabled in production builds.
+</Callout>
+
+## TypeScript Configuration
+
+If you're using TypeScript, the package includes built-in type definitions. No additional configuration is needed.
+
+However, if you want to extend the plugin with custom solution finders, ensure your `tsconfig.json` includes:
+
+```json title="tsconfig.json"
+{
+    "compilerOptions": {
+        "moduleResolution": "bundler",
+        "types": ["vite/client"]
+    }
+}
+```
+
+## Troubleshooting Installation
+
+### Module Not Found
+
+If you encounter "Module not found" errors:
+
+1. Clear your node_modules and package lock file
+2. Reinstall dependencies
+3. Restart your development server
+
+### Plugin Not Loading
+
+If the plugin doesn't seem to be working:
+
+1. Verify the plugin is in your Vite config
+2. Ensure you're running in development mode (not production)
+3. Check that your Vite version is 6.x or 7.x
+4. Look for any console errors that might indicate conflicts
+
+### Version Compatibility
+
+Ensure your versions are compatible:
+
+```json title="package.json"
+{
+    "dependencies": {
+        "vite": "^7.0.0",
+        "@visulima/vite-overlay": "^1.0.0"
+    }
+}
+```
+
+## Next Steps
+
+Now that you have installed the plugin, learn how to use it:
+
+- [Usage Guide](/docs/usage) - Learn the basics
+- [Configuration](/docs/configuration) - Customize the plugin
+- [Examples](/docs/examples) - See real-world examples
