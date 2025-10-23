@@ -573,7 +573,10 @@ describe("table borders", () => {
             table.addRow(["A", "B"]);
             table.addRow(["C", "D"]);
 
-            await expect(table.toString()).toMatchFileSnapshot("table-no-borders");
+            expect(table.toString()).toMatchInlineSnapshot(`
+                " A  B 
+                 C  D "
+            `);
         });
     });
 });
