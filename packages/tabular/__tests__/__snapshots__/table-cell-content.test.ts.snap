@@ -40,3 +40,15 @@ exports[`table Cell Content Handling > truncation > global truncation and comple
 │               │access control      │          │
 └───────────────┴────────────────────┴──────────┘"
 `;
+
+exports[`table Cell Content Handling > truncation > width property > should allow cell width to override table columnWidths 1`] = `
+"┌──────────┬────────────────────┐
+│ Short    │ This is a longer … │
+└──────────┴────────────────────┘"
+`;
+
+exports[`table Cell Content Handling > truncation > width property > should prioritize width over maxWidth when both are specified 1`] = `
+"┌────────────┐
+│ Very long… │
+└────────────┘"
+`;

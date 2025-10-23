@@ -171,9 +171,7 @@ export class Table {
             const adjustedWidths = [...fixedGridWidths];
 
             // Find minimum maxWidth for each column across all cells
-            for (const rowIndex in allRows) {
-                const row = allRows[rowIndex];
-
+            for (const row of allRows) {
                 for (const [cellIndex, cellInput] of row.entries()) {
                     let cellOptions: Omit<GridItem, "content"> = {};
 
@@ -183,7 +181,11 @@ export class Table {
                         cellOptions = rest;
                     }
 
-                    if (cellOptions.maxWidth !== undefined && adjustedWidths[cellIndex] !== undefined) {
+                    // width takes precedence - sets exact width, overriding table columnWidths
+                    if (cellOptions.width !== undefined) {
+                        adjustedWidths[cellIndex] = cellOptions.width;
+                        // maxWidth constrains the width but doesn't override table columnWidths unless smaller than table columnWidths
+                    } else if (cellOptions.maxWidth !== undefined && adjustedWidths[cellIndex] !== undefined) {
                         adjustedWidths[cellIndex] = Math.min(adjustedWidths[cellIndex], cellOptions.maxWidth);
                     }
                 }
@@ -234,8 +236,8 @@ export class Table {
             const isHeaderRow = this.#options.showHeader && Number.parseInt(rowIndex, 10) < this.#headers.length;
             const applyHeaderColspan = isHeaderRow && row.length === 1 && numberColumns > 1;
 
-            // eslint-disable-next-line prefer-const
-            for (let [cellIndex, cellInput] of row.entries()) {
+            for (let cellInput of row) {
+                // End of Selection
                 let cellOptions: Omit<GridItem, "content"> = {};
 
                 if (typeof cellInput === "object" && cellInput !== null && !Array.isArray(cellInput)) {
@@ -260,8 +262,8 @@ export class Table {
                         ? cellInput.replaceAll("\t", " ".repeat(this.#options.transformTabToSpace))
                         : cellInput;
 
-                // For cell maxWidth, use the cell-specific value (table-level columnWidths are handled separately)
-                const { maxWidth } = cellOptions;
+                // For cell maxWidth and width, use the cell-specific values (table-level columnWidths are handled separately)
+                const { maxWidth, width } = cellOptions;
 
                 gridItems.push({
                     backgroundColor: cellOptions.backgroundColor,
@@ -273,6 +275,7 @@ export class Table {
                     rowSpan: cellOptions.rowSpan,
                     truncate: cellOptions.truncate ?? (maxWidth === undefined ? undefined : true),
                     vAlign: cellOptions.vAlign,
+                    width, // Exact width override for this cell
                     wordWrap: cellOptions.wordWrap, // Enable wrap if maxWidth > 0
                 } satisfies GridItem);
             }

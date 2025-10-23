@@ -60,6 +60,9 @@ export interface GridItem {
     /** Vertical alignment of the content */
     vAlign?: VerticalAlignment;
 
+    /** Exact width for this cell, overrides table-level columnWidths */
+    width?: number;
+
     /** Options for controlling word wrapping (takes precedence over truncate) */
     wordWrap?: Omit<WordWrapOptions, "width"> | boolean;
 }

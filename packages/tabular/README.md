@@ -351,6 +351,17 @@ const grid = createGrid({
 });
 ```
 
+### Padding and Width Calculations
+
+All width-related properties (`columnWidths`, `maxWidth`, `width`) **include padding** in their calculations:
+
+- `paddingLeft` and `paddingRight` are added to the total cell width
+- Content space = specified width - (paddingLeft + paddingRight)
+- For example, with `paddingLeft: 1`, `paddingRight: 1`, and `maxWidth: 10`:
+    - Total cell width = 10 characters
+    - Content space = 8 characters (content gets truncated at 8 chars)
+    - Padding space = 2 characters (1 left + 1 right)
+
 ## API Reference
 
 <!-- TYPEDOC -->
@@ -1004,7 +1015,8 @@ optional maxWidth: number;
 
 Defined in: [types.ts:41](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L41)
 
-Maximum width of the cell content before truncation
+Maximum width of the cell content before truncation.
+**Note:** This width includes padding. For example, with `paddingLeft: 1` and `paddingRight: 1`, a cell with `maxWidth: 10` will truncate content when it exceeds 8 characters (content space), leaving 2 characters for padding.
 
 ##### rowSpan?
 
@@ -1035,6 +1047,17 @@ optional vAlign: VerticalAlignment;
 Defined in: [types.ts:48](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L48)
 
 Vertical alignment of the content
+
+##### width?
+
+```ts
+optional width: number;
+```
+
+Defined in: [types.ts:52](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L52)
+
+Exact width for this cell, overrides table-level columnWidths.
+**Note:** This width includes padding. For example, with `paddingLeft: 1` and `paddingRight: 1`, a cell with `width: 10` will have 8 characters of content space and 2 characters of padding.
 
 ##### wordWrap?
 
@@ -1580,6 +1603,7 @@ Defined in: [types.ts:135](https://github.com/visulima/visulima/blob/afe199ce97e
 
 Fixed column widths.
 Can be a single number for all columns or an array for specific columns.
+**Note:** These widths include padding. For example, with `paddingLeft: 1` and `paddingRight: 1`, a column with `columnWidths: 10` will have 8 characters of content space and 2 characters of padding.
 
 ##### gap?
 
