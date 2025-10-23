@@ -362,6 +362,136 @@ All width-related properties (`columnWidths`, `maxWidth`, `width`) **include pad
     - Content space = 8 characters (content gets truncated at 8 chars)
     - Padding space = 2 characters (1 left + 1 right)
 
+### Table Cell Structure
+
+```
+┌─────────────────────────────────────────────────┐
+│                Cell Structure                   │
+├─────────────────────────────────────────────────┤
+│ ┌─────────┬─────────────────┬─────────┐◄── Border
+│ │  Left   │    Content      │  Right  │
+│ │ Padding │     Space       │ Padding │
+│ │ (1 char)│  (contentWidth) │ (1 char)│
+│ └─────────┴─────────────────┴─────────┘◄── Cell Width
+│ ◄─────────────────────────────────────►
+│              Total Cell Width
+└─────────────────────────────────────────────────┘
+```
+
+**Width Priority Order** (highest to lowest):
+
+1. `cell.width` - Exact cell width (overrides table columnWidths)
+2. `table.columnWidths` - Table-level column width constraints
+3. `cell.maxWidth` - Maximum cell width constraint
+4. Auto-calculated width (balanced or content-based)
+
+### Complete Example
+
+```typescript
+import { createTable } from "@visulima/tabular";
+
+const table = createTable({
+    columnWidths: [15, 12, 10], // Table-level widths
+    style: {
+        paddingLeft: 1,
+        paddingRight: 1,
+    },
+});
+
+table.addRow([
+    {
+        content: "Very Long Content Here That Will Be Truncated",
+        maxWidth: 13, // 13 total = 11 content + 2 padding (but table columnWidths takes priority)
+    },
+    {
+        content: "Medium Text",
+        width: 12, // 12 total = 10 content + 2 padding (highest priority - exact width)
+    },
+    {
+        content: "Short", // Uses table columnWidths: 10 total = 8 content + 2 padding
+    },
+]);
+
+console.log(table.toString());
+```
+
+**Output:**
+
+```
+┌───────────────┬────────────┬──────────┐
+│ Very Long Co… │ Medium Te… │ Short    │
+└───────────────┴────────────┴──────────┘
+```
+
+**Cell Analysis:**
+
+- **Cell 1** (`maxWidth: 13`): Table `columnWidths: 15` takes priority, content fits in 13 chars, total width 15
+- **Cell 2** (`width: 12`): `width` has highest priority, content padded to 10 chars, total width exactly 12
+- **Cell 3** (table `columnWidths: 10`): Content padded to 8 chars, total width 10
+
+**Width Calculation Details:**
+
+- Total Width = Content Width + Padding Left + Padding Right
+- Content Width = Total Width - Padding Left - Padding Right
+- Borders and gaps are added between cells but don't affect individual cell width calculations
+
+### Advanced Multi-Row Example
+
+```typescript
+import { createTable } from "@visulima/tabular";
+
+const table = createTable({
+    columnWidths: [16, 14, 12], // Base column widths
+    style: {
+        paddingLeft: 1,
+        paddingRight: 1,
+    },
+});
+
+// Row 1: Demonstrate different width constraints
+table.addRow([
+    { content: "Normal content", maxWidth: 14 }, // Constrained by maxWidth
+    { content: "Fixed width", width: 12 }, // Exact width override
+    { content: "Table width" }, // Uses table columnWidths
+]);
+
+// Row 2: Show truncation behavior
+table.addRow([
+    { content: "This content will be truncated because maxWidth limits it" },
+    { content: "This exact width content gets padded or truncated", width: 14 },
+    { content: "Short" },
+]);
+
+// Row 3: Mixed alignment and styling
+table.addRow([
+    { content: "Left", hAlign: "left", maxWidth: 12 },
+    { content: "Center", hAlign: "center", width: 14 },
+    { content: "Right", hAlign: "right" },
+]);
+
+console.log(table.toString());
+```
+
+**Advanced Output:**
+
+```
+┌────────────────┬──────────────┬────────────┐
+│ Normal content │ Fixed width  │ Table wid… │
+├────────────────┼──────────────┼────────────┤
+│ This content … │ This exact … │ Short      │
+├────────────────┼──────────────┼────────────┤
+│ Left           │    Center    │      Right │
+└────────────────┴──────────────┴────────────┘
+```
+
+**Key Takeaways:**
+
+- **Consistency**: Each column maintains its width across all rows
+- **Flexibility**: Individual cells can override table settings
+- **Priority**: `width` > `columnWidths` > `maxWidth` > auto-calculated
+- **Padding**: Always included in width calculations
+- **Alignment**: Works within the calculated content space
+
 ## API Reference
 
 <!-- TYPEDOC -->
