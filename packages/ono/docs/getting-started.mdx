@@ -1,0 +1,219 @@
+---
+title: Getting Started
+description: Install and set up Ono in your project
+---
+
+# Getting Started
+
+Learn how to install and use Ono in your Node.js applications.
+
+## Installation
+
+Install Ono using your preferred package manager:
+
+<Tabs items={['pnpm', 'npm', 'yarn', 'bun']}>
+  <Tab value="pnpm">
+    ```bash
+    pnpm add @visulima/ono
+    ```
+  </Tab>
+  <Tab value="npm">
+    ```bash
+    npm install @visulima/ono
+    ```
+  </Tab>
+  <Tab value="yarn">
+    ```bash
+    yarn add @visulima/ono
+    ```
+  </Tab>
+  <Tab value="bun">
+    ```bash
+    bun add @visulima/ono
+    ```
+  </Tab>
+</Tabs>
+
+## Basic Usage
+
+### For Web Applications
+
+The simplest way to use Ono is with the `Ono` class:
+
+```typescript
+import { Ono } from "@visulima/ono";
+
+const ono = new Ono();
+
+// Generate HTML error page
+const html = await ono.toHTML(error, {
+  theme: "auto", // 'dark' | 'light' | 'auto'
+  cspNonce: "your-csp-nonce", // optional
+});
+```
+
+### For CLI Applications
+
+```typescript
+import { Ono } from "@visulima/ono";
+
+const ono = new Ono();
+
+try {
+  throw new Error("Something went wrong!");
+} catch (error) {
+  const { errorAnsi, solutionBox } = await ono.toANSI(error);
+
+  console.log(errorAnsi);
+
+  if (solutionBox) {
+    console.log("\n" + solutionBox);
+  }
+}
+```
+
+## Node.js HTTP Server
+
+Here's a complete example with a Node.js HTTP server:
+
+```typescript
+import { createServer } from "node:http";
+import { Ono } from "@visulima/ono";
+
+const ono = new Ono();
+
+const server = createServer(async (request, response) => {
+  try {
+    // Your application logic
+    throw new Error("Something went wrong!");
+  } catch (error) {
+    const html = await ono.toHTML(error, {
+      theme: "auto",
+      cspNonce: "nonce-" + Date.now(),
+    });
+
+    response.writeHead(500, {
+      "Content-Type": "text/html",
+      "Content-Length": Buffer.byteLength(html, "utf8"),
+    });
+    response.end(html);
+  }
+});
+
+server.listen(3000);
+```
+
+## Hono Framework
+
+Integration with Hono is straightforward:
+
+```typescript
+import { serve } from "@hono/node-server";
+import { Hono } from "hono";
+import { Ono } from "@visulima/ono";
+
+const app = new Hono();
+const ono = new Ono();
+
+app.onError(async (err, c) => {
+  const html = await ono.toHTML(err, {
+    theme: "dark",
+    cspNonce: "hono-nonce-" + Date.now(),
+  });
+
+  return c.html(html, 500);
+});
+
+serve({ fetch: app.fetch, port: 3000 });
+```
+
+## Express.js
+
+For Express applications:
+
+```typescript
+import express from "express";
+import { Ono } from "@visulima/ono";
+
+const app = express();
+const ono = new Ono();
+
+// Your routes here
+
+app.use(async (error, req, res, next) => {
+  const html = await ono.toHTML(error, {
+    theme: "auto",
+    cspNonce: res.locals.cspNonce,
+  });
+
+  res.status(500).send(html);
+});
+
+app.listen(3000);
+```
+
+## Adding Request Context
+
+Enhance error pages with request debugging information:
+
+```typescript
+import { Ono } from "@visulima/ono";
+import createRequestContextPage from "@visulima/ono/page/context";
+
+const ono = new Ono();
+
+// In your error handler
+const contextPage = await createRequestContextPage(request, {
+  context: {
+    request: {
+      method: request.method,
+      url: request.url,
+      headers: request.headers,
+    },
+    user: {
+      client: {
+        ip: request.socket?.remoteAddress,
+        userAgent: request.headers["user-agent"],
+      },
+    },
+  },
+});
+
+const html = await ono.toHTML(error, {
+  content: [contextPage],
+  theme: "auto",
+});
+```
+
+## Editor Integration
+
+Enable "Open in editor" functionality:
+
+```typescript
+import { createNodeHttpHandler } from "@visulima/ono/server/open-in-editor";
+
+const openInEditorHandler = createNodeHttpHandler({
+  projectRoot: process.cwd(),
+  allowOutsideProject: false,
+});
+
+// Add route for editor integration
+if (url.pathname === "/__open-in-editor") {
+  return openInEditorHandler(request, response);
+}
+
+// In your error options
+const html = await ono.toHTML(error, {
+  openInEditorUrl: "/__open-in-editor",
+  editor: "code", // VS Code
+});
+```
+
+## Next Steps
+
+Now that you have Ono installed, explore:
+
+- [API Reference](/docs/ono/api-reference) - Complete API documentation
+- [Features](/docs/ono/features) - Detailed feature overview
+- [Examples](/docs/ono/examples) - More practical examples
+- [Advanced Configuration](/docs/ono/advanced) - Custom solution finders and more
