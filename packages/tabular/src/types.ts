@@ -164,8 +164,9 @@ export interface TableOptions extends BaseRenderingOptions {
     /**
      * Fixed column widths.
      * Can be a single number for all columns or an array for specific columns.
+     * Array entries can be undefined to allow automatic width calculation for that column.
      */
-    columnWidths?: number[] | number;
+    columnWidths?: (number | undefined)[] | number;
 
     /**
      * Fixed row heights.
@@ -204,8 +205,8 @@ export interface GridOptions extends BaseRenderingOptions, Style {
     /** Number of columns in the grid */
     columns: number;
 
-    /** Fixed column widths */
-    fixedColumnWidths?: number[];
+    /** Fixed column widths. Undefined entries allow automatic width calculation for that column. */
+    fixedColumnWidths?: (number | undefined)[];
 
     /** Fixed row heights */
     fixedRowHeights?: number[];

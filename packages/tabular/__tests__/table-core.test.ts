@@ -599,9 +599,9 @@ describe("balancedWidths", () => {
 
         // Fixed widths should be respected, only undefined widths should be balanced
         expect(table.toString()).toMatchInlineSnapshot(`
-            "┌─────┬┬────────┐
-            │A    ││B       │
-            └─────┴┴────────┘"
+            "┌─────┬─────────────┬────────┐
+            │A    │Very long co…│B       │
+            └─────┴─────────────┴────────┘"
         `);
     });
 

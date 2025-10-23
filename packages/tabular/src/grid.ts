@@ -459,6 +459,57 @@ export class Grid {
     }
 
     /**
+     * Computes the wrapped line.
+     * @param originalWidth The original width of the content
+     * @param lines The lines of the
+     * @param cellMaxWidth The maximum width of the cell
+     * @param canWordWrap Whether the content can be word wrapped
+     * @returns The width of the wrapped content
+     */
+    // eslint-disable-next-line sonarjs/cognitive-complexity, class-methods-use-this
+    private computeWrappedContentWidth(originalWidth: number, lines: string[], cellMaxWidth: number, canWordWrap: boolean): number {
+        let contentWidth = originalWidth;
+
+        if (canWordWrap) {
+            if (contentWidth > 20) {
+                // For long word-wrappable content, minimum width is based on longest word
+                // since words cannot be broken across lines
+                let wordBasedWidth = 0;
+
+                for (const line of lines) {
+                    const words = line.split(/\s+/);
+
+                    for (const word of words) {
+                        wordBasedWidth = Math.max(wordBasedWidth, Math.min(getStringWidth(word), cellMaxWidth));
+                    }
+                }
+
+                // Use the smaller of: full content width or word-based width + some buffer
+                // But ensure at least 12 chars for readability when wrapping is expected
+                contentWidth = Math.min(contentWidth, Math.max(wordBasedWidth + 4, 12));
+            }
+            // Short wrappable content keeps full width
+        } else {
+            // For non-wrappable content, cap at a reasonable maximum based on longest word + buffer
+            // This prevents one column from dominating while ensuring readability
+            let maxWordWidth = 0;
+
+            for (const line of lines) {
+                const words = line.split(/\s+/);
+
+                for (const word of words) {
+                    maxWordWidth = Math.max(maxWordWidth, Math.min(getStringWidth(word), cellMaxWidth));
+                }
+            }
+
+            // Cap at longest word + generous buffer, but ensure at least 20 chars for readability
+            contentWidth = Math.min(contentWidth, Math.max(maxWordWidth + 12, 20));
+        }
+
+        return contentWidth;
+    }
+
+    /**
      * Places an item in the grid layout
      * @param gridLayout The grid layout array
      * @param startRow Starting row index
@@ -625,7 +676,8 @@ export class Grid {
         const { growableColumns } = minWidthsResult;
 
         // Calculate available width for content distribution
-        const effectiveMaxWidth = this.#terminalWidth;
+        const hasMax = typeof this.#options.maxWidth === "number" && this.#options.maxWidth > 0;
+        const effectiveMaxWidth = hasMax ? Math.min(this.#options.maxWidth as number, this.#terminalWidth) : this.#terminalWidth;
 
         // Calculate structural width (borders and gaps)
         const borderStyle = this.#options.showBorders ? this.#options.border : null;
@@ -770,41 +822,7 @@ export class Grid {
                 }
 
                 // Determine appropriate minimum width based on wrapping capability
-                if (canWordWrap) {
-                    if (contentWidth > 20) {
-                        // For long word-wrappable content, minimum width is based on longest word
-                        // since words cannot be broken across lines
-                        let wordBasedWidth = 0;
-
-                        for (const line of lines) {
-                            const words = line.split(/\s+/);
-
-                            for (const word of words) {
-                                wordBasedWidth = Math.max(wordBasedWidth, Math.min(getStringWidth(word), cellMaxWidth));
-                            }
-                        }
-
-                        // Use the smaller of: full content width or word-based width + some buffer
-                        // But ensure at least 12 chars for readability when wrapping is expected
-                        contentWidth = Math.min(contentWidth, Math.max(wordBasedWidth + 4, 12));
-                    }
-                    // Short wrappable content keeps full width
-                } else {
-                    // For non-wrappable content, cap at a reasonable maximum based on longest word + buffer
-                    // This prevents one column from dominating while ensuring readability
-                    let maxWordWidth = 0;
-
-                    for (const line of lines) {
-                        const words = line.split(/\s+/);
-
-                        for (const word of words) {
-                            maxWordWidth = Math.max(maxWordWidth, Math.min(getStringWidth(word), cellMaxWidth));
-                        }
-                    }
-
-                    // Cap at longest word + generous buffer, but ensure at least 20 chars for readability
-                    contentWidth = Math.min(contentWidth, Math.max(maxWordWidth + 12, 20));
-                }
+                contentWidth = this.computeWrappedContentWidth(contentWidth, lines, cellMaxWidth, canWordWrap);
 
                 if (colSpan === 1) {
                     columnWidths[colIndex] = Math.max(columnWidths[colIndex] ?? 0, contentWidth + totalPadding);
@@ -848,41 +866,7 @@ export class Grid {
                     }
 
                     // Determine appropriate minimum width based on wrapping capability
-                    if (canWordWrap) {
-                        if (contentWidth > 20) {
-                            // For long word-wrappable content, minimum width is based on longest word
-                            // since words cannot be broken across lines
-                            let wordBasedWidth = 0;
-
-                            for (const line of lines) {
-                                const words = line.split(/\s+/);
-
-                                for (const word of words) {
-                                    wordBasedWidth = Math.max(wordBasedWidth, Math.min(getStringWidth(word), cellMaxWidth));
-                                }
-                            }
-
-                            // Use the smaller of: full content width or word-based width + some buffer
-                            // But ensure at least 12 chars for readability when wrapping is expected
-                            contentWidth = Math.min(contentWidth, Math.max(wordBasedWidth + 4, 12));
-                        }
-                        // Short wrappable content keeps full width
-                    } else {
-                        // For non-wrappable content, cap at a reasonable maximum based on longest word + buffer
-                        // This prevents one column from dominating while ensuring readability
-                        let maxWordWidth = 0;
-
-                        for (const line of lines) {
-                            const words = line.split(/\s+/);
-
-                            for (const word of words) {
-                                maxWordWidth = Math.max(maxWordWidth, Math.min(getStringWidth(word), cellMaxWidth));
-                            }
-                        }
-
-                        // Cap at longest word + generous buffer, but ensure at least 20 chars for readability
-                        contentWidth = Math.min(contentWidth, Math.max(maxWordWidth + 12, 20));
-                    }
+                    contentWidth = this.computeWrappedContentWidth(contentWidth, lines, cellMaxWidth, canWordWrap);
 
                     // For spanning cells, distribute the required width across the spanned columns
                     const internalJoinWidth = (colSpan - 1) * singleInternalJoinWidth;
@@ -919,9 +903,66 @@ export class Grid {
      */
     // eslint-disable-next-line sonarjs/cognitive-complexity
     private calculateColumnWidths(gridLayout: (GridItem | null)[][]): number[] {
-        // If fixed column widths are provided and match the column count, use them
+        // If fixed column widths are provided and match the column count, check for holes
         if (this.#options.fixedColumnWidths && this.#options.fixedColumnWidths.length === this.#options.columns) {
-            return [...this.#options.fixedColumnWidths];
+            const fixed = this.#options.fixedColumnWidths;
+
+            // Check if all entries are defined finite numbers (no holes)
+            const hasHole = fixed.some((w) => w === undefined || !Number.isFinite(w as number));
+
+            if (!hasHole) {
+                // All widths defined; use them directly
+                return [...(fixed as number[])];
+            }
+
+            // If holes exist and balancing is enabled, fill only the holes
+            if (this.#options.balancedWidths) {
+                const seed = Array.from<number>({ length: fixed.length }).fill(0);
+                const effectiveMax
+                    = typeof this.#options.maxWidth === "number" && this.#options.maxWidth > 0
+                        ? Math.min(this.#options.maxWidth, this.#terminalWidth)
+                        : this.#terminalWidth;
+
+                const structural = this.calculateTotalGridWidth(Array.from<number>({ length: seed.length }).fill(0));
+                const availableContent = Math.max(0, effectiveMax - structural);
+
+                // Initialize seed with defined widths
+                let currentContent = 0;
+                const holeIndices: number[] = [];
+
+                for (const [i, element] of fixed.entries()) {
+                    if (typeof element === "number" && Number.isFinite(element as number)) {
+                        seed[i] = element as number;
+                        currentContent += element as number;
+                    } else {
+                        holeIndices.push(i);
+                    }
+                }
+
+                // Distribute remaining width evenly across holes
+                let remaining = Math.max(0, availableContent - currentContent);
+                const evenWidth = holeIndices.length > 0 ? Math.floor(remaining / holeIndices.length) : 0;
+
+                for (const i of holeIndices) {
+                    seed[i] = evenWidth;
+                }
+
+                remaining -= evenWidth * holeIndices.length;
+
+                // Distribute remainder (one pixel per hole from start)
+                for (const i of holeIndices) {
+                    if (remaining <= 0) {
+                        break;
+                    }
+
+                    seed[i] += 1;
+                    remaining -= 1;
+                }
+
+                return seed;
+            }
+
+            // Fall through to content-based or balanced calculation for non-balanced mode
         }
 
         // Use balanced width calculation if enabled
@@ -994,41 +1035,7 @@ export class Grid {
                     }
 
                     // Determine appropriate minimum width based on wrapping capability
-                    if (canWordWrap) {
-                        if (contentWidth > 20) {
-                            // For long word-wrappable content, minimum width is based on longest word
-                            // since words cannot be broken across lines
-                            let wordBasedWidth = 0;
-
-                            for (const line of lines) {
-                                const words = line.split(/\s+/);
-
-                                for (const word of words) {
-                                    wordBasedWidth = Math.max(wordBasedWidth, Math.min(getStringWidth(word), cellMaxWidth));
-                                }
-                            }
-
-                            // Use the smaller of: full content width or word-based width + some buffer
-                            // But ensure at least 12 chars for readability when wrapping is expected
-                            contentWidth = Math.min(contentWidth, Math.max(wordBasedWidth + 4, 12));
-                        }
-                        // Short wrappable content keeps full width
-                    } else {
-                        // For non-wrappable content, cap at a reasonable maximum based on longest word + buffer
-                        // This prevents one column from dominating while ensuring readability
-                        let maxWordWidth = 0;
-
-                        for (const line of lines) {
-                            const words = line.split(/\s+/);
-
-                            for (const word of words) {
-                                maxWordWidth = Math.max(maxWordWidth, Math.min(getStringWidth(word), cellMaxWidth));
-                            }
-                        }
-
-                        // Cap at longest word + generous buffer, but ensure at least 20 chars for readability
-                        contentWidth = Math.min(contentWidth, Math.max(maxWordWidth + 12, 20));
-                    }
+                    contentWidth = this.computeWrappedContentWidth(contentWidth, lines, cellMaxWidth, canWordWrap);
 
                     // Calculate total width currently occupied by the columns this cell will span
                     let currentWidthOfSpannedColumns = 0;

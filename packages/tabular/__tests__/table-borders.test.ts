@@ -573,7 +573,7 @@ describe("table borders", () => {
             table.addRow(["A", "B"]);
             table.addRow(["C", "D"]);
 
-            await expect(table.toString()).toMatchInlineSnapshot(`
+            expect(table.toString()).toMatchInlineSnapshot(`
                 " A  B 
                  C  D "
             `);

@@ -135,10 +135,19 @@ export class Table {
         let fixedGridWidths: number[] | undefined;
 
         if (Array.isArray(this.#options.columnWidths)) {
-            fixedGridWidths
+            const widthArray
                 = this.#options.columnWidths.length >= numberColumns
                     ? this.#options.columnWidths.slice(0, numberColumns)
-                    : [...this.#options.columnWidths, ...Array.from<number>({ length: numberColumns - this.#options.columnWidths.length }).fill(1)];
+                    : [
+                        ...this.#options.columnWidths,
+                        ...Array.from<number | undefined>({ length: numberColumns - this.#options.columnWidths.length }).fill(undefined),
+                    ];
+
+            // Only treat as fully fixed if all entries are defined numbers
+            const allDefined = widthArray.every((w) => typeof w === "number" && Number.isFinite(w));
+
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            fixedGridWidths = allDefined ? (widthArray as number[]) : (widthArray as any);
         } else if (typeof this.#options.columnWidths === "number") {
             // If a single number is provided, create an array with that width for all columns
             fixedGridWidths = Array.from<number>({ length: numberColumns }).fill(this.#options.columnWidths);
@@ -172,7 +181,10 @@ export class Table {
             paddingLeft: this.#options.style?.paddingLeft,
             paddingRight: this.#options.style?.paddingRight,
             terminalWidth: this.#options.terminalWidth,
-            truncate: this.#options.truncate || fixedGridWidths !== undefined || (this.#options.maxWidth !== undefined && !this.#options.balancedWidths),
+            truncate:
+                this.#options.truncate
+                || (fixedGridWidths !== undefined && fixedGridWidths.every((w) => typeof w === "number"))
+                || (this.#options.maxWidth !== undefined && !this.#options.balancedWidths),
             wordWrap: this.#options.wordWrap ?? false,
         } satisfies GridOptions;
 
@@ -215,10 +227,11 @@ export class Table {
                     cellOptions.colSpan = numberColumns;
                 }
 
-                if (this.#options.transformTabToSpace && typeof cellInput === "string") {
-                    // eslint-disable-next-line sonarjs/updated-loop-counter
-                    cellInput = cellInput.replaceAll(String.raw`\t`, " ".repeat(this.#options.transformTabToSpace));
-                }
+                // Replace real tab characters with spaces if needed
+                const processedContent
+                    = this.#options.transformTabToSpace && typeof cellInput === "string"
+                        ? cellInput.replaceAll("\t", " ".repeat(this.#options.transformTabToSpace))
+                        : cellInput;
 
                 let maxWidth: number | undefined;
 
@@ -235,7 +248,7 @@ export class Table {
                 gridItems.push({
                     backgroundColor: cellOptions.backgroundColor,
                     colSpan: cellOptions.colSpan,
-                    content: cellInput as Content,
+                    content: processedContent as Content,
                     foregroundColor: cellOptions.foregroundColor,
                     hAlign: cellOptions.hAlign,
                     maxWidth, // Use the determined maxWidth
