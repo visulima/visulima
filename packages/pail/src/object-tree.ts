@@ -153,7 +153,7 @@ export const renderObjectTree = (tree: Record<string, unknown> | unknown[], opti
             return input; // Keep natural order (stack will reverse via pop)
         }
 
-        return input.toSorted((a, b) => context?.sortFn?.(b, a) ?? 0); // In-place sort with reversed comparison
+        return input.toSorted((a, b) => context?.sortFn?.(b, a) ?? 0); // Returns a new sorted copy (reversed compare for LIFO)
     };
 
     const neighbours: boolean[] = [];
