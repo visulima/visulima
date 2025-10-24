@@ -1,5 +1,5 @@
-import Cli from "@visulima/cerebro";
+import { Cerebro } from "@visulima/cerebro";
 
-const cli = new Cli("cerebro");
+const cli = new Cerebro("cerebro");
 
 cli.run();

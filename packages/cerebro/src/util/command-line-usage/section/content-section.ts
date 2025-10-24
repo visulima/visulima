@@ -4,6 +4,7 @@ import { NO_BORDER } from "@visulima/tabular/style";
 import type { Content as IContent } from "../../../@types/command-line-usage";
 import templateFormat from "../../template-format";
 import BaseSection from "./base-section";
+
 /**
  * A Content section comprises a header and one or more lines of content.
  * @property header The section header, always bold and underlined.

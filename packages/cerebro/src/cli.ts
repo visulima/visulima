@@ -1,7 +1,5 @@
 import { argv as process_argv, cwd as process_cwd, env, execArgv, execPath, exit } from "node:process";
 
-import { boxen } from "@visulima/boxen";
-import { dim, green, reset, yellow } from "@visulima/colorize";
 import type { CommandLineOptions } from "@visulima/command-line-args";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { commandLineArgs } from "@visulima/command-line-args";
@@ -12,23 +10,16 @@ import { createPail } from "@visulima/pail/server";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import camelCase from "camelcase";
 
-import type {
-    Cli as ICli,
-    Command as ICommand,
-    CommandSection as ICommandSection,
-    Extension as IExtension,
-    Options as IOptions,
-    Toolbox as IToolbox,
-} from "./@types";
+import type { Cli as ICli, Command as ICommand, CommandSection as ICommandSection, Options as IOptions, Toolbox as IToolbox } from "./@types";
 import type { CliRunOptions } from "./@types/cli";
 import type { OptionDefinition, PossibleOptionDefinition } from "./@types/command";
+import type { Plugin } from "./@types/plugin";
 import HelpCommand from "./command/help";
 import VersionCommand from "./command/version";
 import { POSITIONALS_KEY, VERBOSITY_DEBUG, VERBOSITY_NORMAL, VERBOSITY_QUIET, VERBOSITY_VERBOSE } from "./constants";
 import defaultOptions from "./default-options";
 import EmptyToolbox from "./empty-toolbox";
-import type { UpdateNotifierOptions } from "./update-notifier/has-new-version";
-import checkNodeVersion from "./util/check-node-version";
+import PluginManager from "./plugin-manager";
 import getBooleanValues from "./util/command-line-args/get-boolean-values";
 import mapOptionTypeLabel from "./util/command-line-args/map-option-type-label";
 import removeBooleanValues from "./util/command-line-args/remove-boolean-values";
@@ -38,9 +29,6 @@ import listMissingArguments from "./util/list-missing-arguments";
 import mergeArguments from "./util/merge-arguments";
 import parseRawCommand from "./util/parse-raw-command";
 import registerExceptionHandler from "./util/register-exception-handler";
-
-/** Detect if `CI` environment variable is set */
-const isCI = "CI" in env && ("GITHUB_ACTIONS" in env || "GITLAB_CI" in env || "CIRCLECI" in env);
 
 const lowerFirstChar = (string_: string): string => string_.charAt(0).toLowerCase() + string_.slice(1);
 
@@ -65,15 +53,15 @@ export class Cli implements ICli {
 
     private readonly packageName: string | undefined;
 
-    private readonly extensions: IExtension[] = [];
+    private readonly pluginManager: PluginManager;
 
     private readonly commands: Map<string, ICommand>;
 
     private defaultCommand: string;
 
-    private updateNotifierOptions: UpdateNotifierOptions | undefined;
-
     private commandSection: ICommandSection;
+
+    private pluginsInitialized = false;
 
     /**
      * @param cliName The cli cliName.
@@ -132,7 +120,6 @@ export class Cli implements ICli {
             this.logger.disable();
         }
 
-        checkNodeVersion();
         registerExceptionHandler(this.logger);
 
         this.cliName = cliName;
@@ -146,7 +133,17 @@ export class Cli implements ICli {
 
         this.commands = new Map<string, ICommand>();
 
-        this.addCoreExtensions();
+        this.pluginManager = new PluginManager(this.logger);
+
+        // Register core logger plugin to attach logger to toolbox
+        this.addPlugin({
+            description: "Attaches the default logger to the toolbox",
+            execute: (toolbox: IToolbox) => {
+                // eslint-disable-next-line no-param-reassign
+                toolbox.logger = this.logger;
+            },
+            name: "core-logger",
+        });
 
         this.addCommand(VersionCommand);
         this.addCommand(new HelpCommand(this.commands));
@@ -215,58 +212,22 @@ export class Cli implements ICli {
     }
 
     /**
-     * Adds an extension so it is available when commands execute. They usually live
-     * the given name on the toolbox object passed to commands, but are able
-     * to manipulate the toolbox object however they want.
+     * Add a plugin to extend the CLI functionality
+     * @param plugin The plugin to add
+     * @returns self
      */
-    public addExtension(extension: IExtension): this {
-        this.extensions.push(extension);
+    public addPlugin(plugin: Plugin): this {
+        this.pluginManager.register(plugin);
 
         return this;
     }
 
     /**
-     * Enable the update notifier functionality with the given options.
-     * @param options The options for enabling the update notifier.
-     * options.alwaysRun - Determines whether the update check should always run. Defaults to false.
-     * options.distributionTag - The distribution tag to use for checking updates. Defaults to "latest".
-     * options.updateCheckInterval - The interval in milliseconds between each update check. Defaults to 24 hours.
-     * @example
-     * enableUpdateNotifier({
-     *   alwaysRun: true,
-     *   debug: false,
-     *   distributionTag: "stable",
-     *   pkg: {
-     *     name: "my-package",
-     *     version: "1.0.0"
-     *   },
-     *   updateCheckInterval: 1000 * 60 * 60
-     * });
+     * Get the plugin manager instance
+     * @returns The plugin manager
      */
-    public enableUpdateNotifier(options: Partial<Omit<UpdateNotifierOptions, "debug | pkg">> = {}): this {
-        if (!this.packageName || !this.packageVersion) {
-            throw new Error("Cannot enable update notifier without package name and version.");
-        }
-
-        const configKeys = Object.keys(options);
-
-        if (configKeys.length > 0 && !configKeys.includes("alwaysRun") && !configKeys.includes("distTag") && !configKeys.includes("updateCheckInterval")) {
-            throw new Error("Invalid update notifier options, please check the documentation.");
-        }
-
-        this.updateNotifierOptions = {
-            alwaysRun: false,
-            debug: env.CEREBRO_OUTPUT_LEVEL === String(VERBOSITY_DEBUG),
-            distTag: "latest",
-            pkg: {
-                name: this.packageName,
-                version: this.packageVersion,
-            },
-            updateCheckInterval: 1000 * 60 * 60 * 24,
-            ...options,
-        };
-
-        return this;
+    public getPluginManager(): PluginManager {
+        return this.pluginManager;
     }
 
     public getCliName(): string {
@@ -389,10 +350,19 @@ export class Cli implements ICli {
         // attach the runtime
         toolbox.runtime = this as ICli;
 
-        // allow extensions to attach themselves to the toolbox
-        await this.registerExtensions(toolbox);
+        // initialize plugins on first run
+        if (!this.pluginsInitialized) {
+            await this.pluginManager.init({
+                cli: this as ICli,
+                cwd: this.cwd,
+                logger: this.logger,
+            });
 
-        await this.updateNotifier(toolbox);
+            this.pluginsInitialized = true;
+        }
+
+        // execute plugins that need to modify the toolbox (like attaching logger, custom properties, etc.)
+        await this.pluginManager.executeLifecycle("execute", toolbox);
 
         // eslint-disable-next-line @typescript-eslint/naming-convention
         const { _all, positionals } = commandArgs;
@@ -418,9 +388,24 @@ export class Cli implements ICli {
         // eslint-disable-next-line unicorn/no-null
         this.logger.debug(JSON.stringify(toolbox.argument, null, 2));
 
-        await this.prepareToolboxResult(commandArgs, toolbox, command);
+        try {
+            // Execute beforeCommand hooks
+            await this.pluginManager.executeLifecycle("beforeCommand", toolbox);
 
-        return shouldExitProcess ? exit(0) : undefined;
+            // Execute the command
+            const result = await this.prepareToolboxResult(commandArgs, toolbox, command);
+
+            // Execute afterCommand hooks
+            await this.pluginManager.executeLifecycle("afterCommand", toolbox, result);
+
+            return shouldExitProcess ? exit(0) : undefined;
+        } catch (error) {
+            // Execute error handlers
+            await this.pluginManager.executeErrorHandlers(error as Error, toolbox);
+
+            // Re-throw the error
+            throw error;
+        }
     }
 
     // eslint-disable-next-line class-methods-use-this,@typescript-eslint/no-explicit-any
@@ -467,22 +452,12 @@ export class Cli implements ICli {
         }
     }
 
-    /**
-     * Adds the core extensions. These provide the basic features
-     * available in cerebro.
-     */
-    private addCoreExtensions() {
-        this.addExtension({
-            execute: (toolbox: IToolbox) => {
-                // eslint-disable-next-line no-param-reassign
-                toolbox.logger = this.logger;
-            },
-            name: "logger",
-        });
-    }
-
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    private async prepareToolboxResult<OD extends OptionDefinition<any>>(commandArgs: CommandLineOptions, toolbox: IToolbox, command: ICommand<OD>) {
+    private async prepareToolboxResult<OD extends OptionDefinition<any>>(
+        commandArgs: CommandLineOptions,
+        toolbox: IToolbox,
+        command: ICommand<OD>,
+    ): Promise<unknown> {
         // Help is a special argument for displaying help for the given command.
         // If found, run the help command instead, with the given command name as
         // an option.
@@ -494,53 +469,21 @@ export class Cli implements ICli {
                 throw new Error("Help command not found.");
             }
 
-            await helpCommand.execute(toolbox);
-
-            return;
+            return await helpCommand.execute(toolbox);
         }
 
         if (commandArgs.global?.version || commandArgs.global?.V) {
             this.logger.debug("'--version' option found, running 'version' for given command...");
-            const helpCommand = this.commands.get("version");
+            const versionCommand = this.commands.get("version");
 
-            if (!helpCommand) {
+            if (!versionCommand) {
                 throw new Error("Version command not found.");
             }
 
-            await helpCommand.execute(toolbox);
-
-            return;
+            return await versionCommand.execute(toolbox);
         }
 
-        await command.execute(toolbox);
-    }
-
-    private async updateNotifier({ logger }: IToolbox) {
-        if (
-            this.updateNotifierOptions?.alwaysRun
-            || (!(env.NO_UPDATE_NOTIFIER || env.NODE_ENV === "test" || this.argv.includes("--no-update-notifier") || isCI) && this.updateNotifierOptions)
-        ) {
-            // @TODO add a stream logger
-            logger.raw("Checking for updates...");
-
-            const hasNewVersion = await import("./update-notifier/has-new-version").then((m) => m.default);
-
-            const updateAvailable = await hasNewVersion(this.updateNotifierOptions);
-
-            if (updateAvailable) {
-                const template = `Update available ${dim(`${this.packageVersion}`)}${reset(" → ")}${green(updateAvailable)}`;
-
-                this.logger.error(
-                    boxen(template, {
-                        borderColor: (border: string) => yellow(border),
-                        borderStyle: "round",
-                        margin: 1,
-                        padding: 1,
-                        textAlignment: "center",
-                    }),
-                );
-            }
-        }
+        return await command.execute(toolbox);
     }
 
     // eslint-disable-next-line class-methods-use-this,@typescript-eslint/no-explicit-any
@@ -636,25 +579,6 @@ export class Cli implements ICli {
                     (command.options as OD[]).push(negatedOption);
                 }
             });
-        }
-    }
-
-    private async registerExtensions(toolbox: IToolbox): Promise<void> {
-        const callback = async (extension: IExtension) => {
-            if (typeof extension.execute !== "function") {
-                this.logger.warn(`Skipped ${extension.name} because execute is not a function.`);
-
-                return undefined;
-            }
-
-            await extension.execute(toolbox as IToolbox);
-
-            return undefined;
-        };
-
-        for (const extension of this.extensions) {
-            // eslint-disable-next-line no-await-in-loop
-            await callback(extension);
         }
     }
 

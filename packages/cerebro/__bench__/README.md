@@ -13,18 +13,23 @@ This directory contains performance benchmarks comparing the `@visulima/cerebro`
 ## Benchmark Categories
 
 ### 1. CLI Initialization
+
 Measures the time to create and set up a basic CLI instance.
 
 ### 2. Command Registration
+
 Measures the time to register commands with options and descriptions.
 
 ### 3. Command Parsing Performance
+
 Measures the time to parse command line arguments and execute commands.
 
 ### 4. Help Generation
+
 Measures the time to generate and display help text.
 
 ### 5. Version Display
+
 Measures the time to display version information.
 
 ## Running Benchmarks
@@ -45,6 +50,7 @@ pnpm run test:bench
 ## Performance Considerations
 
 Cerebro is designed to be a full-featured CLI framework with:
+
 - Built-in logging (via Pail)
 - Advanced command-line argument parsing
 - Automatic help generation
@@ -65,6 +71,7 @@ While this adds overhead compared to minimal parsers, it provides a complete CLI
 ## Interpreting Results
 
 When analyzing benchmark results, consider:
+
 1. **Initialization time**: How quickly the CLI framework sets up
 2. **Registration time**: How efficiently commands are added
 3. **Parsing time**: How fast arguments are processed
@@ -73,6 +80,7 @@ When analyzing benchmark results, consider:
 ## Contributing
 
 To add new benchmarks:
+
 1. Add test cases to `index.bench.ts`
 2. Ensure all frameworks handle equivalent scenarios
 3. Use try/catch blocks to prevent benchmark failures

@@ -11,7 +11,7 @@ declare namespace NodeJS {
 
 export type { Cli } from "./@types/cli";
 export type { ArgumentDefinition, Command, OptionDefinition } from "./@types/command";
-export type { Extension } from "./@types/extension";
+export type { Plugin, PluginContext } from "./@types/plugin";
 export type { Toolbox } from "./@types/toolbox";
 export type { CliOptions } from "./cli";
 
@@ -29,3 +29,7 @@ export type VERBOSITY_LEVEL = 16 | 32 | 64 | 128 | 256;
 
 export { Cli as Cerebro } from "./cli";
 export const createCerebro = (name: string, options: CliOptions): Cerebro => new Cerebro(name, options);
+
+// Export built-in plugins
+export { errorHandlerPlugin } from "./plugins/error-handler-plugin";
+export type { ErrorHandlerOptions } from "./plugins/error-handler-plugin";

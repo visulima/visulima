@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import Cli from "../../src";
+import { Cerebro as Cli } from "../../src";
 
 describe("cli", () => {
     it("should initialize Cli with default options", () => {

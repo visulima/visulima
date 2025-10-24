@@ -1,6 +1,5 @@
-/* eslint-disable import/no-extraneous-dependencies */
-import { Command } from "commander";
 import { Command as OclifCommand } from "@oclif/core";
+import { Command } from "commander";
 import { cli } from "gunshi";
 import { bench, describe } from "vitest";
 import yargs from "yargs";
@@ -22,6 +21,7 @@ describe("Cerebro CLI Framework Benchmark", () => {
 
         bench("Commander - Basic CLI setup", () => {
             const program = new Command();
+
             program.name("test-cli").description("Test CLI");
         });
 
@@ -42,11 +42,11 @@ describe("Cerebro CLI Framework Benchmark", () => {
 
         bench("Gunshi - Basic CLI setup", () => {
             const command = {
-                name: 'test',
-                description: 'Test CLI',
+                description: "Test CLI",
+                name: "test",
                 run: () => {
                     // Empty run method
-                }
+                },
             };
         });
     });
@@ -56,21 +56,22 @@ describe("Cerebro CLI Framework Benchmark", () => {
             const cli = new Cerebro("test-cli");
 
             cli.addCommand({
-                name: "test",
                 description: "A test command",
-                options: [
-                    { name: "verbose", type: Boolean, description: "Enable verbose output" },
-                    { name: "count", type: Number, description: "Count value" },
-                    { name: "name", type: String, description: "Name value" },
-                ],
                 execute: () => {
                     // Empty execute function
                 },
+                name: "test",
+                options: [
+                    { description: "Enable verbose output", name: "verbose", type: Boolean },
+                    { description: "Count value", name: "count", type: Number },
+                    { description: "Name value", name: "name", type: String },
+                ],
             });
         });
 
         bench("Commander - Register single command", () => {
             const program = new Command();
+
             program
                 .name("test-cli")
                 .command("test")
@@ -86,68 +87,68 @@ describe("Cerebro CLI Framework Benchmark", () => {
         bench("Yargs - Register single command", () => {
             const argv = yargs(hideBin(["node", "script.js"]))
                 .scriptName("test-cli")
-                .command("test", "A test command", (yargs) => {
-                    return yargs
-                        .option("verbose", {
-                            alias: "v",
-                            type: "boolean",
-                            description: "Enable verbose output",
-                        })
-                        .option("count", {
-                            alias: "c",
-                            type: "number",
-                            description: "Count value",
-                        })
-                        .option("name", {
-                            alias: "n",
-                            type: "string",
-                            description: "Name value",
-                        });
-                });
+                .command("test", "A test command", (yargs) => yargs
+                    .option("verbose", {
+                        alias: "v",
+                        description: "Enable verbose output",
+                        type: "boolean",
+                    })
+                    .option("count", {
+                        alias: "c",
+                        description: "Count value",
+                        type: "number",
+                    })
+                    .option("name", {
+                        alias: "n",
+                        description: "Name value",
+                        type: "string",
+                    }));
         });
 
         bench("Oclif - Register single command", () => {
             // Measure the time to define a command structure similar to Oclif
             const description = "A test command";
             const flags = {
-                verbose: { type: "boolean", char: "v", description: "Enable verbose output" },
-                count: { type: "integer", char: "c", description: "Count value" },
-                name: { type: "string", char: "n", description: "Name value" },
+                count: { char: "c", description: "Count value", type: "integer" },
+                name: { char: "n", description: "Name value", type: "string" },
+                verbose: { char: "v", description: "Enable verbose output", type: "boolean" },
             };
 
             // Simulate Oclif's flag processing
-            const processedFlags = Object.entries(flags).map(([key, config]) => ({
-                name: key,
-                ...config
-            }));
+            const processedFlags = Object.entries(flags).map(([key, config]) => {
+                return {
+                    name: key,
+                    ...config,
+                };
+            });
 
             return { description, flags: processedFlags };
         });
 
         bench("Gunshi - Register single command", () => {
             const command = {
-                name: 'test',
-                description: 'A test command',
                 args: {
-                    verbose: {
-                        type: 'boolean',
-                        short: 'v',
-                        description: 'Enable verbose output'
-                    },
                     count: {
-                        type: 'number',
-                        short: 'c',
-                        description: 'Count value'
+                        description: "Count value",
+                        short: "c",
+                        type: "number",
                     },
                     name: {
-                        type: 'string',
-                        short: 'n',
-                        description: 'Name value'
-                    }
+                        description: "Name value",
+                        short: "n",
+                        type: "string",
+                    },
+                    verbose: {
+                        description: "Enable verbose output",
+                        short: "v",
+                        type: "boolean",
+                    },
                 },
+                description: "A test command",
+                name: "test",
                 run: () => {
                     // Empty run method
-                }
+                },
             };
         });
     });
@@ -155,21 +156,23 @@ describe("Cerebro CLI Framework Benchmark", () => {
     describe("Command Parsing Performance", () => {
         // Cerebro setup
         const cerebroCli = new Cerebro("test-cli");
+
         cerebroCli.addCommand({
-            name: "test",
             description: "A test command",
-            options: [
-                { name: "verbose", type: Boolean, description: "Enable verbose output" },
-                { name: "count", type: Number, description: "Count value" },
-                { name: "name", type: String, description: "Name value" },
-            ],
             execute: () => {
                 // Empty execute function
             },
+            name: "test",
+            options: [
+                { description: "Enable verbose output", name: "verbose", type: Boolean },
+                { description: "Count value", name: "count", type: Number },
+                { description: "Name value", name: "name", type: String },
+            ],
         });
 
         // Commander setup
         const commanderProgram = new Command();
+
         commanderProgram
             .name("test-cli")
             .command("test")
@@ -184,29 +187,27 @@ describe("Cerebro CLI Framework Benchmark", () => {
         // Yargs setup
         const yargsInstance = yargs(hideBin(["node", "script.js"]))
             .scriptName("test-cli")
-            .command("test", "A test command", (yargs) => {
-                return yargs
-                    .option("verbose", {
-                        alias: "v",
-                        type: "boolean",
-                        description: "Enable verbose output",
-                    })
-                    .option("count", {
-                        alias: "c",
-                        type: "number",
-                        description: "Count value",
-                    })
-                    .option("name", {
-                        alias: "n",
-                        type: "string",
-                        description: "Name value",
-                    });
-            });
+            .command("test", "A test command", (yargs) => yargs
+                .option("verbose", {
+                    alias: "v",
+                    description: "Enable verbose output",
+                    type: "boolean",
+                })
+                .option("count", {
+                    alias: "c",
+                    description: "Count value",
+                    type: "number",
+                })
+                .option("name", {
+                    alias: "n",
+                    description: "Name value",
+                    type: "string",
+                }));
 
         bench("Cerebro - Parse simple args", async () => {
             try {
                 await cerebroCli.run({ argv: simpleArgs, shouldExitProcess: false });
-            } catch (error) {
+            } catch {
                 // Ignore errors for benchmarking
             }
         });
@@ -214,7 +215,7 @@ describe("Cerebro CLI Framework Benchmark", () => {
         bench("Commander - Parse simple args", () => {
             try {
                 commanderProgram.parse(simpleArgs);
-            } catch (error) {
+            } catch {
                 // Ignore errors for benchmarking
             }
         });
@@ -222,43 +223,43 @@ describe("Cerebro CLI Framework Benchmark", () => {
         bench("Yargs - Parse simple args", async () => {
             try {
                 await yargsInstance.parseAsync(simpleArgs);
-            } catch (error) {
+            } catch {
                 // Ignore errors for benchmarking
             }
         });
 
         bench("Gunshi - Parse simple args", async () => {
             const command = {
-                name: 'test',
-                description: 'A test command',
                 args: {
-                    verbose: {
-                        type: 'boolean',
-                        short: 'v',
-                        description: 'Enable verbose output'
-                    },
                     count: {
-                        type: 'number',
-                        short: 'c',
-                        description: 'Count value'
+                        description: "Count value",
+                        short: "c",
+                        type: "number",
                     },
                     name: {
-                        type: 'string',
-                        short: 'n',
-                        description: 'Name value'
-                    }
+                        description: "Name value",
+                        short: "n",
+                        type: "string",
+                    },
+                    verbose: {
+                        description: "Enable verbose output",
+                        short: "v",
+                        type: "boolean",
+                    },
                 },
+                description: "A test command",
+                name: "test",
                 run: () => {
                     // Empty run method
-                }
+                },
             };
 
             try {
                 await cli(simpleArgs.slice(2), command, {
-                    name: 'test-cli',
-                    version: '1.0.0'
+                    name: "test-cli",
+                    version: "1.0.0",
                 });
-            } catch (error) {
+            } catch {
                 // Parsing might fail, ignore for benchmarking
             }
         });
@@ -267,21 +268,23 @@ describe("Cerebro CLI Framework Benchmark", () => {
     describe("Help Generation", () => {
         // Cerebro setup with help
         const cerebroCliWithHelp = new Cerebro("test-cli");
+
         cerebroCliWithHelp.addCommand({
-            name: "test",
             description: "A test command",
-            options: [
-                { name: "verbose", type: Boolean, description: "Enable verbose output" },
-                { name: "count", type: Number, description: "Count value" },
-                { name: "name", type: String, description: "Name value" },
-            ],
             execute: () => {
                 // Empty execute function
             },
+            name: "test",
+            options: [
+                { description: "Enable verbose output", name: "verbose", type: Boolean },
+                { description: "Count value", name: "count", type: Number },
+                { description: "Name value", name: "name", type: String },
+            ],
         });
 
         // Commander setup with help
         const commanderProgramWithHelp = new Command();
+
         commanderProgramWithHelp
             .name("test-cli")
             .description("Test CLI")
@@ -298,30 +301,28 @@ describe("Cerebro CLI Framework Benchmark", () => {
         const yargsInstanceWithHelp = yargs(hideBin(["node", "script.js"]))
             .scriptName("test-cli")
             .usage("Test CLI")
-            .command("test", "A test command", (yargs) => {
-                return yargs
-                    .option("verbose", {
-                        alias: "v",
-                        type: "boolean",
-                        description: "Enable verbose output",
-                    })
-                    .option("count", {
-                        alias: "c",
-                        type: "number",
-                        description: "Count value",
-                    })
-                    .option("name", {
-                        alias: "n",
-                        type: "string",
-                        description: "Name value",
-                    });
-            })
+            .command("test", "A test command", (yargs) => yargs
+                .option("verbose", {
+                    alias: "v",
+                    description: "Enable verbose output",
+                    type: "boolean",
+                })
+                .option("count", {
+                    alias: "c",
+                    description: "Count value",
+                    type: "number",
+                })
+                .option("name", {
+                    alias: "n",
+                    description: "Name value",
+                    type: "string",
+                }))
             .help();
 
         bench("Cerebro - Generate help output", async () => {
             try {
                 await cerebroCliWithHelp.run({ argv: helpArgs, shouldExitProcess: false });
-            } catch (error) {
+            } catch {
                 // Help command typically exits, ignore for benchmarking
             }
         });
@@ -329,7 +330,7 @@ describe("Cerebro CLI Framework Benchmark", () => {
         bench("Commander - Generate help output", () => {
             try {
                 commanderProgramWithHelp.parse(helpArgs);
-            } catch (error) {
+            } catch {
                 // Help command typically exits, ignore for benchmarking
             }
         });
@@ -337,43 +338,43 @@ describe("Cerebro CLI Framework Benchmark", () => {
         bench("Yargs - Generate help output", async () => {
             try {
                 await yargsInstanceWithHelp.parseAsync(helpArgs);
-            } catch (error) {
+            } catch {
                 // Help command typically exits, ignore for benchmarking
             }
         });
 
         bench("Gunshi - Generate help output", async () => {
             const command = {
-                name: 'test',
-                description: 'A test command',
                 args: {
-                    verbose: {
-                        type: 'boolean',
-                        short: 'v',
-                        description: 'Enable verbose output'
-                    },
                     count: {
-                        type: 'number',
-                        short: 'c',
-                        description: 'Count value'
+                        description: "Count value",
+                        short: "c",
+                        type: "number",
                     },
                     name: {
-                        type: 'string',
-                        short: 'n',
-                        description: 'Name value'
-                    }
+                        description: "Name value",
+                        short: "n",
+                        type: "string",
+                    },
+                    verbose: {
+                        description: "Enable verbose output",
+                        short: "v",
+                        type: "boolean",
+                    },
                 },
+                description: "A test command",
+                name: "test",
                 run: () => {
                     // Empty run method
-                }
+                },
             };
 
             try {
                 await cli(helpArgs.slice(2), command, {
-                    name: 'test-cli',
-                    version: '1.0.0'
+                    name: "test-cli",
+                    version: "1.0.0",
                 });
-            } catch (error) {
+            } catch {
                 // Help command typically exits, ignore for benchmarking
             }
         });
@@ -385,6 +386,7 @@ describe("Cerebro CLI Framework Benchmark", () => {
 
         // Commander setup with version
         const commanderProgramWithVersion = new Command();
+
         commanderProgramWithVersion.name("test-cli").version("1.0.0");
 
         // Yargs setup with version
@@ -395,7 +397,7 @@ describe("Cerebro CLI Framework Benchmark", () => {
         bench("Cerebro - Display version", async () => {
             try {
                 await cerebroCliWithVersion.run({ argv: versionArgs, shouldExitProcess: false });
-            } catch (error) {
+            } catch {
                 // Version command typically exits, ignore for benchmarking
             }
         });
@@ -403,7 +405,7 @@ describe("Cerebro CLI Framework Benchmark", () => {
         bench("Commander - Display version", () => {
             try {
                 commanderProgramWithVersion.parse(versionArgs);
-            } catch (error) {
+            } catch {
                 // Version command typically exits, ignore for benchmarking
             }
         });
@@ -411,26 +413,26 @@ describe("Cerebro CLI Framework Benchmark", () => {
         bench("Yargs - Display version", async () => {
             try {
                 await yargsInstanceWithVersion.parseAsync(versionArgs);
-            } catch (error) {
+            } catch {
                 // Version command typically exits, ignore for benchmarking
             }
         });
 
         bench("Gunshi - Display version", async () => {
             const command = {
-                name: 'test',
-                description: 'A test command',
+                description: "A test command",
+                name: "test",
                 run: () => {
                     // Empty run method
-                }
+                },
             };
 
             try {
                 await cli(versionArgs.slice(2), command, {
-                    name: 'test-cli',
-                    version: '1.0.0'
+                    name: "test-cli",
+                    version: "1.0.0",
                 });
-            } catch (error) {
+            } catch {
                 // Version command typically exits, ignore for benchmarking
             }
         });

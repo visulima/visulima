@@ -1,6 +1,6 @@
-import type { UpdateNotifierOptions } from "../update-notifier/has-new-version";
+import type PluginManager from "../plugin-manager";
 import type { Command as ICommand, OptionDefinition } from "./command";
-import type { Extension as IExtension } from "./extension";
+import type { Plugin } from "./plugin";
 
 export type CommandSection = { footer?: string; header?: string };
 
@@ -20,16 +20,11 @@ export interface Cli {
     addCommand: <OD extends OptionDefinition<any> = any>(command: ICommand<OD>) => this;
 
     /**
-     * Adds an extension, so it is available when commands execute. They usually live
-     * the given name on the toolbox object passed to commands, but are able
-     * to manipulate the toolbox object however they want. The second
-     * parameter is a function that allows the extension to attach itself.
-     * @param extension The extension to add.
+     * Add a plugin to extend the CLI functionality
+     * @param plugin The plugin to add.
      * @returns self
      */
-    addExtension: (extension: IExtension) => this;
-
-    enableUpdateNotifier: ({ alwaysRun, distTag, updateCheckInterval }: Partial<Omit<UpdateNotifierOptions, "debug | pkg">>) => this;
+    addPlugin: (plugin: Plugin) => this;
 
     getCliName: () => string;
 
@@ -42,6 +37,12 @@ export interface Cli {
     getPackageName: () => string | undefined;
 
     getPackageVersion: () => string | undefined;
+
+    /**
+     * Get the plugin manager instance
+     * @returns The plugin manager
+     */
+    getPluginManager: () => PluginManager;
 
     run: (extraOptions: CliRunOptions) => Promise<void>;
 

@@ -6,8 +6,8 @@
         "test:bench": "vitest bench"
     },
     "dependencies": {
-        "@visulima/cerebro": "workspace:*",
         "@oclif/core": "^4.7.2",
+        "@visulima/cerebro": "workspace:*",
         "commander": "^14.0.1",
         "gunshi": "^0.26.3",
         "vitest": "^4.0.2",

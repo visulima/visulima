@@ -1051,6 +1051,9 @@ importers:
       camelcase:
         specifier: 8.0.0
         version: 8.0.0
+      ci-info:
+        specifier: ^4.3.0
+        version: 4.3.0
       conventional-changelog-conventionalcommits:
         specifier: 9.1.0
         version: 9.1.0
