@@ -1,4 +1,5 @@
-import { Cerebro, errorHandlerPlugin } from "../dist/index.js";
+import { Cerebro } from "@visulima/cerebro";
+import { errorHandlerPlugin } from "@visulima/cerebro/plugins/error-handler";
 
 import optionsDefault from "./commands/options-defaults.js";
 import optionsConflicts from "./commands/options-conflicts.js";
@@ -14,7 +15,6 @@ import errorCustomFormatter from "./commands/error-custom-formatter.js";
 
 const cli = new Cerebro("cerebro");
 
-// Add error handler plugin with detailed logging for demonstration
 cli.addPlugin(
     errorHandlerPlugin({
         detailed: true,

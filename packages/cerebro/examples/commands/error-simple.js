@@ -12,4 +12,3 @@ const errorSimple = (cli) => {
 };
 
 export default errorSimple;
-

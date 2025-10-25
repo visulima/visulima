@@ -76,7 +76,7 @@ export const runtimeVersionCheckPlugin = (options: RuntimeVersionCheckOptions = 
             let minVersion: number;
 
             if (options.runtimes?.[runtime.type]?.minVersion !== undefined) {
-                minVersion = options.runtimes[runtime.type].minVersion;
+                minVersion = (options.runtimes[runtime.type] as RuntimeVersionRequirement).minVersion;
             } else if (runtime.type === "node" && envMinVersion !== undefined) {
                 minVersion = envMinVersion;
             } else {

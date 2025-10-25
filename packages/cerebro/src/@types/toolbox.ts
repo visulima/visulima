@@ -1,11 +1,9 @@
-import type { Pail } from "@visulima/pail/server";
-
 import type { Cli as ICli } from "./cli";
 import type { Command as ICommand } from "./command";
 import type { Options } from "./options";
 
 // Final toolbox
-export interface Toolbox extends Cerebro.ExtensionOverrides {
+export interface Toolbox<T extends Console = Console> extends Cerebro.ExtensionOverrides {
     /**
      * The argument passed to the command.
      * For example, if you run `cerebro foo bar baz`, then this will be `["foo", "bar", "baz"]`.
@@ -20,7 +18,7 @@ export interface Toolbox extends Cerebro.ExtensionOverrides {
 
     commandName: string;
 
-    logger: Pail;
+    logger: T;
 
     /**
      * Any optional parameters. Typically coming from command-line

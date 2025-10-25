@@ -1,19 +1,19 @@
-import type { Pail } from "@visulima/pail/server";
-
 import type { Plugin, PluginContext } from "./@types/plugin";
 import type { Toolbox } from "./@types/toolbox";
+
+type Logger = Console;
 
 /**
  * Manages plugin lifecycle and execution
  */
-class PluginManager {
-    private readonly logger: Pail;
+class PluginManager<T extends Logger = Logger> {
+    private readonly logger: T;
 
     private readonly plugins = new Map<string, Plugin>();
 
     private initialized = false;
 
-    public constructor(logger: Pail) {
+    public constructor(logger: T) {
         this.logger = logger;
     }
 

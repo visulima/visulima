@@ -30,10 +30,14 @@ importers:
       '@anolilab/lint-staged-config':
         specifier: ^3.0.37
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 3.0.37(@types/node@24.9.2)(eslint@9.38.0(jiti@2.6.1))(husky@9.1.7)(lint-staged@16.2.6)(prettier@3.6.2)(secretlint@11.2.5)(vitest@4.0.4)(yaml@2.8.1)
 =======
         version: 3.0.37(@types/node@24.9.1)(eslint@9.38.0(jiti@2.6.1))(husky@9.1.7)(jest@29.7.0(@types/node@24.9.1))(lint-staged@16.2.6)(prettier@3.6.2)(secretlint@11.2.5)(vitest@4.0.1)(yaml@2.8.1)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 3.0.37(@types/node@24.9.1)(eslint@9.38.0(jiti@2.6.1))(husky@9.1.7)(jest@29.7.0(@types/node@24.9.1))(lint-staged@16.2.6)(prettier@3.6.2)(secretlint@11.2.5)(vitest@4.0.3(@types/debug@4.1.12)(@types/node@24.9.1)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(yaml@2.8.1)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       '@anolilab/multi-semantic-release':
         specifier: ^2.0.6
         version: 2.0.6(semantic-release@25.0.1(typescript@5.9.3))(typescript@5.9.3)
@@ -127,8 +131,12 @@ importers:
         version: 4.0.4(@types/debug@4.1.12)(@types/node@24.9.2)(@vitest/ui@4.0.4)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.2)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
         specifier: ^4.0.1
+<<<<<<< HEAD
         version: 4.0.1(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.1)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 4.0.3(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.2)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
 
   apps/storybook:
     dependencies:
@@ -141,7 +149,11 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^16.4.2
+<<<<<<< HEAD
         version: 16.4.2(e56cf8f936178c5674fcbebf843f9e7d)
+=======
+        version: 16.4.2(b5098907f40b4d21be69140c323c4be3)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       '@anolilab/prettier-config':
         specifier: ^6.0.7
         version: 6.0.7(prettier@3.6.2)
@@ -388,10 +400,14 @@ importers:
       '@anolilab/eslint-config':
         specifier: 16.4.2
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 16.4.2(e56cf8f936178c5674fcbebf843f9e7d)
 =======
         version: 16.4.2(ec0e2c848876b9487f35c2781ca101e4)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 16.4.2(ebc88510f1cac7e361d99dc2de21f354)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       '@anolilab/prettier-config':
         specifier: ^6.0.7
         version: 6.0.7(prettier@3.6.2)
@@ -431,11 +447,15 @@ importers:
         version: 4.0.4(vitest@4.0.4)
 =======
         specifier: ^4.0.1
-        version: 4.0.1(@vitest/browser@4.0.1(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(vite@7.1.11(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.1))(vitest@4.0.1)
+        version: 4.0.3(@vitest/browser@4.0.1(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(vite@7.1.11(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.3))(vitest@4.0.3)
       '@vitest/ui':
         specifier: ^4.0.1
+<<<<<<< HEAD
         version: 4.0.1(vitest@4.0.1)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 4.0.2(vitest@4.0.3)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       ansi-regex:
         specifier: ^6.2.2
         version: 6.2.2
@@ -478,8 +498,12 @@ importers:
         version: 4.0.4(@types/debug@4.1.12)(@types/node@24.9.2)(@vitest/ui@4.0.4)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.2)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
         specifier: ^4.0.1
+<<<<<<< HEAD
         version: 4.0.1(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.1)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 4.0.3(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.2)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
 
   packages/ansi/__fixtures__/package/cjs:
     dependencies:
@@ -541,10 +565,14 @@ importers:
       '@anolilab/eslint-config':
         specifier: ^16.4.2
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 16.4.2(e56cf8f936178c5674fcbebf843f9e7d)
 =======
         version: 16.4.2(ec0e2c848876b9487f35c2781ca101e4)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 16.4.2(ebc88510f1cac7e361d99dc2de21f354)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       '@anolilab/prettier-config':
         specifier: ^6.0.7
         version: 6.0.7(prettier@3.6.2)
@@ -632,16 +660,24 @@ importers:
         version: 4.0.4(vitest@4.0.4)
 =======
         specifier: ^4.0.1
-        version: 4.0.1(@vitest/browser@4.0.1(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(vite@7.1.11(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.1))(vitest@4.0.1)
+        version: 4.0.3(@vitest/browser@4.0.1(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(vite@7.1.11(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.3))(vitest@4.0.3)
       '@vitest/ui':
         specifier: ^4.0.1
+<<<<<<< HEAD
         version: 4.0.1(vitest@4.0.1)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 4.0.2(vitest@4.0.3)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       chalk:
         specifier: 5.6.2
         version: 5.6.2
       commander:
+<<<<<<< HEAD
         specifier: ^14.0.2
+=======
+        specifier: ^14.0.1
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
         version: 14.0.2
       conventional-changelog-conventionalcommits:
         specifier: 9.1.0
@@ -760,8 +796,12 @@ importers:
         version: 4.0.4(@types/debug@4.1.12)(@types/node@24.9.2)(@vitest/ui@4.0.4)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.2)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
         specifier: ^4.0.1
+<<<<<<< HEAD
         version: 4.0.1(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.1)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 4.0.3(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.2)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       webpack:
         specifier: ^5.102.1
         version: 5.102.1(@swc/core@1.13.5)
@@ -774,10 +814,14 @@ importers:
       '@anolilab/eslint-config':
         specifier: ^16.4.2
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 16.4.2(e56cf8f936178c5674fcbebf843f9e7d)
 =======
         version: 16.4.2(ec0e2c848876b9487f35c2781ca101e4)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 16.4.2(ebc88510f1cac7e361d99dc2de21f354)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       '@anolilab/prettier-config':
         specifier: ^6.0.7
         version: 6.0.7(prettier@3.6.2)
@@ -814,11 +858,15 @@ importers:
         version: 4.0.4(vitest@4.0.4)
 =======
         specifier: ^4.0.1
-        version: 4.0.1(@vitest/browser@4.0.1(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(vite@7.1.11(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.1))(vitest@4.0.1)
+        version: 4.0.3(@vitest/browser@4.0.1(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(vite@7.1.11(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.3))(vitest@4.0.3)
       '@vitest/ui':
         specifier: ^4.0.1
+<<<<<<< HEAD
         version: 4.0.1(vitest@4.0.1)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 4.0.2(vitest@4.0.3)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       conventional-changelog-conventionalcommits:
         specifier: 9.1.0
         version: 9.1.0
@@ -852,8 +900,12 @@ importers:
         version: 4.0.4(@types/debug@4.1.12)(@types/node@24.9.2)(@vitest/ui@4.0.4)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.2)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
         specifier: ^4.0.1
+<<<<<<< HEAD
         version: 4.0.1(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.1)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 4.0.3(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.2)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
 
   packages/boxen/__bench__:
     devDependencies:
@@ -869,8 +921,12 @@ importers:
         version: 4.0.4(@types/debug@4.1.12)(@types/node@24.9.2)(@vitest/ui@4.0.4)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.2)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
         specifier: ^4.0.1
+<<<<<<< HEAD
         version: 4.0.1(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.1)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 4.0.3(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.2)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
 
   packages/boxen/__fixtures__/package/cjs:
     dependencies:
@@ -889,10 +945,14 @@ importers:
       '@anolilab/eslint-config':
         specifier: ^16.4.2
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 16.4.2(e56cf8f936178c5674fcbebf843f9e7d)
 =======
         version: 16.4.2(ec0e2c848876b9487f35c2781ca101e4)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 16.4.2(ebc88510f1cac7e361d99dc2de21f354)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       '@anolilab/prettier-config':
         specifier: ^6.0.7
         version: 6.0.7(prettier@3.6.2)
@@ -929,11 +989,15 @@ importers:
         version: 4.0.4(vitest@4.0.4)
 =======
         specifier: ^4.0.1
-        version: 4.0.1(@vitest/browser@4.0.1(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(vite@7.1.11(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.1))(vitest@4.0.1)
+        version: 4.0.3(@vitest/browser@4.0.1(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(vite@7.1.11(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.3))(vitest@4.0.3)
       '@vitest/ui':
         specifier: ^4.0.1
+<<<<<<< HEAD
         version: 4.0.1(vitest@4.0.1)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 4.0.2(vitest@4.0.3)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       conventional-changelog-conventionalcommits:
         specifier: 9.1.0
         version: 9.1.0
@@ -967,17 +1031,19 @@ importers:
         version: 4.0.4(@types/debug@4.1.12)(@types/node@24.9.2)(@vitest/ui@4.0.4)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.2)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
         specifier: ^4.0.1
+<<<<<<< HEAD
         version: 4.0.1(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.1)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 4.0.3(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.2)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
 
   packages/cerebro:
     dependencies:
-      '@visulima/boxen':
-        specifier: 2.0.6
-        version: 2.0.6
       '@visulima/colorize':
         specifier: 1.4.25
         version: 1.4.25
+<<<<<<< HEAD
       '@visulima/find-cache-dir':
         specifier: 2.0.2
         version: 2.0.2
@@ -994,6 +1060,8 @@ importers:
 =======
         version: 3.0.2(rotating-file-stream@3.2.7)
 >>>>>>> 0837fe86b (chore: update @visulima/pail to version 3.0.2 in pnpm-lock.yaml)
+=======
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       '@visulima/tabular':
         specifier: workspace:*
         version: link:../tabular
@@ -1004,10 +1072,14 @@ importers:
       '@anolilab/eslint-config':
         specifier: ^16.4.2
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 16.4.2(e56cf8f936178c5674fcbebf843f9e7d)
 =======
         version: 16.4.2(ec0e2c848876b9487f35c2781ca101e4)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 16.4.2(b5098907f40b4d21be69140c323c4be3)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       '@anolilab/prettier-config':
         specifier: ^6.0.7
         version: 6.0.7(prettier@3.6.2)
@@ -1030,17 +1102,29 @@ importers:
 =======
         specifier: 24.9.1
         version: 24.9.1
+      '@visulima/boxen':
+        specifier: 2.0.6
+        version: 2.0.6
       '@visulima/command-line-args':
         specifier: workspace:*
         version: link:../command-line-args
 >>>>>>> d3686cd09 (refactor: update cerebro package structure and dependencies)
       '@visulima/packem':
+<<<<<<< HEAD
         specifier: 2.0.0-alpha.32
         version: 2.0.0-alpha.32(@arethetypeswrong/core@0.18.2)(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@swc/core@1.13.5)(@tailwindcss/node@4.1.16)(@tailwindcss/oxide@4.1.16)(@types/node@24.9.2)(@visulima/redact@2.0.1)(ai@5.0.81(zod@4.1.12))(cssnano@7.1.1(postcss@8.5.6))(esbuild@0.25.11)(icss-utils@5.1.0(postcss@8.5.6))(lightningcss@1.30.2)(package-manager-detector@1.5.0)(postcss-load-config@6.0.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.20.6)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rolldown@1.0.0-beta.45)(rotating-file-stream@3.2.7)(sucrase@3.35.0)(typedoc-plugin-markdown@4.9.0(typedoc@0.28.14(typescript@5.9.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.14(typescript@5.9.3)))(typedoc@0.28.14(typescript@5.9.3))(typescript@5.9.3)(yaml@2.8.1)
+=======
+        specifier: 2.0.0-alpha.30
+        version: 2.0.0-alpha.30(@arethetypeswrong/core@0.18.2)(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@swc/core@1.13.5)(@tailwindcss/node@4.1.15)(@tailwindcss/oxide@4.1.15)(@types/node@24.9.1)(@visulima/redact@2.0.1)(ai@5.0.76(zod@4.1.12))(cssnano@7.1.1(postcss@8.5.6))(esbuild@0.25.11)(icss-utils@5.1.0(postcss@8.5.6))(lightningcss@1.30.2)(package-manager-detector@1.5.0)(postcss-load-config@6.0.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.20.6)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rolldown@1.0.0-beta.44)(rotating-file-stream@3.2.7)(sucrase@3.35.0)(typedoc-plugin-markdown@4.9.0(typedoc@0.28.14(typescript@5.9.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.14(typescript@5.9.3)))(typedoc@0.28.14(typescript@5.9.3))(typescript@5.9.3)(yaml@2.8.1)
+      '@visulima/pail':
+        specifier: 3.0.2
+        version: 3.0.2(rotating-file-stream@3.2.7)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       '@visulima/path':
         specifier: 2.0.1
         version: 2.0.1
       '@vitest/coverage-v8':
+<<<<<<< HEAD
 <<<<<<< HEAD
         specifier: ^4.0.4
         version: 4.0.4(@vitest/browser@4.0.4(msw@2.11.6(@types/node@24.9.2)(typescript@5.9.3))(vite@7.1.12(@types/node@24.9.2)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.4))(vitest@4.0.4)
@@ -1048,12 +1132,16 @@ importers:
         specifier: ^4.0.1
         version: 4.0.1(@vitest/browser@4.0.1(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(vite@7.1.11(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.1))(vitest@4.0.1)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        specifier: ^4.0.3
+        version: 4.0.3(vitest@4.0.3(@types/debug@4.1.12)(@types/node@24.9.1)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       camelcase:
         specifier: 8.0.0
         version: 8.0.0
       ci-info:
-        specifier: ^4.3.0
-        version: 4.3.0
+        specifier: ^4.3.1
+        version: 4.3.1
       conventional-changelog-conventionalcommits:
         specifier: 9.1.0
         version: 9.1.0
@@ -1080,11 +1168,16 @@ importers:
         version: 5.9.3
       vitest:
 <<<<<<< HEAD
+<<<<<<< HEAD
         specifier: ^4.0.4
         version: 4.0.4(@types/debug@4.1.12)(@types/node@24.9.2)(@vitest/ui@4.0.4)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.2)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
         specifier: ^4.0.1
         version: 4.0.1(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.1)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+=======
+        specifier: ^4.0.3
+        version: 4.0.3(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.2)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
 
   packages/cerebro/__bench__:
     dependencies:
@@ -1094,22 +1187,31 @@ importers:
       '@visulima/cerebro':
         specifier: workspace:*
         version: link:..
+      cac:
+        specifier: ^6.7.14
+        version: 6.7.14
+      cleye:
+        specifier: ^1.3.4
+        version: 1.3.4
       commander:
-        specifier: ^14.0.1
-        version: 14.0.1
+        specifier: ^14.0.2
+        version: 14.0.2
       gunshi:
         specifier: ^0.26.3
         version: 0.26.3
+      meow:
+        specifier: ^14.0.0
+        version: 14.0.0
       vitest:
-        specifier: ^4.0.2
-        version: 4.0.2(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.2)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+        specifier: ^4.0.3
+        version: 4.0.3(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.2)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
       yargs:
         specifier: ^18.0.0
         version: 18.0.0
     devDependencies:
       '@types/yargs':
-        specifier: ^17.0.33
-        version: 17.0.33
+        specifier: ^17.0.34
+        version: 17.0.34
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
@@ -1136,10 +1238,14 @@ importers:
       '@anolilab/eslint-config':
         specifier: ^16.4.2
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 16.4.2(e56cf8f936178c5674fcbebf843f9e7d)
 =======
         version: 16.4.2(ec0e2c848876b9487f35c2781ca101e4)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 16.4.2(ebc88510f1cac7e361d99dc2de21f354)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       '@anolilab/prettier-config':
         specifier: ^6.0.7
         version: 6.0.7(prettier@3.6.2)
@@ -1173,11 +1279,15 @@ importers:
         version: 4.0.4(vitest@4.0.4)
 =======
         specifier: ^4.0.1
-        version: 4.0.1(@vitest/browser@4.0.1(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(vite@7.1.11(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.1))(vitest@4.0.1)
+        version: 4.0.3(@vitest/browser@4.0.1(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(vite@7.1.11(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.3))(vitest@4.0.3)
       '@vitest/ui':
         specifier: ^4.0.1
+<<<<<<< HEAD
         version: 4.0.1(vitest@4.0.1)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 4.0.2(vitest@4.0.3)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       ansi-regex:
         specifier: ^6.2.2
         version: 6.2.2
@@ -1220,8 +1330,12 @@ importers:
         version: 4.0.4(@types/debug@4.1.12)(@types/node@24.9.2)(@vitest/ui@4.0.4)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.2)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
         specifier: ^4.0.1
+<<<<<<< HEAD
         version: 4.0.1(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.1)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 4.0.3(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.2)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
 
   packages/colorize/__bench__:
     dependencies:
@@ -1288,10 +1402,14 @@ importers:
       '@anolilab/eslint-config':
         specifier: ^16.4.2
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 16.4.2(e56cf8f936178c5674fcbebf843f9e7d)
 =======
         version: 16.4.2(ec0e2c848876b9487f35c2781ca101e4)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 16.4.2(ebc88510f1cac7e361d99dc2de21f354)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       '@anolilab/semantic-release-pnpm':
         specifier: 2.0.4
         version: 2.0.4(@types/node@24.9.2)(yaml@2.8.1)
@@ -1325,11 +1443,15 @@ importers:
         version: 4.0.4(vitest@4.0.4)
 =======
         specifier: ^4.0.1
-        version: 4.0.1(@vitest/browser@4.0.1(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(vite@7.1.11(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.1))(vitest@4.0.1)
+        version: 4.0.3(@vitest/browser@4.0.1(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(vite@7.1.11(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.3))(vitest@4.0.3)
       '@vitest/ui':
         specifier: ^4.0.1
+<<<<<<< HEAD
         version: 4.0.1(vitest@4.0.1)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 4.0.2(vitest@4.0.3)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       conventional-changelog-conventionalcommits:
         specifier: 9.1.0
         version: 9.1.0
@@ -1366,8 +1488,12 @@ importers:
         version: 4.0.4(@types/debug@4.1.12)(@types/node@24.9.2)(@vitest/ui@4.0.4)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.2)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
         specifier: ^4.0.1
+<<<<<<< HEAD
         version: 4.0.1(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.1)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 4.0.3(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.2)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
 
   packages/command-line-args/__bench__:
     dependencies:
@@ -1423,8 +1549,12 @@ importers:
         version: 4.0.4(@types/debug@4.1.12)(@types/node@24.9.2)(@vitest/ui@4.0.4)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.2)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
         specifier: ^4.0.1
+<<<<<<< HEAD
         version: 4.0.1(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.1)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 4.0.3(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.2)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
 
   packages/connect:
     dependencies:
@@ -1438,10 +1568,14 @@ importers:
       '@anolilab/eslint-config':
         specifier: ^16.4.2
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 16.4.2(e56cf8f936178c5674fcbebf843f9e7d)
 =======
         version: 16.4.2(ec0e2c848876b9487f35c2781ca101e4)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 16.4.2(ebc88510f1cac7e361d99dc2de21f354)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       '@anolilab/prettier-config':
         specifier: ^6.0.7
         version: 6.0.7(prettier@3.6.2)
@@ -1472,11 +1606,15 @@ importers:
         version: 4.0.4(vitest@4.0.4)
 =======
         specifier: ^4.0.1
-        version: 4.0.1(@vitest/browser@4.0.1(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(vite@7.1.11(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.1))(vitest@4.0.1)
+        version: 4.0.3(@vitest/browser@4.0.1(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(vite@7.1.11(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.3))(vitest@4.0.3)
       '@vitest/ui':
         specifier: ^4.0.1
+<<<<<<< HEAD
         version: 4.0.1(vitest@4.0.1)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 4.0.2(vitest@4.0.3)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       conventional-changelog-conventionalcommits:
         specifier: 9.1.0
         version: 9.1.0
@@ -1519,8 +1657,12 @@ importers:
         version: 4.0.4(@types/debug@4.1.12)(@types/node@24.9.2)(@vitest/ui@4.0.4)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.2)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
         specifier: ^4.0.1
+<<<<<<< HEAD
         version: 4.0.1(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.1)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 4.0.3(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.2)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       zod:
         specifier: ^4.1.12
         version: 4.1.12
@@ -1543,10 +1685,14 @@ importers:
       '@anolilab/eslint-config':
         specifier: ^16.4.2
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 16.4.2(e56cf8f936178c5674fcbebf843f9e7d)
 =======
         version: 16.4.2(ec0e2c848876b9487f35c2781ca101e4)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 16.4.2(ebc88510f1cac7e361d99dc2de21f354)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       '@anolilab/prettier-config':
         specifier: ^6.0.7
         version: 6.0.7(prettier@3.6.2)
@@ -1586,11 +1732,15 @@ importers:
         version: 4.0.4(vitest@4.0.4)
 =======
         specifier: ^4.0.1
-        version: 4.0.1(@vitest/browser@4.0.1(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(vite@7.1.11(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.1))(vitest@4.0.1)
+        version: 4.0.3(@vitest/browser@4.0.1(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(vite@7.1.11(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.3))(vitest@4.0.3)
       '@vitest/ui':
         specifier: ^4.0.1
+<<<<<<< HEAD
         version: 4.0.1(vitest@4.0.1)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 4.0.2(vitest@4.0.3)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       conventional-changelog-conventionalcommits:
         specifier: 9.1.0
         version: 9.1.0
@@ -1669,18 +1819,26 @@ importers:
         version: 4.0.4(@types/debug@4.1.12)(@types/node@24.9.2)(@vitest/ui@4.0.4)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.2)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
         specifier: ^4.0.1
+<<<<<<< HEAD
         version: 4.0.1(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.1)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 4.0.3(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.2)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
 
   packages/deep-clone:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^16.4.2
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 16.4.2(e56cf8f936178c5674fcbebf843f9e7d)
 =======
         version: 16.4.2(ec0e2c848876b9487f35c2781ca101e4)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 16.4.2(ebc88510f1cac7e361d99dc2de21f354)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       '@anolilab/prettier-config':
         specifier: ^6.0.7
         version: 6.0.7(prettier@3.6.2)
@@ -1711,11 +1869,15 @@ importers:
         version: 4.0.4(vitest@4.0.4)
 =======
         specifier: ^4.0.1
-        version: 4.0.1(@vitest/browser@4.0.1(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(vite@7.1.11(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.1))(vitest@4.0.1)
+        version: 4.0.3(@vitest/browser@4.0.1(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(vite@7.1.11(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.3))(vitest@4.0.3)
       '@vitest/ui':
         specifier: ^4.0.1
+<<<<<<< HEAD
         version: 4.0.1(vitest@4.0.1)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 4.0.2(vitest@4.0.3)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       conventional-changelog-conventionalcommits:
         specifier: 9.1.0
         version: 9.1.0
@@ -1752,8 +1914,12 @@ importers:
         version: 4.0.4(@types/debug@4.1.12)(@types/node@24.9.2)(@vitest/ui@4.0.4)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.2)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
         specifier: ^4.0.1
+<<<<<<< HEAD
         version: 4.0.1(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.1)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 4.0.3(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.2)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
 
   packages/deep-clone/__bench__:
     dependencies:
@@ -1806,18 +1972,26 @@ importers:
         version: 4.0.4(@types/debug@4.1.12)(@types/node@24.9.2)(@vitest/ui@4.0.4)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.2)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
         specifier: ^4.0.1
+<<<<<<< HEAD
         version: 4.0.1(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.1)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 4.0.3(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.2)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
 
   packages/error:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^16.4.2
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 16.4.2(e56cf8f936178c5674fcbebf843f9e7d)
 =======
         version: 16.4.2(ec0e2c848876b9487f35c2781ca101e4)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 16.4.2(ebc88510f1cac7e361d99dc2de21f354)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       '@anolilab/prettier-config':
         specifier: ^6.0.7
         version: 6.0.7(prettier@3.6.2)
@@ -1854,11 +2028,15 @@ importers:
         version: 4.0.4(vitest@4.0.4)
 =======
         specifier: ^4.0.1
-        version: 4.0.1(@vitest/browser@4.0.1(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(vite@7.1.11(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.1))(vitest@4.0.1)
+        version: 4.0.3(@vitest/browser@4.0.1(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(vite@7.1.11(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.3))(vitest@4.0.3)
       '@vitest/ui':
         specifier: ^4.0.1
+<<<<<<< HEAD
         version: 4.0.1(vitest@4.0.1)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 4.0.2(vitest@4.0.3)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       ai:
         specifier: ^5.0.81
         version: 5.0.81(zod@4.1.12)
@@ -1895,8 +2073,12 @@ importers:
         version: 4.0.4(@types/debug@4.1.12)(@types/node@24.9.2)(@vitest/ui@4.0.4)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.2)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
         specifier: ^4.0.1
+<<<<<<< HEAD
         version: 4.0.1(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.1)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 4.0.3(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.2)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
 
   packages/error-handler:
     dependencies:
@@ -1925,10 +2107,14 @@ importers:
       '@anolilab/eslint-config':
         specifier: ^16.4.2
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 16.4.2(e56cf8f936178c5674fcbebf843f9e7d)
 =======
         version: 16.4.2(ec0e2c848876b9487f35c2781ca101e4)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 16.4.2(ebc88510f1cac7e361d99dc2de21f354)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       '@anolilab/semantic-release-pnpm':
         specifier: 2.0.4
         version: 2.0.4(@types/node@24.9.2)(yaml@2.8.1)
@@ -1962,11 +2148,15 @@ importers:
         version: 4.0.4(vitest@4.0.4)
 =======
         specifier: ^4.0.1
-        version: 4.0.1(@vitest/browser@4.0.1(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(vite@7.1.11(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.1))(vitest@4.0.1)
+        version: 4.0.3(@vitest/browser@4.0.1(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(vite@7.1.11(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.3))(vitest@4.0.3)
       '@vitest/ui':
         specifier: ^4.0.1
+<<<<<<< HEAD
         version: 4.0.1(vitest@4.0.1)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 4.0.2(vitest@4.0.3)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       conventional-changelog-conventionalcommits:
         specifier: 9.1.0
         version: 9.1.0
@@ -2003,8 +2193,12 @@ importers:
         version: 4.0.4(@types/debug@4.1.12)(@types/node@24.9.2)(@vitest/ui@4.0.4)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.2)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
         specifier: ^4.0.1
+<<<<<<< HEAD
         version: 4.0.1(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.1)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 4.0.3(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.2)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
 
   packages/error-handler/examples/cli:
     dependencies:
@@ -2038,10 +2232,14 @@ importers:
       '@anolilab/eslint-config':
         specifier: ^16.4.2
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 16.4.2(e56cf8f936178c5674fcbebf843f9e7d)
 =======
         version: 16.4.2(ec0e2c848876b9487f35c2781ca101e4)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 16.4.2(ebc88510f1cac7e361d99dc2de21f354)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       '@anolilab/prettier-config':
         specifier: ^6.0.7
         version: 6.0.7(prettier@3.6.2)
@@ -2081,11 +2279,15 @@ importers:
         version: 4.0.4(vitest@4.0.4)
 =======
         specifier: ^4.0.1
-        version: 4.0.1(@vitest/browser@4.0.1(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(vite@7.1.11(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.1))(vitest@4.0.1)
+        version: 4.0.3(@vitest/browser@4.0.1(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(vite@7.1.11(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.3))(vitest@4.0.3)
       '@vitest/ui':
         specifier: ^4.0.1
+<<<<<<< HEAD
         version: 4.0.1(vitest@4.0.1)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 4.0.2(vitest@4.0.3)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       conventional-changelog-conventionalcommits:
         specifier: 9.1.0
         version: 9.1.0
@@ -2122,18 +2324,26 @@ importers:
         version: 4.0.4(@types/debug@4.1.12)(@types/node@24.9.2)(@vitest/ui@4.0.4)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.2)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
         specifier: ^4.0.1
+<<<<<<< HEAD
         version: 4.0.1(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.1)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 4.0.3(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.2)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
 
   packages/fmt:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^16.4.2
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 16.4.2(e56cf8f936178c5674fcbebf843f9e7d)
 =======
         version: 16.4.2(ec0e2c848876b9487f35c2781ca101e4)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 16.4.2(ebc88510f1cac7e361d99dc2de21f354)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       '@anolilab/prettier-config':
         specifier: ^6.0.7
         version: 6.0.7(prettier@3.6.2)
@@ -2161,11 +2371,15 @@ importers:
         version: 4.0.4(vitest@4.0.4)
 =======
         specifier: ^4.0.1
-        version: 4.0.1(@vitest/browser@4.0.1(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(vite@7.1.11(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.1))(vitest@4.0.1)
+        version: 4.0.3(@vitest/browser@4.0.1(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(vite@7.1.11(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.3))(vitest@4.0.3)
       '@vitest/ui':
         specifier: ^4.0.1
+<<<<<<< HEAD
         version: 4.0.1(vitest@4.0.1)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 4.0.2(vitest@4.0.3)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       conventional-changelog-conventionalcommits:
         specifier: 9.1.0
         version: 9.1.0
@@ -2199,8 +2413,12 @@ importers:
         version: 4.0.4(@types/debug@4.1.12)(@types/node@24.9.2)(@vitest/ui@4.0.4)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.2)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
         specifier: ^4.0.1
+<<<<<<< HEAD
         version: 4.0.1(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.1)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 4.0.3(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.2)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
 
   packages/fs:
     dependencies:
@@ -2214,10 +2432,14 @@ importers:
       '@anolilab/eslint-config':
         specifier: ^16.4.2
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 16.4.2(e56cf8f936178c5674fcbebf843f9e7d)
 =======
         version: 16.4.2(ec0e2c848876b9487f35c2781ca101e4)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 16.4.2(ebc88510f1cac7e361d99dc2de21f354)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       '@anolilab/prettier-config':
         specifier: ^6.0.7
         version: 6.0.7(prettier@3.6.2)
@@ -2248,11 +2470,15 @@ importers:
         version: 4.0.4(vitest@4.0.4)
 =======
         specifier: ^4.0.1
-        version: 4.0.1(@vitest/browser@4.0.1(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(vite@7.1.11(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.1))(vitest@4.0.1)
+        version: 4.0.3(@vitest/browser@4.0.1(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(vite@7.1.11(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.3))(vitest@4.0.3)
       '@vitest/ui':
         specifier: ^4.0.1
+<<<<<<< HEAD
         version: 4.0.1(vitest@4.0.1)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 4.0.2(vitest@4.0.3)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       conventional-changelog-conventionalcommits:
         specifier: 9.1.0
         version: 9.1.0
@@ -2301,8 +2527,12 @@ importers:
         version: 4.0.4(@types/debug@4.1.12)(@types/node@24.9.2)(@vitest/ui@4.0.4)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.2)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
         specifier: ^4.0.1
+<<<<<<< HEAD
         version: 4.0.1(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.1)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 4.0.3(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.2)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       yaml:
         specifier: ^2.8.1
         version: 2.8.1
@@ -2340,8 +2570,12 @@ importers:
         version: 4.0.4(@types/debug@4.1.12)(@types/node@24.9.2)(@vitest/ui@4.0.4)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.2)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
         specifier: ^4.0.1
+<<<<<<< HEAD
         version: 4.0.1(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.1)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 4.0.3(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.2)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
 
   packages/fs/__bench__/fixtures/a/b: {}
 
@@ -2374,10 +2608,14 @@ importers:
       '@anolilab/eslint-config':
         specifier: ^16.4.2
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 16.4.2(e56cf8f936178c5674fcbebf843f9e7d)
 =======
         version: 16.4.2(ec0e2c848876b9487f35c2781ca101e4)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 16.4.2(ebc88510f1cac7e361d99dc2de21f354)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       '@anolilab/prettier-config':
         specifier: ^6.0.7
         version: 6.0.7(prettier@3.6.2)
@@ -2414,11 +2652,15 @@ importers:
         version: 4.0.4(vitest@4.0.4)
 =======
         specifier: ^4.0.1
-        version: 4.0.1(@vitest/browser@4.0.1(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(vite@7.1.11(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.1))(vitest@4.0.1)
+        version: 4.0.3(@vitest/browser@4.0.1(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(vite@7.1.11(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.3))(vitest@4.0.3)
       '@vitest/ui':
         specifier: ^4.0.1
+<<<<<<< HEAD
         version: 4.0.1(vitest@4.0.1)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 4.0.2(vitest@4.0.3)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       conventional-changelog-conventionalcommits:
         specifier: 9.1.0
         version: 9.1.0
@@ -2491,18 +2733,26 @@ importers:
         version: 4.0.4(@types/debug@4.1.12)(@types/node@24.9.2)(@vitest/ui@4.0.4)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.2)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
         specifier: ^4.0.1
+<<<<<<< HEAD
         version: 4.0.1(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.1)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 4.0.3(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.2)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
 
   packages/humanizer:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^16.4.2
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 16.4.2(e56cf8f936178c5674fcbebf843f9e7d)
 =======
         version: 16.4.2(ec0e2c848876b9487f35c2781ca101e4)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 16.4.2(ebc88510f1cac7e361d99dc2de21f354)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       '@anolilab/prettier-config':
         specifier: ^6.0.7
         version: 6.0.7(prettier@3.6.2)
@@ -2536,11 +2786,15 @@ importers:
         version: 4.0.4(vitest@4.0.4)
 =======
         specifier: ^4.0.1
-        version: 4.0.1(@vitest/browser@4.0.1(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(vite@7.1.11(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.1))(vitest@4.0.1)
+        version: 4.0.3(@vitest/browser@4.0.1(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(vite@7.1.11(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.3))(vitest@4.0.3)
       '@vitest/ui':
         specifier: ^4.0.1
+<<<<<<< HEAD
         version: 4.0.1(vitest@4.0.1)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 4.0.2(vitest@4.0.3)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       conventional-changelog-conventionalcommits:
         specifier: 9.1.0
         version: 9.1.0
@@ -2580,8 +2834,12 @@ importers:
         version: 4.0.4(@types/debug@4.1.12)(@types/node@24.9.2)(@vitest/ui@4.0.4)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.2)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
         specifier: ^4.0.1
+<<<<<<< HEAD
         version: 4.0.1(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.1)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 4.0.3(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.2)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
 
   packages/humanizer/__fixtures__/package/cjs:
     dependencies:
@@ -2604,10 +2862,14 @@ importers:
       '@anolilab/eslint-config':
         specifier: ^16.4.2
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 16.4.2(e56cf8f936178c5674fcbebf843f9e7d)
 =======
         version: 16.4.2(ec0e2c848876b9487f35c2781ca101e4)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 16.4.2(ebc88510f1cac7e361d99dc2de21f354)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       '@anolilab/semantic-release-pnpm':
         specifier: 2.0.4
         version: 2.0.4(@types/node@24.9.2)(yaml@2.8.1)
@@ -2644,14 +2906,18 @@ importers:
         version: 4.0.4(vitest@4.0.4)
 =======
         specifier: ^4.0.1
-        version: 4.0.1(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(vite@7.1.11(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.1)
+        version: 4.0.1(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(vite@7.1.11(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.3)
       '@vitest/coverage-v8':
         specifier: ^4.0.1
-        version: 4.0.1(@vitest/browser@4.0.1(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(vite@7.1.11(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.1))(vitest@4.0.1)
+        version: 4.0.3(@vitest/browser@4.0.1(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(vite@7.1.11(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.3))(vitest@4.0.3)
       '@vitest/ui':
         specifier: ^4.0.1
+<<<<<<< HEAD
         version: 4.0.1(vitest@4.0.1)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 4.0.2(vitest@4.0.3)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       esbuild:
         specifier: 0.25.11
         version: 0.25.11
@@ -2688,8 +2954,12 @@ importers:
         version: 4.0.4(@types/debug@4.1.12)(@types/node@24.9.2)(@vitest/ui@4.0.4)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.2)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
         specifier: ^4.0.1
+<<<<<<< HEAD
         version: 4.0.1(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.1)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 4.0.3(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.2)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       webdriverio:
         specifier: ^9.20.0
         version: 9.20.0
@@ -2718,18 +2988,26 @@ importers:
         version: 4.0.4(@types/debug@4.1.12)(@types/node@24.9.2)(@vitest/ui@4.0.4)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.2)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
         specifier: ^4.0.1
+<<<<<<< HEAD
         version: 4.0.1(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.1)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 4.0.3(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.2)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
 
   packages/is-ansi-color-supported:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^16.4.2
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 16.4.2(e56cf8f936178c5674fcbebf843f9e7d)
 =======
         version: 16.4.2(ec0e2c848876b9487f35c2781ca101e4)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 16.4.2(ebc88510f1cac7e361d99dc2de21f354)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       '@anolilab/prettier-config':
         specifier: ^6.0.7
         version: 6.0.7(prettier@3.6.2)
@@ -2760,11 +3038,15 @@ importers:
         version: 4.0.4(vitest@4.0.4)
 =======
         specifier: ^4.0.1
-        version: 4.0.1(@vitest/browser@4.0.1(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(vite@7.1.11(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.1))(vitest@4.0.1)
+        version: 4.0.3(@vitest/browser@4.0.1(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(vite@7.1.11(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.3))(vitest@4.0.3)
       '@vitest/ui':
         specifier: ^4.0.1
+<<<<<<< HEAD
         version: 4.0.1(vitest@4.0.1)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 4.0.2(vitest@4.0.3)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       conventional-changelog-conventionalcommits:
         specifier: 9.1.0
         version: 9.1.0
@@ -2798,8 +3080,12 @@ importers:
         version: 4.0.4(@types/debug@4.1.12)(@types/node@24.9.2)(@vitest/ui@4.0.4)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.2)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
         specifier: ^4.0.1
+<<<<<<< HEAD
         version: 4.0.1(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.1)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 4.0.3(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.2)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
 
   packages/jsdoc-open-api:
     dependencies:
@@ -2825,10 +3111,14 @@ importers:
       '@anolilab/eslint-config':
         specifier: ^16.4.2
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 16.4.2(e56cf8f936178c5674fcbebf843f9e7d)
 =======
         version: 16.4.2(ec0e2c848876b9487f35c2781ca101e4)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 16.4.2(ebc88510f1cac7e361d99dc2de21f354)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       '@anolilab/prettier-config':
         specifier: ^6.0.7
         version: 6.0.7(prettier@3.6.2)
@@ -2865,11 +3155,15 @@ importers:
         version: 4.0.4(vitest@4.0.4)
 =======
         specifier: ^4.0.1
-        version: 4.0.1(@vitest/browser@4.0.1(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(vite@7.1.11(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.1))(vitest@4.0.1)
+        version: 4.0.3(@vitest/browser@4.0.1(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(vite@7.1.11(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.3))(vitest@4.0.3)
       '@vitest/ui':
         specifier: ^4.0.1
+<<<<<<< HEAD
         version: 4.0.1(vitest@4.0.1)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 4.0.2(vitest@4.0.3)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       conventional-changelog-conventionalcommits:
         specifier: 9.1.0
         version: 9.1.0
@@ -2903,14 +3197,22 @@ importers:
         version: 4.0.4(@types/debug@4.1.12)(@types/node@24.9.2)(@vitest/ui@4.0.4)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.2)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
         specifier: ^4.0.1
+<<<<<<< HEAD
         version: 4.0.1(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.1)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 4.0.3(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.2)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
     optionalDependencies:
       cli-progress:
         specifier: ^3.12.0
         version: 3.12.0
       commander:
+<<<<<<< HEAD
         specifier: ^14.0.2
+=======
+        specifier: ^14.0.1
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
         version: 14.0.2
       webpack:
         specifier: ^5.102.1
@@ -2925,10 +3227,14 @@ importers:
       '@anolilab/eslint-config':
         specifier: ^16.4.2
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 16.4.2(e56cf8f936178c5674fcbebf843f9e7d)
 =======
         version: 16.4.2(ec0e2c848876b9487f35c2781ca101e4)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 16.4.2(ebc88510f1cac7e361d99dc2de21f354)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       '@anolilab/prettier-config':
         specifier: ^6.0.7
         version: 6.0.7(prettier@3.6.2)
@@ -2962,11 +3268,15 @@ importers:
         version: 4.0.4(vitest@4.0.4)
 =======
         specifier: ^4.0.1
-        version: 4.0.1(@vitest/browser@4.0.1(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(vite@7.1.11(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.1))(vitest@4.0.1)
+        version: 4.0.3(@vitest/browser@4.0.1(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(vite@7.1.11(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.3))(vitest@4.0.3)
       '@vitest/ui':
         specifier: ^4.0.1
+<<<<<<< HEAD
         version: 4.0.1(vitest@4.0.1)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 4.0.2(vitest@4.0.3)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       conventional-changelog-conventionalcommits:
         specifier: 9.1.0
         version: 9.1.0
@@ -3012,8 +3322,12 @@ importers:
         version: 4.0.4(@types/debug@4.1.12)(@types/node@24.9.2)(@vitest/ui@4.0.4)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.2)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
         specifier: ^4.0.1
+<<<<<<< HEAD
         version: 4.0.1(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.1)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 4.0.3(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.2)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
 
   packages/ono:
     dependencies:
@@ -3036,10 +3350,14 @@ importers:
       '@anolilab/eslint-config':
         specifier: ^16.4.2
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 16.4.2(e56cf8f936178c5674fcbebf843f9e7d)
 =======
         version: 16.4.2(ec0e2c848876b9487f35c2781ca101e4)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 16.4.2(b5098907f40b4d21be69140c323c4be3)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       '@anolilab/prettier-config':
         specifier: ^6.0.7
         version: 6.0.7(prettier@3.6.2)
@@ -3085,8 +3403,12 @@ importers:
         version: 4.0.4(@vitest/browser@4.0.4(msw@2.11.6(@types/node@24.9.2)(typescript@5.9.3))(vite@7.1.12(@types/node@24.9.2)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.4))(vitest@4.0.4)
 =======
         specifier: ^4.0.1
+<<<<<<< HEAD
         version: 4.0.1(@vitest/browser@4.0.1(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(vite@7.1.11(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.1))(vitest@4.0.1)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 4.0.3(vitest@4.0.3(@types/debug@4.1.12)(@types/node@24.9.1)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       cssnano:
         specifier: 7.1.1
         version: 7.1.1(postcss@8.5.6)
@@ -3147,8 +3469,12 @@ importers:
         version: 4.0.4(@types/debug@4.1.12)(@types/node@24.9.2)(@vitest/ui@4.0.4)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.2)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
         specifier: ^4.0.1
+<<<<<<< HEAD
         version: 4.0.1(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.1)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 4.0.3(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.2)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
 
   packages/ono/examples/bun:
     dependencies:
@@ -3217,10 +3543,14 @@ importers:
       '@anolilab/eslint-config':
         specifier: ^16.4.2
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 16.4.2(e56cf8f936178c5674fcbebf843f9e7d)
 =======
         version: 16.4.2(ec0e2c848876b9487f35c2781ca101e4)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 16.4.2(ebc88510f1cac7e361d99dc2de21f354)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       '@anolilab/prettier-config':
         specifier: ^6.0.7
         version: 6.0.7(prettier@3.6.2)
@@ -3263,11 +3593,15 @@ importers:
         version: 4.0.4(vitest@4.0.4)
 =======
         specifier: ^4.0.1
-        version: 4.0.1(@vitest/browser@4.0.1(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(vite@7.1.11(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.1))(vitest@4.0.1)
+        version: 4.0.3(@vitest/browser@4.0.1(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(vite@7.1.11(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.3))(vitest@4.0.3)
       '@vitest/ui':
         specifier: ^4.0.1
+<<<<<<< HEAD
         version: 4.0.1(vitest@4.0.1)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 4.0.2(vitest@4.0.3)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       '@yarnpkg/pnp':
         specifier: 4.1.2
         version: 4.1.2
@@ -3313,8 +3647,12 @@ importers:
         version: 4.0.4(@types/debug@4.1.12)(@types/node@24.9.2)(@vitest/ui@4.0.4)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.2)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
         specifier: ^4.0.1
+<<<<<<< HEAD
         version: 4.0.1(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.1)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 4.0.3(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.2)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       yarn:
         specifier: ^1.22.22
         version: 1.22.22
@@ -3336,10 +3674,14 @@ importers:
       '@anolilab/eslint-config':
         specifier: ^16.4.2
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 16.4.2(e56cf8f936178c5674fcbebf843f9e7d)
 =======
         version: 16.4.2(ec0e2c848876b9487f35c2781ca101e4)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 16.4.2(ebc88510f1cac7e361d99dc2de21f354)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       '@anolilab/prettier-config':
         specifier: ^6.0.7
         version: 6.0.7(prettier@3.6.2)
@@ -3367,11 +3709,15 @@ importers:
         version: 4.0.4(vitest@4.0.4)
 =======
         specifier: ^4.0.1
-        version: 4.0.1(@vitest/browser@4.0.1(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(vite@7.1.11(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.1))(vitest@4.0.1)
+        version: 4.0.3(@vitest/browser@4.0.1(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(vite@7.1.11(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.3))(vitest@4.0.3)
       '@vitest/ui':
         specifier: ^4.0.1
+<<<<<<< HEAD
         version: 4.0.1(vitest@4.0.1)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 4.0.2(vitest@4.0.3)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       conventional-changelog-conventionalcommits:
         specifier: 9.1.0
         version: 9.1.0
@@ -3408,8 +3754,12 @@ importers:
         version: 4.0.4(@types/debug@4.1.12)(@types/node@24.9.2)(@vitest/ui@4.0.4)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.2)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
         specifier: ^4.0.1
+<<<<<<< HEAD
         version: 4.0.1(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.1)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 4.0.3(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.2)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
 
   packages/pail:
     dependencies:
@@ -3423,10 +3773,14 @@ importers:
       '@anolilab/eslint-config':
         specifier: ^16.4.2
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 16.4.2(e56cf8f936178c5674fcbebf843f9e7d)
 =======
         version: 16.4.2(ec0e2c848876b9487f35c2781ca101e4)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 16.4.2(ebc88510f1cac7e361d99dc2de21f354)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       '@anolilab/prettier-config':
         specifier: ^6.0.7
         version: 6.0.7(prettier@3.6.2)
@@ -3475,11 +3829,15 @@ importers:
         version: 4.0.4(vitest@4.0.4)
 =======
         specifier: ^4.0.1
-        version: 4.0.1(@vitest/browser@4.0.1(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(vite@7.1.11(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.1))(vitest@4.0.1)
+        version: 4.0.3(@vitest/browser@4.0.1(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(vite@7.1.11(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.3))(vitest@4.0.3)
       '@vitest/ui':
         specifier: ^4.0.1
+<<<<<<< HEAD
         version: 4.0.1(vitest@4.0.1)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 4.0.2(vitest@4.0.3)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       conventional-changelog-conventionalcommits:
         specifier: 9.1.0
         version: 9.1.0
@@ -3522,8 +3880,12 @@ importers:
         version: 4.0.4(@types/debug@4.1.12)(@types/node@24.9.2)(@vitest/ui@4.0.4)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.2)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
         specifier: ^4.0.1
+<<<<<<< HEAD
         version: 4.0.1(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.1)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 4.0.3(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.2)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
 
   packages/pail/__bench__:
     dependencies:
@@ -3564,8 +3926,12 @@ importers:
         version: 4.0.4(@types/debug@4.1.12)(@types/node@24.9.2)(@vitest/ui@4.0.4)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.2)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
         specifier: ^4.0.1
+<<<<<<< HEAD
         version: 4.0.1(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.1)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 4.0.3(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.2)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
 
   packages/pail/__fixtures__/package/mjs:
     dependencies:
@@ -3633,10 +3999,14 @@ importers:
       '@anolilab/eslint-config':
         specifier: ^16.4.2
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 16.4.2(e56cf8f936178c5674fcbebf843f9e7d)
 =======
         version: 16.4.2(ec0e2c848876b9487f35c2781ca101e4)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 16.4.2(ebc88510f1cac7e361d99dc2de21f354)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       '@anolilab/prettier-config':
         specifier: ^6.0.7
         version: 6.0.7(prettier@3.6.2)
@@ -3667,11 +4037,15 @@ importers:
         version: 4.0.4(vitest@4.0.4)
 =======
         specifier: ^4.0.1
-        version: 4.0.1(@vitest/browser@4.0.1(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(vite@7.1.11(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.1))(vitest@4.0.1)
+        version: 4.0.3(@vitest/browser@4.0.1(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(vite@7.1.11(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.3))(vitest@4.0.3)
       '@vitest/ui':
         specifier: ^4.0.1
+<<<<<<< HEAD
         version: 4.0.1(vitest@4.0.1)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 4.0.2(vitest@4.0.3)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       binary-extensions:
         specifier: ^3.1.0
         version: 3.1.0
@@ -3708,8 +4082,12 @@ importers:
         version: 4.0.4(@types/debug@4.1.12)(@types/node@24.9.2)(@vitest/ui@4.0.4)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.2)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
         specifier: ^4.0.1
+<<<<<<< HEAD
         version: 4.0.1(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.1)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 4.0.3(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.2)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       zeptomatch:
         specifier: ^2.1.0
         version: 2.1.0
@@ -3820,10 +4198,14 @@ importers:
       '@anolilab/eslint-config':
         specifier: ^16.4.2
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 16.4.2(e56cf8f936178c5674fcbebf843f9e7d)
 =======
         version: 16.4.2(ec0e2c848876b9487f35c2781ca101e4)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 16.4.2(ebc88510f1cac7e361d99dc2de21f354)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       '@anolilab/prettier-config':
         specifier: ^6.0.7
         version: 6.0.7(prettier@3.6.2)
@@ -3854,11 +4236,15 @@ importers:
         version: 4.0.4(vitest@4.0.4)
 =======
         specifier: ^4.0.1
-        version: 4.0.1(@vitest/browser@4.0.1(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(vite@7.1.11(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.1))(vitest@4.0.1)
+        version: 4.0.3(@vitest/browser@4.0.1(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(vite@7.1.11(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.3))(vitest@4.0.3)
       '@vitest/ui':
         specifier: ^4.0.1
+<<<<<<< HEAD
         version: 4.0.1(vitest@4.0.1)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 4.0.2(vitest@4.0.3)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       conventional-changelog-conventionalcommits:
         specifier: 9.1.0
         version: 9.1.0
@@ -3895,8 +4281,12 @@ importers:
         version: 4.0.4(@types/debug@4.1.12)(@types/node@24.9.2)(@vitest/ui@4.0.4)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.2)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
         specifier: ^4.0.1
+<<<<<<< HEAD
         version: 4.0.1(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.1)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 4.0.3(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.2)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
 
   packages/redact/__bench__:
     dependencies:
@@ -3925,8 +4315,12 @@ importers:
         version: 4.0.4(@types/debug@4.1.12)(@types/node@24.9.2)(@vitest/ui@4.0.4)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.2)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
         specifier: ^4.0.1
+<<<<<<< HEAD
         version: 4.0.1(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.1)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 4.0.3(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.2)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
 
   packages/redact/__fixtures__/package/mjs:
     dependencies:
@@ -3943,10 +4337,14 @@ importers:
       '@anolilab/eslint-config':
         specifier: ^16.4.2
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 16.4.2(e56cf8f936178c5674fcbebf843f9e7d)
 =======
         version: 16.4.2(ec0e2c848876b9487f35c2781ca101e4)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 16.4.2(ebc88510f1cac7e361d99dc2de21f354)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       '@anolilab/prettier-config':
         specifier: ^6.0.7
         version: 6.0.7(prettier@3.6.2)
@@ -3983,11 +4381,15 @@ importers:
         version: 4.0.4(vitest@4.0.4)
 =======
         specifier: ^4.0.1
-        version: 4.0.1(@vitest/browser@4.0.1(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(vite@7.1.11(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.1))(vitest@4.0.1)
+        version: 4.0.3(@vitest/browser@4.0.1(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(vite@7.1.11(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.3))(vitest@4.0.3)
       '@vitest/ui':
         specifier: ^4.0.1
+<<<<<<< HEAD
         version: 4.0.1(vitest@4.0.1)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 4.0.2(vitest@4.0.3)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       conventional-changelog-conventionalcommits:
         specifier: 9.1.0
         version: 9.1.0
@@ -4021,8 +4423,12 @@ importers:
         version: 4.0.4(@types/debug@4.1.12)(@types/node@24.9.2)(@vitest/ui@4.0.4)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.2)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
         specifier: ^4.0.1
+<<<<<<< HEAD
         version: 4.0.1(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.1)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 4.0.3(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.2)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
 
   packages/string:
     devDependencies:
@@ -4164,8 +4570,12 @@ importers:
         version: 4.0.4(@types/debug@4.1.12)(@types/node@24.9.2)(@vitest/ui@4.0.4)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.2)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
         specifier: ^4.0.1
+<<<<<<< HEAD
         version: 4.0.1(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.1)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 4.0.3(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.2)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       wrap-ansi:
         specifier: 9.0.2
         version: 9.0.2
@@ -4174,7 +4584,11 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^16.4.2
+<<<<<<< HEAD
         version: 16.4.2(e56cf8f936178c5674fcbebf843f9e7d)
+=======
+        version: 16.4.2(ebc88510f1cac7e361d99dc2de21f354)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       '@anolilab/prettier-config':
         specifier: 6.0.7
         version: 6.0.7(prettier@3.6.2)
@@ -4211,11 +4625,18 @@ importers:
         version: 4.0.4(@vitest/browser@4.0.4(msw@2.11.6(@types/node@24.9.2)(typescript@5.9.3))(vite@7.1.12(@types/node@24.9.2)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.4))(vitest@4.0.4)
 =======
         specifier: ^4.0.2
+<<<<<<< HEAD
         version: 4.0.2(vitest@4.0.2)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
       '@vitest/ui':
         specifier: ^4.0.4
         version: 4.0.4(vitest@4.0.4)
+=======
+        version: 4.0.3(@vitest/browser@4.0.1(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(vite@7.1.11(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.3))(vitest@4.0.3)
+      '@vitest/ui':
+        specifier: ^4.0.2
+        version: 4.0.2(vitest@4.0.3)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       ansi-regex:
         specifier: ^6.2.2
         version: 6.2.2
@@ -4262,8 +4683,13 @@ importers:
         specifier: ^5.9.3
         version: 5.9.3
       vitest:
+<<<<<<< HEAD
         specifier: ^4.0.4
         version: 4.0.4(@types/debug@4.1.12)(@types/node@24.9.2)(@vitest/ui@4.0.4)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.2)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+=======
+        specifier: ^4.0.2
+        version: 4.0.3(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.2)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
 
   packages/tabular/__bench__:
     devDependencies:
@@ -4283,8 +4709,13 @@ importers:
         specifier: ^6.9.0
         version: 6.9.0
       vitest:
+<<<<<<< HEAD
         specifier: ^4.0.4
         version: 4.0.4(@types/debug@4.1.12)(@types/node@24.9.2)(@vitest/ui@4.0.4)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.2)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+=======
+        specifier: ^4.0.2
+        version: 4.0.3(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.2)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
 
   packages/tsconfig:
     dependencies:
@@ -4307,10 +4738,14 @@ importers:
       '@anolilab/eslint-config':
         specifier: ^16.4.2
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 16.4.2(e56cf8f936178c5674fcbebf843f9e7d)
 =======
         version: 16.4.2(ec0e2c848876b9487f35c2781ca101e4)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 16.4.2(ebc88510f1cac7e361d99dc2de21f354)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       '@anolilab/prettier-config':
         specifier: ^6.0.7
         version: 6.0.7(prettier@3.6.2)
@@ -4344,11 +4779,15 @@ importers:
         version: 4.0.4(vitest@4.0.4)
 =======
         specifier: ^4.0.1
-        version: 4.0.1(@vitest/browser@4.0.1(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(vite@7.1.11(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.1))(vitest@4.0.1)
+        version: 4.0.3(@vitest/browser@4.0.1(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(vite@7.1.11(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.3))(vitest@4.0.3)
       '@vitest/ui':
         specifier: ^4.0.1
+<<<<<<< HEAD
         version: 4.0.1(vitest@4.0.1)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 4.0.2(vitest@4.0.3)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       conventional-changelog-conventionalcommits:
         specifier: 9.1.0
         version: 9.1.0
@@ -4397,8 +4836,12 @@ importers:
         version: 4.0.4(@types/debug@4.1.12)(@types/node@24.9.2)(@vitest/ui@4.0.4)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.2)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
         specifier: ^4.0.1
+<<<<<<< HEAD
         version: 4.0.1(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.1)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 4.0.3(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.2)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
 
   packages/tsconfig/__fixtures__/package/cjs:
     dependencies:
@@ -4455,10 +4898,14 @@ importers:
       '@anolilab/eslint-config':
         specifier: ^16.4.2
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 16.4.2(e56cf8f936178c5674fcbebf843f9e7d)
 =======
         version: 16.4.2(ec0e2c848876b9487f35c2781ca101e4)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 16.4.2(ebc88510f1cac7e361d99dc2de21f354)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       '@anolilab/prettier-config':
         specifier: ^6.0.7
         version: 6.0.7(prettier@3.6.2)
@@ -4516,11 +4963,15 @@ importers:
         version: 4.0.4(vitest@4.0.4)
 =======
         specifier: ^4.0.1
-        version: 4.0.1(@vitest/browser@4.0.1(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(vite@7.1.11(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.1))(vitest@4.0.1)
+        version: 4.0.3(@vitest/browser@4.0.1(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(vite@7.1.11(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.3))(vitest@4.0.3)
       '@vitest/ui':
         specifier: ^4.0.1
+<<<<<<< HEAD
         version: 4.0.1(vitest@4.0.1)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 4.0.2(vitest@4.0.3)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       conventional-changelog-conventionalcommits:
         specifier: 9.1.0
         version: 9.1.0
@@ -4575,8 +5026,12 @@ importers:
         version: 4.0.4(@types/debug@4.1.12)(@types/node@24.9.2)(@vitest/ui@4.0.4)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.2)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
         specifier: ^4.0.1
+<<<<<<< HEAD
         version: 4.0.1(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.1)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 4.0.3(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.2)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
 
   packages/vite-overlay/examples/vite-preact:
     dependencies:
@@ -4881,8 +5336,12 @@ importers:
         version: 4.0.4(@types/debug@4.1.12)(@types/node@24.9.2)(@vitest/ui@4.0.4)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.2)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
         specifier: ^4.0.1
+<<<<<<< HEAD
         version: 4.0.1(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.1)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+        version: 4.0.3(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.2)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       web-vitals:
         specifier: ^5.1.0
         version: 5.1.0
@@ -9458,12 +9917,17 @@ packages:
     resolution: {integrity: sha512-I4q9QU9MQv4oEOz4tAHJtNz1cwuLxn2F3xcc2iV5WdqLPpUnj30aUuxt1mAxYTG+oe8CZMV/+6rU4S4gRDzqtQ==}
 
 <<<<<<< HEAD
+<<<<<<< HEAD
   '@types/yargs@17.0.34':
     resolution: {integrity: sha512-KExbHVa92aJpw9WDQvzBaGVE2/Pz+pLZQloT2hjL8IqsZnV62rlPOYvNnLmf/L2dyllfVUOVBj64M0z/46eR2A==}
 =======
   '@types/yargs@17.0.33':
     resolution: {integrity: sha512-WpxBCKWPLr4xSsHgz511rFJAM+wS28w2zEO1QDNY5zM/S8ok70NNfztH0xwhqKyaK0OHCbN98LDAZuy1ctxDkA==}
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+  '@types/yargs@17.0.34':
+    resolution: {integrity: sha512-KExbHVa92aJpw9WDQvzBaGVE2/Pz+pLZQloT2hjL8IqsZnV62rlPOYvNnLmf/L2dyllfVUOVBj64M0z/46eR2A==}
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
 
   '@types/yauzl@2.10.3':
     resolution: {integrity: sha512-oJoftv0LSuaDZE3Le4DbKX+KS9G36NzOeSap90UIK0yMA/NhKJhqlSGtNDORNRaIbQfzjXDrQa0ytJ6mNRGz/Q==}
@@ -9689,10 +10153,6 @@ packages:
   '@visulima/find-cache-dir@1.0.34':
     resolution: {integrity: sha512-eQXTTD+C9UBVRoUoytlVM0SJK+MsUFemXAHJFuoyLVcMFwsFKYrKum9VxRstQszLreSavzDJ71w5ZfY4sX/h2A==}
     engines: {node: '>=18.0.0 <=23.x'}
-
-  '@visulima/find-cache-dir@2.0.2':
-    resolution: {integrity: sha512-alnkK1hZiZPaz2i1YvDka5BqeoRHBDlNfYVR9lkP9MICeHN26h4ovp+2EU/lRA7dUdHwBrAlXK6Pzpmd9Rb62Q==}
-    engines: {node: '>=20.19 <=25.x'}
 
   '@visulima/fmt@1.1.15':
     resolution: {integrity: sha512-r0+HmEwvbgz2ey+I7NyNfaDF6qHmsUYxmZ2nUl9nWUunyLQO2f1IYy/ZJFLBnsaYpbhqWXG32lFlUtmar4c3rQ==}
@@ -10113,9 +10573,10 @@ packages:
       '@vitest/browser':
         optional: true
 
-  '@vitest/coverage-v8@4.0.1':
-    resolution: {integrity: sha512-nmB+UVryiWQLC0pfPQ6KmJacew1ecpuKeUyiGbXtp1+KoYtCTAAlLI++8X/wJfzlULil+l/1jiWPreFnB1U5Mg==}
+  '@vitest/coverage-v8@4.0.3':
+    resolution: {integrity: sha512-I+MlLwyJRBjmJr1kFYSxoseINbIdpxIAeK10jmXgB0FUtIfdYsvM3lGAvBu5yk8WPyhefzdmbCHCc1idFbNRcg==}
     peerDependencies:
+<<<<<<< HEAD
       '@vitest/browser': 4.0.1
       vitest: 4.0.1
     peerDependenciesMeta:
@@ -10128,6 +10589,10 @@ packages:
       '@vitest/browser': 4.0.2
       vitest: 4.0.2
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+      '@vitest/browser': 4.0.3
+      vitest: 4.0.3
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
     peerDependenciesMeta:
       '@vitest/browser':
         optional: true
@@ -10151,6 +10616,7 @@ packages:
     resolution: {integrity: sha512-Io0yyORnB6sikFlt8QW5K7slY4OjqNX9jmJQ02QDda8lyM6B5oNgVWoSoKPac8/kgnCUzuHQKrSLtu/uOqqrig==}
 
 <<<<<<< HEAD
+<<<<<<< HEAD
   '@vitest/expect@4.0.4':
     resolution: {integrity: sha512-0ioMscWJtfpyH7+P82sGpAi3Si30OVV73jD+tEqXm5+rIx9LgnfdaOn45uaFkKOncABi/PHL00Yn0oW/wK4cXw==}
 =======
@@ -10160,6 +10626,10 @@ packages:
   '@vitest/expect@4.0.2':
     resolution: {integrity: sha512-izQY+ABWqL2Vyr5+LNo3m16nLLTAzLn8em6i5uxqsrWRhdgzdN5JIHrpFVGBAYRGDAbtwE+yD4Heu8gsBSWTVQ==}
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+  '@vitest/expect@4.0.3':
+    resolution: {integrity: sha512-v3eSDx/bF25pzar6aEJrrdTXJduEBU3uSGXHslIdGIpJVP8tQQHV6x1ZfzbFQ/bLIomLSbR/2ZCfnaEGkWkiVQ==}
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
 
   '@vitest/mocker@3.2.4':
     resolution: {integrity: sha512-46ryTE9RZO/rfDd7pEqFl7etuyzekzEhUbTW3BvmeO/BcCMEgq59BKhek3dXDWgAj4oMK6OZi+vRr1wPW6qjEQ==}
@@ -10172,8 +10642,24 @@ packages:
       vite:
         optional: true
 
+<<<<<<< HEAD
   '@vitest/mocker@4.0.4':
     resolution: {integrity: sha512-UTtKgpjWj+pvn3lUM55nSg34098obGhSHH+KlJcXesky8b5wCUgg7s60epxrS6yAG8slZ9W8T9jGWg4PisMf5Q==}
+=======
+  '@vitest/mocker@4.0.1':
+    resolution: {integrity: sha512-fwmvg8YvwSAE41Hyhul7dL4UzPhG+k2VaZCcL+aHagLx4qlNQgKYTw7coF4YdjAxSBBt0b408gQFYMX1Qeqweg==}
+    peerDependencies:
+      msw: ^2.4.9
+      vite: '>=7.1.11'
+    peerDependenciesMeta:
+      msw:
+        optional: true
+      vite:
+        optional: true
+
+  '@vitest/mocker@4.0.3':
+    resolution: {integrity: sha512-evZcRspIPbbiJEe748zI2BRu94ThCBE+RkjCpVF8yoVYuTV7hMe+4wLF/7K86r8GwJHSmAPnPbZhpXWWrg1qbA==}
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
     peerDependencies:
       msw: ^2.4.9
       vite: '>=7.1.11'
@@ -10199,27 +10685,35 @@ packages:
     resolution: {integrity: sha512-99EDqiCkncCmvIZj3qJXBZbyoQ35ghOwVWNnQ5nj0Hnsv4Qm40HmrMJrceewjLVvsxV/JSU4qyx2CGcfMBmXJw==}
 
 <<<<<<< HEAD
+<<<<<<< HEAD
   '@vitest/snapshot@4.0.4':
     resolution: {integrity: sha512-XICqf5Gi4648FGoBIeRgnHWSNDp+7R5tpclGosFaUUFzY6SfcpsfHNMnC7oDu/iOLBxYfxVzaQpylEvpgii3zw==}
 =======
+=======
+  '@vitest/pretty-format@4.0.3':
+    resolution: {integrity: sha512-N7gly/DRXzxa9w9sbDXwD9QNFYP2hw90LLLGDobPNwiWgyW95GMxsCt29/COIKKh3P7XJICR38PSDePenMBtsw==}
+
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
   '@vitest/runner@3.2.4':
     resolution: {integrity: sha512-oukfKT9Mk41LreEW09vt45f8wx7DordoWUZMYdY/cyAk7w5TWkTRCNZYF7sX7n2wB7jyGAl74OxgwhPgKaqDMQ==}
 
-  '@vitest/runner@4.0.1':
-    resolution: {integrity: sha512-nxUoWmw7ZX2OiSNwolJeSOOzrrR/o79wRTwP7HhiW/lDFwQHtWMj9snMhrdvccFqanvI8897E81eXjgDbrRvqA==}
-
-  '@vitest/runner@4.0.2':
-    resolution: {integrity: sha512-mPS5T/ZDuO6J5rsQiA76CFmlHtos7dnCvL14I1Oo8SbcjIhJd6kirFmekovfYLRygdF0gJe6SA5asCKIWKw1tw==}
+  '@vitest/runner@4.0.3':
+    resolution: {integrity: sha512-1/aK6fPM0lYXWyGKwop2Gbvz1plyTps/HDbIIJXYtJtspHjpXIeB3If07eWpVH4HW7Rmd3Rl+IS/+zEAXrRtXA==}
 
   '@vitest/snapshot@3.2.4':
     resolution: {integrity: sha512-dEYtS7qQP2CjU27QBC5oUOxLE/v5eLkGqPE0ZKEIDGMs4vKWe7IjgLOeauHsR0D5YuuycGRO5oSRXnwnmA78fQ==}
 
+<<<<<<< HEAD
   '@vitest/snapshot@4.0.1':
     resolution: {integrity: sha512-CvfsEWutEIN/Z9ScXYup7YwlPeK9JICrV7FN9p3pVytsyh+aCHAH0PUi//YlTiQ7T8qYxJYpUrAwZL9XqmZ5ZA==}
 
   '@vitest/snapshot@4.0.2':
     resolution: {integrity: sha512-NibujZAh+fTQlpGdP8J2pZcsPg7EPjiLUOUq9In++4p35vc9xIFMkXfQDbBSpijqZPe6i2hEKrUCbKu70/sPzw==}
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+  '@vitest/snapshot@4.0.3':
+    resolution: {integrity: sha512-amnYmvZ5MTjNCP1HZmdeczAPLRD6iOm9+2nMRUGxbe/6sQ0Ymur0NnR9LIrWS8JA3wKE71X25D6ya/3LN9YytA==}
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
 
   '@vitest/spy@2.0.5':
     resolution: {integrity: sha512-c/jdthAhvJdpfVuaexSrnawxZz6pywlTPe84LUB2m/4t3rl2fTo9NFGBG4oWgaD+FTgDDV8hJ/nibT7IfH3JfA==}
@@ -10230,18 +10724,21 @@ packages:
   '@vitest/spy@4.0.4':
     resolution: {integrity: sha512-G9L13AFyYECo40QG7E07EdYnZZYCKMTSp83p9W8Vwed0IyCG1GnpDLxObkx8uOGPXfDpdeVf24P1Yka8/q1s9g==}
 
+<<<<<<< HEAD
   '@vitest/ui@4.0.4':
     resolution: {integrity: sha512-CmuFQLKw5SaLU/Flo8dLiQw2P2ONguhjfhBL9AYkTeDZPToE8laGvObXqRzS5G+4RD4SgWcI1USAmGxMVIqT0g==}
+=======
+  '@vitest/spy@4.0.3':
+    resolution: {integrity: sha512-82vVL8Cqz7rbXaNUl35V2G7xeNMAjBdNOVaHbrzznT9BmiCiPOzhf0FhU3eP41nP1bLDm/5wWKZqkG4nyU95DQ==}
+
+  '@vitest/ui@3.2.4':
+    resolution: {integrity: sha512-hGISOaP18plkzbWEcP/QvtRW1xDXF2+96HbEX6byqQhAUbiS5oH6/9JwW+QsQCIYON2bI6QZBF+2PvOmrRZ9wA==}
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
     peerDependencies:
 <<<<<<< HEAD
       vitest: 4.0.4
 =======
       vitest: 3.2.4
-
-  '@vitest/ui@4.0.1':
-    resolution: {integrity: sha512-HtXZ7Ki3LoZe8zYzrqvTWB+MWvB42TMkpm60E50vgDZp/+TQgCG55uXMS/vD5PJCMI5zWTNFWIlAVD03e6l5hw==}
-    peerDependencies:
-      vitest: 4.0.1
 
   '@vitest/ui@4.0.2':
     resolution: {integrity: sha512-GqPobLaUnKxkEJQHxszJ4yTSHCNGysWto6wANoBn/iXWU1juZV5pVjopxu+DkMKU+J6UQqvZ4ZXkcjxzRQS31A==}
@@ -10260,6 +10757,9 @@ packages:
 
   '@vitest/utils@4.0.4':
     resolution: {integrity: sha512-4bJLmSvZLyVbNsYFRpPYdJViG9jZyRvMZ35IF4ymXbRZoS+ycYghmwTGiscTXduUg2lgKK7POWIyXJNute1hjw==}
+
+  '@vitest/utils@4.0.3':
+    resolution: {integrity: sha512-qV6KJkq8W3piW6MDIbGOmn1xhvcW4DuA07alqaQ+vdx7YA49J85pnwnxigZVQFQw3tWnQNRKWwhz5wbP6iv/GQ==}
 
   '@volar/language-core@2.4.23':
     resolution: {integrity: sha512-hEEd5ET/oSmBC6pi1j6NaNYRWoAiDhINbT8rmwtINugR39loROSlufGdYMF9TaKGfz+ViGs1Idi3mAhnuPcoGQ==}
@@ -10853,9 +11353,6 @@ packages:
     resolution: {integrity: sha512-ISvCdHdlTDlH5IpxQJIex7BWBywFWgjJSVdwst+/iQCoEYnyOaQ95+X1JGshuBjGp6nxKUy1jMgE3zPqN7fQdg==}
     hasBin: true
 
-  async@3.2.5:
-    resolution: {integrity: sha512-baNZyqaaLhyLVKm/DlvdW051MSgO6b8eVfIezl9E5PqWxFgzLm/wQntEW4zOytVburDEr0JlALEpdOFwvErLsg==}
-
   async@3.2.6:
     resolution: {integrity: sha512-htCUDlxyyCLMgaM3xXg0C0LW2xqfuQ6p05pCEIsXuyQ+a1koYKTuBMzRNwmybfLgvJDMd0r1LTn4+E0Ti6C2AA==}
 
@@ -11382,8 +11879,8 @@ packages:
     resolution: {integrity: sha512-NIxF55hv4nSqQswkAeiOi1r83xy8JldOFDTWiug55KBu9Jnblncd2U6ViHmYgHf01TPZS77NJBhBMKdWj9HQMQ==}
     engines: {node: '>=8'}
 
-  ci-info@4.3.0:
-    resolution: {integrity: sha512-l+2bNRMiQgcfILUi33labAZYIWlH1kWDp+ecNo5iisRKrbm0xcRyCww71/YU0Fkw0mAFpz9bJayXPjey6vkmaQ==}
+  ci-info@4.3.1:
+    resolution: {integrity: sha512-Wdy2Igu8OcBpI2pZePZ5oWjPC38tmDVx5WKUXKwlLYkA0ozo85sLsLvkBbBn/sZaSCMFOGZJ14fvW9t5/d7kdA==}
     engines: {node: '>=8'}
 
   cities-list@1.0.3:
@@ -11420,6 +11917,9 @@ packages:
   clean-stack@5.2.0:
     resolution: {integrity: sha512-TyUIUJgdFnCISzG5zu3291TAsE77ddchd0bepon1VVQrKLGKFED4iXFEDQ24mIPdPBbyE16PK3F8MYE1CmcBEQ==}
     engines: {node: '>=14.16'}
+
+  cleye@1.3.4:
+    resolution: {integrity: sha512-Rd6M8ecBDtdYdPR22h6gG37lPqqJ3hSOaplaGwuGYey9xKmEElOvTgupqfyLSlISshroRpVhYjDtW3vwNUNBaQ==}
 
   cli-boxes@3.0.0:
     resolution: {integrity: sha512-/lzGpEWL/8PfI0BmBOPRwp0c/wFNX1RdUML3jK/RcSBA9T8mZDdQpqYBKtCFTOfQbwPqWEOpjqW+Fnayc0969g==}
@@ -15692,6 +16192,10 @@ packages:
     resolution: {integrity: sha512-pxQJQzB6djGPXh08dacEloMFopsOqGVRKFPYvPOt9XDZ1HasbgDZA74CJGreSU4G3Ak7EFJGoiH2auq+yXISgA==}
     engines: {node: '>=18'}
 
+  meow@14.0.0:
+    resolution: {integrity: sha512-JhC3R1f6dbspVtmF3vKjAWz1EVIvwFrGGPLSdU6rK79xBwHWTuHoLnRX/t1/zHS1Ch1Y2UtIrih7DAHuH9JFJA==}
+    engines: {node: '>=20'}
+
   merge-anything@5.1.7:
     resolution: {integrity: sha512-eRtbOb1N5iyH0tkQDAoQ4Ipsp/5qSR79Dzrz8hEPxRX10RWWR/iQXdoKmBSRCThY1Fh5EhISDtpSc93fpxUniQ==}
     engines: {node: '>=12.13'}
@@ -19171,6 +19675,9 @@ packages:
     resolution: {integrity: sha512-7jDLIdD2Zp0bDe5r3D2qtkd1QOCacylBuL7oa4udvN6v2pqr4+LcCr67C8DR1zkpaZ8XosF5m1yQSabKAW6f2g==}
     engines: {node: '>=14.16'}
 
+  terminal-columns@1.4.1:
+    resolution: {integrity: sha512-IKVL/itiMy947XWVv4IHV7a0KQXvKjj4ptbi7Ew9MPMcOLzkiQeyx3Gyvh62hKrfJ0RZc4M1nbhzjNM39Kyujw==}
+
   terminal-link@4.0.0:
     resolution: {integrity: sha512-lk+vH+MccxNqgVqSnkMVKx4VLJfnLjDBGzH16JVZjKE2DoxP57s6/vt6JmXV5I3jBcfGrxNrYtC+mPtU7WJztA==}
     engines: {node: '>=18'}
@@ -19669,6 +20176,9 @@ packages:
   type-fest@5.1.0:
     resolution: {integrity: sha512-wQ531tuWvB6oK+pchHIu5lHe5f5wpSCqB8Kf4dWQRbOYc9HTge7JL0G4Qd44bh6QuJCccIzL3bugb8GI0MwHrg==}
     engines: {node: '>=20'}
+
+  type-flag@3.0.0:
+    resolution: {integrity: sha512-3YaYwMseXCAhBB14RXW5cRQfJQlEknS6i4C8fCfeUdS3ihG9EdccdR9kt3vP73ZdeTGmPb4bZtkDn5XMIn1DLA==}
 
   type-is@1.6.18:
     resolution: {integrity: sha512-TkRKr9sUTxEH8MdfuCSP7VizJyzRNMjj2J2do2Jr3Kym598JVdEksuzPQCnlFPW4ky9Q+iA+ma9BGm06XQBy8g==}
@@ -20242,14 +20752,15 @@ packages:
       jsdom:
         optional: true
 
-  vitest@4.0.1:
-    resolution: {integrity: sha512-4rwTfUNF0MExMZBiNirkzZpeyUZGOs3JD76N2qHNP9i6w6/bff7MRv2I9yFJKd1ICxzn2igpra+E4t9o2EfQhw==}
+  vitest@4.0.3:
+    resolution: {integrity: sha512-IUSop8jgaT7w0g1yOM/35qVtKjr/8Va4PrjzH1OUb0YH4c3OXB2lCZDkMAB6glA8T5w8S164oJGsbcmAecr4sA==}
     engines: {node: ^20.0.0 || ^22.0.0 || >=24.0.0}
     hasBin: true
     peerDependencies:
       '@edge-runtime/vm': '*'
       '@types/debug': ^4.1.12
       '@types/node': ^20.0.0 || ^22.0.0 || >=24.0.0
+<<<<<<< HEAD
       '@vitest/browser-playwright': 4.0.1
       '@vitest/browser-preview': 4.0.1
       '@vitest/browser-webdriverio': 4.0.1
@@ -20289,6 +20800,12 @@ packages:
       '@vitest/browser-preview': 4.0.4
       '@vitest/browser-webdriverio': 4.0.4
       '@vitest/ui': 4.0.4
+=======
+      '@vitest/browser-playwright': 4.0.3
+      '@vitest/browser-preview': 4.0.3
+      '@vitest/browser-webdriverio': 4.0.3
+      '@vitest/ui': 4.0.3
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       happy-dom: '*'
       jsdom: '*'
     peerDependenciesMeta:
@@ -20781,7 +21298,11 @@ snapshots:
       - '@types/node'
       - typescript
 
+<<<<<<< HEAD
   '@anolilab/eslint-config@16.4.2(e56cf8f936178c5674fcbebf843f9e7d)':
+=======
+  '@anolilab/eslint-config@16.4.2(b5098907f40b4d21be69140c323c4be3)':
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
     dependencies:
       '@eslint-community/eslint-plugin-eslint-comments': 4.5.0(eslint@9.38.0(jiti@2.6.1))
       '@eslint/compat': 1.4.0(eslint@9.38.0(jiti@2.6.1))
@@ -20795,7 +21316,11 @@ snapshots:
       '@typescript-eslint/types': 8.46.2
       '@visulima/package': 4.0.2(@types/node@24.9.2)
       '@visulima/tsconfig': 1.2.0(yaml@2.8.1)
+<<<<<<< HEAD
       '@vitest/eslint-plugin': 1.3.20(eslint@9.38.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.0.4)
+=======
+      '@vitest/eslint-plugin': 1.3.20(eslint@9.38.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.0.3(@types/debug@4.1.12)(@types/node@24.9.1)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       confusing-browser-globals: 1.0.11
       eslint: 9.38.0(jiti@2.6.1)
       eslint-config-flat-gitignore: 2.1.0(eslint@9.38.0(jiti@2.6.1))
@@ -20862,9 +21387,13 @@ snapshots:
       - yaml
 
 <<<<<<< HEAD
+<<<<<<< HEAD
   '@anolilab/lint-staged-config@3.0.37(@types/node@24.9.2)(eslint@9.38.0(jiti@2.6.1))(husky@9.1.7)(lint-staged@16.2.6)(prettier@3.6.2)(secretlint@11.2.5)(vitest@4.0.4)(yaml@2.8.1)':
 =======
   '@anolilab/eslint-config@16.4.2(ec0e2c848876b9487f35c2781ca101e4)':
+=======
+  '@anolilab/eslint-config@16.4.2(ebc88510f1cac7e361d99dc2de21f354)':
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
     dependencies:
       '@eslint-community/eslint-plugin-eslint-comments': 4.5.0(eslint@9.38.0(jiti@2.6.1))
       '@eslint/compat': 1.4.0(eslint@9.38.0(jiti@2.6.1))
@@ -20878,7 +21407,7 @@ snapshots:
       '@typescript-eslint/types': 8.46.2
       '@visulima/package': 4.0.2(@types/node@24.9.1)
       '@visulima/tsconfig': 1.2.0(yaml@2.8.1)
-      '@vitest/eslint-plugin': 1.3.20(eslint@9.38.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.0.1)
+      '@vitest/eslint-plugin': 1.3.20(eslint@9.38.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.0.3(@types/debug@4.1.12)(@types/node@24.9.1)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
       confusing-browser-globals: 1.0.11
       eslint: 9.38.0(jiti@2.6.1)
       eslint-config-flat-gitignore: 2.1.0(eslint@9.38.0(jiti@2.6.1))
@@ -21023,8 +21552,12 @@ snapshots:
       - vitest
       - yaml
 
+<<<<<<< HEAD
   '@anolilab/lint-staged-config@3.0.37(@types/node@24.9.1)(eslint@9.38.0(jiti@2.6.1))(husky@9.1.7)(jest@29.7.0(@types/node@24.9.1))(lint-staged@16.2.6)(prettier@3.6.2)(secretlint@11.2.5)(vitest@4.0.1)(yaml@2.8.1)':
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+  '@anolilab/lint-staged-config@3.0.37(@types/node@24.9.1)(eslint@9.38.0(jiti@2.6.1))(husky@9.1.7)(jest@29.7.0(@types/node@24.9.1))(lint-staged@16.2.6)(prettier@3.6.2)(secretlint@11.2.5)(vitest@4.0.3(@types/debug@4.1.12)(@types/node@24.9.1)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(yaml@2.8.1)':
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
     dependencies:
       '@visulima/fs': 3.1.9(yaml@2.8.1)
       '@visulima/package': 4.0.2(@types/node@24.9.2)
@@ -21037,10 +21570,14 @@ snapshots:
       prettier: 3.6.2
       secretlint: 11.2.5
 <<<<<<< HEAD
+<<<<<<< HEAD
       vitest: 4.0.4(@types/debug@4.1.12)(@types/node@24.9.2)(@vitest/ui@4.0.4)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.2)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
       vitest: 4.0.1(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.1)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+      vitest: 4.0.3(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.2)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
     transitivePeerDependencies:
       - '@types/node'
       - yaml
@@ -22661,8 +23198,12 @@ snapshots:
       '@types/yargs': 17.0.34
 =======
       '@types/node': 24.9.1
+<<<<<<< HEAD
       '@types/yargs': 17.0.33
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+      '@types/yargs': 17.0.34
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       chalk: 4.1.2
 
   '@joshwooding/vite-plugin-react-docgen-typescript@0.6.1(typescript@5.9.3)(vite@7.1.12(@types/node@24.9.2)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))':
@@ -22825,7 +23366,7 @@ snapshots:
   '@npmcli/config@6.4.1':
     dependencies:
       '@npmcli/map-workspaces': 3.0.6
-      ci-info: 4.3.0
+      ci-info: 4.3.1
       ini: 4.1.3
       nopt: 7.2.1
       proc-log: 3.0.0
@@ -26620,10 +27161,14 @@ snapshots:
   '@types/yargs-parser@21.0.3': {}
 
 <<<<<<< HEAD
+<<<<<<< HEAD
   '@types/yargs@17.0.34':
 =======
   '@types/yargs@17.0.33':
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+  '@types/yargs@17.0.34':
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
     dependencies:
       '@types/yargs-parser': 21.0.3
 
@@ -26846,8 +27391,6 @@ snapshots:
       '@visulima/path': 1.4.0
     transitivePeerDependencies:
       - yaml
-
-  '@visulima/find-cache-dir@2.0.2': {}
 
   '@visulima/fmt@1.1.15': {}
 
@@ -27221,10 +27764,14 @@ snapshots:
       vue: 3.5.22(typescript@5.9.3)
 
 <<<<<<< HEAD
+<<<<<<< HEAD
   '@vitest/browser@4.0.4(msw@2.11.6(@types/node@24.9.2)(typescript@5.9.3))(vite@7.1.12(@types/node@24.9.2)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.4)':
 =======
   '@vitest/browser@4.0.1(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(vite@7.1.11(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.1)':
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+  '@vitest/browser@4.0.1(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(vite@7.1.11(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.3)':
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
     dependencies:
       '@vitest/mocker': 4.0.4(msw@2.11.6(@types/node@24.9.2)(typescript@5.9.3))(vite@7.1.12(@types/node@24.9.2)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
       '@vitest/utils': 4.0.4
@@ -27234,10 +27781,14 @@ snapshots:
       sirv: 3.0.2
       tinyrainbow: 3.0.3
 <<<<<<< HEAD
+<<<<<<< HEAD
       vitest: 4.0.4(@types/debug@4.1.12)(@types/node@24.9.2)(@vitest/ui@4.0.4)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.2)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
       vitest: 4.0.1(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.1)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+      vitest: 4.0.3(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.2)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       ws: 8.18.3
     transitivePeerDependencies:
       - bufferutil
@@ -27267,10 +27818,10 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@vitest/coverage-v8@4.0.1(@vitest/browser@4.0.1(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(vite@7.1.11(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.1))(vitest@4.0.1)':
+  '@vitest/coverage-v8@4.0.3(@vitest/browser@4.0.1(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(vite@7.1.11(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.3))(vitest@4.0.3)':
     dependencies:
       '@bcoe/v8-coverage': 1.0.2
-      '@vitest/utils': 4.0.1
+      '@vitest/utils': 4.0.3
       ast-v8-to-istanbul: 0.3.7
       debug: 4.4.3(supports-color@8.1.1)
       istanbul-lib-coverage: 3.2.2
@@ -27280,17 +27831,24 @@ snapshots:
       magicast: 0.3.5
       std-env: 3.9.0
       tinyrainbow: 3.0.3
-      vitest: 4.0.1(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.1)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+      vitest: 4.0.3(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.2)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
     optionalDependencies:
-      '@vitest/browser': 4.0.1(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(vite@7.1.11(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.1)
+      '@vitest/browser': 4.0.1(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(vite@7.1.11(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.3)
     transitivePeerDependencies:
       - supports-color
 
+<<<<<<< HEAD
   '@vitest/coverage-v8@4.0.2(vitest@4.0.2)':
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
     dependencies:
       '@bcoe/v8-coverage': 1.0.2
       '@vitest/utils': 4.0.4
+=======
+  '@vitest/coverage-v8@4.0.3(vitest@4.0.3(@types/debug@4.1.12)(@types/node@24.9.1)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))':
+    dependencies:
+      '@bcoe/v8-coverage': 1.0.2
+      '@vitest/utils': 4.0.3
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       ast-v8-to-istanbul: 0.3.7
       debug: 4.4.3(supports-color@8.1.1)
       istanbul-lib-coverage: 3.2.2
@@ -27301,12 +27859,16 @@ snapshots:
       std-env: 3.9.0
       tinyrainbow: 3.0.3
 <<<<<<< HEAD
+<<<<<<< HEAD
       vitest: 4.0.4(@types/debug@4.1.12)(@types/node@24.9.2)(@vitest/ui@4.0.4)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.2)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
     optionalDependencies:
       '@vitest/browser': 4.0.4(msw@2.11.6(@types/node@24.9.2)(typescript@5.9.3))(vite@7.1.12(@types/node@24.9.2)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.4)
 =======
       vitest: 4.0.2(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.2)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+      vitest: 4.0.3(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.2)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
     transitivePeerDependencies:
       - supports-color
 
@@ -27324,13 +27886,14 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@vitest/eslint-plugin@1.3.20(eslint@9.38.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.0.1)':
+  '@vitest/eslint-plugin@1.3.20(eslint@9.38.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.0.3(@types/debug@4.1.12)(@types/node@24.9.1)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))':
     dependencies:
       '@typescript-eslint/scope-manager': 8.46.2
       '@typescript-eslint/utils': 8.46.2(eslint@9.38.0(jiti@2.6.1))(typescript@5.9.3)
       eslint: 9.38.0(jiti@2.6.1)
     optionalDependencies:
       typescript: 5.9.3
+<<<<<<< HEAD
       vitest: 4.0.1(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.1)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
     transitivePeerDependencies:
       - supports-color
@@ -27344,6 +27907,9 @@ snapshots:
       typescript: 5.9.3
       vitest: 4.0.2(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.2)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+      vitest: 4.0.3(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.2)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
     transitivePeerDependencies:
       - supports-color
 
@@ -27363,6 +27929,7 @@ snapshots:
       tinyrainbow: 2.0.0
 
 <<<<<<< HEAD
+<<<<<<< HEAD
   '@vitest/expect@4.0.4':
 =======
   '@vitest/expect@4.0.1':
@@ -27381,6 +27948,14 @@ snapshots:
       '@types/chai': 5.2.2
       '@vitest/spy': 4.0.4
       '@vitest/utils': 4.0.4
+=======
+  '@vitest/expect@4.0.3':
+    dependencies:
+      '@standard-schema/spec': 1.0.0
+      '@types/chai': 5.2.2
+      '@vitest/spy': 4.0.3
+      '@vitest/utils': 4.0.3
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       chai: 6.2.0
       tinyrainbow: 3.0.3
 
@@ -27399,8 +27974,22 @@ snapshots:
       estree-walker: 3.0.3
       magic-string: 0.30.19
     optionalDependencies:
+<<<<<<< HEAD
       msw: 2.11.6(@types/node@24.9.2)(typescript@5.9.3)
       vite: 7.1.12(@types/node@24.9.2)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+=======
+      msw: 2.11.6(@types/node@24.9.1)(typescript@5.9.3)
+      vite: 7.1.11(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+
+  '@vitest/mocker@4.0.3(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(vite@7.1.11(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))':
+    dependencies:
+      '@vitest/spy': 4.0.3
+      estree-walker: 3.0.3
+      magic-string: 0.30.19
+    optionalDependencies:
+      msw: 2.11.6(@types/node@24.9.1)(typescript@5.9.3)
+      vite: 7.1.11(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
 
   '@vitest/pretty-format@2.0.5':
     dependencies:
@@ -27425,14 +28014,19 @@ snapshots:
 =======
       tinyrainbow: 3.0.3
 
+  '@vitest/pretty-format@4.0.3':
+    dependencies:
+      tinyrainbow: 3.0.3
+
   '@vitest/runner@3.2.4':
     dependencies:
       '@vitest/utils': 3.2.4
       pathe: 2.0.3
       strip-literal: 3.1.0
 
-  '@vitest/runner@4.0.1':
+  '@vitest/runner@4.0.3':
     dependencies:
+<<<<<<< HEAD
       '@vitest/utils': 4.0.1
       pathe: 2.0.3
 
@@ -27440,6 +28034,9 @@ snapshots:
     dependencies:
       '@vitest/utils': 4.0.2
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+      '@vitest/utils': 4.0.3
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       pathe: 2.0.3
 
   '@vitest/snapshot@4.0.4':
@@ -27451,8 +28048,9 @@ snapshots:
       magic-string: 0.30.19
       pathe: 2.0.3
 
-  '@vitest/snapshot@4.0.1':
+  '@vitest/snapshot@4.0.3':
     dependencies:
+<<<<<<< HEAD
       '@vitest/pretty-format': 4.0.1
       magic-string: 0.30.19
       pathe: 2.0.3
@@ -27461,6 +28059,9 @@ snapshots:
     dependencies:
       '@vitest/pretty-format': 4.0.2
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
+=======
+      '@vitest/pretty-format': 4.0.3
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       magic-string: 0.30.19
       pathe: 2.0.3
 
@@ -27474,7 +28075,13 @@ snapshots:
 
   '@vitest/spy@4.0.4': {}
 
+<<<<<<< HEAD
   '@vitest/ui@4.0.4(vitest@4.0.4)':
+=======
+  '@vitest/spy@4.0.3': {}
+
+  '@vitest/ui@3.2.4(vitest@3.2.4)':
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
     dependencies:
 <<<<<<< HEAD
       '@vitest/utils': 4.0.4
@@ -27488,18 +28095,7 @@ snapshots:
       tinyrainbow: 2.0.0
       vitest: 3.2.4(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@3.2.4)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 
-  '@vitest/ui@4.0.1(vitest@4.0.1)':
-    dependencies:
-      '@vitest/utils': 4.0.1
-      fflate: 0.8.2
-      flatted: 3.3.3
-      pathe: 2.0.3
-      sirv: 3.0.2
-      tinyglobby: 0.2.15
-      tinyrainbow: 3.0.3
-      vitest: 4.0.1(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.1)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
-
-  '@vitest/ui@4.0.2(vitest@4.0.2)':
+  '@vitest/ui@4.0.2(vitest@4.0.3)':
     dependencies:
       '@vitest/utils': 4.0.2
 >>>>>>> 1480c5314 (feat(benchmarks): add performance benchmarks for Cerebro CLI framework)
@@ -27509,7 +28105,11 @@ snapshots:
       sirv: 3.0.2
       tinyglobby: 0.2.15
       tinyrainbow: 3.0.3
+<<<<<<< HEAD
       vitest: 4.0.4(@types/debug@4.1.12)(@types/node@24.9.2)(@vitest/ui@4.0.4)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.2)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+=======
+      vitest: 4.0.3(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.2)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
 
   '@vitest/utils@2.0.5':
     dependencies:
@@ -27533,6 +28133,11 @@ snapshots:
   '@vitest/utils@4.0.4':
     dependencies:
       '@vitest/pretty-format': 4.0.4
+      tinyrainbow: 3.0.3
+
+  '@vitest/utils@4.0.3':
+    dependencies:
+      '@vitest/pretty-format': 4.0.3
       tinyrainbow: 3.0.3
 
   '@volar/language-core@2.4.23':
@@ -28082,7 +28687,7 @@ snapshots:
   archiver@7.0.1:
     dependencies:
       archiver-utils: 5.0.2
-      async: 3.2.5
+      async: 3.2.6
       buffer-crc32: 1.0.0
       readable-stream: 4.5.2
       readdir-glob: 1.1.3
@@ -28240,8 +28845,6 @@ snapshots:
   astral-regex@2.0.0: {}
 
   astring@1.8.6: {}
-
-  async@3.2.5: {}
 
   async@3.2.6: {}
 
@@ -28858,7 +29461,7 @@ snapshots:
 
   ci-info@3.9.0: {}
 
-  ci-info@4.3.0: {}
+  ci-info@4.3.1: {}
 
   cities-list@1.0.3: {}
 
@@ -28889,6 +29492,11 @@ snapshots:
   clean-stack@5.2.0:
     dependencies:
       escape-string-regexp: 5.0.0
+
+  cleye@1.3.4:
+    dependencies:
+      terminal-columns: 1.4.1
+      type-flag: 3.0.0
 
   cli-boxes@3.0.0: {}
 
@@ -30789,7 +31397,7 @@ snapshots:
       '@eslint-community/eslint-utils': 4.9.0(eslint@9.38.0(jiti@2.6.1))
       '@eslint/plugin-kit': 0.4.0
       change-case: 5.4.4
-      ci-info: 4.3.0
+      ci-info: 4.3.1
       clean-regexp: 1.0.0
       core-js-compat: 3.45.1
       eslint: 9.38.0(jiti@2.6.1)
@@ -32485,7 +33093,7 @@ snapshots:
 
   is-ci@4.1.0:
     dependencies:
-      ci-info: 4.3.0
+      ci-info: 4.3.1
 
   is-core-module@2.16.1:
     dependencies:
@@ -34248,6 +34856,8 @@ snapshots:
   meow@12.1.1: {}
 
   meow@13.2.0: {}
+
+  meow@14.0.0: {}
 
   merge-anything@5.1.7:
     dependencies:
@@ -38513,6 +39123,8 @@ snapshots:
       type-fest: 2.19.0
       unique-string: 3.0.0
 
+  terminal-columns@1.4.1: {}
+
   terminal-link@4.0.0:
     dependencies:
       ansi-escapes: 7.1.1
@@ -39033,6 +39645,8 @@ snapshots:
   type-fest@5.1.0:
     dependencies:
       tagged-tag: 1.0.0
+
+  type-flag@3.0.0: {}
 
   type-is@1.6.18:
     dependencies:
@@ -39818,15 +40432,15 @@ snapshots:
       - tsx
       - yaml
 
-  vitest@4.0.1(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.1)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1):
+  vitest@4.0.3(@types/debug@4.1.12)(@types/node@24.9.1)(@vitest/ui@4.0.2)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1):
     dependencies:
-      '@vitest/expect': 4.0.1
-      '@vitest/mocker': 4.0.1(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(vite@7.1.11(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
-      '@vitest/pretty-format': 4.0.1
-      '@vitest/runner': 4.0.1
-      '@vitest/snapshot': 4.0.1
-      '@vitest/spy': 4.0.1
-      '@vitest/utils': 4.0.1
+      '@vitest/expect': 4.0.3
+      '@vitest/mocker': 4.0.3(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(vite@7.1.11(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
+      '@vitest/pretty-format': 4.0.3
+      '@vitest/runner': 4.0.3
+      '@vitest/snapshot': 4.0.3
+      '@vitest/spy': 4.0.3
+      '@vitest/utils': 4.0.3
       debug: 4.4.3(supports-color@8.1.1)
       es-module-lexer: 1.7.0
       expect-type: 1.2.2
@@ -39843,6 +40457,7 @@ snapshots:
     optionalDependencies:
       '@types/debug': 4.1.12
       '@types/node': 24.9.1
+<<<<<<< HEAD
       '@vitest/ui': 4.0.1(vitest@4.0.1)
       jsdom: 27.0.1(postcss@8.5.6)
     transitivePeerDependencies:
@@ -39886,6 +40501,9 @@ snapshots:
       '@types/debug': 4.1.12
       '@types/node': 24.9.2
       '@vitest/ui': 4.0.4(vitest@4.0.4)
+=======
+      '@vitest/ui': 4.0.2(vitest@4.0.3)
+>>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       jsdom: 27.0.1(postcss@8.5.6)
     transitivePeerDependencies:
       - jiti
@@ -40213,7 +40831,7 @@ snapshots:
     dependencies:
       '@colors/colors': 1.6.0
       '@dabh/diagnostics': 2.0.8
-      async: 3.2.5
+      async: 3.2.6
       is-stream: 2.0.1
       logform: 2.7.0
       one-time: 1.0.0

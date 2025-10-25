@@ -17,4 +17,3 @@ const errorCritical = (cli) => {
 };
 
 export default errorCritical;
-

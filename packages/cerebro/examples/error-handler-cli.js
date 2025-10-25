@@ -1,4 +1,6 @@
-import { Cerebro, errorHandlerPlugin } from "../dist/index.js";
+import { Cerebro } from "@visulima/cerebro";
+import { errorHandlerPlugin } from "@visulima/cerebro/plugins/error-handler";
+import { pailLoggerPlugin } from "@visulima/cerebro/plugins/pail-logger";
 
 import errorSimple from "./commands/error-simple.js";
 import errorDetailed from "./commands/error-detailed.js";
@@ -12,10 +14,13 @@ const cli = new Cerebro("cerebro-errors");
 
 // Configure different error handling modes
 if (mode === "error-simple") {
-    // Default error handling (no plugin needed, but shown for completeness)
+    // Default error handling
+    cli.addPlugin(pailLoggerPlugin());
+    cli.addPlugin(errorHandlerPlugin());
     errorSimple(cli);
 } else if (mode === "error-detailed") {
     // Detailed error logging with stack traces and additional properties
+    cli.addPlugin(pailLoggerPlugin());
     cli.addPlugin(
         errorHandlerPlugin({
             detailed: true,
@@ -25,6 +30,7 @@ if (mode === "error-simple") {
     errorDetailed(cli);
 } else if (mode === "error-critical") {
     // Critical level logging for severe errors
+    cli.addPlugin(pailLoggerPlugin());
     cli.addPlugin(
         errorHandlerPlugin({
             detailed: true,
@@ -35,6 +41,7 @@ if (mode === "error-simple") {
     errorCritical(cli);
 } else if (mode === "error-custom-formatter") {
     // Custom error formatting
+    cli.addPlugin(pailLoggerPlugin());
     cli.addPlugin(
         errorHandlerPlugin({
             formatter: (error) => {
@@ -58,6 +65,7 @@ ${error.code ? `║ Code:      ${error.code}` : ""}
     errorCustomFormatter(cli);
 } else {
     // Show all available modes
+    cli.addPlugin(pailLoggerPlugin());
     cli.addCommand({
         description: "Show available error handling examples",
         execute: ({ logger }) => {
@@ -80,4 +88,3 @@ ${error.code ? `║ Code:      ${error.code}` : ""}
 }
 
 await cli.run();
-

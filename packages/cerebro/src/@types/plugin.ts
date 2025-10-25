@@ -1,18 +1,16 @@
-import type { Pail } from "@visulima/pail/server";
-
 import type { Cli } from "./cli";
 import type { Toolbox } from "./toolbox";
 
 /**
  * Context provided to plugins during initialization
  */
-export interface PluginContext {
+export interface PluginContext<T extends Console = Console> {
     /** The CLI instance */
     cli: Cli;
     /** Current working directory */
     cwd: string;
     /** Logger instance */
-    logger: Pail;
+    logger: T;
 }
 
 /**

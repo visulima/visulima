@@ -3,10 +3,6 @@ import { argv as process_argv, cwd as process_cwd, env, execArgv, execPath, exit
 import type { CommandLineOptions } from "@visulima/command-line-args";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { commandLineArgs } from "@visulima/command-line-args";
-import type { ConstructorOptions, ExtendedRfc5424LogLevels, Pail, Processor } from "@visulima/pail";
-import CallerProcessor from "@visulima/pail/processor/caller";
-import MessageFormatterProcessor from "@visulima/pail/processor/message-formatter";
-import { createPail } from "@visulima/pail/server";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import camelCase from "camelcase";
 
@@ -14,8 +10,8 @@ import type { Cli as ICli, Command as ICommand, CommandSection as ICommandSectio
 import type { CliRunOptions } from "./@types/cli";
 import type { OptionDefinition, PossibleOptionDefinition } from "./@types/command";
 import type { Plugin } from "./@types/plugin";
-import HelpCommand from "./command/help";
-import VersionCommand from "./command/version";
+import HelpCommand from "./command/help-command";
+import VersionCommand from "./command/version-command";
 import { POSITIONALS_KEY, VERBOSITY_DEBUG, VERBOSITY_NORMAL, VERBOSITY_QUIET, VERBOSITY_VERBOSE } from "./constants";
 import defaultOptions from "./default-options";
 import EmptyToolbox from "./empty-toolbox";
@@ -32,16 +28,18 @@ import registerExceptionHandler from "./util/register-exception-handler";
 
 const lowerFirstChar = (string_: string): string => string_.charAt(0).toLowerCase() + string_.slice(1);
 
-export type CliOptions = {
+export type CliOptions<T extends Console = Console> = {
     argv?: string[];
     cwd?: string;
-    logger?: ConstructorOptions<string, string>;
+    logger?: T;
     packageName?: string;
     packageVersion?: string;
 };
 
-export class Cli implements ICli {
-    private readonly logger: Pail;
+export class Cli<T extends Console = Console> implements ICli {
+    private logger: T;
+
+    private readonly options: CliOptions<T>;
 
     private readonly argv: string[];
 
@@ -64,30 +62,35 @@ export class Cli implements ICli {
     private pluginsInitialized = false;
 
     /**
-     * @param cliName The cli cliName.
+     * Create a new CLI instance.
+     * @param cliName
      * @param options The options for the CLI.
-     * - argv           This should be in the base case process.argv
-     * - cwd            The path of main folder.
-     * - logger         The logger options.
-     * - packageName    The packageJson name.
-     * - packageVersion The packageJson version.
+     * @param options.argv The command line arguments.
+     * @param options.cwd The current working directory.
+     * @param options.logger The logger to use.
+     * @param options.packageName
+     * @param options.packageVersion
      */
-    public constructor(cliName: string, options: CliOptions = {}) {
-        const { argv, cwd, packageName, packageVersion } = {
+    public constructor(cliName: string, options: CliOptions<T> = {}) {
+        this.options = {
             argv: process_argv,
             cwd: process_cwd(),
             ...options,
         };
 
-        this.argv = parseRawCommand(argv);
+        if (this.options.argv === undefined) {
+            throw new Error("The argv option is required, it can be provided as a string array or as a process.argv array");
+        }
 
-        // If the "--quiet"/"-q" flag is ever present, set our global logging
-        // to quiet mode. Also set the level on the logger we've already created.
+        if (this.options.cwd === undefined) {
+            throw new Error("The cwd option is required, it can be provided as a string");
+        }
+
+        this.argv = parseRawCommand(this.options.argv);
+
+        // Set verbosity level from command line flags
         if (this.argv.includes("--quiet") || this.argv.includes("-q")) {
             env.CEREBRO_OUTPUT_LEVEL = String(VERBOSITY_QUIET);
-
-            // If the "--verbose"/"-v" flag is ever present, set our global logging
-            // to verbose mode. Also set the level on the logger we've already created.
         } else if (this.argv.includes("--verbose") || this.argv.includes("-v")) {
             env.CEREBRO_OUTPUT_LEVEL = String(VERBOSITY_VERBOSE);
         } else if (this.argv.includes("--debug") || this.argv.includes("-vvv") || "DEBUG" in env) {
@@ -96,36 +99,24 @@ export class Cli implements ICli {
             env.CEREBRO_OUTPUT_LEVEL = String(VERBOSITY_NORMAL);
         }
 
-        const cerebroLevelToPailLevel: Record<string, ExtendedRfc5424LogLevels> = {
-            32: "informational",
-            64: "trace",
-            128: "debug",
-        };
-
-        const processors: Processor<string>[] = [new MessageFormatterProcessor()];
-
-        if (env.CEREBRO_OUTPUT_LEVEL === String(VERBOSITY_DEBUG)) {
-            processors.push(new CallerProcessor());
+        if (typeof this.options.logger === "object") {
+            this.logger = this.options.logger;
+        } else {
+            this.logger = {
+                ...console,
+                debug: (...args) => {
+                    if (env.CEREBRO_OUTPUT_LEVEL === String(VERBOSITY_DEBUG)) {
+                        // eslint-disable-next-line no-console
+                        console.debug(...args);
+                    }
+                },
+            } as T;
         }
-
-        this.logger = createPail({
-            logLevel: env.CEREBRO_OUTPUT_LEVEL
-                ? cerebroLevelToPailLevel[env.CEREBRO_OUTPUT_LEVEL as keyof typeof cerebroLevelToPailLevel] ?? "informational"
-                : "informational",
-            processors,
-            ...options.logger,
-        });
-
-        if (env.CEREBRO_OUTPUT_LEVEL === String(VERBOSITY_QUIET)) {
-            this.logger.disable();
-        }
-
-        registerExceptionHandler(this.logger);
 
         this.cliName = cliName;
-        this.packageVersion = packageVersion;
-        this.packageName = packageName;
-        this.cwd = cwd;
+        this.packageVersion = this.options.packageVersion;
+        this.packageName = this.options.packageName;
+        this.cwd = this.options.cwd;
         this.defaultCommand = "help";
         this.commandSection = {
             header: `${this.cliName}${this.packageVersion ? ` v${this.packageVersion}` : ""}`,
@@ -135,18 +126,16 @@ export class Cli implements ICli {
 
         this.pluginManager = new PluginManager(this.logger);
 
-        // Register core logger plugin to attach logger to toolbox
-        this.addPlugin({
-            description: "Attaches the default logger to the toolbox",
-            execute: (toolbox: IToolbox) => {
+        this.pluginManager.register({
+            description: "Attaches the logger to the toolbox",
+            execute: (toolbox) => {
                 // eslint-disable-next-line no-param-reassign
                 toolbox.logger = this.logger;
             },
-            name: "core-logger",
+            name: "logger",
         });
 
-        this.addCommand(VersionCommand);
-        this.addCommand(new HelpCommand(this.commands));
+        registerExceptionHandler(this.logger);
     }
 
     public setCommandSection(commandSection: ICommandSection): this {
@@ -253,6 +242,9 @@ export class Cli implements ICli {
     // eslint-disable-next-line sonarjs/cognitive-complexity
     public async run(extraOptions: CliRunOptions = {}): Promise<void> {
         const { shouldExitProcess = true, ...otherExtraOptions } = extraOptions;
+
+        this.addCommand(VersionCommand);
+        this.addCommand(new HelpCommand(this.commands));
 
         const commandNames = [...this.commands.keys()];
 

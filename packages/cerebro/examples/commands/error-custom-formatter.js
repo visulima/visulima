@@ -17,4 +17,3 @@ const errorCustomFormatter = (cli) => {
 };
 
 export default errorCustomFormatter;
-

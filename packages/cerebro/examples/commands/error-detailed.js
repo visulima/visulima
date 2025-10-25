@@ -18,4 +18,3 @@ const errorDetailed = (cli) => {
 };
 
 export default errorDetailed;
-

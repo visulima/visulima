@@ -1,5 +1,3 @@
-import type { Pail } from "@visulima/pail/server";
-
 import type { Cli as ICli, Command as ICommand, Toolbox as IToolbox } from "../@types";
 import type { OptionDefinition } from "../@types/command";
 import type { Section } from "../@types/command-line-usage";
@@ -11,7 +9,7 @@ const EMPTY_GROUP_KEY = "__Other";
 
 const upperFirstChar = (string_: string): string => string_.charAt(0).toUpperCase() + string_.slice(1);
 
-const printGeneralHelp = (logger: Pail<never, string>, runtime: ICli, commands: Map<string, ICommand>, groupOption: string | undefined) => {
+const printGeneralHelp = (logger: Console, runtime: ICli, commands: Map<string, ICommand>, groupOption: string | undefined) => {
     logger.debug("no command given, printing general help...");
 
     let filteredCommands = [...new Set(commands.values())].filter((command) => !command.hidden);
@@ -33,7 +31,7 @@ const printGeneralHelp = (logger: Pail<never, string>, runtime: ICli, commands: 
         return accumulator;
     }, {});
 
-    logger.raw(
+    ((logger as Console & { raw?: (...args: unknown[]) => void })?.raw ?? logger.log)(
         commandLineUsage(
             [
                 {
@@ -41,6 +39,8 @@ const printGeneralHelp = (logger: Pail<never, string>, runtime: ICli, commands: 
                     header: "{inverse.cyan  Usage }",
                 },
                 ...Object.keys(groupedCommands).map((key) => {
+                    const groupOptionName = groupOption ? ` ${upperFirstChar(groupOption)}` : "";
+
                     return {
                         content: (groupedCommands[key] as ICommand[]).map((command) => {
                             let aliases = "";
@@ -59,7 +59,7 @@ const printGeneralHelp = (logger: Pail<never, string>, runtime: ICli, commands: 
                         }),
                         header:
                             key === EMPTY_GROUP_KEY || groupOption
-                                ? `{inverse.green  Available${groupOption ? ` ${upperFirstChar(groupOption)}` : ""} Commands }`
+                                ? `{inverse.green  Available${groupOptionName} Commands }`
                                 : ` {inverse.green  ${upperFirstChar(key)} }`,
                     };
                 }),
@@ -74,18 +74,13 @@ const printGeneralHelp = (logger: Pail<never, string>, runtime: ICli, commands: 
                     content: `Run "{cyan ${runtime.getCliName()}} {green help <command>}" or "{cyan ${runtime.getCliName()}} {green <command>} {yellow --help}" for help with a specific command.`,
                     raw: true,
                 },
-            ].filter(Boolean),
+            ].filter(Boolean) as Section[],
         ),
     );
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const printCommandHelp = <OD extends OptionDefinition<any>>(
-    logger: Pail<never, string>,
-    runtime: ICli,
-    commands: Map<string, ICommand<OD>>,
-    name: string,
-): void => {
+const printCommandHelp = <OD extends OptionDefinition<any>>(logger: Logger, runtime: ICli, commands: Map<string, ICommand<OD>>, name: string): void => {
     const command = commands.get(name) as ICommand<OD>;
 
     const usageGroups: Section[] = [];
@@ -135,7 +130,7 @@ const printCommandHelp = <OD extends OptionDefinition<any>>(
         });
     }
 
-    logger.raw(commandLineUsage(usageGroups));
+    ((logger as Console & { raw?: (...args: unknown[]) => void })?.raw ?? logger.log)(commandLineUsage(usageGroups));
 };
 
 class HelpCommand implements ICommand {
@@ -161,7 +156,7 @@ class HelpCommand implements ICommand {
         const { footer, header } = runtime.getCommandSection();
 
         if (header) {
-            logger.raw(templateFormat(header as string));
+            ((logger as Console & { raw?: (...args: unknown[]) => void })?.raw ?? logger.log)(templateFormat(header as string));
         }
 
         if (commandName === "help") {
@@ -171,7 +166,7 @@ class HelpCommand implements ICommand {
         }
 
         if (footer) {
-            logger.raw(templateFormat(footer as string));
+            ((logger as Console & { raw?: (...args: unknown[]) => void })?.raw ?? logger.log)(templateFormat(footer as string));
         }
     }
 }

@@ -77,7 +77,6 @@ export type ErrorHandlerOptions = {
 
 /**
  * Create an error handler plugin for enhanced error reporting.
- *
  * @param options Error handler configuration options
  * @returns Plugin instance
  */
