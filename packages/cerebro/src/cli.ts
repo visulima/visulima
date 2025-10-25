@@ -6,10 +6,11 @@ import { commandLineArgs } from "@visulima/command-line-args";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import camelCase from "camelcase";
 
-import type { Cli as ICli, Command as ICommand, CommandSection as ICommandSection, Options as IOptions, Toolbox as IToolbox } from "./@types";
-import type { CliRunOptions } from "./@types/cli";
-import type { OptionDefinition, PossibleOptionDefinition } from "./@types/command";
+import type { Cli as ICli, CliRunOptions, CommandSection as ICommandSection } from "./@types/cli";
+import type { Command as ICommand, OptionDefinition, PossibleOptionDefinition } from "./@types/command";
+import type { Options as IOptions } from "./@types/options";
 import type { Plugin } from "./@types/plugin";
+import type { Toolbox as IToolbox } from "./@types/toolbox";
 import HelpCommand from "./command/help-command";
 import VersionCommand from "./command/version-command";
 import { POSITIONALS_KEY, VERBOSITY_DEBUG, VERBOSITY_NORMAL, VERBOSITY_QUIET, VERBOSITY_VERBOSE } from "./constants";
