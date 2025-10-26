@@ -9,8 +9,7 @@ exports[`usage \`@visulima/cerebro\` npm package > should work as ESM package 1`
 
  Available Commands 
 
-    version  [v, V]     Output the version number 
-    help                                          
+    help       
 
  Command Options 
 

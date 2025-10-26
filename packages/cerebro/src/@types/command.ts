@@ -62,6 +62,18 @@ export type ArgumentDefinition<T = any> = Omit<OptionDefinition<T>, "multiple|la
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export interface Command<O extends OptionDefinition<any> = any, TContext extends IToolbox = IToolbox> {
+    /**
+     * @internal
+     * Pre-computed list of options with conflicts for runtime validation
+     */
+    __conflictingOptions__?: PossibleOptionDefinition<O>[];
+
+    /**
+     * @internal
+     * Pre-computed list of required options for runtime validation
+     */
+    __requiredOptions__?: PossibleOptionDefinition<O>[];
+
     /** Potential other names for this command */
     alias?: string[] | string;
 

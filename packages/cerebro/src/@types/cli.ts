@@ -7,6 +7,12 @@ export type CommandSection = { footer?: string; header?: string };
 export type CliRunOptions = {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [key: string]: any;
+
+    /**
+     * Whether to automatically dispose/cleanup the CLI instance after execution
+     * @default true
+     */
+    autoDispose?: boolean;
     shouldExitProcess?: boolean;
 };
 
@@ -25,6 +31,12 @@ export interface Cli {
      * @returns self
      */
     addPlugin: (plugin: Plugin) => this;
+
+    /**
+     * Disposes the CLI instance and cleans up resources
+     * @returns void
+     */
+    dispose: () => void;
 
     getCliName: () => string;
 

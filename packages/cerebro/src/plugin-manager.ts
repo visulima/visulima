@@ -21,6 +21,14 @@ class PluginManager<T extends Logger = Logger> {
     }
 
     /**
+     * Check if any plugins are registered
+     * @returns true if at least one plugin is registered
+     */
+    public hasPlugins(): boolean {
+        return this.plugins.size > 0;
+    }
+
+    /**
      * Register a plugin
      * @param plugin The plugin to register
      * @throws {Error} If plugin name is already registered or dependencies are invalid
@@ -48,6 +56,13 @@ class PluginManager<T extends Logger = Logger> {
     public async init(context: PluginContext): Promise<void> {
         if (this.initialized) {
             throw new Error("PluginManager already initialized");
+        }
+
+        if (this.plugins.size === 0) {
+            this.logger.debug("no plugins registered, skipping initialization");
+            this.initialized = true;
+
+            return;
         }
 
         // Validate dependencies
@@ -94,6 +109,10 @@ class PluginManager<T extends Logger = Logger> {
             throw new Error("PluginManager not initialized");
         }
 
+        if (this.plugins.size === 0) {
+            return;
+        }
+
         const orderedPlugins = this.getDependencyOrder();
 
         for (const plugin of orderedPlugins) {
@@ -126,6 +145,10 @@ class PluginManager<T extends Logger = Logger> {
      */
     public async executeErrorHandlers(error: Error, toolbox: Toolbox): Promise<void> {
         if (!this.initialized) {
+            return;
+        }
+
+        if (this.plugins.size === 0) {
             return;
         }
 
