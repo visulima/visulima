@@ -2,7 +2,6 @@ import type { Cli as ICli } from "./cli";
 import type { Command as ICommand } from "./command";
 import type { Options } from "./options";
 
-// Final toolbox
 export interface Toolbox<T extends Console = Console> extends Cerebro.ExtensionOverrides {
     /**
      * The argument passed to the command.

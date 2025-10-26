@@ -26,6 +26,8 @@ describe("3. Multiple Command Registration (Realistic CLI)", () => {
                 ],
             });
         });
+
+        cli.dispose();
     });
 
     bench("Commander - Register 5 commands", () => {

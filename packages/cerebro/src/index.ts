@@ -55,9 +55,9 @@ export type { ArgumentDefinition, Command, OptionDefinition } from "./@types/com
 export type { Plugin, PluginContext } from "./@types/plugin";
 export type { Toolbox } from "./@types/toolbox";
 export type { CliOptions } from "./cli";
-
 // Main class export
 export { Cli as Cerebro } from "./cli";
+export { VERBOSITY_DEBUG, VERBOSITY_NORMAL, VERBOSITY_QUIET, VERBOSITY_VERBOSE } from "./constants";
 
 /**
  * Creates a new Cerebro CLI instance.

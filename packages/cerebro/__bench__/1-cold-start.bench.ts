@@ -13,6 +13,8 @@ describe("1. Cold Start / Initialization (Critical for CLI tools)", () => {
     bench("Cerebro - Initialize CLI with plugin", () => {
         const cerebroCli = new Cerebro("test-cli");
 
+        cerebroCli.dispose();
+
         return cerebroCli;
     });
 

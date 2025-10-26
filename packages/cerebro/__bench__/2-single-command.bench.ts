@@ -24,6 +24,8 @@ describe("2. Single Command Registration", () => {
                 { description: "Number of workers", name: "workers", type: Number },
             ],
         });
+
+        cli.dispose();
     });
 
     bench("Commander - Register command with 3 options", () => {
