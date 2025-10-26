@@ -1,5 +1,3 @@
-import { boxen } from "@visulima/boxen";
-import { dim, green, reset, yellow } from "@visulima/colorize";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { isCI } from "ci-info";
 
@@ -48,13 +46,16 @@ export const updateNotifierPlugin = (options: UpdateNotifierPluginOptions = {}):
                 return;
             }
 
-            logger.raw("Checking for updates...");
+            ((logger as Console & { raw?: (...args: unknown[]) => void })?.raw ?? logger.log)("Checking for updates...");
 
             try {
                 const hasNewVersion = await import("../update-notifier/has-new-version").then((m) => m.default);
                 const updateAvailable = await hasNewVersion(updateNotifierOptions);
 
                 if (updateAvailable) {
+                    // Lazy load heavy dependencies only when update is available
+                    const [{ boxen }, { dim, green, reset, yellow }] = await Promise.all([import("@visulima/boxen"), import("@visulima/colorize")]);
+
                     const template = `Update available ${dim(packageVersion.toString())}${reset(" → ")}${green(updateAvailable)}`;
 
                     logger.error(

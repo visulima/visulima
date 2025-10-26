@@ -11,7 +11,8 @@ describe("cli", () => {
         expect(cli.getCliName()).toBe("MyCLI");
         expect(cli.getPackageVersion()).toBeUndefined();
         expect(cli.getPackageName()).toBeUndefined();
-        expect(cli.getCommands().size).toBe(4); // help and version commands
+        // Help and version commands are lazy-loaded during run()
+        expect(cli.getCommands().size).toBe(0);
     });
 
     it("should add a command and execute it successfully", async () => {

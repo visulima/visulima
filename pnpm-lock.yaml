@@ -1135,13 +1135,19 @@ importers:
 =======
         specifier: ^4.0.3
         version: 4.0.3(vitest@4.0.3(@types/debug@4.1.12)(@types/node@24.9.1)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
+<<<<<<< HEAD
 >>>>>>> c654b2e96 (feat(cerebro): enhance CLI framework with new plugins and logging options)
       camelcase:
         specifier: 8.0.0
         version: 8.0.0
+=======
+>>>>>>> 81495d01f (feat(cerebro): update dependencies and enhance CLI functionality)
       ci-info:
         specifier: ^4.3.1
         version: 4.3.1
+      commander:
+        specifier: 14.0.2
+        version: 14.0.2
       conventional-changelog-conventionalcommits:
         specifier: 9.1.0
         version: 9.1.0
@@ -1151,6 +1157,9 @@ importers:
       eslint:
         specifier: 9.38.0
         version: 9.38.0(jiti@2.6.1)
+      gunshi:
+        specifier: ^0.26.3
+        version: 0.26.3
       prettier:
         specifier: ^3.6.2
         version: 3.6.2

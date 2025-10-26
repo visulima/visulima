@@ -1,6 +1,7 @@
-import type { Cli as ICli, Command as ICommand, Toolbox as IToolbox } from "../@types";
-import type { OptionDefinition } from "../@types/command";
+import type { Cli as ICli } from "../@types/cli";
+import type { Command as ICommand, OptionDefinition } from "../@types/command";
 import type { Section } from "../@types/command-line-usage";
+import type { Toolbox as IToolbox } from "../@types/toolbox";
 import defaultOptions from "../default-options";
 import commandLineUsage from "../util/command-line-usage";
 import templateFormat from "../util/template-format";

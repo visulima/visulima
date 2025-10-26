@@ -13,6 +13,8 @@ class PluginManager<T extends Logger = Logger> {
 
     private initialized = false;
 
+    private cachedDependencyOrder: Plugin[] | undefined = undefined;
+
     public constructor(logger: T) {
         this.logger = logger;
     }
@@ -34,11 +36,13 @@ class PluginManager<T extends Logger = Logger> {
         this.logger.debug(`registering plugin: ${plugin.name}`);
 
         this.plugins.set(plugin.name, plugin);
+        // Invalidate cache when new plugin is registered
+        this.cachedDependencyOrder = undefined;
     }
 
     /**
-     * Initialize all registered plugins
-     * @param context The plugin context
+     * Initialize all registered plugins.
+     * @param context
      */
     public async init(context: PluginContext): Promise<void> {
         if (this.initialized) {
@@ -140,6 +144,10 @@ class PluginManager<T extends Logger = Logger> {
      * @returns Array of plugins sorted by dependencies
      */
     public getDependencyOrder(): Plugin[] {
+        if (this.cachedDependencyOrder !== undefined) {
+            return this.cachedDependencyOrder;
+        }
+
         const ordered: Plugin[] = [];
         const visited = new Set<string>();
         const visiting = new Set<string>();
@@ -177,6 +185,8 @@ class PluginManager<T extends Logger = Logger> {
         for (const pluginName of this.plugins.keys()) {
             visit(pluginName);
         }
+
+        this.cachedDependencyOrder = ordered;
 
         return ordered;
     }

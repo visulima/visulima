@@ -3,16 +3,12 @@ import { argv as process_argv, cwd as process_cwd, env, execArgv, execPath, exit
 import type { CommandLineOptions } from "@visulima/command-line-args";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { commandLineArgs } from "@visulima/command-line-args";
-// eslint-disable-next-line import/no-extraneous-dependencies
-import camelCase from "camelcase";
 
 import type { Cli as ICli, CliRunOptions, CommandSection as ICommandSection } from "./@types/cli";
 import type { Command as ICommand, OptionDefinition, PossibleOptionDefinition } from "./@types/command";
 import type { Options as IOptions } from "./@types/options";
 import type { Plugin } from "./@types/plugin";
 import type { Toolbox as IToolbox } from "./@types/toolbox";
-import HelpCommand from "./command/help-command";
-import VersionCommand from "./command/version-command";
 import { POSITIONALS_KEY, VERBOSITY_DEBUG, VERBOSITY_NORMAL, VERBOSITY_QUIET, VERBOSITY_VERBOSE } from "./constants";
 import defaultOptions from "./default-options";
 import EmptyToolbox from "./empty-toolbox";
@@ -21,13 +17,26 @@ import getBooleanValues from "./util/command-line-args/get-boolean-values";
 import mapOptionTypeLabel from "./util/command-line-args/map-option-type-label";
 import removeBooleanValues from "./util/command-line-args/remove-boolean-values";
 import commandLineCommands from "./util/command-line-commands";
-import findAlternatives from "./util/levenstein";
+import findAlternatives from "./util/find-alternatives";
 import listMissingArguments from "./util/list-missing-arguments";
 import mergeArguments from "./util/merge-arguments";
 import parseRawCommand from "./util/parse-raw-command";
 import registerExceptionHandler from "./util/register-exception-handler";
 
 const lowerFirstChar = (string_: string): string => string_.charAt(0).toLowerCase() + string_.slice(1);
+
+/**
+ * Lightweight camelCase implementation for option names
+ * Converts kebab-case and snake_case to camelCase
+ */
+const camelCase = (string_: string): string => {
+    // Fast path for strings without separators
+    if (!string_.includes("-") && !string_.includes("_")) {
+        return string_;
+    }
+
+    return string_.replaceAll(/[-_](.)/g, (_, character) => character.toUpperCase()).replace(/^[A-Z]/, (character) => character.toLowerCase());
+};
 
 export type CliOptions<T extends Console = Console> = {
     argv?: string[];
@@ -79,15 +88,7 @@ export class Cli<T extends Console = Console> implements ICli {
             ...options,
         };
 
-        if (this.options.argv === undefined) {
-            throw new Error("The argv option is required, it can be provided as a string array or as a process.argv array");
-        }
-
-        if (this.options.cwd === undefined) {
-            throw new Error("The cwd option is required, it can be provided as a string");
-        }
-
-        this.argv = parseRawCommand(this.options.argv);
+        this.argv = parseRawCommand(this.options.argv as string[]);
 
         // Set verbosity level from command line flags
         if (this.argv.includes("--quiet") || this.argv.includes("-q")) {
@@ -117,7 +118,7 @@ export class Cli<T extends Console = Console> implements ICli {
         this.cliName = cliName;
         this.packageVersion = this.options.packageVersion;
         this.packageName = this.options.packageName;
-        this.cwd = this.options.cwd;
+        this.cwd = this.options.cwd as string;
         this.defaultCommand = "help";
         this.commandSection = {
             header: `${this.cliName}${this.packageVersion ? ` v${this.packageVersion}` : ""}`,
@@ -243,6 +244,12 @@ export class Cli<T extends Console = Console> implements ICli {
     // eslint-disable-next-line sonarjs/cognitive-complexity
     public async run(extraOptions: CliRunOptions = {}): Promise<void> {
         const { shouldExitProcess = true, ...otherExtraOptions } = extraOptions;
+
+        // Lazy load help and version commands to improve init time
+        const [{ default: VersionCommand }, { default: HelpCommand }] = await Promise.all([
+            import("./command/version-command"),
+            import("./command/help-command"),
+        ]);
 
         this.addCommand(VersionCommand);
         this.addCommand(new HelpCommand(this.commands));
