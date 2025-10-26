@@ -1,3 +1,5 @@
+import { cyan, green, inverse, yellow } from "@visulima/colorize";
+
 import type { Cli as ICli } from "../@types/cli";
 import type { Command as ICommand, OptionDefinition } from "../@types/command";
 import type { Section } from "../@types/command-line-usage";
@@ -36,8 +38,8 @@ const printGeneralHelp = (logger: Console, runtime: ICli, commands: Map<string, 
         commandLineUsage(
             [
                 {
-                    content: `{cyan ${runtime.getCliName()}} {green <command>} [positional arguments] {yellow [options]}`,
-                    header: "{inverse.cyan  Usage }",
+                    content: `${cyan(runtime.getCliName())} ${green("<command>")} [positional arguments] ${yellow("[options]")}`,
+                    header: inverse.cyan(" Usage "),
                 },
                 ...Object.keys(groupedCommands).map((key) => {
                     const groupOptionName = groupOption ? ` ${upperFirstChar(groupOption)}` : "";
@@ -56,23 +58,23 @@ const printGeneralHelp = (logger: Console, runtime: ICli, commands: Map<string, 
                                 aliases = ` [${aliases}]`;
                             }
 
-                            return [`{green ${command.name}} ${aliases}`, command.description ?? ""];
+                            return [`${green(command.name)} ${aliases}`, command.description ?? ""];
                         }),
                         header:
                             key === EMPTY_GROUP_KEY || groupOption
-                                ? `{inverse.green  Available${groupOptionName} Commands }`
-                                : ` {inverse.green  ${upperFirstChar(key)} }`,
+                                ? inverse.green(` Available${groupOptionName} Commands `)
+                                : ` ${inverse.green(` ${upperFirstChar(key)} `)}`,
                     };
                 }),
                 commands.has("help")
                     ? {
-                        header: "{inverse.yellow  Command Options }",
+                        header: inverse.yellow(" Command Options "),
                         optionList: (commands.get("help") as ICommand).options?.filter((option) => !option.hidden),
                     }
                     : undefined,
-                { header: "{inverse.yellow  Global Options }", optionList: defaultOptions },
+                { header: inverse.yellow(" Global Options "), optionList: defaultOptions },
                 {
-                    content: `Run "{cyan ${runtime.getCliName()}} {green help <command>}" or "{cyan ${runtime.getCliName()}} {green <command>} {yellow --help}" for help with a specific command.`,
+                    content: `Run "${cyan(runtime.getCliName())} ${green("help <command>")}" or "${cyan(runtime.getCliName())} ${green("<command>")} ${yellow("--help")}" for help with a specific command.`,
                     raw: true,
                 },
             ].filter(Boolean) as Section[],
@@ -81,20 +83,20 @@ const printGeneralHelp = (logger: Console, runtime: ICli, commands: Map<string, 
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const printCommandHelp = <OD extends OptionDefinition<any>>(logger: Logger, runtime: ICli, commands: Map<string, ICommand<OD>>, name: string): void => {
+const printCommandHelp = <OD extends OptionDefinition<any>>(logger: Console, runtime: ICli, commands: Map<string, ICommand<OD>>, name: string): void => {
     const command = commands.get(name) as ICommand<OD>;
 
     const usageGroups: Section[] = [];
 
     usageGroups.push({
-        content: `{cyan ${runtime.getCliName()}} {green ${command.name}}${command.argument ? " [positional arguments]" : ""}${
+        content: `${cyan(runtime.getCliName())} ${green(command.name)}${command.argument ? " [positional arguments]" : ""}${
             command.options ? " [options]" : ""
         }`,
-        header: "{inverse.cyan  Usage }",
+        header: inverse.cyan(" Usage "),
     });
 
     if (command.description) {
-        usageGroups.push({ content: command.description, header: "{inverse.green  Description }" });
+        usageGroups.push({ content: command.description, header: inverse.green(" Description ") });
     }
 
     if (command.argument) {
@@ -103,13 +105,13 @@ const printCommandHelp = <OD extends OptionDefinition<any>>(logger: Logger, runt
 
     if (Array.isArray(command.options) && command.options.length > 0) {
         usageGroups.push({
-            header: "{inverse.yellow  Command Options }",
+            header: inverse.yellow(" Command Options "),
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             optionList: command.options.filter((option) => !option.hidden) as OptionDefinition<any>[],
         });
     }
 
-    usageGroups.push({ header: "{inverse.yellow  Global Options }", optionList: defaultOptions });
+    usageGroups.push({ header: inverse.yellow(" Global Options "), optionList: defaultOptions });
 
     if (command.alias !== undefined && command.alias.length > 0) {
         let alias: string[] = command.alias as string[];
