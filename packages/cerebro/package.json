@@ -62,12 +62,12 @@
             "default": "./dist/index.js"
         },
         "./command/help": {
-            "types": "./dist/command/help-command.d.ts",
-            "default": "./dist/command/help-command.js"
+            "types": "./dist/commands/help-command.d.ts",
+            "default": "./dist/commands/help-command.js"
         },
         "./command/version": {
-            "types": "./dist/command/version-command.d.ts",
-            "default": "./dist/command/version-command.js"
+            "types": "./dist/commands/version-command.d.ts",
+            "default": "./dist/commands/version-command.js"
         },
         "./plugins/error-handler": {
             "types": "./dist/plugins/error-handler-plugin.d.ts",

@@ -1,4 +1,4 @@
-import type { OptionDefinition, PossibleOptionDefinition } from "../@types/command";
+import type { OptionDefinition, PossibleOptionDefinition } from "../../@types/command";
 
 /**
  * Performs a simple merge of multiple argument lists. Does not mutate given

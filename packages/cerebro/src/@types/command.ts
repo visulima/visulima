@@ -3,11 +3,9 @@ import type { OptionDefinition as BaseOptionDefinition } from "@visulima/command
 import type { Content } from "./command-line-usage";
 import type { Toolbox as IToolbox } from "./toolbox";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type TypeConstructor<T> = (value: any) => T extends (infer R)[] ? R | undefined : T | undefined;
+type TypeConstructor<T> = (value: unknown) => T extends (infer R)[] ? R | undefined : T | undefined;
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type MultiplePropertyOptions<T> = any[] extends T ? { lazyMultiple: true } | { multiple: true } : unknown;
+type MultiplePropertyOptions<T> = unknown[] extends T ? { lazyMultiple: true } | { multiple: true } : unknown;
 
 export type OptionDefinition<T> = MultiplePropertyOptions<T>
     & Omit<BaseOptionDefinition, "type|defaultValue"> & {

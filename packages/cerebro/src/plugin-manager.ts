@@ -1,5 +1,6 @@
 import type { Plugin, PluginContext } from "./@types/plugin";
 import type { Toolbox } from "./@types/toolbox";
+import { PluginError } from "./errors";
 
 type Logger = Console;
 
@@ -66,9 +67,15 @@ class PluginManager<T extends Logger = Logger> {
                     // eslint-disable-next-line no-await-in-loop
                     await plugin.init(context);
                 } catch (error) {
-                    this.logger.error(`Failed to initialize plugin "${plugin.name}":`, error as Error);
+                    const pluginError = new PluginError(
+                        plugin.name,
+                        `Failed to initialize: ${error instanceof Error ? error.message : String(error)}`,
+                        error instanceof Error ? error : undefined,
+                    );
 
-                    throw error;
+                    this.logger.error(pluginError.message);
+
+                    throw pluginError;
                 }
             }
         }

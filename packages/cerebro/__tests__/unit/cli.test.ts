@@ -64,9 +64,7 @@ describe("cli", () => {
 
         cli.addCommand({ execute: vi.fn(), name: "duplicate" });
 
-        expect(() => cli.addCommand({ execute: vi.fn(), name: "duplicate" })).toThrow(
-            "Ignored command with name \"duplicate\", it was found in the command list.",
-        );
+        expect(() => cli.addCommand({ execute: vi.fn(), name: "duplicate" })).toThrow("Command with name \"duplicate\" already exists");
     });
 
     it("should throw error when running a command with missing required options", async () => {
@@ -84,7 +82,7 @@ describe("cli", () => {
             cli.run({
                 shouldExitProcess: false,
             }),
-        ).rejects.toThrow("You called the command \"test\" without the required options: requiredOption");
+        ).rejects.toThrow("Command \"test\" is missing required options: requiredOption");
     });
 
     it("should throw error when running a command with unknown options", async () => {
@@ -119,7 +117,7 @@ describe("cli", () => {
             cli.run({
                 shouldExitProcess: false,
             }),
-        ).rejects.toThrow("You called the command \"test\" with conflicting options: option1 and option2");
+        ).rejects.toThrow("Options \"option1\" and \"option2\" cannot be used together");
     });
 
     it("should not throw a error when running a command with one options that dont conflict", async () => {

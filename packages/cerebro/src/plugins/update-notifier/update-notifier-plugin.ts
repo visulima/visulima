@@ -49,7 +49,7 @@ export const updateNotifierPlugin = (options: UpdateNotifierPluginOptions = {}):
             ((logger as Console & { raw?: (...args: unknown[]) => void })?.raw ?? logger.log)("Checking for updates...");
 
             try {
-                const hasNewVersion = await import("../update-notifier/has-new-version").then((m) => m.default);
+                const hasNewVersion = await import("./has-new-version").then((m) => m.default);
                 const updateAvailable = await hasNewVersion(updateNotifierOptions);
 
                 if (updateAvailable) {

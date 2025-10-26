@@ -1,8 +1,8 @@
-import type { Mock } from "vitest";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { Command as ICommand, Toolbox as IToolbox } from "../../../src/@types";
-import HelpCommand from "../../../src/command/help";
+import type { Command as ICommand } from "../../../src/@types/command";
+import type { Toolbox as IToolbox } from "../../../src/@types/toolbox";
+import HelpCommand from "../../../src/commands/help-command";
 import globalOptions from "../../../src/default-options";
 import commandLineUsage from "../../../src/util/command-line-usage";
 
@@ -27,17 +27,17 @@ const runtimeMock = {
 };
 
 const headerSection = {
-    content: "{cyan testcli} {green <command>} [positional arguments] {yellow [options]}",
-    header: "{inverse.cyan  Usage }",
+    content: "testcli <command> [positional arguments] [options]",
+    header: " Usage ",
 };
 
 const footerSection = {
-    content: "Run \"{cyan testcli} {green help <command>}\" or \"{cyan testcli} {green <command>} {yellow --help}\" for help with a specific command.",
+    content: "Run \"testcli help <command>\" or \"testcli <command> --help\" for help with a specific command.",
     raw: true,
 };
 
 const globalOptionsOptionsList = {
-    header: "{inverse.yellow  Global Options }",
+    header: " Global Options ",
     optionList: globalOptions,
 };
 
@@ -88,26 +88,7 @@ describe("command/help", () => {
         helpCommand.execute(toolboxMock as unknown as IToolbox);
 
         expect(loggerMock.raw).toHaveBeenNthCalledWith(1, "Test header");
-        expect(commandLineUsage).toHaveBeenCalledExactlyOnceWith([
-            {
-                content: "{cyan testcli} {green test} [options]",
-                header: "{inverse.cyan  Usage }",
-            },
-            {
-                content: "A test command",
-                header: "{inverse.green  Description }",
-            },
-            {
-                header: "{inverse.yellow  Command Options }",
-                optionList: [
-                    {
-                        description: "Enable verbose output",
-                        name: "verbose",
-                    },
-                ],
-            },
-            globalOptionsOptionsList,
-        ]);
+        expect(commandLineUsage).toMatchSnapshot();
         expect(loggerMock.raw).toHaveBeenNthCalledWith(3, "Test footer");
     });
 
@@ -145,15 +126,7 @@ describe("command/help", () => {
         helpCommand.execute(toolboxMock as unknown as IToolbox);
 
         expect(loggerMock.raw).toHaveBeenNthCalledWith(1, "Test header");
-        expect(commandLineUsage).toHaveBeenCalledExactlyOnceWith([
-            headerSection,
-            {
-                content: [["{green test} ", "A test command"]],
-                header: "{inverse.green  Available Commands }",
-            },
-            globalOptionsOptionsList,
-            footerSection,
-        ]);
+        expect(commandLineUsage).toMatchSnapshot();
         expect(loggerMock.raw).toHaveBeenNthCalledWith(3, "Test footer");
 
         // Ensure hidden commands are not included in the output
@@ -208,17 +181,7 @@ describe("command/help", () => {
         helpCommand.execute(toolboxMock as unknown as IToolbox);
 
         expect(loggerMock.raw).toHaveBeenNthCalledWith(1, "Test header");
-        expect(commandLineUsage).toHaveBeenCalledExactlyOnceWith([
-            {
-                content: "{cyan testcli} {green commandWithExamples}",
-                header: "{inverse.cyan  Usage }",
-            },
-            globalOptionsOptionsList,
-            {
-                content: ["testcli test --verbose", "testcli test --verbose --debug"],
-                header: "Examples",
-            },
-        ]);
+        expect(commandLineUsage).toMatchSnapshot();
         expect(loggerMock.raw).toHaveBeenNthCalledWith(3, "Test footer");
     });
 

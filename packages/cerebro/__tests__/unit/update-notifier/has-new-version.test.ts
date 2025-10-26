@@ -1,7 +1,7 @@
 import type { Mock } from "vitest";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import hasNewVersion from "../../../src/update-notifier/has-new-version";
+import hasNewVersion from "../../../src/plugins/update-notifier/has-new-version";
 
 const { getDistributionVersion, getLastUpdate, saveLastUpdate } = vi.hoisted(() => {
     return {
@@ -11,12 +11,12 @@ const { getDistributionVersion, getLastUpdate, saveLastUpdate } = vi.hoisted(() 
     };
 });
 
-vi.mock(import("../../../src/update-notifier/get-dist-version"), () => {
+vi.mock(import("../../../src/plugins/update-notifier/get-dist-version"), () => {
     return {
         default: getDistributionVersion,
     };
 });
-vi.mock(import("../../../src/update-notifier/cache"), () => {
+vi.mock(import("../../../src/plugins/update-notifier/cache"), () => {
     return {
         getLastUpdate,
         saveLastUpdate,
@@ -42,7 +42,7 @@ describe("update-notifier/has-new-version", () => {
 
         const newVersion = await hasNewVersion(defaultArguments);
 
-        expect(newVersion).toBeNull();
+        expect(newVersion).toBeUndefined();
     });
 
     it("should trigger update for patch version bump", async () => {
@@ -82,7 +82,7 @@ describe("update-notifier/has-new-version", () => {
 
         const newVersion = await hasNewVersion(defaultArguments);
 
-        expect(newVersion).toBeNull();
+        expect(newVersion).toBeUndefined();
     });
 
     it("should trigger update check if last update older than config", async () => {
@@ -97,7 +97,7 @@ describe("update-notifier/has-new-version", () => {
             shouldNotifyInNpmScript: true,
         });
 
-        expect(newVersion).toBeNull();
+        expect(newVersion).toBeUndefined();
         expect(getDistributionVersion).toHaveBeenCalledExactlyOnceWith("has-new-version", "latest", "https://registry.npmjs.org/-/package/__NAME__/dist-tags");
     });
 
@@ -113,7 +113,7 @@ describe("update-notifier/has-new-version", () => {
             shouldNotifyInNpmScript: true,
         });
 
-        expect(newVersion).toBeNull();
+        expect(newVersion).toBeUndefined();
         expect(getDistributionVersion).not.toHaveBeenCalled();
     });
 });

@@ -1,6 +1,4 @@
-type Logger = Console;
-
-const registerExceptionHandler = <T extends Logger = Logger>(logger: T): void => {
+const registerExceptionHandler = <T extends Console = Console>(logger: T): void => {
     // we want to see real exceptions with backtraces and stuff
     process.on("uncaughtException", (error: Partial<Error> | null | undefined) => {
         logger.error(`Uncaught exception: ${error}`);

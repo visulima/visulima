@@ -6,7 +6,7 @@ import type { Section } from "../@types/command-line-usage";
 import type { Toolbox as IToolbox } from "../@types/toolbox";
 import defaultOptions from "../default-options";
 import commandLineUsage from "../util/command-line-usage";
-import templateFormat from "../util/template-format";
+import templateFormat from "../util/text-processing/template-format";
 
 const EMPTY_GROUP_KEY = "__Other";
 

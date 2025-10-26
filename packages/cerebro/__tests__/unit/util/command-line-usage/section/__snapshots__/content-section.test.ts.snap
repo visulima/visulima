@@ -1,10 +1,8 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`line-usage/content-section > should render content: { options: object, data: string[][]|string[] } 1`] = `
-"┌────────────────────────────────────────┬────────────────────────────────────────────────────────────┐
-test  one                                   │  two                                                       │
-test  one                                   │  two                                                       │
-test  foo                                   │                                                            │
-└────────────────────────────────────────┴────────────────────────────────────────────────────────────┘
+"    one     two 
+    one     two 
+    foo         
 "
 `;

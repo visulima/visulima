@@ -2,28 +2,29 @@
 
 exports[`usage \`@visulima/cerebro\` npm package > should work as ESM package 1`] = `
 "cerebro
+
  Usage 
 
-   cerebro <command> [positional arguments] [options]                            
+    cerebro <command> [positional arguments] [options] 
 
  Available Commands 
 
-   version  [v, V]                          Output the version number                                 
-   help                                                                                               
+    version  [v, V]     Output the version number 
+    help                                          
 
  Command Options 
 
-   --group string                           Display only the specified group      
+  --group string   Display only the specified group 
 
  Global Options 
 
-   --verbose boolean                        Turn on verbose output                
-   --debug boolean                          Turn on debugging output              
-   -h, --help boolean                       Print out helpful usage information   
-   -q, --quiet boolean                      Silence output                        
-   -V, --version boolean                    Print version info                    
-   --no-color boolean                       Turn off colored output               
-   --color boolean                          Force colored output                  
+  --verbose boolean       Turn on verbose output              
+  --debug boolean         Turn on debugging output            
+  -h, --help boolean      Print out helpful usage information 
+  -q, --quiet boolean     Silence output                      
+  -V, --version boolean   Print version info                  
+  --no-color boolean      Turn off colored output             
+  --color boolean         Force colored output                
 
 Run "cerebro help <command>" or "cerebro <command> --help" for help with a specific command."
 `;
