@@ -31,7 +31,7 @@
 ### Bug Fixes
 
 * streamline package.json and packem configuration ([ff49f16](https://github.com/visulima/visulima/commit/ff49f165fd11ea088aceb0df8fb5b0e0e6521b89))
-* update @visulima/packem to 2.0.0-alpha.30 across multiple packages for improved compatibility ([27b346e](https://github.com/visulima/visulima/commit/27b346eaa1c0fb0e420d9a9824482028307f4249))
+* update @visulima/packem to 2.0.0-alpha.32 across multiple packages for improved compatibility ([27b346e](https://github.com/visulima/visulima/commit/27b346eaa1c0fb0e420d9a9824482028307f4249))
 
 ### Miscellaneous Chores
 

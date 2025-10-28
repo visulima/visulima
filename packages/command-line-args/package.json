@@ -68,11 +68,11 @@
         "@arethetypeswrong/cli": "^0.18.2",
         "@secretlint/secretlint-rule-preset-recommend": "^11.2.5",
         "@total-typescript/ts-reset": "^0.6.1",
-        "@types/node": "24.9.1",
+        "@types/node": "24.9.2",
         "@visulima/error": "5.0.2",
-        "@visulima/packem": "2.0.0-alpha.30",
-        "@vitest/coverage-v8": "^4.0.1",
-        "@vitest/ui": "^4.0.1",
+        "@visulima/packem": "2.0.0-alpha.32",
+        "@vitest/coverage-v8": "^4.0.4",
+        "@vitest/ui": "^4.0.4",
         "conventional-changelog-conventionalcommits": "9.1.0",
         "esbuild": "^0.25.11",
         "eslint": "9.38.0",
@@ -83,7 +83,7 @@
         "semantic-release": "^25.0.1",
         "test-runner": "0.11.1",
         "typescript": "^5.9.3",
-        "vitest": "^4.0.1"
+        "vitest": "^4.0.4"
     },
     "engines": {
         "node": ">=20.19 <=25.x"

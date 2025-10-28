@@ -21,7 +21,7 @@
 * Adjusted the node engine requirement to support versions 20.19 and above ([ffeb2d4](https://github.com/visulima/visulima/commit/ffeb2d4ceff773f742c4f4f57b760588404e7434))
 * allowed node 24 ([6397e2e](https://github.com/visulima/visulima/commit/6397e2e9a172a31d0983b0f34e9feabcc7bcf339))
 * restore require exports in package.json for compatibility ([8b993fd](https://github.com/visulima/visulima/commit/8b993fd267cf4c02ef94420e520001076057c781))
-* update @visulima/packem to 2.0.0-alpha.30 across multiple packages for improved compatibility ([27b346e](https://github.com/visulima/visulima/commit/27b346eaa1c0fb0e420d9a9824482028307f4249))
+* update @visulima/packem to 2.0.0-alpha.32 across multiple packages for improved compatibility ([27b346e](https://github.com/visulima/visulima/commit/27b346eaa1c0fb0e420d9a9824482028307f4249))
 
 ### Miscellaneous Chores
 

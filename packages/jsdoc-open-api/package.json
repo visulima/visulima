@@ -118,13 +118,13 @@
         "@types/cli-progress": "^3.11.6",
         "@types/http-errors": "^2.0.5",
         "@types/lodash.mergewith": "^4.6.9",
-        "@types/node": "24.9.1",
+        "@types/node": "24.9.2",
         "@types/webpack": "^5.28.5",
         "@visulima/fs": "4.0.2",
-        "@vitest/coverage-v8": "^4.0.1",
-        "@vitest/ui": "^4.0.1",
+        "@vitest/coverage-v8": "^4.0.4",
+        "@vitest/ui": "^4.0.4",
         "cli-progress": "^3.12.0",
-        "commander": "^14.0.1",
+        "commander": "^14.0.2",
         "conventional-changelog-conventionalcommits": "9.1.0",
         "cross-env": "^10.1.0",
         "eslint": "9.38.0",
@@ -134,12 +134,12 @@
         "semantic-release": "25.0.1",
         "tsup": "^8.5.0",
         "typescript": "5.9.3",
-        "vitest": "^4.0.1",
+        "vitest": "^4.0.4",
         "webpack": "^5.102.1"
     },
     "optionalDependencies": {
         "cli-progress": "^3.12.0",
-        "commander": "^14.0.1",
+        "commander": "^14.0.2",
         "webpack": "^5.102.1"
     },
     "engines": {

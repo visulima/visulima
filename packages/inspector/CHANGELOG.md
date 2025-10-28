@@ -19,7 +19,7 @@
 
 ### Bug Fixes
 
-* update @visulima/packem to 2.0.0-alpha.30 across multiple packages for improved compatibility ([27b346e](https://github.com/visulima/visulima/commit/27b346eaa1c0fb0e420d9a9824482028307f4249))
+* update @visulima/packem to 2.0.0-alpha.32 across multiple packages for improved compatibility ([27b346e](https://github.com/visulima/visulima/commit/27b346eaa1c0fb0e420d9a9824482028307f4249))
 * update package dependencies and improve ESLint configuration for enhanced performance ([7bf2429](https://github.com/visulima/visulima/commit/7bf24299c144f6833b48639db3894b086e33a154))
 
 ### Miscellaneous Chores

@@ -8,6 +8,6 @@
         "dev": "bun --hot example.ts"
     },
     "dependencies": {
-        "@visulima/pail": "3.0.0"
+        "@visulima/pail": "3.0.2"
     }
 }

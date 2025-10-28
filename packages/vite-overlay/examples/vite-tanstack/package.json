@@ -9,13 +9,13 @@
         "test": "vitest run"
     },
     "dependencies": {
-        "@tailwindcss/vite": "^4.1.15",
-        "@tanstack/react-router": "^1.133.22",
-        "@tanstack/react-router-devtools": "^1.133.22",
-        "@tanstack/router-plugin": "^1.133.22",
+        "@tailwindcss/vite": "^4.1.16",
+        "@tanstack/react-router": "^1.133.35",
+        "@tanstack/react-router-devtools": "^1.133.35",
+        "@tanstack/router-plugin": "^1.133.35",
         "react": "^19.2.0",
         "react-dom": "^19.2.0",
-        "tailwindcss": "^4.1.15"
+        "tailwindcss": "^4.1.16"
     },
     "devDependencies": {
         "@testing-library/dom": "^10.4.1",
@@ -23,11 +23,11 @@
         "@types/react": "^19.2.2",
         "@types/react-dom": "^19.2.2",
         "@visulima/vite-overlay": "workspace:*",
-        "@vitejs/plugin-react": "^5.0.4",
+        "@vitejs/plugin-react": "^5.1.0",
         "jsdom": "^27.0.1",
         "typescript": "^5.9.3",
-        "vite": "^7.1.11",
-        "vitest": "^4.0.1",
+        "vite": "^7.1.12",
+        "vitest": "^4.0.4",
         "web-vitals": "^5.1.0"
     }
 }

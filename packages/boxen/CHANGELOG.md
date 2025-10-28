@@ -33,7 +33,7 @@
 ### Bug Fixes
 
 * add Prettier configuration and update ESLint settings for improved code formatting ([0039641](https://github.com/visulima/visulima/commit/0039641662fd2e9f55f07e4956666aac9e943bca))
-* update @visulima/packem to 2.0.0-alpha.30 across multiple packages for improved compatibility ([27b346e](https://github.com/visulima/visulima/commit/27b346eaa1c0fb0e420d9a9824482028307f4249))
+* update @visulima/packem to 2.0.0-alpha.32 across multiple packages for improved compatibility ([27b346e](https://github.com/visulima/visulima/commit/27b346eaa1c0fb0e420d9a9824482028307f4249))
 
 ### Miscellaneous Chores
 

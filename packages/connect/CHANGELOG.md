@@ -25,7 +25,7 @@
 ### Bug Fixes
 
 * consolidate ESLint configuration and remove obsolete files for improved maintainability ([670cc9e](https://github.com/visulima/visulima/commit/670cc9e2a16aaf43aafddc5b00bb3d34144bb1df))
-* update @visulima/packem to 2.0.0-alpha.30 across multiple packages for improved compatibility ([27b346e](https://github.com/visulima/visulima/commit/27b346eaa1c0fb0e420d9a9824482028307f4249))
+* update @visulima/packem to 2.0.0-alpha.32 across multiple packages for improved compatibility ([27b346e](https://github.com/visulima/visulima/commit/27b346eaa1c0fb0e420d9a9824482028307f4249))
 * update @visulima/packem to version 2.0.0-alpha.29 and adjust packem.config.ts settings ([e505bcf](https://github.com/visulima/visulima/commit/e505bcfba65e8fede4286b8cd08557d976081de5))
 
 ### Miscellaneous Chores
