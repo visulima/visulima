@@ -33,7 +33,7 @@
 ### Bug Fixes
 
 * Adjusted the node engine requirement to support versions 20.19 and above ([7a2a2c0](https://github.com/visulima/visulima/commit/7a2a2c003a3627ee3052095b5624e6bf20db28d9))
-* update @visulima/packem to 2.0.0-alpha.30 across multiple packages for improved compatibility ([27b346e](https://github.com/visulima/visulima/commit/27b346eaa1c0fb0e420d9a9824482028307f4249))
+* update @visulima/packem to 2.0.0-alpha.32 across multiple packages for improved compatibility ([27b346e](https://github.com/visulima/visulima/commit/27b346eaa1c0fb0e420d9a9824482028307f4249))
 
 ### Miscellaneous Chores
 

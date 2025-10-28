@@ -41,7 +41,7 @@
 ### Bug Fixes
 
 * enhance linting commands and update package dependencies for improved performance ([cdbda6b](https://github.com/visulima/visulima/commit/cdbda6bd693d0618b58525e8fe10eb45d90eb6f5))
-* update @visulima/packem to 2.0.0-alpha.30 across multiple packages for improved compatibility ([27b346e](https://github.com/visulima/visulima/commit/27b346eaa1c0fb0e420d9a9824482028307f4249))
+* update @visulima/packem to 2.0.0-alpha.32 across multiple packages for improved compatibility ([27b346e](https://github.com/visulima/visulima/commit/27b346eaa1c0fb0e420d9a9824482028307f4249))
 * update devDependencies and packem configuration ([db05ef1](https://github.com/visulima/visulima/commit/db05ef1f50c6efa73be2ab8f1362fa90587fafeb))
 
 ### Miscellaneous Chores

@@ -15,7 +15,7 @@
 ### Bug Fixes
 
 * streamline ESLint configuration and enhance code readability ([56ccf38](https://github.com/visulima/visulima/commit/56ccf3882ca6071bb258910b068ffc30ddd2ced3))
-* update @visulima/packem to 2.0.0-alpha.30 across multiple packages for improved compatibility ([27b346e](https://github.com/visulima/visulima/commit/27b346eaa1c0fb0e420d9a9824482028307f4249))
+* update @visulima/packem to 2.0.0-alpha.32 across multiple packages for improved compatibility ([27b346e](https://github.com/visulima/visulima/commit/27b346eaa1c0fb0e420d9a9824482028307f4249))
 
 ### Miscellaneous Chores
 

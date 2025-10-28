@@ -84,7 +84,7 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@prisma/generator-helper": "6.17.1",
+        "@prisma/generator-helper": "6.18.0",
         "type-fest": "5.1.0"
     },
     "devDependencies": {
@@ -93,14 +93,13 @@
         "@anolilab/semantic-release-pnpm": "^2.0.4",
         "@anolilab/semantic-release-preset": "^11.0.4",
         "@arethetypeswrong/cli": "^0.18.2",
-        "@babel/core": "^7.28.4",
-        "@prisma/client": "6.17.1",
-        "@prisma/internals": "6.17.1",
+        "@prisma/client": "6.18.0",
+        "@prisma/internals": "6.18.0",
         "@types/json-schema": "7.0.15",
-        "@types/micromatch": "4.0.9",
-        "@types/node": "24.9.1",
-        "@visulima/packem": "2.0.0-alpha.30",
-        "@vitest/coverage-v8": "3.2.4",
+        "@types/micromatch": "4.0.10",
+        "@types/node": "24.9.2",
+        "@visulima/packem": "2.0.0-alpha.32",
+        "@vitest/coverage-v8": "4.0.4",
         "ajv": "8.17.1",
         "ajv-formats": "3.0.1",
         "conventional-changelog-conventionalcommits": "9.1.0",
@@ -108,12 +107,12 @@
         "eslint": "9.38.0",
         "json-schema": "0.4.0",
         "prettier": "3.6.2",
-        "prisma": "6.17.1",
+        "prisma": "6.18.0",
         "publint": "^0.3.15",
         "rimraf": "6.0.1",
         "semantic-release": "25.0.1",
         "typescript": "5.9.3",
-        "vitest": "3.2.4"
+        "vitest": "4.0.4"
     },
     "peerDependencies": {
         "@prisma/client": "3.* || 4.* || 5.* || 6.*",

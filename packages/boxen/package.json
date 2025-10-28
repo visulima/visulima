@@ -94,13 +94,13 @@
         "@anolilab/semantic-release-pnpm": "^2.0.4",
         "@anolilab/semantic-release-preset": "^11.0.4",
         "@arethetypeswrong/cli": "^0.18.2",
-        "@types/node": "24.9.1",
+        "@types/node": "24.9.2",
         "@visulima/colorize": "1.4.25",
-        "@visulima/packem": "2.0.0-alpha.30",
+        "@visulima/packem": "2.0.0-alpha.32",
         "@visulima/path": "2.0.1",
         "@visulima/string": "2.0.2",
-        "@vitest/coverage-v8": "^4.0.1",
-        "@vitest/ui": "^4.0.1",
+        "@vitest/coverage-v8": "^4.0.4",
+        "@vitest/ui": "^4.0.4",
         "conventional-changelog-conventionalcommits": "9.1.0",
         "esbuild": "0.25.11",
         "eslint": "9.38.0",
@@ -110,7 +110,7 @@
         "semantic-release": "25.0.1",
         "terminal-size": "^4.0.0",
         "typescript": "5.9.3",
-        "vitest": "^4.0.1"
+        "vitest": "^4.0.4"
     },
     "engines": {
         "node": ">=20.18 <=25.x"

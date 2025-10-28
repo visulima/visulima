@@ -15,15 +15,15 @@
     },
     "devDependencies": {
         "@tsconfig/node22": "^22.0.2",
-        "@types/node": "^24.9.1",
+        "@types/node": "^24.9.2",
         "@visulima/vite-overlay": "workspace:*",
         "@vitejs/plugin-vue": "^6.0.1",
         "@vue/tsconfig": "^0.8.1",
         "npm-run-all2": "^8.0.4",
         "typescript": "~5.9.3",
-        "vite": "^7.1.11",
+        "vite": "^7.1.12",
         "vite-plugin-vue-devtools": "^8.0.3",
-        "vue-tsc": "^3.1.1"
+        "vue-tsc": "^3.1.2"
     },
     "engines": {
         "node": "^20.19.0 || >=22.12.0"

@@ -32,7 +32,7 @@
 
 ### Bug Fixes
 
-* update @visulima/packem to 2.0.0-alpha.30 across multiple packages for improved compatibility ([27b346e](https://github.com/visulima/visulima/commit/27b346eaa1c0fb0e420d9a9824482028307f4249))
+* update @visulima/packem to 2.0.0-alpha.32 across multiple packages for improved compatibility ([27b346e](https://github.com/visulima/visulima/commit/27b346eaa1c0fb0e420d9a9824482028307f4249))
 * update dependencies and lock file ([1ad755e](https://github.com/visulima/visulima/commit/1ad755e4a4b68fb194631cf8fe5f9ddb312bc261))
 * update dependencies and packem configuration ([d4fbbc2](https://github.com/visulima/visulima/commit/d4fbbc20dc92426437ff1769f5f8364328f5ddbe))
 
