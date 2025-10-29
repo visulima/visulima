@@ -1,0 +1,19 @@
+{
+    "name": "cerebro-example-error-handling",
+    "version": "1.0.0",
+    "description": "Cerebro CLI error handling examples",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "start": "node cli.js",
+        "simple": "node cli.js error-simple",
+        "detailed": "node cli.js error-detailed",
+        "critical": "node cli.js error-critical",
+        "custom-formatter": "node cli.js error-custom-formatter"
+    },
+    "dependencies": {
+        "@visulima/cerebro": "workspace:*",
+        "@visulima/pail": "workspace:*"
+    }
+}
+

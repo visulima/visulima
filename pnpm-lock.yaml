@@ -915,6 +915,9 @@ importers:
       '@arethetypeswrong/cli':
         specifier: ^0.18.2
         version: 0.18.2
+      '@bomb.sh/tab':
+        specifier: ^0.0.7
+        version: 0.0.7(cac@6.7.14)(citty@0.1.6)(commander@14.0.2)
       '@total-typescript/ts-reset':
         specifier: ^0.6.1
         version: 0.6.1
@@ -931,14 +934,17 @@ importers:
         specifier: 2.0.2
         version: 2.0.2
       '@visulima/packem':
-        specifier: 2.0.0-alpha.30
-        version: 2.0.0-alpha.30(@arethetypeswrong/core@0.18.2)(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@swc/core@1.13.5)(@tailwindcss/node@4.1.16)(@tailwindcss/oxide@4.1.16)(@types/node@24.9.2)(ai@5.0.81(zod@4.1.12))(cssnano@7.1.1(postcss@8.5.6))(esbuild@0.25.11)(icss-utils@5.1.0(postcss@8.5.6))(lightningcss@1.30.2)(package-manager-detector@1.5.0)(postcss-load-config@6.0.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.20.6)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rolldown@1.0.0-beta.45)(rotating-file-stream@3.2.7)(sucrase@3.35.0)(typedoc-plugin-markdown@4.9.0(typedoc@0.28.14(typescript@5.9.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.14(typescript@5.9.3)))(typedoc@0.28.14(typescript@5.9.3))(typescript@5.9.3)(yaml@2.8.1)
+        specifier: 2.0.0-alpha.32
+        version: 2.0.0-alpha.32(@arethetypeswrong/core@0.18.2)(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@swc/core@1.13.5)(@tailwindcss/node@4.1.16)(@tailwindcss/oxide@4.1.16)(@types/node@24.9.2)(@visulima/redact@2.0.1)(ai@5.0.81(zod@4.1.12))(cssnano@7.1.1(postcss@8.5.6))(esbuild@0.25.11)(icss-utils@5.1.0(postcss@8.5.6))(lightningcss@1.30.2)(package-manager-detector@1.5.0)(postcss-load-config@6.0.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.20.6)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rolldown@1.0.0-beta.45)(rotating-file-stream@3.2.7)(sucrase@3.35.0)(typedoc-plugin-markdown@4.9.0(typedoc@0.28.14(typescript@5.9.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.14(typescript@5.9.3)))(typedoc@0.28.14(typescript@5.9.3))(typescript@5.9.3)(yaml@2.8.1)
       '@visulima/pail':
         specifier: 3.0.2
         version: 3.0.2(@visulima/redact@2.0.1)(rotating-file-stream@3.2.7)
       '@visulima/path':
         specifier: 2.0.1
         version: 2.0.1
+      '@visulima/string':
+        specifier: workspace:*
+        version: link:../string
       '@vitest/coverage-v8':
         specifier: ^4.0.4
         version: 4.0.4(@vitest/browser@4.0.4(msw@2.11.6(@types/node@24.9.2)(typescript@5.9.3))(vite@7.1.12(@types/node@24.9.2)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.4))(vitest@4.0.4)
@@ -1027,6 +1033,47 @@ importers:
       '@visulima/cerebro':
         specifier: workspace:*
         version: link:..
+
+  packages/cerebro/examples/basic:
+    dependencies:
+      '@visulima/cerebro':
+        specifier: workspace:*
+        version: link:../..
+
+  packages/cerebro/examples/completion:
+    dependencies:
+      '@visulima/cerebro':
+        specifier: workspace:*
+        version: link:../..
+    optionalDependencies:
+      '@bomb.sh/tab':
+        specifier: ^0.0.7
+        version: 0.0.7(cac@6.7.14)(citty@0.1.6)(commander@14.0.2)
+
+  packages/cerebro/examples/error-handling:
+    dependencies:
+      '@visulima/cerebro':
+        specifier: workspace:*
+        version: link:../..
+      '@visulima/pail':
+        specifier: workspace:*
+        version: link:../../../pail
+
+  packages/cerebro/examples/logging:
+    dependencies:
+      '@visulima/cerebro':
+        specifier: workspace:*
+        version: link:../..
+    optionalDependencies:
+      '@visulima/pail':
+        specifier: workspace:*
+        version: link:../../../pail
+
+  packages/cerebro/examples/options:
+    dependencies:
+      '@visulima/cerebro':
+        specifier: workspace:*
+        version: link:../..
 
   packages/colorize:
     dependencies:
@@ -4972,6 +5019,21 @@ packages:
 
   '@bomb.sh/args@0.3.1':
     resolution: {integrity: sha512-CwxKrfgcorUPP6KfYD59aRdBYWBTsfsxT+GmoLVnKo5Tmyoqbpo0UNcjngRMyU+6tiPbd18RuIYxhgAn44wU/Q==}
+
+  '@bomb.sh/tab@0.0.7':
+    resolution: {integrity: sha512-/9fTHWWYFl0m2nmfNT9ngI8XEVCvwh7ggAkeHtQybM2CrlIWyakTjbESBpxIFjT8ckpuH3oA2ROyjxoglVtOGQ==}
+    hasBin: true
+    peerDependencies:
+      cac: ^6.7.14
+      citty: ^0.1.6
+      commander: ^13.1.0
+    peerDependenciesMeta:
+      cac:
+        optional: true
+      citty:
+        optional: true
+      commander:
+        optional: true
 
   '@braidai/lang@1.1.0':
     resolution: {integrity: sha512-xyJYkiyNQtTyCLeHxZmOs7rnB94D+N1IjKNArQIh8+8lTBOY7TFgwEV+Ow5a1uaBi5j2w9fLbWcJFTWLDItl5g==}
@@ -9203,31 +9265,6 @@ packages:
     engines: {node: '>=20.19 <=24.*'}
     os: [darwin, linux, win32]
 
-  '@visulima/packem-rollup@1.0.0-alpha.23':
-    resolution: {integrity: sha512-9cpBiuBgJg3o2OpsOPhobJcIOtYyKXuA68WKBUF/DkO/3Fj8hfK2cKkEotMVJgxkjYtlzeChzBIRvK4NqwpZ1Q==}
-    engines: {node: '>=20.19.* <=24.*'}
-    peerDependencies:
-      '@swc/core': '*'
-      esbuild: '>=0.25.11'
-      oxc-transform: '*'
-      p-queue: '*'
-      rollup: '>=4'
-      sucrase: '*'
-      typescript: '*'
-    peerDependenciesMeta:
-      '@swc/core':
-        optional: true
-      esbuild:
-        optional: true
-      oxc-transform:
-        optional: true
-      p-queue:
-        optional: true
-      sucrase:
-        optional: true
-      typescript:
-        optional: true
-
   '@visulima/packem-rollup@1.0.0-alpha.25':
     resolution: {integrity: sha512-Zrj+eaXxWkYJScu2Z51YN7FE9c5Wr7a2IGJM2hKZ4DAO0Onjtwzzn7RCDmX39L7t2Jas6t9d62c5KoggAPcUbQ==}
     engines: {node: '>=20.19.* <=25.*'}
@@ -9258,95 +9295,6 @@ packages:
     engines: {node: '>=20.* <=24.*'}
     peerDependencies:
       rollup: ^4.52.4
-
-  '@visulima/packem@2.0.0-alpha.30':
-    resolution: {integrity: sha512-G17pl65RNVsJBRox53Ub4QXrqvmJPA5CqyeitcpoCXWlnmB5qhbbn3a6dbVU3FxlHoao+A1ImPqH+wGlHKnV6Q==}
-    engines: {node: '>=20.19 <=24.*'}
-    hasBin: true
-    peerDependencies:
-      '@arethetypeswrong/core': '>=0.18.2'
-      '@ckeditor/typedoc-plugins': '*'
-      '@swc/core': '>=1.11.29'
-      '@tailwindcss/node': ^4.1.14
-      '@tailwindcss/oxide': ^4.1.14
-      cssnano: '>=7.0.6'
-      esbuild: '>=0.25.11'
-      icss-utils: '>=5.1.0'
-      less: '>=4.2.0'
-      lightningcss: '>=1.27.0'
-      oxc-transform: '>=0.20.0'
-      package-manager-detector: ^1.4.0
-      postcss: '>=8.4.47'
-      postcss-load-config: '>=6.0.1'
-      postcss-modules-extract-imports: '>=3.1.0'
-      postcss-modules-local-by-default: '>=4.0.5'
-      postcss-modules-scope: '>=3.2.0'
-      postcss-modules-values: '>=4.0.0'
-      postcss-value-parser: '>=4.2.0'
-      sass: '>=1.43.4'
-      sass-embedded: '>=1.79.4'
-      stylus: '>=0.63.0'
-      sucrase: '>=3.35.0'
-      typedoc: '>=0.26.0'
-      typedoc-plugin-markdown: '>=4.2.0'
-      typedoc-plugin-rename-defaults: '>=0.7.0'
-      typescript: '>=4.5 || >=5.0'
-      which-pm-runs: '*'
-    peerDependenciesMeta:
-      '@arethetypeswrong/core':
-        optional: true
-      '@ckeditor/typedoc-plugins':
-        optional: true
-      '@swc/core':
-        optional: true
-      '@tailwindcss/node':
-        optional: true
-      '@tailwindcss/oxide':
-        optional: true
-      cssnano:
-        optional: true
-      esbuild:
-        optional: true
-      icss-utils:
-        optional: true
-      less:
-        optional: true
-      lightningcss:
-        optional: true
-      oxc-transform:
-        optional: true
-      postcss:
-        optional: true
-      postcss-load-config:
-        optional: true
-      postcss-modules-extract-imports:
-        optional: true
-      postcss-modules-local-by-default:
-        optional: true
-      postcss-modules-scope:
-        optional: true
-      postcss-modules-values:
-        optional: true
-      postcss-value-parser:
-        optional: true
-      sass:
-        optional: true
-      sass-embedded:
-        optional: true
-      stylus:
-        optional: true
-      sucrase:
-        optional: true
-      typedoc:
-        optional: true
-      typedoc-plugin-markdown:
-        optional: true
-      typedoc-plugin-rename-defaults:
-        optional: true
-      typescript:
-        optional: true
-      which-pm-runs:
-        optional: true
 
   '@visulima/packem@2.0.0-alpha.32':
     resolution: {integrity: sha512-FZSV0wDydxUKoiH95XX3dB+Kl84Kq8epF7AjEArvy6Ep20gUeLXY5Ci/q8rEoqeaqudQPdCovwFZTrrO/jNGlA==}
@@ -9583,10 +9531,6 @@ packages:
   '@visulima/string@2.0.2':
     resolution: {integrity: sha512-MGt1Or0xwdr797r+7mUrwh1U3EGR9tYUxgrgjE0pn7vPDyrLpoquVzBHEh+M7S6Onp0ndcW1NEUtjvKpvuu4kw==}
     engines: {node: '>=20.19 <=25.x'}
-
-  '@visulima/tabular@1.0.11':
-    resolution: {integrity: sha512-y9ZK8O3O4TtIlmWXnFxgFO8FY3Dqe8q+JzN5mlnjpSPam7b2ZApKXtEcsB/fPWN80z5Sa+ZkIkYZ431bQr22/w==}
-    engines: {node: '>=18.0.0 <=24.x'}
 
   '@visulima/tabular@2.0.2':
     resolution: {integrity: sha512-cWNikaoyUcEuDGx+CLPSo7KleiPgw/Tq3lkidpXNtWQ1+HJx1XJNbfmicPpxvlbwgXLuzv28cz3Uo8XYokJe6g==}
@@ -13495,10 +13439,6 @@ packages:
   html-escaper@2.0.2:
     resolution: {integrity: sha512-H2iMtd0I4Mt5eYiapRdIDjp+XzelXQ0tFE4JS7YFwFevXXMmOp9myNrUvCg0D6ws8iqkRPBfKHgbwig1SmlLfg==}
 
-  html-minifier-next@2.1.8:
-    resolution: {integrity: sha512-mTBAQlR7XIeQwCOH0J3tx0UGyQPzD2s7VSFYooUsphMI6BWzx+rzxZS2/xHZHS+CHaQyMqHboQAId4Roy9e0Hg==}
-    hasBin: true
-
   html-minifier-next@3.1.0:
     resolution: {integrity: sha512-rRcCxYeZx1HfFoH66X7ypBVxfvz9k6GmKhtrhcUWJu/SrUQfaBMtTTqLoJJ44KvgwKEmE/DRCyobDlKQmGCGew==}
     hasBin: true
@@ -14470,6 +14410,7 @@ packages:
   keygrip@1.1.0:
     resolution: {integrity: sha512-iYSchDJ+liQ8iwbSI2QqsQOvqv58eJCEanyJPJi+Khyu8smkcKSFUCbPwzFcL7YVtZ6eONjqRX/38caJ7QjRAQ==}
     engines: {node: '>= 0.6'}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
 
   keyv@4.5.4:
     resolution: {integrity: sha512-oxVHkHR/EJf2CNXnWxRLW6mg7JyCCUcG0DtEGmL2ctUo1PNTin1PUil+r/+4r5MpVgC/fn1kjsx7mjSujKqIpw==}
@@ -20796,6 +20737,12 @@ snapshots:
 
   '@bomb.sh/args@0.3.1': {}
 
+  '@bomb.sh/tab@0.0.7(cac@6.7.14)(citty@0.1.6)(commander@14.0.2)':
+    optionalDependencies:
+      cac: 6.7.14
+      citty: 0.1.6
+      commander: 14.0.2
+
   '@braidai/lang@1.1.0': {}
 
   '@braintree/sanitize-url@6.0.2': {}
@@ -26143,52 +26090,6 @@ snapshots:
     transitivePeerDependencies:
       - '@types/node'
 
-  '@visulima/packem-rollup@1.0.0-alpha.23(@swc/core@1.13.5)(@types/node@24.9.2)(esbuild@0.25.11)(picomatch@4.0.3)(rolldown@1.0.0-beta.45)(rollup@4.52.5)(sucrase@3.35.0)(typescript@5.9.3)(yaml@2.8.1)':
-    dependencies:
-      '@babel/parser': 7.28.4
-      '@rollup/plugin-alias': 5.1.1(rollup@4.52.5)
-      '@rollup/plugin-commonjs': 28.0.6(rollup@4.52.5)
-      '@rollup/plugin-dynamic-import-vars': 2.1.5(rollup@4.52.5)
-      '@rollup/plugin-inject': 5.0.5(rollup@4.52.5)
-      '@rollup/plugin-json': 6.1.0(rollup@4.52.5)
-      '@rollup/plugin-node-resolve': 16.0.1(rollup@4.52.5)
-      '@rollup/plugin-replace': 6.0.2(rollup@4.52.5)
-      '@rollup/plugin-wasm': 6.2.2(rollup@4.52.5)
-      '@rollup/pluginutils': 5.3.0(rollup@4.52.5)
-      '@visulima/find-cache-dir': 1.0.34(yaml@2.8.1)
-      '@visulima/fs': 3.1.8(yaml@2.8.1)
-      '@visulima/package': 4.0.0(@types/node@24.9.2)
-      '@visulima/packem-share': 1.0.0-alpha.13(@types/node@24.9.2)(rollup@4.52.5)(yaml@2.8.1)
-      '@visulima/path': 1.4.0
-      '@visulima/source-map': 1.0.20
-      cjs-module-lexer: 2.1.0
-      clean-css: 5.3.3
-      glob-parent: 6.0.2
-      html-minifier-next: 2.1.8
-      magic-string: 0.30.19
-      mlly: 1.8.0
-      oxc-parser: 0.93.0
-      oxc-resolver: 11.8.2
-      rollup: 4.52.5
-      rollup-plugin-dts: 6.2.3(rollup@4.52.5)(typescript@5.9.3)
-      rollup-plugin-license: 3.6.0(picomatch@4.0.3)(rollup@4.52.5)
-      rollup-plugin-polyfill-node: 0.13.0(rollup@4.52.5)
-      rollup-plugin-pure: 0.4.0(rollup@4.52.5)
-      rollup-plugin-visualizer: 6.0.3(rolldown@1.0.0-beta.45)(rollup@4.52.5)
-      rs-module-lexer: 2.6.0
-      semver: 7.7.2
-      tinyglobby: 0.2.15
-    optionalDependencies:
-      '@swc/core': 1.13.5
-      esbuild: 0.25.11
-      sucrase: 3.35.0
-      typescript: 5.9.3
-    transitivePeerDependencies:
-      - '@types/node'
-      - picomatch
-      - rolldown
-      - yaml
-
   '@visulima/packem-rollup@1.0.0-alpha.25(@swc/core@1.13.5)(@types/node@24.9.2)(esbuild@0.25.11)(picomatch@4.0.3)(rolldown@1.0.0-beta.45)(rollup@4.52.5)(sucrase@3.35.0)(typescript@5.9.3)(yaml@2.8.1)':
     dependencies:
       '@babel/parser': 7.28.4
@@ -26244,76 +26145,6 @@ snapshots:
       rollup: 4.52.5
     transitivePeerDependencies:
       - '@types/node'
-      - yaml
-
-  '@visulima/packem@2.0.0-alpha.30(@arethetypeswrong/core@0.18.2)(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@swc/core@1.13.5)(@tailwindcss/node@4.1.16)(@tailwindcss/oxide@4.1.16)(@types/node@24.9.2)(ai@5.0.81(zod@4.1.12))(cssnano@7.1.1(postcss@8.5.6))(esbuild@0.25.11)(icss-utils@5.1.0(postcss@8.5.6))(lightningcss@1.30.2)(package-manager-detector@1.5.0)(postcss-load-config@6.0.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.20.6)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rolldown@1.0.0-beta.45)(rotating-file-stream@3.2.7)(sucrase@3.35.0)(typedoc-plugin-markdown@4.9.0(typedoc@0.28.14(typescript@5.9.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.14(typescript@5.9.3)))(typedoc@0.28.14(typescript@5.9.3))(typescript@5.9.3)(yaml@2.8.1)':
-    dependencies:
-      '@antfu/install-pkg': 1.1.0
-      '@clack/prompts': 0.11.0
-      '@rollup/pluginutils': 5.3.0(rollup@4.52.5)
-      '@visulima/cerebro': 1.1.50(@visulima/redact@2.0.1)(ai@5.0.81(zod@4.1.12))(rotating-file-stream@3.2.7)(yaml@2.8.1)
-      '@visulima/colorize': 1.4.23
-      '@visulima/find-cache-dir': 1.0.34(yaml@2.8.1)
-      '@visulima/fs': 3.1.8(yaml@2.8.1)
-      '@visulima/humanizer': 1.2.2
-      '@visulima/package': 4.0.0(@types/node@24.9.2)
-      '@visulima/packem-rollup': 1.0.0-alpha.23(@swc/core@1.13.5)(@types/node@24.9.2)(esbuild@0.25.11)(picomatch@4.0.3)(rolldown@1.0.0-beta.45)(rollup@4.52.5)(sucrase@3.35.0)(typescript@5.9.3)(yaml@2.8.1)
-      '@visulima/packem-share': 1.0.0-alpha.13(@types/node@24.9.2)(rollup@4.52.5)(yaml@2.8.1)
-      '@visulima/pail': 2.1.28(@visulima/redact@2.0.1)(ai@5.0.81(zod@4.1.12))(rotating-file-stream@3.2.7)
-      '@visulima/path': 1.4.0
-      '@visulima/rollup-plugin-css': 1.0.0-alpha.7(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@swc/core@1.13.5)(@tailwindcss/node@4.1.16)(@tailwindcss/oxide@4.1.16)(@types/node@24.9.2)(cssnano@7.1.1(postcss@8.5.6))(esbuild@0.25.11)(icss-utils@5.1.0(postcss@8.5.6))(lightningcss@1.30.2)(postcss-load-config@6.0.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.20.6)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rollup@4.52.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.9.0(typedoc@0.28.14(typescript@5.9.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.14(typescript@5.9.3)))(typedoc@0.28.14(typescript@5.9.3))(typescript@5.9.3)(yaml@2.8.1)
-      '@visulima/source-map': 1.0.20
-      '@visulima/tabular': 1.0.11
-      '@visulima/tsconfig': 1.1.22(yaml@2.8.1)
-      browserslist: 4.26.2
-      cjs-module-lexer: 2.1.0
-      clean-css: 5.3.3
-      defu: 6.1.4
-      fastest-levenshtein: 1.0.16
-      hookable: 5.5.3
-      html-minifier-next: 2.1.8
-      jiti: 2.6.0
-      magic-string: 0.30.19
-      mlly: 1.8.0
-      package-manager-detector: 1.5.0
-      picomatch: 4.0.3
-      rollup: 4.52.5
-      semver: 7.7.2
-      tinyexec: 1.0.1
-      tinyglobby: 0.2.15
-    optionalDependencies:
-      '@arethetypeswrong/core': 0.18.2
-      '@swc/core': 1.13.5
-      '@tailwindcss/node': 4.1.16
-      '@tailwindcss/oxide': 4.1.16
-      cssnano: 7.1.1(postcss@8.5.6)
-      esbuild: 0.25.11
-      icss-utils: 5.1.0(postcss@8.5.6)
-      lightningcss: 1.30.2
-      postcss: 8.5.6
-      postcss-load-config: 6.0.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.20.6)(yaml@2.8.1)
-      postcss-modules-extract-imports: 3.1.0(postcss@8.5.6)
-      postcss-modules-local-by-default: 4.2.0(postcss@8.5.6)
-      postcss-modules-scope: 3.2.1(postcss@8.5.6)
-      postcss-modules-values: 4.0.0(postcss@8.5.6)
-      postcss-value-parser: 4.2.0
-      sucrase: 3.35.0
-      typedoc: 0.28.14(typescript@5.9.3)
-      typedoc-plugin-markdown: 4.9.0(typedoc@0.28.14(typescript@5.9.3))
-      typedoc-plugin-rename-defaults: 0.7.3(typedoc@0.28.14(typescript@5.9.3))
-      typescript: 5.9.3
-    transitivePeerDependencies:
-      - '@75lb/nature'
-      - '@csstools/css-parser-algorithms'
-      - '@csstools/css-tokenizer'
-      - '@csstools/postcss-slow-plugins'
-      - '@types/node'
-      - '@visulima/css-style-inject'
-      - '@visulima/redact'
-      - ai
-      - p-queue
-      - rolldown
-      - rotating-file-stream
       - yaml
 
   ? '@visulima/packem@2.0.0-alpha.32(@arethetypeswrong/core@0.18.2)(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@swc/core@1.13.5)(@tailwindcss/node@4.1.16)(@tailwindcss/oxide@4.1.16)(@types/node@24.9.2)(@visulima/redact@2.0.1)(ai@5.0.81(zod@4.1.12))(cssnano@7.1.1(postcss@8.5.6))(esbuild@0.25.11)(icss-utils@5.1.0(postcss@8.5.6))(lightningcss@1.30.2)(package-manager-detector@1.5.0)(postcss-load-config@6.0.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.20.6)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rolldown@1.0.0-beta.45)(rotating-file-stream@3.2.7)(sucrase@3.35.0)(typedoc-plugin-markdown@4.9.0(typedoc@0.28.14(typescript@5.9.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.14(typescript@5.9.3)))(typedoc@0.28.14(typescript@5.9.3))(typescript@5.9.3)(yaml@2.8.1)'
@@ -26468,8 +26299,6 @@ snapshots:
       '@visulima/path': 1.4.0
 
   '@visulima/string@2.0.2': {}
-
-  '@visulima/tabular@1.0.11': {}
 
   '@visulima/tabular@2.0.2': {}
 
@@ -31318,15 +31147,6 @@ snapshots:
   html-entities@2.6.0: {}
 
   html-escaper@2.0.2: {}
-
-  html-minifier-next@2.1.8:
-    dependencies:
-      change-case: 4.1.2
-      clean-css: 5.3.3
-      commander: 14.0.2
-      entities: 7.0.0
-      relateurl: 0.2.7
-      terser: 5.44.0
 
   html-minifier-next@3.1.0:
     dependencies:

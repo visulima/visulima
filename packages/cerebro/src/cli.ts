@@ -3,6 +3,7 @@ import { argv as process_argv, cwd as process_cwd, env, execArgv, execPath, exit
 import type { Cli as ICli, CliRunOptions, CommandSection as ICommandSection } from "./@types/cli";
 import type { Command as ICommand, OptionDefinition } from "./@types/command";
 import type { Plugin } from "./@types/plugin";
+import HelpCommand from "./commands/help-command";
 import { VERBOSITY_DEBUG, VERBOSITY_NORMAL, VERBOSITY_QUIET, VERBOSITY_VERBOSE } from "./constants";
 import defaultOptions from "./default-options";
 import { CerebroError, CommandNotFoundError } from "./errors";
@@ -408,8 +409,6 @@ export class Cli<T extends Console = Console> implements ICli {
         const { autoDispose = true, shouldExitProcess = true, ...otherExtraOptions } = extraOptions;
 
         if (!this.#commands.has("help")) {
-            const [{ default: HelpCommand }] = await Promise.all([import("./commands/help-command")]);
-
             this.addCommand(new HelpCommand(this.#commands));
         }
 

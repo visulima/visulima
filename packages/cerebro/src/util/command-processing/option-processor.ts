@@ -1,24 +1,7 @@
+import camelCase from "@visulima/string/case/camel-case";
+
 import type { OptionDefinition } from "../../@types/command";
 import type { Toolbox as IToolbox } from "../../@types/toolbox";
-
-// Pre-compile regex patterns for better performance
-const SEPARATOR_REGEX = /[-_]/;
-const SEPARATOR_WITH_CHAR_REGEX = /[-_](.)/g;
-const UPPERCASE_FIRST_REGEX = /^[A-Z]/;
-
-/**
- * Converts option names to camelCase
- */
-export const camelCase = (string_: string): string => {
-    // Fast path for strings without separators
-    if (!SEPARATOR_REGEX.test(string_)) {
-        return string_;
-    }
-
-    return string_
-        .replaceAll(SEPARATOR_WITH_CHAR_REGEX, (_, character) => character.toUpperCase())
-        .replace(UPPERCASE_FIRST_REGEX, (character) => character.toLowerCase());
-};
 
 /**
  * Adds camelCase names to options

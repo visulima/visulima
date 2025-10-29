@@ -2,10 +2,10 @@ import { Cerebro } from "@visulima/cerebro";
 import { errorHandlerPlugin } from "@visulima/cerebro/plugins/error-handler";
 import { pailLoggerPlugin } from "@visulima/cerebro/plugins/pail-logger";
 
-import errorSimple from "./commands/error-simple.js";
-import errorDetailed from "./commands/error-detailed.js";
-import errorCritical from "./commands/error-critical.js";
-import errorCustomFormatter from "./commands/error-custom-formatter.js";
+import errorSimple from "./error-simple.js";
+import errorDetailed from "./error-detailed.js";
+import errorCritical from "./error-critical.js";
+import errorCustomFormatter from "./error-custom-formatter.js";
 
 // Get configuration from command line argument
 const mode = process.argv[2];

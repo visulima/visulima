@@ -1,27 +1,9 @@
 import { describe, expect, it } from "vitest";
 
 import type { OptionDefinition } from "../../src/@types/command";
-import { addNegatableOptions, camelCase, mapImpliedOptions, mapNegatableOptions, processOptionNames } from "../../src/util/command-processing/option-processor";
+import { addNegatableOptions, mapImpliedOptions, mapNegatableOptions, processOptionNames } from "../../src/util/command-processing/option-processor";
 
 describe("option-processor", () => {
-    describe(camelCase, () => {
-        it("should convert kebab-case to camelCase", () => {
-            expect(camelCase("test-option")).toBe("testOption");
-        });
-
-        it("should convert snake_case to camelCase", () => {
-            expect(camelCase("test_option")).toBe("testOption");
-        });
-
-        it("should handle mixed case", () => {
-            expect(camelCase("Test_Option-Name")).toBe("testOptionName");
-        });
-
-        it("should return as-is when no separators", () => {
-            expect(camelCase("testoption")).toBe("testoption");
-        });
-    });
-
     describe(processOptionNames, () => {
         it("should add camelCase names to options", () => {
             const command = {

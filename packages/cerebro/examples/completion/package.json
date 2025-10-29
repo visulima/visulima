@@ -1,0 +1,24 @@
+{
+    "name": "cerebro-example-completion",
+    "version": "1.0.0",
+    "description": "Cerebro CLI shell completion example",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "start": "node cli.js help",
+        "build": "node cli.js build",
+        "serve": "node cli.js serve",
+        "test": "node cli.js test",
+        "completion:zsh": "node cli.js completion --shell=zsh",
+        "completion:bash": "node cli.js completion --shell=bash",
+        "completion:fish": "node cli.js completion --shell=fish",
+        "completion:powershell": "node cli.js completion --shell=powershell"
+    },
+    "dependencies": {
+        "@visulima/cerebro": "workspace:*"
+    },
+    "optionalDependencies": {
+        "@bomb.sh/tab": "^0.0.7"
+    }
+}
+

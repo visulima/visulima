@@ -69,6 +69,10 @@
             "types": "./dist/commands/version-command.d.ts",
             "default": "./dist/commands/version-command.js"
         },
+        "./command/completion": {
+            "types": "./dist/commands/completion-command.d.ts",
+            "default": "./dist/commands/completion-command.js"
+        },
         "./plugins/error-handler": {
             "types": "./dist/plugins/error-handler-plugin.d.ts",
             "default": "./dist/plugins/error-handler-plugin.js"
@@ -116,6 +120,7 @@
         "fastest-levenshtein": "^1.0.16"
     },
     "devDependencies": {
+        "@bomb.sh/tab": "^0.0.7",
         "@visulima/find-cache-dir": "2.0.2",
         "@anolilab/eslint-config": "^16.4.2",
         "@anolilab/prettier-config": "^6.0.7",
@@ -126,9 +131,10 @@
         "@types/node": "24.9.2",
         "@visulima/boxen": "2.0.6",
         "@visulima/command-line-args": "workspace:*",
-        "@visulima/packem": "2.0.0-alpha.30",
+        "@visulima/packem": "2.0.0-alpha.32",
         "@visulima/pail": "3.0.2",
         "@visulima/path": "2.0.1",
+        "@visulima/string": "workspace:*",
         "@vitest/coverage-v8": "^4.0.4",
         "ci-info": "^4.3.1",
         "commander": "14.0.2",
@@ -144,11 +150,15 @@
         "vitest": "^4.0.4"
     },
     "peerDependencies": {
+        "@bomb.sh/tab": "^0.0.7",
         "@visulima/boxen": "2.0.6",
         "@visulima/find-cache-dir": "2.0.2",
         "@visulima/pail": "3.0.2"
     },
     "peerDependenciesMeta": {
+        "@bomb.sh/tab": {
+            "optional": true
+        },
         "@visulima/find-cache-dir": {
             "optional": true
         },
