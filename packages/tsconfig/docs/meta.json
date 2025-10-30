@@ -1,0 +1,12 @@
+{
+  "title": "@visulima/tsconfig Documentation",
+  "pages": [
+    "index",
+    "installation",
+    "getting-started",
+    "api-reference",
+    "advanced-usage",
+    "examples",
+    "troubleshooting"
+  ]
+}
