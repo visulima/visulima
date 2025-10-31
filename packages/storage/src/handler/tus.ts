@@ -2,7 +2,6 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import { format } from "node:url";
 
 import createHttpError from "http-errors";
-// eslint-disable-next-line import/no-extraneous-dependencies
 import typeis from "type-is";
 
 import type { Checksum, FileInit, UploadFile } from "../storage/utils/file";

@@ -254,14 +254,11 @@ describe("http Tus", () => {
         });
     });
 
-    describe("Tus-Resumable header validation", () => {
+    describe("tus-Resumable header validation", () => {
         it("should return 412 for POST request without Tus-Resumable header", async () => {
             expect.assertions(2);
 
-            response = await supertest(app)
-                .post(basePath)
-                .set("Upload-Length", metadata.size.toString())
-                .set("Upload-Metadata", serializeMetadata(metadata));
+            response = await supertest(app).post(basePath).set("Upload-Length", metadata.size.toString()).set("Upload-Metadata", serializeMetadata(metadata));
 
             expect(response.status).toBe(412);
             expect(response.body.error).toBeDefined();

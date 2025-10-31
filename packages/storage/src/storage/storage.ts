@@ -3,11 +3,8 @@ import { Readable } from "node:stream";
 import { setInterval } from "node:timers";
 import { inspect } from "node:util";
 
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { parseBytes } from "@visulima/humanizer";
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { normalize } from "@visulima/path";
-// eslint-disable-next-line import/no-extraneous-dependencies
 import typeis from "type-is";
 
 import type { Cache } from "../utils/cache";
@@ -325,7 +322,7 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
     /**
      * Retrieves a list of upload.
      */
-    // eslint-disable-next-line class-methods-use-this,@typescript-eslint/no-unused-vars
+    // eslint-disable-next-line class-methods-use-this
     public async list(_limit = 1000): Promise<TFile[]> {
         throw new Error("Not implemented");
     }

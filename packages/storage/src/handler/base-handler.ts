@@ -271,7 +271,6 @@ abstract class BaseHandler<
         }
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public async options(_request: NodeRequest, _response: NodeResponse): Promise<ResponseFile<TFile>> {
         const child = this.constructor as typeof BaseHandler;
 
@@ -446,7 +445,7 @@ abstract class BaseHandler<
     /**
      * Returns user upload list
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
     public async list(request: NodeRequest, _response: NodeResponse): Promise<ResponseList<TFile>> {
         const url = new URL(request.url || "", "http://localhost");
         const limit = url.searchParams.get("limit");

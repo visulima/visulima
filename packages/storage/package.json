@@ -104,6 +104,10 @@
             "types": "./dist/storage/vercel-blob/index.d.ts",
             "import": "./dist/storage/vercel-blob/index.js"
         },
+        "./provider/netlify": {
+            "types": "./dist/storage/netlify-blob/index.d.ts",
+            "import": "./dist/storage/netlify-blob/index.js"
+        },
         "./provider/local": {
             "types": "./dist/storage/local/index.d.ts",
             "import": "./dist/storage/local/index.js"
@@ -190,8 +194,9 @@
         "@vitest/ui": "^3.2.4",
         "@visulima/fs": "workspace:*",
         "@visulima/humanizer": "workspace:*",
-        "@visulima/packem": "2.0.0-alpha.28",
+        "@visulima/packem": "2.0.0-alpha.32",
         "@visulima/path": "workspace:*",
+        "@netlify/blobs": "^10.3.1",
         "aws-crt": "^1.27.3",
         "aws-sdk-client-mock": "^4.1.0",
         "cross-fetch": "^4.1.0",
@@ -223,6 +228,7 @@
         "@aws-sdk/signature-v4-crt": "^3.901.0",
         "@azure/storage-blob": "^12.28.0",
         "@vercel/blob": "^2.0.0",
+        "@netlify/blobs": "^10.3.1",
         "aws-crt": "^1.27.3",
         "gaxios": "^7.1.2",
         "google-auth-library": "^10.4.0",
@@ -261,6 +267,9 @@
             "optional": true
         },
         "sharp": {
+            "optional": true
+        },
+        "@netlify/blobs": {
             "optional": true
         }
     },

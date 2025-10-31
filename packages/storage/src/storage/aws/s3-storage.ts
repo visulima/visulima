@@ -26,7 +26,6 @@ import {
 import { fromIni } from "@aws-sdk/credential-providers";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import type { HttpHandlerOptions, SdkStream } from "@aws-sdk/types";
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { parseBytes } from "@visulima/humanizer";
 
 import { ERRORS, throwErrorCode } from "../../utils/errors";

@@ -2,7 +2,6 @@ import { createWriteStream } from "node:fs";
 import { truncate } from "node:fs/promises";
 import { pipeline } from "node:stream";
 
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { ensureFile, remove } from "@visulima/fs";
 
 import { ERRORS, throwErrorCode } from "../../utils/errors";

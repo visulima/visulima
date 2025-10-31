@@ -73,6 +73,7 @@ onlyBuiltDependencies:
   - nx
   - oxc-resolver
   - prisma
+  - protobufjs
   - rs-module-lexer
   - sharp
   - tree-sitter
