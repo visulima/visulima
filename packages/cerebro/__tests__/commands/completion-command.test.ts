@@ -72,5 +72,27 @@ describe("completion-command", () => {
         // Should not throw any errors and should use auto-detected runtime
         expect(mockToolbox.logger.error).not.toHaveBeenCalled();
     });
+
+    it("should throw CompletionError for invalid shell", async () => {
+        mockToolbox.options = { shell: "invalid-shell" };
+
+        await expect(completionCommand.execute?.(mockToolbox)).rejects.toThrow();
+
+        // Verify error was logged with custom error handling
+        expect(mockToolbox.logger.error).toHaveBeenCalledWith(expect.stringContaining("Invalid shell type"));
+        expect(mockToolbox.logger.error).toHaveBeenCalledWith(expect.stringContaining("INVALID_SHELL"));
+        expect(mockToolbox.logger.info).toHaveBeenCalledWith(expect.stringContaining("Troubleshooting"));
+    });
+
+    it("should throw CompletionError for invalid runtime", async () => {
+        mockToolbox.options = { shell: "zsh", runtime: "invalid-runtime" };
+
+        await expect(completionCommand.execute?.(mockToolbox)).rejects.toThrow();
+
+        // Verify error was logged with custom error handling
+        expect(mockToolbox.logger.error).toHaveBeenCalledWith(expect.stringContaining("Invalid runtime"));
+        expect(mockToolbox.logger.error).toHaveBeenCalledWith(expect.stringContaining("INVALID_RUNTIME"));
+        expect(mockToolbox.logger.info).toHaveBeenCalledWith(expect.stringContaining("Troubleshooting"));
+    });
 });
 

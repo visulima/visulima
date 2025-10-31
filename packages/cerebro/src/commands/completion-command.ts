@@ -9,6 +9,22 @@ const validShells = ["bash", "zsh", "fish", "powershell"];
 const validRuntimes = ["node", "bun", "deno"];
 
 /**
+ * Custom error class for completion command errors.
+ */
+class CompletionError extends Error {
+    public readonly code: string;
+
+    public readonly troubleshooting: string[];
+
+    public constructor(message: string, code: string, troubleshooting: string[] = []) {
+        super(message);
+        this.name = "CompletionError";
+        this.code = code;
+        this.troubleshooting = troubleshooting;
+    }
+}
+
+/**
  * Detects the current JavaScript runtime.
  * @returns The detected runtime (node, bun, or deno)
  */
@@ -78,12 +94,14 @@ const registerCommandOptions = (cmd: any, options: OptionDefinition<unknown>[]):
             continue;
         }
 
-        // eslint-disable-next-line no-underscore-dangle, @typescript-eslint/no-explicit-any
-        const optionNames = (option as any).__names__ || [option.name];
-        const primaryName = optionNames[0];
+        // Register the primary name
+        if (option.name) {
+            cmd.option(option.name, option.description || "");
+        }
 
-        if (primaryName) {
-            cmd.option(primaryName, option.description || "");
+        // Register alias if it exists
+        if (option.alias) {
+            cmd.option(option.alias, option.description || "");
         }
     }
 };
@@ -107,6 +125,36 @@ const registerCommands = (tabInstance: any, commands: Map<string, ICommand>): vo
         if (command.options) {
             registerCommandOptions(cmd, command.options);
         }
+    }
+};
+
+/**
+ * Validates shell option value.
+ * @param shell Shell value to validate
+ * @throws {CompletionError} If shell is invalid
+ */
+const validateShell = (shell: string): void => {
+    if (!validShells.includes(shell)) {
+        throw new CompletionError(
+            `Invalid shell type: ${shell}`,
+            "INVALID_SHELL",
+            [`Valid shells are: ${validShells.join(", ")}`, "Shell will be auto-detected if not specified"],
+        );
+    }
+};
+
+/**
+ * Validates runtime option value.
+ * @param runtime Runtime value to validate
+ * @throws {CompletionError} If runtime is invalid
+ */
+const validateRuntime = (runtime: string | undefined): void => {
+    if (runtime && !validRuntimes.includes(runtime)) {
+        throw new CompletionError(
+            `Invalid runtime: ${runtime}`,
+            "INVALID_RUNTIME",
+            [`Valid runtimes are: ${validRuntimes.join(", ")}`, "Runtime will be auto-detected if not specified"],
+        );
     }
 };
 
@@ -149,17 +197,45 @@ const completionCommand: ICommand = {
         }
 
         try {
+            // Validate options
+            validateShell(shell);
+            validateRuntime(options?.runtime as string | undefined);
             // Register all commands from the CLI
             registerCommands(tab, runtime.getCommands());
 
             // Use provided runtime or detect it
-            const jsRuntime = options?.runtime as string;
+            const jsRuntime = (options?.runtime as string) || detectRuntime();
             const scriptPath = `${jsRuntime} ${cliName}`;
 
             tab.setup(cliName, scriptPath, shell);
         } catch (error) {
-            logger.error("Failed to generate completion script:");
-            logger.error(error instanceof Error ? error.message : String(error));
+            if (error instanceof CompletionError) {
+                logger.error(`Failed to generate completion script: ${error.message}`);
+                logger.error(`Error code: ${error.code}`);
+
+                if (error.troubleshooting.length > 0) {
+                    logger.info("");
+                    logger.info("Troubleshooting:");
+
+                    for (const tip of error.troubleshooting) {
+                        logger.info(`  • ${tip}`);
+                    }
+                }
+
+                // Re-throw to allow callers to handle the error
+                throw error;
+            } else {
+                const errorMessage = error instanceof Error ? error.message : String(error);
+
+                logger.error("Failed to generate completion script");
+                logger.error(`Error: ${errorMessage}`);
+                logger.info("");
+                logger.info("Troubleshooting:");
+                logger.info("  • Ensure @bomb.sh/tab is installed: pnpm add @bomb.sh/tab");
+                logger.info(`  • Verify shell is supported: ${validShells.join(", ")}`);
+                logger.info(`  • Verify runtime is supported: ${validRuntimes.join(", ")}`);
+                logger.info("  • Check that your CLI name is correct");
+            }
         }
     },
     name: "completion",
@@ -169,29 +245,17 @@ const completionCommand: ICommand = {
             defaultValue: detectShell(),
             description: "Shell type (bash, zsh, fish, powershell). Defaults to current shell if detected.",
             name: "shell",
-            type: (input: string) => {
-                if (!validShells.includes(input)) {
-                    throw new Error(`Invalid shell type: ${input}. Valid shells are: ${validShells.join(", ")}`);
-                }
-
-                return input;
-            },
+            type: String,
             typeLabel: "{underline shell}",
-        } satisfies OptionDefinition<typeof detectShell>,
+        } satisfies OptionDefinition<string>,
         {
             defaultOption: true,
             defaultValue: detectRuntime(),
             description: "JavaScript runtime (node, bun, deno). Defaults to current runtime if detected.",
             name: "runtime",
-            type: (input: string): string => {
-                if (!validRuntimes.includes(input)) {
-                    throw new Error(`Invalid runtime: ${input}. Valid runtimes are: ${validRuntimes.join(", ")}`);
-                }
-
-                return input;
-            },
+            type: String,
             typeLabel: "{underline runtime}",
-        } satisfies OptionDefinition<typeof detectRuntime>,
+        } satisfies OptionDefinition<string>,
     ],
 } satisfies ICommand;
 
