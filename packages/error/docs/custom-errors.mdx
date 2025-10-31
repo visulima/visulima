@@ -1,0 +1,696 @@
+---
+title: Custom Error Classes
+description: Create and use domain-specific custom error classes
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
+
+Learn how to create and use custom error classes with `@visulima/error`.
+
+## Overview
+
+Custom error classes allow you to:
+
+- Create domain-specific error types
+- Add custom properties and methods
+- Improve error handling and debugging
+- Provide better context for different error scenarios
+
+## Basic Custom Errors
+
+### Simple Extension
+
+```typescript
+import { VisulimaError } from "@visulima/error";
+
+class ValidationError extends VisulimaError {
+    constructor(message: string) {
+        super({
+            name: "ValidationError",
+            message
+        });
+    }
+}
+
+// Usage
+throw new ValidationError("Email is required");
+```
+
+### With Custom Properties
+
+```typescript
+class HttpError extends VisulimaError {
+    public readonly statusCode: number;
+    
+    constructor(statusCode: number, message: string) {
+        super({
+            name: "HttpError",
+            message
+        });
+        this.statusCode = statusCode;
+    }
+}
+
+// Usage
+const error = new HttpError(404, "Resource not found");
+console.log(error.statusCode); // 404
+```
+
+### With Static Factory Methods
+
+```typescript
+class ApiError extends VisulimaError {
+    public readonly statusCode: number;
+    
+    private constructor(statusCode: number, message: string) {
+        super({
+            name: "ApiError",
+            message
+        });
+        this.statusCode = statusCode;
+    }
+    
+    static badRequest(message: string = "Bad Request") {
+        return new ApiError(400, message);
+    }
+    
+    static unauthorized(message: string = "Unauthorized") {
+        return new ApiError(401, message);
+    }
+    
+    static forbidden(message: string = "Forbidden") {
+        return new ApiError(403, message);
+    }
+    
+    static notFound(resource: string = "Resource") {
+        return new ApiError(404, `${resource} not found`);
+    }
+    
+    static internalError(message: string = "Internal Server Error") {
+        return new ApiError(500, message);
+    }
+}
+
+// Usage
+throw ApiError.notFound("User");
+throw ApiError.badRequest("Invalid email format");
+```
+
+## Domain-Specific Errors
+
+### Database Errors
+
+```typescript
+class DatabaseError extends VisulimaError {
+    public readonly query?: string;
+    public readonly table?: string;
+    public readonly code?: string;
+    
+    constructor(
+        message: string,
+        options?: {
+            query?: string;
+            table?: string;
+            code?: string;
+            cause?: unknown;
+        }
+    ) {
+        super({
+            name: "DatabaseError",
+            message,
+            cause: options?.cause
+        });
+        
+        this.query = options?.query;
+        this.table = options?.table;
+        this.code = options?.code;
+        
+        this.hint = this.generateHint();
+    }
+    
+    private generateHint(): string[] {
+        const hints: string[] = [];
+        
+        if (this.code === "23505") {
+            hints.push("A record with this unique key already exists");
+        }
+        
+        if (this.table) {
+            hints.push(`Check if table '${this.table}' exists and is accessible`);
+        }
+        
+        if (this.query) {
+            hints.push(`Review the query: ${this.query}`);
+        }
+        
+        hints.push("Verify database connection is active");
+        
+        return hints;
+    }
+}
+
+// Usage
+throw new DatabaseError("Unique constraint violation", {
+    query: "INSERT INTO users (email) VALUES ('test@example.com')",
+    table: "users",
+    code: "23505"
+});
+```
+
+### Authentication Errors
+
+```typescript
+class AuthenticationError extends VisulimaError {
+    public readonly code: string;
+    public readonly attemptCount?: number;
+    
+    constructor(
+        message: string,
+        code: string,
+        attemptCount?: number
+    ) {
+        super({
+            name: "AuthenticationError",
+            message
+        });
+        
+        this.code = code;
+        this.attemptCount = attemptCount;
+        
+        if (attemptCount && attemptCount >= 3) {
+            this.hint = "Too many failed attempts. Account may be locked.";
+        }
+    }
+}
+
+// Usage
+throw new AuthenticationError(
+    "Invalid credentials",
+    "INVALID_PASSWORD",
+    3
+);
+```
+
+### Validation Errors
+
+```typescript
+interface ValidationField {
+    field: string;
+    errors: string[];
+}
+
+class ValidationError extends VisulimaError {
+    public readonly fields: ValidationField[];
+    
+    constructor(message: string, fields: ValidationField[]) {
+        super({
+            name: "ValidationError",
+            message
+        });
+        
+        this.fields = fields;
+        this.hint = this.formatFieldErrors();
+    }
+    
+    private formatFieldErrors(): string[] {
+        return this.fields.flatMap(({ field, errors }) =>
+            errors.map(error => `${field}: ${error}`)
+        );
+    }
+    
+    hasFieldError(fieldName: string): boolean {
+        return this.fields.some(f => f.field === fieldName);
+    }
+    
+    getFieldErrors(fieldName: string): string[] {
+        const field = this.fields.find(f => f.field === fieldName);
+        return field?.errors || [];
+    }
+}
+
+// Usage
+throw new ValidationError("Validation failed", [
+    {
+        field: "email",
+        errors: ["Email is required", "Email must be valid"]
+    },
+    {
+        field: "password",
+        errors: ["Password must be at least 8 characters"]
+    }
+]);
+```
+
+### Configuration Errors
+
+```typescript
+class ConfigurationError extends VisulimaError {
+    public readonly key: string;
+    public readonly expectedType?: string;
+    public readonly actualValue?: unknown;
+    
+    constructor(
+        message: string,
+        key: string,
+        options?: {
+            expectedType?: string;
+            actualValue?: unknown;
+        }
+    ) {
+        super({
+            name: "ConfigurationError",
+            message
+        });
+        
+        this.key = key;
+        this.expectedType = options?.expectedType;
+        this.actualValue = options?.actualValue;
+        
+        this.hint = this.generateHint();
+    }
+    
+    private generateHint(): string[] {
+        const hints: string[] = [];
+        
+        hints.push(`Check the '${this.key}' configuration value`);
+        
+        if (this.expectedType) {
+            hints.push(`Expected type: ${this.expectedType}`);
+        }
+        
+        if (this.actualValue !== undefined) {
+            hints.push(`Received: ${JSON.stringify(this.actualValue)}`);
+        }
+        
+        hints.push("Review your configuration file or environment variables");
+        
+        return hints;
+    }
+}
+
+// Usage
+throw new ConfigurationError(
+    "Invalid port number",
+    "PORT",
+    {
+        expectedType: "number",
+        actualValue: "not-a-number"
+    }
+);
+```
+
+## Error Hierarchies
+
+### Base Application Error
+
+```typescript
+class ApplicationError extends VisulimaError {
+    public readonly timestamp: Date;
+    public readonly context?: Record<string, unknown>;
+    
+    constructor(
+        name: string,
+        message: string,
+        options?: {
+            cause?: unknown;
+            context?: Record<string, unknown>;
+            hint?: string | string[];
+        }
+    ) {
+        super({
+            name,
+            message,
+            cause: options?.cause,
+            hint: options?.hint
+        });
+        
+        this.timestamp = new Date();
+        this.context = options?.context;
+    }
+}
+
+// Specific error types
+class NetworkError extends ApplicationError {
+    constructor(message: string, cause?: unknown) {
+        super("NetworkError", message, { cause });
+    }
+}
+
+class BusinessLogicError extends ApplicationError {
+    constructor(message: string, context?: Record<string, unknown>) {
+        super("BusinessLogicError", message, { context });
+    }
+}
+
+class ThirdPartyError extends ApplicationError {
+    constructor(
+        service: string,
+        message: string,
+        cause?: unknown
+    ) {
+        super("ThirdPartyError", `${service}: ${message}`, { cause });
+    }
+}
+```
+
+### Service Layer Errors
+
+```typescript
+class ServiceError extends VisulimaError {
+    public readonly service: string;
+    public readonly operation: string;
+    
+    constructor(
+        service: string,
+        operation: string,
+        message: string,
+        cause?: unknown
+    ) {
+        super({
+            name: "ServiceError",
+            message: `${service}.${operation}: ${message}`,
+            cause
+        });
+        
+        this.service = service;
+        this.operation = operation;
+    }
+}
+
+class UserServiceError extends ServiceError {
+    constructor(operation: string, message: string, cause?: unknown) {
+        super("UserService", operation, message, cause);
+    }
+}
+
+class PaymentServiceError extends ServiceError {
+    constructor(operation: string, message: string, cause?: unknown) {
+        super("PaymentService", operation, message, cause);
+    }
+}
+
+// Usage
+throw new UserServiceError("create", "Email already exists");
+throw new PaymentServiceError("processPayment", "Payment gateway timeout");
+```
+
+## Advanced Patterns
+
+### Error with Retry Information
+
+```typescript
+class RetryableError extends VisulimaError {
+    public readonly retryable: boolean;
+    public readonly retryAfter?: number;
+    public readonly maxRetries?: number;
+    
+    constructor(
+        message: string,
+        options: {
+            retryable: boolean;
+            retryAfter?: number;
+            maxRetries?: number;
+            cause?: unknown;
+        }
+    ) {
+        super({
+            name: "RetryableError",
+            message,
+            cause: options.cause
+        });
+        
+        this.retryable = options.retryable;
+        this.retryAfter = options.retryAfter;
+        this.maxRetries = options.maxRetries;
+        
+        if (this.retryable && this.retryAfter) {
+            this.hint = `Retry after ${this.retryAfter}ms`;
+        }
+    }
+}
+
+// Usage
+throw new RetryableError("Rate limit exceeded", {
+    retryable: true,
+    retryAfter: 5000,
+    maxRetries: 3
+});
+```
+
+### Error with Suggestions
+
+```typescript
+class SuggestedError extends VisulimaError {
+    public readonly suggestions: string[];
+    
+    constructor(
+        name: string,
+        message: string,
+        suggestions: string[]
+    ) {
+        super({
+            name,
+            message,
+            hint: suggestions
+        });
+        
+        this.suggestions = suggestions;
+    }
+}
+
+class CommandNotFoundError extends SuggestedError {
+    constructor(command: string, availableCommands: string[]) {
+        const suggestions = availableCommands
+            .filter(cmd => cmd.includes(command.slice(0, 3)))
+            .map(cmd => `Did you mean '${cmd}'?`);
+        
+        super(
+            "CommandNotFoundError",
+            `Command '${command}' not found`,
+            suggestions.length > 0 
+                ? suggestions 
+                : [`Available commands: ${availableCommands.join(", ")}`]
+        );
+    }
+}
+```
+
+### Error with Severity
+
+```typescript
+type ErrorSeverity = "low" | "medium" | "high" | "critical";
+
+class SeverityError extends VisulimaError {
+    public readonly severity: ErrorSeverity;
+    public readonly shouldNotify: boolean;
+    
+    constructor(
+        name: string,
+        message: string,
+        severity: ErrorSeverity
+    ) {
+        super({
+            name,
+            message
+        });
+        
+        this.severity = severity;
+        this.shouldNotify = severity === "high" || severity === "critical";
+    }
+}
+
+// Usage
+throw new SeverityError(
+    "DataCorruption",
+    "Database integrity check failed",
+    "critical"
+);
+```
+
+## Serialization Support
+
+### Register Custom Errors
+
+```typescript
+import { addKnownErrorConstructor } from "@visulima/error";
+
+class CustomError extends VisulimaError {
+    constructor(message: string) {
+        super({
+            name: "CustomError",
+            message
+        });
+    }
+}
+
+// Register for proper deserialization
+addKnownErrorConstructor(CustomError);
+```
+
+### Serializable Custom Errors
+
+```typescript
+import { addKnownErrorConstructor } from "@visulima/error";
+
+class SerializableError extends VisulimaError {
+    public readonly customData: Record<string, unknown>;
+    
+    constructor(
+        message: string,
+        customData: Record<string, unknown>
+    ) {
+        super({
+            name: "SerializableError",
+            message
+        });
+        
+        this.customData = customData;
+    }
+}
+
+addKnownErrorConstructor(SerializableError);
+
+// Usage
+const error = new SerializableError("Custom error", {
+    userId: "123",
+    action: "purchase",
+    amount: 99.99
+});
+
+const serialized = serializeError(error);
+const deserialized = deserializeError(serialized);
+```
+
+## Best Practices
+
+### 1. Use Descriptive Names
+
+```typescript
+// Good
+class EmailValidationError extends VisulimaError {}
+class PaymentProcessingError extends VisulimaError {}
+
+// Avoid
+class Error1 extends VisulimaError {}
+class MyError extends VisulimaError {}
+```
+
+### 2. Include Helpful Hints
+
+```typescript
+class FileNotFoundError extends VisulimaError {
+    constructor(filePath: string) {
+        super({
+            name: "FileNotFoundError",
+            message: `File not found: ${filePath}`
+        });
+        
+        this.hint = [
+            "Check if the file path is correct",
+            "Verify the file exists",
+            "Ensure you have read permissions"
+        ];
+    }
+}
+```
+
+### 3. Preserve Error Causes
+
+```typescript
+class ServiceError extends VisulimaError {
+    constructor(message: string, cause: unknown) {
+        super({
+            name: "ServiceError",
+            message,
+            cause // Always preserve the original error
+        });
+    }
+}
+```
+
+### 4. Add Context Properties
+
+```typescript
+class ApiRequestError extends VisulimaError {
+    public readonly url: string;
+    public readonly method: string;
+    public readonly statusCode?: number;
+    
+    constructor(options: {
+        url: string;
+        method: string;
+        statusCode?: number;
+        message: string;
+        cause?: unknown;
+    }) {
+        super({
+            name: "ApiRequestError",
+            message: options.message,
+            cause: options.cause
+        });
+        
+        this.url = options.url;
+        this.method = options.method;
+        this.statusCode = options.statusCode;
+    }
+}
+```
+
+### 5. Type Guards
+
+```typescript
+function isValidationError(error: unknown): error is ValidationError {
+    return error instanceof ValidationError;
+}
+
+function isDatabaseError(error: unknown): error is DatabaseError {
+    return error instanceof DatabaseError;
+}
+
+// Usage
+try {
+    // ...
+} catch (error) {
+    if (isValidationError(error)) {
+        console.log("Validation errors:", error.fields);
+    } else if (isDatabaseError(error)) {
+        console.log("Database error:", error.query);
+    }
+}
+```
+
+## Testing Custom Errors
+
+```typescript
+import { describe, it, expect } from "vitest";
+
+describe("CustomError", () => {
+    it("should create error with correct properties", () => {
+        const error = new CustomError("test message", { code: "TEST" });
+        
+        expect(error).toBeInstanceOf(CustomError);
+        expect(error).toBeInstanceOf(VisulimaError);
+        expect(error).toBeInstanceOf(Error);
+        expect(error.name).toBe("CustomError");
+        expect(error.message).toBe("test message");
+        expect(error.code).toBe("TEST");
+    });
+    
+    it("should serialize and deserialize correctly", () => {
+        const original = new CustomError("test", { code: "TEST" });
+        const serialized = serializeError(original);
+        const deserialized = deserializeError(serialized);
+        
+        expect(deserialized).toBeInstanceOf(CustomError);
+        expect(deserialized.message).toBe("test");
+    });
+});
+```
+
+## See Also
+
+- [VisulimaError Class](./visulima-error.md)
+- [Error Serialization](./serialization.md)
+- [Examples](./examples.md)
+- [API Reference](./api-reference.md)

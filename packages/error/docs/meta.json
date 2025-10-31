@@ -1,0 +1,23 @@
+{
+  "title": "Error",
+  "pages": [
+    "index",
+    "---Getting Started---",
+    "installation",
+    "quick-start",
+    "---Core Features---",
+    "visulima-error",
+    "stacktrace",
+    "code-frames",
+    "serialization",
+    "rendering",
+    "solution-finders",
+    "---Advanced---",
+    "ai-integration",
+    "custom-errors",
+    "typescript",
+    "---Reference---",
+    "api-reference",
+    "examples"
+  ]
+}
