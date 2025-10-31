@@ -1,0 +1,137 @@
+---
+title: Getting Started
+description: A robust string manipulation library providing utilities for common string operations with support for multiple languages and scripts.
+---
+
+# Getting Started
+
+@visulima/string is a comprehensive TypeScript library for string manipulation, providing utilities for case conversion, text formatting, internationalization, and advanced string operations.
+
+## Key Features
+
+### Case Conversion
+
+Transform strings between multiple case styles with intelligent handling of acronyms and multi-language support:
+
+- camelCase, PascalCase, snake_case, kebab-case
+- CONSTANT_CASE, dot.case, path/case
+- Title Case with smart minor word handling
+- Sentence case, Train-Case, and more
+
+### Unicode and Multi-Language Support
+
+Full support for international text processing:
+
+- CJK Scripts (Japanese, Korean, Chinese)
+- European Scripts (Cyrillic, Greek, Latin)
+- RTL Scripts (Arabic, Hebrew)
+- Indic Scripts (Devanagari, Bengali, Tamil)
+- Southeast Asian (Thai, Lao, Khmer)
+
+### String Width and Truncation
+
+Accurate visual width calculation and intelligent truncation:
+
+- Unicode-aware width calculation
+- ANSI escape code handling
+- Smart truncation with ellipsis support
+- Emoji and zero-width character support
+
+### Text Formatting
+
+Advanced text formatting utilities:
+
+- Word wrapping with multiple modes
+- Text alignment (left, center, right)
+- Indentation removal (outdent)
+- ANSI color code preservation
+
+### Additional Features
+
+- Slugification with transliteration
+- Levenshtein distance calculation
+- String similarity comparison
+- Advanced string replacement with ignore ranges
+- Type-safe native string extensions
+
+## Quick Start
+
+### Installation
+
+```bash
+npm install @visulima/string
+```
+
+```bash
+yarn add @visulima/string
+```
+
+```bash
+pnpm add @visulima/string
+```
+
+### Basic Usage
+
+```typescript
+import { camelCase, slugify, truncate, wordWrap } from '@visulima/string';
+
+// Case conversion
+camelCase('hello-world'); // 'helloWorld'
+
+// Slugification
+slugify('Hello World!'); // 'hello-world'
+
+// Truncation
+truncate('A very long string', 10); // 'A very lo…'
+
+// Word wrapping
+wordWrap('This is a long text that needs wrapping', { width: 20 });
+```
+
+## Next Steps
+
+<Cards>
+  <Card title="Installation" href="/docs/installation">
+    Learn how to install and configure @visulima/string
+  </Card>
+  <Card title="Case Conversion" href="/docs/case-conversion">
+    Transform strings between different case styles
+  </Card>
+  <Card title="String Manipulation" href="/docs/string-manipulation">
+    Format and manipulate strings
+  </Card>
+  <Card title="API Reference" href="/docs/api">
+    Explore the complete API documentation
+  </Card>
+</Cards>
+
+## TypeScript Support
+
+The library is written in TypeScript and provides comprehensive type definitions:
+
+```typescript
+import type { CaseOptions, TruncateOptions } from '@visulima/string';
+
+const options: CaseOptions = {
+  locale: 'en',
+  knownAcronyms: ['API', 'URL'],
+  cache: true
+};
+```
+
+## Performance
+
+The library is optimized for performance with:
+
+- Precompiled regex patterns
+- Smart caching mechanisms
+- Efficient string processing
+- Minimal memory allocations
+
+## Browser and Node.js Support
+
+Works seamlessly in both environments:
+
+- Node.js >= 18.0.0
+- All modern browsers
+- TypeScript >= 5.0

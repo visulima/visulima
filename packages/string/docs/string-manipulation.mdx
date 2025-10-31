@@ -1,0 +1,441 @@
+---
+title: String Manipulation
+description: Format, truncate, wrap, and align text with Unicode and ANSI support.
+---
+
+# String Manipulation
+
+Comprehensive utilities for formatting and manipulating strings with full Unicode and ANSI escape code support.
+
+## Text Truncation
+
+The `truncate` function provides intelligent string truncation with configurable positions and Unicode support.
+
+### Basic Truncation
+
+```typescript
+import { truncate } from '@visulima/string';
+
+// Truncate from the end (default)
+truncate('unicorn', 4);                 // 'un…'
+truncate('unicorn', 4, { position: 'end' });  // 'un…'
+
+// Truncate from the start
+truncate('unicorn', 5, { position: 'start' }); // '…orn'
+
+// Truncate from the middle
+truncate('unicorn', 5, { position: 'middle' }); // 'un…n'
+```
+
+### Custom Ellipsis
+
+```typescript
+truncate('unicorns', 5, { ellipsis: '.' });     // 'unic.'
+truncate('unicorns', 5, { ellipsis: ' .' });    // 'uni .'
+truncate('unicorns', 8, { ellipsis: '...' });   // 'unico...'
+```
+
+### Smart Truncation on Spaces
+
+```typescript
+// Prefer truncation at word boundaries
+truncate('dragons are awesome', 15, {
+  position: 'end',
+  preferTruncationOnSpace: true
+});
+// 'dragons are…'
+
+truncate('unicorns rainbow dragons', 20, {
+  position: 'middle',
+  preferTruncationOnSpace: true
+});
+// 'unicorns…dragons'
+```
+
+### With ANSI Escape Codes
+
+```typescript
+const colored = '\x1b[31municorn\x1b[39m';
+truncate(colored, 4);
+// '\x1b[31mun\x1b[39m…' (preserves color codes)
+```
+
+### With Unicode Characters
+
+```typescript
+// CJK characters (width 2)
+truncate('안녕하세요', 3, {
+  width: { fullWidth: 2 }
+});
+// '안…'
+
+// Emojis
+truncate('Hello 👋 World', 8, {
+  width: { emojiWidth: 2 }
+});
+// 'Hello 👋…'
+```
+
+### Truncation Options
+
+```typescript
+import type { TruncateOptions } from '@visulima/string';
+
+interface TruncateOptions {
+  // String to append when truncation occurs
+  ellipsis?: string; // default: ''
+  
+  // Width of the ellipsis (auto-calculated if not provided)
+  ellipsisWidth?: number;
+  
+  // Position to truncate
+  position?: 'end' | 'middle' | 'start'; // default: 'end'
+  
+  // Truncate at whitespace if within 3 characters
+  preferTruncationOnSpace?: boolean; // default: false
+  
+  // Width calculation options
+  width?: StringWidthOptions;
+}
+```
+
+## Word Wrapping
+
+The `wordWrap` function provides flexible text wrapping with multiple modes and Unicode support.
+
+### Basic Wrapping
+
+```typescript
+import { wordWrap, WrapMode } from '@visulima/string';
+
+// Default: 80 character width, preserve words
+const wrapped = wordWrap(
+  'This is a long text that will be wrapped to fit within the specified width limit.'
+);
+
+// Custom width
+wordWrap('Long text here...', { width: 40 });
+```
+
+### Wrapping Modes
+
+```typescript
+// Preserve words (default) - keeps words intact
+wordWrap('Long words will stay intact but may exceed width', {
+  width: 20,
+  wrapMode: WrapMode.PRESERVE_WORDS
+});
+
+// Break at characters - breaks words to fit width exactly
+wordWrap('Words will be broken at character boundaries', {
+  width: 20,
+  wrapMode: WrapMode.BREAK_AT_CHARACTERS
+});
+
+// Strict width - forces strict adherence to width
+wordWrap('Text will be broken exactly at width limit', {
+  width: 20,
+  wrapMode: WrapMode.STRICT_WIDTH
+});
+```
+
+### With ANSI Color Codes
+
+```typescript
+const coloredText = '\x1b[31mThis red text\x1b[0m will be wrapped';
+const wrapped = wordWrap(coloredText, { width: 20 });
+// Color codes preserved across line breaks
+```
+
+### Additional Options
+
+```typescript
+wordWrap('Text with zero-width characters', {
+  width: 30,
+  trim: false,  // Don't trim whitespace (default: true)
+  removeZeroWidthCharacters: false  // Keep zero-width chars (default: true)
+});
+```
+
+## Text Alignment
+
+The `alignText` function aligns text with support for multi-line strings and ANSI codes.
+
+### Basic Alignment
+
+```typescript
+import { alignText } from '@visulima/string';
+
+const text = 'First line\nSecond, much longer line';
+
+// Right alignment
+alignText(text, { align: 'right' });
+// "          First line\nSecond, much longer line"
+
+// Center alignment
+alignText(text, { align: 'center' });
+// "     First line     \nSecond, much longer line"
+
+// Left alignment (default)
+alignText(text, { align: 'left' });
+```
+
+### Array of Strings
+
+```typescript
+const lines = ['Short', 'Medium length', 'A very long line'];
+
+const aligned = alignText(lines, { align: 'center' });
+// Returns array with each line centered based on longest line
+```
+
+### Custom Options
+
+```typescript
+alignText('Line1*Line2*Line3', {
+  align: 'center',
+  split: '*',           // Custom line separator
+  pad: '-',             // Custom padding character
+  stringWidthOptions: {
+    emojiWidth: 2       // Handle emoji width correctly
+  }
+});
+```
+
+### Alignment Options
+
+```typescript
+import type { AlignTextOptions } from '@visulima/string';
+
+interface AlignTextOptions {
+  // Alignment direction
+  align?: 'center' | 'left' | 'right'; // default: 'center'
+  
+  // Padding character
+  pad?: string; // default: ' '
+  
+  // Line separator
+  split?: string; // default: '\n'
+  
+  // String width calculation options
+  stringWidthOptions?: StringWidthOptions;
+}
+```
+
+## Indentation Removal (Outdent)
+
+The `outdent` function removes leading indentation while preserving relative indentation.
+
+### Basic Usage
+
+```typescript
+import { outdent } from '@visulima/string';
+
+// Template literal
+const text = outdent`
+  This text will have indentation removed
+  while preserving relative indentation.
+    This line stays indented.
+`;
+// Output:
+// This text will have indentation removed
+// while preserving relative indentation.
+//   This line stays indented.
+
+// String input
+const result = outdent.string(`
+  Hello
+  World
+`);
+// "Hello\nWorld"
+```
+
+### With Interpolation
+
+```typescript
+const name = 'World';
+const greeting = outdent`
+  Hello ${name}!
+  Welcome to outdent.
+`;
+// "Hello World!\nWelcome to outdent."
+```
+
+### Custom Options
+
+```typescript
+const customOutdent = outdent({
+  trimLeadingNewline: false,   // Keep leading newline
+  trimTrailingNewline: false,  // Keep trailing newline
+  newline: '\r\n',             // Normalize to CRLF
+  cache: true                  // Enable caching (default)
+});
+
+customOutdent`
+  Indented text
+`;
+```
+
+### Performance with Caching
+
+```typescript
+// Default behavior - caching enabled
+const dedent = outdent();
+
+// Disable caching if memory is a concern
+const noCacheDedent = outdent({ cache: false });
+
+// Custom cache store
+const customCache = new WeakMap();
+const customCacheDedent = outdent({ cacheStore: customCache });
+```
+
+## String Slicing
+
+Unicode-aware string slicing that handles ANSI codes, emojis, and multi-byte characters.
+
+### Basic Slicing
+
+```typescript
+import { slice } from '@visulima/string';
+
+slice('hello world', 0, 5);     // 'hello'
+slice('hello world', 6);        // 'world'
+slice('hello world', -5);       // 'world'
+```
+
+### With Unicode Characters
+
+```typescript
+// Handles emoji correctly
+slice('Hello 👋 World', 0, 7);  // 'Hello 👋'
+
+// CJK characters
+slice('こんにちは', 0, 3);      // 'こんに'
+```
+
+### With ANSI Codes
+
+```typescript
+const colored = '\x1b[31mRed Text\x1b[0m';
+slice(colored, 0, 3);
+// '\x1b[31mRed\x1b[0m' (preserves color codes)
+```
+
+## String Replacement with Ignore Ranges
+
+Advanced string replacement with support for ignored regions.
+
+### Basic Replacement
+
+```typescript
+import { replaceString } from '@visulima/string';
+import type { OptionReplaceArray, IntervalArray } from '@visulima/string';
+
+const source = 'Replace AB and CD';
+const searches: OptionReplaceArray = [
+  ['AB', 'ab'],
+  ['CD', 'cd']
+];
+
+replaceString(source, searches, []);
+// "Replace ab and cd"
+```
+
+### With Ignore Ranges
+
+```typescript
+const source = 'Replace AB and ignore CD';
+const searches: OptionReplaceArray = [
+  ['AB', 'ab'],
+  ['CD', 'cd']
+];
+
+// Ignore indices 19-22 (the word "ignore")
+const ignoreRanges: IntervalArray = [[19, 22]];
+
+replaceString(source, searches, ignoreRanges);
+// "Replace ab and ignore CD"
+```
+
+### With Regular Expressions
+
+```typescript
+const source = 'Hello World';
+const searches: OptionReplaceArray = [
+  [/(\w+)\s+(\w+)/, '$2, $1']
+];
+
+replaceString(source, searches, []);
+// "World, Hello"
+```
+
+### Overlapping Matches
+
+```typescript
+// Longer match takes precedence
+const source = 'abcde';
+const searches: OptionReplaceArray = [
+  ['abc', '123'],
+  ['abcde', '54321']  // This wins
+];
+
+replaceString(source, searches, []);
+// "54321"
+```
+
+## String Width Calculation
+
+Accurate visual width calculation with Unicode support.
+
+### Basic Width Calculation
+
+```typescript
+import { getStringWidth } from '@visulima/string';
+
+getStringWidth('hello');        // 5
+getStringWidth('👋 hello');     // 7 (emoji is width 2)
+getStringWidth('あいう');       // 6 (each char is width 2)
+```
+
+### With ANSI Codes
+
+```typescript
+// ANSI codes ignored by default
+getStringWidth('\x1b[31mRed\x1b[39m');  // 3
+
+// Include ANSI codes in width
+getStringWidth('\x1b[31mRed\x1b[39m', {
+  countAnsiEscapeCodes: true
+});  // 11
+```
+
+### Custom Width Options
+
+```typescript
+getStringWidth('hello', {
+  regularWidth: 2        // Each regular char = 2
+});  // 10
+
+getStringWidth('你好', {
+  fullWidth: 3           // CJK chars = 3 instead of 2
+});  // 6
+```
+
+### Width with Truncation
+
+```typescript
+import { getStringTruncatedWidth } from '@visulima/string';
+
+getStringTruncatedWidth('hello world', {
+  limit: 8,
+  ellipsis: '...'
+});
+// { width: 8, truncated: true, ellipsed: true, index: 5 }
+```
+
+## Next Steps
+
+- [Slugification](/docs/slugification) - Create URL-friendly slugs
+- [String Width](/docs/string-width) - Detailed width calculation
+- [API Reference](/docs/api) - Complete API documentation
