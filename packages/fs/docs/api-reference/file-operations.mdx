@@ -1,0 +1,446 @@
+---
+title: File Operations
+description: Read, write, move, and remove files with advanced options
+---
+
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# File Operations
+
+Functions for reading, writing, moving, and removing files.
+
+## readFile
+
+Asynchronously reads the contents of a file.
+
+<Callout type="info">
+Supports decompression of gzip and brotli compressed files.
+</Callout>
+
+### Signature
+
+```ts
+function readFile<O extends ReadFileOptions<C>, C extends "brotli" | "gzip" | "none" = "none">(
+    path: URL | string,
+    options?: O
+): Promise<ContentType<O>>
+```
+
+### Parameters
+
+- **`path`** (`URL | string`) - The path to the file
+- **`options`** (`ReadFileOptions`) - Optional reading options
+  - `encoding` (`ReadFileEncoding`) - Character encoding (default: `"utf8"`)
+  - `buffer` (`boolean`) - Return as Buffer instead of string (default: `false`)
+  - `compression` (`"none" | "gzip" | "brotli"`) - Decompression method (default: `"none"`)
+  - `flag` (`string | number`) - File system flag (default: `"r"`)
+
+### Returns
+
+`Promise<string | Buffer>` - File contents as string or Buffer based on options
+
+### Examples
+
+<Tabs items={['Basic', 'Buffer', 'Compressed', 'Encoding']}>
+  <Tab value="Basic">
+    ```ts title="read-text.ts"
+    import { readFile } from "@visulima/fs";
+
+    // Read as string (default)
+    const text = await readFile("./file.txt");
+    console.log(text);
+    ```
+  </Tab>
+  <Tab value="Buffer">
+    ```ts title="read-buffer.ts"
+    import { readFile } from "@visulima/fs";
+
+    // Read as buffer
+    const buffer = await readFile("./image.png", { buffer: true });
+    console.log(buffer.length);
+    ```
+  </Tab>
+  <Tab value="Compressed">
+    ```ts title="read-compressed.ts"
+    import { readFile } from "@visulima/fs";
+
+    // Read compressed file
+    const content = await readFile("./file.txt.gz", { 
+      compression: "gzip" 
+    });
+    ```
+  </Tab>
+  <Tab value="Encoding">
+    ```ts title="read-encoding.ts"
+    import { readFile } from "@visulima/fs";
+
+    // Read with specific encoding
+    const content = await readFile("./file.txt", { 
+      encoding: "utf-16le" 
+    });
+    ```
+  </Tab>
+</Tabs>
+
+## readFileSync
+
+Synchronously reads the contents of a file.
+
+### Signature
+
+```ts
+function readFileSync<O extends ReadFileOptions<C>, C extends "brotli" | "gzip" | "none" = "none">(
+    path: URL | string,
+    options?: O
+): ContentType<O>
+```
+
+### Example
+
+```ts title="read-sync.ts"
+import { readFileSync } from "@visulima/fs";
+
+const text = readFileSync("./file.txt");
+const buffer = readFileSync("./image.png", { buffer: true });
+```
+
+## writeFile
+
+Asynchronously writes content to a file, creating parent directories if needed.
+
+<Callout>
+Automatically creates parent directories when `recursive: true` (default).
+</Callout>
+
+### Signature
+
+```ts
+function writeFile(
+    path: URL | string,
+    data: Buffer | string | Uint8Array,
+    options?: WriteFileOptions
+): Promise<void>
+```
+
+### Parameters
+
+- **`path`** (`URL | string`) - The path to the file
+- **`data`** (`string | Buffer | Uint8Array`) - Content to write
+- **`options`** (`WriteFileOptions`) - Optional writing options
+  - `encoding` (`BufferEncoding`) - Character encoding (default: `"utf8"`)
+  - `mode` (`number`) - File mode/permissions (default: `0o666`)
+  - `flag` (`string`) - File system flag (default: `"w"`)
+  - `recursive` (`boolean`) - Create parent directories (default: `true`)
+  - `overwrite` (`boolean`) - Overwrite if exists (default: `false`)
+  - `chown` (`{ uid: number, gid: number }`) - Set ownership
+
+### Examples
+
+<Tabs items={['Basic', 'Nested', 'Options', 'Buffer', 'Safety']}>
+  <Tab value="Basic">
+    ```ts title="write-basic.ts"
+    import { writeFile } from "@visulima/fs";
+
+    // Basic write
+    await writeFile("./file.txt", "Hello, World!");
+    ```
+  </Tab>
+  <Tab value="Nested">
+    ```ts title="write-nested.ts"
+    import { writeFile } from "@visulima/fs";
+
+    // Write with automatic directory creation
+    await writeFile("./path/to/nested/file.txt", "content");
+    ```
+  </Tab>
+  <Tab value="Options">
+    ```ts title="write-options.ts"
+    import { writeFile } from "@visulima/fs";
+
+    // Write with specific options
+    await writeFile("./file.txt", "content", {
+        encoding: "utf8",
+        mode: 0o644,
+        overwrite: true,
+    });
+    ```
+  </Tab>
+  <Tab value="Buffer">
+    ```ts title="write-buffer.ts"
+    import { writeFile } from "@visulima/fs";
+
+    // Write buffer
+    const buffer = Buffer.from("binary data");
+    await writeFile("./data.bin", buffer);
+    ```
+  </Tab>
+  <Tab value="Safety">
+    ```ts title="write-safe.ts"
+    import { writeFile } from "@visulima/fs";
+
+    // Prevent overwriting
+    try {
+        await writeFile("./existing.txt", "new content", { 
+          overwrite: false 
+        });
+    } catch (error) {
+        console.error("File already exists");
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## writeFileSync
+
+Synchronously writes content to a file.
+
+### Example
+
+```ts title="write-sync.ts"
+import { writeFileSync } from "@visulima/fs";
+
+writeFileSync("./file.txt", "Hello, World!");
+writeFileSync("./path/to/file.txt", "content", { recursive: true });
+```
+
+## move
+
+Asynchronously moves or renames a file or directory.
+
+### Signature
+
+```ts
+function move(
+    source: URL | string,
+    destination: URL | string,
+    options?: MoveOptions
+): Promise<void>
+```
+
+### Examples
+
+```ts title="move-examples.ts"
+import { move } from "@visulima/fs";
+
+// Move/rename file
+await move("./old-name.txt", "./new-name.txt");
+
+// Move to different directory
+await move("./file.txt", "./backup/file.txt");
+
+// Overwrite existing file
+await move("./source.txt", "./dest.txt", { overwrite: true });
+
+// Move directory
+await move("./old-dir", "./new-dir");
+```
+
+## moveSync / rename / renameSync
+
+<Tabs items={['moveSync', 'rename', 'renameSync']}>
+  <Tab value="moveSync">
+    Synchronous version of `move`.
+
+    ```ts
+    import { moveSync } from "@visulima/fs";
+
+    moveSync("./old-name.txt", "./new-name.txt");
+    ```
+  </Tab>
+  <Tab value="rename">
+    Alias for `move` (asynchronous).
+
+    ```ts
+    import { rename } from "@visulima/fs";
+
+    await rename("./old.txt", "./new.txt");
+    ```
+  </Tab>
+  <Tab value="renameSync">
+    Alias for `moveSync` (synchronous).
+
+    ```ts
+    import { renameSync } from "@visulima/fs";
+
+    renameSync("./old.txt", "./new.txt");
+    ```
+  </Tab>
+</Tabs>
+
+## remove
+
+Asynchronously removes files or directories.
+
+<Callout type="warn">
+This operation is destructive and cannot be undone. Use with caution.
+</Callout>
+
+### Signature
+
+```ts
+function remove(
+    path: URL | string,
+    options?: RetryOptions
+): Promise<void>
+```
+
+### Examples
+
+```ts title="remove-examples.ts"
+import { remove } from "@visulima/fs";
+
+// Remove file
+await remove("./file.txt");
+
+// Remove directory and contents
+await remove("./directory");
+
+// Remove with retries (useful for Windows)
+await remove("./locked-file.txt", {
+    maxRetries: 3,
+    retryDelay: 100,
+});
+```
+
+## removeSync
+
+Synchronous version of `remove`.
+
+```ts title="remove-sync.ts"
+import { removeSync } from "@visulima/fs";
+
+removeSync("./file.txt");
+removeSync("./directory");
+```
+
+## isAccessible
+
+Asynchronously checks if a path is accessible with specific permissions.
+
+### Signature
+
+```ts
+function isAccessible(
+    path: URL | string,
+    mode?: number
+): Promise<boolean>
+```
+
+### Parameters
+
+- **`path`** (`URL | string`) - Path to check
+- **`mode`** (`number`) - Access mode to check (default: `F_OK`)
+  - `F_OK` - File exists
+  - `R_OK` - File is readable
+  - `W_OK` - File is writable
+  - `X_OK` - File is executable
+
+### Examples
+
+<Tabs items={['Exists', 'Readable', 'Writable', 'Multiple']}>
+  <Tab value="Exists">
+    ```ts title="check-exists.ts"
+    import { isAccessible, F_OK } from "@visulima/fs";
+
+    // Check if file exists
+    if (await isAccessible("./file.txt")) {
+        console.log("File exists");
+    }
+    ```
+  </Tab>
+  <Tab value="Readable">
+    ```ts title="check-readable.ts"
+    import { isAccessible, R_OK } from "@visulima/fs";
+
+    // Check if file is readable
+    if (await isAccessible("./file.txt", R_OK)) {
+        console.log("File is readable");
+    }
+    ```
+  </Tab>
+  <Tab value="Writable">
+    ```ts title="check-writable.ts"
+    import { isAccessible, W_OK } from "@visulima/fs";
+
+    // Check if file is writable
+    if (await isAccessible("./file.txt", W_OK)) {
+        console.log("File is writable");
+    }
+    ```
+  </Tab>
+  <Tab value="Multiple">
+    ```ts title="check-multiple.ts"
+    import { isAccessible, R_OK, W_OK } from "@visulima/fs";
+
+    // Check multiple permissions
+    if (await isAccessible("./file.txt", R_OK | W_OK)) {
+        console.log("File is readable and writable");
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## isAccessibleSync
+
+Synchronous version of `isAccessible`.
+
+```ts title="is-accessible-sync.ts"
+import { isAccessibleSync, R_OK } from "@visulima/fs";
+
+if (isAccessibleSync("./file.txt", R_OK)) {
+    console.log("File is readable");
+}
+```
+
+## Type Definitions
+
+### ReadFileOptions
+
+```ts
+type ReadFileOptions<C> = {
+    buffer?: boolean;
+    compression?: C;
+    encoding?: ReadFileEncoding | undefined;
+    flag?: number | string | undefined;
+};
+```
+
+### WriteFileOptions
+
+```ts
+type WriteFileOptions = {
+    chown?: {
+        gid: number;
+        uid: number;
+    };
+    encoding?: BufferEncoding | null | undefined;
+    flag?: string | undefined;
+    mode?: number;
+    overwrite?: boolean;
+    recursive?: boolean;
+};
+```
+
+### MoveOptions
+
+```ts
+type MoveOptions = {
+    overwrite?: boolean;
+};
+```
+
+### RetryOptions
+
+```ts
+type RetryOptions = {
+    maxRetries?: number | undefined;
+    retryDelay?: number | undefined;
+};
+```
+
+## See Also
+
+- [Directory Operations](/docs/package/fs/api-reference/directory-operations) - Create and manage directories
+- [JSON Operations](/docs/package/fs/api-reference/json-operations) - Read and write JSON files
+- [YAML Operations](/docs/package/fs/api-reference/yaml-operations) - Read and write YAML files
