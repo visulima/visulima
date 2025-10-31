@@ -15,6 +15,7 @@ const isOption = (argument: string) => isShort.test(argument) || isLong.test(arg
 
 const commandLineCommands = (commands: (string | null)[], argv: string[]): { argv: string[]; command: string | null } => {
     /* the command is the first arg, unless it's an option (e.g. --help) */
+    // eslint-disable-next-line unicorn/no-null
     const command = (argv[0] && isOption(argv[0])) || argv.length === 0 ? null : argv.shift() ?? null;
 
     if (!commands.includes(command)) {

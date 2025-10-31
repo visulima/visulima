@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import findAlternatives from "../../../src/util/levenstein";
+import findAlternatives from "../../../src/util/general/find-alternatives";
 
 describe("util/levenstein", () => {
     it("should find an approximate match within the Levenshtein distance", () => {

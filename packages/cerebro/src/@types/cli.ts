@@ -1,12 +1,18 @@
-import type { UpdateNotifierOptions } from "../update-notifier/has-new-version";
+import type PluginManager from "../plugin-manager";
 import type { Command as ICommand, OptionDefinition } from "./command";
-import type { Extension as IExtension } from "./extension";
+import type { Plugin } from "./plugin";
 
 export type CommandSection = { footer?: string; header?: string };
 
 export type CliRunOptions = {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [key: string]: any;
+
+    /**
+     * Whether to automatically dispose/cleanup the CLI instance after execution
+     * @default true
+     */
+    autoDispose?: boolean;
     shouldExitProcess?: boolean;
 };
 
@@ -20,16 +26,17 @@ export interface Cli {
     addCommand: <OD extends OptionDefinition<any> = any>(command: ICommand<OD>) => this;
 
     /**
-     * Adds an extension, so it is available when commands execute. They usually live
-     * the given name on the toolbox object passed to commands, but are able
-     * to manipulate the toolbox object however they want. The second
-     * parameter is a function that allows the extension to attach itself.
-     * @param extension The extension to add.
+     * Add a plugin to extend the CLI functionality
+     * @param plugin The plugin to add.
      * @returns self
      */
-    addExtension: (extension: IExtension) => this;
+    addPlugin: (plugin: Plugin) => this;
 
-    enableUpdateNotifier: ({ alwaysRun, distTag, updateCheckInterval }: Partial<Omit<UpdateNotifierOptions, "debug | pkg">>) => this;
+    /**
+     * Disposes the CLI instance and cleans up resources
+     * @returns void
+     */
+    dispose: () => void;
 
     getCliName: () => string;
 
@@ -43,6 +50,12 @@ export interface Cli {
 
     getPackageVersion: () => string | undefined;
 
+    /**
+     * Get the plugin manager instance
+     * @returns The plugin manager
+     */
+    getPluginManager: () => PluginManager;
+
     run: (extraOptions: CliRunOptions) => Promise<void>;
 
     setCommandSection: (commandSection: CommandSection) => this;
@@ -54,3 +67,15 @@ export interface Cli {
      */
     setDefaultCommand: (commandName: string) => this;
 }
+
+/**
+ * Any of the output types [[OUTPUT_NORMAL]], [[OUTPUT_RAW]] and [[OUTPUT_PLAIN]].
+ */
+export type OutputType = 1 | 2 | 4;
+
+/**
+ * Any of the verbosity types
+ * [[VERBOSITY_QUIET]], [[VERBOSITY_NORMAL]], [[VERBOSITY_VERBOSE]] and [[VERBOSITY_DEBUG]].
+ */
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export type VERBOSITY_LEVEL = 16 | 32 | 64 | 128 | 256;

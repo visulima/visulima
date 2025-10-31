@@ -4,12 +4,12 @@ exports[`line-usage > should render a typical output 1`] = `
 "
 [1ma typical app[22m
 
-   Generates something very important.                                           
+    Generates something very important. 
 
 [1mOption list[22m
 
-[90m [39m  [1m-h[22m, [1m[33m--help[39m[22m [4mboolean[24m                    [90m [39m  Display this usage guide.             
-[90m [39m  [1m[33m--src[39m[22m [4mstring[][24m                        [90m [39m  The input files to process            
-[90m [39m  [1m-t[22m, [1m[33m--timeout[39m[22m [4mnumber[24m                  [90m [39m  Timeout value in ms                   
+  [1m-h[22m, [1m[33m--help[39m[22m [4mboolean[24m     Display this usage guide.  
+  [1m[33m--src[39m[22m [4mstring[][24m         The input files to process 
+  [1m-t[22m, [1m[33m--timeout[39m[22m [4mnumber[24m   Timeout value in ms        
 "
 `;

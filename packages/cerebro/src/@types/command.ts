@@ -1,13 +1,11 @@
-import type { OptionDefinition as BaseOptionDefinition } from "command-line-args";
+import type { OptionDefinition as BaseOptionDefinition } from "@visulima/command-line-args";
 
 import type { Content } from "./command-line-usage";
 import type { Toolbox as IToolbox } from "./toolbox";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type TypeConstructor<T> = (value: any) => T extends (infer R)[] ? R | undefined : T | undefined;
+type TypeConstructor<T> = (value: unknown) => T extends (infer R)[] ? R | undefined : T | undefined;
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type MultiplePropertyOptions<T> = any[] extends T ? { lazyMultiple: true } | { multiple: true } : unknown;
+type MultiplePropertyOptions<T> = unknown[] extends T ? { lazyMultiple: true } | { multiple: true } : unknown;
 
 export type OptionDefinition<T> = MultiplePropertyOptions<T>
     & Omit<BaseOptionDefinition, "type|defaultValue"> & {
@@ -64,6 +62,18 @@ export type ArgumentDefinition<T = any> = Omit<OptionDefinition<T>, "multiple|la
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export interface Command<O extends OptionDefinition<any> = any, TContext extends IToolbox = IToolbox> {
+    /**
+     * @internal
+     * Pre-computed list of options with conflicts for runtime validation
+     */
+    __conflictingOptions__?: PossibleOptionDefinition<O>[];
+
+    /**
+     * @internal
+     * Pre-computed list of required options for runtime validation
+     */
+    __requiredOptions__?: PossibleOptionDefinition<O>[];
+
     /** Potential other names for this command */
     alias?: string[] | string;
 

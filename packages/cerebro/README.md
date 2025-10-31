@@ -74,6 +74,70 @@ Now you can run your CLI with `node index.js` and you should see the following o
 
 ![Cli Output](./__assets__/cli_output.png)
 
+## Shell Completions
+
+Cerebro supports shell autocompletions for bash, zsh, fish, and powershell through the optional `@bomb.sh/tab` integration.
+
+### Installation
+
+To enable completions, first install the optional peer dependency:
+
+```sh
+pnpm add @bomb.sh/tab
+```
+
+### Adding Completion Command
+
+Import and add the completion command to your CLI:
+
+```ts
+import Cli from "@visulima/cerebro";
+import completionCommand from "@visulima/cerebro/command/completion";
+
+const cli = new Cli("my-cli");
+
+// Add your commands
+cli.addCommand({
+    name: "build",
+    description: "Build the project",
+    options: [
+        {
+            name: "output",
+            alias: "o",
+            type: String,
+            description: "Output directory",
+        },
+    ],
+    execute: ({ options }) => {
+        console.log(`Building to ${options.output || "dist"}`);
+    },
+});
+
+// Add completion command
+cli.addCommand(completionCommand);
+
+await cli.run();
+```
+
+### Generating Completion Scripts
+
+Users can generate completion scripts for their shell:
+
+```bash
+# For zsh
+my-cli completion --shell=zsh > ~/.my-cli-completion.zsh
+echo 'source ~/.my-cli-completion.zsh' >> ~/.zshrc
+
+# For bash
+my-cli completion --shell=bash > ~/.my-cli-completion.bash
+echo 'source ~/.my-cli-completion.bash' >> ~/.bashrc
+
+# For fish
+my-cli completion --shell=fish > ~/.config/fish/completions/my-cli.fish
+```
+
+After setting up, users can use `TAB` to autocomplete commands and options.
+
 ## Supported Node.js Versions
 
 Libraries in this ecosystem make the best effort to track [Node.js’ release schedule](https://github.com/nodejs/release#release-schedule).

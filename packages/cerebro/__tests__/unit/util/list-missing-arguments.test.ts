@@ -2,7 +2,7 @@ import type { CommandLineOptions } from "command-line-args";
 import { describe, expect, it } from "vitest";
 
 import type { OptionDefinition } from "../../../src/@types/command";
-import listMissingArguments from "../../../src/util/list-missing-arguments";
+import listMissingArguments from "../../../src/util/data-processing/list-missing-arguments";
 
 describe("util/list-missing-arguments", () => {
     it("should return missing argument if it was not provided", () => {

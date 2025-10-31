@@ -3,48 +3,48 @@
 exports[`command-line-usage/option-list-section > should omit String, correct typeLabel 1`] = `
 "[1mOption list[22m
 
-[90m [39m  [1m[33m--src[39m[22m [4mstring[24m                          [90m [39m  The input files to process            
+  [1m[33m--src[39m[22m [4mstring[24m   The input files to process 
 "
 `;
 
 exports[`command-line-usage/option-list-section > should omit String, correct typeLabel, lazyMultiple 1`] = `
 "[1mOption list[22m
 
-[90m [39m  [1m[33m--src[39m[22m [4mstring[][24m                        [90m [39m  The input files to process            
+  [1m[33m--src[39m[22m [4mstring[][24m   The input files to process 
 "
 `;
 
 exports[`command-line-usage/option-list-section > should omit String, correct typeLabel, multiple 1`] = `
 "[1mOption list[22m
 
-[90m [39m  [1m[33m--src[39m[22m [4mstring[][24m                        [90m [39m  The input files to process            
+  [1m[33m--src[39m[22m [4mstring[][24m   The input files to process 
 "
 `;
 
 exports[`command-line-usage/option-list-section > should output with correct type Number, correct typeLabel and lazyMultiple 1`] = `
 "[1mOption list[22m
 
-[90m [39m  [1m[33m--src[39m[22m [4mnumber[][24m                        [90m [39m  The input files to process            
+  [1m[33m--src[39m[22m [4mnumber[][24m   The input files to process 
 "
 `;
 
 exports[`command-line-usage/option-list-section > should render a typical output 1`] = `
 "[1mOption list[22m
 
-[90m [39m  [1m-h[22m, [1m[33m--help[39m[22m [4mboolean[24m                    [90m [39m  Display this usage guide.             
-[90m [39m  [1m[33m--src[39m[22m [4mstring[][24m                        [90m [39m  The input files to process            
-[90m [39m  [1m-t[22m, [1m[33m--timeout[39m[22m [4mnumber[24m                  [90m [39m  Timeout value in ms                   
+  [1m-h[22m, [1m[33m--help[39m[22m [4mboolean[24m     Display this usage guide.  
+  [1m[33m--src[39m[22m [4mstring[][24m         The input files to process 
+  [1m-t[22m, [1m[33m--timeout[39m[22m [4mnumber[24m   Timeout value in ms        
 "
 `;
 
 exports[`command-line-usage/option-list-section > should render the out put in the reverse name order 1`] = `
 "[1mOption list[22m
 
-[90m [39m  [1m[33m--timeout[39m[22m, [1m-t[22m [4mnumber[24m                  [90m [39m  Timeout value in ms                   
+  [1m[33m--timeout[39m[22m, [1m-t[22m [4mnumber[24m   Timeout value in ms 
 "
 `;
 
 exports[`command-line-usage/option-list-section > should render the output with no description 1`] = `
-"[90m [39m  [1m[33m--one[39m[22m [4mstring[24m                          [90m [39m                                        
+"  [1m[33m--one[39m[22m [4mstring[24m    
 "
 `;

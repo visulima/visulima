@@ -1,0 +1,53 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`command/version > should output the version number when version is defined 1`] = `
+{
+  "debug": [MockFunction],
+  "info": [MockFunction] {
+    "calls": [
+      [
+        "1.0.0",
+      ],
+    ],
+    "results": [
+      {
+        "type": "return",
+        "value": undefined,
+      },
+    ],
+  },
+  "warning": [MockFunction],
+}
+`;
+
+exports[`command/version > should warn and debug when version is undefined 1`] = `
+{
+  "debug": [MockFunction] {
+    "calls": [
+      [
+        "The version number was not provided by the cli constructor.",
+      ],
+    ],
+    "results": [
+      {
+        "type": "return",
+        "value": undefined,
+      },
+    ],
+  },
+  "info": [MockFunction],
+  "warn": [MockFunction] {
+    "calls": [
+      [
+        "Unknown version",
+      ],
+    ],
+    "results": [
+      {
+        "type": "return",
+        "value": undefined,
+      },
+    ],
+  },
+}
+`;

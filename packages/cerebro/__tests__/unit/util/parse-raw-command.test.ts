@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import parseRawCommand from "../../../src/util/parse-raw-command";
+import parseRawCommand from "../../../src/util/general/parse-raw-command";
 
 describe("util/parse-raw-command", () => {
     it("should return an array of strings when a command string is passed", () => {

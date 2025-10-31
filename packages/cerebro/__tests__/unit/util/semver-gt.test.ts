@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import semverGt from "../../../src/util/semver-gt";
+import semverGt from "../../../src/util/general/semver-gt";
 
 describe("util/semver-gt", () => {
     it("should return true if the first version is greater than the second", () => {

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import Cli from "../../src";
+import { Cerebro as Cli } from "../../src";
 
 describe("cli", () => {
     it("should initialize Cli with default options", () => {
@@ -11,7 +11,8 @@ describe("cli", () => {
         expect(cli.getCliName()).toBe("MyCLI");
         expect(cli.getPackageVersion()).toBeUndefined();
         expect(cli.getPackageName()).toBeUndefined();
-        expect(cli.getCommands().size).toBe(4); // help and version commands
+        // Help and version commands are lazy-loaded during run()
+        expect(cli.getCommands().size).toBe(0);
     });
 
     it("should add a command and execute it successfully", async () => {
@@ -30,7 +31,7 @@ describe("cli", () => {
         await cli.run({ shouldExitProcess: false });
 
         expect(mockedExecute).toHaveBeenCalledTimes(1);
-        // eslint-disable-next-line vitest/prefer-called-exactly-once-with
+
         expect(mockedExecute).toHaveBeenCalledWith(expect.any(Object));
     });
 
@@ -63,9 +64,7 @@ describe("cli", () => {
 
         cli.addCommand({ execute: vi.fn(), name: "duplicate" });
 
-        expect(() => cli.addCommand({ execute: vi.fn(), name: "duplicate" })).toThrow(
-            "Ignored command with name \"duplicate\", it was found in the command list.",
-        );
+        expect(() => cli.addCommand({ execute: vi.fn(), name: "duplicate" })).toThrow("Command with name \"duplicate\" already exists");
     });
 
     it("should throw error when running a command with missing required options", async () => {
@@ -83,7 +82,7 @@ describe("cli", () => {
             cli.run({
                 shouldExitProcess: false,
             }),
-        ).rejects.toThrow("You called the command \"test\" without the required options: requiredOption");
+        ).rejects.toThrow("Command \"test\" is missing required options: requiredOption");
     });
 
     it("should throw error when running a command with unknown options", async () => {
@@ -118,7 +117,7 @@ describe("cli", () => {
             cli.run({
                 shouldExitProcess: false,
             }),
-        ).rejects.toThrow("You called the command \"test\" with conflicting options: option1 and option2");
+        ).rejects.toThrow("Options \"option1\" and \"option2\" cannot be used together");
     });
 
     it("should not throw a error when running a command with one options that dont conflict", async () => {
@@ -142,7 +141,7 @@ describe("cli", () => {
         });
 
         expect(execute).toHaveBeenCalledTimes(1);
-        // eslint-disable-next-line vitest/prefer-called-exactly-once-with
+
         expect(execute).toHaveBeenCalledWith(expect.any(Object));
     });
 });
