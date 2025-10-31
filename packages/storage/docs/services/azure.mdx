@@ -1,0 +1,128 @@
+# Azure Blob Storage
+
+## Overview
+
+Azure Blob Storage is Microsoft's object storage solution for the cloud. Blob Storage is optimized for storing massive amounts of unstructured data, such as text or binary data. Blob Storage is ideal for serving images with on-demand transformations and works seamlessly with Visulima upload's image processing capabilities.
+
+## Installation
+
+```sh
+npm install @azure/storage-blob
+```
+
+```sh
+yarn add @azure/storage-blob
+```
+
+```sh
+pnpm add @azure/storage-blob
+```
+
+## Usage
+
+```ts
+import { LRUCache } from "lru-cache";
+import { AzureStorage, ImageTransformer } from "@visulima/upload";
+
+const storage = new AzureStorage({
+    containerName: "upload",
+    connectionString: "your config",
+    maxUploadSize: "1GB",
+    logger: console,
+});
+
+// Initialize cache for transformed images
+const cache = new LRUCache({
+    max: 1000, // Maximum number of cached items
+    ttl: 3600000, // 1 hour in milliseconds
+});
+
+// Initialize image transformer for on-demand transformations
+const imageTransformer = new ImageTransformer(storage, {
+    cache,
+    maxImageSize: 10 * 1024 * 1024, // 10MB
+    cacheTtl: 3600, // 1 hour
+});
+
+// Upload a file
+const file = await storage.put(fileBuffer, { filename: "image.jpg" });
+
+// Transform the uploaded image
+const thumbnail = await imageTransformer.resize(file.id, {
+    width: 300,
+    height: 200,
+    fit: "cover",
+    quality: 80,
+});
+```
+
+## Image Transformations
+
+Azure Blob Storage integrates seamlessly with Visulima upload's image transformation features:
+
+```ts
+// Resize images on-demand
+const resized = await imageTransformer.resize("file-id", {
+    width: 800,
+    height: 600,
+    fit: "cover",
+});
+
+// Convert formats for better performance
+const webp = await imageTransformer.transform("file-id", {
+    format: "webp",
+    quality: 85,
+});
+
+// Crop images
+const cropped = await imageTransformer.crop("file-id", {
+    width: 400,
+    height: 300,
+    left: 100,
+    top: 50,
+});
+```
+
+## Configuration
+
+| Name             | Type   | Description                                              | Default |
+| :--------------- | :----- | :------------------------------------------------------- | :------ |
+| containerName    | string | The name of the container to use                         |         |
+| connectionString | string | The connection string to use to connect to Azure Storage |         |
+| maxUploadSize    | string | The maximum size of the file to upload                   |         |
+| logger           | Logger | The logger to use                                        |         |
+
+## Performance Considerations
+
+1. **CDN Integration**: Use Azure CDN for global content delivery
+2. **Caching**: Enable transformation caching to reduce compute costs
+3. **Access Tiers**: Choose appropriate access tiers (Hot, Cool, Archive)
+4. **Shared Access Signatures**: Use SAS tokens for secure temporary access
+
+## CDN Integration
+
+For optimal performance, integrate with Azure CDN:
+
+```ts
+// Use Azure CDN for transformed images
+const cdnUrl = `https://your-cdn.azureedge.net/upload/${fileId}?width=500&height=500&fit=cover&quality=80`;
+
+// Or generate SAS URLs for private containers
+const sasUrl = await storage.getSasUrl(fileId, {
+    expires: Date.now() + 3600000, // 1 hour
+    permissions: "r", // read-only
+    transform: {
+        width: 500,
+        height: 500,
+        fit: "cover",
+        format: "webp",
+    },
+});
+```
+
+## Cost Optimization
+
+1. **Lifecycle Management**: Automatically move old transformations to cooler tiers
+2. **Access Patterns**: Use appropriate access tiers based on transformation frequency
+3. **Caching Strategy**: Cache frequently requested transformations
+4. **Compression**: Use efficient formats to reduce storage and bandwidth costs

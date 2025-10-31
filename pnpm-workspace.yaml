@@ -11,6 +11,7 @@ packages:
   - '!packages/readdir/__fixtures__/**'
   - apps/**
   - examples/**
+  - examples/uploads/**
   - packages/**
   - shared/**
   - packages/boxen/__bench__
@@ -54,6 +55,7 @@ onlyBuiltDependencies:
   - '@tailwindcss/oxide'
   - '@tree-sitter-grammars/tree-sitter-yaml'
   - '@visulima/string'
+  - aws-crt
   - core-js
   - core-js-pure
   - dtrace-provider
@@ -65,6 +67,7 @@ onlyBuiltDependencies:
   - nx
   - oxc-resolver
   - prisma
+  - protobufjs
   - rs-module-lexer
   - sharp
   - tree-sitter
