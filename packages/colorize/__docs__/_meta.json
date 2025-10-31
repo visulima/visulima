@@ -1,0 +1,46 @@
+{
+    "introduction": {
+        "title": "Introduction",
+        "description": "Get started with Colorize - terminal and console string styling"
+    },
+    "installation": {
+        "title": "Installation",
+        "description": "How to install and set up Colorize"
+    },
+    "quickstart": {
+        "title": "Quick Start",
+        "description": "Get up and running in minutes"
+    },
+    "api-reference": {
+        "title": "API Reference",
+        "description": "Complete API documentation"
+    },
+    "examples": {
+        "title": "Examples",
+        "description": "Practical usage examples"
+    },
+    "advanced": {
+        "title": "Advanced Features",
+        "description": "Gradients, templates, and more"
+    },
+    "browser": {
+        "title": "Browser Usage",
+        "description": "Using Colorize in web browsers"
+    },
+    "migration": {
+        "title": "Migration Guide",
+        "description": "Migrating from other libraries"
+    },
+    "cli-environment": {
+        "title": "Environment & CLI",
+        "description": "Configuration options"
+    },
+    "faq": {
+        "title": "FAQ",
+        "description": "Frequently asked questions"
+    },
+    "troubleshooting": {
+        "title": "Troubleshooting",
+        "description": "Common issues and solutions"
+    }
+}

@@ -1,0 +1,244 @@
+import { Callout } from "@visulima/nextra-theme-docs/components";
+
+Common questions and answers about Colorize.
+
+## General
+
+### What is Colorize?
+
+Colorize is a modern terminal and console styling library for Node.js and browsers. It provides an intuitive API for adding colors and styles to your terminal output.
+
+### Why use Colorize over alternatives?
+
+- **Performance**: Up to 3x faster than Chalk
+- **Compatibility**: Drop-in replacement for Chalk
+- **Features**: Gradients, enhanced templates, nested styles
+- **Modern**: Full ESM and TypeScript support
+- **Cross-platform**: Works in Node.js, Deno, browsers, and Next.js
+
+### Is Colorize production-ready?
+
+Yes, Colorize is stable and used in production applications.
+
+## Installation
+
+### What Node.js versions are supported?
+
+Node.js 18.x and above.
+
+### Can I use Colorize with TypeScript?
+
+Yes, Colorize includes full TypeScript definitions out of the box.
+
+### Does it work with CommonJS?
+
+Yes, Colorize supports both ESM and CommonJS.
+
+## Usage
+
+### How do I apply colors to text?
+
+```typescript
+import { red, green, blue } from '@visulima/colorize';
+
+console.log(red('Red text'));
+console.log(green`Green text`);
+console.log(blue.bold('Bold blue'));
+```
+
+### Can I chain multiple styles?
+
+Yes:
+
+```typescript
+import { red, bold, underline } from '@visulima/colorize';
+
+console.log(red.bold.underline('All styles combined'));
+```
+
+### How do I use hex colors?
+
+```typescript
+import { hex } from '@visulima/colorize';
+
+console.log(hex('#FF0000')('Red'));
+console.log(hex('#F00')('Red')); // Short form
+```
+
+### How do I create gradients?
+
+```typescript
+import { gradient } from '@visulima/colorize/gradient';
+
+console.log(gradient('red', 'blue')('Gradient text'));
+```
+
+## Color Support
+
+### Why aren't colors showing?
+
+Check:
+1. Terminal supports colors
+2. `NO_COLOR` is not set
+3. Output is TTY
+4. Try: `FORCE_COLOR=1 node app.js`
+
+### How do I force colors in CI?
+
+```bash
+FORCE_COLOR=3 npm test
+```
+
+### How do I disable colors?
+
+```bash
+NO_COLOR=1 node app.js
+# or
+node app.js --no-color
+```
+
+### Does Colorize work over SSH?
+
+Yes, but you may need to force colors:
+
+```bash
+ssh user@server "FORCE_COLOR=1 node app.js"
+```
+
+## Browser
+
+### Can I use Colorize in the browser?
+
+Yes:
+
+```typescript
+import { red, green } from '@visulima/colorize/browser';
+
+console.log(...red('Error')); // Note the spread operator
+```
+
+### Why do I need the spread operator?
+
+Browser consoles use a different API (`%c` syntax). The spread operator unpacks the array Colorize returns.
+
+### Does it work in all browsers?
+
+Yes, modern browsers support console styling:
+- Chrome 69+
+- Firefox 31+
+- Safari 6.1+
+- Edge 79+
+
+## Migration
+
+### Can I switch from Chalk?
+
+Yes, Colorize is a drop-in replacement:
+
+```diff
+- import chalk from 'chalk';
++ import chalk from '@visulima/colorize';
+```
+
+### Do I need to change my code?
+
+No, the API is 100% compatible for standard usage.
+
+## Performance
+
+### Is Colorize faster than Chalk?
+
+Yes, benchmarks show up to 3x faster performance.
+
+### Should I cache styled strings?
+
+For frequently used strings, yes:
+
+```typescript
+const ERROR_PREFIX = red.bold('[ERROR]');
+
+// Reuse
+console.log(ERROR_PREFIX, 'Message 1');
+console.log(ERROR_PREFIX, 'Message 2');
+```
+
+## Troubleshooting
+
+### Colors show up in log files
+
+Disable colors when writing to files:
+
+```bash
+NO_COLOR=1 node app.js > output.log
+```
+
+Or strip colors in code:
+
+```typescript
+import { strip } from '@visulima/colorize';
+
+const styled = red('Error');
+const plain = strip(styled);
+```
+
+### Wrong colors are showing
+
+Check your terminal's color support:
+
+```bash
+echo $TERM
+echo $COLORTERM
+```
+
+### Import errors in TypeScript
+
+Ensure your `tsconfig.json` is configured:
+
+```json
+{
+  "compilerOptions": {
+    "moduleResolution": "node",
+    "esModuleInterop": true
+  }
+}
+```
+
+## Advanced
+
+### Can I create custom color palettes?
+
+Yes:
+
+```typescript
+import { hex } from '@visulima/colorize';
+
+const theme = {
+  primary: hex('#007bff'),
+  success: hex('#28a745'),
+  danger: hex('#dc3545'),
+};
+
+console.log(theme.primary('Primary text'));
+```
+
+### How do I test colored output?
+
+Use `strip()` to test plain text:
+
+```typescript
+import { strip, red } from '@visulima/colorize';
+
+const output = red('Error');
+expect(strip(output)).toBe('Error');
+```
+
+### Can I use Colorize in a library?
+
+Yes, but respect user preferences by letting Colorize handle color detection automatically.
+
+<Callout type="info">
+For more details, see:
+- [Getting Started](/docs/package/colorize/quickstart)
+- [API Reference](/docs/package/colorize/api-reference)
+- [Troubleshooting](/docs/package/colorize/troubleshooting)
+</Callout>
