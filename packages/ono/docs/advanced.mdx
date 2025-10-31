@@ -1,0 +1,746 @@
+---
+title: Advanced Usage
+description: Advanced configuration and customization options
+---
+
+# Advanced Usage
+
+Deep dive into advanced Ono features and customization options.
+
+## Custom Solution Finders
+
+Create sophisticated solution finders that analyze errors and provide contextual help.
+
+### Basic Structure
+
+```typescript
+import type { SolutionFinder } from "@visulima/error/solution";
+
+const finder: SolutionFinder = {
+  name: "my-finder",
+  priority: 100, // Higher = checked first
+  handle: async (error, context) => {
+    // Return undefined if this finder doesn't handle this error
+    if (!shouldHandle(error)) {
+      return undefined;
+    }
+
+    // Return solution
+    return {
+      header: "Solution Title",
+      body: "Detailed solution in Markdown",
+    };
+  },
+};
+```
+
+### Advanced Example
+
+```typescript
+import { readFile } from "node:fs/promises";
+import type { SolutionFinder } from "@visulima/error/solution";
+
+const configErrorFinder: SolutionFinder = {
+  name: "config-error-finder",
+  priority: 100,
+  handle: async (error, context) => {
+    const message = error.message.toLowerCase();
+
+    // Check for config file errors
+    if (message.includes("config") && message.includes("not found")) {
+      try {
+        // Check if example config exists
+        const exampleExists = await fileExists(".env.example");
+
+        return {
+          header: "Configuration File Missing",
+          body: `
+## Problem
+The application configuration file is missing.
+
+## Solutions
+${
+  exampleExists
+    ? `
+1. **Copy the example configuration**
+   \`\`\`bash
+   cp .env.example .env
+   \`\`\`
+`
+    : ""
+}
+
+2. **Create a new configuration file**
+   \`\`\`bash
+   touch .env
+   \`\`\`
+
+3. **Add required environment variables**
+   - DATABASE_URL
+   - API_KEY
+   - SECRET_KEY
+
+## Example Configuration
+\`\`\`env
+DATABASE_URL=postgresql://localhost:5432/mydb
+API_KEY=your-api-key-here
+SECRET_KEY=your-secret-key-here
+\`\`\`
+          `,
+        };
+      } catch {
+        return undefined;
+      }
+    }
+
+    // Check for invalid JSON
+    if (message.includes("json") && message.includes("parse")) {
+      return {
+        header: "Invalid JSON in Configuration",
+        body: `
+## Problem
+The configuration file contains invalid JSON.
+
+## Solutions
+1. **Validate JSON syntax**
+   - Use a JSON validator online
+   - Check for trailing commas
+   - Verify quotes are properly closed
+
+2. **Common JSON errors**
+   - Missing commas between properties
+   - Extra commas after last property
+   - Unquoted property names
+   - Single quotes instead of double quotes
+
+3. **Use a linter**
+   \`\`\`bash
+   npx jsonlint config.json
+   \`\`\`
+        `,
+      };
+    }
+
+    return undefined;
+  },
+};
+
+async function fileExists(path: string): Promise<boolean> {
+  try {
+    await readFile(path);
+    return true;
+  } catch {
+    return false;
+  }
+}
+```
+
+### Multiple Finders
+
+Organize finders by category:
+
+```typescript
+import { Ono } from "@visulima/ono";
+import type { SolutionFinder } from "@visulima/error/solution";
+
+// Database finders
+const databaseFinders: SolutionFinder[] = [
+  {
+    name: "db-connection",
+    priority: 100,
+    handle: async (error) => {
+      /* ... */
+    },
+  },
+  {
+    name: "db-migration",
+    priority: 90,
+    handle: async (error) => {
+      /* ... */
+    },
+  },
+];
+
+// API finders
+const apiFinders: SolutionFinder[] = [
+  {
+    name: "api-auth",
+    priority: 100,
+    handle: async (error) => {
+      /* ... */
+    },
+  },
+  {
+    name: "api-rate-limit",
+    priority: 90,
+    handle: async (error) => {
+      /* ... */
+    },
+  },
+];
+
+// File system finders
+const fileSystemFinders: SolutionFinder[] = [
+  {
+    name: "fs-permissions",
+    priority: 100,
+    handle: async (error) => {
+      /* ... */
+    },
+  },
+];
+
+// Combine all finders
+const allFinders = [
+  ...databaseFinders,
+  ...apiFinders,
+  ...fileSystemFinders,
+];
+
+const ono = new Ono();
+const html = await ono.toHTML(error, {
+  solutionFinders: allFinders,
+});
+```
+
+## Advanced Context Pages
+
+Create complex context pages with custom visualizations.
+
+### Custom HTML Pages
+
+```typescript
+import type { ContentPage } from "@visulima/ono";
+
+const metricsPage: ContentPage = {
+  id: "metrics",
+  name: "Metrics",
+  code: {
+    html: `
+      <div class="p-6">
+        <h2 class="text-2xl font-bold mb-6">Application Metrics</h2>
+        
+        <div class="grid grid-cols-2 gap-4 mb-6">
+          <div class="p-4 border rounded">
+            <h3 class="text-lg font-semibold">Request Rate</h3>
+            <p class="text-3xl font-bold text-blue-600">125/min</p>
+          </div>
+          <div class="p-4 border rounded">
+            <h3 class="text-lg font-semibold">Error Rate</h3>
+            <p class="text-3xl font-bold text-red-600">0.05%</p>
+          </div>
+          <div class="p-4 border rounded">
+            <h3 class="text-lg font-semibold">Avg Response</h3>
+            <p class="text-3xl font-bold text-green-600">235ms</p>
+          </div>
+          <div class="p-4 border rounded">
+            <h3 class="text-lg font-semibold">Active Users</h3>
+            <p class="text-3xl font-bold text-purple-600">1,234</p>
+          </div>
+        </div>
+        
+        <div class="border rounded p-4">
+          <h3 class="text-lg font-semibold mb-4">Recent Activity</h3>
+          <ul class="space-y-2">
+            <li>User login: john@example.com</li>
+            <li>Order created: #12345</li>
+            <li>Payment processed: $99.99</li>
+          </ul>
+        </div>
+      </div>
+    `,
+    script: `
+      // Optional: Add interactive features
+      console.log('Metrics page loaded');
+    `,
+  },
+};
+
+const html = await ono.toHTML(error, {
+  content: [metricsPage],
+});
+```
+
+### Dynamic Context Pages
+
+Generate pages based on runtime data:
+
+```typescript
+async function createDatabaseDebugPage(
+  connectionInfo: any
+): Promise<ContentPage> {
+  const queries = await getRecentQueries();
+  const slowQueries = queries.filter((q) => q.duration > 1000);
+
+  return {
+    id: "database",
+    name: "Database",
+    code: {
+      html: `
+        <div class="p-6">
+          <h2 class="text-2xl font-bold mb-4">Database Debug Info</h2>
+          
+          <section class="mb-6">
+            <h3 class="text-lg font-semibold mb-2">Connection</h3>
+            <pre class="bg-gray-100 p-4 rounded">${JSON.stringify(
+              connectionInfo,
+              null,
+              2
+            )}</pre>
+          </section>
+          
+          <section class="mb-6">
+            <h3 class="text-lg font-semibold mb-2">Slow Queries (${
+              slowQueries.length
+            })</h3>
+            <ul class="space-y-2">
+              ${slowQueries
+                .map(
+                  (q) => `
+                <li class="border-l-4 border-red-500 pl-4">
+                  <code class="text-sm">${q.sql}</code>
+                  <span class="text-red-600 font-bold">${q.duration}ms</span>
+                </li>
+              `
+                )
+                .join("")}
+            </ul>
+          </section>
+        </div>
+      `,
+    },
+  };
+}
+
+const dbPage = await createDatabaseDebugPage(dbConnection);
+const html = await ono.toHTML(error, {
+  content: [contextPage, dbPage],
+});
+```
+
+## Security Hardening
+
+### Content Security Policy
+
+Implement strict CSP:
+
+```typescript
+import { randomBytes } from "node:crypto";
+import { Ono } from "@visulima/ono";
+
+function generateNonce(): string {
+  return randomBytes(16).toString("base64");
+}
+
+async function handleError(error: unknown, response: Response) {
+  const nonce = generateNonce();
+
+  const html = await ono.toHTML(error, {
+    cspNonce: nonce,
+  });
+
+  response.setHeader(
+    "Content-Security-Policy",
+    [
+      `default-src 'none'`,
+      `script-src 'nonce-${nonce}'`,
+      `style-src 'nonce-${nonce}'`,
+      `img-src data:`,
+      `font-src data:`,
+    ].join("; ")
+  );
+
+  return html;
+}
+```
+
+### Sensitive Data Filtering
+
+Custom header filtering:
+
+```typescript
+import createRequestContextPage from "@visulima/ono/page/context";
+
+const contextPage = await createRequestContextPage(request, {
+  // Only show these headers
+  headerAllowlist: [
+    "content-type",
+    "accept",
+    "user-agent",
+    "accept-language",
+  ],
+
+  // Never show these (takes precedence)
+  headerDenylist: [
+    "authorization",
+    "cookie",
+    "x-api-key",
+    "x-auth-token",
+    "x-csrf-token",
+  ],
+
+  // Custom mask value
+  maskValue: "[REDACTED]",
+});
+```
+
+### Sanitize Custom Context
+
+```typescript
+function sanitizeContext(context: any): any {
+  const sensitive = [
+    "password",
+    "secret",
+    "token",
+    "key",
+    "apiKey",
+    "credentials",
+  ];
+
+  function sanitize(obj: any): any {
+    if (Array.isArray(obj)) {
+      return obj.map(sanitize);
+    }
+
+    if (obj && typeof obj === "object") {
+      const sanitized: any = {};
+
+      for (const [key, value] of Object.entries(obj)) {
+        const isSensitive = sensitive.some((s) =>
+          key.toLowerCase().includes(s.toLowerCase())
+        );
+
+        sanitized[key] = isSensitive ? "[REDACTED]" : sanitize(value);
+      }
+
+      return sanitized;
+    }
+
+    return obj;
+  }
+
+  return sanitize(context);
+}
+
+const contextPage = await createRequestContextPage(request, {
+  context: sanitizeContext({
+    user: {
+      id: 123,
+      email: "user@example.com",
+      password: "secret123", // Will be redacted
+    },
+    apiKey: "sk_live_123", // Will be redacted
+  }),
+});
+```
+
+## Performance Optimization
+
+### Caching Context Pages
+
+```typescript
+import { LRUCache } from "lru-cache";
+
+const contextCache = new LRUCache<string, ContentPage>({
+  max: 100,
+  ttl: 1000 * 60 * 5, // 5 minutes
+});
+
+async function getCachedContext(
+  request: Request
+): Promise<ContentPage | undefined> {
+  const cacheKey = `${request.method}:${request.url}`;
+
+  let contextPage = contextCache.get(cacheKey);
+
+  if (!contextPage) {
+    contextPage = await createRequestContextPage(request, {
+      context: {
+        /* ... */
+      },
+    });
+
+    if (contextPage) {
+      contextCache.set(cacheKey, contextPage);
+    }
+  }
+
+  return contextPage;
+}
+```
+
+### Lazy Loading
+
+Only generate expensive context when needed:
+
+```typescript
+async function handleError(error: unknown, request: Request) {
+  // Quick basic page
+  if (!isDevelopment) {
+    return await ono.toHTML(error, {
+      theme: "light",
+    });
+  }
+
+  // Full debug info in development
+  const contextPage = await createRequestContextPage(request, {
+    context: await gatherDebugInfo(),
+  });
+
+  return await ono.toHTML(error, {
+    content: [contextPage],
+    openInEditorUrl: "/__open-in-editor",
+  });
+}
+```
+
+## Editor Configuration
+
+### Custom Editor Setup
+
+```typescript
+import { createNodeHttpHandler } from "@visulima/ono/server/open-in-editor";
+
+const openInEditor = createNodeHttpHandler({
+  projectRoot: process.cwd(),
+  allowOutsideProject: false,
+});
+
+// Configure default editor
+const html = await ono.toHTML(error, {
+  openInEditorUrl: "/__open-in-editor",
+  editor: "cursor", // Set your preferred editor
+});
+```
+
+### Environment-Based Configuration
+
+```typescript
+const editorConfig = {
+  development: {
+    openInEditorUrl: "/__open-in-editor",
+    editor: "code" as const,
+  },
+  production: {
+    openInEditorUrl: undefined,
+    editor: undefined,
+  },
+};
+
+const config =
+  process.env.NODE_ENV === "production"
+    ? editorConfig.production
+    : editorConfig.development;
+
+const html = await ono.toHTML(error, config);
+```
+
+## Integration with Error Tracking
+
+### Sentry Integration
+
+```typescript
+import * as Sentry from "@sentry/node";
+import { Ono } from "@visulima/ono";
+
+const ono = new Ono();
+
+async function handleError(error: unknown) {
+  // Report to Sentry
+  const eventId = Sentry.captureException(error);
+
+  // Show error page with Sentry link
+  const contextPage = await createRequestContextPage(request, {
+    context: {
+      sentry: {
+        eventId,
+        link: `https://sentry.io/organizations/your-org/issues/?query=${eventId}`,
+      },
+    },
+  });
+
+  return await ono.toHTML(error, {
+    content: [contextPage],
+  });
+}
+```
+
+### Custom Error Logging
+
+```typescript
+import { Ono } from "@visulima/ono";
+
+const ono = new Ono();
+
+async function handleError(error: unknown, request: Request) {
+  // Log to your service
+  await logError({
+    error,
+    timestamp: new Date(),
+    request: {
+      method: request.method,
+      url: request.url,
+      headers: Object.fromEntries(request.headers.entries()),
+    },
+    environment: process.env.NODE_ENV,
+  });
+
+  // Show error page
+  return await ono.toHTML(error);
+}
+```
+
+## Custom Themes
+
+### Theme Detection
+
+```typescript
+async function getThemePreference(request: Request): Promise<"dark" | "light"> {
+  const cookie = request.headers.get("cookie");
+  const themeCookie = cookie
+    ?.split(";")
+    .find((c) => c.trim().startsWith("theme="));
+
+  if (themeCookie) {
+    const theme = themeCookie.split("=")[1];
+    return theme === "dark" ? "dark" : "light";
+  }
+
+  // Check Accept header for dark mode preference
+  const accept = request.headers.get("sec-ch-prefers-color-scheme");
+  return accept === "dark" ? "dark" : "light";
+}
+
+const theme = await getThemePreference(request);
+const html = await ono.toHTML(error, { theme });
+```
+
+## Testing
+
+### Unit Tests
+
+```typescript
+import { describe, it, expect } from "vitest";
+import { Ono } from "@visulima/ono";
+
+describe("Ono", () => {
+  it("generates HTML error page", async () => {
+    const ono = new Ono();
+    const error = new Error("Test error");
+
+    const html = await ono.toHTML(error);
+
+    expect(html).toContain("Test error");
+    expect(html).toContain("<!DOCTYPE html>");
+  });
+
+  it("includes custom solution finder", async () => {
+    const ono = new Ono();
+    const error = new Error("Database error");
+
+    const finder = {
+      name: "test-finder",
+      priority: 100,
+      handle: async () => ({
+        header: "Test Solution",
+        body: "Test solution body",
+      }),
+    };
+
+    const html = await ono.toHTML(error, {
+      solutionFinders: [finder],
+    });
+
+    expect(html).toContain("Test Solution");
+  });
+});
+```
+
+### Integration Tests
+
+```typescript
+import { createServer } from "node:http";
+import { describe, it, expect, beforeAll, afterAll } from "vitest";
+import { Ono } from "@visulima/ono";
+
+describe("Error Handler Integration", () => {
+  let server: any;
+  let port: number;
+
+  beforeAll(() => {
+    const ono = new Ono();
+
+    server = createServer(async (req, res) => {
+      try {
+        throw new Error("Test error");
+      } catch (error) {
+        const html = await ono.toHTML(error);
+        res.writeHead(500, { "Content-Type": "text/html" });
+        res.end(html);
+      }
+    });
+
+    port = 3001;
+    server.listen(port);
+  });
+
+  afterAll(() => {
+    server.close();
+  });
+
+  it("returns error page", async () => {
+    const response = await fetch(`http://localhost:${port}`);
+
+    expect(response.status).toBe(500);
+    expect(response.headers.get("content-type")).toContain("text/html");
+
+    const html = await response.text();
+    expect(html).toContain("Test error");
+  });
+});
+```
+
+## Best Practices
+
+### Error Boundaries
+
+Create error boundaries for different parts of your app:
+
+```typescript
+class ErrorBoundary {
+  constructor(private ono: Ono, private name: string) {}
+
+  async handle(error: unknown, context: any) {
+    console.error(`[${this.name}] Error:`, error);
+
+    return await this.ono.toHTML(error, {
+      content: [
+        await createRequestContextPage(context.request, {
+          context: {
+            boundary: this.name,
+            ...context,
+          },
+        }),
+      ],
+    });
+  }
+}
+
+const apiErrorBoundary = new ErrorBoundary(ono, "API");
+const dbErrorBoundary = new ErrorBoundary(ono, "Database");
+```
+
+### Gradual Rollout
+
+Enable Ono gradually:
+
+```typescript
+const useOno = Math.random() < 0.1; // 10% of requests
+
+if (useOno) {
+  const html = await ono.toHTML(error);
+  return html;
+} else {
+  return defaultErrorPage(error);
+}
+```
