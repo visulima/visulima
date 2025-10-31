@@ -1,0 +1,394 @@
+---
+title: Scoped Loggers
+description: Organize logs with scopes and namespaces
+---
+
+# Scoped Loggers
+
+Scopes help you organize and categorize logs by adding hierarchical context. They're perfect for distinguishing logs from different parts of your application.
+
+## Creating Scoped Loggers
+
+### From Scratch
+
+Create a scoped logger from scratch using `createPail`:
+
+```typescript
+import { createPail } from "@visulima/pail";
+
+const appLogger = createPail({
+    scope: "app",
+});
+
+appLogger.info("Application started");
+// Output: [app] Application started
+```
+
+### Multiple Scope Levels
+
+Create multi-level scopes:
+
+```typescript
+const dbLogger = createPail({
+    scope: ["app", "database"],
+});
+
+dbLogger.info("Connected to database");
+// Output: [app › database] Connected to database
+```
+
+### From Existing Logger
+
+Create a child logger from an existing one:
+
+```typescript
+import { pail } from "@visulima/pail";
+
+const apiLogger = pail.scope("api");
+apiLogger.info("API initialized");
+// Output: [api] API initialized
+
+const v1Logger = apiLogger.scope("v1");
+v1Logger.info("v1 endpoint called");
+// Output: [api › v1] v1 endpoint called
+```
+
+## Nested Scopes
+
+Build hierarchical scope structures:
+
+```typescript
+import { pail } from "@visulima/pail";
+
+const global = pail.scope("global");
+global.info("Global scope");
+// Output: [global] Global scope
+
+const outer = global.scope("outer");
+outer.info("Outer scope");
+// Output: [global › outer] Outer scope
+
+const inner = outer.scope("inner");
+inner.info("Inner scope");
+// Output: [global › outer › inner] Inner scope
+```
+
+### Multiple Scope Arguments
+
+Pass multiple scope segments at once:
+
+```typescript
+const logger = pail.scope("app", "module", "component");
+logger.info("Component initialized");
+// Output: [app › module › component] Component initialized
+```
+
+## Scope Inheritance
+
+Child loggers inherit all properties from their parent:
+
+```typescript
+import { createPail } from "@visulima/pail";
+import { FileReporter } from "@visulima/pail/server/reporter";
+
+// Parent logger with configuration
+const parent = createPail({
+    logLevel: "debug",
+    reporters: [
+        new FileReporter({ path: "./logs/app.log" }),
+    ],
+});
+
+// Child inherits configuration
+const child = parent.scope("child");
+
+// Child still uses parent's log level and reporters
+child.debug("This is logged to the file");
+```
+
+**Inherited properties**:
+- Log level
+- Reporters
+- Processors
+- Custom log types
+- Timers
+- Configuration
+- Disabled status
+- Interactive mode
+
+## Use Cases
+
+### Module Organization
+
+Organize logs by application module:
+
+```typescript
+// auth.ts
+const authLogger = pail.scope("auth");
+authLogger.info("User logged in", { userId: 123 });
+
+// database.ts
+const dbLogger = pail.scope("database");
+dbLogger.debug("Query executed", { query: "SELECT * FROM users" });
+
+// api.ts
+const apiLogger = pail.scope("api");
+apiLogger.info("Request received", { path: "/users" });
+```
+
+### Service Layer
+
+Structure logs for service-oriented architecture:
+
+```typescript
+const serviceLogger = pail.scope("service");
+
+const userService = serviceLogger.scope("user");
+const orderService = serviceLogger.scope("order");
+const paymentService = serviceLogger.scope("payment");
+
+userService.info("User created");
+// Output: [service › user] User created
+
+orderService.info("Order placed");
+// Output: [service › order] Order placed
+
+paymentService.info("Payment processed");
+// Output: [service › payment] Payment processed
+```
+
+### Request Tracing
+
+Track logs through request lifecycle:
+
+```typescript
+function handleRequest(requestId: string) {
+    const requestLogger = pail.scope("request", requestId);
+    
+    requestLogger.info("Request started");
+    
+    const authLogger = requestLogger.scope("auth");
+    authLogger.debug("Authenticating user");
+    
+    const dbLogger = requestLogger.scope("db");
+    dbLogger.debug("Fetching user data");
+    
+    requestLogger.success("Request completed");
+}
+
+handleRequest("req-123");
+// Output:
+// [request › req-123] Request started
+// [request › req-123 › auth] Authenticating user
+// [request › req-123 › db] Fetching user data
+// [request › req-123] Request completed
+```
+
+### Component Hierarchy
+
+Mirror your component structure in logs:
+
+```typescript
+const app = pail.scope("app");
+
+// UI Components
+const ui = app.scope("ui");
+const header = ui.scope("header");
+const sidebar = ui.scope("sidebar");
+const content = ui.scope("content");
+
+header.info("Header rendered");
+// Output: [app › ui › header] Header rendered
+
+sidebar.info("Sidebar initialized");
+// Output: [app › ui › sidebar] Sidebar initialized
+
+content.info("Content loaded");
+// Output: [app › ui › content] Content loaded
+```
+
+### Background Jobs
+
+Track different jobs separately:
+
+```typescript
+const jobs = pail.scope("jobs");
+
+function runEmailJob() {
+    const emailJob = jobs.scope("email");
+    emailJob.start("Processing emails");
+    emailJob.info("Sent %d emails", 150);
+    emailJob.complete("Email job finished");
+}
+
+function runCleanupJob() {
+    const cleanupJob = jobs.scope("cleanup");
+    cleanupJob.start("Cleaning up old data");
+    cleanupJob.info("Deleted %d records", 42);
+    cleanupJob.complete("Cleanup job finished");
+}
+```
+
+## Dynamic Scopes
+
+Create scopes dynamically based on runtime data:
+
+```typescript
+function createUserLogger(userId: string) {
+    return pail.scope("user", userId);
+}
+
+const user123Logger = createUserLogger("123");
+user123Logger.info("User action performed");
+// Output: [user › 123] User action performed
+
+const user456Logger = createUserLogger("456");
+user456Logger.info("User action performed");
+// Output: [user › 456] User action performed
+```
+
+## Filtering by Scope
+
+While Pail doesn't have built-in scope filtering, you can implement it with a custom processor:
+
+```typescript
+import type { Processor, Meta } from "@visulima/pail";
+
+class ScopeFilterProcessor implements Processor<string> {
+    constructor(private allowedScopes: string[]) {}
+    
+    process(meta: Meta<string>): Meta<string> {
+        if (meta.scope && meta.scope.length > 0) {
+            const firstScope = meta.scope[0];
+            if (!this.allowedScopes.includes(firstScope)) {
+                // Skip this log
+                meta.message = "";
+            }
+        }
+        return meta;
+    }
+}
+
+const pail = createPail({
+    processors: [
+        new ScopeFilterProcessor(["api", "database"]),
+    ],
+});
+```
+
+## Best Practices
+
+1. **Be consistent** - Use the same scope names across your application
+2. **Keep it simple** - Don't create too many scope levels (2-3 is usually enough)
+3. **Use meaningful names** - Scopes should be self-explanatory
+4. **Follow hierarchy** - Structure scopes to match your application architecture
+5. **Document scopes** - Keep a list of standard scopes for your team
+6. **Avoid dynamic creation** - Reuse scoped loggers instead of creating new ones
+
+## Scope Naming Conventions
+
+### Module-based
+
+```typescript
+// Good
+pail.scope("auth");
+pail.scope("database");
+pail.scope("api");
+
+// Bad
+pail.scope("AuthModule");
+pail.scope("DB");
+pail.scope("TheAPI");
+```
+
+### Feature-based
+
+```typescript
+// Good
+pail.scope("user-registration");
+pail.scope("payment-processing");
+pail.scope("email-notifications");
+
+// Bad
+pail.scope("reg");
+pail.scope("pay");
+pail.scope("email");
+```
+
+### Layer-based
+
+```typescript
+// Good
+pail.scope("controller", "user");
+pail.scope("service", "order");
+pail.scope("repository", "product");
+
+// Bad
+pail.scope("c", "u");
+pail.scope("svc", "ord");
+```
+
+## Examples
+
+### Express Application
+
+```typescript
+import express from "express";
+import { pail } from "@visulima/pail";
+
+const app = express();
+const serverLogger = pail.scope("server");
+
+app.use((req, res, next) => {
+    const requestLogger = serverLogger.scope(`${req.method}:${req.path}`);
+    requestLogger.info("Request started");
+    next();
+});
+
+app.get("/users", (req, res) => {
+    const routeLogger = serverLogger.scope("route", "users");
+    routeLogger.info("Fetching users");
+    res.json({ users: [] });
+});
+```
+
+### Class-based Services
+
+```typescript
+class UserService {
+    private logger = pail.scope("service", "user");
+    
+    async createUser(data: UserData) {
+        this.logger.info("Creating user", { email: data.email });
+        // ... create user ...
+        this.logger.success("User created", { id: user.id });
+    }
+    
+    async deleteUser(id: string) {
+        this.logger.warn("Deleting user", { id });
+        // ... delete user ...
+        this.logger.info("User deleted", { id });
+    }
+}
+```
+
+### Microservices
+
+```typescript
+// service-a
+const serviceA = pail.scope("service-a");
+const apiLogger = serviceA.scope("api");
+const dbLogger = serviceA.scope("database");
+
+// service-b
+const serviceB = pail.scope("service-b");
+const queueLogger = serviceB.scope("queue");
+const cacheLogger = serviceB.scope("cache");
+```
+
+## Next Steps
+
+- [Custom Types](./custom-types) - Create custom log types
+- [Timers](./timers) - Measure performance with scoped timers
+- [Interactive Mode](./interactive) - Use interactive logging
+- [Configuration](../configuration) - Configure scoped loggers

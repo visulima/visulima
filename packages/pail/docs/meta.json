@@ -1,0 +1,29 @@
+{
+  "title": "Pail Documentation",
+  "pages": [
+    "index",
+    "installation",
+    {
+      "title": "Concepts",
+      "pages": [
+        "concepts/log-levels",
+        "concepts/reporters",
+        "concepts/processors"
+      ]
+    },
+    {
+      "title": "Usage",
+      "pages": [
+        "usage/basic",
+        "usage/scoped",
+        "usage/custom-types",
+        "usage/timers",
+        "usage/interactive"
+      ]
+    },
+    "configuration",
+    "api",
+    "examples",
+    "troubleshooting"
+  ]
+}
