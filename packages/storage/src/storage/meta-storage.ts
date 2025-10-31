@@ -39,7 +39,7 @@ class MetaStorage<T extends File = File> {
     /**
      * Deletes an upload metadata
      */
-    // eslint-disable-next-line class-methods-use-this,@typescript-eslint/no-unused-vars
+    // eslint-disable-next-line class-methods-use-this
     public async delete(_id: string): Promise<void> {
         throw new Error("Not implemented");
     }
@@ -47,7 +47,7 @@ class MetaStorage<T extends File = File> {
     /**
      * Retrieves upload metadata
      */
-    // eslint-disable-next-line class-methods-use-this,@typescript-eslint/no-unused-vars
+    // eslint-disable-next-line class-methods-use-this
     public async get(_id: string): Promise<T> {
         throw new Error("Not implemented");
     }
@@ -55,7 +55,7 @@ class MetaStorage<T extends File = File> {
     /**
      * Mark upload active
      */
-    // eslint-disable-next-line class-methods-use-this,@typescript-eslint/no-unused-vars
+    // eslint-disable-next-line class-methods-use-this
     public async touch(_id: string, _file: T): Promise<T> {
         throw new Error("Not implemented");
     }

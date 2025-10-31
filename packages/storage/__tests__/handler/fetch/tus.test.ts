@@ -150,7 +150,7 @@ describe("fetch Tus", () => {
         });
     });
 
-    describe("Tus-Resumable header validation", () => {
+    describe("tus-Resumable header validation", () => {
         it("should return 412 for POST request without Tus-Resumable header", async () => {
             expect.assertions(2);
 
@@ -181,8 +181,10 @@ describe("fetch Tus", () => {
             const response = await tusHandler.fetch(request);
 
             expect(response.status).toBe(412);
+
             const text = await response.text();
             const body = JSON.parse(text);
+
             expect(body.error).toBeDefined();
         });
 
@@ -217,8 +219,10 @@ describe("fetch Tus", () => {
             const response = await tusHandler.fetch(request);
 
             expect(response.status).toBe(412);
+
             const text = await response.text();
             const body = JSON.parse(text);
+
             expect(body.error).toBeDefined();
         });
 
