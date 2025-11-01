@@ -135,11 +135,10 @@ const registerCommands = (tabInstance: any, commands: Map<string, ICommand>): vo
  */
 const validateShell = (shell: string): void => {
     if (!validShells.includes(shell)) {
-        throw new CompletionError(
-            `Invalid shell type: ${shell}`,
-            "INVALID_SHELL",
-            [`Valid shells are: ${validShells.join(", ")}`, "Shell will be auto-detected if not specified"],
-        );
+        throw new CompletionError(`Invalid shell type: ${shell}`, "INVALID_SHELL", [
+            `Valid shells are: ${validShells.join(", ")}`,
+            "Shell will be auto-detected if not specified",
+        ]);
     }
 };
 
@@ -150,11 +149,10 @@ const validateShell = (shell: string): void => {
  */
 const validateRuntime = (runtime: string | undefined): void => {
     if (runtime && !validRuntimes.includes(runtime)) {
-        throw new CompletionError(
-            `Invalid runtime: ${runtime}`,
-            "INVALID_RUNTIME",
-            [`Valid runtimes are: ${validRuntimes.join(", ")}`, "Runtime will be auto-detected if not specified"],
-        );
+        throw new CompletionError(`Invalid runtime: ${runtime}`, "INVALID_RUNTIME", [
+            `Valid runtimes are: ${validRuntimes.join(", ")}`,
+            "Runtime will be auto-detected if not specified",
+        ]);
     }
 };
 

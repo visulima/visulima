@@ -12,6 +12,7 @@ Demonstrates different error handling strategies with the error handler plugin.
 ## Run
 
 ### Using npm scripts:
+
 ```bash
 pnpm start              # Show available examples
 pnpm simple             # Simple error handling
@@ -21,6 +22,7 @@ pnpm custom-formatter   # Custom error formatting
 ```
 
 ### Using node directly:
+
 ```bash
 # Show available examples
 node cli.js
@@ -46,4 +48,3 @@ Each example demonstrates different `errorHandlerPlugin` configurations:
 - **Detailed**: Includes stack traces and error properties
 - **Critical Level**: Uses critical log level for severe errors
 - **Custom Formatter**: Custom error message templates
-

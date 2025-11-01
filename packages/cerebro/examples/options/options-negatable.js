@@ -5,41 +5,41 @@
 //    node cli.js options-negatable --no-sauce --no-cheese
 const optionsNegatable = (cli) => {
     cli.addCommand({
-        name: "options-negatable",
         description: "You can specify a boolean option long name with a leading `no-` to make it true by default and able to be negated.",
+        execute: ({ logger, options }) => {
+            const sauceString = options.ignoreNoSauce ? "ignore" : options.sauce ? "sauce" : "no sauce";
+            const cheeseString = options.cheese === false ? "no cheese" : `${options.cheese} cheese`;
+
+            logger.log(`You ordered a pizza with ${sauceString} and ${cheeseString}`);
+        },
         group: "options",
+        name: "options-negatable",
         options: [
             {
-                name: "no-sauce",
-                description: "Remove sauce",
-                type: Boolean,
                 defaultValue: true,
+                description: "Remove sauce",
+                name: "no-sauce",
+                type: Boolean,
             },
             {
-                name: "cheese",
-                description: "Add the specified type of cheese",
-                type: String,
                 defaultValue: "mozzarella",
+                description: "Add the specified type of cheese",
+                name: "cheese",
+                type: String,
             },
             {
-                name: "no-cheese",
+                defaultValue: false,
                 description: "plain with no cheese",
+                name: "no-cheese",
                 type: Boolean,
-                defaultValue: false,
             },
             {
-                name: "ignore-no-sauce",
-                description: "Ignore the sauce and no-sauce option",
-                type: Boolean,
                 defaultValue: false,
+                description: "Ignore the sauce and no-sauce option",
+                name: "ignore-no-sauce",
+                type: Boolean,
             },
         ],
-        execute: ({ logger, options }) => {
-            const sauceStr = options.ignoreNoSauce ? "ignore" : options.sauce ? "sauce" : "no sauce";
-            const cheeseStr = options.cheese === false ? "no cheese" : `${options.cheese} cheese`;
-
-            logger.log(`You ordered a pizza with ${sauceStr} and ${cheeseStr}`);
-        },
     });
 };
 

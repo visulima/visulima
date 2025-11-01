@@ -11,6 +11,7 @@ Demonstrates different logger configurations in Cerebro CLI.
 ## Run
 
 ### Using npm scripts:
+
 ```bash
 pnpm start      # Console logger (default)
 pnpm console    # Console logger (explicit)
@@ -19,6 +20,7 @@ pnpm custom     # Custom logger
 ```
 
 ### Using node directly:
+
 ```bash
 # Console logger (default)
 node cli.js test
@@ -35,19 +37,21 @@ LOGGER=custom node cli.js test
 ## Logger Comparison
 
 ### Console Logger
+
 - ✅ Fast initialization
 - ✅ Lightweight
 - ✅ Perfect for most CLIs
 - ✅ No external dependencies
 
 ### Pail Logger
+
 - ✅ Pretty output with colors
 - ✅ Structured logging
 - ✅ Lazy-loaded (no overhead until first log)
 - ⚠️ Requires `@visulima/pail` peer dependency
 
 ### Custom Logger
+
 - ✅ Full control over logging behavior
 - ✅ Can integrate with any logging library
 - ✅ Implement only the methods you need
-

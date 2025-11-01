@@ -16,13 +16,16 @@ examples/
 ## 🚀 Quick Start
 
 Each example directory contains:
+
 - A `cli.js` file - The working CLI application
 - A `README.md` - Detailed usage instructions
 
 ## 📚 Examples Overview
 
 ### [Basic](./basic/)
+
 Learn the fundamentals of building a CLI with Cerebro:
+
 - Creating commands
 - Using arguments
 - Adding options
@@ -31,7 +34,9 @@ Learn the fundamentals of building a CLI with Cerebro:
 **Run:** `cd basic && node cli.js help`
 
 ### [Options](./options/)
+
 Explore advanced option handling:
+
 - Default values and aliases
 - Negatable options (`--no-` prefix)
 - Conflicting options
@@ -42,7 +47,9 @@ Explore advanced option handling:
 **Run:** `cd options && node cli.js help`
 
 ### [Error Handling](./error-handling/)
+
 Different error handling strategies:
+
 - Simple error messages
 - Detailed stack traces
 - Critical level logging
@@ -51,7 +58,9 @@ Different error handling strategies:
 **Run:** `cd error-handling && node cli.js`
 
 ### [Logging](./logging/)
+
 Logger configuration options:
+
 - Console logger (default, lightweight)
 - Pail logger (pretty output, feature-rich)
 - Custom logger implementation
@@ -59,7 +68,9 @@ Logger configuration options:
 **Run:** `cd logging && node cli.js test`
 
 ### [Completion](./completion/)
+
 Shell autocompletion integration:
+
 - Automatic command discovery
 - Option autocompletion
 - Multi-shell support (bash, zsh, fish, powershell)
@@ -86,5 +97,3 @@ cd examples/basic && node cli.js help
 ## 📖 Documentation
 
 For full documentation, visit the [main README](../README.md) or the [Visulima documentation](https://visulima.com/packages/cerebro).
-
-

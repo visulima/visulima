@@ -12,7 +12,7 @@ describe("command/version", () => {
             debug: vi.fn(),
             info: vi.fn(),
             warning: vi.fn(),
-        };
+        } satisfies Logger;
         const runtimeMock = {
             getPackageVersion: vi.fn().mockReturnValue("1.0.0"),
         };

@@ -23,6 +23,8 @@ describe("completion-command", () => {
     });
 
     it("should have correct command metadata", () => {
+        expect.assertions(4);
+
         expect(completionCommand.name).toBe("completion");
         expect(completionCommand.description).toBe("Generate shell completion scripts");
         expect(completionCommand.options).toHaveLength(2);
@@ -31,11 +33,14 @@ describe("completion-command", () => {
     });
 
     it("should display usage when no shell option is provided and detection fails", async () => {
+        expect.assertions(3);
+
         mockToolbox.options = {};
 
         // Clear SHELL environment variable to simulate detection failure
         const originalShell = process.env.SHELL;
         const originalStarship = process.env.STARSHIP_SHELL;
+
         delete process.env.SHELL;
         delete process.env.STARSHIP_SHELL;
 
@@ -56,7 +61,9 @@ describe("completion-command", () => {
     });
 
     it("should use custom runtime when provided", async () => {
-        mockToolbox.options = { shell: "zsh", runtime: "bun" };
+        expect.assertions(1);
+
+        mockToolbox.options = { runtime: "bun", shell: "zsh" };
 
         await completionCommand.execute?.(mockToolbox);
 
@@ -65,6 +72,8 @@ describe("completion-command", () => {
     });
 
     it("should auto-detect runtime when not provided", async () => {
+        expect.assertions(1);
+
         mockToolbox.options = { shell: "zsh" };
 
         await completionCommand.execute?.(mockToolbox);
@@ -74,6 +83,8 @@ describe("completion-command", () => {
     });
 
     it("should throw CompletionError for invalid shell", async () => {
+        expect.assertions(3);
+
         mockToolbox.options = { shell: "invalid-shell" };
 
         await expect(completionCommand.execute?.(mockToolbox)).rejects.toThrow();
@@ -85,7 +96,9 @@ describe("completion-command", () => {
     });
 
     it("should throw CompletionError for invalid runtime", async () => {
-        mockToolbox.options = { shell: "zsh", runtime: "invalid-runtime" };
+        expect.assertions(3);
+
+        mockToolbox.options = { runtime: "invalid-runtime", shell: "zsh" };
 
         await expect(completionCommand.execute?.(mockToolbox)).rejects.toThrow();
 
@@ -95,4 +108,3 @@ describe("completion-command", () => {
         expect(mockToolbox.logger.info).toHaveBeenCalledWith(expect.stringContaining("Troubleshooting"));
     });
 });
-

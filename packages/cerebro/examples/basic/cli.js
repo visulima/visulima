@@ -8,37 +8,36 @@ const cli = new Cerebro("my-app", {
 });
 
 cli.addCommand({
-    name: "hello",
-    description: "Say hello to someone",
     argument: {
-        name: "name",
-        description: "Name to greet",
-        type: String,
         defaultValue: "World",
+        description: "Name to greet",
+        name: "name",
+        type: String,
     },
-    options: [
-        {
-            name: "greeting",
-            alias: "g",
-            type: String,
-            description: "Custom greeting",
-            defaultValue: "Hello",
-        },
-    ],
+    description: "Say hello to someone",
     execute: ({ argument, logger, options }) => {
         const name = argument?.[0] || "World";
+
         logger.info(`${options.greeting}, ${name}!`);
     },
+    name: "hello",
+    options: [
+        {
+            alias: "g",
+            defaultValue: "Hello",
+            description: "Custom greeting",
+            name: "greeting",
+            type: String,
+        },
+    ],
 });
 
 cli.addCommand({
-    name: "goodbye",
     description: "Say goodbye",
     execute: ({ logger }) => {
         logger.info("Goodbye!");
     },
+    name: "goodbye",
 });
 
 await cli.run();
-
-

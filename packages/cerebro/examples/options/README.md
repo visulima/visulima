@@ -15,6 +15,7 @@ Demonstrates various option handling features in Cerebro CLI.
 ## Run
 
 ### Using npm scripts:
+
 ```bash
 pnpm start              # Show all available commands
 pnpm common             # Run common options example
@@ -27,6 +28,7 @@ pnpm boolean-or-value   # Run boolean-or-value example
 ```
 
 ### Using node directly:
+
 ```bash
 # Show all available commands
 node cli.js help
@@ -66,4 +68,3 @@ node cli.js options-boolean-or-value
 node cli.js options-boolean-or-value --cheese
 node cli.js options-boolean-or-value --cheese mozzarella
 ```
-

@@ -6,52 +6,52 @@
 //    node cli.js options-implies --no-cheese
 const optionsImplies = (cli) => {
     cli.addCommand({
-        name: "options-implies",
         description: "Demonstrate options implies",
-        group: "options",
-        options: [
-            {
-                name: "quiet",
-                description: "Silence output",
-                type: Boolean,
-                implies: {
-                    logLevel: "off",
-                },
-            },
-            {
-                name: "log-level",
-                description: "Set the logging level",
-                type: String,
-                defaultValue: "info",
-            },
-            {
-                name: "cheese",
-                alias: "c",
-                description: "Add the specified type of cheese",
-                type: String,
-                defaultValue: "mozzarella",
-                implies: {
-                    dairy: true,
-                },
-            },
-            {
-                name: "no-cheese",
-                description: "You do not want any cheese",
-                type: Boolean,
-                defaultValue: false,
-                implies: {
-                    dairy: false,
-                },
-            },
-            {
-                name: "dairy",
-                description: "May contain dairy",
-                type: Boolean,
-            },
-        ],
         execute: ({ logger, options }) => {
             logger.log(options);
         },
+        group: "options",
+        name: "options-implies",
+        options: [
+            {
+                description: "Silence output",
+                implies: {
+                    logLevel: "off",
+                },
+                name: "quiet",
+                type: Boolean,
+            },
+            {
+                defaultValue: "info",
+                description: "Set the logging level",
+                name: "log-level",
+                type: String,
+            },
+            {
+                alias: "c",
+                defaultValue: "mozzarella",
+                description: "Add the specified type of cheese",
+                implies: {
+                    dairy: true,
+                },
+                name: "cheese",
+                type: String,
+            },
+            {
+                defaultValue: false,
+                description: "You do not want any cheese",
+                implies: {
+                    dairy: false,
+                },
+                name: "no-cheese",
+                type: Boolean,
+            },
+            {
+                description: "May contain dairy",
+                name: "dairy",
+                type: Boolean,
+            },
+        ],
     });
 };
 

@@ -4,20 +4,11 @@
 //    node cli.js options-boolean-or-value --cheese mozzarella
 const optionsBooleanOrValue = (cli) => {
     cli.addCommand({
-        name: "options-boolean-or-value",
         description: "Demonstrate options required",
-        group: "options",
-        options: [
-            {
-                name: "cheese",
-                description: "Add cheese with optional type",
-                type: Boolean,
-            },
-        ],
         execute: ({ logger, options }) => {
             logger.log(options);
 
-            if (typeof options.cheese === "undefined") {
+            if (options.cheese === undefined) {
                 logger.log("no cheese");
             } else if (options.cheese === true) {
                 logger.log("add cheese");
@@ -25,6 +16,15 @@ const optionsBooleanOrValue = (cli) => {
                 logger.log(`add cheese type ${options.cheese}`);
             }
         },
+        group: "options",
+        name: "options-boolean-or-value",
+        options: [
+            {
+                description: "Add cheese with optional type",
+                name: "cheese",
+                type: Boolean,
+            },
+        ],
     });
 };
 

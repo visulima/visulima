@@ -9,91 +9,97 @@ const cli = new Cerebro("example-cli", {
 
 // Add some example commands to demonstrate completion
 cli.addCommand({
-    name: "build",
     description: "Build the project",
-    options: [
-        {
-            name: "output",
-            alias: "o",
-            type: String,
-            description: "Output directory",
-        },
-        {
-            name: "watch",
-            alias: "w",
-            type: Boolean,
-            description: "Watch for changes",
-        },
-        {
-            name: "minify",
-            type: Boolean,
-            description: "Minify output",
-        },
-    ],
     execute: ({ logger, options }) => {
         logger.info(`Building project...`);
+
         if (options.output) {
             logger.info(`Output directory: ${options.output}`);
         }
+
         if (options.watch) {
             logger.info("Watching for changes...");
         }
+
         if (options.minify) {
             logger.info("Minifying output...");
         }
     },
+    name: "build",
+    options: [
+        {
+            alias: "o",
+            description: "Output directory",
+            name: "output",
+            type: String,
+        },
+        {
+            alias: "w",
+            description: "Watch for changes",
+            name: "watch",
+            type: Boolean,
+        },
+        {
+            description: "Minify output",
+            name: "minify",
+            type: Boolean,
+        },
+    ],
 });
 
 cli.addCommand({
-    name: "serve",
     description: "Start development server",
-    options: [
-        {
-            name: "port",
-            alias: "p",
-            type: Number,
-            description: "Port number",
-        },
-        {
-            name: "host",
-            alias: "h",
-            type: String,
-            description: "Host address",
-        },
-    ],
     execute: ({ logger, options }) => {
         const port = options.port || 3000;
         const host = options.host || "localhost";
+
         logger.info(`Starting server on ${host}:${port}...`);
     },
+    name: "serve",
+    options: [
+        {
+            alias: "p",
+            description: "Port number",
+            name: "port",
+            type: Number,
+        },
+        {
+            alias: "h",
+            description: "Host address",
+            name: "host",
+            type: String,
+        },
+    ],
 });
 
 cli.addCommand({
-    name: "test",
     description: "Run tests",
-    options: [
-        {
-            name: "coverage",
-            alias: "c",
-            type: Boolean,
-            description: "Generate coverage report",
-        },
-        {
-            name: "watch",
-            alias: "w",
-            type: Boolean,
-            description: "Watch mode",
-        },
-    ],
     execute: ({ logger, options }) => {
         logger.info("Running tests...");
+
         if (options.coverage) {
             logger.info("Generating coverage report...");
         }
+
         if (options.watch) {
             logger.info("Watching for changes...");
         }
     },
+    name: "test",
+    options: [
+        {
+            alias: "c",
+            description: "Generate coverage report",
+            name: "coverage",
+            type: Boolean,
+        },
+        {
+            alias: "w",
+            description: "Watch mode",
+            name: "watch",
+            type: Boolean,
+        },
+    ],
 });
 
 // Add the completion command
@@ -101,4 +107,3 @@ cli.addCommand(completionCommand);
 
 // Run the CLI
 await cli.run();
-

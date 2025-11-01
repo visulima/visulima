@@ -11,20 +11,7 @@
 
 const optionsConflicts = (cli) => {
     cli.addCommand({
-        name: "options-single-conflicts",
         description: "With a single string, which is the camel-case name of the conflicting option.",
-        group: "options",
-        options: [
-            {
-                name: "cash",
-                conflicts: "creditCard",
-                type: Boolean,
-            },
-            {
-                name: "credit-card",
-                type: Boolean,
-            },
-        ],
         execute: ({ logger, options }) => {
             if (options.cash) {
                 logger.log("Paying by cash");
@@ -34,38 +21,26 @@ const optionsConflicts = (cli) => {
                 logger.log("Payment method unknown");
             }
         },
-    });
-
-    cli.addCommand({
-        name: "options-multi-conflicts",
-        description: "With an array of option names. A negated option is not separate from the positive option for conflicts (they have same option name).",
         group: "options",
+        name: "options-single-conflicts",
         options: [
             {
-                name: "summer",
-                description: "use a mixture of summer colors",
-                conflicts: ["autumn", "colour"],
-                type: String,
+                conflicts: "creditCard",
+                name: "cash",
+                type: Boolean,
             },
             {
-                name: "autumn",
-                description: "use a mixture of autumn colors",
-                conflicts: ["summer", "colour"],
-                type: String,
-            },
-            {
-                name: "colour",
-                description: "use a single solid colour",
-                type: String,
-            },
-            {
-                name: "no-colour",
-                description: "leave surface natural",
+                name: "credit-card",
                 type: Boolean,
             },
         ],
+    });
+
+    cli.addCommand({
+        description: "With an array of option names. A negated option is not separate from the positive option for conflicts (they have same option name).",
         execute: ({ logger, options }) => {
             let colour = "not specified";
+
             if (options.colour === false) {
                 colour = "natural";
             } else if (options.colour) {
@@ -78,31 +53,57 @@ const optionsConflicts = (cli) => {
 
             logger.log(`Painting colour is ${colour}`);
         },
+        group: "options",
+        name: "options-multi-conflicts",
+        options: [
+            {
+                conflicts: ["autumn", "colour"],
+                description: "use a mixture of summer colors",
+                name: "summer",
+                type: String,
+            },
+            {
+                conflicts: ["summer", "colour"],
+                description: "use a mixture of autumn colors",
+                name: "autumn",
+                type: String,
+            },
+            {
+                description: "use a single solid colour",
+                name: "colour",
+                type: String,
+            },
+            {
+                description: "leave surface natural",
+                name: "no-colour",
+                type: Boolean,
+            },
+        ],
     });
 
     cli.addCommand({
-        name: "options-default-conflicts",
         description: "The default value for an option does not cause a conflict.",
-        group: "options",
-        options: [
-            {
-                name: "interactive",
-                description: "Interactive mode",
-                type: Boolean,
-                default: false,
-            },
-            {
-                name: "port",
-                description: "Port",
-                type: Number,
-                default: 3000,
-            },
-        ],
         execute: ({ logger, options }) => {
             logger.log("Source command");
             logger.log(`Interactive mode: ${options.interactive}`);
             logger.log(`Port: ${options.port}`);
         },
+        group: "options",
+        name: "options-default-conflicts",
+        options: [
+            {
+                default: false,
+                description: "Interactive mode",
+                name: "interactive",
+                type: Boolean,
+            },
+            {
+                default: 3000,
+                description: "Port",
+                name: "port",
+                type: Number,
+            },
+        ],
     });
 };
 

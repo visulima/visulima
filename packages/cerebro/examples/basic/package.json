@@ -1,17 +1,15 @@
 {
     "name": "cerebro-example-basic",
     "version": "1.0.0",
-    "description": "Basic Cerebro CLI example",
     "private": true,
+    "description": "Basic Cerebro CLI example",
     "type": "module",
     "scripts": {
-        "start": "node cli.js help",
+        "goodbye": "node cli.js goodbye",
         "hello": "node cli.js hello",
-        "goodbye": "node cli.js goodbye"
+        "start": "node cli.js help"
     },
     "dependencies": {
         "@visulima/cerebro": "workspace:*"
     }
 }
-
-

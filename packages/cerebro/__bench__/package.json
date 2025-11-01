@@ -13,7 +13,6 @@
         "commander": "^14.0.2",
         "gunshi": "^0.26.3",
         "meow": "^14.0.0",
-        "vitest": "^4.0.4",
         "yargs": "^18.0.0"
     },
     "devDependencies": {

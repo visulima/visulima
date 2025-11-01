@@ -8,7 +8,7 @@ const errorDetailed = (cli) => {
 
             error.code = "ERR_DEMO";
             error.statusCode = 500;
-            error.context = { userId: 123, action: "test" };
+            error.context = { action: "test", userId: 123 };
 
             throw error;
         },

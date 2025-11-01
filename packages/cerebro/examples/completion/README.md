@@ -13,6 +13,7 @@ pnpm add @bomb.sh/tab
 ## Run
 
 ### Using npm scripts:
+
 ```bash
 pnpm start                  # Show help
 pnpm build                  # Run build command
@@ -27,6 +28,7 @@ pnpm completion:powershell  # Generate powershell completion
 ```
 
 ### Using node directly:
+
 ```bash
 # Show help
 node cli.js help
@@ -79,4 +81,3 @@ echo '. ~/.example-cli-completion.ps1' >> $PROFILE
 - Option autocompletion
 - Works across bash, zsh, fish, and powershell
 - Minimal setup required
-

@@ -5,6 +5,11 @@ process.setMaxListeners(100);
 
 /**
  * Helper to suppress stdout/stderr and console during benchmarks.
+ * Temporarily silences all output streams and console methods, executes the provided
+ * function, then restores original output handlers in a finally block.
+ * @template T - The return type of the function
+ * @param function_ The function to execute with suppressed output
+ * @returns The return value of the executed function
  */
 export const suppressOutput = <T>(function_: () => T): T => {
     const originalWrite = process.stdout.write;
