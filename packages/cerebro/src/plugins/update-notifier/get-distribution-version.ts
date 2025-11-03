@@ -1,6 +1,8 @@
 import type { IncomingMessage } from "node:http";
 import { get } from "node:https";
 
+import UpdateNotifierError from "../../errors/update-notifier-error";
+
 const getDistributionVersion = async (packageName: string, distributionTag: string, registryUrl: string): Promise<string> => {
     const url = registryUrl.replace("__NAME__", packageName);
 
@@ -16,12 +18,12 @@ const getDistributionVersion = async (packageName: string, distributionTag: stri
                     const version = json[distributionTag];
 
                     if (!version) {
-                        reject(new Error("Error getting version"));
+                        reject(new UpdateNotifierError("Error getting version", "VERSION_FETCH_ERROR", { packageName, distributionTag }));
                     }
 
                     resolve(version as string);
                 } catch {
-                    reject(new Error("Could not parse version response"));
+                    reject(new UpdateNotifierError("Could not parse version response", "VERSION_PARSE_ERROR", { packageName, distributionTag }));
                 }
             });
         }).on("error", (error) => reject(error));

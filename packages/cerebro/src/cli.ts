@@ -3,7 +3,8 @@ import { argv as process_argv, cwd as process_cwd, env, execArgv, execPath, exit
 import HelpCommand from "./commands/help-command";
 import { VERBOSITY_DEBUG, VERBOSITY_NORMAL, VERBOSITY_QUIET, VERBOSITY_VERBOSE } from "./constants";
 import defaultOptions from "./default-options";
-import { CerebroError, CommandNotFoundError } from "./errors";
+import CerebroError from "./errors/cerebro-error";
+import CommandNotFoundError from "./errors/command-not-found-error";
 import PluginManager from "./plugin-manager";
 import type { Cli as ICli, CliRunOptions, CommandSection as ICommandSection, RunCommandOptions } from "./types/cli";
 import type { Command as ICommand, OptionDefinition } from "./types/command";

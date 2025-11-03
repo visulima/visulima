@@ -4,6 +4,8 @@ import { findCacheDirSync } from "@visulima/find-cache-dir";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { dirname, join } from "@visulima/path";
 
+import UpdateNotifierError from "../../errors/update-notifier-error";
+
 const FILE_NAME = "last-update-check.json";
 
 /**
@@ -16,7 +18,7 @@ const getConfigFile = (packageName: string): string => {
     const cacheDirectory = findCacheDirSync(packageName);
 
     if (cacheDirectory === undefined) {
-        throw new Error("Could not find cache directory");
+        throw new UpdateNotifierError("Could not find cache directory", "CACHE_DIRECTORY_NOT_FOUND", { packageName });
     }
 
     return join(cacheDirectory, FILE_NAME);

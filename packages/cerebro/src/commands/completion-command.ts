@@ -2,27 +2,12 @@ import { env } from "node:process";
 
 import tab from "@bomb.sh/tab";
 
+import CompletionError from "../errors/completion-error";
 import type { Command as ICommand, OptionDefinition } from "../types/command";
 import type { Toolbox as IToolbox } from "../types/toolbox";
 
 const validShells = ["bash", "zsh", "fish", "powershell"];
 const validRuntimes = ["node", "bun", "deno"];
-
-/**
- * Custom error class for completion command errors.
- */
-class CompletionError extends Error {
-    public readonly code: string;
-
-    public readonly troubleshooting: string[];
-
-    public constructor(message: string, code: string, troubleshooting: string[] = []) {
-        super(message);
-        this.name = "CompletionError";
-        this.code = code;
-        this.troubleshooting = troubleshooting;
-    }
-}
 
 /**
  * Detects the current JavaScript runtime.
@@ -163,19 +148,24 @@ const validateRuntime = (runtime: string | undefined): void => {
  */
 const printUsageInstructions = (logger: Console, cliName: string): void => {
     logger.error("Could not detect current shell");
-    logger.info(`Usage: ${cliName} completion --shell=<bash|zsh|fish|powershell> [--runtime=<node|bun|deno>]`);
-    logger.info("");
-    logger.info("Examples:");
-    logger.info(`  # Install completions for zsh:`);
-    logger.info(`  ${cliName} completion --shell=zsh > ~/.${cliName}-completion.zsh`);
-    logger.info(`  echo 'source ~/.${cliName}-completion.zsh' >> ~/.zshrc`);
-    logger.info("");
-    logger.info(`  # Install completions for bash with custom runtime:`);
-    logger.info(`  ${cliName} completion --shell=bash --runtime=bun > ~/.${cliName}-completion.bash`);
-    logger.info(`  echo 'source ~/.${cliName}-completion.bash' >> ~/.bashrc`);
-    logger.info("");
-    logger.info(`  # Install completions for fish:`);
-    logger.info(`  ${cliName} completion --shell=fish > ~/.config/fish/completions/${cliName}.fish`);
+
+    const usageInfo = [
+        `Usage: ${cliName} completion --shell=<bash|zsh|fish|powershell> [--runtime=<node|bun|deno>]`,
+        "",
+        "Examples:",
+        `  # Install completions for zsh:`,
+        `  ${cliName} completion --shell=zsh > ~/.${cliName}-completion.zsh`,
+        `  echo 'source ~/.${cliName}-completion.zsh' >> ~/.zshrc`,
+        "",
+        `  # Install completions for bash with custom runtime:`,
+        `  ${cliName} completion --shell=bash --runtime=bun > ~/.${cliName}-completion.bash`,
+        `  echo 'source ~/.${cliName}-completion.bash' >> ~/.bashrc`,
+        "",
+        `  # Install completions for fish:`,
+        `  ${cliName} completion --shell=fish > ~/.config/fish/completions/${cliName}.fish`,
+    ].join("\n");
+
+    logger.info(usageInfo);
 };
 
 /**
@@ -208,31 +198,31 @@ const completionCommand: ICommand = {
             tab.setup(cliName, scriptPath, shell);
         } catch (error) {
             if (error instanceof CompletionError) {
-                logger.error(`Failed to generate completion script: ${error.message}`);
-                logger.error(`Error code: ${error.code}`);
+                const errorMessages = [`Failed to generate completion script: ${error.message}`, `Error code: ${error.code}`];
 
                 if (error.troubleshooting.length > 0) {
-                    logger.info("");
-                    logger.info("Troubleshooting:");
-
-                    for (const tip of error.troubleshooting) {
-                        logger.info(`  • ${tip}`);
-                    }
+                    errorMessages.push("", "Troubleshooting:", ...error.troubleshooting.map((tip) => `  • ${tip}`));
                 }
+
+                logger.error(errorMessages.join("\n"));
 
                 // Re-throw to allow callers to handle the error
                 throw error;
             } else {
                 const errorMessage = error instanceof Error ? error.message : String(error);
 
-                logger.error("Failed to generate completion script");
-                logger.error(`Error: ${errorMessage}`);
-                logger.info("");
-                logger.info("Troubleshooting:");
-                logger.info("  • Ensure @bomb.sh/tab is installed: pnpm add @bomb.sh/tab");
-                logger.info(`  • Verify shell is supported: ${validShells.join(", ")}`);
-                logger.info(`  • Verify runtime is supported: ${validRuntimes.join(", ")}`);
-                logger.info("  • Check that your CLI name is correct");
+                const errorMessages = [
+                    "Failed to generate completion script",
+                    `Error: ${errorMessage}`,
+                    "",
+                    "Troubleshooting:",
+                    "  • Ensure @bomb.sh/tab is installed: pnpm add @bomb.sh/tab",
+                    `  • Verify shell is supported: ${validShells.join(", ")}`,
+                    `  • Verify runtime is supported: ${validRuntimes.join(", ")}`,
+                    "  • Check that your CLI name is correct",
+                ];
+
+                logger.error(errorMessages.join("\n"));
             }
         }
     },

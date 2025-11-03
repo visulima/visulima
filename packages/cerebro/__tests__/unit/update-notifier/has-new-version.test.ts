@@ -11,7 +11,7 @@ const { getDistributionVersion, getLastUpdate, saveLastUpdate } = vi.hoisted(() 
     };
 });
 
-vi.mock(import("../../../src/plugins/update-notifier/get-dist-version"), () => {
+vi.mock(import("../../../src/plugins/update-notifier/get-distribution-version"), () => {
     return {
         default: getDistributionVersion,
     };

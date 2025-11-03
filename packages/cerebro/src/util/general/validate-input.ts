@@ -2,7 +2,7 @@
  * Input validation utilities for CLI operations
  */
 
-import { CerebroError } from "../../errors";
+import CerebroError from "../../errors/cerebro-error";
 
 /**
  * Validates that a string is not empty or whitespace-only

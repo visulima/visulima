@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { CerebroError, CommandNotFoundError, CommandValidationError, ConflictingOptionsError, PluginError } from "../src/errors";
+import CerebroError from "../src/errors/cerebro-error";
+import CommandNotFoundError from "../src/errors/command-not-found-error";
+import CommandValidationError from "../src/errors/command-validation-error";
+import ConflictingOptionsError from "../src/errors/conflicting-options-error";
+import PluginError from "../src/errors/plugin-error";
 
 describe("errors", () => {
     describe(CerebroError, () => {
@@ -68,13 +72,13 @@ describe("errors", () => {
             expect(error.pluginName).toBe("test-plugin");
         });
 
-        it("should include original error stack when provided", () => {
+        it("should include original error as cause when provided", () => {
             const originalError = new Error("Original error");
 
             originalError.stack = "Original stack";
             const error = new PluginError("test-plugin", "Plugin failed", originalError);
 
-            expect(error.stack).toContain("Original stack");
+            expect(error.cause).toBe(originalError);
             expect(error.context?.originalError).toBe(originalError);
         });
     });

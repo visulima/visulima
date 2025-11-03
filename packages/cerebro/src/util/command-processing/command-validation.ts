@@ -1,6 +1,7 @@
 import type { CommandLineOptions } from "@visulima/command-line-args";
 
-import { CommandValidationError, ConflictingOptionsError } from "../../errors";
+import CommandValidationError from "../../errors/command-validation-error";
+import ConflictingOptionsError from "../../errors/conflicting-options-error";
 import type { Command as ICommand, OptionDefinition, PossibleOptionDefinition } from "../../types/command";
 import type { Toolbox as IToolbox } from "../../types/toolbox";
 import listMissingArguments from "../data-processing/list-missing-arguments";

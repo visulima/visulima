@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { CerebroError } from "../../src/errors";
+import CerebroError from "../../src/errors/cerebro-error";
 import { validateCommandName, validateNonEmptyString, validateObject, validateStringArray } from "../../src/util/general/validate-input";
 
 describe("validate-input", () => {

@@ -1,4 +1,4 @@
-import { PluginError } from "./errors";
+import PluginError from "./errors/plugin-error";
 import type { Plugin, PluginContext } from "./types/plugin";
 import type { Toolbox } from "./types/toolbox";
 
