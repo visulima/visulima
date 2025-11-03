@@ -9,4 +9,3 @@ export default class UpdateNotifierError extends CerebroError {
         this.name = "UpdateNotifierError";
     }
 }
-

@@ -18,12 +18,12 @@ const getDistributionVersion = async (packageName: string, distributionTag: stri
                     const version = json[distributionTag];
 
                     if (!version) {
-                        reject(new UpdateNotifierError("Error getting version", "VERSION_FETCH_ERROR", { packageName, distributionTag }));
+                        reject(new UpdateNotifierError("Error getting version", "VERSION_FETCH_ERROR", { distributionTag, packageName }));
                     }
 
                     resolve(version as string);
                 } catch {
-                    reject(new UpdateNotifierError("Could not parse version response", "VERSION_PARSE_ERROR", { packageName, distributionTag }));
+                    reject(new UpdateNotifierError("Could not parse version response", "VERSION_PARSE_ERROR", { distributionTag, packageName }));
                 }
             });
         }).on("error", (error) => reject(error));
