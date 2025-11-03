@@ -1,76 +1,11 @@
+import type { RenderErrorOptions } from "@visulima/error";
+import { renderError } from "@visulima/error";
+
 import type { Plugin } from "../types/plugin";
 import type { Toolbox } from "../types/toolbox";
 
-/**
- * Format additional error properties for logging.
- * Extracts non-standard properties from an error object.
- * @param error The error object to extract properties from
- * @returns Record of additional properties excluding standard error fields
- */
-const formatAdditionalProps = (error: Error): Record<string, unknown> => {
-    const standardProps = new Set(["code", "message", "name", "stack"]);
-    const result: Record<string, unknown> = {};
-
-    for (const key of Object.keys(error)) {
-        if (!standardProps.has(key)) {
-            result[key] = (error as unknown as Record<string, unknown>)[key];
-        }
-    }
-
-    return result;
-};
-
-/**
- * Log detailed error information with structured output.
- * Outputs error name, message, code, stack trace, and additional properties.
- * @param error The error object to log
- * @param toolbox The command toolbox containing the logger
- * @param useCriticalLevel Whether to use critical log level instead of error
- */
-const logDetailedError = (error: Error, toolbox: Toolbox, useCriticalLevel: boolean): void => {
-    const { logger } = toolbox;
-    const logMethod = useCriticalLevel ? logger.critical.bind(logger) : logger.error.bind(logger);
-
-    logger.error(""); // Empty line for better readability
-    logMethod("An error occurred:");
-
-    // Error name and message
-    logger.error(`  Name: ${error.name}`);
-    logger.error(`  Message: ${error.message}`);
-
-    // Error code (for Node.js errors)
-    if ("code" in error) {
-        logger.error(`  Code: ${(error as NodeJS.ErrnoException).code}`);
-    }
-
-    // Stack trace
-    if (error.stack) {
-        logger.error("  Stack trace:");
-
-        const stackLines = error.stack.split("\n").slice(1); // Skip first line (error message)
-
-        for (const line of stackLines) {
-            logger.error(`    ${line.trim()}`);
-        }
-    }
-
-    // Additional error properties
-    const additionalProps = formatAdditionalProps(error);
-    const propKeys = Object.keys(additionalProps);
-
-    if (propKeys.length > 0) {
-        logger.error("  Additional properties:");
-
-        for (const prop of propKeys) {
-            logger.error(`    ${prop}: ${JSON.stringify(additionalProps[prop])}`);
-        }
-    }
-
-    logger.error(""); // Empty line for better readability
-};
-
 export type ErrorHandlerOptions = {
-    /** Show detailed error information including stack traces (default: false) */
+    /** Show detailed error information including stack traces and code frames (default: false) */
     detailed?: boolean;
     /** Exit process after handling error (default: true) */
     exitOnError?: boolean;
@@ -78,19 +13,20 @@ export type ErrorHandlerOptions = {
     formatter?: (error: Error) => string;
     /** Whether to log errors (default: true) */
     logErrors?: boolean;
-    /** Use critical log level for errors (default: false) */
-    useCriticalLevel?: boolean;
+    /** Options for renderError from \@visulima/error (only used when detailed is true) */
+    renderOptions?: Partial<RenderErrorOptions>;
 };
 
 /**
  * Create an error handler plugin for enhanced error reporting.
+ * Uses \@visulima/error for beautiful error formatting with code frames and stack traces.
  * @param options Error handler configuration options
  * @returns Plugin instance
  */
 export const errorHandlerPlugin = (options: ErrorHandlerOptions = {}): Plugin => {
     const handleError = async (error: Error, toolbox: Toolbox) => {
-        const { logger } = toolbox;
-        const { detailed = false, exitOnError = true, formatter, logErrors = true, useCriticalLevel = false } = options;
+        const { logger, runtime } = toolbox;
+        const { detailed = false, exitOnError = true, formatter, logErrors = true, renderOptions = {} } = options;
 
         if (!logErrors) {
             return;
@@ -98,17 +34,23 @@ export const errorHandlerPlugin = (options: ErrorHandlerOptions = {}): Plugin =>
 
         if (formatter) {
             // Use custom formatter
-            const logMethod = useCriticalLevel ? logger.critical.bind(logger) : logger.error.bind(logger);
-
-            logMethod(formatter(error));
+            logger.error(formatter(error));
         } else if (detailed) {
-            // Show detailed error information with structured logging
-            logDetailedError(error, toolbox, useCriticalLevel);
+            const cwd = runtime.getCwd();
+            const renderedError = renderError(error, {
+                cwd,
+                hideErrorCodeView: false,
+                hideErrorTitle: false,
+                hideMessage: false,
+                linesAbove: 2,
+                linesBelow: 3,
+                ...renderOptions,
+            });
+
+            logger.error(renderedError);
         } else {
             // Simple error logging (default behavior)
-            const logMethod = useCriticalLevel ? logger.critical.bind(logger) : logger.error.bind(logger);
-
-            logMethod(error);
+            logger.error(error);
         }
 
         // Exit process if configured
@@ -119,7 +61,7 @@ export const errorHandlerPlugin = (options: ErrorHandlerOptions = {}): Plugin =>
     };
 
     return {
-        description: "Enhanced error handling and reporting",
+        description: "Enhanced error handling and reporting with beautiful code frames",
         name: "error-handler",
         onError: handleError,
         version: "1.0.0",

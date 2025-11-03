@@ -930,6 +930,9 @@ importers:
       '@visulima/command-line-args':
         specifier: workspace:*
         version: link:../command-line-args
+      '@visulima/error':
+        specifier: workspace:*
+        version: link:../error
       '@visulima/find-cache-dir':
         specifier: workspace:*
         version: link:../find-cache-dir
