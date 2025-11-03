@@ -243,11 +243,11 @@ exports[`command/help > should display group of commands if the group option is 
         {
           "content": [
             [
-              "[32mtest[39m ",
+              "[32mtest[39m",
               "A test command",
             ],
             [
-              "[32mtest2[39m ",
+              "[32mtest2[39m",
               "A test2 command",
             ],
           ],
@@ -415,7 +415,7 @@ exports[`command/help > should print general help 1`] = `
         {
           "content": [
             [
-              "[32mtest[39m ",
+              "[32mtest[39m",
               "A test command",
             ],
           ],
@@ -499,7 +499,7 @@ exports[`command/help > should print general help and not include hidden command
         {
           "content": [
             [
-              "[32mtest[39m ",
+              "[32mtest[39m",
               "A test command",
             ],
           ],

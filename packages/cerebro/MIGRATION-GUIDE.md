@@ -380,8 +380,7 @@ yargs
             console.log("Deploying to", argv.env);
         },
     )
-    .help()
-    .argv;
+    .help().argv;
 ```
 
 #### Cerebro Equivalent

@@ -50,28 +50,29 @@ const printGeneralHelp = (logger: Console, runtime: ICli, commands: Map<string, 
     }, {});
 
     // Build command list with hierarchical display for nested commands
-    const buildCommandList = (commandList: ICommand[]): string[][] => commandList.map((command) => {
-        let aliases = "";
+    const buildCommandList = (commandList: ICommand[]): string[][] =>
+        commandList.map((command) => {
+            let aliases = "";
 
-        if (typeof command.alias === "string") {
-            aliases = command.alias;
-        } else if (Array.isArray(command.alias)) {
-            aliases = command.alias.join(", ");
-        }
+            if (typeof command.alias === "string") {
+                aliases = command.alias;
+            } else if (Array.isArray(command.alias)) {
+                aliases = command.alias.join(", ");
+            }
 
-        if (aliases !== "") {
-            aliases = ` [${aliases}]`;
-        }
+            if (aliases !== "") {
+                aliases = ` [${aliases}]`;
+            }
 
-        // Display full path for nested commands
-        let commandDisplay = command.name;
+            // Display full path for nested commands
+            let commandDisplay = command.name;
 
-        if (command.commandPath && command.commandPath.length > 0) {
-            commandDisplay = `${command.commandPath.join(" ")} ${command.name}`;
-        }
+            if (command.commandPath && command.commandPath.length > 0) {
+                commandDisplay = `${command.commandPath.join(" ")} ${command.name}`;
+            }
 
-        return [`${green(commandDisplay)}${aliases}`, command.description ?? ""];
-    });
+            return [`${green(commandDisplay)}${aliases}`, command.description ?? ""];
+        });
 
     ((logger as Console & { raw?: (...args: unknown[]) => void })?.raw ?? logger.log)(
         commandLineUsage(

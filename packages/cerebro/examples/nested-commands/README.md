@@ -62,7 +62,7 @@ node cli.js deploy-all
 ```javascript
 cli.addCommand({
     name: "staging",
-    commandPath: ["deploy"],  // Creates: cli deploy staging
+    commandPath: ["deploy"], // Creates: cli deploy staging
     description: "Deploy to staging environment",
     execute: ({ logger }) => {
         logger.info("Deploying to staging...");
@@ -75,7 +75,7 @@ cli.addCommand({
 ```javascript
 cli.addCommand({
     name: "up",
-    commandPath: ["db", "migrate"],  // Creates: cli db migrate up
+    commandPath: ["db", "migrate"], // Creates: cli db migrate up
     description: "Run database migrations forward",
     execute: ({ logger }) => {
         logger.info("Running migrations...");
@@ -168,4 +168,3 @@ Available Commands
 3. **Options Work**: All standard command features (options, arguments, etc.) work with nested commands
 4. **Programmatic Calls**: Use `runtime.runCommand("deploy staging")` to call nested commands
 5. **Help Display**: Nested commands automatically show their full path in help output
-

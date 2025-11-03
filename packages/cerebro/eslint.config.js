@@ -16,6 +16,7 @@ export default createConfig(
             "tsconfig.eslint.json",
             ".prettierrc.cjs",
             "package.json",
+            "MIGRATION-GUIDE.md",
             "README.md",
         ],
     },

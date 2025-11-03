@@ -64,7 +64,7 @@ describe("cli", () => {
 
         cli.addCommand({ execute: vi.fn(), name: "duplicate" });
 
-        expect(() => cli.addCommand({ execute: vi.fn(), name: "duplicate" })).toThrow("Command with name \"duplicate\" already exists");
+        expect(() => cli.addCommand({ execute: vi.fn(), name: "duplicate" })).toThrow("Command with path \"duplicate\" already exists");
     });
 
     it("should throw error when running a command with missing required options", async () => {

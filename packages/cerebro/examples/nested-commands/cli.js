@@ -1,4 +1,3 @@
-// packages/cerebro/examples/nested-commands/cli.js
 // Example demonstrating nested commands (subcommands) in Cerebro
 import { Cerebro } from "@visulima/cerebro";
 
@@ -144,4 +143,3 @@ cli.addCommand({
 });
 
 await cli.run();
-

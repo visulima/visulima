@@ -1,4 +1,3 @@
-import type { Mock } from "vitest";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import hasNewVersion from "../../../src/plugins/update-notifier/has-new-version";
