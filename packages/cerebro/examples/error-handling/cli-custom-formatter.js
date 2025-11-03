@@ -37,4 +37,3 @@ cli.addCommand({
 });
 
 await cli.run({ argv: ["error-custom-formatter"] });
-

@@ -8,7 +8,7 @@ const FILE_NAME = "last-update-check.json";
 
 /**
  * Retrieves the configuration file path for the given package name.
- * @param packageName The name of the package.
+ * @param packageName
  * @throws {Error} - If the cache directory cannot be found.
  * @returns - The absolute path to the configuration file.
  */
@@ -24,7 +24,7 @@ const getConfigFile = (packageName: string): string => {
 
 /**
  * Retrieves the last update check timestamp for the specified package.
- * @param packageName The name of the package.
+ * @param packageName
  * @returns - The timestamp of the last update check, or undefined if the check failed.
  */
 export const getLastUpdate = (packageName: string): number | undefined => {

@@ -163,7 +163,7 @@ class HelpCommand implements ICommand {
         }
 
         if (commandName === "help") {
-            printGeneralHelp(logger, runtime, this.commands, options?.group);
+            printGeneralHelp(logger, runtime, this.commands, typeof options?.group === "string" ? options.group : undefined);
         } else {
             printCommandHelp(logger, runtime, this.commands, commandName as string);
         }

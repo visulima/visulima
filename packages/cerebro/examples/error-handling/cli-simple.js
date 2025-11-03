@@ -15,4 +15,3 @@ cli.addCommand({
 });
 
 await cli.run({ argv: ["error-simple"] });
-

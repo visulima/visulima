@@ -13,26 +13,29 @@ const validateUnknownOptions = <OD extends OptionDefinition<unknown>>(commandArg
     const errors: string[] = [];
 
     // eslint-disable-next-line no-underscore-dangle
-    commandArguments._unknown.forEach((unknownOption) => {
-        const isOption = unknownOption.startsWith("--");
+    if (commandArguments._unknown) {
+        // eslint-disable-next-line no-underscore-dangle
+        commandArguments._unknown.forEach((unknownOption) => {
+            const isOption = unknownOption.startsWith("--");
 
-        let error = `Found unknown ${isOption ? "option" : "argument"} "${unknownOption}"`;
+            let error = `Found unknown ${isOption ? "option" : "argument"} "${unknownOption}"`;
 
-        if (isOption) {
-            const foundAlternatives = findAlternatives(
-                unknownOption.replace("--", ""),
-                (command.options ?? []).map((option) => option.name),
-            );
+            if (isOption) {
+                const foundAlternatives = findAlternatives(
+                    unknownOption.replace("--", ""),
+                    (command.options ?? []).map((option) => option.name),
+                );
 
-            if (foundAlternatives.length > 0) {
-                const [first, ...rest] = foundAlternatives.map((alternative) => `--${alternative}`);
+                if (foundAlternatives.length > 0) {
+                    const [first, ...rest] = foundAlternatives.map((alternative) => `--${alternative}`);
 
-                error += rest.length > 0 ? `, did you mean ${first} or ${rest.join(", ")}?` : `, did you mean ${first}?`;
+                    error += rest.length > 0 ? `, did you mean ${first} or ${rest.join(", ")}?` : `, did you mean ${first}?`;
+                }
             }
-        }
 
-        errors.push(error);
-    });
+            errors.push(error);
+        });
+    }
 
     if (errors.length > 0) {
         throw new Error(errors.join("\n"));

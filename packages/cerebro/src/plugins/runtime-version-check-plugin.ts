@@ -91,9 +91,16 @@ export const runtimeVersionCheckPlugin = (options: RuntimeVersionCheckOptions = 
                 );
 
                 // Runtime-aware exit
-                // @ts-expect-error - Deno is only present in Deno runtime
-                if (runtime.type === "deno" && typeof Deno !== "undefined" && typeof Deno.exit === "function") {
-                    Deno.exit(1);
+                if (runtime.type === "deno") {
+                    // @ts-expect-error - Deno is only present in Deno runtime
+                    const deno = globalThis.Deno as { exit?: (code: number) => void } | undefined;
+
+                    if (deno && typeof deno.exit === "function") {
+                        deno.exit(1);
+                    } else {
+                        // eslint-disable-next-line unicorn/no-process-exit
+                        process.exit(1);
+                    }
                 } else {
                     // eslint-disable-next-line unicorn/no-process-exit
                     process.exit(1);

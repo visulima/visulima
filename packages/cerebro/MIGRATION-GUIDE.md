@@ -363,18 +363,19 @@ yargs
     .command(
         "deploy",
         "Deploy the application",
-        (yargs) => yargs
-            .option("env", {
-                alias: "e",
-                demandOption: true,
-                description: "Environment",
-                type: "string",
-            })
-            .option("force", {
-                alias: "f",
-                description: "Force deployment",
-                type: "boolean",
-            }),
+        (yargs) =>
+            yargs
+                .option("env", {
+                    alias: "e",
+                    demandOption: true,
+                    description: "Environment",
+                    type: "string",
+                })
+                .option("force", {
+                    alias: "f",
+                    description: "Force deployment",
+                    type: "boolean",
+                }),
         (argv) => {
             console.log("Deploying to", argv.env);
         },

@@ -22,7 +22,7 @@ const listMissingArguments = <OD extends OptionDefinition<any>>(
     const requiredOptions = onlyRequired ? commandLineConfig : commandLineConfig.filter((config) => config.required);
 
     return requiredOptions
-        .filter((config) => parsedArguments[config.name] == undefined)
+        .filter((config) => parsedArguments[config.name] === undefined)
         .filter((config) => {
             if (config.type?.name === "Boolean") {
                 // eslint-disable-next-line no-param-reassign

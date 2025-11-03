@@ -253,8 +253,8 @@ export class Cli<T extends Console = Console> implements ICli {
         command.options?.map((option) => mapOptionTypeLabel<OD>(option));
 
         validateDuplicateOptions(command);
-        addNegatableOptions(command);
-        processOptionNames(command);
+        addNegatableOptions(command as { name: string; options?: OptionDefinition<unknown>[] });
+        processOptionNames(command as { options?: OptionDefinition<unknown>[] });
 
         // Pre-compute validation metadata for runtime performance (15% improvement)
         // This moves validation overhead from every execution to one-time registration
@@ -425,7 +425,7 @@ export class Cli<T extends Console = Console> implements ICli {
 
         try {
             // eslint-disable-next-line unicorn/no-null
-            parsedArguments = commandLineCommands([null, ...commandNames], this.#argv);
+            parsedArguments = commandLineCommands([null, ...commandNames], [...this.#argv]);
         } catch (error) {
             // CLI needs a valid command name to do anything. If the given
             // command is invalid, throw a structured error with suggestions.
@@ -458,7 +458,7 @@ export class Cli<T extends Console = Console> implements ICli {
 
         this.#logger.debug(`command '${commandName}' found, parsing command args: ${commandArguments.join(", ")}`);
 
-        const { arguments_, booleanValues, parsedArgs } = processCommandArgs(command, commandArguments, defaultOptions);
+        const { arguments_, booleanValues, parsedArgs } = processCommandArgs(command, commandArguments, defaultOptions as OptionDefinition<unknown>[]);
 
         const commandArgs = { ...parsedArgs, _all: { ...parsedArgs._all, ...booleanValues } } as typeof parsedArgs;
 
@@ -594,7 +594,7 @@ export class Cli<T extends Console = Console> implements ICli {
         this.#logger.debug(`running command '${commandName}' programmatically with args: ${commandArguments.join(", ")}`);
 
         // Process command arguments
-        const { arguments_, booleanValues, parsedArgs } = processCommandArgs(command, commandArguments, defaultOptions);
+        const { arguments_, booleanValues, parsedArgs } = processCommandArgs(command, commandArguments, defaultOptions as OptionDefinition<unknown>[]);
 
         const commandArgs = { ...parsedArgs, _all: { ...parsedArgs._all, ...booleanValues } } as typeof parsedArgs;
 

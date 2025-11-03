@@ -33,4 +33,3 @@ cli.addCommand({
 });
 
 await cli.run({ argv: ["error-render-options"] });
-

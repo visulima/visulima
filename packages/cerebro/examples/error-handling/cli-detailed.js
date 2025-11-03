@@ -25,4 +25,3 @@ cli.addCommand({
 });
 
 await cli.run({ argv: ["error-detailed"] });
-

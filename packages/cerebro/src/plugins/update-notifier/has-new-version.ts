@@ -1,6 +1,6 @@
 import semverGt from "../../util/general/semver-gt";
 import { getLastUpdate, saveLastUpdate } from "./cache";
-import getDistributionVersion from "./get-dist-version";
+import getDistributionVersion from "./get-distribution-version";
 
 const hasNewVersion = async ({
     alwaysRun,

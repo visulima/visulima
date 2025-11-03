@@ -13,7 +13,7 @@ const mergeArguments = <OD extends OptionDefinition<any>>(argumentLists: Possibl
         const existing = argumentsByName.get(argument.name);
 
         if (existing) {
-            argumentsByName.set(argument.name, { ...existing, ...argument });
+            argumentsByName.set(argument.name, { ...existing, ...argument } as PossibleOptionDefinition<OD>);
         } else {
             argumentsByName.set(argument.name, argument);
         }

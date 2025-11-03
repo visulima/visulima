@@ -1,6 +1,12 @@
+// @visulima/pail is an optional peer dependency
+
+// @ts-ignore - Optional peer dependency, types may not be available
 import type { Pail, Processor } from "@visulima/pail";
+// @ts-ignore - Optional peer dependency, types may not be available
 import CallerProcessor from "@visulima/pail/processor/caller";
+// @ts-ignore - Optional peer dependency, types may not be available
 import MessageFormatterProcessor from "@visulima/pail/processor/message-formatter";
+// @ts-ignore - Optional peer dependency, types may not be available
 import { createPail } from "@visulima/pail/server";
 
 import { VERBOSITY_DEBUG, VERBOSITY_QUIET } from "../constants";

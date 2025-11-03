@@ -1,4 +1,5 @@
 import type { RenderErrorOptions } from "@visulima/error";
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { renderError } from "@visulima/error";
 
 import type { Plugin } from "../types/plugin";

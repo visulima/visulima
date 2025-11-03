@@ -7,9 +7,9 @@ import type { UpdateNotifierOptions } from "./has-new-version";
 export type UpdateNotifierPluginOptions = Partial<Omit<UpdateNotifierOptions, "debug" | "pkg">>;
 
 /**
- * Create an update notifier plugin that checks for package updates
- * @param options Update notifier configuration options
- * @returns Plugin instance
+ * Create an update notifier plugin that checks for package updates.
+ * @param options Update notifier configuration options.
+ * @returns Plugin instance.
  */
 export const updateNotifierPlugin = (options: UpdateNotifierPluginOptions = {}): Plugin => {
     return {
