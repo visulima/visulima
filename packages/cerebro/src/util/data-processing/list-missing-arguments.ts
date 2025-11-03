@@ -5,8 +5,10 @@ import type { OptionDefinition, PossibleOptionDefinition } from "../../types/com
 /**
  * Lists missing required arguments from parsed command line options
  * Optimized to use pre-filtered required options when available
+ *
+ * Note: This function mutates parsedArguments by setting missing boolean options to false.
  * @param commandLineConfig All command options OR pre-filtered required options
- * @param parsedArguments Parsed command line arguments
+ * @param parsedArguments Parsed command line arguments (will be mutated for boolean defaults)
  * @param onlyRequired If true, commandLineConfig already contains only required options (optimization)
  * @returns Array of missing required options
  */

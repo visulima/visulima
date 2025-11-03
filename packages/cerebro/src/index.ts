@@ -1,5 +1,5 @@
 import type { CliOptions } from "./cli";
-import { Cli as Cerebro } from "./cli";
+import { Cli } from "./cli";
 import type { VERBOSITY_LEVEL } from "./types/cli";
 
 declare global {
@@ -77,4 +77,4 @@ export type { Toolbox } from "./types/toolbox";
  * ```
  */
 export const createCerebro = <T extends Console = Console>(name: string, options?: CliOptions<T>): InstanceType<typeof import("./cli").Cli<T>> =>
-    new Cerebro(name, options);
+    new Cli(name, options);

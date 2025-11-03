@@ -70,7 +70,9 @@ export const runtimeVersionCheckPlugin = (options: RuntimeVersionCheckOptions = 
             };
 
             // Allow environment variable override for Node.js (backward compatibility)
-            const envMinVersion = process.env.CEREBRO_MIN_NODE_VERSION ? Number(process.env.CEREBRO_MIN_NODE_VERSION) : undefined;
+            const envRaw = process.env.CEREBRO_MIN_NODE_VERSION;
+            const parsed = envRaw === undefined ? undefined : Number.parseInt(envRaw, 10);
+            const envMinVersion = Number.isNaN(parsed as number) ? undefined : parsed;
 
             // Determine minimum version: specific runtime > environment variable (Node.js only) > default
             let minVersion: number;
@@ -87,8 +89,15 @@ export const runtimeVersionCheckPlugin = (options: RuntimeVersionCheckOptions = 
                 context.logger.error(
                     `cerebro requires ${runtime.type} version ${minVersion} or higher. You have ${runtime.type} ${runtime.version}. Read our version support policy: https://github.com/visulima/visulima#supported-runtimes`,
                 );
-                // eslint-disable-next-line unicorn/no-process-exit
-                process.exit(1);
+
+                // Runtime-aware exit
+                // @ts-expect-error - Deno is only present in Deno runtime
+                if (runtime.type === "deno" && typeof Deno !== "undefined" && typeof Deno.exit === "function") {
+                    Deno.exit(1);
+                } else {
+                    // eslint-disable-next-line unicorn/no-process-exit
+                    process.exit(1);
+                }
             }
 
             context.logger.debug(`Runtime version check passed: ${runtime.type} ${runtime.version} >= ${minVersion}`);

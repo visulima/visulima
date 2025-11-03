@@ -41,8 +41,8 @@ export const addNegatableOptions = <OD extends OptionDefinition<unknown>>(comman
  */
 export const mapNegatableOptions = (toolbox: IToolbox, command: { options?: OptionDefinition<unknown>[] }): void => {
     Object.entries(toolbox.options as IToolbox["options"]).forEach(([key, value]) => {
-        if (key.startsWith("no")) {
-            const nonNegatedKey: string = key.replace(/^no-?/, "");
+        if (key.startsWith("no-")) {
+            const nonNegatedKey: string = key.replace(/^no-/, "");
 
             command.options?.forEach((option) => {
                 if (option.name === nonNegatedKey) {

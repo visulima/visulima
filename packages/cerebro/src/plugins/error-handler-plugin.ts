@@ -3,6 +3,9 @@ import type { Toolbox } from "../types/toolbox";
 
 /**
  * Format additional error properties for logging.
+ * Extracts non-standard properties from an error object.
+ * @param error The error object to extract properties from
+ * @returns Record of additional properties excluding standard error fields
  */
 const formatAdditionalProps = (error: Error): Record<string, unknown> => {
     const standardProps = new Set(["code", "message", "name", "stack"]);
@@ -19,6 +22,10 @@ const formatAdditionalProps = (error: Error): Record<string, unknown> => {
 
 /**
  * Log detailed error information with structured output.
+ * Outputs error name, message, code, stack trace, and additional properties.
+ * @param error The error object to log
+ * @param toolbox The command toolbox containing the logger
+ * @param useCriticalLevel Whether to use critical log level instead of error
  */
 const logDetailedError = (error: Error, toolbox: Toolbox, useCriticalLevel: boolean): void => {
     const { logger } = toolbox;

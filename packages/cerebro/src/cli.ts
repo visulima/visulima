@@ -279,7 +279,10 @@ export class Cli<T extends Console = Console> implements ICli {
                 this.#logger.debug("adding alias", alias);
 
                 if (this.#commands.has(alias)) {
-                    throw new Error(`Ignoring command alias "${alias}, command with the same name was found."`);
+                    throw new CerebroError(`Command alias "${alias}" conflicts with existing command`, "DUPLICATE_COMMAND", {
+                        alias,
+                        commandName: command.name,
+                    });
                 } else {
                     this.#commands.set(alias, command);
                 }
@@ -437,7 +440,13 @@ export class Cli<T extends Console = Console> implements ICli {
         }
 
         const commandName = parsedArguments.command ?? this.#defaultCommand;
-        const command = this.#commands.get(commandName) as ICommand;
+        const command = this.#commands.get(commandName);
+
+        if (!command) {
+            const alternatives = findAlternatives(commandName, [...this.#commands.keys()]);
+
+            throw new CommandNotFoundError(commandName, alternatives);
+        }
 
         if (typeof command.execute !== "function") {
             this.#logger.error(`Command "${command.name}" has no function to execute.`);
@@ -462,20 +471,6 @@ export class Cli<T extends Console = Console> implements ICli {
         toolbox.runtime = this as ICli;
         toolbox.argv = this.#argv;
 
-        // initialize plugins on first run (fast path: skip if no plugins registered)
-        if (!this.#pluginsInitialized && this.#pluginManager.hasPlugins()) {
-            await this.#pluginManager.init({
-                cli: this as ICli,
-                cwd: this.#cwd,
-                logger: this.#logger,
-            });
-
-            this.#pluginsInitialized = true;
-        }
-
-        // execute plugins that need to modify the toolbox (fast path: automatically skips if no plugins)
-        await this.#pluginManager.executeLifecycle("execute", toolbox);
-
         // Process options
         mapNegatableOptions(toolbox, command);
         mapImpliedOptions(toolbox, command);
@@ -490,6 +485,20 @@ export class Cli<T extends Console = Console> implements ICli {
         this.#logger.debug(JSON.stringify(toolbox.argument, null, 2));
 
         try {
+            // initialize plugins on first run (fast path: skip if no plugins registered)
+            if (!this.#pluginsInitialized && this.#pluginManager.hasPlugins()) {
+                await this.#pluginManager.init({
+                    cli: this as ICli,
+                    cwd: this.#cwd,
+                    logger: this.#logger,
+                });
+
+                this.#pluginsInitialized = true;
+            }
+
+            // execute plugins that need to modify the toolbox (fast path: automatically skips if no plugins)
+            await this.#pluginManager.executeLifecycle("execute", toolbox);
+
             // Execute beforeCommand hooks
             await this.#pluginManager.executeLifecycle("beforeCommand", toolbox);
 

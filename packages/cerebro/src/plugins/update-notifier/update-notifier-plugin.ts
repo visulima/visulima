@@ -4,7 +4,7 @@ import { isCI } from "ci-info";
 import type { Plugin } from "../../types/plugin";
 import type { UpdateNotifierOptions } from "./has-new-version";
 
-export type UpdateNotifierPluginOptions = Partial<Omit<UpdateNotifierOptions, "debug | pkg">>;
+export type UpdateNotifierPluginOptions = Partial<Omit<UpdateNotifierOptions, "debug" | "pkg">>;
 
 /**
  * Create an update notifier plugin that checks for package updates

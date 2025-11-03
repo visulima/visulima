@@ -39,8 +39,10 @@ class OptionListSection extends BaseSection {
                 border: NO_BORDER,
                 paddingLeft: 2,
                 paddingRight: 1,
+                ...data.tableOptions?.style,
             },
-            wordWrap: true,
+            wordWrap: data.tableOptions?.wordWrap ?? true,
+            ...data.tableOptions,
         });
 
         definitions.forEach((definition) =>

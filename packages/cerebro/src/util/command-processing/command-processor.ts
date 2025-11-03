@@ -10,7 +10,13 @@ import removeBooleanValues from "../arg-processing/remove-boolean-values";
 import mergeArguments from "../data-processing/merge-arguments";
 
 /**
- * Prepares the toolbox for command execution
+ * Prepares the toolbox for command execution.
+ * @template OD The option definition type.
+ * @param command The command to prepare toolbox for.
+ * @param parsedArgs Parsed command-line arguments.
+ * @param booleanValues Extracted boolean flag values.
+ * @param extraOptions Additional options to merge into toolbox.
+ * @returns The prepared toolbox instance.
  */
 export const prepareToolbox = <OD extends OptionDefinition<unknown>>(
     command: ICommand<OD>,
@@ -39,7 +45,13 @@ export const prepareToolbox = <OD extends OptionDefinition<unknown>>(
 };
 
 /**
- * Processes command arguments and options
+ * Processes command arguments and options.
+ * @template OD The option definition type.
+ * @param command The command to process arguments for.
+ * @param commandArguments Raw command-line argument strings.
+ * @param defaultOptions Default option definitions to merge.
+ * @returns Object containing merged arguments, boolean values, and parsed args.
+ * @throws {Error} When an argument has both multiple and lazyMultiple options.
  */
 export const processCommandArgs = <OD extends OptionDefinition<unknown>>(
     command: ICommand<OD>,
@@ -87,10 +99,15 @@ export const processCommandArgs = <OD extends OptionDefinition<unknown>>(
 };
 
 /**
- * Executes a command and returns its result
+ * Executes a command and returns its result.
+ * @template OD The option definition type.
+ * @param command The command to execute.
+ * @param toolbox The prepared toolbox for command execution.
+ * @param _commandArgs Parsed command arguments.
+ * @returns Promise resolving to the command execution result.
  */
 export const executeCommand = async <OD extends OptionDefinition<unknown>>(
     command: ICommand<OD>,
     toolbox: IToolbox,
-    commandArgs: CommandLineOptions,
+    _commandArgs: CommandLineOptions,
 ): Promise<unknown> => await command.execute(toolbox);

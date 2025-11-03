@@ -101,44 +101,53 @@ export const validateConflictingOptions = <OD extends OptionDefinition<unknown>>
  * Validates for duplicate option definitions
  */
 export const validateDuplicateOptions = <OD extends OptionDefinition<unknown>>(command: ICommand<OD>): void => {
-    if (Array.isArray(command.options)) {
-        // eslint-disable-next-line unicorn/no-array-reduce
-        const groupedDuplicatedOption = command.options.reduce<Record<string, OptionDefinition<OD>[]>>((accumulator, object) => {
-            const key = `${object.name}-${object.alias}`;
+    if (!Array.isArray(command.options)) {
+        return;
+    }
 
-            if (!accumulator[key]) {
-                accumulator[key] = [];
-            }
+    const byName = new Map<string, OptionDefinition<OD>[]>();
+    const byAlias = new Map<string, OptionDefinition<OD>[]>();
 
-            (accumulator[key] as OptionDefinition<OD>[]).push(object as OptionDefinition<OD>);
+    for (const opt of command.options as OptionDefinition<OD>[]) {
+        if (opt.name) {
+            const existing = byName.get(opt.name) ?? [];
 
-            return accumulator;
-        }, {});
-        const duplicatedOptions = Object.values(groupedDuplicatedOption).filter((object) => object.length > 1);
+            existing.push(opt);
+            byName.set(opt.name, existing);
+        }
 
-        let errorMessages = "";
+        if (typeof opt.alias === "string" && opt.alias.length > 0) {
+            const existing = byAlias.get(opt.alias) ?? [];
 
-        duplicatedOptions.forEach((options) => {
-            const matchingOption = options[0] as OptionDefinition<OD>;
-            const duplicate = options[1] as OptionDefinition<OD>;
+            existing.push(opt);
+            byAlias.set(opt.alias, existing);
+        } else if (Array.isArray(opt.alias)) {
+            for (const alias of opt.alias) {
+                if (alias.length > 0) {
+                    const existing = byAlias.get(alias) ?? [];
 
-            let flag = "alias";
-
-            if (matchingOption.name === duplicate.name) {
-                flag = "name";
-
-                if (matchingOption.alias === duplicate.alias) {
-                    flag += " and alias";
+                    existing.push(opt);
+                    byAlias.set(alias, existing);
                 }
             }
-
-            errorMessages += `Cannot add option ${flag} "${JSON.stringify(duplicate)}" to command "${
-                command.name
-            }" due to conflicting option ${JSON.stringify(matchingOption)}\n`;
-        });
-
-        if (errorMessages.length > 0) {
-            throw new Error(errorMessages);
         }
+    }
+
+    const errors: string[] = [];
+
+    for (const [name, group] of byName) {
+        if (group.length > 1) {
+            errors.push(`Duplicate option name "${name}" in command "${command.name}": ${JSON.stringify(group)}`);
+        }
+    }
+
+    for (const [alias, group] of byAlias) {
+        if (group.length > 1) {
+            errors.push(`Duplicate option alias "-${alias}" used by options ${group.map((o) => `"${o.name}"`).join(", ")} in command "${command.name}"`);
+        }
+    }
+
+    if (errors.length > 0) {
+        throw new Error(errors.join("\n"));
     }
 };

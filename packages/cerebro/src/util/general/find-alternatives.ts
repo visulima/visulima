@@ -1,5 +1,9 @@
+// packages/cerebro/src/util/general/find-alternatives.ts
 import { distance } from "fastest-levenshtein";
 
+/**
+ * Checks if two strings are similar based on substring matching and Levenshtein distance.
+ */
 const isSimilar = (string1: string, string2: string): boolean => {
     // Fast path: exact substring match
     if (string2.includes(string1)) {
@@ -17,6 +21,12 @@ const isSimilar = (string1: string, string2: string): boolean => {
     return distance(string1, string2) <= string1.length / 3;
 };
 
+/**
+ * Finds strings in an array that are similar to the given string.
+ * @param string The target string to match against
+ * @param array Array of candidate strings to search
+ * @returns Array of similar strings from the input array
+ */
 const findAlternatives = (string: string, array: string[]): string[] => {
     const id = string.toLowerCase();
 
