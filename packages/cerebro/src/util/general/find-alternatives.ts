@@ -1,4 +1,3 @@
-// packages/cerebro/src/util/general/find-alternatives.ts
 import { distance } from "fastest-levenshtein";
 
 /**

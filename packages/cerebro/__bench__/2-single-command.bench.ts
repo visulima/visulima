@@ -1,4 +1,3 @@
-// packages/cerebro/__bench__/2-single-command.bench.ts
 import { Cerebro } from "@visulima/cerebro";
 import { cac } from "cac";
 import { cli as cleye } from "cleye";

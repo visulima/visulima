@@ -8,7 +8,7 @@
     "guides": {
         "title": "Guides",
         "type": "page",
-        "pages": ["guides/commands", "guides/options", "guides/plugins", "guides/advanced"]
+        "pages": ["guides/commands", "guides/options", "guides/plugins", "guides/advanced", "guides/comparison"]
     },
     "toolbox": {
         "title": "Toolbox",

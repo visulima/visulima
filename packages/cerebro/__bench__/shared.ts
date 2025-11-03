@@ -1,5 +1,3 @@
-// packages/cerebro/__bench__/shared.ts
-
 // Increase max listeners to avoid warnings during benchmarks
 process.setMaxListeners(100);
 

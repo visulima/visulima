@@ -1,4 +1,3 @@
-// packages/cerebro/examples/completion.js
 import { Cerebro } from "@visulima/cerebro";
 import completionCommand from "@visulima/cerebro/command/completion";
 

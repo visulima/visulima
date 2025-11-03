@@ -1,4 +1,3 @@
-// packages/cerebro/__bench__/10-full-lifecycle.bench.ts
 import { Cerebro } from "@visulima/cerebro";
 import { cac } from "cac";
 import { cli as cleye } from "cleye";

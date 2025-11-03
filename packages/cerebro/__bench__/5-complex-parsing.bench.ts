@@ -1,4 +1,3 @@
-// packages/cerebro/__bench__/5-complex-parsing.bench.ts
 import { Cerebro } from "@visulima/cerebro";
 import { cac } from "cac";
 import { cli as cleye, command as cleyeCommand } from "cleye";

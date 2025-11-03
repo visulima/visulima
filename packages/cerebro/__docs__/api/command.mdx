@@ -175,7 +175,40 @@ Path to command file (for metadata).
 **Type:** `string[]`  
 **Required:** No
 
-Command path for nested commands (advanced).
+Command path for nested commands. Creates hierarchical command structures.
+
+When specified, the command can be invoked using the full path: `cli <path> <name>`.
+
+```typescript
+{
+    name: "staging",
+    commandPath: ["deploy"], // Invoked as: cli deploy staging
+    execute: ({ logger }) => {
+        logger.info("Deploying to staging...");
+    }
+}
+```
+
+Multi-level nesting is supported:
+
+```typescript
+{
+    name: "up",
+    commandPath: ["db", "migrate"], // Invoked as: cli db migrate up
+    execute: ({ logger }) => {
+        logger.info("Running migrations...");
+    }
+}
+```
+
+**Validation:**
+
+- Each path segment must follow the same rules as command names
+- Must start with a letter
+- Can contain letters, numbers, hyphens, and underscores
+- Cannot contain spaces or special characters
+
+**See also:** [Nested Commands Guide](/docs/cerebro/guides/commands#nested-commands)
 
 ## ArgumentDefinition
 

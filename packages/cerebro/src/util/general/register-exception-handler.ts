@@ -1,5 +1,3 @@
-// packages/cerebro/src/util/general/register-exception-handler.ts
-
 /**
  * Registers global exception handlers for uncaught exceptions and unhandled promise rejections.
  * Logs errors using the provided logger and exits the process with code 1.

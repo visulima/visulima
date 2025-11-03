@@ -8,6 +8,7 @@ This directory contains organized examples demonstrating various features of the
 examples/
 ├── basic/              # Simple CLI basics
 ├── options/            # Option handling features
+├── nested-commands/    # Nested commands (subcommands)
 ├── error-handling/     # Error handling strategies
 ├── logging/            # Logger configurations
 └── completion/         # Shell autocompletion
@@ -45,6 +46,18 @@ Explore advanced option handling:
 - Boolean or value options
 
 **Run:** `cd options && node cli.js help`
+
+### [Nested Commands](./nested-commands/)
+
+Learn how to create hierarchical command structures:
+
+- Basic nested commands (`cli deploy staging`)
+- Multi-level nesting (`cli db migrate up`)
+- Nested commands with options
+- Mixing flat and nested commands
+- Calling nested commands programmatically
+
+**Run:** `cd nested-commands && node cli.js help`
 
 ### [Error Handling](./error-handling/)
 

@@ -224,6 +224,229 @@ cli build -o build --production
 
 See the [Options Guide](/docs/cerebro/guides/options) for detailed option configuration.
 
+## Nested Commands
+
+Cerebro supports nested commands (subcommands) using the `commandPath` property. This allows you to create hierarchical command structures like `cli deploy staging` or `cli db migrate up`.
+
+### Basic Nested Commands
+
+Create nested commands by specifying a `commandPath` array:
+
+```typescript
+// Parent command path: ["deploy"]
+cli.addCommand({
+    name: "staging",
+    commandPath: ["deploy"],
+    description: "Deploy to staging environment",
+    execute: ({ logger }) => {
+        logger.info("Deploying to staging...");
+    },
+});
+
+cli.addCommand({
+    name: "production",
+    commandPath: ["deploy"],
+    description: "Deploy to production environment",
+    execute: ({ logger }) => {
+        logger.info("Deploying to production...");
+    },
+});
+```
+
+Usage:
+
+```bash
+cli deploy staging
+cli deploy production
+```
+
+### Multi-Level Nested Commands
+
+You can nest commands multiple levels deep:
+
+```typescript
+cli.addCommand({
+    name: "up",
+    commandPath: ["db", "migrate"],
+    description: "Run database migrations",
+    execute: ({ logger }) => {
+        logger.info("Running migrations...");
+    },
+});
+
+cli.addCommand({
+    name: "down",
+    commandPath: ["db", "migrate"],
+    description: "Rollback database migrations",
+    execute: ({ logger }) => {
+        logger.info("Rolling back migrations...");
+    },
+});
+
+cli.addCommand({
+    name: "status",
+    commandPath: ["db", "migrate"],
+    description: "Show migration status",
+    execute: ({ logger }) => {
+        logger.info("Migration status...");
+    },
+});
+```
+
+Usage:
+
+```bash
+cli db migrate up
+cli db migrate down
+cli db migrate status
+```
+
+### Nested Commands with Options
+
+Nested commands support all the same features as flat commands, including options:
+
+```typescript
+cli.addCommand({
+    name: "production",
+    commandPath: ["deploy"],
+    description: "Deploy to production environment",
+    options: [
+        {
+            name: "dry-run",
+            type: Boolean,
+            description: "Show what would be deployed without deploying",
+        },
+        {
+            name: "tag",
+            alias: "t",
+            type: String,
+            description: "Deployment tag",
+        },
+    ],
+    execute: ({ options, logger }) => {
+        if (options["dry-run"]) {
+            logger.info("Dry run: Would deploy to production");
+            return;
+        }
+
+        logger.info(`Deploying to production with tag: ${options.tag || "latest"}`);
+    },
+});
+```
+
+Usage:
+
+```bash
+cli deploy production --dry-run
+cli deploy production --tag v1.0.0
+cli deploy production -t v1.0.0 --dry-run
+```
+
+### Flat and Nested Commands Together
+
+You can mix flat and nested commands in the same CLI:
+
+```typescript
+// Flat command
+cli.addCommand({
+    name: "build",
+    description: "Build the project",
+    execute: ({ logger }) => {
+        logger.info("Building...");
+    },
+});
+
+// Nested command with same name (different path)
+cli.addCommand({
+    name: "build",
+    commandPath: ["docker"],
+    description: "Build Docker image",
+    execute: ({ logger }) => {
+        logger.info("Building Docker image...");
+    },
+});
+```
+
+Usage:
+
+```bash
+cli build              # Runs flat "build" command
+cli docker build       # Runs nested "docker build" command
+```
+
+### Calling Nested Commands Programmatically
+
+Use `runtime.runCommand()` with the full command path:
+
+```typescript
+cli.addCommand({
+    name: "deploy-all",
+    execute: async ({ runtime, logger }) => {
+        logger.info("Deploying to all environments...");
+
+        // Call nested commands programmatically
+        await runtime.runCommand("deploy staging");
+        await runtime.runCommand("deploy production");
+    },
+});
+```
+
+You can also call nested commands from within other nested commands:
+
+```typescript
+cli.addCommand({
+    name: "staging",
+    commandPath: ["deploy"],
+    execute: async ({ runtime, logger }) => {
+        logger.info("Preparing staging deployment...");
+        await runtime.runCommand("build", { argv: ["--production"] });
+        logger.info("Deploying to staging...");
+    },
+});
+```
+
+### Help Output
+
+Nested commands are automatically displayed in help with their full path:
+
+```bash
+cli help
+```
+
+Output will show:
+
+```
+Available Commands
+  deploy staging       Deploy to staging environment
+  deploy production    Deploy to production environment
+  db migrate up        Run database migrations
+  db migrate down     Rollback database migrations
+```
+
+### Command Path Validation
+
+Command path segments are validated the same way as command names:
+
+- Must start with a letter
+- Can contain letters, numbers, hyphens, and underscores
+- Cannot contain spaces or special characters
+
+```typescript
+// ✅ Valid
+cli.addCommand({
+    name: "staging",
+    commandPath: ["deploy"], // Valid
+    execute: () => {},
+});
+
+// ❌ Invalid - path segment must start with a letter
+cli.addCommand({
+    name: "test",
+    commandPath: ["-invalid"], // Will throw error
+    execute: () => {},
+});
+```
+
 ## Calling Other Commands
 
 Commands can call other commands programmatically:
@@ -250,12 +473,17 @@ The `runCommand` method allows you to:
 - Pass arguments via `argv` array
 - Merge additional options
 - Get return values from commands
+- Call nested commands using full path (e.g., `"deploy staging"`)
 
 ```typescript
 const result = await runtime.runCommand("build", {
     argv: ["--production"],
     customOption: "value",
 });
+
+// Call nested commands
+await runtime.runCommand("deploy staging");
+await runtime.runCommand("db migrate up");
 ```
 
 ## Error Handling

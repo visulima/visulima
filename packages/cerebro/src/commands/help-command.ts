@@ -21,6 +21,21 @@ const printGeneralHelp = (logger: Console, runtime: ICli, commands: Map<string, 
         filteredCommands = filteredCommands.filter((command) => command.group === groupOption);
     }
 
+    // Group commands by their commandPath for hierarchical display
+    // eslint-disable-next-line unicorn/no-array-reduce
+    const commandsByPath: Record<string, ICommand[]> = filteredCommands.reduce<Record<string, ICommand[]>>((accumulator, command) => {
+        const pathKey = command.commandPath ? command.commandPath.join(" ") : "";
+        const displayKey = pathKey || EMPTY_GROUP_KEY;
+
+        if (!accumulator[displayKey]) {
+            accumulator[displayKey] = [];
+        }
+
+        (accumulator[displayKey] as ICommand[]).push(command);
+
+        return accumulator;
+    }, {});
+
     // eslint-disable-next-line unicorn/no-array-reduce
     const groupedCommands: Record<string, ICommand[]> = filteredCommands.reduce<Record<string, ICommand[]>>((accumulator, command) => {
         const group = command.group ?? EMPTY_GROUP_KEY;
@@ -34,6 +49,30 @@ const printGeneralHelp = (logger: Console, runtime: ICli, commands: Map<string, 
         return accumulator;
     }, {});
 
+    // Build command list with hierarchical display for nested commands
+    const buildCommandList = (commandList: ICommand[]): string[][] => commandList.map((command) => {
+        let aliases = "";
+
+        if (typeof command.alias === "string") {
+            aliases = command.alias;
+        } else if (Array.isArray(command.alias)) {
+            aliases = command.alias.join(", ");
+        }
+
+        if (aliases !== "") {
+            aliases = ` [${aliases}]`;
+        }
+
+        // Display full path for nested commands
+        let commandDisplay = command.name;
+
+        if (command.commandPath && command.commandPath.length > 0) {
+            commandDisplay = `${command.commandPath.join(" ")} ${command.name}`;
+        }
+
+        return [`${green(commandDisplay)}${aliases}`, command.description ?? ""];
+    });
+
     ((logger as Console & { raw?: (...args: unknown[]) => void })?.raw ?? logger.log)(
         commandLineUsage(
             [
@@ -45,21 +84,7 @@ const printGeneralHelp = (logger: Console, runtime: ICli, commands: Map<string, 
                     const groupOptionName = groupOption ? ` ${upperFirstChar(groupOption)}` : "";
 
                     return {
-                        content: (groupedCommands[key] as ICommand[]).map((command) => {
-                            let aliases = "";
-
-                            if (typeof command.alias === "string") {
-                                aliases = command.alias;
-                            } else if (Array.isArray(command.alias)) {
-                                aliases = command.alias.join(", ");
-                            }
-
-                            if (aliases !== "") {
-                                aliases = ` [${aliases}]`;
-                            }
-
-                            return [`${green(command.name)} ${aliases}`, command.description ?? ""];
-                        }),
+                        content: buildCommandList(groupedCommands[key] as ICommand[]),
                         header:
                             key === EMPTY_GROUP_KEY || groupOption
                                 ? inverse.green(` Available${groupOptionName} Commands `)
@@ -84,12 +109,35 @@ const printGeneralHelp = (logger: Console, runtime: ICli, commands: Map<string, 
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const printCommandHelp = <OD extends OptionDefinition<any>>(logger: Console, runtime: ICli, commands: Map<string, ICommand<OD>>, name: string): void => {
-    const command = commands.get(name) as ICommand<OD>;
+    // Try to find command by name first
+    let command = commands.get(name) as ICommand<OD> | undefined;
+
+    // If not found, try to find by full path (for nested commands)
+    if (!command) {
+        for (const cmd of commands.values()) {
+            const fullPath = cmd.commandPath ? [...cmd.commandPath, cmd.name] : [cmd.name];
+
+            if (fullPath[fullPath.length - 1] === name || fullPath.join(" ") === name) {
+                command = cmd as ICommand<OD>;
+                break;
+            }
+        }
+    }
+
+    if (!command) {
+        logger.error(`Command "${name}" not found`);
+
+        return;
+    }
 
     const usageGroups: Section[] = [];
 
+    // Build full command path for display
+    const fullCommandPath = command.commandPath ? [...command.commandPath, command.name] : [command.name];
+    const commandDisplay = fullCommandPath.join(" ");
+
     usageGroups.push({
-        content: `${cyan(runtime.getCliName())} ${green(command.name)}${command.argument ? " [positional arguments]" : ""}${
+        content: `${cyan(runtime.getCliName())} ${green(commandDisplay)}${command.argument ? " [positional arguments]" : ""}${
             command.options ? " [options]" : ""
         }`,
         header: inverse.cyan(" Usage "),

@@ -1,4 +1,3 @@
-// packages/cerebro/examples/basic/cli.js
 // A simple example demonstrating basic Cerebro CLI usage
 import { Cerebro } from "@visulima/cerebro";
 

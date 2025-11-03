@@ -1,4 +1,3 @@
-// packages/cerebro/__bench__/1-cold-start.bench.ts
 import { Command as OclifCommand } from "@oclif/core";
 import { Cerebro } from "@visulima/cerebro";
 import { cac } from "cac";

@@ -13,12 +13,25 @@ import mapOptionTypeLabel from "./util/arg-processing/map-option-type-label";
 import commandLineCommands from "./util/command-line-commands";
 import { executeCommand, prepareToolbox, processCommandArgs } from "./util/command-processing/command-processor";
 import { validateConflictingOptions, validateDuplicateOptions, validateRequiredOptions } from "./util/command-processing/command-validation";
+import { getCommandPathKey, getFullCommandPath, parseNestedCommand } from "./util/command-processing/nested-command-parser";
 import { addNegatableOptions, mapImpliedOptions, mapNegatableOptions, processOptionNames } from "./util/command-processing/option-processor";
 import findAlternatives from "./util/general/find-alternatives";
 import parseRawCommand from "./util/general/parse-raw-command";
 import registerExceptionHandler from "./util/general/register-exception-handler";
 import { validateCommandName, validateNonEmptyString, validateObject, validateStringArray } from "./util/general/validate-input";
 import { sanitizeArguments } from "./util/security";
+
+// Helper to check if a string is an option flag
+const isOption = (argument: string): boolean => {
+    // eslint-disable-next-line regexp/no-unused-capturing-group
+    const isShort = new RegExp(/^-([^\d-])$/);
+    // eslint-disable-next-line regexp/no-unused-capturing-group
+    const isLong = new RegExp(/^--(\S+)/);
+    // eslint-disable-next-line regexp/no-unused-capturing-group
+    const isCombined = new RegExp(/^-([^\d-]{2,})$/);
+
+    return isShort.test(argument) || isLong.test(argument) || isCombined.test(argument);
+};
 
 export type CliOptions<T extends Console = Console> = {
     argv?: ReadonlyArray<string>;
@@ -46,6 +59,9 @@ export class Cli<T extends Console = Console> implements ICli {
     readonly #pluginManager: PluginManager;
 
     readonly #commands: Map<string, ICommand>;
+
+    /** Map of command path keys to full command paths for nested command lookup */
+    readonly #commandPaths: Map<string, string[]>;
 
     #defaultCommand: string;
 
@@ -128,6 +144,7 @@ export class Cli<T extends Console = Console> implements ICli {
         };
 
         this.#commands = new Map<string, ICommand>();
+        this.#commandPaths = new Map<string, string[]>();
 
         this.#pluginManager = new PluginManager(this.#logger);
 
@@ -246,8 +263,28 @@ export class Cli<T extends Console = Console> implements ICli {
             validateObject(command.options, "Command options");
         }
 
-        // add the command to the runtime (if it isn't already there)
-        if (this.#commands.has(command.name)) {
+        // Validate commandPath if provided
+        if (command.commandPath) {
+            validateStringArray(command.commandPath, "Command commandPath");
+            command.commandPath.forEach((segment) => {
+                validateCommandName(segment);
+            });
+        }
+
+        // Generate full command path
+        const fullPath = getFullCommandPath(command.name, command.commandPath);
+        const pathKey = getCommandPathKey(fullPath);
+
+        // Check for duplicate commands (by full path)
+        if (this.#commandPaths.has(pathKey)) {
+            throw new CerebroError(`Command with path "${pathKey}" already exists`, "DUPLICATE_COMMAND", {
+                commandName: command.name,
+                commandPath: command.commandPath,
+            });
+        }
+
+        // Also check for duplicate by name (for backward compatibility)
+        if (this.#commands.has(command.name) && !command.commandPath) {
             throw new CerebroError(`Command with name "${command.name}" already exists`, "DUPLICATE_COMMAND", { commandName: command.name });
         }
 
@@ -257,7 +294,7 @@ export class Cli<T extends Console = Console> implements ICli {
         addNegatableOptions(command as { name: string; options?: OptionDefinition<unknown>[] });
         processOptionNames(command as { options?: OptionDefinition<unknown>[] });
 
-        // Pre-compute validation metadata for runtime performance (15% improvement)
+        // Pre-compute validation metadata for runtime performance
         // This moves validation overhead from every execution to one-time registration
         if (command.options) {
             // Pre-compute conflicting options (used in validateConflictingOptions)
@@ -267,7 +304,9 @@ export class Cli<T extends Console = Console> implements ICli {
             command.__requiredOptions__ = command.options.filter((option) => option.required === true);
         }
 
+        // Store command by both name (for backward compatibility) and full path
         this.#commands.set(command.name, command);
+        this.#commandPaths.set(pathKey, fullPath);
 
         if (command.alias !== undefined) {
             let aliases: string[] = command.alias as string[];
@@ -416,37 +455,103 @@ export class Cli<T extends Console = Console> implements ICli {
             this.addCommand(new HelpCommand(this.#commands));
         }
 
+        // Build list of all command path keys for nested command parsing
+        const commandPathKeys = [...this.#commandPaths.keys()];
+        const commandPathMap = new Map<string, string[]>();
+
+        for (const [key, path] of this.#commandPaths.entries()) {
+            commandPathMap.set(key, path);
+        }
+
+        // Also add flat command names for backward compatibility
         const commandNames = [...this.#commands.keys()];
 
-        let parsedArguments: { argv: string[]; command: string | null | undefined };
+        let parsedCommandPath: string[] | null = null;
+        let remainingArgv: string[] = [...this.#argv];
 
         this.#logger.debug(`process.execPath: ${execPath}`);
         this.#logger.debug(`process.execArgv: ${execArgv.join(" ")}`);
         this.#logger.debug(`process.argv: ${process_argv.join(" ")}`);
 
-        try {
-            // eslint-disable-next-line unicorn/no-null
-            parsedArguments = commandLineCommands([null, ...commandNames], [...this.#argv]);
-        } catch (error) {
-            // CLI needs a valid command name to do anything. If the given
-            // command is invalid, throw a structured error with suggestions.
-            if (error instanceof Error && error.name === "INVALID_COMMAND" && "command" in error) {
-                const invalidCommand = (error as { command: string }).command;
-                const alternatives = findAlternatives(invalidCommand, [...this.#commands.keys()]);
+        // Try to parse nested command first
+        const nestedResult = parseNestedCommand(commandPathMap, [...this.#argv]);
 
-                throw new CommandNotFoundError(invalidCommand, alternatives);
+        if (nestedResult.commandPath) {
+            // Found a nested command match
+            parsedCommandPath = nestedResult.commandPath;
+            remainingArgv = nestedResult.argv;
+        } else {
+            // If nested parsing failed but we have multiple tokens, try to form the attempted path
+            if (this.#argv.length > 1 && !isOption(this.#argv[0]) && !isOption(this.#argv[1])) {
+                // This looks like a nested command attempt that failed
+                const attemptedPath: string[] = [];
+                let i = 0;
+
+                while (i < this.#argv.length && !isOption(this.#argv[i])) {
+                    attemptedPath.push(this.#argv[i]);
+                    i++;
+                }
+
+                const attemptedPathKey = getCommandPathKey(attemptedPath);
+
+                // Only throw error if no flat command matches the first token
+                if (!commandNames.includes(attemptedPath[0])) {
+                    const allCommandPaths = [...commandPathKeys, ...commandNames];
+                    const alternatives = findAlternatives(attemptedPathKey, allCommandPaths);
+
+                    throw new CommandNotFoundError(attemptedPathKey, alternatives);
+                }
             }
 
-            throw error;
+            // Fall back to flat command parsing for backward compatibility
+            let parsedArguments: { argv: string[]; command: string | null | undefined };
+
+            try {
+                // eslint-disable-next-line unicorn/no-null
+                parsedArguments = commandLineCommands([null, ...commandNames], [...this.#argv]);
+            } catch (error) {
+                // CLI needs a valid command name to do anything. If the given
+                // command is invalid, throw a structured error with suggestions.
+                if (error instanceof Error && error.name === "INVALID_COMMAND" && "command" in error) {
+                    const invalidCommand = (error as { command: string }).command;
+                    const allCommandPaths = [...commandPathKeys, ...commandNames];
+                    const alternatives = findAlternatives(invalidCommand, allCommandPaths);
+
+                    throw new CommandNotFoundError(invalidCommand, alternatives);
+                }
+
+                throw error;
+            }
+
+            if (parsedArguments.command) {
+                parsedCommandPath = [parsedArguments.command];
+                remainingArgv = parsedArguments.argv;
+            }
         }
 
-        const commandName = parsedArguments.command ?? this.#defaultCommand;
+        // Use default command if no command was parsed
+        if (!parsedCommandPath) {
+            if (this.#defaultCommand) {
+                parsedCommandPath = [this.#defaultCommand];
+            } else {
+                const allCommandPaths = [...commandPathKeys, ...commandNames];
+
+                throw new CommandNotFoundError("", allCommandPaths);
+            }
+        }
+
+        // Find the command by its full path
+        const pathKey = getCommandPathKey(parsedCommandPath);
+        const storedPath = this.#commandPaths.get(pathKey);
+        const commandName = parsedCommandPath[parsedCommandPath.length - 1];
         const command = this.#commands.get(commandName);
 
-        if (!command) {
-            const alternatives = findAlternatives(commandName, [...this.#commands.keys()]);
+        // Verify the command matches the expected path
+        if (!command || !storedPath || getCommandPathKey(storedPath) !== pathKey) {
+            const allCommandPaths = [...commandPathKeys, ...commandNames];
+            const alternatives = findAlternatives(pathKey, allCommandPaths);
 
-            throw new CommandNotFoundError(commandName, alternatives);
+            throw new CommandNotFoundError(pathKey, alternatives);
         }
 
         if (typeof command.execute !== "function") {
@@ -455,9 +560,9 @@ export class Cli<T extends Console = Console> implements ICli {
             return shouldExitProcess ? exit(1) : undefined;
         }
 
-        const commandArguments = parsedArguments.argv;
+        const commandArguments = remainingArgv;
 
-        this.#logger.debug(`command '${commandName}' found, parsing command args: ${commandArguments.join(", ")}`);
+        this.#logger.debug(`command '${pathKey}' found, parsing command args: ${commandArguments.join(", ")}`);
 
         const { arguments_, booleanValues, parsedArgs } = processCommandArgs(command, commandArguments, defaultOptions as OptionDefinition<unknown>[]);
 
@@ -575,11 +680,27 @@ export class Cli<T extends Console = Console> implements ICli {
         // Validate command name
         validateNonEmptyString(commandName, "Command name");
 
-        // Find the command
-        const command = this.#commands.get(commandName);
+        // Try to find command by full path first (for nested commands)
+        // commandName can be either a simple name or a space-separated path
+        const commandPath = commandName.split(" ").filter(Boolean);
+        const pathKey = getCommandPathKey(commandPath);
+        const storedPath = this.#commandPaths.get(pathKey);
+
+        let command: ICommand | undefined;
+
+        if (storedPath) {
+            // Found by full path
+            const commandNameFromPath = commandPath[commandPath.length - 1];
+
+            command = this.#commands.get(commandNameFromPath);
+        } else {
+            // Fall back to simple name lookup (backward compatibility)
+            command = this.#commands.get(commandName);
+        }
 
         if (!command) {
-            const alternatives = findAlternatives(commandName, [...this.#commands.keys()]);
+            const allCommandPaths = [...this.#commandPaths.keys(), ...this.#commands.keys()];
+            const alternatives = findAlternatives(commandName, allCommandPaths);
 
             throw new CommandNotFoundError(commandName, alternatives);
         }
