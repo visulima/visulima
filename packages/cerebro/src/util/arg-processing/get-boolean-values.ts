@@ -1,4 +1,4 @@
-import type { OptionDefinition, PossibleOptionDefinition } from "../../@types/command";
+import type { OptionDefinition, PossibleOptionDefinition } from "../../types/command";
 import getParameterOption from "./get-parameter-option";
 import isBoolean from "./option-is-boolean";
 

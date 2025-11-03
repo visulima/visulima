@@ -1,0 +1,423 @@
+# Options & Arguments
+
+Options (flags) and arguments are how users provide input to your commands.
+
+## Options
+
+Options are named parameters passed with `--option` or `-o` syntax.
+
+### Basic Options
+
+```typescript
+cli.addCommand({
+    name: "build",
+    options: [
+        {
+            name: "production",
+            type: Boolean,
+            description: "Build for production",
+        },
+    ],
+    execute: ({ options }) => {
+        console.log(options.production); // true or false
+    },
+});
+```
+
+Usage:
+
+```bash
+cli build --production  # options.production = true
+cli build              # options.production = false
+```
+
+### Option Types
+
+#### Boolean Options
+
+```typescript
+{
+  name: "verbose",
+  type: Boolean,
+  description: "Enable verbose output"
+}
+```
+
+#### String Options
+
+```typescript
+{
+  name: "output",
+  type: String,
+  description: "Output directory"
+}
+```
+
+Usage: `cli build --output dist`
+
+#### Number Options
+
+```typescript
+{
+  name: "port",
+  type: Number,
+  description: "Server port"
+}
+```
+
+Usage: `cli serve --port 3000`
+
+#### Array Options
+
+Options can accept multiple values:
+
+```typescript
+{
+  name: "files",
+  type: String, // Will be an array
+  multiple: true,
+  description: "Files to process"
+}
+```
+
+Usage: `cli process --files file1.txt --files file2.txt`
+
+### Aliases
+
+Provide short aliases for options:
+
+```typescript
+{
+  name: "output",
+  alias: "o",
+  type: String,
+  description: "Output directory"
+}
+```
+
+Usage:
+
+```bash
+cli build --output dist
+cli build -o dist  # Same as above
+```
+
+### Default Values
+
+Set default values for options:
+
+```typescript
+{
+  name: "port",
+  type: Number,
+  defaultValue: 3000,
+  description: "Server port"
+}
+```
+
+```typescript
+execute: ({ options }) => {
+    console.log(options.port); // 3000 if not provided
+};
+```
+
+### Required Options
+
+Make options mandatory:
+
+```typescript
+{
+  name: "config",
+  type: String,
+  required: true,
+  description: "Configuration file path"
+}
+```
+
+If not provided, Cerebro will throw an error with a helpful message.
+
+### Negatable Options
+
+Boolean options can be negated with `--no-` prefix:
+
+```typescript
+{
+  name: "color",
+  type: Boolean,
+  defaultValue: true,
+  description: "Enable colored output"
+}
+```
+
+Usage:
+
+```bash
+cli build --color        # options.color = true
+cli build --no-color     # options.color = false
+cli build                # options.color = true (default)
+```
+
+### Conflicting Options
+
+Prevent certain options from being used together:
+
+```typescript
+cli.addCommand({
+    name: "serve",
+    options: [
+        {
+            name: "http",
+            type: Boolean,
+            conflicts: "https",
+            description: "Use HTTP",
+        },
+        {
+            name: "https",
+            type: Boolean,
+            conflicts: "http",
+            description: "Use HTTPS",
+        },
+    ],
+    execute: () => {},
+});
+```
+
+Using both will throw an error:
+
+```bash
+cli serve --http --https  # Error: Options "http" and "https" cannot be used together
+```
+
+### Implied Options
+
+Automatically set other options when one is used:
+
+```typescript
+cli.addCommand({
+    name: "build",
+    options: [
+        {
+            name: "production",
+            type: Boolean,
+            implies: { minify: true, sourcemap: false },
+            description: "Build for production",
+        },
+        {
+            name: "minify",
+            type: Boolean,
+            description: "Minify output",
+        },
+        {
+            name: "sourcemap",
+            type: Boolean,
+            description: "Generate source maps",
+        },
+    ],
+    execute: ({ options }) => {
+        // If --production is used, minify=true and sourcemap=false automatically
+    },
+});
+```
+
+### Boolean or Value Options
+
+Options that can be used as flags or accept values:
+
+```typescript
+{
+  name: "watch",
+  type: Boolean,
+  // Can be used as: --watch (true) or --watch=port (custom value)
+  description: "Watch for changes"
+}
+```
+
+### Hidden Options
+
+Hide options from help output:
+
+```typescript
+{
+  name: "debug",
+  type: Boolean,
+  hidden: true, // Won't appear in help
+  description: "Enable debug mode"
+}
+```
+
+### Type Labels
+
+Customize the type label shown in help:
+
+```typescript
+{
+  name: "port",
+  type: Number,
+  typeLabel: "<port>", // Instead of <number>
+  description: "Server port"
+}
+```
+
+## Positional Arguments
+
+Positional arguments are provided without option names:
+
+```typescript
+cli.addCommand({
+    name: "copy",
+    argument: {
+        name: "source",
+        type: String,
+        description: "Source file",
+    },
+    execute: ({ argument }) => {
+        const source = argument[0];
+        console.log(`Copying ${source}...`);
+    },
+});
+```
+
+Usage: `cli copy file.txt`
+
+### Multiple Arguments
+
+Arguments accept multiple values:
+
+```typescript
+cli.addCommand({
+    name: "copy",
+    argument: {
+        name: "files",
+        type: String,
+        description: "Files to copy",
+    },
+    execute: ({ argument }) => {
+        // argument is an array
+        argument.forEach((file) => {
+            console.log(`Copying ${file}...`);
+        });
+    },
+});
+```
+
+Usage: `cli copy file1.txt file2.txt file3.txt`
+
+### Argument Default Values
+
+```typescript
+argument: {
+  name: "name",
+  type: String,
+  defaultValue: "World",
+  description: "Name to greet"
+}
+```
+
+### Argument Types
+
+Arguments support the same types as options:
+
+- `String` - Text values
+- `Number` - Numeric values
+- `Boolean` - Boolean values (rare for arguments)
+
+## Accessing Options and Arguments
+
+In your command's `execute` function:
+
+```typescript
+execute: ({ options, argument }) => {
+    // Options
+    const isProduction = options.production;
+    const outputDir = options.output || "dist";
+
+    // Arguments
+    const fileName = argument[0];
+    const allFiles = argument; // Array of all arguments
+};
+```
+
+## Complete Example
+
+```typescript
+cli.addCommand({
+    name: "deploy",
+    argument: {
+        name: "target",
+        type: String,
+        defaultValue: "production",
+        description: "Deployment target",
+    },
+    options: [
+        {
+            name: "env",
+            alias: "e",
+            type: String,
+            required: true,
+            description: "Environment name",
+        },
+        {
+            name: "force",
+            alias: "f",
+            type: Boolean,
+            defaultValue: false,
+            description: "Force deployment",
+        },
+        {
+            name: "dry-run",
+            type: Boolean,
+            description: "Perform a dry run",
+        },
+        {
+            name: "services",
+            type: String,
+            multiple: true,
+            description: "Services to deploy",
+        },
+    ],
+    execute: ({ argument, options }) => {
+        const target = argument[0];
+        const env = options.env;
+        const force = options.force;
+        const services = options.services || [];
+
+        console.log(`Deploying to ${target} (${env})`);
+        if (force) {
+            console.log("Force mode enabled");
+        }
+        if (services.length > 0) {
+            console.log(`Services: ${services.join(", ")}`);
+        }
+    },
+});
+```
+
+Usage examples:
+
+```bash
+# Basic usage
+cli deploy staging --env production
+
+# With multiple services
+cli deploy --env production --services api --services worker
+
+# Force deployment
+cli deploy --env production --force
+
+# Dry run
+cli deploy --env production --dry-run
+```
+
+## Global Options
+
+Cerebro provides built-in global options available to all commands:
+
+- `--help, -h` - Show help
+- `--version, -V` - Show version
+- `--verbose, -v` - Verbose output
+- `--debug` - Debug output
+- `--quiet, -q` - Quiet output
+- `--no-color` - Disable colored output
+- `--color` - Force colored output
+
+These don't need to be defined in your commands.

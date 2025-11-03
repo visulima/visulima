@@ -1,10 +1,10 @@
 import type { CommandLineOptions } from "@visulima/command-line-args";
 import { commandLineArgs } from "@visulima/command-line-args";
 
-import type { Command as ICommand, OptionDefinition } from "../../@types/command";
-import type { Toolbox as IToolbox } from "../../@types/toolbox";
 import { POSITIONALS_KEY } from "../../constants";
 import EmptyToolbox from "../../empty-toolbox";
+import type { Command as ICommand, OptionDefinition } from "../../types/command";
+import type { Toolbox as IToolbox } from "../../types/toolbox";
 import getBooleanValues from "../arg-processing/get-boolean-values";
 import removeBooleanValues from "../arg-processing/remove-boolean-values";
 import mergeArguments from "../data-processing/merge-arguments";

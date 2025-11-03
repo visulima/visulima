@@ -1,4 +1,4 @@
-import type { OptionDefinition, PossibleOptionDefinition } from "../../@types/command";
+import type { OptionDefinition, PossibleOptionDefinition } from "../../types/command";
 
 const argumentNameRegExp = /^-{1,2}(\w+)(=(\w+))?$/;
 

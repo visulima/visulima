@@ -23,7 +23,7 @@ describe("completion-command", () => {
     });
 
     it("should have correct command metadata", () => {
-        expect.assertions(4);
+        expect.assertions(5);
 
         expect(completionCommand.name).toBe("completion");
         expect(completionCommand.description).toBe("Generate shell completion scripts");
@@ -83,7 +83,7 @@ describe("completion-command", () => {
     });
 
     it("should throw CompletionError for invalid shell", async () => {
-        expect.assertions(3);
+        expect.assertions(4);
 
         mockToolbox.options = { shell: "invalid-shell" };
 
@@ -96,7 +96,7 @@ describe("completion-command", () => {
     });
 
     it("should throw CompletionError for invalid runtime", async () => {
-        expect.assertions(3);
+        expect.assertions(4);
 
         mockToolbox.options = { runtime: "invalid-runtime", shell: "zsh" };
 

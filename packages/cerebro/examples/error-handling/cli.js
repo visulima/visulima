@@ -15,7 +15,7 @@ const cli = new Cerebro("cerebro-errors");
 // Configure different error handling modes
 switch (mode) {
     case "error-critical": {
-    // Critical level logging for severe errors
+        // Critical level logging for severe errors
         cli.addPlugin(pailLoggerPlugin());
         cli.addPlugin(
             errorHandlerPlugin({
@@ -29,7 +29,7 @@ switch (mode) {
         break;
     }
     case "error-custom-formatter": {
-    // Custom error formatting
+        // Custom error formatting
         cli.addPlugin(pailLoggerPlugin());
         cli.addPlugin(
             errorHandlerPlugin({
@@ -56,7 +56,7 @@ ${error.code ? `║ Code:      ${error.code}` : ""}
         break;
     }
     case "error-detailed": {
-    // Detailed error logging with stack traces and additional properties
+        // Detailed error logging with stack traces and additional properties
         cli.addPlugin(pailLoggerPlugin());
         cli.addPlugin(
             errorHandlerPlugin({
@@ -69,7 +69,7 @@ ${error.code ? `║ Code:      ${error.code}` : ""}
         break;
     }
     case "error-simple": {
-    // Default error handling
+        // Default error handling
         cli.addPlugin(pailLoggerPlugin());
         cli.addPlugin(errorHandlerPlugin());
         errorSimple(cli);
@@ -77,7 +77,7 @@ ${error.code ? `║ Code:      ${error.code}` : ""}
         break;
     }
     default: {
-    // Show all available modes
+        // Show all available modes
         cli.addPlugin(pailLoggerPlugin());
         cli.addCommand({
             description: "Show available error handling examples",

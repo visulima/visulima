@@ -2,8 +2,8 @@ import { env } from "node:process";
 
 import tab from "@bomb.sh/tab";
 
-import type { Command as ICommand, OptionDefinition } from "../@types/command";
-import type { Toolbox as IToolbox } from "../@types/toolbox";
+import type { Command as ICommand, OptionDefinition } from "../types/command";
+import type { Toolbox as IToolbox } from "../types/toolbox";
 
 const validShells = ["bash", "zsh", "fish", "powershell"];
 const validRuntimes = ["node", "bun", "deno"];

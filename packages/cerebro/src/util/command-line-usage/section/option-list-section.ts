@@ -1,8 +1,8 @@
 import { createTable } from "@visulima/tabular";
 import { NO_BORDER } from "@visulima/tabular/style";
 
-import type { ArgumentDefinition, OptionDefinition as IOptionDefinition } from "../../../@types/command";
-import type { OptionList as IOptionList } from "../../../@types/command-line-usage";
+import type { ArgumentDefinition, OptionDefinition as IOptionDefinition } from "../../../types/command";
+import type { OptionList as IOptionList } from "../../../types/command-line-usage";
 import templateFormat from "../../text-processing/template-format";
 import BaseSection from "./base-section";
 

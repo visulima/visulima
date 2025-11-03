@@ -925,23 +925,23 @@ importers:
         specifier: 24.9.2
         version: 24.9.2
       '@visulima/boxen':
-        specifier: 2.0.6
-        version: 2.0.6
+        specifier: workspace:*
+        version: link:../boxen
       '@visulima/command-line-args':
         specifier: workspace:*
         version: link:../command-line-args
       '@visulima/find-cache-dir':
-        specifier: 2.0.2
-        version: 2.0.2
+        specifier: workspace:*
+        version: link:../find-cache-dir
       '@visulima/packem':
         specifier: 2.0.0-alpha.32
         version: 2.0.0-alpha.32(@arethetypeswrong/core@0.18.2)(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@swc/core@1.13.5)(@tailwindcss/node@4.1.16)(@tailwindcss/oxide@4.1.16)(@types/node@24.9.2)(@visulima/redact@2.0.1)(ai@5.0.81(zod@4.1.12))(cssnano@7.1.1(postcss@8.5.6))(esbuild@0.25.11)(icss-utils@5.1.0(postcss@8.5.6))(lightningcss@1.30.2)(package-manager-detector@1.5.0)(postcss-load-config@6.0.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.20.6)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rolldown@1.0.0-beta.45)(rotating-file-stream@3.2.7)(sucrase@3.35.0)(typedoc-plugin-markdown@4.9.0(typedoc@0.28.14(typescript@5.9.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.14(typescript@5.9.3)))(typedoc@0.28.14(typescript@5.9.3))(typescript@5.9.3)(yaml@2.8.1)
       '@visulima/pail':
-        specifier: 3.0.2
-        version: 3.0.2(@visulima/redact@2.0.1)(rotating-file-stream@3.2.7)
+        specifier: workspace:*
+        version: link:../pail
       '@visulima/path':
-        specifier: 2.0.1
-        version: 2.0.1
+        specifier: workspace:*
+        version: link:../path
       '@visulima/string':
         specifier: workspace:*
         version: link:../string
@@ -963,9 +963,6 @@ importers:
       eslint:
         specifier: 9.38.0
         version: 9.38.0(jiti@2.6.1)
-      gunshi:
-        specifier: ^0.26.3
-        version: 0.26.3
       prettier:
         specifier: ^3.6.2
         version: 3.6.2
@@ -1008,9 +1005,6 @@ importers:
       meow:
         specifier: ^14.0.0
         version: 14.0.0
-      vitest:
-        specifier: ^4.0.4
-        version: 4.0.4(@types/debug@4.1.12)(@types/node@24.9.2)(@vitest/ui@4.0.4)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.2)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
       yargs:
         specifier: ^18.0.0
         version: 18.0.0
@@ -1021,6 +1015,9 @@ importers:
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
+      vitest:
+        specifier: ^4.0.4
+        version: 4.0.4(@types/debug@4.1.12)(@types/node@24.9.2)(@vitest/ui@4.0.4)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.9.2)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 
   packages/cerebro/__fixtures__/package/mjs:
     dependencies:
@@ -9177,10 +9174,6 @@ packages:
   '@visulima/find-cache-dir@1.0.34':
     resolution: {integrity: sha512-eQXTTD+C9UBVRoUoytlVM0SJK+MsUFemXAHJFuoyLVcMFwsFKYrKum9VxRstQszLreSavzDJ71w5ZfY4sX/h2A==}
     engines: {node: '>=18.0.0 <=23.x'}
-
-  '@visulima/find-cache-dir@2.0.2':
-    resolution: {integrity: sha512-alnkK1hZiZPaz2i1YvDka5BqeoRHBDlNfYVR9lkP9MICeHN26h4ovp+2EU/lRA7dUdHwBrAlXK6Pzpmd9Rb62Q==}
-    engines: {node: '>=20.19 <=25.x'}
 
   '@visulima/fmt@1.1.15':
     resolution: {integrity: sha512-r0+HmEwvbgz2ey+I7NyNfaDF6qHmsUYxmZ2nUl9nWUunyLQO2f1IYy/ZJFLBnsaYpbhqWXG32lFlUtmar4c3rQ==}
@@ -26001,8 +25994,6 @@ snapshots:
       '@visulima/path': 1.4.0
     transitivePeerDependencies:
       - yaml
-
-  '@visulima/find-cache-dir@2.0.2': {}
 
   '@visulima/fmt@1.1.15': {}
 

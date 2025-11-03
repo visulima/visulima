@@ -3,8 +3,8 @@ import CallerProcessor from "@visulima/pail/processor/caller";
 import MessageFormatterProcessor from "@visulima/pail/processor/message-formatter";
 import { createPail } from "@visulima/pail/server";
 
-import type { VERBOSITY_LEVEL } from "../@types/cli";
 import { VERBOSITY_DEBUG, VERBOSITY_QUIET } from "../constants";
+import type { VERBOSITY_LEVEL } from "../types/cli";
 
 /**
  * Create a Pail logger.

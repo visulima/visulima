@@ -1,13 +1,13 @@
 import { argv as process_argv, cwd as process_cwd, env, execArgv, execPath, exit } from "node:process";
 
-import type { Cli as ICli, CliRunOptions, CommandSection as ICommandSection } from "./@types/cli";
-import type { Command as ICommand, OptionDefinition } from "./@types/command";
-import type { Plugin } from "./@types/plugin";
 import HelpCommand from "./commands/help-command";
 import { VERBOSITY_DEBUG, VERBOSITY_NORMAL, VERBOSITY_QUIET, VERBOSITY_VERBOSE } from "./constants";
 import defaultOptions from "./default-options";
 import { CerebroError, CommandNotFoundError } from "./errors";
 import PluginManager from "./plugin-manager";
+import type { Cli as ICli, CliRunOptions, CommandSection as ICommandSection, RunCommandOptions } from "./types/cli";
+import type { Command as ICommand, OptionDefinition } from "./types/command";
+import type { Plugin } from "./types/plugin";
 import mapOptionTypeLabel from "./util/arg-processing/map-option-type-label";
 import commandLineCommands from "./util/command-line-commands";
 import { executeCommand, prepareToolbox, processCommandArgs } from "./util/command-processing/command-processor";
@@ -532,6 +532,137 @@ export class Cli<T extends Console = Console> implements ICli {
             if (autoDispose) {
                 this.dispose();
             }
+        }
+    }
+
+    /**
+     * Runs a command programmatically from within another command.
+     *
+     * This method allows commands to call other commands during execution,
+     * enabling composition of commands and reusable command logic.
+     * @param commandName The name of the command to execute
+     * @param options Optional options including argv and other command options
+     * @returns A promise that resolves with the command's result
+     * @throws {CommandNotFoundError} If the specified command doesn't exist
+     * @throws {CerebroError} If command validation fails
+     * @example
+     * ```typescript
+     * cli.addCommand({
+     *   name: 'deploy',
+     *   execute: async ({ runtime, logger }) => {
+     *     logger.info('Building...');
+     *     await runtime.runCommand('build', { argv: ['--production'] });
+     *
+     *     logger.info('Testing...');
+     *     await runtime.runCommand('test', { argv: ['--coverage'] });
+     *   }
+     * });
+     * ```
+     */
+    public async runCommand(commandName: string, options: RunCommandOptions = {}): Promise<unknown> {
+        const { argv: providedArgv = [], ...extraOptions } = options;
+
+        // Validate command name
+        validateNonEmptyString(commandName, "Command name");
+
+        // Find the command
+        const command = this.#commands.get(commandName);
+
+        if (!command) {
+            const alternatives = findAlternatives(commandName, [...this.#commands.keys()]);
+
+            throw new CommandNotFoundError(commandName, alternatives);
+        }
+
+        if (typeof command.execute !== "function") {
+            throw new CerebroError(`Command "${command.name}" has no function to execute`, "INVALID_COMMAND", { commandName: command.name });
+        }
+
+        // Sanitize and parse arguments
+        const sanitizedArgv = sanitizeArguments(providedArgv);
+        const commandArguments = [...sanitizedArgv];
+
+        this.#logger.debug(`running command '${commandName}' programmatically with args: ${commandArguments.join(", ")}`);
+
+        // Process command arguments
+        const { arguments_, booleanValues, parsedArgs } = processCommandArgs(command, commandArguments, defaultOptions);
+
+        const commandArgs = { ...parsedArgs, _all: { ...parsedArgs._all, ...booleanValues } } as typeof parsedArgs;
+
+        validateRequiredOptions(arguments_, commandArgs, command);
+
+        // Prepare the execute toolbox
+        const toolbox = prepareToolbox(command, parsedArgs, booleanValues, extraOptions);
+
+        // Attach the runtime
+        toolbox.runtime = this as ICli;
+        toolbox.argv = this.#argv;
+
+        // Initialize plugins if needed (fast path: skip if no plugins registered)
+        if (!this.#pluginsInitialized && this.#pluginManager.hasPlugins()) {
+            await this.#pluginManager.init({
+                cli: this as ICli,
+                cwd: this.#cwd,
+                logger: this.#logger,
+            });
+
+            this.#pluginsInitialized = true;
+        }
+
+        // Execute plugins that need to modify the toolbox (fast path: automatically skips if no plugins)
+        await this.#pluginManager.executeLifecycle("execute", toolbox);
+
+        // Process options
+        mapNegatableOptions(toolbox, command);
+        mapImpliedOptions(toolbox, command);
+
+        validateConflictingOptions(arguments_, toolbox.options, command);
+
+        this.#logger.debug("command options parsed from options:");
+        // eslint-disable-next-line unicorn/no-null
+        this.#logger.debug(JSON.stringify(toolbox.options, null, 2));
+        this.#logger.debug("command argument parsed from argument:");
+        // eslint-disable-next-line unicorn/no-null
+        this.#logger.debug(JSON.stringify(toolbox.argument, null, 2));
+
+        try {
+            // Execute beforeCommand hooks
+            await this.#pluginManager.executeLifecycle("beforeCommand", toolbox);
+
+            // Check for special flags and route to appropriate commands
+            let result: unknown;
+
+            if (commandArgs.global?.help) {
+                const helpCommand = this.#commands.get("help");
+
+                if (!helpCommand) {
+                    throw new CerebroError("Help command not found", "COMMAND_NOT_FOUND");
+                }
+
+                result = await executeCommand(helpCommand, toolbox, commandArgs);
+            } else if (commandArgs.global?.version || commandArgs.global?.V) {
+                const versionCommand = this.#commands.get("version");
+
+                if (!versionCommand) {
+                    throw new CerebroError("Version command not found", "COMMAND_NOT_FOUND");
+                }
+
+                result = await executeCommand(versionCommand, toolbox, commandArgs);
+            } else {
+                // Execute the regular command
+                result = await executeCommand(command, toolbox, commandArgs);
+            }
+
+            // Execute afterCommand hooks
+            await this.#pluginManager.executeLifecycle("afterCommand", toolbox, result);
+
+            return result;
+        } catch (error) {
+            // Execute error handlers
+            await this.#pluginManager.executeErrorHandlers(error as Error, toolbox);
+
+            // Re-throw the error
+            throw error;
         }
     }
 }

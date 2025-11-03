@@ -1,0 +1,246 @@
+# API: Command
+
+Command interface for defining CLI commands.
+
+## Command Interface
+
+```typescript
+interface Command<O extends OptionDefinition = OptionDefinition, TContext extends Toolbox = Toolbox> {
+    name: string;
+    execute: (toolbox: TContext) => Promise<void> | void;
+    description?: string;
+    alias?: string | string[];
+    argument?: ArgumentDefinition;
+    options?: OptionDefinition[];
+    hidden?: boolean;
+    group?: string;
+    examples?: string[] | string[][];
+    usage?: Content[];
+    file?: string;
+    commandPath?: string[];
+}
+```
+
+## Properties
+
+### name
+
+**Type:** `string`  
+**Required:** Yes
+
+The command name used to invoke it:
+
+```typescript
+{
+    name: "build"; // Invoked as: cli build
+}
+```
+
+### execute
+
+**Type:** `(toolbox: TContext) => Promise<void> | void`  
+**Required:** Yes
+
+The function that executes the command:
+
+```typescript
+{
+    execute: ({ logger, options, argument }) => {
+        // Command logic
+    };
+}
+```
+
+### description
+
+**Type:** `string`  
+**Required:** No
+
+Short description shown in help:
+
+```typescript
+{
+    description: "Build the project for production";
+}
+```
+
+### alias
+
+**Type:** `string | string[]`  
+**Required:** No
+
+Alternative names for the command:
+
+```typescript
+{
+    alias: "b"; // Single alias
+    // or
+    alias: ["b", "compile"]; // Multiple aliases
+}
+```
+
+### argument
+
+**Type:** `ArgumentDefinition`  
+**Required:** No
+
+Positional argument definition:
+
+```typescript
+{
+  argument: {
+    name: "file",
+    type: String,
+    description: "File to process",
+    defaultValue: "default.txt"
+  }
+}
+```
+
+### options
+
+**Type:** `OptionDefinition[]`  
+**Required:** No
+
+Command options:
+
+```typescript
+{
+    options: [
+        {
+            name: "production",
+            type: Boolean,
+            description: "Build for production",
+        },
+    ];
+}
+```
+
+### hidden
+
+**Type:** `boolean`  
+**Required:** No  
+**Default:** `false`
+
+Hide command from help output:
+
+```typescript
+{
+    hidden: true;
+}
+```
+
+### group
+
+**Type:** `string`  
+**Required:** No
+
+Group commands in help output:
+
+```typescript
+{
+    group: "Build";
+}
+```
+
+### examples
+
+**Type:** `string[] | string[][]`  
+**Required:** No
+
+Usage examples:
+
+```typescript
+{
+    examples: ["build --production", "build --production --output dist"];
+}
+```
+
+### usage
+
+**Type:** `Content[]`  
+**Required:** No
+
+Custom usage documentation (advanced).
+
+### file
+
+**Type:** `string`  
+**Required:** No
+
+Path to command file (for metadata).
+
+### commandPath
+
+**Type:** `string[]`  
+**Required:** No
+
+Command path for nested commands (advanced).
+
+## ArgumentDefinition
+
+```typescript
+interface ArgumentDefinition<T = any> {
+    name: string;
+    type?: TypeConstructor<T>;
+    description?: string;
+    defaultValue?: T;
+    typeLabel?: string;
+}
+```
+
+## OptionDefinition
+
+```typescript
+interface OptionDefinition<T> {
+    name: string;
+    alias?: string | string[];
+    type?: TypeConstructor<T>;
+    description?: string;
+    defaultValue?: T;
+    required?: boolean;
+    multiple?: boolean;
+    lazyMultiple?: boolean;
+    conflicts?: string | string[];
+    implies?: Record<string, any>;
+    hidden?: boolean;
+    typeLabel?: string;
+    group?: string;
+}
+```
+
+## Complete Example
+
+```typescript
+cli.addCommand({
+    name: "deploy",
+    alias: "d",
+    description: "Deploy the application",
+    group: "Deployment",
+    examples: ["deploy --env production", "deploy --env staging --dry-run"],
+    argument: {
+        name: "target",
+        type: String,
+        description: "Deployment target",
+        defaultValue: "production",
+    },
+    options: [
+        {
+            name: "env",
+            alias: "e",
+            type: String,
+            required: true,
+            description: "Environment name",
+        },
+        {
+            name: "dry-run",
+            type: Boolean,
+            description: "Perform a dry run",
+        },
+    ],
+    execute: async ({ argument, options, logger }) => {
+        const target = argument[0];
+        logger.info(`Deploying to ${target} (${options.env})`);
+    },
+});
+```

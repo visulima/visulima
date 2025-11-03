@@ -1,67 +1,125 @@
 import { Tab, Tabs, Steps } from "@visulima/nextra-theme-docs/components";
 import { PartyPopper } from "lucide-react";
 
-Visulima Nextra Docs Theme is a theme that includes almost everything you need to build a modern documentation website. It includes a top navigation bar, a search bar, a pages sidebar, a TOC sidebar, and other [built-in components](/docs/nextra-theme-docs/writing-content/components).
+# Quick Start
 
-This website itself is built with the Visulima Nextra Docs Theme.
-
-## Start as New Project
+Get started with Cerebro and build your first CLI in under 2 minutes.
 
 <Steps>
-### Install
+### Install Cerebro
 
-Run the following command to install the dependency:
+Install the package using your preferred package manager:
 
 <Tabs>
-    <Tab title="pnpm">```pnpm i @visulima/cerebro ```</Tab>
-    <Tab title="npm">```npm i @visulima/cerebro ```</Tab>
-    <Tab title="yarn">```yarn add @visulima/cerebro ```</Tab>
+    <Tab title="pnpm">```bash pnpm add @visulima/cerebro ```</Tab>
+    <Tab title="npm">```bash npm install @visulima/cerebro ```</Tab>
+    <Tab title="yarn">```bash yarn add @visulima/cerebro ```</Tab>
 </Tabs>
 
-### Create a new bin file
+### Create Your CLI File
 
-For this example we will use `bin/cerebro`.
+Create a new file `cli.js` (or `cli.ts` for TypeScript):
 
-```js filename="bin/cerebro"
-import Cli from "@visulima/cerebro";
+```typescript filename="cli.js"
+import { Cerebro } from "@visulima/cerebro";
 
-(async () => {
-    try {
-        // Create a CLI runtime
-        const cli = new Cli("cerebro");
+const cli = new Cerebro("my-app", {
+    packageName: "my-app",
+    packageVersion: "1.0.0",
+});
 
-        // Your command
-        cli.addCommand({
-            description: "Say hello",
-            execute: ({ logger }) => {
-                logger.log("Hello, world!");
-            },
-            name: "hello",
-        });
+cli.addCommand({
+    name: "hello",
+    description: "Say hello to someone",
+    argument: {
+        name: "name",
+        type: String,
+        description: "Name to greet",
+        defaultValue: "World",
+    },
+    options: [
+        {
+            name: "greeting",
+            alias: "g",
+            type: String,
+            description: "Custom greeting",
+            defaultValue: "Hello",
+        },
+    ],
+    execute: ({ argument, options, logger }) => {
+        const name = argument?.[0] || "World";
+        logger.info(`${options.greeting}, ${name}!`);
+    },
+});
 
-        await cli.run();
-    } catch (error) {
-        // Abort via CTRL-C
-        if (error) {
-            // Throw error
-            throw error;
-        } else {
-            console.log("Goodbye ✌️");
-        }
-    }
-})();
+await cli.run();
 ```
 
-### Ready to Go!
+### Make It Executable
 
-With the above created bin file, you can run the following command to say hello:
+Add the shebang and make it executable:
 
 ```bash
-$ ./bin/cerebro hello // -> Hello, world!
+chmod +x cli.js
 ```
 
-Now you ready to create your own CLI tool with cerebro.
+Or if using TypeScript with tsx:
+
+```bash
+chmod +x cli.ts
+```
+
+### Run Your CLI
+
+Now you can run your CLI:
+
+```bash
+# Default greeting
+node cli.js hello
+# Output: Hello, World!
+
+# With a name
+node cli.js hello Alice
+# Output: Hello, Alice!
+
+# With custom greeting
+node cli.js hello Alice --greeting "Hi"
+# Output: Hi, Alice!
+
+# Using alias
+node cli.js hello Alice -g "Hey"
+# Output: Hey, Alice!
+```
+
+### TypeScript Support
+
+For TypeScript, use the same code but with `.ts` extension:
+
+```typescript filename="cli.ts"
+import { Cerebro } from "@visulima/cerebro";
+
+// ... same code ...
+```
+
+Run with `tsx` or compile first:
+
+```bash
+# Using tsx
+tsx cli.ts hello Alice
+
+# Or compile and run
+tsc cli.ts && node cli.js hello Alice
+```
 
 <PartyPopper size={24} className="mt-0.5" />
 
+**Congratulations!** You've created your first CLI with Cerebro. Now explore the [Commands Guide](/docs/cerebro/guides/commands) to learn more about advanced features.
+
 </Steps>
+
+## What's Next?
+
+- [Commands Guide](/docs/cerebro/guides/commands) - Learn about command configuration
+- [Options & Arguments](/docs/cerebro/guides/options) - Handle CLI options and arguments
+- [Plugins](/docs/cerebro/guides/plugins) - Extend functionality with plugins
+- [API Reference](/docs/cerebro/api/cli) - Complete API documentation

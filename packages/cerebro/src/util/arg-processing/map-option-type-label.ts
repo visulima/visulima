@@ -1,4 +1,4 @@
-import type { OptionDefinition, PossibleOptionDefinition } from "../../@types/command";
+import type { OptionDefinition, PossibleOptionDefinition } from "../../types/command";
 import isBoolean from "./option-is-boolean";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

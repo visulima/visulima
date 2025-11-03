@@ -1,6 +1,6 @@
 import type { CommandLineOptions } from "@visulima/command-line-args";
 
-import type { OptionDefinition, PossibleOptionDefinition } from "../../@types/command";
+import type { OptionDefinition, PossibleOptionDefinition } from "../../types/command";
 
 /**
  * Lists missing required arguments from parsed command line options

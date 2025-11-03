@@ -1,7 +1,7 @@
 import camelCase from "@visulima/string/case/camel-case";
 
-import type { OptionDefinition } from "../../@types/command";
-import type { Toolbox as IToolbox } from "../../@types/toolbox";
+import type { OptionDefinition } from "../../types/command";
+import type { Toolbox as IToolbox } from "../../types/toolbox";
 
 /**
  * Adds camelCase names to options

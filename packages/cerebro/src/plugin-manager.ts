@@ -1,6 +1,6 @@
-import type { Plugin, PluginContext } from "./@types/plugin";
-import type { Toolbox } from "./@types/toolbox";
 import { PluginError } from "./errors";
+import type { Plugin, PluginContext } from "./types/plugin";
+import type { Toolbox } from "./types/toolbox";
 
 type Logger = Console;
 

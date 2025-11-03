@@ -1,7 +1,7 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { isCI } from "ci-info";
 
-import type { Plugin } from "../../@types/plugin";
+import type { Plugin } from "../../types/plugin";
 import type { UpdateNotifierOptions } from "./has-new-version";
 
 export type UpdateNotifierPluginOptions = Partial<Omit<UpdateNotifierOptions, "debug | pkg">>;

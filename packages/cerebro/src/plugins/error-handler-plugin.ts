@@ -1,5 +1,5 @@
-import type { Plugin } from "../@types/plugin";
-import type { Toolbox } from "../@types/toolbox";
+import type { Plugin } from "../types/plugin";
+import type { Toolbox } from "../types/toolbox";
 
 /**
  * Format additional error properties for logging.

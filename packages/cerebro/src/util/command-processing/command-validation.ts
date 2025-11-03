@@ -1,8 +1,8 @@
 import type { CommandLineOptions } from "@visulima/command-line-args";
 
-import type { Command as ICommand, OptionDefinition, PossibleOptionDefinition } from "../../@types/command";
-import type { Toolbox as IToolbox } from "../../@types/toolbox";
 import { CommandValidationError, ConflictingOptionsError } from "../../errors";
+import type { Command as ICommand, OptionDefinition, PossibleOptionDefinition } from "../../types/command";
+import type { Toolbox as IToolbox } from "../../types/toolbox";
 import listMissingArguments from "../data-processing/list-missing-arguments";
 import findAlternatives from "../general/find-alternatives";
 
@@ -59,8 +59,9 @@ export const validateRequiredOptions = <OD extends OptionDefinition<unknown>>(
         );
     }
 
-    // eslint-disable-next-line no-underscore-dangle
-    if (commandArguments._unknown && commandArguments._unknown.length > 0) {
+    // Only validate unknown options if command doesn't accept positional arguments
+    // Positional arguments will be in _unknown initially but are valid if command.argument is defined
+    if (commandArguments._unknown && commandArguments._unknown.length > 0 && !command.argument) {
         validateUnknownOptions(commandArguments, command);
     }
 };

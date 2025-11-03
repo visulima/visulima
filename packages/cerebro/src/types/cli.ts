@@ -16,6 +16,21 @@ export type CliRunOptions = {
     shouldExitProcess?: boolean;
 };
 
+export type RunCommandOptions = {
+    /**
+     * Additional options to merge into the command's options
+     * @default {}
+     */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    [key: string]: any;
+
+    /**
+     * Command line arguments to pass to the command
+     * @default []
+     */
+    argv?: string[];
+};
+
 export interface Cli {
     /**
      * Add an arbitrary command to the CLI.
@@ -57,6 +72,30 @@ export interface Cli {
     getPluginManager: () => PluginManager;
 
     run: (extraOptions: CliRunOptions) => Promise<void>;
+
+    /**
+     * Runs a command programmatically from within another command.
+     * This allows commands to call other commands during execution.
+     * @param commandName The name of the command to execute
+     * @param options Optional options including argv and other command options
+     * @returns A promise that resolves with the command's result
+     * @throws {CommandNotFoundError} If the specified command doesn't exist
+     * @throws {CommandValidationError} If command arguments are invalid
+     * @example
+     * ```typescript
+     * cli.addCommand({
+     *   name: 'deploy',
+     *   execute: async ({ runtime, logger }) => {
+     *     logger.info('Building...');
+     *     await runtime.runCommand('build', { argv: ['--production'] });
+     *
+     *     logger.info('Testing...');
+     *     await runtime.runCommand('test', { argv: ['--coverage'] });
+     *   }
+     * });
+     * ```
+     */
+    runCommand: (commandName: string, options?: RunCommandOptions) => Promise<unknown>;
 
     setCommandSection: (commandSection: CommandSection) => this;
 

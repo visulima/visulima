@@ -1,4 +1,4 @@
-import type { Command as ICommand } from "../@types/command";
+import type { Command as ICommand } from "../types/command";
 
 export default {
     alias: ["v", "V"],

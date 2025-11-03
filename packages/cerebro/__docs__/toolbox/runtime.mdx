@@ -1,0 +1,201 @@
+# Toolbox: Runtime
+
+The `runtime` property provides access to the CLI instance, allowing you to call other commands programmatically.
+
+## Accessing Runtime
+
+```typescript
+execute: ({ runtime }) => {
+    // runtime is the CLI instance
+    const cliName = runtime.getCliName();
+    const commands = runtime.getCommands();
+};
+```
+
+## Calling Other Commands
+
+Use `runtime.runCommand()` to execute other commands:
+
+```typescript
+cli.addCommand({
+    name: "deploy",
+    execute: async ({ runtime, logger }) => {
+        logger.info("Building...");
+        await runtime.runCommand("build", {
+            argv: ["--production"],
+        });
+
+        logger.info("Deploying...");
+    },
+});
+```
+
+### Passing Arguments
+
+```typescript
+await runtime.runCommand("copy", {
+    argv: ["file1.txt", "file2.txt"],
+});
+```
+
+### Passing Options
+
+```typescript
+await runtime.runCommand("build", {
+    argv: ["--production", "--output", "dist"],
+});
+```
+
+### Merging Options
+
+```typescript
+await runtime.runCommand("build", {
+    argv: ["--production"],
+    customOption: "value",
+});
+```
+
+### Getting Return Values
+
+```typescript
+const result = await runtime.runCommand("calculate");
+console.log(result); // Command return value
+```
+
+## Runtime Methods
+
+### getCliName()
+
+Get the CLI application name:
+
+```typescript
+const name = runtime.getCliName(); // "my-app"
+```
+
+### getCommands()
+
+Get all registered commands:
+
+```typescript
+const commands = runtime.getCommands(); // Map<string, Command>
+commands.forEach((command, name) => {
+    console.log(`Command: ${name}`);
+});
+```
+
+### getCwd()
+
+Get the current working directory:
+
+```typescript
+const cwd = runtime.getCwd(); // "/path/to/project"
+```
+
+### getPackageName()
+
+Get the package name if configured:
+
+```typescript
+const packageName = runtime.getPackageName(); // "my-app" | undefined
+```
+
+### getPackageVersion()
+
+Get the package version if configured:
+
+```typescript
+const version = runtime.getPackageVersion(); // "1.0.0" | undefined
+```
+
+### getPluginManager()
+
+Get the plugin manager instance:
+
+```typescript
+const pluginManager = runtime.getPluginManager();
+// Advanced plugin management
+```
+
+## Command Composition Examples
+
+### Build Pipeline
+
+```typescript
+cli.addCommand({
+    name: "ci",
+    execute: async ({ runtime, logger }) => {
+        logger.info("Running CI pipeline...");
+
+        await runtime.runCommand("lint");
+        await runtime.runCommand("test", { argv: ["--coverage"] });
+        await runtime.runCommand("build", { argv: ["--production"] });
+
+        logger.info("CI pipeline complete!");
+    },
+});
+```
+
+### Conditional Execution
+
+```typescript
+cli.addCommand({
+    name: "release",
+    options: [{ name: "skip-tests", type: Boolean }],
+    execute: async ({ runtime, options, logger }) => {
+        if (!options.skipTests) {
+            logger.info("Running tests...");
+            await runtime.runCommand("test");
+        }
+
+        logger.info("Building release...");
+        await runtime.runCommand("build", { argv: ["--production"] });
+    },
+});
+```
+
+### Nested Command Calls
+
+```typescript
+cli.addCommand({
+    name: "deploy",
+    execute: async ({ runtime }) => {
+        await runtime.runCommand("build");
+    },
+});
+
+cli.addCommand({
+    name: "build",
+    execute: async ({ runtime }) => {
+        await runtime.runCommand("compile");
+        await runtime.runCommand("bundle");
+    },
+});
+```
+
+## Error Handling
+
+Errors from called commands propagate:
+
+```typescript
+cli.addCommand({
+    name: "deploy",
+    execute: async ({ runtime, logger }) => {
+        try {
+            await runtime.runCommand("build");
+        } catch (error) {
+            logger.error("Build failed:", error);
+            throw error; // Re-throw to stop deployment
+        }
+
+        await runtime.runCommand("deploy-step");
+    },
+});
+```
+
+## Best Practices
+
+1. **Use for composition** - Break complex operations into smaller commands
+2. **Handle errors** - Wrap `runCommand` calls in try-catch when needed
+3. **Pass options explicitly** - Use `argv` array for clarity
+4. **Avoid circular calls** - Don't create command call loops
+5. **Document dependencies** - Make it clear which commands depend on others

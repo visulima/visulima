@@ -1,4 +1,4 @@
-import type { Toolbox as IToolbox } from "./@types/toolbox";
+import type { Toolbox as IToolbox } from "./types/toolbox";
 
 class EmptyToolbox implements Partial<IToolbox> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

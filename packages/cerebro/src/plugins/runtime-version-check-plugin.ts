@@ -1,4 +1,4 @@
-import type { Plugin } from "../@types/plugin";
+import type { Plugin } from "../types/plugin";
 
 /**
  * Detect the current JavaScript runtime and its version.

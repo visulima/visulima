@@ -1,0 +1,121 @@
+# Toolbox: Parameters
+
+The toolbox provides access to command parameters including arguments, options, and the original argv.
+
+## Arguments
+
+Positional arguments passed to the command:
+
+```typescript
+cli.addCommand({
+    name: "copy",
+    argument: {
+        name: "files",
+        type: String,
+    },
+    execute: ({ argument }) => {
+        // argument is an array of strings
+        argument.forEach((file) => {
+            console.log(`Copying ${file}...`);
+        });
+    },
+});
+```
+
+Usage: `cli copy file1.txt file2.txt`
+
+- `argument[0]` - First argument
+- `argument[1]` - Second argument
+- `argument` - Array of all arguments
+
+## Options
+
+Parsed command-line options:
+
+```typescript
+cli.addCommand({
+    name: "build",
+    options: [
+        { name: "production", type: Boolean },
+        { name: "output", type: String },
+    ],
+    execute: ({ options }) => {
+        const isProduction = options.production; // boolean
+        const outputDir = options.output; // string | undefined
+    },
+});
+```
+
+Options are:
+
+- Type-safe based on option definitions
+- Camel-cased automatically (`--output-dir` → `options.outputDir`)
+- Include default values if set
+- Validated before execution
+
+## Argv
+
+Original command-line arguments:
+
+```typescript
+execute: ({ argv }) => {
+    // Raw argv as parsed by command-line-args
+    console.log(argv);
+};
+```
+
+Use `argv` when you need:
+
+- Raw argument values
+- Unknown options handling
+- Low-level argument access
+
+## Accessing Parameters
+
+```typescript
+cli.addCommand({
+    name: "deploy",
+    argument: {
+        name: "target",
+        type: String,
+    },
+    options: [
+        { name: "env", type: String, required: true },
+        { name: "force", type: Boolean },
+    ],
+    execute: ({ argument, options, argv }) => {
+        const target = argument[0]; // Positional argument
+        const env = options.env; // Option value
+        const force = options.force || false; // Option with default
+
+        // Access raw argv if needed
+        console.log("Raw argv:", argv);
+    },
+});
+```
+
+## Type Safety
+
+With TypeScript, you get full type safety:
+
+```typescript
+interface DeployOptions {
+    env: string;
+    force: boolean;
+    dryRun?: boolean;
+}
+
+cli.addCommand({
+    name: "deploy",
+    options: [
+        { name: "env", type: String, required: true },
+        { name: "force", type: Boolean },
+        { name: "dry-run", type: Boolean },
+    ],
+    execute: ({ options }: { options: DeployOptions }) => {
+        // TypeScript knows the structure
+        const env: string = options.env; // ✅
+        const force: boolean = options.force; // ✅
+    },
+});
+```

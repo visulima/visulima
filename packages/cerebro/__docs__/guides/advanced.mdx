@@ -1,0 +1,358 @@
+# Advanced Features
+
+Learn about advanced Cerebro features for building complex CLIs.
+
+## Command Composition
+
+Call commands from within other commands using `runtime.runCommand()`:
+
+```typescript
+cli.addCommand({
+    name: "deploy",
+    execute: async ({ runtime, logger }) => {
+        logger.info("Building...");
+        await runtime.runCommand("build", {
+            argv: ["--production"],
+        });
+
+        logger.info("Testing...");
+        await runtime.runCommand("test", {
+            argv: ["--coverage"],
+        });
+
+        logger.info("Deploying...");
+    },
+});
+```
+
+### Passing Arguments
+
+Pass arguments to called commands:
+
+```typescript
+await runtime.runCommand("copy", {
+    argv: ["file1.txt", "file2.txt"],
+});
+```
+
+### Passing Options
+
+Pass options to called commands:
+
+```typescript
+await runtime.runCommand("build", {
+    argv: ["--production", "--output", "dist"],
+});
+```
+
+### Merging Options
+
+Merge additional options:
+
+```typescript
+await runtime.runCommand("build", {
+    argv: ["--production"],
+    customOption: "value",
+});
+```
+
+### Getting Return Values
+
+Commands can return values:
+
+```typescript
+cli.addCommand({
+    name: "calculate",
+    execute: () => {
+        return 42;
+    },
+});
+
+cli.addCommand({
+    name: "use-calculation",
+    execute: async ({ runtime }) => {
+        const result = await runtime.runCommand("calculate");
+        console.log(`Result: ${result}`); // 42
+    },
+});
+```
+
+## Custom CLI Configuration
+
+Configure your CLI instance:
+
+```typescript
+const cli = new Cerebro("my-app", {
+    packageName: "my-app",
+    packageVersion: "1.0.0",
+    cwd: "/custom/path",
+    logger: customLogger,
+    argv: process.argv.slice(2), // Custom argv
+});
+```
+
+### Custom Logger
+
+Provide a custom logger:
+
+```typescript
+const customLogger = {
+    info: (...args) => console.log("[INFO]", ...args),
+    error: (...args) => console.error("[ERROR]", ...args),
+    warn: (...args) => console.warn("[WARN]", ...args),
+    debug: (...args) => console.debug("[DEBUG]", ...args),
+};
+
+const cli = new Cerebro("my-app", {
+    logger: customLogger,
+});
+```
+
+## Command Sections
+
+Customize help output:
+
+```typescript
+cli.setCommandSection({
+    header: "My Awesome CLI v1.0.0",
+    footer: "For more info, visit https://example.com",
+});
+```
+
+## Default Command
+
+Set a default command when none is provided:
+
+```typescript
+cli.setDefaultCommand("help"); // Shows help by default
+cli.setDefaultCommand("start"); // Runs start command by default
+```
+
+## Running Without Exiting
+
+For testing or programmatic use:
+
+```typescript
+await cli.run({
+    shouldExitProcess: false, // Don't exit process
+    autoDispose: false, // Don't cleanup automatically
+});
+```
+
+## Error Handling
+
+### Custom Error Handling
+
+Use plugins for custom error handling:
+
+```typescript
+cli.addPlugin({
+    name: "error-handler",
+    onError: async (error, toolbox) => {
+        // Custom error formatting
+        console.error(`❌ Error in ${toolbox.commandName}:`);
+        console.error(error.message);
+
+        // Log to file
+        await logErrorToFile(error, toolbox);
+
+        // Send to monitoring
+        await sendToMonitoring(error);
+    },
+});
+```
+
+### Error Types
+
+Cerebro provides specific error types:
+
+```typescript
+import { CommandNotFoundError, CommandValidationError } from "@visulima/cerebro";
+
+// Handle specific errors
+try {
+    await cli.run();
+} catch (error) {
+    if (error instanceof CommandNotFoundError) {
+        console.error(`Command not found: ${error.command}`);
+        console.error(`Did you mean: ${error.alternatives.join(", ")}?`);
+    } else if (error instanceof CommandValidationError) {
+        console.error(`Validation error: ${error.message}`);
+    }
+}
+```
+
+## Shell Completions
+
+Enable shell autocompletions with `@bomb.sh/tab`:
+
+```bash
+pnpm add @bomb.sh/tab
+```
+
+```typescript
+import { completionCommand } from "@visulima/cerebro/commands/completion";
+
+cli.addCommand(completionCommand);
+```
+
+Then generate completions:
+
+```bash
+cli completion --shell=zsh > ~/.zshrc
+cli completion --shell=bash > ~/.bashrc
+cli completion --shell=fish > ~/.config/fish/completions/cli.fish
+cli completion --shell=powershell > cli.ps1
+```
+
+## Verbosity Levels
+
+Control output verbosity:
+
+```typescript
+// In your CLI options
+{
+  name: "verbose",
+  type: Boolean,
+  description: "Verbose output"
+}
+
+// Or use environment variable
+process.env.CEREBRO_OUTPUT_LEVEL = "64"; // VERBOSITY_VERBOSE
+```
+
+Available levels:
+
+- `VERBOSITY_QUIET` (16) - Minimal output
+- `VERBOSITY_NORMAL` (32) - Normal output
+- `VERBOSITY_VERBOSE` (64) - Verbose output
+- `VERBOSITY_DEBUG` (128) - Debug output
+
+## Command Groups
+
+Organize commands:
+
+```typescript
+cli.addCommand({
+    name: "build",
+    group: "Development",
+    execute: () => {},
+});
+
+cli.addCommand({
+    name: "test",
+    group: "Development",
+    execute: () => {},
+});
+
+cli.addCommand({
+    name: "deploy",
+    group: "Production",
+    execute: () => {},
+});
+```
+
+Help output will group commands accordingly.
+
+## Multiple Commands
+
+Register multiple commands efficiently:
+
+```typescript
+const commands = [
+    {
+        name: "build",
+        execute: () => {},
+    },
+    {
+        name: "test",
+        execute: () => {},
+    },
+    {
+        name: "deploy",
+        execute: () => {},
+    },
+];
+
+commands.forEach((cmd) => cli.addCommand(cmd));
+```
+
+## TypeScript Best Practices
+
+### Extending Toolbox Type
+
+```typescript
+declare global {
+    namespace Cerebro {
+        interface ExtensionOverrides {
+            myFeature: () => void;
+            api: {
+                get: (url: string) => Promise<unknown>;
+            };
+        }
+    }
+}
+```
+
+### Typed Commands
+
+```typescript
+interface BuildOptions {
+    production: boolean;
+    output: string;
+}
+
+cli.addCommand({
+    name: "build",
+    options: [
+        { name: "production", type: Boolean },
+        { name: "output", type: String },
+    ],
+    execute: ({ options }: { options: BuildOptions }) => {
+        // TypeScript knows the options structure
+    },
+});
+```
+
+## Performance Tips
+
+1. **Lazy load plugins** - Only load plugins when needed
+2. **Use command groups** - Organize commands for faster lookups
+3. **Cache expensive operations** - Cache results in plugin `init`
+4. **Minimize toolbox extensions** - Only add what's needed
+
+## Testing
+
+Test your CLI commands:
+
+```typescript
+import { describe, it, expect } from "vitest";
+import { Cerebro } from "@visulima/cerebro";
+
+describe("CLI", () => {
+    it("should execute command", async () => {
+        const cli = new Cerebro("test-cli", {
+            argv: ["hello", "World"],
+        });
+
+        const execute = vi.fn();
+        cli.addCommand({
+            name: "hello",
+            execute,
+        });
+
+        await cli.run({ shouldExitProcess: false });
+
+        expect(execute).toHaveBeenCalled();
+    });
+});
+```
+
+## Best Practices
+
+1. **Use command composition** - Break complex operations into smaller commands
+2. **Handle errors gracefully** - Use error hooks and provide helpful messages
+3. **Document commands** - Always include descriptions and examples
+4. **Type everything** - Use TypeScript for better DX
+5. **Test your CLI** - Write tests for your commands
+6. **Follow CLI conventions** - Use standard option names and patterns

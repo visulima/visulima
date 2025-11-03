@@ -1,6 +1,6 @@
-import type { VERBOSITY_LEVEL } from "./@types/cli";
 import type { CliOptions } from "./cli";
 import { Cli as Cerebro } from "./cli";
+import type { VERBOSITY_LEVEL } from "./types/cli";
 
 declare global {
     // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -49,15 +49,15 @@ declare namespace NodeJS {
  * ```
  */
 
-// Type exports
-export type { Cli, CliRunOptions, OutputType, VERBOSITY_LEVEL } from "./@types/cli";
-export type { ArgumentDefinition, Command, OptionDefinition } from "./@types/command";
-export type { Plugin, PluginContext } from "./@types/plugin";
-export type { Toolbox } from "./@types/toolbox";
 export type { CliOptions } from "./cli";
 // Main class export
 export { Cli as Cerebro } from "./cli";
 export { VERBOSITY_DEBUG, VERBOSITY_NORMAL, VERBOSITY_QUIET, VERBOSITY_VERBOSE } from "./constants";
+// Type exports
+export type { Cli, CliRunOptions, OutputType, RunCommandOptions, VERBOSITY_LEVEL } from "./types/cli";
+export type { ArgumentDefinition, Command, OptionDefinition } from "./types/command";
+export type { Plugin, PluginContext } from "./types/plugin";
+export type { Toolbox } from "./types/toolbox";
 
 /**
  * Creates a new Cerebro CLI instance.
