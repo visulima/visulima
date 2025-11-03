@@ -1,4 +1,5 @@
 import type { CommandLineOptions } from "@visulima/command-line-args";
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { commandLineArgs } from "@visulima/command-line-args";
 
 import { POSITIONALS_KEY } from "../../constants";

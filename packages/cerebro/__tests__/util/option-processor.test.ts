@@ -6,6 +6,8 @@ import { addNegatableOptions, mapImpliedOptions, mapNegatableOptions, processOpt
 describe("option-processor", () => {
     describe(processOptionNames, () => {
         it("should add camelCase names to options", () => {
+            expect.assertions(2);
+
             const command = {
                 options: [
                     { name: "test-option", type: String } as OptionDefinition<string>,
@@ -22,6 +24,8 @@ describe("option-processor", () => {
 
     describe(addNegatableOptions, () => {
         it("should add negated options for boolean flags starting with no-", () => {
+            expect.assertions(3);
+
             const command = {
                 name: "test",
                 options: [{ name: "no-verbose", type: Boolean } as OptionDefinition<boolean>],
@@ -35,6 +39,8 @@ describe("option-processor", () => {
         });
 
         it("should not add negated options for non-boolean types", () => {
+            expect.assertions(1);
+
             const command = {
                 name: "test",
                 options: [{ name: "no-input", type: String } as OptionDefinition<string>],
@@ -44,6 +50,8 @@ describe("option-processor", () => {
         });
 
         it("should not duplicate existing options", () => {
+            expect.assertions(1);
+
             const command = {
                 name: "test",
                 options: [{ name: "no-verbose", type: Boolean } as OptionDefinition<boolean>, { name: "verbose", type: Boolean } as OptionDefinition<boolean>],
@@ -57,6 +65,8 @@ describe("option-processor", () => {
 
     describe(mapNegatableOptions, () => {
         it("should map no-* options to their negated counterparts", () => {
+            expect.assertions(2);
+
             const toolbox = {
                 options: {
                     "no-verbose": false,
@@ -77,6 +87,8 @@ describe("option-processor", () => {
 
     describe(mapImpliedOptions, () => {
         it("should apply implied options when option is present", () => {
+            expect.assertions(2);
+
             const toolbox = {
                 options: {
                     production: true,
@@ -101,6 +113,8 @@ describe("option-processor", () => {
         });
 
         it("should not override explicitly set options", () => {
+            expect.assertions(2);
+
             const toolbox = {
                 options: {
                     production: true,

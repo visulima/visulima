@@ -26,6 +26,7 @@ export default createConfig(
             "no-secrets/no-secrets": "off",
             "sonarjs/no-nested-functions": "off",
             "unicorn/no-null": "off",
+            "vitest/require-mock-type-parameters": "off",
         },
     },
 );
