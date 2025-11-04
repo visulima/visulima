@@ -9,7 +9,7 @@ import type { Toolbox as IToolbox } from "../../types/toolbox";
 import getBooleanValues from "../arg-processing/get-boolean-values";
 import removeBooleanValues from "../arg-processing/remove-boolean-values";
 import mergeArguments from "../data-processing/merge-arguments";
-import processEnvVariables from "../process-env-processor";
+import processEnvVariables from "../process-env-variables";
 
 /**
  * Builds option lookup maps for O(1) access instead of O(n) find() operations.
@@ -101,7 +101,7 @@ export const processCommandArgs = <OD extends OptionDefinition<unknown>>(
     const commandOptions = command.options ?? [];
     const hasCommandOptions = commandOptions.length > 0;
 
-    // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     let arguments_ = hasCommandOptions ? mergeArguments([...commandOptions, ...defaultOptions]) : mergeArguments(defaultOptions);
 
     if (arguments_.length > 0) {

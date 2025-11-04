@@ -13,9 +13,7 @@ import findAlternatives from "../general/find-alternatives";
 const validateUnknownOptions = <OD extends OptionDefinition<unknown>>(commandArguments: CommandLineOptions, command: ICommand<OD>): void => {
     const errors: string[] = [];
 
-    // eslint-disable-next-line no-underscore-dangle
     if (commandArguments._unknown) {
-        // eslint-disable-next-line no-underscore-dangle
         commandArguments._unknown.forEach((unknownOption) => {
             const isOption = unknownOption.startsWith("--");
 

@@ -246,7 +246,7 @@ const generateMultiCommands = async (commands: ICommand[], outputDirectory: stri
 /**
  * Normalizes line endings to LF.
  */
-const normalizeLineEndings = (text: string): string => text.replaceAll(/\r\n/g, "\n").replaceAll(/\r/g, "\n");
+const normalizeLineEndings = (text: string): string => text.replaceAll("\r\n", "\n").replaceAll("\r", "\n");
 
 /**
  * Generates table of contents from README content.
@@ -342,6 +342,7 @@ const readmeCommand: ICommand = {
 
         if (existsSync(readmePath)) {
             const rawReadme = await readFile(readmePath, "utf8");
+
             readme = normalizeLineEndings(rawReadme);
         } else {
             logger.warn(`README file not found at ${readmePath}, creating template`);

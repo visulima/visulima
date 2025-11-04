@@ -26,21 +26,6 @@ const runtimeMock = {
     getCommandSection: vi.fn().mockReturnValue({ footer: "Test footer", header: "Test header" }),
 };
 
-const headerSection = {
-    content: "testcli <command> [positional arguments] [options]",
-    header: " Usage ",
-};
-
-const footerSection = {
-    content: "Run \"testcli help <command>\" or \"testcli <command> --help\" for help with a specific command.",
-    raw: true,
-};
-
-const globalOptionsOptionsList = {
-    header: " Global Options ",
-    optionList: globalOptions,
-};
-
 describe("command/help", () => {
     const commandsMap = new Map<string, ICommand>([]);
 

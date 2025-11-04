@@ -11,6 +11,7 @@ describe("default-env", () => {
     });
 
     it("should have all required properties for each env definition", () => {
+        // eslint-disable-next-line vitest/prefer-expect-assertions
         expect.assertions(defaultEnv.length);
 
         for (const envDefinition of defaultEnv) {
@@ -69,12 +70,14 @@ describe("default-env", () => {
     });
 
     it("should have valid type definitions", () => {
+        // eslint-disable-next-line vitest/prefer-expect-assertions
         expect.assertions(defaultEnv.length);
 
         const validTypes = [String, Number, Boolean];
 
         for (const envDefinition of defaultEnv) {
             if (envDefinition.type) {
+                // eslint-disable-next-line vitest/no-conditional-expect
                 expect(validTypes).toContain(envDefinition.type);
             }
         }

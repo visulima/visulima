@@ -30,4 +30,16 @@ export default createConfig(
             "vitest/require-mock-type-parameters": "off",
         },
     },
+    {
+        files: ["__bench__/**/*.ts"],
+        rules: {
+            "import/no-extraneous-dependencies": "off",
+        },
+    },
+    {
+        files: ["**/*.ts"],
+        rules: {
+            "no-underscore-dangle": "off",
+        },
+    },
 );

@@ -22,7 +22,7 @@ vi.mock(import("../../../src/plugins/update-notifier/cache"), () => {
     };
 });
 
-// eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const package_ = { name: "has-new-version", version: "1.0.0" };
 
 const defaultArguments = {

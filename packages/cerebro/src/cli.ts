@@ -212,7 +212,7 @@ export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
         const { arguments_, booleanValues, parsedArgs } = processCommandArgs(command, commandArguments, defaultOptions as OptionDefinition<unknown>[]);
 
         const hasBooleanValues = Object.keys(booleanValues).length > 0;
-        // eslint-disable-next-line no-underscore-dangle
+
         const commandArgs = hasBooleanValues ? ({ ...parsedArgs, _all: { ...parsedArgs._all, ...booleanValues } } as typeof parsedArgs) : parsedArgs;
 
         validateRequiredOptions(arguments_, commandArgs, command);
@@ -448,9 +448,9 @@ export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
         processOptionNames(command as { options?: OptionDefinition<unknown>[] });
 
         if (command.options) {
-            // eslint-disable-next-line no-param-reassign, no-underscore-dangle
+            // eslint-disable-next-line no-param-reassign
             command.__conflictingOptions__ = command.options.filter((option) => option.conflicts !== undefined) as typeof command.__conflictingOptions__;
-            // eslint-disable-next-line no-param-reassign, no-underscore-dangle
+            // eslint-disable-next-line no-param-reassign
             command.__requiredOptions__ = command.options.filter((option) => option.required === true) as typeof command.__requiredOptions__;
         }
 

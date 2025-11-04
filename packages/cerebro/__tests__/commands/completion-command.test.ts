@@ -51,10 +51,12 @@ describe("completion-command", () => {
         expect(mockToolbox.logger.info).toHaveBeenCalledWith(expect.stringContaining("--runtime"));
 
         // Restore SHELL
+        // eslint-disable-next-line vitest/no-conditional-in-test
         if (originalShell) {
             process.env.SHELL = originalShell;
         }
 
+        // eslint-disable-next-line vitest/no-conditional-in-test
         if (originalStarship) {
             process.env.STARSHIP_SHELL = originalStarship;
         }

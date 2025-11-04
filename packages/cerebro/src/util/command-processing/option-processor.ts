@@ -11,7 +11,7 @@ import type { Toolbox as IToolbox } from "../../types/toolbox";
  */
 export const processOptionNames = <OD extends OptionDefinition<unknown>>(command: { options?: OD[] }): void => {
     command.options?.forEach((option) => {
-        // eslint-disable-next-line no-underscore-dangle,no-param-reassign
+        // eslint-disable-next-line no-param-reassign
         option.__camelCaseName__ = camelCase(option.name);
     });
 };
@@ -93,7 +93,6 @@ export const mapNegatableOptions = (toolbox: IToolbox, command: { options?: Opti
         const option = optionMapByName.get(nonNegatedKey);
 
         if (option) {
-            // eslint-disable-next-line no-underscore-dangle
             option.__negated__ = true;
         }
 
@@ -116,9 +115,7 @@ export const mapImpliedOptions = (toolbox: IToolbox, command: { options?: Option
     const optionMapByCamelCase = new Map<string, OptionDefinition<unknown>>();
 
     for (const option of command.options) {
-        // eslint-disable-next-line no-underscore-dangle
         if (option.__camelCaseName__ && option.__negated__ === undefined && option.implies !== undefined) {
-            // eslint-disable-next-line no-underscore-dangle
             optionMapByCamelCase.set(option.__camelCaseName__, option);
         }
     }
