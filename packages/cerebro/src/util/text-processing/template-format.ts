@@ -6,7 +6,7 @@ const formatCache = new Map<string, string>();
 const MAX_CACHE_SIZE = 500;
 
 /**
- * Optimized template formatting with intelligent caching
+ * Formats templates with intelligent caching.
  */
 const templateFormat = (string_?: string): string => {
     if (!string_) {

@@ -8,9 +8,10 @@ type ArgumentsAndLastOption<OD extends OptionDefinition<any>> = { args: string[]
 const booleanValue = new Set(["0", "1", "false", "true"]);
 
 /**
- * commandLineArgs throws an error if we pass aa value for a boolean arg as follows:
+ * Removes boolean values from arguments to prevent commandLineArgs errors.
+ * commandLineArgs throws an error if we pass a value for a boolean arg as follows:
  * myCommand -a=true --booleanArg=false --otherArg true
- * this function removes these booleans to avoid errors from commandLineArgs
+ * This function removes these booleans to avoid errors from commandLineArgs.
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const removeBooleanValues = <OD extends OptionDefinition<any>>(

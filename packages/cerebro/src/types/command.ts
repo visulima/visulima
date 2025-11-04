@@ -24,7 +24,6 @@ export type OptionDefinition<T> = MultiplePropertyOptions<T>
         /**
          * A string or array of strings indicating the conflicting option(s).
          * Note: The default value for an option does not cause a conflict.
-         * @TODO Upgrade this type to read given options keys
          */
         conflicts?: string[] | string;
 
@@ -101,13 +100,11 @@ export type PossibleEnvDefinition = EnvDefinition<boolean> | EnvDefinition<numbe
 export interface Command<O extends OptionDefinition<any> = any, TContext extends IToolbox = IToolbox> {
     /**
      * @internal
-     * Pre-computed list of options with conflicts for runtime validation
      */
     __conflictingOptions__?: PossibleOptionDefinition<O>[];
 
     /**
      * @internal
-     * Pre-computed list of required options for runtime validation
      */
     __requiredOptions__?: PossibleOptionDefinition<O>[];
 

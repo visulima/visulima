@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import type { EnvDefinition } from "../../../src/types/command";
-import processEnvVariables from "../../../src/util/process-env-processor";
+import processEnvVariables from "../../../src/util/process-env-variables";
 
 // Mock process.env
 const originalEnv = process.env;

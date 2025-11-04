@@ -271,7 +271,7 @@ describe("security", () => {
             const limiter = new RateLimiter();
 
             // Default maxAttempts is 5
-            for (let i = 0; i < 5; i++) {
+            for (let i = 0; i < 5; i += 1) {
                 expect(limiter.checkLimit("key1")).toBe(true);
             }
 

@@ -98,7 +98,7 @@ const printGeneralHelp = (logger: Console, runtime: ICli, commands: Map<string, 
     );
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any,sonarjs/cognitive-complexity
 const printCommandHelp = <OD extends OptionDefinition<any>>(logger: Console, runtime: ICli, commands: Map<string, ICommand<OD>>, name: string): void => {
     // Try to find command by name first
     let command = commands.get(name) as ICommand<OD> | undefined;

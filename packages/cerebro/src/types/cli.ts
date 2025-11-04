@@ -22,15 +22,19 @@ export type CliRunOptions = {
 
 export type RunCommandOptions = {
     /**
-     * Additional options to merge into the command's options
-     * @default {}
+     * Extra options to merge into the command's options.
+     * These will be merged with the command's default options and parsed arguments.
+     * Use this to override or add additional options programmatically.
+     * @default Empty object
      */
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [key: string]: any;
 
     /**
-     * Command line arguments to pass to the command
-     * @default []
+     * Command-line arguments to pass to the command.
+     * If not provided, uses the default argv from the CLI instance.
+     * These arguments will be parsed and merged with the command's options.
+     * @default Empty array
      */
     argv?: string[];
 };
@@ -83,8 +87,7 @@ export interface Cli {
      * @param commandName The name of the command to execute
      * @param options Optional options including argv and other command options
      * @returns A promise that resolves with the command's result
-     * @throws {CommandNotFoundError} If the specified command doesn't exist
-     * @throws {CommandValidationError} If command arguments are invalid
+     * @throws {Error} If the specified command doesn't exist or command arguments are invalid
      * @example
      * ```typescript
      * cli.addCommand({

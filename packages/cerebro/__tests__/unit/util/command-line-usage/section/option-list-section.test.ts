@@ -76,7 +76,7 @@ describe("command-line-usage/option-list-section", () => {
         expect.assertions(1);
 
         expect(() => {
-            // eslint-disable-next-line no-new
+            // eslint-disable-next-line no-new, sonarjs/constructor-for-side-effects
             new OptionListSection({
                 // @ts-expect-error - test error
                 optionList: [{ description: "something" }],

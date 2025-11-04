@@ -6,10 +6,10 @@ import type { ArgumentDefinition, OptionDefinition } from "./command";
 export interface Content {
     /**
      * Overloaded property, accepting data in one of four formats.
-     *  1. A single string (one line of text).
-     *  2. An array of strings (multiple lines of text).
-     *  3. An array of arrays (recordset-style data). In this case, the data will be rendered in table format.
-     *  4. An object with two properties - data and options. In this case, the data and options will be passed directly to the underlying table module for rendering.
+     * 1. A single string (one line of text).
+     * 2. An array of strings (multiple lines of text).
+     * 3. An array of arrays (recordset-style data). In this case, the data will be rendered in table format.
+     * 4. An object with two properties - data and options. In this case, the data and options will be passed directly to the underlying table module for rendering.
      */
     content?: string[] | string[][] | string | { data: string[][]; options: TableOptions };
     /** The section header, always bold and underlined. */

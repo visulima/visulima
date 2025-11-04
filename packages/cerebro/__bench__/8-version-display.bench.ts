@@ -91,6 +91,7 @@ describe("8. Version Display", () => {
                             name: "test-cli",
                             version: "1.0.0",
                         },
+                        // eslint-disable-next-line sonarjs/no-nested-functions
                         () => {
                             // Empty callback
                         },

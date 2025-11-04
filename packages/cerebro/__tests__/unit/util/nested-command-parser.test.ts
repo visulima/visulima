@@ -4,13 +4,13 @@ import { getCommandPathKey, getFullCommandPath, parseNestedCommand } from "../..
 
 describe("nested-command-parser", () => {
     describe(parseNestedCommand, () => {
-        it("should return null commandPath when argv is empty", () => {
+        it("should return undefined commandPath when argv is empty", () => {
             expect.assertions(2);
 
             const availableCommands = new Map<string, string[]>();
             const result = parseNestedCommand(availableCommands, []);
 
-            expect(result.commandPath).toBeNull();
+            expect(result.commandPath).toBeUndefined();
             expect(result.argv).toStrictEqual([]);
         });
 
@@ -70,13 +70,13 @@ describe("nested-command-parser", () => {
             expect(result.argv).toStrictEqual(["staging"]);
         });
 
-        it("should return null when no match is found", () => {
+        it("should return undefined when no match is found", () => {
             expect.assertions(2);
 
             const availableCommands = new Map<string, string[]>([["build", ["build"]]]);
             const result = parseNestedCommand(availableCommands, ["unknown", "command"]);
 
-            expect(result.commandPath).toBeNull();
+            expect(result.commandPath).toBeUndefined();
             expect(result.argv).toStrictEqual(["unknown", "command"]);
         });
 
@@ -96,7 +96,7 @@ describe("nested-command-parser", () => {
             const availableCommands = new Map<string, string[]>([["deploy staging", ["deploy", "staging"]]]);
             const result = parseNestedCommand(availableCommands, ["deploy"]);
 
-            expect(result.commandPath).toBeNull();
+            expect(result.commandPath).toBeUndefined();
             expect(result.argv).toStrictEqual(["deploy"]);
         });
     });

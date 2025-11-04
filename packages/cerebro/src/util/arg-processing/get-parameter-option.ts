@@ -21,10 +21,7 @@ const getParameterOption = <OD extends OptionDefinition<any>>(
 
     const nameOrAlias = regExpResult[1];
 
-    // Optimize: use Map lookup if provided, otherwise fall back to find()
-    let option: PossibleOptionDefinition<OD> | undefined;
-
-    option
+    const option: PossibleOptionDefinition<OD> | undefined
         = optionMapByName && optionMapByAlias
             ? optionMapByName.get(nameOrAlias) ?? optionMapByAlias.get(nameOrAlias)
             : options.find((o) => o.name === nameOrAlias || o.alias === nameOrAlias);

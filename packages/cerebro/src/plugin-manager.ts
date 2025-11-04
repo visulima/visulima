@@ -22,15 +22,15 @@ class PluginManager<T extends Logger = Logger> {
     }
 
     /**
-     * Check if any plugins are registered
-     * @returns true if at least one plugin is registered
+     * Checks if any plugins are registered.
+     * @returns True if at least one plugin is registered
      */
     public hasPlugins(): boolean {
         return this.plugins.size > 0;
     }
 
     /**
-     * Register a plugin
+     * Registers a plugin.
      * @param plugin The plugin to register
      * @throws {Error} If plugin name is already registered or dependencies are invalid
      */
@@ -52,9 +52,10 @@ class PluginManager<T extends Logger = Logger> {
     }
 
     /**
-     * Initialize all registered plugins.
-     * @param context
+     * Initializes all registered plugins.
+     * @param context The plugin context for initialization
      */
+    // eslint-disable-next-line sonarjs/cognitive-complexity
     public async init(context: PluginContext): Promise<void> {
         if (this.initialized) {
             throw new Error("PluginManager already initialized");
@@ -98,7 +99,7 @@ class PluginManager<T extends Logger = Logger> {
     }
 
     /**
-     * Execute a specific lifecycle hook for all plugins
+     * Executes a specific lifecycle hook for all plugins.
      * @param hook The lifecycle hook name
      * @param toolbox The command toolbox (for command-specific hooks)
      * @param result The command result (for afterCommand hook)
@@ -121,13 +122,10 @@ class PluginManager<T extends Logger = Logger> {
                 this.logger.debug(`executing ${hook} hook for plugin: ${plugin.name}`);
 
                 try {
-                    if (hook === "afterCommand") {
-                        // eslint-disable-next-line no-await-in-loop
-                        await (hookFunction as (toolbox: Toolbox, result: unknown) => Promise<void> | void)(toolbox, result);
-                    } else {
-                        // eslint-disable-next-line no-await-in-loop
-                        await (hookFunction as (toolbox: Toolbox) => Promise<void> | void)(toolbox);
-                    }
+                    // eslint-disable-next-line no-await-in-loop
+                    await (hook === "afterCommand"
+                        ? (hookFunction as (toolbox: Toolbox, result: unknown) => Promise<void> | void)(toolbox, result)
+                        : (hookFunction as (toolbox: Toolbox) => Promise<void> | void)(toolbox));
                 } catch (error) {
                     this.logger.error(`Error in ${hook} hook for plugin "${plugin.name}":`, error as Error);
 
@@ -138,7 +136,7 @@ class PluginManager<T extends Logger = Logger> {
     }
 
     /**
-     * Execute error handlers for all plugins
+     * Executes error handlers for all plugins.
      * @param error The error that occurred
      * @param toolbox The command toolbox
      */
@@ -169,7 +167,7 @@ class PluginManager<T extends Logger = Logger> {
     }
 
     /**
-     * Get all registered plugins in dependency order
+     * Gets all registered plugins in dependency order.
      * @returns Array of plugins sorted by dependencies
      */
     public getDependencyOrder(): Plugin[] {
@@ -219,7 +217,7 @@ class PluginManager<T extends Logger = Logger> {
     }
 
     /**
-     * Validate that all plugin dependencies exist
+     * Validates that all plugin dependencies exist.
      * @throws {Error} If any dependencies are missing
      */
     private validateDependencies(): void {

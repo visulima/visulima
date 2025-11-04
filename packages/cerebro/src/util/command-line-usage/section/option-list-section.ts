@@ -106,27 +106,27 @@ class OptionListSection extends BaseSection {
  * @property {object} [tableOptions] - An options object suitable for passing into [table-layout](https://github.com/75lb/table-layout#table-). See [here for an example](https://github.com/75lb/command-line-usage/blob/master/example/option-list-options.js).
  * @example
  * {
- *   header: 'Options',
- *   optionList: [
- *     {
- *       name: 'help',
- *       alias: 'h',
- *       description: 'Display this usage guide.'
- *     },
- *     {
- *       name: 'src',
- *       description: 'The input files to process',
- *       multiple: true,
- *       defaultOption: true,
- *       typeLabel: '{underline file} ...'
- *     },
- *     {
- *       name: 'timeout',
- *       description: 'Timeout value in ms.',
- *       alias: 't',
- *       typeLabel: '{underline ms}'
- *     }
- *   ]
+ * header: 'Options',
+ * optionList: [
+ * {
+ * name: 'help',
+ * alias: 'h',
+ * description: 'Display this usage guide.'
+ * },
+ * {
+ * name: 'src',
+ * description: 'The input files to process',
+ * multiple: true,
+ * defaultOption: true,
+ * typeLabel: '{underline file} ...'
+ * },
+ * {
+ * name: 'timeout',
+ * description: 'Timeout value in ms.',
+ * alias: 't',
+ * typeLabel: '{underline ms}'
+ * }
+ * ]
  * }
  */
 export default OptionListSection;

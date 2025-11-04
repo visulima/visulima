@@ -8,7 +8,7 @@ import listMissingArguments from "../data-processing/list-missing-arguments";
 import findAlternatives from "../general/find-alternatives";
 
 /**
- * Validates unknown options and provides helpful suggestions
+ * Validates unknown options and provides helpful suggestions.
  */
 const validateUnknownOptions = <OD extends OptionDefinition<unknown>>(commandArguments: CommandLineOptions, command: ICommand<OD>): void => {
     const errors: string[] = [];
@@ -42,8 +42,8 @@ const validateUnknownOptions = <OD extends OptionDefinition<unknown>>(commandArg
 };
 
 /**
- * Validates that all required options are present
- * Uses pre-computed required options metadata from command registration for performance
+ * Validates that all required options are present.
+ * Uses pre-computed required options metadata from command registration for performance.
  */
 export const validateRequiredOptions = <OD extends OptionDefinition<unknown>>(
     arguments_: PossibleOptionDefinition<OD>[],
@@ -67,8 +67,8 @@ export const validateRequiredOptions = <OD extends OptionDefinition<unknown>>(
 };
 
 /**
- * Validates for conflicting options
- * Uses pre-computed conflict metadata from command registration for performance
+ * Validates for conflicting options.
+ * Uses pre-computed conflict metadata from command registration for performance.
  */
 export const validateConflictingOptions = <OD extends OptionDefinition<unknown>>(
     arguments_: PossibleOptionDefinition<OD>[],
@@ -96,8 +96,9 @@ export const validateConflictingOptions = <OD extends OptionDefinition<unknown>>
 };
 
 /**
- * Validates for duplicate option definitions
+ * Validates for duplicate option definitions.
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity
 export const validateDuplicateOptions = <OD extends OptionDefinition<unknown>>(command: ICommand<OD>): void => {
     if (!Array.isArray(command.options)) {
         return;
