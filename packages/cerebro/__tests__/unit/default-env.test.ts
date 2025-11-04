@@ -16,6 +16,7 @@ describe("default-env", () => {
 
         for (const envDef of defaultEnv) {
             expect(envDef).toHaveProperty("name");
+
             expectTypeOf(envDef.name).toBeString();
         }
     });
@@ -85,7 +86,9 @@ describe("default-env", () => {
 
         for (const envDef of defaultEnv) {
             expect(envDef.description).toBeDefined();
+
             expectTypeOf(envDef.description).toBeString();
+
             expect(envDef.description?.length).toBeGreaterThan(0);
         }
     });

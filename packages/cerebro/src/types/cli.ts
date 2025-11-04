@@ -75,7 +75,7 @@ export interface Cli {
      */
     getPluginManager: () => PluginManager;
 
-    run: (extraOptions: CliRunOptions) => Promise<void>;
+    run: (extraOptions?: CliRunOptions) => Promise<void>;
 
     /**
      * Runs a command programmatically from within another command.

@@ -4,7 +4,7 @@ This directory contains organized examples demonstrating various features of the
 
 ## 📁 Structure
 
-```
+```text
 examples/
 ├── basic/              # Simple CLI basics
 ├── options/            # Option handling features

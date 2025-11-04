@@ -7,10 +7,10 @@
  */
 const registerExceptionHandler = <T extends Console = Console>(logger: T): () => void => {
     // we want to see real exceptions with backtraces and stuff
-    const uncaughtExceptionHandler = (error: Partial<Error> | null | undefined) => {
-        logger.error(`Uncaught exception: ${error}`);
+    const uncaughtExceptionHandler = (error: Error) => {
+        logger.error(`Uncaught exception: ${error.message || error}`);
 
-        if (error?.stack) {
+        if (error.stack) {
             logger.error(error.stack);
         }
 
@@ -18,11 +18,27 @@ const registerExceptionHandler = <T extends Console = Console>(logger: T): () =>
         process.exit(1);
     };
 
-    const unhandledRejectionHandler = (error: Partial<Error> | null | undefined) => {
-        logger.error(`Promise rejection: ${error}`);
+    const unhandledRejectionHandler = (reason: unknown, _promise: Promise<unknown>) => {
+        if (reason instanceof Error) {
+            logger.error(`Promise rejection: ${reason.message || reason}`);
 
-        if (error?.stack) {
-            logger.error(error.stack);
+            if (reason.stack) {
+                logger.error(reason.stack);
+            }
+        } else {
+            let reasonString: string;
+
+            if (typeof reason === "string") {
+                reasonString = reason;
+            } else {
+                try {
+                    reasonString = JSON.stringify(reason);
+                } catch {
+                    reasonString = String(reason);
+                }
+            }
+
+            logger.error(`Promise rejection: ${reasonString}`);
         }
 
         // eslint-disable-next-line unicorn/no-process-exit

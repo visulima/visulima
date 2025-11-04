@@ -275,9 +275,6 @@ async function setupCLI() {
 
     ```javascript
     // test.cjs
-    /**
-     *
-     */
     async function test() {
         const { createCerebro } = await import("@visulima/cerebro");
         const cli = createCerebro("test-app");

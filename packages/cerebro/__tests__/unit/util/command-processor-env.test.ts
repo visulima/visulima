@@ -1,5 +1,5 @@
 import type { CommandLineOptions } from "@visulima/command-line-args";
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterAll, beforeEach, describe, expect, it } from "vitest";
 
 import { POSITIONALS_KEY } from "../../../src/constants";
 import type { Command as ICommand } from "../../../src/types/command";
@@ -13,6 +13,11 @@ describe("util/command-processor - environment variables", () => {
     beforeEach(() => {
         // Reset process.env before each test
         process.env = { ...originalEnv };
+    });
+
+    afterAll(() => {
+        // Restore original process.env reference
+        process.env = originalEnv;
     });
 
     it("should add env property to toolbox when command has env definitions", () => {

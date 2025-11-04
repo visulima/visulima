@@ -25,9 +25,7 @@ const templateFormat = (string_?: string): string => {
         return cached;
     }
 
-    // Only escape backticks if they exist (more efficient than always replacing)
-    const escaped = string_.includes("`") ? string_.replaceAll("`", "\\`") : string_;
-    const result = colorizeTemplate(Object.assign([], { raw: [escaped] }));
+    const result = colorizeTemplate(Object.assign([], { raw: [string_] }));
 
     // Intelligent cache management
     if (formatCache.size >= MAX_CACHE_SIZE) {

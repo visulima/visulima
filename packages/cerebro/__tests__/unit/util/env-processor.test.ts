@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { EnvDefinition } from "../../../src/types/command";
 import processEnvVariables from "../../../src/util/env-processor";
@@ -10,6 +10,11 @@ describe("util/env-processor", () => {
     beforeEach(() => {
         // Reset process.env before each test
         process.env = { ...originalEnv };
+    });
+
+    afterEach(() => {
+        // Restore original process.env reference
+        process.env = originalEnv;
     });
 
     it("should return empty object when env definitions are undefined", () => {

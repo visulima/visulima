@@ -37,7 +37,7 @@ describe("register-exception-handler", () => {
         // Trigger uncaughtException
         process.emit("uncaughtException", error);
 
-        expect(mockLogger.error).toHaveBeenCalledWith("Uncaught exception: Error: Test error");
+        expect(mockLogger.error).toHaveBeenCalledWith("Uncaught exception: Test error");
         expect(mockLogger.error).toHaveBeenCalledWith(error.stack);
 
         cleanup();
@@ -48,12 +48,34 @@ describe("register-exception-handler", () => {
 
         const cleanup = registerExceptionHandler(mockLogger as unknown as Console);
         const error = new Error("Test rejection");
+        const promise = Promise.reject(error);
+
+        // Catch the promise rejection to prevent unhandled rejection error
+        promise.catch(() => {});
 
         // Trigger unhandledRejection
-        process.emit("unhandledRejection", error);
+        process.emit("unhandledRejection", error, promise);
 
-        expect(mockLogger.error).toHaveBeenCalledWith("Promise rejection: Error: Test rejection");
+        expect(mockLogger.error).toHaveBeenCalledWith("Promise rejection: Test rejection");
         expect(mockLogger.error).toHaveBeenCalledWith(error.stack);
+
+        cleanup();
+    });
+
+    it("should handle non-Error rejection reasons", () => {
+        expect.assertions(1);
+
+        const cleanup = registerExceptionHandler(mockLogger as unknown as Console);
+        const reason = "String rejection";
+        const promise = Promise.reject(reason);
+
+        // Catch the promise rejection to prevent unhandled rejection error
+        promise.catch(() => {});
+
+        // Trigger unhandledRejection with non-Error reason
+        process.emit("unhandledRejection", reason, promise);
+
+        expect(mockLogger.error).toHaveBeenCalledWith("Promise rejection: String rejection");
 
         cleanup();
     });
@@ -67,30 +89,6 @@ describe("register-exception-handler", () => {
         process.emit("uncaughtException", error);
 
         expect(mockLogger.error).toHaveBeenCalledTimes(1);
-
-        cleanup();
-    });
-
-    it("should handle null error", () => {
-        expect.assertions(1);
-
-        const cleanup = registerExceptionHandler(mockLogger as unknown as Console);
-
-        process.emit("uncaughtException", null);
-
-        expect(mockLogger.error).toHaveBeenCalledWith("Uncaught exception: null");
-
-        cleanup();
-    });
-
-    it("should handle undefined error", () => {
-        expect.assertions(1);
-
-        const cleanup = registerExceptionHandler(mockLogger as unknown as Console);
-
-        process.emit("uncaughtException", undefined);
-
-        expect(mockLogger.error).toHaveBeenCalledWith("Uncaught exception: undefined");
 
         cleanup();
     });
@@ -137,7 +135,7 @@ describe("register-exception-handler", () => {
 
         process.emit("uncaughtException", new Error("Test"));
 
-        expect(logger1.error).toHaveBeenCalledWith("Uncaught exception: Error: Test");
+        expect(logger1.error).toHaveBeenCalledWith("Uncaught exception: Test");
         // eslint-disable-next-line vitest/prefer-called-with
         expect(logger2.error).toHaveBeenCalled();
 

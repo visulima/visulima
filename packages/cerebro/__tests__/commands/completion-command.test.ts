@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { Toolbox } from "../../src/@types/toolbox";
 import completionCommand from "../../src/commands/completion-command";
+import type { Toolbox } from "../../src/types/toolbox";
 
 describe("completion-command", () => {
     let mockToolbox: Toolbox;

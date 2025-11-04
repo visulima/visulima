@@ -149,7 +149,7 @@ deploy-tool
 
 When you run `node cli.js help`, nested commands are displayed with their full path:
 
-```
+```text
 Available Commands
   build                    Build the project
   deploy staging          Deploy to staging environment

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import type { OptionDefinition } from "../../src/@types/command";
+import type { OptionDefinition } from "../../src/types/command";
 import { addNegatableOptions, mapImpliedOptions, mapNegatableOptions, processOptionNames } from "../../src/util/command-processing/option-processor";
 
 describe("option-processor", () => {

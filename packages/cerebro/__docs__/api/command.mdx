@@ -149,6 +149,7 @@ Environment variables supported by this command:
 ```
 
 Environment variables are automatically:
+
 - Converted to camelCase (`API_KEY` → `apiKey`)
 - Type-transformed (String, Number, Boolean)
 - Applied with default values if not set
@@ -161,7 +162,7 @@ execute: ({ env }) => {
     const apiKey = env.apiKey; // string | undefined
     const timeout = env.timeout; // number (5000 if not set)
     const verbose = env.verbose; // boolean (false if not set)
-}
+};
 ```
 
 **See also:** [Environment Variables Guide](/docs/cerebro/guides/options#environment-variables)
@@ -320,6 +321,7 @@ The environment variable name (e.g., `API_KEY`, `LOG_LEVEL`). Will be converted 
 **Required:** No
 
 Type constructor for transforming the environment variable value:
+
 - `String` - Keep as string
 - `Number` - Parse as integer
 - `Boolean` - Parse as boolean (accepts `true`, `1`, `yes`, `on` for true)
@@ -429,7 +431,7 @@ cli.addCommand({
         const apiKey = env.apiKey;
         const timeout = env.timeout; // 30000 if not set
         const forceDeploy = env.forceDeploy; // false if not set
-        
+
         logger.info(`Deploying to ${target} (${options.env})`);
         if (forceDeploy) {
             logger.info("Force deployment enabled");

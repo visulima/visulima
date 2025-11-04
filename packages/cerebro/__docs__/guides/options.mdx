@@ -494,10 +494,12 @@ The value is parsed as an integer. Invalid values will use the default if provid
 ```
 
 Boolean values are case-insensitive and accept:
+
 - `true`, `1`, `yes`, `on` → `true`
 - `false`, `0`, `no`, `off`, or any other value → `false`
 
 Usage:
+
 ```bash
 ENABLE_CACHE=true cli build
 ENABLE_CACHE=1 cli build
@@ -569,7 +571,7 @@ cli.addCommand({
     execute: ({ env, options }) => {
         const deployEnv = env.deployEnv; // "staging" if not set
         const forceDeploy = env.forceDeploy; // false if not set
-        
+
         // Can combine with options
         const finalEnv = options.env || env.deployEnv;
     },
@@ -613,7 +615,7 @@ cli.addCommand({
         const timeout = env.buildTimeout; // 30000 or value from BUILD_TIMEOUT
         const sourcemaps = env.enableSourcemaps; // true or value from ENABLE_SOURCEMAPS
         const output = options.output || "dist";
-        
+
         console.log(`Building for ${nodeEnv} with timeout ${timeout}ms`);
         if (sourcemaps) {
             console.log("Source maps enabled");
@@ -648,6 +650,7 @@ cli help build
 ```
 
 Output includes an "Environment Variables" section showing:
+
 - Variable name
 - Description
 - Default value (if set)

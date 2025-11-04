@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import type { OptionDefinition } from "../../../src/@types/command";
+import type { OptionDefinition } from "../../../src/types/command";
 import mergeArguments from "../../../src/util/data-processing/merge-arguments";
 
 describe("util/merge-arguments", () => {

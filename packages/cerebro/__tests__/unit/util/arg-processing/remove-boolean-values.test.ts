@@ -16,6 +16,18 @@ describe("remove-boolean-values", () => {
         expect(result).toStrictEqual(["file.txt"]);
     });
 
+    it("should remove boolean flag alias when followed by boolean value", () => {
+        expect.assertions(1);
+
+        const options: OptionDefinition[] = [{ alias: "v", name: "verbose", type: Boolean }];
+        // The function removes the flag (not the value) when value follows
+        const args = ["-v", "true", "file.txt"];
+
+        const result = removeBooleanValues(args, options);
+
+        expect(result).toStrictEqual(["file.txt"]);
+    });
+
     it("should remove boolean flag when followed by 1", () => {
         expect.assertions(1);
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import type { OptionList as IOptionList } from "../../../../../src/@types/command-line-usage";
+import type { OptionList as IOptionList } from "../../../../../src/types/command-line-usage";
 import OptionListSection from "../../../../../src/util/command-line-usage/section/option-list-section";
 
 describe("command-line-usage/option-list-section", () => {

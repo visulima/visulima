@@ -5,8 +5,6 @@ import { VERBOSITY_DEBUG, VERBOSITY_NORMAL, VERBOSITY_QUIET, VERBOSITY_VERBOSE }
 import defaultOptions from "./default-options";
 import CerebroError from "./errors/cerebro-error";
 import CommandNotFoundError from "./errors/command-not-found-error";
-import CommandValidationError from "./errors/command-validation-error";
-import ConflictingOptionsError from "./errors/conflicting-options-error";
 import PluginManager from "./plugin-manager";
 import type { Cli as ICli, CliRunOptions, CommandSection as ICommandSection, ExtendedLogger, RunCommandOptions } from "./types/cli";
 import type { Command as ICommand, OptionDefinition } from "./types/command";

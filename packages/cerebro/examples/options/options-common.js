@@ -1,7 +1,15 @@
+// packages/cerebro/examples/options/options-common.js
+
 // Try the following:
 //    node cli.js options-common -p
 //    node cli.js options-common -d -s -p vegetarian
 //    node cli.js options-common --pizza-type=cheese
+
+/**
+ * Sets up a command with common option types (string, boolean) and default values
+ * @param {import("@visulima/cerebro").Cerebro} cli - The Cerebro CLI instance to add the command to
+ * @returns {void}
+ */
 const optionsCommon = (cli) => {
     cli.addCommand({
         execute: ({ logger, options }) => {

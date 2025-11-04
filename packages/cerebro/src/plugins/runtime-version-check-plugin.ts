@@ -1,6 +1,40 @@
 import type { Plugin } from "../types/plugin";
 
 /**
+ * Safely parse major version from a version string.
+ * @param versionString The version string to parse
+ * @returns The major version number, or 0 if parsing fails
+ */
+const parseMajorVersion = (versionString: string | undefined | null): number => {
+    if (!versionString || typeof versionString !== "string") {
+        return 0;
+    }
+
+    const parts = versionString.split(".");
+
+    if (parts.length === 0 || !parts[0]) {
+        return 0;
+    }
+
+    const major = Number.parseInt(parts[0], 10);
+
+    return Number.isNaN(major) ? 0 : major;
+};
+
+/**
+ * Safely extract version from Node.js process.version.
+ * @param processVersion The process.version string
+ * @returns The version string without the "v" prefix, or empty string if invalid
+ */
+const extractNodeVersion = (processVersion: string | undefined): string => {
+    if (!processVersion || typeof processVersion !== "string") {
+        return "";
+    }
+
+    return processVersion.replace("v", "");
+};
+
+/**
  * Detect the current JavaScript runtime and its version.
  */
 const detectRuntime = (): { major: number; type: RuntimeType; version: string } => {
@@ -8,8 +42,8 @@ const detectRuntime = (): { major: number; type: RuntimeType; version: string } 
     // @ts-expect-error - Bun is a global in Bun runtime
     if (typeof Bun !== "undefined") {
         // @ts-expect-error - Bun.version exists in Bun runtime
-        const version = Bun.version as string;
-        const major = Number(version.split(".")[0]);
+        const version = (Bun.version as string) || "";
+        const major = parseMajorVersion(version);
 
         return { major, type: "bun", version };
     }
@@ -18,16 +52,15 @@ const detectRuntime = (): { major: number; type: RuntimeType; version: string } 
     // @ts-expect-error - Deno is a global in Deno runtime
     if (typeof Deno !== "undefined") {
         // @ts-expect-error - Deno.version exists in Deno runtime
-        const version = Deno.version.deno as string;
-        const major = Number(version.split(".")[0]);
+        const version = (Deno.version?.deno as string) || "";
+        const major = parseMajorVersion(version);
 
         return { major, type: "deno", version };
     }
 
     // Default to Node.js
-    const version = process.version.replace("v", "");
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const major = Number(/v([^.]+)/.exec(process.version)![1]);
+    const version = extractNodeVersion(process.version);
+    const major = parseMajorVersion(version);
 
     return { major, type: "node", version };
 };

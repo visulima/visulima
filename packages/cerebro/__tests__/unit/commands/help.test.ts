@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { Command as ICommand } from "../../../src/@types/command";
-import type { Toolbox as IToolbox } from "../../../src/@types/toolbox";
 import HelpCommand from "../../../src/commands/help-command";
 import globalOptions from "../../../src/default-options";
+import type { Command as ICommand } from "../../../src/types/command";
+import type { Toolbox as IToolbox } from "../../../src/types/toolbox";
 import commandLineUsage from "../../../src/util/command-line-usage";
 
 vi.mock(import("../../../src/util/command-line-usage"));

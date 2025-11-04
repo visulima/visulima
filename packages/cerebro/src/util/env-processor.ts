@@ -80,7 +80,7 @@ const processEnvVariables = (
 
     for (const envDefinition of envDefinitions) {
         // Access process.env directly to ensure we get the latest value
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
         const envValue = process.env[envDefinition.name];
         const transformedValue = transformEnvValue(envDefinition, envValue);
         const finalValue = transformedValue === undefined ? envDefinition.defaultValue : transformedValue;

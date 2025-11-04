@@ -4,7 +4,9 @@ import type { OptionDefinition } from "../../types/command";
 import type { Toolbox as IToolbox } from "../../types/toolbox";
 
 /**
- * Adds camelCase names to options
+ * Converts option names to camelCase and adds them as __camelCaseName__ properties
+ * @template OD - The option definition type
+ * @param command The command object containing options to process
  */
 export const processOptionNames = <OD extends OptionDefinition<unknown>>(command: { options?: OD[] }): void => {
     command.options?.forEach((option) => {
@@ -15,6 +17,10 @@ export const processOptionNames = <OD extends OptionDefinition<unknown>>(command
 
 /**
  * Adds negatable options for boolean flags
+ * For options starting with "no-", creates a corresponding non-negated option
+ * @template OD - The option definition type
+ * @param command The command object to add negatable options to
+ * @throws {Error} When a negated option is not of type Boolean
  */
 export const addNegatableOptions = <OD extends OptionDefinition<unknown>>(command: { name: string; options?: OD[] }): void => {
     if (Array.isArray(command.options)) {
@@ -38,6 +44,9 @@ export const addNegatableOptions = <OD extends OptionDefinition<unknown>>(comman
 
 /**
  * Maps negatable options to their non-negated counterparts
+ * Processes toolbox options starting with "no" and converts them to non-negated form
+ * @param toolbox The command toolbox containing options
+ * @param command The command object with option definitions
  */
 export const mapNegatableOptions = (toolbox: IToolbox, command: { options?: OptionDefinition<unknown>[] }): void => {
     Object.entries(toolbox.options as IToolbox["options"]).forEach(([key, value]) => {
@@ -59,6 +68,9 @@ export const mapNegatableOptions = (toolbox: IToolbox, command: { options?: Opti
 
 /**
  * Applies implied option values
+ * Sets implied option values from option definitions that have an implies property
+ * @param toolbox The command toolbox to apply implied values to
+ * @param command The command object with option definitions
  */
 export const mapImpliedOptions = (toolbox: IToolbox, command: { options?: OptionDefinition<unknown>[] }): void => {
     Object.keys(toolbox.options as IToolbox["options"]).forEach((optionKey) => {

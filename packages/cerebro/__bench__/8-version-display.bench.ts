@@ -32,12 +32,10 @@ describe("8. Version Display", () => {
 
     bench("Yargs - Display version", async () => {
         await suppressOutput(async () => {
-            const parser = yargs(hideBin(["node", "script.js"]))
-                .scriptName("test-cli")
-                .version("1.0.0");
+            const parser = yargs(hideBin(versionArgs)).scriptName("test-cli").version("1.0.0");
 
             try {
-                await parser.parseAsync(versionArgs.slice(2));
+                await parser.parseAsync();
             } catch {
                 // Ignore errors
             }
