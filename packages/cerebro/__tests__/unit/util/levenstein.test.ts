@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import findAlternatives from "../../../src/util/general/find-alternatives";
 
-describe("util/levenstein", () => {
+describe("util/levenstein (find-alternatives)", () => {
     it("should find an approximate match within the Levenshtein distance", () => {
         expect.assertions(1);
 
@@ -34,5 +34,62 @@ describe("util/levenstein", () => {
         const result = findAlternatives(string, array);
 
         expect(result).toStrictEqual([]);
+    });
+
+    it("should handle case-insensitive matching", () => {
+        expect.assertions(1);
+
+        const string = "COMMAND";
+        const array = ["command", "Command", "COMMAND"];
+
+        const result = findAlternatives(string, array);
+
+        expect(result.length).toBeGreaterThan(0);
+    });
+
+    it("should handle empty array", () => {
+        expect.assertions(1);
+
+        const string = "command";
+        const array: string[] = [];
+
+        const result = findAlternatives(string, array);
+
+        expect(result).toStrictEqual([]);
+    });
+
+    it("should handle empty string", () => {
+        expect.assertions(1);
+
+        const string = "";
+        const array = ["test", "command"];
+
+        const result = findAlternatives(string, array);
+
+        expect(result).toStrictEqual([]);
+    });
+
+    it("should filter out strings with large length differences", () => {
+        expect.assertions(1);
+
+        const string = "cmd";
+        const array = ["verylongcommandname", "cmd", "c"];
+
+        const result = findAlternatives(string, array);
+
+        // Should include "cmd" but not "verylongcommandname" due to length difference
+        expect(result).toContain("cmd");
+    });
+
+    it("should find multiple similar strings", () => {
+        expect.assertions(2);
+
+        const string = "build";
+        const array = ["buil", "buid", "bild", "test"];
+
+        const result = findAlternatives(string, array);
+
+        expect(result.length).toBeGreaterThan(0);
+        expect(result).not.toContain("test");
     });
 });

@@ -4,6 +4,10 @@ import type { Plugin } from "./plugin";
 
 export type CommandSection = { footer?: string; header?: string };
 
+export type ExtendedLogger = Console & {
+    debug: (...args: any[]) => void;
+};
+
 export type CliRunOptions = {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [key: string]: any;

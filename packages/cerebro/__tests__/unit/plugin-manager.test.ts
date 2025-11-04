@@ -148,7 +148,7 @@ describe(PluginManager, () => {
             pluginManager.register(plugin);
 
             await expect(pluginManager.init({} as PluginContext)).rejects.toThrow(PluginError);
-            expect(mockLogger.error).toHaveBeenCalledWith();
+            expect(mockLogger.error).toHaveBeenCalledWith(expect.stringContaining("Failed to initialize"));
         });
 
         it("should throw error when dependencies are missing", async () => {
@@ -309,7 +309,7 @@ describe(PluginManager, () => {
             await pluginManager.init({} as PluginContext);
 
             await expect(pluginManager.executeLifecycle("beforeCommand", {} as Toolbox)).rejects.toThrow(hookError);
-            expect(mockLogger.error).toHaveBeenCalledWith();
+            expect(mockLogger.error).toHaveBeenCalledWith(expect.stringContaining("Error in beforeCommand hook"), hookError);
         });
 
         it("should skip plugins without hook function", async () => {
@@ -377,7 +377,7 @@ describe(PluginManager, () => {
             const error = new Error("Test error");
 
             await expect(pluginManager.executeErrorHandlers(error, {} as Toolbox)).resolves.not.toThrow();
-            expect(mockLogger.error).toHaveBeenCalledWith();
+            expect(mockLogger.error).toHaveBeenCalledWith(expect.stringContaining("Error in error handler"), expect.any(Error));
         });
 
         it("should execute error handlers in dependency order", async () => {

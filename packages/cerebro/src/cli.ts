@@ -5,8 +5,10 @@ import { VERBOSITY_DEBUG, VERBOSITY_NORMAL, VERBOSITY_QUIET, VERBOSITY_VERBOSE }
 import defaultOptions from "./default-options";
 import CerebroError from "./errors/cerebro-error";
 import CommandNotFoundError from "./errors/command-not-found-error";
+import CommandValidationError from "./errors/command-validation-error";
+import ConflictingOptionsError from "./errors/conflicting-options-error";
 import PluginManager from "./plugin-manager";
-import type { Cli as ICli, CliRunOptions, CommandSection as ICommandSection, RunCommandOptions } from "./types/cli";
+import type { Cli as ICli, CliRunOptions, CommandSection as ICommandSection, ExtendedLogger, RunCommandOptions } from "./types/cli";
 import type { Command as ICommand, OptionDefinition } from "./types/command";
 import type { Plugin } from "./types/plugin";
 import mapOptionTypeLabel from "./util/arg-processing/map-option-type-label";
@@ -33,7 +35,7 @@ const isOption = (argument: string): boolean => {
     return isShort.test(argument) || isLong.test(argument) || isCombined.test(argument);
 };
 
-export type CliOptions<T extends Console = Console> = {
+export type CliOptions<T extends ExtendedLogger = ExtendedLogger> = {
     argv?: ReadonlyArray<string>;
     cwd?: string;
     logger?: T;
@@ -41,7 +43,7 @@ export type CliOptions<T extends Console = Console> = {
     packageVersion?: string;
 };
 
-export class Cli<T extends Console = Console> implements ICli {
+export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
     readonly #logger: T;
 
     readonly #options: CliOptions<T>;
@@ -62,6 +64,12 @@ export class Cli<T extends Console = Console> implements ICli {
 
     /** Map of command path keys to full command paths for nested command lookup */
     readonly #commandPaths: Map<string, string[]>;
+
+    /**
+     * Map of commands keyed by their full path string (e.g., "deploy staging")
+     * This allows correct resolution when different paths share the same leaf name
+     */
+    readonly #commandsByPath: Map<string, ICommand>;
 
     #defaultCommand: string;
 
@@ -145,6 +153,7 @@ export class Cli<T extends Console = Console> implements ICli {
 
         this.#commands = new Map<string, ICommand>();
         this.#commandPaths = new Map<string, string[]>();
+        this.#commandsByPath = new Map<string, ICommand>();
 
         this.#pluginManager = new PluginManager(this.#logger);
 
@@ -251,7 +260,7 @@ export class Cli<T extends Console = Console> implements ICli {
             if (typeof command.alias === "string") {
                 validateCommandName(command.alias);
             } else {
-                validateStringArray(command.alias, "Command alias").forEach(validateCommandName);
+                validateStringArray(command.alias, "Command alias").forEach((alias) => validateCommandName(alias));
             }
         }
 
@@ -298,15 +307,19 @@ export class Cli<T extends Console = Console> implements ICli {
         // This moves validation overhead from every execution to one-time registration
         if (command.options) {
             // Pre-compute conflicting options (used in validateConflictingOptions)
+            // eslint-disable-next-line no-param-reassign, no-underscore-dangle
             command.__conflictingOptions__ = command.options.filter((option) => option.conflicts !== undefined);
 
             // Pre-compute required options (used in validateRequiredOptions)
+            // eslint-disable-next-line no-param-reassign, no-underscore-dangle
             command.__requiredOptions__ = command.options.filter((option) => option.required === true);
         }
 
         // Store command by both name (for backward compatibility) and full path
         this.#commands.set(command.name, command);
         this.#commandPaths.set(pathKey, fullPath);
+        // Store command by full path key for correct nested command resolution
+        this.#commandsByPath.set(pathKey, command);
 
         if (command.alias !== undefined) {
             let aliases: string[] = command.alias as string[];
@@ -365,7 +378,6 @@ export class Cli<T extends Console = Console> implements ICli {
 
     /**
      * Gets the CLI application name.
-     * @returns The CLI name
      */
     public getCliName(): string {
         return this.#cliName;
@@ -543,15 +555,33 @@ export class Cli<T extends Console = Console> implements ICli {
         // Find the command by its full path
         const pathKey = getCommandPathKey(parsedCommandPath);
         const storedPath = this.#commandPaths.get(pathKey);
-        const commandName = parsedCommandPath[parsedCommandPath.length - 1];
-        const command = this.#commands.get(commandName);
 
-        // Verify the command matches the expected path
-        if (!command || !storedPath || getCommandPathKey(storedPath) !== pathKey) {
-            const allCommandPaths = [...commandPathKeys, ...commandNames];
-            const alternatives = findAlternatives(pathKey, allCommandPaths);
+        // Use path-based lookup when stored path exists, fallback to leaf name for backward compatibility
+        let command: ICommand | undefined;
 
-            throw new CommandNotFoundError(pathKey, alternatives);
+        if (storedPath) {
+            // Resolve by full path key (handles cases where different paths share same leaf name)
+            command = this.#commandsByPath.get(pathKey);
+
+            // Verify the command matches the expected path
+            if (!command || getCommandPathKey(storedPath) !== pathKey) {
+                const allCommandPaths = [...commandPathKeys, ...commandNames];
+                const alternatives = findAlternatives(pathKey, allCommandPaths);
+
+                throw new CommandNotFoundError(pathKey, alternatives);
+            }
+        } else {
+            // Fallback to leaf name lookup (backward compatibility for flat commands)
+            const commandName = parsedCommandPath[parsedCommandPath.length - 1];
+
+            command = this.#commands.get(commandName);
+
+            if (!command) {
+                const allCommandPaths = [...commandPathKeys, ...commandNames];
+                const alternatives = findAlternatives(pathKey, allCommandPaths);
+
+                throw new CommandNotFoundError(pathKey, alternatives);
+            }
         }
 
         if (typeof command.execute !== "function") {
@@ -564,8 +594,10 @@ export class Cli<T extends Console = Console> implements ICli {
 
         this.#logger.debug(`command '${pathKey}' found, parsing command args: ${commandArguments.join(", ")}`);
 
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         const { arguments_, booleanValues, parsedArgs } = processCommandArgs(command, commandArguments, defaultOptions as OptionDefinition<unknown>[]);
 
+        // eslint-disable-next-line no-underscore-dangle
         const commandArgs = { ...parsedArgs, _all: { ...parsedArgs._all, ...booleanValues } } as typeof parsedArgs;
 
         validateRequiredOptions(arguments_, commandArgs, command);
@@ -689,10 +721,8 @@ export class Cli<T extends Console = Console> implements ICli {
         let command: ICommand | undefined;
 
         if (storedPath) {
-            // Found by full path
-            const commandNameFromPath = commandPath[commandPath.length - 1];
-
-            command = this.#commands.get(commandNameFromPath);
+            // Resolve by full path key (handles cases where different paths share same leaf name)
+            command = this.#commandsByPath.get(pathKey);
         } else {
             // Fall back to simple name lookup (backward compatibility)
             command = this.#commands.get(commandName);
@@ -700,7 +730,7 @@ export class Cli<T extends Console = Console> implements ICli {
 
         if (!command) {
             const allCommandPaths = [...this.#commandPaths.keys(), ...this.#commands.keys()];
-            const alternatives = findAlternatives(commandName, allCommandPaths);
+            const alternatives = findAlternatives(pathKey || commandName, allCommandPaths);
 
             throw new CommandNotFoundError(commandName, alternatives);
         }

@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, expectTypeOf, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import registerExceptionHandler from "../../../src/util/general/register-exception-handler";
 
@@ -100,7 +100,7 @@ describe("register-exception-handler", () => {
 
         const cleanup = registerExceptionHandler(mockLogger as unknown as Console);
 
-        expectTypeOf(cleanup).toBeFunction();
+        expect(typeof cleanup).toBe("function");
 
         cleanup();
     });
@@ -137,8 +137,8 @@ describe("register-exception-handler", () => {
 
         process.emit("uncaughtException", new Error("Test"));
 
-        expect(logger1.error).toHaveBeenCalledWith();
-        expect(logger2.error).toHaveBeenCalledWith();
+        expect(logger1.error).toHaveBeenCalled();
+        expect(logger2.error).toHaveBeenCalled();
 
         cleanup1();
         cleanup2();
