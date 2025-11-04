@@ -5,6 +5,12 @@ import type { Toolbox as IToolbox } from "./toolbox";
 
 type TypeConstructor<T> = (value: unknown) => T extends (infer R)[] ? R | undefined : T | undefined;
 
+/**
+ * Type constructor for environment variables.
+ * Environment variables are always strings (or undefined), so the transform function receives string | undefined.
+ */
+type EnvTypeConstructor<T> = (value: string | undefined) => T extends (infer R)[] ? R | undefined : T | undefined;
+
 type MultiplePropertyOptions<T> = unknown[] extends T ? { lazyMultiple: true } | { multiple: true } : unknown;
 
 export type OptionDefinition<T> = MultiplePropertyOptions<T>
@@ -60,6 +66,37 @@ export type PossibleOptionDefinition<OD>
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type ArgumentDefinition<T = any> = Omit<OptionDefinition<T>, "multiple|lazyMultiple|defaultOption|alias|group|defaultValue">;
 
+/**
+ * Environment variable definition for commands.
+ * Used to document and provide type-safe access to environment variables a command supports.
+ * @template T The type of the environment variable value
+ */
+export interface EnvDefinition<T = string> {
+    /** Default value if the environment variable is not set */
+    defaultValue?: T | undefined;
+
+    /** A description of what the environment variable does */
+    description?: string | undefined;
+
+    /** Environment variable is hidden from help */
+    hidden?: boolean;
+
+    /** The name of the environment variable */
+    name: string;
+
+    /**
+     * A transform function to convert the string environment variable value to the desired type.
+     * Typical values are `String`, `Number`, `Boolean` or custom functions.
+     * The function receives `string | undefined` and should return the transformed value.
+     */
+    type?: EnvTypeConstructor<T> | undefined;
+
+    /** A string to replace the default type string (e.g. &lt;string>). Useful for more descriptive type labels. */
+    typeLabel?: string | undefined;
+}
+
+export type PossibleEnvDefinition = EnvDefinition<boolean> | EnvDefinition<number> | EnvDefinition<string>;
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export interface Command<O extends OptionDefinition<any> = any, TContext extends IToolbox = IToolbox> {
     /**
@@ -85,6 +122,9 @@ export interface Command<O extends OptionDefinition<any> = any, TContext extends
 
     /** A tweet-sized summary of your command */
     description?: string;
+
+    /** Environment variables supported by this command */
+    env?: (EnvDefinition<boolean> | EnvDefinition<number> | EnvDefinition<string>)[];
 
     /** The full command examples, can be multiple lines */
     examples?: string[] | string[][];

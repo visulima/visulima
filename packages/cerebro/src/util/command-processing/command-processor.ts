@@ -9,6 +9,7 @@ import type { Toolbox as IToolbox } from "../../types/toolbox";
 import getBooleanValues from "../arg-processing/get-boolean-values";
 import removeBooleanValues from "../arg-processing/remove-boolean-values";
 import mergeArguments from "../data-processing/merge-arguments";
+import processEnvVariables from "../env-processor";
 
 /**
  * Prepares the toolbox for command execution.
@@ -41,6 +42,7 @@ export const prepareToolbox = <OD extends OptionDefinition<unknown>>(
 
     toolbox.argument = positionals?.[POSITIONALS_KEY] ?? [];
     toolbox.options = { ..._all, ...extraOptions };
+    toolbox.env = processEnvVariables(command.env);
 
     return toolbox;
 };

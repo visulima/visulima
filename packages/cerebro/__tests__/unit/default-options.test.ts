@@ -98,7 +98,7 @@ describe("default-options", () => {
     it("should have exactly 7 default options", () => {
         expect.assertions(1);
 
-        expect(defaultOptions.length).toBe(7);
+        expect(defaultOptions).toHaveLength(7);
     });
 
     it("should have all options as Boolean type", () => {
@@ -109,4 +109,3 @@ describe("default-options", () => {
         });
     });
 });
-

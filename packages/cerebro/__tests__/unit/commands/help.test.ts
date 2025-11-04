@@ -238,4 +238,100 @@ describe("command/help", () => {
         expect(commandLineUsage).toMatchSnapshot();
         expect(loggerMock.raw).toHaveBeenNthCalledWith(3, "Test footer");
     });
+
+    it("should display environment variables in general help", () => {
+        expect.assertions(4);
+
+        const helpCommand = new HelpCommand(commandsMap);
+        const toolboxMock = {
+            commandName: "help",
+            logger: loggerMock,
+            runtime: runtimeMock,
+        };
+
+        helpCommand.execute(toolboxMock as unknown as IToolbox);
+
+        expect(loggerMock.raw).toHaveBeenNthCalledWith(1, "Test header");
+
+        const usageCalls = vi.mocked(commandLineUsage).mock.calls[0][0];
+        const envSection = usageCalls.find((section) => section.header?.includes("Environment Variables"));
+
+        expect(envSection).toBeDefined();
+        expect(envSection?.header).toContain("Environment Variables");
+        expect(loggerMock.raw).toHaveBeenNthCalledWith(3, "Test footer");
+    });
+
+    it("should display command-specific environment variables", () => {
+        expect.assertions(4);
+
+        commandsMap.set("test-env", {
+            description: "Test command with env vars",
+            env: [
+                {
+                    description: "Test environment variable",
+                    name: "TEST_ENV_VAR",
+                    type: String,
+                },
+            ],
+            execute: () => {},
+            name: "test-env",
+        });
+
+        const helpCommand = new HelpCommand(commandsMap);
+        const toolboxMock = {
+            commandName: "test-env",
+            logger: loggerMock,
+            runtime: runtimeMock,
+        };
+
+        helpCommand.execute(toolboxMock as unknown as IToolbox);
+
+        expect(loggerMock.raw).toHaveBeenNthCalledWith(1, "Test header");
+
+        const usageCalls = vi.mocked(commandLineUsage).mock.calls[0][0];
+        const envSection = usageCalls.find((section) => section.header?.includes("Environment Variables"));
+
+        expect(envSection).toBeDefined();
+        expect(envSection?.content).toEqual([["TEST_ENV_VAR", "Test environment variable"]]);
+        expect(loggerMock.raw).toHaveBeenNthCalledWith(3, "Test footer");
+    });
+
+    it("should not display hidden environment variables", () => {
+        expect.assertions(3);
+
+        commandsMap.set("test-env-hidden", {
+            description: "Test command with hidden env vars",
+            env: [
+                {
+                    description: "Visible env var",
+                    name: "VISIBLE_VAR",
+                    type: String,
+                },
+                {
+                    description: "Hidden env var",
+                    hidden: true,
+                    name: "HIDDEN_VAR",
+                    type: String,
+                },
+            ],
+            execute: () => {},
+            name: "test-env-hidden",
+        });
+
+        const helpCommand = new HelpCommand(commandsMap);
+        const toolboxMock = {
+            commandName: "test-env-hidden",
+            logger: loggerMock,
+            runtime: runtimeMock,
+        };
+
+        helpCommand.execute(toolboxMock as unknown as IToolbox);
+
+        const usageCalls = vi.mocked(commandLineUsage).mock.calls[0][0];
+        const envSection = usageCalls.find((section) => section.header?.includes("Environment Variables"));
+
+        expect(envSection).toBeDefined();
+        expect(envSection?.content).toEqual([["VISIBLE_VAR", "Visible env var"]]);
+        expect(envSection?.content).not.toContainEqual(["HIDDEN_VAR", "Hidden env var"]);
+    });
 });

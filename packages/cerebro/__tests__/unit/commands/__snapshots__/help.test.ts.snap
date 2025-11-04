@@ -60,6 +60,31 @@ exports[`command/help > should display a empty help command if no commands exist
           ],
         },
         {
+          "content": [
+            [
+              "CEREBRO_OUTPUT_LEVEL",
+              "Controls the verbosity level of output. Valid values: '16' (quiet), '32' (normal), '64' (verbose), '128' (debug)",
+            ],
+            [
+              "CEREBRO_MIN_NODE_VERSION",
+              "Sets the minimum required Node.js version. Overrides the default minimum version check",
+            ],
+            [
+              "NO_UPDATE_NOTIFIER",
+              "When set, disables the update notifier check",
+            ],
+            [
+              "NODE_ENV",
+              "Standard Node.js environment variable. When set to 'test', disables update notifier",
+            ],
+            [
+              "DEBUG",
+              "When set, enables debug output (same as --debug flag)",
+            ],
+          ],
+          "header": "[7m[35m Environment Variables [39m[27m",
+        },
+        {
           "content": "Run "[36mtestcli[39m [32mhelp <command>[39m" or "[36mtestcli[39m [32m<command>[39m [33m--help[39m" for help with a specific command.",
           "raw": true,
         },
@@ -304,6 +329,31 @@ exports[`command/help > should display group of commands if the group option is 
           ],
         },
         {
+          "content": [
+            [
+              "CEREBRO_OUTPUT_LEVEL",
+              "Controls the verbosity level of output. Valid values: '16' (quiet), '32' (normal), '64' (verbose), '128' (debug)",
+            ],
+            [
+              "CEREBRO_MIN_NODE_VERSION",
+              "Sets the minimum required Node.js version. Overrides the default minimum version check",
+            ],
+            [
+              "NO_UPDATE_NOTIFIER",
+              "When set, disables the update notifier check",
+            ],
+            [
+              "NODE_ENV",
+              "Standard Node.js environment variable. When set to 'test', disables update notifier",
+            ],
+            [
+              "DEBUG",
+              "When set, enables debug output (same as --debug flag)",
+            ],
+          ],
+          "header": "[7m[35m Environment Variables [39m[27m",
+        },
+        {
           "content": "Run "[36mtestcli[39m [32mhelp <command>[39m" or "[36mtestcli[39m [32m<command>[39m [33m--help[39m" for help with a specific command.",
           "raw": true,
         },
@@ -472,6 +522,31 @@ exports[`command/help > should print general help 1`] = `
           ],
         },
         {
+          "content": [
+            [
+              "CEREBRO_OUTPUT_LEVEL",
+              "Controls the verbosity level of output. Valid values: '16' (quiet), '32' (normal), '64' (verbose), '128' (debug)",
+            ],
+            [
+              "CEREBRO_MIN_NODE_VERSION",
+              "Sets the minimum required Node.js version. Overrides the default minimum version check",
+            ],
+            [
+              "NO_UPDATE_NOTIFIER",
+              "When set, disables the update notifier check",
+            ],
+            [
+              "NODE_ENV",
+              "Standard Node.js environment variable. When set to 'test', disables update notifier",
+            ],
+            [
+              "DEBUG",
+              "When set, enables debug output (same as --debug flag)",
+            ],
+          ],
+          "header": "[7m[35m Environment Variables [39m[27m",
+        },
+        {
           "content": "Run "[36mtestcli[39m [32mhelp <command>[39m" or "[36mtestcli[39m [32m<command>[39m [33m--help[39m" for help with a specific command.",
           "raw": true,
         },
@@ -554,6 +629,31 @@ exports[`command/help > should print general help and not include hidden command
               "type": [Function],
             },
           ],
+        },
+        {
+          "content": [
+            [
+              "CEREBRO_OUTPUT_LEVEL",
+              "Controls the verbosity level of output. Valid values: '16' (quiet), '32' (normal), '64' (verbose), '128' (debug)",
+            ],
+            [
+              "CEREBRO_MIN_NODE_VERSION",
+              "Sets the minimum required Node.js version. Overrides the default minimum version check",
+            ],
+            [
+              "NO_UPDATE_NOTIFIER",
+              "When set, disables the update notifier check",
+            ],
+            [
+              "NODE_ENV",
+              "Standard Node.js environment variable. When set to 'test', disables update notifier",
+            ],
+            [
+              "DEBUG",
+              "When set, enables debug output (same as --debug flag)",
+            ],
+          ],
+          "header": "[7m[35m Environment Variables [39m[27m",
         },
         {
           "content": "Run "[36mtestcli[39m [32mhelp <command>[39m" or "[36mtestcli[39m [32m<command>[39m [33m--help[39m" for help with a specific command.",

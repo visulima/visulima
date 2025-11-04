@@ -408,6 +408,252 @@ cli deploy --env production --force
 cli deploy --env production --dry-run
 ```
 
+## Environment Variables
+
+Environment variables provide a way to configure commands without passing values on the command line. They're useful for:
+
+- Configuration that doesn't change frequently
+- Sensitive values that shouldn't appear in command history
+- CI/CD pipelines and automation
+- Default settings that can be overridden by options
+
+### Defining Environment Variables
+
+Add an `env` array to your command definition, similar to `options`:
+
+```typescript
+cli.addCommand({
+    name: "build",
+    env: [
+        {
+            name: "API_KEY",
+            type: String,
+            description: "API key for authentication",
+        },
+        {
+            name: "TIMEOUT",
+            type: Number,
+            defaultValue: 5000,
+            description: "Request timeout in milliseconds",
+        },
+        {
+            name: "VERBOSE",
+            type: Boolean,
+            defaultValue: false,
+            description: "Enable verbose logging",
+        },
+    ],
+    execute: ({ env }) => {
+        const apiKey = env.apiKey; // camelCase: API_KEY → apiKey
+        const timeout = env.timeout; // 5000 if not set
+        const verbose = env.verbose; // false if not set
+    },
+});
+```
+
+### Environment Variable Types
+
+Environment variables support the same types as options:
+
+#### String Environment Variables
+
+```typescript
+{
+    name: "API_URL",
+    type: String,
+    description: "API endpoint URL"
+}
+```
+
+Usage: `API_URL=https://api.example.com cli build`
+
+#### Number Environment Variables
+
+```typescript
+{
+    name: "PORT",
+    type: Number,
+    defaultValue: 3000,
+    description: "Server port"
+}
+```
+
+Usage: `PORT=8080 cli serve`
+
+The value is parsed as an integer. Invalid values will use the default if provided.
+
+#### Boolean Environment Variables
+
+```typescript
+{
+    name: "ENABLE_CACHE",
+    type: Boolean,
+    defaultValue: false,
+    description: "Enable caching"
+}
+```
+
+Boolean values are case-insensitive and accept:
+- `true`, `1`, `yes`, `on` → `true`
+- `false`, `0`, `no`, `off`, or any other value → `false`
+
+Usage:
+```bash
+ENABLE_CACHE=true cli build
+ENABLE_CACHE=1 cli build
+ENABLE_CACHE=yes cli build
+```
+
+### Default Values
+
+Set default values that are used when the environment variable is not set:
+
+```typescript
+{
+    name: "LOG_LEVEL",
+    type: String,
+    defaultValue: "info",
+    description: "Logging level"
+}
+```
+
+```typescript
+execute: ({ env }) => {
+    // env.logLevel will be "info" if LOG_LEVEL is not set
+    console.log(env.logLevel);
+};
+```
+
+### Hidden Environment Variables
+
+Hide environment variables from help output:
+
+```typescript
+{
+    name: "SECRET_KEY",
+    type: String,
+    hidden: true, // Won't appear in help
+    description: "Secret key for encryption"
+}
+```
+
+### CamelCase Conversion
+
+Environment variable names are automatically converted to camelCase:
+
+- `API_KEY` → `env.apiKey`
+- `LOG_LEVEL` → `env.logLevel`
+- `ENABLE_SSL` → `env.enableSsl`
+
+### Accessing Environment Variables
+
+Access environment variables through the `env` property in your command's `execute` function:
+
+```typescript
+cli.addCommand({
+    name: "deploy",
+    env: [
+        {
+            name: "DEPLOY_ENV",
+            type: String,
+            defaultValue: "staging",
+            description: "Deployment environment",
+        },
+        {
+            name: "FORCE_DEPLOY",
+            type: Boolean,
+            defaultValue: false,
+            description: "Force deployment without confirmation",
+        },
+    ],
+    execute: ({ env, options }) => {
+        const deployEnv = env.deployEnv; // "staging" if not set
+        const forceDeploy = env.forceDeploy; // false if not set
+        
+        // Can combine with options
+        const finalEnv = options.env || env.deployEnv;
+    },
+});
+```
+
+### Complete Example
+
+```typescript
+cli.addCommand({
+    name: "build",
+    env: [
+        {
+            name: "NODE_ENV",
+            type: String,
+            defaultValue: "development",
+            description: "Node.js environment",
+        },
+        {
+            name: "BUILD_TIMEOUT",
+            type: Number,
+            defaultValue: 30000,
+            description: "Build timeout in milliseconds",
+        },
+        {
+            name: "ENABLE_SOURCEMAPS",
+            type: Boolean,
+            defaultValue: true,
+            description: "Generate source maps",
+        },
+    ],
+    options: [
+        {
+            name: "output",
+            type: String,
+            description: "Output directory",
+        },
+    ],
+    execute: ({ env, options }) => {
+        const nodeEnv = env.nodeEnv; // "development" or value from NODE_ENV
+        const timeout = env.buildTimeout; // 30000 or value from BUILD_TIMEOUT
+        const sourcemaps = env.enableSourcemaps; // true or value from ENABLE_SOURCEMAPS
+        const output = options.output || "dist";
+        
+        console.log(`Building for ${nodeEnv} with timeout ${timeout}ms`);
+        if (sourcemaps) {
+            console.log("Source maps enabled");
+        }
+    },
+});
+```
+
+Usage examples:
+
+```bash
+# Using defaults
+cli build
+
+# Override with environment variables
+NODE_ENV=production BUILD_TIMEOUT=60000 cli build
+
+# Combine with options
+ENABLE_SOURCEMAPS=false cli build --output build
+
+# Boolean values
+ENABLE_SOURCEMAPS=1 cli build  # true
+ENABLE_SOURCEMAPS=0 cli build  # false
+```
+
+### Environment Variables in Help
+
+Environment variables are automatically displayed in the help output:
+
+```bash
+cli help build
+```
+
+Output includes an "Environment Variables" section showing:
+- Variable name
+- Description
+- Default value (if set)
+
+Hidden environment variables are excluded from help output.
+
 ## Global Options
 
 Cerebro provides built-in global options available to all commands:
@@ -421,3 +667,15 @@ Cerebro provides built-in global options available to all commands:
 - `--color` - Force colored output
 
 These don't need to be defined in your commands.
+
+## Global Environment Variables
+
+Cerebro also provides built-in global environment variables:
+
+- `CEREBRO_OUTPUT_LEVEL` - Controls verbosity level (16=quiet, 32=normal, 64=verbose, 128=debug)
+- `CEREBRO_MIN_NODE_VERSION` - Overrides minimum Node.js version check
+- `NO_UPDATE_NOTIFIER` - Disables update notifier check
+- `NODE_ENV` - Standard Node.js environment variable
+- `DEBUG` - Enables debug output (same as --debug flag)
+
+These are available to all commands and appear in the general help output.

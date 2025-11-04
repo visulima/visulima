@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { Cerebro as Cli } from "../../src";
 
@@ -466,6 +466,154 @@ describe("cli", () => {
             expect(testExecute).toHaveBeenCalledTimes(1);
             expect(deployExecute).toHaveBeenCalledTimes(1);
             await expect(buildExecute.mock.results[0]?.value).resolves.toBe("build-result");
+        });
+    });
+
+    describe("environment variables", () => {
+        const originalEnv = process.env;
+
+        beforeEach(() => {
+            process.env = { ...originalEnv };
+        });
+
+        it("should process environment variables and make them available in toolbox", async () => {
+            expect.assertions(4);
+
+            process.env.TEST_STRING_VAR = "test-string";
+            process.env.TEST_NUMBER_VAR = "42";
+            process.env.TEST_BOOL_VAR = "true";
+
+            const execute = vi.fn().mockImplementation(({ env }) => {
+                expect(env.testStringVar).toBe("test-string");
+                expect(env.testNumberVar).toBe(42);
+                expect(env.testBoolVar).toBe(true);
+            });
+
+            const cli = new Cli("MyCLI", { argv: ["test"] });
+
+            cli.addCommand({
+                env: [
+                    {
+                        name: "TEST_STRING_VAR",
+                        type: String,
+                    },
+                    {
+                        name: "TEST_NUMBER_VAR",
+                        type: Number,
+                    },
+                    {
+                        name: "TEST_BOOL_VAR",
+                        type: Boolean,
+                    },
+                ],
+                execute,
+                name: "test",
+            });
+
+            await cli.run({ shouldExitProcess: false });
+
+            expect(execute).toHaveBeenCalledTimes(1);
+        });
+
+        it("should use default values when environment variables are not set", async () => {
+            expect.assertions(4);
+
+            delete process.env.TEST_VAR;
+
+            const execute = vi.fn().mockImplementation(({ env }) => {
+                expect(env.testVar).toBe("default-value");
+                expect(env.testNumber).toBe(100);
+                expect(env.testBool).toBe(false);
+            });
+
+            const cli = new Cli("MyCLI", { argv: ["test"] });
+
+            cli.addCommand({
+                env: [
+                    {
+                        defaultValue: "default-value",
+                        name: "TEST_VAR",
+                        type: String,
+                    },
+                    {
+                        defaultValue: 100,
+                        name: "TEST_NUMBER",
+                        type: Number,
+                    },
+                    {
+                        defaultValue: false,
+                        name: "TEST_BOOL",
+                        type: Boolean,
+                    },
+                ],
+                execute,
+                name: "test",
+            });
+
+            await cli.run({ shouldExitProcess: false });
+
+            expect(execute).toHaveBeenCalledTimes(1);
+        });
+
+        it("should prefer environment variable value over default value", async () => {
+            expect.assertions(2);
+
+            process.env.TEST_VAR = "env-value";
+
+            const execute = vi.fn().mockImplementation(({ env }) => {
+                expect(env.testVar).toBe("env-value");
+            });
+
+            const cli = new Cli("MyCLI", { argv: ["test"] });
+
+            cli.addCommand({
+                env: [
+                    {
+                        defaultValue: "default-value",
+                        name: "TEST_VAR",
+                        type: String,
+                    },
+                ],
+                execute,
+                name: "test",
+            });
+
+            await cli.run({ shouldExitProcess: false });
+
+            expect(execute).toHaveBeenCalledTimes(1);
+        });
+
+        it("should convert environment variable names to camelCase", async () => {
+            expect.assertions(3);
+
+            process.env.TEST_ENV_VAR_NAME = "value1";
+            process.env.ANOTHER_TEST_VAR = "value2";
+
+            const execute = vi.fn().mockImplementation(({ env }) => {
+                expect(env.testEnvVarName).toBe("value1");
+                expect(env.anotherTestVar).toBe("value2");
+            });
+
+            const cli = new Cli("MyCLI", { argv: ["test"] });
+
+            cli.addCommand({
+                env: [
+                    {
+                        name: "TEST_ENV_VAR_NAME",
+                        type: String,
+                    },
+                    {
+                        name: "ANOTHER_TEST_VAR",
+                        type: String,
+                    },
+                ],
+                execute,
+                name: "test",
+            });
+
+            await cli.run({ shouldExitProcess: false });
+
+            expect(execute).toHaveBeenCalledTimes(1);
         });
     });
 });

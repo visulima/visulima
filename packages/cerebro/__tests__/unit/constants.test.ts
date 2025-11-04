@@ -78,4 +78,3 @@ describe("constants", () => {
         expect(VERBOSITY_DEBUG).toBe(128); // 2^7
     });
 });
-

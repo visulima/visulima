@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, expectTypeOf, it, vi } from "vitest";
 
 import registerExceptionHandler from "../../../src/util/general/register-exception-handler";
 
@@ -96,11 +96,11 @@ describe("register-exception-handler", () => {
     });
 
     it("should return cleanup function", () => {
-        expect.assertions(1);
+        expect.assertions(0);
 
         const cleanup = registerExceptionHandler(mockLogger as unknown as Console);
 
-        expect(typeof cleanup).toBe("function");
+        expectTypeOf(cleanup).toBeFunction();
 
         cleanup();
     });
@@ -137,7 +137,8 @@ describe("register-exception-handler", () => {
 
         process.emit("uncaughtException", new Error("Test"));
 
-        expect(logger1.error).toHaveBeenCalled();
+        expect(logger1.error).toHaveBeenCalledWith("Uncaught exception: Error: Test");
+        // eslint-disable-next-line vitest/prefer-called-with
         expect(logger2.error).toHaveBeenCalled();
 
         cleanup1();

@@ -25,5 +25,13 @@ exports[`usage \`@visulima/cerebro\` npm package > should work as ESM package 1`
   --no-color boolean      Turn off colored output             
   --color boolean         Force colored output                
 
+ Environment Variables 
+
+    CEREBRO_OUTPUT_LEVEL         Controls the verbosity level of output. Valid values: '16' (quiet), '32' (normal), '64' (verbose), '128' (debug) 
+    CEREBRO_MIN_NODE_VERSION     Sets the minimum required Node.js version. Overrides the default minimum version check                           
+    NO_UPDATE_NOTIFIER           When set, disables the update notifier check                                                                     
+    NODE_ENV                     Standard Node.js environment variable. When set to 'test', disables update notifier                              
+    DEBUG                        When set, enables debug output (same as --debug flag)                                                            
+
 Run "cerebro help <command>" or "cerebro <command> --help" for help with a specific command."
 `;

@@ -17,9 +17,11 @@ class EmptyToolbox implements Partial<IToolbox> {
 
     public commandName: IToolbox["commandName"];
 
-    public runtime?: IToolbox["runtime"];
+    public env?: IToolbox["env"];
 
     public logger?: IToolbox["logger"];
+
+    public runtime?: IToolbox["runtime"];
 
     public constructor(commandName: IToolbox["commandName"], command: IToolbox["command"]) {
         this.commandName = commandName;

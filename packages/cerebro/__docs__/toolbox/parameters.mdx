@@ -53,6 +53,60 @@ Options are:
 - Include default values if set
 - Validated before execution
 
+## Environment Variables
+
+Type-safe access to environment variables defined in your command:
+
+```typescript
+cli.addCommand({
+    name: "build",
+    env: [
+        {
+            name: "API_KEY",
+            type: String,
+            description: "API key",
+        },
+        {
+            name: "TIMEOUT",
+            type: Number,
+            defaultValue: 5000,
+            description: "Timeout in ms",
+        },
+        {
+            name: "VERBOSE",
+            type: Boolean,
+            defaultValue: false,
+            description: "Enable verbose output",
+        },
+    ],
+    execute: ({ env }) => {
+        const apiKey = env.apiKey; // string | undefined
+        const timeout = env.timeout; // number (5000 if not set)
+        const verbose = env.verbose; // boolean (false if not set)
+    },
+});
+```
+
+Environment variables are:
+
+- Type-safe based on their type definitions
+- Automatically converted to camelCase (`API_KEY` → `apiKey`)
+- Include default values if not set
+- Transformed according to their type (String, Number, Boolean)
+
+### Boolean Environment Variables
+
+Boolean environment variables accept multiple truthy values (case-insensitive):
+- `true`, `1`, `yes`, `on` → `true`
+- Any other value → `false`
+
+```bash
+VERBOSE=true cli build    # env.verbose = true
+VERBOSE=1 cli build      # env.verbose = true
+VERBOSE=yes cli build    # env.verbose = true
+VERBOSE=false cli build  # env.verbose = false
+```
+
 ## Argv
 
 Original command-line arguments:
@@ -83,10 +137,25 @@ cli.addCommand({
         { name: "env", type: String, required: true },
         { name: "force", type: Boolean },
     ],
-    execute: ({ argument, options, argv }) => {
+    env: [
+        {
+            name: "API_KEY",
+            type: String,
+            description: "API key for deployment",
+        },
+        {
+            name: "TIMEOUT",
+            type: Number,
+            defaultValue: 30000,
+            description: "Deployment timeout",
+        },
+    ],
+    execute: ({ argument, options, env, argv }) => {
         const target = argument[0]; // Positional argument
-        const env = options.env; // Option value
+        const envName = options.env; // Option value
         const force = options.force || false; // Option with default
+        const apiKey = env.apiKey; // Environment variable
+        const timeout = env.timeout; // Environment variable with default
 
         // Access raw argv if needed
         console.log("Raw argv:", argv);

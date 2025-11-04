@@ -13,10 +13,23 @@ export interface Toolbox<T extends Console = Console> extends Cerebro.ExtensionO
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     argv: Record<string, any>;
 
+    /**
+     * The command that is being executed.
+     */
     command: ICommand;
 
+    /**
+     * The name of the command that is being executed.
+     */
     commandName: string;
 
+    /**
+     * Environment variables processed from the command definition.
+     * Values are transformed according to their type definitions and default values.
+     */
+    env: Record<string, unknown>;
+
+    /** The logger instance. */
     logger: T;
 
     /**
@@ -25,5 +38,8 @@ export interface Toolbox<T extends Console = Console> extends Cerebro.ExtensionO
      */
     options: Options;
 
+    /**
+     * This is the instance of the CLI that is running the command.
+     */
     runtime: ICli;
 }
