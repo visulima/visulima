@@ -29,7 +29,6 @@ export const addNegatableOptions = <OD extends OptionDefinition<unknown>>(comman
         return;
     }
 
-    // Build a Set of option names for O(1) lookups instead of O(n) array.some()
     const optionNames = new Set<string>();
 
     for (const option of command.options) {
@@ -42,7 +41,6 @@ export const addNegatableOptions = <OD extends OptionDefinition<unknown>>(comman
         if (option.name.startsWith("no-")) {
             const nonNegatedName = option.name.replace("no-", "");
 
-            // Use Set lookup instead of array.some()
             if (!optionNames.has(nonNegatedName)) {
                 if (option.type !== Boolean) {
                     throw new Error(`Cannot add negated option "${option.name}" to command "${command.name}" because it is not a boolean.`);
@@ -60,7 +58,6 @@ export const addNegatableOptions = <OD extends OptionDefinition<unknown>>(comman
         }
     }
 
-    // Add all new options at once
     if (optionsToAdd.length > 0) {
         (command.options as OD[]).push(...optionsToAdd);
     }
@@ -78,7 +75,6 @@ export const mapNegatableOptions = (toolbox: IToolbox, command: { options?: Opti
         return;
     }
 
-    // Optimize: early return if no options start with "no-"
     const options = toolbox.options as IToolbox["options"];
     const negatableKeys = Object.keys(options).filter((key) => key.startsWith("no-"));
 
@@ -86,7 +82,6 @@ export const mapNegatableOptions = (toolbox: IToolbox, command: { options?: Opti
         return;
     }
 
-    // Build a Map for O(1) lookups instead of O(n) array iteration
     const optionMapByName = new Map<string, OptionDefinition<unknown>>();
 
     for (const option of command.options) {
@@ -118,7 +113,6 @@ export const mapImpliedOptions = (toolbox: IToolbox, command: { options?: Option
         return;
     }
 
-    // Build a Map keyed by camelCase name for O(1) lookups instead of O(n) array.find()
     const optionMapByCamelCase = new Map<string, OptionDefinition<unknown>>();
 
     for (const option of command.options) {
@@ -129,7 +123,6 @@ export const mapImpliedOptions = (toolbox: IToolbox, command: { options?: Option
         }
     }
 
-    // Optimize: early return if no options have implies
     if (optionMapByCamelCase.size === 0) {
         return;
     }
@@ -146,7 +139,6 @@ export const mapImpliedOptions = (toolbox: IToolbox, command: { options?: Option
                 if (options[key] === undefined) {
                     options[key] = value;
                 }
-                // Note: We don't override explicitly set options
             }
         }
     }

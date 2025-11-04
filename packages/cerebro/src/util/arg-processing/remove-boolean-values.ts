@@ -19,7 +19,6 @@ const removeBooleanValues = <OD extends OptionDefinition<any>>(
     optionMapByName?: Map<string, PossibleOptionDefinition<OD>>,
     optionMapByAlias?: Map<string, PossibleOptionDefinition<OD>>,
 ): string[] => {
-    // Optimize: early return if no options or arguments
     if (options.length === 0 || arguments_.length === 0) {
         return arguments_;
     }
@@ -30,7 +29,6 @@ const removeBooleanValues = <OD extends OptionDefinition<any>>(
         const { lastOption } = argumentsAndLastValue;
 
         if (lastOption && isBoolean(lastOption) && booleanValue.has(argument)) {
-            // Optimize: avoid creating new array if removing last element
             const { args } = argumentsAndLastValue;
             const result = args.slice(0, -1);
 
@@ -41,7 +39,6 @@ const removeBooleanValues = <OD extends OptionDefinition<any>>(
             return { args: argumentsAndLastValue.args };
         }
 
-        // Optimize: create new array with push for better performance
         const newArgs = [...argumentsAndLastValue.args];
 
         newArgs.push(argument);

@@ -63,8 +63,6 @@ export const validateRequiredOptions = <OD extends OptionDefinition<unknown>>(
         );
     }
 
-    // Only validate unknown options if command doesn't accept positional arguments
-    // Positional arguments will be in _unknown initially but are valid if command.argument is defined
     if (commandArguments._unknown && commandArguments._unknown.length > 0 && !command.argument) {
         validateUnknownOptions(commandArguments, command);
     }
@@ -79,8 +77,6 @@ export const validateConflictingOptions = <OD extends OptionDefinition<unknown>>
     commandArguments: IToolbox["options"],
     command: ICommand<OD>,
 ): void => {
-    // Use pre-computed conflicting options (15% performance improvement)
-    // This list is computed once at registration instead of filtering on every execution
     const conflicts = command.__conflictingOptions__ ?? arguments_.filter((argument) => argument.conflicts !== undefined);
 
     if (conflicts.length > 0) {

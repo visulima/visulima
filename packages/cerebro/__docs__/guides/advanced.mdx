@@ -1,3 +1,5 @@
+import { Tab, Tabs } from "@visulima/nextra-theme-docs/components";
+
 # Advanced Features
 
 Learn about advanced Cerebro features for building complex CLIs.
@@ -184,14 +186,24 @@ try {
 
 ## Shell Completions
 
-Enable shell autocompletions with `@bomb.sh/tab`:
+Enable shell autocompletions for your CLI.
 
-```bash
-pnpm add @bomb.sh/tab
-```
+### Installation
+
+Install the required dependency:
+
+<Tabs>
+    <Tab title="pnpm">```bash pnpm add @bomb.sh/tab ```</Tab>
+    <Tab title="npm">```bash npm install @bomb.sh/tab ```</Tab>
+    <Tab title="yarn">```bash yarn add @bomb.sh/tab ```</Tab>
+</Tabs>
+
+### Setup
+
+Add the completion command to your CLI:
 
 ```typescript
-import { completionCommand } from "@visulima/cerebro/commands/completion";
+import completionCommand from "@visulima/cerebro/command/completion";
 
 cli.addCommand(completionCommand);
 ```
@@ -204,6 +216,178 @@ cli completion --shell=bash > ~/.bashrc
 cli completion --shell=fish > ~/.config/fish/completions/cli.fish
 cli completion --shell=powershell > cli.ps1
 ```
+
+## README Generation
+
+Generate comprehensive README documentation for your CLI commands automatically.
+
+### Installation
+
+First, install the required dependency:
+
+<Tabs>
+    <Tab title="pnpm">```bash pnpm add github-slugger ```</Tab>
+    <Tab title="npm">```bash npm install github-slugger ```</Tab>
+    <Tab title="yarn">```bash yarn add github-slugger ```</Tab>
+</Tabs>
+
+### Setup
+
+Add the readme command to your CLI:
+
+```typescript
+import readmeCommand from "@visulima/cerebro/command/readme-generator";
+
+cli.addCommand(readmeCommand);
+```
+
+### Basic Usage
+
+Generate a README with all your commands:
+
+```bash
+cli readme
+```
+
+This will:
+- Read or create a `README.md` file
+- Generate usage examples
+- List all commands with descriptions
+- Create a table of contents
+- Replace content between special tags: `<!-- usage -->`, `<!-- commands -->`, `<!-- toc -->`
+
+### README Template
+
+The command uses special HTML comment tags to mark sections:
+
+```markdown
+# My CLI
+
+<!-- usage -->
+<!-- usagestop -->
+
+<!-- commands -->
+<!-- commandsstop -->
+
+<!-- toc -->
+<!-- tocstop -->
+```
+
+The `readme` command will replace content between these tags.
+
+### Options
+
+#### `--readme-path`
+
+Specify a custom README file path:
+
+```bash
+cli readme --readme-path=DOCS.md
+```
+
+#### `--output-dir`
+
+Set output directory for multi-file mode (default: `docs`):
+
+```bash
+cli readme --multi --output-dir=documentation
+```
+
+#### `--multi`
+
+Generate multi-file documentation grouped by command groups:
+
+```bash
+cli readme --multi
+```
+
+This creates separate markdown files for each command group in the output directory.
+
+#### `--aliases`
+
+Include command aliases in the command list:
+
+```bash
+cli readme --aliases
+```
+
+#### `--dry-run`
+
+Preview what would be generated without writing files:
+
+```bash
+cli readme --dry-run
+```
+
+#### `--version`
+
+Specify a custom version for the generated documentation:
+
+```bash
+cli readme --version=2.0.0
+```
+
+#### `--nested-topics-depth`
+
+Control maximum depth for nested topics in multi-file mode:
+
+```bash
+cli readme --multi --nested-topics-depth=2
+```
+
+### Example Workflow
+
+1. **Create a README template** with the special tags:
+
+```markdown
+# My Awesome CLI
+
+<!-- usage -->
+<!-- usagestop -->
+
+<!-- commands -->
+<!-- commandsstop -->
+
+<!-- toc -->
+<!-- tocstop -->
+```
+
+2. **Add the readme command** to your CLI:
+
+```typescript
+import readmeCommand from "@visulima/cerebro/command/readme-generator";
+
+cli.addCommand(readmeCommand);
+```
+
+3. **Generate the README**:
+
+```bash
+cli readme
+```
+
+4. **The README will be updated** with:
+   - Installation and usage instructions
+   - Complete command list with descriptions
+   - Command documentation with options and examples
+   - Table of contents
+
+### Multi-File Documentation
+
+For larger CLIs, use multi-file mode to organize documentation:
+
+```bash
+cli readme --multi --output-dir=docs
+```
+
+This creates:
+- `docs/Build.md` - Commands in the "Build" group
+- `docs/Deploy.md` - Commands in the "Deploy" group
+- And updates `README.md` with links to these files
+
+### Cross-Platform Line Endings
+
+The `readme` command automatically handles different line ending formats (LF, CRLF, CR) and normalizes them to LF for consistent output across platforms.
 
 ## Verbosity Levels
 

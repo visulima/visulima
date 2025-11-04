@@ -61,11 +61,9 @@ export const prepareToolbox = <OD extends OptionDefinition<unknown>>(
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const { _all, positionals } = parsedArgs;
 
-    // Optimize: only merge if booleanValues has entries
     const hasBooleanValues = Object.keys(booleanValues).length > 0;
     const mergedAll = hasBooleanValues ? { ..._all, ...booleanValues } : _all;
 
-    // Optimize: only delete if key exists
     if (POSITIONALS_KEY in mergedAll) {
         // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
         delete mergedAll[POSITIONALS_KEY];
@@ -73,7 +71,6 @@ export const prepareToolbox = <OD extends OptionDefinition<unknown>>(
 
     toolbox.argument = positionals?.[POSITIONALS_KEY] ?? [];
 
-    // Optimize: only merge extraOptions if it has entries
     const hasExtraOptions = Object.keys(extraOptions).length > 0;
 
     toolbox.options = hasExtraOptions ? { ...mergedAll, ...extraOptions } : mergedAll;
@@ -104,11 +101,9 @@ export const processCommandArgs = <OD extends OptionDefinition<unknown>>(
     const commandOptions = command.options ?? [];
     const hasCommandOptions = commandOptions.length > 0;
 
-    // Optimize: avoid spreading when command has no options
     // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
     let arguments_ = hasCommandOptions ? mergeArguments([...commandOptions, ...defaultOptions]) : mergeArguments(defaultOptions);
 
-    // Optimize: only validate if we have arguments to check
     if (arguments_.length > 0) {
         for (const argument of arguments_) {
             if (argument.multiple && argument.lazyMultiple) {
@@ -132,7 +127,6 @@ export const processCommandArgs = <OD extends OptionDefinition<unknown>>(
         ];
     }
 
-    // Optimize: skip boolean processing if no command options
     let argvForParsing: string[];
     let booleanValues: Record<string, unknown>;
 

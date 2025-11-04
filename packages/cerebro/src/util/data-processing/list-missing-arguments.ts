@@ -21,23 +21,18 @@ const listMissingArguments = <OD extends OptionDefinition<any>>(
 ): PossibleOptionDefinition<OD>[] => {
     const missing: PossibleOptionDefinition<OD>[] = [];
 
-    // Single pass through options combining all filter conditions
     for (const config of commandLineConfig) {
-        // Skip if not required (unless already filtered)
         if (!onlyRequired && !config.required) {
             continue;
         }
 
-        // Skip if already present in parsed arguments
         if (parsedArguments[config.name] !== undefined) {
             continue;
         }
 
-        // Handle boolean defaults
         if (config.type?.name === "Boolean") {
             // eslint-disable-next-line no-param-reassign
             parsedArguments[config.name] = false;
-            // Don't add to missing list as it now has a default value
             continue;
         }
 

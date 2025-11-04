@@ -43,14 +43,11 @@ class PluginManager<T extends Logger = Logger> {
             throw new Error(`Plugin "${plugin.name}" is already registered`);
         }
 
-        // Skip debug logging during cold start (only log if debug mode is actually enabled)
-        // Check env directly instead of calling logger.debug which has overhead
         if (process.env.CEREBRO_OUTPUT_LEVEL === String(VERBOSITY_DEBUG)) {
             this.logger.debug(`registering plugin: ${plugin.name}`);
         }
 
         this.plugins.set(plugin.name, plugin);
-        // Invalidate cache when new plugin is registered
         this.cachedDependencyOrder = undefined;
     }
 
@@ -70,15 +67,12 @@ class PluginManager<T extends Logger = Logger> {
             return;
         }
 
-        // Validate dependencies
         this.validateDependencies();
 
-        // Get plugins in dependency order
         const orderedPlugins = this.getDependencyOrder();
 
         this.logger.debug(`initializing ${orderedPlugins.length} plugin(s)...`);
 
-        // Initialize each plugin
         for (const plugin of orderedPlugins) {
             if (typeof plugin.init === "function") {
                 this.logger.debug(`initializing plugin: ${plugin.name}`);
@@ -204,7 +198,6 @@ class PluginManager<T extends Logger = Logger> {
 
             visiting.add(pluginName);
 
-            // Visit dependencies first
             if (plugin.dependencies) {
                 for (const dependency of plugin.dependencies) {
                     visit(dependency);
@@ -216,7 +209,6 @@ class PluginManager<T extends Logger = Logger> {
             ordered.push(plugin);
         };
 
-        // Visit all plugins
         for (const pluginName of this.plugins.keys()) {
             visit(pluginName);
         }

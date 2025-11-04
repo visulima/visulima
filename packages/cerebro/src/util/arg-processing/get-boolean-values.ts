@@ -40,7 +40,6 @@ const getBooleanValues = <OD extends OptionDefinition<any>>(
     optionMapByName?: Map<string, PossibleOptionDefinition<OD>>,
     optionMapByAlias?: Map<string, PossibleOptionDefinition<OD>>,
 ): Partial<OD> => {
-    // Optimize: early return if no options or arguments
     if (options.length === 0 || arguments_.length === 0) {
         return {};
     }

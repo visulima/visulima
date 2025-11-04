@@ -43,14 +43,26 @@ describe(PluginManager, () => {
         it("should register a plugin", () => {
             expect.assertions(2);
 
-            const plugin: Plugin = {
-                name: "test-plugin",
-            };
+            const originalEnv = process.env.CEREBRO_OUTPUT_LEVEL;
 
-            pluginManager.register(plugin);
+            process.env.CEREBRO_OUTPUT_LEVEL = "128";
 
-            expect(pluginManager.hasPlugins()).toBe(true);
-            expect(mockLogger.debug).toHaveBeenCalledWith("registering plugin: test-plugin");
+            try {
+                const plugin: Plugin = {
+                    name: "test-plugin",
+                };
+
+                pluginManager.register(plugin);
+
+                expect(pluginManager.hasPlugins()).toBe(true);
+                expect(mockLogger.debug).toHaveBeenCalledWith("registering plugin: test-plugin");
+            } finally {
+                if (originalEnv === undefined) {
+                    delete process.env.CEREBRO_OUTPUT_LEVEL;
+                } else {
+                    process.env.CEREBRO_OUTPUT_LEVEL = originalEnv;
+                }
+            }
         });
 
         it("should throw error when registering duplicate plugin", () => {

@@ -7,8 +7,6 @@ import { VERBOSITY_DEBUG, VERBOSITY_NORMAL, VERBOSITY_QUIET, VERBOSITY_VERBOSE }
 import defaultOptions from "./default-options";
 import CerebroError from "./errors/cerebro-error";
 import CommandNotFoundError from "./errors/command-not-found-error";
-import CommandValidationError from "./errors/command-validation-error";
-import ConflictingOptionsError from "./errors/conflicting-options-error";
 import PluginManager from "./plugin-manager";
 import type { Cli as ICli, CliRunOptions, CommandSection as ICommandSection, ExtendedLogger, RunCommandOptions } from "./types/cli";
 import type { Command as ICommand, OptionDefinition } from "./types/command";
@@ -26,12 +24,13 @@ import registerExceptionHandler from "./util/general/register-exception-handler"
 import { validateCommandName, validateNonEmptyString, validateObject, validateStringArray } from "./util/general/validate-input";
 import { sanitizeArguments } from "./util/security";
 
-// Pre-compiled regex patterns for option detection (performance optimization)
+// eslint-disable-next-line regexp/no-unused-capturing-group
 const OPTION_REGEX_SHORT = /^-([^\d-])$/;
+// eslint-disable-next-line regexp/no-unused-capturing-group
 const OPTION_REGEX_LONG = /^--(\S+)/;
+// eslint-disable-next-line regexp/no-unused-capturing-group
 const OPTION_REGEX_COMBINED = /^-([^\d-]{2,})$/;
 
-// Helper to check if a string is an option flag
 const isOption = (argument: string): boolean => OPTION_REGEX_SHORT.test(argument) || OPTION_REGEX_LONG.test(argument) || OPTION_REGEX_COMBINED.test(argument);
 
 export type CliOptions<T extends ExtendedLogger = ExtendedLogger> = {
@@ -47,7 +46,7 @@ export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
 
     readonly #options: CliOptions<T>;
 
-    readonly #argv: ReadonlyArray<string>;
+    #argv?: ReadonlyArray<string>;
 
     readonly #cwd: string;
 
@@ -57,7 +56,7 @@ export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
 
     readonly #packageName: string | undefined;
 
-    readonly #pluginManager: PluginManager;
+    #pluginManager?: PluginManager;
 
     readonly #commands: Map<string, ICommand>;
 
@@ -78,7 +77,8 @@ export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
 
     #exceptionHandlerCleanup?: () => void;
 
-    /** Cached arrays for command lookup performance */
+    #exceptionHandlerRegistered = false;
+
     #cachedCommandPathKeys?: string[];
 
     #cachedCommandNames?: string[];
@@ -131,8 +131,68 @@ export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
     }
 
     /**
-     * Common command execution logic shared between run() and runCommand()
-     * This eliminates code duplication and improves maintainability
+     * Gets parsed argv.
+     * @returns Parsed and sanitized argv array
+     */
+    #getArgv(): ReadonlyArray<string> {
+        if (this.#argv === undefined) {
+            const rawArgv = parseRawCommand(this.#options.argv as string[]);
+
+            this.#argv = sanitizeArguments(rawArgv);
+
+            this.#setVerbosityLevel();
+        }
+
+        return this.#argv;
+    }
+
+    /**
+     * Sets verbosity level from argv flags.
+     */
+    #setVerbosityLevel(): void {
+        if (!this.#argv) {
+            return;
+        }
+
+        let verbositySet = false;
+
+        for (const argument of this.#argv) {
+            if (argument === "--quiet" || argument === "-q") {
+                env.CEREBRO_OUTPUT_LEVEL = String(VERBOSITY_QUIET);
+                verbositySet = true;
+                break;
+            }
+
+            if (argument === "--verbose" || argument === "-v") {
+                env.CEREBRO_OUTPUT_LEVEL = String(VERBOSITY_VERBOSE);
+                verbositySet = true;
+                break;
+            }
+
+            if (argument === "--debug" || argument === "-vvv") {
+                env.CEREBRO_OUTPUT_LEVEL = String(VERBOSITY_DEBUG);
+                verbositySet = true;
+                break;
+            }
+        }
+
+        if (!verbositySet) {
+            env.CEREBRO_OUTPUT_LEVEL = Object.hasOwn(env, "DEBUG") ? String(VERBOSITY_DEBUG) : String(VERBOSITY_NORMAL);
+        }
+    }
+
+    /**
+     * Registers exception handlers.
+     */
+    #ensureExceptionHandlers(): void {
+        if (!this.#exceptionHandlerRegistered) {
+            this.#exceptionHandlerCleanup = registerExceptionHandler(this.#logger);
+            this.#exceptionHandlerRegistered = true;
+        }
+    }
+
+    /**
+     * Common command execution logic shared between run() and runCommand().
      */
     #executeCommandInternal(
         command: ICommand,
@@ -151,30 +211,34 @@ export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
         // eslint-disable-next-line @typescript-eslint/naming-convention
         const { arguments_, booleanValues, parsedArgs } = processCommandArgs(command, commandArguments, defaultOptions as OptionDefinition<unknown>[]);
 
+        const hasBooleanValues = Object.keys(booleanValues).length > 0;
         // eslint-disable-next-line no-underscore-dangle
-        const commandArgs = { ...parsedArgs, _all: { ...parsedArgs._all, ...booleanValues } } as typeof parsedArgs;
+        const commandArgs = hasBooleanValues ? ({ ...parsedArgs, _all: { ...parsedArgs._all, ...booleanValues } } as typeof parsedArgs) : parsedArgs;
 
         validateRequiredOptions(arguments_, commandArgs, command);
 
-        // Prepare the execute toolbox
         const toolbox = prepareToolbox(command, parsedArgs, booleanValues, extraOptions);
 
-        // Attach the runtime
         toolbox.runtime = this as ICli;
-        toolbox.argv = this.#argv;
+        toolbox.argv = this.#getArgv();
 
-        // Process options
-        mapNegatableOptions(toolbox, command);
-        mapImpliedOptions(toolbox, command);
+        const hasOptions = command.options && command.options.length > 0;
+
+        if (hasOptions) {
+            mapNegatableOptions(toolbox, command);
+            mapImpliedOptions(toolbox, command);
+        }
 
         validateConflictingOptions(arguments_, toolbox.options, command);
 
-        this.#logger.debug("command options parsed from options:");
-        // eslint-disable-next-line unicorn/no-null
-        this.#logger.debug(JSON.stringify(toolbox.options, null, 2));
-        this.#logger.debug("command argument parsed from argument:");
-        // eslint-disable-next-line unicorn/no-null
-        this.#logger.debug(JSON.stringify(toolbox.argument, null, 2));
+        if (process.env.CEREBRO_OUTPUT_LEVEL === String(VERBOSITY_DEBUG)) {
+            this.#logger.debug("command options parsed from options:");
+            // eslint-disable-next-line unicorn/no-null
+            this.#logger.debug(JSON.stringify(toolbox.options, null, 2));
+            this.#logger.debug("command argument parsed from argument:");
+            // eslint-disable-next-line unicorn/no-null
+            this.#logger.debug(JSON.stringify(toolbox.argument, null, 2));
+        }
 
         return { arguments_, booleanValues, commandArgs, parsedArgs, toolbox };
     }
@@ -190,16 +254,17 @@ export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
      * @param options.packageVersion
      */
     public constructor(cliName: string, options: CliOptions<T> = {}) {
-        // Validate inputs
-        this.#cliName = validateNonEmptyString(cliName, "CLI name");
+        if (typeof cliName !== "string" || cliName.trim().length === 0) {
+            throw new CerebroError("CLI name must be a non-empty string", "INVALID_INPUT", { cliName });
+        }
 
-        this.#options = {
-            argv: process_argv,
-            cwd: process_cwd(),
-            ...options,
-        };
+        this.#cliName = cliName.trim();
 
-        // Validate options
+        const argv = options.argv ?? process_argv;
+        const cwd = options.cwd ?? process_cwd();
+
+        this.#options = { ...options, argv, cwd };
+
         if (this.#options.argv && !Array.isArray(this.#options.argv)) {
             throw new CerebroError("CLI argv option must be an array of strings", "INVALID_INPUT", { argv: this.#options.argv });
         }
@@ -216,18 +281,7 @@ export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
             throw new CerebroError("CLI packageVersion option must be a string", "INVALID_INPUT", { packageVersion: this.#options.packageVersion });
         }
 
-        this.#argv = sanitizeArguments(parseRawCommand(this.#options.argv as string[]));
-
-        // Set verbosity level from command line flags
-        if (this.#argv.includes("--quiet") || this.#argv.includes("-q")) {
-            env.CEREBRO_OUTPUT_LEVEL = String(VERBOSITY_QUIET);
-        } else if (this.#argv.includes("--verbose") || this.#argv.includes("-v")) {
-            env.CEREBRO_OUTPUT_LEVEL = String(VERBOSITY_VERBOSE);
-        } else if (this.#argv.includes("--debug") || this.#argv.includes("-vvv") || Object.hasOwn(env, "DEBUG")) {
-            env.CEREBRO_OUTPUT_LEVEL = String(VERBOSITY_DEBUG);
-        } else {
-            env.CEREBRO_OUTPUT_LEVEL = String(VERBOSITY_NORMAL);
-        }
+        env.CEREBRO_OUTPUT_LEVEL = String(VERBOSITY_NORMAL);
 
         if (typeof this.#options.logger === "object") {
             this.#logger = this.#options.logger;
@@ -247,26 +301,11 @@ export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
         this.#packageName = this.#options.packageName;
         this.#cwd = this.#options.cwd as string;
         this.#defaultCommand = "help";
-        this.#commandSection = {
-            header: `${this.#cliName}${this.#packageVersion ? ` v${this.#packageVersion}` : ""}`,
-        };
+        this.#commandSection = {};
 
         this.#commands = new Map<string, ICommand>();
         this.#commandPaths = new Map<string, string[]>();
         this.#commandsByPath = new Map<string, ICommand>();
-
-        this.#pluginManager = new PluginManager(this.#logger);
-
-        this.#pluginManager.register({
-            description: "Attaches the logger to the toolbox",
-            execute: (toolbox) => {
-                // eslint-disable-next-line no-param-reassign
-                toolbox.logger = this.#logger;
-            },
-            name: "logger",
-        });
-
-        this.#exceptionHandlerCleanup = registerExceptionHandler(this.#logger);
     }
 
     /**
@@ -294,6 +333,10 @@ export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
      * @returns The command section configuration
      */
     public getCommandSection(): ICommandSection {
+        if (!this.#commandSection.header) {
+            this.#commandSection.header = `${this.#cliName}${this.#packageVersion ? ` v${this.#packageVersion}` : ""}`;
+        }
+
         return this.#commandSection;
     }
 
@@ -302,7 +345,7 @@ export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
      *
      * By default, this is set to 'help'. The command must already be registered
      * with the CLI instance.
-     * @param commandName The name of the default command
+     * @param commandName The command name to use as the default
      * @returns The CLI instance for method chaining
      * @example
      * ```typescript
@@ -351,6 +394,7 @@ export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
      * });
      * ```
      */
+    // eslint-disable-next-line sonarjs/cognitive-complexity
     public addCommand<OD extends OptionDefinition<unknown> = OptionDefinition<unknown>>(command: ICommand<OD>): this {
         // Validate command input
         validateObject(command, "Command");
@@ -372,7 +416,6 @@ export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
             validateObject(command.options, "Command options");
         }
 
-        // Validate commandPath if provided
         if (command.commandPath) {
             validateStringArray(command.commandPath, "Command commandPath");
             command.commandPath.forEach((segment) => {
@@ -380,11 +423,9 @@ export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
             });
         }
 
-        // Generate full command path
         const fullPath = getFullCommandPath(command.name, command.commandPath);
         const pathKey = getCommandPathKey(fullPath);
 
-        // Check for duplicate commands (by full path)
         if (this.#commandPaths.has(pathKey)) {
             throw new CerebroError(`Command with path "${pathKey}" already exists`, "DUPLICATE_COMMAND", {
                 commandName: command.name,
@@ -392,57 +433,50 @@ export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
             });
         }
 
-        // Also check for duplicate by name (for backward compatibility)
         if (this.#commands.has(command.name) && !command.commandPath) {
             throw new CerebroError(`Command with name "${command.name}" already exists`, "DUPLICATE_COMMAND", { commandName: command.name });
         }
 
-        command.options?.map((option) => mapOptionTypeLabel<OD>(option));
+        if (command.options) {
+            for (const option of command.options) {
+                mapOptionTypeLabel<OD>(option);
+            }
+        }
 
         validateDuplicateOptions(command);
         addNegatableOptions(command as { name: string; options?: OptionDefinition<unknown>[] });
         processOptionNames(command as { options?: OptionDefinition<unknown>[] });
 
-        // Pre-compute validation metadata for runtime performance
-        // This moves validation overhead from every execution to one-time registration
         if (command.options) {
-            // Pre-compute conflicting options (used in validateConflictingOptions)
             // eslint-disable-next-line no-param-reassign, no-underscore-dangle
-            command.__conflictingOptions__ = command.options.filter((option) => option.conflicts !== undefined);
-
-            // Pre-compute required options (used in validateRequiredOptions)
+            command.__conflictingOptions__ = command.options.filter((option) => option.conflicts !== undefined) as typeof command.__conflictingOptions__;
             // eslint-disable-next-line no-param-reassign, no-underscore-dangle
-            command.__requiredOptions__ = command.options.filter((option) => option.required === true);
+            command.__requiredOptions__ = command.options.filter((option) => option.required === true) as typeof command.__requiredOptions__;
         }
 
-        // Store command by both name (for backward compatibility) and full path
         this.#commands.set(command.name, command);
         this.#commandPaths.set(pathKey, fullPath);
-        // Store command by full path key for correct nested command resolution
         this.#commandsByPath.set(pathKey, command);
 
-        // Invalidate cache when commands are added
         this.#invalidateCommandCache();
 
         if (command.alias !== undefined) {
-            let aliases: string[] = command.alias as string[];
+            const aliases = typeof command.alias === "string" ? [command.alias] : (command.alias as string[]);
 
-            if (typeof command.alias === "string") {
-                aliases = [command.alias];
-            }
-
-            aliases.forEach((alias) => {
-                this.#logger.debug("adding alias", alias);
+            for (const alias of aliases) {
+                if (process.env.CEREBRO_OUTPUT_LEVEL === String(VERBOSITY_DEBUG)) {
+                    this.#logger.debug("adding alias", alias);
+                }
 
                 if (this.#commands.has(alias)) {
                     throw new CerebroError(`Command alias "${alias}" conflicts with existing command`, "DUPLICATE_COMMAND", {
                         alias,
                         commandName: command.name,
                     });
-                } else {
-                    this.#commands.set(alias, command);
                 }
-            });
+
+                this.#commands.set(alias, command);
+            }
         }
 
         return this;
@@ -466,7 +500,7 @@ export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
      * ```
      */
     public addPlugin(plugin: Plugin): this {
-        this.#pluginManager.register(plugin);
+        this.getPluginManager().register(plugin);
 
         return this;
     }
@@ -476,6 +510,20 @@ export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
      * @returns The plugin manager instance
      */
     public getPluginManager(): PluginManager {
+        if (this.#pluginManager) {
+            return this.#pluginManager;
+        }
+
+        this.#pluginManager = new PluginManager(this.#logger);
+        this.#pluginManager.register({
+            description: "Attaches the logger to the toolbox",
+            execute: (toolbox) => {
+                // eslint-disable-next-line no-param-reassign
+                toolbox.logger = this.#logger;
+            },
+            name: "logger",
+        });
+
         return this.#pluginManager;
     }
 
@@ -532,7 +580,6 @@ export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
      * ```
      */
     public dispose(): void {
-        // Remove exception handlers to prevent memory leaks
         this.#exceptionHandlerCleanup?.();
     }
 
@@ -547,8 +594,7 @@ export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
      * @param extraOptions.autoDispose Whether to automatically cleanup/dispose resources after execution (default: true)
      * @returns A promise that resolves when execution completes
      * @throws {CommandNotFoundError} If the specified command doesn't exist
-     * @throws {CommandValidationError} If command arguments are invalid
-     * @throws {ConflictingOptionsError} If conflicting options are provided
+     * @throws {Error} If command arguments are invalid or conflicting options are provided
      * @example
      * ```typescript
      * // Run with default behavior (exits process and auto-disposes)
@@ -570,40 +616,43 @@ export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
             this.addCommand(new HelpCommand(this.#commands));
         }
 
-        // Use cached arrays for performance
         const commandNames = this.#getCommandNames();
-        // Use existing Map directly instead of creating a new one
         const commandPathMap = this.#commandPaths;
 
+        this.#ensureExceptionHandlers();
+
+        const argv = this.#getArgv();
+
         let parsedCommandPath: string[] | undefined;
-        let remainingArgv: string[] = [...this.#argv];
+        let remainingArgv: string[] = [...argv];
 
         this.#logger.debug(`process.execPath: ${execPath}`);
         this.#logger.debug(`process.execArgv: ${execArgv.join(" ")}`);
         this.#logger.debug(`process.argv: ${process_argv.join(" ")}`);
 
-        // Try to parse nested command first
-        const nestedResult = parseNestedCommand(commandPathMap, [...this.#argv]);
+        const nestedResult = parseNestedCommand(commandPathMap, [...argv]);
 
         if (nestedResult.commandPath) {
-            // Found a nested command match
             parsedCommandPath = nestedResult.commandPath;
             remainingArgv = nestedResult.argv;
         } else {
-            // If nested parsing failed but we have multiple tokens, try to form the attempted path
-            if (this.#argv.length > 1 && this.#argv[0] && this.#argv[1] && !isOption(this.#argv[0]) && !isOption(this.#argv[1])) {
-                // This looks like a nested command attempt that failed
+            if (argv.length > 1 && argv[0] && argv[1] && !isOption(argv[0]) && !isOption(argv[1])) {
                 const attemptedPath: string[] = [];
                 let i = 0;
 
-                while (i < this.#argv.length && this.#argv[i] && !isOption(this.#argv[i])) {
-                    attemptedPath.push(this.#argv[i]);
+                while (i < argv.length) {
+                    const argument = argv[i];
+
+                    if (!argument || isOption(argument)) {
+                        break;
+                    }
+
+                    attemptedPath.push(argument);
                     i += 1;
                 }
 
                 const attemptedPathKey = getCommandPathKey(attemptedPath);
 
-                // Only throw error if no flat command matches the first token
                 if (attemptedPath[0] && !commandNames.includes(attemptedPath[0])) {
                     const allCommandPaths = this.#getAllCommandPaths();
                     const alternatives = findAlternatives(attemptedPathKey, allCommandPaths);
@@ -612,15 +661,12 @@ export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
                 }
             }
 
-            // Fall back to flat command parsing for backward compatibility
             let parsedArguments: { argv: string[]; command: string | null | undefined };
 
             try {
                 // eslint-disable-next-line unicorn/no-null
-                parsedArguments = commandLineCommands([null, ...commandNames], [...this.#argv]);
+                parsedArguments = commandLineCommands([null, ...commandNames], [...argv]);
             } catch (error) {
-                // CLI needs a valid command name to do anything. If the given
-                // command is invalid, throw a structured error with suggestions.
                 if (error instanceof Error && error.name === "INVALID_COMMAND" && "command" in error) {
                     const invalidCommand = (error as { command: string }).command;
                     const allCommandPaths = this.#getAllCommandPaths();
@@ -638,7 +684,6 @@ export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
             }
         }
 
-        // Use default command if no command was parsed
         if (!parsedCommandPath) {
             if (this.#defaultCommand) {
                 parsedCommandPath = [this.#defaultCommand];
@@ -649,18 +694,14 @@ export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
             }
         }
 
-        // Find the command by its full path
         const pathKey = getCommandPathKey(parsedCommandPath);
         const storedPath = this.#commandPaths.get(pathKey);
 
-        // Use path-based lookup when stored path exists, fallback to leaf name for backward compatibility
         let command: ICommand | undefined;
 
         if (storedPath) {
-            // Resolve by full path key (handles cases where different paths share same leaf name)
             command = this.#commandsByPath.get(pathKey);
 
-            // Verify the command matches the expected path
             if (!command || getCommandPathKey(storedPath) !== pathKey) {
                 const allCommandPaths = this.#getAllCommandPaths();
                 const alternatives = findAlternatives(pathKey, allCommandPaths);
@@ -668,7 +709,6 @@ export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
                 throw new CommandNotFoundError(pathKey, alternatives);
             }
         } else {
-            // Fallback to leaf name lookup (backward compatibility for flat commands)
             const commandName = parsedCommandPath[parsedCommandPath.length - 1];
 
             command = commandName ? this.#commands.get(commandName) : undefined;
@@ -689,13 +729,13 @@ export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
 
         const commandArguments = remainingArgv;
 
-        // Use shared execution logic
         const { commandArgs, toolbox } = this.#executeCommandInternal(command, commandArguments, otherExtraOptions, pathKey);
 
+        const pluginManager = this.getPluginManager();
+
         try {
-            // initialize plugins on first run (fast path: skip if no plugins registered)
-            if (!this.#pluginsInitialized && this.#pluginManager.hasPlugins()) {
-                await this.#pluginManager.init({
+            if (!this.#pluginsInitialized && pluginManager.hasPlugins()) {
+                await pluginManager.init({
                     cli: this as ICli,
                     cwd: this.#cwd,
                     logger: this.#logger,
@@ -704,13 +744,10 @@ export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
                 this.#pluginsInitialized = true;
             }
 
-            // execute plugins that need to modify the toolbox (fast path: automatically skips if no plugins)
-            await this.#pluginManager.executeLifecycle("execute", toolbox);
+            await pluginManager.executeLifecycle("execute", toolbox);
 
-            // Execute beforeCommand hooks
-            await this.#pluginManager.executeLifecycle("beforeCommand", toolbox);
+            await pluginManager.executeLifecycle("beforeCommand", toolbox);
 
-            // Check for special flags and route to appropriate commands
             let result: unknown;
 
             if (commandArgs.global?.help) {
@@ -730,22 +767,17 @@ export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
 
                 result = await executeCommand(versionCommand, toolbox, commandArgs);
             } else {
-                // Execute the regular command
                 result = await executeCommand(command, toolbox, commandArgs);
             }
 
-            // Execute afterCommand hooks
-            await this.#pluginManager.executeLifecycle("afterCommand", toolbox, result);
+            await pluginManager.executeLifecycle("afterCommand", toolbox, result);
 
             return shouldExitProcess ? exit(0) : undefined;
         } catch (error) {
-            // Execute error handlers
-            await this.#pluginManager.executeErrorHandlers(error as Error, toolbox);
+            await pluginManager.executeErrorHandlers(error as Error, toolbox);
 
-            // Re-throw the error
             throw error;
         } finally {
-            // Automatically clean up resources to prevent memory leaks
             if (autoDispose) {
                 this.dispose();
             }
@@ -779,24 +811,13 @@ export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
     public async runCommand(commandName: string, options: RunCommandOptions = {}): Promise<unknown> {
         const { argv: providedArgv = [], ...extraOptions } = options;
 
-        // Validate command name
         validateNonEmptyString(commandName, "Command name");
 
-        // Try to find command by full path first (for nested commands)
-        // commandName can be either a simple name or a space-separated path
         const commandPath = commandName.split(" ").filter(Boolean);
         const pathKey = getCommandPathKey(commandPath);
         const storedPath = this.#commandPaths.get(pathKey);
 
-        let command: ICommand | undefined;
-
-        if (storedPath) {
-            // Resolve by full path key (handles cases where different paths share same leaf name)
-            command = this.#commandsByPath.get(pathKey);
-        } else {
-            // Fall back to simple name lookup (backward compatibility)
-            command = this.#commands.get(commandName);
-        }
+        const command: ICommand | undefined = storedPath ? this.#commandsByPath.get(pathKey) : this.#commands.get(commandName);
 
         if (!command) {
             const allCommandPaths = this.#getAllCommandPaths();
@@ -809,18 +830,17 @@ export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
             throw new CerebroError(`Command "${command.name}" has no function to execute`, "INVALID_COMMAND", { commandName: command.name });
         }
 
-        // Sanitize and parse arguments
         const sanitizedArgv = sanitizeArguments(providedArgv);
         const commandArguments = [...sanitizedArgv];
 
         this.#logger.debug(`running command '${commandName}' programmatically with args: ${commandArguments.join(", ")}`);
 
-        // Use shared execution logic
         const { commandArgs, toolbox } = this.#executeCommandInternal(command, commandArguments, extraOptions, pathKey || commandName);
 
-        // Initialize plugins if needed (fast path: skip if no plugins registered)
-        if (!this.#pluginsInitialized && this.#pluginManager.hasPlugins()) {
-            await this.#pluginManager.init({
+        const pluginManager = this.getPluginManager();
+
+        if (!this.#pluginsInitialized && pluginManager.hasPlugins()) {
+            await pluginManager.init({
                 cli: this as ICli,
                 cwd: this.#cwd,
                 logger: this.#logger,
@@ -829,14 +849,11 @@ export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
             this.#pluginsInitialized = true;
         }
 
-        // Execute plugins that need to modify the toolbox (fast path: automatically skips if no plugins)
-        await this.#pluginManager.executeLifecycle("execute", toolbox);
+        await pluginManager.executeLifecycle("execute", toolbox);
 
         try {
-            // Execute beforeCommand hooks
-            await this.#pluginManager.executeLifecycle("beforeCommand", toolbox);
+            await pluginManager.executeLifecycle("beforeCommand", toolbox);
 
-            // Check for special flags and route to appropriate commands
             let result: unknown;
 
             if (commandArgs.global?.help) {
@@ -856,19 +873,15 @@ export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
 
                 result = await executeCommand(versionCommand, toolbox, commandArgs);
             } else {
-                // Execute the regular command
                 result = await executeCommand(command, toolbox, commandArgs);
             }
 
-            // Execute afterCommand hooks
-            await this.#pluginManager.executeLifecycle("afterCommand", toolbox, result);
+            await pluginManager.executeLifecycle("afterCommand", toolbox, result);
 
             return result;
         } catch (error) {
-            // Execute error handlers
-            await this.#pluginManager.executeErrorHandlers(error as Error, toolbox);
+            await pluginManager.executeErrorHandlers(error as Error, toolbox);
 
-            // Re-throw the error
             throw error;
         }
     }

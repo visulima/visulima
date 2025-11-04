@@ -11,16 +11,12 @@ export const parseNestedCommand = (availableCommands: Map<string, string[]>, arg
         return { argv: [], commandPath: null };
     }
 
-    // Try to match progressively longer command paths
-    // Start with single token, then two tokens, etc.
-    // Optimize: build path key incrementally instead of joining entire array each time
     const pathKeyParts: string[] = [];
 
     for (let depth = 1; depth <= argv.length; depth++) {
         pathKeyParts.push(argv[depth - 1]);
         const pathKey = pathKeyParts.join(" ");
 
-        // Check if this path matches a registered command
         if (availableCommands.has(pathKey)) {
             const remainingArgv = argv.slice(depth);
 
@@ -28,7 +24,6 @@ export const parseNestedCommand = (availableCommands: Map<string, string[]>, arg
         }
     }
 
-    // No match found
     return { argv, commandPath: null };
 };
 

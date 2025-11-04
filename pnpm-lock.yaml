@@ -966,6 +966,9 @@ importers:
       eslint:
         specifier: 9.38.0
         version: 9.38.0(jiti@2.6.1)
+      github-slugger:
+        specifier: 2.0.0
+        version: 2.0.0
       prettier:
         specifier: ^3.6.2
         version: 3.6.2
@@ -1068,6 +1071,12 @@ importers:
       '@visulima/pail':
         specifier: workspace:*
         version: link:../../../pail
+
+  packages/cerebro/examples/nested-commands:
+    dependencies:
+      '@visulima/cerebro':
+        specifier: workspace:*
+        version: link:../..
 
   packages/cerebro/examples/options:
     dependencies:
