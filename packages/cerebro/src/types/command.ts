@@ -94,6 +94,42 @@ export interface EnvDefinition<T = string> {
 
 export type PossibleEnvDefinition = EnvDefinition<boolean> | EnvDefinition<number> | EnvDefinition<string>;
 
+/**
+ * Command interface with type-safe options and environment variables.
+ * @template O - The option definition type
+ * @template TContext - The toolbox context type (allows custom typing for better autocomplete)
+ * @example
+ * ```typescript
+ * // Define your options type for autocomplete
+ * type BuildOptions = {
+ *   output?: string;
+ *   production?: boolean;
+ *   watch?: boolean;
+ * };
+ *
+ * type BuildEnv = {
+ *   apiKey?: string;
+ *   debug?: boolean;
+ * };
+ *
+ * cli.addCommand({
+ *   name: "build",
+ *   options: [
+ *     { name: "output", type: String, alias: "o" },
+ *     { name: "production", type: Boolean },
+ *     { name: "watch", type: Boolean }
+ *   ],
+ *   env: [
+ *     { name: "API_KEY", type: String },
+ *     { name: "DEBUG", type: Boolean }
+ *   ],
+ *   execute: ({ options, env }: Toolbox<Console, BuildOptions, BuildEnv>) => {
+ *     // Full autocomplete on options and env!
+ *     console.log(options.output, options.production, env.apiKey);
+ *   }
+ * });
+ * ```
+ */
 export interface Command<O extends OptionDefinition<unknown> = OptionDefinition<unknown>, TContext extends IToolbox = IToolbox> {
     /**
      * @internal
