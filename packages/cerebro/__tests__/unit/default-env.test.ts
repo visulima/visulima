@@ -1,7 +1,6 @@
 import { describe, expect, expectTypeOf, it } from "vitest";
 
 import defaultEnv from "../../src/default-env";
-import type { EnvDefinition } from "../../src/types/command";
 
 describe("default-env", () => {
     it("should export an array of environment variable definitions", () => {
@@ -14,10 +13,10 @@ describe("default-env", () => {
     it("should have all required properties for each env definition", () => {
         expect.assertions(defaultEnv.length);
 
-        for (const envDef of defaultEnv) {
-            expect(envDef).toHaveProperty("name");
+        for (const envDefinition of defaultEnv) {
+            expect(envDefinition).toHaveProperty("name");
 
-            expectTypeOf(envDef.name).toBeString();
+            expectTypeOf(envDefinition.name).toBeString();
         }
     });
 
@@ -74,22 +73,23 @@ describe("default-env", () => {
 
         const validTypes = [String, Number, Boolean];
 
-        for (const envDef of defaultEnv) {
-            if (envDef.type) {
-                expect(validTypes).toContain(envDef.type);
+        for (const envDefinition of defaultEnv) {
+            if (envDefinition.type) {
+                expect(validTypes).toContain(envDefinition.type);
             }
         }
     });
 
     it("should have descriptions for all environment variables", () => {
+        // eslint-disable-next-line vitest/prefer-expect-assertions
         expect.assertions(defaultEnv.length * 2);
 
-        for (const envDef of defaultEnv) {
-            expect(envDef.description).toBeDefined();
+        for (const envDefinition of defaultEnv) {
+            expect(envDefinition.description).toBeDefined();
 
-            expectTypeOf(envDef.description).toBeString();
+            expectTypeOf(envDefinition.description).toBeString();
 
-            expect(envDef.description?.length).toBeGreaterThan(0);
+            expect(envDefinition.description?.length).toBeGreaterThan(0);
         }
     });
 });

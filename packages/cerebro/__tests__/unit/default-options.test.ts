@@ -12,6 +12,7 @@ describe("default-options", () => {
     });
 
     it("should have all options with required properties", () => {
+        // eslint-disable-next-line vitest/prefer-expect-assertions
         expect.assertions(defaultOptions.length * 3);
 
         defaultOptions.forEach((option) => {
@@ -22,6 +23,7 @@ describe("default-options", () => {
     });
 
     it("should have all options in global group", () => {
+        // eslint-disable-next-line vitest/prefer-expect-assertions
         expect.assertions(defaultOptions.length);
 
         defaultOptions.forEach((option) => {
@@ -102,6 +104,7 @@ describe("default-options", () => {
     });
 
     it("should have all options as Boolean type", () => {
+        // eslint-disable-next-line vitest/prefer-expect-assertions
         expect.assertions(defaultOptions.length);
 
         defaultOptions.forEach((option) => {

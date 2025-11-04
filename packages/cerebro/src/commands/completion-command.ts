@@ -1,9 +1,7 @@
-import { env } from "node:process";
-
 import tab from "@bomb.sh/tab";
 
 import CompletionError from "../errors/completion-error";
-import type { Command as ICommand, OptionDefinition } from "../types/command";
+import type { Command as ICommand, EnvDefinition, OptionDefinition } from "../types/command";
 import type { Toolbox as IToolbox } from "../types/toolbox";
 
 const validShells = ["bash", "zsh", "fish", "powershell"];
@@ -32,11 +30,13 @@ const detectRuntime = (): string => {
 
 /**
  * Detects the current shell from environment variables.
+ * @param toolboxEnv Optional env object from toolbox (camelCase keys)
  * @returns The detected shell name or undefined if not detected
  */
-const detectShell = (): string | undefined => {
-    // Check SHELL environment variable (Unix-like systems)
-    const shell = env.STARSHIP_SHELL ?? env.SHELL;
+const detectShell = (toolboxEnv?: Record<string, unknown>): string | undefined => {
+    // Prefer shell from toolbox.env if available (camelCase: STARSHIP_SHELL -> starshipShell, SHELL -> shell)
+    const starshipShell = toolboxEnv?.starshipShell as string | undefined;
+    const shell = starshipShell ?? toolboxEnv?.shell as string | undefined;
 
     if (shell) {
         const shellPath = shell.toLowerCase();
@@ -54,13 +54,18 @@ const detectShell = (): string | undefined => {
         }
     }
 
-    // Check for PowerShell on Windows
-    if (env.PSModulePath || env.PROMPT?.includes("PS")) {
+    // Check for PowerShell on Windows (from toolbox.env or process.env)
+    const psModulePath = toolboxEnv?.psModulePath as string | undefined;
+    const prompt = toolboxEnv?.prompt as string | undefined;
+
+    if (psModulePath || prompt?.includes("PS")) {
         return "powershell";
     }
 
     // Check ComSpec for Windows Command Prompt (not supported, but return bash as fallback)
-    if (env.ComSpec?.toLowerCase().includes("cmd.exe")) {
+    const comSpec = toolboxEnv?.comSpec as string | undefined;
+
+    if (comSpec?.toLowerCase().includes("cmd.exe")) {
         return "bash"; // Fallback to bash
     }
 
@@ -173,10 +178,38 @@ const printUsageInstructions = (logger: Console, cliName: string): void => {
  */
 const completionCommand: ICommand = {
     description: "Generate shell completion scripts",
-    execute: async ({ logger, options, runtime }: IToolbox) => {
+    env: [
+        {
+            description: "Shell path (Unix-like systems). Used for shell detection.",
+            name: "SHELL",
+            type: String,
+        } satisfies EnvDefinition<string>,
+        {
+            description: "Starship shell configuration. Takes precedence over SHELL for detection.",
+            name: "STARSHIP_SHELL",
+            type: String,
+        } satisfies EnvDefinition<string>,
+        {
+            description: "PowerShell module path (Windows). Used for PowerShell detection.",
+            name: "PSModulePath",
+            type: String,
+        } satisfies EnvDefinition<string>,
+        {
+            description: "Command prompt variable (Windows). Used for PowerShell detection.",
+            name: "PROMPT",
+            type: String,
+        } satisfies EnvDefinition<string>,
+        {
+            description: "Command processor (Windows). Used for Windows Command Prompt detection.",
+            name: "ComSpec",
+            type: String,
+        } satisfies EnvDefinition<string>,
+    ],
+    execute: async ({ env: toolboxEnv, logger, options, runtime }: IToolbox) => {
         const cliName = runtime.getCliName();
 
-        const shell = options?.shell as string;
+        // Use shell from options, or detect from toolbox.env or process.env
+        const shell = (options?.shell as string) || detectShell(toolboxEnv);
 
         if (!shell) {
             printUsageInstructions(logger, cliName);

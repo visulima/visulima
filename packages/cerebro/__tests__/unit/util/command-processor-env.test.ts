@@ -3,7 +3,6 @@ import { afterAll, beforeEach, describe, expect, it } from "vitest";
 
 import { POSITIONALS_KEY } from "../../../src/constants";
 import type { Command as ICommand } from "../../../src/types/command";
-import type { Toolbox as IToolbox } from "../../../src/types/toolbox";
 import { prepareToolbox } from "../../../src/util/command-processing/command-processor";
 
 // Mock process.env

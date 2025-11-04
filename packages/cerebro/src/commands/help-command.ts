@@ -1,9 +1,9 @@
-import { cyan, green, inverse, magenta, yellow } from "@visulima/colorize";
+import { cyan, green, inverse, yellow } from "@visulima/colorize";
 
 import defaultEnv from "../default-env";
 import defaultOptions from "../default-options";
 import type { Cli as ICli } from "../types/cli";
-import type { Command as ICommand, EnvDefinition, OptionDefinition } from "../types/command";
+import type { Command as ICommand, OptionDefinition } from "../types/command";
 import type { Section } from "../types/command-line-usage";
 import type { Toolbox as IToolbox } from "../types/toolbox";
 import commandLineUsage from "../util/command-line-usage";
@@ -21,21 +21,6 @@ const printGeneralHelp = (logger: Console, runtime: ICli, commands: Map<string, 
     if (groupOption) {
         filteredCommands = filteredCommands.filter((command) => command.group === groupOption);
     }
-
-    // Group commands by their commandPath for hierarchical display
-    // eslint-disable-next-line unicorn/no-array-reduce
-    const commandsByPath: Record<string, ICommand[]> = filteredCommands.reduce<Record<string, ICommand[]>>((accumulator, command) => {
-        const pathKey = command.commandPath ? command.commandPath.join(" ") : "";
-        const displayKey = pathKey || EMPTY_GROUP_KEY;
-
-        if (!accumulator[displayKey]) {
-            accumulator[displayKey] = [];
-        }
-
-        (accumulator[displayKey] as ICommand[]).push(command);
-
-        return accumulator;
-    }, {});
 
     // eslint-disable-next-line unicorn/no-array-reduce
     const groupedCommands: Record<string, ICommand[]> = filteredCommands.reduce<Record<string, ICommand[]>>((accumulator, command) => {

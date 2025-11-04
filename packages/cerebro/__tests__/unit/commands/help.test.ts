@@ -292,7 +292,7 @@ describe("command/help", () => {
         const envSection = usageCalls.find((section) => section.header?.includes("Environment Variables"));
 
         expect(envSection).toBeDefined();
-        expect(envSection?.content).toEqual([["TEST_ENV_VAR", "Test environment variable"]]);
+        expect(envSection?.content).toStrictEqual([["TEST_ENV_VAR", "Test environment variable"]]);
         expect(loggerMock.raw).toHaveBeenNthCalledWith(3, "Test footer");
     });
 
@@ -331,7 +331,7 @@ describe("command/help", () => {
         const envSection = usageCalls.find((section) => section.header?.includes("Environment Variables"));
 
         expect(envSection).toBeDefined();
-        expect(envSection?.content).toEqual([["VISIBLE_VAR", "Visible env var"]]);
+        expect(envSection?.content).toStrictEqual([["VISIBLE_VAR", "Visible env var"]]);
         expect(envSection?.content).not.toContainEqual(["HIDDEN_VAR", "Hidden env var"]);
     });
 });
