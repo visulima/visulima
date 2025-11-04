@@ -8,19 +8,27 @@ const validShells = ["bash", "zsh", "fish", "powershell"];
 const validRuntimes = ["node", "bun", "deno"];
 
 /**
+ * Type guard to check if Deno is available in global scope.
+ */
+const hasDeno = (global: typeof globalThis): global is typeof globalThis & { Deno: unknown } => "Deno" in global;
+
+/**
+ * Type guard to check if Bun is available in global scope.
+ */
+const hasBun = (global: typeof globalThis): global is typeof globalThis & { Bun: unknown } => "Bun" in global;
+
+/**
  * Detects the current JavaScript runtime.
  * @returns The detected runtime (node, bun, or deno)
  */
 const detectRuntime = (): string => {
     // Check for Deno
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    if ((globalThis as any).Deno !== undefined) {
+    if (hasDeno(globalThis)) {
         return "deno";
     }
 
     // Check for Bun
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    if ((globalThis as any).Bun !== undefined) {
+    if (hasBun(globalThis)) {
         return "bun";
     }
 
@@ -73,12 +81,40 @@ const detectShell = (toolboxEnv?: Record<string, unknown>): string | undefined =
 };
 
 /**
+ * Minimal interface for tab library command instance
+ */
+interface TabCommand {
+    option: (name: string | string[], description: string) => void;
+}
+
+/**
+ * Minimal interface for tab library instance
+ */
+interface TabInstance {
+    command: (name: string, description: string) => TabCommand;
+    setup: (cliName: string, scriptPath: string, shell: string) => void;
+}
+
+// Type assertion for tab library - it provides command() and setup() methods
+const tabInstance = tab as TabInstance;
+
+/**
  * Registers options for a command.
  * @param cmd The command instance
  * @param options Command options to register
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const registerCommandOptions = (cmd: any, options: OptionDefinition<unknown>[]): void => {
+const registerCommandOptions = <O extends OptionDefinition<unknown>>(
+    cmd: TabCommand,
+    options: ReadonlyArray<
+        | O
+        | OptionDefinition<boolean[]>
+        | OptionDefinition<boolean>
+        | OptionDefinition<number[]>
+        | OptionDefinition<number>
+        | OptionDefinition<string[]>
+        | OptionDefinition<string>
+    >,
+): void => {
     for (const option of options) {
         if (option.hidden) {
             continue;
@@ -101,8 +137,8 @@ const registerCommandOptions = (cmd: any, options: OptionDefinition<unknown>[]):
  * @param tabInstance The tab instance to register commands with
  * @param commands Map of CLI commands to register
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const registerCommands = (tabInstance: any, commands: Map<string, ICommand>): void => {
+// eslint-disable-next-line @typescript-eslint/no-shadow
+const registerCommands = (tabInstance: TabInstance, commands: Map<string, ICommand>): void => {
     for (const [commandName, command] of commands) {
         // Skip aliases and hidden commands
         if (command.name !== commandName || command.hidden) {
@@ -222,13 +258,13 @@ const completionCommand: ICommand = {
             validateShell(shell);
             validateRuntime(options?.runtime as string | undefined);
             // Register all commands from the CLI
-            registerCommands(tab, runtime.getCommands());
+            registerCommands(tabInstance, runtime.getCommands());
 
             // Use provided runtime or detect it
             const jsRuntime = (options?.runtime as string) || detectRuntime();
             const scriptPath = `${jsRuntime} ${cliName}`;
 
-            tab.setup(cliName, scriptPath, shell);
+            tabInstance.setup(cliName, scriptPath, shell);
         } catch (error) {
             if (error instanceof CompletionError) {
                 const errorMessages = [`Failed to generate completion script: ${error.message}`, `Error code: ${error.code}`];

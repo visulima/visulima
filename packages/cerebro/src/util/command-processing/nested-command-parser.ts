@@ -13,7 +13,13 @@ export const parseNestedCommand = (availableCommands: Map<string, string[]>, arg
     const pathKeyParts: string[] = [];
 
     for (let depth = 1; depth <= argv.length; depth += 1) {
-        pathKeyParts.push(argv[depth - 1]);
+        const argument = argv[depth - 1];
+
+        if (argument === undefined) {
+            break;
+        }
+
+        pathKeyParts.push(argument);
         const pathKey = pathKeyParts.join(" ");
 
         if (availableCommands.has(pathKey)) {

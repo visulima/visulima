@@ -73,7 +73,20 @@ export const addNegatableOptions = <OD extends OptionDefinition<unknown>>(comman
  * @param command The command object with option definitions
  * @param command.options The command options array
  */
-export const mapNegatableOptions = (toolbox: IToolbox, command: { options?: OptionDefinition<unknown>[] }): void => {
+export const mapNegatableOptions = <O extends OptionDefinition<unknown>>(
+    toolbox: IToolbox,
+    command: {
+        options?: ReadonlyArray<
+            | O
+            | OptionDefinition<boolean[]>
+            | OptionDefinition<boolean>
+            | OptionDefinition<number[]>
+            | OptionDefinition<number>
+            | OptionDefinition<string[]>
+            | OptionDefinition<string>
+        >;
+    },
+): void => {
     if (!command.options || command.options.length === 0) {
         return;
     }
@@ -88,7 +101,7 @@ export const mapNegatableOptions = (toolbox: IToolbox, command: { options?: Opti
     const optionMapByName = new Map<string, OptionDefinition<unknown>>();
 
     for (const option of command.options) {
-        optionMapByName.set(option.name, option);
+        optionMapByName.set(option.name, option as OptionDefinition<unknown>);
     }
 
     for (const key of negatableKeys) {
@@ -110,8 +123,22 @@ export const mapNegatableOptions = (toolbox: IToolbox, command: { options?: Opti
  * @param command The command object with option definitions
  * @param command.options The command options array
  */
-// eslint-disable-next-line sonarjs/cognitive-complexity
-export const mapImpliedOptions = (toolbox: IToolbox, command: { options?: OptionDefinition<unknown>[] }): void => {
+
+export const mapImpliedOptions = <O extends OptionDefinition<unknown>>(
+    toolbox: IToolbox,
+    command: {
+        options?: ReadonlyArray<
+            | O
+            | OptionDefinition<boolean[]>
+            | OptionDefinition<boolean>
+            | OptionDefinition<number[]>
+            | OptionDefinition<number>
+            | OptionDefinition<string[]>
+            | OptionDefinition<string>
+        >;
+    },
+    // eslint-disable-next-line sonarjs/cognitive-complexity
+): void => {
     if (!command.options || command.options.length === 0) {
         return;
     }
@@ -120,7 +147,7 @@ export const mapImpliedOptions = (toolbox: IToolbox, command: { options?: Option
 
     for (const option of command.options) {
         if (option.__camelCaseName__ && option.__negated__ === undefined && option.implies !== undefined) {
-            optionMapByCamelCase.set(option.__camelCaseName__, option);
+            optionMapByCamelCase.set(option.__camelCaseName__, option as OptionDefinition<unknown>);
         }
     }
 

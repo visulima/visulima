@@ -10,8 +10,7 @@ export interface Toolbox<T extends Console = Console> extends Cerebro.ExtensionO
     argument: string[];
 
     /* The original argv value. */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    argv: Record<string, any>;
+    argv: ReadonlyArray<string>;
 
     /**
      * The command that is being executed.

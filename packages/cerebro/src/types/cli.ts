@@ -5,12 +5,11 @@ import type { Plugin } from "./plugin";
 export type CommandSection = { footer?: string; header?: string };
 
 export type ExtendedLogger = Console & {
-    debug: (...args: any[]) => void;
+    debug: (...args: unknown[]) => void;
 };
 
 export type CliRunOptions = {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    [key: string]: any;
+    [key: string]: unknown;
 
     /**
      * Whether to automatically dispose/cleanup the CLI instance after execution
@@ -27,8 +26,7 @@ export type RunCommandOptions = {
      * Use this to override or add additional options programmatically.
      * @default Empty object
      */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    [key: string]: any;
+    [key: string]: unknown;
 
     /**
      * Command-line arguments to pass to the command.
@@ -45,8 +43,7 @@ export interface Cli {
      * @param command The command to add.
      * @returns self
      */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    addCommand: <OD extends OptionDefinition<any> = any>(command: ICommand<OD>) => this;
+    addCommand: <OD extends OptionDefinition<unknown> = OptionDefinition<unknown>>(command: ICommand<OD>) => this;
 
     /**
      * Add a plugin to extend the CLI functionality

@@ -104,8 +104,10 @@ const formatCommandHelp = (command: ICommand, cliName: string): string => {
     if (Array.isArray(command.options) && command.options.length > 0) {
         usageGroups.push({
             header: " Command Options ",
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            optionList: command.options.filter((option: any) => !option.hidden) as OptionDefinition<any>[],
+            optionList: command.options.filter(
+                (option): option is OptionDefinition<unknown> =>
+                    typeof option === "object" && option !== null && (!("hidden" in option) || !(option as OptionDefinition<unknown>).hidden),
+            ),
         });
     }
 

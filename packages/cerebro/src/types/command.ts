@@ -37,8 +37,7 @@ export type OptionDefinition<T> = MultiplePropertyOptions<T>
         hidden?: boolean;
 
         // @TODO Upgrade this type to read given options keys and values
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        implies?: Record<string, any>;
+        implies?: Record<string, unknown>;
 
         /** Specifies whether the variable is required. */
         required?: boolean;
@@ -62,8 +61,7 @@ export type PossibleOptionDefinition<OD>
         | OptionDefinition<string[]>
         | OptionDefinition<string>;
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type ArgumentDefinition<T = any> = Omit<OptionDefinition<T>, "multiple|lazyMultiple|defaultOption|alias|group|defaultValue">;
+export type ArgumentDefinition<T = unknown> = Omit<OptionDefinition<T>, "multiple|lazyMultiple|defaultOption|alias|group|defaultValue">;
 
 /**
  * Environment variable definition for commands.
@@ -96,8 +94,7 @@ export interface EnvDefinition<T = string> {
 
 export type PossibleEnvDefinition = EnvDefinition<boolean> | EnvDefinition<number> | EnvDefinition<string>;
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export interface Command<O extends OptionDefinition<any> = any, TContext extends IToolbox = IToolbox> {
+export interface Command<O extends OptionDefinition<unknown> = OptionDefinition<unknown>, TContext extends IToolbox = IToolbox> {
     /**
      * @internal
      */

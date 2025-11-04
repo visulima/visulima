@@ -8,8 +8,7 @@ type PartialAndLastOption<T> = {
     partial: Partial<T>;
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const convertType = <OD extends OptionDefinition<any>>(value: any, option: PossibleOptionDefinition<OD>): any => {
+const convertType = <OD extends OptionDefinition<unknown>>(value: unknown, option: PossibleOptionDefinition<OD>): unknown => {
     if (option.type === undefined) {
         return value;
     }
@@ -33,8 +32,7 @@ const booleanValue = new Set(["0", "1", "false", "true"]);
  * Gets the values of any boolean arguments that were specified on the command line with a value.
  * These arguments were removed by removeBooleanValues.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const getBooleanValues = <OD extends OptionDefinition<any>>(
+const getBooleanValues = <OD extends OptionDefinition<unknown>>(
     arguments_: string[],
     options: PossibleOptionDefinition<OD>[],
     optionMapByName?: Map<string, PossibleOptionDefinition<OD>>,
@@ -50,15 +48,17 @@ const getBooleanValues = <OD extends OptionDefinition<any>>(
         const { lastOption } = argumentsAndLastOption;
 
         if (option && isBoolean(option) && argValue && argName) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any,no-param-reassign
-            argumentsAndLastOption.partial[argName as keyof PartialAndLastOption<OD>["partial"]] = convertType(argValue, option) as any;
+            // eslint-disable-next-line no-param-reassign
+            argumentsAndLastOption.partial[argName as keyof PartialAndLastOption<OD>["partial"]] = convertType(
+                argValue,
+                option,
+            ) as PartialAndLastOption<OD>["partial"][keyof PartialAndLastOption<OD>["partial"]];
         } else if (argumentsAndLastOption.lastName && lastOption && isBoolean(lastOption) && booleanValue.has(argument)) {
             // eslint-disable-next-line no-param-reassign
             argumentsAndLastOption.partial[argumentsAndLastOption.lastName as keyof PartialAndLastOption<OD>["partial"]] = convertType(
                 argument,
                 lastOption,
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            ) as any;
+            ) as PartialAndLastOption<OD>["partial"][keyof PartialAndLastOption<OD>["partial"]];
         }
 
         return { lastName: argName, lastOption: option, partial: argumentsAndLastOption.partial };

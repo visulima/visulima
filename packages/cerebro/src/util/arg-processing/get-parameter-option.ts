@@ -2,8 +2,7 @@ import type { OptionDefinition, PossibleOptionDefinition } from "../../types/com
 
 const argumentNameRegExp = /^-{1,2}(\w+)(=(\w+))?$/;
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const getParameterOption = <OD extends OptionDefinition<any>>(
+const getParameterOption = <OD extends OptionDefinition<unknown>>(
     argument: string,
     options: PossibleOptionDefinition<OD>[],
     optionMapByName?: Map<string, PossibleOptionDefinition<OD>>,
@@ -20,6 +19,10 @@ const getParameterOption = <OD extends OptionDefinition<any>>(
     }
 
     const nameOrAlias = regExpResult[1];
+
+    if (!nameOrAlias) {
+        return {};
+    }
 
     const option: PossibleOptionDefinition<OD> | undefined
         = optionMapByName && optionMapByAlias
