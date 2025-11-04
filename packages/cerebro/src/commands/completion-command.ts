@@ -36,7 +36,7 @@ const detectRuntime = (): string => {
 const detectShell = (toolboxEnv?: Record<string, unknown>): string | undefined => {
     // Prefer shell from toolbox.env if available (camelCase: STARSHIP_SHELL -> starshipShell, SHELL -> shell)
     const starshipShell = toolboxEnv?.starshipShell as string | undefined;
-    const shell = starshipShell ?? toolboxEnv?.shell as string | undefined;
+    const shell = starshipShell ?? (toolboxEnv?.shell as string | undefined);
 
     if (shell) {
         const shellPath = shell.toLowerCase();

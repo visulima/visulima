@@ -1,5 +1,7 @@
 import { argv as process_argv, cwd as process_cwd, env, execArgv, execPath, exit } from "node:process";
 
+import type { CommandLineOptions } from "@visulima/command-line-args";
+
 import HelpCommand from "./commands/help-command";
 import { VERBOSITY_DEBUG, VERBOSITY_NORMAL, VERBOSITY_QUIET, VERBOSITY_VERBOSE } from "./constants";
 import defaultOptions from "./default-options";
@@ -9,6 +11,7 @@ import PluginManager from "./plugin-manager";
 import type { Cli as ICli, CliRunOptions, CommandSection as ICommandSection, ExtendedLogger, RunCommandOptions } from "./types/cli";
 import type { Command as ICommand, OptionDefinition } from "./types/command";
 import type { Plugin } from "./types/plugin";
+import type { Toolbox as IToolbox } from "./types/toolbox";
 import mapOptionTypeLabel from "./util/arg-processing/map-option-type-label";
 import commandLineCommands from "./util/command-line-commands";
 import { executeCommand, prepareToolbox, processCommandArgs } from "./util/command-processing/command-processor";
@@ -21,17 +24,13 @@ import registerExceptionHandler from "./util/general/register-exception-handler"
 import { validateCommandName, validateNonEmptyString, validateObject, validateStringArray } from "./util/general/validate-input";
 import { sanitizeArguments } from "./util/security";
 
-// Helper to check if a string is an option flag
-const isOption = (argument: string): boolean => {
-    // eslint-disable-next-line regexp/no-unused-capturing-group
-    const isShort = new RegExp(/^-([^\d-])$/);
-    // eslint-disable-next-line regexp/no-unused-capturing-group
-    const isLong = new RegExp(/^--(\S+)/);
-    // eslint-disable-next-line regexp/no-unused-capturing-group
-    const isCombined = new RegExp(/^-([^\d-]{2,})$/);
+// Pre-compiled regex patterns for option detection (performance optimization)
+const OPTION_REGEX_SHORT = /^-([^\d-])$/;
+const OPTION_REGEX_LONG = /^--(\S+)/;
+const OPTION_REGEX_COMBINED = /^-([^\d-]{2,})$/;
 
-    return isShort.test(argument) || isLong.test(argument) || isCombined.test(argument);
-};
+// Helper to check if a string is an option flag
+const isOption = (argument: string): boolean => OPTION_REGEX_SHORT.test(argument) || OPTION_REGEX_LONG.test(argument) || OPTION_REGEX_COMBINED.test(argument);
 
 export type CliOptions<T extends ExtendedLogger = ExtendedLogger> = {
     argv?: ReadonlyArray<string>;
@@ -76,6 +75,104 @@ export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
     #pluginsInitialized = false;
 
     #exceptionHandlerCleanup?: () => void;
+
+    /** Cached arrays for command lookup performance */
+    #cachedCommandPathKeys?: string[];
+
+    #cachedCommandNames?: string[];
+
+    #cachedAllCommandPaths?: string[];
+
+    /**
+     * Gets all command path keys (cached for performance)
+     */
+    #getCommandPathKeys(): string[] {
+        if (this.#cachedCommandPathKeys === undefined) {
+            this.#cachedCommandPathKeys = [...this.#commandPaths.keys()];
+        }
+
+        return this.#cachedCommandPathKeys;
+    }
+
+    /**
+     * Gets all command names (cached for performance)
+     */
+    #getCommandNames(): string[] {
+        if (this.#cachedCommandNames === undefined) {
+            this.#cachedCommandNames = [...this.#commands.keys()];
+        }
+
+        return this.#cachedCommandNames;
+    }
+
+    /**
+     * Gets all command paths combined (cached for performance)
+     */
+    #getAllCommandPaths(): string[] {
+        if (this.#cachedAllCommandPaths === undefined) {
+            this.#cachedAllCommandPaths = [...this.#getCommandPathKeys(), ...this.#getCommandNames()];
+        }
+
+        return this.#cachedAllCommandPaths;
+    }
+
+    /**
+     * Invalidates cached command arrays (call when commands are added/removed)
+     */
+    #invalidateCommandCache(): void {
+        this.#cachedCommandPathKeys = undefined;
+        this.#cachedCommandNames = undefined;
+        this.#cachedAllCommandPaths = undefined;
+    }
+
+    /**
+     * Common command execution logic shared between run() and runCommand()
+     * This eliminates code duplication and improves maintainability
+     */
+    #executeCommandInternal(
+        command: ICommand,
+        commandArguments: string[],
+        extraOptions: Record<string, unknown>,
+        pathKey: string,
+    ): {
+        arguments_: ReturnType<typeof processCommandArgs>["arguments_"];
+        booleanValues: Record<string, unknown>;
+        commandArgs: CommandLineOptions;
+        parsedArgs: CommandLineOptions;
+        toolbox: IToolbox;
+    } {
+        this.#logger.debug(`command '${pathKey}' found, parsing command args: ${commandArguments.join(", ")}`);
+
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        const { arguments_, booleanValues, parsedArgs } = processCommandArgs(command, commandArguments, defaultOptions as OptionDefinition<unknown>[]);
+
+        // eslint-disable-next-line no-underscore-dangle
+        const commandArgs = { ...parsedArgs, _all: { ...parsedArgs._all, ...booleanValues } } as typeof parsedArgs;
+
+        validateRequiredOptions(arguments_, commandArgs, command);
+
+        // Prepare the execute toolbox
+        const toolbox = prepareToolbox(command, parsedArgs, booleanValues, extraOptions);
+
+        // Attach the runtime
+        toolbox.runtime = this as ICli;
+        toolbox.argv = this.#argv;
+
+        // Process options
+        mapNegatableOptions(toolbox, command);
+        mapImpliedOptions(toolbox, command);
+
+        validateConflictingOptions(arguments_, toolbox.options, command);
+
+        this.#logger.debug("command options parsed from options:");
+        // eslint-disable-next-line unicorn/no-null
+        this.#logger.debug(JSON.stringify(toolbox.options, null, 2));
+        this.#logger.debug("command argument parsed from argument:");
+        // eslint-disable-next-line unicorn/no-null
+        this.#logger.debug(JSON.stringify(toolbox.argument, null, 2));
+
+        return { arguments_, booleanValues, commandArgs, parsedArgs, toolbox };
+    }
 
     /**
      * Create a new CLI instance.
@@ -319,6 +416,9 @@ export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
         // Store command by full path key for correct nested command resolution
         this.#commandsByPath.set(pathKey, command);
 
+        // Invalidate cache when commands are added
+        this.#invalidateCommandCache();
+
         if (command.alias !== undefined) {
             let aliases: string[] = command.alias as string[];
 
@@ -465,16 +565,11 @@ export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
             this.addCommand(new HelpCommand(this.#commands));
         }
 
-        // Build list of all command path keys for nested command parsing
-        const commandPathKeys = [...this.#commandPaths.keys()];
-        const commandPathMap = new Map<string, string[]>();
-
-        for (const [key, path] of this.#commandPaths.entries()) {
-            commandPathMap.set(key, path);
-        }
-
-        // Also add flat command names for backward compatibility
-        const commandNames = [...this.#commands.keys()];
+        // Use cached arrays for performance
+        const commandPathKeys = this.#getCommandPathKeys();
+        const commandNames = this.#getCommandNames();
+        // Use existing Map directly instead of creating a new one
+        const commandPathMap = this.#commandPaths;
 
         let parsedCommandPath: string[] | null = null;
         let remainingArgv: string[] = [...this.#argv];
@@ -506,7 +601,7 @@ export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
 
                 // Only throw error if no flat command matches the first token
                 if (!commandNames.includes(attemptedPath[0])) {
-                    const allCommandPaths = [...commandPathKeys, ...commandNames];
+                    const allCommandPaths = this.#getAllCommandPaths();
                     const alternatives = findAlternatives(attemptedPathKey, allCommandPaths);
 
                     throw new CommandNotFoundError(attemptedPathKey, alternatives);
@@ -524,7 +619,7 @@ export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
                 // command is invalid, throw a structured error with suggestions.
                 if (error instanceof Error && error.name === "INVALID_COMMAND" && "command" in error) {
                     const invalidCommand = (error as { command: string }).command;
-                    const allCommandPaths = [...commandPathKeys, ...commandNames];
+                    const allCommandPaths = this.#getAllCommandPaths();
                     const alternatives = findAlternatives(invalidCommand, allCommandPaths);
 
                     throw new CommandNotFoundError(invalidCommand, alternatives);
@@ -544,7 +639,7 @@ export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
             if (this.#defaultCommand) {
                 parsedCommandPath = [this.#defaultCommand];
             } else {
-                const allCommandPaths = [...commandPathKeys, ...commandNames];
+                const allCommandPaths = this.#getAllCommandPaths();
 
                 throw new CommandNotFoundError("", allCommandPaths);
             }
@@ -563,7 +658,7 @@ export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
 
             // Verify the command matches the expected path
             if (!command || getCommandPathKey(storedPath) !== pathKey) {
-                const allCommandPaths = [...commandPathKeys, ...commandNames];
+                const allCommandPaths = this.#getAllCommandPaths();
                 const alternatives = findAlternatives(pathKey, allCommandPaths);
 
                 throw new CommandNotFoundError(pathKey, alternatives);
@@ -575,7 +670,7 @@ export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
             command = this.#commands.get(commandName);
 
             if (!command) {
-                const allCommandPaths = [...commandPathKeys, ...commandNames];
+                const allCommandPaths = this.#getAllCommandPaths();
                 const alternatives = findAlternatives(pathKey, allCommandPaths);
 
                 throw new CommandNotFoundError(pathKey, alternatives);
@@ -590,35 +685,8 @@ export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
 
         const commandArguments = remainingArgv;
 
-        this.#logger.debug(`command '${pathKey}' found, parsing command args: ${commandArguments.join(", ")}`);
-
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        const { arguments_, booleanValues, parsedArgs } = processCommandArgs(command, commandArguments, defaultOptions as OptionDefinition<unknown>[]);
-
-        // eslint-disable-next-line no-underscore-dangle
-        const commandArgs = { ...parsedArgs, _all: { ...parsedArgs._all, ...booleanValues } } as typeof parsedArgs;
-
-        validateRequiredOptions(arguments_, commandArgs, command);
-
-        // prepare the execute toolbox
-        const toolbox = prepareToolbox(command, parsedArgs, booleanValues, otherExtraOptions);
-
-        // attach the runtime
-        toolbox.runtime = this as ICli;
-        toolbox.argv = this.#argv;
-
-        // Process options
-        mapNegatableOptions(toolbox, command);
-        mapImpliedOptions(toolbox, command);
-
-        validateConflictingOptions(arguments_, toolbox.options, command);
-
-        this.#logger.debug("command options parsed from options:");
-        // eslint-disable-next-line unicorn/no-null
-        this.#logger.debug(JSON.stringify(toolbox.options, null, 2));
-        this.#logger.debug("command argument parsed from argument:");
-        // eslint-disable-next-line unicorn/no-null
-        this.#logger.debug(JSON.stringify(toolbox.argument, null, 2));
+        // Use shared execution logic
+        const { commandArgs, toolbox } = this.#executeCommandInternal(command, commandArguments, otherExtraOptions, pathKey);
 
         try {
             // initialize plugins on first run (fast path: skip if no plugins registered)
@@ -727,7 +795,7 @@ export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
         }
 
         if (!command) {
-            const allCommandPaths = [...this.#commandPaths.keys(), ...this.#commands.keys()];
+            const allCommandPaths = this.#getAllCommandPaths();
             const alternatives = findAlternatives(pathKey || commandName, allCommandPaths);
 
             throw new CommandNotFoundError(commandName, alternatives);
@@ -743,19 +811,8 @@ export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
 
         this.#logger.debug(`running command '${commandName}' programmatically with args: ${commandArguments.join(", ")}`);
 
-        // Process command arguments
-        const { arguments_, booleanValues, parsedArgs } = processCommandArgs(command, commandArguments, defaultOptions as OptionDefinition<unknown>[]);
-
-        const commandArgs = { ...parsedArgs, _all: { ...parsedArgs._all, ...booleanValues } } as typeof parsedArgs;
-
-        validateRequiredOptions(arguments_, commandArgs, command);
-
-        // Prepare the execute toolbox
-        const toolbox = prepareToolbox(command, parsedArgs, booleanValues, extraOptions);
-
-        // Attach the runtime
-        toolbox.runtime = this as ICli;
-        toolbox.argv = this.#argv;
+        // Use shared execution logic
+        const { commandArgs, toolbox } = this.#executeCommandInternal(command, commandArguments, extraOptions, pathKey || commandName);
 
         // Initialize plugins if needed (fast path: skip if no plugins registered)
         if (!this.#pluginsInitialized && this.#pluginManager.hasPlugins()) {
@@ -770,19 +827,6 @@ export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
 
         // Execute plugins that need to modify the toolbox (fast path: automatically skips if no plugins)
         await this.#pluginManager.executeLifecycle("execute", toolbox);
-
-        // Process options
-        mapNegatableOptions(toolbox, command);
-        mapImpliedOptions(toolbox, command);
-
-        validateConflictingOptions(arguments_, toolbox.options, command);
-
-        this.#logger.debug("command options parsed from options:");
-        // eslint-disable-next-line unicorn/no-null
-        this.#logger.debug(JSON.stringify(toolbox.options, null, 2));
-        this.#logger.debug("command argument parsed from argument:");
-        // eslint-disable-next-line unicorn/no-null
-        this.#logger.debug(JSON.stringify(toolbox.argument, null, 2));
 
         try {
             // Execute beforeCommand hooks

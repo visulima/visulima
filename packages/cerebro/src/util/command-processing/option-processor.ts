@@ -46,20 +46,31 @@ export const addNegatableOptions = <OD extends OptionDefinition<unknown>>(comman
 /**
  * Maps negatable options to their non-negated counterparts
  * Processes toolbox options starting with "no" and converts them to non-negated form
+ * Optimized with Map lookup for better performance
  * @param toolbox The command toolbox containing options
  * @param command The command object with option definitions
  */
 export const mapNegatableOptions = (toolbox: IToolbox, command: { options?: OptionDefinition<unknown>[] }): void => {
+    if (!command.options || command.options.length === 0) {
+        return;
+    }
+
+    // Build a Map for O(1) lookups instead of O(n) array iteration
+    const optionMapByName = new Map<string, OptionDefinition<unknown>>();
+
+    for (const option of command.options) {
+        optionMapByName.set(option.name, option);
+    }
+
     Object.entries(toolbox.options as IToolbox["options"]).forEach(([key, value]) => {
         if (key.startsWith("no-")) {
             const nonNegatedKey: string = key.replace(/^no-/, "");
+            const option = optionMapByName.get(nonNegatedKey);
 
-            command.options?.forEach((option) => {
-                if (option.name === nonNegatedKey) {
-                    // eslint-disable-next-line no-underscore-dangle,no-param-reassign
-                    option.__negated__ = true;
-                }
-            });
+            if (option) {
+                // eslint-disable-next-line no-underscore-dangle
+                option.__negated__ = true;
+            }
 
             // eslint-disable-next-line no-param-reassign
             toolbox.options[nonNegatedKey] = !value;
@@ -70,15 +81,28 @@ export const mapNegatableOptions = (toolbox: IToolbox, command: { options?: Opti
 /**
  * Applies implied option values
  * Sets implied option values from option definitions that have an implies property
+ * Optimized with Map lookup for better performance
  * @param toolbox The command toolbox to apply implied values to
  * @param command The command object with option definitions
  */
 export const mapImpliedOptions = (toolbox: IToolbox, command: { options?: OptionDefinition<unknown>[] }): void => {
-    Object.keys(toolbox.options as IToolbox["options"]).forEach((optionKey) => {
-        const option = command.options?.find(
+    if (!command.options || command.options.length === 0) {
+        return;
+    }
+
+    // Build a Map keyed by camelCase name for O(1) lookups instead of O(n) array.find()
+    const optionMapByCamelCase = new Map<string, OptionDefinition<unknown>>();
+
+    for (const option of command.options) {
+        // eslint-disable-next-line no-underscore-dangle
+        if (option.__camelCaseName__ && option.__negated__ === undefined && option.implies !== undefined) {
             // eslint-disable-next-line no-underscore-dangle
-            (o) => o.__camelCaseName__ === optionKey && o.__negated__ === undefined && o.implies !== undefined,
-        );
+            optionMapByCamelCase.set(option.__camelCaseName__, option);
+        }
+    }
+
+    Object.keys(toolbox.options as IToolbox["options"]).forEach((optionKey) => {
+        const option = optionMapByCamelCase.get(optionKey);
 
         if (option?.implies) {
             const implies = option.implies as Record<string, unknown>;

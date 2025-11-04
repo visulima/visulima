@@ -1,6 +1,7 @@
 /**
  * Parses nested command paths from argv.
  * Supports both flat commands (e.g., "build") and nested commands (e.g., "deploy staging").
+ * Optimized to reduce string operations
  * @param availableCommands Map of all available commands keyed by their full path string
  * @param argv Command line arguments to parse
  * @returns Object with the matched command path and remaining argv
@@ -12,15 +13,18 @@ export const parseNestedCommand = (availableCommands: Map<string, string[]>, arg
 
     // Try to match progressively longer command paths
     // Start with single token, then two tokens, etc.
+    // Optimize: build path key incrementally instead of joining entire array each time
+    const pathKeyParts: string[] = [];
+
     for (let depth = 1; depth <= argv.length; depth++) {
-        const candidatePath = argv.slice(0, depth);
-        const pathKey = candidatePath.join(" ");
+        pathKeyParts.push(argv[depth - 1]);
+        const pathKey = pathKeyParts.join(" ");
 
         // Check if this path matches a registered command
         if (availableCommands.has(pathKey)) {
             const remainingArgv = argv.slice(depth);
 
-            return { argv: remainingArgv, commandPath: candidatePath };
+            return { argv: remainingArgv, commandPath: [...pathKeyParts] };
         }
     }
 
