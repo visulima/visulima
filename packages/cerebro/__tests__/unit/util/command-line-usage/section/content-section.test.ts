@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import type { Content as IContent } from "../../../../../src/@types/command-line-usage";
+import type { Content as IContent } from "../../../../../src/types/command-line-usage";
 import ContentSection from "../../../../../src/util/command-line-usage/section/content-section";
 
 const isWindows = process.platform === "win32";

@@ -1,95 +1,124 @@
-Features for allowing you to log to the console.
+# Toolbox: Logger
 
-You can access these tools on the cerebro toolbox.
+The `logger` provides methods for outputting messages at different log levels.
 
-## clear
+## Basic Usage
 
-This clears the console window.
-
-```js
-toolbox.logger.clear();
+```typescript
+cli.addCommand({
+    name: "example",
+    execute: ({ logger }) => {
+        logger.info("Information message");
+        logger.error("Error message");
+        logger.warn("Warning message");
+        logger.debug("Debug message");
+    },
+});
 ```
 
-## critical
+## Log Levels
 
-Prints a critical message.
+### Info
 
-```js
-toolbox.logger.critical("Your system does not have Yarn installed.");
+General information messages:
+
+```typescript
+logger.info("Building project...");
+logger.info("Files processed:", fileCount);
 ```
 
-## error
+### Error
 
-Prints an error message. Use this when something goes Pants-On-Head wrong. What does that mean?
-Well, if your next line of code isn't `process.exit(0)`, then it was probably a warning.
+Error messages:
 
-```js
-toolbox.logger.error("Out of disk space.");
+```typescript
+logger.error("Failed to build");
+logger.error("Error details:", error);
 ```
 
-## danger
+### Warn
 
-@todo write doc
+Warning messages:
 
-## success
-
-Print a "something good just happened" message.
-
-```js
-toolbox.logger.success("We did it!");
+```typescript
+logger.warn("Deprecated option used");
+logger.warn("This feature will be removed in v2.0");
 ```
 
-## warning
+### Debug
 
-Prints a warning message. Use this when you feel a disturbance in the force.
+Debug messages (only shown with `--debug` flag):
 
-```js
-toolbox.logger.warning("Your system does not have Yarn installed. It's awesome.");
+```typescript
+logger.debug("Processing file:", fileName);
+logger.debug("Options:", options);
 ```
 
-## info
+## Logging Objects
 
-Prints an informational message. Use this as your goto.
+Logger methods accept multiple arguments:
 
-```js
-toolbox.logger.info("Hello. I am a chatty plugin.");
+```typescript
+logger.info("User:", user.name, "Age:", user.age);
+logger.error("Error:", error.message, error.stack);
 ```
 
-## debug
+## Verbosity Control
 
-Only used for debugging your plugins. You can pass this function a string or an object.
+Log levels are controlled by verbosity flags:
 
-```js
-toolbox.logger.debug(someObject, "download status");
+```bash
+cli command              # Shows info, warn, error
+cli command --verbose    # Shows debug too
+cli command --debug      # Shows all debug messages
+cli command --quiet      # Minimal output
 ```
 
-The `message` parameter is object you would like to see.
+## Custom Logger
 
-The `label` is an optional label on a message which is handy if you've got a lot of debug messages, and
-you're losing track of which one is which.
+Provide a custom logger when creating the CLI:
 
-The `showIcon` shows an icon before the message and label.
+```typescript
+const customLogger = {
+    info: (...args) => console.log("[INFO]", ...args),
+    error: (...args) => console.error("[ERROR]", ...args),
+    warn: (...args) => console.warn("[WARN]", ...args),
+    debug: (...args) => {
+        if (process.env.DEBUG) {
+            console.debug("[DEBUG]", ...args);
+        }
+    },
+};
 
-## log
+const cli = new Cerebro("my-app", {
+    logger: customLogger,
+});
+```
 
-@todo write doc
+## Conditional Logging
 
-## status
+Use log levels appropriately:
 
-@todo write doc
+```typescript
+execute: ({ logger, options }) => {
+    if (options.verbose) {
+        logger.debug("Detailed processing information");
+    }
 
-## notice
+    logger.info("Starting operation...");
 
-@todo write doc
+    try {
+        // Operation
+    } catch (error) {
+        logger.error("Operation failed:", error);
+    }
+};
+```
 
-## note
+## Best Practices
 
-@todo write doc
-
-## line
-
-@todo write doc
-
-## center
-
-@todo write doc
+1. **Use appropriate levels** - info for normal output, error for errors
+2. **Don't overuse debug** - Reserve for troubleshooting
+3. **Include context** - Log relevant information
+4. **Format consistently** - Use consistent message formats
+5. **Respect verbosity** - Don't force output in quiet mode

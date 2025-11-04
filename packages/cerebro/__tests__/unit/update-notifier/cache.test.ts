@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { getLastUpdate, saveLastUpdate } from "../../../src/update-notifier/cache";
+import { getLastUpdate, saveLastUpdate } from "../../../src/plugins/update-notifier/cache";
 
 vi.useFakeTimers().setSystemTime(new Date("2022-01-01"));
 

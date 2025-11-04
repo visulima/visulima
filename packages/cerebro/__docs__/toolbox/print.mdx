@@ -1,139 +1,70 @@
-Features for allowing you to print to the console.
+# Toolbox: Print
 
-You can access these tools on the cerebro toolbox, via `const { toolbox } = require('@visulima/cerebro')`.
+The `logger` provides print methods for formatted output (if using a logger that supports it, like Pail).
 
-## colors
+## Basic Printing
 
-An object for working with printing colors on the command line. It is from the `colors` NPM package,
-however we define a theme to make things a bit consistent.
-
-Some available functions include:
-
-| function             | use when you want...                     |
-| -------------------- | ---------------------------------------- |
-| `colors.success()`   | the user to smile                        |
-| `colors.error()`     | to say something has failed              |
-| `colors.warning()`   | to point out that something might be off |
-| `colors.highlight()` | to draw attention to something           |
-| `colors.info()`      | to say something informational           |
-| `colors.muted()`     | you need to say something secondary      |
-
-Each take a `string` parameter and return a `string`.
-
-One gotcha here is that the length of the string is longer than you think because of the embedded
-color codes that disappear when you print them.
-
-## spin
-
-Creates a spin for long running tasks on the command line. It's
-[ora](https://github.com/sindresorhus/ora)!
-
-Here's an example of how to work with it:
-
-```js
-// a spin starts with the text you provide
-const spin = toolbox.print.spin("Time for fun!");
-await toolbox.system.run("sleep 5");
+```typescript
+execute: ({ logger }) => {
+    logger.info("Info message");
+    logger.error("Error message");
+    logger.warn("Warning message");
+    logger.debug("Debug message");
+};
 ```
 
-> Important: make sure you don't print anything else while a spin is going. You need to stop
-> it first.
+## Custom Print Methods
 
-There's a few ways to stop it.
+Some loggers (like Pail) provide additional print methods:
 
-```js
-// stop it & clear the text
-spin.stop();
+```typescript
+execute: ({ logger }) => {
+    // If using Pail logger
+    if (logger.success) {
+        logger.success("Operation successful!");
+    }
 
-// stop it, leave a checkmark, and optional new text
-spin.succeed("woot!");
-
-// stop it, leave an X, and optional new text
-spin.fail("womp womp.");
-
-// stop it, leave a custom label, and optional new text
-spin.stopAndPersist({ symbol: "🚨", text: "osnap!" });
+    if (logger.table) {
+        logger.table([
+            { name: "Alice", age: 30 },
+            { name: "Bob", age: 25 },
+        ]);
+    }
+};
 ```
 
-Once stopped, you can start it again later.
+## Raw Output
 
-```js
-spin.start();
+Some loggers support raw output:
+
+```typescript
+execute: ({ logger }) => {
+    if (logger.raw) {
+        logger.raw("Raw output without formatting");
+    }
+};
 ```
 
-You can change the color of the spin by setting:
+## Using Pail Logger
 
-```js
-spin.color = "cyan";
+For enhanced printing capabilities, use the Pail logger:
+
+```typescript
+import { pail } from "@visulima/pail";
+
+const cli = new Cerebro("my-app", {
+    logger: pail({
+        // Pail configuration
+    }),
+});
 ```
 
-The text can also be set with the normal printing colors.
+Pail provides:
 
-```js
-spin.text = toolbox.print.colors.green("i like trees");
-```
+- Colored output
+- Tables
+- Success/error formatting
+- Progress bars
+- And more
 
-## table
-
-Prints out a table of data, including a header. You can choose from three different formats:
-`default`, `markdown`, and `lean`.
-
-```js
-const { table } = toolbox.print;
-table(
-    ["First Name", "Last Name", "Age"],
-    [
-        ["Jamon", "Holmgren", 35],
-        ["Gant", "Laborde", 36],
-        ["Steve", "Kellock", 43],
-        ["Gary", "Busey", 73],
-    ],
-    { format: "markdown" },
-);
-```
-
-Output:
-
-```
-| First Name | Last Name | Age |
-| ---------- | --------- | --- |
-| Jamon      | Holmgren  | 35  |
-| Gant       | Laborde   | 36  |
-| Steve      | Kellock   | 43  |
-| Gary       | Busey     | 73  |
-```
-
-You can also pass styles for the table (as specified in [cli-table3](https://github.com/cli-table/cli-table3)):
-
-```js
-const { table } = toolbox.print;
-table(
-    ["First Name", "Last Name", "Age"],
-    [
-        ["Jamon", "Holmgren", 35],
-        ["Gant", "Laborde", 36],
-        ["Steve", "Kellock", 43],
-        ["Gary", "Busey", 73],
-    ],
-    {
-        format: "lean",
-        style: { "padding-left": 0, "padding-right": 8 },
-    },
-);
-```
-
-Output:
-
-```
-┌──────────────────┬─────────────────┬───────────┐
-│First Name        │Last Name        │Age        │
-├──────────────────┼─────────────────┼───────────┤
-│Jamon             │Holmgren         │35         │
-├──────────────────┼─────────────────┼───────────┤
-│Gant              │Laborde          │36         │
-├──────────────────┼─────────────────┼───────────┤
-│Steve             │Kellock          │43         │
-├──────────────────┼─────────────────┼───────────┤
-│Gary              │Busey            │73         │
-└──────────────────┴─────────────────┴───────────┘
-```
+See [Pail documentation](https://github.com/visulima/visulima/tree/main/packages/pail) for details.

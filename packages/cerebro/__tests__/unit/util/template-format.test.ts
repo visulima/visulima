@@ -1,7 +1,7 @@
 import { red } from "@visulima/colorize";
 import { describe, expect, it } from "vitest";
 
-import templateFormat from "../../../src/util/template-format";
+import templateFormat from "../../../src/util/text-processing/template-format";
 
 describe("util/template-format", () => {
     it("should return simple string", () => {

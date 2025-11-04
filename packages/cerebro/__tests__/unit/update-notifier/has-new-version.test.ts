@@ -1,7 +1,6 @@
-import type { Mock } from "vitest";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import hasNewVersion from "../../../src/update-notifier/has-new-version";
+import hasNewVersion from "../../../src/plugins/update-notifier/has-new-version";
 
 const { getDistributionVersion, getLastUpdate, saveLastUpdate } = vi.hoisted(() => {
     return {
@@ -11,19 +10,19 @@ const { getDistributionVersion, getLastUpdate, saveLastUpdate } = vi.hoisted(() 
     };
 });
 
-vi.mock(import("../../../src/update-notifier/get-dist-version"), () => {
+vi.mock(import("../../../src/plugins/update-notifier/get-distribution-version"), () => {
     return {
         default: getDistributionVersion,
     };
 });
-vi.mock(import("../../../src/update-notifier/cache"), () => {
+vi.mock(import("../../../src/plugins/update-notifier/cache"), () => {
     return {
         getLastUpdate,
         saveLastUpdate,
     };
 });
 
-// eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const package_ = { name: "has-new-version", version: "1.0.0" };
 
 const defaultArguments = {
@@ -42,7 +41,7 @@ describe("update-notifier/has-new-version", () => {
 
         const newVersion = await hasNewVersion(defaultArguments);
 
-        expect(newVersion).toBe(null);
+        expect(newVersion).toBeUndefined();
     });
 
     it("should trigger update for patch version bump", async () => {
@@ -82,7 +81,7 @@ describe("update-notifier/has-new-version", () => {
 
         const newVersion = await hasNewVersion(defaultArguments);
 
-        expect(newVersion).toBe(null);
+        expect(newVersion).toBeUndefined();
     });
 
     it("should trigger update check if last update older than config", async () => {
@@ -97,7 +96,7 @@ describe("update-notifier/has-new-version", () => {
             shouldNotifyInNpmScript: true,
         });
 
-        expect(newVersion).toBe(null);
+        expect(newVersion).toBeUndefined();
         expect(getDistributionVersion).toHaveBeenCalledExactlyOnceWith("has-new-version", "latest", "https://registry.npmjs.org/-/package/__NAME__/dist-tags");
     });
 
@@ -113,7 +112,7 @@ describe("update-notifier/has-new-version", () => {
             shouldNotifyInNpmScript: true,
         });
 
-        expect(newVersion).toBe(null);
+        expect(newVersion).toBeUndefined();
         expect(getDistributionVersion).not.toHaveBeenCalled();
     });
 });

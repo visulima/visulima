@@ -1,0 +1,193 @@
+# API: Plugin
+
+Plugin interface for extending Cerebro functionality.
+
+## Plugin Interface
+
+```typescript
+interface Plugin {
+    name: string;
+    description?: string;
+    version?: string;
+    dependencies?: string[];
+    init?: (context: PluginContext) => Promise<void> | void;
+    execute?: (toolbox: Toolbox) => Promise<void> | void;
+    beforeCommand?: (toolbox: Toolbox) => Promise<void> | void;
+    afterCommand?: (toolbox: Toolbox, result: unknown) => Promise<void> | void;
+    onError?: (error: Error, toolbox: Toolbox) => Promise<void> | void;
+}
+```
+
+## Properties
+
+### name
+
+**Type:** `string`  
+**Required:** Yes
+
+Unique plugin name:
+
+```typescript
+{
+    name: "my-plugin";
+}
+```
+
+### description
+
+**Type:** `string`  
+**Required:** No
+
+Plugin description:
+
+```typescript
+{
+    description: "Adds file system utilities";
+}
+```
+
+### version
+
+**Type:** `string`  
+**Required:** No
+
+Plugin version:
+
+```typescript
+{
+    version: "1.0.0";
+}
+```
+
+### dependencies
+
+**Type:** `string[]`  
+**Required:** No
+
+Other plugins this plugin depends on:
+
+```typescript
+{
+    dependencies: ["logger", "filesystem"];
+}
+```
+
+## Lifecycle Hooks
+
+### init
+
+Called once during plugin initialization:
+
+```typescript
+{
+    init: async ({ cli, cwd, logger }) => {
+        // Initialize plugin
+        logger.info("Plugin initialized");
+    };
+}
+```
+
+### execute
+
+Called during command execution to extend toolbox:
+
+```typescript
+{
+    execute: (toolbox) => {
+        toolbox.myFeature = () => {
+            console.log("My feature!");
+        };
+    };
+}
+```
+
+### beforeCommand
+
+Called before each command executes:
+
+```typescript
+{
+    beforeCommand: async (toolbox) => {
+        console.log(`Executing: ${toolbox.commandName}`);
+    };
+}
+```
+
+### afterCommand
+
+Called after successful command execution:
+
+```typescript
+{
+    afterCommand: async (toolbox, result) => {
+        console.log(`Command completed: ${result}`);
+    };
+}
+```
+
+### onError
+
+Called when an error occurs:
+
+```typescript
+{
+    onError: async (error, toolbox) => {
+        console.error(`Error in ${toolbox.commandName}:`, error);
+    };
+}
+```
+
+## PluginContext
+
+Context provided to `init` hook:
+
+```typescript
+interface PluginContext<T extends Console = Console> {
+    cli: Cli;
+    cwd: string;
+    logger: T;
+}
+```
+
+## Complete Example
+
+```typescript
+cli.addPlugin({
+    name: "http-client",
+    version: "1.0.0",
+    description: "HTTP client utilities",
+    dependencies: ["logger"],
+
+    init: async ({ logger }) => {
+        logger.info("HTTP client plugin initialized");
+    },
+
+    execute: (toolbox) => {
+        toolbox.http = {
+            get: async (url: string) => {
+                const response = await fetch(url);
+                return response.json();
+            },
+            post: async (url: string, data: unknown) => {
+                const response = await fetch(url, {
+                    method: "POST",
+                    body: JSON.stringify(data),
+                });
+                return response.json();
+            },
+        };
+    },
+
+    beforeCommand: async (toolbox) => {
+        toolbox.logger.debug(`Preparing HTTP client`);
+    },
+
+    afterCommand: async (toolbox, result) => {
+        toolbox.logger.debug(`Command completed`);
+    },
+
+    onError: async (error, toolbox) => {
+        toolbox.logger.error(`HTTP error:`, error);
+    },
+});
+```

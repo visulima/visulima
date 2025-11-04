@@ -1,4 +1,4 @@
-import type { OptionDefinition } from "./@types/command";
+import type { OptionDefinition } from "./types/command";
 
 const defaultOptions: OptionDefinition<boolean>[] = [
     {

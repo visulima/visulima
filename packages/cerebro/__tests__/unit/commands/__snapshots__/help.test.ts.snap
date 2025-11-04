@@ -1,0 +1,672 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`command/help > should display a empty help command if no commands exists 1`] = `
+[MockFunction] {
+  "calls": [
+    [
+      [
+        {
+          "content": "[36mtestcli[39m [32m<command>[39m [positional arguments] [33m[options][39m",
+          "header": "[7m[36m Usage [39m[27m",
+        },
+        {
+          "header": "[7m[33m Global Options [39m[27m",
+          "optionList": [
+            {
+              "description": "Turn on verbose output",
+              "group": "global",
+              "name": "verbose",
+              "type": [Function],
+            },
+            {
+              "description": "Turn on debugging output",
+              "group": "global",
+              "name": "debug",
+              "type": [Function],
+            },
+            {
+              "alias": "h",
+              "description": "Print out helpful usage information",
+              "group": "global",
+              "name": "help",
+              "type": [Function],
+            },
+            {
+              "alias": "q",
+              "description": "Silence output",
+              "group": "global",
+              "name": "quiet",
+              "type": [Function],
+            },
+            {
+              "alias": "V",
+              "description": "Print version info",
+              "group": "global",
+              "name": "version",
+              "type": [Function],
+            },
+            {
+              "description": "Turn off colored output",
+              "group": "global",
+              "name": "no-color",
+              "type": [Function],
+            },
+            {
+              "description": "Force colored output",
+              "group": "global",
+              "name": "color",
+              "type": [Function],
+            },
+          ],
+        },
+        {
+          "content": [
+            [
+              "CEREBRO_OUTPUT_LEVEL",
+              "Controls the verbosity level of output. Valid values: '16' (quiet), '32' (normal), '64' (verbose), '128' (debug)",
+            ],
+            [
+              "CEREBRO_MIN_NODE_VERSION",
+              "Sets the minimum required Node.js version. Overrides the default minimum version check",
+            ],
+            [
+              "NO_UPDATE_NOTIFIER",
+              "When set, disables the update notifier check",
+            ],
+            [
+              "NODE_ENV",
+              "Standard Node.js environment variable. When set to 'test', disables update notifier",
+            ],
+            [
+              "DEBUG",
+              "When set, enables debug output (same as --debug flag)",
+            ],
+          ],
+          "header": "[7m[35m Environment Variables [39m[27m",
+        },
+        {
+          "content": "Run "[36mtestcli[39m [32mhelp <command>[39m" or "[36mtestcli[39m [32m<command>[39m [33m--help[39m" for help with a specific command.",
+          "raw": true,
+        },
+      ],
+    ],
+  ],
+  "results": [
+    {
+      "type": "return",
+      "value": undefined,
+    },
+  ],
+}
+`;
+
+exports[`command/help > should display aliases if present 1`] = `
+[MockFunction] {
+  "calls": [
+    [
+      [
+        {
+          "content": "[36mtestcli[39m [32mcommandWithAlias[39m",
+          "header": "[7m[36m Usage [39m[27m",
+        },
+        {
+          "content": [
+            "cwa",
+            "aliasForCommand",
+          ],
+          "header": "Alias(es)",
+        },
+        {
+          "header": "[7m[33m Global Options [39m[27m",
+          "optionList": [
+            {
+              "description": "Turn on verbose output",
+              "group": "global",
+              "name": "verbose",
+              "type": [Function],
+            },
+            {
+              "description": "Turn on debugging output",
+              "group": "global",
+              "name": "debug",
+              "type": [Function],
+            },
+            {
+              "alias": "h",
+              "description": "Print out helpful usage information",
+              "group": "global",
+              "name": "help",
+              "type": [Function],
+            },
+            {
+              "alias": "q",
+              "description": "Silence output",
+              "group": "global",
+              "name": "quiet",
+              "type": [Function],
+            },
+            {
+              "alias": "V",
+              "description": "Print version info",
+              "group": "global",
+              "name": "version",
+              "type": [Function],
+            },
+            {
+              "description": "Turn off colored output",
+              "group": "global",
+              "name": "no-color",
+              "type": [Function],
+            },
+            {
+              "description": "Force colored output",
+              "group": "global",
+              "name": "color",
+              "type": [Function],
+            },
+          ],
+        },
+      ],
+    ],
+  ],
+  "results": [
+    {
+      "type": "return",
+      "value": undefined,
+    },
+  ],
+}
+`;
+
+exports[`command/help > should display command examples 1`] = `
+[MockFunction] {
+  "calls": [
+    [
+      [
+        {
+          "content": "[36mtestcli[39m [32mcommandWithExamples[39m",
+          "header": "[7m[36m Usage [39m[27m",
+        },
+        {
+          "header": "[7m[33m Global Options [39m[27m",
+          "optionList": [
+            {
+              "description": "Turn on verbose output",
+              "group": "global",
+              "name": "verbose",
+              "type": [Function],
+            },
+            {
+              "description": "Turn on debugging output",
+              "group": "global",
+              "name": "debug",
+              "type": [Function],
+            },
+            {
+              "alias": "h",
+              "description": "Print out helpful usage information",
+              "group": "global",
+              "name": "help",
+              "type": [Function],
+            },
+            {
+              "alias": "q",
+              "description": "Silence output",
+              "group": "global",
+              "name": "quiet",
+              "type": [Function],
+            },
+            {
+              "alias": "V",
+              "description": "Print version info",
+              "group": "global",
+              "name": "version",
+              "type": [Function],
+            },
+            {
+              "description": "Turn off colored output",
+              "group": "global",
+              "name": "no-color",
+              "type": [Function],
+            },
+            {
+              "description": "Force colored output",
+              "group": "global",
+              "name": "color",
+              "type": [Function],
+            },
+          ],
+        },
+        {
+          "content": [
+            "testcli test --verbose",
+            "testcli test --verbose --debug",
+          ],
+          "header": "Examples",
+        },
+      ],
+    ],
+  ],
+  "results": [
+    {
+      "type": "return",
+      "value": undefined,
+    },
+  ],
+}
+`;
+
+exports[`command/help > should display group of commands if the group option is passed 1`] = `
+[MockFunction] {
+  "calls": [
+    [
+      [
+        {
+          "content": "[36mtestcli[39m [32m<command>[39m [positional arguments] [33m[options][39m",
+          "header": "[7m[36m Usage [39m[27m",
+        },
+        {
+          "content": [
+            [
+              "[32mtest[39m",
+              "A test command",
+            ],
+            [
+              "[32mtest2[39m",
+              "A test2 command",
+            ],
+          ],
+          "header": "[7m[32m Available Test Commands [39m[27m",
+        },
+        {
+          "header": "[7m[33m Global Options [39m[27m",
+          "optionList": [
+            {
+              "description": "Turn on verbose output",
+              "group": "global",
+              "name": "verbose",
+              "type": [Function],
+            },
+            {
+              "description": "Turn on debugging output",
+              "group": "global",
+              "name": "debug",
+              "type": [Function],
+            },
+            {
+              "alias": "h",
+              "description": "Print out helpful usage information",
+              "group": "global",
+              "name": "help",
+              "type": [Function],
+            },
+            {
+              "alias": "q",
+              "description": "Silence output",
+              "group": "global",
+              "name": "quiet",
+              "type": [Function],
+            },
+            {
+              "alias": "V",
+              "description": "Print version info",
+              "group": "global",
+              "name": "version",
+              "type": [Function],
+            },
+            {
+              "description": "Turn off colored output",
+              "group": "global",
+              "name": "no-color",
+              "type": [Function],
+            },
+            {
+              "description": "Force colored output",
+              "group": "global",
+              "name": "color",
+              "type": [Function],
+            },
+          ],
+        },
+        {
+          "content": [
+            [
+              "CEREBRO_OUTPUT_LEVEL",
+              "Controls the verbosity level of output. Valid values: '16' (quiet), '32' (normal), '64' (verbose), '128' (debug)",
+            ],
+            [
+              "CEREBRO_MIN_NODE_VERSION",
+              "Sets the minimum required Node.js version. Overrides the default minimum version check",
+            ],
+            [
+              "NO_UPDATE_NOTIFIER",
+              "When set, disables the update notifier check",
+            ],
+            [
+              "NODE_ENV",
+              "Standard Node.js environment variable. When set to 'test', disables update notifier",
+            ],
+            [
+              "DEBUG",
+              "When set, enables debug output (same as --debug flag)",
+            ],
+          ],
+          "header": "[7m[35m Environment Variables [39m[27m",
+        },
+        {
+          "content": "Run "[36mtestcli[39m [32mhelp <command>[39m" or "[36mtestcli[39m [32m<command>[39m [33m--help[39m" for help with a specific command.",
+          "raw": true,
+        },
+      ],
+    ],
+  ],
+  "results": [
+    {
+      "type": "return",
+      "value": undefined,
+    },
+  ],
+}
+`;
+
+exports[`command/help > should print command-specific help 1`] = `
+[MockFunction] {
+  "calls": [
+    [
+      [
+        {
+          "content": "[36mtestcli[39m [32mtest[39m [options]",
+          "header": "[7m[36m Usage [39m[27m",
+        },
+        {
+          "content": "A test command",
+          "header": "[7m[32m Description [39m[27m",
+        },
+        {
+          "header": "[7m[33m Command Options [39m[27m",
+          "optionList": [
+            {
+              "description": "Enable verbose output",
+              "name": "verbose",
+            },
+          ],
+        },
+        {
+          "header": "[7m[33m Global Options [39m[27m",
+          "optionList": [
+            {
+              "description": "Turn on verbose output",
+              "group": "global",
+              "name": "verbose",
+              "type": [Function],
+            },
+            {
+              "description": "Turn on debugging output",
+              "group": "global",
+              "name": "debug",
+              "type": [Function],
+            },
+            {
+              "alias": "h",
+              "description": "Print out helpful usage information",
+              "group": "global",
+              "name": "help",
+              "type": [Function],
+            },
+            {
+              "alias": "q",
+              "description": "Silence output",
+              "group": "global",
+              "name": "quiet",
+              "type": [Function],
+            },
+            {
+              "alias": "V",
+              "description": "Print version info",
+              "group": "global",
+              "name": "version",
+              "type": [Function],
+            },
+            {
+              "description": "Turn off colored output",
+              "group": "global",
+              "name": "no-color",
+              "type": [Function],
+            },
+            {
+              "description": "Force colored output",
+              "group": "global",
+              "name": "color",
+              "type": [Function],
+            },
+          ],
+        },
+      ],
+    ],
+  ],
+  "results": [
+    {
+      "type": "return",
+      "value": undefined,
+    },
+  ],
+}
+`;
+
+exports[`command/help > should print general help 1`] = `
+[MockFunction] {
+  "calls": [
+    [
+      [
+        {
+          "content": "[36mtestcli[39m [32m<command>[39m [positional arguments] [33m[options][39m",
+          "header": "[7m[36m Usage [39m[27m",
+        },
+        {
+          "content": [
+            [
+              "[32mtest[39m",
+              "A test command",
+            ],
+          ],
+          "header": " [7m[32m Test [39m[27m",
+        },
+        {
+          "header": "[7m[33m Global Options [39m[27m",
+          "optionList": [
+            {
+              "description": "Turn on verbose output",
+              "group": "global",
+              "name": "verbose",
+              "type": [Function],
+            },
+            {
+              "description": "Turn on debugging output",
+              "group": "global",
+              "name": "debug",
+              "type": [Function],
+            },
+            {
+              "alias": "h",
+              "description": "Print out helpful usage information",
+              "group": "global",
+              "name": "help",
+              "type": [Function],
+            },
+            {
+              "alias": "q",
+              "description": "Silence output",
+              "group": "global",
+              "name": "quiet",
+              "type": [Function],
+            },
+            {
+              "alias": "V",
+              "description": "Print version info",
+              "group": "global",
+              "name": "version",
+              "type": [Function],
+            },
+            {
+              "description": "Turn off colored output",
+              "group": "global",
+              "name": "no-color",
+              "type": [Function],
+            },
+            {
+              "description": "Force colored output",
+              "group": "global",
+              "name": "color",
+              "type": [Function],
+            },
+          ],
+        },
+        {
+          "content": [
+            [
+              "CEREBRO_OUTPUT_LEVEL",
+              "Controls the verbosity level of output. Valid values: '16' (quiet), '32' (normal), '64' (verbose), '128' (debug)",
+            ],
+            [
+              "CEREBRO_MIN_NODE_VERSION",
+              "Sets the minimum required Node.js version. Overrides the default minimum version check",
+            ],
+            [
+              "NO_UPDATE_NOTIFIER",
+              "When set, disables the update notifier check",
+            ],
+            [
+              "NODE_ENV",
+              "Standard Node.js environment variable. When set to 'test', disables update notifier",
+            ],
+            [
+              "DEBUG",
+              "When set, enables debug output (same as --debug flag)",
+            ],
+          ],
+          "header": "[7m[35m Environment Variables [39m[27m",
+        },
+        {
+          "content": "Run "[36mtestcli[39m [32mhelp <command>[39m" or "[36mtestcli[39m [32m<command>[39m [33m--help[39m" for help with a specific command.",
+          "raw": true,
+        },
+      ],
+    ],
+  ],
+  "results": [
+    {
+      "type": "return",
+      "value": undefined,
+    },
+  ],
+}
+`;
+
+exports[`command/help > should print general help and not include hidden commands 1`] = `
+[MockFunction] {
+  "calls": [
+    [
+      [
+        {
+          "content": "[36mtestcli[39m [32m<command>[39m [positional arguments] [33m[options][39m",
+          "header": "[7m[36m Usage [39m[27m",
+        },
+        {
+          "content": [
+            [
+              "[32mtest[39m",
+              "A test command",
+            ],
+          ],
+          "header": "[7m[32m Available Commands [39m[27m",
+        },
+        {
+          "header": "[7m[33m Global Options [39m[27m",
+          "optionList": [
+            {
+              "description": "Turn on verbose output",
+              "group": "global",
+              "name": "verbose",
+              "type": [Function],
+            },
+            {
+              "description": "Turn on debugging output",
+              "group": "global",
+              "name": "debug",
+              "type": [Function],
+            },
+            {
+              "alias": "h",
+              "description": "Print out helpful usage information",
+              "group": "global",
+              "name": "help",
+              "type": [Function],
+            },
+            {
+              "alias": "q",
+              "description": "Silence output",
+              "group": "global",
+              "name": "quiet",
+              "type": [Function],
+            },
+            {
+              "alias": "V",
+              "description": "Print version info",
+              "group": "global",
+              "name": "version",
+              "type": [Function],
+            },
+            {
+              "description": "Turn off colored output",
+              "group": "global",
+              "name": "no-color",
+              "type": [Function],
+            },
+            {
+              "description": "Force colored output",
+              "group": "global",
+              "name": "color",
+              "type": [Function],
+            },
+          ],
+        },
+        {
+          "content": [
+            [
+              "CEREBRO_OUTPUT_LEVEL",
+              "Controls the verbosity level of output. Valid values: '16' (quiet), '32' (normal), '64' (verbose), '128' (debug)",
+            ],
+            [
+              "CEREBRO_MIN_NODE_VERSION",
+              "Sets the minimum required Node.js version. Overrides the default minimum version check",
+            ],
+            [
+              "NO_UPDATE_NOTIFIER",
+              "When set, disables the update notifier check",
+            ],
+            [
+              "NODE_ENV",
+              "Standard Node.js environment variable. When set to 'test', disables update notifier",
+            ],
+            [
+              "DEBUG",
+              "When set, enables debug output (same as --debug flag)",
+            ],
+          ],
+          "header": "[7m[35m Environment Variables [39m[27m",
+        },
+        {
+          "content": "Run "[36mtestcli[39m [32mhelp <command>[39m" or "[36mtestcli[39m [32m<command>[39m [33m--help[39m" for help with a specific command.",
+          "raw": true,
+        },
+      ],
+    ],
+  ],
+  "results": [
+    {
+      "type": "return",
+      "value": undefined,
+    },
+  ],
+}
+`;

@@ -1,0 +1,441 @@
+# API: Command
+
+Command interface for defining CLI commands.
+
+## Command Interface
+
+```typescript
+interface Command<O extends OptionDefinition = OptionDefinition, TContext extends Toolbox = Toolbox> {
+    name: string;
+    execute: (toolbox: TContext) => Promise<void> | void;
+    description?: string;
+    alias?: string | string[];
+    argument?: ArgumentDefinition;
+    options?: OptionDefinition[];
+    env?: EnvDefinition[];
+    hidden?: boolean;
+    group?: string;
+    examples?: string[] | string[][];
+    usage?: Content[];
+    file?: string;
+    commandPath?: string[];
+}
+```
+
+## Properties
+
+### name
+
+**Type:** `string`  
+**Required:** Yes
+
+The command name used to invoke it:
+
+```typescript
+{
+    name: "build"; // Invoked as: cli build
+}
+```
+
+### execute
+
+**Type:** `(toolbox: TContext) => Promise<void> | void`  
+**Required:** Yes
+
+The function that executes the command:
+
+```typescript
+{
+    execute: ({ logger, options, argument }) => {
+        // Command logic
+    };
+}
+```
+
+### description
+
+**Type:** `string`  
+**Required:** No
+
+Short description shown in help:
+
+```typescript
+{
+    description: "Build the project for production";
+}
+```
+
+### alias
+
+**Type:** `string | string[]`  
+**Required:** No
+
+Alternative names for the command:
+
+```typescript
+{
+    alias: "b"; // Single alias
+    // or
+    alias: ["b", "compile"]; // Multiple aliases
+}
+```
+
+### argument
+
+**Type:** `ArgumentDefinition`  
+**Required:** No
+
+Positional argument definition:
+
+```typescript
+{
+  argument: {
+    name: "file",
+    type: String,
+    description: "File to process",
+    defaultValue: "default.txt"
+  }
+}
+```
+
+### options
+
+**Type:** `OptionDefinition[]`  
+**Required:** No
+
+Command options:
+
+```typescript
+{
+    options: [
+        {
+            name: "production",
+            type: Boolean,
+            description: "Build for production",
+        },
+    ];
+}
+```
+
+### env
+
+**Type:** `EnvDefinition[]`  
+**Required:** No
+
+Environment variables supported by this command:
+
+```typescript
+{
+    env: [
+        {
+            name: "API_KEY",
+            type: String,
+            description: "API key for authentication",
+        },
+        {
+            name: "TIMEOUT",
+            type: Number,
+            defaultValue: 5000,
+            description: "Request timeout in milliseconds",
+        },
+        {
+            name: "VERBOSE",
+            type: Boolean,
+            defaultValue: false,
+            description: "Enable verbose logging",
+        },
+    ];
+}
+```
+
+Environment variables are automatically:
+
+- Converted to camelCase (`API_KEY` → `apiKey`)
+- Type-transformed (String, Number, Boolean)
+- Applied with default values if not set
+- Displayed in help output (unless `hidden: true`)
+
+Access them in `execute` via `toolbox.env`:
+
+```typescript
+execute: ({ env }) => {
+    const apiKey = env.apiKey; // string | undefined
+    const timeout = env.timeout; // number (5000 if not set)
+    const verbose = env.verbose; // boolean (false if not set)
+};
+```
+
+**See also:** [Environment Variables Guide](/docs/cerebro/guides/options#environment-variables)
+
+### hidden
+
+**Type:** `boolean`  
+**Required:** No  
+**Default:** `false`
+
+Hide command from help output:
+
+```typescript
+{
+    hidden: true;
+}
+```
+
+### group
+
+**Type:** `string`  
+**Required:** No
+
+Group commands in help output:
+
+```typescript
+{
+    group: "Build";
+}
+```
+
+### examples
+
+**Type:** `string[] | string[][]`  
+**Required:** No
+
+Usage examples:
+
+```typescript
+{
+    examples: ["build --production", "build --production --output dist"];
+}
+```
+
+### usage
+
+**Type:** `Content[]`  
+**Required:** No
+
+Custom usage documentation (advanced).
+
+### file
+
+**Type:** `string`  
+**Required:** No
+
+Path to command file (for metadata).
+
+### commandPath
+
+**Type:** `string[]`  
+**Required:** No
+
+Command path for nested commands. Creates hierarchical command structures.
+
+When specified, the command can be invoked using the full path: `cli <path> <name>`.
+
+```typescript
+{
+    name: "staging",
+    commandPath: ["deploy"], // Invoked as: cli deploy staging
+    execute: ({ logger }) => {
+        logger.info("Deploying to staging...");
+    }
+}
+```
+
+Multi-level nesting is supported:
+
+```typescript
+{
+    name: "up",
+    commandPath: ["db", "migrate"], // Invoked as: cli db migrate up
+    execute: ({ logger }) => {
+        logger.info("Running migrations...");
+    }
+}
+```
+
+**Validation:**
+
+- Each path segment must follow the same rules as command names
+- Must start with a letter
+- Can contain letters, numbers, hyphens, and underscores
+- Cannot contain spaces or special characters
+
+**See also:** [Nested Commands Guide](/docs/cerebro/guides/commands#nested-commands)
+
+## ArgumentDefinition
+
+```typescript
+interface ArgumentDefinition<T = any> {
+    name: string;
+    type?: TypeConstructor<T>;
+    description?: string;
+    defaultValue?: T;
+    typeLabel?: string;
+}
+```
+
+## OptionDefinition
+
+```typescript
+interface OptionDefinition<T> {
+    name: string;
+    alias?: string | string[];
+    type?: TypeConstructor<T>;
+    description?: string;
+    defaultValue?: T;
+    required?: boolean;
+    multiple?: boolean;
+    lazyMultiple?: boolean;
+    conflicts?: string | string[];
+    implies?: Record<string, any>;
+    hidden?: boolean;
+    typeLabel?: string;
+    group?: string;
+}
+```
+
+## EnvDefinition
+
+```typescript
+interface EnvDefinition<T = string> {
+    name: string;
+    type?: EnvTypeConstructor<T>;
+    description?: string;
+    defaultValue?: T;
+    hidden?: boolean;
+    typeLabel?: string;
+}
+```
+
+### Properties
+
+#### name
+
+**Type:** `string`  
+**Required:** Yes
+
+The environment variable name (e.g., `API_KEY`, `LOG_LEVEL`). Will be converted to camelCase when accessed via `toolbox.env`.
+
+#### type
+
+**Type:** `EnvTypeConstructor<T>`  
+**Required:** No
+
+Type constructor for transforming the environment variable value:
+
+- `String` - Keep as string
+- `Number` - Parse as integer
+- `Boolean` - Parse as boolean (accepts `true`, `1`, `yes`, `on` for true)
+
+```typescript
+{
+    name: "PORT",
+    type: Number, // Parses string to number
+}
+```
+
+#### description
+
+**Type:** `string`  
+**Required:** No
+
+Description shown in help output.
+
+#### defaultValue
+
+**Type:** `T`  
+**Required:** No
+
+Default value used when the environment variable is not set:
+
+```typescript
+{
+    name: "TIMEOUT",
+    type: Number,
+    defaultValue: 5000, // Used if TIMEOUT is not set
+}
+```
+
+#### hidden
+
+**Type:** `boolean`  
+**Required:** No  
+**Default:** `false`
+
+Hide environment variable from help output:
+
+```typescript
+{
+    name: "SECRET_KEY",
+    type: String,
+    hidden: true, // Won't appear in help
+}
+```
+
+#### typeLabel
+
+**Type:** `string`  
+**Required:** No
+
+Custom type label for help output (advanced).
+
+## Complete Example
+
+```typescript
+cli.addCommand({
+    name: "deploy",
+    alias: "d",
+    description: "Deploy the application",
+    group: "Deployment",
+    examples: ["deploy --env production", "deploy --env staging --dry-run"],
+    argument: {
+        name: "target",
+        type: String,
+        description: "Deployment target",
+        defaultValue: "production",
+    },
+    options: [
+        {
+            name: "env",
+            alias: "e",
+            type: String,
+            required: true,
+            description: "Environment name",
+        },
+        {
+            name: "dry-run",
+            type: Boolean,
+            description: "Perform a dry run",
+        },
+    ],
+    env: [
+        {
+            name: "API_KEY",
+            type: String,
+            description: "API key for deployment",
+        },
+        {
+            name: "TIMEOUT",
+            type: Number,
+            defaultValue: 30000,
+            description: "Deployment timeout in milliseconds",
+        },
+        {
+            name: "FORCE_DEPLOY",
+            type: Boolean,
+            defaultValue: false,
+            description: "Force deployment without confirmation",
+        },
+    ],
+    execute: async ({ argument, options, env, logger }) => {
+        const target = argument[0];
+        const apiKey = env.apiKey;
+        const timeout = env.timeout; // 30000 if not set
+        const forceDeploy = env.forceDeploy; // false if not set
+
+        logger.info(`Deploying to ${target} (${options.env})`);
+        if (forceDeploy) {
+            logger.info("Force deployment enabled");
+        }
+    },
+});
+```

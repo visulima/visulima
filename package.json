@@ -11,6 +11,7 @@
     ],
     "scripts": {
         "audit": "audit-ci --config ./audit-ci.jsonc",
+        "bench:cerebro": "pnpm --filter \"cerebro-bench\" run test:bench",
         "bench:colorize": "pnpm --filter \"colorize-bench\" run test:bench",
         "bench:deep-clone": "pnpm --filter \"deep-clone\" run test:bench",
         "bench:fmt": "pnpm --filter \"fmt\" run test:bench",

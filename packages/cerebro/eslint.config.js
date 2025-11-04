@@ -16,6 +16,7 @@ export default createConfig(
             "tsconfig.eslint.json",
             ".prettierrc.cjs",
             "package.json",
+            "MIGRATION-GUIDE.md",
             "README.md",
         ],
     },
@@ -26,6 +27,19 @@ export default createConfig(
             "no-secrets/no-secrets": "off",
             "sonarjs/no-nested-functions": "off",
             "unicorn/no-null": "off",
+            "vitest/require-mock-type-parameters": "off",
+        },
+    },
+    {
+        files: ["__bench__/**/*.ts"],
+        rules: {
+            "import/no-extraneous-dependencies": "off",
+        },
+    },
+    {
+        files: ["**/*.ts"],
+        rules: {
+            "no-underscore-dangle": "off",
         },
     },
 );

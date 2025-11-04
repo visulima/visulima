@@ -1,7 +1,7 @@
 {
     "name": "@visulima/cerebro",
     "version": "1.1.58",
-    "description": "A delightful toolkit for building Node-powered CLIs.",
+    "description": "A delightful toolkit for building cross-runtime CLIs for Node.js, Deno, and Bun.",
     "keywords": [
         "command",
         "line",
@@ -58,26 +58,42 @@
     "type": "module",
     "exports": {
         ".": {
-            "import": {
-                "types": "./dist/index.d.mts",
-                "default": "./dist/index.mjs"
-            },
-            "require": {
-                "types": "./dist/index.d.cts",
-                "default": "./dist/index.cjs"
-            }
+            "types": "./dist/index.d.ts",
+            "default": "./dist/index.js"
+        },
+        "./command/help": {
+            "types": "./dist/commands/help-command.d.ts",
+            "default": "./dist/commands/help-command.js"
+        },
+        "./command/version": {
+            "types": "./dist/commands/version-command.d.ts",
+            "default": "./dist/commands/version-command.js"
+        },
+        "./command/completion": {
+            "types": "./dist/commands/completion-command.d.ts",
+            "default": "./dist/commands/completion-command.js"
+        },
+        "./command/readme-generator": {
+            "types": "./dist/commands/readme-command.d.ts",
+            "default": "./dist/commands/readme-command.js"
+        },
+        "./plugins/error-handler": {
+            "types": "./dist/plugins/error-handler-plugin.d.ts",
+            "default": "./dist/plugins/error-handler-plugin.js"
+        },
+        "./plugins/runtime-version-check": {
+            "types": "./dist/plugins/runtime-version-check-plugin.d.ts",
+            "default": "./dist/plugins/runtime-version-check-plugin.js"
+        },
+        "./plugins/update-notifier": {
+            "types": "./dist/plugins/update-notifier/update-notifier-plugin.d.ts",
+            "default": "./dist/plugins/update-notifier/update-notifier-plugin.js"
+        },
+        "./logger/pail": {
+            "types": "./dist/logger/create-pail-logger.d.ts",
+            "default": "./dist/logger/create-pail-logger.js"
         },
         "./package.json": "./package.json"
-    },
-    "main": "dist/index.cjs",
-    "module": "dist/index.mjs",
-    "types": "dist/index.d.ts",
-    "typesVersions": {
-        ">=5.0": {
-            ".": [
-                "./dist/index.d.ts"
-            ]
-        }
     },
     "files": [
         "dist",
@@ -103,27 +119,31 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@visulima/boxen": "2.0.6",
         "@visulima/colorize": "1.4.25",
-        "@visulima/find-cache-dir": "2.0.2",
-        "@visulima/pail": "3.0.2",
-        "cli-table3": "^0.6.5",
-        "command-line-args": "^6.0.1",
+        "@visulima/tabular": "workspace:*",
         "fastest-levenshtein": "^1.0.16"
     },
     "devDependencies": {
+        "github-slugger": "2.0.0",
+        "@bomb.sh/tab": "^0.0.7",
+        "@visulima/error": "workspace:*",
+        "@visulima/find-cache-dir": "workspace:*",
         "@anolilab/eslint-config": "^16.4.2",
         "@anolilab/prettier-config": "^6.0.7",
         "@anolilab/semantic-release-pnpm": "^2.0.4",
         "@anolilab/semantic-release-preset": "^11.0.4",
         "@arethetypeswrong/cli": "^0.18.2",
         "@total-typescript/ts-reset": "^0.6.1",
-        "@types/command-line-args": "^5.2.3",
         "@types/node": "24.9.2",
+        "@visulima/boxen": "workspace:*",
+        "@visulima/command-line-args": "workspace:*",
         "@visulima/packem": "2.0.0-alpha.32",
-        "@visulima/path": "2.0.1",
+        "@visulima/pail": "workspace:*",
+        "@visulima/path": "workspace:*",
+        "@visulima/string": "workspace:*",
         "@vitest/coverage-v8": "^4.0.4",
-        "camelcase": "8.0.0",
+        "ci-info": "^4.3.1",
+        "commander": "14.0.2",
         "conventional-changelog-conventionalcommits": "9.1.0",
         "esbuild": "0.25.11",
         "eslint": "9.38.0",
@@ -134,8 +154,32 @@
         "typescript": "5.9.3",
         "vitest": "^4.0.4"
     },
+    "peerDependencies": {
+        "@bomb.sh/tab": "^0.0.7",
+        "github-slugger": "2.0.0",
+        "@visulima/boxen": "2.0.6",
+        "@visulima/find-cache-dir": "2.0.2",
+        "@visulima/pail": "3.0.2"
+    },
+    "peerDependenciesMeta": {
+        "@bomb.sh/tab": {
+            "optional": true
+        },
+        "@visulima/find-cache-dir": {
+            "optional": true
+        },
+        "@visulima/boxen": {
+            "optional": true
+        },
+        "@visulima/pail": {
+            "optional": true
+        },
+        "github-slugger": {
+            "optional": true
+        }
+    },
     "engines": {
-        "node": ">=18.0.0 <=25.x"
+        "node": ">=20.19 <=25.x"
     },
     "os": [
         "darwin",

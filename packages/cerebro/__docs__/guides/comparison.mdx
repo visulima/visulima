@@ -1,0 +1,525 @@
+import { Alert } from "@visulima/nextra-theme-docs/components";
+
+# Comparison with Popular CLIs
+
+When choosing a CLI framework, it's important to understand how Cerebro compares to other popular options. This guide provides a detailed comparison to help you make an informed decision.
+
+## Quick Comparison Table
+
+| Feature                 | Cerebro              | Commander   | Yargs       | Oclif       | Meow    | CAC          | Cleye        |
+| ----------------------- | -------------------- | ----------- | ----------- | ----------- | ------- | ------------ | ------------ |
+| **TypeScript First**    | ✅ Excellent         | ⚠️ Partial  | ⚠️ Partial  | ✅ Good     | ❌ No   | ❌ No        | ✅ Excellent |
+| **Plugin System**       | ✅ Built-in          | ❌ No       | ❌ No       | ✅ Built-in | ❌ No   | ❌ No        | ❌ No        |
+| **Performance**         | ✅ Fast              | ⚠️ Moderate | ⚠️ Moderate | ⚠️ Moderate | ✅ Fast | ✅ Very Fast | ✅ Fast      |
+| **Zero Config**         | ✅ Yes               | ✅ Yes      | ✅ Yes      | ❌ No       | ✅ Yes  | ✅ Yes       | ✅ Yes       |
+| **Shell Completions**   | ✅ Built-in (Plugin) | ⚠️ Plugin   | ⚠️ Plugin   | ✅ Built-in | ❌ No   | ❌ No        | ❌ No        |
+| **Command Composition** | ✅ Yes               | ❌ No       | ❌ No       | ✅ Yes      | ❌ No   | ❌ No        | ❌ No        |
+| **Nested/Subcommands**  | ✅ Yes               | ✅ Yes      | ✅ Yes      | ✅ Yes      | ❌ No   | ✅ Yes       | ❌ No        |
+| **Bundle Size**         | ✅ Small             | ⚠️ Medium   | ⚠️ Large    | ⚠️ Large    | ✅ Tiny | ✅ Tiny      | ✅ Small     |
+| **Learning Curve**      | ✅ Easy              | ✅ Easy     | ⚠️ Moderate | ⚠️ Steep    | ✅ Easy | ✅ Easy      | ✅ Easy      |
+
+## Detailed Comparisons
+
+### vs Commander.js
+
+**Commander.js** is the most popular Node.js CLI framework, known for its simplicity and maturity.
+
+#### Advantages of Commander.js
+
+- **Widespread adoption** - Used by thousands of projects
+- **Large community** - Extensive documentation and examples
+- **Simple API** - Easy to get started
+- **Mature ecosystem** - Many plugins and extensions available
+
+#### Advantages of Cerebro
+
+- **Better TypeScript support** - Superior type inference and autocomplete
+- **Built-in plugin system** - Extend functionality without external dependencies
+- **Command composition** - Call commands from within other commands
+- **Nested commands** - Support for hierarchical command structures
+- **Modern architecture** - Designed with TypeScript and async/await in mind
+- **Better performance** - Optimized for fast startup times
+
+#### When to Choose Commander.js
+
+- You need maximum ecosystem compatibility
+- You're building a simple CLI without complex needs
+- Your team is already familiar with Commander.js
+
+#### When to Choose Cerebro
+
+- You want excellent TypeScript support out of the box
+- You need plugin extensibility
+- You want command composition capabilities
+- You need nested subcommands
+- Performance is important for your use case
+
+**Example Comparison:**
+
+```typescript
+// Commander.js
+import { Command } from "commander";
+
+const program = new Command();
+program.name("my-app").version("1.0.0");
+
+program
+    .command("run")
+    .option("-d, --debug", "output extra debugging")
+    .action((options) => {
+        if (options.debug) console.log("Debug mode");
+    });
+
+program.parse();
+```
+
+```typescript
+// Cerebro
+import { Cerebro } from "@visulima/cerebro";
+
+const cli = new Cerebro("my-app", {
+    packageVersion: "1.0.0",
+});
+
+cli.addCommand({
+    name: "run",
+    options: [{ name: "debug", alias: "d", type: Boolean }],
+    execute: ({ options, logger }) => {
+        if (options.debug) logger.debug("Debug mode");
+    },
+});
+
+await cli.run();
+```
+
+**Nested Commands Example:**
+
+```typescript
+// Commander.js - Nested commands
+program
+    .command("deploy")
+    .command("staging")
+    .action(() => {
+        console.log("Deploying to staging...");
+    });
+
+program
+    .command("deploy")
+    .command("production")
+    .action(() => {
+        console.log("Deploying to production...");
+    });
+```
+
+```typescript
+// Cerebro - Nested commands
+cli.addCommand({
+    name: "staging",
+    commandPath: ["deploy"],
+    description: "Deploy to staging environment",
+    execute: ({ logger }) => {
+        logger.info("Deploying to staging...");
+    },
+});
+
+cli.addCommand({
+    name: "production",
+    commandPath: ["deploy"],
+    description: "Deploy to production environment",
+    execute: ({ logger }) => {
+        logger.info("Deploying to production...");
+    },
+});
+
+// Usage: cli deploy staging
+// Usage: cli deploy production
+```
+
+### vs Yargs
+
+**Yargs** is a powerful argument parser with extensive features and a rich ecosystem.
+
+#### Advantages of Yargs
+
+- **Rich feature set** - Extensive argument parsing capabilities
+- **Middleware support** - Powerful middleware system
+- **Positional arguments** - Excellent support for complex argument patterns
+- **Validation** - Built-in validation and coercion
+
+#### Advantages of Cerebro
+
+- **Simpler API** - More intuitive and easier to learn
+- **TypeScript-first** - Better type safety and inference
+- **Plugin architecture** - Built-in plugin system with lifecycle hooks
+- **Performance** - Faster startup and execution
+- **Command composition** - Built-in support for calling commands programmatically
+
+#### When to Choose Yargs
+
+- You need complex argument parsing patterns
+- You require extensive middleware capabilities
+- Your CLI has very complex positional argument requirements
+
+#### When to Choose Cerebro
+
+- You want a cleaner, more modern API
+- TypeScript support is important
+- You need plugin extensibility
+- You prefer better performance
+
+**Example Comparison:**
+
+```typescript
+// Yargs
+import yargs from "yargs";
+import { hideBin } from "yargs/helpers";
+
+const argv = yargs(hideBin(process.argv))
+    .option("input", {
+        alias: "i",
+        type: "string",
+        description: "Input file",
+        demandOption: true,
+    })
+    .option("output", {
+        alias: "o",
+        type: "string",
+        description: "Output file",
+    })
+    .parse();
+```
+
+```typescript
+// Cerebro
+import { Cerebro } from "@visulima/cerebro";
+
+const cli = new Cerebro("my-app");
+
+cli.addCommand({
+    name: "process",
+    options: [
+        {
+            name: "input",
+            alias: "i",
+            type: String,
+            description: "Input file",
+            required: true,
+        },
+        {
+            name: "output",
+            alias: "o",
+            type: String,
+            description: "Output file",
+        },
+    ],
+    execute: ({ options }) => {
+        // Process files
+    },
+});
+
+await cli.run();
+```
+
+### vs Oclif
+
+**Oclif** is Salesforce's enterprise-grade CLI framework with extensive tooling and features.
+
+#### Advantages of Oclif
+
+- **Enterprise features** - Designed for large-scale CLI applications
+- **Built-in generators** - Scaffolding tools for commands and plugins
+- **Multi-command architecture** - Excellent for complex CLIs
+- **Plugin ecosystem** - Rich plugin marketplace
+- **Testing utilities** - Built-in testing helpers
+
+#### Advantages of Cerebro
+
+- **Lighter weight** - Smaller bundle size and faster startup
+- **Simpler setup** - Zero configuration approach
+- **Better TypeScript** - Superior type inference
+- **Modern API** - Cleaner, more intuitive interface
+- **No generators needed** - Write commands directly without scaffolding
+
+#### When to Choose Oclif
+
+- Building enterprise-grade CLIs with many commands
+- You need extensive scaffolding and generators
+- You want access to a plugin marketplace
+- Building CLIs that integrate with Salesforce
+
+#### When to Choose Cerebro
+
+- You want a lighter, faster framework
+- You prefer simplicity over enterprise features
+- TypeScript support is a priority
+- You want zero configuration
+
+**Example Comparison:**
+
+```typescript
+// Oclif
+import { Command, Flags } from "@oclif/core";
+
+export class Build extends Command {
+    static flags = {
+        production: Flags.boolean({
+            char: "p",
+            description: "Production build",
+        }),
+    };
+
+    async run() {
+        const { flags } = await this.parse(Build);
+        // Build logic
+    }
+}
+```
+
+```typescript
+// Cerebro
+import { Cerebro } from "@visulima/cerebro";
+
+const cli = new Cerebro("my-app");
+
+cli.addCommand({
+    name: "build",
+    options: [
+        {
+            name: "production",
+            alias: "p",
+            type: Boolean,
+            description: "Production build",
+        },
+    ],
+    execute: ({ options }) => {
+        // Build logic
+    },
+});
+
+await cli.run();
+```
+
+### vs Meow
+
+**Meow** is a minimal CLI helper built by Sindre Sorhus, focused on simplicity and zero dependencies.
+
+#### Advantages of Meow
+
+- **Ultra-lightweight** - Zero dependencies, tiny bundle size
+- **Simple API** - Minimal and straightforward
+- **Fast** - Extremely fast startup
+- **No bloat** - Only essential features
+
+#### Advantages of Cerebro
+
+- **More features** - Built-in plugin system, command composition
+- **Better TypeScript** - Full type safety and inference
+- **Help generation** - Automatic help text generation
+- **Shell completions** - Built-in completion support
+- **Command structure** - Better organization for multiple commands
+
+#### When to Choose Meow
+
+- Building extremely simple CLIs
+- Bundle size is critical
+- You only need basic argument parsing
+- Zero dependencies is a hard requirement
+
+#### When to Choose Cerebro
+
+- You need more than basic argument parsing
+- You want plugin extensibility
+- TypeScript support is important
+- You need help generation and completions
+
+**Example Comparison:**
+
+```typescript
+// Meow
+import meow from "meow";
+
+const cli = meow(
+    `
+  Usage
+    $ my-app <input>
+
+  Options
+    --flag, -f  Some flag
+
+  Examples
+    $ my-app unicorn
+`,
+    {
+        flags: {
+            flag: {
+                type: "boolean",
+                alias: "f",
+            },
+        },
+    },
+);
+```
+
+```typescript
+// Cerebro
+import { Cerebro } from "@visulima/cerebro";
+
+const cli = new Cerebro("my-app");
+
+cli.addCommand({
+    name: "run",
+    argument: {
+        name: "input",
+        type: String,
+    },
+    options: [
+        {
+            name: "flag",
+            alias: "f",
+            type: Boolean,
+        },
+    ],
+    execute: ({ argument, options }) => {
+        // Command logic
+    },
+});
+
+await cli.run();
+```
+
+### vs CAC
+
+**CAC** (Command And Conquer) is a super lightweight CLI framework with zero dependencies.
+
+#### Advantages of CAC
+
+- **Zero dependencies** - Completely dependency-free
+- **Very fast** - Extremely lightweight and fast
+- **Simple** - Minimal API surface
+- **Small bundle** - Tiny footprint
+
+#### Advantages of Cerebro
+
+- **TypeScript support** - Full type safety
+- **Plugin system** - Built-in extensibility
+- **More features** - Help generation, completions, command composition
+- **Better DX** - Superior developer experience
+- **Error handling** - Built-in error handling system
+
+#### When to Choose CAC
+
+- You need zero dependencies
+- Minimal bundle size is critical
+- You only need basic command parsing
+
+#### When to Choose Cerebro
+
+- You want TypeScript support
+- You need plugin capabilities
+- Better developer experience matters
+
+### vs Cleye
+
+**Cleye** is a modern TypeScript-first CLI library with strongly typed parameters.
+
+#### Advantages of Cleye
+
+- **TypeScript-first** - Excellent type safety
+- **Strong typing** - Strongly typed parameters
+- **Clean API** - Modern and intuitive
+- **Small bundle** - Lightweight
+
+#### Advantages of Cerebro
+
+- **Plugin system** - Built-in plugin architecture
+- **Command composition** - Call commands programmatically
+- **More features** - Help generation, completions, toolbox
+- **Lifecycle hooks** - Plugin lifecycle management
+- **Better organization** - More structured for complex CLIs
+
+#### When to Choose Cleye
+
+- You want a simple TypeScript-first CLI
+- You prefer minimal dependencies
+- Basic command parsing is sufficient
+
+#### When to Choose Cerebro
+
+- You need plugin extensibility
+- You want command composition
+- You need more advanced features
+
+## Performance Comparison
+
+Cerebro is optimized for performance, especially important for CLI tools that start fresh with every invocation:
+
+- **Fast startup** - Minimal initialization overhead
+- **Efficient parsing** - Optimized argument parsing
+- **Small memory footprint** - Lightweight runtime
+- **Quick command execution** - Optimized command dispatching
+
+For detailed performance benchmarks, see the [benchmark results](https://github.com/visulima/visulima/tree/main/packages/cerebro/__bench__).
+
+## Migration Guide
+
+If you're considering migrating from another CLI framework, check out our [Migration Guide](https://github.com/visulima/visulima/blob/main/packages/cerebro/MIGRATION-GUIDE.md) for detailed examples and best practices.
+
+## Features Comparison
+
+### What Cerebro Has
+
+- ✅ **Command composition** - Call commands programmatically
+- ✅ **Nested/Subcommands** - Support for `cli deploy staging` style commands using `commandPath`
+- ✅ **Plugin system** - Extensible architecture with lifecycle hooks
+- ✅ **TypeScript-first** - Excellent type safety and inference
+- ✅ **Shell completions** - Built-in completion support (via plugin)
+- ✅ **Help generation** - Automatic help text generation
+- ✅ **Error handling** - Built-in error types and handling
+- ✅ **Command grouping** - Organize commands in help output
+- ✅ **Option validation** - Required options, conflicts, implied options
+- ✅ **Negatable options** - `--no-` prefix support
+- ✅ **Command aliases** - Multiple aliases per command
+- ✅ **Global options** - Built-in help, version, verbose, quiet, debug
+- ✅ **Default command** - Set a default command when none provided
+
+### What Cerebro Doesn't Have (Yet)
+
+Cerebro focuses on simplicity and performance, which means some advanced features available in other frameworks are intentionally omitted or can be added via plugins:
+
+- ⚠️ **Multiple Named Arguments** - Single positional argument support only (can accept multiple values as array)
+- ⚠️ **Environment Variable Mapping** - No automatic `MYAPP_PORT` → `--port` mapping (can be added via plugin)
+- ⚠️ **Config File Support** - No built-in JSON/YAML/TOML config file reading (can be added via plugin)
+- ⚠️ **Middleware System** - No Yargs-style middleware for option preprocessing (plugins provide lifecycle hooks instead)
+- ⚠️ **Custom Option Coercion** - Basic type conversion only, no custom coercion functions
+- ⚠️ **Command Generators** - No scaffolding tools like Oclif (by design - prefer direct code)
+
+<Alert type="info">
+    **Note:** Many missing features can be implemented via plugins. The plugin system is designed to be the extension mechanism for additional functionality.
+</Alert>
+
+## Summary
+
+**Choose Cerebro if:**
+
+- ✅ You want excellent TypeScript support
+- ✅ You need plugin extensibility
+- ✅ Performance matters for your CLI
+- ✅ You want command composition
+- ✅ You need nested subcommands
+- ✅ You prefer modern, clean APIs
+- ✅ You need built-in shell completions
+- ✅ You want a simple, focused framework
+
+**Consider alternatives if:**
+
+- ❌ You need maximum ecosystem compatibility (→ Commander.js)
+- ❌ You require complex argument parsing patterns (→ Yargs)
+- ❌ You need environment variable/config file integration out of the box (→ Yargs)
+- ❌ You need zero dependencies (→ Meow, CAC)
+- ❌ You want minimal features (→ Cleye)
+- ❌ You need command generators/scaffolding (→ Oclif)
+
+<Alert type="info">
+    **Note:** This comparison is based on features and typical use cases. Your specific requirements may vary. We recommend trying Cerebro and comparing it
+    directly with your use case. Missing features can often be added via plugins or custom code.
+</Alert>

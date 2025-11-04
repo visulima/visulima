@@ -1,4 +1,4 @@
-import type { Content as IContent, OptionList as IOptionList, Section as ISection } from "../../@types/command-line-usage";
+import type { Content as IContent, OptionList as IOptionList, Section as ISection } from "../../types/command-line-usage";
 import ContentSection from "./section/content-section";
 import OptionList from "./section/option-list-section";
 
