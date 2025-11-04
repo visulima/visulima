@@ -3,7 +3,7 @@ import type { Toolbox as IToolbox } from "./types/toolbox";
 class EmptyToolbox implements Partial<IToolbox> {
     [x: string]: unknown;
 
-    public result: unknown;
+    public result?: unknown;
 
     public argv?: IToolbox["argv"];
 

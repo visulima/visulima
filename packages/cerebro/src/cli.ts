@@ -849,19 +849,19 @@ export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
 
         const pluginManager = this.getPluginManager();
 
-        if (!this.#pluginsInitialized && pluginManager.hasPlugins()) {
-            await pluginManager.init({
-                cli: this as ICli,
-                cwd: this.#cwd,
-                logger: this.#logger,
-            });
-
-            this.#pluginsInitialized = true;
-        }
-
-        await pluginManager.executeLifecycle("execute", toolbox);
-
         try {
+            if (!this.#pluginsInitialized && pluginManager.hasPlugins()) {
+                await pluginManager.init({
+                    cli: this as ICli,
+                    cwd: this.#cwd,
+                    logger: this.#logger,
+                });
+
+                this.#pluginsInitialized = true;
+            }
+
+            await pluginManager.executeLifecycle("execute", toolbox);
+
             await pluginManager.executeLifecycle("beforeCommand", toolbox);
 
             let result: unknown;

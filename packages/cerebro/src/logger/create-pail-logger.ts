@@ -34,7 +34,7 @@ const createPailLogger = async (): Promise<Pail> => {
     }
 
     const logger = createPail({
-        logLevel: outputLevel ? cerebroLevelToPailLevel[outputLevel as unknown as VERBOSITY_LEVEL] : "informational",
+        logLevel: (outputLevel && cerebroLevelToPailLevel[outputLevel as unknown as VERBOSITY_LEVEL]) || "informational",
         processors,
     });
 

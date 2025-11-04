@@ -1,6 +1,6 @@
 import type { OptionDefinition, PossibleOptionDefinition } from "../../types/command";
 
-const argumentNameRegExp = /^-{1,2}(\w+)(=(\w+))?$/;
+const argumentNameRegExp = /^-{1,2}(\w+)(=(.+))?$/;
 
 const getParameterOption = <OD extends OptionDefinition<unknown>>(
     argument: string,

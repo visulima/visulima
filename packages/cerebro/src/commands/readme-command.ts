@@ -212,7 +212,14 @@ const generateMultiCommands = async (commands: ICommand[], outputDirectory: stri
         groupedCommands.set(group, groupCommands);
     }
 
-    const groups = [...groupedCommands.entries()].filter(([group]) => group !== "__Other");
+    // Map "__Other" to a display name for ungrouped commands
+    const groups = [...groupedCommands.entries()].map(([group, groupCommands]) => {
+        if (group === "__Other") {
+            return ["Other", groupCommands] as [string, ICommand[]];
+        }
+
+        return [group, groupCommands] as [string, ICommand[]];
+    });
 
     // Create topic files for each group
     await Promise.all(

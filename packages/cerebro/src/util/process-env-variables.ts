@@ -36,10 +36,11 @@ const transformEnvValue = (envDefinition: EnvDefinition<boolean> | EnvDefinition
     }
 
     // Handle Number type - parse explicitly to avoid NaN issues
+    // Use parseFloat to support both integers and floating-point numbers
     const isNumberType = envDefinition.type === Number || (typeof envDefinition.type === "function" && envDefinition.type.name === "Number");
 
     if (isNumberType) {
-        const parsed = Number.parseInt(envValue, 10);
+        const parsed = Number.parseFloat(envValue);
 
         return Number.isNaN(parsed) ? undefined : parsed;
     }

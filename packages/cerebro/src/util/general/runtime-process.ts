@@ -346,9 +346,7 @@ export const getVersions = (): Record<string, string> => {
  * Terminates the process with the specified exit code.
  * @param code Exit code (default: 0)
  */
-export const exitProcess = (code?: number): never => {
-    const exitCode = code ?? 0;
-
+export const exitProcess = (exitCode = 0): never => {
     // Check for Deno first using type guard
     if (hasDeno(globalThis)) {
         // @ts-expect-error - Deno is available after type guard check
@@ -356,7 +354,7 @@ export const exitProcess = (code?: number): never => {
 
         deno.exit(exitCode);
         // TypeScript knows this never returns, but we add this for runtime safety
-        // eslint-disable-next-line no-unreachable
+
         throw new Error("Deno exit failed");
     }
 
@@ -367,7 +365,7 @@ export const exitProcess = (code?: number): never => {
 
         bun.process.exit(exitCode);
         // TypeScript knows this never returns, but we add this for runtime safety
-        // eslint-disable-next-line no-unreachable
+
         throw new Error("Bun exit failed");
     }
 
@@ -380,7 +378,7 @@ export const exitProcess = (code?: number): never => {
     // In test environments, process.exit() might be mocked and not actually exit.
     // We use a type assertion to satisfy TypeScript's never return type requirement
     // without throwing an error that would break tests.
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+
     return undefined as never;
 };
 

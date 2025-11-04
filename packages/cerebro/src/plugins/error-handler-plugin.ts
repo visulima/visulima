@@ -30,32 +30,31 @@ export const errorHandlerPlugin = (options: ErrorHandlerOptions = {}): Plugin =>
         const { logger, runtime } = toolbox;
         const { detailed = false, exitOnError = true, formatter, logErrors = true, renderOptions = {} } = options;
 
-        if (!logErrors) {
-            return;
+        // Log error if logging is enabled
+        if (logErrors) {
+            if (formatter) {
+                // Use custom formatter
+                logger.error(formatter(error));
+            } else if (detailed) {
+                const cwd = runtime.getCwd();
+                const renderedError = renderError(error, {
+                    cwd,
+                    hideErrorCodeView: false,
+                    hideErrorTitle: false,
+                    hideMessage: false,
+                    linesAbove: 2,
+                    linesBelow: 3,
+                    ...renderOptions,
+                });
+
+                logger.error(renderedError);
+            } else {
+                // Simple error logging (default behavior)
+                logger.error(error);
+            }
         }
 
-        if (formatter) {
-            // Use custom formatter
-            logger.error(formatter(error));
-        } else if (detailed) {
-            const cwd = runtime.getCwd();
-            const renderedError = renderError(error, {
-                cwd,
-                hideErrorCodeView: false,
-                hideErrorTitle: false,
-                hideMessage: false,
-                linesAbove: 2,
-                linesBelow: 3,
-                ...renderOptions,
-            });
-
-            logger.error(renderedError);
-        } else {
-            // Simple error logging (default behavior)
-            logger.error(error);
-        }
-
-        // Exit process if configured
+        // Exit process if configured (always evaluated, regardless of logErrors)
         if (exitOnError) {
             exitProcess(1);
         }
