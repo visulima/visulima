@@ -1,5 +1,3 @@
-import { argv as process_argv, cwd as process_cwd, env, execArgv, execPath, exit } from "node:process";
-
 import type { CommandLineOptions } from "@visulima/command-line-args";
 
 import HelpCommand from "./commands/help-command";
@@ -21,6 +19,7 @@ import { addNegatableOptions, mapImpliedOptions, mapNegatableOptions, processOpt
 import findAlternatives from "./util/general/find-alternatives";
 import parseRawCommand from "./util/general/parse-raw-command";
 import registerExceptionHandler from "./util/general/register-exception-handler";
+import { exitProcess, getArgv as getRuntimeArgv, getCwd as getRuntimeCwd, getEnv, getExecArgv, getExecPath } from "./util/general/runtime-process";
 import { validateCommandName, validateNonEmptyString, validateObject, validateStringArray } from "./util/general/validate-input";
 import { sanitizeArguments } from "./util/security";
 
@@ -154,6 +153,7 @@ export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
             return;
         }
 
+        const env = getEnv();
         let verbositySet = false;
 
         for (const argument of this.#argv) {
@@ -231,7 +231,9 @@ export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
 
         validateConflictingOptions(arguments_, toolbox.options, command);
 
-        if (process.env.CEREBRO_OUTPUT_LEVEL === String(VERBOSITY_DEBUG)) {
+        const env = getEnv();
+
+        if (env.CEREBRO_OUTPUT_LEVEL === String(VERBOSITY_DEBUG)) {
             this.#logger.debug("command options parsed from options:");
             // eslint-disable-next-line unicorn/no-null
             this.#logger.debug(JSON.stringify(toolbox.options, null, 2));
@@ -260,8 +262,8 @@ export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
 
         this.#cliName = cliName.trim();
 
-        const argv = options.argv ?? process_argv;
-        const cwd = options.cwd ?? process_cwd();
+        const argv = options.argv ?? getRuntimeArgv();
+        const cwd = options.cwd ?? getRuntimeCwd();
 
         this.#options = { ...options, argv, cwd };
 
@@ -280,6 +282,8 @@ export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
         if (this.#options.packageVersion && typeof this.#options.packageVersion !== "string") {
             throw new CerebroError("CLI packageVersion option must be a string", "INVALID_INPUT", { packageVersion: this.#options.packageVersion });
         }
+
+        const env = getEnv();
 
         env.CEREBRO_OUTPUT_LEVEL = String(VERBOSITY_NORMAL);
 
@@ -464,7 +468,9 @@ export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
             const aliases = typeof command.alias === "string" ? [command.alias] : (command.alias as string[]);
 
             for (const alias of aliases) {
-                if (process.env.CEREBRO_OUTPUT_LEVEL === String(VERBOSITY_DEBUG)) {
+                const env = getEnv();
+
+                if (env.CEREBRO_OUTPUT_LEVEL === String(VERBOSITY_DEBUG)) {
                     this.#logger.debug("adding alias", alias);
                 }
 
@@ -626,9 +632,13 @@ export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
         let parsedCommandPath: string[] | undefined;
         let remainingArgv: string[] = [...argv];
 
+        const execPath = getExecPath();
+        const execArgv = getExecArgv();
+        const runtimeArgv = getRuntimeArgv();
+
         this.#logger.debug(`process.execPath: ${execPath}`);
         this.#logger.debug(`process.execArgv: ${execArgv.join(" ")}`);
-        this.#logger.debug(`process.argv: ${process_argv.join(" ")}`);
+        this.#logger.debug(`process.argv: ${runtimeArgv.join(" ")}`);
 
         const nestedResult = parseNestedCommand(commandPathMap, [...argv]);
 
@@ -724,7 +734,7 @@ export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
         if (typeof command.execute !== "function") {
             this.#logger.error(`Command "${command.name}" has no function to execute.`);
 
-            return shouldExitProcess ? exit(1) : undefined;
+            return shouldExitProcess ? exitProcess(1) : undefined;
         }
 
         const commandArguments = remainingArgv;
@@ -772,7 +782,7 @@ export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
 
             await pluginManager.executeLifecycle("afterCommand", toolbox, result);
 
-            return shouldExitProcess ? exit(0) : undefined;
+            return shouldExitProcess ? exitProcess(0) : undefined;
         } catch (error) {
             await pluginManager.executeErrorHandlers(error as Error, toolbox);
 

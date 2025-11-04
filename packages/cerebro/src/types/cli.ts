@@ -83,7 +83,7 @@ export interface Cli {
      * This allows commands to call other commands during execution.
      * @param commandName The name of the command to execute
      * @param options Optional options including argv and other command options
-     * @returns A promise that resolves with the command's result
+     * @returns A promise that resolves with the command's result (or void if command doesn't return a value)
      * @throws {Error} If the specified command doesn't exist or command arguments are invalid
      * @example
      * ```typescript
@@ -91,7 +91,8 @@ export interface Cli {
      *   name: 'deploy',
      *   execute: async ({ runtime, logger }) => {
      *     logger.info('Building...');
-     *     await runtime.runCommand('build', { argv: ['--production'] });
+     *     const buildResult = await runtime.runCommand('build', { argv: ['--production'] });
+     *     // buildResult is the return value from the build command's execute function
      *
      *     logger.info('Testing...');
      *     await runtime.runCommand('test', { argv: ['--coverage'] });

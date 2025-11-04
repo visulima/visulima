@@ -5,6 +5,40 @@ import type { ExtendedLogger, VERBOSITY_LEVEL } from "./types/cli";
 declare global {
     // eslint-disable-next-line @typescript-eslint/no-namespace
     namespace Cerebro {
+        /**
+         * Extend this interface to add custom properties to the Toolbox.
+         * This allows plugins and extensions to add type-safe properties to the toolbox.
+         * @example
+         * ```typescript
+         * declare global {
+         *   namespace Cerebro {
+         *     interface ExtensionOverrides {
+         *       // Add custom properties with full type safety
+         *       fs: {
+         *         readFile: (path: string) => Promise<string>;
+         *         writeFile: (path: string, content: string) => Promise<void>;
+         *       };
+         *       http: {
+         *         get: <T>(url: string) => Promise<T>;
+         *         post: <T>(url: string, data: unknown) => Promise<T>;
+         *       };
+         *       myCustomUtil: () => void;
+         *     }
+         *   }
+         * }
+         *
+         * // Now in your commands, you get full autocomplete:
+         * cli.addCommand({
+         *   name: "example",
+         *   execute: ({ fs, http, myCustomUtil }) => {
+         *     // ✅ Full autocomplete and type safety!
+         *     const content = await fs.readFile("file.txt");
+         *     const data = await http.get<MyType>("https://api.example.com");
+         *     myCustomUtil();
+         *   }
+         * });
+         * ```
+         */
         // eslint-disable-next-line @typescript-eslint/no-empty-object-type
         export interface ExtensionOverrides {}
     }

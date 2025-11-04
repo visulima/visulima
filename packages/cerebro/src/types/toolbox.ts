@@ -16,6 +16,22 @@ export interface Toolbox<
     /**
      * The argument passed to the command.
      * For example, if you run `cerebro foo bar baz`, then this will be `["foo", "bar", "baz"]`.
+     * @example
+     * ```typescript
+     * cli.addCommand({
+     *   name: "copy",
+     *   argument: {
+     *     name: "files",
+     *     type: String,
+     *     description: "Files to copy"
+     *   },
+     *   execute: ({ argument }) => {
+     *     // argument is an array of strings
+     *     // argument[0] is the first file, argument[1] is the second, etc.
+     *     argument.forEach((file) => console.log(`Copying ${file}...`));
+     *   }
+     * });
+     * ```
      */
     argument: string[];
 

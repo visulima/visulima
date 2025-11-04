@@ -1,6 +1,44 @@
 /**
  * Helper types for creating type-safe commands with autocomplete support.
  * These types help you define your options and environment variables with full TypeScript autocomplete.
+ * Use these types to create type-safe Toolbox interfaces for your commands.
+ * @example
+ * ```typescript
+ * import { CreateOptions, CreateEnv, type Toolbox } from '@visulima/cerebro';
+ *
+ * // Define options with their original names (they'll be converted to camelCase)
+ * type BuildOptions = CreateOptions<{
+ *   "output-dir": string | undefined;
+ *   "verbose": boolean | undefined;
+ *   "port": number | undefined;
+ * }>;
+ * // Result: { outputDir: string | undefined, verbose: boolean | undefined, port: number | undefined }
+ *
+ * // Define environment variables (UPPER_SNAKE_CASE -> camelCase)
+ * type BuildEnv = CreateEnv<{
+ *   "API_KEY": string | undefined;
+ *   "DEBUG": boolean | undefined;
+ * }>;
+ * // Result: { apiKey: string | undefined, debug: boolean | undefined }
+ *
+ * // Use in your command
+ * cli.addCommand({
+ *   name: "build",
+ *   options: [
+ *     { name: "output-dir", type: String },
+ *     { name: "verbose", type: Boolean },
+ *     { name: "port", type: Number }
+ *   ],
+ *   env: [
+ *     { name: "API_KEY", type: String },
+ *     { name: "DEBUG", type: Boolean }
+ *   ],
+ *   execute: ({ options, env }: Toolbox<Console, BuildOptions, BuildEnv>) => {
+ *     // Full autocomplete on options.outputDir, options.verbose, env.apiKey, etc.
+ *     console.log(options.outputDir, options.verbose, env.apiKey);
+ *   }
+ * });
+ * ```
  */
 
 /**
