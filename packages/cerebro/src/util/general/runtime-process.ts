@@ -40,39 +40,28 @@ const hasBun = (
 } => "Bun" in global;
 
 /**
- * Detects the current JavaScript runtime.
- * @returns The detected runtime (node, bun, or deno)
- */
-const detectRuntime = (): "node" | "bun" | "deno" => {
-    // Check for Deno
-    if (hasDeno(globalThis)) {
-        return "deno";
-    }
-
-    // Check for Bun
-    if (hasBun(globalThis)) {
-        return "bun";
-    }
-
-    // Default to Node.js
-    return "node";
-};
-
-/**
  * Gets command line arguments compatible with process.argv format.
  * For Deno, constructs argv from Deno.args (prepending execPath).
  * For Node.js and Bun, uses process.argv directly.
  * @returns Array of command line arguments
  */
 export const getArgv = (): ReadonlyArray<string> => {
-    const runtime = detectRuntime();
-
-    if (runtime === "deno") {
+    // Check for Deno first using type guard
+    if (hasDeno(globalThis)) {
         // Deno.args only contains the arguments, not the script name
         // We construct argv similar to process.argv: [execPath, scriptPath, ...args]
         // Note: scriptPath may not be available in all contexts, so we use execPath as fallback
-        // @ts-expect-error - Deno is a global in Deno runtime
-        const deno = globalThis.Deno as ReturnType<typeof hasDeno> extends true ? (typeof globalThis)["Deno"] : never;
+        // @ts-expect-error - Deno is available after type guard check
+        const deno = globalThis.Deno as {
+            args: string[];
+            env: {
+                get: (key: string) => string | undefined;
+                has: (key: string) => boolean;
+                set: (key: string, value: string) => void;
+                toObject: () => Record<string, string>;
+            };
+            execPath: () => string;
+        };
         const execPath = deno.execPath();
         // Try to get script path from import.meta if available (via try-catch since it's context-dependent)
         let scriptPath = execPath;
@@ -90,16 +79,15 @@ export const getArgv = (): ReadonlyArray<string> => {
         return [execPath, scriptPath, ...deno.args];
     }
 
-    if (runtime === "bun") {
-        // @ts-expect-error - Bun is a global in Bun runtime
-        const bun = globalThis.Bun as ReturnType<typeof hasBun> extends true ? (typeof globalThis)["Bun"] : never;
+    // Check for Bun
+    if (hasBun(globalThis)) {
+        // @ts-expect-error - Bun is available after type guard check
+        const bun = globalThis.Bun as { process: { argv: string[] } };
 
-        // @ts-expect-error - process exists in Bun runtime
-        return (bun.process as { argv: string[] }).argv;
+        return bun.process.argv;
     }
 
     // Node.js - use global process object
-
     return (process as { argv: string[] }).argv;
 };
 
@@ -108,25 +96,23 @@ export const getArgv = (): ReadonlyArray<string> => {
  * @returns The current working directory path
  */
 export const getCwd = (): string => {
-    const runtime = detectRuntime();
-
-    if (runtime === "deno") {
-        // @ts-expect-error - Deno is a global in Deno runtime
-        const deno = globalThis.Deno as ReturnType<typeof hasDeno> extends true ? (typeof globalThis)["Deno"] : never;
+    // Check for Deno first using type guard
+    if (hasDeno(globalThis)) {
+        // @ts-expect-error - Deno is available after type guard check
+        const deno = globalThis.Deno as { cwd: () => string };
 
         return deno.cwd();
     }
 
-    if (runtime === "bun") {
-        // @ts-expect-error - Bun is a global in Bun runtime
-        const bun = globalThis.Bun as ReturnType<typeof hasBun> extends true ? (typeof globalThis)["Bun"] : never;
+    // Check for Bun
+    if (hasBun(globalThis)) {
+        // @ts-expect-error - Bun is available after type guard check
+        const bun = globalThis.Bun as { process: { cwd: () => string } };
 
-        // @ts-expect-error - process exists in Bun runtime
-        return (bun.process as { cwd: () => string }).cwd();
+        return bun.process.cwd();
     }
 
     // Node.js - use global process object
-
     return (process as { cwd: () => string }).cwd();
 };
 
@@ -136,11 +122,17 @@ export const getCwd = (): string => {
  * @returns Environment variables object (mutable proxy)
  */
 export const getEnv = (): Record<string, string | undefined> => {
-    const runtime = detectRuntime();
-
-    if (runtime === "deno") {
-        // @ts-expect-error - Deno is a global in Deno runtime
-        const deno = globalThis.Deno as ReturnType<typeof hasDeno> extends true ? (typeof globalThis)["Deno"] : never;
+    // Check for Deno first using type guard
+    if (hasDeno(globalThis)) {
+        // @ts-expect-error - Deno is available after type guard check
+        const deno = globalThis.Deno as {
+            env: {
+                get: (key: string) => string | undefined;
+                has: (key: string) => boolean;
+                set: (key: string, value: string) => void;
+                toObject: () => Record<string, string>;
+            };
+        };
 
         // Create a proxy that intercepts property assignments and reads
         return new Proxy(deno.env.toObject(), {
@@ -158,7 +150,7 @@ export const getEnv = (): Record<string, string | undefined> => {
 
                 return prop in target;
             },
-            set: (target, prop: string, value: string | undefined) => {
+            set: (_target, prop: string, value: string | undefined) => {
                 if (typeof prop === "string") {
                     if (value === undefined) {
                         // Deno doesn't support deleting env vars directly
@@ -176,12 +168,12 @@ export const getEnv = (): Record<string, string | undefined> => {
         }) as Record<string, string | undefined>;
     }
 
-    if (runtime === "bun") {
-        // @ts-expect-error - Bun is a global in Bun runtime
-        const bun = globalThis.Bun as ReturnType<typeof hasBun> extends true ? (typeof globalThis)["Bun"] : never;
+    // Check for Bun
+    if (hasBun(globalThis)) {
+        // @ts-expect-error - Bun is available after type guard check
+        const bun = globalThis.Bun as { process: { env: Record<string, string | undefined> } };
 
-        // @ts-expect-error - process exists in Bun runtime
-        return (bun.process as { env: Record<string, string | undefined> }).env;
+        return bun.process.env;
     }
 
     // Node.js - use global process object
@@ -193,24 +185,22 @@ export const getEnv = (): Record<string, string | undefined> => {
  * @returns Array of execution arguments
  */
 export const getExecArgv = (): ReadonlyArray<string> => {
-    const runtime = detectRuntime();
-
-    if (runtime === "deno") {
+    // Check for Deno first using type guard
+    if (hasDeno(globalThis)) {
         // Deno doesn't expose execArgv in the same way
         // Return empty array as Deno uses different flags
         return [];
     }
 
-    if (runtime === "bun") {
-        // @ts-expect-error - Bun is a global in Bun runtime
-        const bun = globalThis.Bun as ReturnType<typeof hasBun> extends true ? (typeof globalThis)["Bun"] : never;
+    // Check for Bun
+    if (hasBun(globalThis)) {
+        // @ts-expect-error - Bun is available after type guard check
+        const bun = globalThis.Bun as { process: { execArgv: string[] } };
 
-        // @ts-expect-error - process exists in Bun runtime
-        return (bun.process as { execArgv: string[] }).execArgv;
+        return bun.process.execArgv;
     }
 
     // Node.js - use global process object
-
     return (process as { execArgv: string[] }).execArgv;
 };
 
@@ -219,25 +209,23 @@ export const getExecArgv = (): ReadonlyArray<string> => {
  * @returns The executable path
  */
 export const getExecPath = (): string => {
-    const runtime = detectRuntime();
-
-    if (runtime === "deno") {
-        // @ts-expect-error - Deno is a global in Deno runtime
-        const deno = globalThis.Deno as ReturnType<typeof hasDeno> extends true ? (typeof globalThis)["Deno"] : never;
+    // Check for Deno first using type guard
+    if (hasDeno(globalThis)) {
+        // @ts-expect-error - Deno is available after type guard check
+        const deno = globalThis.Deno as { execPath: () => string };
 
         return deno.execPath();
     }
 
-    if (runtime === "bun") {
-        // @ts-expect-error - Bun is a global in Bun runtime
-        const bun = globalThis.Bun as ReturnType<typeof hasBun> extends true ? (typeof globalThis)["Bun"] : never;
+    // Check for Bun
+    if (hasBun(globalThis)) {
+        // @ts-expect-error - Bun is available after type guard check
+        const bun = globalThis.Bun as { process: { execPath: string } };
 
-        // @ts-expect-error - process exists in Bun runtime
-        return (bun.process as { execPath: string }).execPath;
+        return bun.process.execPath;
     }
 
     // Node.js - use global process object
-
     return (process as { execPath: string }).execPath;
 };
 
@@ -246,24 +234,25 @@ export const getExecPath = (): string => {
  * @param code Exit code (default: 0)
  */
 export const exitProcess = (code?: number): never => {
-    const runtime = detectRuntime();
-
-    if (runtime === "deno") {
-        // @ts-expect-error - Deno is a global in Deno runtime
-        const deno = globalThis.Deno as ReturnType<typeof hasDeno> extends true ? (typeof globalThis)["Deno"] : never;
+    // Check for Deno first using type guard
+    if (hasDeno(globalThis)) {
+        // @ts-expect-error - Deno is available after type guard check
+        const deno = globalThis.Deno as { exit: (code?: number) => never };
 
         deno.exit(code ?? 0);
     }
 
-    if (runtime === "bun") {
-        // @ts-expect-error - Bun is a global in Bun runtime
-        const bun = globalThis.Bun as ReturnType<typeof hasBun> extends true ? (typeof globalThis)["Bun"] : never;
+    // Check for Bun
+    if (hasBun(globalThis)) {
+        // @ts-expect-error - Bun is available after type guard check
+        const bun = globalThis.Bun as { process: { exit: (code?: number) => never } };
 
-        // @ts-expect-error - process exists in Bun runtime
-        (bun.process as { exit: (code?: number) => never }).exit(code ?? 0);
+        bun.process.exit(code ?? 0);
     }
 
     // Node.js - use global process object
-
     (process as { exit: (code?: number) => never }).exit(code ?? 0);
+
+    // This should never be reached, but TypeScript needs this for type checking
+    throw new Error("Process exit failed");
 };
