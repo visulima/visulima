@@ -7,6 +7,8 @@ import { VERBOSITY_DEBUG, VERBOSITY_NORMAL, VERBOSITY_QUIET, VERBOSITY_VERBOSE }
 import defaultOptions from "./default-options";
 import CerebroError from "./errors/cerebro-error";
 import CommandNotFoundError from "./errors/command-not-found-error";
+import CommandValidationError from "./errors/command-validation-error";
+import ConflictingOptionsError from "./errors/conflicting-options-error";
 import PluginManager from "./plugin-manager";
 import type { Cli as ICli, CliRunOptions, CommandSection as ICommandSection, ExtendedLogger, RunCommandOptions } from "./types/cli";
 import type { Command as ICommand, OptionDefinition } from "./types/command";
@@ -84,7 +86,8 @@ export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
     #cachedAllCommandPaths?: string[];
 
     /**
-     * Gets all command path keys (cached for performance)
+     * Gets all command path keys (cached for performance).
+     * @returns Array of command path keys
      */
     #getCommandPathKeys(): string[] {
         if (this.#cachedCommandPathKeys === undefined) {
@@ -95,7 +98,8 @@ export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
     }
 
     /**
-     * Gets all command names (cached for performance)
+     * Gets all command names (cached for performance).
+     * @returns Array of command names
      */
     #getCommandNames(): string[] {
         if (this.#cachedCommandNames === undefined) {
@@ -106,7 +110,8 @@ export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
     }
 
     /**
-     * Gets all command paths combined (cached for performance)
+     * Gets all command paths combined (cached for performance).
+     * @returns Array of all command paths
      */
     #getAllCommandPaths(): string[] {
         if (this.#cachedAllCommandPaths === undefined) {
@@ -117,7 +122,7 @@ export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
     }
 
     /**
-     * Invalidates cached command arrays (call when commands are added/removed)
+     * Invalidates cached command arrays (call when commands are added/removed).
      */
     #invalidateCommandCache(): void {
         this.#cachedCommandPathKeys = undefined;
@@ -566,12 +571,11 @@ export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
         }
 
         // Use cached arrays for performance
-        const commandPathKeys = this.#getCommandPathKeys();
         const commandNames = this.#getCommandNames();
         // Use existing Map directly instead of creating a new one
         const commandPathMap = this.#commandPaths;
 
-        let parsedCommandPath: string[] | null = null;
+        let parsedCommandPath: string[] | undefined;
         let remainingArgv: string[] = [...this.#argv];
 
         this.#logger.debug(`process.execPath: ${execPath}`);
@@ -587,20 +591,20 @@ export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
             remainingArgv = nestedResult.argv;
         } else {
             // If nested parsing failed but we have multiple tokens, try to form the attempted path
-            if (this.#argv.length > 1 && !isOption(this.#argv[0]) && !isOption(this.#argv[1])) {
+            if (this.#argv.length > 1 && this.#argv[0] && this.#argv[1] && !isOption(this.#argv[0]) && !isOption(this.#argv[1])) {
                 // This looks like a nested command attempt that failed
                 const attemptedPath: string[] = [];
                 let i = 0;
 
-                while (i < this.#argv.length && !isOption(this.#argv[i])) {
+                while (i < this.#argv.length && this.#argv[i] && !isOption(this.#argv[i])) {
                     attemptedPath.push(this.#argv[i]);
-                    i++;
+                    i += 1;
                 }
 
                 const attemptedPathKey = getCommandPathKey(attemptedPath);
 
                 // Only throw error if no flat command matches the first token
-                if (!commandNames.includes(attemptedPath[0])) {
+                if (attemptedPath[0] && !commandNames.includes(attemptedPath[0])) {
                     const allCommandPaths = this.#getAllCommandPaths();
                     const alternatives = findAlternatives(attemptedPathKey, allCommandPaths);
 
@@ -667,7 +671,7 @@ export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
             // Fallback to leaf name lookup (backward compatibility for flat commands)
             const commandName = parsedCommandPath[parsedCommandPath.length - 1];
 
-            command = this.#commands.get(commandName);
+            command = commandName ? this.#commands.get(commandName) : undefined;
 
             if (!command) {
                 const allCommandPaths = this.#getAllCommandPaths();

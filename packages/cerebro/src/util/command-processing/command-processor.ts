@@ -29,19 +29,21 @@ export const prepareToolbox = <OD extends OptionDefinition<unknown>>(
     // prepare the execute toolbox
     const toolbox = new EmptyToolbox(command.name, command) as unknown as IToolbox;
 
-    // eslint-disable-next-line no-underscore-dangle
-    const commandArgs = { ...parsedArgs, _all: { ...parsedArgs._all, ...booleanValues } } as typeof parsedArgs;
-
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    const { _all, positionals } = commandArgs;
+    const { _all, positionals } = parsedArgs;
 
-    if (_all[POSITIONALS_KEY]) {
+    // Merge boolean values into _all without creating intermediate object
+
+    const mergedAll = { ..._all, ...booleanValues };
+
+    if (mergedAll[POSITIONALS_KEY]) {
         // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-        delete _all[POSITIONALS_KEY];
+        delete mergedAll[POSITIONALS_KEY];
     }
 
     toolbox.argument = positionals?.[POSITIONALS_KEY] ?? [];
-    toolbox.options = { ..._all, ...extraOptions };
+    // Merge in single operation instead of spreading twice
+    toolbox.options = { ...mergedAll, ...extraOptions };
     toolbox.env = processEnvVariables(command.env);
 
     return toolbox;

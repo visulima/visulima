@@ -19,14 +19,31 @@ export const processOptionNames = <OD extends OptionDefinition<unknown>>(command
 /**
  * Adds negatable options for boolean flags
  * For options starting with "no-", creates a corresponding non-negated option
+ * Optimized with Set lookup for better performance
  * @template OD - The option definition type
  * @param command The command object to add negatable options to
  * @throws {Error} When a negated option is not of type Boolean
  */
 export const addNegatableOptions = <OD extends OptionDefinition<unknown>>(command: { name: string; options?: OD[] }): void => {
-    if (Array.isArray(command.options)) {
-        command.options.forEach((option) => {
-            if (option.name.startsWith("no-") && !(command.options as OD[]).some((o) => o.name === option.name.replace("no-", ""))) {
+    if (!Array.isArray(command.options) || command.options.length === 0) {
+        return;
+    }
+
+    // Build a Set of option names for O(1) lookups instead of O(n) array.some()
+    const optionNames = new Set<string>();
+
+    for (const option of command.options) {
+        optionNames.add(option.name);
+    }
+
+    const optionsToAdd: OD[] = [];
+
+    for (const option of command.options) {
+        if (option.name.startsWith("no-")) {
+            const nonNegatedName = option.name.replace("no-", "");
+
+            // Use Set lookup instead of array.some()
+            if (!optionNames.has(nonNegatedName)) {
                 if (option.type !== Boolean) {
                     throw new Error(`Cannot add negated option "${option.name}" to command "${command.name}" because it is not a boolean.`);
                 }
@@ -34,12 +51,18 @@ export const addNegatableOptions = <OD extends OptionDefinition<unknown>>(comman
                 const negatedOption = {
                     ...option,
                     defaultValue: option.defaultValue === undefined ? true : !option.defaultValue,
-                    name: `${option.name.replace("no-", "")}`,
+                    name: nonNegatedName,
                 } as OD;
 
-                (command.options as OD[]).push(negatedOption);
+                optionsToAdd.push(negatedOption);
+                optionNames.add(nonNegatedName);
             }
-        });
+        }
+    }
+
+    // Add all new options at once
+    if (optionsToAdd.length > 0) {
+        (command.options as OD[]).push(...optionsToAdd);
     }
 };
 

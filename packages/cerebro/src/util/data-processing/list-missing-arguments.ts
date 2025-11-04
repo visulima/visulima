@@ -5,6 +5,7 @@ import type { OptionDefinition, PossibleOptionDefinition } from "../../types/com
 /**
  * Lists missing required arguments from parsed command line options
  * Optimized to use pre-filtered required options when available
+ * Combines filter operations for better performance
  *
  * Note: This function mutates parsedArguments by setting missing boolean options to false.
  * @param commandLineConfig All command options OR pre-filtered required options
@@ -18,21 +19,32 @@ const listMissingArguments = <OD extends OptionDefinition<any>>(
     parsedArguments: CommandLineOptions,
     onlyRequired = false,
 ): PossibleOptionDefinition<OD>[] => {
-    // Performance optimization: skip the first filter if we already have only required options
-    const requiredOptions = onlyRequired ? commandLineConfig : commandLineConfig.filter((config) => config.required);
+    const missing: PossibleOptionDefinition<OD>[] = [];
 
-    return requiredOptions
-        .filter((config) => parsedArguments[config.name] === undefined)
-        .filter((config) => {
-            if (config.type?.name === "Boolean") {
-                // eslint-disable-next-line no-param-reassign
-                parsedArguments[config.name] = false;
+    // Single pass through options combining all filter conditions
+    for (const config of commandLineConfig) {
+        // Skip if not required (unless already filtered)
+        if (!onlyRequired && !config.required) {
+            continue;
+        }
 
-                return false;
-            }
+        // Skip if already present in parsed arguments
+        if (parsedArguments[config.name] !== undefined) {
+            continue;
+        }
 
-            return true;
-        });
+        // Handle boolean defaults
+        if (config.type?.name === "Boolean") {
+            // eslint-disable-next-line no-param-reassign
+            parsedArguments[config.name] = false;
+            // Don't add to missing list as it now has a default value
+            continue;
+        }
+
+        missing.push(config);
+    }
+
+    return missing;
 };
 
 export default listMissingArguments;
