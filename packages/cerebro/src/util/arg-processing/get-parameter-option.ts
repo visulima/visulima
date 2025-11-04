@@ -6,6 +6,8 @@ const argumentNameRegExp = /^-{1,2}(\w+)(=(\w+))?$/;
 const getParameterOption = <OD extends OptionDefinition<any>>(
     argument: string,
     options: PossibleOptionDefinition<OD>[],
+    optionMapByName?: Map<string, PossibleOptionDefinition<OD>>,
+    optionMapByAlias?: Map<string, PossibleOptionDefinition<OD>>,
 ): {
     argName?: string;
     argValue?: string;
@@ -19,7 +21,13 @@ const getParameterOption = <OD extends OptionDefinition<any>>(
 
     const nameOrAlias = regExpResult[1];
 
-    const option = options.find((o) => o.name === nameOrAlias || o.alias === nameOrAlias);
+    // Optimize: use Map lookup if provided, otherwise fall back to find()
+    let option: PossibleOptionDefinition<OD> | undefined;
+
+    option
+        = optionMapByName && optionMapByAlias
+            ? optionMapByName.get(nameOrAlias) ?? optionMapByAlias.get(nameOrAlias)
+            : options.find((o) => o.name === nameOrAlias || o.alias === nameOrAlias);
 
     if (option !== undefined) {
         return { argName: option.name, argValue: regExpResult[3] as string, option };

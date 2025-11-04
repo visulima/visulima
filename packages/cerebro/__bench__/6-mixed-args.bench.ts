@@ -11,7 +11,7 @@ import { mixedArgs } from "./shared";
 
 describe("6. Mixed Positional + Flag Arguments", () => {
     bench("Cerebro - Parse mixed args", async () => {
-        const cli = new Cerebro("test-cli");
+        const cli = new Cerebro("test-cli", { argv: mixedArgs.slice(2) });
 
         cli.addCommand({
             description: "Process files",
@@ -26,7 +26,7 @@ describe("6. Mixed Positional + Flag Arguments", () => {
             ],
         });
 
-        await cli.run({ argv: mixedArgs, shouldExitProcess: false });
+        await cli.run({ shouldExitProcess: false });
     });
 
     bench("Commander - Parse mixed args", () => {

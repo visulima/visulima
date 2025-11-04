@@ -12,7 +12,7 @@ import { simpleCommand } from "./shared";
 
 describe("4. Simple Argument Parsing", () => {
     bench("Cerebro - Parse simple command", async () => {
-        const cerebroCli = new Cerebro("test-cli");
+        const cerebroCli = new Cerebro("test-cli", { argv: simpleCommand.slice(2) });
 
         cerebroCli.addCommand({
             description: "Build command",
@@ -23,7 +23,7 @@ describe("4. Simple Argument Parsing", () => {
             options: [{ description: "Enable verbose output", name: "verbose", type: Boolean }],
         });
 
-        await cerebroCli.run({ argv: simpleCommand, shouldExitProcess: false });
+        await cerebroCli.run({ shouldExitProcess: false });
     });
 
     bench("Commander - Parse simple command", () => {

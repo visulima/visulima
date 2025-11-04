@@ -11,56 +11,60 @@ import { errorArgs, suppressOutput } from "./shared";
 
 describe("9. Error Handling Performance", () => {
     bench("Cerebro - Handle unknown command", async () => {
-        const cli = new Cerebro("test-cli");
+        try {
+            const cli = new Cerebro("test-cli", { argv: errorArgs });
 
-        cli.addCommand({
-            description: "Known command",
-            execute: () => {
-                // Empty execute function
-            },
-            name: "build",
-        });
+            cli.addCommand({
+                description: "Known command",
+                execute: () => {
+                    // Empty execute function
+                },
+                name: "build",
+            });
 
-        await cli.run({ argv: errorArgs, shouldExitProcess: false });
+            await cli.run({ shouldExitProcess: false });
+        } catch {
+            // Expected - unknown command should throw
+        }
     });
 
     bench("Commander - Handle unknown command", () => {
-        suppressOutput(() => {
-            const program = new Command();
+        try {
+            suppressOutput(() => {
+                const program = new Command();
 
-            program
-                .name("test-cli")
-                .command("build")
-                .action(() => {
-                    // Empty action
-                });
+                program
+                    .name("test-cli")
+                    .command("build")
+                    .action(() => {
+                        // Empty action
+                    });
 
-            try {
                 program.parse(errorArgs);
-            } catch {
-                // Ignore errors
-            }
-        });
+            });
+        } catch {
+            // Expected - unknown command should throw
+        }
     });
 
     bench("Yargs - Handle unknown command", async () => {
-        await suppressOutput(async () => {
-            const parser = yargs(hideBin(["node", "script.js"]))
-                .scriptName("test-cli")
-                .command("build", "Build command")
-                .strict();
+        try {
+            await suppressOutput(async () => {
+                const parser = yargs(hideBin(["node", "script.js"]))
+                    .scriptName("test-cli")
+                    .command("build", "Build command")
+                    .strict();
 
-            try {
                 await parser.parseAsync(errorArgs.slice(2));
-            } catch {
-                // Ignore errors
-            }
-        });
+            });
+        } catch {
+            // Expected - unknown command/invalid flags should throw
+        }
     });
 
     bench("Meow - Handle invalid input", () => {
-        suppressOutput(() => {
-            try {
+        try {
+            suppressOutput(() => {
                 meow("Test CLI", {
                     argv: errorArgs.slice(2),
                     flags: {
@@ -70,31 +74,31 @@ describe("9. Error Handling Performance", () => {
                     },
                     importMeta: import.meta,
                 });
-            } catch {
-                // Ignore errors
-            }
-        });
+            });
+        } catch {
+            // Expected - invalid input should throw
+        }
     });
 
     bench("CAC - Handle unknown command", () => {
-        suppressOutput(() => {
-            const cli = cac("test-cli");
+        try {
+            suppressOutput(() => {
+                const cli = cac("test-cli");
 
-            cli.command("build", "Known command").action(() => {
-                // Empty action
-            });
+                cli.command("build", "Known command").action(() => {
+                    // Empty action
+                });
 
-            try {
                 cli.parse(errorArgs, { run: false });
-            } catch {
-                // Ignore errors
-            }
-        });
+            });
+        } catch {
+            // Expected - unknown command should throw
+        }
     });
 
     bench("Cleye - Handle invalid flags", () => {
-        suppressOutput(() => {
-            try {
+        try {
+            suppressOutput(() => {
                 cleye(
                     {
                         flags: {
@@ -107,9 +111,9 @@ describe("9. Error Handling Performance", () => {
                     },
                     errorArgs.slice(2),
                 );
-            } catch {
-                // Ignore errors
-            }
-        });
+            });
+        } catch {
+            // Expected - invalid flags should throw
+        }
     });
 });

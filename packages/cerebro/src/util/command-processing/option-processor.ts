@@ -78,6 +78,14 @@ export const mapNegatableOptions = (toolbox: IToolbox, command: { options?: Opti
         return;
     }
 
+    // Optimize: early return if no options start with "no-"
+    const options = toolbox.options as IToolbox["options"];
+    const negatableKeys = Object.keys(options).filter((key) => key.startsWith("no-"));
+
+    if (negatableKeys.length === 0) {
+        return;
+    }
+
     // Build a Map for O(1) lookups instead of O(n) array iteration
     const optionMapByName = new Map<string, OptionDefinition<unknown>>();
 
@@ -85,20 +93,17 @@ export const mapNegatableOptions = (toolbox: IToolbox, command: { options?: Opti
         optionMapByName.set(option.name, option);
     }
 
-    Object.entries(toolbox.options as IToolbox["options"]).forEach(([key, value]) => {
-        if (key.startsWith("no-")) {
-            const nonNegatedKey: string = key.replace(/^no-/, "");
-            const option = optionMapByName.get(nonNegatedKey);
+    for (const key of negatableKeys) {
+        const nonNegatedKey: string = key.replace(/^no-/, "");
+        const option = optionMapByName.get(nonNegatedKey);
 
-            if (option) {
-                // eslint-disable-next-line no-underscore-dangle
-                option.__negated__ = true;
-            }
-
-            // eslint-disable-next-line no-param-reassign
-            toolbox.options[nonNegatedKey] = !value;
+        if (option) {
+            // eslint-disable-next-line no-underscore-dangle
+            option.__negated__ = true;
         }
-    });
+
+        options[nonNegatedKey] = !options[key];
+    }
 };
 
 /**
@@ -124,19 +129,25 @@ export const mapImpliedOptions = (toolbox: IToolbox, command: { options?: Option
         }
     }
 
-    Object.keys(toolbox.options as IToolbox["options"]).forEach((optionKey) => {
+    // Optimize: early return if no options have implies
+    if (optionMapByCamelCase.size === 0) {
+        return;
+    }
+
+    const options = toolbox.options as IToolbox["options"];
+
+    for (const optionKey of Object.keys(options)) {
         const option = optionMapByCamelCase.get(optionKey);
 
         if (option?.implies) {
             const implies = option.implies as Record<string, unknown>;
 
-            Object.entries(implies).forEach(([key, value]) => {
-                if (toolbox.options[key] === undefined) {
-                    // eslint-disable-next-line no-param-reassign
-                    toolbox.options[key] = value;
+            for (const [key, value] of Object.entries(implies)) {
+                if (options[key] === undefined) {
+                    options[key] = value;
                 }
                 // Note: We don't override explicitly set options
-            });
+            }
         }
-    });
+    }
 };

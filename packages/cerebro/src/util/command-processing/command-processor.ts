@@ -4,12 +4,42 @@ import { commandLineArgs } from "@visulima/command-line-args";
 
 import { POSITIONALS_KEY } from "../../constants";
 import EmptyToolbox from "../../empty-toolbox";
-import type { Command as ICommand, OptionDefinition } from "../../types/command";
+import type { Command as ICommand, OptionDefinition, PossibleOptionDefinition } from "../../types/command";
 import type { Toolbox as IToolbox } from "../../types/toolbox";
 import getBooleanValues from "../arg-processing/get-boolean-values";
 import removeBooleanValues from "../arg-processing/remove-boolean-values";
 import mergeArguments from "../data-processing/merge-arguments";
 import processEnvVariables from "../process-env-processor";
+
+/**
+ * Builds option lookup maps for O(1) access instead of O(n) find() operations.
+ * @template OD The option definition type.
+ * @param commandOptions The command options to build maps from.
+ * @returns Maps keyed by option name and alias for fast lookups.
+ */
+const buildOptionMaps = <OD extends OptionDefinition<unknown>>(
+    commandOptions: PossibleOptionDefinition<OD>[],
+): {
+    optionMapByAlias: Map<string, PossibleOptionDefinition<OD>>;
+    optionMapByName: Map<string, PossibleOptionDefinition<OD>>;
+} => {
+    const optionMapByName = new Map<string, PossibleOptionDefinition<OD>>();
+    const optionMapByAlias = new Map<string, PossibleOptionDefinition<OD>>();
+
+    for (const option of commandOptions) {
+        optionMapByName.set(option.name, option);
+
+        if (option.alias) {
+            const aliases = Array.isArray(option.alias) ? option.alias : [option.alias];
+
+            for (const alias of aliases) {
+                optionMapByAlias.set(alias, option);
+            }
+        }
+    }
+
+    return { optionMapByAlias, optionMapByName };
+};
 
 /**
  * Prepares the toolbox for command execution.
@@ -26,24 +56,28 @@ export const prepareToolbox = <OD extends OptionDefinition<unknown>>(
     booleanValues: Record<string, unknown>,
     extraOptions: Record<string, unknown>,
 ): IToolbox => {
-    // prepare the execute toolbox
     const toolbox = new EmptyToolbox(command.name, command) as unknown as IToolbox;
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const { _all, positionals } = parsedArgs;
 
-    // Merge boolean values into _all without creating intermediate object
+    // Optimize: only merge if booleanValues has entries
+    const hasBooleanValues = Object.keys(booleanValues).length > 0;
+    const mergedAll = hasBooleanValues ? { ..._all, ...booleanValues } : _all;
 
-    const mergedAll = { ..._all, ...booleanValues };
-
-    if (mergedAll[POSITIONALS_KEY]) {
+    // Optimize: only delete if key exists
+    if (POSITIONALS_KEY in mergedAll) {
         // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
         delete mergedAll[POSITIONALS_KEY];
     }
 
     toolbox.argument = positionals?.[POSITIONALS_KEY] ?? [];
-    // Merge in single operation instead of spreading twice
-    toolbox.options = { ...mergedAll, ...extraOptions };
+
+    // Optimize: only merge extraOptions if it has entries
+    const hasExtraOptions = Object.keys(extraOptions).length > 0;
+
+    toolbox.options = hasExtraOptions ? { ...mergedAll, ...extraOptions } : mergedAll;
+
     toolbox.env = processEnvVariables(command.env);
 
     return toolbox;
@@ -67,14 +101,21 @@ export const processCommandArgs = <OD extends OptionDefinition<unknown>>(
     booleanValues: Record<string, unknown>;
     parsedArgs: CommandLineOptions;
 } => {
-    // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
-    let arguments_ = mergeArguments([...command.options ?? [], ...defaultOptions]);
+    const commandOptions = command.options ?? [];
+    const hasCommandOptions = commandOptions.length > 0;
 
-    arguments_.forEach((argument) => {
-        if (argument.multiple && argument.lazyMultiple) {
-            throw new Error(`Argument "${argument.name}" cannot have both multiple and lazyMultiple options, please choose one.`);
+    // Optimize: avoid spreading when command has no options
+    // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
+    let arguments_ = hasCommandOptions ? mergeArguments([...commandOptions, ...defaultOptions]) : mergeArguments(defaultOptions);
+
+    // Optimize: only validate if we have arguments to check
+    if (arguments_.length > 0) {
+        for (const argument of arguments_) {
+            if (argument.multiple && argument.lazyMultiple) {
+                throw new Error(`Argument "${argument.name}" cannot have both multiple and lazyMultiple options, please choose one.`);
+            }
         }
-    });
+    }
 
     if (command.argument) {
         arguments_ = [
@@ -91,14 +132,26 @@ export const processCommandArgs = <OD extends OptionDefinition<unknown>>(
         ];
     }
 
+    // Optimize: skip boolean processing if no command options
+    let argvForParsing: string[];
+    let booleanValues: Record<string, unknown>;
+
+    if (hasCommandOptions) {
+        const { optionMapByAlias, optionMapByName } = buildOptionMaps(commandOptions);
+
+        argvForParsing = removeBooleanValues(commandArguments, commandOptions, optionMapByName, optionMapByAlias);
+        booleanValues = getBooleanValues(commandArguments, commandOptions, optionMapByName, optionMapByAlias);
+    } else {
+        argvForParsing = commandArguments;
+        booleanValues = {};
+    }
+
     const parsedArgs = commandLineArgs(arguments_, {
-        argv: removeBooleanValues(commandArguments, command.options ?? []),
+        argv: argvForParsing,
         camelCase: true,
         partial: true,
         stopAtFirstUnknown: true,
     });
-
-    const booleanValues = getBooleanValues(commandArguments, command.options ?? []);
 
     return { arguments_, booleanValues, parsedArgs };
 };

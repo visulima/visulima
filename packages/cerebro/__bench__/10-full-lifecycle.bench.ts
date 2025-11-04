@@ -12,7 +12,7 @@ import { simpleCommand } from "./shared";
 
 describe("10. Full Lifecycle (Init + Register + Parse)", () => {
     bench("Cerebro - Complete flow", async () => {
-        const cerebroCli = new Cerebro("test-cli");
+        const cerebroCli = new Cerebro("test-cli", { argv: simpleCommand.slice(2) });
 
         cerebroCli.addCommand({
             description: "Build command",
@@ -26,7 +26,7 @@ describe("10. Full Lifecycle (Init + Register + Parse)", () => {
             ],
         });
 
-        await cerebroCli.run({ argv: simpleCommand, shouldExitProcess: false });
+        await cerebroCli.run({ shouldExitProcess: false });
     });
 
     bench("Commander - Complete flow", () => {

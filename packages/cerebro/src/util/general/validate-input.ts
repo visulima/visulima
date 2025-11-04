@@ -1,11 +1,12 @@
-/**
- * Input validation utilities for CLI operations
- */
-
 import CerebroError from "../../errors/cerebro-error";
 
 /**
- * Validates that a string is not empty or whitespace-only
+ * Maximum allowed length for command and plugin names to prevent DoS attacks
+ */
+const MAX_NAME_LENGTH = 100;
+
+/**
+ * Validates that a string is not empty or whitespace-only.
  */
 export const validateNonEmptyString = (value: unknown, fieldName: string): string => {
     if (typeof value !== "string" || value.trim().length === 0) {
@@ -16,7 +17,7 @@ export const validateNonEmptyString = (value: unknown, fieldName: string): strin
 };
 
 /**
- * Validates that a value is an array of strings
+ * Validates that a value is an array of strings.
  */
 export const validateStringArray = (value: unknown, fieldName: string): string[] => {
     if (!Array.isArray(value) || !value.every((item) => typeof item === "string")) {
@@ -27,7 +28,7 @@ export const validateStringArray = (value: unknown, fieldName: string): string[]
 };
 
 /**
- * Validates that a value is a function
+ * Validates that a value is a function.
  */
 export const validateFunction = (value: unknown, fieldName: string): (...args: unknown[]) => unknown => {
     if (typeof value !== "function") {
@@ -38,7 +39,7 @@ export const validateFunction = (value: unknown, fieldName: string): (...args: u
 };
 
 /**
- * Validates that a value is an object (but not null)
+ * Validates that a value is an object (but not null).
  */
 export const validateObject = (value: unknown, fieldName: string): Record<string, unknown> => {
     if (typeof value !== "object" || value === null) {
@@ -49,12 +50,7 @@ export const validateObject = (value: unknown, fieldName: string): Record<string
 };
 
 /**
- * Maximum allowed length for command and plugin names to prevent DoS attacks
- */
-const MAX_NAME_LENGTH = 100;
-
-/**
- * Validates command name format and prevents malicious inputs
+ * Validates command name format and prevents malicious inputs.
  */
 export const validateCommandName = (name: string): string => {
     const trimmedName = validateNonEmptyString(name, "Command name");
@@ -91,7 +87,7 @@ export const validateCommandName = (name: string): string => {
 };
 
 /**
- * Validates plugin name format and prevents malicious inputs
+ * Validates plugin name format and prevents malicious inputs.
  */
 export const validatePluginName = (name: string): string => {
     const trimmedName = validateNonEmptyString(name, "Plugin name");

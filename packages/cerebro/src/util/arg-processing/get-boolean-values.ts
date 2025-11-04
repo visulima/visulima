@@ -34,9 +34,19 @@ const booleanValue = new Set(["0", "1", "false", "true"]);
  * These arguments were removed by removeBooleanValues.
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const getBooleanValues = <OD extends OptionDefinition<any>>(arguments_: string[], options: PossibleOptionDefinition<OD>[]): Partial<OD> => {
+const getBooleanValues = <OD extends OptionDefinition<any>>(
+    arguments_: string[],
+    options: PossibleOptionDefinition<OD>[],
+    optionMapByName?: Map<string, PossibleOptionDefinition<OD>>,
+    optionMapByAlias?: Map<string, PossibleOptionDefinition<OD>>,
+): Partial<OD> => {
+    // Optimize: early return if no options or arguments
+    if (options.length === 0 || arguments_.length === 0) {
+        return {};
+    }
+
     const getBooleanValue = (argumentsAndLastOption: PartialAndLastOption<OD>, argument: string): PartialAndLastOption<OD> => {
-        const { argName, argValue, option } = getParameterOption<OD>(argument, options);
+        const { argName, argValue, option } = getParameterOption<OD>(argument, options, optionMapByName, optionMapByAlias);
 
         const { lastOption } = argumentsAndLastOption;
 

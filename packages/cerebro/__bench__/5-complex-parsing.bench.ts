@@ -11,7 +11,7 @@ import { complexArgs, suppressOutput } from "./shared";
 
 describe("5. Complex Argument Parsing (Many flags)", () => {
     bench("Cerebro - Parse 8 flags", async () => {
-        const cli = new Cerebro("test-cli");
+        const cli = new Cerebro("test-cli", { argv: complexArgs.slice(2) });
 
         cli.addCommand({
             description: "Deploy command",
@@ -31,7 +31,7 @@ describe("5. Complex Argument Parsing (Many flags)", () => {
             ],
         });
 
-        await cli.run({ argv: complexArgs, shouldExitProcess: false });
+        await cli.run({ shouldExitProcess: false });
     });
 
     bench("Commander - Parse 8 flags", () => {
@@ -53,11 +53,7 @@ describe("5. Complex Argument Parsing (Many flags)", () => {
                     // Empty action
                 });
 
-            try {
-                program.parse(complexArgs);
-            } catch {
-                // Ignore errors
-            }
+            program.parse(complexArgs);
         });
     });
 
@@ -76,34 +72,26 @@ describe("5. Complex Argument Parsing (Many flags)", () => {
                         .option("timeout", { alias: "t", type: "number" })
                         .option("config", { alias: "c", type: "string" }));
 
-            try {
-                await parser.parseAsync(complexArgs.slice(2));
-            } catch {
-                // Ignore errors
-            }
+            await parser.parseAsync(complexArgs.slice(2));
         });
     });
 
     bench("Meow - Parse 8 flags", () => {
         suppressOutput(() => {
-            try {
-                meow("Deploy command", {
-                    argv: complexArgs.slice(2),
-                    flags: {
-                        config: { shortFlag: "c", type: "string" },
-                        dryRun: { type: "boolean" },
-                        env: { shortFlag: "e", type: "string" },
-                        force: { shortFlag: "f", type: "boolean" },
-                        region: { shortFlag: "r", type: "string" },
-                        timeout: { shortFlag: "t", type: "number" },
-                        verbose: { shortFlag: "v", type: "boolean" },
-                        workers: { shortFlag: "w", type: "number" },
-                    },
-                    importMeta: import.meta,
-                });
-            } catch {
-                // Ignore errors
-            }
+            meow("Deploy command", {
+                argv: complexArgs.slice(2),
+                flags: {
+                    config: { shortFlag: "c", type: "string" },
+                    dryRun: { type: "boolean" },
+                    env: { shortFlag: "e", type: "string" },
+                    force: { shortFlag: "f", type: "boolean" },
+                    region: { shortFlag: "r", type: "string" },
+                    timeout: { shortFlag: "t", type: "number" },
+                    verbose: { shortFlag: "v", type: "boolean" },
+                    workers: { shortFlag: "w", type: "number" },
+                },
+                importMeta: import.meta,
+            });
         });
     });
 
@@ -124,44 +112,36 @@ describe("5. Complex Argument Parsing (Many flags)", () => {
                     // Empty action
                 });
 
-            try {
-                cli.parse(complexArgs, { run: false });
-            } catch {
-                // Ignore errors
-            }
+            cli.parse(complexArgs, { run: false });
         });
     });
 
     bench("Cleye - Parse 8 flags", () => {
         suppressOutput(() => {
-            try {
-                const deployCommand = cleyeCommand({
-                    flags: {
-                        config: String,
-                        dryRun: Boolean,
-                        env: String,
-                        force: Boolean,
-                        region: String,
-                        timeout: Number,
-                        verbose: Boolean,
-                        workers: Number,
-                    },
-                    name: "deploy",
-                });
+            const deployCommand = cleyeCommand({
+                flags: {
+                    config: String,
+                    dryRun: Boolean,
+                    env: String,
+                    force: Boolean,
+                    region: String,
+                    timeout: Number,
+                    verbose: Boolean,
+                    workers: Number,
+                },
+                name: "deploy",
+            });
 
-                cleye(
-                    {
-                        commands: [deployCommand],
-                        name: "test-cli",
-                    },
-                    () => {
-                        // Empty callback
-                    },
-                    complexArgs.slice(2),
-                );
-            } catch {
-                // Ignore errors
-            }
+            cleye(
+                {
+                    commands: [deployCommand],
+                    name: "test-cli",
+                },
+                () => {
+                    // Empty callback
+                },
+                complexArgs.slice(2),
+            );
         });
     });
 });

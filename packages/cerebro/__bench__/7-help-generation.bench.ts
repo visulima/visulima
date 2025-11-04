@@ -7,11 +7,11 @@ import { bench, describe } from "vitest";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 
-import { helpArgs, suppressOutput } from "./shared";
+import { helpArgs, mockProcessExit, suppressOutput } from "./shared";
 
 describe("7. Help Text Generation", () => {
     bench("Cerebro - Generate help", async () => {
-        const cli = new Cerebro("test-cli");
+        const cli = new Cerebro("test-cli", { argv: helpArgs.slice(2) });
 
         cli.addCommand({
             description: "Test command with detailed help",
@@ -26,7 +26,7 @@ describe("7. Help Text Generation", () => {
             ],
         });
 
-        await cli.run({ argv: helpArgs, shouldExitProcess: false });
+        await cli.run({ shouldExitProcess: false });
     });
 
     bench("Commander - Generate help", () => {
@@ -45,11 +45,9 @@ describe("7. Help Text Generation", () => {
                     // Empty action
                 });
 
-            try {
+            mockProcessExit(() => {
                 program.parse(helpArgs);
-            } catch {
-                // Ignore errors
-            }
+            });
         });
     });
 
@@ -77,38 +75,30 @@ describe("7. Help Text Generation", () => {
                         }))
                 .help();
 
-            try {
-                await parser.parseAsync(helpArgs.slice(2));
-            } catch {
-                // Ignore errors
-            }
+            await parser.parseAsync(helpArgs.slice(2));
         });
     });
 
     bench("Meow - Generate help", () => {
         suppressOutput(() => {
-            try {
-                meow("Test command with detailed help", {
-                    argv: helpArgs.slice(2),
-                    flags: {
-                        config: {
-                            shortFlag: "c",
-                            type: "string",
-                        },
-                        verbose: {
-                            shortFlag: "v",
-                            type: "boolean",
-                        },
-                        workers: {
-                            shortFlag: "w",
-                            type: "number",
-                        },
+            meow("Test command with detailed help", {
+                argv: helpArgs.slice(2),
+                flags: {
+                    config: {
+                        shortFlag: "c",
+                        type: "string",
                     },
-                    importMeta: import.meta,
-                });
-            } catch {
-                // Ignore errors
-            }
+                    verbose: {
+                        shortFlag: "v",
+                        type: "boolean",
+                    },
+                    workers: {
+                        shortFlag: "w",
+                        type: "number",
+                    },
+                },
+                importMeta: import.meta,
+            });
         });
     });
 
@@ -126,43 +116,37 @@ describe("7. Help Text Generation", () => {
 
             cli.help();
 
-            try {
+            mockProcessExit(() => {
                 cli.parse(helpArgs, { run: false });
-            } catch {
-                // Ignore errors
-            }
+            });
         });
     });
 
     bench("Cleye - Generate help", () => {
         suppressOutput(() => {
-            try {
-                cleye(
-                    {
-                        flags: {
-                            config: {
-                                description: "Specify configuration file path",
-                                type: String,
-                            },
-                            verbose: {
-                                description: "Enable verbose output for debugging",
-                                type: Boolean,
-                            },
-                            workers: {
-                                description: "Set number of parallel workers (1-10)",
-                                type: Number,
-                            },
+            cleye(
+                {
+                    flags: {
+                        config: {
+                            description: "Specify configuration file path",
+                            type: String,
                         },
-                        name: "test-cli",
+                        verbose: {
+                            description: "Enable verbose output for debugging",
+                            type: Boolean,
+                        },
+                        workers: {
+                            description: "Set number of parallel workers (1-10)",
+                            type: Number,
+                        },
                     },
-                    () => {
-                        // Empty callback
-                    },
-                    helpArgs.slice(2),
-                );
-            } catch {
-                // Ignore errors
-            }
+                    name: "test-cli",
+                },
+                () => {
+                    // Empty callback
+                },
+                helpArgs.slice(2),
+            );
         });
     });
 });

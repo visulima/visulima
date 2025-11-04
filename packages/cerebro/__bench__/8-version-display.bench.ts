@@ -7,53 +7,69 @@ import { bench, describe } from "vitest";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 
-import { suppressOutput, versionArgs } from "./shared";
+import { mockProcessExit, suppressOutput, versionArgs } from "./shared";
 
 describe("8. Version Display", () => {
     bench("Cerebro - Display version", async () => {
-        const cli = new Cerebro("test-cli", { packageVersion: "1.0.0" });
+        await suppressOutput(async () => {
+            const cli = new Cerebro("test-cli", { argv: versionArgs.slice(2), packageVersion: "1.0.0" });
 
-        await cli.run({ argv: versionArgs, shouldExitProcess: false });
+            cli.addCommand({
+                description: "Output the version number",
+                execute: ({ logger, runtime }) => {
+                    const version = runtime.getPackageVersion();
+
+                    if (version === undefined) {
+                        logger.warn("Unknown version");
+                    } else {
+                        logger.info(version);
+                    }
+                },
+                name: "version",
+            });
+
+            await cli.run({ shouldExitProcess: false });
+        });
     });
 
     bench("Commander - Display version", () => {
-        suppressOutput(() => {
-            const program = new Command();
+        try {
+            suppressOutput(() => {
+                mockProcessExit(() => {
+                    const program = new Command();
 
-            program.name("test-cli").version("1.0.0");
+                    program.name("test-cli").version("1.0.0");
 
-            try {
-                program.parse(versionArgs);
-            } catch {
-                // Ignore errors
-            }
-        });
+                    program.parse(versionArgs);
+                });
+            });
+        } catch {
+            // Ignore - expected when process.exit is called
+        }
     });
 
     bench("Yargs - Display version", async () => {
         await suppressOutput(async () => {
             const parser = yargs(hideBin(versionArgs)).scriptName("test-cli").version("1.0.0");
 
-            try {
-                await parser.parseAsync();
-            } catch {
-                // Ignore errors
-            }
+            await parser.parseAsync();
         });
     });
 
     bench("Meow - Display version", () => {
-        suppressOutput(() => {
-            try {
-                meow("Test CLI", {
-                    argv: versionArgs.slice(2),
-                    importMeta: import.meta,
-                    version: "1.0.0",
+        try {
+            suppressOutput(() => {
+                mockProcessExit(() => {
+                    meow("Test CLI", {
+                        argv: versionArgs.slice(2),
+                        importMeta: import.meta,
+                        version: "1.0.0",
+                    });
                 });
-            } catch {
-                // Ignore errors
-            }
-        });
+            });
+        } catch {
+            // Ignore - expected when process.exit is called
+        }
     });
 
     bench("CAC - Display version", () => {
@@ -62,30 +78,28 @@ describe("8. Version Display", () => {
 
             cli.version("1.0.0");
 
-            try {
-                cli.parse(versionArgs, { run: false });
-            } catch {
-                // Ignore errors
-            }
+            cli.parse(versionArgs, { run: false });
         });
     });
 
     bench("Cleye - Display version", () => {
-        suppressOutput(() => {
-            try {
-                cleye(
-                    {
-                        name: "test-cli",
-                        version: "1.0.0",
-                    },
-                    () => {
-                        // Empty callback
-                    },
-                    versionArgs.slice(2),
-                );
-            } catch {
-                // Ignore errors
-            }
-        });
+        try {
+            suppressOutput(() => {
+                mockProcessExit(() => {
+                    cleye(
+                        {
+                            name: "test-cli",
+                            version: "1.0.0",
+                        },
+                        () => {
+                            // Empty callback
+                        },
+                        versionArgs.slice(2),
+                    );
+                });
+            });
+        } catch {
+            // Ignore - expected when process.exit is called
+        }
     });
 });

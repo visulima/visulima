@@ -1,3 +1,4 @@
+import { VERBOSITY_DEBUG } from "./constants";
 import PluginError from "./errors/plugin-error";
 import type { Plugin, PluginContext } from "./types/plugin";
 import type { Toolbox } from "./types/toolbox";
@@ -42,7 +43,11 @@ class PluginManager<T extends Logger = Logger> {
             throw new Error(`Plugin "${plugin.name}" is already registered`);
         }
 
-        this.logger.debug(`registering plugin: ${plugin.name}`);
+        // Skip debug logging during cold start (only log if debug mode is actually enabled)
+        // Check env directly instead of calling logger.debug which has overhead
+        if (process.env.CEREBRO_OUTPUT_LEVEL === String(VERBOSITY_DEBUG)) {
+            this.logger.debug(`registering plugin: ${plugin.name}`);
+        }
 
         this.plugins.set(plugin.name, plugin);
         // Invalidate cache when new plugin is registered

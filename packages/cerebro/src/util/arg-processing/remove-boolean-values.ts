@@ -13,26 +13,40 @@ const booleanValue = new Set(["0", "1", "false", "true"]);
  * this function removes these booleans to avoid errors from commandLineArgs
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const removeBooleanValues = <OD extends OptionDefinition<any>>(arguments_: string[], options: PossibleOptionDefinition<OD>[]): string[] => {
+const removeBooleanValues = <OD extends OptionDefinition<any>>(
+    arguments_: string[],
+    options: PossibleOptionDefinition<OD>[],
+    optionMapByName?: Map<string, PossibleOptionDefinition<OD>>,
+    optionMapByAlias?: Map<string, PossibleOptionDefinition<OD>>,
+): string[] => {
+    // Optimize: early return if no options or arguments
+    if (options.length === 0 || arguments_.length === 0) {
+        return arguments_;
+    }
+
     const removeBooleanArguments = (argumentsAndLastValue: ArgumentsAndLastOption<OD>, argument: string): ArgumentsAndLastOption<OD> => {
-        const { argValue, option } = getParameterOption(argument, options);
+        const { argValue, option } = getParameterOption(argument, options, optionMapByName, optionMapByAlias);
 
         const { lastOption } = argumentsAndLastValue;
 
         if (lastOption && isBoolean(lastOption) && booleanValue.has(argument)) {
-            // eslint-disable-next-line no-underscore-dangle,@typescript-eslint/naming-convention
-            const copiedArguments_ = [...argumentsAndLastValue.args];
+            // Optimize: avoid creating new array if removing last element
+            const { args } = argumentsAndLastValue;
+            const result = args.slice(0, -1);
 
-            copiedArguments_.pop();
-
-            return { args: copiedArguments_ };
+            return { args: result };
         }
 
         if (option && isBoolean(option) && argValue) {
             return { args: argumentsAndLastValue.args };
         }
 
-        return { args: [...argumentsAndLastValue.args, argument], lastOption: option as PossibleOptionDefinition<OD> };
+        // Optimize: create new array with push for better performance
+        const newArgs = [...argumentsAndLastValue.args];
+
+        newArgs.push(argument);
+
+        return { args: newArgs, lastOption: option as PossibleOptionDefinition<OD> };
     };
 
     // eslint-disable-next-line unicorn/no-array-callback-reference,unicorn/no-array-reduce

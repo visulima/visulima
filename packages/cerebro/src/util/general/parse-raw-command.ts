@@ -2,7 +2,21 @@ import hideBin from "./hide-bin";
 
 const COMMAND_DELIMITER = " ";
 
-const equals = (a: string[], b: string[]) => a.length === b.length && a.every((v, index) => v === b[index]);
+// Optimized equals function - check reference equality first, then length, then elements
+const equals = (a: string[], b: string[]): boolean => {
+    // Fast path: same reference
+    if (a === b) {
+        return true;
+    }
+
+    // Fast path: different lengths
+    if (a.length !== b.length) {
+        return false;
+    }
+
+    // Compare elements only if necessary
+    return a.every((v, index) => v === b[index]);
+};
 
 /**
  * Parses the raw command into an array of strings.
