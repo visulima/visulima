@@ -2,6 +2,7 @@ import { VERBOSITY_DEBUG } from "./constants";
 import PluginError from "./errors/plugin-error";
 import type { Plugin, PluginContext } from "./types/plugin";
 import type { Toolbox } from "./types/toolbox";
+import { getEnv } from "./util/general/runtime-process";
 
 type Logger = Console;
 
@@ -43,7 +44,9 @@ class PluginManager<T extends Logger = Logger> {
             throw new Error(`Plugin "${plugin.name}" is already registered`);
         }
 
-        if (process.env.CEREBRO_OUTPUT_LEVEL === String(VERBOSITY_DEBUG)) {
+        const env = getEnv();
+
+        if (env.CEREBRO_OUTPUT_LEVEL === String(VERBOSITY_DEBUG)) {
             this.logger.debug(`registering plugin: ${plugin.name}`);
         }
 

@@ -9,6 +9,7 @@ import type { Command as ICommand, OptionDefinition } from "../types/command";
 import type { Section } from "../types/command-line-usage";
 import type { Toolbox as IToolbox } from "../types/toolbox";
 import commandLineUsage from "../util/command-line-usage";
+import { getArch, getCwd, getPlatform, getVersions } from "../util/general/runtime-process";
 
 const slugger = new GithubSlugger();
 const slugify = slugger.slug;
@@ -149,13 +150,15 @@ const renderCommand = (command: ICommand, cliName: string): string => {
 const generateUsage = (cliName: string, packageName: string, version: string | undefined, nodeVersion: string): string => {
     const versionFlags = ["--version", "-V"];
     const versionFlagsString = `(${versionFlags.join("|")})`;
+    const platform = getPlatform();
+    const arch = getArch();
 
     return `\`\`\`sh-session
 $ npm install -g ${packageName}
 $ ${cliName} COMMAND
 running command...
 $ ${cliName} ${versionFlagsString}
-${packageName}/${version ?? "unknown"} ${process.platform}-${process.arch} node-v${nodeVersion}
+${packageName}/${version ?? "unknown"} ${platform}-${arch} node-v${nodeVersion}
 $ ${cliName} --help [COMMAND]
 USAGE
   $ ${cliName} COMMAND
@@ -230,7 +233,7 @@ const generateMultiCommands = async (commands: ICommand[], outputDirectory: stri
                 .trim()}\n`;
 
             if (!options.dryRun) {
-                await writeFileWithDirectory(resolve(process.cwd(), filePath), document);
+                await writeFileWithDirectory(resolve(getCwd(), filePath), document);
             }
         }),
     );
@@ -299,7 +302,8 @@ const readmeCommand: ICommand = {
         const cliName = runtime.getCliName();
         const packageName = runtime.getPackageName() ?? cliName;
         const packageVersion = runtime.getPackageVersion();
-        const nodeVersion = process.versions.node;
+        const versions = getVersions();
+        const nodeVersion = versions.node ?? "unknown";
 
         const readmeOptions: ReadmeOptions = {
             aliases: options?.aliases as boolean | undefined,
@@ -340,7 +344,7 @@ const readmeCommand: ICommand = {
         // Read existing README or create template
         let readme: string;
 
-        const readmePath = resolve(process.cwd(), readmeOptions.readmePath ?? "README.md");
+        const readmePath = resolve(getCwd(), readmeOptions.readmePath ?? "README.md");
 
         if (existsSync(readmePath)) {
             const rawReadme = await readFile(readmePath, "utf8");

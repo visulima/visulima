@@ -11,6 +11,7 @@ import { createPail } from "@visulima/pail/server";
 
 import { VERBOSITY_DEBUG, VERBOSITY_QUIET } from "../constants";
 import type { VERBOSITY_LEVEL } from "../types/cli";
+import { getEnv } from "../util/general/runtime-process";
 
 /**
  * Create a Pail logger.
@@ -25,17 +26,19 @@ const createPailLogger = async (): Promise<Pail> => {
     };
 
     const processors: Processor<string>[] = [new MessageFormatterProcessor()];
+    const env = getEnv();
+    const outputLevel = env.CEREBRO_OUTPUT_LEVEL;
 
-    if (process.env.CEREBRO_OUTPUT_LEVEL === String(128) || process.env.CEREBRO_OUTPUT_LEVEL === String(VERBOSITY_DEBUG)) {
+    if (outputLevel === String(128) || outputLevel === String(VERBOSITY_DEBUG)) {
         processors.push(new CallerProcessor());
     }
 
     const logger = createPail({
-        logLevel: process.env.CEREBRO_OUTPUT_LEVEL ? cerebroLevelToPailLevel[process.env.CEREBRO_OUTPUT_LEVEL as unknown as VERBOSITY_LEVEL] : "informational",
+        logLevel: outputLevel ? cerebroLevelToPailLevel[outputLevel as unknown as VERBOSITY_LEVEL] : "informational",
         processors,
     });
 
-    if (process.env.CEREBRO_OUTPUT_LEVEL === String(VERBOSITY_QUIET)) {
+    if (outputLevel === String(VERBOSITY_QUIET)) {
         logger.disable();
     }
 

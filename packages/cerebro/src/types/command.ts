@@ -11,7 +11,7 @@ type TypeConstructor<T> = (value: unknown) => T extends (infer R)[] ? R | undefi
  */
 type EnvTypeConstructor<T> = (value: string | undefined) => T extends (infer R)[] ? R | undefined : T | undefined;
 
-type MultiplePropertyOptions<T> = unknown[] extends T ? { lazyMultiple: true } | { multiple: true } : unknown;
+type MultiplePropertyOptions<T> = T extends ReadonlyArray<unknown> ? { lazyMultiple: true } | { multiple: true } : unknown;
 
 export type OptionDefinition<T> = MultiplePropertyOptions<T>
     & Omit<BaseOptionDefinition, "type|defaultValue"> & {

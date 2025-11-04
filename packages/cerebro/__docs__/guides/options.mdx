@@ -219,16 +219,32 @@ cli.addCommand({
 });
 ```
 
-### Boolean or Value Options
+### Boolean Options
 
-Options that can be used as flags or accept values:
+Boolean options are simple flags that are either present (true) or absent (false):
 
 ```typescript
 {
   name: "watch",
   type: Boolean,
-  // Can be used as: --watch (true) or --watch=port (custom value)
   description: "Watch for changes"
+}
+```
+
+Usage:
+
+```bash
+cli build --watch  # options.watch = true
+cli build          # options.watch = false
+```
+
+Note: If you need an option that can accept values, use a `String` type instead:
+
+```typescript
+{
+  name: "watch",
+  type: String,
+  description: "Watch mode (e.g., 'port' or 'file')"
 }
 ```
 

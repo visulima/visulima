@@ -1,4 +1,5 @@
 import type { EnvDefinition } from "../types/command";
+import { getEnv } from "./general/runtime-process";
 
 /**
  * Transforms a boolean environment variable value.
@@ -77,11 +78,11 @@ const processEnvVariables = (
     }
 
     const result: Record<string, unknown> = {};
+    const env = getEnv();
 
     for (const envDefinition of envDefinitions) {
-        // Access process.env directly to ensure we get the latest value
-
-        const envValue = process.env[envDefinition.name];
+        // Access env via runtime abstraction to ensure cross-runtime compatibility
+        const envValue = env[envDefinition.name];
         const transformedValue = transformEnvValue(envDefinition, envValue);
         const finalValue = transformedValue === undefined ? envDefinition.defaultValue : transformedValue;
         const camelCaseName = toCamelCase(envDefinition.name);

@@ -8,7 +8,7 @@ describe("remove-boolean-values", () => {
         expect.assertions(1);
 
         const options: OptionDefinition[] = [{ alias: "v", name: "verbose", type: Boolean }];
-        // The function removes the flag (not the value) when value follows
+        // The function removes both the flag and its boolean value
         const args = ["--verbose", "true", "file.txt"];
 
         const result = removeBooleanValues(args, options);
@@ -20,7 +20,7 @@ describe("remove-boolean-values", () => {
         expect.assertions(1);
 
         const options: OptionDefinition[] = [{ alias: "v", name: "verbose", type: Boolean }];
-        // The function removes the flag (not the value) when value follows
+        // The function removes both the flag and its boolean value
         const args = ["-v", "true", "file.txt"];
 
         const result = removeBooleanValues(args, options);

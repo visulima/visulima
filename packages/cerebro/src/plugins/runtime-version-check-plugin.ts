@@ -1,4 +1,5 @@
 import type { Plugin } from "../types/plugin";
+import { exitProcess, getEnv, getVersions } from "../util/general/runtime-process";
 
 /**
  * Safely parse major version from a version string.
@@ -58,8 +59,10 @@ const detectRuntime = (): { major: number; type: RuntimeType; version: string } 
         return { major, type: "deno", version };
     }
 
-    // Default to Node.js
-    const version = extractNodeVersion(process.version);
+    // Default to Node.js - use runtime abstraction
+    const versions = getVersions();
+    const nodeVersion = versions.node ?? "";
+    const version = extractNodeVersion(nodeVersion);
     const major = parseMajorVersion(version);
 
     return { major, type: "node", version };
@@ -103,9 +106,19 @@ export const runtimeVersionCheckPlugin = (options: RuntimeVersionCheckOptions = 
             };
 
             // Allow environment variable override for Node.js (backward compatibility)
-            const envRaw = process.env.CEREBRO_MIN_NODE_VERSION;
-            const parsed = envRaw === undefined ? undefined : Number.parseInt(envRaw, 10);
-            const envMinVersion = Number.isNaN(parsed as number) ? undefined : parsed;
+            let envMinVersion: number | undefined;
+
+            try {
+                const env = getEnv();
+                const envRaw = env.CEREBRO_MIN_NODE_VERSION;
+
+                const parsed = envRaw === undefined ? undefined : Number.parseInt(envRaw, 10);
+
+                envMinVersion = Number.isNaN(parsed as number) ? undefined : parsed;
+            } catch {
+                // getEnv() may not be available in some runtimes
+                envMinVersion = undefined;
+            }
 
             // Determine minimum version: specific runtime > environment variable (Node.js only) > default
             let minVersion: number;
@@ -123,21 +136,8 @@ export const runtimeVersionCheckPlugin = (options: RuntimeVersionCheckOptions = 
                     `cerebro requires ${runtime.type} version ${minVersion} or higher. You have ${runtime.type} ${runtime.version}. Read our version support policy: https://github.com/visulima/visulima#supported-runtimes`,
                 );
 
-                // Runtime-aware exit
-                if (runtime.type === "deno") {
-                    // @ts-expect-error - Deno is only present in Deno runtime
-                    const deno = globalThis.Deno as { exit?: (code: number) => void } | undefined;
-
-                    if (deno && typeof deno.exit === "function") {
-                        deno.exit(1);
-                    } else {
-                        // eslint-disable-next-line unicorn/no-process-exit
-                        process.exit(1);
-                    }
-                } else {
-                    // eslint-disable-next-line unicorn/no-process-exit
-                    process.exit(1);
-                }
+                // Use runtime-aware exit function
+                exitProcess(1);
             }
 
             context.logger.debug(`Runtime version check passed: ${runtime.type} ${runtime.version} >= ${minVersion}`);

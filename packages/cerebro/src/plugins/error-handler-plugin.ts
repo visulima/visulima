@@ -4,6 +4,7 @@ import { renderError } from "@visulima/error";
 
 import type { Plugin } from "../types/plugin";
 import type { Toolbox } from "../types/toolbox";
+import { exitProcess } from "../util/general/runtime-process";
 
 export type ErrorHandlerOptions = {
     /** Show detailed error information including stack traces and code frames (default: false) */
@@ -56,8 +57,7 @@ export const errorHandlerPlugin = (options: ErrorHandlerOptions = {}): Plugin =>
 
         // Exit process if configured
         if (exitOnError) {
-            // eslint-disable-next-line unicorn/no-process-exit
-            process.exit(1);
+            exitProcess(1);
         }
     };
 

@@ -230,16 +230,134 @@ export const getExecPath = (): string => {
 };
 
 /**
+ * Gets the operating system platform.
+ * @returns Platform string (e.g., "darwin", "linux", "win32")
+ */
+export const getPlatform = (): string => {
+    // Check for Deno first using type guard
+    if (hasDeno(globalThis)) {
+        // @ts-expect-error - Deno is available after type guard check
+        const deno = globalThis.Deno as { build?: { os?: string } };
+
+        // Deno.build.os returns values like "darwin", "linux", "windows"
+        // Map "windows" to "win32" for compatibility with Node.js
+        const os = deno.build?.os ?? "unknown";
+
+        return os === "windows" ? "win32" : os;
+    }
+
+    // Check for Bun
+    if (hasBun(globalThis)) {
+        // @ts-expect-error - Bun is available after type guard check
+        const bun = globalThis.Bun as { platform?: string };
+
+        // Bun.platform returns values like "darwin", "linux", "win32"
+        return bun.platform ?? "unknown";
+    }
+
+    // Node.js - use global process object
+    return (process as { platform: string }).platform;
+};
+
+/**
+ * Gets the CPU architecture.
+ * @returns Architecture string (e.g., "x64", "arm64")
+ */
+export const getArch = (): string => {
+    // Check for Deno first using type guard
+    if (hasDeno(globalThis)) {
+        // @ts-expect-error - Deno is available after type guard check
+        const deno = globalThis.Deno as { build?: { arch?: string } };
+
+        // Deno.build.arch returns values like "x86_64", "aarch64"
+        // Map to Node.js-compatible values
+        const arch = deno.build?.arch ?? "unknown";
+
+        if (arch === "x86_64") {
+            return "x64";
+        }
+
+        if (arch === "aarch64") {
+            return "arm64";
+        }
+
+        return arch;
+    }
+
+    // Check for Bun
+    if (hasBun(globalThis)) {
+        // @ts-expect-error - Bun is available after type guard check
+        const bun = globalThis.Bun as { process: { arch: string } };
+
+        return bun.process.arch;
+    }
+
+    // Node.js - use global process object
+    return (process as { arch: string }).arch;
+};
+
+/**
+ * Gets version information about the runtime.
+ * @returns Object with version strings
+ */
+export const getVersions = (): Record<string, string> => {
+    // Check for Deno first using type guard
+    if (hasDeno(globalThis)) {
+        // @ts-expect-error - Deno is available after type guard check
+        const deno = globalThis.Deno as { version?: { deno?: string; typescript?: string; v8?: string } };
+
+        // Deno.version contains deno, v8, typescript versions
+        const versions: Record<string, string> = {};
+
+        if (deno.version?.deno) {
+            versions.deno = deno.version.deno;
+        }
+
+        if (deno.version?.v8) {
+            versions.v8 = deno.version.v8;
+        }
+
+        if (deno.version?.typescript) {
+            versions.typescript = deno.version.typescript;
+        }
+
+        return versions;
+    }
+
+    // Check for Bun
+    if (hasBun(globalThis)) {
+        // @ts-expect-error - Bun is available after type guard check
+        const bun = globalThis.Bun as { process: { versions?: Record<string, string> }; version?: string };
+
+        const versions: Record<string, string> = { ...bun.process.versions };
+
+        if (bun.version) {
+            versions.bun = bun.version;
+        }
+
+        return versions;
+    }
+
+    // Node.js - use global process object
+    return (process as { versions: Record<string, string> }).versions;
+};
+
+/**
  * Terminates the process with the specified exit code.
  * @param code Exit code (default: 0)
  */
 export const exitProcess = (code?: number): never => {
+    const exitCode = code ?? 0;
+
     // Check for Deno first using type guard
     if (hasDeno(globalThis)) {
         // @ts-expect-error - Deno is available after type guard check
         const deno = globalThis.Deno as { exit: (code?: number) => never };
 
-        deno.exit(code ?? 0);
+        deno.exit(exitCode);
+        // TypeScript knows this never returns, but we add this for runtime safety
+        // eslint-disable-next-line no-unreachable
+        throw new Error("Deno exit failed");
     }
 
     // Check for Bun
@@ -247,12 +365,90 @@ export const exitProcess = (code?: number): never => {
         // @ts-expect-error - Bun is available after type guard check
         const bun = globalThis.Bun as { process: { exit: (code?: number) => never } };
 
-        bun.process.exit(code ?? 0);
+        bun.process.exit(exitCode);
+        // TypeScript knows this never returns, but we add this for runtime safety
+        // eslint-disable-next-line no-unreachable
+        throw new Error("Bun exit failed");
     }
 
     // Node.js - use global process object
-    (process as { exit: (code?: number) => never }).exit(code ?? 0);
+    const nodeProcess = process as { exit: (code?: number) => void };
 
-    // This should never be reached, but TypeScript needs this for type checking
-    throw new Error("Process exit failed");
+    nodeProcess.exit(exitCode);
+
+    // In production, process.exit() never returns, so this code is unreachable.
+    // In test environments, process.exit() might be mocked and not actually exit.
+    // We use a type assertion to satisfy TypeScript's never return type requirement
+    // without throwing an error that would break tests.
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+    return undefined as never;
+};
+
+/**
+ * Runtime-agnostic event handler registration.
+ * Note: Deno and Bun don't have equivalent event emitters, so this only works in Node.js.
+ * In other runtimes, handlers are registered but may not be called for all events.
+ */
+export type ProcessEventType = "uncaughtException" | "unhandledRejection";
+
+export type ProcessEventHandler = (...args: unknown[]) => void;
+
+/**
+ * Registers an event handler for process events.
+ * @param event Event type to listen for
+ * @param handler Handler function
+ * @returns Cleanup function to remove the handler
+ */
+export const onProcessEvent = (event: ProcessEventType, handler: ProcessEventHandler): () => void => {
+    // Check for Deno first - Deno doesn't have process events, return no-op cleanup
+    if (hasDeno(globalThis)) {
+        // Deno uses global error handlers differently
+        // Return no-op cleanup function
+        return () => {
+            // No-op
+        };
+    }
+
+    // Check for Bun - Bun has limited process event support
+    if (hasBun(globalThis)) {
+        // Bun may have process events, but they're not fully compatible
+        // Try to use process.on if available, otherwise return no-op
+        try {
+            // @ts-expect-error - Bun is available after type guard check
+            const bun = globalThis.Bun as {
+                process?: {
+                    on?: (event: string, handler: ProcessEventHandler) => void;
+                    removeListener?: (event: string, handler: ProcessEventHandler) => void;
+                };
+            };
+
+            if (bun.process?.on) {
+                bun.process.on(event, handler);
+
+                return () => {
+                    if (bun.process?.removeListener) {
+                        bun.process.removeListener(event, handler);
+                    }
+                };
+            }
+        } catch {
+            // Fall through to no-op
+        }
+
+        return () => {
+            // No-op
+        };
+    }
+
+    // Node.js - use global process object
+    const nodeProcess = process as {
+        on: (event: ProcessEventType, handler: ProcessEventHandler) => void;
+        removeListener: (event: ProcessEventType, handler: ProcessEventHandler) => void;
+    };
+
+    nodeProcess.on(event, handler);
+
+    return () => {
+        nodeProcess.removeListener(event, handler);
+    };
 };

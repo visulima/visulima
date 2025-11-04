@@ -2,6 +2,7 @@
 import { isCI } from "ci-info";
 
 import type { Plugin } from "../../types/plugin";
+import { getEnv } from "../../util/general/runtime-process";
 import type { UpdateNotifierOptions } from "./has-new-version";
 
 export type UpdateNotifierPluginOptions = Partial<Omit<UpdateNotifierOptions, "debug" | "pkg">>;
@@ -24,9 +25,11 @@ export const updateNotifierPlugin = (options: UpdateNotifierPluginOptions = {}):
                 return;
             }
 
+            const env = getEnv();
+
             const updateNotifierOptions: UpdateNotifierOptions = {
                 alwaysRun: false,
-                debug: process.env.CEREBRO_OUTPUT_LEVEL === "256",
+                debug: env.CEREBRO_OUTPUT_LEVEL === "256",
                 distTag: "latest",
                 pkg: {
                     name: packageName,
@@ -38,7 +41,7 @@ export const updateNotifierPlugin = (options: UpdateNotifierPluginOptions = {}):
 
             const shouldCheck
                 = updateNotifierOptions.alwaysRun
-                    || !(process.env.NO_UPDATE_NOTIFIER || process.env.NODE_ENV === "test" || toolbox.argv.includes("--no-update-notifier") || isCI);
+                    || !(env.NO_UPDATE_NOTIFIER || env.NODE_ENV === "test" || toolbox.argv.includes("--no-update-notifier") || isCI);
 
             if (!shouldCheck) {
                 logger.debug("Update notifier: skipping check (disabled by environment or flags)");

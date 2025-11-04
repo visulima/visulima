@@ -1,4 +1,5 @@
 import hideBin from "./hide-bin";
+import { getArgv } from "./runtime-process";
 
 const COMMAND_DELIMITER = " ";
 
@@ -24,7 +25,9 @@ const parseRawCommand = (commandArray: string[] | string): string[] => {
         return (commandArray as string).split(COMMAND_DELIMITER);
     }
 
-    if (equals(commandArray as string[], process.argv)) {
+    const argv = getArgv();
+
+    if (equals(commandArray as string[], argv as string[])) {
         return hideBin(commandArray as string[]);
     }
 

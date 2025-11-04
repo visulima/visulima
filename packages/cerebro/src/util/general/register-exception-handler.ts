@@ -1,3 +1,6 @@
+import type { ProcessEventHandler } from "./runtime-process";
+import { exitProcess, onProcessEvent } from "./runtime-process";
+
 /**
  * Registers global exception handlers for uncaught exceptions and unhandled promise rejections.
  * Logs errors using the provided logger and exits the process with code 1.
@@ -14,11 +17,10 @@ const registerExceptionHandler = <T extends Console = Console>(logger: T): () =>
             logger.error(error.stack);
         }
 
-        // eslint-disable-next-line unicorn/no-process-exit
-        process.exit(1);
+        exitProcess(1);
     };
 
-    const unhandledRejectionHandler = (reason: unknown, _promise: Promise<unknown>) => {
+    const unhandledRejectionHandler = (reason: unknown, _promise?: Promise<unknown>) => {
         if (reason instanceof Error) {
             logger.error(`Promise rejection: ${reason.message || reason}`);
 
@@ -41,17 +43,16 @@ const registerExceptionHandler = <T extends Console = Console>(logger: T): () =>
             logger.error(`Promise rejection: ${reasonString}`);
         }
 
-        // eslint-disable-next-line unicorn/no-process-exit
-        process.exit(1);
+        exitProcess(1);
     };
 
-    process.on("uncaughtException", uncaughtExceptionHandler);
-    process.on("unhandledRejection", unhandledRejectionHandler);
+    const cleanupUncaughtException = onProcessEvent("uncaughtException", uncaughtExceptionHandler as ProcessEventHandler);
+    const cleanupUnhandledRejection = onProcessEvent("unhandledRejection", unhandledRejectionHandler as ProcessEventHandler);
 
     // Return cleanup function
     return () => {
-        process.removeListener("uncaughtException", uncaughtExceptionHandler);
-        process.removeListener("unhandledRejection", unhandledRejectionHandler);
+        cleanupUncaughtException();
+        cleanupUnhandledRejection();
     };
 };
 

@@ -94,6 +94,137 @@ import { updateNotifierPlugin } from "@visulima/cerebro/plugins/update-notifier"
 - **Clearer dependencies**: Explicit imports make dependencies obvious
 - **Improved performance**: Reduced bundle size and faster loading
 
+### Nested Command Support
+
+Cerebro now supports nested commands (subcommands) using the `commandPath` property. This allows you to create hierarchical command structures like `cli deploy staging` or `cli db migrate up`.
+
+#### Defining Nested Commands
+
+Create nested commands by specifying a `commandPath` array in your command definition:
+
+```typescript
+// Parent command path: ["deploy"]
+cli.addCommand({
+    name: "staging",
+    commandPath: ["deploy"],
+    description: "Deploy to staging environment",
+    execute: ({ logger }) => {
+        logger.info("Deploying to staging...");
+    },
+});
+
+cli.addCommand({
+    name: "production",
+    commandPath: ["deploy"],
+    description: "Deploy to production environment",
+    execute: ({ logger }) => {
+        logger.info("Deploying to production...");
+    },
+});
+```
+
+Usage:
+
+```bash
+cli deploy staging
+cli deploy production
+```
+
+#### Multi-Level Nested Commands
+
+You can nest commands multiple levels deep:
+
+```typescript
+cli.addCommand({
+    name: "up",
+    commandPath: ["db", "migrate"],
+    description: "Run database migrations",
+    execute: ({ logger }) => {
+        logger.info("Running migrations...");
+    },
+});
+
+cli.addCommand({
+    name: "down",
+    commandPath: ["db", "migrate"],
+    description: "Rollback database migrations",
+    execute: ({ logger }) => {
+        logger.info("Rolling back migrations...");
+    },
+});
+```
+
+Usage:
+
+```bash
+cli db migrate up
+cli db migrate down
+```
+
+#### Accessing Command Path
+
+The `commandPath` is available through the `command` property in the execute function:
+
+```typescript
+cli.addCommand({
+    name: "staging",
+    commandPath: ["deploy"],
+    execute: ({ command, logger }) => {
+        // command.commandPath will be ["deploy"]
+        // command.name will be "staging"
+        const fullPath = command.commandPath ? [...command.commandPath, command.name].join(" ") : command.name;
+        logger.info(`Executing command: ${fullPath}`);
+    },
+});
+```
+
+#### Options in Nested Commands
+
+Nested commands support options just like regular commands:
+
+```typescript
+cli.addCommand({
+    name: "up",
+    commandPath: ["db", "migrate"],
+    options: [
+        {
+            name: "force",
+            type: Boolean,
+            description: "Force migration even if already applied",
+        },
+    ],
+    execute: ({ options, logger }) => {
+        if (options.force) {
+            logger.info("Forcing migration...");
+        }
+        logger.info("Running migrations...");
+    },
+});
+```
+
+Usage:
+
+```bash
+cli db migrate up --force
+```
+
+#### Calling Nested Commands Programmatically
+
+Use `runtime.runCommand()` with the full command path (space-separated):
+
+```typescript
+cli.addCommand({
+    name: "deploy-all",
+    execute: async ({ runtime, logger }) => {
+        logger.info("Deploying to all environments...");
+
+        // Call nested commands programmatically
+        await runtime.runCommand("deploy staging");
+        await runtime.runCommand("deploy production");
+    },
+});
+```
+
 ### Enhanced Error Handling
 
 Error handling has been improved with better error types and validation.
@@ -101,16 +232,16 @@ Error handling has been improved with better error types and validation.
 #### Command Not Found Errors
 
 ```typescript
-// Before - Generic error
-// After - Specific error types
 import { CommandNotFoundError } from "@visulima/cerebro";
 
+// Before - Generic error
 try {
     await cli.run();
 } catch (error) {
     console.error("Error:", error.message);
 }
 
+// After - Specific error types
 try {
     await cli.run();
 } catch (error) {
@@ -144,9 +275,9 @@ Replace CJS `require()` calls with ESM `import` statements:
 
 ```javascript
 // Before
-// After
 import { createCerebro } from "@visulima/cerebro";
 
+// After
 const { createCerebro } = require("@visulima/cerebro");
 ```
 
@@ -157,6 +288,7 @@ Use granular plugin imports:
 ```javascript
 // Before
 import { errorHandlerPlugin } from "@visulima/cerebro";
+
 // After
 import { errorHandlerPlugin } from "@visulima/cerebro/plugins/error-handler";
 ```
@@ -213,6 +345,7 @@ const { createCerebro } = await import("@visulima/cerebro");
 ```javascript
 // Before
 import { errorHandlerPlugin } from "@visulima/cerebro";
+
 // After
 import { errorHandlerPlugin } from "@visulima/cerebro/plugins/error-handler";
 ```
