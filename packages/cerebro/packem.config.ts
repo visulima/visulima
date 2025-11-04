@@ -4,10 +4,7 @@ import transformer from "@visulima/packem/transformer/esbuild";
 
 // eslint-disable-next-line import/no-unused-modules
 export default defineConfig({
-    node10Compatibility: {
-        writeToPackageJson: true,
-        typeScriptVersion: ">=5.0",
-    },
+    runtime: "node",
     rollup: {
         license: {
             path: "./LICENSE.md",
@@ -17,5 +14,4 @@ export default defineConfig({
         },
     },
     transformer,
-    cjsInterop: true,
 }) as BuildConfig;

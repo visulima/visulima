@@ -3,9 +3,21 @@
         "title": "Introduction"
     },
     "quickstart": {
-        "title": "Quick Start",
-        "description": "Start building a awesome cli's in under 2 minutes"
+        "title": "Quick Start"
     },
-    "toolbox": "Toolboxes",
-    "configuration": "Configuration"
+    "guides": {
+        "title": "Guides",
+        "type": "page",
+        "pages": ["guides/commands", "guides/options", "guides/plugins", "guides/advanced", "guides/comparison"]
+    },
+    "toolbox": {
+        "title": "Toolbox",
+        "type": "page",
+        "pages": ["toolbox/parameters", "toolbox/runtime", "toolbox/logger", "toolbox/print"]
+    },
+    "api": {
+        "title": "API Reference",
+        "type": "page",
+        "pages": ["api/cli", "api/command", "api/plugin", "api/types"]
+    }
 }

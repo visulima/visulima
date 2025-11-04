@@ -1,11 +1,9 @@
-import type { Toolbox as IToolbox } from "./@types";
+import type { Toolbox as IToolbox } from "./types/toolbox";
 
 class EmptyToolbox implements Partial<IToolbox> {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    [x: string]: any;
+    [x: string]: unknown;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    public result: any;
+    public result?: unknown;
 
     public argv?: IToolbox["argv"];
 
@@ -17,9 +15,11 @@ class EmptyToolbox implements Partial<IToolbox> {
 
     public commandName: IToolbox["commandName"];
 
-    public runtime?: IToolbox["runtime"];
+    public env?: IToolbox["env"];
 
     public logger?: IToolbox["logger"];
+
+    public runtime?: IToolbox["runtime"];
 
     public constructor(commandName: IToolbox["commandName"], command: IToolbox["command"]) {
         this.commandName = commandName;

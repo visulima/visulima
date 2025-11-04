@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import type { OptionList as IOptionList } from "../../../../../src/@types/command-line-usage";
+import type { OptionList as IOptionList } from "../../../../../src/types/command-line-usage";
 import OptionListSection from "../../../../../src/util/command-line-usage/section/option-list-section";
 
 describe("command-line-usage/option-list-section", () => {
@@ -76,7 +76,7 @@ describe("command-line-usage/option-list-section", () => {
         expect.assertions(1);
 
         expect(() => {
-            // eslint-disable-next-line no-new
+            // eslint-disable-next-line no-new, sonarjs/constructor-for-side-effects
             new OptionListSection({
                 // @ts-expect-error - test error
                 optionList: [{ description: "something" }],

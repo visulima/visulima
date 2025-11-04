@@ -1,0 +1,19 @@
+{
+    "name": "cerebro-example-logging",
+    "version": "1.0.0",
+    "private": true,
+    "description": "Cerebro CLI logging examples",
+    "type": "module",
+    "scripts": {
+        "console": "LOGGER=console node cli.js test",
+        "custom": "LOGGER=custom node cli.js test",
+        "pail": "LOGGER=pail node cli.js test",
+        "start": "node cli.js test"
+    },
+    "dependencies": {
+        "@visulima/cerebro": "workspace:*"
+    },
+    "optionalDependencies": {
+        "@visulima/pail": "workspace:*"
+    }
+}

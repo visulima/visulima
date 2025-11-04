@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import type { OptionDefinition } from "../../../src/@types/command";
-import mergeArguments from "../../../src/util/merge-arguments";
+import type { OptionDefinition } from "../../../src/types/command";
+import mergeArguments from "../../../src/util/data-processing/merge-arguments";
 
 describe("util/merge-arguments", () => {
     it("should return single argument list it was the only one provided", () => {

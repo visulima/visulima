@@ -1,0 +1,20 @@
+{
+    "name": "cerebro-example-options",
+    "version": "1.0.0",
+    "private": true,
+    "description": "Cerebro CLI options handling examples",
+    "type": "module",
+    "scripts": {
+        "boolean-or-value": "node cli.js options-boolean-or-value",
+        "common": "node cli.js options-common",
+        "conflicts": "node cli.js options-single-conflicts",
+        "defaults": "node cli.js options-defaults",
+        "implies": "node cli.js options-implies",
+        "negatable": "node cli.js options-negatable",
+        "required": "node cli.js options-required",
+        "start": "node cli.js help"
+    },
+    "dependencies": {
+        "@visulima/cerebro": "workspace:*"
+    }
+}

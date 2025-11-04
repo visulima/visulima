@@ -1,32 +1,9 @@
-import type { TableInstanceOptions } from "cli-table3";
-import CliTable3 from "cli-table3";
+import { createTable } from "@visulima/tabular";
+import { NO_BORDER } from "@visulima/tabular/style";
 
-import type { Content as IContent } from "../../../@types/command-line-usage";
-import templateFormat from "../../template-format";
+import type { Content as IContent } from "../../../types/command-line-usage";
+import templateFormat from "../../text-processing/template-format";
 import BaseSection from "./base-section";
-
-const defaultTableOptions: Partial<TableInstanceOptions> = {
-    chars: {
-        bottom: "",
-        "bottom-left": "",
-        "bottom-mid": "",
-        "bottom-right": "",
-        left: " ",
-        "left-mid": "",
-        mid: "",
-        "mid-mid": "",
-        middle: " ",
-        right: "",
-        "right-mid": "",
-        top: "",
-        "top-left": "",
-        "top-mid": "",
-        "top-right": "",
-    },
-    colWidths: [40, 60],
-    style: { border: [], compact: true, head: [], "padding-left": 2, "padding-right": 1 },
-    wordWrap: true,
-};
 
 /**
  * A Content section comprises a header and one or more lines of content.
@@ -36,7 +13,7 @@ const defaultTableOptions: Partial<TableInstanceOptions> = {
  * 1. A single string (one line of text)
  * 2. An array of strings (multiple lines of text)
  * 3. An array of objects (recordset-style data). In this case, the data will be rendered in table format. The property names of each object are not important, so long as they are consistent throughout the array.
- * 4. An object with two properties - `data` and `options`. In this case, the data and options will be passed directly to the underlying [table](https://github.com/cli-table/cli-table3) module for rendering.
+ * 4. An object with two properties - `data` and `options`. In this case, the data and options will be passed directly to the underlying [table](https://github.com/visulima/visulima/tree/main/packages/tabular) module for rendering.
  * @property raw - Set to true to avoid indentation and wrapping. Useful for banners.
  * @example
  * Simple string of content. For ansi formatting, use [colorize template literal syntax](https://github.com/visulima/visulima/tree/main/packages/colorize#tagged-template-literals).
@@ -121,12 +98,17 @@ class ContentSection extends BaseSection {
     // eslint-disable-next-line class-methods-use-this
     private getContentLines(content: IContent["content"]) {
         if (typeof content === "string") {
-            const table = new CliTable3({
-                ...defaultTableOptions,
-                colWidths: [80],
+            const table = createTable({
+                showHeader: false,
+                style: {
+                    border: NO_BORDER,
+                    paddingLeft: 4,
+                    paddingRight: 1,
+                },
+                wordWrap: true,
             });
 
-            table.push([templateFormat(content)]);
+            table.addRow([templateFormat(content)]);
 
             return table.toString();
         }
@@ -136,15 +118,21 @@ class ContentSection extends BaseSection {
             // eslint-disable-next-line @typescript-eslint/no-shadow
             && content.every((value) => typeof value === "string" || (Array.isArray(value) && value.every((value) => typeof value === "string")))
         ) {
-            const table = new CliTable3({
-                ...defaultTableOptions,
+            const table = createTable({
+                showHeader: false,
+                style: {
+                    border: NO_BORDER,
+                    paddingLeft: 4,
+                    paddingRight: 1,
+                },
+                wordWrap: true,
             });
 
             content.forEach((row) => {
                 if (Array.isArray(row)) {
-                    table.push(row.map((cell) => templateFormat(cell)));
+                    table.addRow(row.map((cell) => templateFormat(cell)));
                 } else {
-                    table.push([templateFormat(row)]);
+                    table.addRow([templateFormat(row)]);
                 }
             });
 
@@ -152,23 +140,27 @@ class ContentSection extends BaseSection {
         }
 
         if (typeof content === "object") {
-            const contentObject = content as { data?: string[] | string[][]; options?: TableInstanceOptions };
+            const contentObject = content as { data?: string[] | string[][]; options?: Record<string, unknown> };
 
             if (!contentObject.options || !contentObject.data) {
                 throw new Error(`Must have an "options" or "data" property\n${JSON.stringify(content)}`);
             }
 
-            const table = new CliTable3({
-                ...defaultTableOptions,
-                ...contentObject.options,
-                style: { ...defaultTableOptions.style, ...contentObject.options.style },
+            const table = createTable({
+                showHeader: false,
+                style: {
+                    border: NO_BORDER,
+                    paddingLeft: 4,
+                    paddingRight: 1,
+                },
+                wordWrap: true,
             });
 
             contentObject.data.forEach((row) => {
                 if (Array.isArray(row)) {
-                    table.push(row.map((cell) => templateFormat(cell)));
+                    table.addRow(row.map((cell) => templateFormat(cell)));
                 } else {
-                    table.push([templateFormat(row)]);
+                    table.addRow([templateFormat(row)]);
                 }
             });
 

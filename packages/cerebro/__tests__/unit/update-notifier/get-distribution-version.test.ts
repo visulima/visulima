@@ -1,10 +1,9 @@
 import { get } from "node:https";
 import Stream from "node:stream";
 
-import type { Mock } from "vitest";
 import { describe, expect, it, vi } from "vitest";
 
-import getDistributionVersion from "../../../src/update-notifier/get-dist-version";
+import getDistributionVersion from "../../../src/plugins/update-notifier/get-distribution-version";
 
 const registryUrl = "https://registry.npmjs.org/-/package/__NAME__/dist-tags";
 
