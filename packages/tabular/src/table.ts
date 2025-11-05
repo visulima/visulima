@@ -214,6 +214,7 @@ export class Table {
                 this.#options.truncate
                 || (fixedGridWidths !== undefined && fixedGridWidths.every((w) => typeof w === "number"))
                 || (this.#options.maxWidth !== undefined && !this.#options.balancedWidths),
+            truncateOverflow: this.#options.truncateOverflow,
             wordWrap: this.#options.wordWrap ?? false,
         } satisfies GridOptions;
 

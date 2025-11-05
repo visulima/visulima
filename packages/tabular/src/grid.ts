@@ -57,6 +57,11 @@ export type GridOptionsWithDefaults = Omit<GridOptions, "border" | "fixedRowHeig
 
     truncate: TruncateOptions | boolean;
 
+    /**
+     * @deprecated This option is deprecated and will be removed in a future version. Use `truncate` or `wordWrap` options instead.
+     */
+    truncateOverflow: boolean;
+
     wordWrap: WordWrapOptions | boolean;
 };
 
@@ -103,6 +108,7 @@ export class Grid {
             showBorders: options.border !== undefined,
             // terminalWidth is optional, handled later
             truncate: false,
+            truncateOverflow: true,
             wordWrap: false,
         };
 
@@ -1344,8 +1350,9 @@ export class Grid {
             const truncateOptions = typeof cell.truncate === "object" ? cell.truncate : optionsTruncate;
 
             processedLines = processedLines.map((line) => truncate(line, baseContentWidth, truncateOptions));
-        } else {
+        } else if (this.#options.truncateOverflow) {
             // Ensure lines fit even if truncate/wrap are off
+            // @deprecated This fallback truncation is deprecated. Use `truncate` or `wordWrap` options instead.
             // eslint-disable-next-line @stylistic/no-extra-parens
             processedLines = processedLines.map((line) => (getStringWidth(line) > baseContentWidth ? truncate(line, baseContentWidth, {}) : line));
         }

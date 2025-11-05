@@ -18,6 +18,12 @@ interface BaseRenderingOptions {
 
     truncate?: TruncateOptions | boolean;
 
+    /**
+     * Whether to truncate content that exceeds cell width when truncate/wrap are disabled (default: true)
+     * @deprecated This option is deprecated and will be removed in a future version. Use `truncate` or `wordWrap` options instead.
+     */
+    truncateOverflow?: boolean;
+
     /** Global word wrap options/flag */
     wordWrap?: Omit<WordWrapOptions, "width"> | boolean;
 }
