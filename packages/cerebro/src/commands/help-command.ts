@@ -1,4 +1,5 @@
 import { cyan, green, inverse, yellow } from "@visulima/colorize";
+import { getStringWidth } from "@visulima/string";
 
 import defaultEnv from "../default-env";
 import defaultOptions from "../default-options";
@@ -36,8 +37,8 @@ const printGeneralHelp = (logger: Console, runtime: ICli, commands: Map<string, 
     }, {});
 
     // Build command list with hierarchical display for nested commands
-    const buildCommandList = (commandList: ICommand[]): string[][] =>
-        commandList.map((command) => {
+    const buildCommandList = (commandList: ICommand[]): { data: string[][]; options: { columnWidths: number[] } } => {
+        const commandRows = commandList.map((command) => {
             let aliases = "";
 
             if (typeof command.alias === "string") {
@@ -57,8 +58,24 @@ const printGeneralHelp = (logger: Console, runtime: ICli, commands: Map<string, 
                 commandDisplay = `${command.commandPath.join(" ")} ${command.name}`;
             }
 
-            return [`${green(commandDisplay)}${aliases}`, command.description ?? ""];
+            const firstColumn = `${green(commandDisplay)}${aliases}`;
+
+            return [firstColumn, command.description ?? ""];
         });
+
+        // Calculate the maximum width of the first column (command names)
+        const maxFirstColumnWidth = Math.max(
+            ...commandRows.map((row) => getStringWidth(row[0] as string)),
+            0,
+        );
+
+        return {
+            data: commandRows,
+            options: {
+                columnWidths: [maxFirstColumnWidth, undefined],
+            },
+        };
+    };
 
     ((logger as Console & { raw?: (...args: unknown[]) => void })?.raw ?? logger.log)(
         commandLineUsage(

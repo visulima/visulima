@@ -120,6 +120,7 @@
     },
     "dependencies": {
         "@visulima/colorize": "1.4.25",
+        "@visulima/string": "workspace:*",
         "@visulima/tabular": "workspace:*",
         "fastest-levenshtein": "^1.0.16"
     },
