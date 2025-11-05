@@ -15,7 +15,6 @@ interface BaseRenderingOptions {
     terminalWidth?: number;
 
     /** Global truncation options/flag */
-
     truncate?: TruncateOptions | boolean;
 
     /**
