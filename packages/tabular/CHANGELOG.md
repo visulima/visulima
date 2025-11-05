@@ -1,3 +1,9 @@
+## @visulima/tabular [3.1.0](https://github.com/visulima/visulima/compare/@visulima/tabular@3.0.0...@visulima/tabular@3.1.0) (2025-11-05)
+
+### Features
+
+* add setFooter to tabular component [#563](https://github.com/visulima/visulima/issues/563) ([09b4aae](https://github.com/visulima/visulima/commit/09b4aae136f0e1583b17e810f0ebab12784ab70b))
+
 ## @visulima/tabular [3.0.0](https://github.com/visulima/visulima/compare/@visulima/tabular@2.0.2...@visulima/tabular@3.0.0) (2025-11-05)
 
 ### ⚠ BREAKING CHANGES
