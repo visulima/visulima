@@ -546,4 +546,167 @@ describe("error handling and edge cases", () => {
             └──────┴──────┘"
         `);
     });
+
+    describe("setFooter", () => {
+        it("should render footer at the bottom of the table", () => {
+            expect.assertions(1);
+
+            const table = createTable({ style: { paddingLeft: 0, paddingRight: 0 } });
+
+            table.setHeaders(["A", "B", "C"]);
+            table.addRow(["x", "y", "z"]);
+            table.setFooter(["Footer1", "Footer2", "Footer3"]);
+
+            expect(table.toString()).toMatchInlineSnapshot(`
+              "┌───────┬───────┬───────┐
+              │A      │B      │C      │
+              ├───────┼───────┼───────┤
+              │x      │y      │z      │
+              ├───────┼───────┼───────┤
+              │Footer1│Footer2│Footer3│
+              └───────┴───────┴───────┘"
+            `);
+        });
+
+        it("should handle tables with headers, rows, and footers", () => {
+            expect.assertions(1);
+
+            const table = createTable({ style: { paddingLeft: 1, paddingRight: 1 } });
+
+            table.setHeaders(["Name", "Age"]);
+            table.addRow(["Alice", "25"]);
+            table.addRow(["Bob", "30"]);
+            table.setFooter(["Total", "55"]);
+
+            expect(table.toString()).toMatchInlineSnapshot(`
+                "┌───────┬─────┐
+                │ Name  │ Age │
+                ├───────┼─────┤
+                │ Alice │ 25  │
+                ├───────┼─────┤
+                │ Bob   │ 30  │
+                ├───────┼─────┤
+                │ Total │ 55  │
+                └───────┴─────┘"
+            `);
+        });
+
+        it("should handle empty footers", () => {
+            expect.assertions(1);
+
+            const table = createTable({ style: { paddingLeft: 0, paddingRight: 0 } });
+
+            table.setHeaders(["A", "B", "C"]);
+            table.addRow(["x", "y", "z"]);
+            table.setFooter(["", "", ""]);
+
+            expect(table.toString()).toMatchInlineSnapshot(`
+              "┌─┬─┬─┐
+              │A│B│C│
+              ├─┼─┼─┤
+              │x│y│z│
+              ├─┼─┼─┤
+              │ │ │ │
+              └─┴─┴─┘"
+            `);
+        });
+
+        it("should handle tables with hidden footers", () => {
+            expect.assertions(1);
+
+            const table = new Table({ showFooter: false, style: { paddingLeft: 0, paddingRight: 0 } });
+
+            table.setHeaders(["A", "B", "C"]);
+            table.addRow(["x", "y", "z"]);
+            table.setFooter(["Footer1", "Footer2", "Footer3"]);
+
+            expect(table.toString()).toMatchInlineSnapshot(`
+                "┌─┬─┬─┐
+                │A│B│C│
+                ├─┼─┼─┤
+                │x│y│z│
+                └─┴─┴─┘"
+            `);
+        });
+
+        it("should handle single-cell footer with auto colspan", () => {
+            expect.assertions(1);
+
+            const table = createTable({ style: { paddingLeft: 1, paddingRight: 1 } });
+
+            table.setHeaders(["Col1", "Col2", "Col3"]);
+            table.addRow(["a", "b", "c"]);
+            table.setFooter(["Single Footer"]);
+
+            expect(table.toString()).toMatchInlineSnapshot(`
+              "┌──────┬──────┬──────┐
+              │ Col1 │ Col2 │ Col3 │
+              ├──────┼──────┼──────┤
+              │ a    │ b    │ c    │
+              ├──────┴──────┴──────┤
+              │ Single Footer      │
+              └────────────────────┘"
+            `);
+        });
+
+        it("should handle multiple footer rows", () => {
+            expect.assertions(1);
+
+            const table = createTable({ style: { paddingLeft: 1, paddingRight: 1 } });
+
+            table.setHeaders(["Name", "Value"]);
+            table.addRow(["Item1", "10"]);
+            table.setFooter([
+                ["Subtotal", "10"],
+                ["Total", "10"],
+            ]);
+
+            expect(table.toString()).toMatchInlineSnapshot(`
+              "┌──────────┬───────┐
+              │ Name     │ Value │
+              ├──────────┼───────┤
+              │ Item1    │ 10    │
+              ├──────────┼───────┤
+              │ Subtotal │ 10    │
+              ├──────────┼───────┤
+              │ Total    │ 10    │
+              └──────────┴───────┘"
+            `);
+        });
+
+        it("should render only footer if footer is set but no rows added", () => {
+            expect.assertions(1);
+
+            const table = createTable({ showHeader: false });
+
+            table.setFooter(["F1", "F2"]);
+
+            expect(table.toString()).toMatchInlineSnapshot(`
+                "┌────┬────┐
+                │ F1 │ F2 │
+                └────┴────┘"
+            `);
+        });
+
+        it("should replace existing footer when setFooter is called multiple times", () => {
+            expect.assertions(1);
+
+            const table = createTable({ style: { paddingLeft: 0, paddingRight: 0 } });
+
+            table.setHeaders(["A", "B"]);
+            table.addRow(["x", "y"]);
+            table.setFooter(["Old1", "Old2"]);
+            table.setFooter(["New1", "New2"]);
+
+            expect(table.toString()).toMatchInlineSnapshot(`
+                "┌────┬────┐
+                │A   │B   │
+                ├────┼────┤
+                │x   │y   │
+                ├────┼────┤
+                │New1│New2│
+                └────┴────┘"
+            `);
+        });
+    });
 });
