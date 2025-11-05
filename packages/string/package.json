@@ -1,6 +1,6 @@
 {
         "name": "@visulima/string",
-        "version": "2.0.2",
+        "version": "2.0.3",
         "description": "Functions for manipulating strings.",
         "keywords": [
                 "visulima",
@@ -251,7 +251,7 @@
                 "@secretlint/secretlint-rule-preset-recommend": "11.2.5",
                 "@total-typescript/ts-reset": "0.6.1",
                 "@types/node": "24.10.0",
-                "@visulima/colorize": "1.4.25",
+                "@visulima/colorize": "1.4.26",
                 "@visulima/packem": "2.0.0-alpha.32",
                 "@vitest/coverage-v8": "4.0.7",
                 "@vitest/ui": "4.0.7",

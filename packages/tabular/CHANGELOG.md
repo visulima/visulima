@@ -1,3 +1,25 @@
+## @visulima/tabular [3.0.0](https://github.com/visulima/visulima/compare/@visulima/tabular@2.0.2...@visulima/tabular@3.0.0) (2025-11-05)
+
+### ⚠ BREAKING CHANGES
+
+* **tabular:** add cell width property and balanced widths functionality (#560)
+
+### Features
+
+* **tabular:** add cell width property and balanced widths functionality ([#560](https://github.com/visulima/visulima/issues/560)) ([618006c](https://github.com/visulima/visulima/commit/618006c6fda15c8f46a3db9ca4fe59f85529ffa7))
+* update dependencies and deprecate truncateOverflow option ([6d025e0](https://github.com/visulima/visulima/commit/6d025e07d5eb83bfed30815318a65ef628a1797e))
+
+### Bug Fixes
+
+* set default value for truncateOverflow option in Table class ([463ad04](https://github.com/visulima/visulima/commit/463ad04dd992b0472631072d9b1bf0289d54354c))
+* update dependencies across multiple packages ([36a47f2](https://github.com/visulima/visulima/commit/36a47f26d65d25a7b4d8371186710e7d0ab61a2b))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.26
+* **@visulima/string:** upgraded to 2.0.3
+
 ## @visulima/tabular [2.0.2](https://github.com/visulima/visulima/compare/@visulima/tabular@2.0.1...@visulima/tabular@2.0.2) (2025-10-22)
 
 ### Miscellaneous Chores

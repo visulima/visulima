@@ -1,3 +1,16 @@
+## @visulima/error-handler [1.0.10](https://github.com/visulima/visulima/compare/@visulima/error-handler@1.0.9...@visulima/error-handler@1.0.10) (2025-11-05)
+
+### Bug Fixes
+
+* update dependencies across multiple packages ([36a47f2](https://github.com/visulima/visulima/commit/36a47f26d65d25a7b4d8371186710e7d0ab61a2b))
+* Updated `ts-japi` to version `1.12.1` ([a4d8b72](https://github.com/visulima/visulima/commit/a4d8b728ccab8ce5b0a97ac9c11105fc6a7ce765))
+
+
+### Dependencies
+
+* **@visulima/boxen:** upgraded to 2.0.7
+* **@visulima/error:** upgraded to 5.0.3
+
 ## @visulima/error-handler [1.0.9](https://github.com/visulima/visulima/compare/@visulima/error-handler@1.0.8...@visulima/error-handler@1.0.9) (2025-10-22)
 
 ### Miscellaneous Chores

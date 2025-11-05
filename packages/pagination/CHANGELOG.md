@@ -1,3 +1,14 @@
+## @visulima/pagination [4.0.2](https://github.com/visulima/visulima/compare/@visulima/pagination@4.0.1...@visulima/pagination@4.0.2) (2025-11-05)
+
+### Bug Fixes
+
+* update dependencies across multiple packages ([36a47f2](https://github.com/visulima/visulima/commit/36a47f26d65d25a7b4d8371186710e7d0ab61a2b))
+
+### Miscellaneous Chores
+
+* update dependencies across multiple packages ([c526462](https://github.com/visulima/visulima/commit/c52646260c2ae8bbf85692e642f305f47a158d4e))
+* update package dependencies and configurations ([7bfe7e7](https://github.com/visulima/visulima/commit/7bfe7e71869580900aab50efb064b4293994ed9a))
+
 ## @visulima/pagination [4.0.1](https://github.com/visulima/visulima/compare/@visulima/pagination@4.0.0...@visulima/pagination@4.0.1) (2025-10-21)
 
 ### Bug Fixes
