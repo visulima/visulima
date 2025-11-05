@@ -68,7 +68,7 @@ Repository: git+https://github.com/visulima/visulima.git
 >
 > > MIT License
 > >
-> > Copyright (c) 2025 visulima
+> > Copyright (c) 2024 visulima
 > >
 > > Permission is hereby granted, free of charge, to any person obtaining a copy
 > > of this software and associated documentation files (the "Software"), to deal
@@ -558,7 +558,6 @@ Repository: git+https://github.com/visulima/visulima.git
 ---------------------------------------
 
 ## cli-spinners
-
 License: MIT
 By: Sindre Sorhus
 Repository: sindresorhus/cli-spinners
@@ -573,7 +572,7 @@ Repository: sindresorhus/cli-spinners
 >
 > THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
----
+---------------------------------------
 
 ## safe-stable-stringify
 License: MIT
@@ -669,7 +668,7 @@ Repository: git+https://github.com/visulima/visulima.git
 >
 > > MIT License
 > >
-> > Copyright (c) 2025 visulima
+> > Copyright (c) 2024 visulima
 > >
 > > Permission is hereby granted, free of charge, to any person obtaining a copy
 > > of this software and associated documentation files (the "Software"), to deal
@@ -1019,7 +1018,6 @@ Repository: git+https://github.com/visulima/visulima.git
 ---------------------------------------
 
 ## cli-spinners
-
 License: MIT
 By: Sindre Sorhus
 Repository: sindresorhus/cli-spinners
@@ -1034,7 +1032,7 @@ Repository: sindresorhus/cli-spinners
 >
 > THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
----
+---------------------------------------
 
 ## safe-stable-stringify
 License: MIT

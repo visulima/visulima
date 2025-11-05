@@ -8,4 +8,3 @@ coverage
 node_modules
 .eslintcache
 tsconfig.json
-tsconfig.eslint.json

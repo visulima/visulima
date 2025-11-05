@@ -86,8 +86,7 @@
                 "{workspaceRoot}/package.json",
                 "{workspaceRoot}/tsup.config.ts",
                 "{workspaceRoot}/tsconfig.json",
-                "{workspaceRoot}/tsconfig.base.json",
-                "{workspaceRoot}/tsconfig.eslint.json"
+                "{workspaceRoot}/tsconfig.base.json"
             ]
         },
     "parallel": 5,

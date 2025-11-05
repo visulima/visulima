@@ -13,7 +13,6 @@ export default createConfig(
             "vitest.config.ts",
             "packem.config.ts",
             ".secretlintrc.cjs",
-            "tsconfig.eslint.json",
             ".prettierrc.cjs",
             "package.json",
             "MIGRATION-GUIDE.md",

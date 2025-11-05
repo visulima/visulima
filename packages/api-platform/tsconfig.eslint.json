@@ -1,9 +1,0 @@
-{
-    "$schema": "https://json.schemastore.org/tsconfig",
-    "extends": "../../tsconfig.base.json",
-    "compilerOptions": {
-        "baseUrl": ".",
-        "verbatimModuleSyntax": true
-    },
-    "include": ["__docs__/**/*.mdx", "__tests__/**/*.ts", "src/**/*.tsx", "src/**/*.ts", "*.d.ts", "build.config.ts", "tsup.config.ts"]
-}
