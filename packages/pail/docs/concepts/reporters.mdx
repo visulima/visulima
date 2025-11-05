@@ -20,7 +20,7 @@ import { createPail } from "@visulima/pail";
 import { JsonReporter } from "@visulima/pail/reporter/json";
 
 const logger = createPail({
-  reporters: [new JsonReporter()],
+    reporters: [new JsonReporter()],
 });
 
 logger.info("Server started", { port: 3000 });
@@ -34,7 +34,7 @@ import { createPail } from "@visulima/pail/browser";
 import { JsonReporter } from "@visulima/pail/reporter/json";
 
 const logger = createPail({
-  reporters: [new JsonReporter()],
+    reporters: [new JsonReporter()],
 });
 ```
 
@@ -49,7 +49,7 @@ import { createPail } from "@visulima/pail";
 import { PrettyReporter } from "@visulima/pail/reporter/pretty";
 
 const logger = createPail({
-  reporters: [new PrettyReporter()],
+    reporters: [new PrettyReporter()],
 });
 
 logger.success("Operation completed");
@@ -63,7 +63,7 @@ import { createPail } from "@visulima/pail/browser";
 import { PrettyReporter } from "@visulima/pail/reporter/pretty";
 
 const logger = createPail({
-  reporters: [new PrettyReporter()],
+    reporters: [new PrettyReporter()],
 });
 ```
 
@@ -76,7 +76,7 @@ import { createPail } from "@visulima/pail";
 import { SimpleReporter } from "@visulima/pail/reporter/simple";
 
 const logger = createPail({
-  reporters: [new SimpleReporter()],
+    reporters: [new SimpleReporter()],
 });
 ```
 
@@ -89,25 +89,25 @@ import { createPail } from "@visulima/pail";
 import { JsonFileReporter } from "@visulima/pail/reporter/file";
 
 const logger = createPail({
-  reporters: [
-    new JsonFileReporter({
-      filePath: "/var/log/app.log",
-      interval: "1d", // Rotate daily
-      size: "10M",   // Rotate when file reaches 10MB
-      compress: "gzip",
-    }),
-  ],
+    reporters: [
+        new JsonFileReporter({
+            filePath: "/var/log/app.log",
+            interval: "1d", // Rotate daily
+            size: "10M", // Rotate when file reaches 10MB
+            compress: "gzip",
+        }),
+    ],
 });
 ```
 
 ## Reporter Comparison
 
-| Reporter | Browser | Server | Output Format | Use Case |
-|----------|---------|--------|---------------|----------|
-| `JsonReporter` | ✅ | ✅ | JSON | Structured logging, log aggregation |
-| `PrettyReporter` | ✅ | ✅ | Formatted text | Development, debugging |
-| `SimpleReporter` | ❌ | ✅ | Simple text | Minimal output |
-| `FileReporter` | ❌ | ✅ | JSON files | Production logging |
+| Reporter         | Browser | Server | Output Format  | Use Case                            |
+| ---------------- | ------- | ------ | -------------- | ----------------------------------- |
+| `JsonReporter`   | ✅      | ✅     | JSON           | Structured logging, log aggregation |
+| `PrettyReporter` | ✅      | ✅     | Formatted text | Development, debugging              |
+| `SimpleReporter` | ❌      | ✅     | Simple text    | Minimal output                      |
+| `FileReporter`   | ❌      | ✅     | JSON files     | Production logging                  |
 
 ## Using Multiple Reporters
 
@@ -120,10 +120,10 @@ import { PrettyReporter } from "@visulima/pail/reporter/pretty";
 import { JsonFileReporter } from "@visulima/pail/reporter/file";
 
 const logger = createPail({
-  reporters: [
-    new PrettyReporter(), // Console output
-    new JsonFileReporter({ filePath: "./logs/app.log" }), // File output
-  ],
+    reporters: [
+        new PrettyReporter(), // Console output
+        new JsonFileReporter({ filePath: "./logs/app.log" }), // File output
+    ],
 });
 
 logger.info("Message"); // Sent to both reporters
@@ -137,14 +137,14 @@ Implement the `Reporter` interface:
 import type { Reporter, ReadonlyMeta } from "@visulima/pail";
 
 class CustomReporter<L extends string = string> implements Reporter<L> {
-  public log(meta: ReadonlyMeta<L>): void {
-    // Your custom logic here
-    console.log(`[${meta.type.name}] ${meta.message}`);
-  }
+    public log(meta: ReadonlyMeta<L>): void {
+        // Your custom logic here
+        console.log(`[${meta.type.name}] ${meta.message}`);
+    }
 }
 
 const logger = createPail({
-  reporters: [new CustomReporter()],
+    reporters: [new CustomReporter()],
 });
 ```
 
@@ -155,24 +155,22 @@ For server-side reporters that need stdout/stderr:
 ```typescript
 import type { StreamAwareReporter } from "@visulima/pail";
 
-class StreamReporter<L extends string = string>
-  implements StreamAwareReporter<L>
-{
-  #stdout: NodeJS.WriteStream;
-  #stderr: NodeJS.WriteStream;
+class StreamReporter<L extends string = string> implements StreamAwareReporter<L> {
+    #stdout: NodeJS.WriteStream;
+    #stderr: NodeJS.WriteStream;
 
-  public setStdout(stdout: NodeJS.WriteStream): void {
-    this.#stdout = stdout;
-  }
+    public setStdout(stdout: NodeJS.WriteStream): void {
+        this.#stdout = stdout;
+    }
 
-  public setStderr(stderr: NodeJS.WriteStream): void {
-    this.#stderr = stderr;
-  }
+    public setStderr(stderr: NodeJS.WriteStream): void {
+        this.#stderr = stderr;
+    }
 
-  public log(meta: ReadonlyMeta<L>): void {
-    const stream = meta.type.level === "error" ? this.#stderr : this.#stdout;
-    stream.write(`${JSON.stringify(meta)}\n`);
-  }
+    public log(meta: ReadonlyMeta<L>): void {
+        const stream = meta.type.level === "error" ? this.#stderr : this.#stdout;
+        stream.write(`${JSON.stringify(meta)}\n`);
+    }
 }
 ```
 
@@ -183,19 +181,17 @@ To customize output based on logger types:
 ```typescript
 import type { LoggerTypesAwareReporter, LoggerTypesConfig } from "@visulima/pail";
 
-class TypesAwareReporter<T extends string, L extends string = string>
-  implements LoggerTypesAwareReporter<T, L>
-{
-  private types: LoggerTypesConfig<T, L> = {};
+class TypesAwareReporter<T extends string, L extends string = string> implements LoggerTypesAwareReporter<T, L> {
+    private types: LoggerTypesConfig<T, L> = {};
 
-  public setLoggerTypes(types: LoggerTypesConfig<T, L>): void {
-    this.types = types;
-  }
+    public setLoggerTypes(types: LoggerTypesConfig<T, L>): void {
+        this.types = types;
+    }
 
-  public log(meta: ReadonlyMeta<L>): void {
-    const typeConfig = this.types[meta.type.name];
-    // Use typeConfig for custom formatting
-  }
+    public log(meta: ReadonlyMeta<L>): void {
+        const typeConfig = this.types[meta.type.name];
+        // Use typeConfig for custom formatting
+    }
 }
 ```
 
@@ -207,11 +203,11 @@ class TypesAwareReporter<T extends string, L extends string = string>
 import { JsonReporter } from "@visulima/pail/reporter/json";
 
 new JsonReporter({
-  error: {
-    // Error serialization options
-    includeStack: true,
-    includeCause: true,
-  },
+    error: {
+        // Error serialization options
+        includeStack: true,
+        includeCause: true,
+    },
 });
 ```
 
@@ -221,16 +217,16 @@ new JsonReporter({
 import { PrettyReporter } from "@visulima/pail/reporter/pretty";
 
 new PrettyReporter({
-  uppercase: {
-    label: true, // Uppercase labels
-  },
-  bold: {
-    label: false,
-  },
-  underline: {
-    label: false,
-    message: false,
-  },
+    uppercase: {
+        label: true, // Uppercase labels
+    },
+    bold: {
+        label: false,
+    },
+    underline: {
+        label: false,
+        message: false,
+    },
 });
 ```
 
@@ -240,11 +236,11 @@ new PrettyReporter({
 import { JsonFileReporter } from "@visulima/pail/reporter/file";
 
 new JsonFileReporter({
-  filePath: "./logs/app.log",
-  interval: "1d",        // Daily rotation
-  size: "10M",           // Rotate at 10MB
-  compress: "gzip",      // Compress old files
-  writeImmediately: false, // Buffer writes
+    filePath: "./logs/app.log",
+    interval: "1d", // Daily rotation
+    size: "10M", // Rotate at 10MB
+    compress: "gzip", // Compress old files
+    writeImmediately: false, // Buffer writes
 });
 ```
 
@@ -254,7 +250,7 @@ The raw reporter bypasses normal processing and is used internally for direct ou
 
 ```typescript
 const logger = createPail({
-  rawReporter: new CustomRawReporter(),
+    rawReporter: new CustomRawReporter(),
 });
 
 logger.raw("Direct message"); // Uses rawReporter
@@ -265,4 +261,3 @@ logger.raw("Direct message"); // Uses rawReporter
 - [Processors](/docs/package/pail/concepts/processors) - Learn about log processors
 - [Configuration](/docs/package/pail/configuration) - Configure reporters
 - [API Reference](/docs/package/pail/api) - Complete reporter API
-

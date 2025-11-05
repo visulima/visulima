@@ -14,10 +14,12 @@ Complete API documentation for Pail.
 Creates a new Pail logger instance.
 
 **Type Parameters:**
+
 - `T` - Custom logger type names (default: `string`)
 - `L` - Custom log level types (default: `string`)
 
 **Parameters:**
+
 - `options?` - Configuration options (see [Configuration](/docs/package/pail/configuration))
 
 **Returns:** `PailServerType<T, L>` (server) or `PailBrowserType<T, L>` (browser)
@@ -28,10 +30,10 @@ Creates a new Pail logger instance.
 import { createPail } from "@visulima/pail";
 
 const logger = createPail({
-  logLevel: "debug",
-  types: {
-    http: { label: "HTTP", logLevel: "info" },
-  },
+    logLevel: "debug",
+    types: {
+        http: { label: "HTTP", logLevel: "info" },
+    },
 });
 ```
 
@@ -54,28 +56,29 @@ pail.info("Hello world");
 All default log types are available as methods:
 
 ```typescript
-logger.alert(message, ...args)
-logger.critical(message, ...args)
-logger.debug(message, ...args)
-logger.emergency(message, ...args)
-logger.error(message, ...args)
-logger.info(message, ...args)
-logger.log(message, ...args)
-logger.notice(message, ...args)
-logger.pending(message, ...args)
-logger.start(message, ...args)
-logger.stop(message, ...args)
-logger.success(message, ...args)
-logger.trace(message, ...args)
-logger.await(message, ...args)
-logger.wait(message, ...args)
-logger.warn(message, ...args)
-logger.warning(message, ...args)
-logger.watch(message, ...args)
-logger.complete(message, ...args)
+logger.alert(message, ...args);
+logger.critical(message, ...args);
+logger.debug(message, ...args);
+logger.emergency(message, ...args);
+logger.error(message, ...args);
+logger.info(message, ...args);
+logger.log(message, ...args);
+logger.notice(message, ...args);
+logger.pending(message, ...args);
+logger.start(message, ...args);
+logger.stop(message, ...args);
+logger.success(message, ...args);
+logger.trace(message, ...args);
+logger.await(message, ...args);
+logger.wait(message, ...args);
+logger.warn(message, ...args);
+logger.warning(message, ...args);
+logger.watch(message, ...args);
+logger.complete(message, ...args);
 ```
 
 **Parameters:**
+
 - `message` - Message string, Error object, or Message object
 - `...args` - Additional context arguments
 
@@ -85,9 +88,9 @@ logger.complete(message, ...args)
 logger.info("User logged in", { userId: 123 });
 logger.error(new Error("Something went wrong"));
 logger.complete({
-  prefix: "[task]",
-  message: "Task completed",
-  suffix: "(@user)",
+    prefix: "[task]",
+    message: "Task completed",
+    suffix: "(@user)",
 });
 ```
 
@@ -96,6 +99,7 @@ logger.complete({
 Creates a scoped logger instance.
 
 **Parameters:**
+
 - `...name` - Scope names (one or more)
 
 **Returns:** New logger instance with scope applied
@@ -123,6 +127,7 @@ logger.unscope(); // Removes scope
 Starts a timer with the specified label.
 
 **Parameters:**
+
 - `label` - Timer label (default: `"default"`)
 
 **Example:**
@@ -138,6 +143,7 @@ logger.timeEnd("operation");
 Logs the current elapsed time for a timer without stopping it.
 
 **Parameters:**
+
 - `label` - Timer label (uses last timer if not specified)
 - `...data` - Additional data to include
 
@@ -154,6 +160,7 @@ logger.timeEnd("task");
 Stops a timer and logs the final elapsed time.
 
 **Parameters:**
+
 - `label` - Timer label (uses last timer if not specified)
 
 **Example:**
@@ -168,6 +175,7 @@ logger.timeEnd("operation"); // Logs final time
 Increments and logs a counter.
 
 **Parameters:**
+
 - `label` - Counter label (default: `"default"`)
 
 **Example:**
@@ -182,6 +190,7 @@ logger.count("requests"); // Logs: "requests: 2"
 Resets a counter to zero.
 
 **Parameters:**
+
 - `label` - Counter label (default: `"default"`)
 
 **Example:**
@@ -196,6 +205,7 @@ logger.countReset("requests"); // Resets counter
 Starts a log group.
 
 **Parameters:**
+
 - `label` - Group label (default: `"console.group"`)
 
 **Example:**
@@ -251,7 +261,7 @@ Checks if logging is currently enabled.
 
 ```typescript
 if (logger.isEnabled()) {
-  logger.debug("Logger is active");
+    logger.debug("Logger is active");
 }
 ```
 
@@ -283,6 +293,7 @@ logger.resume(); // Queued messages are output
 Logs a raw message bypassing normal processing.
 
 **Parameters:**
+
 - `message` - Raw message string
 - `...arguments_` - Additional arguments
 
@@ -402,6 +413,7 @@ const manager = logger.getInteractiveManager();
 Creates a single progress bar. Requires interactive mode.
 
 **Parameters:**
+
 - `options` - Progress bar configuration
 
 **Returns:** ProgressBar instance
@@ -421,6 +433,7 @@ bar.stop();
 Creates a multi-bar progress manager. Requires interactive mode.
 
 **Parameters:**
+
 - `options?` - Multi-bar configuration
 
 **Returns:** MultiProgressBar instance
@@ -438,6 +451,7 @@ const bar1 = multiBar.create(100);
 Creates a single spinner. Requires interactive mode.
 
 **Parameters:**
+
 - `options?` - Spinner configuration
 
 **Returns:** Spinner instance
@@ -456,6 +470,7 @@ spinner.succeed("Done");
 Creates a multi-spinner manager. Requires interactive mode.
 
 **Parameters:**
+
 - `options?` - Spinner configuration
 
 **Returns:** MultiSpinner instance
@@ -476,20 +491,20 @@ Configuration options for creating a logger.
 
 ```typescript
 interface ConstructorOptions<T extends string, L extends string> {
-  disabled?: boolean;
-  logLevel?: LiteralUnion<ExtendedRfc5424LogLevels, L>;
-  logLevels?: Partial<Record<ExtendedRfc5424LogLevels, number>> & Record<L, number>;
-  messages?: {
-    timerEnd?: string;
-    timerStart?: string;
-  };
-  processors?: Processor<L>[];
-  rawReporter?: Reporter<L>;
-  reporters?: Reporter<L>[];
-  scope?: string[] | string;
-  throttle?: number;
-  throttleMin?: number;
-  types?: LoggerTypesConfig<T, L> & Partial<LoggerTypesConfig<DefaultLogTypes, L>>;
+    disabled?: boolean;
+    logLevel?: LiteralUnion<ExtendedRfc5424LogLevels, L>;
+    logLevels?: Partial<Record<ExtendedRfc5424LogLevels, number>> & Record<L, number>;
+    messages?: {
+        timerEnd?: string;
+        timerStart?: string;
+    };
+    processors?: Processor<L>[];
+    rawReporter?: Reporter<L>;
+    reporters?: Reporter<L>[];
+    scope?: string[] | string;
+    throttle?: number;
+    throttleMin?: number;
+    types?: LoggerTypesConfig<T, L> & Partial<LoggerTypesConfig<DefaultLogTypes, L>>;
 }
 ```
 
@@ -498,11 +513,10 @@ interface ConstructorOptions<T extends string, L extends string> {
 Server-specific configuration options.
 
 ```typescript
-interface ServerConstructorOptions<T extends string, L extends string>
-  extends ConstructorOptions<T, L> {
-  interactive?: boolean;
-  stderr: NodeJS.WriteStream;
-  stdout: NodeJS.WriteStream;
+interface ServerConstructorOptions<T extends string, L extends string> extends ConstructorOptions<T, L> {
+    interactive?: boolean;
+    stderr: NodeJS.WriteStream;
+    stdout: NodeJS.WriteStream;
 }
 ```
 
@@ -511,16 +525,7 @@ interface ServerConstructorOptions<T extends string, L extends string>
 Standard log levels.
 
 ```typescript
-type ExtendedRfc5424LogLevels =
-  | "alert"
-  | "critical"
-  | "debug"
-  | "emergency"
-  | "error"
-  | "informational"
-  | "notice"
-  | "trace"
-  | "warning";
+type ExtendedRfc5424LogLevels = "alert" | "critical" | "debug" | "emergency" | "error" | "informational" | "notice" | "trace" | "warning";
 ```
 
 ### `Message`
@@ -529,10 +534,10 @@ Structured message object.
 
 ```typescript
 interface Message {
-  context?: any[];
-  message: any;
-  prefix?: string;
-  suffix?: string;
+    context?: any[];
+    message: any;
+    prefix?: string;
+    suffix?: string;
 }
 ```
 
@@ -543,6 +548,7 @@ interface Message {
 Renders an object as an ASCII tree structure.
 
 **Parameters:**
+
 - `tree` - The object or array to render
 - `options?` - Configuration options (see [Object Tree Usage](/docs/package/pail/usage/object-tree))
 
@@ -554,12 +560,12 @@ Renders an object as an ASCII tree structure.
 import { renderObjectTree } from "@visulima/pail/object-tree";
 
 const obj = {
-  name: "John",
-  age: 30,
-  address: {
-    street: "Main St",
-    city: "New York",
-  },
+    name: "John",
+    age: 30,
+    address: {
+        street: "Main St",
+        city: "New York",
+    },
 };
 
 console.log(renderObjectTree(obj));
@@ -572,4 +578,3 @@ console.log(renderObjectTree(obj));
 - [Configuration](/docs/package/pail/configuration) - Configuration guide
 - [Examples](/docs/package/pail/examples) - Usage examples
 - [Object Tree Rendering](/docs/package/pail/usage/object-tree) - Object tree utility
-

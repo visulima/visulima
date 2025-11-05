@@ -81,10 +81,10 @@ Configure timer messages:
 import { createPail } from "@visulima/pail";
 
 const logger = createPail({
-  messages: {
-    timerStart: "Starting timer...",
-    timerEnd: "Completed in:",
-  },
+    messages: {
+        timerStart: "Starting timer...",
+        timerEnd: "Completed in:",
+    },
 });
 
 logger.time("task");
@@ -101,21 +101,21 @@ logger.timeEnd("task");
 import { pail } from "@visulima/pail";
 
 export const handleRequest = async (req: Request, res: Response) => {
-  pail.time("request");
-  
-  try {
-    pail.time("database");
-    const data = await db.query("SELECT * FROM users");
-    pail.timeEnd("database");
-    
-    pail.time("serialization");
-    const json = JSON.stringify(data);
-    pail.timeEnd("serialization");
-    
-    res.json(json);
-  } finally {
-    pail.timeEnd("request");
-  }
+    pail.time("request");
+
+    try {
+        pail.time("database");
+        const data = await db.query("SELECT * FROM users");
+        pail.timeEnd("database");
+
+        pail.time("serialization");
+        const json = JSON.stringify(data);
+        pail.timeEnd("serialization");
+
+        res.json(json);
+    } finally {
+        pail.timeEnd("request");
+    }
 };
 ```
 
@@ -125,14 +125,14 @@ export const handleRequest = async (req: Request, res: Response) => {
 import { pail } from "@visulima/pail";
 
 const benchmark = (name: string, fn: () => void) => {
-  pail.time(`benchmark-${name}`);
-  fn();
-  pail.timeEnd(`benchmark-${name}`);
+    pail.time(`benchmark-${name}`);
+    fn();
+    pail.timeEnd(`benchmark-${name}`);
 };
 
 benchmark("array-sort", () => {
-  const arr = Array.from({ length: 1000000 }, () => Math.random());
-  arr.sort();
+    const arr = Array.from({ length: 1000000 }, () => Math.random());
+    arr.sort();
 });
 ```
 
@@ -191,4 +191,3 @@ pail.timeEnd(); // Stops "first"
 
 - [Basic Usage](/docs/package/pail/usage/basic) - Basic logging operations
 - [Scoped Loggers](/docs/package/pail/usage/scoped) - Organize logs by context
-

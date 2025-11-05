@@ -13,9 +13,9 @@ Pail is highly configurable. This guide covers all configuration options.
 import { createPail } from "@visulima/pail";
 
 const logger = createPail({
-  logLevel: "debug",
-  scope: "my-module",
-  disabled: false,
+    logLevel: "debug",
+    scope: "my-module",
+    disabled: false,
 });
 ```
 
@@ -27,11 +27,12 @@ Set the minimum log level to display:
 
 ```typescript
 const logger = createPail({
-  logLevel: "warning", // Only show warning and above
+    logLevel: "warning", // Only show warning and above
 });
 ```
 
 **Default:** Automatically detected based on environment:
+
 - `NODE_ENV=debug` or `DEBUG=1` → `debug`
 - `NODE_ENV=test` → `warning`
 - Otherwise → `informational`
@@ -44,11 +45,11 @@ Define custom log levels with numeric priorities:
 
 ```typescript
 const logger = createPail({
-  logLevels: {
-    verbose: 0,  // Lower than debug
-    custom: 10,  // Higher than emergency
-  },
-  logLevel: "verbose",
+    logLevels: {
+        verbose: 0, // Lower than debug
+        custom: 10, // Higher than emergency
+    },
+    logLevel: "verbose",
 });
 ```
 
@@ -58,9 +59,9 @@ Set initial scope for the logger:
 
 ```typescript
 const logger = createPail({
-  scope: "api", // Single scope
-  // or
-  scope: ["api", "users"], // Multiple scopes
+    scope: "api", // Single scope
+    // or
+    scope: ["api", "users"], // Multiple scopes
 });
 ```
 
@@ -70,7 +71,7 @@ Disable logging entirely:
 
 ```typescript
 const logger = createPail({
-  disabled: true, // All logs are ignored
+    disabled: true, // All logs are ignored
 });
 ```
 
@@ -80,8 +81,8 @@ Configure spam prevention:
 
 ```typescript
 const logger = createPail({
-  throttle: 1000,      // Throttle window in ms (default: 1000)
-  throttleMin: 5,      // Minimum duplicates before throttling (default: 5)
+    throttle: 1000, // Throttle window in ms (default: 1000)
+    throttleMin: 5, // Minimum duplicates before throttling (default: 5)
 });
 ```
 
@@ -93,10 +94,10 @@ Customize timer messages:
 
 ```typescript
 const logger = createPail({
-  messages: {
-    timerStart: "Starting timer...",
-    timerEnd: "Completed in:",
-  },
+    messages: {
+        timerStart: "Starting timer...",
+        timerEnd: "Completed in:",
+    },
 });
 ```
 
@@ -109,10 +110,7 @@ import { PrettyReporter } from "@visulima/pail/reporter/pretty";
 import { JsonReporter } from "@visulima/pail/reporter/json";
 
 const logger = createPail({
-  reporters: [
-    new PrettyReporter(),
-    new JsonReporter(),
-  ],
+    reporters: [new PrettyReporter(), new JsonReporter()],
 });
 ```
 
@@ -125,10 +123,10 @@ import CallerProcessor from "@visulima/pail/processor/caller";
 import RedactProcessor from "@visulima/pail/processor/redact";
 
 const logger = createPail({
-  processors: [
-    new CallerProcessor(),
-    new RedactProcessor(), // Uses standard rules, or pass custom rules: new RedactProcessor(rules, options),
-  ],
+    processors: [
+        new CallerProcessor(),
+        new RedactProcessor(), // Uses standard rules, or pass custom rules: new RedactProcessor(rules, options),
+    ],
 });
 ```
 
@@ -138,14 +136,14 @@ Define custom log types:
 
 ```typescript
 const logger = createPail({
-  types: {
-    http: {
-      badge: "🌐",
-      color: "blue",
-      label: "HTTP",
-      logLevel: "info",
+    types: {
+        http: {
+            badge: "🌐",
+            color: "blue",
+            label: "HTTP",
+            logLevel: "info",
+        },
     },
-  },
 });
 ```
 
@@ -157,7 +155,7 @@ Configure the raw reporter (for `logger.raw()`):
 import { RawReporter } from "@visulima/pail";
 
 const logger = createPail({
-  rawReporter: new CustomRawReporter(),
+    rawReporter: new CustomRawReporter(),
 });
 ```
 
@@ -169,7 +167,7 @@ Enable interactive features (progress bars, spinners):
 
 ```typescript
 const logger = createPail({
-  interactive: true,
+    interactive: true,
 });
 ```
 
@@ -182,8 +180,8 @@ import { createPail } from "@visulima/pail";
 import { stderr, stdout } from "node:process";
 
 const logger = createPail({
-  stdout: customStdout,
-  stderr: customStderr,
+    stdout: customStdout,
+    stderr: customStderr,
 });
 ```
 
@@ -195,48 +193,50 @@ import { PrettyReporter } from "@visulima/pail/reporter/pretty";
 import { CallerProcessor } from "@visulima/pail/processor/caller";
 
 const logger = createPail({
-  // Log level
-  logLevel: process.env.NODE_ENV === "production" ? "info" : "debug",
-  
-  // Scope
-  scope: ["app", "api"],
-  
-  // Throttling
-  throttle: 2000,
-  throttleMin: 10,
-  
-  // Custom types
-  types: {
-    http: {
-      badge: "🌐",
-      color: "blue",
-      label: "HTTP",
-      logLevel: "info",
+    // Log level
+    logLevel: process.env.NODE_ENV === "production" ? "info" : "debug",
+
+    // Scope
+    scope: ["app", "api"],
+
+    // Throttling
+    throttle: 2000,
+    throttleMin: 10,
+
+    // Custom types
+    types: {
+        http: {
+            badge: "🌐",
+            color: "blue",
+            label: "HTTP",
+            logLevel: "info",
+        },
+        db: {
+            badge: "💾",
+            color: "cyan",
+            label: "DB",
+            logLevel: "debug",
+        },
     },
-    db: {
-      badge: "💾",
-      color: "cyan",
-      label: "DB",
-      logLevel: "debug",
+
+    // Reporters
+    reporters: [
+        new PrettyReporter({
+            uppercase: { label: true },
+        }),
+    ],
+
+    // Processors
+    processors: [new CallerProcessor()],
+
+    // Timer messages
+    messages: {
+        timerStart: "⏱️  Started:",
+        timerEnd: "✅ Completed in:",
     },
-  },
-  
-  // Reporters
-  reporters: [new PrettyReporter({
-    uppercase: { label: true },
-  })],
-  
-  // Processors
-  processors: [new CallerProcessor()],
-  
-  // Timer messages
-  messages: {
-    timerStart: "⏱️  Started:",
-    timerEnd: "✅ Completed in:",
-  },
-  
-  // Server-specific
-  interactive: true,
+
+    // Server-specific
+    interactive: true,
 });
 ```
 
@@ -249,13 +249,11 @@ const isDevelopment = process.env.NODE_ENV === "development";
 const isProduction = process.env.NODE_ENV === "production";
 
 const logger = createPail({
-  logLevel: isDevelopment ? "debug" : "info",
-  reporters: isProduction
-    ? [new JsonReporter()] // Structured logs in production
-    : [new PrettyReporter()], // Pretty output in development
-  processors: isProduction
-    ? [new RedactProcessor(), new CallerProcessor()]
-    : [new CallerProcessor()],
+    logLevel: isDevelopment ? "debug" : "info",
+    reporters: isProduction
+        ? [new JsonReporter()] // Structured logs in production
+        : [new PrettyReporter()], // Pretty output in development
+    processors: isProduction ? [new RedactProcessor(), new CallerProcessor()] : [new CallerProcessor()],
 });
 ```
 
@@ -268,15 +266,15 @@ type CustomLogTypes = "http" | "db" | "cache";
 type CustomLogLevels = "verbose" | "custom";
 
 const logger = createPail<CustomLogTypes, CustomLogLevels>({
-  types: {
-    http: { label: "HTTP", logLevel: "info" },
-    db: { label: "DB", logLevel: "debug" },
-    cache: { label: "CACHE", logLevel: "debug" },
-  },
-  logLevels: {
-    verbose: 0,
-    custom: 10,
-  },
+    types: {
+        http: { label: "HTTP", logLevel: "info" },
+        db: { label: "DB", logLevel: "debug" },
+        cache: { label: "CACHE", logLevel: "debug" },
+    },
+    logLevels: {
+        verbose: 0,
+        custom: 10,
+    },
 });
 ```
 
@@ -284,4 +282,3 @@ const logger = createPail<CustomLogTypes, CustomLogLevels>({
 
 - [API Reference](/docs/package/pail/api) - Complete API documentation
 - [Examples](/docs/package/pail/examples) - Configuration examples
-

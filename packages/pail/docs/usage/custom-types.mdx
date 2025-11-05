@@ -15,20 +15,20 @@ Define custom types when creating a logger:
 import { createPail } from "@visulima/pail";
 
 const logger = createPail({
-  types: {
-    http: {
-      badge: "🌐",
-      color: "blue",
-      label: "HTTP",
-      logLevel: "info",
+    types: {
+        http: {
+            badge: "🌐",
+            color: "blue",
+            label: "HTTP",
+            logLevel: "info",
+        },
+        db: {
+            badge: "💾",
+            color: "cyan",
+            label: "DATABASE",
+            logLevel: "debug",
+        },
     },
-    db: {
-      badge: "💾",
-      color: "cyan",
-      label: "DATABASE",
-      logLevel: "debug",
-    },
-  },
 });
 
 logger.http("GET /api/users 200");
@@ -63,10 +63,10 @@ Pail supports ANSI colors from `@visulima/colorize`:
 
 ```typescript
 const logger = createPail({
-  types: {
-    success: { color: "greenBright", label: "SUCCESS", logLevel: "info" },
-    warning: { color: "yellowBright", label: "WARNING", logLevel: "warning" },
-  },
+    types: {
+        success: { color: "greenBright", label: "SUCCESS", logLevel: "info" },
+        warning: { color: "yellowBright", label: "WARNING", logLevel: "warning" },
+    },
 });
 ```
 
@@ -78,20 +78,20 @@ You can override default types to customize their appearance:
 import { createPail } from "@visulima/pail";
 
 const logger = createPail({
-  types: {
-    error: {
-      badge: "❌",
-      color: "redBright",
-      label: "ERROR",
-      logLevel: "error",
+    types: {
+        error: {
+            badge: "❌",
+            color: "redBright",
+            label: "ERROR",
+            logLevel: "error",
+        },
+        success: {
+            badge: "✅",
+            color: "greenBright",
+            label: "SUCCESS",
+            logLevel: "info",
+        },
     },
-    success: {
-      badge: "✅",
-      color: "greenBright",
-      label: "SUCCESS",
-      logLevel: "info",
-    },
-  },
 });
 
 logger.error("Custom error style");
@@ -104,20 +104,20 @@ logger.success("Custom success style");
 
 ```typescript
 const logger = createPail({
-  types: {
-    http: {
-      badge: "🌐",
-      color: "blue",
-      label: "HTTP",
-      logLevel: "info",
+    types: {
+        http: {
+            badge: "🌐",
+            color: "blue",
+            label: "HTTP",
+            logLevel: "info",
+        },
+        httpError: {
+            badge: "⚠️",
+            color: "red",
+            label: "HTTP_ERROR",
+            logLevel: "error",
+        },
     },
-    httpError: {
-      badge: "⚠️",
-      color: "red",
-      label: "HTTP_ERROR",
-      logLevel: "error",
-    },
-  },
 });
 
 logger.http("GET /api/users 200", { duration: 45 });
@@ -128,26 +128,26 @@ logger.httpError("POST /api/users 500", { error: "Database error" });
 
 ```typescript
 const logger = createPail({
-  types: {
-    db: {
-      badge: "💾",
-      color: "cyan",
-      label: "DATABASE",
-      logLevel: "debug",
+    types: {
+        db: {
+            badge: "💾",
+            color: "cyan",
+            label: "DATABASE",
+            logLevel: "debug",
+        },
+        dbQuery: {
+            badge: "🔍",
+            color: "blueBright",
+            label: "QUERY",
+            logLevel: "debug",
+        },
+        dbError: {
+            badge: "❌",
+            color: "red",
+            label: "DB_ERROR",
+            logLevel: "error",
+        },
     },
-    dbQuery: {
-      badge: "🔍",
-      color: "blueBright",
-      label: "QUERY",
-      logLevel: "debug",
-    },
-    dbError: {
-      badge: "❌",
-      color: "red",
-      label: "DB_ERROR",
-      logLevel: "error",
-    },
-  },
 });
 
 logger.db("Connected to database");
@@ -159,20 +159,20 @@ logger.dbError("Connection failed", error);
 
 ```typescript
 const logger = createPail({
-  types: {
-    security: {
-      badge: "🔒",
-      color: "yellow",
-      label: "SECURITY",
-      logLevel: "warning",
+    types: {
+        security: {
+            badge: "🔒",
+            color: "yellow",
+            label: "SECURITY",
+            logLevel: "warning",
+        },
+        auth: {
+            badge: "🔐",
+            color: "magenta",
+            label: "AUTH",
+            logLevel: "info",
+        },
     },
-    auth: {
-      badge: "🔐",
-      color: "magenta",
-      label: "AUTH",
-      logLevel: "info",
-    },
-  },
 });
 
 logger.security("Suspicious activity detected", { ip: "192.168.1.1" });
@@ -183,32 +183,32 @@ logger.auth("User logged in", { userId: 123 });
 
 ```typescript
 const logger = createPail({
-  types: {
-    job: {
-      badge: "⚙️",
-      color: "cyan",
-      label: "JOB",
-      logLevel: "info",
+    types: {
+        job: {
+            badge: "⚙️",
+            color: "cyan",
+            label: "JOB",
+            logLevel: "info",
+        },
+        jobStart: {
+            badge: "▶️",
+            color: "green",
+            label: "JOB_START",
+            logLevel: "info",
+        },
+        jobComplete: {
+            badge: "✅",
+            color: "greenBright",
+            label: "JOB_COMPLETE",
+            logLevel: "info",
+        },
+        jobError: {
+            badge: "❌",
+            color: "red",
+            label: "JOB_ERROR",
+            logLevel: "error",
+        },
     },
-    jobStart: {
-      badge: "▶️",
-      color: "green",
-      label: "JOB_START",
-      logLevel: "info",
-    },
-    jobComplete: {
-      badge: "✅",
-      color: "greenBright",
-      label: "JOB_COMPLETE",
-      logLevel: "info",
-    },
-    jobError: {
-      badge: "❌",
-      color: "red",
-      label: "JOB_ERROR",
-      logLevel: "error",
-    },
-  },
 });
 
 logger.jobStart("Processing queue");
@@ -227,18 +227,18 @@ import { createPail } from "@visulima/pail";
 type CustomTypes = "http" | "db" | "cache";
 
 const logger = createPail<CustomTypes>({
-  types: {
-    http: { label: "HTTP", logLevel: "info" },
-    db: { label: "DB", logLevel: "debug" },
-    cache: { label: "CACHE", logLevel: "debug" },
-  },
+    types: {
+        http: { label: "HTTP", logLevel: "info" },
+        db: { label: "DB", logLevel: "debug" },
+        cache: { label: "CACHE", logLevel: "debug" },
+    },
 });
 
 // TypeScript knows about custom types
 logger.http("GET /api/users"); // ✅ Type-safe
-logger.db("Query executed");   // ✅ Type-safe
-logger.cache("Cache hit");      // ✅ Type-safe
-logger.unknown("Test");         // ❌ Type error
+logger.db("Query executed"); // ✅ Type-safe
+logger.cache("Cache hit"); // ✅ Type-safe
+logger.unknown("Test"); // ❌ Type error
 ```
 
 ## Combining with Scopes
@@ -265,4 +265,3 @@ apiLogger.http("POST /users 201");
 
 - [Basic Usage](/docs/package/pail/usage/basic) - Basic logging operations
 - [Configuration](/docs/package/pail/configuration) - Configure logger types
-

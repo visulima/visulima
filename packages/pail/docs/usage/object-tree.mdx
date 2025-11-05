@@ -21,16 +21,17 @@ import { renderObjectTree } from "@visulima/pail/object-tree";
 import { renderObjectTree } from "@visulima/pail/object-tree";
 
 const user = {
-  name: "Alice Johnson",
-  age: 28,
-  email: "alice@example.com",
-  active: true,
+    name: "Alice Johnson",
+    age: 28,
+    email: "alice@example.com",
+    active: true,
 };
 
 console.log(renderObjectTree(user));
 ```
 
 Output:
+
 ```
 ├─ name: Alice Johnson
 ├─ age: 28
@@ -44,27 +45,28 @@ Works seamlessly with nested object structures:
 
 ```typescript
 const config = {
-  server: {
-    host: "localhost",
-    port: 3000,
-    ssl: {
-      enabled: true,
-      cert: "/path/to/cert.pem",
+    server: {
+        host: "localhost",
+        port: 3000,
+        ssl: {
+            enabled: true,
+            cert: "/path/to/cert.pem",
+        },
     },
-  },
-  database: {
-    type: "postgresql",
-    connection: {
-      host: "db.example.com",
-      port: 5432,
+    database: {
+        type: "postgresql",
+        connection: {
+            host: "db.example.com",
+            port: 5432,
+        },
     },
-  },
 };
 
 console.log(renderObjectTree(config));
 ```
 
 Output:
+
 ```
 ├─ server
 │  ├─ host: localhost
@@ -85,19 +87,19 @@ Customize the tree appearance:
 
 ```typescript
 const data = {
-  project: "MyApp",
-  version: "2.1.0",
-  contributors: 15,
+    project: "MyApp",
+    version: "2.1.0",
+    contributors: 15,
 };
 
 console.log(
-  renderObjectTree(data, {
-    keyNeighbour: "├── ",
-    keyNoNeighbour: "└── ",
-    separator: " → ",
-    spacerNeighbour: "│  ",
-    spacerNoNeighbour: "   ",
-  })
+    renderObjectTree(data, {
+        keyNeighbour: "├── ",
+        keyNoNeighbour: "└── ",
+        separator: " → ",
+        spacerNeighbour: "│  ",
+        spacerNoNeighbour: "   ",
+    }),
 );
 ```
 
@@ -107,33 +109,32 @@ Format values with a custom render function:
 
 ```typescript
 const metrics = {
-  responseTime: 145, // milliseconds
-  errorRate: 0.02, // percentage
-  uptime: 99.9, // percentage
-  requestsPerSecond: 1250,
+    responseTime: 145, // milliseconds
+    errorRate: 0.02, // percentage
+    uptime: 99.9, // percentage
+    requestsPerSecond: 1250,
 };
 
 console.log(
-  renderObjectTree(metrics, {
-    renderFn: (node) => {
-      if (typeof node === "number") {
-        if (node < 1) {
-          return `${(node * 100).toFixed(2)}%`;
-        }
-        if (node > 1000) {
-          return `${(node / 1000).toFixed(1)}k`;
-        }
-        return node.toString();
-      }
-      return ["boolean", "string"].includes(typeof node)
-        ? String(node)
-        : undefined;
-    },
-  })
+    renderObjectTree(metrics, {
+        renderFn: (node) => {
+            if (typeof node === "number") {
+                if (node < 1) {
+                    return `${(node * 100).toFixed(2)}%`;
+                }
+                if (node > 1000) {
+                    return `${(node / 1000).toFixed(1)}k`;
+                }
+                return node.toString();
+            }
+            return ["boolean", "string"].includes(typeof node) ? String(node) : undefined;
+        },
+    }),
 );
 ```
 
 Output:
+
 ```
 ├─ responseTime: 145
 ├─ errorRate: 2.00%
@@ -147,16 +148,16 @@ Sort object keys alphabetically or with a custom function:
 
 ```typescript
 const unsorted = {
-  zebra: "animal",
-  apple: "fruit",
-  banana: "fruit",
-  car: "vehicle",
+    zebra: "animal",
+    apple: "fruit",
+    banana: "fruit",
+    car: "vehicle",
 };
 
 console.log(
-  renderObjectTree(unsorted, {
-    sortFn: (a, b) => a.localeCompare(b),
-  })
+    renderObjectTree(unsorted, {
+        sortFn: (a, b) => a.localeCompare(b),
+    }),
 );
 ```
 
@@ -166,21 +167,22 @@ Detects and handles circular references:
 
 ```typescript
 const circularObj = {
-  name: "Circular Example",
-  data: [1, 2, 3],
+    name: "Circular Example",
+    data: [1, 2, 3],
 };
 
 // Create circular reference
 circularObj.self = circularObj;
 
 console.log(
-  renderObjectTree(circularObj, {
-    breakCircularWith: " [↻ CIRCULAR]",
-  })
+    renderObjectTree(circularObj, {
+        breakCircularWith: " [↻ CIRCULAR]",
+    }),
 );
 ```
 
 Output:
+
 ```
 ├─ name: Circular Example
 ├─ data: [1,2,3]
@@ -193,14 +195,14 @@ Get output as an array of lines instead of a single string:
 
 ```typescript
 const obj = {
-  method: "GET",
-  status: 200,
-  cached: false,
+    method: "GET",
+    status: 200,
+    cached: false,
 };
 
 const lines = renderObjectTree(obj, { joined: false });
 lines.forEach((line, index) => {
-  console.log(`${index + 1}: ${line}`);
+    console.log(`${index + 1}: ${line}`);
 });
 ```
 
@@ -210,24 +212,24 @@ lines.forEach((line, index) => {
 
 ```typescript
 interface ObjectTreeOptions {
-  /** Text to display for circular references (default: " (circular ref.)") */
-  breakCircularWith?: string | null;
-  /** Whether to return as single string or array of lines (default: true) */
-  joined?: boolean;
-  /** Connector for neighbor keys (default: "├─ ") */
-  keyNeighbour?: string;
-  /** Connector for non-neighbor keys (default: "└─ ") */
-  keyNoNeighbour?: string;
-  /** Function to render node values (default: renders primitives) */
-  renderFn?: (node: unknown) => string | undefined;
-  /** Separator between key and value (default: ": ") */
-  separator?: string;
-  /** Function to sort object keys (default: natural order) */
-  sortFn?: (a: string, b: string) => number;
-  /** Spacer for neighbor branches (default: "│  ") */
-  spacerNeighbour?: string;
-  /** Spacer for non-neighbor branches (default: "   ") */
-  spacerNoNeighbour?: string;
+    /** Text to display for circular references (default: " (circular ref.)") */
+    breakCircularWith?: string | null;
+    /** Whether to return as single string or array of lines (default: true) */
+    joined?: boolean;
+    /** Connector for neighbor keys (default: "├─ ") */
+    keyNeighbour?: string;
+    /** Connector for non-neighbor keys (default: "└─ ") */
+    keyNoNeighbour?: string;
+    /** Function to render node values (default: renders primitives) */
+    renderFn?: (node: unknown) => string | undefined;
+    /** Separator between key and value (default: ": ") */
+    separator?: string;
+    /** Function to sort object keys (default: natural order) */
+    sortFn?: (a: string, b: string) => number;
+    /** Spacer for neighbor branches (default: "│  ") */
+    spacerNeighbour?: string;
+    /** Spacer for non-neighbor branches (default: "   ") */
+    spacerNoNeighbour?: string;
 }
 ```
 
@@ -246,4 +248,3 @@ interface ObjectTreeOptions {
 
 - [Basic Usage](/docs/package/pail/usage/basic) - Basic logging operations
 - [Examples](/docs/package/pail/examples) - Real-world examples
-
