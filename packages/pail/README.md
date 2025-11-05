@@ -485,6 +485,286 @@ bar.update(50, { speed: "2.5" });
 bar.stop();
 ```
 
+### Gradient Character Arrays
+
+Create smooth gradient animations by providing arrays of characters that progressively fill:
+
+```typescript
+import { createPail } from "@visulima/pail";
+
+const logger = createPail({ interactive: true });
+
+// Shade gradient (light to dark)
+const bar = logger.createProgressBar({
+    total: 100,
+    barCompleteChar: ["░", "▒", "▓", "█"], // Gradient array
+    barIncompleteChar: " ",
+    format: "Downloading [{bar}] {percentage}%",
+});
+
+bar.start();
+for (let i = 0; i <= 100; i++) {
+    bar.update(i);
+}
+bar.stop();
+```
+
+Supported gradients:
+
+- **Shades**: `["░", "▒", "▓", "█"]` (light to dark)
+- **Blocks**: `["▁", "▂", "▃", "▄", "▅", "▆", "▇", "█"]` (small to large)
+- **Temperature**: `["🔵", "🟢", "🟡", "🟠", "🔴"]` (cold to hot)
+- **Custom**: Any array of characters for your own gradient effect
+
+### Composite Progress Bars
+
+Track multiple related progress bars simultaneously with automatic color layering based on progress percentage. This is perfect for operations with multiple parallel sources or stages:
+
+```typescript
+import { createPail } from "@visulima/pail";
+import colorize from "@visulima/colorize";
+
+const logger = createPail({ interactive: true });
+
+// Create a composite multi-bar that displays all bars as a single layered composite
+const multiBar = logger.createMultiProgressBar({
+    composite: true, // Enable composite mode
+    format: "[{bar}]  ① {r}%  ② {y}%  ③ {b}%",
+});
+
+const source1 = multiBar.create(100, 0, { r: "0", y: "0", b: "0" });
+const source2 = multiBar.create(100, 0, { r: "0", y: "0", b: "0" });
+const source3 = multiBar.create(100, 0, { r: "0", y: "0", b: "0" });
+
+// Apply colors to each source
+multiBar.setBarColor(source1, colorize.red);
+multiBar.setBarColor(source2, colorize.yellow);
+multiBar.setBarColor(source3, colorize.blue);
+
+// Update sources with different speeds
+for (let i = 0; i <= 100; i++) {
+    source1.update(i); // Red: 100% progress
+    source2.update(Math.floor(i * 0.7)); // Yellow: 70% progress
+    source3.update(Math.floor(i * 0.4)); // Blue: 40% progress
+    await new Promise((r) => setTimeout(r, 40));
+}
+
+multiBar.stop();
+```
+
+**Output example:**
+
+```txt
+[▒▒▒▒▒▒▒▒▒▒▓▓▓▓▓▓▓▓██████████████████████]  ① 100%  ② 70%  ③ 40%
+```
+
+#### Color Layering & Character Shading
+
+The composite bar uses character shading to represent overlapping progress bars:
+
+| Character        | Meaning            | Example             |
+| ---------------- | ------------------ | ------------------- |
+| **█** (solid)    | One bar visible    | Red at 100%         |
+| **▓** (medium)   | Two bars overlap   | Red + Yellow        |
+| **▒** (light)    | Three bars overlap | Red + Yellow + Blue |
+| **░** (lightest) | Four+ bars overlap | All bars present    |
+
+#### How It Works
+
+The composite bar renders based on **progress percentage at each position**:
+
+1. **At position 0-40%**: Only Red (①) is filled → shows **█** with red color
+2. **At position 40-70%**: Red + Yellow (①+②) filled → shows **▓** with yellow color (highest index shown)
+3. **At position 70-100%**: All three (①+②+③) filled → shows **▒** with blue color (highest index)
+
+The **highest-indexed bar's color** is used at each position, creating a natural progression.
+
+**Dynamic Visibility Based on Progress:**
+
+The bar with the **smallest progress percentage** is shown on top for maximum visibility:
+
+- Red at 30%, Yellow at 60% → Red is visible first (30% < 60%)
+- When Red reaches 30% and Yellow is only at 20% → Yellow becomes visible (20% < 30%)
+- This ensures slower-progressing operations are always visible and not hidden beneath faster ones
+
+#### Use Cases
+
+1. **Multi-source Download**: Show progress from multiple download sources
+2. **Parallel Tasks**: Monitor concurrent operations (build, test, lint)
+3. **Pipeline Stages**: Upload → Process → Finalize with different completion times
+4. **Batch Operations**: Parse → Validate → Compile at different speeds
+5. **Resource Tracking**: CPU, Memory, Disk usage in parallel
+
+Each progress bar:
+
+- Updates independently at its own speed
+- Can have different total values and progress rates
+- Uses color to distinguish sources
+- Shows through character shading when overlapping
+
+## Spinners (Server Only)
+
+Pail includes a comprehensive spinner system inspired by cli-progress, with support for single and multi-spinner modes, various styles, and interactive terminal output.
+
+### Single Spinner
+
+```typescript
+import { createPail } from "@visulima/pail";
+
+const logger = createPail({ interactive: true });
+const spinner = logger.createSpinner({
+    text: "Loading...",
+    color: "blue",
+});
+
+spinner.start();
+spinner.succeed("Loaded!");
+spinner.fail("Failed!");
+spinner.stop();
+```
+
+### Multi Spinner
+
+```typescript
+import { createPail } from "@visulima/pail";
+
+const logger = createPail({ interactive: true });
+const multiSpinner = logger.createMultiSpinner({
+    style: "dots", // Apply style to all spinners
+});
+
+const spinner1 = multiSpinner.create("Loading A");
+const spinner2 = multiSpinner.create("Loading B");
+const spinner3 = multiSpinner.create("Loading C");
+
+// Update spinners as needed
+spinner1.succeed("Loaded A!");
+spinner2.succeed("Loaded B!");
+spinner3.succeed("Loaded C!");
+
+// Clean up when done
+multiSpinner.stop();
+```
+
+### Custom Spinner
+
+Create fully customized spinners with your own characters and formatting:
+
+```typescript
+import { createPail } from "@visulima/pail";
+
+const logger = createPail({ interactive: true });
+const spinner = logger.createSpinner({
+    text: "🚀 Downloading {filename}: [{bar}] {percentage}% | Speed: {speed} MB/s | ETA: {eta}s",
+    barCompleteChar: "🚀",
+    barIncompleteChar: "⚪",
+    width: 20,
+});
+
+spinner.start(0, 0, {
+    filename: "large-file.zip",
+    speed: "0.0",
+});
+
+// Update with payload data
+spinner.update(50, { speed: "2.5" });
+spinner.succeed();
+```
+
+## Object Tree
+
+Render objects and data structures as formatted ASCII trees for better terminal visualization and debugging:
+
+```typescript
+import { renderObjectTree } from "@visulima/pail/object-tree";
+
+const data = {
+    user: {
+        name: "John Doe",
+        email: "john@example.com",
+        profile: {
+            age: 30,
+            location: "New York",
+            skills: ["JavaScript", "TypeScript", "Node.js"],
+        },
+    },
+    settings: {
+        theme: "dark",
+        notifications: true,
+    },
+};
+
+console.log(renderObjectTree(data));
+```
+
+**Output:**
+
+```txt
+├─ user:
+│  ├─ name: John Doe
+│  ├─ email: john@example.com
+│  └─ profile:
+│     ├─ age: 30
+│     ├─ location: New York
+│     └─ skills:
+├─ settings:
+│  ├─ theme: dark
+│  └─ notifications: true
+```
+
+> **Note:** `renderObjectTree` is exported as a separate module (`@visulima/pail/object-tree`) to reduce main bundle size. It works in both **Node.js** and **Browser** environments and is a pure utility function with no platform-specific dependencies.
+
+### Custom Rendering
+
+Customize how object trees are rendered:
+
+```typescript
+import { renderObjectTree } from "@visulima/pail/object-tree";
+
+const obj = {
+    name: "John",
+    age: 30,
+    address: {
+        street: "Main St",
+        city: "New York",
+    },
+};
+
+// Custom rendering with sorting and formatting
+const tree = renderObjectTree(obj, {
+    sortFn: (a, b) => a.localeCompare(b), // Sort keys alphabetically
+    renderFn: (node) => {
+        if (typeof node === "string") return node.toUpperCase();
+        return ["boolean", "string", "number"].includes(typeof node) ? String(node) : undefined;
+    },
+    joined: true, // Return as single string (false for array of lines)
+});
+
+console.log(tree);
+```
+
+### Configuration Options
+
+| Option              | Description                                           | Default              |
+| ------------------- | ----------------------------------------------------- | -------------------- |
+| `joined`            | Return as single string or array of lines             | `true`               |
+| `sortFn`            | Function to sort object keys (null for natural order) | `null`               |
+| `renderFn`          | Function to render node values                        | Renders primitives   |
+| `separator`         | Separator between key and value                       | `": "`               |
+| `keyNeighbour`      | Connector for keys with siblings                      | `"├─ "`              |
+| `keyNoNeighbour`    | Connector for last keys                               | `"└─ "`              |
+| `spacerNeighbour`   | Spacer for branches with siblings                     | `"│  "`              |
+| `spacerNoNeighbour` | Spacer for branches without siblings                  | `"   "`              |
+| `breakCircularWith` | Text for circular references                          | `" (circular ref.)"` |
+
+### Use Cases
+
+1. **Debugging**: Visualize complex object structures during development
+2. **Logging**: Pretty-print objects for better readability in logs
+3. **API Responses**: Display JSON API responses in tree format
+4. **Configuration Display**: Show configuration trees in terminal applications
+5. **Data Inspection**: Inspect deeply nested data structures
+
 ## Integrations
 
 ### Use with @visulima/boxen

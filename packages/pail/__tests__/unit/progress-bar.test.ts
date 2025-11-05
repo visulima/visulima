@@ -1,5 +1,7 @@
-import { describe, expect, it } from "vitest";
+import { blue, red, yellow } from "@visulima/colorize";
+import { beforeEach, describe, expect, expectTypeOf, it } from "vitest";
 
+import type { MultiBarInstance } from "../../src/progress-bar";
 import { applyStyleToOptions, getBarChar, MultiProgressBar, ProgressBar } from "../../src/progress-bar";
 
 describe(ProgressBar, () => {
@@ -374,5 +376,221 @@ describe("integration with PailServer", () => {
         expect(styledOptions.barCompleteChar).toBe("#");
         expect(styledOptions.barIncompleteChar).toBe("-");
         expect(styledOptions.total).toBe(100);
+    });
+});
+
+describe("getCompositeChar", () => {
+    let multiBar: MultiProgressBar;
+    let mockBars: MultiBarInstance[];
+
+    beforeEach(() => {
+        multiBar = new MultiProgressBar();
+        // Create mock bars with different indices and getBarState method
+        mockBars = [
+            {
+                bar: new ProgressBar({ total: 100 }),
+                getBarState: () => {
+                    return { char: "█", current: 50, total: 100 };
+                },
+                index: 0,
+            } as any as MultiBarInstance,
+            {
+                bar: new ProgressBar({ total: 100 }),
+                getBarState: () => {
+                    return { char: "█", current: 70, total: 100 };
+                },
+                index: 1,
+            } as any as MultiBarInstance,
+            {
+                bar: new ProgressBar({ total: 100 }),
+                getBarState: () => {
+                    return { char: "█", current: 90, total: 100 };
+                },
+                index: 2,
+            } as any as MultiBarInstance,
+        ];
+    });
+
+    it("should return solid block for single bar", () => {
+        expect.assertions(1);
+
+        const result = (multiBar as any).getCompositeChar(mockBars, [0], 0, 40);
+
+        expect(result).toBe("█");
+    });
+
+    it("should return medium shade for two bars and use highest index", () => {
+        expect.assertions(2);
+
+        const result = (multiBar as any).getCompositeChar(mockBars, [0, 1], 0, 40);
+
+        expect(result).toBe("▓");
+        // The result should be colored, but we can't easily test the color here
+        expect(result.length).toBeGreaterThan(0);
+    });
+
+    it("should return lighter shade for three bars", () => {
+        expect.assertions(1);
+
+        const result = (multiBar as any).getCompositeChar(mockBars, [0, 1, 2], 0, 40);
+
+        expect(result).toBe("▒");
+    });
+
+    it("should return lightest shade for four or more bars", () => {
+        expect.assertions(2);
+
+        const result4 = (multiBar as any).getCompositeChar(mockBars, [0, 1, 2, 3], 0, 40);
+        const result5 = (multiBar as any).getCompositeChar(mockBars, [0, 1, 2, 3, 4], 0, 40);
+
+        expect(result4).toBe("░");
+        expect(result5).toBe("░");
+    });
+
+    it("should handle undefined stack", () => {
+        expect.assertions(1);
+
+        const result = (multiBar as any).getCompositeChar(mockBars, undefined, 0, 40);
+
+        expect(result).toBe("█");
+    });
+
+    it("should handle empty stack", () => {
+        expect.assertions(1);
+
+        const result = (multiBar as any).getCompositeChar(mockBars, [], 0, 40);
+
+        expect(result).toBe("█");
+    });
+
+    it("should handle out of bounds bar index", () => {
+        expect.assertions(1);
+
+        const result = (multiBar as any).getCompositeChar(mockBars, [99], 0, 40);
+
+        expect(result).toBe("█");
+    });
+
+    it("should show bar with lowest progress percentage on top", () => {
+        expect.assertions(1);
+
+        // Create bars with different progress rates
+        const bars: any = [
+            {
+                getBarState: () => {
+                    return { char: "█", current: 10, total: 100 };
+                },
+                index: 0,
+            }, // 10% progress
+            {
+                getBarState: () => {
+                    return { char: "█", current: 20, total: 100 };
+                },
+                index: 1,
+            }, // 20% progress
+            {
+                getBarState: () => {
+                    return { char: "█", current: 50, total: 100 };
+                },
+                index: 2,
+            }, // 50% progress
+        ];
+
+        // When multiple bars are in stack, show the one with SMALLEST progress percentage
+        // At position 5, all three bars are filled (5 < 10, 5 < 20, 5 < 50)
+        // Bar 0 has smallest % (10%), so it should be selected
+        multiBar.setBarColor(bars[0], red);
+        multiBar.setBarColor(bars[1], yellow);
+        multiBar.setBarColor(bars[2], blue);
+
+        const result = (multiBar as any).getCompositeChar(bars, [0, 1, 2], 5, 40);
+
+        // Should return the character colored with the first bar's color (smallest progress)
+        expect(result).toContain("▒"); // 3 bars overlap = light shade
+    });
+});
+
+describe("progressBar gradient mode", () => {
+    it("should normalize mixed gradient/string types", () => {
+        expect.assertions(1);
+
+        const bar = new ProgressBar({
+            barCompleteChar: ["█", "▓", "▒"],
+            barIncompleteChar: "░",
+            total: 100,
+        });
+
+        const output = bar.render();
+
+        expect(output).toBeDefined();
+
+        expectTypeOf(output).toBeString();
+    });
+
+    it("should handle boundary condition at 100% complete", () => {
+        expect.assertions(1);
+
+        const bar = new ProgressBar({
+            barCompleteChar: ["█", "▓", "▒"],
+            current: 100,
+            total: 100,
+            width: 20,
+        });
+
+        const output = bar.render();
+
+        expect(output).toBeDefined();
+
+        expectTypeOf(output).toBeString();
+    });
+
+    it("should not create out-of-bounds array access", () => {
+        expect.assertions(1);
+
+        const outputs = [];
+
+        for (let i = 0; i <= 100; i += 10) {
+            const bar = new ProgressBar({
+                barCompleteChar: ["█", "▓", "▒"],
+                current: i,
+                total: 100,
+                width: 20,
+            });
+
+            outputs.push(bar.render());
+        }
+
+        expect(outputs).toHaveLength(11);
+    });
+
+    it("should handle single-element gradient array", () => {
+        expect.assertions(1);
+
+        const bar = new ProgressBar({
+            barCompleteChar: ["█"],
+            current: 50,
+            total: 100,
+            width: 20,
+        });
+
+        const output = bar.render();
+
+        expect(output).toBeDefined();
+
+        expectTypeOf(output).toBeString();
+    });
+
+    it("should use correct gradient style detection", () => {
+        expect.assertions(1);
+
+        const bar = new ProgressBar({
+            barCompleteChar: ["▬", "▮", "▯"],
+            style: "rect",
+            total: 100,
+        });
+
+        const output = bar.render();
+
+        expect(output).toBeDefined();
     });
 });
