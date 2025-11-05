@@ -180,6 +180,9 @@ export interface TableOptions extends BaseRenderingOptions {
     /** Whether to show the header of the table */
     showHeader?: boolean;
 
+    /** Whether to show the footer of the table */
+    showFooter?: boolean;
+
     /** Global style options for the table */
     style?: Partial<Style>;
 
