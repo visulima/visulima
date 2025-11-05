@@ -1,6 +1,6 @@
 {
     "name": "@visulima/health-check",
-    "version": "3.0.1",
+    "version": "3.0.2",
     "description": "A library built to provide support for defining service health for node services. It allows you to register async health checks for your dependencies and the service itself, provides a health endpoint that exposes their status, and health metrics.",
     "keywords": [
         "anolilab",
