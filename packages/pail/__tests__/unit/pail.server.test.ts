@@ -275,3 +275,55 @@ describe("pailServerImpl", () => {
         });
     });
 });
+
+describe("interactive mode validation", () => {
+    it("should throw when creating spinner without interactive mode", () => {
+        expect.assertions(1);
+
+        const pailServer = new PailServer({ interactive: false, stderr, stdout });
+
+        expect(() => pailServer.createSpinner()).toThrow("Interactive mode is not enabled");
+    });
+
+    it("should throw when creating progress bar without interactive mode", () => {
+        expect.assertions(1);
+
+        const pailServer = new PailServer({ interactive: false, stderr, stdout });
+
+        expect(() => pailServer.createProgressBar({ total: 100 })).toThrow("Interactive mode is not enabled");
+    });
+
+    it("should throw when creating multi-spinner without interactive mode", () => {
+        expect.assertions(1);
+
+        const pailServer = new PailServer({ interactive: false, stderr, stdout });
+
+        expect(() => pailServer.createMultiSpinner()).toThrow("Interactive mode is not enabled");
+    });
+
+    it("should throw when creating multi-progress-bar without interactive mode", () => {
+        expect.assertions(1);
+
+        const pailServer = new PailServer({ interactive: false, stderr, stdout });
+
+        expect(() => pailServer.createMultiProgressBar()).toThrow("Interactive mode is not enabled");
+    });
+
+    it("should accept empty options for spinner (parity with progress bar)", () => {
+        expect.assertions(1);
+
+        const pailServer = new PailServer({ interactive: true, stderr, stdout });
+        const spinner = pailServer.createSpinner(); // no options
+
+        expect(spinner).toBeDefined();
+    });
+
+    it("should accept empty options for multi-spinner", () => {
+        expect.assertions(1);
+
+        const pailServer = new PailServer({ interactive: true, stderr, stdout });
+        const multiSpinner = pailServer.createMultiSpinner(); // no options
+
+        expect(multiSpinner).toBeDefined();
+    });
+});

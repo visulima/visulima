@@ -129,3 +129,5 @@ export type {
     Reporter,
     StreamAwareReporter,
 } from "./shared";
+export type { SpinnerIcons, SpinnerOptions, SpinnerStartOptions, SpinnerStyle } from "./spinner";
+export { MultiSpinner, Spinner } from "./spinner";
