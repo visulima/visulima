@@ -6,13 +6,15 @@
     },
     "targetDefaults": {
         "build": {
-            "dependsOn": ["^build", "default"],
-            "inputs": ["default", "^default"],
+            "dependsOn": ["^build"],
+            "inputs": ["production", "^production"],
+            "outputs": ["{projectRoot}/dist"],
             "cache": true
         },
         "build:prod": {
-            "dependsOn": ["^build:prod", "default"],
-            "inputs": ["default", "^default"],
+            "dependsOn": ["^build:prod"],
+            "inputs": ["production", "^production"],
+            "outputs": ["{projectRoot}/dist"],
             "cache": true
         },
         "lint:eslint": {
@@ -42,11 +44,14 @@
             "cache": true
         },
         "test": {
-            "dependsOn": ["default", "^default", "{projectRoot}/vite.config.ts", "{projectRoot}/tools/get-vitest-config.ts"],
+            "dependsOn": ["^build"],
+            "inputs": ["testing", "^production", "{projectRoot}/vite.config.ts", "{projectRoot}/tools/get-vitest-config.ts"],
             "cache": true
         },
         "test:coverage": {
-            "dependsOn": ["default", "^default", "{projectRoot}/vite.config.ts", "{projectRoot}/tools/get-vitest-config.ts"],
+            "dependsOn": ["^build"],
+            "inputs": ["testing", "^production", "{projectRoot}/vite.config.ts", "{projectRoot}/tools/get-vitest-config.ts"],
+            "outputs": ["{projectRoot}/coverage"],
             "cache": true
         },
         "build-storybook": {
@@ -62,28 +67,28 @@
             "cache": true
         }
     },
-    "namedInputs": {
-        "default": ["sharedGlobals", "{projectRoot}/**/*", "!{projectRoot}/**/*.md"],
-        "public": [
-            "default",
-            "{workspaceRoot}/dist",
-            "!{workspaceRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)",
-            "!{workspaceRoot}/vite.config.ts",
-            "!{workspaceRoot}/.eslintrc.js",
-            "!{workspaceRoot}/.eslintrc.cjs",
-            "!{workspaceRoot}/.storybook/**/*",
-            "!{workspaceRoot}/**/*.stories.@(js|jsx|ts|tsx|mdx)"
-        ],
-        "sharedGlobals": [
-            "{workspaceRoot}/.nvmrc",
-            "{workspaceRoot}/package.json",
-            "{workspaceRoot}/tsup.config.ts",
-            "{workspaceRoot}/tsconfig.json",
-            "{workspaceRoot}/tsconfig.base.json",
-            "{workspaceRoot}/tsconfig.eslint.json"
-        ],
-        "production": ["default"]
-    },
+        "namedInputs": {
+            "default": ["sharedGlobals", "{projectRoot}/**/*", "!{projectRoot}/**/*.md"],
+            "production": ["default", "!{projectRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)"],
+            "testing": ["default", "{projectRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)"],
+            "public": [
+                "default",
+                "{workspaceRoot}/dist",
+                "!{workspaceRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)",
+                "!{workspaceRoot}/vite.config.ts",
+                "!{workspaceRoot}/.eslintrc.js",
+                "!{workspaceRoot}/.eslintrc.cjs",
+                "!{workspaceRoot}/.storybook/**/*",
+                "!{workspaceRoot}/**/*.stories.@(js|jsx|ts|tsx|mdx)"
+            ],
+            "sharedGlobals": [
+                "{workspaceRoot}/.nvmrc",
+                "{workspaceRoot}/package.json",
+                "{workspaceRoot}/tsup.config.ts",
+                "{workspaceRoot}/tsconfig.json",
+                "{workspaceRoot}/tsconfig.base.json"
+            ]
+        },
     "parallel": 5,
     "defaultBase": "main",
     "$schema": "./node_modules/nx/schemas/nx-schema.json"
