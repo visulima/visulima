@@ -1,3 +1,74 @@
+## @visulima/cerebro [2.0.0](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.1.58...@visulima/cerebro@2.0.0) (2025-11-05)
+
+### ⚠ BREAKING CHANGES
+
+* **cerebro:** This release introduces significant breaking changes:
+
+- **ESM-only**: CommonJS exports removed, now requires ESM (Node.js 20.19+, Deno 1.0+, Bun 1.0+)
+- **Granular exports**: Plugins and commands must be imported from specific paths (e.g., `@visulima/cerebro/plugins/error-handler`)
+- **Enhanced error types**: New error classes with improved validation and error codes
+- **Runtime requirements**: Minimum Node.js version is now 20.19
+
+## Features
+
+- **Cross-runtime support**: Full support for Node.js, Deno, and Bun with runtime-agnostic utilities
+- **Nested commands**: Hierarchical command structure with parent-child relationships
+- **Plugin system**: Extensible plugin architecture with built-in plugins:
+  - Error handler plugin for custom error formatting
+  - Runtime version check plugin
+  - Update notifier plugin for package version checks
+- **Shell completion**: New completion command for bash/zsh/fish autocompletion
+- **README generation**: Command to automatically generate CLI documentation
+- **Environment variables**: Support for environment variable definitions in command options
+- **Enhanced logging**: Integration with Pail logger for structured logging
+- **Performance benchmarks**: Comprehensive benchmark suite for performance monitoring
+- **Enhanced error handling**: Improved error types, validation, and error codes
+- **Security enhancements**: Input validation and security utilities
+
+## Improvements
+
+- **Type safety**: Replaced 'any' types with 'unknown' for better type safety
+- **Code organization**: Restructured types from `@types` to `types` directory
+- **Documentation**: Extensive API documentation, migration guide, and enhanced guides
+- **Examples**: Reorganized and expanded examples covering all major features
+- **Testing**: Comprehensive unit tests, integration tests, and improved test coverage
+- **Performance**: Optimized command processing and enhanced performance
+
+## Documentation
+
+- Added migration guide (MIGRATION-GUIDE.md) with detailed breaking change information
+- Enhanced API documentation with complete type definitions
+- Added guides for advanced usage, commands, options, and plugins
+- Expanded examples with README files and comprehensive use cases
+
+See MIGRATION-GUIDE.md for detailed migration instructions.
+
+### Features
+
+* **cerebro:** major upgrade with cross-runtime support, plugin system, and nested commands ([6e2c930](https://github.com/visulima/visulima/commit/6e2c930322ae263ecf8c1b44e63e53094b26631b))
+
+### Bug Fixes
+
+* update dependencies across multiple packages ([36a47f2](https://github.com/visulima/visulima/commit/36a47f26d65d25a7b4d8371186710e7d0ab61a2b))
+* update dependencies and add terminal width support ([c50fc05](https://github.com/visulima/visulima/commit/c50fc05f0b6c2ec925ca3483e05a6db08a6d6be7))
+
+### Tests
+
+* add CEREBRO_TERMINAL_WIDTH environment variable for terminal output ([88ce74e](https://github.com/visulima/visulima/commit/88ce74eb7f16646de9e515676d5aed904a9b0132))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.26
+* **@visulima/tabular:** upgraded to 3.0.0
+* **@visulima/error:** upgraded to 5.0.3
+* **@visulima/find-cache-dir:** upgraded to 2.0.3
+* **@visulima/boxen:** upgraded to 2.0.7
+* **@visulima/command-line-args:** upgraded to 1.0.1
+* **@visulima/pail:** upgraded to 3.0.3
+* **@visulima/path:** upgraded to 2.0.2
+* **@visulima/string:** upgraded to 2.0.3
+
 ## @visulima/cerebro [1.1.58](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.1.57...@visulima/cerebro@1.1.58) (2025-10-22)
 
 ### Bug Fixes
