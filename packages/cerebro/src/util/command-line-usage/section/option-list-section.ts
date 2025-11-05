@@ -4,6 +4,7 @@ import { NO_BORDER } from "@visulima/tabular/style";
 import type { ArgumentDefinition, OptionDefinition as IOptionDefinition } from "../../../types/command";
 import type { OptionList as IOptionList } from "../../../types/command-line-usage";
 import templateFormat from "../../text-processing/template-format";
+import getTerminalWidth from "../get-terminal-width";
 import BaseSection from "./base-section";
 
 class OptionListSection extends BaseSection {
@@ -41,6 +42,8 @@ class OptionListSection extends BaseSection {
                 paddingRight: 1,
                 ...data.tableOptions?.style,
             },
+            terminalWidth: getTerminalWidth() ?? data.tableOptions?.terminalWidth,
+            truncateOverflow: false,
             wordWrap: data.tableOptions?.wordWrap ?? true,
             ...data.tableOptions,
         });

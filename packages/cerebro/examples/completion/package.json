@@ -18,6 +18,6 @@
         "@visulima/cerebro": "workspace:*"
     },
     "optionalDependencies": {
-        "@bomb.sh/tab": "^0.0.7"
+        "@bomb.sh/tab": "^0.0.9"
     }
 }
