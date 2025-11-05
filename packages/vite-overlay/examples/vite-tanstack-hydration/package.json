@@ -18,7 +18,7 @@
         "tailwind-merge": "^3.3.1"
     },
     "devDependencies": {
-        "@types/node": "^24.9.2",
+        "@types/node": "^24.10.0",
         "@types/react": "^19.2.2",
         "@types/react-dom": "^19.2.2",
         "@visulima/vite-overlay": "workspace:*",
@@ -27,7 +27,7 @@
         "postcss": "^8.5.6",
         "tailwindcss": "^4.1.16",
         "typescript": "^5.9.3",
-        "vite": "^7.1.12",
+        "vite": "^7.2.0",
         "vite-tsconfig-paths": "^5.1.4"
     }
 }

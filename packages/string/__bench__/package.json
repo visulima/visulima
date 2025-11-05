@@ -25,7 +25,7 @@
         "string-width": "8.1.0",
         "transliteration": "2.3.5",
         "typescript": "5.9.3",
-        "vitest": "^4.0.4",
+        "vitest": "^4.0.7",
         "wrap-ansi": "9.0.2"
     }
 }
