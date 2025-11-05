@@ -132,6 +132,18 @@
             "types": "./dist/reporter/simple/simple-reporter.server.d.ts",
             "default": "./dist/reporter/simple/simple-reporter.server.js"
         },
+        "./progress-bar": {
+            "types": "./dist/progress-bar.d.ts",
+            "default": "./dist/progress-bar.js"
+        },
+        "./spinner": {
+            "types": "./dist/spinner.d.ts",
+            "default": "./dist/spinner.js"
+        },
+        "./interactive": {
+            "types": "./dist/interactive/index.d.ts",
+            "default": "./dist/interactive/index.js"
+        },
         "./object-tree": {
             "types": "./dist/object-tree.d.ts",
             "default": "./dist/object-tree.js"
