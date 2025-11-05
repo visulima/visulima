@@ -25,5 +25,4 @@ export default defineConfig({
         },
     },
     transformer,
-    cjsInterop: true,
 }) as BuildConfig;

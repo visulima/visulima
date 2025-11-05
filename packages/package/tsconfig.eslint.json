@@ -1,8 +1,0 @@
-{
-    "$schema": "https://json.schemastore.org/tsconfig",
-    "extends": "./tsconfig.json",
-    "compilerOptions": {
-        "baseUrl": "."
-    },
-    "include": ["__docs__/**/*", "__tests__/**/*", "src/**/*", "*.d.ts", "packem.config.ts"]
-}
