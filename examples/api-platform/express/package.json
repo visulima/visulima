@@ -16,7 +16,7 @@
     "devDependencies": {
         "@types/cors": "^2.8.19",
         "@types/express": "^5.0.5",
-        "rimraf": "^6.0.1",
+        "rimraf": "^6.1.0",
         "tsx": "^4.20.6",
         "typescript": "5.9.3"
     }
