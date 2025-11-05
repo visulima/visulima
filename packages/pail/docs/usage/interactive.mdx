@@ -15,7 +15,7 @@ Enable interactive mode when creating a logger:
 import { createPail } from "@visulima/pail";
 
 const logger = createPail({
-  interactive: true,
+    interactive: true,
 });
 ```
 
@@ -29,16 +29,16 @@ Create a simple progress bar:
 const logger = createPail({ interactive: true });
 
 const bar = logger.createProgressBar({
-  total: 100,
-  format: 'Downloading [{bar}] {percentage}% | ETA: {eta}s | {value}/{total}',
+    total: 100,
+    format: "Downloading [{bar}] {percentage}% | ETA: {eta}s | {value}/{total}",
 });
 
 bar.start();
 
 // Update progress
 for (let i = 0; i <= 100; i++) {
-  bar.update(i);
-  await sleep(50);
+    bar.update(i);
+    await sleep(50);
 }
 
 bar.stop();
@@ -48,12 +48,12 @@ bar.stop();
 
 ```typescript
 const bar = logger.createProgressBar({
-  total: 100,
-  format: '{prefix} [{bar}] {percentage}% | {value}/{total}',
-  prefix: 'Progress',
-  barCompleteChar: '=',
-  barIncompleteChar: '-',
-  hideCursor: true,
+    total: 100,
+    format: "{prefix} [{bar}] {percentage}% | {value}/{total}",
+    prefix: "Progress",
+    barCompleteChar: "=",
+    barIncompleteChar: "-",
+    hideCursor: true,
 });
 ```
 
@@ -67,11 +67,11 @@ const logger = createPail({ interactive: true });
 const multiBar = logger.createMultiProgressBar();
 
 const bar1 = multiBar.create(100, 0, {
-  format: 'Upload [{bar}] {percentage}%',
+    format: "Upload [{bar}] {percentage}%",
 });
 
 const bar2 = multiBar.create(200, 0, {
-  format: 'Download [{bar}] {percentage}%',
+    format: "Download [{bar}] {percentage}%",
 });
 
 bar1.start();
@@ -93,16 +93,16 @@ Create a spinner for ongoing operations:
 ```typescript
 const logger = createPail({ interactive: true });
 
-const spinner = logger.createSpinner({ name: 'dots' });
-spinner.start('Loading...');
+const spinner = logger.createSpinner({ name: "dots" });
+spinner.start("Loading...");
 
 // ... do work ...
 
-spinner.succeed('Loaded successfully');
+spinner.succeed("Loaded successfully");
 // or
-spinner.failed('Failed to load');
+spinner.failed("Failed to load");
 // or
-spinner.warn('Warning occurred');
+spinner.warn("Warning occurred");
 ```
 
 ### Spinner Styles
@@ -111,9 +111,9 @@ Available spinner styles:
 
 ```typescript
 const spinner = logger.createSpinner({
-  name: 'dots',        // or 'line', 'pulse', 'bounce', etc.
-  color: 'blue',
-  interval: 80,
+    name: "dots", // or 'line', 'pulse', 'bounce', etc.
+    color: "blue",
+    interval: 80,
 });
 ```
 
@@ -126,16 +126,16 @@ const logger = createPail({ interactive: true });
 
 const multiSpinner = logger.createMultiSpinner();
 
-const spinner1 = multiSpinner.create('Loading users');
-const spinner2 = multiSpinner.create('Loading posts');
+const spinner1 = multiSpinner.create("Loading users");
+const spinner2 = multiSpinner.create("Loading posts");
 
 spinner1.start();
 spinner2.start();
 
 // ... work ...
 
-spinner1.succeed('Users loaded');
-spinner2.succeed('Posts loaded');
+spinner1.succeed("Users loaded");
+spinner2.succeed("Posts loaded");
 
 multiSpinner.stop();
 ```
@@ -149,9 +149,9 @@ const logger = createPail({ interactive: true });
 
 const manager = logger.getInteractiveManager();
 if (manager) {
-  manager.hook(); // Enable interactive mode
-  // ... use progress bars/spinners ...
-  manager.unhook(); // Disable interactive mode
+    manager.hook(); // Enable interactive mode
+    // ... use progress bars/spinners ...
+    manager.unhook(); // Disable interactive mode
 }
 ```
 
@@ -163,21 +163,21 @@ if (manager) {
 const logger = createPail({ interactive: true });
 
 const uploadFile = async (file: File) => {
-  const bar = logger.createProgressBar({
-    total: file.size,
-    format: 'Uploading [{bar}] {percentage}% | {value}/{total} bytes',
-  });
+    const bar = logger.createProgressBar({
+        total: file.size,
+        format: "Uploading [{bar}] {percentage}% | {value}/{total} bytes",
+    });
 
-  bar.start();
+    bar.start();
 
-  // Simulate upload
-  for (let uploaded = 0; uploaded < file.size; uploaded += chunkSize) {
-    await uploadChunk(file, uploaded, chunkSize);
-    bar.update(uploaded);
-  }
+    // Simulate upload
+    for (let uploaded = 0; uploaded < file.size; uploaded += chunkSize) {
+        await uploadChunk(file, uploaded, chunkSize);
+        bar.update(uploaded);
+    }
 
-  bar.stop();
-  logger.success('File uploaded');
+    bar.stop();
+    logger.success("File uploaded");
 };
 ```
 
@@ -187,26 +187,26 @@ const uploadFile = async (file: File) => {
 const logger = createPail({ interactive: true });
 
 const processData = async () => {
-  const multiBar = logger.createMultiProgressBar();
-  
-  const step1 = multiBar.create(100, 0, { format: 'Step 1 [{bar}]' });
-  const step2 = multiBar.create(100, 0, { format: 'Step 2 [{bar}]' });
-  const step3 = multiBar.create(100, 0, { format: 'Step 3 [{bar}]' });
+    const multiBar = logger.createMultiProgressBar();
 
-  step1.start();
-  await doStep1((progress) => step1.update(progress));
-  step1.stop();
+    const step1 = multiBar.create(100, 0, { format: "Step 1 [{bar}]" });
+    const step2 = multiBar.create(100, 0, { format: "Step 2 [{bar}]" });
+    const step3 = multiBar.create(100, 0, { format: "Step 3 [{bar}]" });
 
-  step2.start();
-  await doStep2((progress) => step2.update(progress));
-  step2.stop();
+    step1.start();
+    await doStep1((progress) => step1.update(progress));
+    step1.stop();
 
-  step3.start();
-  await doStep3((progress) => step3.update(progress));
-  step3.stop();
+    step2.start();
+    await doStep2((progress) => step2.update(progress));
+    step2.stop();
 
-  multiBar.stop();
-  logger.success('All steps completed');
+    step3.start();
+    await doStep3((progress) => step3.update(progress));
+    step3.stop();
+
+    multiBar.stop();
+    logger.success("All steps completed");
 };
 ```
 
@@ -216,18 +216,18 @@ const processData = async () => {
 const logger = createPail({ interactive: true });
 
 const loadData = async () => {
-  const spinner = logger.createSpinner({ name: 'dots' });
-  
-  spinner.start('Loading data...');
-  
-  try {
-    const data = await fetchData();
-    spinner.succeed('Data loaded');
-    return data;
-  } catch (error) {
-    spinner.failed('Failed to load data');
-    throw error;
-  }
+    const spinner = logger.createSpinner({ name: "dots" });
+
+    spinner.start("Loading data...");
+
+    try {
+        const data = await fetchData();
+        spinner.succeed("Data loaded");
+        return data;
+    } catch (error) {
+        spinner.failed("Failed to load data");
+        throw error;
+    }
 };
 ```
 
@@ -273,4 +273,3 @@ Spinner methods:
 
 - [Basic Usage](/docs/package/pail/usage/basic) - Basic logging operations
 - [Configuration](/docs/package/pail/configuration) - Configure interactive mode
-

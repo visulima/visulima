@@ -62,8 +62,8 @@ import { pail } from "@visulima/pail";
 const logger = pail.scope("auth");
 
 export const login = (username: string) => {
-  logger.info("Attempting login", { username });
-  // ...
+    logger.info("Attempting login", { username });
+    // ...
 };
 ```
 
@@ -76,8 +76,8 @@ import { pail } from "@visulima/pail";
 const paymentLogger = pail.scope("payment", "processing");
 
 export const processPayment = (amount: number) => {
-  paymentLogger.info("Processing payment", { amount });
-  // ...
+    paymentLogger.info("Processing payment", { amount });
+    // ...
 };
 ```
 
@@ -90,13 +90,13 @@ import { createPail } from "@visulima/pail";
 const logger = createPail();
 
 export const requestLogger = (req: Request, res: Response, next: NextFunction) => {
-  const requestId = req.headers["x-request-id"] || generateId();
-  const scopedLogger = logger.scope("request", requestId);
-  
-  req.logger = scopedLogger; // Attach to request
-  scopedLogger.info("Request received", { method: req.method, path: req.path });
-  
-  next();
+    const requestId = req.headers["x-request-id"] || generateId();
+    const scopedLogger = logger.scope("request", requestId);
+
+    req.logger = scopedLogger; // Attach to request
+    scopedLogger.info("Request received", { method: req.method, path: req.path });
+
+    next();
 };
 ```
 
@@ -109,15 +109,15 @@ import { pail } from "@visulima/pail";
 const logger = pail.scope("UserProfile");
 
 const UserProfile = () => {
-  useEffect(() => {
-    logger.info("Component mounted");
-    
-    return () => {
-      logger.info("Component unmounted");
-    };
-  }, []);
-  
-  // ...
+    useEffect(() => {
+        logger.info("Component mounted");
+
+        return () => {
+            logger.info("Component unmounted");
+        };
+    }, []);
+
+    // ...
 };
 ```
 
@@ -135,9 +135,9 @@ Scopes are displayed differently depending on the reporter:
 
 ```json
 {
-  "scope": ["api", "users"],
-  "type": { "name": "info", "level": "informational" },
-  "message": "Fetching user"
+    "scope": ["api", "users"],
+    "type": { "name": "info", "level": "informational" },
+    "message": "Fetching user"
 }
 ```
 
@@ -155,7 +155,7 @@ You can create scopes dynamically:
 
 ```typescript
 const createModuleLogger = (moduleName: string) => {
-  return pail.scope("module", moduleName);
+    return pail.scope("module", moduleName);
 };
 
 const authLogger = createModuleLogger("auth");
@@ -166,4 +166,3 @@ const userLogger = createModuleLogger("user");
 
 - [Basic Usage](/docs/package/pail/usage/basic) - Basic logging operations
 - [Configuration](/docs/package/pail/configuration) - Configure logger behavior
-

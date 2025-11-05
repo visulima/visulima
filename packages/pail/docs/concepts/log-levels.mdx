@@ -103,7 +103,7 @@ When you set a log level, only messages at that level or higher priority will be
 import { createPail } from "@visulima/pail";
 
 const logger = createPail({
-  logLevel: "warning", // Only show warning and above
+    logLevel: "warning", // Only show warning and above
 });
 ```
 
@@ -134,11 +134,11 @@ You can define custom log levels with numeric priorities:
 import { createPail } from "@visulima/pail";
 
 const logger = createPail({
-  logLevels: {
-    verbose: 0, // Lower than debug
-    custom: 10,  // Higher than emergency
-  },
-  logLevel: "verbose",
+    logLevels: {
+        verbose: 0, // Lower than debug
+        custom: 10, // Higher than emergency
+    },
+    logLevel: "verbose",
 });
 ```
 
@@ -150,13 +150,13 @@ Each logger type (like `success`, `error`, etc.) can have its own log level:
 import { createPail } from "@visulima/pail";
 
 const logger = createPail({
-  types: {
-    http: {
-      label: "HTTP",
-      color: "blue",
-      logLevel: "info", // HTTP logs use 'info' level
+    types: {
+        http: {
+            label: "HTTP",
+            color: "blue",
+            logLevel: "info", // HTTP logs use 'info' level
+        },
     },
-  },
 });
 
 logger.http("GET /api/users 200"); // Uses 'info' level
@@ -173,4 +173,3 @@ logger.http("GET /api/users 200"); // Uses 'info' level
 
 - [Configuration](/docs/package/pail/configuration) - Learn how to configure log levels
 - [Basic Usage](/docs/package/pail/usage/basic) - See log levels in action
-

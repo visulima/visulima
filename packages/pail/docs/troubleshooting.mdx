@@ -14,30 +14,33 @@ Common issues and their solutions when using Pail.
 **Possible Causes:**
 
 1. **Logger is disabled**
-   ```typescript
-   logger.disable(); // Check if disabled somewhere
-   logger.enable(); // Re-enable
-   ```
+
+    ```typescript
+    logger.disable(); // Check if disabled somewhere
+    logger.enable(); // Re-enable
+    ```
 
 2. **Log level too high**
-   ```typescript
-   // If logLevel is "error", debug/info won't show
-   const logger = createPail({ logLevel: "debug" });
-   ```
+
+    ```typescript
+    // If logLevel is "error", debug/info won't show
+    const logger = createPail({ logLevel: "debug" });
+    ```
 
 3. **No reporters configured**
-   ```typescript
-   // Make sure reporters are added
-   const logger = createPail({
-     reporters: [new PrettyReporter()],
-   });
-   ```
+
+    ```typescript
+    // Make sure reporters are added
+    const logger = createPail({
+        reporters: [new PrettyReporter()],
+    });
+    ```
 
 4. **Environment variable override**
-   ```bash
-   # Check PAIL_LOG_LEVEL
-   echo $PAIL_LOG_LEVEL
-   ```
+    ```bash
+    # Check PAIL_LOG_LEVEL
+    echo $PAIL_LOG_LEVEL
+    ```
 
 ## TypeScript Errors
 
@@ -49,10 +52,10 @@ Common issues and their solutions when using Pail.
 type CustomTypes = "http" | "db";
 
 const logger = createPail<CustomTypes>({
-  types: {
-    http: { label: "HTTP", logLevel: "info" },
-    db: { label: "DB", logLevel: "debug" },
-  },
+    types: {
+        http: { label: "HTTP", logLevel: "info" },
+        db: { label: "DB", logLevel: "debug" },
+    },
 });
 ```
 
@@ -63,9 +66,9 @@ const logger = createPail<CustomTypes>({
 ```typescript
 // Make sure custom type is in types config
 const logger = createPail({
-  types: {
-    custom: { label: "CUSTOM", logLevel: "info" },
-  },
+    types: {
+        custom: { label: "CUSTOM", logLevel: "info" },
+    },
 });
 
 logger.custom("Message"); // Now works
@@ -78,29 +81,33 @@ logger.custom("Message"); // Now works
 **Solutions:**
 
 1. **Increase log level**
-   ```typescript
-   const logger = createPail({
-     logLevel: "warning", // Reduce verbosity
-   });
-   ```
+
+    ```typescript
+    const logger = createPail({
+        logLevel: "warning", // Reduce verbosity
+    });
+    ```
 
 2. **Disable processors in production**
-   ```typescript
-   const logger = createPail({
-     processors: process.env.NODE_ENV === "production"
-       ? [] // No processors in production
-       : [new CallerProcessor()],
-   });
-   ```
+
+    ```typescript
+    const logger = createPail({
+        processors:
+            process.env.NODE_ENV === "production"
+                ? [] // No processors in production
+                : [new CallerProcessor()],
+    });
+    ```
 
 3. **Use JSON reporter in production**
-   ```typescript
-   const logger = createPail({
-     reporters: process.env.NODE_ENV === "production"
-       ? [new JsonReporter()] // Faster
-       : [new PrettyReporter()],
-   });
-   ```
+    ```typescript
+    const logger = createPail({
+        reporters:
+            process.env.NODE_ENV === "production"
+                ? [new JsonReporter()] // Faster
+                : [new PrettyReporter()],
+    });
+    ```
 
 ## Interactive Mode Issues
 
@@ -109,23 +116,24 @@ logger.custom("Message"); // Now works
 **Possible Causes:**
 
 1. **Interactive mode not enabled**
-   ```typescript
-   const logger = createPail({ interactive: true }); // Required
-   ```
+
+    ```typescript
+    const logger = createPail({ interactive: true }); // Required
+    ```
 
 2. **Not running in terminal**
-   - Interactive mode only works in terminal environments
-   - Won't work in browser or non-TTY environments
+    - Interactive mode only works in terminal environments
+    - Won't work in browser or non-TTY environments
 
 3. **Streams not available**
-   ```typescript
-   // Make sure stdout/stderr are available
-   const logger = createPail({
-     interactive: true,
-     stdout: process.stdout,
-     stderr: process.stderr,
-   });
-   ```
+    ```typescript
+    // Make sure stdout/stderr are available
+    const logger = createPail({
+        interactive: true,
+        stdout: process.stdout,
+        stderr: process.stderr,
+    });
+    ```
 
 ## File Reporter Issues
 
@@ -134,24 +142,26 @@ logger.custom("Message"); // Now works
 **Possible Causes:**
 
 1. **Missing dependency**
-   ```bash
-   npm install rotating-file-stream
-   ```
+
+    ```bash
+    npm install rotating-file-stream
+    ```
 
 2. **Permissions issue**
-   ```bash
-   # Check file permissions
-   ls -la /var/log/app.log
-   # Ensure write permissions
-   ```
+
+    ```bash
+    # Check file permissions
+    ls -la /var/log/app.log
+    # Ensure write permissions
+    ```
 
 3. **Invalid file path**
-   ```typescript
-   // Use absolute paths
-   new JsonFileReporter({
-     filePath: "/absolute/path/to/log.log", // Not relative
-   });
-   ```
+    ```typescript
+    // Use absolute paths
+    new JsonFileReporter({
+        filePath: "/absolute/path/to/log.log", // Not relative
+    });
+    ```
 
 ## Redact Processor Issues
 
@@ -160,27 +170,29 @@ logger.custom("Message"); // Now works
 **Possible Causes:**
 
 1. **Missing dependency**
-   ```bash
-   npm install @visulima/redact
-   ```
+
+    ```bash
+    npm install @visulima/redact
+    ```
 
 2. **Pattern not matching**
-   ```typescript
-   // Test your regex pattern
-   const pattern = /\b\d{4}[\s-]?\d{4}[\s-]?\d{4}[\s-]?\d{4}\b/g;
-   "1234-5678-9012-3456".match(pattern); // Should match
-   ```
+
+    ```typescript
+    // Test your regex pattern
+    const pattern = /\b\d{4}[\s-]?\d{4}[\s-]?\d{4}[\s-]?\d{4}\b/g;
+    "1234-5678-9012-3456".match(pattern); // Should match
+    ```
 
 3. **Processor order**
-   ```typescript
-   // RedactProcessor should run before other processors
-   const logger = createPail({
-     processors: [
-       new RedactProcessor(), // First
-       new CallerProcessor(), // Second
-     ],
-   });
-   ```
+    ```typescript
+    // RedactProcessor should run before other processors
+    const logger = createPail({
+        processors: [
+            new RedactProcessor(), // First
+            new CallerProcessor(), // Second
+        ],
+    });
+    ```
 
 ## Scope Issues
 
@@ -189,14 +201,14 @@ logger.custom("Message"); // Now works
 **Check:**
 
 1. **Reporter supports scopes**
-   - All built-in reporters support scopes
-   - Custom reporters need to handle `meta.scope`
+    - All built-in reporters support scopes
+    - Custom reporters need to handle `meta.scope`
 
 2. **Scope is set correctly**
-   ```typescript
-   const scopedLogger = logger.scope("api");
-   scopedLogger.info("Message"); // Should include scope
-   ```
+    ```typescript
+    const scopedLogger = logger.scope("api");
+    scopedLogger.info("Message"); // Should include scope
+    ```
 
 ## Browser Issues
 
@@ -205,19 +217,20 @@ logger.custom("Message"); // Now works
 **Solutions:**
 
 1. **Use browser import**
-   ```typescript
-   import { createPail } from "@visulima/pail/browser";
-   ```
+
+    ```typescript
+    import { createPail } from "@visulima/pail/browser";
+    ```
 
 2. **Check browser compatibility**
-   - Requires modern browser with ES module support
-   - Check browser console for errors
+    - Requires modern browser with ES module support
+    - Check browser console for errors
 
 3. **Use browser-compatible reporters**
-   ```typescript
-   // PrettyReporter and JsonReporter work in browser
-   // FileReporter and SimpleReporter don't
-   ```
+    ```typescript
+    // PrettyReporter and JsonReporter work in browser
+    // FileReporter and SimpleReporter don't
+    ```
 
 ## Environment Variable Issues
 
@@ -226,20 +239,21 @@ logger.custom("Message"); // Now works
 **Check:**
 
 1. **Variable name**
-   ```bash
-   # Correct
-   PAIL_LOG_LEVEL=debug node app.js
-   
-   # Not
-   LOG_LEVEL=debug node app.js
-   ```
+
+    ```bash
+    # Correct
+    PAIL_LOG_LEVEL=debug node app.js
+
+    # Not
+    LOG_LEVEL=debug node app.js
+    ```
 
 2. **Setting before import**
-   ```typescript
-   // Set before creating logger
-   process.env.PAIL_LOG_LEVEL = "debug";
-   import { createPail } from "@visulima/pail";
-   ```
+    ```typescript
+    // Set before creating logger
+    process.env.PAIL_LOG_LEVEL = "debug";
+    import { createPail } from "@visulima/pail";
+    ```
 
 ## Getting Help
 
@@ -254,4 +268,3 @@ If you're still experiencing issues:
 
 - [Configuration](/docs/package/pail/configuration) - Configuration options
 - [API Reference](/docs/package/pail/api) - Complete API documentation
-

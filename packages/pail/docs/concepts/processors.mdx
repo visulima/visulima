@@ -32,7 +32,7 @@ import { createPail } from "@visulima/pail";
 import CallerProcessor from "@visulima/pail/processor/caller";
 
 const logger = createPail({
-  processors: [new CallerProcessor()],
+    processors: [new CallerProcessor()],
 });
 
 logger.info("This message includes caller info");
@@ -52,16 +52,16 @@ import { createPail } from "@visulima/pail";
 import RedactProcessor from "@visulima/pail/processor/redact";
 
 const logger = createPail({
-  processors: [
-    new RedactProcessor(
-      [
-        // Redact patterns
-        { key: "card", pattern: /\b\d{4}[\s-]?\d{4}[\s-]?\d{4}[\s-]?\d{4}\b/g, replacement: "[REDACTED]" }, // Credit cards
-        { key: "email", pattern: /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g, replacement: "[EMAIL]" }, // Emails
-      ],
-      { exclude: [] } // Optional options
-    ),
-  ],
+    processors: [
+        new RedactProcessor(
+            [
+                // Redact patterns
+                { key: "card", pattern: /\b\d{4}[\s-]?\d{4}[\s-]?\d{4}[\s-]?\d{4}\b/g, replacement: "[REDACTED]" }, // Credit cards
+                { key: "email", pattern: /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g, replacement: "[EMAIL]" }, // Emails
+            ],
+            { exclude: [] }, // Optional options
+        ),
+    ],
 });
 
 logger.info("User email: user@example.com");
@@ -102,16 +102,16 @@ Implement the `Processor` interface:
 import type { Processor, Meta } from "@visulima/pail";
 
 class TimestampProcessor<L extends string = string> implements Processor<L> {
-  public process(meta: Meta<L>): Meta<L> {
-    return {
-      ...meta,
-      timestamp: Date.now(), // Add custom field
-    };
-  }
+    public process(meta: Meta<L>): Meta<L> {
+        return {
+            ...meta,
+            timestamp: Date.now(), // Add custom field
+        };
+    }
 }
 
 const logger = createPail({
-  processors: [new TimestampProcessor()],
+    processors: [new TimestampProcessor()],
 });
 ```
 
@@ -122,19 +122,17 @@ If your processor needs to serialize objects:
 ```typescript
 import type { StringifyAwareProcessor, Meta } from "@visulima/pail";
 
-class SerializationProcessor<L extends string = string>
-  implements StringifyAwareProcessor<L>
-{
-  private stringify: typeof JSON.stringify | undefined;
+class SerializationProcessor<L extends string = string> implements StringifyAwareProcessor<L> {
+    private stringify: typeof JSON.stringify | undefined;
 
-  public setStringify(stringify: typeof JSON.stringify): void {
-    this.stringify = stringify;
-  }
+    public setStringify(stringify: typeof JSON.stringify): void {
+        this.stringify = stringify;
+    }
 
-  public process(meta: Meta<L>): Meta<L> {
-    // Use this.stringify for serialization
-    return meta;
-  }
+    public process(meta: Meta<L>): Meta<L> {
+        // Use this.stringify for serialization
+        return meta;
+    }
 }
 ```
 
@@ -146,26 +144,23 @@ Add request IDs to all logs:
 import type { Processor, Meta } from "@visulima/pail";
 
 class RequestIdProcessor<L extends string = string> implements Processor<L> {
-  private requestId: string;
+    private requestId: string;
 
-  public constructor(requestId: string) {
-    this.requestId = requestId;
-  }
+    public constructor(requestId: string) {
+        this.requestId = requestId;
+    }
 
-  public process(meta: Meta<L>): Meta<L> {
-    return {
-      ...meta,
-      context: [
-        ...(meta.context || []),
-        { requestId: this.requestId },
-      ],
-    };
-  }
+    public process(meta: Meta<L>): Meta<L> {
+        return {
+            ...meta,
+            context: [...(meta.context || []), { requestId: this.requestId }],
+        };
+    }
 }
 
 // Use in request handler
 const logger = createPail({
-  processors: [new RequestIdProcessor(req.id)],
+    processors: [new RequestIdProcessor(req.id)],
 });
 ```
 
@@ -177,18 +172,18 @@ Add environment information:
 import type { Processor, Meta } from "@visulima/pail";
 
 class EnvironmentProcessor<L extends string = string> implements Processor<L> {
-  public process(meta: Meta<L>): Meta<L> {
-    return {
-      ...meta,
-      context: [
-        ...(meta.context || []),
-        {
-          env: process.env.NODE_ENV,
-          version: process.env.APP_VERSION,
-        },
-      ],
-    };
-  }
+    public process(meta: Meta<L>): Meta<L> {
+        return {
+            ...meta,
+            context: [
+                ...(meta.context || []),
+                {
+                    env: process.env.NODE_ENV,
+                    version: process.env.APP_VERSION,
+                },
+            ],
+        };
+    }
 }
 ```
 
@@ -205,4 +200,3 @@ class EnvironmentProcessor<L extends string = string> implements Processor<L> {
 - [Reporters](/docs/package/pail/concepts/reporters) - Learn about output destinations
 - [Configuration](/docs/package/pail/configuration) - Configure processors
 - [API Reference](/docs/package/pail/api) - Complete processor API
-
