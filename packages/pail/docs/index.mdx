@@ -1,0 +1,105 @@
+---
+title: Introduction
+description: Get started with Pail, a highly configurable logging library for Node.js, Edge, and Browser
+---
+
+# Pail
+
+**Highly configurable Logger for Node.js, Edge and Browser**
+
+Pail is a powerful, flexible logging library built on top of modern JavaScript foundations. It provides a comprehensive logging solution with support for multiple log levels, custom types, processors, reporters, and advanced features like throttling, scoping, timers, and interactive terminal UIs.
+
+## Why Pail?
+
+- **Easy to use** - Simple API that feels natural
+- **Hackable to the core** - Fully extensible with custom processors and reporters
+- **Integrated timers** - Built-in performance timing utilities
+- **Custom pluggable processors and reporters** - Extend functionality easily
+- **TypeScript support** - Full type safety out of the box
+- **Interactive and regular modes** - Support for progress bars, multi-progress bars, spinners, multi-spinners, and interactive manager
+- **Object tree rendering** - Utility function to visualize objects as ASCII trees
+- **Secrets & sensitive information filtering** - Built-in redaction support
+- **Filename, date and timestamp support** - Rich metadata tracking
+- **Scoped loggers and timers** - Organize logs by context
+- **Scaled logging levels mechanism** - RFC 5424 compliant
+- **String interpolation support** - Format messages like console.log
+- **Object and error interpolation** - Rich error handling
+- **Stack trace and pretty errors** - Beautiful error formatting
+- **Simple and minimal syntax** - Intuitive API design
+- **Spam prevention by throttling logs** - Avoid log flooding
+- **Browser and Server support** - Universal logging solution
+- **Redirect console and stdout/stderr** - Easy integration
+- **Pretty or JSON output** - Multiple output formats
+- **ESM-only with tree-shaking support** - Modern JavaScript (Node.js ≥ 20.19)
+- **Supports circular structures** - Robust object serialization
+- **Fast and powerful** - Optimized for performance
+
+## Quick Start
+
+```typescript
+import { pail } from "@visulima/pail";
+
+pail.success("Operation successful");
+pail.debug("Hello", "from", "L59");
+pail.pending("Write release notes for %s", "1.2.0");
+pail.critical(new Error("Unable to acquire lock"));
+pail.watch("Recursively watching build directory...");
+pail.complete({
+    prefix: "[task]",
+    message: "Fix issue #59",
+    suffix: "(@prisis)",
+});
+```
+
+## Installation
+
+```bash
+npm install @visulima/pail
+```
+
+```bash
+yarn add @visulima/pail
+```
+
+```bash
+pnpm add @visulima/pail
+```
+
+## Core Concepts
+
+Pail is built around three core concepts:
+
+### Log Levels
+
+Pail adheres to the log levels defined in [RFC 5424](https://datatracker.ietf.org/doc/html/rfc5424) extended with `trace` level. This means you can use log levels to filter out messages that are not important to you.
+
+### Reporters
+
+Reporters are responsible for writing log messages to various destinations (console, files, etc.). Pail comes with built-in reporters:
+
+- `JsonReporter` - Structured JSON output
+- `PrettyReporter` - Beautiful formatted console output
+- `SimpleReporter` - Simple formatted output (server only)
+- `FileReporter` - Write logs to rotating files (server only)
+
+### Processors
+
+Processors modify or enhance log metadata before it reaches reporters. Built-in processors include:
+
+- `CallerProcessor` - Adds caller information (file, line, column)
+- `RedactProcessor` - Redacts sensitive information
+- `MessageFormatterProcessor` - Formats messages with string interpolation
+- `ErrorProcessor` - Serializes errors with cause chains
+
+## Comparison with Other Libraries
+
+Wondering how Pail compares to Pino, Winston, Consola, or other logging libraries? Check out our [comparison guide](/docs/package/pail/comparison) to see which library fits your needs.
+
+## What's Next?
+
+- [Installation Guide](/docs/package/pail/installation) - Learn how to install and set up Pail
+- [Basic Usage](/docs/package/pail/usage/basic) - Start logging with simple examples
+- [Comparison](/docs/package/pail/comparison) - See how Pail compares to alternatives
+- [Configuration](/docs/package/pail/configuration) - Customize Pail to your needs
+- [API Reference](/docs/package/pail/api) - Complete API documentation
+

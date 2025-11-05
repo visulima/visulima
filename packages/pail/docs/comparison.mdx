@@ -1,0 +1,340 @@
+---
+title: Comparison
+description: How Pail compares to other logging libraries
+---
+
+# Comparison with Other Logging Libraries
+
+Choosing the right logging library depends on your specific needs. This guide helps you understand when Pail is the right choice compared to popular alternatives.
+
+## Quick Comparison
+
+| Feature | Pail | Pino | Winston | Consola | TSLog |
+|---------|------|------|---------|---------|-------|
+| **Browser Support** | ✅ | ❌ | ❌ | ✅ | ❌ |
+| **Server Support** | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **Pretty Output** | ✅ | ❌ | ✅ | ✅ | ❌ |
+| **JSON Output** | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **TypeScript** | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **Custom Types** | ✅ | ❌ | ❌ | ✅ | ❌ |
+| **Processors** | ✅ | ❌ | ❌ | ❌ | ❌ |
+| **Interactive Features** | ✅ Progress bars, Multi-bars, Spinners, Multi-spinners, Interactive Manager | ❌ | ❌ | ❌ | ❌ |
+| **Performance** | ⚡⚡ Very Fast | ⚡ Fast | 🐌 Slower | ⚡⚡ Very Fast | ⚡ Fast |
+| **Bundle Size** | Small | Small | Large | Medium | Medium |
+
+## Detailed Comparisons
+
+### Pail vs Pino
+
+**Choose Pino if:**
+- You're already heavily invested in Pino's ecosystem
+- You need specific Pino plugins or integrations
+- You prefer Pino's API style
+
+**Choose Pail if:**
+- You need browser support
+- You want pretty-printed logs for development
+- You need custom log types (like `http`, `db`, etc.)
+- You want built-in interactive features (progress bars, multi-progress bars, spinners, multi-spinners, interactive manager)
+- You need processors for data transformation
+- You want a unified logging solution for both browser and server
+- You want better performance - Pail is **faster than Pino** in benchmarks
+
+**Performance:** Based on benchmarks, Pail server is **faster than Pino** across all scenarios:
+- Basic logging: Pail (~12M ops/sec) vs Pino (~1.9M ops/sec) - **6x faster**
+- Object logging: Pail (~12M ops/sec) vs Pino (~1.8M ops/sec) - **6.7x faster**
+- Deep objects: Pail (~12M ops/sec) vs Pino (~79K ops/sec) - **156x faster**
+- Long strings: Pail (~12M ops/sec) vs Pino (~175K ops/sec) - **69x faster**
+
+Pail combines superior performance with better developer experience.
+
+```typescript
+// Pino - Fast but limited
+import pino from "pino";
+const logger = pino();
+logger.info({ userId: 123 }, "User logged in");
+
+// Pail - More features, still fast
+import { pail } from "@visulima/pail";
+pail.info("User logged in", { userId: 123 });
+pail.http("GET /api/users 200"); // Custom types
+```
+
+### Pail vs Winston
+
+**Choose Winston if:**
+- You need extensive third-party transport plugins
+- You're migrating from an existing Winston setup
+- You need specific Winston ecosystem integrations
+
+**Choose Pail if:**
+- You want a modern, TypeScript-first API
+- You need browser support
+- You want better performance
+- You prefer a simpler, more intuitive API
+- You need interactive features (progress bars, multi-progress bars, spinners, multi-spinners, interactive manager)
+
+**Performance:** Pail is significantly faster than Winston, especially for high-volume logging scenarios.
+
+```typescript
+// Winston - More verbose
+import winston from "winston";
+const logger = winston.createLogger({
+  transports: [new winston.transports.Console()],
+});
+logger.info("Message", { metadata: "value" });
+
+// Pail - Cleaner API
+import { pail } from "@visulima/pail";
+pail.info("Message", { metadata: "value" });
+```
+
+### Pail vs Consola
+
+**Choose Consola if:**
+- You're already using Nuxt.js (Consola is built for Nuxt)
+- You need Nuxt-specific integrations
+- You prefer Consola's API style
+
+**Choose Pail if:**
+- You need more advanced features (processors, custom types)
+- You want better TypeScript support
+- You need interactive terminal features (progress bars, multi-progress bars, spinners, multi-spinners, interactive manager)
+- You want more control over output formatting
+- You need RFC 5424 compliant log levels
+
+**Performance:** Both are extremely fast. Pail is faster for object logging (~12M vs ~11M ops/sec), while Consola has a slight edge for basic string logging. Pail offers significantly more features while maintaining comparable performance.
+
+```typescript
+// Consola - Simple and clean
+import { createConsola } from "consola";
+const logger = createConsola();
+logger.info("Message");
+
+// Pail - More powerful
+import { pail } from "@visulima/pail";
+pail.info("Message");
+pail.http("GET /api/users"); // Custom types
+const bar = pail.createProgressBar({ total: 100 }); // Single progress bar
+const multiBar = pail.createMultiProgressBar(); // Multi-progress bars
+const spinner = pail.createSpinner(); // Single spinner
+const multiSpinner = pail.createMultiSpinner(); // Multi-spinners
+```
+
+### Pail vs TSLog
+
+**Choose TSLog if:**
+- You need very specific TypeScript-only features
+- You prefer TSLog's type system
+- You're building TypeScript-only applications
+
+**Choose Pail if:**
+- You need browser support
+- You want pretty output for development
+- You need custom log types
+- You want progress bars and interactive features
+- You need processors for data transformation
+
+**Performance:** Both are performant, with Pail offering more features while maintaining good performance.
+
+## Key Differentiators
+
+### 1. Universal Support
+
+Pail is one of the few logging libraries that works seamlessly in both browser and server environments with the same API:
+
+```typescript
+// Works in both browser and server
+import { pail } from "@visulima/pail";
+pail.info("Works everywhere!");
+```
+
+### 2. Custom Log Types
+
+Pail's custom types feature allows semantic logging that matches your domain:
+
+```typescript
+const logger = createPail({
+  types: {
+    http: { badge: "🌐", color: "blue", label: "HTTP", logLevel: "info" },
+    db: { badge: "💾", color: "cyan", label: "DB", logLevel: "debug" },
+  },
+});
+
+logger.http("GET /api/users 200");
+logger.db("Query executed");
+```
+
+### 3. Processors
+
+Processors allow you to transform log data before it's output:
+
+```typescript
+import RedactProcessor from "@visulima/pail/processor/redact";
+import CallerProcessor from "@visulima/pail/processor/caller";
+
+const logger = createPail({
+  processors: [
+    new CallerProcessor(), // Add file/line info
+    new RedactProcessor(), // Uses standard rules, or pass custom rules as first parameter
+  ],
+});
+```
+
+### 4. Interactive Mode
+
+Comprehensive interactive terminal features:
+
+**Progress Bars:**
+- Single progress bars (`createProgressBar`)
+- Multi-progress bars (`createMultiProgressBar`) - Display multiple bars simultaneously
+
+**Spinners:**
+- Single spinners (`createSpinner`)
+- Multi-spinners (`createMultiSpinner`) - Manage multiple spinners
+
+**Interactive Manager:**
+- Direct access to `InteractiveManager` for advanced control
+
+```typescript
+const logger = createPail({ interactive: true });
+
+// Single progress bar
+const bar = logger.createProgressBar({ total: 100 });
+bar.start();
+bar.update(50);
+bar.stop();
+
+// Multi-progress bars
+const multiBar = logger.createMultiProgressBar();
+const bar1 = multiBar.create(100);
+const bar2 = multiBar.create(200);
+
+// Single spinner
+const spinner = logger.createSpinner({ name: 'dots' });
+spinner.start('Loading...');
+spinner.succeed('Done');
+
+// Multi-spinners
+const multiSpinner = logger.createMultiSpinner();
+const spinner1 = multiSpinner.create('Task 1');
+const spinner2 = multiSpinner.create('Task 2');
+
+// Interactive manager
+const manager = logger.getInteractiveManager();
+manager?.hook(); // Enable interactive mode
+manager?.unhook(); // Disable interactive mode
+```
+
+### 5. Built-in Throttling
+
+Prevent log spam automatically:
+
+```typescript
+const logger = createPail({
+  throttle: 1000, // Throttle duplicate logs
+  throttleMin: 5,  // After 5 duplicates
+});
+```
+
+## Performance Benchmarks
+
+Based on our benchmarks (see [benchmarks](https://github.com/visulima/visulima/tree/main/packages/pail/__bench__)):
+
+### Server Performance (operations per second)
+
+| Scenario | Pail Server | Consola | Pino | Winston |
+|----------|-------------|---------|------|---------|
+| **Basic logging** | ~12.3M | ~12.9M | ~1.9M | ~549K |
+| **Object logging** | ~12.0M | ~11.4M | ~1.8M | ~497K |
+| **Deep objects** | ~12.4M | ~12.4M | ~79K | ~19K |
+| **Long strings** | ~12.1M | ~12.9M | ~175K | ~71K |
+
+### Key Performance Insights
+
+- **Pail is fastest** for object and deep object logging (tied with Consola)
+- **Pail is 6-156x faster than Pino** depending on the scenario
+- **Pail is 20-175x faster than Winston** across all scenarios
+- **Browser performance**: Pail browser is optimized (~1M ops/sec for basic logging)
+
+Pail combines top-tier performance with rich features, making it an excellent choice for both development and production.
+
+## Migration Guide
+
+If you're migrating from another logger:
+
+### From Pino
+
+```typescript
+// Before (Pino)
+pino.info({ userId: 123 }, "User logged in");
+
+// After (Pail)
+pail.info("User logged in", { userId: 123 });
+```
+
+### From Winston
+
+```typescript
+// Before (Winston)
+winston.info("Message", { metadata: "value" });
+
+// After (Pail)
+pail.info("Message", { metadata: "value" });
+```
+
+### From Consola
+
+```typescript
+// Before (Consola)
+consola.info("Message");
+
+// After (Pail)
+pail.info("Message");
+```
+
+## When to Choose Pail
+
+Pail is ideal when you need:
+
+- ✅ **Universal logging** - Same API for browser and server
+- ✅ **Developer experience** - Pretty output, custom types, scoping
+- ✅ **Advanced features** - Processors, throttling, interactive mode (progress bars, multi-bars, spinners, multi-spinners, interactive manager)
+- ✅ **TypeScript** - Full type safety and IntelliSense
+- ✅ **Performance** - Fast enough for production workloads
+- ✅ **Flexibility** - Highly configurable and extensible
+
+## When Not to Choose Pail
+
+Consider alternatives if:
+
+- ❌ You need **specific Winston transports** (use Winston)
+- ❌ You're **migrating from Consola** in Nuxt (may be easier to stay)
+- ❌ You only need **simple console.log** (use native console)
+- ❌ You're already heavily invested in **Pino's ecosystem** (but note: Pail is faster!)
+
+## Summary
+
+Pail offers the best combination of **top-tier performance**, **rich features**, and **excellent developer experience**. Benchmark results show:
+
+- **6-156x faster than Pino** depending on logging scenario
+- **20-175x faster than Winston** across all scenarios  
+- **Competitive with Consola** (fastest for object logging, tied for deep objects)
+- **Universal support** for browser and server with same API
+
+Pail is particularly strong when you need:
+
+1. **Universal browser/server support** - Same API everywhere
+2. **Top performance** - Faster than Pino, competitive with fastest loggers
+3. **Rich developer experience** - Pretty output, custom types, scoping
+4. **Advanced interactive features** - Progress bars, multi-progress bars, spinners, multi-spinners, and interactive manager
+5. **Modern TypeScript-first API** - Full type safety
+
+For most applications, Pail provides the optimal combination of **speed**, **power**, and **ease of use**.
+
+## Related
+
+- [Installation](/docs/package/pail/installation) - Get started with Pail
+- [Basic Usage](/docs/package/pail/usage/basic) - Learn the basics
+- [Performance Benchmarks](https://github.com/visulima/visulima/tree/main/packages/pail/__bench__) - See detailed benchmarks
+

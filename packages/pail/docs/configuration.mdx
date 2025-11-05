@@ -1,0 +1,287 @@
+---
+title: Configuration
+description: Configure Pail to suit your needs
+---
+
+# Configuration
+
+Pail is highly configurable. This guide covers all configuration options.
+
+## Basic Configuration
+
+```typescript
+import { createPail } from "@visulima/pail";
+
+const logger = createPail({
+  logLevel: "debug",
+  scope: "my-module",
+  disabled: false,
+});
+```
+
+## Configuration Options
+
+### Log Level
+
+Set the minimum log level to display:
+
+```typescript
+const logger = createPail({
+  logLevel: "warning", // Only show warning and above
+});
+```
+
+**Default:** Automatically detected based on environment:
+- `NODE_ENV=debug` or `DEBUG=1` → `debug`
+- `NODE_ENV=test` → `warning`
+- Otherwise → `informational`
+
+**Environment Variable:** `PAIL_LOG_LEVEL=debug`
+
+### Custom Log Levels
+
+Define custom log levels with numeric priorities:
+
+```typescript
+const logger = createPail({
+  logLevels: {
+    verbose: 0,  // Lower than debug
+    custom: 10,  // Higher than emergency
+  },
+  logLevel: "verbose",
+});
+```
+
+### Scope
+
+Set initial scope for the logger:
+
+```typescript
+const logger = createPail({
+  scope: "api", // Single scope
+  // or
+  scope: ["api", "users"], // Multiple scopes
+});
+```
+
+### Disabled
+
+Disable logging entirely:
+
+```typescript
+const logger = createPail({
+  disabled: true, // All logs are ignored
+});
+```
+
+### Throttling
+
+Configure spam prevention:
+
+```typescript
+const logger = createPail({
+  throttle: 1000,      // Throttle window in ms (default: 1000)
+  throttleMin: 5,      // Minimum duplicates before throttling (default: 5)
+});
+```
+
+Throttling prevents the same log message from being repeated too frequently.
+
+### Timer Messages
+
+Customize timer messages:
+
+```typescript
+const logger = createPail({
+  messages: {
+    timerStart: "Starting timer...",
+    timerEnd: "Completed in:",
+  },
+});
+```
+
+### Reporters
+
+Configure output destinations:
+
+```typescript
+import { PrettyReporter } from "@visulima/pail/reporter/pretty";
+import { JsonReporter } from "@visulima/pail/reporter/json";
+
+const logger = createPail({
+  reporters: [
+    new PrettyReporter(),
+    new JsonReporter(),
+  ],
+});
+```
+
+### Processors
+
+Add processors to modify log metadata:
+
+```typescript
+import CallerProcessor from "@visulima/pail/processor/caller";
+import RedactProcessor from "@visulima/pail/processor/redact";
+
+const logger = createPail({
+  processors: [
+    new CallerProcessor(),
+    new RedactProcessor(), // Uses standard rules, or pass custom rules: new RedactProcessor(rules, options),
+  ],
+});
+```
+
+### Custom Types
+
+Define custom log types:
+
+```typescript
+const logger = createPail({
+  types: {
+    http: {
+      badge: "🌐",
+      color: "blue",
+      label: "HTTP",
+      logLevel: "info",
+    },
+  },
+});
+```
+
+### Raw Reporter
+
+Configure the raw reporter (for `logger.raw()`):
+
+```typescript
+import { RawReporter } from "@visulima/pail";
+
+const logger = createPail({
+  rawReporter: new CustomRawReporter(),
+});
+```
+
+## Server-Specific Options
+
+### Interactive Mode
+
+Enable interactive features (progress bars, spinners):
+
+```typescript
+const logger = createPail({
+  interactive: true,
+});
+```
+
+### Streams
+
+Customize stdout/stderr streams:
+
+```typescript
+import { createPail } from "@visulima/pail";
+import { stderr, stdout } from "node:process";
+
+const logger = createPail({
+  stdout: customStdout,
+  stderr: customStderr,
+});
+```
+
+## Complete Configuration Example
+
+```typescript
+import { createPail } from "@visulima/pail";
+import { PrettyReporter } from "@visulima/pail/reporter/pretty";
+import { CallerProcessor } from "@visulima/pail/processor/caller";
+
+const logger = createPail({
+  // Log level
+  logLevel: process.env.NODE_ENV === "production" ? "info" : "debug",
+  
+  // Scope
+  scope: ["app", "api"],
+  
+  // Throttling
+  throttle: 2000,
+  throttleMin: 10,
+  
+  // Custom types
+  types: {
+    http: {
+      badge: "🌐",
+      color: "blue",
+      label: "HTTP",
+      logLevel: "info",
+    },
+    db: {
+      badge: "💾",
+      color: "cyan",
+      label: "DB",
+      logLevel: "debug",
+    },
+  },
+  
+  // Reporters
+  reporters: [new PrettyReporter({
+    uppercase: { label: true },
+  })],
+  
+  // Processors
+  processors: [new CallerProcessor()],
+  
+  // Timer messages
+  messages: {
+    timerStart: "⏱️  Started:",
+    timerEnd: "✅ Completed in:",
+  },
+  
+  // Server-specific
+  interactive: true,
+});
+```
+
+## Environment-Based Configuration
+
+Create different configurations for different environments:
+
+```typescript
+const isDevelopment = process.env.NODE_ENV === "development";
+const isProduction = process.env.NODE_ENV === "production";
+
+const logger = createPail({
+  logLevel: isDevelopment ? "debug" : "info",
+  reporters: isProduction
+    ? [new JsonReporter()] // Structured logs in production
+    : [new PrettyReporter()], // Pretty output in development
+  processors: isProduction
+    ? [new RedactProcessor(), new CallerProcessor()]
+    : [new CallerProcessor()],
+});
+```
+
+## TypeScript Configuration
+
+For TypeScript projects, define custom types:
+
+```typescript
+type CustomLogTypes = "http" | "db" | "cache";
+type CustomLogLevels = "verbose" | "custom";
+
+const logger = createPail<CustomLogTypes, CustomLogLevels>({
+  types: {
+    http: { label: "HTTP", logLevel: "info" },
+    db: { label: "DB", logLevel: "debug" },
+    cache: { label: "CACHE", logLevel: "debug" },
+  },
+  logLevels: {
+    verbose: 0,
+    custom: 10,
+  },
+});
+```
+
+## Related
+
+- [API Reference](/docs/package/pail/api) - Complete API documentation
+- [Examples](/docs/package/pail/examples) - Configuration examples
+

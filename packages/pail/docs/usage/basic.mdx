@@ -1,0 +1,221 @@
+---
+title: Basic Usage
+description: Learn the basics of logging with Pail
+---
+
+# Basic Usage
+
+This guide covers the fundamental logging operations in Pail.
+
+## Default Logger
+
+Pail provides a pre-configured logger instance ready to use:
+
+```typescript
+import { pail } from "@visulima/pail";
+
+pail.info("Server started");
+pail.success("Operation completed");
+pail.error("Something went wrong", error);
+```
+
+## Log Types
+
+Pail provides semantic log types for different purposes:
+
+### Informational Logs
+
+```typescript
+pail.info("User logged in", { userId: 123 });
+pail.log("General message");
+```
+
+### Success Messages
+
+```typescript
+pail.success("File uploaded successfully");
+```
+
+### Warnings
+
+```typescript
+pail.warn("Using deprecated API");
+pail.warning("High memory usage detected");
+```
+
+### Errors
+
+```typescript
+pail.error("Failed to connect to database", error);
+pail.critical("System failure", criticalError);
+pail.emergency("System is down!");
+pail.alert("Immediate action required");
+```
+
+### Debug and Trace
+
+```typescript
+pail.debug("Processing request", { requestId: "abc" });
+pail.trace("Entering function", { functionName: "processData" });
+```
+
+### Status Messages
+
+```typescript
+pail.pending("Task in progress...");
+pail.complete("Task completed");
+pail.start("Starting process");
+pail.stop("Process stopped");
+pail.await("Waiting for response");
+pail.wait("Waiting...");
+pail.watch("Watching for changes");
+```
+
+## Message Formats
+
+### Simple String
+
+```typescript
+pail.info("Hello world");
+```
+
+### String Interpolation
+
+```typescript
+pail.info("User %s logged in", "John");
+pail.success("Completed %d tasks", 5);
+```
+
+### Multiple Arguments
+
+```typescript
+pail.debug("Processing", "request", { id: 123 });
+// All arguments are included in context
+```
+
+### Structured Message Object
+
+```typescript
+pail.complete({
+  prefix: "[task]",
+  message: "Fix issue #59",
+  suffix: "(@prisis)",
+});
+```
+
+### Error Objects
+
+```typescript
+try {
+  // ...
+} catch (error) {
+  pail.error(error); // Error object is automatically serialized
+  pail.error("Operation failed", error); // With additional context
+}
+```
+
+### Objects and Arrays
+
+```typescript
+pail.info({ userId: 123, action: "login" });
+pail.debug([1, 2, 3, 4, 5]);
+```
+
+## Creating Custom Loggers
+
+Create a logger with custom configuration:
+
+```typescript
+import { createPail } from "@visulima/pail";
+
+const logger = createPail({
+  logLevel: "debug",
+  scope: "my-module",
+});
+
+logger.info("Module initialized");
+```
+
+## Enabling and Disabling
+
+```typescript
+logger.disable(); // Stop all logging
+logger.info("This won't be logged");
+
+logger.enable(); // Resume logging
+logger.info("This will be logged");
+
+if (logger.isEnabled()) {
+  logger.debug("Logger is active");
+}
+```
+
+## Pausing and Resuming
+
+Queue messages during critical operations:
+
+```typescript
+logger.pause(); // Start queuing messages
+logger.info("Message 1"); // Queued
+logger.warn("Message 2"); // Queued
+
+logger.resume(); // Flush all queued messages
+logger.info("Message 3"); // Output immediately
+```
+
+## Console Integration
+
+### Wrap Console (Browser)
+
+```typescript
+logger.wrapConsole(); // Redirect console.* to logger
+console.log("Goes through logger");
+console.error("Also goes through logger");
+
+logger.restoreConsole(); // Restore original console
+```
+
+### Wrap Streams (Server)
+
+```typescript
+logger.wrapStd(); // Redirect stdout/stderr to logger
+process.stdout.write("Goes through logger");
+
+logger.restoreStd(); // Restore original streams
+```
+
+### Wrap Everything (Server)
+
+```typescript
+logger.wrapAll(); // Wraps both console and streams
+// All output goes through logger
+
+logger.restoreAll(); // Restore everything
+```
+
+## Exception Handling
+
+Automatically log uncaught exceptions:
+
+```typescript
+logger.wrapException(); // Sets up global error handlers
+
+// Uncaught errors will be logged automatically
+throw new Error("This will be logged");
+```
+
+## Raw Logging
+
+Bypass normal processing:
+
+```typescript
+logger.raw("Direct message", { data: "value" });
+// Uses rawReporter, bypasses processors
+```
+
+## Next Steps
+
+- [Scoped Loggers](/docs/package/pail/usage/scoped) - Organize logs by context
+- [Custom Types](/docs/package/pail/usage/custom-types) - Create custom log types
+- [Timers](/docs/package/pail/usage/timers) - Measure performance
+

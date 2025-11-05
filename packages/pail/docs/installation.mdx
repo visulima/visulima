@@ -1,0 +1,119 @@
+---
+title: Installation
+description: Install and set up Pail in your project
+---
+
+# Installation
+
+Pail is available as an npm package and can be installed using your preferred package manager.
+
+## Package Managers
+
+### npm
+
+```bash
+npm install @visulima/pail
+```
+
+### yarn
+
+```bash
+yarn add @visulima/pail
+```
+
+### pnpm
+
+```bash
+pnpm add @visulima/pail
+```
+
+## Requirements
+
+- **Node.js**: 20.19 or higher, up to 25.x
+- **TypeScript**: Optional but recommended for full type safety
+
+## Environment Support
+
+Pail supports:
+
+- **Node.js** (CommonJS and ESM)
+- **Edge Runtime** (Cloudflare Workers, Vercel Edge, etc.)
+- **Browser** (Modern browsers with ES module support)
+
+## Optional Dependencies
+
+Some features require optional peer dependencies:
+
+### Redact Processor
+
+For sensitive data redaction:
+
+```bash
+npm install @visulima/redact
+# or
+yarn add @visulima/redact
+# or
+pnpm add @visulima/redact
+```
+
+### File Reporter
+
+For file-based logging (server only):
+
+```bash
+npm install rotating-file-stream
+# or
+yarn add rotating-file-stream
+# or
+pnpm add rotating-file-stream
+```
+
+## Import Methods
+
+### Server (Node.js)
+
+```typescript
+import { pail, createPail } from "@visulima/pail";
+// or
+import { pail, createPail } from "@visulima/pail/server";
+```
+
+### Browser
+
+```typescript
+import { pail, createPail } from "@visulima/pail/browser";
+```
+
+### Auto-detection
+
+```typescript
+import { pail, createPail } from "@visulima/pail";
+```
+
+The default import automatically selects the appropriate implementation based on your environment.
+
+## TypeScript Support
+
+Pail is written in TypeScript and provides full type definitions. No additional type packages are required.
+
+```typescript
+import type { Pail, LoggerFunction } from "@visulima/pail";
+```
+
+## Verify Installation
+
+After installation, verify that Pail is working correctly:
+
+```typescript
+import { pail } from "@visulima/pail";
+
+pail.info("Pail is installed and working!");
+```
+
+If you see the log message, installation was successful!
+
+## Next Steps
+
+- [Basic Usage](/docs/package/pail/usage/basic) - Learn how to use Pail
+- [Configuration](/docs/package/pail/configuration) - Configure Pail for your needs
+

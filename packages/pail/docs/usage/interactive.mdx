@@ -1,0 +1,276 @@
+---
+title: Interactive Mode
+description: Use progress bars and spinners for interactive terminal output
+---
+
+# Interactive Mode
+
+Interactive mode enables progress bars, spinners, and other dynamic terminal UI elements. **Server only.**
+
+## Enabling Interactive Mode
+
+Enable interactive mode when creating a logger:
+
+```typescript
+import { createPail } from "@visulima/pail";
+
+const logger = createPail({
+  interactive: true,
+});
+```
+
+## Progress Bars
+
+### Single Progress Bar
+
+Create a simple progress bar:
+
+```typescript
+const logger = createPail({ interactive: true });
+
+const bar = logger.createProgressBar({
+  total: 100,
+  format: 'Downloading [{bar}] {percentage}% | ETA: {eta}s | {value}/{total}',
+});
+
+bar.start();
+
+// Update progress
+for (let i = 0; i <= 100; i++) {
+  bar.update(i);
+  await sleep(50);
+}
+
+bar.stop();
+```
+
+### Progress Bar Options
+
+```typescript
+const bar = logger.createProgressBar({
+  total: 100,
+  format: '{prefix} [{bar}] {percentage}% | {value}/{total}',
+  prefix: 'Progress',
+  barCompleteChar: '=',
+  barIncompleteChar: '-',
+  hideCursor: true,
+});
+```
+
+### Multiple Progress Bars
+
+Display multiple progress bars simultaneously:
+
+```typescript
+const logger = createPail({ interactive: true });
+
+const multiBar = logger.createMultiProgressBar();
+
+const bar1 = multiBar.create(100, 0, {
+  format: 'Upload [{bar}] {percentage}%',
+});
+
+const bar2 = multiBar.create(200, 0, {
+  format: 'Download [{bar}] {percentage}%',
+});
+
+bar1.start();
+bar2.start();
+
+// Update both bars
+bar1.update(50);
+bar2.update(100);
+
+multiBar.stop();
+```
+
+## Spinners
+
+### Single Spinner
+
+Create a spinner for ongoing operations:
+
+```typescript
+const logger = createPail({ interactive: true });
+
+const spinner = logger.createSpinner({ name: 'dots' });
+spinner.start('Loading...');
+
+// ... do work ...
+
+spinner.succeed('Loaded successfully');
+// or
+spinner.failed('Failed to load');
+// or
+spinner.warn('Warning occurred');
+```
+
+### Spinner Styles
+
+Available spinner styles:
+
+```typescript
+const spinner = logger.createSpinner({
+  name: 'dots',        // or 'line', 'pulse', 'bounce', etc.
+  color: 'blue',
+  interval: 80,
+});
+```
+
+### Multiple Spinners
+
+Manage multiple spinners:
+
+```typescript
+const logger = createPail({ interactive: true });
+
+const multiSpinner = logger.createMultiSpinner();
+
+const spinner1 = multiSpinner.create('Loading users');
+const spinner2 = multiSpinner.create('Loading posts');
+
+spinner1.start();
+spinner2.start();
+
+// ... work ...
+
+spinner1.succeed('Users loaded');
+spinner2.succeed('Posts loaded');
+
+multiSpinner.stop();
+```
+
+## Interactive Manager
+
+Access the interactive manager directly:
+
+```typescript
+const logger = createPail({ interactive: true });
+
+const manager = logger.getInteractiveManager();
+if (manager) {
+  manager.hook(); // Enable interactive mode
+  // ... use progress bars/spinners ...
+  manager.unhook(); // Disable interactive mode
+}
+```
+
+## Real-World Examples
+
+### File Upload Progress
+
+```typescript
+const logger = createPail({ interactive: true });
+
+const uploadFile = async (file: File) => {
+  const bar = logger.createProgressBar({
+    total: file.size,
+    format: 'Uploading [{bar}] {percentage}% | {value}/{total} bytes',
+  });
+
+  bar.start();
+
+  // Simulate upload
+  for (let uploaded = 0; uploaded < file.size; uploaded += chunkSize) {
+    await uploadChunk(file, uploaded, chunkSize);
+    bar.update(uploaded);
+  }
+
+  bar.stop();
+  logger.success('File uploaded');
+};
+```
+
+### Multi-Step Process
+
+```typescript
+const logger = createPail({ interactive: true });
+
+const processData = async () => {
+  const multiBar = logger.createMultiProgressBar();
+  
+  const step1 = multiBar.create(100, 0, { format: 'Step 1 [{bar}]' });
+  const step2 = multiBar.create(100, 0, { format: 'Step 2 [{bar}]' });
+  const step3 = multiBar.create(100, 0, { format: 'Step 3 [{bar}]' });
+
+  step1.start();
+  await doStep1((progress) => step1.update(progress));
+  step1.stop();
+
+  step2.start();
+  await doStep2((progress) => step2.update(progress));
+  step2.stop();
+
+  step3.start();
+  await doStep3((progress) => step3.update(progress));
+  step3.stop();
+
+  multiBar.stop();
+  logger.success('All steps completed');
+};
+```
+
+### Loading States
+
+```typescript
+const logger = createPail({ interactive: true });
+
+const loadData = async () => {
+  const spinner = logger.createSpinner({ name: 'dots' });
+  
+  spinner.start('Loading data...');
+  
+  try {
+    const data = await fetchData();
+    spinner.succeed('Data loaded');
+    return data;
+  } catch (error) {
+    spinner.failed('Failed to load data');
+    throw error;
+  }
+};
+```
+
+## Progress Bar Format Tokens
+
+Available format tokens:
+
+- `{bar}` - The progress bar
+- `{percentage}` - Percentage complete
+- `{value}` - Current value
+- `{total}` - Total value
+- `{eta}` - Estimated time remaining (seconds)
+- `{duration}` - Elapsed time (seconds)
+- `{prefix}` - Custom prefix text
+
+## Spinner Operations
+
+Spinner methods:
+
+- `start(text?)` - Start spinner with optional text
+- `stop()` - Stop spinner
+- `succeed(text?)` - Mark as successful and stop
+- `fail(text?)` - Mark as failed and stop
+- `warn(text?)` - Mark as warning and stop
+- `info(text?)` - Update with info text
+- `update(text?)` - Update spinner text
+
+## Best Practices
+
+1. **Use for long operations** - Progress bars/spinners are for operations that take time
+2. **Update frequently** - Update progress bars regularly for smooth animation
+3. **Clean up** - Always call `stop()` to clean up resources
+4. **Combine with logging** - Use regular logging alongside interactive elements
+5. **Error handling** - Handle errors gracefully and update UI accordingly
+
+## Limitations
+
+- **Server only** - Interactive mode requires Node.js streams
+- **Terminal only** - Works in terminal environments, not in browser
+- **Single instance** - Use one interactive logger per process
+
+## Related
+
+- [Basic Usage](/docs/package/pail/usage/basic) - Basic logging operations
+- [Configuration](/docs/package/pail/configuration) - Configure interactive mode
+

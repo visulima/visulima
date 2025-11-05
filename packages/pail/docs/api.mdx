@@ -1,0 +1,575 @@
+---
+title: API Reference
+description: Complete API reference for Pail
+---
+
+# API Reference
+
+Complete API documentation for Pail.
+
+## Core Functions
+
+### `createPail<T, L>(options?)`
+
+Creates a new Pail logger instance.
+
+**Type Parameters:**
+- `T` - Custom logger type names (default: `string`)
+- `L` - Custom log level types (default: `string`)
+
+**Parameters:**
+- `options?` - Configuration options (see [Configuration](/docs/package/pail/configuration))
+
+**Returns:** `PailServerType<T, L>` (server) or `PailBrowserType<T, L>` (browser)
+
+**Example:**
+
+```typescript
+import { createPail } from "@visulima/pail";
+
+const logger = createPail({
+  logLevel: "debug",
+  types: {
+    http: { label: "HTTP", logLevel: "info" },
+  },
+});
+```
+
+### `pail`
+
+Default pre-configured logger instance.
+
+**Example:**
+
+```typescript
+import { pail } from "@visulima/pail";
+
+pail.info("Hello world");
+```
+
+## Logger Methods
+
+### Logging Methods
+
+All default log types are available as methods:
+
+```typescript
+logger.alert(message, ...args)
+logger.critical(message, ...args)
+logger.debug(message, ...args)
+logger.emergency(message, ...args)
+logger.error(message, ...args)
+logger.info(message, ...args)
+logger.log(message, ...args)
+logger.notice(message, ...args)
+logger.pending(message, ...args)
+logger.start(message, ...args)
+logger.stop(message, ...args)
+logger.success(message, ...args)
+logger.trace(message, ...args)
+logger.await(message, ...args)
+logger.wait(message, ...args)
+logger.warn(message, ...args)
+logger.warning(message, ...args)
+logger.watch(message, ...args)
+logger.complete(message, ...args)
+```
+
+**Parameters:**
+- `message` - Message string, Error object, or Message object
+- `...args` - Additional context arguments
+
+**Example:**
+
+```typescript
+logger.info("User logged in", { userId: 123 });
+logger.error(new Error("Something went wrong"));
+logger.complete({
+  prefix: "[task]",
+  message: "Task completed",
+  suffix: "(@user)",
+});
+```
+
+### `scope<N>(...name: string[]): PailServerType<N, L>`
+
+Creates a scoped logger instance.
+
+**Parameters:**
+- `...name` - Scope names (one or more)
+
+**Returns:** New logger instance with scope applied
+
+**Example:**
+
+```typescript
+const scopedLogger = logger.scope("api", "users");
+scopedLogger.info("Message"); // Includes scope
+```
+
+### `unscope(): void`
+
+Removes the current scope.
+
+**Example:**
+
+```typescript
+logger.scope("api");
+logger.unscope(); // Removes scope
+```
+
+### `time(label?: string): void`
+
+Starts a timer with the specified label.
+
+**Parameters:**
+- `label` - Timer label (default: `"default"`)
+
+**Example:**
+
+```typescript
+logger.time("operation");
+// ... work ...
+logger.timeEnd("operation");
+```
+
+### `timeLog(label?: string, ...data: unknown[]): void`
+
+Logs the current elapsed time for a timer without stopping it.
+
+**Parameters:**
+- `label` - Timer label (uses last timer if not specified)
+- `...data` - Additional data to include
+
+**Example:**
+
+```typescript
+logger.time("task");
+logger.timeLog("task"); // Logs current elapsed time
+logger.timeEnd("task");
+```
+
+### `timeEnd(label?: string): void`
+
+Stops a timer and logs the final elapsed time.
+
+**Parameters:**
+- `label` - Timer label (uses last timer if not specified)
+
+**Example:**
+
+```typescript
+logger.time("operation");
+logger.timeEnd("operation"); // Logs final time
+```
+
+### `count(label?: string): void`
+
+Increments and logs a counter.
+
+**Parameters:**
+- `label` - Counter label (default: `"default"`)
+
+**Example:**
+
+```typescript
+logger.count("requests"); // Logs: "requests: 1"
+logger.count("requests"); // Logs: "requests: 2"
+```
+
+### `countReset(label?: string): void`
+
+Resets a counter to zero.
+
+**Parameters:**
+- `label` - Counter label (default: `"default"`)
+
+**Example:**
+
+```typescript
+logger.count("requests");
+logger.countReset("requests"); // Resets counter
+```
+
+### `group(label?: string): void`
+
+Starts a log group.
+
+**Parameters:**
+- `label` - Group label (default: `"console.group"`)
+
+**Example:**
+
+```typescript
+logger.group("Database Operations");
+logger.info("Connecting...");
+logger.info("Querying...");
+logger.groupEnd();
+```
+
+### `groupEnd(): void`
+
+Ends the current log group.
+
+**Example:**
+
+```typescript
+logger.group("Operations");
+logger.groupEnd();
+```
+
+### `disable(): void`
+
+Disables all logging output.
+
+**Example:**
+
+```typescript
+logger.disable();
+logger.info("Won't be logged");
+```
+
+### `enable(): void`
+
+Enables logging output.
+
+**Example:**
+
+```typescript
+logger.disable();
+logger.enable();
+logger.info("Will be logged");
+```
+
+### `isEnabled(): boolean`
+
+Checks if logging is currently enabled.
+
+**Returns:** `true` if enabled, `false` if disabled
+
+**Example:**
+
+```typescript
+if (logger.isEnabled()) {
+  logger.debug("Logger is active");
+}
+```
+
+### `pause(): void`
+
+Pauses logging and starts queuing messages.
+
+**Example:**
+
+```typescript
+logger.pause();
+logger.info("Queued");
+logger.resume(); // Messages are now output
+```
+
+### `resume(): void`
+
+Resumes logging and flushes all queued messages.
+
+**Example:**
+
+```typescript
+logger.pause();
+logger.resume(); // Queued messages are output
+```
+
+### `raw(message: string, ...arguments_: unknown[]): void`
+
+Logs a raw message bypassing normal processing.
+
+**Parameters:**
+- `message` - Raw message string
+- `...arguments_` - Additional arguments
+
+**Example:**
+
+```typescript
+logger.raw("Direct message", { data: "value" });
+```
+
+### `clear(): void`
+
+Clears the console/terminal output.
+
+**Example:**
+
+```typescript
+logger.clear();
+```
+
+## Server-Only Methods
+
+### `wrapConsole(): void`
+
+Wraps the global console methods to redirect them through the logger.
+
+**Example:**
+
+```typescript
+logger.wrapConsole();
+console.log("Goes through logger");
+logger.restoreConsole();
+```
+
+### `restoreConsole(): void`
+
+Restores the original global console methods.
+
+**Example:**
+
+```typescript
+logger.wrapConsole();
+logger.restoreConsole();
+```
+
+### `wrapStd(): void`
+
+Wraps stdout and stderr streams to redirect them through the logger.
+
+**Example:**
+
+```typescript
+logger.wrapStd();
+process.stdout.write("Goes through logger");
+logger.restoreStd();
+```
+
+### `restoreStd(): void`
+
+Restores the original stdout and stderr streams.
+
+**Example:**
+
+```typescript
+logger.wrapStd();
+logger.restoreStd();
+```
+
+### `wrapAll(): void`
+
+Wraps all output sources (console and streams).
+
+**Example:**
+
+```typescript
+logger.wrapAll();
+// All output goes through logger
+logger.restoreAll();
+```
+
+### `restoreAll(): void`
+
+Restores all wrapped output sources.
+
+**Example:**
+
+```typescript
+logger.wrapAll();
+logger.restoreAll();
+```
+
+### `wrapException(): void`
+
+Wraps uncaught exception and unhandled rejection handlers.
+
+**Example:**
+
+```typescript
+logger.wrapException();
+// Uncaught errors will be logged automatically
+```
+
+### `getInteractiveManager(): InteractiveManager | undefined`
+
+Gets the interactive manager instance if interactive mode is enabled.
+
+**Returns:** InteractiveManager instance or `undefined`
+
+**Example:**
+
+```typescript
+const logger = createPail({ interactive: true });
+const manager = logger.getInteractiveManager();
+```
+
+### `createProgressBar(options: SingleBarOptions): ProgressBar`
+
+Creates a single progress bar. Requires interactive mode.
+
+**Parameters:**
+- `options` - Progress bar configuration
+
+**Returns:** ProgressBar instance
+
+**Example:**
+
+```typescript
+const logger = createPail({ interactive: true });
+const bar = logger.createProgressBar({ total: 100 });
+bar.start();
+bar.update(50);
+bar.stop();
+```
+
+### `createMultiProgressBar(options?: MultiBarOptions): MultiProgressBar`
+
+Creates a multi-bar progress manager. Requires interactive mode.
+
+**Parameters:**
+- `options?` - Multi-bar configuration
+
+**Returns:** MultiProgressBar instance
+
+**Example:**
+
+```typescript
+const logger = createPail({ interactive: true });
+const multiBar = logger.createMultiProgressBar();
+const bar1 = multiBar.create(100);
+```
+
+### `createSpinner(options?: SpinnerOptions): Spinner`
+
+Creates a single spinner. Requires interactive mode.
+
+**Parameters:**
+- `options?` - Spinner configuration
+
+**Returns:** Spinner instance
+
+**Example:**
+
+```typescript
+const logger = createPail({ interactive: true });
+const spinner = logger.createSpinner({ name: "dots" });
+spinner.start("Loading...");
+spinner.succeed("Done");
+```
+
+### `createMultiSpinner(options?: SpinnerOptions): MultiSpinner`
+
+Creates a multi-spinner manager. Requires interactive mode.
+
+**Parameters:**
+- `options?` - Spinner configuration
+
+**Returns:** MultiSpinner instance
+
+**Example:**
+
+```typescript
+const logger = createPail({ interactive: true });
+const multiSpinner = logger.createMultiSpinner();
+const spinner1 = multiSpinner.create("Loading 1");
+```
+
+## Types
+
+### `ConstructorOptions<T, L>`
+
+Configuration options for creating a logger.
+
+```typescript
+interface ConstructorOptions<T extends string, L extends string> {
+  disabled?: boolean;
+  logLevel?: LiteralUnion<ExtendedRfc5424LogLevels, L>;
+  logLevels?: Partial<Record<ExtendedRfc5424LogLevels, number>> & Record<L, number>;
+  messages?: {
+    timerEnd?: string;
+    timerStart?: string;
+  };
+  processors?: Processor<L>[];
+  rawReporter?: Reporter<L>;
+  reporters?: Reporter<L>[];
+  scope?: string[] | string;
+  throttle?: number;
+  throttleMin?: number;
+  types?: LoggerTypesConfig<T, L> & Partial<LoggerTypesConfig<DefaultLogTypes, L>>;
+}
+```
+
+### `ServerConstructorOptions<T, L>`
+
+Server-specific configuration options.
+
+```typescript
+interface ServerConstructorOptions<T extends string, L extends string>
+  extends ConstructorOptions<T, L> {
+  interactive?: boolean;
+  stderr: NodeJS.WriteStream;
+  stdout: NodeJS.WriteStream;
+}
+```
+
+### `ExtendedRfc5424LogLevels`
+
+Standard log levels.
+
+```typescript
+type ExtendedRfc5424LogLevels =
+  | "alert"
+  | "critical"
+  | "debug"
+  | "emergency"
+  | "error"
+  | "informational"
+  | "notice"
+  | "trace"
+  | "warning";
+```
+
+### `Message`
+
+Structured message object.
+
+```typescript
+interface Message {
+  context?: any[];
+  message: any;
+  prefix?: string;
+  suffix?: string;
+}
+```
+
+## Utilities
+
+### `renderObjectTree(tree, options?)`
+
+Renders an object as an ASCII tree structure.
+
+**Parameters:**
+- `tree` - The object or array to render
+- `options?` - Configuration options (see [Object Tree Usage](/docs/package/pail/usage/object-tree))
+
+**Returns:** `string | string[]` - Formatted tree as string or array of lines
+
+**Example:**
+
+```typescript
+import { renderObjectTree } from "@visulima/pail/object-tree";
+
+const obj = {
+  name: "John",
+  age: 30,
+  address: {
+    street: "Main St",
+    city: "New York",
+  },
+};
+
+console.log(renderObjectTree(obj));
+```
+
+**See also:** [Object Tree Rendering](/docs/package/pail/usage/object-tree) for detailed usage and examples.
+
+## Related
+
+- [Configuration](/docs/package/pail/configuration) - Configuration guide
+- [Examples](/docs/package/pail/examples) - Usage examples
+- [Object Tree Rendering](/docs/package/pail/usage/object-tree) - Object tree utility
+

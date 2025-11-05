@@ -1,0 +1,358 @@
+---
+title: Examples
+description: Real-world examples of using Pail
+---
+
+# Examples
+
+Real-world examples demonstrating how to use Pail in various scenarios.
+
+## Express.js API Server
+
+```typescript
+import express from "express";
+import { createPail } from "@visulima/pail";
+import { PrettyReporter } from "@visulima/pail/reporter/pretty";
+import CallerProcessor from "@visulima/pail/processor/caller";
+
+const logger = createPail({
+  scope: "api",
+  types: {
+    http: {
+      badge: "🌐",
+      color: "blue",
+      label: "HTTP",
+      logLevel: "info",
+    },
+  },
+  reporters: [new PrettyReporter()],
+  processors: [new CallerProcessor()],
+});
+
+const app = express();
+
+// Request logging middleware
+app.use((req, res, next) => {
+  const requestId = req.headers["x-request-id"] || `req-${Date.now()}`;
+  const requestLogger = logger.scope("request", requestId);
+  req.logger = requestLogger;
+  
+  requestLogger.http(`${req.method} ${req.path}`);
+  
+  const start = Date.now();
+  res.on("finish", () => {
+    const duration = Date.now() - start;
+    requestLogger.http(`${req.method} ${req.path} ${res.statusCode}`, {
+      duration: `${duration}ms`,
+    });
+  });
+  
+  next();
+});
+
+app.get("/users", async (req, res) => {
+  req.logger.time("query");
+  const users = await db.query("SELECT * FROM users");
+  req.logger.timeEnd("query");
+  
+  res.json(users);
+});
+
+app.listen(3000, () => {
+  logger.info("Server started on port 3000");
+});
+```
+
+## Next.js Application
+
+```typescript
+// lib/logger.ts
+import { createPail } from "@visulima/pail";
+
+export const logger = createPail({
+  scope: "nextjs",
+  logLevel: process.env.NODE_ENV === "production" ? "info" : "debug",
+});
+
+// app/api/users/route.ts
+import { logger } from "@/lib/logger";
+
+export async function GET() {
+  const apiLogger = logger.scope("api", "users");
+  
+  apiLogger.info("Fetching users");
+  
+  try {
+    const users = await fetchUsers();
+    apiLogger.success(`Fetched ${users.length} users`);
+    return Response.json(users);
+  } catch (error) {
+    apiLogger.error("Failed to fetch users", error);
+    return Response.json({ error: "Failed to fetch users" }, { status: 500 });
+  }
+}
+```
+
+## CLI Tool with Progress Bars
+
+```typescript
+import { createPail } from "@visulima/pail";
+
+const logger = createPail({
+  interactive: true,
+  scope: "cli",
+});
+
+const processFiles = async (files: string[]) => {
+  const multiBar = logger.createMultiProgressBar();
+  
+  const uploadBar = multiBar.create(files.length, 0, {
+    format: "Uploading [{bar}] {percentage}% | {value}/{total} files",
+  });
+  
+  const processBar = multiBar.create(files.length, 0, {
+    format: "Processing [{bar}] {percentage}% | {value}/{total} files",
+  });
+  
+  uploadBar.start();
+  processBar.start();
+  
+  for (let i = 0; i < files.length; i++) {
+    await uploadFile(files[i]);
+    uploadBar.update(i + 1);
+    
+    await processFile(files[i]);
+    processBar.update(i + 1);
+  }
+  
+  multiBar.stop();
+  logger.success(`Processed ${files.length} files`);
+};
+```
+
+## Background Job Processor
+
+```typescript
+import { createPail } from "@visulima/pail";
+
+const logger = createPail({
+  types: {
+    job: {
+      badge: "⚙️",
+      color: "cyan",
+      label: "JOB",
+      logLevel: "info",
+    },
+    jobStart: {
+      badge: "▶️",
+      color: "green",
+      label: "JOB_START",
+      logLevel: "info",
+    },
+    jobComplete: {
+      badge: "✅",
+      color: "greenBright",
+      label: "JOB_COMPLETE",
+      logLevel: "info",
+    },
+    jobError: {
+      badge: "❌",
+      color: "red",
+      label: "JOB_ERROR",
+      logLevel: "error",
+    },
+  },
+});
+
+const processJob = async (jobId: string) => {
+  const jobLogger = logger.scope("job", jobId);
+  
+  jobLogger.jobStart("Starting job", { jobId });
+  
+  try {
+    jobLogger.job("Processing step 1");
+    await step1();
+    
+    jobLogger.job("Processing step 2");
+    await step2();
+    
+    jobLogger.jobComplete("Job completed", { jobId });
+  } catch (error) {
+    jobLogger.jobError("Job failed", error);
+    throw error;
+  }
+};
+```
+
+## Database Logger
+
+```typescript
+import { createPail } from "@visulima/pail";
+
+const logger = createPail({
+  types: {
+    db: {
+      badge: "💾",
+      color: "cyan",
+      label: "DATABASE",
+      logLevel: "debug",
+    },
+    dbQuery: {
+      badge: "🔍",
+      color: "blueBright",
+      label: "QUERY",
+      logLevel: "debug",
+    },
+    dbError: {
+      badge: "❌",
+      color: "red",
+      label: "DB_ERROR",
+      logLevel: "error",
+    },
+  },
+});
+
+// Database wrapper
+const db = {
+  async query(sql: string, params?: any[]) {
+    logger.dbQuery(sql, { params });
+    logger.time("query");
+    
+    try {
+      const result = await dbClient.query(sql, params);
+      logger.timeEnd("query");
+      return result;
+    } catch (error) {
+      logger.dbError("Query failed", error);
+      logger.timeEnd("query");
+      throw error;
+    }
+  },
+};
+```
+
+## Production Logging Setup
+
+```typescript
+import { createPail } from "@visulima/pail";
+import { JsonReporter } from "@visulima/pail/reporter/json";
+import { JsonFileReporter } from "@visulima/pail/reporter/file";
+import RedactProcessor from "@visulima/pail/processor/redact";
+import CallerProcessor from "@visulima/pail/processor/caller";
+
+const logger = createPail({
+  logLevel: process.env.PAIL_LOG_LEVEL || "info",
+  reporters: [
+    new JsonReporter(), // Console output (for log aggregation)
+    new JsonFileReporter({
+      filePath: "/var/log/app.log",
+      interval: "1d",
+      size: "100M",
+      compress: "gzip",
+    }),
+  ],
+  processors: [
+    new CallerProcessor(),
+    new RedactProcessor(
+      [
+        // Redact credit cards
+        { key: "card", pattern: /\b\d{4}[\s-]?\d{4}[\s-]?\d{4}[\s-]?\d{4}\b/g, replacement: "[CARD]" },
+        // Redact emails
+        { key: "email", pattern: /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g, replacement: "[EMAIL]" },
+        // Redact SSNs
+        { key: "ssn", pattern: /\b\d{3}-\d{2}-\d{4}\b/g, replacement: "[SSN]" },
+      ],
+      { exclude: [] } // Optional options
+    ),
+  ],
+});
+```
+
+## React Component Logger
+
+```typescript
+// hooks/useLogger.ts
+import { useEffect, useRef } from "react";
+import { pail } from "@visulima/pail";
+
+export const useLogger = (componentName: string) => {
+  const loggerRef = useRef(pail.scope("component", componentName));
+  
+  useEffect(() => {
+    loggerRef.current.info("Component mounted");
+    
+    return () => {
+      loggerRef.current.info("Component unmounted");
+    };
+  }, []);
+  
+  return loggerRef.current;
+};
+
+// components/UserProfile.tsx
+import { useLogger } from "@/hooks/useLogger";
+
+export const UserProfile = ({ userId }: { userId: string }) => {
+  const logger = useLogger("UserProfile");
+  
+  useEffect(() => {
+    logger.debug("Loading user", { userId });
+    // ... load user
+  }, [userId]);
+  
+  return <div>...</div>;
+};
+```
+
+## Error Tracking Integration
+
+```typescript
+import { createPail } from "@visulima/pail";
+import { JsonReporter } from "@visulima/pail/reporter/json";
+
+class ErrorTrackingReporter implements Reporter {
+  public log(meta: ReadonlyMeta) {
+    if (meta.type.level === "error" || meta.type.level === "critical") {
+      // Send to error tracking service
+      errorTrackingService.captureError(meta.error || meta.message, {
+        level: meta.type.level,
+        context: meta.context,
+        scope: meta.scope,
+      });
+    }
+  }
+}
+
+const logger = createPail({
+  reporters: [
+    new JsonReporter(),
+    new ErrorTrackingReporter(),
+  ],
+});
+```
+
+## Testing Setup
+
+```typescript
+// test/setup.ts
+import { createPail } from "@visulima/pail";
+
+// Disable logging in tests by default
+export const testLogger = createPail({
+  disabled: process.env.DEBUG !== "1",
+  logLevel: "warning", // Only show warnings and errors
+});
+
+// Enable for specific tests
+export const enableTestLogging = () => {
+  testLogger.enable();
+  // Note: logLevel cannot be changed after creation.
+  // Create a new logger if you need a different log level.
+};
+```
+
+## Related
+
+- [Basic Usage](/docs/package/pail/usage/basic) - Basic logging operations
+- [Configuration](/docs/package/pail/configuration) - Configuration options
+
