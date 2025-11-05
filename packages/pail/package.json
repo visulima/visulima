@@ -1,6 +1,6 @@
 {
     "name": "@visulima/pail",
-    "version": "3.0.3",
+    "version": "3.1.0",
     "description": "Highly configurable Logger for Node.js, Edge and Browser.",
     "keywords": [
         "ansi",
@@ -186,9 +186,9 @@
         "@secretlint/secretlint-rule-preset-recommend": "^11.2.5",
         "@total-typescript/ts-reset": "^0.6.1",
         "@types/node": "24.10.0",
-        "@visulima/error": "5.0.2",
-        "@visulima/fmt": "1.1.17",
-        "@visulima/inspector": "1.0.26",
+        "@visulima/error": "5.0.3",
+        "@visulima/fmt": "1.1.18",
+        "@visulima/inspector": "1.0.27",
         "@visulima/packem": "2.0.0-alpha.32",
         "@visulima/redact": "2.0.2",
         "@visulima/string": "2.0.3",

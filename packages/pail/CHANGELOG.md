@@ -1,3 +1,16 @@
+## @visulima/pail [3.1.0](https://github.com/visulima/visulima/compare/@visulima/pail@3.0.3...@visulima/pail@3.1.0) (2025-11-05)
+
+### Features
+
+* add comprehensive documentation for Pail logging library ([6b552ad](https://github.com/visulima/visulima/commit/6b552adc5763aa13b9ac03f457db686c09a73e1c))
+* add interactive module and update package.json ([bb9328c](https://github.com/visulima/visulima/commit/bb9328c98701108e601c07c5f1fff4f554c682cf))
+* **pail:** add comprehensive documentation, object tree, spinner, and enhanced progress bar ([f69738b](https://github.com/visulima/visulima/commit/f69738b708fa73b6755d66b0c5ef5283e85fd55b))
+
+### Miscellaneous Chores
+
+* update dependencies in package.json for cerebro and pail ([4ff6e98](https://github.com/visulima/visulima/commit/4ff6e984e4e2707095bbdff76c1362fa7d30c8ec))
+* update documentation and improve formatting across multiple files ([449b4fb](https://github.com/visulima/visulima/commit/449b4fbd1a57711e2daf5c8ded6a95c9cca87a03))
+
 ## @visulima/pail [3.0.3](https://github.com/visulima/visulima/compare/@visulima/pail@3.0.2...@visulima/pail@3.0.3) (2025-11-05)
 
 ### Bug Fixes
