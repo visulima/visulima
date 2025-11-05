@@ -13,6 +13,8 @@ export class Table {
 
     #headers: TableCell[][] = [];
 
+    #footers: TableCell[][] = [];
+
     #isDirty = true;
 
     #cachedString: string | undefined = undefined;
@@ -25,6 +27,7 @@ export class Table {
         this.#options = {
             ...options,
             showHeader: options.showHeader ?? true,
+            showFooter: options.showFooter ?? true,
             style: {
                 border: DEFAULT_BORDER,
                 paddingLeft: 1,
@@ -47,6 +50,27 @@ export class Table {
         } else {
             // eslint-disable-next-line @stylistic/no-extra-parens
             this.#headers = (headers as TableCell[][]).map((row) => (Array.isArray(row) ? row : [row]));
+        }
+
+        this.#isDirty = true;
+        this.#cachedString = undefined;
+
+        return this;
+    }
+
+    /**
+     * Sets the footer rows for the table.
+     * Replaces any existing footers.
+     * @param footers Array of footer rows OR a single footer row.
+     * @returns The Table instance for chaining.
+     */
+    public setFooter(footers: TableCell[] | TableCell[][]): this {
+        // eslint-disable-next-line unicorn/prefer-ternary
+        if (footers.length > 0 && !Array.isArray(footers[0])) {
+            this.#footers = [footers as TableCell[]];
+        } else {
+            // eslint-disable-next-line @stylistic/no-extra-parens
+            this.#footers = (footers as TableCell[][]).map((row) => (Array.isArray(row) ? row : [row]));
         }
 
         this.#isDirty = true;
@@ -99,9 +123,11 @@ export class Table {
             return this.#cachedString;
         }
 
-        // Combine headers and rows for processing
+        // Combine headers, rows, and footers for processing
         // Use this.headers directly, check showHeader option
-        const allRows = this.#options.showHeader ? [...this.#headers, ...this.#rows] : this.#rows;
+        const headerRows = this.#options.showHeader ? this.#headers : [];
+        const footerRows = this.#options.showFooter ? this.#footers : [];
+        const allRows = [...headerRows, ...this.#rows, ...footerRows];
 
         // If table is empty (considering showHeader), return empty string
         if (allRows.length === 0) {
@@ -234,8 +260,14 @@ export class Table {
             }
 
             // Check if this is a header row and if the auto-span logic should apply
-            const isHeaderRow = this.#options.showHeader && Number.parseInt(rowIndex, 10) < this.#headers.length;
+            const headerRowCount = this.#options.showHeader ? this.#headers.length : 0;
+            const footerRowCount = this.#options.showFooter ? this.#footers.length : 0;
+            const bodyRowCount = this.#rows.length;
+            const currentRowIndex = Number.parseInt(rowIndex, 10);
+            const isHeaderRow = this.#options.showHeader && currentRowIndex < headerRowCount;
+            const isFooterRow = this.#options.showFooter && currentRowIndex >= headerRowCount + bodyRowCount;
             const applyHeaderColspan = isHeaderRow && row.length === 1 && numberColumns > 1;
+            const applyFooterColspan = isFooterRow && row.length === 1 && numberColumns > 1;
 
             for (let cellInput of row) {
                 // End of Selection
@@ -252,6 +284,13 @@ export class Table {
 
                 // Apply auto colSpan for single-cell header rows
                 if (applyHeaderColspan) {
+                    // Ensure colSpan is set to the full table width
+                    // Override any smaller, pre-existing colSpan on the cell object
+                    cellOptions.colSpan = numberColumns;
+                }
+
+                // Apply auto colSpan for single-cell footer rows
+                if (applyFooterColspan) {
                     // Ensure colSpan is set to the full table width
                     // Override any smaller, pre-existing colSpan on the cell object
                     cellOptions.colSpan = numberColumns;
