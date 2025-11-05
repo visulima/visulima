@@ -1,3 +1,19 @@
+## @visulima/string [2.0.3](https://github.com/visulima/visulima/compare/@visulima/string@2.0.2...@visulima/string@2.0.3) (2025-11-05)
+
+### Bug Fixes
+
+* added new tests for handling Japanese text in word wrapping functionality. ([c4a7c00](https://github.com/visulima/visulima/commit/c4a7c00a5606e1ab80bdc22538e5a7ea6263250b))
+* update dependencies across multiple packages ([36a47f2](https://github.com/visulima/visulima/commit/36a47f26d65d25a7b4d8371186710e7d0ab61a2b))
+
+### Miscellaneous Chores
+
+* update dependencies across multiple packages ([c526462](https://github.com/visulima/visulima/commit/c52646260c2ae8bbf85692e642f305f47a158d4e))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.26
+
 ## @visulima/string [2.0.2](https://github.com/visulima/visulima/compare/@visulima/string@2.0.1...@visulima/string@2.0.2) (2025-10-22)
 
 ### Bug Fixes
