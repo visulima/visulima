@@ -1,0 +1,268 @@
+---
+title: Custom Types
+description: Create custom log types for semantic logging
+---
+
+# Custom Types
+
+Custom log types allow you to create semantic logging methods that better represent your application's domain.
+
+## Creating Custom Types
+
+Define custom types when creating a logger:
+
+```typescript
+import { createPail } from "@visulima/pail";
+
+const logger = createPail({
+  types: {
+    http: {
+      badge: "🌐",
+      color: "blue",
+      label: "HTTP",
+      logLevel: "info",
+    },
+    db: {
+      badge: "💾",
+      color: "cyan",
+      label: "DATABASE",
+      logLevel: "debug",
+    },
+  },
+});
+
+logger.http("GET /api/users 200");
+logger.db("Query executed", { query: "SELECT * FROM users" });
+```
+
+## Type Configuration
+
+Each custom type requires:
+
+- **`label`** (required) - Display label for the log type
+- **`logLevel`** (required) - The log level to use
+- **`color`** (optional) - ANSI color for styling
+- **`badge`** (optional) - Icon or symbol prefix
+
+```typescript
+{
+  label: "HTTP",           // Required: Display name
+  logLevel: "info",        // Required: Log level
+  color: "blue",           // Optional: Color name
+  badge: "🌐",            // Optional: Icon/symbol
+}
+```
+
+## Available Colors
+
+Pail supports ANSI colors from `@visulima/colorize`:
+
+- `black`, `red`, `green`, `yellow`, `blue`, `magenta`, `cyan`, `white`
+- `blackBright`, `redBright`, `greenBright`, `yellowBright`, `blueBright`, `magentaBright`, `cyanBright`, `whiteBright`
+- `gray`
+
+```typescript
+const logger = createPail({
+  types: {
+    success: { color: "greenBright", label: "SUCCESS", logLevel: "info" },
+    warning: { color: "yellowBright", label: "WARNING", logLevel: "warning" },
+  },
+});
+```
+
+## Overriding Default Types
+
+You can override default types to customize their appearance:
+
+```typescript
+import { createPail } from "@visulima/pail";
+
+const logger = createPail({
+  types: {
+    error: {
+      badge: "❌",
+      color: "redBright",
+      label: "ERROR",
+      logLevel: "error",
+    },
+    success: {
+      badge: "✅",
+      color: "greenBright",
+      label: "SUCCESS",
+      logLevel: "info",
+    },
+  },
+});
+
+logger.error("Custom error style");
+logger.success("Custom success style");
+```
+
+## Real-World Examples
+
+### HTTP Logger
+
+```typescript
+const logger = createPail({
+  types: {
+    http: {
+      badge: "🌐",
+      color: "blue",
+      label: "HTTP",
+      logLevel: "info",
+    },
+    httpError: {
+      badge: "⚠️",
+      color: "red",
+      label: "HTTP_ERROR",
+      logLevel: "error",
+    },
+  },
+});
+
+logger.http("GET /api/users 200", { duration: 45 });
+logger.httpError("POST /api/users 500", { error: "Database error" });
+```
+
+### Database Logger
+
+```typescript
+const logger = createPail({
+  types: {
+    db: {
+      badge: "💾",
+      color: "cyan",
+      label: "DATABASE",
+      logLevel: "debug",
+    },
+    dbQuery: {
+      badge: "🔍",
+      color: "blueBright",
+      label: "QUERY",
+      logLevel: "debug",
+    },
+    dbError: {
+      badge: "❌",
+      color: "red",
+      label: "DB_ERROR",
+      logLevel: "error",
+    },
+  },
+});
+
+logger.db("Connected to database");
+logger.dbQuery("SELECT * FROM users", { duration: 12 });
+logger.dbError("Connection failed", error);
+```
+
+### Security Logger
+
+```typescript
+const logger = createPail({
+  types: {
+    security: {
+      badge: "🔒",
+      color: "yellow",
+      label: "SECURITY",
+      logLevel: "warning",
+    },
+    auth: {
+      badge: "🔐",
+      color: "magenta",
+      label: "AUTH",
+      logLevel: "info",
+    },
+  },
+});
+
+logger.security("Suspicious activity detected", { ip: "192.168.1.1" });
+logger.auth("User logged in", { userId: 123 });
+```
+
+### Background Job Logger
+
+```typescript
+const logger = createPail({
+  types: {
+    job: {
+      badge: "⚙️",
+      color: "cyan",
+      label: "JOB",
+      logLevel: "info",
+    },
+    jobStart: {
+      badge: "▶️",
+      color: "green",
+      label: "JOB_START",
+      logLevel: "info",
+    },
+    jobComplete: {
+      badge: "✅",
+      color: "greenBright",
+      label: "JOB_COMPLETE",
+      logLevel: "info",
+    },
+    jobError: {
+      badge: "❌",
+      color: "red",
+      label: "JOB_ERROR",
+      logLevel: "error",
+    },
+  },
+});
+
+logger.jobStart("Processing queue");
+logger.job("Processing item", { itemId: 456 });
+logger.jobComplete("Queue processed", { itemsProcessed: 100 });
+logger.jobError("Job failed", error);
+```
+
+## TypeScript Support
+
+Custom types are fully typed:
+
+```typescript
+import { createPail } from "@visulima/pail";
+
+type CustomTypes = "http" | "db" | "cache";
+
+const logger = createPail<CustomTypes>({
+  types: {
+    http: { label: "HTTP", logLevel: "info" },
+    db: { label: "DB", logLevel: "debug" },
+    cache: { label: "CACHE", logLevel: "debug" },
+  },
+});
+
+// TypeScript knows about custom types
+logger.http("GET /api/users"); // ✅ Type-safe
+logger.db("Query executed");   // ✅ Type-safe
+logger.cache("Cache hit");      // ✅ Type-safe
+logger.unknown("Test");         // ❌ Type error
+```
+
+## Combining with Scopes
+
+Custom types work great with scoped loggers:
+
+```typescript
+const apiLogger = logger.scope("api");
+
+apiLogger.http("GET /users 200");
+apiLogger.http("POST /users 201");
+// Output: [api] 🌐 HTTP GET /users 200
+```
+
+## Best Practices
+
+1. **Use semantic names** - Names should reflect their purpose
+2. **Consistent styling** - Use consistent colors/badges for similar types
+3. **Appropriate log levels** - Match log levels to severity
+4. **Document your types** - Keep a reference of custom types
+5. **Don't overuse** - Too many types can be confusing
+
+## Related
+
+- [Basic Usage](/docs/package/pail/usage/basic) - Basic logging operations
+- [Configuration](/docs/package/pail/configuration) - Configure logger types
+

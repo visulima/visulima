@@ -1,0 +1,169 @@
+---
+title: Scoped Loggers
+description: Organize logs by context using scoped loggers
+---
+
+# Scoped Loggers
+
+Scoped loggers allow you to organize logs by context, making it easier to track messages from specific modules, features, or components.
+
+## Basic Scoping
+
+Create a scoped logger by calling `scope()`:
+
+```typescript
+import { pail } from "@visulima/pail";
+
+const authLogger = pail.scope("auth");
+authLogger.info("User logged in"); // Includes scope: ["auth"]
+```
+
+## Multiple Scope Levels
+
+You can nest scopes for hierarchical organization:
+
+```typescript
+const apiLogger = pail.scope("api", "users");
+apiLogger.info("Fetching user"); // Includes scope: ["api", "users"]
+```
+
+## Scoped Logger Instance
+
+The `scope()` method returns a new logger instance with the scope applied:
+
+```typescript
+const logger = createPail();
+const scopedLogger = logger.scope("database");
+
+scopedLogger.info("Connected"); // Has scope
+logger.info("General message"); // No scope (original logger unchanged)
+```
+
+## Removing Scope
+
+Remove the current scope:
+
+```typescript
+const scopedLogger = logger.scope("auth");
+scopedLogger.info("Has scope");
+
+scopedLogger.unscope();
+scopedLogger.info("No scope");
+```
+
+## Usage Patterns
+
+### Module-Level Scoping
+
+```typescript
+// auth.ts
+import { pail } from "@visulima/pail";
+
+const logger = pail.scope("auth");
+
+export const login = (username: string) => {
+  logger.info("Attempting login", { username });
+  // ...
+};
+```
+
+### Feature-Level Scoping
+
+```typescript
+// payment.ts
+import { pail } from "@visulima/pail";
+
+const paymentLogger = pail.scope("payment", "processing");
+
+export const processPayment = (amount: number) => {
+  paymentLogger.info("Processing payment", { amount });
+  // ...
+};
+```
+
+### Request-Level Scoping
+
+```typescript
+// middleware.ts
+import { createPail } from "@visulima/pail";
+
+const logger = createPail();
+
+export const requestLogger = (req: Request, res: Response, next: NextFunction) => {
+  const requestId = req.headers["x-request-id"] || generateId();
+  const scopedLogger = logger.scope("request", requestId);
+  
+  req.logger = scopedLogger; // Attach to request
+  scopedLogger.info("Request received", { method: req.method, path: req.path });
+  
+  next();
+};
+```
+
+### Component Scoping (React Example)
+
+```typescript
+// UserProfile.tsx
+import { pail } from "@visulima/pail";
+
+const logger = pail.scope("UserProfile");
+
+const UserProfile = () => {
+  useEffect(() => {
+    logger.info("Component mounted");
+    
+    return () => {
+      logger.info("Component unmounted");
+    };
+  }, []);
+  
+  // ...
+};
+```
+
+## Scope Display
+
+Scopes are displayed differently depending on the reporter:
+
+### PrettyReporter
+
+```
+[api] [users] info Fetching user
+```
+
+### JsonReporter
+
+```json
+{
+  "scope": ["api", "users"],
+  "type": { "name": "info", "level": "informational" },
+  "message": "Fetching user"
+}
+```
+
+## Best Practices
+
+1. **Use descriptive names** - Make scopes meaningful
+2. **Keep scope hierarchy shallow** - Usually 1-3 levels is enough
+3. **Scope at module boundaries** - Create scopes at module/feature level
+4. **Consistent naming** - Use consistent scope naming across your app
+5. **Don't over-scope** - Not every function needs its own scope
+
+## Advanced: Dynamic Scoping
+
+You can create scopes dynamically:
+
+```typescript
+const createModuleLogger = (moduleName: string) => {
+  return pail.scope("module", moduleName);
+};
+
+const authLogger = createModuleLogger("auth");
+const userLogger = createModuleLogger("user");
+```
+
+## Related
+
+- [Basic Usage](/docs/package/pail/usage/basic) - Basic logging operations
+- [Configuration](/docs/package/pail/configuration) - Configure logger behavior
+

@@ -1,0 +1,194 @@
+---
+title: Timers
+description: Measure performance with built-in timers
+---
+
+# Timers
+
+Pail provides built-in timing utilities to measure how long operations take.
+
+## Basic Timer
+
+Start and stop a timer:
+
+```typescript
+import { pail } from "@visulima/pail";
+
+pail.time("operation");
+// ... do work ...
+pail.timeEnd("operation");
+// Output: Timer run for: 123 ms
+```
+
+## Multiple Timers
+
+You can run multiple timers simultaneously:
+
+```typescript
+pail.time("database");
+pail.time("api");
+
+// ... database work ...
+pail.timeEnd("database"); // Logs elapsed time for database
+
+// ... api work ...
+pail.timeEnd("api"); // Logs elapsed time for api
+```
+
+## Timer Labels
+
+Use descriptive labels for your timers:
+
+```typescript
+pail.time("user-authentication");
+// ... authentication logic ...
+pail.timeEnd("user-authentication");
+```
+
+## Checking Elapsed Time
+
+Log the current elapsed time without stopping the timer:
+
+```typescript
+pail.time("long-operation");
+
+// ... some work ...
+pail.timeLog("long-operation"); // Logs current elapsed time
+
+// ... more work ...
+pail.timeEnd("long-operation"); // Logs final time and stops
+```
+
+## Sequential Timers
+
+Timers can be sequential - start one after another:
+
+```typescript
+pail.time("step1");
+// ... work ...
+pail.timeEnd("step1");
+
+pail.time("step2");
+// ... work ...
+pail.timeEnd("step2");
+```
+
+## Custom Timer Messages
+
+Configure timer messages:
+
+```typescript
+import { createPail } from "@visulima/pail";
+
+const logger = createPail({
+  messages: {
+    timerStart: "Starting timer...",
+    timerEnd: "Completed in:",
+  },
+});
+
+logger.time("task");
+// ... work ...
+logger.timeEnd("task");
+// Output: Completed in: 123 ms
+```
+
+## Real-World Examples
+
+### API Request Timing
+
+```typescript
+import { pail } from "@visulima/pail";
+
+export const handleRequest = async (req: Request, res: Response) => {
+  pail.time("request");
+  
+  try {
+    pail.time("database");
+    const data = await db.query("SELECT * FROM users");
+    pail.timeEnd("database");
+    
+    pail.time("serialization");
+    const json = JSON.stringify(data);
+    pail.timeEnd("serialization");
+    
+    res.json(json);
+  } finally {
+    pail.timeEnd("request");
+  }
+};
+```
+
+### Performance Benchmarking
+
+```typescript
+import { pail } from "@visulima/pail";
+
+const benchmark = (name: string, fn: () => void) => {
+  pail.time(`benchmark-${name}`);
+  fn();
+  pail.timeEnd(`benchmark-${name}`);
+};
+
+benchmark("array-sort", () => {
+  const arr = Array.from({ length: 1000000 }, () => Math.random());
+  arr.sort();
+});
+```
+
+### Scoped Timers
+
+Combine timers with scoped loggers:
+
+```typescript
+const apiLogger = pail.scope("api");
+
+apiLogger.time("request");
+// ... work ...
+apiLogger.timeEnd("request");
+// Output: [api] Timer run for: 123 ms
+```
+
+## Timer States
+
+### Starting a Timer
+
+If you try to start a timer that already exists, you'll get a warning:
+
+```typescript
+pail.time("my-timer");
+pail.time("my-timer"); // Warning: Timer 'my-timer' already exists
+```
+
+### Stopping Non-Existent Timer
+
+If you try to stop a timer that doesn't exist:
+
+```typescript
+pail.timeEnd("non-existent"); // Warning: Timer not found
+```
+
+### Using Last Timer
+
+If you don't specify a label, the most recently started timer is used:
+
+```typescript
+pail.time("first");
+pail.time("second");
+pail.timeEnd(); // Stops "second"
+pail.timeEnd(); // Stops "first"
+```
+
+## Best Practices
+
+1. **Use descriptive labels** - Make timer names meaningful
+2. **Nest timers logically** - Group related timers
+3. **Clean up timers** - Always call `timeEnd()` to avoid memory leaks
+4. **Combine with scopes** - Use scoped loggers for context
+5. **Use in production** - Timers have minimal overhead
+
+## Related
+
+- [Basic Usage](/docs/package/pail/usage/basic) - Basic logging operations
+- [Scoped Loggers](/docs/package/pail/usage/scoped) - Organize logs by context
+

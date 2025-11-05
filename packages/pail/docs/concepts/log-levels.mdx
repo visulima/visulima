@@ -1,0 +1,176 @@
+---
+title: Log Levels
+description: Understanding log levels in Pail
+---
+
+# Log Levels
+
+Pail adheres to the log levels defined in [RFC 5424](https://datatracker.ietf.org/doc/html/rfc5424) extended with a `trace` level. Each level has a numeric priority where lower numbers indicate higher severity.
+
+## Standard Log Levels
+
+### Emergency (8)
+
+**Highest priority** - System is unusable. This should trigger immediate alerts.
+
+```typescript
+pail.emergency("System is down!");
+```
+
+### Alert (7)
+
+Action must be taken immediately. Example: Entire website down, database unavailable, etc. This should trigger SMS alerts and wake you up.
+
+```typescript
+pail.alert("Database connection lost!");
+```
+
+### Critical (6)
+
+Critical conditions. Example: Application component unavailable, unexpected exception.
+
+```typescript
+pail.critical("Failed to initialize core service");
+```
+
+### Error (5)
+
+Runtime errors that do not require immediate action but should typically be logged and monitored.
+
+```typescript
+pail.error("Failed to process user request", error);
+```
+
+### Warning (4)
+
+Exceptional occurrences that are not errors. Examples: Use of deprecated APIs, poor use of an API, undesirable things that are not necessarily wrong.
+
+```typescript
+pail.warn("Using deprecated API, please update");
+```
+
+### Notice (3)
+
+Normal but significant events.
+
+```typescript
+pail.notice("User authentication successful");
+```
+
+### Informational (2)
+
+Interesting events. Examples: User logs in, SQL logs.
+
+```typescript
+pail.info("User logged in", { userId: 123 });
+```
+
+### Debug (1)
+
+Detailed debug information.
+
+```typescript
+pail.debug("Processing request", { requestId: "abc123" });
+```
+
+### Trace (2)
+
+Very detailed and fine-grained informational events. Similar to debug but even more verbose.
+
+```typescript
+pail.trace("Entering function", { functionName: "processData" });
+```
+
+## Log Level Priority
+
+When you set a log level, only messages at that level or higher priority will be logged. For example, if you set the log level to `warning`, you'll see:
+
+- ✅ Emergency
+- ✅ Alert
+- ✅ Critical
+- ✅ Error
+- ✅ Warning
+- ❌ Notice
+- ❌ Informational
+- ❌ Debug
+- ❌ Trace
+
+## Setting Log Levels
+
+### Via Configuration
+
+```typescript
+import { createPail } from "@visulima/pail";
+
+const logger = createPail({
+  logLevel: "warning", // Only show warning and above
+});
+```
+
+### Via Environment Variable
+
+```bash
+PAIL_LOG_LEVEL=debug node app.js
+```
+
+### Automatic Detection
+
+Pail automatically detects log levels based on environment:
+
+- **Development/Debug**: `NODE_ENV=debug` or `DEBUG=1` → `debug`
+- **Test**: `NODE_ENV=test` → `warning`
+- **Production**: Default → `informational`
+
+```typescript
+// Automatically uses appropriate level based on NODE_ENV
+import { pail } from "@visulima/pail";
+```
+
+## Custom Log Levels
+
+You can define custom log levels with numeric priorities:
+
+```typescript
+import { createPail } from "@visulima/pail";
+
+const logger = createPail({
+  logLevels: {
+    verbose: 0, // Lower than debug
+    custom: 10,  // Higher than emergency
+  },
+  logLevel: "verbose",
+});
+```
+
+## Logger Type Log Levels
+
+Each logger type (like `success`, `error`, etc.) can have its own log level:
+
+```typescript
+import { createPail } from "@visulima/pail";
+
+const logger = createPail({
+  types: {
+    http: {
+      label: "HTTP",
+      color: "blue",
+      logLevel: "info", // HTTP logs use 'info' level
+    },
+  },
+});
+
+logger.http("GET /api/users 200"); // Uses 'info' level
+```
+
+## Best Practices
+
+1. **Use appropriate levels** - Match the severity of your log messages
+2. **Set production levels** - Use `informational` or `warning` in production
+3. **Use debug/trace sparingly** - These are for development only
+4. **Consider your audience** - What information do operators need vs. developers?
+
+## Related
+
+- [Configuration](/docs/package/pail/configuration) - Learn how to configure log levels
+- [Basic Usage](/docs/package/pail/usage/basic) - See log levels in action
+

@@ -1,0 +1,257 @@
+---
+title: Troubleshooting
+description: Common issues and solutions
+---
+
+# Troubleshooting
+
+Common issues and their solutions when using Pail.
+
+## Logs Not Appearing
+
+### Issue: No output from logger
+
+**Possible Causes:**
+
+1. **Logger is disabled**
+   ```typescript
+   logger.disable(); // Check if disabled somewhere
+   logger.enable(); // Re-enable
+   ```
+
+2. **Log level too high**
+   ```typescript
+   // If logLevel is "error", debug/info won't show
+   const logger = createPail({ logLevel: "debug" });
+   ```
+
+3. **No reporters configured**
+   ```typescript
+   // Make sure reporters are added
+   const logger = createPail({
+     reporters: [new PrettyReporter()],
+   });
+   ```
+
+4. **Environment variable override**
+   ```bash
+   # Check PAIL_LOG_LEVEL
+   echo $PAIL_LOG_LEVEL
+   ```
+
+## TypeScript Errors
+
+### Issue: Custom types not recognized
+
+**Solution:** Explicitly type the logger:
+
+```typescript
+type CustomTypes = "http" | "db";
+
+const logger = createPail<CustomTypes>({
+  types: {
+    http: { label: "HTTP", logLevel: "info" },
+    db: { label: "DB", logLevel: "debug" },
+  },
+});
+```
+
+### Issue: Property does not exist on logger
+
+**Solution:** Check that the type is defined in configuration:
+
+```typescript
+// Make sure custom type is in types config
+const logger = createPail({
+  types: {
+    custom: { label: "CUSTOM", logLevel: "info" },
+  },
+});
+
+logger.custom("Message"); // Now works
+```
+
+## Performance Issues
+
+### Issue: Slow logging in production
+
+**Solutions:**
+
+1. **Increase log level**
+   ```typescript
+   const logger = createPail({
+     logLevel: "warning", // Reduce verbosity
+   });
+   ```
+
+2. **Disable processors in production**
+   ```typescript
+   const logger = createPail({
+     processors: process.env.NODE_ENV === "production"
+       ? [] // No processors in production
+       : [new CallerProcessor()],
+   });
+   ```
+
+3. **Use JSON reporter in production**
+   ```typescript
+   const logger = createPail({
+     reporters: process.env.NODE_ENV === "production"
+       ? [new JsonReporter()] // Faster
+       : [new PrettyReporter()],
+   });
+   ```
+
+## Interactive Mode Issues
+
+### Issue: Progress bars/spinners not working
+
+**Possible Causes:**
+
+1. **Interactive mode not enabled**
+   ```typescript
+   const logger = createPail({ interactive: true }); // Required
+   ```
+
+2. **Not running in terminal**
+   - Interactive mode only works in terminal environments
+   - Won't work in browser or non-TTY environments
+
+3. **Streams not available**
+   ```typescript
+   // Make sure stdout/stderr are available
+   const logger = createPail({
+     interactive: true,
+     stdout: process.stdout,
+     stderr: process.stderr,
+   });
+   ```
+
+## File Reporter Issues
+
+### Issue: File reporter not writing
+
+**Possible Causes:**
+
+1. **Missing dependency**
+   ```bash
+   npm install rotating-file-stream
+   ```
+
+2. **Permissions issue**
+   ```bash
+   # Check file permissions
+   ls -la /var/log/app.log
+   # Ensure write permissions
+   ```
+
+3. **Invalid file path**
+   ```typescript
+   // Use absolute paths
+   new JsonFileReporter({
+     filePath: "/absolute/path/to/log.log", // Not relative
+   });
+   ```
+
+## Redact Processor Issues
+
+### Issue: Sensitive data not redacted
+
+**Possible Causes:**
+
+1. **Missing dependency**
+   ```bash
+   npm install @visulima/redact
+   ```
+
+2. **Pattern not matching**
+   ```typescript
+   // Test your regex pattern
+   const pattern = /\b\d{4}[\s-]?\d{4}[\s-]?\d{4}[\s-]?\d{4}\b/g;
+   "1234-5678-9012-3456".match(pattern); // Should match
+   ```
+
+3. **Processor order**
+   ```typescript
+   // RedactProcessor should run before other processors
+   const logger = createPail({
+     processors: [
+       new RedactProcessor(), // First
+       new CallerProcessor(), // Second
+     ],
+   });
+   ```
+
+## Scope Issues
+
+### Issue: Scope not appearing in logs
+
+**Check:**
+
+1. **Reporter supports scopes**
+   - All built-in reporters support scopes
+   - Custom reporters need to handle `meta.scope`
+
+2. **Scope is set correctly**
+   ```typescript
+   const scopedLogger = logger.scope("api");
+   scopedLogger.info("Message"); // Should include scope
+   ```
+
+## Browser Issues
+
+### Issue: Logger not working in browser
+
+**Solutions:**
+
+1. **Use browser import**
+   ```typescript
+   import { createPail } from "@visulima/pail/browser";
+   ```
+
+2. **Check browser compatibility**
+   - Requires modern browser with ES module support
+   - Check browser console for errors
+
+3. **Use browser-compatible reporters**
+   ```typescript
+   // PrettyReporter and JsonReporter work in browser
+   // FileReporter and SimpleReporter don't
+   ```
+
+## Environment Variable Issues
+
+### Issue: Environment variables not working
+
+**Check:**
+
+1. **Variable name**
+   ```bash
+   # Correct
+   PAIL_LOG_LEVEL=debug node app.js
+   
+   # Not
+   LOG_LEVEL=debug node app.js
+   ```
+
+2. **Setting before import**
+   ```typescript
+   // Set before creating logger
+   process.env.PAIL_LOG_LEVEL = "debug";
+   import { createPail } from "@visulima/pail";
+   ```
+
+## Getting Help
+
+If you're still experiencing issues:
+
+1. **Check the [API Reference](/docs/package/pail/api)** for correct usage
+2. **Review [Examples](/docs/package/pail/examples)** for working code
+3. **Open an issue** on [GitHub](https://github.com/visulima/visulima/issues)
+4. **Check [CHANGELOG.md](https://github.com/visulima/visulima/blob/main/packages/pail/CHANGELOG.md)** for breaking changes
+
+## Related
+
+- [Configuration](/docs/package/pail/configuration) - Configuration options
+- [API Reference](/docs/package/pail/api) - Complete API documentation
+

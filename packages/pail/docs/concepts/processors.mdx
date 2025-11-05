@@ -1,0 +1,208 @@
+---
+title: Processors
+description: Understanding processors in Pail
+---
+
+# Processors
+
+Processors modify or enhance log metadata before it reaches reporters. They run in sequence and can add context, transform data, or filter information.
+
+## Built-in Processors
+
+### MessageFormatterProcessor
+
+Formats log messages using string interpolation (like `util.format`). This is added by default.
+
+```typescript
+import { createPail } from "@visulima/pail";
+// MessageFormatterProcessor is included by default
+
+const logger = createPail();
+
+logger.info("User %s logged in", "John");
+// Message is formatted: "User John logged in"
+```
+
+### CallerProcessor
+
+Adds caller information (filename, line number, column number) to log metadata.
+
+```typescript
+import { createPail } from "@visulima/pail";
+import CallerProcessor from "@visulima/pail/processor/caller";
+
+const logger = createPail({
+  processors: [new CallerProcessor()],
+});
+
+logger.info("This message includes caller info");
+// Meta includes: file, line, column
+```
+
+### RedactProcessor
+
+Redacts sensitive information from log messages. Requires `@visulima/redact` package.
+
+```bash
+npm install @visulima/redact
+```
+
+```typescript
+import { createPail } from "@visulima/pail";
+import RedactProcessor from "@visulima/pail/processor/redact";
+
+const logger = createPail({
+  processors: [
+    new RedactProcessor(
+      [
+        // Redact patterns
+        { key: "card", pattern: /\b\d{4}[\s-]?\d{4}[\s-]?\d{4}[\s-]?\d{4}\b/g, replacement: "[REDACTED]" }, // Credit cards
+        { key: "email", pattern: /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g, replacement: "[EMAIL]" }, // Emails
+      ],
+      { exclude: [] } // Optional options
+    ),
+  ],
+});
+
+logger.info("User email: user@example.com");
+// Output: "User email: [EMAIL]"
+```
+
+### ErrorProcessor
+
+Serializes error objects with cause chains to a standard format that can be serialized.
+
+```typescript
+import { createPail } from "@visulima/pail";
+// ErrorProcessor would be added if available
+
+logger.error(new Error("Something went wrong"));
+// Error is properly serialized with stack trace
+```
+
+## Processor Order
+
+Processors run in the order they are added:
+
+```typescript
+const logger = createPail({
+  processors: [
+    new CallerProcessor(),      // 1. Add caller info
+    new RedactProcessor(...),   // 2. Redact sensitive data
+    // Processors run sequentially
+  ],
+});
+```
+
+## Creating Custom Processors
+
+Implement the `Processor` interface:
+
+```typescript
+import type { Processor, Meta } from "@visulima/pail";
+
+class TimestampProcessor<L extends string = string> implements Processor<L> {
+  public process(meta: Meta<L>): Meta<L> {
+    return {
+      ...meta,
+      timestamp: Date.now(), // Add custom field
+    };
+  }
+}
+
+const logger = createPail({
+  processors: [new TimestampProcessor()],
+});
+```
+
+### Stringify-Aware Processor
+
+If your processor needs to serialize objects:
+
+```typescript
+import type { StringifyAwareProcessor, Meta } from "@visulima/pail";
+
+class SerializationProcessor<L extends string = string>
+  implements StringifyAwareProcessor<L>
+{
+  private stringify: typeof JSON.stringify | undefined;
+
+  public setStringify(stringify: typeof JSON.stringify): void {
+    this.stringify = stringify;
+  }
+
+  public process(meta: Meta<L>): Meta<L> {
+    // Use this.stringify for serialization
+    return meta;
+  }
+}
+```
+
+## Example: Request ID Processor
+
+Add request IDs to all logs:
+
+```typescript
+import type { Processor, Meta } from "@visulima/pail";
+
+class RequestIdProcessor<L extends string = string> implements Processor<L> {
+  private requestId: string;
+
+  public constructor(requestId: string) {
+    this.requestId = requestId;
+  }
+
+  public process(meta: Meta<L>): Meta<L> {
+    return {
+      ...meta,
+      context: [
+        ...(meta.context || []),
+        { requestId: this.requestId },
+      ],
+    };
+  }
+}
+
+// Use in request handler
+const logger = createPail({
+  processors: [new RequestIdProcessor(req.id)],
+});
+```
+
+## Example: Environment Processor
+
+Add environment information:
+
+```typescript
+import type { Processor, Meta } from "@visulima/pail";
+
+class EnvironmentProcessor<L extends string = string> implements Processor<L> {
+  public process(meta: Meta<L>): Meta<L> {
+    return {
+      ...meta,
+      context: [
+        ...(meta.context || []),
+        {
+          env: process.env.NODE_ENV,
+          version: process.env.APP_VERSION,
+        },
+      ],
+    };
+  }
+}
+```
+
+## Processor Best Practices
+
+1. **Keep processors focused** - Each processor should do one thing well
+2. **Maintain immutability** - Return new objects, don't mutate input
+3. **Consider performance** - Processors run for every log message
+4. **Order matters** - Place processors in logical order
+5. **Type safety** - Use TypeScript for better processor development
+
+## Related
+
+- [Reporters](/docs/package/pail/concepts/reporters) - Learn about output destinations
+- [Configuration](/docs/package/pail/configuration) - Configure processors
+- [API Reference](/docs/package/pail/api) - Complete processor API
+
