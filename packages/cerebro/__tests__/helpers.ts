@@ -4,7 +4,9 @@ import { execSync } from "node:child_process";
  * Return output of javascript file.
  */
 export const execScriptSync = (file: string, flags: string[] = [], environment: string[] = []): string => {
-    const environmentVariables = environment.length > 0 ? `${environment.join(" ")} ` : "";
+    const defaultEnv = ["CEREBRO_TERMINAL_WIDTH=80"];
+    const allEnv = [...defaultEnv, ...environment];
+    const environmentVariables = allEnv.length > 0 ? `${allEnv.join(" ")} ` : "";
     const cmd = `cross-env ${environmentVariables}node "${file}" ${flags.join(" ")}`;
     // eslint-disable-next-line sonarjs/os-command
     const result = execSync(cmd);

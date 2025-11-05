@@ -3,6 +3,7 @@ import { NO_BORDER } from "@visulima/tabular/style";
 
 import type { Content as IContent } from "../../../types/command-line-usage";
 import templateFormat from "../../text-processing/template-format";
+import getTerminalWidth from "../get-terminal-width";
 import BaseSection from "./base-section";
 
 /**
@@ -105,6 +106,8 @@ class ContentSection extends BaseSection {
                     paddingLeft: 4,
                     paddingRight: 1,
                 },
+                terminalWidth: getTerminalWidth(),
+                truncateOverflow: false,
                 wordWrap: true,
             });
 
@@ -125,6 +128,8 @@ class ContentSection extends BaseSection {
                     paddingLeft: 4,
                     paddingRight: 1,
                 },
+                terminalWidth: getTerminalWidth(),
+                truncateOverflow: false,
                 wordWrap: true,
             });
 
@@ -153,6 +158,8 @@ class ContentSection extends BaseSection {
                     paddingLeft: 4,
                     paddingRight: 1,
                 },
+                terminalWidth: getTerminalWidth(),
+                truncateOverflow: false,
                 wordWrap: true,
             });
 

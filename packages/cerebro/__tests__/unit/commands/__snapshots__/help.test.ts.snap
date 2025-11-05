@@ -81,6 +81,10 @@ exports[`command/help > should display a empty help command if no commands exist
               "DEBUG",
               "When set, enables debug output (same as --debug flag)",
             ],
+            [
+              "CEREBRO_TERMINAL_WIDTH",
+              "Sets the terminal width for table rendering. Useful for testing and consistent output",
+            ],
           ],
           "header": "[7m[35m Environment Variables [39m[27m",
         },
@@ -350,6 +354,10 @@ exports[`command/help > should display group of commands if the group option is 
               "DEBUG",
               "When set, enables debug output (same as --debug flag)",
             ],
+            [
+              "CEREBRO_TERMINAL_WIDTH",
+              "Sets the terminal width for table rendering. Useful for testing and consistent output",
+            ],
           ],
           "header": "[7m[35m Environment Variables [39m[27m",
         },
@@ -543,6 +551,10 @@ exports[`command/help > should print general help 1`] = `
               "DEBUG",
               "When set, enables debug output (same as --debug flag)",
             ],
+            [
+              "CEREBRO_TERMINAL_WIDTH",
+              "Sets the terminal width for table rendering. Useful for testing and consistent output",
+            ],
           ],
           "header": "[7m[35m Environment Variables [39m[27m",
         },
@@ -651,6 +663,10 @@ exports[`command/help > should print general help and not include hidden command
             [
               "DEBUG",
               "When set, enables debug output (same as --debug flag)",
+            ],
+            [
+              "CEREBRO_TERMINAL_WIDTH",
+              "Sets the terminal width for table rendering. Useful for testing and consistent output",
             ],
           ],
           "header": "[7m[35m Environment Variables [39m[27m",
