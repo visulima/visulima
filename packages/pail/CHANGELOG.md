@@ -1,3 +1,20 @@
+## @visulima/pail [3.0.3](https://github.com/visulima/visulima/compare/@visulima/pail@3.0.2...@visulima/pail@3.0.3) (2025-11-05)
+
+### Bug Fixes
+
+* update dependencies across multiple packages ([36a47f2](https://github.com/visulima/visulima/commit/36a47f26d65d25a7b4d8371186710e7d0ab61a2b))
+* Upgraded `type-fest` to version `5.2.0` ([bd6cd53](https://github.com/visulima/visulima/commit/bd6cd5367ff102a7487372dc1ca7742a41c69ea9))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.26
+* **@visulima/error:** upgraded to 5.0.3
+* **@visulima/fmt:** upgraded to 1.1.18
+* **@visulima/inspector:** upgraded to 1.0.27
+* **@visulima/redact:** upgraded to 2.0.2
+* **@visulima/string:** upgraded to 2.0.3
+
 ## @visulima/pail [3.0.2](https://github.com/visulima/visulima/compare/@visulima/pail@3.0.1...@visulima/pail@3.0.2) (2025-10-22)
 
 ### Miscellaneous Chores
