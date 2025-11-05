@@ -1,3 +1,10 @@
+## @visulima/cerebro [2.0.1](https://github.com/visulima/visulima/compare/@visulima/cerebro@2.0.0...@visulima/cerebro@2.0.1) (2025-11-05)
+
+
+### Dependencies
+
+* **@visulima/tabular:** upgraded to 3.1.0
+
 ## @visulima/cerebro [2.0.0](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.1.58...@visulima/cerebro@2.0.0) (2025-11-05)
 
 ### ⚠ BREAKING CHANGES
