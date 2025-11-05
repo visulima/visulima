@@ -1,3 +1,19 @@
+## @visulima/vite-overlay [1.3.4](https://github.com/visulima/visulima/compare/@visulima/vite-overlay@1.3.3...@visulima/vite-overlay@1.3.4) (2025-11-05)
+
+### Bug Fixes
+
+* update dependencies across multiple packages ([36a47f2](https://github.com/visulima/visulima/commit/36a47f26d65d25a7b4d8371186710e7d0ab61a2b))
+
+### Miscellaneous Chores
+
+* update dependencies across multiple packages ([c526462](https://github.com/visulima/visulima/commit/c52646260c2ae8bbf85692e642f305f47a158d4e))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 5.0.3
+* **@visulima/path:** upgraded to 2.0.2
+
 ## @visulima/vite-overlay [1.3.3](https://github.com/visulima/visulima/compare/@visulima/vite-overlay@1.3.2...@visulima/vite-overlay@1.3.3) (2025-10-22)
 
 ### Bug Fixes
