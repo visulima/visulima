@@ -1,6 +1,6 @@
 {
     "name": "@visulima/tabular",
-    "version": "3.0.0",
+    "version": "3.1.0",
     "description": "Create beautiful ASCII tables and grids with customizable borders, padding, and alignment. Supports Unicode, colors, and ANSI escape codes.",
     "keywords": [
         "cli",
