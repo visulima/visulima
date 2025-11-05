@@ -44,6 +44,24 @@ import Bench from "./lib/bench.js";
 import { createFixture } from "./lib/utils.js";
 import packages from "./packages.js";
 
+// Check Node.js version for styleText support (Node.js 22+)
+const nodeMajorVersion = Number.parseInt(process.version.split(".")[0].replace("v", ""), 10);
+let isNode22Plus = nodeMajorVersion >= 22;
+
+// Conditionally import styleText for Node.js 22+
+let styleText;
+
+if (isNode22Plus) {
+    try {
+        const styleTextModule = await import("node:util/styleText");
+        // styleText can be default export or the module itself
+        styleText = styleTextModule.default || styleTextModule;
+    } catch {
+        // styleText not available, skip benchmarks
+        isNode22Plus = false;
+    }
+}
+
 const colorSpace = isStdoutColorSupported();
 
 if (colorSpace < 3) {
@@ -90,7 +108,7 @@ let fixture = [];
 
 console.log(colorize.hex("#F88").inverse.bold` -= Benchmark =- `);
 
-bench("Using 1 style (red)")
+const bench1 = bench("Using 1 style (red)")
     .add(packages["@visulima/colorize"], () => colorize.red("foo"))
     .add(packages.chalk, () => chalk.red("foo"))
     .add(packages.ansis, () => ansis.red("foo"))
@@ -101,10 +119,15 @@ bench("Using 1 style (red)")
     .add(packages["colors-cli"], () => colorsCli.red("foo"))
     .add(packages["ansi-colors"], () => ansiColors.red("foo"))
     .add(packages.kleur, () => kleur.red("foo"))
-    .add(packages.kolorist, () => kolorist_red("foo"))
-    .run();
+    .add(packages.kolorist, () => kolorist_red("foo"));
 
-bench(`Using 2 styles (red, bold)`)
+if (isNode22Plus && styleText) {
+    bench1.add("node:util/styleText", () => styleText.red("foo"));
+}
+
+bench1.run();
+
+const bench2 = bench(`Using 2 styles (red, bold)`)
     .add(packages["@visulima/colorize"], () => colorize.red.bold("foo"))
     .add(packages.chalk, () => chalk.red.bold("foo"))
     .add(packages.ansis, () => ansis.red.bold("foo"))
@@ -115,10 +138,15 @@ bench(`Using 2 styles (red, bold)`)
     .add(packages["colors-cli"], () => colorsCli.red.bold("foo"))
     .add(packages["ansi-colors"], () => ansiColors.red.bold("foo"))
     .add(packages.kleur, () => kleur.red().bold("foo"))
-    .add(packages.kolorist, () => kolorist_red(bold("foo")))
-    .run();
+    .add(packages.kolorist, () => kolorist_red(bold("foo")));
 
-bench(`Using 3 styles (red, bold, underline)`)
+if (isNode22Plus && styleText) {
+    bench2.add("node:util/styleText", () => styleText.red(styleText.bold("foo")));
+}
+
+bench2.run();
+
+const bench3 = bench(`Using 3 styles (red, bold, underline)`)
     .add(packages["@visulima/colorize"], () => colorize.red.bold.underline("foo"))
     .add(packages.chalk, () => chalk.red.bold.underline("foo"))
     .add(packages.ansis, () => ansis.red.bold.underline("foo"))
@@ -129,10 +157,15 @@ bench(`Using 3 styles (red, bold, underline)`)
     .add(packages["colors-cli"], () => colorsCli.red.bold.underline("foo"))
     .add(packages["ansi-colors"], () => ansiColors.red.bold.underline("foo"))
     .add(packages.kleur, () => kleur.red().bold().underline("foo"))
-    .add(packages.kolorist, () => kolorist_red(bold(underline("foo"))))
-    .run();
+    .add(packages.kolorist, () => kolorist_red(bold(underline("foo"))));
 
-bench(`Using 4 styles (bgWhite red, bold, underline)`)
+if (isNode22Plus && styleText) {
+    bench3.add("node:util/styleText", () => styleText.red(styleText.bold(styleText.underline("foo"))));
+}
+
+bench3.run();
+
+const bench4 = bench(`Using 4 styles (bgWhite red, bold, underline)`)
     .add(packages["@visulima/colorize"], () => colorize.bgWhite.red.bold.underline("foo"))
     .add(packages.chalk, () => chalk.bgWhite.red.bold.underline("foo"))
     .add(packages.ansis, () => ansis.bgWhite.red.bold.underline("foo"))
@@ -143,8 +176,13 @@ bench(`Using 4 styles (bgWhite red, bold, underline)`)
     .add(packages["colors-cli"], () => colorsCli.white_b.red.bold.underline("foo"))
     .add(packages["ansi-colors"], () => ansiColors.bgWhite.red.bold.underline("foo"))
     .add(packages.kleur, () => kleur.bgWhite().red().bold().underline()("foo"))
-    .add(packages.kolorist, () => bgWhite(kolorist_red(bold(underline("foo")))))
-    .run();
+    .add(packages.kolorist, () => bgWhite(kolorist_red(bold(underline("foo")))));
+
+if (isNode22Plus && styleText) {
+    bench4.add("node:util/styleText", () => styleText.bgWhite(styleText.red(styleText.bold(styleText.underline("foo")))));
+}
+
+bench4.run();
 
 // Colorette bench
 // https://github.com/jorgebucaran/colorette/blob/main/bench/index.js
@@ -165,7 +203,7 @@ bench("Colorette bench")
     .run();
 
 // Base colors
-bench("Base colors")
+const benchBaseColors = bench("Base colors")
     .add(packages["@visulima/colorize"], () => baseColors.forEach((style) => colorize[style]("foo")))
     .add(packages["ansi-colors"], () => baseColors.forEach((style) => ansiColors[style]("foo")))
     .add(packages.ansis, () => baseColors.forEach((style) => ansis[style]("foo")))
@@ -176,8 +214,13 @@ bench("Base colors")
     .add(packages.colors, () => baseColors.forEach((style) => colorsJs[style]("foo")))
     .add(packages.kleur, () => baseColors.forEach((style) => kleur[style]("foo")))
     .add(`${packages.kleur}/colors`, () => baseColors.forEach((style) => kleurColors[style]("foo")))
-    .add(packages.picocolors, () => baseColors.forEach((style) => picocolors[style]("foo")))
-    .run();
+    .add(packages.picocolors, () => baseColors.forEach((style) => picocolors[style]("foo")));
+
+if (isNode22Plus && styleText) {
+    benchBaseColors.add("node:util/styleText", () => baseColors.forEach((style) => styleText[style]("foo")));
+}
+
+benchBaseColors.run();
 
 // Chained styles
 bench("Chained styles")
@@ -195,7 +238,7 @@ bench("Chained styles")
     .run();
 
 // Nested calls
-bench("Nested calls")
+const benchNestedCalls = bench("Nested calls")
     .add(packages["@visulima/colorize"], () => baseColors.forEach((style) => colorize[style](colorize.bold(colorize.underline(colorize.italic("foo"))))))
     .add(packages["ansi-colors"], () => baseColors.forEach((style) => ansiColors[style](ansiColors.bold(ansiColors.underline(ansiColors.italic("foo"))))))
     .add(packages.ansis, () => baseColors.forEach((style) => ansis[style](ansis.bold(ansis.underline(ansis.italic("foo"))))))
@@ -207,8 +250,13 @@ bench("Nested calls")
     .add(packages.kleur, () => baseColors.forEach((style) => kleur[style](kleur.bold(kleur.underline(kleur.italic("foo"))))))
     .add(`${packages.kleur}/colors`, () =>
         baseColors.forEach((style) => kleurColors[style](kleurColors.bold(kleurColors.underline(kleurColors.italic("foo"))))))
-    .add(packages.picocolors, () => baseColors.forEach((style) => picocolors[style](picocolors.bold(picocolors.underline(picocolors.italic("foo"))))))
-    .run();
+    .add(packages.picocolors, () => baseColors.forEach((style) => picocolors[style](picocolors.bold(picocolors.underline(picocolors.italic("foo"))))));
+
+if (isNode22Plus && styleText) {
+    benchNestedCalls.add("node:util/styleText", () => baseColors.forEach((style) => styleText[style](styleText.bold(styleText.underline(styleText.italic("foo"))))));
+}
+
+benchNestedCalls.run();
 
 // Nested styles
 fixture = createFixture(vendors, nestedFixture);

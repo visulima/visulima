@@ -563,9 +563,202 @@ Since Chrome 69 (every chrome based browser), ANSI escape codes are natively sup
 
 For other browsers (like firefox) we use the console style syntax command `%c`.
 
+### Browser Compatibility for ANSI Codes
+
+| Browser           | Version       | Colors Supported   |
+|-------------------|---------------|--------------------|
+| **Chrome**        | **v69+**      | TrueColor (16M)    |
+| **Safari**        | **v10+**      | TrueColor (16M)    |
+| **Edge**          | **v79+**      | TrueColor (16M)    |
+| **Opera**         | **v56+**      | TrueColor (16M)    |
+| **Brave**         | **v1.0+**     | TrueColor (16M)    |
+| **Vivaldi**       | **v2.0+**     | TrueColor (16M)    |
+
+> [!WARNING]
+> **Firefox** doesn't natively support ANSI codes in the developer console. Colorize automatically falls back to `%c` syntax for Firefox.
+
 ## Windows
 
 If you're on Windows, do yourself a favor and use [Windows Terminal](https://github.com/microsoft/terminal) instead of cmd.exe.
+
+## Edge Cases: Handling Input Arguments
+
+Colorize ensures consistent and predictable behavior for edge-case inputs, making it reliable for production use.
+
+### Handling falsy arguments
+
+```typescript
+import colorize, { red } from "@visulima/colorize";
+
+colorize.red();          // ✅ Returns empty string ''
+colorize.red(undefined); // ✅ Returns empty string ''
+colorize.red(null);      // ✅ Returns empty string ''
+colorize.red("");        // ✅ Returns empty string ''
+colorize.reset();        // ✅ Returns reset ANSI code '\x1b[0m'
+```
+
+This reliable handling prevents unexpected output when working with variables that might be `undefined`, `null`, or empty strings.
+
+## Which One Should You Use?
+
+### Quick Decision Guide
+
+- **Need basic 16 colors only?** Both Colorize and `styleText()` work, but Colorize is **~100x faster** and supports more environments.
+- **Need truecolor (hex/rgb), 256 colors, or browser support?** Use **Colorize** - `styleText()` doesn't support these.
+- **Need nested template strings or chained syntax?** Use **Colorize** - `styleText()` requires verbose nested calls.
+- **Only targeting Node.js 22+ and want zero dependencies?** `styleText()` works, but consider the performance and feature trade-offs.
+
+### Checklist
+
+- Does support for **ESM** or **CJS** matter?
+  - ✅ Colorize: `ESM` and `CJS`
+  - ❌ styleText: Node.js only
+
+- Does **browser compatibility** matter?
+  - ✅ Colorize: Works in Chromium-based browsers and Safari
+  - ❌ styleText: Node.js only
+
+- Does **performance** matter? (e.g., high-frequency logging)
+  - ✅ Colorize: **~100x faster** than styleText
+  - ❌ styleText: Significantly slower
+
+- Does support for **[ANSI 256 colors](#256-colors)** or **[Truecolor](#truecolor)** with [fallback](#fallback) matter?
+  - ✅ Colorize: Full support with automatic fallback
+  - ❌ styleText: Limited to 16 colors only
+
+- Does handling **[edge cases](#edge-cases-handling-input-arguments)** (undefined, null, empty strings) matter?
+  - ✅ Colorize: Reliable handling of all edge cases
+  - ⚠️ styleText: Behavior varies by Node.js version
+
+- Does keeping your code **clean and readable** matter?
+  - ✅ Colorize: [Default and named import](#named-import), [chained syntax](#chained-syntax), [nested template strings](#nested-syntax)
+  - ❌ styleText: Verbose nested calls, no chaining
+
+- Does **TypeScript** support and IDE autocomplete matter?
+  - ✅ Colorize: Full TypeScript support with autocomplete
+  - ⚠️ styleText: Basic TypeScript support
+
+## Library Maintenance Status
+
+As of 2025, here's the maintenance status of popular ANSI color libraries:
+
+- ✅ **@visulima/colorize**: Actively maintained
+- ✅ **ansis**: Actively maintained
+- ✅ **chalk**: Actively maintained
+- ✅ **picocolors**: Actively maintained
+- ⚠️ **colorette**: Last updated 2+ years ago
+- ⚠️ **ansi-colors**: Last updated 3+ years ago
+- ⚠️ **kleur**: Last updated 3+ years ago
+- ⚠️ **colors.js**: Last updated 2+ years ago
+- ⚠️ **cli-color**: Last updated 1+ year ago
+- ⚠️ **colors-cli**: Last updated 1+ year ago
+
+Colorize is actively maintained and regularly updated with new features, bug fixes, and performance improvements.
+
+## Colorize vs `util.styleText()`
+
+Since **Node.js v22**, the built-in [`util.styleText()`](https://nodejs.org/api/util.html#utilstyletextformat-text-options) function has been officially introduced, supporting [standard modifiers](https://nodejs.org/api/util.html#modifiers) - the basic 16 colors and styles.
+
+### Where it works
+
+**Colorize**
+
+✅ Works on **Node.js v20.19+**\
+✅ Works in Chromium-based browsers and Safari (useful for shared utils)\
+✅ Works in **Deno** and **Next.JS** runtimes\
+⚠️ **Firefox DevTools** don't render ANSI escape sequences.
+
+**styleText**
+
+✅ Native since **Node.js v22+**\
+❌ Node only - it doesn't work in browsers or other runtimes
+
+### Performance
+
+In practical benchmarks, `styleText()` is dramatically slower, **~100x slower** than Colorize:
+
+```js
+styleText('red', 'text');      //    579.832 ops/sec
+colorize.red('text');          // 59.646.465 ops/sec
+```
+
+See the [benchmark](./__bench__/README.md) for detailed performance comparisons.
+
+### Color support detection
+
+**Colorize**
+
+- Detects terminal, TTY, CI, or browser color capability and automatically falls back to the supported level (truecolor → 256 → 16 → no color).
+- Supports common flags and environment variables:\
+  `NO_COLOR`, `FORCE_COLOR`, `COLORTERM`, `--no-color`, `--color`.
+
+**styleText**
+
+- Detects terminal color support automatically.
+- Supports only environment variables:\
+  `NO_COLOR`, `FORCE_COLOR`, `NODE_DISABLE_COLORS`.
+
+### Simple styling
+
+**Colorize** has a compact and elegant syntax:
+
+```typescript
+import colorize, { green } from "@visulima/colorize";
+
+console.log(colorize.green("Success!"));
+// or even shorter using named import
+console.log(green`Success!`);
+console.log(green.bold`Success!`);
+```
+
+The same example with **styleText** is more verbose:
+
+```js
+const { styleText } = require("node:util");
+
+console.log(styleText("green", "Success!"));
+console.log(styleText(["green", "bold"], "Success!"));
+```
+
+### Nested styling
+
+**Colorize** keeps your code short and readable:
+
+```typescript
+import { red, cyan } from "@visulima/colorize";
+
+console.log(red`Error: ${cyan.bold`file.js`} not found!`);
+```
+
+Using **styleText** becomes awkward and verbose for nested or combined styles:
+
+```js
+const { styleText } = require("node:util");
+
+console.log(styleText("red", `Error: ${styleText(["cyan", "bold"], "file.js")} not found!`));
+```
+
+### Truecolor
+
+**Colorize**
+
+- Supports 16-color, 256-color, and truecolor output.
+- Truecolor methods `hex()` and `rgb()`:
+
+  ```typescript
+  console.log(colorize.hex("#ffa500")("orange text"));
+  console.log(colorize.rgb(255, 165, 0)("orange text"));
+  ```
+
+**styleText**
+
+- Limited to the 16 ANSI colors and standard styles.
+- No support for hex, rgb, or truecolor.
+
+### TypeScript & IDE support
+
+**Colorize** includes `d.ts` type definitions for seamless **TypeScript** integration.\
+Color names, methods, and style chains are fully typed, enabling **autocomplete** and **type checking** in IDEs like VS Code.
 
 ## Comparison of most popular libraries
 
@@ -581,6 +774,7 @@ If you're on Windows, do yourself a favor and use [Windows Terminal](https://git
 | [`colors.js`][colors.js]<br><nobr>`❌ named import`</nobr>        | ![npm bundle size](https://img.shields.io/bundlephobia/min/colors.js)          | <nobr>_non-standard_</nobr><br>`16` colors |         ❌         |       ❌       |        ✅         |             ❌             |     ✅      |    only<br>`FORCE_COLOR`<br>`--no-color`<br>`--color`    | no color                           |
 | [`kleur`][kleur]<br><nobr>`✅ named import`</nobr>                | ![npm bundle size](https://img.shields.io/bundlephobia/min/kleur)              |         **standard**<br>`8` colors         |         ❌         |       ❌       |        ✅         |             ❌             |     ❌      |           only<br>`NO_COLOR`<br>`FORCE_COLOR`            | no color                           |
 | [`picocolors`][picocolors]<br><nobr>`❌ named import`</nobr>      | ![npm bundle size](https://img.shields.io/bundlephobia/min/picocolors)         |         **standard**<br>`8` colors         |         ❌         |       ❌       |        ❌         |             ❌             |     ❌      | `NO_COLOR`<br>`FORCE_COLOR`<br>`--no-color`<br>`--color` | no color                           |
+| [`util.styleText()`][styleText]<br><nobr>`❌ named import`</nobr><br><nobr>`Node ≥ 22`</nobr> | Built-in                                                                        |        **standard**<br>`16` colors         |         ❌         |       ❌       |        ❌         |             ❌             |     ❓      | `NO_COLOR`<br>`FORCE_COLOR`<br>`NODE_DISABLE_COLORS`    | no color                           |
 
 > **Note**
 >
@@ -614,6 +808,7 @@ If you're on Windows, do yourself a favor and use [Windows Terminal](https://git
 > - [`@visulima/colorize`][npm-url]: `hex()` `rgb()`
 > - [`ansis`][ansis]: `hex()` `rgb()`
 > - [`chalk`][chalk]: `hex()` `rgb()`
+> - [`util.styleText()`][styleText]: Not supported (limited to 16 colors)
 >
 > **Chained syntax**\
 > `lib.red.bold('text')`
@@ -745,3 +940,4 @@ The visulima colorize is open-sourced software licensed under the [MIT][license-
 [chalk]: https://github.com/chalk/chalk
 [chalk-template]: https://github.com/chalk/chalk-template
 [ansis]: https://github.com/webdiscus/ansis
+[styleText]: https://nodejs.org/api/util.html#utilstyletextformat-text-options
