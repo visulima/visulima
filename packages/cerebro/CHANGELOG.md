@@ -1,3 +1,14 @@
+## @visulima/cerebro [2.0.2](https://github.com/visulima/visulima/compare/@visulima/cerebro@2.0.1...@visulima/cerebro@2.0.2) (2025-11-05)
+
+### Miscellaneous Chores
+
+* update dependencies in package.json for cerebro and pail ([4ff6e98](https://github.com/visulima/visulima/commit/4ff6e984e4e2707095bbdff76c1362fa7d30c8ec))
+
+
+### Dependencies
+
+* **@visulima/pail:** upgraded to 3.1.0
+
 ## @visulima/cerebro [2.0.1](https://github.com/visulima/visulima/compare/@visulima/cerebro@2.0.0...@visulima/cerebro@2.0.1) (2025-11-05)
 
 
