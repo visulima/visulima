@@ -1,3 +1,20 @@
+## @visulima/crud [2.0.43](https://github.com/visulima/visulima/compare/@visulima/crud@2.0.42...@visulima/crud@2.0.43) (2025-11-05)
+
+### Bug Fixes
+
+* update dependencies across multiple packages ([36a47f2](https://github.com/visulima/visulima/commit/36a47f26d65d25a7b4d8371186710e7d0ab61a2b))
+
+### Miscellaneous Chores
+
+* update dependencies across multiple packages ([c526462](https://github.com/visulima/visulima/commit/c52646260c2ae8bbf85692e642f305f47a158d4e))
+* update package dependencies and configurations ([7bfe7e7](https://github.com/visulima/visulima/commit/7bfe7e71869580900aab50efb064b4293994ed9a))
+
+
+### Dependencies
+
+* **@visulima/pagination:** upgraded to 4.0.2
+* **@visulima/prisma-dmmf-transformer:** upgraded to 2.0.34
+
 ## @visulima/crud [2.0.42](https://github.com/visulima/visulima/compare/@visulima/crud@2.0.41...@visulima/crud@2.0.42) (2025-10-21)
 
 ### Bug Fixes
