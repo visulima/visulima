@@ -49,6 +49,7 @@ declare namespace NodeJS {
     interface ProcessEnvironment {
         CEREBRO_MIN_NODE_VERSION?: string;
         CEREBRO_OUTPUT_LEVEL: VERBOSITY_LEVEL;
+        CEREBRO_TERMINAL_WIDTH?: string;
     }
 }
 

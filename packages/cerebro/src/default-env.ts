@@ -33,6 +33,11 @@ const defaultEnv: (EnvDefinition<string> | EnvDefinition<number> | EnvDefinition
         name: "DEBUG",
         type: Boolean,
     } as EnvDefinition<boolean>,
+    {
+        description: "Sets the terminal width for table rendering. Useful for testing and consistent output",
+        name: "CEREBRO_TERMINAL_WIDTH",
+        type: Number,
+    } as EnvDefinition<number>,
 ];
 
 export default defaultEnv;
