@@ -1,6 +1,6 @@
 {
     "name": "@visulima/fs",
-    "version": "4.0.2",
+    "version": "4.0.3",
     "description": "Human friendly file system utilities for Node.js",
     "keywords": [
         "anolilab",
@@ -130,7 +130,7 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@visulima/path": "2.0.1",
+        "@visulima/path": "2.0.2",
         "type-fest": "^5.2.0"
     },
     "devDependencies": {
@@ -140,7 +140,7 @@
         "@anolilab/semantic-release-preset": "^11.0.5",
         "@arethetypeswrong/cli": "^0.18.2",
         "@types/node": "24.10.0",
-        "@visulima/error": "5.0.2",
+        "@visulima/error": "5.0.3",
         "@visulima/packem": "2.0.0-alpha.32",
         "@vitest/coverage-v8": "^4.0.7",
         "@vitest/ui": "^4.0.7",
