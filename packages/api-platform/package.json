@@ -233,7 +233,6 @@
         "@hapi/hapi": "^21.4.3",
         "@koa/router": "^12.0.1",
         "@visulima/crud": "2.0.43",
-        "@visulima/readdir": "2.0.12",
         "chalk": "5.6.2",
         "commander": "^12.1.0",
         "cors": "^2.8.5",
