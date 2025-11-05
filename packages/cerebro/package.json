@@ -124,19 +124,18 @@
         "fastest-levenshtein": "^1.0.16"
     },
     "devDependencies": {
-        "github-slugger": "2.0.0",
-        "@bomb.sh/tab": "^0.0.9",
-        "@visulima/error": "5.0.3",
-        "@visulima/find-cache-dir": "2.0.3",
         "@anolilab/eslint-config": "^16.4.2",
         "@anolilab/prettier-config": "^6.0.7",
         "@anolilab/semantic-release-pnpm": "^2.0.5",
         "@anolilab/semantic-release-preset": "^11.0.5",
         "@arethetypeswrong/cli": "^0.18.2",
+        "@bomb.sh/tab": "^0.0.9",
         "@total-typescript/ts-reset": "^0.6.1",
         "@types/node": "24.10.0",
         "@visulima/boxen": "2.0.7",
         "@visulima/command-line-args": "1.0.1",
+        "@visulima/error": "5.0.3",
+        "@visulima/find-cache-dir": "2.0.3",
         "@visulima/packem": "2.0.0-alpha.32",
         "@visulima/pail": "3.0.3",
         "@visulima/path": "2.0.2",
@@ -147,6 +146,7 @@
         "conventional-changelog-conventionalcommits": "9.1.0",
         "esbuild": "0.25.12",
         "eslint": "9.39.1",
+        "github-slugger": "2.0.0",
         "prettier": "^3.6.2",
         "publint": "^0.3.15",
         "rimraf": "6.1.0",
@@ -156,19 +156,19 @@
     },
     "peerDependencies": {
         "@bomb.sh/tab": "^0.0.7",
-        "github-slugger": "2.0.0",
         "@visulima/boxen": "2.0.7",
         "@visulima/find-cache-dir": "2.0.3",
-        "@visulima/pail": "3.0.3"
+        "@visulima/pail": "3.0.3",
+        "github-slugger": "2.0.0"
     },
     "peerDependenciesMeta": {
         "@bomb.sh/tab": {
             "optional": true
         },
-        "@visulima/find-cache-dir": {
+        "@visulima/boxen": {
             "optional": true
         },
-        "@visulima/boxen": {
+        "@visulima/find-cache-dir": {
             "optional": true
         },
         "@visulima/pail": {
