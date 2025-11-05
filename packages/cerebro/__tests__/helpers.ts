@@ -4,7 +4,8 @@ import { execSync } from "node:child_process";
  * Return output of javascript file.
  */
 export const execScriptSync = (file: string, flags: string[] = [], environment: string[] = []): string => {
-    const defaultEnv = ["CEREBRO_TERMINAL_WIDTH=80"];
+    const terminalWidth = process.env.CEREBRO_TERMINAL_WIDTH ?? "80";
+    const defaultEnv = [`CEREBRO_TERMINAL_WIDTH=${terminalWidth}`];
     const allEnv = [...defaultEnv, ...environment];
     const environmentVariables = allEnv.length > 0 ? `${allEnv.join(" ")} ` : "";
     const cmd = `cross-env ${environmentVariables}node "${file}" ${flags.join(" ")}`;
