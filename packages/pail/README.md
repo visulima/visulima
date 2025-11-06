@@ -133,6 +133,7 @@ Reporters are responsible for writing the log messages to the console or a file.
 | ---------------------------- | ------------------------- |
 | `JsonReporter`               | `JsonReporter`            |
 | `PrettyReporter`             | `PrettyReporter`          |
+| `HttpReporter`               | `HttpReporter`            |
 | x                            | `SimpleReporter`          |
 | x                            | `FileReporter`            |
 
@@ -849,6 +850,218 @@ console.log(tree);
 3. **API Responses**: Display JSON API responses in tree format
 4. **Configuration Display**: Show configuration trees in terminal applications
 5. **Data Inspection**: Inspect deeply nested data structures
+
+## HTTP Reporter
+
+The HTTP Reporter sends logs to HTTP endpoints, making it perfect for centralized logging services, log aggregation platforms, or custom logging APIs. It supports batching, compression, retries, rate limiting, and Edge Runtime compatibility.
+
+**Note:** When used in Edge Runtime environments (Next.js Edge, Cloudflare Workers, etc.), the package automatically resolves to an Edge-compatible version that disables compression and uses Edge-compatible APIs. You don't need to import a separate class - just use `HttpReporter` and the package handles the routing.
+
+### Basic Usage
+
+```typescript
+import { createPail } from "@visulima/pail";
+import { HttpReporter } from "@visulima/pail/reporter/http";
+
+const logger = createPail({
+    reporters: [
+        new HttpReporter({
+            url: "https://api.example.com/logs",
+            method: "POST",
+            headers: {
+                Authorization: "Bearer your-token",
+            },
+        }),
+    ],
+});
+
+logger.info("Application started", { version: "1.0.0" });
+```
+
+### Edge Runtime Compatibility
+
+For Edge Runtime environments, enable Edge compatibility mode explicitly (or let the package auto-detect):
+
+```typescript
+import { createPail } from "@visulima/pail";
+import { HttpReporter } from "@visulima/pail/reporter/http";
+
+const logger = createPail({
+    reporters: [
+        new HttpReporter({
+            url: "https://api.example.com/logs",
+            edgeCompat: true, // Enable Edge compatibility (auto-enabled in Edge environments)
+            headers: {
+                Authorization: "Bearer your-token",
+            },
+        }),
+    ],
+});
+
+logger.info("Edge function executed");
+```
+
+When `edgeCompat` is enabled (or automatically enabled in Edge environments), compression is disabled and Edge-compatible APIs are used.
+
+### Batching
+
+HTTP Reporter supports automatic batching to reduce network requests:
+
+```typescript
+const logger = createPail({
+    reporters: [
+        new HttpReporter({
+            url: "https://api.example.com/logs",
+            enableBatchSend: true,
+            batchSize: 100, // Send when 100 logs are queued
+            batchSendTimeout: 5000, // Or send after 5 seconds
+            batchMode: "delimiter", // Options: "delimiter", "array", "field"
+            batchSendDelimiter: "\n", // Delimiter for batch entries
+        }),
+    ],
+});
+```
+
+**Batch Modes:**
+
+- `delimiter` (default): Join entries with a delimiter (e.g., newline-delimited JSON)
+- `array`: Send entries as a JSON array
+- `field`: Wrap entries in an object with a field name (requires `batchFieldName`)
+
+```typescript
+// Field mode example (e.g., for Logflare)
+new HttpReporter({
+    url: "https://api.logflare.app/logs",
+    batchMode: "field",
+    batchFieldName: "batch", // Wraps entries in { batch: [...] }
+});
+```
+
+### Compression
+
+Enable gzip compression to reduce payload size:
+
+```typescript
+const logger = createPail({
+    reporters: [
+        new HttpReporter({
+            url: "https://api.example.com/logs",
+            compression: true, // Enable gzip compression
+        }),
+    ],
+});
+```
+
+**Note:** Compression is automatically disabled when Edge compatibility mode is enabled (either via `edgeCompat: true` or automatically in Edge Runtime environments).
+
+### Retry Logic
+
+Configure retry behavior for failed requests:
+
+```typescript
+const logger = createPail({
+    reporters: [
+        new HttpReporter({
+            url: "https://api.example.com/logs",
+            maxRetries: 3, // Retry up to 3 times
+            retryDelay: 1000, // Base delay: 1 second
+            respectRateLimit: true, // Wait on 429 responses
+        }),
+    ],
+});
+```
+
+### Error Handling
+
+Handle errors with custom callbacks:
+
+```typescript
+const logger = createPail({
+    reporters: [
+        new HttpReporter({
+            url: "https://api.example.com/logs",
+            onError: (error) => {
+                console.error("Failed to send log:", error);
+                // Send to fallback service, alert, etc.
+            },
+            onDebug: (entry) => {
+                console.log("Sending log entry:", entry);
+            },
+            onDebugRequestResponse: ({ req, res }) => {
+                console.log("Request:", req.method, req.url);
+                console.log("Response:", res.status, res.statusText);
+            },
+        }),
+    ],
+});
+```
+
+### Payload Customization
+
+Customize the payload format with a template function:
+
+```typescript
+const logger = createPail({
+    reporters: [
+        new HttpReporter({
+            url: "https://api.example.com/logs",
+            payloadTemplate: ({ data, logLevel, message }) => {
+                return JSON.stringify({
+                    timestamp: new Date().toISOString(),
+                    level: logLevel,
+                    message,
+                    metadata: data,
+                });
+            },
+        }),
+    ],
+});
+```
+
+### Size Limits
+
+Configure maximum sizes to prevent oversized payloads:
+
+```typescript
+const logger = createPail({
+    reporters: [
+        new HttpReporter({
+            url: "https://api.example.com/logs",
+            maxLogSize: 1_048_576, // 1MB per log entry
+            maxPayloadSize: 5_242_880, // 5MB per batch payload
+        }),
+    ],
+});
+```
+
+When a log entry exceeds `maxLogSize`, a `LogSizeError` is thrown. When a batch exceeds `maxPayloadSize`, it's automatically split into smaller batches.
+
+### Configuration Options
+
+| Option                   | Type                                       | Default              | Description                                   |
+| ------------------------ | ------------------------------------------ | -------------------- | --------------------------------------------- |
+| `url`                    | `string`                                   | **required**         | HTTP endpoint URL                             |
+| `method`                 | `string`                                   | `"POST"`             | HTTP method                                   |
+| `headers`                | `Record<string, string> \| (() => ...)`    | `{}`                 | Request headers (object or function)          |
+| `contentType`            | `string`                                   | `"application/json"` | Content type for single requests              |
+| `batchContentType`       | `string`                                   | `"application/json"` | Content type for batch requests               |
+| `enableBatchSend`        | `boolean`                                  | `true`               | Enable automatic batching                     |
+| `batchSize`              | `number`                                   | `100`                | Number of logs to batch before sending        |
+| `batchSendTimeout`       | `number`                                   | `5000`               | Timeout (ms) to send batch regardless of size |
+| `batchMode`              | `"delimiter" \| "array" \| "field"`        | `"delimiter"`        | Batch format mode                             |
+| `batchSendDelimiter`     | `string`                                   | `"\n"`               | Delimiter for batch entries                   |
+| `batchFieldName`         | `string`                                   | `undefined`          | Field name for "field" batch mode             |
+| `compression`            | `boolean`                                  | `false`              | Enable gzip compression                       |
+| `maxRetries`             | `number`                                   | `3`                  | Maximum retry attempts                        |
+| `retryDelay`             | `number`                                   | `1000`               | Base delay between retries (ms)               |
+| `respectRateLimit`       | `boolean`                                  | `true`               | Wait on 429 rate limit responses              |
+| `maxLogSize`             | `number`                                   | `1048576`            | Maximum size per log entry (bytes)            |
+| `maxPayloadSize`         | `number`                                   | `5242880`            | Maximum size per payload (bytes)              |
+| `edgeCompat`             | `boolean`                                  | `false`              | Enable Edge Runtime compatibility             |
+| `onError`                | `(error: Error) => void`                   | `undefined`          | Error callback                                |
+| `onDebug`                | `(entry: Record<string, unknown>) => void` | `undefined`          | Debug callback for log entries                |
+| `onDebugRequestResponse` | `(reqRes: {...}) => void`                  | `undefined`          | Debug callback for HTTP requests/responses    |
+| `payloadTemplate`        | `(data: {...}) => string`                  | `undefined`          | Custom payload formatter                      |
 
 ## Integrations
 

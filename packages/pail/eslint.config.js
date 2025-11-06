@@ -31,4 +31,10 @@ export default createConfig(
             "vitest/require-mock-type-parameters": "off",
         },
     },
+    {
+        files: ["src/reporter/http/utils/compression.ts", "src/reporter/http/utils/retry.ts"],
+        rules: {
+            "sonarjs/file-name-differ-from-class": "off",
+        },
+    },
 );
