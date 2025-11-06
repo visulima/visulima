@@ -5,11 +5,11 @@
     "description": "Cerebro CLI error handling examples",
     "type": "module",
     "scripts": {
-        "start": "node cli.js",
-        "simple": "node cli-simple.js",
-        "detailed": "node cli-detailed.js",
         "custom-formatter": "node cli-custom-formatter.js",
-        "render-options": "node cli-render-options.js"
+        "detailed": "node cli-detailed.js",
+        "render-options": "node cli-render-options.js",
+        "simple": "node cli-simple.js",
+        "start": "node cli.js"
     },
     "dependencies": {
         "@visulima/cerebro": "workspace:*",

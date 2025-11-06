@@ -5,15 +5,15 @@
     "description": "Nested commands (subcommands) example for Cerebro CLI",
     "type": "module",
     "scripts": {
-        "start": "node cli.js help",
-        "deploy-staging": "node cli.js deploy staging",
+        "deploy-all": "node cli.js deploy-all",
         "deploy-prod": "node cli.js deploy production",
         "deploy-prod-dry": "node cli.js deploy production --dry-run",
-        "migrate-up": "node cli.js db migrate up",
+        "deploy-staging": "node cli.js deploy staging",
+        "docker-build": "node cli.js docker build",
         "migrate-down": "node cli.js db migrate down",
         "migrate-status": "node cli.js db migrate status",
-        "docker-build": "node cli.js docker build",
-        "deploy-all": "node cli.js deploy-all"
+        "migrate-up": "node cli.js db migrate up",
+        "start": "node cli.js help"
     },
     "dependencies": {
         "@visulima/cerebro": "workspace:*"
