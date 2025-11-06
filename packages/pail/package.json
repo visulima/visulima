@@ -229,6 +229,7 @@
         "@anolilab/semantic-release-pnpm": "^2.0.5",
         "@anolilab/semantic-release-preset": "^11.0.5",
         "@arethetypeswrong/cli": "^0.18.2",
+        "@opentelemetry/api": "^1.9",
         "@secretlint/secretlint-rule-preset-recommend": "^11.2.5",
         "@total-typescript/ts-reset": "^0.6.1",
         "@types/node": "24.10.0",
@@ -256,7 +257,7 @@
         "vitest": "^4.0.7"
     },
     "peerDependencies": {
-        "@opentelemetry/api": "^1.0.0 || ^2.0.0",
+        "@opentelemetry/api": "^1.9",
         "@visulima/redact": "2.0.2",
         "rotating-file-stream": "^3.2.7"
     },
