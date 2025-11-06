@@ -693,4 +693,165 @@ describe("pailBrowserImpl", () => {
             consoleTraceSpy.mockRestore();
         });
     });
+
+    describe("child", () => {
+        it("should create child logger that inherits parent settings", () => {
+            expect.assertions(3);
+
+            const parent = new PailBrowser({
+                logLevel: "informational",
+                processors: [],
+                rawReporter: new RawReporter(),
+                reporters: [new RawReporter()],
+                throttle: 1000,
+                throttleMin: 5,
+                types: {
+                    http: {
+                        label: "HTTP",
+                        logLevel: "informational",
+                    },
+                },
+            });
+
+            const child = parent.child();
+
+            const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+
+            // Child should inherit parent types
+            child.http("GET /api 200");
+
+            expect(consoleSpy).toHaveBeenCalledWith("GET /api 200");
+
+            // Child should inherit parent log level
+            child.debug("Debug message"); // Should not be logged (level is info)
+
+            expect(consoleSpy).toHaveBeenCalledTimes(1);
+
+            // Child should have its own state
+            child.time("test");
+            child.timeEnd("test");
+
+            expect(consoleSpy).toHaveBeenCalledTimes(3); // http + timer start + timer end
+
+            consoleSpy.mockRestore();
+        });
+
+        it("should allow overriding parent settings in child", () => {
+            expect.assertions(2);
+
+            const parent = new PailBrowser({
+                logLevel: "warning",
+                processors: [],
+                rawReporter: new RawReporter(),
+                reporters: [new RawReporter()],
+                throttle: 1000,
+                throttleMin: 5,
+            });
+
+            const child = parent.child({ logLevel: "debug" });
+
+            const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+
+            // Parent should use warning level
+            parent.info("Parent info"); // Should not be logged
+
+            expect(consoleSpy).not.toHaveBeenCalled();
+
+            // Child should use debug level
+            child.info("Child info"); // Should be logged
+
+            expect(consoleSpy).toHaveBeenCalledWith("Child info");
+
+            consoleSpy.mockRestore();
+        });
+
+        it("should merge parent and child types", () => {
+            expect.assertions(2);
+
+            const parent = new PailBrowser({
+                logLevel: "debug",
+                processors: [],
+                rawReporter: new RawReporter(),
+                reporters: [new RawReporter()],
+                throttle: 1000,
+                throttleMin: 5,
+                types: {
+                    http: {
+                        label: "HTTP",
+                        logLevel: "info",
+                    },
+                },
+            });
+
+            const child = parent.child({
+                types: {
+                    db: {
+                        label: "DB",
+                        logLevel: "info",
+                    },
+                },
+            });
+
+            const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+
+            // Child should have parent types
+            child.http("GET /api 200");
+
+            expect(consoleSpy).toHaveBeenCalledWith("GET /api 200");
+
+            // Child should have new types
+            child.db("Query executed");
+
+            expect(consoleSpy).toHaveBeenCalledWith("Query executed");
+
+            consoleSpy.mockRestore();
+        });
+
+        it("should merge parent and child scope", () => {
+            expect.assertions(1);
+
+            const parent = new PailBrowser({
+                logLevel: "debug",
+                processors: [],
+                rawReporter: new RawReporter(),
+                reporters: [new RawReporter()],
+                scope: ["parent"],
+                throttle: 1000,
+                throttleMin: 5,
+            });
+
+            const child = parent.child({ scope: ["child"] });
+
+            // Child scope should extend parent scope
+            expect(child.scopeName).toStrictEqual(["parent", "child"]);
+        });
+
+        it("should combine parent and child reporters", () => {
+            expect.assertions(2);
+
+            const parentReporter = new RawReporter();
+            const childReporter = new RawReporter();
+
+            const parent = new PailBrowser({
+                logLevel: "debug",
+                processors: [],
+                rawReporter: new RawReporter(),
+                reporters: [parentReporter],
+                throttle: 1000,
+                throttleMin: 5,
+            });
+
+            const child = parent.child({ reporters: [childReporter] });
+
+            const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+
+            child.info("Test message");
+
+            // Should be called twice (once for each reporter)
+            expect(consoleSpy).toHaveBeenCalledTimes(2);
+            expect(consoleSpy).toHaveBeenCalledWith("Test message");
+
+            consoleSpy.mockRestore();
+        });
+    });
 });

@@ -5,7 +5,7 @@ import type { PailServerType } from "./pail.server";
 import { PailServer } from "./pail.server";
 import MessageFormatterProcessor from "./processor/message-formatter-processor";
 import { PrettyReporter } from "./reporter/pretty/pretty-reporter.server";
-import type { ConstructorOptions, ExtendedRfc5424LogLevels } from "./types";
+import type { ExtendedRfc5424LogLevels, ServerConstructorOptions } from "./types";
 
 /**
  * Determines the default log level based on environment variables.
@@ -73,7 +73,7 @@ const getDefaultLogLevel = (): ExtendedRfc5424LogLevels => {
  * PAIL_LOG_LEVEL=debug node app.js
  * ```
  */
-export const createPail = <T extends string = string, L extends string = string>(options?: ConstructorOptions<T, L>): PailServerType<T, L> => {
+export const createPail = <T extends string = string, L extends string = string>(options?: ServerConstructorOptions<T, L>): PailServerType<T, L> => {
     let logLevel: ExtendedRfc5424LogLevels = getDefaultLogLevel();
 
     if (env.PAIL_LOG_LEVEL !== undefined) {

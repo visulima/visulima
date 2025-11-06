@@ -1,4 +1,5 @@
 import type { AnsiColors } from "@visulima/colorize";
+import type { stringify } from "safe-stable-stringify";
 import type { LiteralUnion, Primitive } from "type-fest";
 
 import type InteractiveManager from "./interactive/interactive-manager";
@@ -272,3 +273,18 @@ export type Message = {
     prefix?: string;
     suffix?: string;
 };
+
+/**
+ * Internal interface for parent logger optimization properties.
+ *
+ * These properties are used internally to optimize child logger creation
+ * by reusing parent logger's computed values when they haven't changed.
+ * @internal
+ */
+export interface ParentLoggerOptimization<T extends string = string, L extends string = string> {
+    parentLogLevels?: Record<string, number>;
+    parentLongestLabel?: string;
+    parentMessages?: { timerEnd: string; timerStart: string };
+    parentStringify?: typeof stringify;
+    parentTypes?: LoggerTypesConfig<LiteralUnion<DefaultLogTypes, T>, L>;
+}
