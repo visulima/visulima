@@ -42,4 +42,12 @@ const getFileSource = async (file: string): Promise<string | undefined> => {
     }
 };
 
+/**
+ * Clears the file source cache
+ * Useful for testing and cleanup
+ */
+export const clearFileSourceCache = (): void => {
+    cache.clear();
+};
+
 export default getFileSource;
