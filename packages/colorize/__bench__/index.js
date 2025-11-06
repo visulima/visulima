@@ -54,6 +54,7 @@ let styleText;
 if (isNode22Plus) {
     try {
         const styleTextModule = await import("node:util/styleText");
+
         // styleText can be default export or the module itself
         styleText = styleTextModule.default || styleTextModule;
     } catch {
@@ -253,7 +254,8 @@ const benchNestedCalls = bench("Nested calls")
     .add(packages.picocolors, () => baseColors.forEach((style) => picocolors[style](picocolors.bold(picocolors.underline(picocolors.italic("foo"))))));
 
 if (isNode22Plus && styleText) {
-    benchNestedCalls.add("node:util/styleText", () => baseColors.forEach((style) => styleText[style](styleText.bold(styleText.underline(styleText.italic("foo"))))));
+    benchNestedCalls.add("node:util/styleText", () =>
+        baseColors.forEach((style) => styleText[style](styleText.bold(styleText.underline(styleText.italic("foo"))))));
 }
 
 benchNestedCalls.run();

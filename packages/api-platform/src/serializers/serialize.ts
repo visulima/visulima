@@ -18,7 +18,6 @@ const serialize = <Request extends IncomingMessage, Response extends ServerRespo
     options: {
         defaultContentType: string;
     },
-
 ): Buffer | Uint8Array | string => {
     const contentType = response.getHeader(contentTypeKey) as string | undefined;
 

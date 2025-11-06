@@ -565,14 +565,14 @@ For other browsers (like firefox) we use the console style syntax command `%c`.
 
 ### Browser Compatibility for ANSI Codes
 
-| Browser           | Version       | Colors Supported   |
-|-------------------|---------------|--------------------|
-| **Chrome**        | **v69+**      | TrueColor (16M)    |
-| **Safari**        | **v10+**      | TrueColor (16M)    |
-| **Edge**          | **v79+**      | TrueColor (16M)    |
-| **Opera**         | **v56+**      | TrueColor (16M)    |
-| **Brave**         | **v1.0+**     | TrueColor (16M)    |
-| **Vivaldi**       | **v2.0+**     | TrueColor (16M)    |
+| Browser     | Version   | Colors Supported |
+| ----------- | --------- | ---------------- |
+| **Chrome**  | **v69+**  | TrueColor (16M)  |
+| **Safari**  | **v10+**  | TrueColor (16M)  |
+| **Edge**    | **v79+**  | TrueColor (16M)  |
+| **Opera**   | **v56+**  | TrueColor (16M)  |
+| **Brave**   | **v1.0+** | TrueColor (16M)  |
+| **Vivaldi** | **v2.0+** | TrueColor (16M)  |
 
 > [!WARNING]
 > **Firefox** doesn't natively support ANSI codes in the developer console. Colorize automatically falls back to `%c` syntax for Firefox.
@@ -590,11 +590,11 @@ Colorize ensures consistent and predictable behavior for edge-case inputs, makin
 ```typescript
 import colorize, { red } from "@visulima/colorize";
 
-colorize.red();          // ✅ Returns empty string ''
+colorize.red(); // ✅ Returns empty string ''
 colorize.red(undefined); // ✅ Returns empty string ''
-colorize.red(null);      // ✅ Returns empty string ''
-colorize.red("");        // ✅ Returns empty string ''
-colorize.reset();        // ✅ Returns reset ANSI code '\x1b[0m'
+colorize.red(null); // ✅ Returns empty string ''
+colorize.red(""); // ✅ Returns empty string ''
+colorize.reset(); // ✅ Returns reset ANSI code '\x1b[0m'
 ```
 
 This reliable handling prevents unexpected output when working with variables that might be `undefined`, `null`, or empty strings.
@@ -611,32 +611,32 @@ This reliable handling prevents unexpected output when working with variables th
 ### Checklist
 
 - Does support for **ESM** or **CJS** matter?
-  - ✅ Colorize: `ESM` and `CJS`
-  - ❌ styleText: Node.js only
+    - ✅ Colorize: `ESM` and `CJS`
+    - ❌ styleText: Node.js only
 
 - Does **browser compatibility** matter?
-  - ✅ Colorize: Works in Chromium-based browsers and Safari
-  - ❌ styleText: Node.js only
+    - ✅ Colorize: Works in Chromium-based browsers and Safari
+    - ❌ styleText: Node.js only
 
 - Does **performance** matter? (e.g., high-frequency logging)
-  - ✅ Colorize: **~100x faster** than styleText
-  - ❌ styleText: Significantly slower
+    - ✅ Colorize: **~100x faster** than styleText
+    - ❌ styleText: Significantly slower
 
 - Does support for **[ANSI 256 colors](#256-colors)** or **[Truecolor](#truecolor)** with [fallback](#fallback) matter?
-  - ✅ Colorize: Full support with automatic fallback
-  - ❌ styleText: Limited to 16 colors only
+    - ✅ Colorize: Full support with automatic fallback
+    - ❌ styleText: Limited to 16 colors only
 
 - Does handling **[edge cases](#edge-cases-handling-input-arguments)** (undefined, null, empty strings) matter?
-  - ✅ Colorize: Reliable handling of all edge cases
-  - ⚠️ styleText: Behavior varies by Node.js version
+    - ✅ Colorize: Reliable handling of all edge cases
+    - ⚠️ styleText: Behavior varies by Node.js version
 
 - Does keeping your code **clean and readable** matter?
-  - ✅ Colorize: [Default and named import](#named-import), [chained syntax](#chained-syntax), [nested template strings](#nested-syntax)
-  - ❌ styleText: Verbose nested calls, no chaining
+    - ✅ Colorize: [Default and named import](#named-import), [chained syntax](#chained-syntax), [nested template strings](#nested-syntax)
+    - ❌ styleText: Verbose nested calls, no chaining
 
 - Does **TypeScript** support and IDE autocomplete matter?
-  - ✅ Colorize: Full TypeScript support with autocomplete
-  - ⚠️ styleText: Basic TypeScript support
+    - ✅ Colorize: Full TypeScript support with autocomplete
+    - ⚠️ styleText: Basic TypeScript support
 
 ## Library Maintenance Status
 
@@ -678,8 +678,8 @@ Since **Node.js v22**, the built-in [`util.styleText()`](https://nodejs.org/api/
 In practical benchmarks, `styleText()` is dramatically slower, **~100x slower** than Colorize:
 
 ```js
-styleText('red', 'text');      //    579.832 ops/sec
-colorize.red('text');          // 59.646.465 ops/sec
+styleText("red", "text"); //    579.832 ops/sec
+colorize.red("text"); // 59.646.465 ops/sec
 ```
 
 See the [benchmark](./__bench__/README.md) for detailed performance comparisons.
@@ -745,10 +745,10 @@ console.log(styleText("red", `Error: ${styleText(["cyan", "bold"], "file.js")} n
 - Supports 16-color, 256-color, and truecolor output.
 - Truecolor methods `hex()` and `rgb()`:
 
-  ```typescript
-  console.log(colorize.hex("#ffa500")("orange text"));
-  console.log(colorize.rgb(255, 165, 0)("orange text"));
-  ```
+    ```typescript
+    console.log(colorize.hex("#ffa500")("orange text"));
+    console.log(colorize.rgb(255, 165, 0)("orange text"));
+    ```
 
 **styleText**
 
@@ -762,19 +762,19 @@ Color names, methods, and style chains are fully typed, enabling **autocomplete*
 
 ## Comparison of most popular libraries
 
-| Library<br>**\*\***\_\_**\*\***<br> - name<br> - named import     | Code size                                                                      |               Naming colors                | ANSI 256<br>colors | True-<br>color | Chained<br>syntax | Nested<br>template strings | New<br>Line |            Supports<br>CLI params<br>ENV vars            | Fallbacks                          |
-| :---------------------------------------------------------------- | :----------------------------------------------------------------------------- | :----------------------------------------: | :----------------: | :------------: | :---------------: | :------------------------: | :---------: | :------------------------------------------------------: | ---------------------------------- |
-| [`@visulima/colorize`][npm-url]<br><nobr>`✅ named import`</nobr> | ![npm bundle size](https://img.shields.io/bundlephobia/min/@visulima/colorize) |        **standard**<br>`16` colors         |         ✅         |       ✅       |        ✅         |             ✅             |     ✅      | `NO_COLOR`<br>`FORCE_COLOR`<br>`--no-color`<br>`--color` | 256 color<br>16 colors<br>no color |
-| [`ansi-colors`][ansi-colors]<br><nobr>`❌ named import`</nobr>    | ![npm bundle size](https://img.shields.io/bundlephobia/min/ansi-colors)        |        **standard**<br>`16` colors         |         ❌         |       ❌       |        ✅         |             ❌             |     ✅      |                  only<br>`FORCE_COLOR`                   | ❌                                 |
-| [`ansis`][ansis]<br><nobr>`✅ named import`</nobr>                | ![npm bundle size](https://img.shields.io/bundlephobia/min/ansis)              |        **standard**<br>`16` colors         |         ✅         |       ✅       |        ✅         |             ✅             |     ✅      | `NO_COLOR`<br>`FORCE_COLOR`<br>`--no-color`<br>`--color` | 256 color<br>16 colors<br>no color |
-| [`chalk`][chalk]<br><nobr>`❌ named import`</nobr>                | ![npm bundle size](https://img.shields.io/bundlephobia/min/chalk)              |        **standard**<br>`16` colors         |         ✅         |       ✅       |        ✅         |             ❌             |     ✅      | `NO_COLOR`<br>`FORCE_COLOR`<br>`--no-color`<br>`--color` | 256 color<br>16 colors<br>no color |
-| [`cli-color`][cli-color]<br><nobr>`❌ named import`</nobr>        | ![npm bundle size](https://img.shields.io/bundlephobia/min/cli-color)          |        **standard**<br>`16` colors         |         ✅         |       ❌       |        ✅         |             ❌             |     ❌      |                    only<br>`NO_COLOR`                    | 16 colors<br>no color              |
-| [`colorette`][colorette]<br><nobr>`✅ named import`</nobr>        | ![npm bundle size](https://img.shields.io/bundlephobia/min/colorette)          |        **standard**<br>`16` colors         |         ❌         |       ❌       |        ❌         |             ❌             |     ❌      | `NO_COLOR`<br>`FORCE_COLOR`<br>`--no-color`<br>`--color` | no color                           |
-| [`colors-cli`][colors-cli]<br><nobr>`❌ named import`</nobr>      | ![npm bundle size](https://img.shields.io/bundlephobia/min/colors-cli)         | <nobr>_non-standard_</nobr><br>`16` colors |         ✅         |       ❌       |        ✅         |             ❌             |     ✅      |            only<br>`--no-color`<br>`--color`             | no color                           |
-| [`colors.js`][colors.js]<br><nobr>`❌ named import`</nobr>        | ![npm bundle size](https://img.shields.io/bundlephobia/min/colors.js)          | <nobr>_non-standard_</nobr><br>`16` colors |         ❌         |       ❌       |        ✅         |             ❌             |     ✅      |    only<br>`FORCE_COLOR`<br>`--no-color`<br>`--color`    | no color                           |
-| [`kleur`][kleur]<br><nobr>`✅ named import`</nobr>                | ![npm bundle size](https://img.shields.io/bundlephobia/min/kleur)              |         **standard**<br>`8` colors         |         ❌         |       ❌       |        ✅         |             ❌             |     ❌      |           only<br>`NO_COLOR`<br>`FORCE_COLOR`            | no color                           |
-| [`picocolors`][picocolors]<br><nobr>`❌ named import`</nobr>      | ![npm bundle size](https://img.shields.io/bundlephobia/min/picocolors)         |         **standard**<br>`8` colors         |         ❌         |       ❌       |        ❌         |             ❌             |     ❌      | `NO_COLOR`<br>`FORCE_COLOR`<br>`--no-color`<br>`--color` | no color                           |
-| [`util.styleText()`][styleText]<br><nobr>`❌ named import`</nobr><br><nobr>`Node ≥ 22`</nobr> | Built-in                                                                        |        **standard**<br>`16` colors         |         ❌         |       ❌       |        ❌         |             ❌             |     ❓      | `NO_COLOR`<br>`FORCE_COLOR`<br>`NODE_DISABLE_COLORS`    | no color                           |
+| Library<br>**\*\***\_\_**\*\***<br> - name<br> - named import                                 | Code size                                                                      |               Naming colors                | ANSI 256<br>colors | True-<br>color | Chained<br>syntax | Nested<br>template strings | New<br>Line |            Supports<br>CLI params<br>ENV vars            | Fallbacks                          |
+| :-------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------- | :----------------------------------------: | :----------------: | :------------: | :---------------: | :------------------------: | :---------: | :------------------------------------------------------: | ---------------------------------- |
+| [`@visulima/colorize`][npm-url]<br><nobr>`✅ named import`</nobr>                             | ![npm bundle size](https://img.shields.io/bundlephobia/min/@visulima/colorize) |        **standard**<br>`16` colors         |         ✅         |       ✅       |        ✅         |             ✅             |     ✅      | `NO_COLOR`<br>`FORCE_COLOR`<br>`--no-color`<br>`--color` | 256 color<br>16 colors<br>no color |
+| [`ansi-colors`][ansi-colors]<br><nobr>`❌ named import`</nobr>                                | ![npm bundle size](https://img.shields.io/bundlephobia/min/ansi-colors)        |        **standard**<br>`16` colors         |         ❌         |       ❌       |        ✅         |             ❌             |     ✅      |                  only<br>`FORCE_COLOR`                   | ❌                                 |
+| [`ansis`][ansis]<br><nobr>`✅ named import`</nobr>                                            | ![npm bundle size](https://img.shields.io/bundlephobia/min/ansis)              |        **standard**<br>`16` colors         |         ✅         |       ✅       |        ✅         |             ✅             |     ✅      | `NO_COLOR`<br>`FORCE_COLOR`<br>`--no-color`<br>`--color` | 256 color<br>16 colors<br>no color |
+| [`chalk`][chalk]<br><nobr>`❌ named import`</nobr>                                            | ![npm bundle size](https://img.shields.io/bundlephobia/min/chalk)              |        **standard**<br>`16` colors         |         ✅         |       ✅       |        ✅         |             ❌             |     ✅      | `NO_COLOR`<br>`FORCE_COLOR`<br>`--no-color`<br>`--color` | 256 color<br>16 colors<br>no color |
+| [`cli-color`][cli-color]<br><nobr>`❌ named import`</nobr>                                    | ![npm bundle size](https://img.shields.io/bundlephobia/min/cli-color)          |        **standard**<br>`16` colors         |         ✅         |       ❌       |        ✅         |             ❌             |     ❌      |                    only<br>`NO_COLOR`                    | 16 colors<br>no color              |
+| [`colorette`][colorette]<br><nobr>`✅ named import`</nobr>                                    | ![npm bundle size](https://img.shields.io/bundlephobia/min/colorette)          |        **standard**<br>`16` colors         |         ❌         |       ❌       |        ❌         |             ❌             |     ❌      | `NO_COLOR`<br>`FORCE_COLOR`<br>`--no-color`<br>`--color` | no color                           |
+| [`colors-cli`][colors-cli]<br><nobr>`❌ named import`</nobr>                                  | ![npm bundle size](https://img.shields.io/bundlephobia/min/colors-cli)         | <nobr>_non-standard_</nobr><br>`16` colors |         ✅         |       ❌       |        ✅         |             ❌             |     ✅      |            only<br>`--no-color`<br>`--color`             | no color                           |
+| [`colors.js`][colors.js]<br><nobr>`❌ named import`</nobr>                                    | ![npm bundle size](https://img.shields.io/bundlephobia/min/colors.js)          | <nobr>_non-standard_</nobr><br>`16` colors |         ❌         |       ❌       |        ✅         |             ❌             |     ✅      |    only<br>`FORCE_COLOR`<br>`--no-color`<br>`--color`    | no color                           |
+| [`kleur`][kleur]<br><nobr>`✅ named import`</nobr>                                            | ![npm bundle size](https://img.shields.io/bundlephobia/min/kleur)              |         **standard**<br>`8` colors         |         ❌         |       ❌       |        ✅         |             ❌             |     ❌      |           only<br>`NO_COLOR`<br>`FORCE_COLOR`            | no color                           |
+| [`picocolors`][picocolors]<br><nobr>`❌ named import`</nobr>                                  | ![npm bundle size](https://img.shields.io/bundlephobia/min/picocolors)         |         **standard**<br>`8` colors         |         ❌         |       ❌       |        ❌         |             ❌             |     ❌      | `NO_COLOR`<br>`FORCE_COLOR`<br>`--no-color`<br>`--color` | no color                           |
+| [`util.styleText()`][styleText]<br><nobr>`❌ named import`</nobr><br><nobr>`Node ≥ 22`</nobr> | Built-in                                                                       |        **standard**<br>`16` colors         |         ❌         |       ❌       |        ❌         |             ❌             |     ❓      |   `NO_COLOR`<br>`FORCE_COLOR`<br>`NODE_DISABLE_COLORS`   | no color                           |
 
 > **Note**
 >

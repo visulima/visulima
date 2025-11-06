@@ -145,11 +145,10 @@ const createInstance = (options: Options): Outdent => {
 
     // Define the actual outdent function returned by the factory
     // It handles both template literal calls and option-setting calls.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     function outdent(stringsOrOptions: TemplateStringsArray, ...values: any[]): string;
     function outdent(stringsOrOptions: Options): Outdent;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     function outdent(stringsOrOptions: Options | TemplateStringsArray, ...values: any[]): Outdent | string {
         // Call signature: outdent`template literal`
         if (isTemplateStringsArray(stringsOrOptions)) {
@@ -244,7 +243,7 @@ export interface Outdent {
      * @param values The interpolated values.
      * @returns The processed string with indentation removed.
      */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     (strings: TemplateStringsArray, ...values: any[]): string;
 
     /**

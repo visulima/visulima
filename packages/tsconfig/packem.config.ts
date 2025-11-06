@@ -24,7 +24,7 @@ export default defineConfig({
             unused: {
                 exclude: ["type-fest"],
             },
-        }
+        },
     },
     typedoc: {
         format: "inline",

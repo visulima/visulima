@@ -72,17 +72,17 @@ export const createOpenInEditorMiddleware = (options: OpenInEditorOptions = {}):
 
                     const onEnd = () => {
                         try {
-                            resolve(data ? JSON.parse(data) : {});
+                            resolve((data ? JSON.parse(data) : {}) as EditorPayload);
                         } catch {
-                            resolve({});
+                            resolve({} as EditorPayload);
                         }
                     };
 
                     request.on("data", onData);
                     request.on("end", onEnd);
-                    request.on("error", () => resolve({}));
+                    request.on("error", () => resolve({} as EditorPayload));
                 } catch {
-                    resolve({});
+                    resolve({} as EditorPayload);
                 }
             });
         }

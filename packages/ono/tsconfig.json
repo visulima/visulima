@@ -4,6 +4,7 @@
     "compilerOptions": {
         "baseUrl": ".",
         "moduleResolution": "bundler",
-        "types": ["@types/node", "@visulima/packem/files"]
-    }
+        "types": ["node", "@visulima/packem/files"]
+    },
+    "exclude": ["dist", "examples"]
 }

@@ -6,7 +6,7 @@
     },
     "targetDefaults": {
         "build": {
-            "dependsOn": ["^build"],
+            "dependsOn": ["^build", "lint:types"],
             "inputs": ["production", "^production"],
             "outputs": ["{projectRoot}/dist"],
             "cache": true
@@ -67,28 +67,28 @@
             "cache": true
         }
     },
-        "namedInputs": {
-            "default": ["sharedGlobals", "{projectRoot}/**/*", "!{projectRoot}/**/*.md"],
-            "production": ["default", "!{projectRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)"],
-            "testing": ["default", "{projectRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)"],
-            "public": [
-                "default",
-                "{workspaceRoot}/dist",
-                "!{workspaceRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)",
-                "!{workspaceRoot}/vite.config.ts",
-                "!{workspaceRoot}/.eslintrc.js",
-                "!{workspaceRoot}/.eslintrc.cjs",
-                "!{workspaceRoot}/.storybook/**/*",
-                "!{workspaceRoot}/**/*.stories.@(js|jsx|ts|tsx|mdx)"
-            ],
-            "sharedGlobals": [
-                "{workspaceRoot}/.nvmrc",
-                "{workspaceRoot}/package.json",
-                "{workspaceRoot}/tsup.config.ts",
-                "{workspaceRoot}/tsconfig.json",
-                "{workspaceRoot}/tsconfig.base.json"
-            ]
-        },
+    "namedInputs": {
+        "default": ["sharedGlobals", "{projectRoot}/**/*", "!{projectRoot}/**/*.md"],
+        "production": ["default", "!{projectRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)"],
+        "testing": ["default", "{projectRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)"],
+        "public": [
+            "default",
+            "{workspaceRoot}/dist",
+            "!{workspaceRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)",
+            "!{workspaceRoot}/vite.config.ts",
+            "!{workspaceRoot}/.eslintrc.js",
+            "!{workspaceRoot}/.eslintrc.cjs",
+            "!{workspaceRoot}/.storybook/**/*",
+            "!{workspaceRoot}/**/*.stories.@(js|jsx|ts|tsx|mdx)"
+        ],
+        "sharedGlobals": [
+            "{workspaceRoot}/.nvmrc",
+            "{workspaceRoot}/package.json",
+            "{workspaceRoot}/tsup.config.ts",
+            "{workspaceRoot}/tsconfig.json",
+            "{workspaceRoot}/tsconfig.base.json"
+        ]
+    },
     "parallel": 5,
     "defaultBase": "main",
     "$schema": "./node_modules/nx/schemas/nx-schema.json"

@@ -6,4 +6,3 @@ beforeAll(() => {
         process.env.CEREBRO_TERMINAL_WIDTH = "80";
     }
 });
-

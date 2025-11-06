@@ -24,7 +24,7 @@ const handlers = {
     DataView: copyDataView,
     Date: copyDate,
     Error: copyError,
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type, @typescript-eslint/no-unused-vars
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
     Function: (object: Function, _state: State) => object,
     Map: copyMapLoose,
     Object: copyObjectLoose,
@@ -33,7 +33,7 @@ const handlers = {
     },
     RegExp: copyRegExpLoose,
     Set: copySetLoose,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
     SharedArrayBuffer: (object: SharedArrayBuffer, _state: State) => {
         throw new TypeError(`${object.constructor.name} objects cannot be cloned`);
     },
@@ -119,9 +119,12 @@ export const deepClone = <T>(originalData: T, options?: Options): DeepReadwrite<
             return cloner.Error(value, state);
         }
 
+        if (value instanceof ArrayBuffer) {
+            return cloner.ArrayBuffer(value, state);
+        }
+
         if (
-            value instanceof ArrayBuffer
-            || value instanceof Uint8Array
+            value instanceof Uint8Array
             || value instanceof Uint8ClampedArray
             || value instanceof Int8Array
             || value instanceof Uint16Array
@@ -131,7 +134,16 @@ export const deepClone = <T>(originalData: T, options?: Options): DeepReadwrite<
             || value instanceof Float32Array
             || value instanceof Float64Array
         ) {
-            return cloner.ArrayBuffer(value, state);
+            const { buffer } = value;
+
+            if (buffer instanceof SharedArrayBuffer) {
+                throw new TypeError("SharedArrayBuffer cannot be cloned");
+            }
+
+            const clonedBuffer = cloner.ArrayBuffer(buffer, state);
+            const TypedArrayConstructor = value.constructor as new (buffer: ArrayBuffer, byteOffset?: number, length?: number) => typeof value;
+
+            return new TypedArrayConstructor(clonedBuffer, value.byteOffset, value.length);
         }
 
         if (value instanceof Blob) {
@@ -172,7 +184,7 @@ export const deepClone = <T>(originalData: T, options?: Options): DeepReadwrite<
     const cloned = clone(originalData, { cache, clone });
 
     // Reset the cache to free up memory
-    cache = undefined;
+    cache = null;
 
     return cloned as DeepReadwrite<T>;
 };

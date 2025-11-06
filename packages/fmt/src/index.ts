@@ -16,12 +16,12 @@ const CHAR_s = "s".codePointAt(0);
 const CHAR_d = "d".codePointAt(0);
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const CHAR_f = "f".codePointAt(0);
-// eslint-disable-next-line @typescript-eslint/naming-convention,unicorn/prevent-abbreviations
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const CHAR_i = "i".codePointAt(0);
 const CHAR_O = "O".codePointAt(0);
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const CHAR_o = "o".codePointAt(0);
-// eslint-disable-next-line @typescript-eslint/naming-convention,unicorn/prevent-abbreviations
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const CHAR_j = "j".codePointAt(0);
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const CHAR_c = "c".codePointAt(0);

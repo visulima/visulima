@@ -1,4 +1,3 @@
-/* eslint-disable unicorn/prevent-abbreviations */
 import httpErrors from "http-errors";
 import { createMocks } from "node-mocks-http";
 import { describe, expect, it } from "vitest";

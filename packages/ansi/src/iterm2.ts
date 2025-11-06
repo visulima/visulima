@@ -60,7 +60,6 @@ export { ITerm2File, ITerm2FileEnd, ITerm2FilePart, ITerm2MultipartFileStart } f
  * // Output: OSC1337;ShellIntegrationVersion=15;Shell=zshBEL
  * ```
  */
-// eslint-disable-next-line unicorn/prevent-abbreviations
 export const iTerm2 = (payload: IITerm2Payload): string => {
     if (!payload || typeof payload.toString !== "function" || payload.toString === Object.prototype.toString) {
         throw new Error("Invalid payload: must implement IITerm2Payload with a custom toString method");

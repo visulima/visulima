@@ -26,8 +26,8 @@ export class Table {
     public constructor(options: TableOptions = {}) {
         this.#options = {
             ...options,
-            showHeader: options.showHeader ?? true,
             showFooter: options.showFooter ?? true,
+            showHeader: options.showHeader ?? true,
             style: {
                 border: DEFAULT_BORDER,
                 paddingLeft: 1,
@@ -261,7 +261,6 @@ export class Table {
 
             // Check if this is a header row and if the auto-span logic should apply
             const headerRowCount = this.#options.showHeader ? this.#headers.length : 0;
-            const footerRowCount = this.#options.showFooter ? this.#footers.length : 0;
             const bodyRowCount = this.#rows.length;
             const currentRowIndex = Number.parseInt(rowIndex, 10);
             const isHeaderRow = this.#options.showHeader && currentRowIndex < headerRowCount;

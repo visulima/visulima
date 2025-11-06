@@ -43,7 +43,6 @@ const modelsToOpenApi = async <M extends string = string, PrismaClient = FakePri
     prismaClient,
     swagger = { allowedMediaTypes: { "application/json": true }, models: {} },
 }: ModelsToOpenApiParameters<M, PrismaClient>): Promise<{
-
     examples: Record<string, OpenAPIV3.ExampleObject | OpenAPIV3.ReferenceObject>;
     paths: OpenAPIV3.PathsObject;
 

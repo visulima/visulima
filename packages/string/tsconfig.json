@@ -3,7 +3,7 @@
     "extends": "../../tsconfig.base.json",
     "compilerOptions": {
         "moduleResolution": "bundler",
-        "types": ["./src/native-string-types.d.ts", "./vitest.d.ts"]
+        "types": ["./src/native-string-types.d.ts", "./vitest.d.ts", "node"]
     },
     "include": ["src/**/*", "*.d.ts"]
 }

@@ -29,7 +29,10 @@ const pathRegexParser = (layerRegexPath: ExpressRegex | string, keys: Key[]): st
     }
 
     const match = /^\/\^((?:\\[$()*+./?[\\\]^{|}]|[^$()*+./?[\\\]^{|}])*)\$\//u.exec(
-        layerRegexPath.toString().replace(String.raw`\/?`, "").replace(String.raw`(?=\/|$)`, "$"),
+        layerRegexPath
+            .toString()
+            .replace(String.raw`\/?`, "")
+            .replace(String.raw`(?=\/|$)`, "$"),
     ) as string[];
 
     if (Array.isArray(match) && match.length > 1) {

@@ -28,17 +28,17 @@ async function main() {
         await writeFile(join(fixtures, "a/b/c/resolved.js"), "");
     }
 
-    for (let dir of up(start)) {
+    for (const dir of up(start)) {
         if (dir === fixtures)
             break;
 
         if (COUNT > 0) {
-            let name = Math.random().toString(16).slice(4);
+            const name = Math.random().toString(16).slice(4);
 
             await Promise.all(Array.from({ length: COUNT }, (_, index) => writeFile(join(dir, `${name + index}.txt`), "")));
         }
 
-        let array = await readdir(dir);
+        const array = await readdir(dir);
 
         console.log("> \"%s\" has %d file(s)", dir, array.length);
     }

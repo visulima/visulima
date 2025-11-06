@@ -13,11 +13,7 @@ const table1 = createTable({
     },
 });
 
-table1.addRow([
-    "Short",
-    "Medium length text",
-    "Very long content that should be constrained"
-]);
+table1.addRow(["Short", "Medium length text", "Very long content that should be constrained"]);
 
 console.log(table1.toString());
 console.log();
@@ -34,9 +30,9 @@ const table2 = createTable({
 });
 
 table2.addRow([
-    "A",           // Very short
-    "Medium",      // Medium length
-    "Very long content here that will be truncated"  // Long content
+    "A", // Very short
+    "Medium", // Medium length
+    "Very long content here that will be truncated", // Long content
 ]);
 
 console.log(table2.toString());
@@ -52,11 +48,7 @@ const table3 = createTable({
     },
 });
 
-table3.addRow([
-    "A",
-    "Medium",
-    "Very long content here that will be truncated"
-]);
+table3.addRow(["A", "Medium", "Very long content here that will be truncated"]);
 
 console.log(table3.toString());
 console.log();

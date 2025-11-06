@@ -1,5 +1,6 @@
 {
     "extends": "../../tsconfig.base.json",
+    "compilerOptions": {},
     "include": ["."],
-    "exclude": ["dist", "build", "node_modules"]
+    "exclude": ["dist", "build", "node_modules", "eslint.config.js"]
 }

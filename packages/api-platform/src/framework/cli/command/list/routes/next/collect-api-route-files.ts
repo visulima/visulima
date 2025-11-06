@@ -1,6 +1,5 @@
 import { statSync } from "node:fs";
 
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { collect } from "@visulima/fs";
 import { join } from "@visulima/path";
 

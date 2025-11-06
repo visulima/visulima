@@ -94,7 +94,6 @@ const parseRelation = (
     // eslint-disable-next-line no-param-reassign
     parsed[initialFieldKey] = {
         some: {
-
             ...(oldParsed?.some as object),
             ...formatFields[initialFieldKey]?.some,
         },

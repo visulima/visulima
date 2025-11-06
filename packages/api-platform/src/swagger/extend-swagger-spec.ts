@@ -223,7 +223,6 @@ const prepareResponseExamples = (
     mediaType: string,
     transformers: Transformers,
     examples: Record<string, OpenAPIV3.ExampleObject | OpenAPIV3.ReferenceObject>,
-
 ) => {
     prepareStatusContent(methodSpec, status, mediaType);
 

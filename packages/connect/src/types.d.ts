@@ -1,4 +1,4 @@
-import type { AnyZodObject } from "zod";
+import type { ZodObject } from "zod";
 
 export type HttpMethod = "CONNECT" | "DELETE" | "GET" | "HEAD" | "OPTIONS" | "PATCH" | "POST" | "PUT" | "TRACE";
 
@@ -30,7 +30,7 @@ export interface HandlerOptions<Handler extends FunctionLike> {
     onNoMatch?: Handler;
 }
 
-export type RouteShortcutMethod<This, Schema extends AnyZodObject, H extends FunctionLike> = (
+export type RouteShortcutMethod<This, Schema extends ZodObject<any>, H extends FunctionLike> = (
     route: Nextable<H> | RouteMatch,
     zodSchemaOrRouteOrFns?: Nextable<H> | RouteMatch | Schema | string,
     ...fns: Nextable<H>[]
