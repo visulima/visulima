@@ -11,6 +11,7 @@ import bunyan from "bunyan";
 import { createConsola as createBrowserConsola, createConsola as createServerConsola } from "consola";
 import { diary } from "diary";
 import pino from "pino";
+import { ROARR, Roarr as log } from "roarr";
 import type { ILogObj } from "tslog";
 import { Logger } from "tslog";
 // eslint-disable-next-line import/no-extraneous-dependencies
@@ -102,6 +103,11 @@ const diarySink = (event) => {
     diaryStream.write(JSON.stringify(event));
 };
 const diaryLogger = diary("standard", diarySink);
+
+// Configure roarr to write to /dev/null
+ROARR.write = () => {
+    // Logs are discarded for benchmarking
+};
 
 describe("basic", async () => {
     bench(
@@ -238,6 +244,16 @@ describe("basic", async () => {
         "diary",
         async () => {
             diaryLogger.info("info message");
+        },
+        {
+            iterations: 10_000,
+        },
+    );
+
+    bench(
+        "roarr",
+        async () => {
+            log.info("hello world");
         },
         {
             iterations: 10_000,
