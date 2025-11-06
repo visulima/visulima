@@ -160,6 +160,24 @@
             "types": "./dist/reporter/simple/simple-reporter.server.d.ts",
             "default": "./dist/reporter/simple/simple-reporter.server.js"
         },
+        "./reporter/abstract-http": {
+            "types": "./dist/reporter/http/abstract-http-reporter.d.ts",
+            "default": "./dist/reporter/http/abstract-http-reporter.js"
+        },
+        "./reporter/http": {
+            "edge-light": {
+                "types": "./dist/reporter/http/http-reporter.edge-light.d.ts",
+                "default": "./dist/reporter/http/http-reporter.edge-light.js"
+            },
+            "browser": {
+                "types": "./dist/reporter/http/http-reporter.d.ts",
+                "default": "./dist/reporter/http/http-reporter.js"
+            },
+            "import": {
+                "types": "./dist/reporter/http/http-reporter.d.ts",
+                "default": "./dist/reporter/http/http-reporter.js"
+            }
+        },
         "./progress-bar": {
             "types": "./dist/progress-bar.d.ts",
             "default": "./dist/progress-bar.js"
