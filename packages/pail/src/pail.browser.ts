@@ -122,6 +122,8 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
 
     protected rawReporter: Reporter<L>;
 
+    protected force: Record<string, LoggerFunction>;
+
     /**
      * Creates a new Pail browser logger instance.
      *
@@ -171,7 +173,17 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
         for (const type in this.types) {
             // @ts-expect-error - dynamic property
 
-            this[type] = this.logger.bind(this, type as T, false);
+            this[type] = this.logger.bind(this, type as T, false, false);
+        }
+
+        // Create force methods that bypass log level filtering
+        // @ts-expect-error - dynamic property
+        this.force = {};
+
+        // eslint-disable-next-line no-restricted-syntax,guard-for-in
+        for (const type in this.types) {
+            // @ts-expect-error - dynamic property
+            this.force[type] = this.logger.bind(this, type as T, false, true);
         }
 
         if (Array.isArray(options.reporters)) {
@@ -378,7 +390,7 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
         const queue = this.messageQueue.splice(0);
 
         for (const { messageObject, raw, type } of queue) {
-            this.logger(type, raw, ...messageObject);
+            this.logger(type, raw, false, ...messageObject);
         }
     }
 
@@ -443,7 +455,7 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
      */
     public time(label = "default"): void {
         if (this.seqTimers.has(label)) {
-            this.logger("warn", false, {
+            this.logger("warn", false, false, {
                 message: `Timer '${label}' already exists`,
                 prefix: label,
             });
@@ -451,7 +463,7 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
             this.seqTimers.add(label);
             this.timersMap.set(label, Date.now());
 
-            this.logger("start", false, {
+            this.logger("start", false, false, {
                 message: this.startTimerMessage,
                 prefix: label,
             });
@@ -486,13 +498,13 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             const span = Date.now() - this.timersMap.get(label)!;
 
-            this.logger("info", false, {
+            this.logger("info", false, false, {
                 context: data,
                 message: span < 1000 ? `${span} ms` : `${(span / 1000).toFixed(2)} s`,
                 prefix: label,
             });
         } else {
-            this.logger("warn", false, {
+            this.logger("warn", false, false, {
                 context: data,
                 message: "Timer not found",
                 prefix: label,
@@ -527,12 +539,12 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
 
             this.timersMap.delete(label);
 
-            this.logger("stop", false, {
+            this.logger("stop", false, false, {
                 message: `${this.endTimerMessage} ${span < 1000 ? `${span} ms` : `${(span / 1000).toFixed(2)} s`}`,
                 prefix: label,
             });
         } else {
-            this.logger("warn", false, {
+            this.logger("warn", false, false, {
                 message: "Timer not found",
                 prefix: label,
             });
@@ -607,7 +619,7 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
 
         this.countMap.set(label, current + 1);
 
-        this.logger("log", false, {
+        this.logger("log", false, false, {
             message: `${label}: ${current + 1}`,
             prefix: label,
         });
@@ -631,7 +643,7 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
         if (this.countMap.has(label)) {
             this.countMap.delete(label);
         } else {
-            this.logger("warn", false, {
+            this.logger("warn", false, false, {
                 message: `Count for ${label} does not exist`,
                 prefix: label,
             });
@@ -676,7 +688,7 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
             return;
         }
 
-        this.logger("log", true, {
+        this.logger("log", true, false, {
             context: arguments_,
             message,
         });
@@ -821,7 +833,7 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
     }
 
     // eslint-disable-next-line sonarjs/cognitive-complexity
-    protected logger(type: LiteralUnion<DefaultLogTypes, T>, raw: boolean, ...messageObject: any[]): void {
+    protected logger(type: LiteralUnion<DefaultLogTypes, T>, raw: boolean, force: boolean, ...messageObject: any[]): void {
         if (this.disabled) {
             return;
         }
@@ -835,7 +847,8 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
 
         const logLevel = this.#normalizeLogLevel(this.types[type].logLevel);
 
-        if ((this.logLevels[logLevel] as number) >= (this.logLevels[this.generalLogLevel] as number)) {
+        // Bypass level check if force is true
+        if (force || (this.logLevels[logLevel] as number) >= (this.logLevels[this.generalLogLevel] as number)) {
             let meta = this.#buildMeta(type, this.types[type], ...messageObject);
 
             /**
@@ -911,12 +924,12 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
 }
 
 export type PailBrowserType<T extends string = string, L extends string = string> = Console
-    & (new<TC extends string = string, LC extends string = string>(
-        options?: ConstructorOptions<TC, LC>,
-    ) => PailBrowserType<TC, LC>)
+    & (new<TC extends string = string, LC extends string = string>(options?: ConstructorOptions<TC, LC>) => PailBrowserType<TC, LC>)
     & PailBrowserImpl<T, L>
     & Record<DefaultLogTypes, LoggerFunction>
-    & Record<T, LoggerFunction>;
+    & Record<T, LoggerFunction> & {
+        force: Record<DefaultLogTypes, LoggerFunction> & Record<T, LoggerFunction>;
+    };
 
 export type PailConstructor<T extends string = string, L extends string = string> = new (options?: ConstructorOptions<T, L>) => PailBrowserType<T, L>;
 

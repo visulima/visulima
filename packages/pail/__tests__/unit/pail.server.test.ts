@@ -23,8 +23,8 @@ describe("pailServerImpl", () => {
         pailServer.warn("Warning message");
         pailServer.error("Error message");
 
-        expect(logStdoutSpy).toHaveBeenNthCalledWith(1, "Info message");
-        expect(logStdoutSpy).toHaveBeenNthCalledWith(2, "Warning message");
+        expect(logStdoutSpy).toHaveBeenCalledWith("Info message");
+        expect(logStdoutSpy).toHaveBeenCalledWith("Warning message");
         expect(logStderrSpy).toHaveBeenCalledExactlyOnceWith("Error message");
     });
 
@@ -165,13 +165,13 @@ describe("pailServerImpl", () => {
         newLogger3.groupEnd();
         newLogger3.log("Back to the outer level");
 
-        expect(logStdoutSpy).toHaveBeenNthCalledWith(1, "This is the outer level");
-        expect(logStdoutSpy).toHaveBeenNthCalledWith(2, "    Level 2");
-        expect(logStdoutSpy).toHaveBeenNthCalledWith(3, "    Hello world!");
-        expect(logStdoutSpy).toHaveBeenNthCalledWith(4, "        Level 3");
-        expect(logStdoutSpy).toHaveBeenNthCalledWith(5, "        More of level 3");
-        expect(logStdoutSpy).toHaveBeenNthCalledWith(6, "    Back to level 2");
-        expect(logStdoutSpy).toHaveBeenNthCalledWith(7, "Back to the outer level");
+        expect(logStdoutSpy).toHaveBeenCalledWith("This is the outer level");
+        expect(logStdoutSpy).toHaveBeenCalledWith("    Level 2");
+        expect(logStdoutSpy).toHaveBeenCalledWith("    Hello world!");
+        expect(logStdoutSpy).toHaveBeenCalledWith("        Level 3");
+        expect(logStdoutSpy).toHaveBeenCalledWith("        More of level 3");
+        expect(logStdoutSpy).toHaveBeenCalledWith("    Back to level 2");
+        expect(logStdoutSpy).toHaveBeenCalledWith("Back to the outer level");
     });
 
     describe("pause and resume", () => {
@@ -197,7 +197,7 @@ describe("pailServerImpl", () => {
 
             // All three messages should now be logged in order
             expect(logStdoutSpy).toHaveBeenCalledTimes(3);
-            expect(logStdoutSpy).toHaveBeenNthCalledWith(1, "Message 1");
+            expect(logStdoutSpy).toHaveBeenCalledWith("Message 1");
         });
 
         it("should not queue messages when not paused", () => {
@@ -254,9 +254,9 @@ describe("pailServerImpl", () => {
             pailServer.resume();
 
             expect(logStdoutSpy).toHaveBeenCalledTimes(3);
-            expect(logStdoutSpy).toHaveBeenNthCalledWith(1, "First");
-            expect(logStdoutSpy).toHaveBeenNthCalledWith(2, "Second");
-            expect(logStdoutSpy).toHaveBeenNthCalledWith(3, "Third");
+            expect(logStdoutSpy).toHaveBeenCalledWith("First");
+            expect(logStdoutSpy).toHaveBeenCalledWith("Second");
+            expect(logStdoutSpy).toHaveBeenCalledWith("Third");
         });
 
         it("should not output messages when disabled even if queued", () => {
@@ -272,6 +272,61 @@ describe("pailServerImpl", () => {
 
             // Message should not be logged because logger is disabled
             expect(logStdoutSpy).not.toHaveBeenCalled();
+        });
+    });
+
+    describe("force", () => {
+        it("should bypass log level filter when using force methods", () => {
+            expect.assertions(2);
+
+            const pailServer = new PailServer({
+                logLevel: "warning", // Set to warning, so info/debug should be filtered
+                reporters: [new RawReporter()],
+                stderr,
+                stdout,
+            });
+
+            const logStdoutSpy = vi.spyOn(stdout, "write");
+
+            // Normal info should not be logged (level is warn)
+            pailServer.info("This should not be logged");
+
+            expect(logStdoutSpy).not.toHaveBeenCalled();
+
+            // Force info should be logged despite level being warn
+            pailServer.force.info("This will show even if level is set to 'warn'");
+
+            expect(logStdoutSpy).toHaveBeenCalledWith("This will show even if level is set to 'warn'");
+
+            logStdoutSpy.mockRestore();
+        });
+
+        it("should bypass log level filter for all log types", () => {
+            expect.assertions(5);
+
+            const pailServer = new PailServer({
+                logLevel: "warning",
+                reporters: [new RawReporter()],
+                stderr,
+                stdout,
+            });
+
+            const logStdoutSpy = vi.spyOn(stdout, "write");
+            const logStderrSpy = vi.spyOn(stderr, "write");
+
+            // Force methods should work for different log types
+            pailServer.force.error("Something went wrong!");
+            pailServer.force.debug("Debug message");
+            pailServer.force.trace("Trace message");
+
+            expect(logStderrSpy).toHaveBeenCalledTimes(2); // error and trace go to stderr
+            expect(logStdoutSpy).toHaveBeenCalledTimes(1); // debug goes to stdout
+            expect(logStderrSpy).toHaveBeenCalledWith("Something went wrong!");
+            expect(logStderrSpy).toHaveBeenCalledWith("Trace message");
+            expect(logStdoutSpy).toHaveBeenCalledWith("Debug message");
+
+            logStdoutSpy.mockRestore();
+            logStderrSpy.mockRestore();
         });
     });
 });
