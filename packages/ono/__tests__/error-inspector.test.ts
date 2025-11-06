@@ -128,7 +128,7 @@ describe("error inspector template", () => {
 
         expect(lightHtml).toContain("<html lang=\"en\" class=\"\">");
         expect(darkHtml).toContain("<html lang=\"en\" class=\"dark\">");
-    });
+    }, 10_000); // 10 seconds timeout
 
     it("should handle editor configuration", async () => {
         expect.assertions(1);

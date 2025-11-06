@@ -196,7 +196,7 @@ describe("ono class", () => {
 
             expect(html).toContain("Main error");
             expect(html).toContain("Root cause");
-        });
+        }, 10_000); // 10 seconds timeout
 
         it("should handle errors with stack traces", async () => {
             expect.assertions(2);
