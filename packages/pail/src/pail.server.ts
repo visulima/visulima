@@ -364,7 +364,9 @@ export type PailServerType<T extends string = string, L extends string = string>
     & (new<TC extends string = string, LC extends string = string>(options?: ServerConstructorOptions<TC, LC>) => PailServerType<TC, LC>)
     & PailServerImpl<T, L>
     & Record<DefaultLogTypes, LoggerFunction>
-    & Record<T, LoggerFunction>;
+    & Record<T, LoggerFunction> & {
+        force: Record<DefaultLogTypes, LoggerFunction> & Record<T, LoggerFunction>;
+    };
 
 export type PailConstructor<T extends string = string, L extends string = string> = new (options?: ServerConstructorOptions<T, L>) => PailServerType<T, L>;
 

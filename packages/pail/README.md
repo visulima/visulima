@@ -104,6 +104,27 @@ Pail supports the logging levels described by [RFC 5424][rfc-5424].
 
 - `EMERGENCY`: Emergency: system is unusable.
 
+### Bypass Log Level Filter with Force
+
+Normally, the logger will only output messages at or above the configured level.
+
+However, you can force a log to be emitted regardless of the current level:
+
+```typescript
+import { createPail } from "@visulima/pail";
+
+const logger = createPail({
+    logLevel: "warn", // Only show warning and above
+});
+
+logger.info("This won't be logged"); // Filtered out
+
+logger.force.error("Something went wrong!");
+logger.force.info("This will show even if level is set to 'warn'");
+```
+
+⚠️ **Use this with care**—force is designed for exceptional situations where logs must be guaranteed to appear.
+
 ### Reporters
 
 Reporters are responsible for writing the log messages to the console or a file. `pail` comes with a few built-in reporters:

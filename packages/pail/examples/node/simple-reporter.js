@@ -128,4 +128,3 @@ logger.count("requests");
 logger.count("requests");
 logger.count("errors");
 logger.count("errors");
-

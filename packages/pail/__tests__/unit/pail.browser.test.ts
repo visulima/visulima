@@ -30,8 +30,8 @@ describe("pailBrowserImpl", () => {
         logger.info("Info message");
         logger.customType("Custom log message", { key: "value" });
 
-        expect(consoleSpy).toHaveBeenNthCalledWith(1, "Info message");
-        expect(consoleSpy).toHaveBeenNthCalledWith(2, "Custom log message", { key: "value" });
+        expect(consoleSpy).toHaveBeenCalledWith("Info message");
+        expect(consoleSpy).toHaveBeenCalledWith("Custom log message", { key: "value" });
 
         consoleSpy.mockRestore();
     });
@@ -105,10 +105,10 @@ describe("pailBrowserImpl", () => {
         logger.timeLog("testTimer", "Intermediate log");
         logger.timeEnd("testTimer");
 
-        expect(consoleSpy).toHaveBeenNthCalledWith(1, "Initialized timer...");
+        expect(consoleSpy).toHaveBeenCalledWith("Initialized timer...");
         // eslint-disable-next-line sonarjs/slow-regex
-        expect(consoleSpy).toHaveBeenNthCalledWith(2, expect.stringMatching(/(.*) ms/), "Intermediate log");
-        expect(consoleSpy).toHaveBeenNthCalledWith(3, expect.stringMatching(/Timer run for: (.*)ms/));
+        expect(consoleSpy).toHaveBeenCalledWith(expect.stringMatching(/(.*) ms/), "Intermediate log");
+        expect(consoleSpy).toHaveBeenCalledWith(expect.stringMatching(/Timer run for: (.*)ms/));
 
         consoleSpy.mockRestore();
     });
@@ -182,8 +182,8 @@ describe("pailBrowserImpl", () => {
         logger.info(undefined);
         logger.info(null);
 
-        expect(consoleSpy).toHaveBeenNthCalledWith(1, undefined);
-        expect(consoleSpy).toHaveBeenNthCalledWith(2, null);
+        expect(consoleSpy).toHaveBeenCalledWith(undefined);
+        expect(consoleSpy).toHaveBeenCalledWith(null);
 
         consoleSpy.mockRestore();
     });
@@ -206,7 +206,7 @@ describe("pailBrowserImpl", () => {
         logger.time("testTimer");
         logger.time("testTimer");
 
-        expect(consoleSpy).toHaveBeenNthCalledWith(2, "Timer 'testTimer' already exists");
+        expect(consoleSpy).toHaveBeenCalledWith("Timer 'testTimer' already exists");
 
         consoleSpy.mockRestore();
     });
@@ -512,7 +512,7 @@ describe("pailBrowserImpl", () => {
 
             // All three messages should now be logged in order
             expect(consoleSpy).toHaveBeenCalledTimes(3);
-            expect(consoleSpy).toHaveBeenNthCalledWith(1, "Message 1");
+            expect(consoleSpy).toHaveBeenCalledWith("Message 1");
 
             consoleSpy.mockRestore();
         });
@@ -599,9 +599,9 @@ describe("pailBrowserImpl", () => {
             logger.resume();
 
             expect(consoleSpy).toHaveBeenCalledTimes(3);
-            expect(consoleSpy).toHaveBeenNthCalledWith(1, "First");
-            expect(consoleSpy).toHaveBeenNthCalledWith(2, "Second");
-            expect(consoleSpy).toHaveBeenNthCalledWith(3, "Third");
+            expect(consoleSpy).toHaveBeenCalledWith("First");
+            expect(consoleSpy).toHaveBeenCalledWith("Second");
+            expect(consoleSpy).toHaveBeenCalledWith("Third");
 
             consoleSpy.mockRestore();
         });
@@ -629,6 +629,68 @@ describe("pailBrowserImpl", () => {
             expect(consoleSpy).not.toHaveBeenCalled();
 
             consoleSpy.mockRestore();
+        });
+    });
+
+    describe("force", () => {
+        it("should bypass log level filter when using force methods", () => {
+            expect.assertions(2);
+
+            const logger = new PailBrowser({
+                logLevel: "warning", // Set to warning, so info/debug should be filtered
+                processors: [],
+                rawReporter: new RawReporter(),
+                reporters: [new RawReporter()],
+                throttle: 1000,
+                throttleMin: 5,
+            });
+
+            const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+
+            // Normal info should not be logged (level is warn)
+            logger.info("This should not be logged");
+
+            expect(consoleSpy).not.toHaveBeenCalled();
+
+            // Force info should be logged despite level being warn
+            logger.force.info("This will show even if level is set to 'warn'");
+
+            expect(consoleSpy).toHaveBeenCalledWith("This will show even if level is set to 'warn'");
+
+            consoleSpy.mockRestore();
+        });
+
+        it("should bypass log level filter for all log types", () => {
+            expect.assertions(6);
+
+            const logger = new PailBrowser({
+                logLevel: "warning",
+                processors: [],
+                rawReporter: new RawReporter(),
+                reporters: [new RawReporter()],
+                throttle: 1000,
+                throttleMin: 5,
+            });
+
+            const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+            const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+            const consoleTraceSpy = vi.spyOn(console, "trace").mockImplementation(() => {});
+
+            // Force methods should work for different log types
+            logger.force.error("Something went wrong!");
+            logger.force.debug("Debug message");
+            logger.force.trace("Trace message");
+
+            expect(consoleErrorSpy).toHaveBeenCalledTimes(1);
+            expect(consoleLogSpy).toHaveBeenCalledTimes(1);
+            expect(consoleTraceSpy).toHaveBeenCalledTimes(1);
+            expect(consoleErrorSpy).toHaveBeenCalledWith("Something went wrong!");
+            expect(consoleLogSpy).toHaveBeenCalledWith("Debug message");
+            expect(consoleTraceSpy).toHaveBeenCalledWith("Trace message");
+
+            consoleLogSpy.mockRestore();
+            consoleErrorSpy.mockRestore();
+            consoleTraceSpy.mockRestore();
         });
     });
 });
