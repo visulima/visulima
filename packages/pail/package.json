@@ -114,11 +114,35 @@
             "types": "./dist/reporter/file/json-file-reporter.d.ts",
             "default": "./dist/reporter/file/json-file-reporter.js"
         },
+        "./server/reporter/json": {
+            "import": {
+                "types": "./dist/reporter/json/index.d.ts",
+                "default": "./dist/reporter/json/index.js"
+            }
+        },
+        "./browser/reporter/json": {
+            "import": {
+                "types": "./dist/reporter/json/index.browser.d.ts",
+                "default": "./dist/reporter/json/index.browser.js"
+            }
+        },
         "./reporter/json": {
             "browser": "./dist/reporter/json/index.browser.js",
             "import": {
                 "types": "./dist/reporter/json/index.d.ts",
                 "default": "./dist/reporter/json/index.js"
+            }
+        },
+        "./server/reporter/pretty": {
+            "import": {
+                "types": "./dist/reporter/pretty/index.d.ts",
+                "default": "./dist/reporter/pretty/index.js"
+            }
+        },
+        "./browser/reporter/pretty": {
+            "import": {
+                "types": "./dist/reporter/pretty/index.browser.d.ts",
+                "default": "./dist/reporter/pretty/index.browser.js"
             }
         },
         "./reporter/pretty": {

@@ -10,16 +10,35 @@ import type { SpinnerOptions } from "./spinner";
 import { MultiSpinner, Spinner } from "./spinner";
 import type {
     ConstructorOptions,
+    DefaultLoggerTypes,
     DefaultLogTypes,
+    ExtendedRfc5424LogLevels,
     InteractiveStreamReporter,
     LoggerFunction,
     LoggerTypesAwareReporter,
+    LoggerTypesConfig,
+    ParentLoggerOptimization,
+    Processor,
     Reporter,
     ServerConstructorOptions,
     StreamAwareReporter,
     StringifyAwareReporter,
 } from "./types";
 import { clearTerminal } from "./utils/ansi-escapes";
+import arrayify from "./utils/arrayify";
+import getLongestLabel from "./utils/get-longest-label";
+import mergeTypes from "./utils/merge-types";
+
+/**
+ * Internal interface for server-specific parent logger optimization properties.
+ *
+ * Extends the base optimization interface with server-specific stream properties.
+ * @internal
+ */
+interface ServerParentLoggerOptimization<T extends string = string, L extends string = string> extends ParentLoggerOptimization<T, L> {
+    parentStderr?: NodeJS.WriteStream;
+    parentStdout?: NodeJS.WriteStream;
+}
 
 class PailServerImpl<T extends string = string, L extends string = string> extends PailBrowserImpl<T, L> {
     protected readonly stdout: NodeJS.WriteStream;
@@ -38,12 +57,72 @@ class PailServerImpl<T extends string = string, L extends string = string> exten
      * @param options Server-specific configuration options
      */
     public constructor(public readonly options: ServerConstructorOptions<T, L>) {
-        const { interactive, rawReporter, reporters, stderr, stdout, ...rest } = options;
+        // Optimize: reuse streams from parent when not overridden
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const parentStderr = (options as any).parentStderr as NodeJS.WriteStream | undefined;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const parentStdout = (options as any).parentStdout as NodeJS.WriteStream | undefined;
 
-        super(rest as ConstructorOptions<T, L>);
+        const { interactive, processors, rawReporter, reporters, stderr: optionsStderr, stdout: optionsStdout } = options;
+        const stderr = parentStderr ?? optionsStderr;
+        const stdout = parentStdout ?? optionsStdout;
+
+        // Optimize: reuse types, longestLabel, stringify, logLevels, and messages from parent if provided
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const parentLongestLabel = (options as any).parentLongestLabel as string | undefined;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const parentTypes = (options as any).parentTypes as LoggerTypesConfig<LiteralUnion<DefaultLogTypes, T>, L> | undefined;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { parentLogLevels, parentMessages, parentStringify } = options as any;
+
+        // Extract reporters before super() so parent constructor doesn't register them
+        // We'll register them ourselves after streams are set
+        // Optimize: only create parentOptions if we need to modify it, otherwise pass options directly
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const parentOptions: any & ConstructorOptions<T, L> = {
+            disabled: options.disabled,
+            logLevel: options.logLevel,
+            logLevels: options.logLevels,
+            messages: options.messages,
+            processors: [],
+            rawReporter: options.rawReporter,
+            reporters: [],
+            scope: options.scope,
+            throttle: options.throttle,
+            throttleMin: options.throttleMin,
+        };
+
+        // Batch parent value assignments for optimization
+        // When reusing parent types, options.types is not in the object (not set in childOptions)
+        // Check if types property exists in options object
+        const hasTypesProperty = "types" in options;
+
+        if (parentTypes && parentLongestLabel && !hasTypesProperty) {
+            // Don't set types when reusing parent types - let constructor handle it
+            parentOptions.parentTypes = parentTypes;
+            parentOptions.parentLongestLabel = parentLongestLabel;
+        } else if (hasTypesProperty && options.types !== undefined) {
+            // Only set types when they're provided and not reusing parent types
+            parentOptions.types = options.types;
+        }
+
+        if (parentStringify) {
+            parentOptions.parentStringify = parentStringify;
+        }
+
+        if (parentLogLevels && !options.logLevels) {
+            parentOptions.parentLogLevels = parentLogLevels;
+        }
+
+        if (parentMessages && !options.messages) {
+            parentOptions.parentMessages = parentMessages;
+        }
+
+        super(parentOptions);
 
         this.interactive = interactive ?? false;
 
+        // Set streams after super() is called
         this.stdout = stdout;
         this.stderr = stderr;
 
@@ -51,11 +130,16 @@ class PailServerImpl<T extends string = string, L extends string = string> exten
             this.interactiveManager = new InteractiveManager(new InteractiveStreamHook(this.stdout), new InteractiveStreamHook(this.stderr));
         }
 
+        // Register reporters now that streams are set
         if (Array.isArray(reporters)) {
             this.registerReporters(reporters);
         }
 
-        this.rawReporter = this.extendReporter(options.rawReporter ?? new RawReporter<L>());
+        this.rawReporter = this.extendReporter(rawReporter ?? new RawReporter<L>());
+
+        if (Array.isArray(processors)) {
+            this.registerProcessors(processors);
+        }
     }
 
     // @ts-expect-error - this returns a different type
@@ -68,6 +152,166 @@ class PailServerImpl<T extends string = string, L extends string = string> exten
 
         return this as unknown as PailServerType<N, L>;
     }
+
+    /**
+     * Creates a child logger that inherits settings from the parent.
+     *
+     * Returns a new logger instance that inherits all configuration from the parent
+     * (reporters, processors, types, log levels, throttle settings, etc.) while allowing
+     * you to override only what you need. Child loggers are independent instances with
+     * their own state (timers, counters, etc.).
+     * @template N - The new custom logger type names
+     * @template LC - The new log level types
+     * @param options Configuration options to override or extend parent settings
+     * @returns A new child logger instance
+     * @example
+     * ```typescript
+     * const parent = createPail({
+     *   logLevel: "info",
+     *   types: { http: { label: "HTTP", logLevel: "info" } },
+     *   reporters: [new PrettyReporter()],
+     * });
+     *
+     * // Child inherits parent settings but overrides log level
+     * const child = parent.child({ logLevel: "debug" });
+     * child.info("This will be logged"); // Uses debug level from child
+     * child.http("GET /api 200"); // Inherits http type from parent
+     *
+     * // Child can add new types
+     * const childWithNewType = parent.child({
+     *   types: { db: { label: "DB", logLevel: "info" } },
+     * });
+     * childWithNewType.db("Query executed"); // New type available
+     * ```
+     */
+    // @ts-expect-error - override signature differs due to server-specific options
+    public override child<N extends string = T, LC extends string = L>(
+        options?: Partial<ConstructorOptions<N, LC>> & Partial<Pick<ServerConstructorOptions<N, LC>, "interactive" | "stderr" | "stdout">>,
+    ): PailServerType<N, LC> {
+        // Check if types have changed - if not, we can reuse bound methods
+        const typesChanged = options?.types !== undefined && options.types !== null;
+        const mergedTypes = typesChanged
+            ? mergeTypes<LC, N>(this.types as DefaultLoggerTypes<LC>, options.types as LoggerTypesConfig<N, LC>)
+            : (this.types as LoggerTypesConfig<LiteralUnion<DefaultLogTypes, N>, LC>);
+
+        // Combine parent and child reporters - pass Sets directly to avoid array conversion
+        const childReporters = options?.reporters ?? [];
+        const allReporters
+            = childReporters.length > 0
+                ? ([...this.reporters, ...childReporters] as unknown as Reporter<LC>[])
+                : ([...this.reporters] as unknown as Reporter<LC>[]);
+
+        // Combine parent and child processors - pass Sets directly to avoid array conversion
+        const childProcessors = options?.processors ?? [];
+        const allProcessors
+            = childProcessors.length > 0
+                ? ([...this.processors, ...childProcessors] as unknown as Processor<LC>[])
+                : ([...this.processors] as unknown as Processor<LC>[]);
+
+        // Merge log levels (child overrides parent)
+        const mergedLogLevels = options?.logLevels
+            ? ({ ...this.logLevels, ...options.logLevels } as Partial<Record<ExtendedRfc5424LogLevels, number>> & Record<LC, number>)
+            : (this.logLevels as Partial<Record<ExtendedRfc5424LogLevels, number>> & Record<LC, number>);
+
+        // Merge scope (child scope extends parent scope)
+        // Optimize: avoid array operations when no child scope
+        let mergedScope: string[];
+
+        if (options?.scope) {
+            const childScope = arrayify(options.scope).filter(Boolean);
+
+            mergedScope = this.scopeName.length > 0 ? [...this.scopeName, ...childScope] : childScope;
+        } else {
+            mergedScope = this.scopeName.length > 0 ? this.scopeName : [];
+        }
+
+        // Merge messages (child overrides parent)
+        const mergedMessages = options?.messages
+            ? {
+                timerEnd: this.endTimerMessage,
+                timerStart: this.startTimerMessage,
+                ...options.messages,
+            }
+            : {
+                timerEnd: this.endTimerMessage,
+                timerStart: this.startTimerMessage,
+            };
+
+        // Create child logger options
+        // Pass parent types, longestLabel, stringify, logLevels, and messages for optimization when unchanged
+        const childOptions: ServerConstructorOptions<N, LC> & ServerParentLoggerOptimization<N, LC> = {
+            disabled: options?.disabled ?? this.disabled,
+            interactive: options?.interactive ?? this.interactive,
+            logLevel: (options?.logLevel ?? this.generalLogLevel) as LiteralUnion<ExtendedRfc5424LogLevels, LC>,
+            logLevels: mergedLogLevels,
+            messages: mergedMessages,
+            processors: allProcessors,
+            rawReporter: (options?.rawReporter ?? this.rawReporter) as Reporter<LC>,
+            reporters: allReporters,
+            scope: mergedScope,
+            stderr: options?.stderr ?? this.stderr,
+            stdout: options?.stdout ?? this.stdout,
+            throttle: options?.throttle ?? this.throttle,
+            throttleMin: options?.throttleMin ?? this.throttleMin,
+        };
+
+        // Optimize: pass parent values when they haven't changed
+        if (typesChanged) {
+            // When types have changed, mergedTypes is already fully merged (includes defaults from parent)
+            // Pass as parentTypes so constructor uses them directly without merging again
+            childOptions.parentTypes = mergedTypes;
+            childOptions.parentLongestLabel = getLongestLabel<LC, N>(mergedTypes);
+        } else {
+            // Don't set types in childOptions when reusing parent types - let constructor handle it
+            childOptions.parentTypes = this.types as LoggerTypesConfig<LiteralUnion<DefaultLogTypes, N>, LC>;
+            childOptions.parentLongestLabel = this.longestLabel;
+        }
+
+        this.#assignParentValues(childOptions, options, typesChanged);
+
+        return new PailServerImpl<N, LC>(childOptions) as unknown as PailServerType<N, LC>;
+    }
+
+    /**
+     * Assigns parent values to child options for optimization.
+     *
+     * Reuses parent values when they haven't changed to avoid unnecessary recalculations.
+     */
+    /* eslint-disable no-param-reassign */
+    #assignParentValues<N extends string = T, LC extends string = L>(
+        childOptions: ServerConstructorOptions<N, LC> & ServerParentLoggerOptimization<N, LC>,
+        options: (Partial<ConstructorOptions<N, LC>> & Partial<Pick<ServerConstructorOptions<N, LC>, "interactive" | "stderr" | "stdout">>) | undefined,
+        typesChanged: boolean,
+    ): void {
+        if (!typesChanged) {
+            childOptions.parentTypes = this.types as LoggerTypesConfig<LiteralUnion<DefaultLogTypes, N>, LC>;
+            childOptions.parentLongestLabel = this.longestLabel;
+        }
+
+        if (!options?.logLevels) {
+            childOptions.parentLogLevels = this.logLevels;
+        }
+
+        if (!options?.messages) {
+            childOptions.parentMessages = {
+                timerEnd: this.endTimerMessage,
+                timerStart: this.startTimerMessage,
+            };
+        }
+
+        // Always pass stringify (it's the same configuration)
+        childOptions.parentStringify = this.stringify;
+
+        // Optimize: reuse streams from parent when not overridden
+        if (!options?.stdout) {
+            childOptions.parentStdout = this.stdout;
+        }
+
+        if (!options?.stderr) {
+            childOptions.parentStderr = this.stderr;
+        }
+    }
+    /* eslint-enable no-param-reassign */
 
     /**
      * Gets the interactive manager instance if interactive mode is enabled.

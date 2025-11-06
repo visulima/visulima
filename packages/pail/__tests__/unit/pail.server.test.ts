@@ -329,6 +329,108 @@ describe("pailServerImpl", () => {
             logStderrSpy.mockRestore();
         });
     });
+
+    describe("child", () => {
+        it("should create child logger that inherits parent settings", () => {
+            expect.assertions(2);
+
+            const parent = new PailServer({
+                logLevel: "informational",
+                reporters: [new RawReporter()],
+                stderr,
+                stdout,
+                types: {
+                    http: {
+                        label: "HTTP",
+                        logLevel: "informational",
+                    },
+                },
+            });
+
+            const child = parent.child();
+
+            const logStdoutSpy = vi.spyOn(stdout, "write");
+
+            // Child should inherit parent types
+            child.http("GET /api 200");
+
+            expect(logStdoutSpy).toHaveBeenCalledWith("GET /api 200");
+
+            // Child should inherit parent log level
+            child.debug("Debug message"); // Should not be logged (level is info)
+
+            expect(logStdoutSpy).toHaveBeenCalledTimes(1);
+
+            logStdoutSpy.mockRestore();
+        });
+
+        it("should allow overriding parent settings in child", () => {
+            expect.assertions(2);
+
+            const parent = new PailServer({
+                logLevel: "warning",
+                reporters: [new RawReporter()],
+                stderr,
+                stdout,
+            });
+
+            const child = parent.child({ logLevel: "debug" });
+
+            const logStdoutSpy = vi.spyOn(stdout, "write");
+
+            // Parent should use warning level
+            parent.info("Parent info"); // Should not be logged
+
+            expect(logStdoutSpy).not.toHaveBeenCalled();
+
+            // Child should use debug level
+            child.info("Child info"); // Should be logged
+
+            expect(logStdoutSpy).toHaveBeenCalledWith("Child info");
+
+            logStdoutSpy.mockRestore();
+        });
+
+        it("should merge parent and child types", () => {
+            expect.assertions(2);
+
+            const parent = new PailServer({
+                logLevel: "debug",
+                reporters: [new RawReporter()],
+                stderr,
+                stdout,
+                types: {
+                    http: {
+                        label: "HTTP",
+                        logLevel: "info",
+                    },
+                },
+            });
+
+            const child = parent.child({
+                types: {
+                    db: {
+                        label: "DB",
+                        logLevel: "info",
+                    },
+                },
+            });
+
+            const logStdoutSpy = vi.spyOn(stdout, "write");
+
+            // Child should have parent types
+            child.http("GET /api 200");
+
+            expect(logStdoutSpy).toHaveBeenCalledWith("GET /api 200");
+
+            // Child should have new types
+            child.db("Query executed");
+
+            expect(logStdoutSpy).toHaveBeenCalledWith("Query executed");
+
+            logStdoutSpy.mockRestore();
+        });
+    });
 });
 
 describe("interactive mode validation", () => {

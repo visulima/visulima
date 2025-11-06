@@ -16,6 +16,7 @@ import type {
     LoggerTypesConfig,
     Message,
     Meta,
+    ParentLoggerOptimization,
     Processor,
     Reporter,
     StringifyAwareProcessor,
@@ -122,7 +123,7 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
 
     protected rawReporter: Reporter<L>;
 
-    protected force: Record<string, LoggerFunction>;
+    protected force: Record<string, LoggerFunction> = {} as Record<string, LoggerFunction>;
 
     /**
      * Creates a new Pail browser logger instance.
@@ -135,16 +136,45 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
         this.throttle = options.throttle ?? 1000;
         this.throttleMin = options.throttleMin ?? 5;
 
-        this.stringify = stringifyConfigure({
-            strict: true,
-        });
+        // Optimize: reuse types, longestLabel, stringify, and logLevels from parent if provided (for child loggers)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const parentLongestLabel = (options as any).parentLongestLabel as string | undefined;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const parentTypes = (options as any).parentTypes as LoggerTypesConfig<LiteralUnion<DefaultLogTypes, T>, L> | undefined;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const parentStringify = (options as any).parentStringify as typeof stringify | undefined;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const parentLogLevels = (options as any).parentLogLevels as Record<string, number> | undefined;
+
+        // Reuse stringify from parent if available (same configuration)
+        this.stringify
+            = parentStringify
+                ?? stringifyConfigure({
+                    strict: true,
+                });
 
         this.startTimerMessage = options.messages?.timerStart ?? "Initialized timer...";
         this.endTimerMessage = options.messages?.timerEnd ?? "Timer run for:";
-        this.types = mergeTypes<L, T>(LOG_TYPES as DefaultLoggerTypes<L>, (options.types ?? {}) as LoggerTypesConfig<LiteralUnion<DefaultLogTypes, T>, L>);
-        this.longestLabel = getLongestLabel<L, T>(this.types);
 
-        this.logLevels = { ...EXTENDED_RFC_5424_LOG_LEVELS, ...options.logLevels };
+        // Optimize: reuse parent types and longestLabel when provided (for child loggers with unchanged types)
+        // When parentTypes is provided, it means we're creating a child logger - reuse parent's types
+        // Only merge types if parentTypes is not available or if types are explicitly provided in options
+        if (parentTypes && parentLongestLabel) {
+            // Reuse parent types and longestLabel when provided (for child loggers)
+            // This happens when child() is called without types parameter
+            this.types = parentTypes;
+            this.longestLabel = parentLongestLabel;
+        } else {
+            // Always merge with LOG_TYPES to ensure default types are included
+            // When options.types is provided from child() with merged types, merging again is safe (idempotent)
+            // When options.types is provided for a new logger, it needs to be merged with defaults
+            this.types = mergeTypes<L, T>(LOG_TYPES as DefaultLoggerTypes<L>, (options.types ?? {}) as LoggerTypesConfig<LiteralUnion<DefaultLogTypes, T>, L>);
+            this.longestLabel = getLongestLabel<L, T>(this.types);
+        }
+
+        // Optimize: reuse logLevels from parent if no new logLevels provided
+        this.logLevels = parentLogLevels && !options.logLevels ? parentLogLevels : { ...EXTENDED_RFC_5424_LOG_LEVELS, ...options.logLevels };
+
         this.generalLogLevel = this.#normalizeLogLevel(options.logLevel);
 
         this.reporters = new Set();
@@ -169,22 +199,7 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
         // Prevent infinite loop on logging
         this.logger = preventLoop(this.logger).bind(this);
 
-        // eslint-disable-next-line no-restricted-syntax,guard-for-in
-        for (const type in this.types) {
-            // @ts-expect-error - dynamic property
-
-            this[type] = this.logger.bind(this, type as T, false, false);
-        }
-
-        // Create force methods that bypass log level filtering
-        // @ts-expect-error - dynamic property
-        this.force = {};
-
-        // eslint-disable-next-line no-restricted-syntax,guard-for-in
-        for (const type in this.types) {
-            // @ts-expect-error - dynamic property
-            this.force[type] = this.logger.bind(this, type as T, false, true);
-        }
+        this.#initializeBoundMethods();
 
         if (Array.isArray(options.reporters)) {
             this.registerReporters(options.reporters);
@@ -193,7 +208,30 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
         this.rawReporter = this.extendReporter(options.rawReporter ?? new RawReporter<L>());
 
         if (Array.isArray(options.processors)) {
-            this.#registerProcessors(options.processors);
+            this.registerProcessors(options.processors);
+        }
+    }
+
+    /**
+     * Initializes bound methods for all logger types.
+     *
+     * Creates bound methods for both regular and force logging methods.
+     * This is separated to allow reuse when types haven't changed.
+     */
+    #initializeBoundMethods(): void {
+        // eslint-disable-next-line no-restricted-syntax,guard-for-in
+        for (const type in this.types) {
+            // @ts-expect-error - dynamic property
+            this[type] = this.logger.bind(this, type as T, false, false);
+        }
+
+        // Create force methods that bypass log level filtering
+        // Force is already initialized in class property
+
+        // eslint-disable-next-line no-restricted-syntax,guard-for-in
+        for (const type in this.types) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (this.force as any)[type] = this.logger.bind(this, type as T, false, true);
         }
     }
 
@@ -437,6 +475,133 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
      */
     public unscope(): void {
         this.scopeName = [];
+    }
+
+    /**
+     * Creates a child logger that inherits settings from the parent.
+     *
+     * Returns a new logger instance that inherits all configuration from the parent
+     * (reporters, processors, types, log levels, throttle settings, etc.) while allowing
+     * you to override only what you need. Child loggers are independent instances with
+     * their own state (timers, counters, etc.).
+     * @template N - The new custom logger type names
+     * @template LC - The new log level types
+     * @param options Configuration options to override or extend parent settings
+     * @returns A new child logger instance
+     * @example
+     * ```typescript
+     * const parent = createPail({
+     *   logLevel: "info",
+     *   types: { http: { label: "HTTP", logLevel: "info" } },
+     *   reporters: [new PrettyReporter()],
+     * });
+     *
+     * // Child inherits parent settings but overrides log level
+     * const child = parent.child({ logLevel: "debug" });
+     * child.info("This will be logged"); // Uses debug level from child
+     * child.http("GET /api 200"); // Inherits http type from parent
+     *
+     * // Child can add new types
+     * const childWithNewType = parent.child({
+     *   types: { db: { label: "DB", logLevel: "info" } },
+     * });
+     * childWithNewType.db("Query executed"); // New type available
+     * ```
+     */
+    // eslint-disable-next-line sonarjs/cognitive-complexity
+    public child<N extends string = T, LC extends string = L>(options?: Partial<ConstructorOptions<N, LC>>): PailBrowserType<N, LC> {
+        // Check if types have changed - if not, we can reuse bound methods
+        const typesChanged = options?.types !== undefined && options.types !== null;
+        const mergedTypes = typesChanged
+            ? mergeTypes<LC, N>(this.types as DefaultLoggerTypes<LC>, options.types as LoggerTypesConfig<N, LC>)
+            : (this.types as LoggerTypesConfig<LiteralUnion<DefaultLogTypes, N>, LC>);
+
+        // Combine parent and child reporters - pass Sets directly to avoid array conversion
+        const childReporters = options?.reporters ?? [];
+        const allReporters
+            = childReporters.length > 0
+                ? ([...this.reporters, ...childReporters] as unknown as Reporter<LC>[])
+                : ([...this.reporters] as unknown as Reporter<LC>[]);
+
+        // Combine parent and child processors - pass Sets directly to avoid array conversion
+        const childProcessors = options?.processors ?? [];
+        const allProcessors
+            = childProcessors.length > 0
+                ? ([...this.processors, ...childProcessors] as unknown as Processor<LC>[])
+                : ([...this.processors] as unknown as Processor<LC>[]);
+
+        // Merge log levels (child overrides parent)
+        const mergedLogLevels = options?.logLevels
+            ? ({ ...this.logLevels, ...options.logLevels } as Partial<Record<ExtendedRfc5424LogLevels, number>> & Record<LC, number>)
+            : (this.logLevels as Partial<Record<ExtendedRfc5424LogLevels, number>> & Record<LC, number>);
+
+        // Merge scope (child scope extends parent scope)
+        // Optimize: avoid array operations when no child scope
+        let mergedScope: string[];
+
+        if (options?.scope) {
+            const childScope = arrayify(options.scope).filter(Boolean);
+
+            mergedScope = this.scopeName.length > 0 ? [...this.scopeName, ...childScope] : childScope;
+        } else {
+            mergedScope = this.scopeName.length > 0 ? this.scopeName : [];
+        }
+
+        // Merge messages (child overrides parent)
+        // Optimize: only create messages object if there are overrides
+        const mergedMessages = options?.messages
+            ? {
+                timerEnd: this.endTimerMessage,
+                timerStart: this.startTimerMessage,
+                ...options.messages,
+            }
+            : {
+                timerEnd: this.endTimerMessage,
+                timerStart: this.startTimerMessage,
+            };
+
+        // Create child logger options
+        // Pass parent types, longestLabel, stringify, and logLevels for optimization when unchanged
+        const childOptions: ConstructorOptions<N, LC> & ParentLoggerOptimization<N, LC> = {
+            disabled: options?.disabled ?? this.disabled,
+            logLevel: (options?.logLevel ?? this.generalLogLevel) as LiteralUnion<ExtendedRfc5424LogLevels, LC>,
+            logLevels: mergedLogLevels,
+            messages: mergedMessages,
+            processors: allProcessors,
+            rawReporter: (options?.rawReporter ?? this.rawReporter) as Reporter<LC>,
+            reporters: allReporters,
+            scope: mergedScope,
+            throttle: options?.throttle ?? this.throttle,
+            throttleMin: options?.throttleMin ?? this.throttleMin,
+        };
+
+        // Optimize: pass parent values when they haven't changed
+        if (typesChanged) {
+            // When types have changed, mergedTypes is already fully merged (includes defaults from parent)
+            // Pass as parentTypes so constructor uses them directly without merging again
+            childOptions.parentTypes = mergedTypes;
+            childOptions.parentLongestLabel = getLongestLabel<LC, N>(mergedTypes);
+        } else {
+            // Don't set types in childOptions when reusing parent types - let constructor handle it
+            childOptions.parentTypes = this.types as LoggerTypesConfig<LiteralUnion<DefaultLogTypes, N>, LC>;
+            childOptions.parentLongestLabel = this.longestLabel;
+        }
+
+        if (!options?.logLevels) {
+            childOptions.parentLogLevels = this.logLevels;
+        }
+
+        if (!options?.messages) {
+            childOptions.parentMessages = {
+                timerEnd: this.endTimerMessage,
+                timerStart: this.startTimerMessage,
+            };
+        }
+
+        // Always pass stringify (it's the same configuration)
+        childOptions.parentStringify = this.stringify;
+
+        return new PailBrowserImpl<N, LC>(childOptions) as unknown as PailBrowserType<N, LC>;
     }
 
     /**
@@ -712,6 +877,16 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
         }
     }
 
+    protected registerProcessors(processors: Processor<L>[]): void {
+        for (const processor of processors) {
+            if (typeof (processor as StringifyAwareProcessor<L>).setStringify === "function") {
+                (processor as StringifyAwareProcessor<L>).setStringify(this.stringify);
+            }
+
+            this.processors.add(processor as Processor<L>);
+        }
+    }
+
     #report(meta: Meta<L>, raw: boolean): void {
         if (raw) {
             this.rawReporter.log(Object.freeze(meta));
@@ -719,16 +894,6 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
             for (const reporter of this.reporters) {
                 reporter.log(Object.freeze(meta));
             }
-        }
-    }
-
-    #registerProcessors(processors: Processor<L>[]): void {
-        for (const processor of processors) {
-            if (typeof (processor as StringifyAwareProcessor<L>).setStringify === "function") {
-                (processor as StringifyAwareProcessor<L>).setStringify(this.stringify);
-            }
-
-            this.processors.add(processor as Processor<L>);
         }
     }
 
@@ -845,11 +1010,17 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
             return;
         }
 
-        const logLevel = this.#normalizeLogLevel(this.types[type].logLevel);
+        const typeConfig = this.types[type];
+
+        if (!typeConfig) {
+            return;
+        }
+
+        const logLevel = this.#normalizeLogLevel(typeConfig.logLevel);
 
         // Bypass level check if force is true
         if (force || (this.logLevels[logLevel] as number) >= (this.logLevels[this.generalLogLevel] as number)) {
-            let meta = this.#buildMeta(type, this.types[type], ...messageObject);
+            let meta = this.#buildMeta(type, typeConfig, ...messageObject);
 
             /**
              * @param newLog false if the throttle expired and we don't want to log a duplicate

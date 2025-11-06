@@ -270,6 +270,66 @@ foo();
 
 ![extended scope](./__assets__/extended-scope.png)
 
+## Child Loggers
+
+Create child loggers that inherit settings from their parent while overriding only what you need. Child loggers are independent instances with their own state (timers, counters, etc.), but they inherit configuration like reporters, processors, types, log levels, and throttle settings.
+
+```typescript
+import { createPail } from "@visulima/pail";
+import { PrettyReporter } from "@visulima/pail/reporter/pretty";
+
+const parent = createPail({
+    logLevel: "informational",
+    types: {
+        http: {
+            label: "HTTP",
+            logLevel: "informational",
+        },
+    },
+    reporters: [new PrettyReporter()],
+});
+
+// Child inherits all parent settings
+const child = parent.child();
+child.http("GET /api/users 200"); // Inherits http type from parent
+child.info("Request processed"); // Inherits log level from parent
+
+// Child can override specific settings
+const debugChild = parent.child({ logLevel: "debug" });
+debugChild.debug("Detailed debug info"); // Uses debug level
+
+// Child can add new types
+const dbChild = parent.child({
+    types: {
+        db: {
+            label: "DB",
+            logLevel: "informational",
+        },
+    },
+});
+dbChild.db("Query executed"); // New type available
+dbChild.http("GET /api 200"); // Still has parent types
+
+// Child scope extends parent scope
+const scopedChild = parent.child({ scope: ["api"] });
+// Logs will include both parent and child scope if parent had scope set
+```
+
+### What Gets Inherited
+
+- **Types**: Child types are merged with parent types (child can add new or override existing)
+- **Reporters**: Child reporters are added to parent reporters (both are used)
+- **Processors**: Child processors are added to parent processors (both are applied)
+- **Log Levels**: Child log levels override parent log levels
+- **Scope**: Child scope extends parent scope (combined into array)
+- **Throttle Settings**: Child inherits parent throttle settings unless overridden
+- **Timer Messages**: Child inherits parent timer messages unless overridden
+
+### What's Independent
+
+- **State**: Each child logger has its own timers, counters, and message queue
+- **Disabled/Paused**: Child logger state is independent from parent
+
 ## Interactive Loggers (Only on if stdout and stderr is a TTY)
 
 To initialize an interactive logger, create a new pail instance with the `interactive` attribute set to `true`.

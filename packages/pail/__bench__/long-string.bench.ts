@@ -3,9 +3,9 @@ import { createWriteStream } from "node:fs";
 
 import { Ogma } from "@ogma/logger";
 import { createPail as createBrowserPail } from "@visulima/pail/browser";
-import { JsonReporter as BrowserJsonReporter } from "@visulima/pail/browser/reporter";
+import { JsonReporter as BrowserJsonReporter } from "@visulima/pail/browser/reporter/json";
 import { createPail as createServerPail } from "@visulima/pail/server";
-import { JsonReporter as ServerJsonReporter } from "@visulima/pail/server/reporter";
+import { JsonReporter as ServerJsonReporter } from "@visulima/pail/server/reporter/json";
 import bunyan from "bunyan";
 import { createConsola as createBrowserConsola, createConsola as createServerConsola } from "consola";
 import { diary } from "diary";
