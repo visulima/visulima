@@ -1,4 +1,5 @@
 import { createWriteStream } from "node:fs";
+import { devNull } from "node:os";
 
 import { createPail as createBrowserPail } from "@visulima/pail/browser";
 import { JsonReporter as BrowserJsonReporter } from "@visulima/pail/browser/reporter/json";
@@ -10,7 +11,7 @@ import pino from "pino";
 import { bench, describe } from "vitest";
 import { createLogger, transports } from "winston";
 
-const wsDevelopmentNull = createWriteStream("/dev/null");
+const wsDevelopmentNull = createWriteStream(devNull);
 
 const serverPail = createServerPail({
     reporters: [new ServerJsonReporter()],
@@ -25,13 +26,13 @@ const browserPail = createBrowserPail({
 });
 
 const pinoNodeStream = pino(wsDevelopmentNull);
-const pinoDestination = pino(pino.destination("/dev/null"));
-const pinoMinLength = pino(pino.destination({ dest: "/dev/null", minLength: 4096, sync: false }));
+const pinoDestination = pino(pino.destination(devNull));
+const pinoMinLength = pino(pino.destination({ dest: devNull, minLength: 4096, sync: false }));
 
 const winstonNodeStream = createLogger({
     transports: [
         new transports.Stream({
-            stream: createWriteStream("/dev/null"),
+            stream: createWriteStream(devNull),
         }),
     ],
 });

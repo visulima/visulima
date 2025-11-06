@@ -1,4 +1,5 @@
 import { createWriteStream } from "node:fs";
+import { devNull } from "node:os";
 
 import { Signale } from "@dynamicabot/signales";
 import { Ogma } from "@ogma/logger";
@@ -18,7 +19,7 @@ import { createLogger, transports } from "winston";
 
 import { JsonBrowserConsolaReporter, JsonServerConsolaReporter } from "./utils";
 
-const wsDevelopmentNull = createWriteStream("/dev/null");
+const wsDevelopmentNull = createWriteStream(devNull);
 
 const serverPail = createServerPail({
     reporters: [new ServerJsonReporter()],
@@ -32,7 +33,7 @@ const browserPail = createBrowserPail({
     throttle: 999_999_999,
 });
 
-const wsDevelopmentNull2 = createWriteStream("/dev/null");
+const wsDevelopmentNull2 = createWriteStream(devNull);
 
 wsDevelopmentNull2.on("finish", () => {
     // eslint-disable-next-line no-console
@@ -66,13 +67,13 @@ const tsLog = new Logger<ILogObj>({
 });
 
 const pinoNodeStream = pino(wsDevelopmentNull);
-const pinoDestination = pino(pino.destination("/dev/null"));
-const pinoMinLength = pino(pino.destination({ dest: "/dev/null", minLength: 4096, sync: false }));
+const pinoDestination = pino(pino.destination(devNull));
+const pinoMinLength = pino(pino.destination({ dest: devNull, minLength: 4096, sync: false }));
 
 const winstonNodeStream = createLogger({
     transports: [
         new transports.Stream({
-            stream: createWriteStream("/dev/null"),
+            stream: createWriteStream(devNull),
         }),
     ],
 });
@@ -91,12 +92,12 @@ const signale = new Signale({
     stream: wsDevelopmentNull,
 });
 
-const ogmaStream = createWriteStream("/dev/null");
+const ogmaStream = createWriteStream(devNull);
 
 const ogmaLogger = new Ogma({ stream: ogmaStream });
 const ogmaJsonLogger = new Ogma({ json: true, stream: ogmaStream });
 
-const diaryStream = createWriteStream("/dev/null");
+const diaryStream = createWriteStream(devNull);
 const diarySink = (event) => {
     diaryStream.write(JSON.stringify(event));
 };
