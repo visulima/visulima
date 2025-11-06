@@ -1,6 +1,6 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 
-import type { AnyZodObject, ZodObject } from "zod";
+import type { ZodObject } from "zod";
 
 import withZod from "./adapter/with-zod";
 import type { Route } from "./router";
@@ -42,7 +42,7 @@ export type RequestHandler<Request extends IncomingMessage, Response extends Ser
 export class NodeRouter<
     Request extends IncomingMessage = IncomingMessage,
     Response extends ServerResponse = ServerResponse,
-    Schema extends AnyZodObject = ZodObject<never>,
+    Schema extends ZodObject<any> = ZodObject<never>,
 > {
     public all: RouteShortcutMethod<this, Schema, RequestHandler<Request, Response>> = this.add.bind(this, "");
 
@@ -173,7 +173,7 @@ export class NodeRouter<
 export const createRouter = <
     Request extends IncomingMessage,
     Response extends ServerResponse,
-    Schema extends AnyZodObject = ZodObject<{ body?: AnyZodObject; headers?: AnyZodObject; query?: AnyZodObject }>,
+    Schema extends ZodObject<any> = ZodObject<{ body?: ZodObject<any>; headers?: ZodObject<any>; query?: ZodObject<any> }>,
 >(
     options: HandlerOptions<RoutesExtendedRequestHandler<Request, Response, Response, Route<Nextable<FunctionLike>>[]>> = {},
 ): NodeRouter<Request, Response, Schema> => new NodeRouter<Request, Response, Schema>(options);

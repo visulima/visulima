@@ -38,7 +38,6 @@ const getObject = (detail: Partial<Spacer> | number | undefined): Spacer => {
     };
 };
 
-// eslint-disable-next-line no-confusing-arrow
 const getBorderWidth = (borderStyle: BorderStyle | string) => borderStyle === NONE ? 0 : 2;
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
@@ -358,7 +357,7 @@ const sanitizeOptions = (options: DimensionOptions): DimensionOptions => {
     return options;
 };
 
-const formatTitle = (title: string, borderStyle: BorderStyle | string): string => (borderStyle === NONE ? title : ` ${title} `);
+const formatTitle = (title: string, borderStyle: BorderStyle | string): string => borderStyle === NONE ? title : ` ${title} `;
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
 const determineDimensions = (text: string, columnsWidth: number, options: DimensionOptions): DimensionOptions => {

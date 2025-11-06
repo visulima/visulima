@@ -55,7 +55,7 @@ export const commandLineArgs = (optionDefinitions: OptionDefinition | ReadonlyAr
     // Handle case insensitive option matching
     let normalizedArgv = argv;
 
-    if (effectiveOptions.caseInsensitive) {
+    if (effectiveOptions.caseInsensitive && argv) {
         normalizedArgv = argv.map((argument) => {
             if (argument.startsWith("--")) {
                 const equalsIndex = argument.indexOf("=");
@@ -66,7 +66,14 @@ export const commandLineArgs = (optionDefinitions: OptionDefinition | ReadonlyAr
             }
 
             if (argument.startsWith("-") && !argument.startsWith("--") && argument.length > 1) {
-                const [flags, rest] = argument.slice(1).split("=", 2);
+                const flagsAndRest = argument.slice(1).split("=", 2);
+                const flags = flagsAndRest[0];
+                const rest = flagsAndRest[1];
+
+                if (!flags) {
+                    return argument;
+                }
+
                 const lowered = flags.toLowerCase();
 
                 return rest === undefined ? `-${lowered}` : `-${lowered}=${rest}`;
@@ -77,12 +84,12 @@ export const commandLineArgs = (optionDefinitions: OptionDefinition | ReadonlyAr
     }
 
     // Tokenize arguments
-    const tokens = parseArgsTokens(normalizedArgv.map(String));
+    const tokens = parseArgsTokens((normalizedArgv ?? argv ?? []).map(String));
 
     debugLog(debugEnabled, "Tokenized arguments:", "index", tokens);
 
     // Resolve tokens into final parsed arguments
-    const result = resolveArgs(tokens, definitions as OptionDefinition[], effectiveOptions, argv);
+    const result = resolveArgs(tokens, definitions as OptionDefinition[], effectiveOptions, argv ?? []);
 
     debugLog(debugEnabled, "Command-line-args parsing completed", "index");
 

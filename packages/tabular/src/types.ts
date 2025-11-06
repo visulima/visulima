@@ -182,11 +182,11 @@ export interface TableOptions extends BaseRenderingOptions {
      */
     rowHeights?: number[] | number;
 
-    /** Whether to show the header of the table */
-    showHeader?: boolean;
-
     /** Whether to show the footer of the table */
     showFooter?: boolean;
+
+    /** Whether to show the header of the table */
+    showHeader?: boolean;
 
     /** Global style options for the table */
     style?: Partial<Style>;

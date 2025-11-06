@@ -90,7 +90,6 @@ class PrismaJsonSchemaParser {
     public getExampleModelsSchemas(
         modelNames: string[],
         schemas: Record<string, OpenAPIV3.SchemaObject>,
-
     ): Record<string, OpenAPIV3.ExampleObject | OpenAPIV3.ReferenceObject> {
         const referenceToSchema = (reference: string) => {
             const name = reference.replace("#/components/schemas/", "");

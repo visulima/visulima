@@ -558,13 +558,13 @@ describe("error handling and edge cases", () => {
             table.setFooter(["Footer1", "Footer2", "Footer3"]);
 
             expect(table.toString()).toMatchInlineSnapshot(`
-              "┌───────┬───────┬───────┐
-              │A      │B      │C      │
-              ├───────┼───────┼───────┤
-              │x      │y      │z      │
-              ├───────┼───────┼───────┤
-              │Footer1│Footer2│Footer3│
-              └───────┴───────┴───────┘"
+                "┌───────┬───────┬───────┐
+                │A      │B      │C      │
+                ├───────┼───────┼───────┤
+                │x      │y      │z      │
+                ├───────┼───────┼───────┤
+                │Footer1│Footer2│Footer3│
+                └───────┴───────┴───────┘"
             `);
         });
 
@@ -601,13 +601,13 @@ describe("error handling and edge cases", () => {
             table.setFooter(["", "", ""]);
 
             expect(table.toString()).toMatchInlineSnapshot(`
-              "┌─┬─┬─┐
-              │A│B│C│
-              ├─┼─┼─┤
-              │x│y│z│
-              ├─┼─┼─┤
-              │ │ │ │
-              └─┴─┴─┘"
+                "┌─┬─┬─┐
+                │A│B│C│
+                ├─┼─┼─┤
+                │x│y│z│
+                ├─┼─┼─┤
+                │ │ │ │
+                └─┴─┴─┘"
             `);
         });
 
@@ -639,13 +639,13 @@ describe("error handling and edge cases", () => {
             table.setFooter(["Single Footer"]);
 
             expect(table.toString()).toMatchInlineSnapshot(`
-              "┌──────┬──────┬──────┐
-              │ Col1 │ Col2 │ Col3 │
-              ├──────┼──────┼──────┤
-              │ a    │ b    │ c    │
-              ├──────┴──────┴──────┤
-              │ Single Footer      │
-              └────────────────────┘"
+                "┌──────┬──────┬──────┐
+                │ Col1 │ Col2 │ Col3 │
+                ├──────┼──────┼──────┤
+                │ a    │ b    │ c    │
+                ├──────┴──────┴──────┤
+                │ Single Footer      │
+                └────────────────────┘"
             `);
         });
 
@@ -662,15 +662,15 @@ describe("error handling and edge cases", () => {
             ]);
 
             expect(table.toString()).toMatchInlineSnapshot(`
-              "┌──────────┬───────┐
-              │ Name     │ Value │
-              ├──────────┼───────┤
-              │ Item1    │ 10    │
-              ├──────────┼───────┤
-              │ Subtotal │ 10    │
-              ├──────────┼───────┤
-              │ Total    │ 10    │
-              └──────────┴───────┘"
+                "┌──────────┬───────┐
+                │ Name     │ Value │
+                ├──────────┼───────┤
+                │ Item1    │ 10    │
+                ├──────────┼───────┤
+                │ Subtotal │ 10    │
+                ├──────────┼───────┤
+                │ Total    │ 10    │
+                └──────────┴───────┘"
             `);
         });
 

@@ -56,7 +56,7 @@ const createDocumentTermsFromTerms = (
     documentObject: any,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     term: any,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     logger?: { debug: (...arguments_: any[]) => void },
 ): IDocumentTerm[] => {
     const reversedTags = term.tags.reverse();
@@ -116,7 +116,7 @@ const processTerms = (
     typesToAnonymize: string[],
     input: string,
     processedTerms: IDocumentTerm[],
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     logger?: { debug: (...arguments_: any[]) => void },
 ): IDocumentTerm[] => {
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -148,7 +148,7 @@ const processDocument = (
     input: string,
     typesToAnonymize: string[],
     stringAnonymizeModifiers: StringAnonymize[],
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     logger?: { debug: (...arguments_: any[]) => void },
 ): IDocumentTerm[] => {
     let processedTerms: IDocumentTerm[] = [];

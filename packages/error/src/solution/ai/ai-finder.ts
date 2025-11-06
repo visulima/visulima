@@ -74,7 +74,7 @@ const readFromCache = (cacheFilePath: string, ttl: number): Solution | undefined
         }
 
         const cacheContent = readFileSync(cacheFilePath, "utf8");
-        const cacheEntry: CacheEntry = JSON.parse(cacheContent);
+        const cacheEntry = JSON.parse(cacheContent) as CacheEntry;
 
         // Check if cache entry is still valid
         const now = Date.now();

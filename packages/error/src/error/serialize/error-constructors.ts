@@ -1,5 +1,5 @@
 // Default error constructors that are commonly used
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+
 const defaultErrorConstructors = new Map<string, new (...arguments_: any[]) => Error>([
     ["Error", Error],
     ["EvalError", EvalError],
@@ -12,12 +12,11 @@ const defaultErrorConstructors = new Map<string, new (...arguments_: any[]) => E
 
 // Handle AggregateError separately since it has a different constructor signature
 if (typeof AggregateError !== "undefined") {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     defaultErrorConstructors.set("AggregateError", AggregateError as new (...arguments_: any[]) => Error);
 }
 
 // Type for error constructors (flexible to handle different signatures)
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+
 type ErrorConstructor = new (...arguments_: any[]) => Error;
 
 /**
@@ -47,13 +46,13 @@ export const addKnownErrorConstructor = (constructor: ErrorConstructor, name?: s
 /**
  * Get all known error constructors.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+
 export const getKnownErrorConstructors = (): Map<string, new (...arguments_: any[]) => Error> => new Map(defaultErrorConstructors);
 
 /**
  * Get a specific error constructor by name.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+
 export const getErrorConstructor = (name: string): (new (...arguments_: any[]) => Error) | undefined => defaultErrorConstructors.get(name);
 
 /**

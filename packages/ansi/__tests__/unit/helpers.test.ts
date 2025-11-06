@@ -4,8 +4,8 @@ const originalEnvironment = { ...process.env };
 const originalWindow = (globalThis as any).window;
 
 describe("helper Constants", () => {
-    let platformSpy: ReturnType<typeof vi.spyOn>;
-    let environmentSpy: ReturnType<typeof vi.spyOn>;
+    let platformSpy: any;
+    let environmentSpy: any;
 
     beforeEach(() => {
         platformSpy = vi.spyOn(process, "platform", "get").mockReturnValue("linux");

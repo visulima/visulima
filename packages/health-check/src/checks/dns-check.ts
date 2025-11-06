@@ -36,7 +36,6 @@ const dnsCheck
                             timestamp: new Date().toISOString(),
                         },
                         meta: {
-
                             addresses: meta,
                             host,
                         },
@@ -51,7 +50,6 @@ const dnsCheck
                         timestamp: new Date().toISOString(),
                     },
                     meta: {
-
                         addresses: meta,
                         host,
                     },

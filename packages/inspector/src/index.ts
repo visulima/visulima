@@ -165,7 +165,6 @@ const internalInspect = (value: unknown, options: Options, depth: number, seen: 
     if ("constructor" in (value as object)) {
         // If it is a class, inspect it like an object but add the constructor name
         if ((value as object).constructor !== Object) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             return inspectClass(value as new (...arguments_: any[]) => unknown, options, inspect, indent);
         }
 

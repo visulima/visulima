@@ -142,7 +142,6 @@ export class Router<H extends FunctionLike> {
 
             if (matched) {
                 fns.push(
-
                     ...route.fns.flatMap((function_) => {
                         if (function_ instanceof Router) {
                             const { base } = function_;

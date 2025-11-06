@@ -1,8 +1,8 @@
 @import "tailwindcss" source("../../");
 
 /* Plugins */
-@plugin '@tailwindcss/typography';
-@plugin '@tailwindcss/forms';
+@plugin "@tailwindcss/typography";
+@plugin "@tailwindcss/forms";
 
 /* ono Theme Color Variables - Available for use in Tailwind classes */
 :root,

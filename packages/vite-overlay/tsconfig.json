@@ -4,7 +4,7 @@
     "compilerOptions": {
         "baseUrl": ".",
         "moduleResolution": "bundler",
-        "types": ["@visulima/packem/files"]
+        "types": ["node", "@visulima/packem/files"]
     },
     "include": ["src/**/*", "*.d.ts"]
 }

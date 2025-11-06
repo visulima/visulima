@@ -190,51 +190,51 @@ console.log(clean); // => {}
 
 Performance comparison for shallow object cloning `{ a: "a", b: "b", c: "c" }`:
 
-| Library | Operations/sec | Relative Performance |
-|---------|----------------|---------------------|
-| **plain-object-clone** | 5,650,888 | **1.00x** (fastest) |
-| fast-copy | 5,056,607 | 0.89x |
-| rfdc - default | 4,674,249 | 0.83x |
-| deep-copy | 4,522,595 | 0.80x |
-| rfdc - proto | 4,371,388 | 0.77x |
-| nanoclone | 4,282,256 | 0.76x |
-| **@visulima/deep-clone - loose** | 3,551,940 | 0.63x |
-| clone-deep | 3,740,025 | 0.66x |
-| nano-copy | 3,673,002 | 0.65x |
-| rfdc - circles and proto | 3,423,507 | 0.61x |
-| rfdc - circles | 3,235,513 | 0.57x |
-| ramda.clone | 2,514,785 | 0.44x |
-| lodash.clonedeep | 2,236,361 | 0.40x |
-| structured-clone | 1,503,190 | 0.27x |
-| @mfederczuk/deeptools | 1,305,034 | 0.23x |
-| @ungap/structured-clone | 1,231,364 | 0.22x |
-| fast-copy strict | 1,196,932 | 0.21x |
-| @visulima/deep-clone - strict | 930,414 | 0.16x |
+| Library                          | Operations/sec | Relative Performance |
+| -------------------------------- | -------------- | -------------------- |
+| **plain-object-clone**           | 5,650,888      | **1.00x** (fastest)  |
+| fast-copy                        | 5,056,607      | 0.89x                |
+| rfdc - default                   | 4,674,249      | 0.83x                |
+| deep-copy                        | 4,522,595      | 0.80x                |
+| rfdc - proto                     | 4,371,388      | 0.77x                |
+| nanoclone                        | 4,282,256      | 0.76x                |
+| **@visulima/deep-clone - loose** | 3,551,940      | 0.63x                |
+| clone-deep                       | 3,740,025      | 0.66x                |
+| nano-copy                        | 3,673,002      | 0.65x                |
+| rfdc - circles and proto         | 3,423,507      | 0.61x                |
+| rfdc - circles                   | 3,235,513      | 0.57x                |
+| ramda.clone                      | 2,514,785      | 0.44x                |
+| lodash.clonedeep                 | 2,236,361      | 0.40x                |
+| structured-clone                 | 1,503,190      | 0.27x                |
+| @mfederczuk/deeptools            | 1,305,034      | 0.23x                |
+| @ungap/structured-clone          | 1,231,364      | 0.22x                |
+| fast-copy strict                 | 1,196,932      | 0.21x                |
+| @visulima/deep-clone - strict    | 930,414        | 0.16x                |
 
 ### Deep Clone Performance
 
 Performance comparison for deep object cloning (complex nested structure):
 
-| Library | Operations/sec | Relative Performance |
-|---------|----------------|---------------------|
-| **rfdc - proto** | 412,630 | **1.00x** (fastest) |
-| rfdc - default | 400,110 | 0.97x |
-| rfdc - circles | 369,861 | 0.90x |
-| rfdc - circles and proto | 367,846 | 0.89x |
-| nanoclone | 314,105 | 0.76x |
-| deep-copy | 301,609 | 0.73x |
-| plain-object-clone | 249,603 | 0.60x |
-| nano-copy | 248,646 | 0.60x |
-| fast-copy | 228,871 | 0.55x |
-| clone-deep | 217,880 | 0.53x |
-| **@visulima/deep-clone - loose** | 194,650 | 0.47x |
-| lodash.clonedeep | 130,934 | 0.32x |
-| structured-clone | 90,495 | 0.22x |
-| @ungap/structured-clone | 88,710 | 0.21x |
-| ramda.clone | 58,385 | 0.14x |
-| fast-copy strict | 34,771 | 0.08x |
-| @visulima/deep-clone - strict | 33,065 | 0.08x |
-| @mfederczuk/deeptools | 15,357 | 0.04x |
+| Library                          | Operations/sec | Relative Performance |
+| -------------------------------- | -------------- | -------------------- |
+| **rfdc - proto**                 | 412,630        | **1.00x** (fastest)  |
+| rfdc - default                   | 400,110        | 0.97x                |
+| rfdc - circles                   | 369,861        | 0.90x                |
+| rfdc - circles and proto         | 367,846        | 0.89x                |
+| nanoclone                        | 314,105        | 0.76x                |
+| deep-copy                        | 301,609        | 0.73x                |
+| plain-object-clone               | 249,603        | 0.60x                |
+| nano-copy                        | 248,646        | 0.60x                |
+| fast-copy                        | 228,871        | 0.55x                |
+| clone-deep                       | 217,880        | 0.53x                |
+| **@visulima/deep-clone - loose** | 194,650        | 0.47x                |
+| lodash.clonedeep                 | 130,934        | 0.32x                |
+| structured-clone                 | 90,495         | 0.22x                |
+| @ungap/structured-clone          | 88,710         | 0.21x                |
+| ramda.clone                      | 58,385         | 0.14x                |
+| fast-copy strict                 | 34,771         | 0.08x                |
+| @visulima/deep-clone - strict    | 33,065         | 0.08x                |
+| @mfederczuk/deeptools            | 15,357         | 0.04x                |
 
 ### Important Notes
 
@@ -242,9 +242,9 @@ Performance comparison for deep object cloning (complex nested structure):
 - **Loose mode** (default): Fast performance with standard cloning behavior
 - **Strict mode**: Slower but clones all properties including non-enumerable ones and symbols
 - Libraries like `plain-object-clone` and `fastest-json-copy` are faster but have significant limitations:
-  - Cannot handle circular references
-  - Treat complex objects (Date, Map, etc.) as plain objects
-  - Limited type support
+    - Cannot handle circular references
+    - Treat complex objects (Date, Map, etc.) as plain objects
+    - Limited type support
 - **rfdc** is very fast but has fewer features than @visulima/deep-clone
 
 ## Supported Node.js Versions

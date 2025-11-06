@@ -8,9 +8,9 @@
  */
 
 // prettier-ignore
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+
 export const makeColorizeTemplate = (template: (text: string) => string): (firstString: TemplateStringsArray, ...arguments_: any[]) => string =>
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     (firstString: TemplateStringsArray, ...arguments_: any[]): string => {
         if (!Array.isArray(firstString) || !Array.isArray(firstString.raw)) {
             // If chalkTemplate() was called by itself or with a string

@@ -1,5 +1,6 @@
 import { deepCopy as mfederczukClone } from "@mfederczuk/deeptools";
 import ungapStructuredClone from "@ungap/structured-clone";
+import { deepClone as visulimaDeepCopy } from "@visulima/deep-clone/dist/dist";
 import cloneDeep from "clone-deep";
 import deepCopy from "deep-copy";
 import fastCopy, { copyStrict as fastCopyStrict } from "fast-copy";
@@ -10,8 +11,6 @@ import plainObjectClone from "plain-object-clone";
 import { clone as ramdaClone } from "ramda";
 import rfdc from "rfdc";
 import { bench, describe } from "vitest";
-
-import { deepClone as visulimaDeepCopy } from "../dist";
 
 const data = { a: "a", b: "b", c: "c" };
 

@@ -6,7 +6,7 @@ import { AnyMap } from "@jridgewell/trace-mapping";
 import { dirname, resolve, toNamespacedPath } from "@visulima/path";
 
 const INLINE_SOURCEMAP_REGEX = /^data:application\/json[^,]+base64,/;
-// eslint-disable-next-line regexp/no-unused-capturing-group, regexp/no-super-linear-backtracking, sonarjs/regex-complexity, sonarjs/slow-regex
+// eslint-disable-next-line regexp/no-super-linear-backtracking, sonarjs/regex-complexity, sonarjs/slow-regex
 const SOURCEMAP_REGEX = /\/\/[@#][ \t]+sourceMappingURL=([^\s'"]+)[ \t]*$|\/\*[@#][ \t]+sourceMappingURL=([^*]+?)[ \t]*\*\/[ \t]*$/;
 
 const isInlineMap = (url: string): boolean => INLINE_SOURCEMAP_REGEX.test(url);
@@ -14,7 +14,7 @@ const isInlineMap = (url: string): boolean => INLINE_SOURCEMAP_REGEX.test(url);
 const resolveSourceMapUrl = (sourceFile: string, sourcePath: string): string | undefined => {
     const lines = sourceFile.split(/\r?\n/);
 
-    let sourceMapUrl: string | undefined;
+    let sourceMapUrl: RegExpExecArray | null = null;
 
     // eslint-disable-next-line no-plusplus
     for (let index = lines.length - 1; index >= 0 && !sourceMapUrl; index--) {
@@ -25,7 +25,13 @@ const resolveSourceMapUrl = (sourceFile: string, sourcePath: string): string | u
         return undefined;
     }
 
-    return isInlineMap(sourceMapUrl[1] as string) ? (sourceMapUrl[1] as string) : (resolve(sourcePath, sourceMapUrl[1] as string) as string);
+    const url = sourceMapUrl[1] ?? sourceMapUrl[2];
+
+    if (!url) {
+        return undefined;
+    }
+
+    return isInlineMap(url) ? url : (resolve(sourcePath, url) as string);
 };
 
 const decodeInlineMap = (data: string) => {

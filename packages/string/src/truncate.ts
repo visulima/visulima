@@ -95,7 +95,7 @@ export type TruncateOptions = {
  * @param options Configuration options for truncation
  * @returns The truncated string with ellipsis if applicable
  */
-// eslint-disable-next-line sonarjs/cognitive-complexity
+
 export const truncate = (input: string, limit: number, options: TruncateOptions = {}): string => {
     // Input validation
     if (typeof input !== "string") {

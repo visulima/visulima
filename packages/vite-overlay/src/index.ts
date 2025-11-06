@@ -465,6 +465,13 @@ const setupHMRHandler = (
             const errors = [...extensionPayload.errors];
             const mainError = errors.shift();
 
+            if (!mainError) {
+                await developmentLogger.error("No error information available");
+                client.send(payload);
+
+                return;
+            }
+
             const consoleMessage = [
                 `${styleText("red", "[client]")} ${mainError.name}: ${mainError.message}`,
                 ...mainError.originalFilePath.includes("-extension://")
@@ -473,7 +480,7 @@ const setupHMRHandler = (
                         "",
                         styleText("blue", `${mainError.originalFilePath}:${mainError.originalFileLine}:${mainError.originalFileColumn}`),
                         "",
-                        await codeToANSI(mainError.originalSnippet, findLanguageBasedOnExtension(mainError.originalFilePath), "nord"),
+                        await codeToANSI(mainError.originalSnippet, (findLanguageBasedOnExtension(mainError.originalFilePath) || "text") as any, "nord"),
                         "",
                         "Raw stack trace:",
                         "",
@@ -489,8 +496,8 @@ const setupHMRHandler = (
                     "",
                     `${spacer}Caused by: `,
                     "",
-                    `${spacer}${mainError.name}: ${mainError.message}`,
-                    `${spacer}at ${mainError.originalFilePath}:${mainError.originalFileLine}:${mainError.originalFileColumn}`,
+                    `${spacer}${error.name}: ${error.message}`,
+                    `${spacer}at ${error.originalFilePath}:${error.originalFileLine}:${error.originalFileColumn}`,
                 );
             });
 

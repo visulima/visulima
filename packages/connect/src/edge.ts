@@ -1,4 +1,4 @@
-import type { AnyZodObject, ZodObject } from "zod";
+import type { ZodObject } from "zod";
 
 import withZod from "./adapter/with-zod";
 import type { Route } from "./router";
@@ -32,7 +32,7 @@ export const getPathname = (request: Request & { nextUrl?: URL }): string =>
 // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
 export type RequestHandler<R extends Request, Context> = (request: R, context_: Context) => ValueOrPromise<Response | void>;
 
-export class EdgeRouter<R extends Request = Request, Context = unknown, RResponse extends Response = Response, Schema extends AnyZodObject = ZodObject<any>> {
+export class EdgeRouter<R extends Request = Request, Context = unknown, RResponse extends Response = Response, Schema extends ZodObject<any> = ZodObject<any>> {
     public all: RouteShortcutMethod<this, Schema, RequestHandler<R, Context>> = this.add.bind(this, "");
 
     public connect: RouteShortcutMethod<this, Schema, RequestHandler<R, Context>> = this.add.bind(this, "CONNECT");

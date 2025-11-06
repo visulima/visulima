@@ -4,7 +4,6 @@ const waitNSeconds = async (seconds) =>
         setTimeout(() => {
             resolve("n seconds have passed");
         }, seconds);
-    })
-;
+    });
 
 waitNSeconds(4000);
