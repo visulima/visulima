@@ -373,4 +373,58 @@ describe("parses tsconfig", () => {
 
         expect(parsedTsconfig).toStrictEqual(expectedTsconfig);
     });
+
+    describe("rewriteRelativeImportExtensions", () => {
+        it("sets allowImportingTsExtensions implicitly", async () => {
+            expect.assertions(1);
+
+            writeJsonSync(join(distribution, "tsconfig.json"), {
+                compilerOptions: {
+                    rewriteRelativeImportExtensions: true,
+                },
+            });
+
+            const parsedTsconfig = readTsConfig(join(distribution, "tsconfig.json"));
+            const expectedTsconfig = await getTscTsconfig(distribution);
+
+            delete expectedTsconfig.files;
+
+            expect(parsedTsconfig).toStrictEqual(expectedTsconfig);
+        });
+
+        it("respects explicit allowImportingTsExtensions", async () => {
+            expect.assertions(1);
+
+            writeJsonSync(join(distribution, "tsconfig.json"), {
+                compilerOptions: {
+                    rewriteRelativeImportExtensions: true,
+                    allowImportingTsExtensions: false,
+                },
+            });
+
+            const parsedTsconfig = readTsConfig(join(distribution, "tsconfig.json"));
+            const expectedTsconfig = await getTscTsconfig(distribution);
+
+            delete expectedTsconfig.files;
+
+            expect(parsedTsconfig).toStrictEqual(expectedTsconfig);
+        });
+
+        it("does not set allowImportingTsExtensions when false", async () => {
+            expect.assertions(1);
+
+            writeJsonSync(join(distribution, "tsconfig.json"), {
+                compilerOptions: {
+                    rewriteRelativeImportExtensions: false,
+                },
+            });
+
+            const parsedTsconfig = readTsConfig(join(distribution, "tsconfig.json"));
+            const expectedTsconfig = await getTscTsconfig(distribution);
+
+            delete expectedTsconfig.files;
+
+            expect(parsedTsconfig).toStrictEqual(expectedTsconfig);
+        });
+    });
 });

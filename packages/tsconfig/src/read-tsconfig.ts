@@ -263,6 +263,11 @@ const tsCompatibleWrapper = (config: TsConfigJsonResolved, options: Options | un
         return config;
     }
 
+    if (config.compilerOptions.rewriteRelativeImportExtensions) {
+        // eslint-disable-next-line no-param-reassign
+        config.compilerOptions.allowImportingTsExtensions ??= true;
+    }
+
     if (["5.4", "5.5", "5.6", "5.7", "5.8", "5.9", "true"].includes(String(options?.tscCompatible))) {
         if (
             config.compilerOptions.esModuleInterop === undefined
