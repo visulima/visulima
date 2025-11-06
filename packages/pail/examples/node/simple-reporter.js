@@ -117,9 +117,8 @@ console.log("\n", "------------------ SIMPLE REPORTER - TIMERS -----------------
 logger.time("data-processing");
 logger.info("Processing data...");
 
-setTimeout(() => {
-    logger.timeEnd("data-processing");
-}, 500);
+await new Promise((resolve) => setTimeout(resolve, 500));
+logger.timeEnd("data-processing");
 
 console.log("\n", "------------------ SIMPLE REPORTER - COUNTERS ------------------", "\n");
 

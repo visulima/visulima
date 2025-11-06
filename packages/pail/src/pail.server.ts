@@ -256,18 +256,7 @@ class PailServerImpl<T extends string = string, L extends string = string> exten
         };
 
         // Optimize: pass parent values when they haven't changed
-        if (typesChanged) {
-            // When types have changed, mergedTypes is already fully merged (includes defaults from parent)
-            // Pass as parentTypes so constructor uses them directly without merging again
-            childOptions.parentTypes = mergedTypes;
-            childOptions.parentLongestLabel = getLongestLabel<LC, N>(mergedTypes);
-        } else {
-            // Don't set types in childOptions when reusing parent types - let constructor handle it
-            childOptions.parentTypes = this.types as LoggerTypesConfig<LiteralUnion<DefaultLogTypes, N>, LC>;
-            childOptions.parentLongestLabel = this.longestLabel;
-        }
-
-        this.#assignParentValues(childOptions, options, typesChanged);
+        this.#assignParentValues(childOptions, options, typesChanged, mergedTypes);
 
         return new PailServerImpl<N, LC>(childOptions) as unknown as PailServerType<N, LC>;
     }
@@ -282,8 +271,15 @@ class PailServerImpl<T extends string = string, L extends string = string> exten
         childOptions: ServerConstructorOptions<N, LC> & ServerParentLoggerOptimization<N, LC>,
         options: (Partial<ConstructorOptions<N, LC>> & Partial<Pick<ServerConstructorOptions<N, LC>, "interactive" | "stderr" | "stdout">>) | undefined,
         typesChanged: boolean,
+        mergedTypes: LoggerTypesConfig<LiteralUnion<DefaultLogTypes, N>, LC>,
     ): void {
-        if (!typesChanged) {
+        if (typesChanged) {
+            // When types have changed, mergedTypes is already fully merged (includes defaults from parent)
+            // Pass as parentTypes so constructor uses them directly without merging again
+            childOptions.parentTypes = mergedTypes;
+            childOptions.parentLongestLabel = getLongestLabel<LC, N>(mergedTypes);
+        } else {
+            // Don't set types in childOptions when reusing parent types - let constructor handle it
             childOptions.parentTypes = this.types as LoggerTypesConfig<LiteralUnion<DefaultLogTypes, N>, LC>;
             childOptions.parentLongestLabel = this.longestLabel;
         }
