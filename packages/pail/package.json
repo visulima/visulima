@@ -110,6 +110,10 @@
             "types": "./dist/processor/caller/caller-processor.d.ts",
             "default": "./dist/processor/caller/caller-processor.js"
         },
+        "./processor/opentelemetry": {
+            "types": "./dist/processor/opentelemetry-processor.d.ts",
+            "default": "./dist/processor/opentelemetry-processor.js"
+        },
         "./reporter/file": {
             "types": "./dist/reporter/file/json-file-reporter.d.ts",
             "default": "./dist/reporter/file/json-file-reporter.js"
@@ -234,10 +238,14 @@
         "vitest": "^4.0.7"
     },
     "peerDependencies": {
+        "@opentelemetry/api": "^1.0.0 || ^2.0.0",
         "@visulima/redact": "2.0.2",
         "rotating-file-stream": "^3.2.7"
     },
     "peerDependenciesMeta": {
+        "@opentelemetry/api": {
+            "optional": true
+        },
         "@visulima/redact": {
             "optional": true
         },

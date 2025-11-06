@@ -116,6 +116,8 @@ export const pail = createPail();
 export type { PailServerType as Pail } from "./pail.server";
 export type { MultiBarOptions, ProgressBarOptions, ProgressBarPayload, ProgressBarStyle, SingleBarOptions } from "./progress-bar";
 export { getBarChar, MultiProgressBar, ProgressBar } from "./progress-bar";
+export type { SpinnerIcons, SpinnerOptions, SpinnerStartOptions, SpinnerStyle } from "./spinner";
+export { MultiSpinner, Spinner } from "./spinner";
 export type {
     ConstructorOptions,
     DefaultLoggerTypes,
@@ -128,6 +130,4 @@ export type {
     Processor,
     Reporter,
     StreamAwareReporter,
-} from "./shared";
-export type { SpinnerIcons, SpinnerOptions, SpinnerStartOptions, SpinnerStyle } from "./spinner";
-export { MultiSpinner, Spinner } from "./spinner";
+} from "./types";

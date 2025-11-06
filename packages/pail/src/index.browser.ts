@@ -67,4 +67,4 @@ export type {
     Processor,
     Reporter,
     StreamAwareReporter,
-} from "./shared";
+} from "./types";

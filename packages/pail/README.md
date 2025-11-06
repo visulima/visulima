@@ -152,6 +152,10 @@ A processor can be added to a logger directly (and is subsequently applied to lo
     > Use `npm install @visulima/redact`, `pnpm add @visulima/redact` or `yarn add @visulima/redact` to install it.
 - `MessageFormatterProcessor` - formats the log message (Util.format-like unescaped string formatting utility) [@visulima/fmt][fmt]
 - `ErrorProcessor` - serializes the error with cause object to a std error object that can be serialized.
+- `OpenTelemetryProcessor` - adds OpenTelemetry trace context to log metadata
+    > The OpenTelemetry processor needs the "@opentelemetry/api" package to work.
+    > Use `npm install @opentelemetry/api`, `pnpm add @opentelemetry/api` or `yarn add @opentelemetry/api` to install it.
+    > Extracts trace ID, span ID, and trace flags from the active OpenTelemetry span and adds them to the log context for distributed tracing correlation.
 
 ## Usage
 
