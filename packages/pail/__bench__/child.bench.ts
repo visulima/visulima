@@ -7,6 +7,7 @@ import { createPail as createServerPail } from "@visulima/pail/server";
 import { JsonReporter as ServerJsonReporter } from "@visulima/pail/server/reporter/json";
 import bunyan from "bunyan";
 import pino from "pino";
+import { ROARR, Roarr as log } from "roarr";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { bench, describe } from "vitest";
 import { createLogger, transports } from "winston";
@@ -46,6 +47,11 @@ const bunyanNodeStream = bunyan.createLogger({
         },
     ],
 });
+
+// Configure roarr to write to /dev/null
+ROARR.write = () => {
+    // Logs are discarded for benchmarking
+};
 
 describe("child creation", async () => {
     bench(
@@ -124,6 +130,18 @@ describe("child creation", async () => {
         "pino min length",
         async () => {
             const child = pinoMinLength.child({ component: "test" });
+
+            child.info("hello world");
+        },
+        {
+            iterations: 10_000,
+        },
+    );
+
+    bench(
+        "roarr",
+        async () => {
+            const child = log.child({ component: "test" });
 
             child.info("hello world");
         },
@@ -224,6 +242,19 @@ describe("child child creation", async () => {
             iterations: 10_000,
         },
     );
+
+    bench(
+        "roarr",
+        async () => {
+            const child = log.child({ component: "api" });
+            const grandChild = child.child({ module: "users" });
+
+            grandChild.info("hello world");
+        },
+        {
+            iterations: 10_000,
+        },
+    );
 });
 
 describe("child with overrides", async () => {
@@ -303,6 +334,18 @@ describe("child with overrides", async () => {
         "pino min length",
         async () => {
             const child = pinoMinLength.child({ component: "test" });
+
+            child.debug("debug message");
+        },
+        {
+            iterations: 10_000,
+        },
+    );
+
+    bench(
+        "roarr",
+        async () => {
+            const child = log.child({ component: "test" });
 
             child.debug("debug message");
         },
