@@ -12,7 +12,7 @@
             "cache": true
         },
         "build:prod": {
-            "dependsOn": ["^build:prod"],
+            "dependsOn": ["^build:prod", "lint:types"],
             "inputs": ["production", "^production"],
             "outputs": ["{projectRoot}/dist"],
             "cache": true
