@@ -3,10 +3,10 @@
     "version": "0.1.0",
     "private": true,
     "scripts": {
-        "dev": "next dev --turbopack",
         "build": "next build --turbopack",
-        "start": "next start",
-        "lint": "eslint"
+        "dev": "next dev --turbopack",
+        "lint": "eslint",
+        "start": "next start"
     },
     "dependencies": {
         "@visulima/pail": "workspace:*",
