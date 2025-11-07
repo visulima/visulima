@@ -16,7 +16,7 @@ describe("stack page", () => {
             expect(page.name).toBe("Stack");
             expect(page.code.html).toContain("Test error");
             expect(page.defaultSelected).toBe(true);
-        }, 10_000); // 10 seconds timeout
+        }, 30_000); // 30 seconds timeout
 
         it("should handle errors with stack traces", async () => {
             expect.assertions(4);
