@@ -1,5 +1,5 @@
 // @ts-ignore - Optional peer dependency, types may not be available
-import type { ConstructorOptions, Pail, Processor } from "@visulima/pail";
+import type { ConstructorOptions, PailServerType, Processor } from "@visulima/pail";
 // @ts-ignore - Optional peer dependency, types may not be available
 import CallerProcessor from "@visulima/pail/processor/caller";
 // @ts-ignore - Optional peer dependency, types may not be available
@@ -16,7 +16,7 @@ import { getEnv } from "../util/general/runtime-process";
  * @param options Optional configuration options for the logger
  * @returns A configured Pail logger instance
  */
-const createPailLogger = async (options?: Partial<ConstructorOptions<string, string>>): Promise<Pail> => {
+const createPailLogger = (options?: Partial<ConstructorOptions<string, string>>): PailServerType<string, string> => {
     const cerebroLevelToPailLevel: Record<Partial<VERBOSITY_LEVEL>, string> = {
         16: "informational",
         32: "informational",
