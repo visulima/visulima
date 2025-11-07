@@ -1,3 +1,17 @@
+## @visulima/cerebro [2.1.0](https://github.com/visulima/visulima/compare/@visulima/cerebro@2.0.3...@visulima/cerebro@2.1.0) (2025-11-07)
+
+### Features
+
+* **cli:** enhance logger validation in CLI constructor ([a327472](https://github.com/visulima/visulima/commit/a327472c6f9ff9ff87221aa0c8ead4c79749c0f7))
+
+### Miscellaneous Chores
+
+* Add jsr file to all packages for release ([#565](https://github.com/visulima/visulima/issues/565)) ([ec91652](https://github.com/visulima/visulima/commit/ec91652b4e4112adf14ba152c1239a7703ba425a))
+
+### Code Refactoring
+
+* **logger:** update createPailLogger to return PailServerType ([7c4208f](https://github.com/visulima/visulima/commit/7c4208ffcc68ed0c6bbeb457a5ff3411d31c203c))
+
 ## @visulima/cerebro [2.0.3](https://github.com/visulima/visulima/compare/@visulima/cerebro@2.0.2...@visulima/cerebro@2.0.3) (2025-11-07)
 
 ### Bug Fixes
