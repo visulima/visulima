@@ -33,6 +33,17 @@ function convertGlobPattern(distPath) {
 }
 
 /**
+ * Escapes all regular expression meta-characters in a string, except for *
+ * This ensures that special regex characters are treated as literals
+ * The * character is left unescaped so it can be converted to .* for glob matching
+ */
+function escapeRegex(str) {
+    // Escape all regex meta-characters except *: \ ^ $ . | ? + ( ) [ ] { }
+    // Backslash must be escaped first since it's used in other escapes
+    return str.replace(/[\\^$.+?()[\]{}|]/g, "\\$&");
+}
+
+/**
  * Expands a glob pattern export into individual file exports
  * Example: "./language/*": "./src/language/*.ts" -> { "./language/en": "./src/language/en.ts", ... }
  */
@@ -55,10 +66,10 @@ function expandGlobExport(exportKey, globPath, packageDir) {
     const exportBaseMatch = exportKey.match(/^(.+)\/\*$/);
     const exportBase = exportBaseMatch ? exportBaseMatch[1] : exportKey.replace(/\*$/, "");
 
-    // Convert glob pattern to regex (simple case: *.ts -> /.*\.ts$/)
-    // Escape dots first, then replace * with .*
+    // Convert glob pattern to regex: escape all regex meta-characters, then replace * with .*
+    const escapedPattern = escapeRegex(filePattern);
     const patternRegex = new RegExp(
-        "^" + filePattern.replace(/\./g, "\\.").replace(/\*/g, ".*") + "$"
+        "^" + escapedPattern.replace(/\*/g, ".*") + "$"
     );
 
     // Read directory and find matching files
@@ -337,13 +348,13 @@ async function generateJsrConfig(packageDir) {
             }
         }
     }
-    
+
     // Normalize jsrExports to always be an object (JSR expects object format)
     // If it's a string, convert it to { ".": string } format
     if (typeof jsrExports === "string") {
         jsrExports = { ".": jsrExports };
     }
-    
+
     // Verify all export paths exist (glob patterns should already be expanded)
     const verifiedExports = {};
     for (const [key, value] of Object.entries(jsrExports)) {
