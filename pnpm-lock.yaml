@@ -2115,6 +2115,8 @@ importers:
         specifier: ^4.0.7
         version: 4.0.7(@types/debug@4.1.12)(@types/node@24.10.0)(@vitest/ui@4.0.7)(jiti@2.6.1)(jsdom@27.1.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.0(@types/node@24.10.0)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 
+  packages/fs/__bench__/fixtures/a/b: {}
+
   packages/fs/__fixtures__/find-up: {}
 
   packages/fs/__fixtures__/package/cjs:
@@ -3170,6 +3172,9 @@ importers:
       roarr:
         specifier: ^7.21.2
         version: 7.21.2
+      rslog:
+        specifier: ^1.3.0
+        version: 1.3.0
       tslog:
         specifier: ^4.10.2
         version: 4.10.2
@@ -17781,17 +17786,12 @@ packages:
     engines: {node: 20 || >=22}
     hasBin: true
 
-<<<<<<< HEAD
-  rolldown-vite@7.2.2:
-    resolution: {integrity: sha512-Fl3ZdmJhDMJGcqrr342pPVrhugXdOcuNBRBauz4S7QGSRXbQy7y8q5QYJtgkcrG8XjY0EENSZeTk58c3m20FxA==}
-=======
   roarr@7.21.2:
     resolution: {integrity: sha512-RyXI+aNxwVyfF71a9cqz/jhXWbycnVh7GXnnJUniIBXKTOJQF3rmpNexStXt8TUcKyiXCwyfYzboZLMYUllPDA==}
     engines: {node: '>=18.0'}
 
-  rolldown-vite@7.2.1:
-    resolution: {integrity: sha512-J1QRxf8zlYNvjAY1fB6zW+FLr0K26/IpKFrGM+Za0Ko6meJUMlHBk+LV19gAb8sfSluH4/6dyWKVS2dvNU4RLQ==}
->>>>>>> 22f1200d5 (chore(pail): integrate roarr logging into benchmarks)
+  rolldown-vite@7.2.2:
+    resolution: {integrity: sha512-Fl3ZdmJhDMJGcqrr342pPVrhugXdOcuNBRBauz4S7QGSRXbQy7y8q5QYJtgkcrG8XjY0EENSZeTk58c3m20FxA==}
     engines: {node: ^20.19.0 || >=22.12.0}
     hasBin: true
     peerDependencies:
@@ -17890,6 +17890,9 @@ packages:
   rs-module-lexer@2.6.0:
     resolution: {integrity: sha512-aT0lO0icZ3Hq0IWvo+ORgVc6BJDoKfaDBdRIDQkL2PtBnFQJ0DuvExiiWI4GxjEjH8Yyro++NPArHFaD8bvS9w==}
     engines: {node: '>=14'}
+
+  rslog@1.3.0:
+    resolution: {integrity: sha512-93DpwwaiRrLz7fJ5z6Uwb171hHBws1VVsWjU6IruLFX63BicLA44QNu0sfn3guKHnBHZMFSKO8akfx5QhjuegQ==}
 
   run-applescript@7.1.0:
     resolution: {integrity: sha512-DPe5pVFaAsinSaV6QjQ6gdiedWDcRCbUuiQfQa2wmWV7+xC9bGulGI8+TdRmoFkAPaBXk8CrAbnlY2ISniJ47Q==}
@@ -36604,17 +36607,13 @@ snapshots:
       glob: 11.0.3
       package-json-from-dist: 1.0.1
 
-<<<<<<< HEAD
-  rolldown-vite@7.2.2(@types/node@24.10.0)(esbuild@0.25.12)(jiti@2.6.1)(less@4.4.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1):
-=======
   roarr@7.21.2:
     dependencies:
       fast-printf: 1.6.10
       safe-stable-stringify: 2.5.0
       semver-compare: 1.0.0
 
-  rolldown-vite@7.2.1(@types/node@24.10.0)(esbuild@0.25.12)(jiti@2.6.1)(less@4.4.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1):
->>>>>>> 22f1200d5 (chore(pail): integrate roarr logging into benchmarks)
+  rolldown-vite@7.2.2(@types/node@24.10.0)(esbuild@0.25.12)(jiti@2.6.1)(less@4.4.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1):
     dependencies:
       '@oxc-project/runtime': 0.96.0
       fdir: 6.5.0(picomatch@4.0.3)
@@ -36748,6 +36747,8 @@ snapshots:
       '@xn-sakina/rml-linux-x64-musl': 2.6.0
       '@xn-sakina/rml-win32-arm64-msvc': 2.6.0
       '@xn-sakina/rml-win32-x64-msvc': 2.6.0
+
+  rslog@1.3.0: {}
 
   run-applescript@7.1.0: {}
 

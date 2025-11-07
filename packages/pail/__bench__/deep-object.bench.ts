@@ -12,6 +12,7 @@ import { createConsola as createBrowserConsola, createConsola as createServerCon
 import { diary } from "diary";
 import pino from "pino";
 import { ROARR, Roarr as log } from "roarr";
+import { logger as rslogLogger } from "rslog";
 import type { ILogObj } from "tslog";
 import { Logger } from "tslog";
 // eslint-disable-next-line import/no-extraneous-dependencies
@@ -95,6 +96,19 @@ const diaryLogger = diary("standard", diarySink);
 ROARR.write = () => {
     // Logs are discarded for benchmarking
 };
+
+// Configure rslog to write to /dev/null
+rslogLogger.override({
+    log: () => {},
+    info: () => {},
+    start: () => {},
+    ready: () => {},
+    success: () => {},
+    warn: () => {},
+    error: () => {},
+    debug: () => {},
+    greet: () => {},
+});
 
 describe("deep object", async () => {
     bench(
@@ -231,6 +245,16 @@ describe("deep object", async () => {
         "roarr",
         async () => {
             log.info(deep, "message");
+        },
+        {
+            iterations: 10_000,
+        },
+    );
+
+    bench(
+        "rslog",
+        async () => {
+            rslogLogger.info(deep);
         },
         {
             iterations: 10_000,
