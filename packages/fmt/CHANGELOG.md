@@ -1,3 +1,13 @@
+## @visulima/fmt [1.1.19](https://github.com/visulima/visulima/compare/@visulima/fmt@1.1.18...@visulima/fmt@1.1.19) (2025-11-07)
+
+### Bug Fixes
+
+* update TypeScript configurations and improve linting across multiple packages ([6f25ec7](https://github.com/visulima/visulima/commit/6f25ec7841da7246f8f9166efc5292a7089d37ee))
+
+### Miscellaneous Chores
+
+* update npm and pnpm configurations for monorepo optimization ([#564](https://github.com/visulima/visulima/issues/564)) ([5512b42](https://github.com/visulima/visulima/commit/5512b42f672c216b6a3c9e39035199a4ebd9a4b8))
+
 ## @visulima/fmt [1.1.18](https://github.com/visulima/visulima/compare/@visulima/fmt@1.1.17...@visulima/fmt@1.1.18) (2025-11-05)
 
 ### Bug Fixes
