@@ -1,3 +1,37 @@
+## @visulima/pail [3.2.0](https://github.com/visulima/visulima/compare/@visulima/pail@3.1.0...@visulima/pail@3.2.0) (2025-11-07)
+
+### Features
+
+* **pail:** add child logger functionality with inheritance and overrides ([c5dce1d](https://github.com/visulima/visulima/commit/c5dce1d3208a75aac223cde650e1072e2fb333b2))
+* **pail:** add OpenTelemetryProcessor for enhanced logging with trace context ([c7dfb9c](https://github.com/visulima/visulima/commit/c7dfb9c5bdabc7e41609d6c3fad9195a49de9a64))
+* **pail:** implement force logging methods to bypass log level filters ([52b8516](https://github.com/visulima/visulima/commit/52b85168fc27feb23879d716ac68676d42d3aa3b))
+* **pail:** introduce HTTP Reporter with Edge compatibility and enhanced logging features ([9cd695c](https://github.com/visulima/visulima/commit/9cd695c6ee34259b65ccd4b98dbe3a3d43bef50a))
+
+### Bug Fixes
+
+* **pail:** enhance PailBrowserType and PailServerType to extend Console ([ce7f2c6](https://github.com/visulima/visulima/commit/ce7f2c61551aa899b7775d04518340e61c2db1d2))
+* update TypeScript configurations and improve linting across multiple packages ([6f25ec7](https://github.com/visulima/visulima/commit/6f25ec7841da7246f8f9166efc5292a7089d37ee))
+
+### Miscellaneous Chores
+
+* **pail:** add simple reporter example for basic usage and advanced features ([be16be5](https://github.com/visulima/visulima/commit/be16be5cbde1cf72019343be646361af02bef8de))
+* **pail:** update package.json dependencies and fix example scripts ([8f98736](https://github.com/visulima/visulima/commit/8f9873619ca5ae49acd27ce63337958a7908c013))
+* update npm and pnpm configurations for monorepo optimization ([#564](https://github.com/visulima/visulima/issues/564)) ([5512b42](https://github.com/visulima/visulima/commit/5512b42f672c216b6a3c9e39035199a4ebd9a4b8))
+
+### Code Refactoring
+
+* **pail:** replace hardcoded '/dev/null' with 'devNull' import for improved cross-platform compatibility ([3e8e95d](https://github.com/visulima/visulima/commit/3e8e95da4dc15d1ec0996b5ee3df403953e50c95))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.27
+* **@visulima/error:** upgraded to 5.0.4
+* **@visulima/fmt:** upgraded to 1.1.19
+* **@visulima/inspector:** upgraded to 1.0.28
+* **@visulima/redact:** upgraded to 2.0.3
+* **@visulima/string:** upgraded to 2.0.4
+
 ## @visulima/pail [3.1.0](https://github.com/visulima/visulima/compare/@visulima/pail@3.0.3...@visulima/pail@3.1.0) (2025-11-05)
 
 ### Features
