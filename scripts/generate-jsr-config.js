@@ -1,0 +1,423 @@
+#!/usr/bin/env node
+
+import { readFileSync, writeFileSync, existsSync, readdirSync, statSync } from "node:fs";
+import { join, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
+import * as prettier from "prettier";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const packagesDir = join(__dirname, "..", "packages");
+
+/**
+ * Checks if a path contains a glob pattern
+ */
+function isGlobPattern(path) {
+    return path.includes("*");
+}
+
+/**
+ * Converts a dist glob pattern to a src glob pattern
+ */
+function convertGlobPattern(distPath) {
+    // Convert dist path to src path
+    let srcPath = distPath.replace(/^\.\/dist\//, "./src/");
+
+    // Convert file extensions: .js -> .ts, .d.ts -> .ts
+    srcPath = srcPath.replace(/\.(js|mjs|cjs)$/, ".ts");
+    srcPath = srcPath.replace(/\.d\.ts$/, ".ts");
+    srcPath = srcPath.replace(/\.d\.mts$/, ".mts");
+    srcPath = srcPath.replace(/\.d\.cts$/, ".cts");
+
+    return srcPath;
+}
+
+/**
+ * Escapes all regular expression meta-characters in a string, except for *
+ * This ensures that special regex characters are treated as literals
+ * The * character is left unescaped so it can be converted to .* for glob matching
+ */
+function escapeRegex(str) {
+    // Escape all regex meta-characters except *: \ ^ $ . | ? + ( ) [ ] { }
+    // Backslash must be escaped first since it's used in other escapes
+    return str.replace(/[\\^$.+?()[\]{}|]/g, "\\$&");
+}
+
+/**
+ * Expands a glob pattern export into individual file exports
+ * Example: "./language/*": "./src/language/*.ts" -> { "./language/en": "./src/language/en.ts", ... }
+ */
+function expandGlobExport(exportKey, globPath, packageDir) {
+    // Extract directory and file pattern from glob
+    // Pattern: "./src/language/*.ts" -> dir: "./src/language", pattern: "*.ts"
+    const globMatch = globPath.match(/^(.+)\/([^/]*\*[^/]*)$/);
+    if (!globMatch) {
+        return {};
+    }
+
+    const [, dirPath, filePattern] = globMatch;
+    const fullDirPath = join(packageDir, dirPath);
+
+    if (!existsSync(fullDirPath) || !statSync(fullDirPath).isDirectory()) {
+        return {};
+    }
+
+    // Extract the base path from export key (e.g., "./language/*" -> "./language")
+    const exportBaseMatch = exportKey.match(/^(.+)\/\*$/);
+    const exportBase = exportBaseMatch ? exportBaseMatch[1] : exportKey.replace(/\*$/, "");
+
+    // Convert glob pattern to regex: escape all regex meta-characters, then replace * with .*
+    const escapedPattern = escapeRegex(filePattern);
+    const patternRegex = new RegExp(
+        "^" + escapedPattern.replace(/\*/g, ".*") + "$"
+    );
+
+    // Read directory and find matching files
+    const files = readdirSync(fullDirPath, { withFileTypes: true })
+        .filter((dirent) => dirent.isFile() && patternRegex.test(dirent.name))
+        .map((dirent) => dirent.name);
+
+    // Create individual exports
+    const expandedExports = {};
+    for (const file of files) {
+        // Remove extension from file name for export key
+        const fileBase = file.replace(/\.(ts|tsx|mts|cts)$/, "");
+        const exportKeyPath = `${exportBase}/${fileBase}`;
+        const sourcePath = `${dirPath}/${file}`;
+
+        expandedExports[exportKeyPath] = sourcePath;
+    }
+
+    return expandedExports;
+}
+
+/**
+ * Finds the actual source file for a dist path
+ */
+function findSourceFile(distPath, packageDir) {
+    // Handle glob patterns
+    if (isGlobPattern(distPath)) {
+        return convertGlobPattern(distPath);
+    }
+
+    // Convert dist path to potential src paths
+    const basePath = distPath.replace(/^\.\/dist\//, "./src/");
+
+    // Try different extensions
+    const extensions = [".ts", ".tsx", ".mts", ".cts"];
+    const baseWithoutExt = basePath.replace(/\.(js|mjs|cjs|d\.ts|d\.mts|d\.cts)$/, "");
+
+    for (const ext of extensions) {
+        const candidatePath = baseWithoutExt + ext;
+        if (fileExists(join(packageDir, candidatePath))) {
+            return candidatePath;
+        }
+    }
+
+    // If no source file found, return the dist path as fallback
+    return distPath;
+}
+
+/**
+ * Converts package.json exports to jsr.json exports format
+ * Maps dist paths to src paths for TypeScript source files
+ * Expands glob patterns into individual exports (JSR doesn't support globs)
+ */
+function convertExports(packageExports, packageDir) {
+    if (typeof packageExports === "string") {
+        // Single export - find source file
+        return findSourceFile(packageExports, packageDir);
+    }
+
+    if (typeof packageExports === "object" && packageExports !== null) {
+        const jsrExports = {};
+
+        for (const [key, value] of Object.entries(packageExports)) {
+            // Skip package.json exports
+            if (key === "./package.json") {
+                continue;
+            }
+
+            // Check if export key contains glob pattern
+            const isGlobKey = isGlobPattern(key);
+
+            if (typeof value === "string") {
+                // Simple string export
+                const sourcePath = findSourceFile(value, packageDir);
+                if (isGlobKey && isGlobPattern(sourcePath)) {
+                    // Expand glob pattern into individual exports
+                    const expanded = expandGlobExport(key, sourcePath, packageDir);
+                    Object.assign(jsrExports, expanded);
+                } else {
+                    jsrExports[key] = sourcePath;
+                }
+            } else if (typeof value === "object" && value !== null) {
+                // Object with conditions (import, require, types, etc.)
+                // For JSR, we want the import/default path, preferring TypeScript
+                let distPath = null;
+
+                if (value.import) {
+                    distPath = typeof value.import === "string"
+                        ? value.import
+                        : value.import.default;
+                } else if (value.default) {
+                    distPath = value.default;
+                } else if (value.types) {
+                    distPath = value.types;
+                } else {
+                    // Use the first available path
+                    const firstValue = Object.values(value)[0];
+                    distPath = typeof firstValue === "string"
+                        ? firstValue
+                        : firstValue?.default || firstValue?.types;
+                }
+
+                if (distPath) {
+                    const sourcePath = findSourceFile(distPath, packageDir);
+                    if (isGlobKey && isGlobPattern(sourcePath)) {
+                        // Expand glob pattern into individual exports
+                        const expanded = expandGlobExport(key, sourcePath, packageDir);
+                        Object.assign(jsrExports, expanded);
+                    } else {
+                        jsrExports[key] = sourcePath;
+                    }
+                }
+            }
+        }
+
+        return Object.keys(jsrExports).length > 0 ? jsrExports : undefined;
+    }
+
+    return undefined;
+}
+
+/**
+ * Gets the main entry point from package.json exports
+ */
+function getMainExport(packageExports) {
+    if (typeof packageExports === "string") {
+        return packageExports;
+    }
+
+    if (typeof packageExports === "object" && packageExports !== null) {
+        const mainExport = packageExports["."];
+        if (!mainExport) {
+            return undefined;
+        }
+
+        if (typeof mainExport === "string") {
+            return mainExport;
+        }
+
+        // Get import or default
+        if (mainExport.import) {
+            return typeof mainExport.import === "string"
+                ? mainExport.import
+                : mainExport.import.default;
+        }
+
+        if (mainExport.default) {
+            return mainExport.default;
+        }
+
+        // Fallback to types
+        if (mainExport.types) {
+            return mainExport.types;
+        }
+    }
+
+    return undefined;
+}
+
+/**
+ * Checks if a file exists
+ */
+function fileExists(filePath) {
+    return existsSync(filePath);
+}
+
+/**
+ * Validates that a package name follows JSR naming conventions
+ */
+function validatePackageName(name) {
+    // JSR requires scoped packages: @scope/package-name
+    if (!name || typeof name !== "string") {
+        return false;
+    }
+    // Must start with @ and contain a /
+    return name.startsWith("@") && name.includes("/") && name.split("/").length === 2;
+}
+
+/**
+ * Validates that a version follows Semantic Versioning
+ */
+function validateVersion(version) {
+    if (!version || typeof version !== "string") {
+        return false;
+    }
+    // Basic SemVer pattern: major.minor.patch[-prerelease][+build]
+    const semverPattern = /^\d+\.\d+\.\d+(-[a-zA-Z0-9.-]+)?(\+[a-zA-Z0-9.-]+)?$/;
+    return semverPattern.test(version);
+}
+
+/**
+ * Validates that exports are properly formatted
+ */
+function validateExports(exports) {
+    if (!exports) {
+        return false;
+    }
+
+    // Exports can be a string or an object
+    if (typeof exports === "string") {
+        // String export must point to a .ts file
+        return exports.endsWith(".ts") || exports.endsWith(".tsx") || exports.endsWith(".mts") || exports.endsWith(".cts");
+    }
+
+    if (typeof exports === "object" && exports !== null) {
+        // Object exports: check that all values are strings pointing to .ts files
+        for (const value of Object.values(exports)) {
+            if (typeof value !== "string") {
+                return false;
+            }
+            // Must point to TypeScript source files
+            if (!value.endsWith(".ts") && !value.endsWith(".tsx") && !value.endsWith(".mts") && !value.endsWith(".cts")) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    return false;
+}
+
+/**
+ * Generates jsr.json for a package
+ */
+async function generateJsrConfig(packageDir) {
+    const packageJsonPath = join(packageDir, "package.json");
+    const jsrJsonPath = join(packageDir, "jsr.json");
+
+    if (!existsSync(packageJsonPath)) {
+        console.warn(`⚠️  No package.json found in ${packageDir}`);
+        return false;
+    }
+
+    const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf-8"));
+    const { name, version, exports: packageExports } = packageJson;
+
+    if (!name || !version) {
+        console.warn(`⚠️  Missing name or version in ${packageJsonPath}`);
+        return false;
+    }
+
+    // Validate package name follows JSR spec
+    if (!validatePackageName(name)) {
+        console.warn(`⚠️  Invalid package name "${name}" in ${packageJsonPath}. JSR requires scoped packages (@scope/package)`);
+        return false;
+    }
+
+    // Validate version follows SemVer
+    if (!validateVersion(version)) {
+        console.warn(`⚠️  Invalid version "${version}" in ${packageJsonPath}. Must follow Semantic Versioning (e.g., 1.0.0)`);
+        return false;
+    }
+
+    // Convert exports
+    let jsrExports = convertExports(packageExports, packageDir);
+
+    // If no exports converted, try to use main entry point
+    if (!jsrExports) {
+        const mainExport = getMainExport(packageExports);
+        if (mainExport) {
+            jsrExports = findSourceFile(mainExport, packageDir);
+        } else {
+            // Default to src/index.ts if it exists, try other extensions
+            const indexFiles = ["./src/index.ts", "./src/index.tsx", "./src/index.mts"];
+            let foundIndex = false;
+            for (const indexFile of indexFiles) {
+                if (fileExists(join(packageDir, indexFile))) {
+                    jsrExports = indexFile;
+                    foundIndex = true;
+                    break;
+                }
+            }
+            if (!foundIndex) {
+                console.warn(`⚠️  Could not determine exports for ${name}`);
+                return false;
+            }
+        }
+    }
+
+    // Normalize jsrExports to always be an object (JSR expects object format)
+    // If it's a string, convert it to { ".": string } format
+    if (typeof jsrExports === "string") {
+        jsrExports = { ".": jsrExports };
+    }
+
+    // Verify all export paths exist (glob patterns should already be expanded)
+    const verifiedExports = {};
+    for (const [key, value] of Object.entries(jsrExports)) {
+        const fullPath = join(packageDir, value);
+        if (fileExists(fullPath)) {
+            verifiedExports[key] = value;
+        } else {
+            console.warn(`⚠️  Export path ${value} does not exist for ${name}`);
+            verifiedExports[key] = value; // Keep it anyway, might be created during build
+        }
+    }
+    jsrExports = verifiedExports;
+
+    // Validate exports before creating config
+    if (!validateExports(jsrExports)) {
+        console.warn(`⚠️  Invalid exports format for ${name}. Exports must point to TypeScript source files (.ts, .tsx, .mts, .cts)`);
+        return false;
+    }
+
+    // Create jsr.json
+    const jsrConfig = {
+        name,
+        version,
+        exports: jsrExports,
+    };
+
+    writeFileSync(jsrJsonPath, JSON.stringify(jsrConfig, null, 2) + "\n", "utf-8");
+
+    // Format the generated file with prettier
+    try {
+        const prettierConfigPath = join(__dirname, "..", ".prettierrc.cjs");
+        const prettierConfig = await prettier.resolveConfig(prettierConfigPath);
+        const fileContent = readFileSync(jsrJsonPath, "utf-8");
+        const formatted = await prettier.format(fileContent, {
+            parser: "json",
+            ...prettierConfig,
+        });
+        writeFileSync(jsrJsonPath, formatted, "utf-8");
+    } catch (error) {
+        // If prettier fails, continue anyway - the file was still created
+        console.warn(`⚠️  Failed to format jsr.json for ${name} with prettier: ${error.message}`);
+    }
+
+    console.log(`✅ Created jsr.json for ${name}`);
+    return true;
+}
+
+// Main execution
+(async () => {
+    const packageDirs = readdirSync(packagesDir, { withFileTypes: true })
+        .filter((dirent) => dirent.isDirectory())
+        .map((dirent) => join(packagesDir, dirent.name));
+
+    let successCount = 0;
+    let failCount = 0;
+
+    for (const packageDir of packageDirs) {
+        if (await generateJsrConfig(packageDir)) {
+            successCount++;
+        } else {
+            failCount++;
+        }
+    }
+
+    console.log(`\n📊 Summary: ${successCount} packages processed successfully, ${failCount} failed`);
+})();
