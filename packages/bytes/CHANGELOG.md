@@ -1,3 +1,9 @@
+## @visulima/bytes [2.0.3](https://github.com/visulima/visulima/compare/@visulima/bytes@2.0.2...@visulima/bytes@2.0.3) (2025-11-07)
+
+### Bug Fixes
+
+* update TypeScript configurations and improve linting across multiple packages ([6f25ec7](https://github.com/visulima/visulima/commit/6f25ec7841da7246f8f9166efc5292a7089d37ee))
+
 ## @visulima/bytes [2.0.2](https://github.com/visulima/visulima/compare/@visulima/bytes@2.0.1...@visulima/bytes@2.0.2) (2025-11-05)
 
 ### Bug Fixes
