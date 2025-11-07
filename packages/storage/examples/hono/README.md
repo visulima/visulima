@@ -71,7 +71,7 @@ The server will start on `http://localhost:3000`.
 
 ### Documentation
 
-- `GET /swagger` - Interactive Swagger UI documentation
+- `GET /` - Interactive Swagger UI documentation
 - `GET /openapi.json` - OpenAPI JSON specification
 
 ## Image Transformations
@@ -213,7 +213,7 @@ upload.start();
 The API includes interactive Swagger documentation that you can access at:
 
 ```bash
-open http://localhost:3000/swagger
+open http://localhost:3000/
 ```
 
 The Swagger UI provides:

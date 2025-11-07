@@ -19,7 +19,10 @@ No installation needed - Deno handles dependencies automatically through npm spe
 ## Usage
 
 ```bash
-cd examples/deno
+# Run directly with Deno
+deno run --allow-net --allow-read --allow-write --allow-env index.ts
+
+# Or use the convenience script
 pnpm run dev
 ```
 

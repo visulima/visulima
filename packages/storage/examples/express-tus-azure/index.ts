@@ -14,7 +14,7 @@ const storage = new AzureStorage({
         const { uri = "unknown", id } = file;
 
         console.log(`File upload complete, storage path: ${uri}`);
-        // send gcs link to client
+        // send azure link to client
         return { id, link: uri };
     },
 });

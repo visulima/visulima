@@ -10,7 +10,6 @@ import type { ClientError, GCStorageOptions } from "../../../src/storage/gcs/typ
 import { buildContentRange, getRangeEnd } from "../../../src/storage/gcs/utils";
 import type { FilePart } from "../../../src/storage/utils/file";
 import { metafile, storageOptions, testfile } from "../../__helpers__/config";
-import { deepClone } from "../../__helpers__/utils";
 
 const { mockFetch } = vi.hoisted(() => {
     return {
@@ -45,7 +44,7 @@ describe(GCStorage, async () => {
     const uri = "http://api.com?upload_id=123456789";
     const request = createRequest({ headers: { origin: "http://api.com" } });
     const metafileResponse = (): { data: GCSFile; status: number } =>
-        deepClone({
+        structuredClone({
             data: { ...metafile, createdAt: new Date().toISOString(), uri },
             status: 200,
         });

@@ -54,13 +54,8 @@ vi.mock(import("../../src/transformer/audio-transformer"), () => {
 });
 
 describe(MediaTransformer, () => {
-    let transformer: MediaTransformer;
-
     beforeEach(() => {
         vi.clearAllMocks();
-        transformer = new MediaTransformer(mockStorage as any, {
-            ImageTransformer: MockImageTransformer,
-        });
     });
 
     describe("constructor", () => {

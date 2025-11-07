@@ -5,6 +5,7 @@ import swaggerUi from "swagger-ui-express";
 import swaggerJSDoc from "swagger-jsdoc";
 import fs from "node:fs";
 import path from "node:path";
+import sanitizeFilename from "sanitize-filename";
 
 const PORT = process.env.PORT || 3002;
 
@@ -95,7 +96,7 @@ app.use(
 
 type Moving = { percent: number; status: "moving" | "error" | "done" };
 
-const processes = {} as Record<string, Moving>;
+const processes = new Map<string, Moving>();
 
 const uploadDirectory = "upload";
 const moveTo = "files";
@@ -109,11 +110,25 @@ const imageTransformer = new ImageTransformer(storage, {
 
 const onComplete: express.RequestHandler = (req, res) => {
     const file = req.body as DiskFile;
-    const moving = (processes[file.name] ??= {} as Moving);
+    
+    // Sanitize file.name and file.originalName to prevent path traversal
+    const safeName = sanitizeFilename(file.name);
+    const safeOriginalName = sanitizeFilename(file.originalName);
+    
+    if (!safeName || !safeOriginalName) {
+        return res.status(400).json({ error: "Invalid filename." });
+    }
+    
+    let moving = processes.get(safeName);
+    if (!moving) {
+        moving = { percent: 0 } as Moving;
+        processes.set(safeName, moving);
+    }
+    
     if (!moving.status) {
         moving.status = "moving";
-        const source = path.resolve(uploadDirectory, file.name);
-        const destination = path.resolve(moveTo, file.originalName);
+        const source = path.resolve(uploadDirectory, safeName);
+        const destination = path.resolve(moveTo, safeOriginalName);
         void (async () => {
             try {
                 await copyFile(source, destination, {
@@ -123,9 +138,11 @@ const onComplete: express.RequestHandler = (req, res) => {
                 });
                 await fs.promises.unlink(source);
                 moving.status = "done";
+                processes.set(safeName, moving);
             } catch (e) {
                 console.error(e);
                 moving.status = "error";
+                processes.set(safeName, moving);
             }
         })();
     }

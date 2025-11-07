@@ -10,7 +10,6 @@ import DiskStorage from "../../../src/storage/local/disk-storage";
 import { metafile, storageOptions } from "../../__helpers__/config";
 import FileWriteStream from "../../__helpers__/streams/file-write-stream";
 import RequestReadStream from "../../__helpers__/streams/request-read-stream";
-import { deepClone } from "../../__helpers__/utils";
 
 // Mock fs modules with memfs
 vi.mock(import("node:fs"), async () => {
@@ -74,7 +73,7 @@ describe(DiskStorage, () => {
 
         await (createDummyFile ? fs.promises.writeFile(filePath, "") : fs.promises.rm(filePath));
 
-        await storage.create(request, deepClone(metafile));
+        await storage.create(request, structuredClone(metafile));
     };
 
     beforeAll(async () => {
@@ -333,7 +332,7 @@ describe(DiskStorage, () => {
         beforeEach(async () => {
             storage = new DiskStorage(options);
 
-            await storage.create(request, deepClone(metafile));
+            await storage.create(request, structuredClone(metafile));
         });
 
         it("should copy file to new location", async () => {
@@ -353,7 +352,7 @@ describe(DiskStorage, () => {
         beforeEach(async () => {
             storage = new DiskStorage(options);
 
-            await storage.create(request, deepClone(metafile));
+            await storage.create(request, structuredClone(metafile));
         });
 
         it("should move file to new location", async () => {

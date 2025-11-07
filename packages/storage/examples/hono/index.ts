@@ -73,15 +73,15 @@ app.get("/files/:id?/:metadata?", async (c: Context) => {
     }
 });
 
-// File listing route - uses multipart.fetch directly
+// File delete route - uses multipart.fetch directly
 app.delete("/files/:id", async (c: Context) => {
     const request = c.req.raw;
 
     try {
         return await multipart.fetch(request);
     } catch (error: any) {
-        console.error("List files error:", error);
-        return c.json({ error: error.message || "Failed to list files" }, 500);
+        console.error("Delete file(s) error:", error);
+        return c.json({ error: error.message || "Failed to delete file(s)" }, 500);
     }
 });
 

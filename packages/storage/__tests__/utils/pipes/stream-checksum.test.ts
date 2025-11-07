@@ -1,7 +1,8 @@
 import { createReadStream } from "node:fs";
 import { mkdir, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { PassThrough, pipeline } from "node:stream";
+import { PassThrough } from "node:stream";
+import { pipeline } from "node:stream/promises";
 
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
@@ -36,7 +37,7 @@ describe("utils", () => {
 
         describe(StreamChecksum, () => {
             it("should create StreamChecksum instance with correct properties and validate checksum mismatch", async () => {
-                expect.assertions(5);
+                expect.assertions(4);
 
                 await createTestFile(directory, file);
 
@@ -47,14 +48,10 @@ describe("utils", () => {
 
                 const stream = createReadStream(file);
 
-                const writeableStream = pipeline(stream, transformer, (error) => {
-                    expect(error?.message).toBe("Checksum mismatch");
-                });
+                await expect(pipeline(stream, transformer)).rejects.toThrow("Checksum mismatch");
 
-                expect(writeableStream).toBeInstanceOf(StreamChecksum);
-                expect(writeableStream).toHaveLength(0);
-                // @ts-expect-error
-                expect(writeableStream.digest).toBe("");
+                expect(transformer).toBeInstanceOf(StreamChecksum);
+                expect(transformer.calculatedDigest).toBeTruthy();
             });
         });
 
@@ -65,16 +62,15 @@ describe("utils", () => {
                 await createTestFile(directory, file);
 
                 const stream = createReadStream(file);
+                const transformer = streamChecksum("", "");
 
-                const writeableStream = pipeline(stream, streamChecksum("", ""), (error) => {
-                    expect(error).toBeUndefined();
-                });
+                await expect(pipeline(stream, transformer)).resolves.toBeUndefined();
 
-                expect(writeableStream).toBeInstanceOf(PassThrough);
+                expect(transformer).toBeInstanceOf(PassThrough);
             });
 
             it("should return a StreamChecksum instance with correct properties when checksum provided", async () => {
-                expect.assertions(5);
+                expect.assertions(3);
 
                 await createTestFile(directory, file);
 
@@ -85,12 +81,9 @@ describe("utils", () => {
                 expect(transformer.checksum).toBe("CY9rzUYh03PK3k6DJie09g==");
                 expect(transformer.algorithm).toBe("md5");
 
-                const stream = pipeline(createReadStream(file), transformer, (error) => {
-                    expect(error).toBeUndefined();
-                });
+                await expect(pipeline(createReadStream(file), transformer)).resolves.toBeUndefined();
 
-                expect(stream).toBeInstanceOf(StreamChecksum);
-                expect(stream).toHaveLength(0);
+                expect(transformer).toBeInstanceOf(StreamChecksum);
             });
         });
     });

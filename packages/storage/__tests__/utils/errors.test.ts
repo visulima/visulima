@@ -5,9 +5,13 @@ import { ErrorMap, ERRORS, isUploadError, throwErrorCode, UploadError } from "..
 describe("utils", () => {
     describe("errors", () => {
         it("should have matching ERROR constants and ErrorMap keys", () => {
-            expect.assertions(1);
+            expect.assertions(2);
 
-            expect(Object.keys(ERRORS)).toHaveLength(Object.keys(ErrorMap).length);
+            const errorKeys = Object.values(ERRORS);
+            const mapKeys = Object.keys(ErrorMap);
+
+            expect(errorKeys).toHaveLength(mapKeys.length);
+            expect(errorKeys.sort()).toEqual(mapKeys.sort());
         });
 
         it("should correctly identify UploadError instances", () => {

@@ -3,22 +3,11 @@ import { createHash } from "node:crypto";
 import { IncomingMessage } from "node:http";
 import { Socket } from "node:net";
 
-import { rimraf } from "rimraf";
-
-export function cleanup(directory: string): Promise<any> {
-    return new Promise((resolve) => {
-        rimraf(directory, resolve);
-    });
-}
-
 export const hash = (buf: BinaryLike, algorithm = "sha1", encoding: BinaryToTextEncoding = "base64"): string =>
+    // eslint-disable-next-line sonarjs/hashing
     createHash(algorithm).update(buf).digest(encoding);
 
-export function deepClone<T>(object: T): T {
-    return JSON.parse(JSON.stringify(object)) as T;
-}
-
-export async function waitForStorageReady(storage: { isReady: boolean } | { storage: { isReady: boolean } }, timeoutMs = 5000): Promise<void> {
+export const waitForStorageReady = async (storage: { isReady: boolean } | { storage: { isReady: boolean } }, timeoutMs = 5000): Promise<void> => {
     const startTime = Date.now();
     const storageObject = "isReady" in storage ? storage : storage.storage;
 
@@ -35,25 +24,24 @@ export async function waitForStorageReady(storage: { isReady: boolean } | { stor
 
         checkReady();
     });
-}
+};
 
-export function createRequest(options: { body: string; encoding?: BufferEncoding }): IncomingMessage {
+export const createRequest = (options: { body: string; encoding?: BufferEncoding }): IncomingMessage => {
     const { body, encoding = "utf8" } = options;
 
     const request = new IncomingMessage(new Socket());
 
     request.headers = {
         "content-length": String(Buffer.byteLength(body, encoding)),
-        "content-type": `text/${encoding}; charset=${encoding}`,
+        "content-type": `text/plain; charset=${encoding}`,
     };
 
-    const chunks = [...body];
+    const buffer = Buffer.from(body, encoding);
 
-    chunks.forEach((chunk) => {
-        process.nextTick(() => request.emit("data", chunk));
+    process.nextTick(() => {
+        request.emit("data", buffer);
+        request.emit("end");
     });
 
-    process.nextTick(() => request.emit("end"));
-
     return request;
-}
+};

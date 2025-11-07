@@ -11,7 +11,7 @@ services:
             POSTGRES_DB: "visulima"
             PGDATA: "/var/lib/postgresql/data"
         healthcheck:
-            test: ["CMD", "pg_isready", "-U", "ckan"]
+            test: ["CMD", "pg_isready", "-U", "visulima"]
         ports:
             - "5433:5432"
 

@@ -14,6 +14,14 @@ export class StreamChecksum extends Transform {
     private hash: Hash;
 
     /**
+     * Gets the calculated digest value after the stream has finished processing.
+     * @returns The digest value in the configured encoding, or empty string if not yet calculated
+     */
+    public get calculatedDigest(): string {
+        return this.digest;
+    }
+
+    /**
      * Creates a new StreamChecksum transform stream.
      * @param checksum Expected checksum value to validate against
      * @param algorithm Hash algorithm to use (e.g., 'md5', 'sha256')
