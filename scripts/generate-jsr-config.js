@@ -22,13 +22,13 @@ function isGlobPattern(path) {
 function convertGlobPattern(distPath) {
     // Convert dist path to src path
     let srcPath = distPath.replace(/^\.\/dist\//, "./src/");
-    
+
     // Convert file extensions: .js -> .ts, .d.ts -> .ts
     srcPath = srcPath.replace(/\.(js|mjs|cjs)$/, ".ts");
     srcPath = srcPath.replace(/\.d\.ts$/, ".ts");
     srcPath = srcPath.replace(/\.d\.mts$/, ".mts");
     srcPath = srcPath.replace(/\.d\.cts$/, ".cts");
-    
+
     return srcPath;
 }
 
@@ -43,29 +43,29 @@ function expandGlobExport(exportKey, globPath, packageDir) {
     if (!globMatch) {
         return {};
     }
-    
+
     const [, dirPath, filePattern] = globMatch;
     const fullDirPath = join(packageDir, dirPath);
-    
+
     if (!existsSync(fullDirPath) || !statSync(fullDirPath).isDirectory()) {
         return {};
     }
-    
+
     // Extract the base path from export key (e.g., "./language/*" -> "./language")
     const exportBaseMatch = exportKey.match(/^(.+)\/\*$/);
     const exportBase = exportBaseMatch ? exportBaseMatch[1] : exportKey.replace(/\*$/, "");
-    
+
     // Convert glob pattern to regex (simple case: *.ts -> /.*\.ts$/)
     // Escape dots first, then replace * with .*
     const patternRegex = new RegExp(
         "^" + filePattern.replace(/\./g, "\\.").replace(/\*/g, ".*") + "$"
     );
-    
+
     // Read directory and find matching files
     const files = readdirSync(fullDirPath, { withFileTypes: true })
         .filter((dirent) => dirent.isFile() && patternRegex.test(dirent.name))
         .map((dirent) => dirent.name);
-    
+
     // Create individual exports
     const expandedExports = {};
     for (const file of files) {
@@ -73,10 +73,10 @@ function expandGlobExport(exportKey, globPath, packageDir) {
         const fileBase = file.replace(/\.(ts|tsx|mts|cts)$/, "");
         const exportKeyPath = `${exportBase}/${fileBase}`;
         const sourcePath = `${dirPath}/${file}`;
-        
+
         expandedExports[exportKeyPath] = sourcePath;
     }
-    
+
     return expandedExports;
 }
 
@@ -88,21 +88,21 @@ function findSourceFile(distPath, packageDir) {
     if (isGlobPattern(distPath)) {
         return convertGlobPattern(distPath);
     }
-    
+
     // Convert dist path to potential src paths
     const basePath = distPath.replace(/^\.\/dist\//, "./src/");
-    
+
     // Try different extensions
     const extensions = [".ts", ".tsx", ".mts", ".cts"];
     const baseWithoutExt = basePath.replace(/\.(js|mjs|cjs|d\.ts|d\.mts|d\.cts)$/, "");
-    
+
     for (const ext of extensions) {
         const candidatePath = baseWithoutExt + ext;
         if (fileExists(join(packageDir, candidatePath))) {
             return candidatePath;
         }
     }
-    
+
     // If no source file found, return the dist path as fallback
     return distPath;
 }
@@ -144,10 +144,10 @@ function convertExports(packageExports, packageDir) {
                 // Object with conditions (import, require, types, etc.)
                 // For JSR, we want the import/default path, preferring TypeScript
                 let distPath = null;
-                
+
                 if (value.import) {
-                    distPath = typeof value.import === "string" 
-                        ? value.import 
+                    distPath = typeof value.import === "string"
+                        ? value.import
                         : value.import.default;
                 } else if (value.default) {
                     distPath = value.default;
@@ -156,11 +156,11 @@ function convertExports(packageExports, packageDir) {
                 } else {
                     // Use the first available path
                     const firstValue = Object.values(value)[0];
-                    distPath = typeof firstValue === "string" 
-                        ? firstValue 
+                    distPath = typeof firstValue === "string"
+                        ? firstValue
                         : firstValue?.default || firstValue?.types;
                 }
-                
+
                 if (distPath) {
                     const sourcePath = findSourceFile(distPath, packageDir);
                     if (isGlobKey && isGlobPattern(sourcePath)) {
@@ -226,6 +226,61 @@ function fileExists(filePath) {
 }
 
 /**
+ * Validates that a package name follows JSR naming conventions
+ */
+function validatePackageName(name) {
+    // JSR requires scoped packages: @scope/package-name
+    if (!name || typeof name !== "string") {
+        return false;
+    }
+    // Must start with @ and contain a /
+    return name.startsWith("@") && name.includes("/") && name.split("/").length === 2;
+}
+
+/**
+ * Validates that a version follows Semantic Versioning
+ */
+function validateVersion(version) {
+    if (!version || typeof version !== "string") {
+        return false;
+    }
+    // Basic SemVer pattern: major.minor.patch[-prerelease][+build]
+    const semverPattern = /^\d+\.\d+\.\d+(-[a-zA-Z0-9.-]+)?(\+[a-zA-Z0-9.-]+)?$/;
+    return semverPattern.test(version);
+}
+
+/**
+ * Validates that exports are properly formatted
+ */
+function validateExports(exports) {
+    if (!exports) {
+        return false;
+    }
+
+    // Exports can be a string or an object
+    if (typeof exports === "string") {
+        // String export must point to a .ts file
+        return exports.endsWith(".ts") || exports.endsWith(".tsx") || exports.endsWith(".mts") || exports.endsWith(".cts");
+    }
+
+    if (typeof exports === "object" && exports !== null) {
+        // Object exports: check that all values are strings pointing to .ts files
+        for (const value of Object.values(exports)) {
+            if (typeof value !== "string") {
+                return false;
+            }
+            // Must point to TypeScript source files
+            if (!value.endsWith(".ts") && !value.endsWith(".tsx") && !value.endsWith(".mts") && !value.endsWith(".cts")) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    return false;
+}
+
+/**
  * Generates jsr.json for a package
  */
 async function generateJsrConfig(packageDir) {
@@ -242,6 +297,18 @@ async function generateJsrConfig(packageDir) {
 
     if (!name || !version) {
         console.warn(`⚠️  Missing name or version in ${packageJsonPath}`);
+        return false;
+    }
+
+    // Validate package name follows JSR spec
+    if (!validatePackageName(name)) {
+        console.warn(`⚠️  Invalid package name "${name}" in ${packageJsonPath}. JSR requires scoped packages (@scope/package)`);
+        return false;
+    }
+
+    // Validate version follows SemVer
+    if (!validateVersion(version)) {
+        console.warn(`⚠️  Invalid version "${version}" in ${packageJsonPath}. Must follow Semantic Versioning (e.g., 1.0.0)`);
         return false;
     }
 
@@ -284,6 +351,12 @@ async function generateJsrConfig(packageDir) {
         jsrExports = verifiedExports;
     }
 
+    // Validate exports before creating config
+    if (!validateExports(jsrExports)) {
+        console.warn(`⚠️  Invalid exports format for ${name}. Exports must point to TypeScript source files (.ts, .tsx, .mts, .cts)`);
+        return false;
+    }
+
     // Create jsr.json
     const jsrConfig = {
         name,
@@ -292,7 +365,7 @@ async function generateJsrConfig(packageDir) {
     };
 
     writeFileSync(jsrJsonPath, JSON.stringify(jsrConfig, null, 2) + "\n", "utf-8");
-    
+
     // Format the generated file with prettier
     try {
         const prettierConfigPath = join(__dirname, "..", ".prettierrc.cjs");
@@ -307,7 +380,7 @@ async function generateJsrConfig(packageDir) {
         // If prettier fails, continue anyway - the file was still created
         console.warn(`⚠️  Failed to format jsr.json for ${name} with prettier: ${error.message}`);
     }
-    
+
     console.log(`✅ Created jsr.json for ${name}`);
     return true;
 }
