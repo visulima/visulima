@@ -1,0 +1,22 @@
+{
+    "name": "@visulima/error-handler",
+    "version": "1.0.11",
+    "exports": {
+        ".": "./src/index.ts",
+        "./handler/cli": "./src/handler/cli-handler.ts",
+        "./handler/http/node": "./src/handler/http/node-handler.ts",
+        "./handler/http/hono": "./src/handler/http/fetch-handler.ts",
+        "./handler/http/bun": "./src/handler/http/fetch-handler.ts",
+        "./handler/http/cloudflare": "./src/handler/http/fetch-handler.ts",
+        "./handler/http/deno": "./src/handler/http/fetch-handler.ts",
+        "./handler/http/edge": "./src/handler/http/fetch-handler.ts",
+        "./handler/fetch": "./src/handler/http/fetch-handler.ts",
+        "./error-handler/html": "./src/error-handler/html-error-handler.ts",
+        "./error-handler/problem": "./src/error-handler/problem-error-handler.ts",
+        "./error-handler/jsonapi": "./src/error-handler/jsonapi-error-handler.ts",
+        "./error-handler/text": "./src/error-handler/text-error-handler.ts",
+        "./error-handler/json": "./src/error-handler/json-error-handler.ts",
+        "./error-handler/jsonp": "./src/error-handler/jsonp-error-handler.ts",
+        "./error-handler/xml": "./src/error-handler/xml-error-handler.ts"
+    }
+}
