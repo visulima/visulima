@@ -162,7 +162,11 @@ describe("nested commands", () => {
 
         const loggerMock = {
             debug: vi.fn(),
+            error: vi.fn(),
+            info: vi.fn(),
+            log: vi.fn(),
             raw: vi.fn(),
+            warn: vi.fn(),
         };
 
         const cli = new Cli("MyCLI", { argv: ["help"], logger: loggerMock as unknown as Console });

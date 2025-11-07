@@ -344,7 +344,7 @@ export const getVersions = (): Record<string, string> => {
 
 /**
  * Terminates the process with the specified exit code.
- * @param code Exit code (default: 0)
+ * @param exitCode Exit code (default: 0)
  */
 export const exitProcess = (exitCode = 0): never => {
     // Check for Deno first using type guard
