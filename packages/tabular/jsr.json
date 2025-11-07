@@ -1,8 +1,8 @@
 {
-  "name": "@visulima/tabular",
-  "version": "3.1.1",
-  "exports": {
-    ".": "./src/index.ts",
-    "./style": "./src/style.ts"
-  }
+    "name": "@visulima/tabular",
+    "version": "3.1.1",
+    "exports": {
+        ".": "./src/index.ts",
+        "./style": "./src/style.ts"
+    }
 }

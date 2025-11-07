@@ -1,9 +1,9 @@
 {
-  "name": "@visulima/is-ansi-color-supported",
-  "version": "2.3.3",
-  "exports": {
-    ".": "./src/is-color-supported.server.ts",
-    "./browser": "./src/is-color-supported.browser.ts",
-    "./edge-light": "./src/is-color-supported.edge-light.ts"
-  }
+    "name": "@visulima/is-ansi-color-supported",
+    "version": "2.3.3",
+    "exports": {
+        ".": "./src/is-color-supported.server.ts",
+        "./browser": "./src/is-color-supported.browser.ts",
+        "./edge-light": "./src/is-color-supported.edge-light.ts"
+    }
 }

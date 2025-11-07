@@ -1,11 +1,11 @@
 {
-  "name": "@visulima/colorize",
-  "version": "1.4.27",
-  "exports": {
-    ".": "./src/index.server.mts",
-    "./browser": "./src/index.browser.ts",
-    "./template": "./src/template.ts",
-    "./gradient": "./src/gradient.ts",
-    "./utils": "./src/utils.ts"
-  }
+    "name": "@visulima/colorize",
+    "version": "1.4.27",
+    "exports": {
+        ".": "./src/index.server.mts",
+        "./browser": "./src/index.browser.ts",
+        "./template": "./src/template.ts",
+        "./gradient": "./src/gradient.ts",
+        "./utils": "./src/utils.ts"
+    }
 }

@@ -1,7 +1,7 @@
 {
-  "name": "@visulima/boxen",
-  "version": "2.0.8",
-  "exports": {
-    ".": "./src/index.ts"
-  }
+    "name": "@visulima/boxen",
+    "version": "2.0.8",
+    "exports": {
+        ".": "./src/index.ts"
+    }
 }

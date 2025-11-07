@@ -1,7 +1,7 @@
 {
-  "name": "@visulima/connect",
-  "version": "3.0.25",
-  "exports": {
-    ".": "./src/index.ts"
-  }
+    "name": "@visulima/connect",
+    "version": "3.0.25",
+    "exports": {
+        ".": "./src/index.ts"
+    }
 }

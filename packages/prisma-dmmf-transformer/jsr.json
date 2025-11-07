@@ -1,7 +1,7 @@
 {
-  "name": "@visulima/prisma-dmmf-transformer",
-  "version": "2.0.35",
-  "exports": {
-    ".": "./src/index.ts"
-  }
+    "name": "@visulima/prisma-dmmf-transformer",
+    "version": "2.0.35",
+    "exports": {
+        ".": "./src/index.ts"
+    }
 }

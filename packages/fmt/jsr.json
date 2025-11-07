@@ -1,7 +1,7 @@
 {
-  "name": "@visulima/fmt",
-  "version": "1.1.19",
-  "exports": {
-    ".": "./src/index.ts"
-  }
+    "name": "@visulima/fmt",
+    "version": "1.1.19",
+    "exports": {
+        ".": "./src/index.ts"
+    }
 }
