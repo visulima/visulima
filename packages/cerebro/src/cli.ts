@@ -255,6 +255,7 @@ export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
      * @param options.packageName
      * @param options.packageVersion
      */
+    // eslint-disable-next-line sonarjs/cognitive-complexity
     public constructor(cliName: string, options: CliOptions<T> = {}) {
         if (typeof cliName !== "string" || cliName.trim().length === 0) {
             throw new CerebroError("CLI name must be a non-empty string", "INVALID_INPUT", { cliName });
@@ -288,6 +289,23 @@ export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
         env.CEREBRO_OUTPUT_LEVEL = String(VERBOSITY_NORMAL);
 
         if (typeof this.#options.logger === "object") {
+            const requiredMethods = ["debug", "error", "info", "log", "warn"] as const;
+            const missingMethods: string[] = [];
+            const logger = this.#options.logger as Record<string, unknown>;
+
+            for (const method of requiredMethods) {
+                if (typeof logger[method] !== "function") {
+                    missingMethods.push(method);
+                }
+            }
+
+            if (missingMethods.length > 0) {
+                throw new CerebroError(`Logger object is missing required methods: ${missingMethods.join(", ")}`, "INVALID_INPUT", {
+                    logger: this.#options.logger,
+                    missingMethods,
+                });
+            }
+
             this.#logger = this.#options.logger;
         } else {
             this.#logger = {

@@ -1,7 +1,5 @@
-// @visulima/pail is an optional peer dependency
-
 // @ts-ignore - Optional peer dependency, types may not be available
-import type { Pail, Processor } from "@visulima/pail";
+import type { ConstructorOptions, Pail, Processor } from "@visulima/pail";
 // @ts-ignore - Optional peer dependency, types may not be available
 import CallerProcessor from "@visulima/pail/processor/caller";
 // @ts-ignore - Optional peer dependency, types may not be available
@@ -15,8 +13,10 @@ import { getEnv } from "../util/general/runtime-process";
 
 /**
  * Create a Pail logger.
+ * @param options Optional configuration options for the logger
+ * @returns A configured Pail logger instance
  */
-const createPailLogger = async (): Promise<Pail> => {
+const createPailLogger = async (options?: Partial<ConstructorOptions<string, string>>): Promise<Pail> => {
     const cerebroLevelToPailLevel: Record<Partial<VERBOSITY_LEVEL>, string> = {
         16: "informational",
         32: "informational",
@@ -33,10 +33,16 @@ const createPailLogger = async (): Promise<Pail> => {
         processors.push(new CallerProcessor());
     }
 
-    const logger = createPail({
-        logLevel: (outputLevel && cerebroLevelToPailLevel[outputLevel as unknown as VERBOSITY_LEVEL]) || "informational",
-        processors,
-    });
+    // Use environment-based logLevel unless explicitly provided in options
+    const envLogLevel = (outputLevel && cerebroLevelToPailLevel[outputLevel as unknown as VERBOSITY_LEVEL]) || "informational";
+
+    const loggerOptions = {
+        ...options,
+        logLevel: options?.logLevel ?? envLogLevel,
+        processors: options?.processors ? [...processors, ...options.processors] : processors,
+    };
+
+    const logger = createPail(loggerOptions as Parameters<typeof createPail>[0]);
 
     if (outputLevel === String(VERBOSITY_QUIET)) {
         logger.disable();

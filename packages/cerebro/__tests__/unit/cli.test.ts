@@ -53,7 +53,6 @@ describe("cli", () => {
 
         cli.setDefaultCommand("version");
 
-        // @ts-expect-error - Testing private method
         expect(cli.defaultCommand).toBe("version");
     });
 
@@ -614,6 +613,141 @@ describe("cli", () => {
             await cli.run({ shouldExitProcess: false });
 
             expect(execute).toHaveBeenCalledTimes(1);
+        });
+    });
+
+    describe("logger validation", () => {
+        const getError = (function_: () => unknown): Error | undefined => {
+            try {
+                function_();
+
+                return undefined;
+            } catch (error) {
+                return error as Error;
+            }
+        };
+
+        it("should accept a valid logger object with all required methods", () => {
+            expect.assertions(1);
+
+            const validLogger = {
+                debug: vi.fn(),
+                error: vi.fn(),
+                info: vi.fn(),
+                log: vi.fn(),
+                warn: vi.fn(),
+            } as unknown as Console;
+
+            expect(() => new Cli("MyCLI", { logger: validLogger })).not.toThrow();
+        });
+
+        it("should throw error when logger is missing debug method", () => {
+            expect.assertions(2);
+
+            const invalidLogger = {
+                error: vi.fn(),
+                info: vi.fn(),
+                log: vi.fn(),
+                warn: vi.fn(),
+            } as unknown as Console;
+
+            const createCli = () => new Cli("MyCLI", { logger: invalidLogger });
+            const error = getError(createCli);
+
+            expect(error?.message).toContain("Logger object is missing required methods: debug");
+            expect((error as { code?: string })?.code).toBe("INVALID_INPUT");
+        });
+
+        it("should throw error when logger is missing multiple methods", () => {
+            expect.assertions(2);
+
+            const invalidLogger = {
+                debug: vi.fn(),
+                error: vi.fn(),
+                // Missing info, log, warn
+            } as unknown as Console;
+
+            const createCli = () => new Cli("MyCLI", { logger: invalidLogger });
+            const error = getError(createCli);
+
+            expect(error?.message).toContain("Logger object is missing required methods: info, log, warn");
+            expect((error as { code?: string })?.code).toBe("INVALID_INPUT");
+        });
+
+        it("should throw error when logger method is not a function", () => {
+            expect.assertions(2);
+
+            const invalidLogger = {
+                debug: "not-a-function",
+                error: vi.fn(),
+                info: vi.fn(),
+                log: vi.fn(),
+                warn: vi.fn(),
+            } as unknown as Console;
+
+            const createCli = () => new Cli("MyCLI", { logger: invalidLogger });
+            const error = getError(createCli);
+
+            expect(error?.message).toContain("Logger object is missing required methods: debug");
+            expect((error as { code?: string })?.code).toBe("INVALID_INPUT");
+        });
+
+        it("should throw error when logger method is null", () => {
+            expect.assertions(2);
+
+            const invalidLogger = {
+                debug: null,
+                error: vi.fn(),
+                info: vi.fn(),
+                log: vi.fn(),
+                warn: vi.fn(),
+            } as unknown as Console;
+
+            const createCli = () => new Cli("MyCLI", { logger: invalidLogger });
+            const error = getError(createCli);
+
+            expect(error?.message).toContain("Logger object is missing required methods: debug");
+            expect((error as { code?: string })?.code).toBe("INVALID_INPUT");
+        });
+
+        it("should throw error when logger method is undefined", () => {
+            expect.assertions(2);
+
+            const invalidLogger = {
+                debug: undefined,
+                error: vi.fn(),
+                info: vi.fn(),
+                log: vi.fn(),
+                warn: vi.fn(),
+            } as unknown as Console;
+
+            const createCli = () => new Cli("MyCLI", { logger: invalidLogger });
+            const error = getError(createCli);
+
+            expect(error?.message).toContain("Logger object is missing required methods: debug");
+            expect((error as { code?: string })?.code).toBe("INVALID_INPUT");
+        });
+
+        it("should include missing methods in error context", () => {
+            expect.assertions(2);
+
+            const invalidLogger = {
+                debug: vi.fn(),
+                error: vi.fn(),
+                // Missing info, log, warn
+            } as unknown as Console;
+
+            const createCli = () => new Cli("MyCLI", { logger: invalidLogger });
+            const error = getError(createCli);
+
+            expect(error).toHaveProperty("context");
+            expect((error as { context?: { missingMethods?: string[] } })?.context?.missingMethods).toStrictEqual(["info", "log", "warn"]);
+        });
+
+        it("should work with console object as logger", () => {
+            expect.assertions(1);
+
+            expect(() => new Cli("MyCLI", { logger: console })).not.toThrow();
         });
     });
 });
