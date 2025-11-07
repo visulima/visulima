@@ -1,6 +1,6 @@
 {
     "name": "@visulima/deep-clone",
-    "version": "3.0.2",
+    "version": "3.0.3",
     "description": "Fastest deep clone implementation.",
     "keywords": [
         "anolilab",
