@@ -1,6 +1,6 @@
 {
     "name": "@visulima/tabular",
-    "version": "3.1.0",
+    "version": "3.1.1",
     "description": "Create beautiful ASCII tables and grids with customizable borders, padding, and alignment. Supports Unicode, colors, and ANSI escape codes.",
     "keywords": [
         "cli",
@@ -87,9 +87,9 @@
         "@secretlint/secretlint-rule-preset-recommend": "^11.2.5",
         "@total-typescript/ts-reset": "^0.6.1",
         "@types/node": "24.10.0",
-        "@visulima/colorize": "1.4.26",
+        "@visulima/colorize": "1.4.27",
         "@visulima/packem": "2.0.0-alpha.32",
-        "@visulima/string": "2.0.3",
+        "@visulima/string": "2.0.4",
         "@vitest/coverage-v8": "^4.0.7",
         "@vitest/ui": "^4.0.7",
         "ansi-regex": "^6.2.2",
