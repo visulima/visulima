@@ -336,20 +336,26 @@ async function generateJsrConfig(packageDir) {
                 return false;
             }
         }
-    } else {
-        // Verify all export paths exist (glob patterns should already be expanded)
-        const verifiedExports = {};
-        for (const [key, value] of Object.entries(jsrExports)) {
-            const fullPath = join(packageDir, value);
-            if (fileExists(fullPath)) {
-                verifiedExports[key] = value;
-            } else {
-                console.warn(`⚠️  Export path ${value} does not exist for ${name}`);
-                verifiedExports[key] = value; // Keep it anyway, might be created during build
-            }
-        }
-        jsrExports = verifiedExports;
     }
+    
+    // Normalize jsrExports to always be an object (JSR expects object format)
+    // If it's a string, convert it to { ".": string } format
+    if (typeof jsrExports === "string") {
+        jsrExports = { ".": jsrExports };
+    }
+    
+    // Verify all export paths exist (glob patterns should already be expanded)
+    const verifiedExports = {};
+    for (const [key, value] of Object.entries(jsrExports)) {
+        const fullPath = join(packageDir, value);
+        if (fileExists(fullPath)) {
+            verifiedExports[key] = value;
+        } else {
+            console.warn(`⚠️  Export path ${value} does not exist for ${name}`);
+            verifiedExports[key] = value; // Keep it anyway, might be created during build
+        }
+    }
+    jsrExports = verifiedExports;
 
     // Validate exports before creating config
     if (!validateExports(jsrExports)) {
