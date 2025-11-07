@@ -1,3 +1,15 @@
+## @visulima/find-cache-dir [2.0.4](https://github.com/visulima/visulima/compare/@visulima/find-cache-dir@2.0.3...@visulima/find-cache-dir@2.0.4) (2025-11-07)
+
+### Miscellaneous Chores
+
+* update npm and pnpm configurations for monorepo optimization ([#564](https://github.com/visulima/visulima/issues/564)) ([5512b42](https://github.com/visulima/visulima/commit/5512b42f672c216b6a3c9e39035199a4ebd9a4b8))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 4.0.4
+* **@visulima/path:** upgraded to 2.0.3
+
 ## @visulima/find-cache-dir [2.0.3](https://github.com/visulima/visulima/compare/@visulima/find-cache-dir@2.0.2...@visulima/find-cache-dir@2.0.3) (2025-11-05)
 
 ### Bug Fixes
