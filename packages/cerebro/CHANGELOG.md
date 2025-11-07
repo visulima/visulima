@@ -1,3 +1,27 @@
+## @visulima/cerebro [2.0.3](https://github.com/visulima/visulima/compare/@visulima/cerebro@2.0.2...@visulima/cerebro@2.0.3) (2025-11-07)
+
+### Bug Fixes
+
+* update TypeScript configurations and improve linting across multiple packages ([6f25ec7](https://github.com/visulima/visulima/commit/6f25ec7841da7246f8f9166efc5292a7089d37ee))
+
+### Miscellaneous Chores
+
+* update npm and pnpm configurations for monorepo optimization ([#564](https://github.com/visulima/visulima/issues/564)) ([5512b42](https://github.com/visulima/visulima/commit/5512b42f672c216b6a3c9e39035199a4ebd9a4b8))
+* update package.json files and pnpm-lock.yaml ([95d9f5b](https://github.com/visulima/visulima/commit/95d9f5b607105d05a006deadb4379e89f06dfe99))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.27
+* **@visulima/tabular:** upgraded to 3.1.1
+* **@visulima/boxen:** upgraded to 2.0.8
+* **@visulima/command-line-args:** upgraded to 1.0.2
+* **@visulima/error:** upgraded to 5.0.4
+* **@visulima/find-cache-dir:** upgraded to 2.0.4
+* **@visulima/pail:** upgraded to 3.2.0
+* **@visulima/path:** upgraded to 2.0.3
+* **@visulima/string:** upgraded to 2.0.4
+
 ## @visulima/cerebro [2.0.2](https://github.com/visulima/visulima/compare/@visulima/cerebro@2.0.1...@visulima/cerebro@2.0.2) (2025-11-05)
 
 ### Miscellaneous Chores
