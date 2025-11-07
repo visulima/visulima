@@ -1,0 +1,13 @@
+{
+  "name": "@visulima/package",
+  "version": "4.1.4",
+  "exports": {
+    ".": "./src/index.ts",
+    "./monorepo": "./src/monorepo.ts",
+    "./package": "./src/package.ts",
+    "./package-json": "./src/package-json.ts",
+    "./package-manager": "./src/package-manager.ts",
+    "./pnpm": "./src/pnpm.ts",
+    "./error": "./src/error.ts"
+  }
+}

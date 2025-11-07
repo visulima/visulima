@@ -1,0 +1,11 @@
+{
+  "name": "@visulima/api-platform",
+  "version": "3.0.56",
+  "exports": {
+    ".": "./src/index-server.ts",
+    "./next": "./src/framework/next/index-server.ts",
+    "./next/pages/swagger": "./src/framework/next/routes/pages/swagger/index.tsx",
+    "./next/pages/redoc": "./src/framework/next/routes/pages/redoc/index.tsx",
+    "./cli": "./src/framework/cli/index.ts"
+  }
+}

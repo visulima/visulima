@@ -1,0 +1,8 @@
+{
+  "name": "@visulima/humanizer",
+  "version": "2.0.3",
+  "exports": {
+    ".": "./src/index.ts",
+    "./language/*": "./dist/language/*.js"
+  }
+}

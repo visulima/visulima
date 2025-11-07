@@ -1,0 +1,7 @@
+{
+  "name": "@visulima/tsconfig",
+  "version": "2.1.0",
+  "exports": {
+    ".": "./src/index.ts"
+  }
+}

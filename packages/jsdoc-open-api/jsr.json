@@ -1,0 +1,9 @@
+{
+  "name": "@visulima/jsdoc-open-api",
+  "version": "2.0.92",
+  "exports": {
+    ".": "./src/index.ts",
+    "./cli": "./src/cli/index.ts",
+    "./cli/commander": "./src/cli/commander/index.ts"
+  }
+}

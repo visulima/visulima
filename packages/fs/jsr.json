@@ -1,0 +1,12 @@
+{
+  "name": "@visulima/fs",
+  "version": "4.0.4",
+  "exports": {
+    ".": "./src/index.ts",
+    "./utils": "./src/utils.ts",
+    "./error": "./src/error.ts",
+    "./yaml": "./src/yaml.ts",
+    "./size": "./src/size.ts",
+    "./eol": "./src/eol.ts"
+  }
+}

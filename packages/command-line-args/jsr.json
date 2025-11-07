@@ -1,0 +1,7 @@
+{
+  "name": "@visulima/command-line-args",
+  "version": "1.0.2",
+  "exports": {
+    ".": "./src/index.ts"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "name": "@visulima/cerebro",
+  "version": "2.0.3",
+  "exports": {
+    ".": "./src/index.ts",
+    "./command/help": "./src/commands/help-command.ts",
+    "./command/version": "./src/commands/version-command.ts",
+    "./command/completion": "./src/commands/completion-command.ts",
+    "./command/readme-generator": "./src/commands/readme-command.ts",
+    "./plugins/error-handler": "./src/plugins/error-handler-plugin.ts",
+    "./plugins/runtime-version-check": "./src/plugins/runtime-version-check-plugin.ts",
+    "./plugins/update-notifier": "./src/plugins/update-notifier/update-notifier-plugin.ts",
+    "./logger/pail": "./src/logger/create-pail-logger.ts"
+  }
+}
