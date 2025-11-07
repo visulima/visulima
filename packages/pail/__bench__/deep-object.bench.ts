@@ -11,6 +11,8 @@ import bunyan from "bunyan";
 import { createConsola as createBrowserConsola, createConsola as createServerConsola } from "consola";
 import { diary } from "diary";
 import pino from "pino";
+import { ROARR, Roarr as log } from "roarr";
+import { logger as rslogLogger } from "rslog";
 import type { ILogObj } from "tslog";
 import { Logger } from "tslog";
 // eslint-disable-next-line import/no-extraneous-dependencies
@@ -89,6 +91,24 @@ const diarySink = (event) => {
     diaryStream.write(JSON.stringify(event));
 };
 const diaryLogger = diary("standard", diarySink);
+
+// Configure roarr to write to /dev/null
+ROARR.write = () => {
+    // Logs are discarded for benchmarking
+};
+
+// Configure rslog to write to /dev/null
+rslogLogger.override({
+    log: () => {},
+    info: () => {},
+    start: () => {},
+    ready: () => {},
+    success: () => {},
+    warn: () => {},
+    error: () => {},
+    debug: () => {},
+    greet: () => {},
+});
 
 describe("deep object", async () => {
     bench(
@@ -215,6 +235,26 @@ describe("deep object", async () => {
         "diary",
         async () => {
             diaryLogger.info("info message");
+        },
+        {
+            iterations: 10_000,
+        },
+    );
+
+    bench(
+        "roarr",
+        async () => {
+            log.info(deep, "message");
+        },
+        {
+            iterations: 10_000,
+        },
+    );
+
+    bench(
+        "rslog",
+        async () => {
+            rslogLogger.info(deep);
         },
         {
             iterations: 10_000,
