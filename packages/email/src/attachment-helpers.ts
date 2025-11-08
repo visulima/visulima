@@ -1,38 +1,15 @@
 import type { Buffer } from "node:buffer";
 import { readFile } from "node:fs/promises";
-import { extname } from "node:path";
+import { lookup } from "mime";
 
 /**
- * Detect MIME type from filename using Node.js built-in lookup
+ * Detect MIME type from filename using mime package
  * Falls back to application/octet-stream if not found
  * @param filename - The filename or path
  * @returns MIME type or application/octet-stream as fallback
  */
 export const detectMimeType = (filename: string): string => {
-    try {
-        // Use Node.js built-in MIME type detection
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
-        const { lookup } = require("node:mime");
-        return lookup(filename) || "application/octet-stream";
-    } catch {
-        // Fallback if node:mime is not available
-        const ext = extname(filename).toLowerCase();
-        // Basic fallback for common types
-        const basicTypes: Record<string, string> = {
-            ".pdf": "application/pdf",
-            ".txt": "text/plain",
-            ".html": "text/html",
-            ".htm": "text/html",
-            ".json": "application/json",
-            ".xml": "application/xml",
-            ".png": "image/png",
-            ".jpg": "image/jpeg",
-            ".jpeg": "image/jpeg",
-            ".gif": "image/gif",
-            ".svg": "image/svg+xml",
-        };
-        return basicTypes[ext] || "application/octet-stream";
-    }
+    return lookup(filename) || "application/octet-stream";
 };
 
 /**
