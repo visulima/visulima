@@ -48,6 +48,15 @@ export type { ZeptomailEmailOptions } from "./providers/zeptomail/types.js";
 // Export Mail class and related
 export { createMail, Mail, MailMessage, type Mailable } from "./mail.js";
 
+// Export attachment helpers
+export {
+    detectMimeType,
+    generateContentId,
+    readFileAsBuffer,
+    type AttachmentDataOptions,
+    type AttachmentOptions,
+} from "./attachment-helpers.js";
+
 // Export utilities
 export {
     buildMimeMessage,

@@ -1,5 +1,12 @@
 import type { EmailAddress, EmailOptions, EmailResult, Result } from "./types.js";
 import type { Provider } from "./providers/provider.js";
+import {
+    type AttachmentDataOptions,
+    type AttachmentOptions,
+    detectMimeType,
+    generateContentId,
+    readFileAsBuffer,
+} from "./attachment-helpers.js";
 
 /**
  * Mailable interface - represents an email that can be sent
@@ -129,7 +136,60 @@ export class MailMessage {
     }
 
     /**
-     * Attach a file
+     * Attach a file from path (reads file from filesystem)
+     * Similar to Laravel's attach() method
+     *
+     * @example
+     * ```ts
+     * message.attachFromPath('/path/to/file.pdf')
+     * message.attachFromPath('/path/to/file.pdf', { filename: 'custom-name.pdf' })
+     * ```
+     */
+    async attachFromPath(filePath: string, options?: AttachmentOptions): Promise<this> {
+        const content = await readFileAsBuffer(filePath);
+        const filename = options?.filename || filePath.split(/[/\\]/).pop() || "attachment";
+        const contentType = options?.contentType || detectMimeType(filename);
+
+        this.attachments.push({
+            filename,
+            content,
+            contentType,
+            disposition: options?.disposition || "attachment",
+            cid: options?.cid,
+        });
+
+        return this;
+    }
+
+    /**
+     * Attach raw data (string or Buffer)
+     * Similar to Laravel's attachData() method
+     *
+     * @example
+     * ```ts
+     * message.attachData(Buffer.from('content'), 'file.txt')
+     * message.attachData('content', 'file.txt', { contentType: 'text/plain' })
+     * ```
+     */
+    attachData(content: string | Buffer, options: AttachmentDataOptions): this {
+        const contentType = options.contentType || detectMimeType(options.filename);
+
+        this.attachments.push({
+            filename: options.filename,
+            content,
+            contentType,
+            disposition: options.disposition || "attachment",
+            cid: options.cid,
+        });
+
+        return this;
+    }
+
+    /**
+     * Attach a file (legacy method - kept for backward compatibility)
+     * Prefer using attachFromPath() or attachData() for better type safety
+     *
+     * @deprecated Use attachFromPath() or attachData() instead
      */
     attach(filename: string, content: string | Buffer, options?: { contentType?: string; disposition?: string; cid?: string }): this {
         this.attachments.push({
@@ -140,6 +200,65 @@ export class MailMessage {
             cid: options?.cid,
         });
         return this;
+    }
+
+    /**
+     * Embed an inline attachment from file path (for images in HTML)
+     * Similar to Laravel's embed() method
+     * Returns the Content-ID that can be used in HTML: <img src="cid:{cid}">
+     *
+     * @example
+     * ```ts
+     * const cid = await message.embedFromPath('/path/to/logo.png')
+     * message.html(`<img src="cid:${cid}">`)
+     * ```
+     */
+    async embedFromPath(filePath: string, options?: Omit<AttachmentOptions, "disposition" | "cid">): Promise<string> {
+        const content = await readFileAsBuffer(filePath);
+        const filename = options?.filename || filePath.split(/[/\\]/).pop() || "inline";
+        const contentType = options?.contentType || detectMimeType(filename);
+        const cid = options?.cid || generateContentId(filename);
+
+        this.attachments.push({
+            filename,
+            content,
+            contentType,
+            disposition: "inline",
+            cid,
+        });
+
+        return cid;
+    }
+
+    /**
+     * Embed raw data as inline attachment (for images in HTML)
+     * Similar to Laravel's embedData() method
+     * Returns the Content-ID that can be used in HTML: <img src="cid:{cid}">
+     *
+     * @example
+     * ```ts
+     * const imageBuffer = Buffer.from('...')
+     * const cid = message.embedData(imageBuffer, 'logo.png', { contentType: 'image/png' })
+     * message.html(`<img src="cid:${cid}">`)
+     * ```
+     */
+    embedData(
+        content: string | Buffer,
+        filename: string,
+        options?: Omit<AttachmentDataOptions, "filename" | "disposition" | "cid">,
+    ): string {
+        const contentType = options?.contentType || detectMimeType(filename);
+        const cid = options?.cid || generateContentId(filename);
+
+        this.attachments.push({
+            filename,
+            content,
+            contentType,
+            disposition: "inline",
+            cid,
+        });
+
+        return cid;
     }
 
     /**
