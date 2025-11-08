@@ -11,6 +11,7 @@ export default defineConfig({
         requireCJS: {
             builtinNodeModules: true,
         },
+        external: ["nodemailer"],
     },
     transformer,
 }) as BuildConfig;

@@ -13,6 +13,7 @@ export type {
     HttpEmailConfig,
     MailCrabConfig,
     MaybePromise,
+    NodemailerConfig,
     ResendConfig,
     Result,
     RoundRobinConfig,
@@ -27,6 +28,7 @@ export {
     failoverProvider,
     httpProvider,
     mailCrabProvider,
+    nodemailerProvider,
     resendProvider,
     roundRobinProvider,
     smtpProvider,
@@ -40,6 +42,7 @@ export type { AwsSesEmailOptions } from "./providers/aws-ses/types.js";
 export type { FailoverEmailOptions } from "./providers/failover/types.js";
 export type { HttpEmailOptions } from "./providers/http/types.js";
 export type { MailCrabEmailOptions } from "./providers/mailcrab/types.js";
+export type { NodemailerEmailOptions } from "./providers/nodemailer/types.js";
 export type { ResendEmailOptions, ResendEmailTag } from "./providers/resend/types.js";
 export type { RoundRobinEmailOptions } from "./providers/roundrobin/types.js";
 export type { SmtpEmailOptions } from "./providers/smtp/types.js";

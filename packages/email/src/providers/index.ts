@@ -25,3 +25,6 @@ export type { RoundRobinEmailOptions } from "./roundrobin/index.js";
 
 export { mailCrabProvider } from "./mailcrab/index.js";
 export type { MailCrabEmailOptions } from "./mailcrab/index.js";
+
+export { nodemailerProvider } from "./nodemailer/index.js";
+export type { NodemailerEmailOptions } from "./nodemailer/index.js";
