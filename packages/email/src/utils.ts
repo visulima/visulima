@@ -1,7 +1,6 @@
 import type { Attachment, EmailAddress, EmailOptions, ErrorOptions, Result } from "./types.js";
 
-// Runtime detection - use global fetch if available (Node.js 18+, Deno, Bun, Cloudflare Workers)
-const hasFetch = typeof globalThis.fetch !== "undefined";
+// Runtime detection - Buffer availability (Node.js, Bun have it; Deno, Workers don't)
 const hasBuffer = typeof globalThis.Buffer !== "undefined";
 const isNode = typeof process !== "undefined" && process.versions?.node;
 
@@ -158,8 +157,7 @@ export interface RequestOptions {
 }
 
 /**
- * Makes an HTTP request using Fetch API (compatible with Node.js, Deno, Bun, Cloudflare Workers)
- * Falls back to node:http/https for older Node.js versions without fetch
+ * Makes an HTTP request using Fetch API (compatible with Node.js 20.19+, Deno, Bun, Cloudflare Workers)
  */
 export const makeRequest = async (
     url: string | URL,
@@ -168,225 +166,137 @@ export const makeRequest = async (
 ): Promise<Result<unknown>> => {
     const urlObj = typeof url === "string" ? new URL(url) : url;
 
-    // Use Fetch API if available (Node.js 18+, Deno, Bun, Cloudflare Workers)
-    if (hasFetch) {
-        try {
-            // Convert headers to Headers object
-            const headers = new Headers();
-            if (options.headers) {
-                Object.entries(options.headers).forEach(([key, value]) => {
-                    headers.set(key, value);
-                });
-            }
+    try {
+        // Convert headers to Headers object
+        const headers = new Headers();
+        if (options.headers) {
+            Object.entries(options.headers).forEach(([key, value]) => {
+                headers.set(key, value);
+            });
+        }
 
-            // Prepare fetch options
-            const fetchOptions: RequestInit = {
-                method: options.method || (data ? "POST" : "GET"),
-                headers,
-            };
+        // Prepare fetch options
+        const fetchOptions: RequestInit = {
+            method: options.method || (data ? "POST" : "GET"),
+            headers,
+        };
 
-            // Add body if data is provided
-            if (data) {
-                if (typeof data === "string") {
+        // Add body if data is provided
+        if (data) {
+            if (typeof data === "string") {
+                fetchOptions.body = data;
+            } else {
+                // Convert Buffer/Uint8Array to ArrayBuffer or Uint8Array
+                if (data instanceof Uint8Array) {
+                    fetchOptions.body = data;
+                } else if (hasBuffer && data instanceof Buffer) {
+                    // In Node.js/Bun, Buffer is Uint8Array-compatible
                     fetchOptions.body = data;
                 } else {
-                    // Convert Buffer/Uint8Array to ArrayBuffer or Uint8Array
-                    if (data instanceof Uint8Array) {
-                        fetchOptions.body = data;
-                    } else if (hasBuffer && data instanceof Buffer) {
-                        // In Node.js/Bun, Buffer is Uint8Array-compatible
-                        fetchOptions.body = data;
-                    } else {
-                        // Fallback: convert to Uint8Array
-                        const uint8Array = data instanceof Uint8Array
-                            ? data
-                            : new Uint8Array(data as ArrayLike<number>);
-                        fetchOptions.body = uint8Array;
-                    }
+                    // Fallback: convert to Uint8Array
+                    const uint8Array = data instanceof Uint8Array
+                        ? data
+                        : new Uint8Array(data as ArrayLike<number>);
+                    fetchOptions.body = uint8Array;
                 }
             }
+        }
 
-            // Handle timeout using AbortController
-            let controller: AbortController | undefined;
-            let timeoutId: ReturnType<typeof setTimeout> | undefined;
+        // Handle timeout using AbortController
+        let controller: AbortController | undefined;
+        let timeoutId: ReturnType<typeof setTimeout> | undefined;
 
-            if (options.timeout) {
-                controller = new AbortController();
-                timeoutId = setTimeout(() => {
-                    controller?.abort();
-                }, options.timeout);
-                fetchOptions.signal = controller.signal;
+        if (options.timeout) {
+            controller = new AbortController();
+            timeoutId = setTimeout(() => {
+                controller?.abort();
+            }, options.timeout);
+            fetchOptions.signal = controller.signal;
+        }
+
+        try {
+            const response = await fetch(urlObj.toString(), fetchOptions);
+
+            // Clear timeout if request completed
+            if (timeoutId) {
+                clearTimeout(timeoutId);
             }
 
-            try {
-                const response = await fetch(urlObj.toString(), fetchOptions);
+            // Read response body
+            let bodyText: string;
+            const contentType = response.headers.get("content-type") || "";
 
-                // Clear timeout if request completed
-                if (timeoutId) {
-                    clearTimeout(timeoutId);
-                }
-
-                // Read response body
-                let bodyText: string;
-                const contentType = response.headers.get("content-type") || "";
-
-                if (contentType.includes("application/json")) {
-                    try {
-                        const json = await response.json();
-                        bodyText = JSON.stringify(json);
-                    } catch {
-                        // If JSON parsing fails, read as text
-                        bodyText = await response.text();
-                    }
-                } else {
+            if (contentType.includes("application/json")) {
+                try {
+                    const json = await response.json();
+                    bodyText = JSON.stringify(json);
+                } catch {
+                    // If JSON parsing fails, read as text
                     bodyText = await response.text();
                 }
-
-                // Parse body if it's JSON
-                let parsedBody: unknown = bodyText;
-                if (contentType.includes("application/json")) {
-                    try {
-                        parsedBody = JSON.parse(bodyText);
-                    } catch {
-                        // Keep as string if parsing fails
-                        parsedBody = bodyText;
-                    }
-                }
-
-                const isSuccess = response.status >= 200 && response.status < 300;
-
-                // Convert Headers to plain object
-                const headersObj: Record<string, string> = {};
-                response.headers.forEach((value, key) => {
-                    headersObj[key] = value;
-                });
-
-                return {
-                    success: isSuccess,
-                    data: {
-                        statusCode: response.status,
-                        headers: headersObj,
-                        body: parsedBody,
-                    },
-                    error: isSuccess
-                        ? undefined
-                        : createError(
-                              "http",
-                              `Request failed with status ${response.status}`,
-                              { code: response.status.toString() },
-                          ),
-                };
-            } catch (error) {
-                // Clear timeout on error
-                if (timeoutId) {
-                    clearTimeout(timeoutId);
-                }
-
-                if (error instanceof Error && error.name === "AbortError") {
-                    return {
-                        success: false,
-                        error: createError("http", `Request timed out after ${options.timeout}ms`),
-                    };
-                }
-
-                throw error;
+            } else {
+                bodyText = await response.text();
             }
-        } catch (error) {
-            return {
-                success: false,
-                error: createError(
-                    "http",
-                    `Request failed: ${error instanceof Error ? error.message : String(error)}`,
-                    { cause: error instanceof Error ? error : new Error(String(error)) },
-                ),
-            };
-        }
-    }
 
-    // Fallback to node:http/https for older Node.js versions without fetch
-    if (!hasFetch && isNode) {
-        try {
-            // Lazy load node:http/https only when needed
-            // eslint-disable-next-line @typescript-eslint/no-require-imports
-            const httpModule = require("node:http");
-            // eslint-disable-next-line @typescript-eslint/no-require-imports
-            const httpsModule = require("node:https");
-
-            return new Promise((resolve) => {
-                const protocol = urlObj.protocol === "https:" ? httpsModule : httpModule;
-
-                const req = protocol.request(urlObj, options as never, (res) => {
-                    const chunks: Buffer[] = [];
-
-                    res.on("data", (chunk) => chunks.push(chunk));
-
-                    res.on("end", () => {
-                        const body = Buffer.concat(chunks).toString();
-                        let parsedBody: unknown = body;
-
-                        // Try to parse as JSON if the content-type is json
-                        if (res.headers["content-type"]?.includes("application/json")) {
-                            try {
-                                parsedBody = JSON.parse(body);
-                            } catch {
-                                // If it fails, keep the raw body
-                            }
-                        }
-
-                        const isSuccess =
-                            res.statusCode !== undefined && res.statusCode >= 200 && res.statusCode < 300;
-
-                        resolve({
-                            success: isSuccess,
-                            data: {
-                                statusCode: res.statusCode,
-                                headers: res.headers as Record<string, string>,
-                                body: parsedBody,
-                            },
-                            error: isSuccess
-                                ? undefined
-                                : createError(
-                                      "http",
-                                      `Request failed with status ${res.statusCode}`,
-                                      { code: res.statusCode?.toString() },
-                                  ),
-                        });
-                    });
-                });
-
-                req.on("error", (error) => {
-                    resolve({
-                        success: false,
-                        error: createError("http", `Request failed: ${error.message}`, { cause: error }),
-                    });
-                });
-
-                if (options.timeout) {
-                    req.setTimeout(options.timeout, () => {
-                        req.destroy();
-                        resolve({
-                            success: false,
-                            error: createError("http", `Request timed out after ${options.timeout}ms`),
-                        });
-                    });
+            // Parse body if it's JSON
+            let parsedBody: unknown = bodyText;
+            if (contentType.includes("application/json")) {
+                try {
+                    parsedBody = JSON.parse(bodyText);
+                } catch {
+                    // Keep as string if parsing fails
+                    parsedBody = bodyText;
                 }
+            }
 
-                if (data) {
-                    req.write(data);
-                }
+            const isSuccess = response.status >= 200 && response.status < 300;
 
-                req.end();
+            // Convert Headers to plain object
+            const headersObj: Record<string, string> = {};
+            response.headers.forEach((value, key) => {
+                headersObj[key] = value;
             });
-        } catch {
-            // If node:http/https is not available, fall through to error
-        }
-    }
 
-    // No fetch and no node:http - this shouldn't happen in practice
-    return {
-        success: false,
-        error: createError("http", "No HTTP client available (fetch or node:http/https required)"),
-    };
+            return {
+                success: isSuccess,
+                data: {
+                    statusCode: response.status,
+                    headers: headersObj,
+                    body: parsedBody,
+                },
+                error: isSuccess
+                    ? undefined
+                    : createError(
+                          "http",
+                          `Request failed with status ${response.status}`,
+                          { code: response.status.toString() },
+                      ),
+            };
+        } catch (error) {
+            // Clear timeout on error
+            if (timeoutId) {
+                clearTimeout(timeoutId);
+            }
+
+            if (error instanceof Error && error.name === "AbortError") {
+                return {
+                    success: false,
+                    error: createError("http", `Request timed out after ${options.timeout}ms`),
+                };
+            }
+
+            throw error;
+        }
+    } catch (error) {
+        return {
+            success: false,
+            error: createError(
+                "http",
+                `Request failed: ${error instanceof Error ? error.message : String(error)}`,
+                { cause: error instanceof Error ? error : new Error(String(error)) },
+            ),
+        };
+    }
 };
 
 /**
