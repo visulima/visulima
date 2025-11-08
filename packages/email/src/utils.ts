@@ -222,31 +222,20 @@ export const makeRequest = async (
                 clearTimeout(timeoutId);
             }
 
-            // Read response body
-            let bodyText: string;
+            // Read and parse response body
             const contentType = response.headers.get("content-type") || "";
+            const isJson = contentType.includes("application/json");
 
-            if (contentType.includes("application/json")) {
+            let parsedBody: unknown;
+            if (isJson) {
                 try {
-                    const json = await response.json();
-                    bodyText = JSON.stringify(json);
+                    parsedBody = await response.json();
                 } catch {
                     // If JSON parsing fails, read as text
-                    bodyText = await response.text();
+                    parsedBody = await response.text();
                 }
             } else {
-                bodyText = await response.text();
-            }
-
-            // Parse body if it's JSON
-            let parsedBody: unknown = bodyText;
-            if (contentType.includes("application/json")) {
-                try {
-                    parsedBody = JSON.parse(bodyText);
-                } catch {
-                    // Keep as string if parsing fails
-                    parsedBody = bodyText;
-                }
+                parsedBody = await response.text();
             }
 
             const isSuccess = response.status >= 200 && response.status < 300;
@@ -326,6 +315,35 @@ export const retry = async <T>(
         await new Promise((resolve) => setTimeout(resolve, delay));
         return retry(fn, retries - 1, delay * 2);
     }
+};
+
+/**
+ * Convert content to base64 string
+ * Works across Node.js, Deno, Bun, and Workers
+ */
+const toBase64 = (content: string | Buffer | Uint8Array): string => {
+    if (typeof content === "string") {
+        if (hasBuffer) {
+            return Buffer.from(content, "utf8").toString("base64");
+        }
+        // Use TextEncoder/TextDecoder for environments without Buffer
+        const encoder = new TextEncoder();
+        const bytes = encoder.encode(content);
+        return btoa(String.fromCharCode(...bytes));
+    }
+
+    if (hasBuffer && content instanceof Buffer) {
+        return content.toString("base64");
+    }
+
+    // Uint8Array or similar
+    const uint8Array = content instanceof Uint8Array
+        ? content
+        : new Uint8Array(content as ArrayLike<number>);
+    if (hasBuffer) {
+        return Buffer.from(uint8Array).toString("base64");
+    }
+    return btoa(String.fromCharCode(...uint8Array));
 };
 
 /**
@@ -428,32 +446,7 @@ export const buildMimeMessage = <T extends EmailOptions>(options: T): string => 
             }
             message.push("Content-Transfer-Encoding: base64");
             message.push("");
-
-            // Handle content conversion for different runtimes
-            let base64Content: string;
-            if (typeof attachment.content === "string") {
-                if (hasBuffer) {
-                    base64Content = Buffer.from(attachment.content, "utf8").toString("base64");
-                } else {
-                    // Use TextEncoder/TextDecoder for environments without Buffer
-                    const encoder = new TextEncoder();
-                    const bytes = encoder.encode(attachment.content);
-                    base64Content = btoa(String.fromCharCode(...bytes));
-                }
-            } else if (hasBuffer && attachment.content instanceof Buffer) {
-                base64Content = attachment.content.toString("base64");
-            } else {
-                // Uint8Array or similar
-                const uint8Array = attachment.content instanceof Uint8Array
-                    ? attachment.content
-                    : new Uint8Array(attachment.content as ArrayLike<number>);
-                if (hasBuffer) {
-                    base64Content = Buffer.from(uint8Array).toString("base64");
-                } else {
-                    base64Content = btoa(String.fromCharCode(...uint8Array));
-                }
-            }
-            message.push(base64Content);
+            message.push(toBase64(attachment.content));
             message.push("");
         });
     }
