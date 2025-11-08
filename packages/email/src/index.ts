@@ -14,6 +14,7 @@ export type {
     MaybePromise,
     ResendConfig,
     Result,
+    RoundRobinConfig,
     SmtpConfig,
     ZeptomailConfig,
 } from "./types.js";
@@ -25,6 +26,7 @@ export {
     failoverProvider,
     httpProvider,
     resendProvider,
+    roundRobinProvider,
     smtpProvider,
     zeptomailProvider,
     type Provider,
@@ -36,6 +38,7 @@ export type { AwsSesEmailOptions } from "./providers/aws-ses/types.js";
 export type { FailoverEmailOptions } from "./providers/failover/types.js";
 export type { HttpEmailOptions } from "./providers/http/types.js";
 export type { ResendEmailOptions, ResendEmailTag } from "./providers/resend/types.js";
+export type { RoundRobinEmailOptions } from "./providers/roundrobin/types.js";
 export type { SmtpEmailOptions } from "./providers/smtp/types.js";
 export type { ZeptomailEmailOptions } from "./providers/zeptomail/types.js";
 

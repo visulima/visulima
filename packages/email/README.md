@@ -200,12 +200,73 @@ const failover = failoverProvider({
 });
 ```
 
+### Round Robin Provider
+
+The round robin provider distributes your email sending workload across multiple providers. Each email is sent using the next available provider in rotation, providing load balancing across your mailers.
+
+```typescript
+import { createMail, roundRobinProvider, resendProvider, smtpProvider } from "@visulima/email";
+
+// Create individual providers
+const resend = resendProvider({ apiKey: "re_xxx" });
+const smtp = smtpProvider({
+  host: "smtp.example.com",
+  port: 587,
+  user: "user@example.com",
+  password: "password",
+});
+
+// Create round robin provider with multiple mailers
+const roundRobin = roundRobinProvider({
+  mailers: [
+    resend,      // First provider
+    smtp,        // Second provider
+  ],
+  retryAfter: 60, // Wait 60ms before trying next provider if current is unavailable (default: 60)
+});
+
+// Use round robin provider
+const mail = createMail(roundRobin);
+
+// Each email will be distributed across providers in rotation
+await mail.message().to("user1@example.com").from("sender@example.com").subject("Email 1").html("<h1>Email 1</h1>").send();
+// Uses resend (or random start)
+
+await mail.message().to("user2@example.com").from("sender@example.com").subject("Email 2").html("<h1>Email 2</h1>").send();
+// Uses smtp (next in rotation)
+
+await mail.message().to("user3@example.com").from("sender@example.com").subject("Email 3").html("<h1>Email 3</h1>").send();
+// Uses resend (back to first)
+```
+
+You can also use provider factories directly:
+
+```typescript
+import { roundRobinProvider, resendProvider, smtpProvider } from "@visulima/email";
+
+const roundRobin = roundRobinProvider({
+  mailers: [
+    resendProvider({ apiKey: "re_xxx" }),  // Provider factory
+    smtpProvider({                          // Provider factory
+      host: "smtp.example.com",
+      port: 587,
+      user: "user@example.com",
+      password: "password",
+    }),
+  ],
+  retryAfter: 100, // Wait 100ms between attempts
+});
+```
+
+**Note:** The round robin provider starts at a random provider and then rotates through providers for each subsequent email. If a provider is unavailable, it will automatically try the next provider in the rotation.
+
 ## Supported Providers
 
 - **AWS SES** - Amazon Simple Email Service
 - **Failover** - Automatic failover between multiple providers
 - **HTTP** - Generic HTTP API provider
 - **Resend** - Resend email service
+- **Round Robin** - Load balancing across multiple providers
 - **SMTP** - Standard SMTP protocol
 - **Zeptomail** - Zeptomail email service
 
