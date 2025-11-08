@@ -235,6 +235,13 @@ export const zeptomailProvider: ProviderFactory<ZeptomailConfig, unknown, Zeptom
                     };
                 }
             },
+
+            /**
+             * Validate credentials
+             */
+            async validateCredentials(): Promise<boolean> {
+                return this.isAvailable();
+            },
         };
     },
 );

@@ -212,15 +212,10 @@ export const resendProvider: ProviderFactory<ResendConfig, unknown, ResendEmailO
                             : emailOpts.from.email,
                         to: formatRecipients(emailOpts.to),
                         subject: emailOpts.subject,
+                        text: emailOpts.text,
+                        html: emailOpts.html,
+                        headers: emailOpts.headers || {},
                     };
-
-                    if (emailOpts.html) {
-                        payload.html = emailOpts.html;
-                    }
-
-                    if (emailOpts.text) {
-                        payload.text = emailOpts.text;
-                    }
 
                     if (emailOpts.cc) {
                         payload.cc = formatRecipients(emailOpts.cc);
@@ -234,10 +229,6 @@ export const resendProvider: ProviderFactory<ResendConfig, unknown, ResendEmailO
                         payload.reply_to = emailOpts.replyTo.name
                             ? `${emailOpts.replyTo.name} <${emailOpts.replyTo.email}>`
                             : emailOpts.replyTo.email;
-                    }
-
-                    if (emailOpts.headers) {
-                        payload.headers = emailOpts.headers;
                     }
 
                     if (emailOpts.attachments) {
@@ -311,6 +302,82 @@ export const resendProvider: ProviderFactory<ResendConfig, unknown, ResendEmailO
                     return {
                         success: false,
                         error: error instanceof Error ? error : createError(PROVIDER_NAME, String(error)),
+                    };
+                }
+            },
+
+            /**
+             * Validate API credentials
+             */
+            async validateCredentials(): Promise<boolean> {
+                return this.isAvailable();
+            },
+
+            /**
+             * Retrieve email by ID
+             */
+            async getEmail(id: string): Promise<Result<unknown>> {
+                try {
+                    if (!id) {
+                        return {
+                            success: false,
+                            error: createError(PROVIDER_NAME, "Email ID is required to retrieve email details"),
+                        };
+                    }
+
+                    // Make sure provider is initialized
+                    if (!isInitialized) {
+                        await this.initialize();
+                    }
+
+                    // Create headers with API key
+                    const headers: Record<string, string> = {
+                        Authorization: `Bearer ${options.apiKey}`,
+                        "Content-Type": "application/json",
+                    };
+
+                    debug("Retrieving email details", { id });
+
+                    // Send request with retry capability
+                    const result = await retry(
+                        async () =>
+                            makeRequest(
+                                `${options.endpoint}/emails/${id}`,
+                                {
+                                    method: "GET",
+                                    headers,
+                                    timeout: options.timeout,
+                                },
+                            ),
+                        options.retries,
+                    );
+
+                    if (!result.success) {
+                        debug("API request failed when retrieving email", result.error);
+                        return {
+                            success: false,
+                            error: createError(
+                                PROVIDER_NAME,
+                                `Failed to retrieve email: ${result.error?.message || "Unknown error"}`,
+                                { cause: result.error },
+                            ),
+                        };
+                    }
+
+                    debug("Email details retrieved successfully");
+                    return {
+                        success: true,
+                        data: (result.data as { body?: unknown })?.body,
+                    };
+                } catch (error) {
+                    debug("Exception retrieving email", error);
+                    return {
+                        success: false,
+                        error: createError(
+                            PROVIDER_NAME,
+                            `Failed to retrieve email: ${(error as Error).message}`,
+                            { cause: error as Error },
+                        ),
                     };
                 }
             },
