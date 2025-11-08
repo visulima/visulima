@@ -227,3 +227,25 @@ export interface MailCrabConfig extends BaseConfig {
      */
     secure?: boolean;
 }
+
+/**
+ * Nodemailer configuration
+ * Accepts any nodemailer transport configuration
+ * Common transports: SMTP, Sendmail, SES, etc.
+ */
+export interface NodemailerConfig extends BaseConfig {
+    /**
+     * Nodemailer transport configuration
+     * Can be a transport object or a transport name (e.g., 'smtp', 'sendmail')
+     * For SMTP: { host, port, secure, auth: { user, pass } }
+     * For Sendmail: { path: '/usr/sbin/sendmail' }
+     * For SES: { SES: { ... } }
+     * See: https://nodemailer.com/transports/
+     */
+    transport: Record<string, unknown> | string;
+
+    /**
+     * Default from address (optional, can be overridden per email)
+     */
+    defaultFrom?: EmailAddress;
+}
