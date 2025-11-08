@@ -48,6 +48,7 @@ export {
     formatEmailAddresses,
     generateBoundary,
     generateMessageId,
+    isPortAvailable,
     makeRequest,
     retry,
     validateEmail,

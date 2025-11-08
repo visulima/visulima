@@ -19,9 +19,9 @@ export class MailMessage {
     private toAddresses: EmailAddress[] = [];
     private ccAddresses: EmailAddress[] = [];
     private bccAddresses: EmailAddress[] = [];
-    private subject = "";
-    private text?: string;
-    private html?: string;
+    private subjectText = "";
+    private textContent?: string;
+    private htmlContent?: string;
     private headers: Record<string, string> = {};
     private attachments: Array<{
         filename: string;
@@ -92,7 +92,7 @@ export class MailMessage {
      * Set the email subject
      */
     subject(text: string): this {
-        this.subject = text;
+        this.subjectText = text;
         return this;
     }
 
@@ -100,7 +100,7 @@ export class MailMessage {
      * Set the plain text content
      */
     text(content: string): this {
-        this.text = content;
+        this.textContent = content;
         return this;
     }
 
@@ -108,7 +108,7 @@ export class MailMessage {
      * Set the HTML content
      */
     html(content: string): this {
-        this.html = content;
+        this.htmlContent = content;
         return this;
     }
 
@@ -172,19 +172,19 @@ export class MailMessage {
         if (this.toAddresses.length === 0) {
             throw new Error("At least one recipient is required");
         }
-        if (!this.subject) {
+        if (!this.subjectText) {
             throw new Error("Subject is required");
         }
-        if (!this.text && !this.html) {
+        if (!this.textContent && !this.htmlContent) {
             throw new Error("Either text or html content is required");
         }
 
         return {
             from: this.fromAddress,
             to: this.toAddresses.length === 1 ? this.toAddresses[0] : this.toAddresses,
-            subject: this.subject,
-            text: this.text,
-            html: this.html,
+            subject: this.subjectText,
+            text: this.textContent,
+            html: this.htmlContent,
             cc: this.ccAddresses.length > 0 ? (this.ccAddresses.length === 1 ? this.ccAddresses[0] : this.ccAddresses) : undefined,
             bcc: this.bccAddresses.length > 0 ? (this.bccAddresses.length === 1 ? this.bccAddresses[0] : this.bccAddresses) : undefined,
             headers: Object.keys(this.headers).length > 0 ? this.headers : undefined,
