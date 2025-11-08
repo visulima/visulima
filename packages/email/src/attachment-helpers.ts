@@ -1,6 +1,6 @@
 import type { Buffer } from "node:buffer";
 import { readFile } from "node:fs/promises";
-import { lookup } from "mime";
+import mime from "mime";
 
 /**
  * Detect MIME type from filename using mime package
@@ -9,7 +9,7 @@ import { lookup } from "mime";
  * @returns MIME type or application/octet-stream as fallback
  */
 export const detectMimeType = (filename: string): string => {
-    return lookup(filename) || "application/octet-stream";
+    return mime.getType(filename) || "application/octet-stream";
 };
 
 /**

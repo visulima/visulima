@@ -1,5 +1,6 @@
 import type { EmailAddress, EmailOptions, EmailResult, Result } from "./types.js";
 import type { Provider } from "./providers/provider.js";
+import { basename } from "node:path";
 import {
     type AttachmentDataOptions,
     type AttachmentOptions,
@@ -17,6 +18,18 @@ export interface Mailable {
      */
     build(): EmailOptions | Promise<EmailOptions>;
 }
+
+/**
+ * Normalize email address(es) to EmailAddress array
+ */
+const normalizeAddresses = (
+    address: EmailAddress | EmailAddress[] | string | string[],
+): EmailAddress[] => {
+    if (Array.isArray(address)) {
+        return address.map((addr) => (typeof addr === "string" ? { email: addr } : addr));
+    }
+    return typeof address === "string" ? [{ email: address }] : [address];
+};
 
 /**
  * Mail message builder - provides fluent interface for building emails
@@ -57,13 +70,7 @@ export class MailMessage {
      * Set the recipient address(es)
      */
     to(address: EmailAddress | EmailAddress[] | string | string[]): this {
-        const addresses = Array.isArray(address)
-            ? address.map((addr) => (typeof addr === "string" ? { email: addr } : addr))
-            : typeof address === "string"
-              ? [{ email: address }]
-              : [address];
-
-        this.toAddresses.push(...addresses);
+        this.toAddresses.push(...normalizeAddresses(address));
         return this;
     }
 
@@ -71,13 +78,7 @@ export class MailMessage {
      * Set the CC recipient address(es)
      */
     cc(address: EmailAddress | EmailAddress[] | string | string[]): this {
-        const addresses = Array.isArray(address)
-            ? address.map((addr) => (typeof addr === "string" ? { email: addr } : addr))
-            : typeof address === "string"
-              ? [{ email: address }]
-              : [address];
-
-        this.ccAddresses.push(...addresses);
+        this.ccAddresses.push(...normalizeAddresses(address));
         return this;
     }
 
@@ -85,13 +86,7 @@ export class MailMessage {
      * Set the BCC recipient address(es)
      */
     bcc(address: EmailAddress | EmailAddress[] | string | string[]): this {
-        const addresses = Array.isArray(address)
-            ? address.map((addr) => (typeof addr === "string" ? { email: addr } : addr))
-            : typeof address === "string"
-              ? [{ email: address }]
-              : [address];
-
-        this.bccAddresses.push(...addresses);
+        this.bccAddresses.push(...normalizeAddresses(address));
         return this;
     }
 
@@ -130,7 +125,7 @@ export class MailMessage {
     /**
      * Set multiple headers
      */
-    headers(headers: Record<string, string>): this {
+    setHeaders(headers: Record<string, string>): this {
         Object.assign(this.headers, headers);
         return this;
     }
@@ -147,7 +142,7 @@ export class MailMessage {
      */
     async attachFromPath(filePath: string, options?: AttachmentOptions): Promise<this> {
         const content = await readFileAsBuffer(filePath);
-        const filename = options?.filename || filePath.split(/[/\\]/).pop() || "attachment";
+        const filename = options?.filename || basename(filePath) || "attachment";
         const contentType = options?.contentType || detectMimeType(filename);
 
         this.attachments.push({
@@ -198,9 +193,9 @@ export class MailMessage {
      */
     async embedFromPath(filePath: string, options?: Omit<AttachmentOptions, "disposition" | "cid">): Promise<string> {
         const content = await readFileAsBuffer(filePath);
-        const filename = options?.filename || filePath.split(/[/\\]/).pop() || "inline";
+        const filename = options?.filename || basename(filePath) || "inline";
         const contentType = options?.contentType || detectMimeType(filename);
-        const cid = options?.cid || generateContentId(filename);
+        const cid = generateContentId(filename);
 
         this.attachments.push({
             filename,
@@ -231,7 +226,7 @@ export class MailMessage {
         options?: Omit<AttachmentDataOptions, "filename" | "disposition" | "cid">,
     ): string {
         const contentType = options?.contentType || detectMimeType(filename);
-        const cid = options?.cid || generateContentId(filename);
+        const cid = generateContentId(filename);
 
         this.attachments.push({
             filename,
@@ -281,18 +276,35 @@ export class MailMessage {
             throw new Error("Either text or html content is required");
         }
 
-        return {
+        const emailOptions: EmailOptions = {
             from: this.fromAddress,
             to: this.toAddresses.length === 1 ? this.toAddresses[0] : this.toAddresses,
             subject: this.subjectText,
             text: this.textContent,
             html: this.htmlContent,
-            cc: this.ccAddresses.length > 0 ? (this.ccAddresses.length === 1 ? this.ccAddresses[0] : this.ccAddresses) : undefined,
-            bcc: this.bccAddresses.length > 0 ? (this.bccAddresses.length === 1 ? this.bccAddresses[0] : this.bccAddresses) : undefined,
-            headers: Object.keys(this.headers).length > 0 ? this.headers : undefined,
-            attachments: this.attachments.length > 0 ? this.attachments : undefined,
-            replyTo: this.replyToAddress,
         };
+
+        if (this.ccAddresses.length > 0) {
+            emailOptions.cc = this.ccAddresses.length === 1 ? this.ccAddresses[0] : this.ccAddresses;
+        }
+
+        if (this.bccAddresses.length > 0) {
+            emailOptions.bcc = this.bccAddresses.length === 1 ? this.bccAddresses[0] : this.bccAddresses;
+        }
+
+        if (Object.keys(this.headers).length > 0) {
+            emailOptions.headers = this.headers;
+        }
+
+        if (this.attachments.length > 0) {
+            emailOptions.attachments = this.attachments;
+        }
+
+        if (this.replyToAddress) {
+            emailOptions.replyTo = this.replyToAddress;
+        }
+
+        return emailOptions;
     }
 
     /**
