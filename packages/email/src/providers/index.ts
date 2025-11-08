@@ -16,3 +16,6 @@ export type { SmtpEmailOptions } from "./smtp/index.js";
 
 export { zeptomailProvider } from "./zeptomail/index.js";
 export type { ZeptomailEmailOptions } from "./zeptomail/index.js";
+
+export { failoverProvider } from "./failover/index.js";
+export type { FailoverEmailOptions } from "./failover/index.js";

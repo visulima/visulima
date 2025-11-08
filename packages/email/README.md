@@ -141,9 +141,69 @@ const emailOptions: EmailOptions = {
 const result = await mail.sendEmail(emailOptions);
 ```
 
+### Failover Provider
+
+The failover provider allows you to configure multiple email providers as backups. If the primary provider fails, it will automatically try the next provider in the list.
+
+```typescript
+import { createMail, failoverProvider, resendProvider, smtpProvider } from "@visulima/email";
+
+// Create individual providers
+const resend = resendProvider({ apiKey: "re_xxx" });
+const smtp = smtpProvider({
+  host: "smtp.example.com",
+  port: 587,
+  user: "user@example.com",
+  password: "password",
+});
+
+// Create failover provider with multiple mailers
+const failover = failoverProvider({
+  mailers: [
+    resend,      // Try Resend first
+    smtp,        // Fallback to SMTP if Resend fails
+  ],
+  retryAfter: 60, // Wait 60ms before trying next provider (default: 60)
+});
+
+// Use failover provider
+const mail = createMail(failover);
+
+const result = await mail
+  .message()
+  .to("user@example.com")
+  .from("sender@example.com")
+  .subject("Hello")
+  .html("<h1>Hello World</h1>")
+  .send();
+
+// The failover provider will try Resend first, and if it fails,
+// automatically try SMTP
+```
+
+You can also use provider factories directly:
+
+```typescript
+import { failoverProvider, resendProvider, smtpProvider } from "@visulima/email";
+
+const failover = failoverProvider({
+  mailers: [
+    resendProvider({ apiKey: "re_xxx" }),  // Provider factory
+    smtpProvider({                          // Provider factory
+      host: "smtp.example.com",
+      port: 587,
+      user: "user@example.com",
+      password: "password",
+    }),
+  ],
+  retryAfter: 100, // Wait 100ms between attempts
+});
+```
+
 ## Supported Providers
 
 - **AWS SES** - Amazon Simple Email Service
+- **Failover** - Automatic failover between multiple providers
 - **HTTP** - Generic HTTP API provider
 - **Resend** - Resend email service
 - **SMTP** - Standard SMTP protocol

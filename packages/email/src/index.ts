@@ -9,6 +9,7 @@ export type {
     EmailTag,
     ErrorOptions,
     FeatureFlags,
+    FailoverConfig,
     HttpEmailConfig,
     MaybePromise,
     ResendConfig,
@@ -21,6 +22,7 @@ export type {
 export {
     awsSesProvider,
     defineProvider,
+    failoverProvider,
     httpProvider,
     resendProvider,
     smtpProvider,
@@ -31,6 +33,7 @@ export {
 
 // Export provider-specific types
 export type { AwsSesEmailOptions } from "./providers/aws-ses/types.js";
+export type { FailoverEmailOptions } from "./providers/failover/types.js";
 export type { HttpEmailOptions } from "./providers/http/types.js";
 export type { ResendEmailOptions, ResendEmailTag } from "./providers/resend/types.js";
 export type { SmtpEmailOptions } from "./providers/smtp/types.js";
