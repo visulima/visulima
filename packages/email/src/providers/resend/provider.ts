@@ -231,7 +231,9 @@ export const resendProvider: ProviderFactory<ResendConfig, unknown, ResendEmailO
                     }
 
                     if (emailOpts.replyTo) {
-                        payload.reply_to = emailOpts.replyTo.email;
+                        payload.reply_to = emailOpts.replyTo.name
+                            ? `${emailOpts.replyTo.name} <${emailOpts.replyTo.email}>`
+                            : emailOpts.replyTo.email;
                     }
 
                     if (emailOpts.headers) {
@@ -243,6 +245,7 @@ export const resendProvider: ProviderFactory<ResendConfig, unknown, ResendEmailO
                             filename: att.filename,
                             content: typeof att.content === "string" ? att.content : att.content.toString("base64"),
                             content_type: att.contentType,
+                            path: att.path,
                         }));
                     }
 
@@ -251,9 +254,9 @@ export const resendProvider: ProviderFactory<ResendConfig, unknown, ResendEmailO
                     }
 
                     if (emailOpts.templateId) {
-                        payload.template_id = emailOpts.templateId;
+                        payload.template = emailOpts.templateId;
                         if (emailOpts.templateData) {
-                            payload.template_data = emailOpts.templateData;
+                            payload.data = emailOpts.templateData;
                         }
                     }
 
