@@ -1,0 +1,312 @@
+import type { Attachment, EmailAddress, EmailOptions, ErrorOptions, Result } from "./types.js";
+import { Buffer } from "node:buffer";
+import * as crypto from "node:crypto";
+import * as http from "node:http";
+import * as https from "node:https";
+import { URL } from "node:url";
+
+/**
+ * Creates a formatted error message
+ */
+export const createError = (component: string, message: string, opts?: ErrorOptions): Error => {
+    const err = new Error(`[@visulima/email] [${component}] ${message}`, opts);
+    if (Error.captureStackTrace) {
+        Error.captureStackTrace(err, createError);
+    }
+    return err;
+};
+
+/**
+ * Creates an error for missing required options
+ */
+export const createRequiredError = (component: string, name: string | string[]): Error => {
+    if (Array.isArray(name)) {
+        return createError(
+            component,
+            `Missing required options: ${name.map((n) => `'${n}'`).join(", ")}`,
+        );
+    }
+    return createError(component, `Missing required option: '${name}'`);
+};
+
+/**
+ * Generates a random message ID for emails
+ */
+export const generateMessageId = (): string => {
+    const domain = "visulima.local";
+    const timestamp = Date.now();
+    const random = Math.random().toString(36).substring(2, 10);
+    return `<${timestamp}.${random}@${domain}>`;
+};
+
+/**
+ * Validate email address format
+ */
+export const validateEmail = (email: string): boolean => {
+    const emailRegex = /^[\w.%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/i;
+    return emailRegex.test(email);
+};
+
+/**
+ * Format email address as "Name <email@example.com>"
+ */
+export const formatEmailAddress = (address: EmailAddress): string => {
+    if (!validateEmail(address.email)) {
+        throw createError("email", `Invalid email address: ${address.email}`);
+    }
+
+    return address.name ? `${address.name} <${address.email}>` : address.email;
+};
+
+/**
+ * Format email addresses list
+ */
+export const formatEmailAddresses = (addresses: EmailAddress | EmailAddress[]): string => {
+    if (Array.isArray(addresses)) {
+        return addresses.map(formatEmailAddress).join(", ");
+    }
+    return formatEmailAddress(addresses);
+};
+
+/**
+ * Validate email options
+ */
+export const validateEmailOptions = <T extends EmailOptions>(options: T): string[] => {
+    const errors: string[] = [];
+
+    if (!options.from || !options.from.email) {
+        errors.push("Missing required field: from");
+    }
+
+    if (!options.to) {
+        errors.push("Missing required field: to");
+    }
+
+    if (!options.subject) {
+        errors.push("Missing required field: subject");
+    }
+
+    if (!options.text && !options.html) {
+        errors.push("Either text or html content is required");
+    }
+
+    // Validate email addresses
+    if (options.from && options.from.email && !validateEmail(options.from.email)) {
+        errors.push(`Invalid from email address: ${options.from.email}`);
+    }
+
+    const checkAddresses = (addresses: EmailAddress | EmailAddress[] | undefined, field: string) => {
+        if (!addresses) return;
+
+        const list = Array.isArray(addresses) ? addresses : [addresses];
+        list.forEach((addr) => {
+            if (!validateEmail(addr.email)) {
+                errors.push(`Invalid ${field} email address: ${addr.email}`);
+            }
+        });
+    };
+
+    checkAddresses(options.to, "to");
+    checkAddresses(options.cc, "cc");
+    checkAddresses(options.bcc, "bcc");
+
+    // Validate replyTo if present
+    if (options.replyTo && !validateEmail(options.replyTo.email)) {
+        errors.push(`Invalid replyTo email address: ${options.replyTo.email}`);
+    }
+
+    return errors;
+};
+
+/**
+ * Makes an HTTP request without external dependencies
+ */
+export const makeRequest = async (
+    url: string | URL,
+    options: http.RequestOptions = {},
+    data?: string | Buffer,
+): Promise<Result<unknown>> => {
+    return new Promise((resolve) => {
+        const urlObj = typeof url === "string" ? new URL(url) : url;
+        const protocol = urlObj.protocol === "https:" ? https : http;
+
+        const req = protocol.request(urlObj, options, (res) => {
+            const chunks: Buffer[] = [];
+
+            res.on("data", (chunk) => chunks.push(chunk));
+
+            res.on("end", () => {
+                const body = Buffer.concat(chunks).toString();
+                let parsedBody: unknown = body;
+
+                // Try to parse as JSON if the content-type is json
+                if (res.headers["content-type"]?.includes("application/json")) {
+                    try {
+                        parsedBody = JSON.parse(body);
+                    } catch {
+                        // If it fails, keep the raw body
+                    }
+                }
+
+                const isSuccess =
+                    res.statusCode !== undefined && res.statusCode >= 200 && res.statusCode < 300;
+
+                resolve({
+                    success: isSuccess,
+                    data: {
+                        statusCode: res.statusCode,
+                        headers: res.headers,
+                        body: parsedBody,
+                    },
+                    error: isSuccess
+                        ? undefined
+                        : createError(
+                              "http",
+                              `Request failed with status ${res.statusCode}`,
+                              { code: res.statusCode?.toString() },
+                          ),
+                });
+            });
+        });
+
+        req.on("error", (error) => {
+            resolve({
+                success: false,
+                error: createError("http", `Request failed: ${error.message}`, { cause: error }),
+            });
+        });
+
+        if (options.timeout) {
+            req.setTimeout(options.timeout, () => {
+                req.destroy(createError("http", `Request timed out after ${options.timeout}ms`));
+            });
+        }
+
+        if (data) {
+            req.write(data);
+        }
+
+        req.end();
+    });
+};
+
+/**
+ * Helper function to retry a function with exponential backoff
+ */
+export const retry = async <T>(
+    fn: () => Promise<Result<T>>,
+    retries: number = 3,
+    delay: number = 300,
+): Promise<Result<T>> => {
+    try {
+        const result = await fn();
+        if (result.success || retries <= 0) {
+            return result;
+        }
+
+        await new Promise((resolve) => setTimeout(resolve, delay));
+        return retry(fn, retries - 1, delay * 2);
+    } catch (error) {
+        if (retries <= 0) {
+            return {
+                success: false,
+                error: error instanceof Error ? error : new Error(String(error)),
+            };
+        }
+
+        await new Promise((resolve) => setTimeout(resolve, delay));
+        return retry(fn, retries - 1, delay * 2);
+    }
+};
+
+/**
+ * Generate boundary string for multipart emails
+ */
+export const generateBoundary = (): string => {
+    return `----_=_NextPart_${crypto.randomBytes(16).toString("hex")}`;
+};
+
+/**
+ * Build a MIME message from email options
+ */
+export const buildMimeMessage = <T extends EmailOptions>(options: T): string => {
+    const boundary = generateBoundary();
+    const message: string[] = [];
+
+    // Headers
+    message.push(`From: ${formatEmailAddress(options.from)}`);
+    message.push(`To: ${formatEmailAddresses(options.to)}`);
+
+    if (options.cc) {
+        message.push(`Cc: ${formatEmailAddresses(options.cc)}`);
+    }
+
+    if (options.bcc) {
+        message.push(`Bcc: ${formatEmailAddresses(options.bcc)}`);
+    }
+
+    if (options.replyTo) {
+        message.push(`Reply-To: ${formatEmailAddress(options.replyTo)}`);
+    }
+
+    message.push(`Subject: ${options.subject}`);
+    message.push("MIME-Version: 1.0");
+
+    // Custom headers
+    if (options.headers) {
+        Object.entries(options.headers).forEach(([key, value]) => {
+            message.push(`${key}: ${value}`);
+        });
+    }
+
+    // Content-Type with boundary
+    message.push(`Content-Type: multipart/mixed; boundary="${boundary}"`);
+    message.push("");
+
+    // Text part
+    if (options.text) {
+        message.push(`--${boundary}`);
+        message.push("Content-Type: text/plain; charset=UTF-8");
+        message.push("Content-Transfer-Encoding: 7bit");
+        message.push("");
+        message.push(options.text);
+        message.push("");
+    }
+
+    // HTML part
+    if (options.html) {
+        message.push(`--${boundary}`);
+        message.push("Content-Type: text/html; charset=UTF-8");
+        message.push("Content-Transfer-Encoding: 7bit");
+        message.push("");
+        message.push(options.html);
+        message.push("");
+    }
+
+    // Attachments
+    if (options.attachments && options.attachments.length > 0) {
+        options.attachments.forEach((attachment: Attachment) => {
+            message.push(`--${boundary}`);
+            message.push(
+                `Content-Type: ${attachment.contentType || "application/octet-stream"}; name="${attachment.filename}"`,
+            );
+            message.push(`Content-Disposition: ${attachment.disposition || "attachment"}; filename="${attachment.filename}"`);
+            if (attachment.cid) {
+                message.push(`Content-ID: <${attachment.cid}>`);
+            }
+            message.push("Content-Transfer-Encoding: base64");
+            message.push("");
+
+            const content =
+                typeof attachment.content === "string"
+                    ? Buffer.from(attachment.content)
+                    : attachment.content;
+            message.push(content.toString("base64"));
+            message.push("");
+        });
+    }
+
+    message.push(`--${boundary}--`);
+
+    return message.join("\r\n");
+};
