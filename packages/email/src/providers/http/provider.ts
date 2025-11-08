@@ -207,6 +207,38 @@ export const httpProvider: ProviderFactory<HttpEmailConfig, unknown, HttpEmailOp
                     },
                 };
             },
+
+            /**
+             * Validate configuration
+             */
+            async validateCredentials(): Promise<boolean> {
+                try {
+                    // Use GET request to validate credentials
+                    const result = await makeRequest(
+                        options.endpoint,
+                        {
+                            method: "GET",
+                            headers: getStandardHeaders(),
+                            timeout: DEFAULT_TIMEOUT,
+                        },
+                    );
+
+                    // Consider API available if response is successful (2xx)
+                    if (
+                        result.data &&
+                        typeof result.data === "object" &&
+                        "statusCode" in result.data &&
+                        typeof result.data.statusCode === "number" &&
+                        result.data.statusCode >= 200 &&
+                        result.data.statusCode < 300
+                    ) {
+                        return true;
+                    }
+                    return false;
+                } catch {
+                    return false;
+                }
+            },
         };
     },
 );

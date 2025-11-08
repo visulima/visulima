@@ -286,6 +286,13 @@ export const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions
                     };
                 }
             },
+
+            /**
+             * Validate credentials
+             */
+            async validateCredentials(): Promise<boolean> {
+                return this.isAvailable();
+            },
         };
     },
 );

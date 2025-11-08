@@ -313,6 +313,13 @@ export const awsSesProvider: ProviderFactory<AwsSesConfig, unknown, AwsSesEmailO
                     };
                 }
             },
+
+            /**
+             * Validate credentials
+             */
+            async validateCredentials(): Promise<boolean> {
+                return this.isAvailable();
+            },
         };
     },
 );
