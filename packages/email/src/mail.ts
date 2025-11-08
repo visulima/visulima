@@ -186,23 +186,6 @@ export class MailMessage {
     }
 
     /**
-     * Attach a file (legacy method - kept for backward compatibility)
-     * Prefer using attachFromPath() or attachData() for better type safety
-     *
-     * @deprecated Use attachFromPath() or attachData() instead
-     */
-    attach(filename: string, content: string | Buffer, options?: { contentType?: string; disposition?: string; cid?: string }): this {
-        this.attachments.push({
-            filename,
-            content,
-            contentType: options?.contentType,
-            disposition: options?.disposition,
-            cid: options?.cid,
-        });
-        return this;
-    }
-
-    /**
      * Embed an inline attachment from file path (for images in HTML)
      * Similar to Laravel's embed() method
      * Returns the Content-ID that can be used in HTML: <img src="cid:{cid}">
