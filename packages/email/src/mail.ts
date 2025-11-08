@@ -198,7 +198,7 @@ export class MailMessage {
      */
     async send(): Promise<Result<EmailResult>> {
         if (!this.provider) {
-            throw new Error("No provider configured. Use Mail.mailer() or Mail.setDefaultMailer() first.");
+            throw new Error("No provider configured. Use mailer() method to set a provider.");
         }
 
         const emailOptions = this.build();
@@ -207,94 +207,46 @@ export class MailMessage {
 }
 
 /**
- * Mail facade - provides static methods for sending emails
- * Follows Laravel's Mail facade pattern
+ * Mail class - instance-based email sending
  */
 export class Mail {
-    private static defaultProvider?: Provider;
-    private static currentMessage?: MailMessage;
+    private provider: Provider;
 
     /**
-     * Set the default mailer/provider
+     * Create a new Mail instance with a provider
      */
-    static setDefaultMailer(provider: Provider): void {
-        Mail.defaultProvider = provider;
+    constructor(provider: Provider) {
+        this.provider = provider;
     }
 
     /**
-     * Get the default mailer/provider
+     * Create a new mail message
      */
-    static getDefaultMailer(): Provider | undefined {
-        return Mail.defaultProvider;
-    }
-
-    /**
-     * Set the mailer/provider for the current message
-     */
-    static mailer(provider: Provider): MailMessage {
+    message(): MailMessage {
         const message = new MailMessage();
-        message.mailer(provider);
-        Mail.currentMessage = message;
-        return message;
-    }
-
-    /**
-     * Set the recipient(s) and return a MailMessage builder
-     */
-    static to(address: EmailAddress | EmailAddress[] | string | string[]): MailMessage {
-        const message = new MailMessage();
-        message.to(address);
-        if (Mail.defaultProvider) {
-            message.mailer(Mail.defaultProvider);
-        }
-        Mail.currentMessage = message;
-        return message;
-    }
-
-    /**
-     * Set the CC recipient(s) and return a MailMessage builder
-     */
-    static cc(address: EmailAddress | EmailAddress[] | string | string[]): MailMessage {
-        const message = Mail.currentMessage || new MailMessage();
-        message.cc(address);
-        if (Mail.defaultProvider && !Mail.currentMessage) {
-            message.mailer(Mail.defaultProvider);
-        }
-        Mail.currentMessage = message;
-        return message;
-    }
-
-    /**
-     * Set the BCC recipient(s) and return a MailMessage builder
-     */
-    static bcc(address: EmailAddress | EmailAddress[] | string | string[]): MailMessage {
-        const message = Mail.currentMessage || new MailMessage();
-        message.bcc(address);
-        if (Mail.defaultProvider && !Mail.currentMessage) {
-            message.mailer(Mail.defaultProvider);
-        }
-        Mail.currentMessage = message;
+        message.mailer(this.provider);
         return message;
     }
 
     /**
      * Send a mailable instance
      */
-    static async send(mailable: Mailable, provider?: Provider): Promise<Result<EmailResult>> {
+    async send(mailable: Mailable): Promise<Result<EmailResult>> {
         const emailOptions = await mailable.build();
-        const mailProvider = provider || Mail.defaultProvider;
-
-        if (!mailProvider) {
-            throw new Error("No provider configured. Use Mail.setDefaultMailer() or pass a provider to send().");
-        }
-
-        return mailProvider.sendEmail(emailOptions);
+        return this.provider.sendEmail(emailOptions);
     }
 
     /**
-     * Send email using a MailMessage builder
+     * Send email using email options directly
      */
-    static async sendMessage(message: MailMessage): Promise<Result<EmailResult>> {
-        return message.send();
+    async sendEmail(options: EmailOptions): Promise<Result<EmailResult>> {
+        return this.provider.sendEmail(options);
     }
 }
+
+/**
+ * Create a new Mail instance with a provider
+ */
+export const createMail = (provider: Provider): Mail => {
+    return new Mail(provider);
+};

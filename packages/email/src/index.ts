@@ -37,7 +37,7 @@ export type { SmtpEmailOptions } from "./providers/smtp/types.js";
 export type { ZeptomailEmailOptions } from "./providers/zeptomail/types.js";
 
 // Export Mail class and related
-export { Mail, MailMessage, type Mailable } from "./mail.js";
+export { createMail, Mail, MailMessage, type Mailable } from "./mail.js";
 
 // Export utilities
 export {
