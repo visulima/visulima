@@ -44,18 +44,20 @@ pnpm add @visulima/email
 ### Basic Usage
 
 ```typescript
-import { Mail, resendProvider } from "@visulima/email";
+import { createMail, resendProvider } from "@visulima/email";
 
 // Create a provider
 const resend = resendProvider({
   apiKey: "re_xxx",
 });
 
-// Set as default mailer
-Mail.setDefaultMailer(resend);
+// Create a Mail instance
+const mail = createMail(resend);
 
-// Send an email
-const result = await Mail.to("user@example.com")
+// Send an email using the message builder
+const result = await mail
+  .message()
+  .to("user@example.com")
   .from("sender@example.com")
   .subject("Hello")
   .html("<h1>Hello World</h1>")
@@ -69,7 +71,7 @@ if (result.success) {
 ### Using Different Providers
 
 ```typescript
-import { Mail, smtpProvider, resendProvider } from "@visulima/email";
+import { createMail, smtpProvider, resendProvider } from "@visulima/email";
 
 // SMTP provider
 const smtp = smtpProvider({
@@ -85,8 +87,13 @@ const resend = resendProvider({
   apiKey: "re_xxx",
 });
 
+// Create Mail instances for each provider
+const smtpMail = createMail(smtp);
+const resendMail = createMail(resend);
+
 // Send via specific provider
-await Mail.mailer(resend)
+await resendMail
+  .message()
   .to("user@example.com")
   .from("sender@example.com")
   .subject("Hello")
@@ -97,7 +104,8 @@ await Mail.mailer(resend)
 ### Using Mailable Classes
 
 ```typescript
-import { Mail, type Mailable, type EmailOptions } from "@visulima/email";
+import { createMail, type Mailable, type EmailOptions } from "@visulima/email";
+import { resendProvider } from "@visulima/email";
 
 class WelcomeEmail implements Mailable {
   constructor(private user: { name: string; email: string }) {}
@@ -112,7 +120,25 @@ class WelcomeEmail implements Mailable {
   }
 }
 
-const result = await Mail.send(new WelcomeEmail({ name: "John", email: "john@example.com" }));
+const mail = createMail(resendProvider({ apiKey: "re_xxx" }));
+const result = await mail.send(new WelcomeEmail({ name: "John", email: "john@example.com" }));
+```
+
+### Direct Email Sending
+
+```typescript
+import { createMail, resendProvider, type EmailOptions } from "@visulima/email";
+
+const mail = createMail(resendProvider({ apiKey: "re_xxx" }));
+
+const emailOptions: EmailOptions = {
+  from: { email: "sender@example.com" },
+  to: { email: "user@example.com" },
+  subject: "Hello",
+  html: "<h1>Hello World</h1>",
+};
+
+const result = await mail.sendEmail(emailOptions);
 ```
 
 ## Supported Providers
