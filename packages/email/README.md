@@ -260,11 +260,43 @@ const roundRobin = roundRobinProvider({
 
 **Note:** The round robin provider starts at a random provider and then rotates through providers for each subsequent email. If a provider is unavailable, it will automatically try the next provider in the rotation.
 
+### MailCrab Provider (for Development)
+
+MailCrab is a local SMTP server for testing emails during development. This provider is a convenience wrapper around the SMTP provider with MailCrab defaults.
+
+```typescript
+import { createMail, mailCrabProvider } from "@visulima/email";
+
+// Create MailCrab provider with default settings (localhost:1025)
+const mailCrab = mailCrabProvider({});
+
+// Or customize the connection
+const mailCrab = mailCrabProvider({
+  host: "localhost",
+  port: 1025, // Default MailCrab port
+  secure: false, // Typically false for development
+});
+
+// Use MailCrab provider
+const mail = createMail(mailCrab);
+
+const result = await mail
+  .message()
+  .to("user@example.com")
+  .from("sender@example.com")
+  .subject("Test Email")
+  .html("<h1>Test</h1>")
+  .send();
+```
+
+**Note:** Make sure MailCrab is running locally before using this provider. MailCrab can be installed via Docker or as a standalone application.
+
 ## Supported Providers
 
 - **AWS SES** - Amazon Simple Email Service
 - **Failover** - Automatic failover between multiple providers
 - **HTTP** - Generic HTTP API provider
+- **MailCrab** - Local development email testing (SMTP wrapper)
 - **Resend** - Resend email service
 - **Round Robin** - Load balancing across multiple providers
 - **SMTP** - Standard SMTP protocol

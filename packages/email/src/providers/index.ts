@@ -22,3 +22,6 @@ export type { FailoverEmailOptions } from "./failover/index.js";
 
 export { roundRobinProvider } from "./roundrobin/index.js";
 export type { RoundRobinEmailOptions } from "./roundrobin/index.js";
+
+export { mailCrabProvider } from "./mailcrab/index.js";
+export type { MailCrabEmailOptions } from "./mailcrab/index.js";
