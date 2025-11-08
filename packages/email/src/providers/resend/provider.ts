@@ -13,6 +13,7 @@ const DEFAULT_RETRIES = 3;
 
 /**
  * Validates tag format for Resend API
+ * Tags can only contain ASCII letters, numbers, underscores, or dashes
  */
 function validateTag(tag: ResendEmailTag): string[] {
     const errors: string[] = [];
@@ -147,6 +148,12 @@ export const resendProvider: ProviderFactory<ResendConfig, unknown, ResendEmailO
                         return true;
                     }
 
+                    debug("Resend API availability check response:", {
+                        statusCode: (result.data as { statusCode?: number })?.statusCode,
+                        success: result.success,
+                        error: result.error?.message,
+                    });
+
                     // For unrestricted API keys, check for 200 OK
                     return (
                         result.success &&
@@ -165,6 +172,7 @@ export const resendProvider: ProviderFactory<ResendConfig, unknown, ResendEmailO
 
             /**
              * Send email through Resend API
+             * @param emailOpts The email options including Resend-specific features
              */
             async sendEmail(emailOpts: ResendEmailOptions): Promise<Result<EmailResult>> {
                 try {
@@ -192,19 +200,6 @@ export const resendProvider: ProviderFactory<ResendConfig, unknown, ResendEmailO
                         return [addresses.name ? `${addresses.name} <${addresses.email}>` : addresses.email];
                     };
 
-                    // Validate tags if present
-                    if (emailOpts.tags) {
-                        for (const tag of emailOpts.tags) {
-                            const tagErrors = validateTag(tag);
-                            if (tagErrors.length > 0) {
-                                return {
-                                    success: false,
-                                    error: createError(PROVIDER_NAME, `Invalid tag: ${tagErrors.join(", ")}`),
-                                };
-                            }
-                        }
-                    }
-
                     // Prepare request payload
                     const payload: Record<string, unknown> = {
                         from: emailOpts.from.name
@@ -217,33 +212,24 @@ export const resendProvider: ProviderFactory<ResendConfig, unknown, ResendEmailO
                         headers: emailOpts.headers || {},
                     };
 
+                    // Add CC if present
                     if (emailOpts.cc) {
                         payload.cc = formatRecipients(emailOpts.cc);
                     }
 
+                    // Add BCC if present
                     if (emailOpts.bcc) {
                         payload.bcc = formatRecipients(emailOpts.bcc);
                     }
 
+                    // Add reply-to if present
                     if (emailOpts.replyTo) {
                         payload.reply_to = emailOpts.replyTo.name
                             ? `${emailOpts.replyTo.name} <${emailOpts.replyTo.email}>`
                             : emailOpts.replyTo.email;
                     }
 
-                    if (emailOpts.attachments) {
-                        payload.attachments = emailOpts.attachments.map((att) => ({
-                            filename: att.filename,
-                            content: typeof att.content === "string" ? att.content : att.content.toString("base64"),
-                            content_type: att.contentType,
-                            path: att.path,
-                        }));
-                    }
-
-                    if (emailOpts.tags) {
-                        payload.tags = emailOpts.tags.map((tag) => ({ name: tag.name, value: tag.value }));
-                    }
-
+                    // Add template id and data if present
                     if (emailOpts.templateId) {
                         payload.template = emailOpts.templateId;
                         if (emailOpts.templateData) {
@@ -251,57 +237,115 @@ export const resendProvider: ProviderFactory<ResendConfig, unknown, ResendEmailO
                         }
                     }
 
+                    // Add scheduled_at if present
                     if (emailOpts.scheduledAt) {
-                        payload.scheduled_at = typeof emailOpts.scheduledAt === "string" ? emailOpts.scheduledAt : emailOpts.scheduledAt.toISOString();
+                        payload.scheduled_at =
+                            typeof emailOpts.scheduledAt === "string"
+                                ? emailOpts.scheduledAt
+                                : emailOpts.scheduledAt.toISOString();
                     }
 
+                    // Add tags if present - with validation
+                    if (emailOpts.tags && emailOpts.tags.length > 0) {
+                        // Validate tags format first
+                        const tagValidationErrors: string[] = [];
+
+                        emailOpts.tags.forEach((tag) => {
+                            const errors = validateTag(tag);
+                            if (errors.length > 0) {
+                                tagValidationErrors.push(...errors);
+                            }
+                        });
+
+                        // Return validation errors if any found
+                        if (tagValidationErrors.length > 0) {
+                            return {
+                                success: false,
+                                error: createError(PROVIDER_NAME, `Invalid email tags: ${tagValidationErrors.join(", ")}`),
+                            };
+                        }
+
+                        payload.tags = emailOpts.tags.map((tag) => ({
+                            name: tag.name,
+                            value: tag.value,
+                        }));
+                    }
+
+                    // Add attachments if present
+                    if (emailOpts.attachments && emailOpts.attachments.length > 0) {
+                        payload.attachments = emailOpts.attachments.map((attachment) => ({
+                            filename: attachment.filename,
+                            content:
+                                typeof attachment.content === "string"
+                                    ? attachment.content
+                                    : attachment.content.toString("base64"),
+                            content_type: attachment.contentType, // Added content type support
+                            path: attachment.path, // Added path support
+                        }));
+                    }
+
+                    debug("Sending email via Resend API", {
+                        to: payload.to,
+                        subject: payload.subject,
+                    });
+
+                    // Create headers with API key
                     const headers: Record<string, string> = {
                         Authorization: `Bearer ${options.apiKey}`,
                         "Content-Type": "application/json",
                     };
 
-                    // Send email with retry logic
-                    const sendRequest = async (): Promise<Result<EmailResult>> => {
-                        const result = await makeRequest(
-                            `${options.endpoint}/emails`,
-                            {
-                                method: "POST",
-                                headers,
-                                timeout: options.timeout,
-                            },
-                            JSON.stringify(payload),
-                        );
+                    // Send request with retry capability
+                    const result = await retry(
+                        async () =>
+                            makeRequest(
+                                `${options.endpoint}/emails`,
+                                {
+                                    method: "POST",
+                                    headers,
+                                    timeout: options.timeout,
+                                },
+                                JSON.stringify(payload),
+                            ),
+                        options.retries,
+                    );
 
-                        if (!result.success) {
-                            return {
-                                success: false,
-                                error: result.error || createError(PROVIDER_NAME, "Failed to send email"),
-                            };
-                        }
-
-                        const responseData = result.data as { body?: { id?: string } };
-                        const messageId =
-                            responseData?.body && typeof responseData.body === "object" && responseData.body.id
-                                ? responseData.body.id
-                                : generateMessageId();
-
+                    if (!result.success) {
+                        debug("API request failed when sending email", result.error);
                         return {
-                            success: true,
-                            data: {
-                                messageId,
-                                sent: true,
-                                timestamp: new Date(),
-                                provider: PROVIDER_NAME,
-                                response: result.data,
-                            },
+                            success: false,
+                            error: result.error || createError(PROVIDER_NAME, "Failed to send email"),
                         };
-                    };
+                    }
 
-                    return retry(sendRequest, options.retries);
+                    // Extract message ID from response
+                    const responseData = result.data as { body?: { id?: string } };
+                    const messageId =
+                        responseData?.body && typeof responseData.body === "object" && responseData.body.id
+                            ? responseData.body.id
+                            : generateMessageId();
+
+                    debug("Email sent successfully", { messageId });
+
+                    return {
+                        success: true,
+                        data: {
+                            messageId,
+                            sent: true,
+                            timestamp: new Date(),
+                            provider: PROVIDER_NAME,
+                            response: result.data,
+                        },
+                    };
                 } catch (error) {
+                    debug("Exception sending email", error);
                     return {
                         success: false,
-                        error: error instanceof Error ? error : createError(PROVIDER_NAME, String(error)),
+                        error: createError(
+                            PROVIDER_NAME,
+                            `Failed to send email: ${(error as Error).message}`,
+                            { cause: error as Error },
+                        ),
                     };
                 }
             },
@@ -315,6 +359,8 @@ export const resendProvider: ProviderFactory<ResendConfig, unknown, ResendEmailO
 
             /**
              * Retrieve email by ID
+             * @param id Email ID to retrieve
+             * @returns Email details
              */
             async getEmail(id: string): Promise<Result<unknown>> {
                 try {
