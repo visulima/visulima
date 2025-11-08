@@ -1,11 +1,37 @@
 import type { AwsSesConfig, EmailAddress, EmailOptions, EmailResult, Result } from "../../types.js";
 import type { ProviderFactory } from "../provider.js";
 import type { AwsSesEmailOptions } from "./types.js";
-import { Buffer } from "node:buffer";
-import * as crypto from "node:crypto";
-import * as https from "node:https";
-import { createError, createRequiredError, validateEmailOptions } from "../../utils.js";
+import { createError, createRequiredError, makeRequest, validateEmailOptions } from "../../utils.js";
 import { defineProvider } from "../provider.js";
+
+// Runtime detection for crypto and Buffer
+const hasBuffer = typeof globalThis.Buffer !== "undefined";
+const isNode = typeof process !== "undefined" && process.versions?.node;
+
+// Lazy load Node.js crypto module
+let crypto: typeof import("node:crypto") | undefined;
+const getCrypto = (): typeof import("node:crypto") => {
+    if (!crypto && isNode) {
+        try {
+            // eslint-disable-next-line @typescript-eslint/no-require-imports
+            crypto = require("node:crypto");
+        } catch {
+            // Ignore if not available
+        }
+    }
+    if (!crypto) {
+        throw new Error("Crypto module is required for AWS SES provider");
+    }
+    return crypto;
+};
+
+// Helper to get Buffer
+const getBuffer = (): typeof globalThis.Buffer => {
+    if (!hasBuffer) {
+        throw new Error("Buffer is required for AWS SES provider");
+    }
+    return globalThis.Buffer;
+};
 
 const PROVIDER_NAME = "aws-ses";
 
@@ -59,7 +85,8 @@ export const awsSesProvider: ProviderFactory<AwsSesConfig, unknown, AwsSesEmailO
                 .map((key) => key.toLowerCase())
                 .join(";");
 
-            const payloadHash = crypto.createHash("sha256").update(payload).digest("hex");
+            const cryptoModule = getCrypto();
+            const payloadHash = cryptoModule.createHash("sha256").update(payload).digest("hex");
 
             return [method, path, canonicalQueryString, canonicalHeaders, signedHeaders, payloadHash].join("\n");
         };
@@ -68,8 +95,9 @@ export const awsSesProvider: ProviderFactory<AwsSesConfig, unknown, AwsSesEmailO
          * Create string to sign for AWS Signature V4
          */
         const createStringToSign = (timestamp: string, region: string, canonicalRequest: string): string => {
+            const cryptoModule = getCrypto();
             const date = timestamp.substring(0, 8);
-            const hash = crypto.createHash("sha256").update(canonicalRequest).digest("hex");
+            const hash = cryptoModule.createHash("sha256").update(canonicalRequest).digest("hex");
 
             return ["AWS4-HMAC-SHA256", timestamp, `${date}/${region}/ses/aws4_request`, hash].join("\n");
         };
@@ -78,17 +106,18 @@ export const awsSesProvider: ProviderFactory<AwsSesConfig, unknown, AwsSesEmailO
          * Calculate AWS Signature V4
          */
         const calculateSignature = (secretKey: string, timestamp: string, region: string, stringToSign: string): string => {
+            const cryptoModule = getCrypto();
             const date = timestamp.substring(0, 8);
 
-            const kDate = crypto.createHmac("sha256", `AWS4${secretKey}`).update(date).digest();
+            const kDate = cryptoModule.createHmac("sha256", `AWS4${secretKey}`).update(date).digest();
 
-            const kRegion = crypto.createHmac("sha256", kDate).update(region).digest();
+            const kRegion = cryptoModule.createHmac("sha256", kDate).update(region).digest();
 
-            const kService = crypto.createHmac("sha256", kRegion).update("ses").digest();
+            const kService = cryptoModule.createHmac("sha256", kRegion).update("ses").digest();
 
-            const kSigning = crypto.createHmac("sha256", kService).update("aws4_request").digest();
+            const kSigning = cryptoModule.createHmac("sha256", kService).update("aws4_request").digest();
 
-            return crypto.createHmac("sha256", kSigning).update(stringToSign).digest("hex");
+            return cryptoModule.createHmac("sha256", kSigning).update(stringToSign).digest("hex");
         };
 
         /**
@@ -115,140 +144,135 @@ export const awsSesProvider: ProviderFactory<AwsSesConfig, unknown, AwsSesEmailO
         };
 
         /**
-         * Make an HTTP request to AWS SES API
+         * Make an HTTP request to AWS SES API using runtime-agnostic makeRequest
          */
-        const makeRequest = (action: string, params: Record<string, unknown>): Promise<Record<string, unknown>> => {
+        const makeAwsRequest = async (
+            action: string,
+            params: Record<string, unknown>,
+        ): Promise<Record<string, unknown>> => {
             // Validate required credentials
             if (!options.accessKeyId || !options.secretAccessKey) {
                 debug("Missing required credentials: accessKeyId or secretAccessKey");
                 throw createRequiredError(PROVIDER_NAME, ["accessKeyId", "secretAccessKey"]);
             }
 
-            return new Promise((resolve, reject) => {
-                try {
-                    const region = options.region || (defaultOptions.region as string);
-                    const apiVersion = options.apiVersion || defaultOptions.apiVersion;
-                    const host = options.endpoint || `email.${region}.amazonaws.com`;
-                    const path = "/";
-                    const method = "POST";
+            try {
+                const region = options.region || (defaultOptions.region as string);
+                const apiVersion = options.apiVersion || defaultOptions.apiVersion;
+                const host = options.endpoint || `email.${region}.amazonaws.com`;
+                const path = "/";
+                const method = "POST";
 
-                    debug("Making request to AWS SES:", { action, region, host });
+                debug("Making request to AWS SES:", { action, region, host });
 
-                    // Prepare request body
-                    const body = new URLSearchParams();
-                    body.append("Action", action);
-                    body.append("Version", apiVersion as string);
+                // Prepare request body
+                const body = new URLSearchParams();
+                body.append("Action", action);
+                body.append("Version", apiVersion as string);
 
-                    // Add parameters to body
-                    Object.entries(params).forEach(([key, value]) => {
-                        if (value !== undefined && value !== null) {
-                            body.append(key, String(value));
+                // Add parameters to body
+                Object.entries(params).forEach(([key, value]) => {
+                    if (value !== undefined && value !== null) {
+                        body.append(key, String(value));
+                    }
+                });
+
+                const bodyString = body.toString();
+                debug("Request body:", bodyString);
+
+                // Create timestamp for signing
+                const now = new Date();
+                const amzDate = now.toISOString().replace(/[:-]|\.\d{3}/g, "");
+
+                // Get Buffer for byte length calculation
+                const Buffer = getBuffer();
+
+                // Prepare headers for signing
+                const headers: Record<string, string> = {
+                    Host: host,
+                    "Content-Type": "application/x-www-form-urlencoded",
+                    "Content-Length": Buffer.byteLength(bodyString).toString(),
+                    "X-Amz-Date": amzDate,
+                };
+
+                // Add session token if provided
+                if (options.sessionToken) {
+                    headers["X-Amz-Security-Token"] = options.sessionToken;
+                }
+
+                debug("Request headers:", headers);
+
+                // Create canonical request
+                const canonicalRequest = createCanonicalRequest(method, path, {}, headers, bodyString);
+
+                // Create string to sign
+                const stringToSign = createStringToSign(amzDate, region, canonicalRequest);
+
+                // Calculate signature
+                const signature = calculateSignature(options.secretAccessKey, amzDate, region, stringToSign);
+
+                // Create authorization header
+                headers.Authorization = createAuthHeader(options.accessKeyId, amzDate, region, headers, signature);
+
+                debug("Making HTTPS request to:", `https://${host}${path}`);
+
+                // Use runtime-agnostic makeRequest
+                const url = `https://${host}${path}`;
+                const result = await makeRequest(
+                    url,
+                    {
+                        method,
+                        headers,
+                    },
+                    bodyString,
+                );
+
+                if (!result.success) {
+                    throw result.error || new Error("AWS SES API request failed");
+                }
+
+                const responseData = result.data?.body as string;
+                if (!responseData) {
+                    throw new Error("No response body from AWS SES");
+                }
+
+                debug("Response status:", result.data?.statusCode);
+                debug("Response data:", responseData);
+
+                const statusCode = result.data?.statusCode as number | undefined;
+                if (statusCode && statusCode >= 200 && statusCode < 300) {
+                    // Parse XML response (simple parsing for common patterns)
+                    const parsedResult: Record<string, unknown> = {};
+
+                    // Extract common SES response patterns
+                    // This is a simplified parser that extracts just what we need
+                    if (action === "SendRawEmail") {
+                        const messageIdMatch = responseData.match(/<MessageId>(.*?)<\/MessageId>/);
+                        if (messageIdMatch && messageIdMatch[1]) {
+                            parsedResult.MessageId = messageIdMatch[1];
+                            debug("Extracted MessageId:", parsedResult.MessageId);
                         }
-                    });
-
-                    const bodyString = body.toString();
-                    debug("Request body:", bodyString);
-
-                    // Create timestamp for signing
-                    const now = new Date();
-                    const amzDate = now.toISOString().replace(/[:-]|\.\d{3}/g, "");
-
-                    // Prepare headers for signing
-                    const headers: Record<string, string> = {
-                        Host: host,
-                        "Content-Type": "application/x-www-form-urlencoded",
-                        "Content-Length": Buffer.byteLength(bodyString).toString(),
-                        "X-Amz-Date": amzDate,
-                    };
-
-                    // Add session token if provided
-                    if (options.sessionToken) {
-                        headers["X-Amz-Security-Token"] = options.sessionToken;
+                    } else if (action === "GetSendQuota") {
+                        const maxMatch = responseData.match(/<Max24HourSend>(.*?)<\/Max24HourSend>/);
+                        if (maxMatch && maxMatch[1]) {
+                            parsedResult.Max24HourSend = Number.parseFloat(maxMatch[1]);
+                            debug("Extracted Max24HourSend:", parsedResult.Max24HourSend);
+                        }
                     }
 
-                    debug("Request headers:", headers);
-
-                    // Create canonical request
-                    const canonicalRequest = createCanonicalRequest(method, path, {}, headers, bodyString);
-
-                    // Create string to sign
-                    const stringToSign = createStringToSign(amzDate, region, canonicalRequest);
-
-                    // Calculate signature
-                    const signature = calculateSignature(options.secretAccessKey, amzDate, region, stringToSign);
-
-                    // Create authorization header
-                    headers.Authorization = createAuthHeader(options.accessKeyId, amzDate, region, headers, signature);
-
-                    debug("Making HTTPS request to:", `https://${host}${path}`);
-
-                    // Create HTTPS request
-                    const req = https.request(
-                        {
-                            host,
-                            path,
-                            method,
-                            headers,
-                        },
-                        (res) => {
-                            let data = "";
-
-                            debug("Response status:", res.statusCode);
-                            debug("Response headers:", res.headers);
-
-                            res.on("data", (chunk) => {
-                                data += chunk.toString();
-                            });
-
-                            res.on("end", () => {
-                                debug("Response data:", data);
-
-                                if (res.statusCode && res.statusCode >= 200 && res.statusCode < 300) {
-                                    // Parse XML response (simple parsing for common patterns)
-                                    const result: Record<string, unknown> = {};
-
-                                    // Extract common SES response patterns
-                                    // This is a simplified parser that extracts just what we need
-                                    if (action === "SendRawEmail") {
-                                        const messageIdMatch = data.match(/<MessageId>(.*?)<\/MessageId>/);
-                                        if (messageIdMatch && messageIdMatch[1]) {
-                                            result.MessageId = messageIdMatch[1];
-                                            debug("Extracted MessageId:", result.MessageId);
-                                        }
-                                    } else if (action === "GetSendQuota") {
-                                        const maxMatch = data.match(/<Max24HourSend>(.*?)<\/Max24HourSend>/);
-                                        if (maxMatch && maxMatch[1]) {
-                                            result.Max24HourSend = Number.parseFloat(maxMatch[1]);
-                                            debug("Extracted Max24HourSend:", result.Max24HourSend);
-                                        }
-                                    }
-
-                                    resolve(result);
-                                } else {
-                                    // Extract error from XML
-                                    const errorMatch = data.match(/<Message>(.*?)<\/Message>/);
-                                    const errorMessage = errorMatch ? errorMatch[1] : "Unknown AWS SES error";
-                                    debug("AWS SES Error:", errorMessage);
-                                    reject(new Error(`AWS SES API Error: ${errorMessage}`));
-                                }
-                            });
-                        },
-                    );
-
-                    req.on("error", (error) => {
-                        debug("Request error:", error.message);
-                        reject(error);
-                    });
-
-                    // Send the request
-                    req.write(bodyString);
-                    req.end();
-                } catch (error) {
-                    const errorMessage = error instanceof Error ? error.message : String(error);
-                    debug("makeRequest exception:", errorMessage);
-                    reject(error instanceof Error ? error : new Error(errorMessage));
+                    return parsedResult;
+                } else {
+                    // Extract error from XML
+                    const errorMatch = responseData.match(/<Message>(.*?)<\/Message>/);
+                    const errorMessage = errorMatch ? errorMatch[1] : "Unknown AWS SES error";
+                    debug("AWS SES Error:", errorMessage);
+                    throw new Error(`AWS SES API Error: ${errorMessage}`);
                 }
-            });
+            } catch (error) {
+                const errorMessage = error instanceof Error ? error.message : String(error);
+                debug("makeAwsRequest exception:", errorMessage);
+                throw error instanceof Error ? error : new Error(errorMessage);
+            }
         };
 
         /**
@@ -262,10 +286,11 @@ export const awsSesProvider: ProviderFactory<AwsSesConfig, unknown, AwsSesEmailO
          * Generate MIME message for email
          */
         const generateMimeMessage = (options: EmailOptions): string => {
+            const cryptoModule = getCrypto();
             // Generate a boundary string for MIME parts
-            const boundary = `----=${crypto.randomUUID().replace(/-/g, "")}`;
+            const boundary = `----=${cryptoModule.randomUUID().replace(/-/g, "")}`;
             const now = new Date().toString();
-            const messageId = `<${crypto.randomUUID().replace(/-/g, "")}@${options.from.email.split("@")[1]}>`;
+            const messageId = `<${cryptoModule.randomUUID().replace(/-/g, "")}@${options.from.email.split("@")[1]}>`;
 
             let message = "";
 
@@ -368,7 +393,7 @@ export const awsSesProvider: ProviderFactory<AwsSesConfig, unknown, AwsSesEmailO
              */
             async isAvailable(): Promise<boolean> {
                 try {
-                    const response = await makeRequest("GetSendQuota", {});
+                    const response = await makeAwsRequest("GetSendQuota", {});
                     return !!(response.Max24HourSend as number | undefined);
                 } catch {
                     return false;
@@ -424,13 +449,14 @@ export const awsSesProvider: ProviderFactory<AwsSesConfig, unknown, AwsSesEmailO
                     const rawMessage = generateMimeMessage(emailOpts);
 
                     // Base64 encode the raw message
+                    const Buffer = getBuffer();
                     const encodedMessage = Buffer.from(rawMessage).toString("base64");
 
                     // Add the raw message data
                     params["RawMessage.Data"] = encodedMessage;
 
                     // Send the raw email
-                    const response = await makeRequest("SendRawEmail", params);
+                    const response = await makeAwsRequest("SendRawEmail", params);
 
                     return {
                         success: true,
