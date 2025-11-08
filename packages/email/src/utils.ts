@@ -3,6 +3,7 @@ import { Buffer } from "node:buffer";
 import * as crypto from "node:crypto";
 import * as http from "node:http";
 import * as https from "node:https";
+import * as net from "node:net";
 import { URL } from "node:url";
 
 /**
@@ -309,4 +310,27 @@ export const buildMimeMessage = <T extends EmailOptions>(options: T): string => 
     message.push(`--${boundary}--`);
 
     return message.join("\r\n");
+};
+
+/**
+ * Check if a port is available on a host
+ */
+export const isPortAvailable = async (host: string, port: number): Promise<boolean> => {
+    return new Promise<boolean>((resolve) => {
+        const socket = new net.Socket();
+
+        const onError = (): void => {
+            socket.destroy();
+            resolve(false);
+        };
+
+        socket.setTimeout(1000);
+        socket.on("error", onError);
+        socket.on("timeout", onError);
+
+        socket.connect(port, host, () => {
+            socket.end();
+            resolve(true);
+        });
+    });
 };

@@ -159,53 +159,98 @@ export const httpProvider: ProviderFactory<HttpEmailConfig, unknown, HttpEmailOp
              * Send email via HTTP API
              */
             async sendEmail(emailOpts: HttpEmailOptions): Promise<Result<EmailResult>> {
-                // Validate email options
-                const validationErrors = validateEmailOptions(emailOpts);
-                if (validationErrors.length > 0) {
+                try {
+                    // Validate email options first, before any other operations
+                    const validationErrors = validateEmailOptions(emailOpts);
+                    if (validationErrors.length > 0) {
+                        return {
+                            success: false,
+                            error: createError(PROVIDER_NAME, `Invalid email options: ${validationErrors.join(", ")}`),
+                        };
+                    }
+
+                    // Make sure the provider is initialized
+                    if (!isInitialized) {
+                        await this.initialize();
+                    }
+
+                    // Format headers
+                    const headers = getStandardHeaders();
+
+                    // Add custom headers from email options
+                    if (emailOpts.headers) {
+                        Object.assign(headers, emailOpts.headers);
+                    }
+
+                    // Format the request payload
+                    const payload = formatRequest(emailOpts);
+
+                    // Use endpoint override if provided
+                    const endpoint = emailOpts.endpointOverride || options.endpoint;
+
+                    // Use method override if provided
+                    const method = emailOpts.methodOverride || options.method;
+
+                    // Make the request
+                    const result = await makeRequest(
+                        endpoint,
+                        {
+                            method,
+                            headers,
+                            timeout: DEFAULT_TIMEOUT,
+                        },
+                        JSON.stringify(payload),
+                    );
+
+                    if (!result.success) {
+                        return {
+                            success: false,
+                            error: createError(
+                                PROVIDER_NAME,
+                                `Failed to send email: ${result.error?.message || "Unknown error"}`,
+                                { cause: result.error },
+                            ),
+                        };
+                    }
+
+                    // Extract message ID from the response following various patterns
+                    let messageId: string | undefined;
+                    const responseBody = (result.data as { body?: Record<string, unknown> })?.body;
+                    if (responseBody && typeof responseBody === "object") {
+                        messageId =
+                            (responseBody.id as string | undefined) ||
+                            (responseBody.messageId as string | undefined) ||
+                            (responseBody.data &&
+                                typeof responseBody.data === "object" &&
+                                ((responseBody.data as { id?: string }).id ||
+                                    (responseBody.data as { messageId?: string }).messageId));
+                    }
+
+                    // Fall back to generating a message ID if none found
+                    if (!messageId) {
+                        messageId = generateMessageId();
+                    }
+
+                    return {
+                        success: true,
+                        data: {
+                            messageId,
+                            sent: true,
+                            timestamp: new Date(),
+                            provider: PROVIDER_NAME,
+                            response: (result.data as { body?: unknown })?.body,
+                        },
+                    };
+                } catch (error) {
                     return {
                         success: false,
-                        error: createError(PROVIDER_NAME, `Validation failed: ${validationErrors.join(", ")}`),
+                        error: createError(
+                            PROVIDER_NAME,
+                            `Failed to send email: ${(error as Error).message}`,
+                            { cause: error as Error },
+                        ),
                     };
                 }
-
-                // Format request payload
-                const payload = formatRequest(emailOpts);
-
-                // Make HTTP request
-                const result = await makeRequest(
-                    options.endpoint,
-                    {
-                        method: options.method,
-                        headers: getStandardHeaders(),
-                        timeout: DEFAULT_TIMEOUT,
-                    },
-                    JSON.stringify(payload),
-                );
-
-                if (!result.success) {
-                    return {
-                        success: false,
-                        error: result.error || createError(PROVIDER_NAME, "Failed to send email"),
-                    };
-                }
-
-                // Extract message ID from response if available
-                const responseData = result.data as { body?: { id?: string; messageId?: string } };
-                const messageId =
-                    responseData?.body && typeof responseData.body === "object"
-                        ? responseData.body.id || responseData.body.messageId || generateMessageId()
-                        : generateMessageId();
-
-                return {
-                    success: true,
-                    data: {
-                        messageId,
-                        sent: true,
-                        timestamp: new Date(),
-                        provider: PROVIDER_NAME,
-                        response: result.data,
-                    },
-                };
             },
 
             /**

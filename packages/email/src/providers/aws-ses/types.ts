@@ -10,7 +10,22 @@ export interface AwsSesEmailOptions extends EmailOptions {
     configurationSetName?: string;
 
     /**
-     * Tags for AWS SES
+     * Source ARN for sending authorization
      */
-    tags?: Array<{ name: string; value: string }>;
+    sourceArn?: string;
+
+    /**
+     * Return path email address
+     */
+    returnPath?: string;
+
+    /**
+     * Return path ARN
+     */
+    returnPathArn?: string;
+
+    /**
+     * Message tags as key-value pairs
+     */
+    messageTags?: Record<string, string>;
 }
