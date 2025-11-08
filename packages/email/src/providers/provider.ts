@@ -23,6 +23,9 @@ export interface Provider<
 
     // Optional method to get email details by ID
     getEmail?: (id: string) => MaybePromise<Result<unknown>>;
+
+    // Optional method to shutdown/cleanup provider resources
+    shutdown?: () => MaybePromise<void>;
 }
 
 /**
