@@ -133,10 +133,8 @@ export const nodemailerProvider: ProviderFactory<NodemailerConfig, unknown, Node
                         nodemailerAttachment.contentType = attachment.contentType;
                     }
 
-                    // Prefer contentDisposition over disposition
-                    const disposition = attachment.contentDisposition || attachment.disposition;
-                    if (disposition) {
-                        nodemailerAttachment.contentDisposition = disposition;
+                    if (attachment.contentDisposition) {
+                        nodemailerAttachment.contentDisposition = attachment.contentDisposition;
                     }
 
                     if (attachment.cid) {

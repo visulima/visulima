@@ -1,4 +1,4 @@
-import type { EmailAddress, EmailOptions, EmailResult, Result } from "./types.js";
+import type { Attachment, EmailAddress, EmailOptions, EmailResult, Result } from "./types.js";
 import type { Provider } from "./providers/provider.js";
 import { basename } from "node:path";
 import {
@@ -43,14 +43,7 @@ export class MailMessage {
     private textContent?: string;
     private htmlContent?: string;
     private headers: Record<string, string> = {};
-    private attachments: Array<{
-        filename: string;
-        content: string | Buffer;
-        contentType?: string;
-        disposition?: string;
-        cid?: string;
-        path?: string;
-    }> = [];
+    private attachments: Attachment[] = [];
     private replyToAddress?: EmailAddress;
     private provider?: Provider;
 
@@ -149,7 +142,7 @@ export class MailMessage {
             filename,
             content,
             contentType,
-            contentDisposition: options?.contentDisposition || options?.disposition || "attachment",
+            contentDisposition: options?.contentDisposition || "attachment",
             cid: options?.cid,
             encoding: options?.encoding,
             headers: options?.headers,
@@ -175,7 +168,7 @@ export class MailMessage {
             filename: options.filename,
             content,
             contentType,
-            contentDisposition: options.contentDisposition || options.disposition || "attachment",
+            contentDisposition: options.contentDisposition || "attachment",
             cid: options.cid,
             encoding: options.encoding,
             headers: options.headers,
@@ -195,7 +188,7 @@ export class MailMessage {
      * message.html(`<img src="cid:${cid}">`)
      * ```
      */
-    async embedFromPath(filePath: string, options?: Omit<AttachmentOptions, "disposition" | "cid">): Promise<string> {
+    async embedFromPath(filePath: string, options?: Omit<AttachmentOptions, "contentDisposition" | "cid">): Promise<string> {
         const content = await readFileAsBuffer(filePath);
         const filename = options?.filename || basename(filePath) || "inline";
         const contentType = options?.contentType || detectMimeType(filename);
@@ -227,7 +220,7 @@ export class MailMessage {
     embedData(
         content: string | Buffer,
         filename: string,
-        options?: Omit<AttachmentDataOptions, "filename" | "disposition" | "cid">,
+        options?: Omit<AttachmentDataOptions, "filename" | "contentDisposition" | "cid">,
     ): string {
         const contentType = options?.contentType || detectMimeType(filename);
         const cid = generateContentId(filename);

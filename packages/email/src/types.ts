@@ -76,12 +76,6 @@ export interface Attachment {
 
     /**
      * Content disposition: 'attachment' (default) or 'inline'
-     * @deprecated Use contentDisposition instead
-     */
-    disposition?: string;
-
-    /**
-     * Content disposition: 'attachment' (default) or 'inline'
      */
     contentDisposition?: "attachment" | "inline";
 
