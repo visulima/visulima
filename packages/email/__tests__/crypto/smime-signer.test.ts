@@ -40,7 +40,9 @@ vi.mock(import("pkijs"), async () => {
                 certificates: [],
                 encapContentInfo: {},
                 signerInfos: [],
-                toSchema: vi.fn(() => { return { toBER: vi.fn(() => new Uint8Array([1, 2, 3])) }; }),
+                toSchema: vi.fn(() => {
+                    return { toBER: vi.fn(() => new Uint8Array([1, 2, 3])) };
+                }),
                 version: options?.version || 1,
             });
         }
@@ -117,7 +119,9 @@ vi.mock(import("pkijs"), async () => {
             constructor(options?: any) {
                 Object.assign(this, {
                     attributes: options?.attributes || [],
-                    toSchema: vi.fn(() => { return { toBER: vi.fn(() => new Uint8Array([1, 2, 3])) }; }),
+                    toSchema: vi.fn(() => {
+                        return { toBER: vi.fn(() => new Uint8Array([1, 2, 3])) };
+                    }),
                 });
             }
         },

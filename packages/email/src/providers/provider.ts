@@ -4,6 +4,7 @@ import type { EmailOptions, EmailResult, FeatureFlags, MaybePromise, Result } fr
  * Standard provider interface for email services
  */
 export interface Provider<OptionsT = unknown, InstanceT = unknown, EmailOptionsT extends EmailOptions = EmailOptions> {
+    endpoint?: string;
     features?: FeatureFlags;
     getEmail?: (id: string) => MaybePromise<Result<unknown>>;
     getInstance?: () => InstanceT;

@@ -2,7 +2,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { sendGridProvider } from "../../src/providers/sendgrid/index.js";
 import type { SendGridEmailOptions } from "../../src/providers/sendgrid/types.js";
-import * as utils from "../../src/utils.js";
+import { makeRequest } from "../../src/utils/make-request.js";
+import { retry } from "../../src/utils/retry.js";
 
 // Mock the utils module
 vi.mock(import("../../src/utils.js"), async () => {
@@ -78,7 +79,7 @@ describe(sendGridProvider, () => {
         });
 
         it("should check API availability for non-standard keys", async () => {
-            const makeRequestSpy = vi.spyOn(utils, "makeRequest").mockResolvedValue({
+            (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValue({
                 data: {
                     body: {},
                     headers: {},
@@ -91,14 +92,21 @@ describe(sendGridProvider, () => {
 
             const isAvailable = await provider.isAvailable();
 
-            expect(makeRequestSpy).toHaveBeenCalledWith();
+            expect(makeRequest as ReturnType<typeof vi.fn>).toHaveBeenCalledWith(`${provider.endpoint}/user/profile`, {
+                headers: {
+                    Authorization: "Bearer custom_key",
+                    "Content-Type": "application/json",
+                },
+                method: "GET",
+                timeout: 30_000,
+            });
             expect(isAvailable).toBe(true);
         });
     });
 
     describe("sendEmail", () => {
         it("should send email successfully", async () => {
-            const makeRequestSpy = vi.spyOn(utils, "makeRequest").mockResolvedValue({
+            (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValue({
                 data: {
                     headers: new Headers({ "X-Message-Id": "test-message-id" }),
                     statusCode: 202,
@@ -118,7 +126,18 @@ describe(sendGridProvider, () => {
 
             expect(result.success).toBe(true);
             expect(result.data?.messageId).toBeDefined();
-            expect(makeRequestSpy).toHaveBeenCalledWith();
+            expect(makeRequest as ReturnType<typeof vi.fn>).toHaveBeenCalledWith(
+                `${provider.endpoint}/mail/send`,
+                {
+                    headers: {
+                        Authorization: "Bearer SG.test123",
+                        "Content-Type": "application/json",
+                    },
+                    method: "POST",
+                    timeout: 30_000,
+                },
+                expect.any(String),
+            ); // JSON payload
         });
 
         it("should validate email options", async () => {
@@ -132,7 +151,7 @@ describe(sendGridProvider, () => {
         });
 
         it("should format recipients correctly", async () => {
-            const makeRequestSpy = vi.spyOn(utils, "makeRequest").mockResolvedValue({
+            (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValue({
                 data: {
                     headers: new Headers({ "X-Message-Id": "test-id" }),
                     statusCode: 202,
@@ -150,7 +169,7 @@ describe(sendGridProvider, () => {
 
             await provider.sendEmail(emailOptions);
 
-            const callArgs = makeRequestSpy.mock.calls[0];
+            const callArgs = (makeRequest as ReturnType<typeof vi.fn>).mock.calls[0];
             const payload = JSON.parse(callArgs[2] as string);
 
             expect(payload.from.email).toBe("sender@example.com");
@@ -161,7 +180,7 @@ describe(sendGridProvider, () => {
         });
 
         it("should include CC and BCC recipients", async () => {
-            const makeRequestSpy = vi.spyOn(utils, "makeRequest").mockResolvedValue({
+            (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValue({
                 data: {
                     headers: new Headers({ "X-Message-Id": "test-id" }),
                     statusCode: 202,
@@ -181,7 +200,7 @@ describe(sendGridProvider, () => {
 
             await provider.sendEmail(emailOptions);
 
-            const callArgs = makeRequestSpy.mock.calls[0];
+            const callArgs = (makeRequest as ReturnType<typeof vi.fn>).mock.calls[0];
             const payload = JSON.parse(callArgs[2] as string);
 
             expect(payload.personalizations[0].cc).toBeDefined();
@@ -189,7 +208,7 @@ describe(sendGridProvider, () => {
         });
 
         it("should include template if provided", async () => {
-            const makeRequestMock = utils.makeRequest as ReturnType<typeof vi.fn>;
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
 
             makeRequestMock.mockResolvedValue({
                 data: {
@@ -234,7 +253,7 @@ describe(sendGridProvider, () => {
         });
 
         it("should include attachments", async () => {
-            const makeRequestSpy = vi.spyOn(utils, "makeRequest").mockResolvedValue({
+            (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValue({
                 data: {
                     headers: new Headers({ "X-Message-Id": "test-id" }),
                     statusCode: 202,
@@ -259,7 +278,7 @@ describe(sendGridProvider, () => {
 
             await provider.sendEmail(emailOptions);
 
-            const callArgs = makeRequestSpy.mock.calls[0];
+            const callArgs = (makeRequest as ReturnType<typeof vi.fn>).mock.calls[0];
             const payload = JSON.parse(callArgs[2] as string);
 
             expect(payload.attachments).toBeDefined();
@@ -268,7 +287,7 @@ describe(sendGridProvider, () => {
         });
 
         it("should include custom headers", async () => {
-            const makeRequestSpy = vi.spyOn(utils, "makeRequest").mockResolvedValue({
+            (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValue({
                 data: {
                     headers: new Headers({ "X-Message-Id": "test-id" }),
                     statusCode: 202,
@@ -287,7 +306,7 @@ describe(sendGridProvider, () => {
 
             await provider.sendEmail(emailOptions);
 
-            const callArgs = makeRequestSpy.mock.calls[0];
+            const callArgs = (makeRequest as ReturnType<typeof vi.fn>).mock.calls[0];
             const payload = JSON.parse(callArgs[2] as string);
 
             expect(payload.headers).toBeDefined();
@@ -295,7 +314,7 @@ describe(sendGridProvider, () => {
         });
 
         it("should include tags as customArgs", async () => {
-            const makeRequestSpy = vi.spyOn(utils, "makeRequest").mockResolvedValue({
+            (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValue({
                 data: {
                     headers: new Headers({ "X-Message-Id": "test-id" }),
                     statusCode: 202,
@@ -314,7 +333,7 @@ describe(sendGridProvider, () => {
 
             await provider.sendEmail(emailOptions);
 
-            const callArgs = makeRequestSpy.mock.calls[0];
+            const callArgs = (makeRequest as ReturnType<typeof vi.fn>).mock.calls[0];
             const payload = JSON.parse(callArgs[2] as string);
 
             expect(payload.personalizations[0].customArgs).toBeDefined();
@@ -323,7 +342,7 @@ describe(sendGridProvider, () => {
         });
 
         it("should handle errors gracefully", async () => {
-            (utils.makeRequest as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+            (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
                 error: new Error("API Error"),
                 success: false,
             });

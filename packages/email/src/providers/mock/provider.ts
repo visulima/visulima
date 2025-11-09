@@ -1,6 +1,8 @@
 import { EmailError } from "../../errors/email-error";
 import type { EmailOptions, EmailResult, Receipt, Result } from "../../types";
-import { createLogger, generateMessageId, validateEmailOptions } from "../../utils";
+import { createLogger } from "../../utils/create-logger";
+import { generateMessageId } from "../../utils/generate-message-id";
+import { validateEmailOptions } from "../../utils/validate-email-options";
 import type { ProviderFactory } from "../provider";
 import { defineProvider } from "../provider";
 import type { MockConfig, MockEmailEntry, MockEmailOptions } from "./types";

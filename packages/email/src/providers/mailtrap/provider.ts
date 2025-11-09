@@ -2,7 +2,12 @@ import { Buffer } from "node:buffer";
 
 import { EmailError, RequiredOptionError } from "../../errors/email-error";
 import type { EmailAddress, EmailResult, Result } from "../../types";
-import { createLogger, generateMessageId, headersToRecord, makeRequest, retry, validateEmailOptions } from "../../utils";
+import { createLogger } from "../../utils/create-logger";
+import { generateMessageId } from "../../utils/generate-message-id";
+import { headersToRecord } from "../../utils/headers-to-record";
+import { makeRequest } from "../../utils/make-request";
+import { retry } from "../../utils/retry";
+import { validateEmailOptions } from "../../utils/validate-email-options";
 import type { ProviderFactory } from "../provider";
 import { defineProvider } from "../provider";
 import type { MailtrapConfig, MailtrapEmailOptions } from "./types";

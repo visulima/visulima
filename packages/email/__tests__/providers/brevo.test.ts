@@ -2,18 +2,34 @@ import { beforeEach, describe, expect, expectTypeOf, it, vi } from "vitest";
 
 import { brevoProvider } from "../../src/providers/brevo/index.js";
 import type { BrevoEmailOptions } from "../../src/providers/brevo/types.js";
-import * as utils from "../../src/utils.js";
+import { makeRequest } from "../../src/utils/make-request.js";
+import { retry } from "../../src/utils/retry.js";
 
-// Mock the utils module
-vi.mock(import("../../src/utils.js"), async () => {
-    const actual = await vi.importActual("../../src/utils.js");
-
+// Mock the makeRequest function
+vi.mock(import("../../src/utils/make-request.js"), () => {
     return {
-        ...actual,
-        makeRequest: vi.fn(),
+        makeRequest: vi.fn((url, options, data) =>
+        // Return a mock result that matches the expected structure
+            Promise.resolve({
+                data: {
+                    body: { messageId: "test-message-id" },
+                    statusCode: 200,
+                },
+                success: true,
+            }),
+        ),
+    };
+});
+
+// Mock the retry function
+vi.mock(import("../../src/utils/retry.js"), () => {
+    return {
         retry: vi.fn(async (function_) => await function_()),
     };
 });
+
+// Get the mocked makeRequest function for testing
+const makeRequestSpy = makeRequest as ReturnType<typeof vi.fn>;
 
 describe(brevoProvider, () => {
     beforeEach(() => {
@@ -70,7 +86,7 @@ describe(brevoProvider, () => {
 
     describe("isAvailable", () => {
         it("should check API availability", async () => {
-            const makeRequestSpy = vi.spyOn(utils, "makeRequest").mockResolvedValue({
+            (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValue({
                 data: {
                     body: {},
                     headers: {},
@@ -83,12 +99,19 @@ describe(brevoProvider, () => {
 
             const isAvailable = await provider.isAvailable();
 
-            expect(makeRequestSpy).toHaveBeenCalledWith();
+            expect(makeRequest).toHaveBeenCalledWith(`${provider.endpoint}/account`, {
+                headers: {
+                    "api-key": "test123",
+                    "Content-Type": "application/json",
+                },
+                method: "GET",
+                timeout: 30_000,
+            });
             expect(isAvailable).toBe(true);
         });
 
         it("should return false if API is unavailable", async () => {
-            (utils.makeRequest as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+            (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
                 error: new Error("API Error"),
                 success: false,
             });
@@ -103,7 +126,7 @@ describe(brevoProvider, () => {
 
     describe("sendEmail", () => {
         it("should send email successfully", async () => {
-            const makeRequestSpy = vi.spyOn(utils, "makeRequest").mockResolvedValue({
+            (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValue({
                 data: {
                     body: { messageId: "test-message-id" },
                     statusCode: 200,
@@ -123,7 +146,18 @@ describe(brevoProvider, () => {
 
             expect(result.success).toBe(true);
             expect(result.data?.messageId).toBeDefined();
-            expect(makeRequestSpy).toHaveBeenCalledWith();
+            expect(makeRequest as ReturnType<typeof vi.fn>).toHaveBeenCalledWith(
+                `${provider.endpoint}/smtp/email`,
+                {
+                    headers: {
+                        "api-key": "test123",
+                        "Content-Type": "application/json",
+                    },
+                    method: "POST",
+                    timeout: 30_000,
+                },
+                expect.any(String),
+            ); // JSON payload
         });
 
         it("should validate email options", async () => {
@@ -137,7 +171,7 @@ describe(brevoProvider, () => {
         });
 
         it("should format recipients correctly", async () => {
-            const makeRequestSpy = vi.spyOn(utils, "makeRequest").mockResolvedValue({
+            (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValue({
                 data: {
                     body: { messageId: "test-id" },
                     statusCode: 200,
@@ -155,7 +189,19 @@ describe(brevoProvider, () => {
 
             await provider.sendEmail(emailOptions);
 
-            const callArgs = makeRequestSpy.mock.calls[0];
+            expect(makeRequest as ReturnType<typeof vi.fn>).toHaveBeenCalledWith(
+                `${provider.endpoint}/smtp/email`,
+                expect.objectContaining({
+                    headers: expect.objectContaining({
+                        "api-key": "test123",
+                        "Content-Type": "application/json",
+                    }),
+                    method: "POST",
+                }),
+                expect.any(String),
+            );
+
+            const callArgs = (makeRequest as ReturnType<typeof vi.fn>).mock.calls[0];
             const payload = JSON.parse(callArgs[2] as string);
 
             expect(payload.sender.email).toBe("sender@example.com");
@@ -166,7 +212,7 @@ describe(brevoProvider, () => {
         });
 
         it("should include CC and BCC recipients", async () => {
-            const makeRequestSpy = vi.spyOn(utils, "makeRequest").mockResolvedValue({
+            (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValue({
                 data: {
                     body: { messageId: "test-id" },
                     statusCode: 200,
@@ -186,7 +232,19 @@ describe(brevoProvider, () => {
 
             await provider.sendEmail(emailOptions);
 
-            const callArgs = makeRequestSpy.mock.calls[0];
+            expect(makeRequest as ReturnType<typeof vi.fn>).toHaveBeenCalledWith(
+                `${provider.endpoint}/smtp/email`,
+                expect.objectContaining({
+                    headers: expect.objectContaining({
+                        "api-key": "test123",
+                        "Content-Type": "application/json",
+                    }),
+                    method: "POST",
+                }),
+                expect.any(String),
+            );
+
+            const callArgs = (makeRequest as ReturnType<typeof vi.fn>).mock.calls[0];
             const payload = JSON.parse(callArgs[2] as string);
 
             expect(payload.cc).toBeDefined();
@@ -194,7 +252,7 @@ describe(brevoProvider, () => {
         });
 
         it("should include template if provided", async () => {
-            const makeRequestMock = utils.makeRequest as ReturnType<typeof vi.fn>;
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
 
             makeRequestMock.mockResolvedValue({
                 data: {
@@ -239,7 +297,7 @@ describe(brevoProvider, () => {
         });
 
         it("should include tags", async () => {
-            const makeRequestSpy = vi.spyOn(utils, "makeRequest").mockResolvedValue({
+            (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValue({
                 data: {
                     body: { messageId: "test-id" },
                     statusCode: 200,
@@ -258,7 +316,19 @@ describe(brevoProvider, () => {
 
             await provider.sendEmail(emailOptions);
 
-            const callArgs = makeRequestSpy.mock.calls[0];
+            expect(makeRequest as ReturnType<typeof vi.fn>).toHaveBeenCalledWith(
+                `${provider.endpoint}/smtp/email`,
+                expect.objectContaining({
+                    headers: expect.objectContaining({
+                        "api-key": "test123",
+                        "Content-Type": "application/json",
+                    }),
+                    method: "POST",
+                }),
+                expect.any(String),
+            );
+
+            const callArgs = (makeRequest as ReturnType<typeof vi.fn>).mock.calls[0];
             const payload = JSON.parse(callArgs[2] as string);
 
             expect(payload.tags).toBeDefined();
@@ -266,7 +336,7 @@ describe(brevoProvider, () => {
         });
 
         it("should include scheduled date/time", async () => {
-            const makeRequestSpy = vi.spyOn(utils, "makeRequest").mockResolvedValue({
+            (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValue({
                 data: {
                     body: { messageId: "test-id" },
                     statusCode: 200,
@@ -286,7 +356,19 @@ describe(brevoProvider, () => {
 
             await provider.sendEmail(emailOptions);
 
-            const callArgs = makeRequestSpy.mock.calls[0];
+            expect(makeRequest as ReturnType<typeof vi.fn>).toHaveBeenCalledWith(
+                `${provider.endpoint}/smtp/email`,
+                expect.objectContaining({
+                    headers: expect.objectContaining({
+                        "api-key": "test123",
+                        "Content-Type": "application/json",
+                    }),
+                    method: "POST",
+                }),
+                expect.any(String),
+            );
+
+            const callArgs = (makeRequest as ReturnType<typeof vi.fn>).mock.calls[0];
             const payload = JSON.parse(callArgs[2] as string);
 
             expect(payload.scheduledAt).toBeDefined();
@@ -295,7 +377,7 @@ describe(brevoProvider, () => {
         });
 
         it("should include custom headers", async () => {
-            const makeRequestSpy = vi.spyOn(utils, "makeRequest").mockResolvedValue({
+            (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValue({
                 data: {
                     body: { messageId: "test-id" },
                     statusCode: 200,
@@ -314,7 +396,19 @@ describe(brevoProvider, () => {
 
             await provider.sendEmail(emailOptions);
 
-            const callArgs = makeRequestSpy.mock.calls[0];
+            expect(makeRequest as ReturnType<typeof vi.fn>).toHaveBeenCalledWith(
+                `${provider.endpoint}/smtp/email`,
+                expect.objectContaining({
+                    headers: expect.objectContaining({
+                        "api-key": "test123",
+                        "Content-Type": "application/json",
+                    }),
+                    method: "POST",
+                }),
+                expect.any(String),
+            );
+
+            const callArgs = (makeRequest as ReturnType<typeof vi.fn>).mock.calls[0];
             const payload = JSON.parse(callArgs[2] as string);
 
             expect(payload.headers).toBeDefined();
@@ -322,7 +416,7 @@ describe(brevoProvider, () => {
         });
 
         it("should include attachments", async () => {
-            const makeRequestSpy = vi.spyOn(utils, "makeRequest").mockResolvedValue({
+            (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValue({
                 data: {
                     body: { messageId: "test-id" },
                     statusCode: 200,
@@ -347,7 +441,19 @@ describe(brevoProvider, () => {
 
             await provider.sendEmail(emailOptions);
 
-            const callArgs = makeRequestSpy.mock.calls[0];
+            expect(makeRequest as ReturnType<typeof vi.fn>).toHaveBeenCalledWith(
+                `${provider.endpoint}/smtp/email`,
+                expect.objectContaining({
+                    headers: expect.objectContaining({
+                        "api-key": "test123",
+                        "Content-Type": "application/json",
+                    }),
+                    method: "POST",
+                }),
+                expect.any(String),
+            );
+
+            const callArgs = (makeRequest as ReturnType<typeof vi.fn>).mock.calls[0];
             const payload = JSON.parse(callArgs[2] as string);
 
             expect(payload.attachment).toBeDefined();
@@ -356,7 +462,7 @@ describe(brevoProvider, () => {
         });
 
         it("should handle errors gracefully", async () => {
-            (utils.makeRequest as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+            (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
                 error: new Error("API Error"),
                 success: false,
             });

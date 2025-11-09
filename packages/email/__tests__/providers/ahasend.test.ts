@@ -2,7 +2,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ahaSendProvider } from "../../src/providers/ahasend/index.js";
 import type { AhaSendEmailOptions } from "../../src/providers/ahasend/types.js";
-import * as utils from "../../src/utils.js";
+import { makeRequest } from "../../src/utils/make-request.js";
+import { retry } from "../../src/utils/retry.js";
 
 vi.mock(import("../../src/utils.js"), async () => {
     const actual = await vi.importActual("../../src/utils.js");

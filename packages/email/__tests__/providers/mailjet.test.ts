@@ -2,7 +2,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { mailjetProvider } from "../../src/providers/mailjet/index.js";
 import type { MailjetEmailOptions } from "../../src/providers/mailjet/types.js";
-import * as utils from "../../src/utils.js";
+import { makeRequest } from "../../src/utils/make-request.js";
+import { retry } from "../../src/utils/retry.js";
 
 // Mock the utils module
 vi.mock(import("../../src/utils.js"), async () => {
@@ -77,7 +78,7 @@ describe(mailjetProvider, () => {
 
     describe("isAvailable", () => {
         it("should check API availability", async () => {
-            const makeRequestSpy = vi.spyOn(utils, "makeRequest").mockResolvedValue({
+            (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValue({
                 data: {
                     body: {},
                     headers: {},
@@ -90,12 +91,19 @@ describe(mailjetProvider, () => {
 
             const isAvailable = await provider.isAvailable();
 
-            expect(makeRequestSpy).toHaveBeenCalledWith();
+            expect(makeRequest as ReturnType<typeof vi.fn>).toHaveBeenCalledWith(`${provider.endpoint}/v3.1/REST/user`, {
+                headers: {
+                    Authorization: "Basic a2V5MTIzOnNlY3JldDEyMw==",
+                    "Content-Type": "application/json",
+                },
+                method: "GET",
+                timeout: 30_000,
+            });
             expect(isAvailable).toBe(true);
         });
 
         it("should return false if API is unavailable", async () => {
-            (utils.makeRequest as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+            (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
                 error: new Error("API Error"),
                 success: false,
             });
@@ -110,7 +118,7 @@ describe(mailjetProvider, () => {
 
     describe("sendEmail", () => {
         it("should send email successfully", async () => {
-            const makeRequestSpy = vi.spyOn(utils, "makeRequest").mockResolvedValue({
+            (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValue({
                 data: {
                     body: {
                         Messages: [
@@ -136,7 +144,18 @@ describe(mailjetProvider, () => {
 
             expect(result.success).toBe(true);
             expect(result.data?.messageId).toBeDefined();
-            expect(makeRequestSpy).toHaveBeenCalledWith();
+            expect(makeRequest as ReturnType<typeof vi.fn>).toHaveBeenCalledWith(
+                `${provider.endpoint}/v3.1/send`,
+                {
+                    headers: {
+                        Authorization: "Basic a2V5MTIzOnNlY3JldDEyMw==",
+                        "Content-Type": "application/json",
+                    },
+                    method: "POST",
+                    timeout: 30_000,
+                },
+                expect.any(String),
+            ); // JSON payload
         });
 
         it("should validate email options", async () => {
@@ -150,7 +169,7 @@ describe(mailjetProvider, () => {
         });
 
         it("should format recipients correctly", async () => {
-            const makeRequestSpy = vi.spyOn(utils, "makeRequest").mockResolvedValue({
+            (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValue({
                 data: {
                     body: {
                         Messages: [
@@ -174,7 +193,7 @@ describe(mailjetProvider, () => {
 
             await provider.sendEmail(emailOptions);
 
-            const callArgs = makeRequestSpy.mock.calls[0];
+            const callArgs = (makeRequest as ReturnType<typeof vi.fn>).mock.calls[0];
             const payload = JSON.parse(callArgs[2] as string);
 
             expect(payload.Messages[0].From.Email).toBe("sender@example.com");
@@ -185,7 +204,7 @@ describe(mailjetProvider, () => {
         });
 
         it("should include CC and BCC recipients", async () => {
-            const makeRequestSpy = vi.spyOn(utils, "makeRequest").mockResolvedValue({
+            (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValue({
                 data: {
                     body: {
                         Messages: [
@@ -211,7 +230,7 @@ describe(mailjetProvider, () => {
 
             await provider.sendEmail(emailOptions);
 
-            const callArgs = makeRequestSpy.mock.calls[0];
+            const callArgs = (makeRequest as ReturnType<typeof vi.fn>).mock.calls[0];
             const payload = JSON.parse(callArgs[2] as string);
 
             expect(payload.Messages[0].Cc).toBeDefined();
@@ -219,7 +238,7 @@ describe(mailjetProvider, () => {
         });
 
         it("should include template if provided", async () => {
-            const makeRequestMock = utils.makeRequest as ReturnType<typeof vi.fn>;
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
 
             makeRequestMock.mockResolvedValue({
                 data: {
@@ -270,7 +289,7 @@ describe(mailjetProvider, () => {
         });
 
         it("should include tags", async () => {
-            const makeRequestSpy = vi.spyOn(utils, "makeRequest").mockResolvedValue({
+            (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValue({
                 data: {
                     body: {
                         Messages: [
@@ -295,14 +314,14 @@ describe(mailjetProvider, () => {
 
             await provider.sendEmail(emailOptions);
 
-            const callArgs = makeRequestSpy.mock.calls[0];
+            const callArgs = (makeRequest as ReturnType<typeof vi.fn>).mock.calls[0];
             const payload = JSON.parse(callArgs[2] as string);
 
             expect(payload.Messages[0].CustomCampaign).toBe("tag1,tag2");
         });
 
         it("should include custom headers", async () => {
-            const makeRequestSpy = vi.spyOn(utils, "makeRequest").mockResolvedValue({
+            (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValue({
                 data: {
                     body: {
                         Messages: [
@@ -327,7 +346,7 @@ describe(mailjetProvider, () => {
 
             await provider.sendEmail(emailOptions);
 
-            const callArgs = makeRequestSpy.mock.calls[0];
+            const callArgs = (makeRequest as ReturnType<typeof vi.fn>).mock.calls[0];
             const payload = JSON.parse(callArgs[2] as string);
 
             expect(payload.Messages[0].Headers).toBeDefined();
@@ -337,7 +356,7 @@ describe(mailjetProvider, () => {
         });
 
         it("should include attachments", async () => {
-            const makeRequestSpy = vi.spyOn(utils, "makeRequest").mockResolvedValue({
+            (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValue({
                 data: {
                     body: {
                         Messages: [
@@ -368,7 +387,7 @@ describe(mailjetProvider, () => {
 
             await provider.sendEmail(emailOptions);
 
-            const callArgs = makeRequestSpy.mock.calls[0];
+            const callArgs = (makeRequest as ReturnType<typeof vi.fn>).mock.calls[0];
             const payload = JSON.parse(callArgs[2] as string);
 
             expect(payload.Messages[0].Attachments).toBeDefined();
@@ -377,7 +396,7 @@ describe(mailjetProvider, () => {
         });
 
         it("should handle errors gracefully", async () => {
-            (utils.makeRequest as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+            (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
                 error: new Error("API Error"),
                 success: false,
             });

@@ -3,7 +3,7 @@ import { context, SpanStatusCode, trace } from "@opentelemetry/api";
 
 import { EmailError, RequiredOptionError } from "../../errors/email-error";
 import type { EmailOptions, EmailResult, Result } from "../../types";
-import { createLogger } from "../../utils";
+import { createLogger } from "../../utils/create-logger";
 import type { Provider, ProviderFactory } from "../provider";
 import { defineProvider } from "../provider";
 import type { OpenTelemetryConfig, OpenTelemetryEmailOptions } from "./types";
