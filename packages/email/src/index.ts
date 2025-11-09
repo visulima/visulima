@@ -19,6 +19,8 @@ export type {
     MailCrabConfig,
     MaybePromise,
     NodemailerConfig,
+    Priority,
+    Receipt,
     ResendConfig,
     Result,
     RoundRobinConfig,
@@ -28,6 +30,7 @@ export type {
 
 export {
     buildMimeMessage,
+    comparePriority,
     createLogger,
     formatEmailAddress,
     formatEmailAddresses,
@@ -35,6 +38,7 @@ export {
     generateMessageId,
     isPortAvailable,
     makeRequest,
+    parseAddress,
     retry,
     validateEmail,
     validateEmailOptions,

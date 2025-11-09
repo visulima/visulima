@@ -1,5 +1,5 @@
 import { EmailError } from "./errors/email-error";
-import type { EmailAddress, EmailOptions, Logger, Result } from "./types";
+import type { EmailAddress, EmailOptions, Logger, Priority, Result } from "./types";
 
 const hasBuffer = globalThis.Buffer !== undefined;
 const isNode = typeof process !== "undefined" && process.versions?.node;
@@ -98,6 +98,105 @@ export const validateEmail = (email: string): boolean => {
     const emailRegex = /^[\w.%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/i;
 
     return emailRegex.test(email);
+};
+
+/**
+ * Parses a string representation of an email address into an EmailAddress object.
+ * Supports formats: "email@example.com", "Name <email@example.com>", "<email@example.com>"
+ *
+ * @example Parsing an address with a name
+ * ```ts
+ * const address = parseAddress("John Doe <john@example.com>");
+ * // { name: "John Doe", email: "john@example.com" }
+ * ```
+ *
+ * @example Parsing an address without a name
+ * ```ts
+ * const address = parseAddress("jane@example.com");
+ * // { email: "jane@example.com" }
+ * ```
+ *
+ * @param address - The string representation of the address to parse
+ * @returns An EmailAddress object if parsing is successful, or undefined if invalid
+ */
+export const parseAddress = (address: string): EmailAddress | undefined => {
+    if (!address || typeof address !== "string") {
+        return undefined;
+    }
+
+    const trimmed = address.trim();
+    if (!trimmed) {
+        return undefined;
+    }
+
+    // Check for name and angle bracket format: "Name <email@domain.com>"
+    const nameAngleBracketMatch = trimmed.match(/^(.+?)\s*<(.+?)>$/);
+    if (nameAngleBracketMatch) {
+        const name = nameAngleBracketMatch[1].trim();
+        const email = nameAngleBracketMatch[2].trim();
+
+        if (!validateEmail(email)) {
+            return undefined;
+        }
+
+        // Remove quotes from name if present
+        const cleanName = name.replace(/^"(.+)"$/, "$1");
+        return { name: cleanName, email };
+    }
+
+    // Check for angle bracket format without name: "<email@domain.com>"
+    const angleBracketMatch = trimmed.match(/^<(.+?)>$/);
+    if (angleBracketMatch) {
+        const email = angleBracketMatch[1].trim();
+
+        if (!validateEmail(email)) {
+            return undefined;
+        }
+
+        return { email };
+    }
+
+    // Check for plain email format: "email@domain.com"
+    if (validateEmail(trimmed)) {
+        return { email: trimmed };
+    }
+
+    return undefined;
+};
+
+/**
+ * Compares two priority levels and returns a number indicating their relative order.
+ * High priority is considered greater than normal, which is greater than low.
+ *
+ * @example Sorting priorities
+ * ```ts
+ * const priorities: Priority[] = ["normal", "low", "high"];
+ * priorities.sort(comparePriority);
+ * // ["high", "normal", "low"]
+ * ```
+ *
+ * @param a - The first priority to compare
+ * @param b - The second priority to compare
+ * @returns A negative number if a is less than b, a positive number if a is greater than b, and zero if they are equal
+ */
+export const comparePriority = (a: Priority, b: Priority): number => {
+    if (a === b) {
+        return 0;
+    }
+
+    if (a === "high") {
+        return -1;
+    }
+
+    if (b === "high") {
+        return 1;
+    }
+
+    if (a === "low") {
+        return 1;
+    }
+
+    return -1;
 };
 
 /**
@@ -441,7 +540,7 @@ export const buildMimeMessage = async <T extends EmailOptions>(options: T): Prom
 
             message.push(`Content-Transfer-Encoding: ${encoding}`, "");
 
-            let attachmentContent: string | Buffer | undefined;
+            let attachmentContent: string | Buffer | Uint8Array | undefined;
 
             if (attachment.raw !== undefined) {
                 attachmentContent = attachment.raw;
@@ -451,13 +550,26 @@ export const buildMimeMessage = async <T extends EmailOptions>(options: T): Prom
                     `Attachment '${attachment.filename}' must have content, raw, or be resolved from path/href before building MIME message`,
                 );
             } else {
-                attachmentContent = attachment.content;
+                // Handle async content (Promise<Uint8Array>)
+                if (attachment.content instanceof Promise) {
+                    attachmentContent = await attachment.content;
+                } else {
+                    attachmentContent = attachment.content;
+                }
             }
 
             if (encoding === "base64") {
                 message.push(toBase64(attachmentContent));
             } else if (encoding === "7bit" || encoding === "8bit") {
-                message.push(typeof attachmentContent === "string" ? attachmentContent : attachmentContent.toString("utf-8"));
+                if (typeof attachmentContent === "string") {
+                    message.push(attachmentContent);
+                } else if (hasBuffer && attachmentContent instanceof Buffer) {
+                    message.push(attachmentContent.toString("utf-8"));
+                } else {
+                    // Uint8Array
+                    const decoder = new TextDecoder();
+                    message.push(decoder.decode(attachmentContent));
+                }
             } else {
                 message.push(toBase64(attachmentContent));
             }
