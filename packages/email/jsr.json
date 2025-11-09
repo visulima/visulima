@@ -2,6 +2,10 @@
     "name": "@visulima/email",
     "version": "0.0.0",
     "exports": {
-        ".": "./src/index.ts"
+        ".": "./src/index.ts",
+        "./handlebars": "./src/template-engines/handlebars.ts",
+        "./mjml": "./src/template-engines/mjml.ts",
+        "./react-email": "./src/template-engines/react-email.ts",
+        "./html-to-text": "./src/template-engines/html-to-text.ts"
     }
 }

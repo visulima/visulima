@@ -35,6 +35,22 @@
             "types": "./dist/index.d.ts",
             "default": "./dist/index.js"
         },
+        "./handlebars": {
+            "types": "./dist/template-engines/handlebars.d.ts",
+            "default": "./dist/template-engines/handlebars.js"
+        },
+        "./mjml": {
+            "types": "./dist/template-engines/mjml.d.ts",
+            "default": "./dist/template-engines/mjml.js"
+        },
+        "./react-email": {
+            "types": "./dist/template-engines/react-email.d.ts",
+            "default": "./dist/template-engines/react-email.js"
+        },
+        "./html-to-text": {
+            "types": "./dist/template-engines/html-to-text.d.ts",
+            "default": "./dist/template-engines/html-to-text.js"
+        },
         "./package.json": "./package.json"
     },
     "files": [
@@ -75,15 +91,36 @@
         "provenance": true
     },
     "dependencies": {
-        "@react-email/render": "^1.0.0",
         "@visulima/error": "5.0.4",
-        "handlebars": "^4.7.8",
-        "html-to-text": "^9.0.5",
-        "mjml": "^4.15.3",
         "mime": "^4.0.4",
         "nodemailer": "^6.9.16"
     },
+    "peerDependencies": {
+        "@react-email/render": "^1.0.0",
+        "handlebars": "^4.7.8",
+        "html-to-text": "^9.0.5",
+        "mjml": "^4.15.3"
+    },
+    "peerDependenciesMeta": {
+        "@react-email/render": {
+            "optional": true
+        },
+        "handlebars": {
+            "optional": true
+        },
+        "html-to-text": {
+            "optional": true
+        },
+        "mjml": {
+            "optional": true
+        }
+    },
     "devDependencies": {
+        "@react-email/render": "^1.0.0",
+        "@types/handlebars": "^4.1.0",
+        "handlebars": "^4.7.8",
+        "html-to-text": "^9.0.5",
+        "mjml": "^4.15.3",
         "publint": "^0.3.12",
         "@anolilab/eslint-config": "^16.2.4",
         "@anolilab/semantic-release-pnpm": "1.1.11",
