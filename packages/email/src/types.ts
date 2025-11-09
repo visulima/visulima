@@ -41,12 +41,70 @@ export interface EmailAddress {
  * Email attachment
  */
 export interface Attachment {
+    /**
+     * Filename for the attachment
+     */
     filename: string;
-    content: string | Buffer;
-    contentType?: string;
-    disposition?: string;
-    cid?: string;
+
+    /**
+     * Attachment content (string or Buffer)
+     * Required if path, href, or raw are not provided
+     */
+    content?: string | Buffer;
+
+    /**
+     * File path to read attachment from
+     * Alternative to content
+     */
     path?: string;
+
+    /**
+     * URL to fetch attachment from
+     * Alternative to content or path
+     */
+    href?: string;
+
+    /**
+     * HTTP headers to use when fetching from href
+     */
+    httpHeaders?: Record<string, string>;
+
+    /**
+     * MIME type of the attachment
+     */
+    contentType?: string;
+
+    /**
+     * Content disposition: 'attachment' (default) or 'inline'
+     * @deprecated Use contentDisposition instead
+     */
+    disposition?: string;
+
+    /**
+     * Content disposition: 'attachment' (default) or 'inline'
+     */
+    contentDisposition?: "attachment" | "inline";
+
+    /**
+     * Content-ID for inline attachments (used in HTML with cid:)
+     */
+    cid?: string;
+
+    /**
+     * Content transfer encoding (e.g., 'base64', '7bit', 'quoted-printable')
+     */
+    encoding?: string;
+
+    /**
+     * Custom headers for this attachment
+     */
+    headers?: Record<string, string>;
+
+    /**
+     * Raw attachment data (alternative to content)
+     * Can be used for pre-encoded content
+     */
+    raw?: string | Buffer;
 }
 
 /**

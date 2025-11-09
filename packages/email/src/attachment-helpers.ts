@@ -44,8 +44,14 @@ export interface AttachmentOptions {
 
     /**
      * Disposition type: 'attachment' (default) or 'inline'
+     * @deprecated Use contentDisposition instead
      */
     disposition?: "attachment" | "inline";
+
+    /**
+     * Content disposition: 'attachment' (default) or 'inline'
+     */
+    contentDisposition?: "attachment" | "inline";
 
     /**
      * Content-ID for inline attachments (used in HTML with cid:)
@@ -57,6 +63,16 @@ export interface AttachmentOptions {
      * Custom filename (if different from the file path)
      */
     filename?: string;
+
+    /**
+     * Content transfer encoding (e.g., 'base64', '7bit', 'quoted-printable')
+     */
+    encoding?: string;
+
+    /**
+     * Custom headers for this attachment
+     */
+    headers?: Record<string, string>;
 }
 
 /**
