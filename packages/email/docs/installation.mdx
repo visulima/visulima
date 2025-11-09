@@ -29,8 +29,47 @@ pnpm add @visulima/email
 
 ## Requirements
 
-- **Node.js**: 20.19 or higher, up to 25.x
+- **Node.js**: 20.19 or higher, up to 25.x (for Node.js-specific providers)
 - **TypeScript**: Optional but recommended for full type safety
+
+## Runtime Support
+
+@visulima/email supports multiple JavaScript runtimes, but provider availability varies by runtime:
+
+### Universal Runtimes
+
+The following providers work in **Node.js**, **Deno**, **Bun**, and **Cloudflare Workers**:
+
+- **Resend** - Uses Fetch API
+- **HTTP** - Uses Fetch API
+- **Zeptomail** - Uses Fetch API
+- **Failover** - Works if all wrapped providers support the runtime
+- **Round Robin** - Works if all wrapped providers support the runtime
+
+### Node.js Only
+
+The following providers require Node.js built-in modules (`node:crypto`, `node:net`, `node:tls`) and only work in **Node.js**:
+
+- **AWS SES** - Requires `node:crypto` for AWS Signature V4 signing
+- **SMTP** - Requires `node:net` and `node:tls` for SMTP connections
+- **MailCrab** - Wraps SMTP provider (requires Node.js)
+- **Nodemailer** - Requires the `nodemailer` package (Node.js only)
+
+### Runtime Compatibility Table
+
+| Provider    | Node.js | Deno | Bun  | Cloudflare Workers |
+| ----------- | ------- | ---- | ---- | ------------------ |
+| Resend      | ✅      | ✅   | ✅   | ✅                 |
+| HTTP        | ✅      | ✅   | ✅   | ✅                 |
+| Zeptomail   | ✅      | ✅   | ✅   | ✅                 |
+| AWS SES     | ✅      | ❌   | ❌   | ❌                 |
+| SMTP        | ✅      | ❌   | ❌   | ❌                 |
+| MailCrab    | ✅      | ❌   | ❌   | ❌                 |
+| Nodemailer  | ✅      | ❌   | ❌   | ❌                 |
+| Failover    | ✅\*    | ✅\* | ✅\* | ✅\*               |
+| Round Robin | ✅\*    | ✅\* | ✅\* | ✅\*               |
+
+\* Runtime support depends on the wrapped providers. Works if all wrapped providers support the runtime.
 
 ## Provider Dependencies
 

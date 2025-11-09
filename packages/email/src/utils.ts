@@ -1,39 +1,84 @@
-import type { Attachment, EmailAddress, EmailOptions, Result } from "./types.js";
-import { EmailError, RequiredOptionError } from "./errors/email-error.js";
+import { EmailError } from "./errors/email-error.js";
+import type { EmailAddress, EmailOptions, Logger, Result } from "./types.js";
 
-// Runtime detection - Buffer availability (Node.js, Bun have it; Deno, Workers don't)
-const hasBuffer = typeof globalThis.Buffer !== "undefined";
+const hasBuffer = globalThis.Buffer !== undefined;
 const isNode = typeof process !== "undefined" && process.versions?.node;
 
-// Conditional imports for Node.js-specific modules
-let crypto: typeof import("node:crypto") | undefined;
-let net: typeof import("node:net") | undefined;
+let cryptoModule: { createHash: typeof import("node:crypto").createHash; randomBytes: typeof import("node:crypto").randomBytes } | undefined;
+let netModule: { createConnection: typeof import("node:net").createConnection; Socket: typeof import("node:net").Socket } | undefined;
 
-// Lazy load Node.js modules only when needed
-const getCrypto = (): typeof import("node:crypto") => {
-    if (!crypto && isNode) {
+const getCrypto = async (): Promise<typeof cryptoModule> => {
+    if (!cryptoModule && isNode) {
         try {
-            // eslint-disable-next-line @typescript-eslint/no-require-imports
-            crypto = require("node:crypto");
+            const crypto = await import("node:crypto");
+
+            cryptoModule = {
+                createHash: crypto.createHash,
+                randomBytes: crypto.randomBytes,
+            };
         } catch {
             // Ignore if not available
         }
     }
-    return crypto!;
+
+    return cryptoModule;
 };
 
-const getNet = (): typeof import("node:net") | undefined => {
-    if (!net && isNode) {
+const getNet = async (): Promise<typeof netModule> => {
+    if (!netModule && isNode) {
         try {
-            // eslint-disable-next-line @typescript-eslint/no-require-imports
-            net = require("node:net");
+            const net = await import("node:net");
+
+            netModule = {
+                createConnection: net.createConnection,
+                Socket: net.Socket,
+            };
         } catch {
             // Ignore if not available
         }
     }
-    return net;
+
+    return netModule;
 };
 
+/**
+ * Creates a logger from options
+ * If a custom logger is provided, it will be used
+ * Otherwise, creates a logger based on debug flag
+ */
+export const createLogger = (providerName: string, debug?: boolean, logger?: Logger): Logger => {
+    if (logger) {
+        return logger;
+    }
+
+    const noop = (): void => {
+        // No-op logger when debug is disabled
+    };
+
+    if (!debug) {
+        return {
+            debug: noop,
+            error: noop,
+            info: noop,
+            warn: noop,
+        };
+    }
+
+    return {
+        debug: (message: string, ...args: unknown[]): void => {
+            console.log(`[${providerName}] ${message}`, ...args);
+        },
+        error: (message: string, ...args: unknown[]): void => {
+            console.error(`[${providerName}] ${message}`, ...args);
+        },
+        info: (message: string, ...args: unknown[]): void => {
+            console.info(`[${providerName}] ${message}`, ...args);
+        },
+        warn: (message: string, ...args: unknown[]): void => {
+            console.warn(`[${providerName}] ${message}`, ...args);
+        },
+    };
+};
 
 /**
  * Generates a random message ID for emails
@@ -41,7 +86,8 @@ const getNet = (): typeof import("node:net") | undefined => {
 export const generateMessageId = (): string => {
     const domain = "visulima.local";
     const timestamp = Date.now();
-    const random = Math.random().toString(36).substring(2, 10);
+    const random = Math.random().toString(36).slice(2, 10);
+
     return `<${timestamp}.${random}@${domain}>`;
 };
 
@@ -50,11 +96,12 @@ export const generateMessageId = (): string => {
  */
 export const validateEmail = (email: string): boolean => {
     const emailRegex = /^[\w.%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/i;
+
     return emailRegex.test(email);
 };
 
 /**
- * Format email address as "Name <email@example.com>"
+ * Format email address as "Name &lt;email@example.com>"
  */
 export const formatEmailAddress = (address: EmailAddress): string => {
     if (!validateEmail(address.email)) {
@@ -71,6 +118,7 @@ export const formatEmailAddresses = (addresses: EmailAddress | EmailAddress[]): 
     if (Array.isArray(addresses)) {
         return addresses.map(formatEmailAddress).join(", ");
     }
+
     return formatEmailAddress(addresses);
 };
 
@@ -96,15 +144,16 @@ export const validateEmailOptions = <T extends EmailOptions>(options: T): string
         errors.push("Either text or html content is required");
     }
 
-    // Validate email addresses
     if (options.from && options.from.email && !validateEmail(options.from.email)) {
         errors.push(`Invalid from email address: ${options.from.email}`);
     }
 
     const checkAddresses = (addresses: EmailAddress | EmailAddress[] | undefined, field: string) => {
-        if (!addresses) return;
+        if (!addresses)
+            return;
 
         const list = Array.isArray(addresses) ? addresses : [addresses];
+
         list.forEach((addr) => {
             if (!validateEmail(addr.email)) {
                 errors.push(`Invalid ${field} email address: ${addr.email}`);
@@ -116,7 +165,6 @@ export const validateEmailOptions = <T extends EmailOptions>(options: T): string
     checkAddresses(options.cc, "cc");
     checkAddresses(options.bcc, "bcc");
 
-    // Validate replyTo if present
     if (options.replyTo && !validateEmail(options.replyTo.email)) {
         errors.push(`Invalid replyTo email address: ${options.replyTo.email}`);
     }
@@ -128,59 +176,46 @@ export const validateEmailOptions = <T extends EmailOptions>(options: T): string
  * Request options compatible with both Fetch API and Node.js http
  */
 export interface RequestOptions {
-    method?: string;
-    headers?: Record<string, string>;
-    timeout?: number;
     [key: string]: unknown;
+    headers?: Record<string, string>;
+    method?: string;
+    timeout?: number;
 }
 
 /**
  * Makes an HTTP request using Fetch API (compatible with Node.js 20.19+, Deno, Bun, Cloudflare Workers)
  */
-export const makeRequest = async (
-    url: string | URL,
-    options: RequestOptions = {},
-    data?: string | Buffer | Uint8Array,
-): Promise<Result<unknown>> => {
-    const urlObj = typeof url === "string" ? new URL(url) : url;
+export const makeRequest = async (url: string | URL, options: RequestOptions = {}, data?: string | Buffer | Uint8Array): Promise<Result<unknown>> => {
+    const urlObject = typeof url === "string" ? new URL(url) : url;
 
     try {
-        // Convert headers to Headers object
         const headers = new Headers();
+
         if (options.headers) {
             Object.entries(options.headers).forEach(([key, value]) => {
                 headers.set(key, value);
             });
         }
 
-        // Prepare fetch options
         const fetchOptions: RequestInit = {
-            method: options.method || (data ? "POST" : "GET"),
             headers,
+            method: options.method || (data ? "POST" : "GET"),
         };
 
-        // Add body if data is provided
         if (data) {
             if (typeof data === "string") {
                 fetchOptions.body = data;
+            } else if (data instanceof Uint8Array) {
+                fetchOptions.body = data as BodyInit;
+            } else if (hasBuffer && (data as unknown) instanceof (globalThis.Buffer as unknown as typeof Buffer)) {
+                // Convert Buffer to Uint8Array for better fetch API compatibility
+                fetchOptions.body = new Uint8Array(data as ArrayLike<number>) as BodyInit;
             } else {
-                // Convert Buffer/Uint8Array to ArrayBuffer or Uint8Array
-                if (data instanceof Uint8Array) {
-                    fetchOptions.body = data;
-                } else if (hasBuffer && data instanceof Buffer) {
-                    // In Node.js/Bun, Buffer is Uint8Array-compatible
-                    fetchOptions.body = data;
-                } else {
-                    // Fallback: convert to Uint8Array
-                    const uint8Array = data instanceof Uint8Array
-                        ? data
-                        : new Uint8Array(data as ArrayLike<number>);
-                    fetchOptions.body = uint8Array;
-                }
+                // Fallback: convert to Uint8Array
+                fetchOptions.body = new Uint8Array(data as ArrayLike<number>) as BodyInit;
             }
         }
 
-        // Handle timeout using AbortController
         let controller: AbortController | undefined;
         let timeoutId: ReturnType<typeof setTimeout> | undefined;
 
@@ -193,23 +228,21 @@ export const makeRequest = async (
         }
 
         try {
-            const response = await fetch(urlObj.toString(), fetchOptions);
+            const response = await fetch(urlObject.toString(), fetchOptions);
 
-            // Clear timeout if request completed
             if (timeoutId) {
                 clearTimeout(timeoutId);
             }
 
-            // Read and parse response body
             const contentType = response.headers.get("content-type") || "";
             const isJson = contentType.includes("application/json");
 
             let parsedBody: unknown;
+
             if (isJson) {
                 try {
                     parsedBody = await response.json();
                 } catch {
-                    // If JSON parsing fails, read as text
                     parsedBody = await response.text();
                 }
             } else {
@@ -218,37 +251,30 @@ export const makeRequest = async (
 
             const isSuccess = response.status >= 200 && response.status < 300;
 
-            // Convert Headers to plain object
-            const headersObj: Record<string, string> = {};
+            const headersObject: Record<string, string> = {};
+
             response.headers.forEach((value, key) => {
-                headersObj[key] = value;
+                headersObject[key] = value;
             });
 
             return {
-                success: isSuccess,
                 data: {
-                    statusCode: response.status,
-                    headers: headersObj,
                     body: parsedBody,
+                    headers: headersObject,
+                    statusCode: response.status,
                 },
-                error: isSuccess
-                    ? undefined
-                    : new EmailError(
-                          "http",
-                          `Request failed with status ${response.status}`,
-                          { code: response.status.toString() },
-                      ),
+                error: isSuccess ? undefined : new EmailError("http", `Request failed with status ${response.status}`, { code: response.status.toString() }),
+                success: isSuccess,
             };
         } catch (error) {
-            // Clear timeout on error
             if (timeoutId) {
                 clearTimeout(timeoutId);
             }
 
             if (error instanceof Error && error.name === "AbortError") {
                 return {
-                    success: false,
                     error: new EmailError("http", `Request timed out after ${options.timeout}ms`),
+                    success: false,
                 };
             }
 
@@ -256,12 +282,10 @@ export const makeRequest = async (
         }
     } catch (error) {
         return {
+            error: new EmailError("http", `Request failed: ${error instanceof Error ? error.message : String(error)}`, {
+                cause: error instanceof Error ? error : new Error(String(error)),
+            }),
             success: false,
-            error: new EmailError(
-                "http",
-                `Request failed: ${error instanceof Error ? error.message : String(error)}`,
-                { cause: error instanceof Error ? error : new Error(String(error)) },
-            ),
         };
     }
 };
@@ -269,29 +293,28 @@ export const makeRequest = async (
 /**
  * Helper function to retry a function with exponential backoff
  */
-export const retry = async <T>(
-    fn: () => Promise<Result<T>>,
-    retries: number = 3,
-    delay: number = 300,
-): Promise<Result<T>> => {
+export const retry = async <T>(function_: () => Promise<Result<T>>, retries: number = 3, delay: number = 300): Promise<Result<T>> => {
     try {
-        const result = await fn();
+        const result = await function_();
+
         if (result.success || retries <= 0) {
             return result;
         }
 
         await new Promise((resolve) => setTimeout(resolve, delay));
-        return retry(fn, retries - 1, delay * 2);
+
+        return retry(function_, retries - 1, delay * 2);
     } catch (error) {
         if (retries <= 0) {
             return {
-                success: false,
                 error: error instanceof Error ? error : new Error(String(error)),
+                success: false,
             };
         }
 
         await new Promise((resolve) => setTimeout(resolve, delay));
-        return retry(fn, retries - 1, delay * 2);
+
+        return retry(function_, retries - 1, delay * 2);
     }
 };
 
@@ -304,9 +327,10 @@ const toBase64 = (content: string | Buffer | Uint8Array): string => {
         if (hasBuffer) {
             return Buffer.from(content, "utf8").toString("base64");
         }
-        // Use TextEncoder/TextDecoder for environments without Buffer
+
         const encoder = new TextEncoder();
         const bytes = encoder.encode(content);
+
         return btoa(String.fromCharCode(...bytes));
     }
 
@@ -314,13 +338,12 @@ const toBase64 = (content: string | Buffer | Uint8Array): string => {
         return content.toString("base64");
     }
 
-    // Uint8Array or similar
-    const uint8Array = content instanceof Uint8Array
-        ? content
-        : new Uint8Array(content as ArrayLike<number>);
+    const uint8Array = content instanceof Uint8Array ? content : new Uint8Array(content as ArrayLike<number>);
+
     if (hasBuffer) {
         return Buffer.from(uint8Array).toString("base64");
     }
+
     return btoa(String.fromCharCode(...uint8Array));
 };
 
@@ -328,40 +351,37 @@ const toBase64 = (content: string | Buffer | Uint8Array): string => {
  * Generate boundary string for multipart emails
  * Works across Node.js, Deno, Bun, and Workers
  */
-export const generateBoundary = (): string => {
-    const cryptoModule = getCrypto();
-    if (cryptoModule) {
-        // Node.js: use crypto.randomBytes
-        return `----_=_NextPart_${cryptoModule.randomBytes(16).toString("hex")}`;
+export const generateBoundary = async (): Promise<string> => {
+    const crypto = await getCrypto();
+
+    if (crypto) {
+        return `----_=_NextPart_${crypto.randomBytes(16).toString("hex")}`;
     }
 
-    // Fallback for environments without node:crypto (Deno, Workers)
-    // Use crypto.getRandomValues which is available in all modern environments
     const array = new Uint8Array(16);
-    if (typeof globalThis.crypto !== "undefined" && globalThis.crypto.getRandomValues) {
+
+    if (globalThis.crypto !== undefined && globalThis.crypto.getRandomValues) {
         globalThis.crypto.getRandomValues(array);
     } else {
-        // Fallback: use Math.random (less secure but works everywhere)
         for (let i = 0; i < array.length; i++) {
             array[i] = Math.floor(Math.random() * 256);
         }
     }
 
-    // Convert to hex string
-    const hex = Array.from(array)
+    const hex = [...array]
         .map((b) => b.toString(16).padStart(2, "0"))
         .join("");
+
     return `----_=_NextPart_${hex}`;
 };
 
 /**
  * Build a MIME message from email options
  */
-export const buildMimeMessage = <T extends EmailOptions>(options: T): string => {
-    const boundary = generateBoundary();
+export const buildMimeMessage = async <T extends EmailOptions>(options: T): Promise<string> => {
+    const boundary = await generateBoundary();
     const message: string[] = [];
 
-    // Headers
     message.push(`From: ${formatEmailAddress(options.from)}`);
     message.push(`To: ${formatEmailAddresses(options.to)}`);
 
@@ -377,97 +397,71 @@ export const buildMimeMessage = <T extends EmailOptions>(options: T): string => 
         message.push(`Reply-To: ${formatEmailAddress(options.replyTo)}`);
     }
 
-    message.push(`Subject: ${options.subject}`);
-    message.push("MIME-Version: 1.0");
+    message.push(`Subject: ${options.subject}`, "MIME-Version: 1.0");
 
-    // Custom headers
     if (options.headers) {
         Object.entries(options.headers).forEach(([key, value]) => {
             message.push(`${key}: ${value}`);
         });
     }
 
-    // Content-Type with boundary
-    message.push(`Content-Type: multipart/mixed; boundary="${boundary}"`);
-    message.push("");
+    message.push(`Content-Type: multipart/mixed; boundary="${boundary}"`, "");
 
-    // Text part
     if (options.text) {
-        message.push(`--${boundary}`);
-        message.push("Content-Type: text/plain; charset=UTF-8");
-        message.push("Content-Transfer-Encoding: 7bit");
-        message.push("");
-        message.push(options.text);
-        message.push("");
+        message.push(`--${boundary}`, "Content-Type: text/plain; charset=UTF-8", "Content-Transfer-Encoding: 7bit", "", options.text, "");
     }
 
-    // HTML part
     if (options.html) {
-        message.push(`--${boundary}`);
-        message.push("Content-Type: text/html; charset=UTF-8");
-        message.push("Content-Transfer-Encoding: 7bit");
-        message.push("");
-        message.push(options.html);
-        message.push("");
+        message.push(`--${boundary}`, "Content-Type: text/html; charset=UTF-8", "Content-Transfer-Encoding: 7bit", "", options.html, "");
     }
 
-    // Attachments
     if (options.attachments && options.attachments.length > 0) {
         for (const attachment of options.attachments) {
             message.push(`--${boundary}`);
-            
-            // Content-Type
+
             const contentType = attachment.contentType || "application/octet-stream";
+
             message.push(`Content-Type: ${contentType}; name="${attachment.filename}"`);
-            
-            // Content-Disposition
+
             const disposition = attachment.contentDisposition || "attachment";
+
             message.push(`Content-Disposition: ${disposition}; filename="${attachment.filename}"`);
-            
-            // Content-ID for inline attachments
+
             if (attachment.cid) {
                 message.push(`Content-ID: <${attachment.cid}>`);
             }
-            
-            // Custom headers for this attachment
+
             if (attachment.headers) {
                 Object.entries(attachment.headers).forEach(([key, value]) => {
                     message.push(`${key}: ${value}`);
                 });
             }
-            
-            // Content-Transfer-Encoding
+
             const encoding = attachment.encoding || "base64";
-            message.push(`Content-Transfer-Encoding: ${encoding}`);
-            message.push("");
-            
-            // Attachment content
+
+            message.push(`Content-Transfer-Encoding: ${encoding}`, "");
+
             let attachmentContent: string | Buffer | undefined;
-            
-            // Priority: raw > content > (path/href would need async handling, but buildMimeMessage is sync)
+
             if (attachment.raw !== undefined) {
                 attachmentContent = attachment.raw;
-            } else if (attachment.content !== undefined) {
-                attachmentContent = attachment.content;
-            } else {
-                // Note: path and href require async operations, so they should be resolved before calling buildMimeMessage
-                // For now, we'll throw an error if neither content nor raw is provided
+            } else if (attachment.content === undefined) {
                 throw new EmailError(
                     "attachment",
                     `Attachment '${attachment.filename}' must have content, raw, or be resolved from path/href before building MIME message`,
                 );
+            } else {
+                attachmentContent = attachment.content;
             }
-            
-            // Encode content based on encoding type
+
             if (encoding === "base64") {
                 message.push(toBase64(attachmentContent));
             } else if (encoding === "7bit" || encoding === "8bit") {
                 message.push(typeof attachmentContent === "string" ? attachmentContent : attachmentContent.toString("utf-8"));
             } else {
-                // For other encodings, default to base64
                 message.push(toBase64(attachmentContent));
             }
-            
+
             message.push("");
         }
     }
@@ -482,15 +476,14 @@ export const buildMimeMessage = <T extends EmailOptions>(options: T): string => 
  * Only works in Node.js environments (requires net module)
  */
 export const isPortAvailable = async (host: string, port: number): Promise<boolean> => {
-    const netModule = getNet();
-    if (!netModule) {
-        // In non-Node.js environments, assume port is available
-        // This is mainly used for SMTP provider initialization
+    const net = await getNet();
+
+    if (!net) {
         return true;
     }
 
     return new Promise<boolean>((resolve) => {
-        const socket = new netModule.Socket();
+        const socket = new net.Socket();
 
         const onError = (): void => {
             socket.destroy();

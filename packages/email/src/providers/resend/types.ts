@@ -21,16 +21,6 @@ export interface ResendEmailTag extends EmailTag {
  */
 export interface ResendEmailOptions extends EmailOptions {
     /**
-     * Template ID for template-based emails
-     */
-    templateId?: string;
-
-    /**
-     * Template data for template-based emails
-     */
-    templateData?: Record<string, unknown>;
-
-    /**
      * Schedule email for delivery at a specific time
      */
     scheduledAt?: Date | string;
@@ -39,4 +29,14 @@ export interface ResendEmailOptions extends EmailOptions {
      * Tags for categorizing emails
      */
     tags?: ResendEmailTag[];
+
+    /**
+     * Template data for template-based emails
+     */
+    templateData?: Record<string, unknown>;
+
+    /**
+     * Template ID for template-based emails
+     */
+    templateId?: string;
 }

@@ -7,12 +7,13 @@ description: Get started with @visulima/email, a powerful email sending package 
 
 **Powerful email sending package with multiple provider support**
 
-@visulima/email is a flexible, provider-agnostic email sending library for Node.js. It provides a clean, fluent API for building and sending emails with support for multiple email service providers, template engines, and advanced features like failover and load balancing.
+@visulima/email is a flexible, provider-agnostic email sending library that works across multiple JavaScript runtimes. It provides a clean, fluent API for building and sending emails with support for multiple email service providers, template engines, and advanced features like failover and load balancing.
 
 ## Why @visulima/email?
 
 - **Multiple Providers** - Support for AWS SES, Resend, SMTP, Zeptomail, HTTP, Nodemailer, and more
 - **Provider Agnostic** - Switch between providers without changing your code
+- **Cross-Runtime Support** - Works in Node.js, Deno, Bun, and Cloudflare Workers (provider-dependent)
 - **Fluent API** - Clean, chainable API inspired by Laravel's Mail system
 - **Template Engines** - Support for Handlebars, MJML, React Email, and HTML-to-text conversion
 - **Failover & Load Balancing** - Built-in failover and round-robin providers for high availability
@@ -22,6 +23,15 @@ description: Get started with @visulima/email, a powerful email sending package 
 - **Attachment Support** - Rich attachment handling with inline images and files
 - **Mailable Classes** - Organize emails using class-based mailables
 
+## Runtime Support
+
+@visulima/email supports multiple JavaScript runtimes. Some providers work universally (Node.js, Deno, Bun, Cloudflare Workers), while others require Node.js:
+
+**Universal Providers** (all runtimes): Resend, HTTP, Zeptomail  
+**Node.js Only**: AWS SES, SMTP, MailCrab, Nodemailer
+
+See [Runtime Support](/docs/package/email/installation#runtime-support) for complete details.
+
 ## Quick Start
 
 ```typescript
@@ -30,23 +40,17 @@ import { resendProvider } from "@visulima/email/providers/resend";
 
 // Create a provider
 const resend = resendProvider({
-  apiKey: "re_xxx",
+    apiKey: "re_xxx",
 });
 
 // Create a Mail instance
 const mail = createMail(resend);
 
 // Send an email using the message builder
-const result = await mail
-  .message()
-  .to("user@example.com")
-  .from("sender@example.com")
-  .subject("Hello")
-  .html("<h1>Hello World</h1>")
-  .send();
+const result = await mail.message().to("user@example.com").from("sender@example.com").subject("Hello").html("<h1>Hello World</h1>").send();
 
 if (result.success) {
-  console.log("Email sent:", result.data?.messageId);
+    console.log("Email sent:", result.data?.messageId);
 }
 ```
 
@@ -66,8 +70,10 @@ pnpm add @visulima/email
 
 ## Requirements
 
-- **Node.js**: 20.19 or higher, up to 25.x
+- **Node.js**: 20.19 or higher, up to 25.x (for Node.js-specific providers)
 - **TypeScript**: Optional but recommended for full type safety
+
+**Note**: Universal providers (Resend, HTTP, Zeptomail) work in Node.js, Deno, Bun, and Cloudflare Workers without Node.js version requirements.
 
 ## Supported Providers
 

@@ -1,10 +1,9 @@
-import type { EmailOptions, EmailResult, Result } from "../../types.js";
-import type { RoundRobinConfig } from "../../types.js";
-import type { ProviderFactory } from "../provider.js";
-import type { Provider } from "../provider.js";
-import type { RoundRobinEmailOptions } from "./types.js";
 import { EmailError, RequiredOptionError } from "../../errors/email-error.js";
+import type { EmailOptions, EmailResult, Result, RoundRobinConfig } from "../../types.js";
+import { createLogger } from "../../utils.js";
+import type { Provider, ProviderFactory } from "../provider.js";
 import { defineProvider } from "../provider.js";
+import type { RoundRobinEmailOptions } from "./types.js";
 
 // Type guard to check if something is a ProviderFactory
 function isProviderFactory(value: unknown): value is ProviderFactory<unknown, unknown, EmailOptions> {
@@ -13,13 +12,7 @@ function isProviderFactory(value: unknown): value is ProviderFactory<unknown, un
 
 // Type guard to check if something is a Provider
 function isProvider(value: unknown): value is Provider {
-    return (
-        value !== null &&
-        typeof value === "object" &&
-        "sendEmail" in value &&
-        "initialize" in value &&
-        "isAvailable" in value
-    );
+    return value !== null && typeof value === "object" && "sendEmail" in value && "initialize" in value && "isAvailable" in value;
 }
 
 // Constants
@@ -29,29 +22,24 @@ const PROVIDER_NAME = "roundrobin";
  * Round Robin Provider for distributing email sending across multiple providers
  */
 export const roundRobinProvider: ProviderFactory<RoundRobinConfig, unknown, RoundRobinEmailOptions> = defineProvider(
-    (opts: RoundRobinConfig = {} as RoundRobinConfig) => {
+    (options_: RoundRobinConfig = {} as RoundRobinConfig) => {
         // Validate required options
-        if (!opts.mailers || opts.mailers.length === 0) {
+        if (!options_.mailers || options_.mailers.length === 0) {
             throw new RequiredOptionError(PROVIDER_NAME, "mailers");
         }
 
         // Initialize with defaults
         const options: Required<RoundRobinConfig> = {
-            mailers: opts.mailers,
-            retryAfter: opts.retryAfter ?? 60,
-            debug: opts.debug || false,
+            debug: options_.debug || false,
+            mailers: options_.mailers,
+            retryAfter: options_.retryAfter ?? 60,
         };
 
         let isInitialized = false;
         const providers: Provider[] = [];
         let currentIndex = 0;
 
-        // Debug helper
-        const debug = (message: string, ...args: unknown[]): void => {
-            if (options.debug) {
-                console.log(`[${PROVIDER_NAME}] ${message}`, ...args);
-            }
-        };
+        const logger = createLogger(PROVIDER_NAME, options.debug, options_.logger);
 
         /**
          * Initialize all providers
@@ -70,7 +58,7 @@ export const roundRobinProvider: ProviderFactory<RoundRobinConfig, unknown, Roun
                     } else if (isProvider(mailer)) {
                         provider = mailer;
                     } else {
-                        debug(`Skipping invalid mailer: ${mailer}`);
+                        logger.debug(`Skipping invalid mailer: ${mailer}`);
                         continue;
                     }
 
@@ -78,13 +66,13 @@ export const roundRobinProvider: ProviderFactory<RoundRobinConfig, unknown, Roun
                     try {
                         await provider.initialize();
                         providers.push(provider);
-                        debug(`Initialized provider: ${provider.name || "unknown"}`);
+                        logger.debug(`Initialized provider: ${provider.name || "unknown"}`);
                     } catch (error) {
-                        debug(`Failed to initialize provider ${provider.name || "unknown"}:`, error);
+                        logger.debug(`Failed to initialize provider ${provider.name || "unknown"}:`, error);
                         // Continue with next provider
                     }
                 } catch (error) {
-                    debug(`Error processing mailer:`, error);
+                    logger.debug(`Error processing mailer:`, error);
                     // Continue with next provider
                 }
             }
@@ -95,7 +83,7 @@ export const roundRobinProvider: ProviderFactory<RoundRobinConfig, unknown, Roun
 
             // Initialize currentIndex to a random provider
             currentIndex = Math.floor(Math.random() * providers.length);
-            debug(`Round robin starting at index ${currentIndex} (${providers[currentIndex]?.name || "unknown"})`);
+            logger.debug(`Round robin starting at index ${currentIndex} (${providers[currentIndex]?.name || "unknown"})`);
         };
 
         /**
@@ -117,10 +105,12 @@ export const roundRobinProvider: ProviderFactory<RoundRobinConfig, unknown, Roun
                 // Check if provider is available
                 try {
                     const isAvailable = await provider.isAvailable();
+
                     if (isAvailable) {
                         // Move to next provider for next call
                         currentIndex = (currentIndex + 1) % providers.length;
-                        debug(`Selected provider: ${providerName} (index ${currentIndex === 0 ? providers.length - 1 : currentIndex - 1})`);
+                        logger.debug(`Selected provider: ${providerName} (index ${currentIndex === 0 ? providers.length - 1 : currentIndex - 1})`);
+
                         return provider;
                     }
                 } catch {
@@ -138,25 +128,24 @@ export const roundRobinProvider: ProviderFactory<RoundRobinConfig, unknown, Roun
             }
 
             // If we've tried all providers and none are available, return the one at startIndex
-            debug(`No available providers found, using provider at index ${startIndex}`);
+            logger.debug(`No available providers found, using provider at index ${startIndex}`);
+
             return providers[startIndex] || null;
         };
 
         return {
-            name: PROVIDER_NAME,
             features: {
                 // Round robin supports features that all providers support
                 attachments: true,
+                batchSending: false,
+                customHeaders: true,
                 html: true,
+                replyTo: true,
+                scheduling: false, // Not all providers support scheduling
+                tagging: false, // Not all providers support tagging
                 templates: false, // Not all providers support templates
                 tracking: false, // Not all providers support tracking
-                customHeaders: true,
-                batchSending: false,
-                tagging: false, // Not all providers support tagging
-                scheduling: false, // Not all providers support scheduling
-                replyTo: true,
             },
-            options,
 
             /**
              * Initialize the round robin provider and all underlying providers
@@ -169,13 +158,9 @@ export const roundRobinProvider: ProviderFactory<RoundRobinConfig, unknown, Roun
                 try {
                     await initializeProviders();
                     isInitialized = true;
-                    debug(`Round robin provider initialized with ${providers.length} provider(s)`);
+                    logger.debug(`Round robin provider initialized with ${providers.length} provider(s)`);
                 } catch (error) {
-                    throw new EmailError(
-                        PROVIDER_NAME,
-                        `Failed to initialize: ${(error as Error).message}`,
-                        { cause: error as Error },
-                    );
+                    throw new EmailError(PROVIDER_NAME, `Failed to initialize: ${(error as Error).message}`, { cause: error as Error });
                 }
             },
 
@@ -205,11 +190,15 @@ export const roundRobinProvider: ProviderFactory<RoundRobinConfig, unknown, Roun
                 }
             },
 
+            name: PROVIDER_NAME,
+
+            options,
+
             /**
              * Send email through round robin providers
              * Selects the next available provider in rotation
              */
-            async sendEmail(emailOpts: RoundRobinEmailOptions): Promise<Result<EmailResult>> {
+            async sendEmail(emailOptions: RoundRobinEmailOptions): Promise<Result<EmailResult>> {
                 try {
                     // Make sure providers are initialized
                     if (providers.length === 0) {
@@ -218,8 +207,8 @@ export const roundRobinProvider: ProviderFactory<RoundRobinConfig, unknown, Roun
 
                     if (providers.length === 0) {
                         return {
-                            success: false,
                             error: new EmailError(PROVIDER_NAME, "No providers available"),
+                            success: false,
                         };
                     }
 
@@ -228,32 +217,34 @@ export const roundRobinProvider: ProviderFactory<RoundRobinConfig, unknown, Roun
 
                     if (!provider) {
                         return {
-                            success: false,
                             error: new EmailError(PROVIDER_NAME, "No available providers found"),
+                            success: false,
                         };
                     }
 
                     const providerName = provider.name || "unknown";
 
-                    debug(`Sending email via ${providerName}`);
+                    logger.debug(`Sending email via ${providerName}`);
 
                     // Try to send the email
-                    const result = await provider.sendEmail(emailOpts);
+                    const result = await provider.sendEmail(emailOptions);
 
                     if (result.success) {
-                        debug(`Email sent successfully via ${providerName}`);
+                        logger.debug(`Email sent successfully via ${providerName}`);
+
                         return {
-                            success: true,
                             data: {
                                 ...result.data,
                                 provider: `${PROVIDER_NAME}(${providerName})`,
                             },
+                            success: true,
                         };
                     }
 
                     // If send failed, try the next provider (failover behavior)
-                    debug(`Failed to send via ${providerName}, trying next provider`);
+                    logger.debug(`Failed to send via ${providerName}, trying next provider`);
                     const errors: (Error | unknown)[] = [];
+
                     if (result.error) {
                         errors.push(result.error);
                     }
@@ -264,23 +255,27 @@ export const roundRobinProvider: ProviderFactory<RoundRobinConfig, unknown, Roun
 
                     while (attempts < providers.length - 1) {
                         const nextProvider = await getNextProvider();
+
                         if (!nextProvider || nextProvider === provider) {
                             break;
                         }
 
                         const nextProviderName = nextProvider.name || "unknown";
-                        debug(`Retrying with ${nextProviderName}`);
+
+                        logger.debug(`Retrying with ${nextProviderName}`);
 
                         try {
-                            const retryResult = await nextProvider.sendEmail(emailOpts);
+                            const retryResult = await nextProvider.sendEmail(emailOptions);
+
                             if (retryResult.success) {
-                                debug(`Email sent successfully via ${nextProviderName} (after retry)`);
+                                logger.debug(`Email sent successfully via ${nextProviderName} (after retry)`);
+
                                 return {
-                                    success: true,
                                     data: {
                                         ...retryResult.data,
                                         provider: `${PROVIDER_NAME}(${nextProviderName})`,
                                     },
+                                    success: true,
                                 };
                             }
 
@@ -296,22 +291,15 @@ export const roundRobinProvider: ProviderFactory<RoundRobinConfig, unknown, Roun
 
                     // All providers failed
                     const errorMessages = errors.map((e) => e.message).join("; ");
+
                     return {
+                        error: new EmailError(PROVIDER_NAME, `Failed to send email via all providers. Errors: ${errorMessages}`, { cause: errors[0] }),
                         success: false,
-                        error: new EmailError(
-                            PROVIDER_NAME,
-                            `Failed to send email via all providers. Errors: ${errorMessages}`,
-                            { cause: errors[0] },
-                        ),
                     };
                 } catch (error) {
                     return {
+                        error: new EmailError(PROVIDER_NAME, `Failed to send email: ${(error as Error).message}`, { cause: error as Error }),
                         success: false,
-                        error: new EmailError(
-                            PROVIDER_NAME,
-                            `Failed to send email: ${(error as Error).message}`,
-                            { cause: error as Error },
-                        ),
                     };
                 }
             },

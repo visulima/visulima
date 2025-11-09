@@ -1,4 +1,9 @@
-// Export types
+export { type AttachmentDataOptions, type AttachmentOptions, detectMimeType, generateContentId, readFileAsBuffer } from "./attachment-helpers.js";
+export { EmailError, RequiredOptionError } from "./errors/email-error.js";
+export { createMail, Mail, type Mailable, MailMessage } from "./mail.js";
+export type { Provider, ProviderFactory } from "./providers/provider.js";
+export { defineProvider } from "./providers/provider.js";
+export type { TemplateRenderer } from "./template-engines/index.js";
 export type {
     Attachment,
     AwsSesConfig,
@@ -7,9 +12,10 @@ export type {
     EmailOptions,
     EmailResult,
     EmailTag,
-    FeatureFlags,
     FailoverConfig,
+    FeatureFlags,
     HttpEmailConfig,
+    Logger,
     MailCrabConfig,
     MaybePromise,
     NodemailerConfig,
@@ -19,32 +25,9 @@ export type {
     SmtpConfig,
     ZeptomailConfig,
 } from "./types.js";
-
-// Export core provider types (needed for Mail class)
-export { defineProvider } from "./providers/provider.js";
-export type { Provider, ProviderFactory } from "./providers/provider.js";
-
-// Export Mail class and related
-export { createMail, Mail, MailMessage, type Mailable } from "./mail.js";
-
-// Export attachment helpers
-export {
-    detectMimeType,
-    generateContentId,
-    readFileAsBuffer,
-    type AttachmentDataOptions,
-    type AttachmentOptions,
-} from "./attachment-helpers.js";
-
-// Export template engine types
-export type { TemplateRenderer } from "./template-engines/index.js";
-
-// Export errors
-export { EmailError, RequiredOptionError } from "./errors/email-error.js";
-
-// Export utilities
 export {
     buildMimeMessage,
+    createLogger,
     formatEmailAddress,
     formatEmailAddresses,
     generateBoundary,

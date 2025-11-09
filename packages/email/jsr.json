@@ -3,9 +3,18 @@
     "version": "0.0.0",
     "exports": {
         ".": "./src/index.ts",
-        "./handlebars": "./src/template-engines/handlebars.ts",
-        "./mjml": "./src/template-engines/mjml.ts",
-        "./react-email": "./src/template-engines/react-email.ts",
-        "./html-to-text": "./src/template-engines/html-to-text.ts"
+        "./template/handlebars": "./src/template-engines/handlebars.ts",
+        "./template/mjml": "./src/template-engines/mjml.ts",
+        "./template/react-email": "./src/template-engines/react-email.ts",
+        "./template/html-to-text": "./src/template-engines/html-to-text.ts",
+        "./providers/aws-ses": "./src/providers/aws-ses/index.ts",
+        "./providers/http": "./src/providers/http/index.ts",
+        "./providers/resend": "./src/providers/resend/index.ts",
+        "./providers/smtp": "./src/providers/smtp/index.ts",
+        "./providers/zeptomail": "./src/providers/zeptomail/index.ts",
+        "./providers/failover": "./src/providers/failover/index.ts",
+        "./providers/roundrobin": "./src/providers/roundrobin/index.ts",
+        "./providers/mailcrab": "./src/providers/mailcrab/index.ts",
+        "./providers/nodemailer": "./src/providers/nodemailer/index.ts"
     }
 }

@@ -1,19 +1,21 @@
-import { describe, expect, it, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
 import { resendProvider } from "../../src/providers/resend/index.js";
-import * as utils from "../../src/utils.js";
 import type { ResendEmailOptions } from "../../src/providers/resend/types.js";
+import * as utils from "../../src/utils.js";
 
 // Mock the utils module
-vi.mock("../../src/utils.js", async () => {
+vi.mock(import("../../src/utils.js"), async () => {
     const actual = await vi.importActual("../../src/utils.js");
+
     return {
         ...actual,
         makeRequest: vi.fn(),
-        retry: vi.fn(async (fn) => await fn()),
+        retry: vi.fn(async (function_) => await function_()),
     };
 });
 
-describe("resendProvider", () => {
+describe(resendProvider, () => {
     beforeEach(() => {
         vi.clearAllMocks();
     });
@@ -54,14 +56,14 @@ describe("resendProvider", () => {
 
             expect(provider.features).toEqual({
                 attachments: true,
+                batchSending: true,
+                customHeaders: true,
                 html: true,
+                replyTo: true,
+                scheduling: true,
+                tagging: true,
                 templates: true,
                 tracking: true,
-                customHeaders: true,
-                batchSending: true,
-                scheduling: true,
-                replyTo: true,
-                tagging: true,
             });
         });
     });
@@ -77,19 +79,19 @@ describe("resendProvider", () => {
 
         it("should check API availability for non-standard keys", async () => {
             const makeRequestSpy = vi.spyOn(utils, "makeRequest").mockResolvedValue({
-                success: true,
                 data: {
-                    statusCode: 200,
-                    headers: {},
                     body: {},
+                    headers: {},
+                    statusCode: 200,
                 },
+                success: true,
             });
 
             const provider = resendProvider({ apiKey: "custom_key" });
 
             const isAvailable = await provider.isAvailable();
 
-            expect(makeRequestSpy).toHaveBeenCalled();
+            expect(makeRequestSpy).toHaveBeenCalledWith();
             expect(isAvailable).toBe(true);
         });
     });
@@ -97,27 +99,27 @@ describe("resendProvider", () => {
     describe("sendEmail", () => {
         it("should send email successfully", async () => {
             const makeRequestSpy = vi.spyOn(utils, "makeRequest").mockResolvedValue({
-                success: true,
                 data: {
-                    statusCode: 200,
-                    headers: {},
                     body: { id: "test-message-id" },
+                    headers: {},
+                    statusCode: 200,
                 },
+                success: true,
             });
 
             const provider = resendProvider({ apiKey: "re_test123" });
             const emailOptions: ResendEmailOptions = {
                 from: { email: "sender@example.com" },
-                to: { email: "user@example.com" },
-                subject: "Test",
                 html: "<h1>Test</h1>",
+                subject: "Test",
+                to: { email: "user@example.com" },
             };
 
             const result = await provider.sendEmail(emailOptions);
 
             expect(result.success).toBe(true);
             expect(result.data?.messageId).toBe("test-message-id");
-            expect(makeRequestSpy).toHaveBeenCalled();
+            expect(makeRequestSpy).toHaveBeenCalledWith();
         });
 
         it("should validate email options", async () => {
@@ -132,23 +134,20 @@ describe("resendProvider", () => {
 
         it("should format recipients correctly", async () => {
             const makeRequestSpy = vi.spyOn(utils, "makeRequest").mockResolvedValue({
-                success: true,
                 data: {
-                    statusCode: 200,
-                    headers: {},
                     body: { id: "test-id" },
+                    headers: {},
+                    statusCode: 200,
                 },
+                success: true,
             });
 
             const provider = resendProvider({ apiKey: "re_test123" });
             const emailOptions: ResendEmailOptions = {
                 from: { email: "sender@example.com", name: "Sender" },
-                to: [
-                    { email: "user1@example.com", name: "User 1" },
-                    { email: "user2@example.com" },
-                ],
-                subject: "Test",
                 html: "<h1>Test</h1>",
+                subject: "Test",
+                to: [{ email: "user1@example.com", name: "User 1" }, { email: "user2@example.com" }],
             };
 
             await provider.sendEmail(emailOptions);
@@ -162,24 +161,24 @@ describe("resendProvider", () => {
 
         it("should include tags if provided", async () => {
             const makeRequestSpy = vi.spyOn(utils, "makeRequest").mockResolvedValue({
-                success: true,
                 data: {
-                    statusCode: 200,
-                    headers: {},
                     body: { id: "test-id" },
+                    headers: {},
+                    statusCode: 200,
                 },
+                success: true,
             });
 
             const provider = resendProvider({ apiKey: "re_test123" });
             const emailOptions: ResendEmailOptions = {
                 from: { email: "sender@example.com" },
-                to: { email: "user@example.com" },
-                subject: "Test",
                 html: "<h1>Test</h1>",
+                subject: "Test",
                 tags: [
                     { name: "category", value: "newsletter" },
                     { name: "campaign", value: "summer2024" },
                 ],
+                to: { email: "user@example.com" },
             };
 
             await provider.sendEmail(emailOptions);
@@ -197,10 +196,10 @@ describe("resendProvider", () => {
             const provider = resendProvider({ apiKey: "re_test123" });
             const emailOptions: ResendEmailOptions = {
                 from: { email: "sender@example.com" },
-                to: { email: "user@example.com" },
-                subject: "Test",
                 html: "<h1>Test</h1>",
+                subject: "Test",
                 tags: [{ name: "invalid tag!", value: "value" }],
+                to: { email: "user@example.com" },
             };
 
             const result = await provider.sendEmail(emailOptions);
@@ -212,31 +211,33 @@ describe("resendProvider", () => {
         it("should include template if provided", async () => {
             // Mock makeRequest to handle sendEmail call
             const makeRequestMock = utils.makeRequest as ReturnType<typeof vi.fn>;
+
             makeRequestMock.mockResolvedValue({
-                success: true,
                 data: {
-                    statusCode: 200,
-                    headers: {},
                     body: { id: "test-id" },
+                    headers: {},
+                    statusCode: 200,
                 },
+                success: true,
             });
 
             const provider = resendProvider({ apiKey: "re_test123" });
+
             // Initialize provider first
             await provider.initialize();
-            
+
             const emailOptions: ResendEmailOptions = {
                 from: { email: "sender@example.com" },
-                to: { email: "user@example.com" },
-                subject: "Test",
                 html: "dummy", // Dummy html to pass validation (templates don't require it but generic validation does)
-                templateId: "template_123",
+                subject: "Test",
                 templateData: { name: "John" },
+                templateId: "template_123",
+                to: { email: "user@example.com" },
             };
 
             // Get call count before sendEmail
             const callCountBefore = makeRequestMock.mock.calls.length;
-            
+
             const result = await provider.sendEmail(emailOptions);
 
             // Debug: log error if send failed
@@ -247,28 +248,31 @@ describe("resendProvider", () => {
 
             // Verify email was sent successfully
             expect(result.success).toBe(true);
-            
+
             // makeRequest should have been called (at least one more time for sendEmail)
             expect(makeRequestMock.mock.calls.length).toBeGreaterThan(callCountBefore);
-            
+
             // Find the call that has a payload with "template" - this should be the sendEmail call
-            const calls = makeRequestMock.mock.calls;
+            const { calls } = makeRequestMock.mock;
             const callWithPayload = calls
                 .slice(callCountBefore) // Only check calls made during sendEmail
                 .find((call) => call.length > 2 && call[2] && typeof call[2] === "string" && (call[2] as string).includes("template"));
-            
+
             expect(callWithPayload).toBeDefined();
-            
+
             if (callWithPayload && callWithPayload[2]) {
                 const payload = JSON.parse(callWithPayload[2] as string);
+
                 expect(payload.template).toBe("template_123");
                 expect(payload.data).toEqual({ name: "John" });
             } else {
                 // Fallback: check all recent calls
                 const recentCalls = calls.slice(-3); // Check last 3 calls
                 const anyCallWithPayload = recentCalls.find((call) => call.length > 2 && call[2]);
+
                 if (anyCallWithPayload && anyCallWithPayload[2]) {
                     const payload = JSON.parse(anyCallWithPayload[2] as string);
+
                     expect(payload.template).toBe("template_123");
                     expect(payload.data).toEqual({ name: "John" });
                 } else {
@@ -279,16 +283,16 @@ describe("resendProvider", () => {
 
         it("should handle errors gracefully", async () => {
             (utils.makeRequest as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-                success: false,
                 error: new Error("API Error"),
+                success: false,
             });
 
             const provider = resendProvider({ apiKey: "re_test123" });
             const emailOptions: ResendEmailOptions = {
                 from: { email: "sender@example.com" },
-                to: { email: "user@example.com" },
-                subject: "Test",
                 html: "<h1>Test</h1>",
+                subject: "Test",
+                to: { email: "user@example.com" },
             };
 
             const result = await provider.sendEmail(emailOptions);

@@ -48,23 +48,17 @@ import { createMail, resendProvider } from "@visulima/email";
 
 // Create a provider
 const resend = resendProvider({
-  apiKey: "re_xxx",
+    apiKey: "re_xxx",
 });
 
 // Create a Mail instance
 const mail = createMail(resend);
 
 // Send an email using the message builder
-const result = await mail
-  .message()
-  .to("user@example.com")
-  .from("sender@example.com")
-  .subject("Hello")
-  .html("<h1>Hello World</h1>")
-  .send();
+const result = await mail.message().to("user@example.com").from("sender@example.com").subject("Hello").html("<h1>Hello World</h1>").send();
 
 if (result.success) {
-  console.log("Email sent:", result.data?.messageId);
+    console.log("Email sent:", result.data?.messageId);
 }
 ```
 
@@ -75,16 +69,16 @@ import { createMail, smtpProvider, resendProvider } from "@visulima/email";
 
 // SMTP provider
 const smtp = smtpProvider({
-  host: "smtp.example.com",
-  port: 587,
-  secure: true,
-  user: "user@example.com",
-  password: "password",
+    host: "smtp.example.com",
+    port: 587,
+    secure: true,
+    user: "user@example.com",
+    password: "password",
 });
 
 // Resend provider
 const resend = resendProvider({
-  apiKey: "re_xxx",
+    apiKey: "re_xxx",
 });
 
 // Create Mail instances for each provider
@@ -92,13 +86,7 @@ const smtpMail = createMail(smtp);
 const resendMail = createMail(resend);
 
 // Send via specific provider
-await resendMail
-  .message()
-  .to("user@example.com")
-  .from("sender@example.com")
-  .subject("Hello")
-  .html("<h1>Hello World</h1>")
-  .send();
+await resendMail.message().to("user@example.com").from("sender@example.com").subject("Hello").html("<h1>Hello World</h1>").send();
 ```
 
 ### Using Mailable Classes
@@ -108,16 +96,16 @@ import { createMail, type Mailable, type EmailOptions } from "@visulima/email";
 import { resendProvider } from "@visulima/email";
 
 class WelcomeEmail implements Mailable {
-  constructor(private user: { name: string; email: string }) {}
+    constructor(private user: { name: string; email: string }) {}
 
-  build(): EmailOptions {
-    return {
-      from: { email: "noreply@example.com" },
-      to: { email: this.user.email, name: this.user.name },
-      subject: "Welcome!",
-      html: `<h1>Welcome ${this.user.name}!</h1>`,
-    };
-  }
+    build(): EmailOptions {
+        return {
+            from: { email: "noreply@example.com" },
+            to: { email: this.user.email, name: this.user.name },
+            subject: "Welcome!",
+            html: `<h1>Welcome ${this.user.name}!</h1>`,
+        };
+    }
 }
 
 const mail = createMail(resendProvider({ apiKey: "re_xxx" }));
@@ -132,10 +120,10 @@ import { createMail, resendProvider, type EmailOptions } from "@visulima/email";
 const mail = createMail(resendProvider({ apiKey: "re_xxx" }));
 
 const emailOptions: EmailOptions = {
-  from: { email: "sender@example.com" },
-  to: { email: "user@example.com" },
-  subject: "Hello",
-  html: "<h1>Hello World</h1>",
+    from: { email: "sender@example.com" },
+    to: { email: "user@example.com" },
+    subject: "Hello",
+    html: "<h1>Hello World</h1>",
 };
 
 const result = await mail.sendEmail(emailOptions);
@@ -151,31 +139,25 @@ import { createMail, failoverProvider, resendProvider, smtpProvider } from "@vis
 // Create individual providers
 const resend = resendProvider({ apiKey: "re_xxx" });
 const smtp = smtpProvider({
-  host: "smtp.example.com",
-  port: 587,
-  user: "user@example.com",
-  password: "password",
+    host: "smtp.example.com",
+    port: 587,
+    user: "user@example.com",
+    password: "password",
 });
 
 // Create failover provider with multiple mailers
 const failover = failoverProvider({
-  mailers: [
-    resend,      // Try Resend first
-    smtp,        // Fallback to SMTP if Resend fails
-  ],
-  retryAfter: 60, // Wait 60ms before trying next provider (default: 60)
+    mailers: [
+        resend, // Try Resend first
+        smtp, // Fallback to SMTP if Resend fails
+    ],
+    retryAfter: 60, // Wait 60ms before trying next provider (default: 60)
 });
 
 // Use failover provider
 const mail = createMail(failover);
 
-const result = await mail
-  .message()
-  .to("user@example.com")
-  .from("sender@example.com")
-  .subject("Hello")
-  .html("<h1>Hello World</h1>")
-  .send();
+const result = await mail.message().to("user@example.com").from("sender@example.com").subject("Hello").html("<h1>Hello World</h1>").send();
 
 // The failover provider will try Resend first, and if it fails,
 // automatically try SMTP
@@ -187,16 +169,17 @@ You can also use provider factories directly:
 import { failoverProvider, resendProvider, smtpProvider } from "@visulima/email";
 
 const failover = failoverProvider({
-  mailers: [
-    resendProvider({ apiKey: "re_xxx" }),  // Provider factory
-    smtpProvider({                          // Provider factory
-      host: "smtp.example.com",
-      port: 587,
-      user: "user@example.com",
-      password: "password",
-    }),
-  ],
-  retryAfter: 100, // Wait 100ms between attempts
+    mailers: [
+        resendProvider({ apiKey: "re_xxx" }), // Provider factory
+        smtpProvider({
+            // Provider factory
+            host: "smtp.example.com",
+            port: 587,
+            user: "user@example.com",
+            password: "password",
+        }),
+    ],
+    retryAfter: 100, // Wait 100ms between attempts
 });
 ```
 
@@ -210,19 +193,19 @@ import { createMail, roundRobinProvider, resendProvider, smtpProvider } from "@v
 // Create individual providers
 const resend = resendProvider({ apiKey: "re_xxx" });
 const smtp = smtpProvider({
-  host: "smtp.example.com",
-  port: 587,
-  user: "user@example.com",
-  password: "password",
+    host: "smtp.example.com",
+    port: 587,
+    user: "user@example.com",
+    password: "password",
 });
 
 // Create round robin provider with multiple mailers
 const roundRobin = roundRobinProvider({
-  mailers: [
-    resend,      // First provider
-    smtp,        // Second provider
-  ],
-  retryAfter: 60, // Wait 60ms before trying next provider if current is unavailable (default: 60)
+    mailers: [
+        resend, // First provider
+        smtp, // Second provider
+    ],
+    retryAfter: 60, // Wait 60ms before trying next provider if current is unavailable (default: 60)
 });
 
 // Use round robin provider
@@ -245,16 +228,17 @@ You can also use provider factories directly:
 import { roundRobinProvider, resendProvider, smtpProvider } from "@visulima/email";
 
 const roundRobin = roundRobinProvider({
-  mailers: [
-    resendProvider({ apiKey: "re_xxx" }),  // Provider factory
-    smtpProvider({                          // Provider factory
-      host: "smtp.example.com",
-      port: 587,
-      user: "user@example.com",
-      password: "password",
-    }),
-  ],
-  retryAfter: 100, // Wait 100ms between attempts
+    mailers: [
+        resendProvider({ apiKey: "re_xxx" }), // Provider factory
+        smtpProvider({
+            // Provider factory
+            host: "smtp.example.com",
+            port: 587,
+            user: "user@example.com",
+            password: "password",
+        }),
+    ],
+    retryAfter: 100, // Wait 100ms between attempts
 });
 ```
 
@@ -272,21 +256,15 @@ const mailCrab = mailCrabProvider({});
 
 // Or customize the connection
 const mailCrab = mailCrabProvider({
-  host: "localhost",
-  port: 1025, // Default MailCrab port
-  secure: false, // Typically false for development
+    host: "localhost",
+    port: 1025, // Default MailCrab port
+    secure: false, // Typically false for development
 });
 
 // Use MailCrab provider
 const mail = createMail(mailCrab);
 
-const result = await mail
-  .message()
-  .to("user@example.com")
-  .from("sender@example.com")
-  .subject("Test Email")
-  .html("<h1>Test</h1>")
-  .send();
+const result = await mail.message().to("user@example.com").from("sender@example.com").subject("Test Email").html("<h1>Test</h1>").send();
 ```
 
 **Note:** Make sure MailCrab is running locally before using this provider. MailCrab can be installed via Docker or as a standalone application.
@@ -297,10 +275,59 @@ const result = await mail
 - **Failover** - Automatic failover between multiple providers
 - **HTTP** - Generic HTTP API provider
 - **MailCrab** - Local development email testing (SMTP wrapper)
+- **Nodemailer** - Popular Node.js email library wrapper
 - **Resend** - Resend email service
 - **Round Robin** - Load balancing across multiple providers
 - **SMTP** - Standard SMTP protocol
 - **Zeptomail** - Zeptomail email service
+
+## Runtime Support
+
+@visulima/email is designed to work across multiple JavaScript runtimes. However, some providers have specific runtime requirements:
+
+### Universal Providers (All Runtimes)
+
+These providers work in **Node.js**, **Deno**, **Bun**, and **Cloudflare Workers**:
+
+- ✅ **Resend** - Uses Fetch API
+- ✅ **HTTP** - Uses Fetch API
+- ✅ **Zeptomail** - Uses Fetch API
+- ✅ **Failover** - Runtime depends on wrapped providers (works if all wrapped providers support the runtime)
+- ✅ **Round Robin** - Runtime depends on wrapped providers (works if all wrapped providers support the runtime)
+
+### Node.js Only Providers
+
+These providers require Node.js built-in modules and only work in **Node.js**:
+
+- ⚠️ **AWS SES** - Requires `node:crypto` for AWS Signature V4 signing
+- ⚠️ **SMTP** - Requires `node:net` and `node:tls` for SMTP connections
+- ⚠️ **MailCrab** - Wraps SMTP provider (requires Node.js)
+- ⚠️ **Nodemailer** - Requires the `nodemailer` package (Node.js only)
+
+### Template Engines
+
+Template engines are optional peer dependencies and work where their underlying packages are supported:
+
+- **Handlebars** - Works in Node.js, Deno, Bun (where `handlebars` package is available)
+- **MJML** - Works in Node.js, Deno, Bun (where `mjml` package is available)
+- **React Email** - Works in Node.js, Deno, Bun (where `@react-email/render` package is available)
+- **HTML-to-Text** - Works in Node.js, Deno, Bun (where `html-to-text` package is available)
+
+### Runtime Requirements Summary
+
+| Provider    | Node.js | Deno | Bun  | Cloudflare Workers |
+| ----------- | ------- | ---- | ---- | ------------------ |
+| Resend      | ✅      | ✅   | ✅   | ✅                 |
+| HTTP        | ✅      | ✅   | ✅   | ✅                 |
+| Zeptomail   | ✅      | ✅   | ✅   | ✅                 |
+| AWS SES     | ✅      | ❌   | ❌   | ❌                 |
+| SMTP        | ✅      | ❌   | ❌   | ❌                 |
+| MailCrab    | ✅      | ❌   | ❌   | ❌                 |
+| Nodemailer  | ✅      | ❌   | ❌   | ❌                 |
+| Failover    | ✅\*    | ✅\* | ✅\* | ✅\*               |
+| Round Robin | ✅\*    | ✅\* | ✅\* | ✅\*               |
+
+\* Runtime support depends on the wrapped providers. Works if all wrapped providers support the runtime.
 
 ## Related
 
@@ -317,8 +344,8 @@ If you would like to help take a look at the [list of issues](https://github.com
 
 ## Credits
 
--   [Daniel Bannert](https://github.com/prisis)
--   [All Contributors](https://github.com/visulima/visulima/graphs/contributors)
+- [Daniel Bannert](https://github.com/prisis)
+- [All Contributors](https://github.com/visulima/visulima/graphs/contributors)
 
 ## License
 

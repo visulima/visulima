@@ -4,11 +4,7 @@
         "installation",
         {
             "title": "Getting Started",
-            "pages": [
-                "getting-started/introduction",
-                "getting-started/configuration",
-                "getting-started/sending-mail"
-            ]
+            "pages": ["getting-started/introduction", "getting-started/configuration", "getting-started/sending-mail"]
         },
         {
             "title": "Mail Messages",
@@ -37,13 +33,7 @@
         },
         {
             "title": "Template Engines",
-            "pages": [
-                "templates/introduction",
-                "templates/handlebars",
-                "templates/mjml",
-                "templates/react-email",
-                "templates/html-to-text"
-            ]
+            "pages": ["templates/introduction", "templates/handlebars", "templates/mjml", "templates/react-email", "templates/html-to-text"]
         },
         "local-development",
         "testing"

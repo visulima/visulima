@@ -15,13 +15,7 @@ import { resendProvider } from "@visulima/email/providers/resend";
 
 const mail = createMail(resendProvider({ apiKey: "re_xxx" }));
 
-const result = await mail
-  .message()
-  .to("user@example.com")
-  .from("sender@example.com")
-  .subject("Hello")
-  .html("<h1>Hello World</h1>")
-  .send();
+const result = await mail.message().to("user@example.com").from("sender@example.com").subject("Hello").html("<h1>Hello World</h1>").send();
 ```
 
 ## Setting Recipients
@@ -121,8 +115,8 @@ With options:
 
 ```typescript
 await message.attachFromPath("/path/to/file.pdf", {
-  filename: "custom-name.pdf",
-  contentType: "application/pdf",
+    filename: "custom-name.pdf",
+    contentType: "application/pdf",
 });
 ```
 
@@ -130,8 +124,8 @@ await message.attachFromPath("/path/to/file.pdf", {
 
 ```typescript
 message.attachData(Buffer.from("file content"), {
-  filename: "document.txt",
-  contentType: "text/plain",
+    filename: "document.txt",
+    contentType: "text/plain",
 });
 ```
 
@@ -148,8 +142,8 @@ const cid = await message.embedFromPath("/path/to/image.png");
 
 ```typescript
 const cid = message.embedData(Buffer.from("image data"), {
-  filename: "logo.png",
-  contentType: "image/png",
+    filename: "logo.png",
+    contentType: "image/png",
 });
 // Use cid in HTML: <img src="cid:${cid}" />
 ```
@@ -201,10 +195,10 @@ When using templates, text can be automatically generated from HTML:
 import { renderHandlebars } from "@visulima/email/template/handlebars";
 
 await message.view(
-  renderHandlebars,
-  "<h1>Hello {{name}}!</h1><p>Welcome to our service.</p>",
-  { name: "John" },
-  { autoText: true }, // Default: true
+    renderHandlebars,
+    "<h1>Hello {{name}}!</h1><p>Welcome to our service.</p>",
+    { name: "John" },
+    { autoText: true }, // Default: true
 );
 ```
 
@@ -216,10 +210,10 @@ Override the default provider for a specific message:
 import { smtpProvider } from "@visulima/email/providers/smtp";
 
 const smtp = smtpProvider({
-  host: "smtp.example.com",
-  port: 587,
-  user: "user@example.com",
-  password: "password",
+    host: "smtp.example.com",
+    port: 587,
+    user: "user@example.com",
+    password: "password",
 });
 
 await message.mailer(smtp).send();
@@ -244,16 +238,16 @@ import { renderHandlebars } from "@visulima/email/template/handlebars";
 const mail = createMail(resendProvider({ apiKey: "re_xxx" }));
 
 const result = await mail
-  .message()
-  .to({ email: "user@example.com", name: "John Doe" })
-  .cc("cc@example.com")
-  .from({ email: "sender@example.com", name: "My App" })
-  .replyTo("support@example.com")
-  .subject("Welcome!")
-  .view(renderHandlebars, "<h1>Hello {{name}}!</h1>", { name: "John" })
-  .attachFromPath("/path/to/welcome.pdf")
-  .header("X-Priority", "1")
-  .send();
+    .message()
+    .to({ email: "user@example.com", name: "John Doe" })
+    .cc("cc@example.com")
+    .from({ email: "sender@example.com", name: "My App" })
+    .replyTo("support@example.com")
+    .subject("Welcome!")
+    .view(renderHandlebars, "<h1>Hello {{name}}!</h1>", { name: "John" })
+    .attachFromPath("/path/to/welcome.pdf")
+    .header("X-Priority", "1")
+    .send();
 ```
 
 ## Next Steps

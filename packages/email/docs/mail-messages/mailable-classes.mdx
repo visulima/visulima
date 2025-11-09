@@ -13,17 +13,17 @@ Mailable classes provide a clean way to organize and reuse email templates. They
 import type { Mailable, EmailOptions } from "@visulima/email";
 
 class WelcomeEmail implements Mailable {
-  constructor(private user: { name: string; email: string }) {}
+    constructor(private user: { name: string; email: string }) {}
 
-  async build(): Promise<EmailOptions> {
-    return {
-      from: { email: "noreply@example.com" },
-      to: { email: this.user.email, name: this.user.name },
-      subject: `Welcome, ${this.user.name}!`,
-      html: `<h1>Welcome ${this.user.name}!</h1><p>Thanks for joining us.</p>`,
-      text: `Welcome ${this.user.name}! Thanks for joining us.`,
-    };
-  }
+    async build(): Promise<EmailOptions> {
+        return {
+            from: { email: "noreply@example.com" },
+            to: { email: this.user.email, name: this.user.name },
+            subject: `Welcome, ${this.user.name}!`,
+            html: `<h1>Welcome ${this.user.name}!</h1><p>Thanks for joining us.</p>`,
+            text: `Welcome ${this.user.name}! Thanks for joining us.`,
+        };
+    }
 }
 ```
 
@@ -45,27 +45,27 @@ import type { Mailable, EmailOptions } from "@visulima/email";
 import { renderHandlebars } from "@visulima/email/template/handlebars";
 
 class WelcomeEmail implements Mailable {
-  constructor(private user: { name: string; email: string }) {}
+    constructor(private user: { name: string; email: string }) {}
 
-  async build(): Promise<EmailOptions> {
-    const html = renderHandlebars(
-      `
+    async build(): Promise<EmailOptions> {
+        const html = renderHandlebars(
+            `
       <h1>Welcome {{name}}!</h1>
       <p>Thanks for joining us on {{date}}.</p>
       `,
-      {
-        name: this.user.name,
-        date: new Date().toLocaleDateString(),
-      },
-    );
+            {
+                name: this.user.name,
+                date: new Date().toLocaleDateString(),
+            },
+        );
 
-    return {
-      from: { email: "noreply@example.com" },
-      to: { email: this.user.email, name: this.user.name },
-      subject: `Welcome, ${this.user.name}!`,
-      html,
-    };
-  }
+        return {
+            from: { email: "noreply@example.com" },
+            to: { email: this.user.email, name: this.user.name },
+            subject: `Welcome, ${this.user.name}!`,
+            html,
+        };
+    }
 }
 ```
 
@@ -77,36 +77,33 @@ import { renderHandlebars } from "@visulima/email/template/handlebars";
 import { readFile } from "node:fs/promises";
 
 class OrderConfirmationEmail implements Mailable {
-  constructor(
-    private order: {
-      id: string;
-      customer: { name: string; email: string };
-      items: Array<{ name: string; price: number }>;
-      total: number;
-    },
-  ) {}
-
-  async build(): Promise<EmailOptions> {
-    const html = renderHandlebars(
-      await readFile("./templates/order-confirmation.hbs", "utf-8"),
-      {
-        order: this.order,
-      },
-    );
-
-    return {
-      from: { email: "orders@example.com", name: "Order Confirmation" },
-      to: { email: this.order.customer.email, name: this.order.customer.name },
-      subject: `Order Confirmation #${this.order.id}`,
-      html,
-      attachments: [
-        {
-          filename: `invoice-${this.order.id}.pdf`,
-          path: `./invoices/${this.order.id}.pdf`,
+    constructor(
+        private order: {
+            id: string;
+            customer: { name: string; email: string };
+            items: Array<{ name: string; price: number }>;
+            total: number;
         },
-      ],
-    };
-  }
+    ) {}
+
+    async build(): Promise<EmailOptions> {
+        const html = renderHandlebars(await readFile("./templates/order-confirmation.hbs", "utf-8"), {
+            order: this.order,
+        });
+
+        return {
+            from: { email: "orders@example.com", name: "Order Confirmation" },
+            to: { email: this.order.customer.email, name: this.order.customer.name },
+            subject: `Order Confirmation #${this.order.id}`,
+            html,
+            attachments: [
+                {
+                    filename: `invoice-${this.order.id}.pdf`,
+                    path: `./invoices/${this.order.id}.pdf`,
+                },
+            ],
+        };
+    }
 }
 ```
 

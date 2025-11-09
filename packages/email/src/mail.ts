@@ -1,14 +1,11 @@
-import type { Attachment, EmailAddress, EmailOptions, EmailResult, Result } from "./types.js";
-import type { Provider } from "./providers/provider.js";
 import { basename } from "node:path";
-import {
-    type AttachmentDataOptions,
-    type AttachmentOptions,
-    detectMimeType,
-    generateContentId,
-    readFileAsBuffer,
-} from "./attachment-helpers.js";
+
+import type { AttachmentDataOptions, AttachmentOptions } from "./attachment-helpers.js";
+import { detectMimeType, generateContentId, readFileAsBuffer } from "./attachment-helpers.js";
+import type { Provider } from "./providers/provider.js";
+import { htmlToText } from "./template-engines/html-to-text.js";
 import type { TemplateRenderer } from "./template-engines/types.js";
+import type { Attachment, EmailAddress, EmailOptions, EmailResult, Result } from "./types.js";
 
 /**
  * Mailable interface - represents an email that can be sent
@@ -17,18 +14,17 @@ export interface Mailable {
     /**
      * Build the email message
      */
-    build(): Promise<EmailOptions>;
+    build: () => Promise<EmailOptions>;
 }
 
 /**
  * Normalize email address(es) to EmailAddress array
  */
-const normalizeAddresses = (
-    address: EmailAddress | EmailAddress[] | string | string[],
-): EmailAddress[] => {
+const normalizeAddresses = (address: EmailAddress | EmailAddress[] | string | string[]): EmailAddress[] => {
     if (Array.isArray(address)) {
         return address.map((addr) => (typeof addr === "string" ? { email: addr } : addr));
     }
+
     return typeof address === "string" ? [{ email: address }] : [address];
 };
 
@@ -37,26 +33,33 @@ const normalizeAddresses = (
  */
 export class MailMessage {
     private fromAddress?: EmailAddress;
+
     private toAddresses: EmailAddress[] = [];
+
     private ccAddresses: EmailAddress[] = [];
+
     private bccAddresses: EmailAddress[] = [];
+
     private subjectText = "";
+
     private textContent?: string;
+
     private htmlContent?: string;
+
     private headers: Record<string, string> = {};
+
     private attachments: Attachment[] = [];
+
     private replyToAddress?: EmailAddress;
+
     private provider?: Provider;
 
     /**
      * Set the sender address
      */
     from(address: EmailAddress | string): this {
-        if (typeof address === "string") {
-            this.fromAddress = { email: address };
-        } else {
-            this.fromAddress = address;
-        }
+        this.fromAddress = typeof address === "string" ? { email: address } : address;
+
         return this;
     }
 
@@ -65,6 +68,7 @@ export class MailMessage {
      */
     to(address: EmailAddress | EmailAddress[] | string | string[]): this {
         this.toAddresses.push(...normalizeAddresses(address));
+
         return this;
     }
 
@@ -73,6 +77,7 @@ export class MailMessage {
      */
     cc(address: EmailAddress | EmailAddress[] | string | string[]): this {
         this.ccAddresses.push(...normalizeAddresses(address));
+
         return this;
     }
 
@@ -81,6 +86,7 @@ export class MailMessage {
      */
     bcc(address: EmailAddress | EmailAddress[] | string | string[]): this {
         this.bccAddresses.push(...normalizeAddresses(address));
+
         return this;
     }
 
@@ -89,6 +95,7 @@ export class MailMessage {
      */
     subject(text: string): this {
         this.subjectText = text;
+
         return this;
     }
 
@@ -97,6 +104,7 @@ export class MailMessage {
      */
     text(content: string): this {
         this.textContent = content;
+
         return this;
     }
 
@@ -105,6 +113,7 @@ export class MailMessage {
      */
     html(content: string): this {
         this.htmlContent = content;
+
         return this;
     }
 
@@ -113,6 +122,7 @@ export class MailMessage {
      */
     header(name: string, value: string): this {
         this.headers[name] = value;
+
         return this;
     }
 
@@ -121,13 +131,13 @@ export class MailMessage {
      */
     setHeaders(headers: Record<string, string>): this {
         Object.assign(this.headers, headers);
+
         return this;
     }
 
     /**
      * Attach a file from path (reads file from filesystem)
      * Similar to Laravel's attach() method
-     *
      * @example
      * ```ts
      * message.attachFromPath('/path/to/file.pdf')
@@ -140,12 +150,12 @@ export class MailMessage {
         const contentType = options?.contentType || detectMimeType(filename);
 
         this.attachments.push({
-            filename,
-            content,
-            contentType,
-            contentDisposition: options?.contentDisposition || "attachment",
             cid: options?.cid,
+            content,
+            contentDisposition: options?.contentDisposition || "attachment",
+            contentType,
             encoding: options?.encoding,
+            filename,
             headers: options?.headers,
         });
 
@@ -155,7 +165,6 @@ export class MailMessage {
     /**
      * Attach raw data (string or Buffer)
      * Similar to Laravel's attachData() method
-     *
      * @example
      * ```ts
      * message.attachData(Buffer.from('content'), 'file.txt')
@@ -166,12 +175,12 @@ export class MailMessage {
         const contentType = options.contentType || detectMimeType(options.filename);
 
         this.attachments.push({
-            filename: options.filename,
-            content,
-            contentType,
-            contentDisposition: options.contentDisposition || "attachment",
             cid: options.cid,
+            content,
+            contentDisposition: options.contentDisposition || "attachment",
+            contentType,
             encoding: options.encoding,
+            filename: options.filename,
             headers: options.headers,
         });
 
@@ -181,8 +190,7 @@ export class MailMessage {
     /**
      * Embed an inline attachment from file path (for images in HTML)
      * Similar to Laravel's embed() method
-     * Returns the Content-ID that can be used in HTML: <img src="cid:{cid}">
-     *
+     * Returns the Content-ID that can be used in HTML: &lt;img src="cid:{cid}">
      * @example
      * ```ts
      * const cid = await message.embedFromPath('/path/to/logo.png')
@@ -196,11 +204,11 @@ export class MailMessage {
         const cid = generateContentId(filename);
 
         this.attachments.push({
-            filename,
-            content,
-            contentType,
-            contentDisposition: "inline",
             cid,
+            content,
+            contentDisposition: "inline",
+            contentType,
+            filename,
         });
 
         return cid;
@@ -209,8 +217,7 @@ export class MailMessage {
     /**
      * Embed raw data as inline attachment (for images in HTML)
      * Similar to Laravel's embedData() method
-     * Returns the Content-ID that can be used in HTML: <img src="cid:{cid}">
-     *
+     * Returns the Content-ID that can be used in HTML: &lt;img src="cid:{cid}">
      * @example
      * ```ts
      * const imageBuffer = Buffer.from('...')
@@ -218,20 +225,16 @@ export class MailMessage {
      * message.html(`<img src="cid:${cid}">`)
      * ```
      */
-    embedData(
-        content: string | Buffer,
-        filename: string,
-        options?: Omit<AttachmentDataOptions, "filename" | "contentDisposition" | "cid">,
-    ): string {
+    embedData(content: string | Buffer, filename: string, options?: Omit<AttachmentDataOptions, "filename" | "contentDisposition" | "cid">): string {
         const contentType = options?.contentType || detectMimeType(filename);
         const cid = generateContentId(filename);
 
         this.attachments.push({
-            filename,
-            content,
-            contentType,
-            contentDisposition: "inline",
             cid,
+            content,
+            contentDisposition: "inline",
+            contentType,
+            filename,
         });
 
         return cid;
@@ -241,11 +244,8 @@ export class MailMessage {
      * Set the reply-to address
      */
     replyTo(address: EmailAddress | string): this {
-        if (typeof address === "string") {
-            this.replyToAddress = { email: address };
-        } else {
-            this.replyToAddress = address;
-        }
+        this.replyToAddress = typeof address === "string" ? { email: address } : address;
+
         return this;
     }
 
@@ -254,13 +254,13 @@ export class MailMessage {
      */
     mailer(provider: Provider): this {
         this.provider = provider;
+
         return this;
     }
 
     /**
      * Render a template and set as HTML content
      * Accepts a render function for flexible template engine support
-     *
      * @example
      * ```ts
      * import { renderHandlebars } from '@visulima/email/template/handlebars';
@@ -277,18 +277,17 @@ export class MailMessage {
         render: TemplateRenderer,
         template: unknown,
         data?: Record<string, unknown>,
-        options?: { autoText?: boolean; [key: string]: unknown },
+        options?: { [key: string]: unknown; autoText?: boolean },
     ): Promise<this> {
         try {
             const html = await render(template, data, options);
+
             this.html(html);
 
-            // Auto-generate text from HTML if requested
             if (options?.autoText !== false && html) {
                 try {
-                    // Dynamic import to avoid requiring html-to-text if not needed
-                    const { htmlToText } = await import("./template-engines/html-to-text.js");
                     const text = htmlToText(html);
+
                     if (text && !this.textContent) {
                         this.text(text);
                     }
@@ -305,25 +304,20 @@ export class MailMessage {
 
     /**
      * Render a text template and set as text content
-     *
      * @example
      * ```ts
      * import { renderHandlebars } from '@visulima/email/template/handlebars';
      * message.viewText(renderHandlebars, 'Hello {{name}}!', { name: 'John' })
      * ```
      */
-    async viewText(
-        render: TemplateRenderer,
-        template: string,
-        data?: Record<string, unknown>,
-        options?: Record<string, unknown>,
-    ): Promise<this> {
+    async viewText(render: TemplateRenderer, template: string, data?: Record<string, unknown>, options?: Record<string, unknown>): Promise<this> {
         try {
             const text = await render(template, data, options);
+
             if (typeof text === "string") {
                 this.text(text);
             } else {
-                throw new Error("Text renderer must return a string");
+                throw new TypeError("Text renderer must return a string");
             }
         } catch (error) {
             throw new Error(`Failed to render text template: ${(error as Error).message}`);
@@ -339,17 +333,17 @@ export class MailMessage {
         if (!this.fromAddress) {
             throw new Error("From address is required");
         }
+
         if (this.toAddresses.length === 0) {
             throw new Error("At least one recipient is required");
         }
+
         if (!this.subjectText) {
             throw new Error("Subject is required");
         }
-        // Auto-generate text from HTML if HTML exists but text doesn't
+
         if (this.htmlContent && !this.textContent) {
             try {
-                // Dynamic import to avoid requiring html-to-text if not needed
-                const { htmlToText } = await import("./template-engines/html-to-text.js");
                 this.textContent = htmlToText(this.htmlContent);
             } catch {
                 // Ignore errors in text conversion
@@ -362,10 +356,10 @@ export class MailMessage {
 
         const emailOptions: EmailOptions = {
             from: this.fromAddress,
-            to: this.toAddresses.length === 1 ? this.toAddresses[0] : this.toAddresses,
+            html: this.htmlContent,
             subject: this.subjectText,
             text: this.textContent,
-            html: this.htmlContent,
+            to: this.toAddresses.length === 1 ? this.toAddresses[0] : this.toAddresses,
         };
 
         if (this.ccAddresses.length > 0) {
@@ -400,6 +394,7 @@ export class MailMessage {
         }
 
         const emailOptions = await this.build();
+
         return this.provider.sendEmail(emailOptions);
     }
 }
@@ -422,7 +417,9 @@ export class Mail {
      */
     message(): MailMessage {
         const message = new MailMessage();
+
         message.mailer(this.provider);
+
         return message;
     }
 
@@ -431,6 +428,7 @@ export class Mail {
      */
     async send(mailable: Mailable): Promise<Result<EmailResult>> {
         const emailOptions = await mailable.build();
+
         return this.provider.sendEmail(emailOptions);
     }
 
@@ -445,6 +443,4 @@ export class Mail {
 /**
  * Create a new Mail instance with a provider
  */
-export const createMail = (provider: Provider): Mail => {
-    return new Mail(provider);
-};
+export const createMail = (provider: Provider): Mail => new Mail(provider);
