@@ -12,7 +12,7 @@ import {
 } from "../src/utils.js";
 
 describe("utils", () => {
-    describe("generateMessageId", () => {
+    describe(generateMessageId, () => {
         it("should generate a message ID", () => {
             const messageId = generateMessageId();
 
@@ -27,7 +27,7 @@ describe("utils", () => {
         });
     });
 
-    describe("validateEmail", () => {
+    describe(validateEmail, () => {
         it("should validate correct email addresses", () => {
             expect(validateEmail("user@example.com")).toBe(true);
             expect(validateEmail("user.name@example.co.uk")).toBe(true);
@@ -42,7 +42,7 @@ describe("utils", () => {
         });
     });
 
-    describe("formatEmailAddress", () => {
+    describe(formatEmailAddress, () => {
         it("should format email without name", () => {
             const address: EmailAddress = { email: "user@example.com" };
             const formatted = formatEmailAddress(address);
@@ -64,7 +64,7 @@ describe("utils", () => {
         });
     });
 
-    describe("parseAddress", () => {
+    describe(parseAddress, () => {
         it("should parse plain email address", () => {
             const addr1 = parseAddress("john@example.com");
 
@@ -75,17 +75,17 @@ describe("utils", () => {
             const addr2 = parseAddress("John Doe <john@example.com>");
 
             expect(addr2).toEqual({
-                name: "John Doe",
                 email: "john@example.com",
+                name: "John Doe",
             });
         });
 
         it("should parse email with quoted name", () => {
-            const addr3 = parseAddress('"John Doe" <john@example.com>');
+            const addr3 = parseAddress("\"John Doe\" <john@example.com>");
 
             expect(addr3).toEqual({
-                name: "John Doe",
                 email: "john@example.com",
+                name: "John Doe",
             });
         });
 
@@ -106,9 +106,9 @@ describe("utils", () => {
         });
 
         it("should parse quoted local part", () => {
-            const addr7 = parseAddress('"test@test"@example.com');
+            const addr7 = parseAddress("\"test@test\"@example.com");
 
-            expect(addr7).toEqual({ email: '"test@test"@example.com' });
+            expect(addr7).toEqual({ email: "\"test@test\"@example.com" });
         });
 
         it("should parse domain literal", () => {
@@ -143,7 +143,7 @@ describe("utils", () => {
             for (const testCase of testCases) {
                 const parsed = parseAddress(testCase);
 
-                expect(parsed).not.toBeUndefined();
+                expect(parsed).toBeDefined();
 
                 if (parsed) {
                     const formatted = formatEmailAddress(parsed);
@@ -155,29 +155,29 @@ describe("utils", () => {
         });
 
         it("should handle complex quoted string cases", () => {
-            const addr1 = parseAddress('"user with spaces"@example.com');
+            const addr1 = parseAddress("\"user with spaces\"@example.com");
 
-            expect(addr1).toEqual({ email: '"user with spaces"@example.com' });
+            expect(addr1).toEqual({ email: "\"user with spaces\"@example.com" });
 
-            const addr2 = parseAddress('"user\\"quote"@example.com');
+            const addr2 = parseAddress(String.raw`"user\"quote"@example.com`);
 
-            expect(addr2).toEqual({ email: '"user\\"quote"@example.com' });
+            expect(addr2).toEqual({ email: String.raw`"user\"quote"@example.com` });
 
-            const addr3 = parseAddress('"user\\\\backslash"@example.com');
+            const addr3 = parseAddress(String.raw`"user\\backslash"@example.com`);
 
-            expect(addr3).toEqual({ email: '"user\\\\backslash"@example.com' });
+            expect(addr3).toEqual({ email: String.raw`"user\\backslash"@example.com` });
 
-            const addr4 = parseAddress('".user.name."@example.com');
+            const addr4 = parseAddress("\".user.name.\"@example.com");
 
-            expect(addr4).toEqual({ email: '".user.name."@example.com' });
+            expect(addr4).toEqual({ email: "\".user.name.\"@example.com" });
 
-            const addr5 = parseAddress('"user@domain"@example.com');
+            const addr5 = parseAddress("\"user@domain\"@example.com");
 
-            expect(addr5).toEqual({ email: '"user@domain"@example.com' });
+            expect(addr5).toEqual({ email: "\"user@domain\"@example.com" });
 
             // Test invalid quoted strings
-            expect(parseAddress('"unterminated@example.com')).toBeUndefined();
-            expect(parseAddress('unterminated"@example.com')).toBeUndefined();
+            expect(parseAddress("\"unterminated@example.com")).toBeUndefined();
+            expect(parseAddress("unterminated\"@example.com")).toBeUndefined();
         });
 
         it("should handle domain literal cases", () => {
@@ -213,49 +213,49 @@ describe("utils", () => {
         });
 
         it("should handle complex name parsing", () => {
-            const addr1 = parseAddress('John "Johnny" Doe <john@example.com>');
+            const addr1 = parseAddress("John \"Johnny\" Doe <john@example.com>");
 
             expect(addr1).toEqual({
-                name: 'John "Johnny" Doe',
                 email: "john@example.com",
+                name: "John \"Johnny\" Doe",
             });
 
             const addr2 = parseAddress("José María <jose@example.com>");
 
             expect(addr2).toEqual({
-                name: "José María",
                 email: "jose@example.com",
+                name: "José María",
             });
 
-            const addr3 = parseAddress('"Doe, John" <john@example.com>');
+            const addr3 = parseAddress("\"Doe, John\" <john@example.com>");
 
             expect(addr3).toEqual({
-                name: "Doe, John",
                 email: "john@example.com",
+                name: "Doe, John",
             });
 
             const addr4 = parseAddress("John Doe (Company) <john@example.com>");
 
             expect(addr4).toEqual({
-                name: "John Doe (Company)",
                 email: "john@example.com",
+                name: "John Doe (Company)",
             });
 
             const addr5 = parseAddress("  John   Doe  <john@example.com>");
 
             expect(addr5).toEqual({
-                name: "John   Doe",
                 email: "john@example.com",
+                name: "John   Doe",
             });
         });
 
         it("should handle edge cases with valid email patterns", () => {
-            const longLocal = "a".repeat(63) + "@example.com";
+            const longLocal = `${"a".repeat(63)}@example.com`;
             const addr1 = parseAddress(longLocal);
 
             expect(addr1).toEqual({ email: longLocal });
 
-            const longDomain = "user@" + "a".repeat(60) + ".com";
+            const longDomain = `user@${"a".repeat(60)}.com`;
             const addr3 = parseAddress(longDomain);
 
             expect(addr3).toEqual({ email: longDomain });
@@ -292,7 +292,7 @@ describe("utils", () => {
         });
     });
 
-    describe("comparePriority", () => {
+    describe(comparePriority, () => {
         it("should compare priorities correctly", () => {
             expect(comparePriority("high", "high")).toBe(0);
             expect(comparePriority("normal", "normal")).toBe(0);
@@ -315,7 +315,7 @@ describe("utils", () => {
         });
     });
 
-    describe("formatEmailAddresses", () => {
+    describe(formatEmailAddresses, () => {
         it("should format single address", () => {
             const address: EmailAddress = { email: "user@example.com" };
             const formatted = formatEmailAddresses(address);
@@ -331,7 +331,7 @@ describe("utils", () => {
         });
     });
 
-    describe("validateEmailOptions", () => {
+    describe(validateEmailOptions, () => {
         it("should validate correct email options", () => {
             const options: EmailOptions = {
                 from: { email: "sender@example.com" },

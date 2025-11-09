@@ -58,7 +58,7 @@ export interface Attachment {
     cid?: string;
 
     /**
-     * Attachment content (string, Buffer, or Promise<Uint8Array> for async loading)
+     * Attachment content (string, Buffer, or Promise&lt;Uint8Array> for async loading)
      * Required if path, href, or raw are not provided
      */
     content?: string | Buffer | Promise<Uint8Array>;
@@ -175,43 +175,49 @@ export interface EmailResult {
  * Receipt type for email sending results
  * Uses discriminated union for type safety
  */
-export type Receipt =
+export type Receipt
+    = | {
+        /**
+         * The unique identifier for the message that was sent
+         */
+        readonly messageId: string;
+
+        /**
+         * Optional provider name
+         */
+        readonly provider?: string;
+
+        /**
+         * Optional response data from provider
+         */
+        readonly response?: unknown;
+
+        /**
+         * Indicates that the email was sent successfully
+         */
+        readonly successful: true;
+
+        /**
+         * Timestamp when email was sent
+         */
+        readonly timestamp: Date;
+    }
     | {
-          /**
-           * Indicates that the email was sent successfully
-           */
-          readonly successful: true;
-          /**
-           * The unique identifier for the message that was sent
-           */
-          readonly messageId: string;
-          /**
-           * Optional provider name
-           */
-          readonly provider?: string;
-          /**
-           * Optional response data from provider
-           */
-          readonly response?: unknown;
-          /**
-           * Timestamp when email was sent
-           */
-          readonly timestamp: Date;
-      }
-    | {
-          /**
-           * Indicates that the email failed to send
-           */
-          readonly successful: false;
-          /**
-           * An array of error messages that occurred during the sending process
-           */
-          readonly errorMessages: readonly string[];
-          /**
-           * Optional provider name
-           */
-          readonly provider?: string;
-      };
+        /**
+         * An array of error messages that occurred during the sending process
+         */
+        readonly errorMessages: ReadonlyArray<string>;
+
+        /**
+         * Optional provider name
+         */
+        readonly provider?: string;
+
+        /**
+         * Indicates that the email failed to send
+         */
+        readonly successful: false;
+    };
 
 /**
  * Generic result type
@@ -221,4 +227,3 @@ export interface Result<T = unknown> {
     error?: Error | unknown;
     success: boolean;
 }
-

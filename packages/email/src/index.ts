@@ -20,7 +20,6 @@ export type {
     Receipt,
     Result,
 } from "./types";
-
 export {
     buildMimeMessage,
     comparePriority,

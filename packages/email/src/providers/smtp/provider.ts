@@ -90,75 +90,76 @@ export const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions
     /**
      * Send SMTP command and await response
      */
-    const sendSmtpCommand = async (socket: Socket, command: string, expectedCode: string | string[]): Promise<string> => new Promise<string>((resolve, reject) => {
-        const expectedCodes = Array.isArray(expectedCode) ? expectedCode : [expectedCode];
-        let responseBuffer = "";
-        let lastLineCode = "";
-        let timeoutHandle: NodeJS.Timeout;
+    const sendSmtpCommand = async (socket: Socket, command: string, expectedCode: string | string[]): Promise<string> =>
+        new Promise<string>((resolve, reject) => {
+            const expectedCodes = Array.isArray(expectedCode) ? expectedCode : [expectedCode];
+            let responseBuffer = "";
+            let lastLineCode = "";
+            let timeoutHandle: NodeJS.Timeout;
 
-        // Declare functions before use
-        let onData: (data: Buffer) => void;
-        let onError: (error: Error) => void;
+            // Declare functions before use
+            let onData: (data: Buffer) => void;
+            let onError: (error: Error) => void;
 
-        const cleanup = () => {
-            socket.removeListener("data", onData);
-            socket.removeListener("error", onError);
+            const cleanup = () => {
+                socket.removeListener("data", onData);
+                socket.removeListener("error", onError);
 
-            if (timeoutHandle) {
-                clearTimeout(timeoutHandle);
-            }
-        };
+                if (timeoutHandle) {
+                    clearTimeout(timeoutHandle);
+                }
+            };
 
-        onError = (error: Error) => {
-            cleanup();
-            reject(new EmailError(PROVIDER_NAME, `Socket error: ${error.message}`, { cause: error }));
-        };
+            onError = (error: Error) => {
+                cleanup();
+                reject(new EmailError(PROVIDER_NAME, `Socket error: ${error.message}`, { cause: error }));
+            };
 
-        onData = (data: Buffer) => {
-            responseBuffer += data.toString();
-            // SMTP çok satırlı yanıtlar: 250-...\r\n, son satır 250 ...\r\n
-            // Her satırı kontrol et
-            const lines = responseBuffer.split("\r\n").filter(Boolean);
+            onData = (data: Buffer) => {
+                responseBuffer += data.toString();
+                // SMTP çok satırlı yanıtlar: 250-...\r\n, son satır 250 ...\r\n
+                // Her satırı kontrol et
+                const lines = responseBuffer.split("\r\n").filter(Boolean);
 
-            if (lines.length > 0) {
-                const lastLine = lines[lines.length - 1];
+                if (lines.length > 0) {
+                    const lastLine = lines[lines.length - 1];
 
-                if (lastLine) {
-                    const match = lastLine.match(/^(\d{3})[\s-]/);
+                    if (lastLine) {
+                        const match = lastLine.match(/^(\d{3})[\s-]/);
 
-                    if (match && match[1]) {
-                        lastLineCode = match[1];
+                        if (match && match[1]) {
+                            lastLineCode = match[1];
 
-                        // Son satırda boşluk varsa (multi-line bitti)
-                        if (lastLine[3] === " ") {
-                            cleanup();
+                            // Son satırda boşluk varsa (multi-line bitti)
+                            if (lastLine[3] === " ") {
+                                cleanup();
 
-                            if (expectedCodes.includes(lastLineCode)) {
-                                resolve(responseBuffer);
-                            } else {
-                                reject(
-                                    new EmailError(PROVIDER_NAME, `Expected ${expectedCodes.join(" or ")}, got ${lastLineCode}: ${responseBuffer.trim()}`),
-                                );
+                                if (expectedCodes.includes(lastLineCode)) {
+                                    resolve(responseBuffer);
+                                } else {
+                                    reject(
+                                        new EmailError(PROVIDER_NAME, `Expected ${expectedCodes.join(" or ")}, got ${lastLineCode}: ${responseBuffer.trim()}`),
+                                    );
+                                }
                             }
                         }
                     }
                 }
+            };
+
+            // Set up timeout
+            timeoutHandle = setTimeout(() => {
+                cleanup();
+                reject(new EmailError(PROVIDER_NAME, `Command timeout after ${options.timeout}ms: ${command?.slice(0, 50)}...`));
+            }, options.timeout);
+
+            socket.on("data", onData);
+            socket.on("error", onError);
+
+            if (command) {
+                socket.write(`${command}\r\n`);
             }
-        };
-
-        // Set up timeout
-        timeoutHandle = setTimeout(() => {
-            cleanup();
-            reject(new EmailError(PROVIDER_NAME, `Command timeout after ${options.timeout}ms: ${command?.slice(0, 50)}...`));
-        }, options.timeout);
-
-        socket.on("data", onData);
-        socket.on("error", onError);
-
-        if (command) {
-            socket.write(`${command}\r\n`);
-        }
-    });
+        });
 
     /**
      * Create SMTP connection
@@ -271,67 +272,68 @@ export const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions
     /**
      * Upgrade plain connection to TLS using STARTTLS
      */
-    const upgradeToTLS = async (socket: Socket): Promise<Socket> => new Promise<Socket>((resolve, reject) => {
-        let tlsTimeout: NodeJS.Timeout;
-        let isResolved = false;
-        let tlsSocket: Socket | undefined;
+    const upgradeToTLS = async (socket: Socket): Promise<Socket> =>
+        new Promise<Socket>((resolve, reject) => {
+            let tlsTimeout: NodeJS.Timeout;
+            let isResolved = false;
+            let tlsSocket: Socket | undefined;
 
-        const cleanup = () => {
-            if (tlsTimeout) {
-                clearTimeout(tlsTimeout);
-            }
-        };
-
-        // Set up TLS connection timeout using Promise-based timeout
-        tlsTimeout = setTimeout(() => {
-            if (!isResolved) {
-                isResolved = true;
-
-                if (tlsSocket && !tlsSocket.destroyed) {
-                    tlsSocket.destroy();
+            const cleanup = () => {
+                if (tlsTimeout) {
+                    clearTimeout(tlsTimeout);
                 }
-
-                cleanup();
-                reject(new EmailError(PROVIDER_NAME, `TLS connection timeout after ${options.timeout}ms`));
-            }
-        }, options.timeout);
-
-        try {
-            // Create TLS socket options
-            const tlsOptions = {
-                host: options.host,
-                rejectUnauthorized: options.rejectUnauthorized,
-                socket,
             };
 
-            // Create TLS connection
-            tlsSocket = connect(tlsOptions);
+            // Set up TLS connection timeout using Promise-based timeout
+            tlsTimeout = setTimeout(() => {
+                if (!isResolved) {
+                    isResolved = true;
 
-            // Handle TLS connection errors
-            tlsSocket.on("error", (error) => {
+                    if (tlsSocket && !tlsSocket.destroyed) {
+                        tlsSocket.destroy();
+                    }
+
+                    cleanup();
+                    reject(new EmailError(PROVIDER_NAME, `TLS connection timeout after ${options.timeout}ms`));
+                }
+            }, options.timeout);
+
+            try {
+                // Create TLS socket options
+                const tlsOptions = {
+                    host: options.host,
+                    rejectUnauthorized: options.rejectUnauthorized,
+                    socket,
+                };
+
+                // Create TLS connection
+                tlsSocket = connect(tlsOptions);
+
+                // Handle TLS connection errors
+                tlsSocket.on("error", (error) => {
+                    if (!isResolved) {
+                        isResolved = true;
+                        cleanup();
+                        reject(new EmailError(PROVIDER_NAME, `TLS connection error: ${error.message}`, { cause: error }));
+                    }
+                });
+
+                // Resolve when secure connection is established
+                tlsSocket.once("secure", () => {
+                    if (!isResolved && tlsSocket) {
+                        isResolved = true;
+                        cleanup();
+                        resolve(tlsSocket);
+                    }
+                });
+            } catch (error) {
                 if (!isResolved) {
                     isResolved = true;
                     cleanup();
-                    reject(new EmailError(PROVIDER_NAME, `TLS connection error: ${error.message}`, { cause: error }));
+                    reject(new EmailError(PROVIDER_NAME, `Failed to upgrade to TLS: ${(error as Error).message}`, { cause: error as Error }));
                 }
-            });
-
-            // Resolve when secure connection is established
-            tlsSocket.once("secure", () => {
-                if (!isResolved && tlsSocket) {
-                    isResolved = true;
-                    cleanup();
-                    resolve(tlsSocket);
-                }
-            });
-        } catch (error) {
-            if (!isResolved) {
-                isResolved = true;
-                cleanup();
-                reject(new EmailError(PROVIDER_NAME, `Failed to upgrade to TLS: ${(error as Error).message}`, { cause: error as Error }));
             }
-        }
-    });
+        });
 
     /**
      * Return a connection to the pool or close it
@@ -367,28 +369,29 @@ export const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions
     /**
      * Close SMTP connection
      */
-    const closeConnection = async (socket: Socket, release = false): Promise<void> => new Promise<void>((resolve) => {
-        try {
-            if (release) {
-                // Reset the connection state by sending RSET command
-                socket.write("RSET\r\n");
+    const closeConnection = async (socket: Socket, release = false): Promise<void> =>
+        new Promise<void>((resolve) => {
+            try {
+                if (release) {
+                    // Reset the connection state by sending RSET command
+                    socket.write("RSET\r\n");
 
-                // Release the connection back to the pool
-                releaseConnection(socket);
+                    // Release the connection back to the pool
+                    releaseConnection(socket);
+                    resolve();
+
+                    return;
+                }
+
+                // Send QUIT command
+                socket.write("QUIT\r\n");
+                socket.end();
+                socket.once("close", () => resolve());
+            } catch {
+                // Just resolve even if there's an error during close
                 resolve();
-
-                return;
             }
-
-            // Send QUIT command
-            socket.write("QUIT\r\n");
-            socket.end();
-            socket.once("close", () => resolve());
-        } catch {
-            // Just resolve even if there's an error during close
-            resolve();
-        }
-    });
+        });
 
     /**
      * Perform SMTP authentication
@@ -826,7 +829,9 @@ export const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions
                     if (emailOptions.listUnsubscribe) {
                         let unsubValue;
 
-                        unsubValue = Array.isArray(emailOptions.listUnsubscribe) ? emailOptions.listUnsubscribe.map((value) => `<${sanitizeHeaderValue(value)}>`).join(", ") : `<${sanitizeHeaderValue(emailOptions.listUnsubscribe)}>`;
+                        unsubValue = Array.isArray(emailOptions.listUnsubscribe)
+                            ? emailOptions.listUnsubscribe.map((value) => `<${sanitizeHeaderValue(value)}>`).join(", ")
+                            : `<${sanitizeHeaderValue(emailOptions.listUnsubscribe)}>`;
 
                         additionalHeaders.push(`List-Unsubscribe: ${unsubValue}`);
                     }

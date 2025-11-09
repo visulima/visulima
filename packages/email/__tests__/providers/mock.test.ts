@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { mockProvider } from "../../src/providers/mock/index.js";
 import type { MockEmailOptions } from "../../src/providers/mock/types.js";
 
-describe("mockProvider", () => {
+describe(mockProvider, () => {
     beforeEach(() => {
         vi.clearAllMocks();
     });
@@ -21,10 +21,10 @@ describe("mockProvider", () => {
 
         it("should create provider with custom config", () => {
             const provider = mockProvider({
+                debug: true,
                 delay: 100,
                 failureRate: 0.5,
                 simulateFailure: true,
-                debug: true,
             });
 
             expect(provider.options?.delay).toBe(100);
@@ -92,6 +92,7 @@ describe("mockProvider", () => {
             expect(result.data?.provider).toBe("mock");
 
             const sentEmails = provider.getSentEmails();
+
             expect(sentEmails).toHaveLength(1);
             expect(sentEmails[0]?.options.subject).toBe("Test Subject");
         });
@@ -109,21 +110,22 @@ describe("mockProvider", () => {
         it("should store email with all fields", async () => {
             const provider = mockProvider();
             const emailOptions: MockEmailOptions = {
-                from: { email: "sender@example.com", name: "Sender" },
-                to: { email: "user@example.com", name: "User" },
-                cc: { email: "cc@example.com" },
                 bcc: { email: "bcc@example.com" },
-                subject: "Test",
-                html: "<h1>HTML</h1>",
-                text: "Text",
-                replyTo: { email: "reply@example.com" },
+                cc: { email: "cc@example.com" },
+                from: { email: "sender@example.com", name: "Sender" },
                 headers: { "X-Custom": "value" },
+                html: "<h1>HTML</h1>",
+                replyTo: { email: "reply@example.com" },
+                subject: "Test",
                 tags: ["tag1", "tag2"],
+                text: "Text",
+                to: { email: "user@example.com", name: "User" },
             };
 
             await provider.sendEmail(emailOptions);
 
             const sentEmails = provider.getSentEmails();
+
             expect(sentEmails).toHaveLength(1);
             expect(sentEmails[0]?.options).toEqual(emailOptions);
         });
@@ -132,17 +134,15 @@ describe("mockProvider", () => {
             const provider = mockProvider();
             const emailOptions: MockEmailOptions = {
                 from: { email: "sender@example.com" },
-                subject: "Test",
                 html: "<h1>Test</h1>",
-                to: [
-                    { email: "user1@example.com" },
-                    { email: "user2@example.com" },
-                ],
+                subject: "Test",
+                to: [{ email: "user1@example.com" }, { email: "user2@example.com" }],
             };
 
             await provider.sendEmail(emailOptions);
 
             const sentEmails = provider.getSentEmails();
+
             expect(sentEmails).toHaveLength(1);
         });
     });
@@ -152,8 +152,8 @@ describe("mockProvider", () => {
             const provider = mockProvider({ simulateFailure: true });
             const emailOptions: MockEmailOptions = {
                 from: { email: "sender@example.com" },
-                subject: "Test",
                 html: "<h1>Test</h1>",
+                subject: "Test",
                 to: { email: "user@example.com" },
             };
 
@@ -170,8 +170,8 @@ describe("mockProvider", () => {
             const provider = mockProvider({ failureRate: 1 });
             const emailOptions: MockEmailOptions = {
                 from: { email: "sender@example.com" },
-                subject: "Test",
                 html: "<h1>Test</h1>",
+                subject: "Test",
                 to: { email: "user@example.com" },
             };
 
@@ -184,8 +184,8 @@ describe("mockProvider", () => {
             const provider = mockProvider({ failureRate: 0 });
             const emailOptions: MockEmailOptions = {
                 from: { email: "sender@example.com" },
-                subject: "Test",
                 html: "<h1>Test</h1>",
+                subject: "Test",
                 to: { email: "user@example.com" },
             };
 
@@ -221,14 +221,15 @@ describe("mockProvider", () => {
             const provider = mockProvider({ delay: 100 });
             const emailOptions: MockEmailOptions = {
                 from: { email: "sender@example.com" },
-                subject: "Test",
                 html: "<h1>Test</h1>",
+                subject: "Test",
                 to: { email: "user@example.com" },
             };
 
             await provider.sendEmail(emailOptions);
 
             const endTime = Date.now();
+
             expect(endTime - startTime).toBeGreaterThanOrEqual(90); // Allow some margin
         });
 
@@ -238,7 +239,7 @@ describe("mockProvider", () => {
             provider.setDelay(200);
 
             expect(provider.options?.delay).toBe(200);
-            expect(provider.options?.randomDelayRange).toEqual({ min: 0, max: 0 });
+            expect(provider.options?.randomDelayRange).toEqual({ max: 0, min: 0 });
         });
 
         it("should throw error for negative delay", () => {
@@ -257,20 +258,22 @@ describe("mockProvider", () => {
             provider.setRandomDelay(50, 100);
 
             expect(provider.options?.delay).toBe(0);
-            expect(provider.options?.randomDelayRange).toEqual({ min: 50, max: 100 });
+            expect(provider.options?.randomDelayRange).toEqual({ max: 100, min: 50 });
         });
 
         it("should use random delay when sending", async () => {
             const provider = mockProvider();
+
             provider.setRandomDelay(10, 20);
             const emailOptions: MockEmailOptions = {
                 from: { email: "sender@example.com" },
-                subject: "Test",
                 html: "<h1>Test</h1>",
+                subject: "Test",
                 to: { email: "user@example.com" },
             };
 
             const startTime = Date.now();
+
             await provider.sendEmail(emailOptions);
             const endTime = Date.now();
 
@@ -294,19 +297,19 @@ describe("mockProvider", () => {
         it("should use next response for next send", async () => {
             const provider = mockProvider();
             const customReceipt = {
-                successful: true,
                 messageId: "custom-id",
-                timestamp: new Date("2024-01-01"),
                 provider: "custom-provider",
                 response: { custom: "data" },
+                successful: true,
+                timestamp: new Date("2024-01-01"),
             } as const;
 
             provider.setNextResponse(customReceipt);
 
             const emailOptions: MockEmailOptions = {
                 from: { email: "sender@example.com" },
-                subject: "Test",
                 html: "<h1>Test</h1>",
+                subject: "Test",
                 to: { email: "user@example.com" },
             };
 
@@ -318,23 +321,24 @@ describe("mockProvider", () => {
 
             // Next response should be cleared after use
             const result2 = await provider.sendEmail(emailOptions);
+
             expect(result2.data?.messageId).not.toBe("custom-id");
         });
 
         it("should use next response for failure", async () => {
             const provider = mockProvider();
             const failureReceipt = {
-                successful: false,
                 errorMessages: ["Custom error"],
                 provider: "mock",
+                successful: false,
             } as const;
 
             provider.setNextResponse(failureReceipt);
 
             const emailOptions: MockEmailOptions = {
                 from: { email: "sender@example.com" },
-                subject: "Test",
                 html: "<h1>Test</h1>",
+                subject: "Test",
                 to: { email: "user@example.com" },
             };
 
@@ -349,18 +353,18 @@ describe("mockProvider", () => {
         it("should use default response when set", async () => {
             const provider = mockProvider();
             const defaultReceipt = {
-                successful: true,
                 messageId: "default-id",
-                timestamp: new Date("2024-01-01"),
                 provider: "mock",
+                successful: true,
+                timestamp: new Date("2024-01-01"),
             } as const;
 
             provider.setDefaultResponse(defaultReceipt);
 
             const emailOptions: MockEmailOptions = {
                 from: { email: "sender@example.com" },
-                subject: "Test",
                 html: "<h1>Test</h1>",
+                subject: "Test",
                 to: { email: "user@example.com" },
             };
 
@@ -373,18 +377,18 @@ describe("mockProvider", () => {
         it("should use default response for multiple sends", async () => {
             const provider = mockProvider();
             const defaultReceipt = {
-                successful: true,
                 messageId: "default-id",
-                timestamp: new Date(),
                 provider: "mock",
+                successful: true,
+                timestamp: new Date(),
             } as const;
 
             provider.setDefaultResponse(defaultReceipt);
 
             const emailOptions: MockEmailOptions = {
                 from: { email: "sender@example.com" },
-                subject: "Test",
                 html: "<h1>Test</h1>",
+                subject: "Test",
                 to: { email: "user@example.com" },
             };
 
@@ -400,8 +404,8 @@ describe("mockProvider", () => {
             const provider = mockProvider();
             const emailOptions: MockEmailOptions = {
                 from: { email: "sender@example.com" },
-                subject: "Test",
                 html: "<h1>Test</h1>",
+                subject: "Test",
                 to: { email: "user@example.com" },
             };
 
@@ -429,8 +433,8 @@ describe("mockProvider", () => {
             const provider = mockProvider();
             const emailOptions: MockEmailOptions = {
                 from: { email: "sender@example.com" },
-                subject: "Test",
                 html: "<h1>Test</h1>",
+                subject: "Test",
                 to: { email: "user@example.com" },
             };
 
@@ -448,14 +452,14 @@ describe("mockProvider", () => {
             const provider = mockProvider();
             const emailOptions1: MockEmailOptions = {
                 from: { email: "sender@example.com" },
-                subject: "First",
                 html: "<h1>Test</h1>",
+                subject: "First",
                 to: { email: "user@example.com" },
             };
             const emailOptions2: MockEmailOptions = {
                 from: { email: "sender@example.com" },
-                subject: "Last",
                 html: "<h1>Test</h1>",
+                subject: "Last",
                 to: { email: "user@example.com" },
             };
 
@@ -481,17 +485,19 @@ describe("mockProvider", () => {
             const provider = mockProvider();
             const emailOptions: MockEmailOptions = {
                 from: { email: "sender@example.com" },
-                subject: "Test",
                 html: "<h1>Test</h1>",
+                subject: "Test",
                 to: { email: "user@example.com" },
             };
 
             expect(provider.getSentMessagesCount()).toBe(0);
 
             await provider.sendEmail(emailOptions);
+
             expect(provider.getSentMessagesCount()).toBe(1);
 
             await provider.sendEmail(emailOptions);
+
             expect(provider.getSentMessagesCount()).toBe(2);
         });
     });
@@ -501,8 +507,8 @@ describe("mockProvider", () => {
             const provider = mockProvider();
             const emailOptions: MockEmailOptions = {
                 from: { email: "sender@example.com" },
-                subject: "Test",
                 html: "<h1>Test</h1>",
+                subject: "Test",
                 to: { email: "user@example.com" },
             };
 
@@ -533,21 +539,21 @@ describe("mockProvider", () => {
             const provider = mockProvider();
             const emailOptions1: MockEmailOptions = {
                 from: { email: "sender@example.com" },
-                subject: "First",
                 html: "<h1>Test</h1>",
+                subject: "First",
                 to: { email: "user1@example.com" },
             };
             const emailOptions2: MockEmailOptions = {
                 from: { email: "sender@example.com" },
-                subject: "Second",
                 html: "<h1>Test</h1>",
+                subject: "Second",
                 to: { email: "user2@example.com" },
             };
 
             await provider.sendEmail(emailOptions1);
             await provider.sendEmail(emailOptions2);
 
-            const message = provider.findMessageBy((msg) => msg.options.subject === "First");
+            const message = provider.findMessageBy((message_) => message_.options.subject === "First");
 
             expect(message).toBeDefined();
             expect(message?.options.subject).toBe("First");
@@ -557,14 +563,14 @@ describe("mockProvider", () => {
             const provider = mockProvider();
             const emailOptions: MockEmailOptions = {
                 from: { email: "sender@example.com" },
-                subject: "Test",
                 html: "<h1>Test</h1>",
+                subject: "Test",
                 to: { email: "user@example.com" },
             };
 
             await provider.sendEmail(emailOptions);
 
-            const message = provider.findMessageBy((msg) => msg.options.subject === "NonExistent");
+            const message = provider.findMessageBy((message_) => message_.options.subject === "NonExistent");
 
             expect(message).toBeUndefined();
         });
@@ -575,20 +581,20 @@ describe("mockProvider", () => {
             const provider = mockProvider();
             const emailOptions1: MockEmailOptions = {
                 from: { email: "sender@example.com" },
-                subject: "Test",
                 html: "<h1>Test</h1>",
+                subject: "Test",
                 to: { email: "user1@example.com" },
             };
             const emailOptions2: MockEmailOptions = {
                 from: { email: "sender@example.com" },
-                subject: "Test",
                 html: "<h1>Test</h1>",
+                subject: "Test",
                 to: { email: "user2@example.com" },
             };
             const emailOptions3: MockEmailOptions = {
                 from: { email: "sender@example.com" },
-                subject: "Other",
                 html: "<h1>Test</h1>",
+                subject: "Other",
                 to: { email: "user3@example.com" },
             };
 
@@ -596,7 +602,7 @@ describe("mockProvider", () => {
             await provider.sendEmail(emailOptions2);
             await provider.sendEmail(emailOptions3);
 
-            const messages = provider.findMessagesBy((msg) => msg.options.subject === "Test");
+            const messages = provider.findMessagesBy((message) => message.options.subject === "Test");
 
             expect(messages).toHaveLength(2);
         });
@@ -607,14 +613,14 @@ describe("mockProvider", () => {
             const provider = mockProvider();
             const emailOptions1: MockEmailOptions = {
                 from: { email: "sender@example.com" },
-                subject: "Test 1",
                 html: "<h1>Test</h1>",
+                subject: "Test 1",
                 to: { email: "user@example.com" },
             };
             const emailOptions2: MockEmailOptions = {
                 from: { email: "sender@example.com" },
-                subject: "Test 2",
                 html: "<h1>Test</h1>",
+                subject: "Test 2",
                 to: { email: "other@example.com" },
             };
 
@@ -630,11 +636,11 @@ describe("mockProvider", () => {
         it("should find messages in CC", async () => {
             const provider = mockProvider();
             const emailOptions: MockEmailOptions = {
-                from: { email: "sender@example.com" },
-                subject: "Test",
-                html: "<h1>Test</h1>",
-                to: { email: "to@example.com" },
                 cc: { email: "cc@example.com" },
+                from: { email: "sender@example.com" },
+                html: "<h1>Test</h1>",
+                subject: "Test",
+                to: { email: "to@example.com" },
             };
 
             await provider.sendEmail(emailOptions);
@@ -647,11 +653,11 @@ describe("mockProvider", () => {
         it("should find messages in BCC", async () => {
             const provider = mockProvider();
             const emailOptions: MockEmailOptions = {
-                from: { email: "sender@example.com" },
-                subject: "Test",
-                html: "<h1>Test</h1>",
-                to: { email: "to@example.com" },
                 bcc: { email: "bcc@example.com" },
+                from: { email: "sender@example.com" },
+                html: "<h1>Test</h1>",
+                subject: "Test",
+                to: { email: "to@example.com" },
             };
 
             await provider.sendEmail(emailOptions);
@@ -665,12 +671,9 @@ describe("mockProvider", () => {
             const provider = mockProvider();
             const emailOptions: MockEmailOptions = {
                 from: { email: "sender@example.com" },
-                subject: "Test",
                 html: "<h1>Test</h1>",
-                to: [
-                    { email: "user1@example.com" },
-                    { email: "user2@example.com" },
-                ],
+                subject: "Test",
+                to: [{ email: "user1@example.com" }, { email: "user2@example.com" }],
             };
 
             await provider.sendEmail(emailOptions);
@@ -688,20 +691,20 @@ describe("mockProvider", () => {
             const provider = mockProvider();
             const emailOptions1: MockEmailOptions = {
                 from: { email: "sender@example.com" },
-                subject: "Welcome",
                 html: "<h1>Test</h1>",
+                subject: "Welcome",
                 to: { email: "user1@example.com" },
             };
             const emailOptions2: MockEmailOptions = {
                 from: { email: "sender@example.com" },
-                subject: "Welcome",
                 html: "<h1>Test</h1>",
+                subject: "Welcome",
                 to: { email: "user2@example.com" },
             };
             const emailOptions3: MockEmailOptions = {
                 from: { email: "sender@example.com" },
-                subject: "Other",
                 html: "<h1>Test</h1>",
+                subject: "Other",
                 to: { email: "user3@example.com" },
             };
 
@@ -722,8 +725,8 @@ describe("mockProvider", () => {
             const provider = mockProvider();
             const emailOptions: MockEmailOptions = {
                 from: { email: "sender@example.com" },
-                subject: "Test",
                 html: "<h1>Test</h1>",
+                subject: "Test",
                 to: { email: "user@example.com" },
             };
 
@@ -747,13 +750,13 @@ describe("mockProvider", () => {
             const provider = mockProvider();
             const emailOptions: MockEmailOptions = {
                 from: { email: "sender@example.com" },
-                subject: "Special",
                 html: "<h1>Test</h1>",
+                subject: "Special",
                 to: { email: "user@example.com" },
             };
 
             const sendPromise = provider.sendEmail(emailOptions);
-            const waitPromise = provider.waitForMessage((msg) => msg.options.subject === "Special", 1000);
+            const waitPromise = provider.waitForMessage((message_) => message_.options.subject === "Special", 1000);
 
             const [_, message] = await Promise.all([sendPromise, waitPromise]);
 
@@ -763,9 +766,7 @@ describe("mockProvider", () => {
         it("should timeout if message not found", async () => {
             const provider = mockProvider();
 
-            await expect(
-                provider.waitForMessage((msg) => msg.options.subject === "NonExistent", 100),
-            ).rejects.toThrow("Timeout");
+            await expect(provider.waitForMessage((message) => message.options.subject === "NonExistent", 100)).rejects.toThrow("Timeout");
         });
     });
 
@@ -774,16 +775,16 @@ describe("mockProvider", () => {
             const provider = mockProvider();
             const emailOptions: MockEmailOptions = {
                 from: { email: "sender@example.com" },
-                subject: "Test",
                 html: "<h1>Test</h1>",
+                subject: "Test",
                 to: { email: "user@example.com" },
             };
 
             provider.setFailureRate(0.5);
             provider.setDelay(100);
             provider.setNextResponse({
-                successful: true,
                 messageId: "test-id",
+                successful: true,
                 timestamp: new Date(),
             });
             await provider.sendEmail(emailOptions);
@@ -801,14 +802,15 @@ describe("mockProvider", () => {
             const provider = mockProvider();
             const emailOptions: MockEmailOptions = {
                 from: { email: "sender@example.com" },
-                subject: "Test",
                 html: "<h1>Test</h1>",
+                subject: "Test",
                 to: { email: "user@example.com" },
             };
 
             const sendResult = await provider.sendEmail(emailOptions);
 
             expect(sendResult.success).toBe(true);
+
             const messageId = sendResult.data?.messageId!;
 
             const getResult = await provider.getEmail(messageId);
@@ -842,8 +844,8 @@ describe("mockProvider", () => {
             const provider = mockProvider();
             const emailOptions: MockEmailOptions = {
                 from: { email: "sender@example.com" },
-                subject: "Test",
                 html: "<h1>Test</h1>",
+                subject: "Test",
                 to: { email: "user@example.com" },
             };
 
@@ -861,8 +863,8 @@ describe("mockProvider", () => {
             const provider = mockProvider();
             const emailOptions: MockEmailOptions = {
                 from: { email: "sender@example.com" },
-                subject: "Test",
                 html: "<h1>Test</h1>",
+                subject: "Test",
                 to: { email: "user@example.com" },
             };
 
@@ -882,8 +884,8 @@ describe("mockProvider", () => {
             const provider2 = mockProvider();
             const emailOptions: MockEmailOptions = {
                 from: { email: "sender@example.com" },
-                subject: "Test",
                 html: "<h1>Test</h1>",
+                subject: "Test",
                 to: { email: "user@example.com" },
             };
 
@@ -894,4 +896,3 @@ describe("mockProvider", () => {
         });
     });
 });
-

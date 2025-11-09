@@ -30,7 +30,7 @@ export const httpProvider: ProviderFactory<HttpEmailConfig, unknown, HttpEmailOp
     const getStandardHeaders = (): Record<string, string> => {
         const headers: Record<string, string> = {
             "Content-Type": "application/json",
-            ...(options.headers ? headersToRecord(options.headers) : {}),
+            ...options.headers ? headersToRecord(options.headers) : {},
         };
 
         if (options.apiKey) {

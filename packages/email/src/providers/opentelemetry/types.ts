@@ -1,4 +1,5 @@
 import type { Tracer } from "@opentelemetry/api";
+
 import type { BaseConfig, EmailOptions } from "../../types";
 import type { Provider, ProviderFactory } from "../provider";
 
@@ -13,10 +14,10 @@ export interface OpenTelemetryConfig extends BaseConfig {
     provider: Provider | ProviderFactory;
 
     /**
-     * Optional OpenTelemetry tracer instance
-     * If not provided, uses the global tracer
+     * Whether to record email content in spans (default: false)
+     * When false, only metadata is recorded
      */
-    tracer?: Tracer;
+    recordContent?: boolean;
 
     /**
      * Service name for OpenTelemetry spans (default: "email")
@@ -24,10 +25,10 @@ export interface OpenTelemetryConfig extends BaseConfig {
     serviceName?: string;
 
     /**
-     * Whether to record email content in spans (default: false)
-     * When false, only metadata is recorded
+     * Optional OpenTelemetry tracer instance
+     * If not provided, uses the global tracer
      */
-    recordContent?: boolean;
+    tracer?: Tracer;
 }
 
 /**
@@ -36,4 +37,3 @@ export interface OpenTelemetryConfig extends BaseConfig {
 export interface OpenTelemetryEmailOptions extends EmailOptions {
     // No additional options beyond base EmailOptions
 }
-

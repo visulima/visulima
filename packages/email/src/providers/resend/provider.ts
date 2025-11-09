@@ -231,7 +231,7 @@ export const resendProvider: ProviderFactory<ResendConfig, unknown, ResendEmailO
 
                 const formatRecipients = (addresses: EmailAddress | EmailAddress[]): string[] => {
                     if (Array.isArray(addresses)) {
-                        return addresses.map((address) => (address.name ? `${address.name} <${address.email}>` : address.email));
+                        return addresses.map((address) => address.name ? `${address.name} <${address.email}>` : address.email);
                     }
 
                     return [addresses.name ? `${addresses.name} <${addresses.email}>` : addresses.email];

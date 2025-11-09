@@ -18,9 +18,9 @@ export const renderVueEmail: TemplateRenderer = async (
     try {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return await render(template as any, data ?? {}, {
-            pretty: options?.pretty as boolean | undefined,
-            plainText: options?.plainText as boolean | undefined,
             htmlToTextOptions: options?.htmlToTextOptions as Record<string, unknown> | undefined,
+            plainText: options?.plainText as boolean | undefined,
+            pretty: options?.pretty as boolean | undefined,
         });
     } catch (error) {
         if (error instanceof Error && error.message.includes("Cannot find module")) {
@@ -30,4 +30,3 @@ export const renderVueEmail: TemplateRenderer = async (
         throw new EmailError("vue-email", `Failed to render Vue Email component: ${(error as Error).message}`, { cause: error });
     }
 };
-

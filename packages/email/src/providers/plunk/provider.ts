@@ -186,6 +186,7 @@ export const plunkProvider: ProviderFactory<PlunkConfig, unknown, PlunkEmailOpti
                 // Add from address
                 if (emailOptions.from) {
                     payload.from = emailOptions.from.email;
+
                     if (emailOptions.from.name) {
                         payload.from_name = emailOptions.from.name;
                     }
@@ -221,6 +222,7 @@ export const plunkProvider: ProviderFactory<PlunkConfig, unknown, PlunkEmailOpti
                 // Add reply-to
                 if (emailOptions.replyTo) {
                     payload.reply_to = emailOptions.replyTo.email;
+
                     if (emailOptions.replyTo.name) {
                         payload.reply_to_name = emailOptions.replyTo.name;
                     }
@@ -244,6 +246,7 @@ export const plunkProvider: ProviderFactory<PlunkConfig, unknown, PlunkEmailOpti
                 // Add custom headers
                 if (emailOptions.headers) {
                     const headersRecord = headersToRecord(emailOptions.headers);
+
                     payload.headers = headersRecord;
                 }
 
@@ -258,6 +261,7 @@ export const plunkProvider: ProviderFactory<PlunkConfig, unknown, PlunkEmailOpti
                                     content = attachment.content;
                                 } else if (attachment.content instanceof Promise) {
                                     const buffer = await attachment.content;
+
                                     content = Buffer.from(buffer).toString("base64");
                                 } else {
                                     content = attachment.content.toString("base64");
@@ -346,4 +350,3 @@ export const plunkProvider: ProviderFactory<PlunkConfig, unknown, PlunkEmailOpti
         },
     };
 });
-

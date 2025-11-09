@@ -102,21 +102,18 @@ export const validateEmail = (email: string): boolean => {
 
 /**
  * Parses a string representation of an email address into an EmailAddress object.
- * Supports formats: "email@example.com", "Name <email@example.com>", "<email@example.com>"
- *
+ * Supports formats: "email@example.com", "Name &lt;email@example.com>", "&lt;email@example.com>"
  * @example Parsing an address with a name
  * ```ts
  * const address = parseAddress("John Doe <john@example.com>");
  * // { name: "John Doe", email: "john@example.com" }
  * ```
- *
  * @example Parsing an address without a name
  * ```ts
  * const address = parseAddress("jane@example.com");
  * // { email: "jane@example.com" }
  * ```
- *
- * @param address - The string representation of the address to parse
+ * @param address The string representation of the address to parse
  * @returns An EmailAddress object if parsing is successful, or undefined if invalid
  */
 export const parseAddress = (address: string): EmailAddress | undefined => {
@@ -125,12 +122,14 @@ export const parseAddress = (address: string): EmailAddress | undefined => {
     }
 
     const trimmed = address.trim();
+
     if (!trimmed) {
         return undefined;
     }
 
     // Check for name and angle bracket format: "Name <email@domain.com>"
     const nameAngleBracketMatch = trimmed.match(/^(.+?)\s*<(.+?)>$/);
+
     if (nameAngleBracketMatch) {
         const name = nameAngleBracketMatch[1].trim();
         const email = nameAngleBracketMatch[2].trim();
@@ -141,11 +140,13 @@ export const parseAddress = (address: string): EmailAddress | undefined => {
 
         // Remove quotes from name if present
         const cleanName = name.replace(/^"(.+)"$/, "$1");
-        return { name: cleanName, email };
+
+        return { email, name: cleanName };
     }
 
     // Check for angle bracket format without name: "<email@domain.com>"
     const angleBracketMatch = trimmed.match(/^<(.+?)>$/);
+
     if (angleBracketMatch) {
         const email = angleBracketMatch[1].trim();
 
@@ -167,16 +168,14 @@ export const parseAddress = (address: string): EmailAddress | undefined => {
 /**
  * Compares two priority levels and returns a number indicating their relative order.
  * High priority is considered greater than normal, which is greater than low.
- *
  * @example Sorting priorities
  * ```ts
  * const priorities: Priority[] = ["normal", "low", "high"];
  * priorities.sort(comparePriority);
  * // ["high", "normal", "low"]
  * ```
- *
- * @param a - The first priority to compare
- * @param b - The second priority to compare
+ * @param a The first priority to compare
+ * @param b The second priority to compare
  * @returns A negative number if a is less than b, a positive number if a is greater than b, and zero if they are equal
  */
 export const comparePriority = (a: Priority, b: Priority): number => {
@@ -222,7 +221,7 @@ export const formatEmailAddresses = (addresses: EmailAddress | EmailAddress[]): 
 };
 
 /**
- * Converts EmailHeaders (Record<string, string> or ImmutableHeaders) to Record<string, string>
+ * Converts EmailHeaders (Record&lt;string, string> or ImmutableHeaders) to Record&lt;string, string>
  * This allows us to work with headers uniformly regardless of their input type
  */
 export const headersToRecord = (headers: EmailHeaders): Record<string, string> => {
@@ -487,9 +486,7 @@ export const generateBoundary = async (): Promise<string> => {
         }
     }
 
-    const hex = [...array]
-        .map((b) => b.toString(16).padStart(2, "0"))
-        .join("");
+    const hex = [...array].map((b) => b.toString(16).padStart(2, "0")).join("");
 
     return `----_=_NextPart_${hex}`;
 };
@@ -574,11 +571,7 @@ export const buildMimeMessage = async <T extends EmailOptions>(options: T): Prom
                 );
             } else {
                 // Handle async content (Promise<Uint8Array>)
-                if (attachment.content instanceof Promise) {
-                    attachmentContent = await attachment.content;
-                } else {
-                    attachmentContent = attachment.content;
-                }
+                attachmentContent = attachment.content instanceof Promise ? await attachment.content : attachment.content;
             }
 
             if (encoding === "base64") {
@@ -591,6 +584,7 @@ export const buildMimeMessage = async <T extends EmailOptions>(options: T): Prom
                 } else {
                     // Uint8Array
                     const decoder = new TextDecoder();
+
                     message.push(decoder.decode(attachmentContent));
                 }
             } else {

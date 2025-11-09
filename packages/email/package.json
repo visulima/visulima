@@ -111,6 +111,70 @@
             "types": "./dist/providers/mock/index.d.ts",
             "default": "./dist/providers/mock/index.js"
         },
+        "./providers/sendgrid": {
+            "types": "./dist/providers/sendgrid/index.d.ts",
+            "default": "./dist/providers/sendgrid/index.js"
+        },
+        "./providers/mailgun": {
+            "types": "./dist/providers/mailgun/index.d.ts",
+            "default": "./dist/providers/mailgun/index.js"
+        },
+        "./providers/postmark": {
+            "types": "./dist/providers/postmark/index.d.ts",
+            "default": "./dist/providers/postmark/index.js"
+        },
+        "./providers/brevo": {
+            "types": "./dist/providers/brevo/index.d.ts",
+            "default": "./dist/providers/brevo/index.js"
+        },
+        "./providers/mailjet": {
+            "types": "./dist/providers/mailjet/index.d.ts",
+            "default": "./dist/providers/mailjet/index.js"
+        },
+        "./providers/mailersend": {
+            "types": "./dist/providers/mailersend/index.d.ts",
+            "default": "./dist/providers/mailersend/index.js"
+        },
+        "./providers/mandrill": {
+            "types": "./dist/providers/mandrill/index.d.ts",
+            "default": "./dist/providers/mandrill/index.js"
+        },
+        "./providers/postal": {
+            "types": "./dist/providers/postal/index.d.ts",
+            "default": "./dist/providers/postal/index.js"
+        },
+        "./providers/mailtrap": {
+            "types": "./dist/providers/mailtrap/index.d.ts",
+            "default": "./dist/providers/mailtrap/index.js"
+        },
+        "./providers/mailpace": {
+            "types": "./dist/providers/mailpace/index.d.ts",
+            "default": "./dist/providers/mailpace/index.js"
+        },
+        "./providers/azure": {
+            "types": "./dist/providers/azure/index.d.ts",
+            "default": "./dist/providers/azure/index.js"
+        },
+        "./providers/infobip": {
+            "types": "./dist/providers/infobip/index.d.ts",
+            "default": "./dist/providers/infobip/index.js"
+        },
+        "./providers/scaleway": {
+            "types": "./dist/providers/scaleway/index.d.ts",
+            "default": "./dist/providers/scaleway/index.js"
+        },
+        "./providers/ahasend": {
+            "types": "./dist/providers/ahasend/index.d.ts",
+            "default": "./dist/providers/ahasend/index.js"
+        },
+        "./providers/mailomat": {
+            "types": "./dist/providers/mailomat/index.d.ts",
+            "default": "./dist/providers/mailomat/index.js"
+        },
+        "./providers/sweego": {
+            "types": "./dist/providers/sweego/index.d.ts",
+            "default": "./dist/providers/sweego/index.js"
+        },
         "./package.json": "./package.json"
     },
     "files": [
