@@ -59,9 +59,37 @@ const smtp = smtpProvider({
 import { zeptomailProvider } from "@visulima/email/providers/zeptomail";
 
 const zeptomail = zeptomailProvider({
-    apiKey: process.env.ZEPTOMAIL_API_KEY!,
+    token: process.env.ZEPTOMAIL_TOKEN!, // Format: "Zoho-enczapikey <your_api_key>"
     timeout: 30000, // Optional
     retries: 3, // Optional
+});
+```
+
+### Plunk
+
+```typescript
+import { plunkProvider } from "@visulima/email/providers/plunk";
+
+const plunk = plunkProvider({
+    apiKey: process.env.PLUNK_API_KEY!,
+    endpoint: "https://api.useplunk.com/v1", // Optional, defaults to this
+    timeout: 30000, // Optional
+    retries: 3, // Optional
+});
+```
+
+### Mock (for Testing)
+
+```typescript
+import { mockProvider } from "@visulima/email/providers/mock";
+
+const mock = mockProvider({
+    debug: true, // Optional: enable debug logging
+    delay: 100, // Optional: simulate delay in milliseconds
+    failureRate: 0.1, // Optional: failure rate (0.0 to 1.0)
+    simulateFailure: false, // Optional: always fail if true
+    timeout: 0, // Optional: not used by mock provider
+    retries: 0, // Optional: not used by mock provider
 });
 ```
 
@@ -76,6 +104,8 @@ AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE
 AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
 SMTP_USER=user@example.com
 SMTP_PASSWORD=password
+ZEPTOMAIL_TOKEN=Zoho-enczapikey <your_api_key>
+PLUNK_API_KEY=your-plunk-api-key
 ```
 
 Then use them in your code:
@@ -85,6 +115,42 @@ const resend = resendProvider({
     apiKey: process.env.RESEND_API_KEY!,
 });
 ```
+
+## Typing Configuration
+
+If you want to type your configuration objects, you can import the config types from each provider:
+
+```typescript
+import { resendProvider, type ResendConfig } from "@visulima/email/providers/resend";
+import { smtpProvider, type SmtpConfig } from "@visulima/email/providers/smtp";
+
+// Type your configuration
+const resendConfig: ResendConfig = {
+    apiKey: process.env.RESEND_API_KEY!,
+    timeout: 30000,
+    retries: 3,
+};
+
+const smtpConfig: SmtpConfig = {
+    host: "smtp.example.com",
+    port: 587,
+    secure: false,
+    user: process.env.SMTP_USER!,
+    password: process.env.SMTP_PASSWORD!,
+};
+
+// Use typed configs
+const resend = resendProvider(resendConfig);
+const smtp = smtpProvider(smtpConfig);
+```
+
+Each provider exports its own config type from its provider path. For example:
+- `ResendConfig` from `@visulima/email/providers/resend`
+- `SmtpConfig` from `@visulima/email/providers/smtp`
+- `AwsSesConfig` from `@visulima/email/providers/aws-ses`
+- `PlunkConfig` from `@visulima/email/providers/plunk`
+- `MockConfig` from `@visulima/email/providers/mock`
+- And so on for other providers
 
 ## Provider Factory Pattern
 

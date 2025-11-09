@@ -6,26 +6,19 @@ export { defineProvider } from "./providers/provider";
 export type { TemplateRenderer } from "./template-engines/types";
 export type {
     Attachment,
-    AwsSesConfig,
     BaseConfig,
     EmailAddress,
+    EmailHeaders,
     EmailOptions,
     EmailResult,
     EmailTag,
-    FailoverConfig,
     FeatureFlags,
-    HttpEmailConfig,
+    ImmutableHeaders,
     Logger,
-    MailCrabConfig,
     MaybePromise,
-    NodemailerConfig,
     Priority,
     Receipt,
-    ResendConfig,
     Result,
-    RoundRobinConfig,
-    SmtpConfig,
-    ZeptomailConfig,
 } from "./types";
 
 export {
@@ -36,6 +29,7 @@ export {
     formatEmailAddresses,
     generateBoundary,
     generateMessageId,
+    headersToRecord,
     isPortAvailable,
     makeRequest,
     parseAddress,

@@ -1,11 +1,11 @@
 import { createHash, createHmac, randomUUID } from "node:crypto";
 
 import { EmailError, RequiredOptionError } from "../../errors/email-error";
-import type { AwsSesConfig, EmailAddress, EmailOptions, EmailResult, Result } from "../../types";
-import { createLogger, makeRequest, validateEmailOptions } from "../../utils";
+import type { EmailAddress, EmailOptions, EmailResult, Result } from "../../types";
+import { createLogger, headersToRecord, makeRequest, validateEmailOptions } from "../../utils";
 import type { ProviderFactory } from "../provider";
 import { defineProvider } from "../provider";
-import type { AwsSesEmailOptions } from "./types";
+import type { AwsSesConfig, AwsSesEmailOptions } from "./types";
 
 const hasBuffer = globalThis.Buffer !== undefined;
 
@@ -270,7 +270,9 @@ export const awsSesProvider: ProviderFactory<AwsSesConfig, unknown, AwsSesEmailO
 
         // Add custom headers if provided
         if (options.headers) {
-            for (const [name, value] of Object.entries(options.headers)) {
+            const headersRecord = headersToRecord(options.headers);
+
+            for (const [name, value] of Object.entries(headersRecord)) {
                 message += `${name}: ${value}\r\n`;
             }
         }

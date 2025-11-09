@@ -1,4 +1,12 @@
-import type { EmailOptions, EmailTag } from "../../types";
+import type { BaseConfig, EmailOptions, EmailTag } from "../../types";
+
+/**
+ * Resend configuration
+ */
+export interface ResendConfig extends BaseConfig {
+    apiKey: string;
+    endpoint?: string;
+}
 
 /**
  * Resend-specific email tag type with additional constraints

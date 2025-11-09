@@ -126,6 +126,20 @@ export interface EmailTag {
 export type Priority = "high" | "normal" | "low";
 
 /**
+ * Represents the headers of an email message.
+ * This type is a supertype of the standard `Headers` class, which is used to manage HTTP headers.
+ * Note that this type does not include methods for modifying the headers,
+ * such as `append`, `delete`, or `set`. It is intended to be used for
+ * read-only access to the headers of an email message.
+ */
+export type ImmutableHeaders = Omit<Headers, "append" | "delete" | "set">;
+
+/**
+ * Email headers can be either a plain object or an ImmutableHeaders instance
+ */
+export type EmailHeaders = Record<string, string> | ImmutableHeaders;
+
+/**
  * Common email options that all providers support
  */
 export interface EmailOptions {
@@ -134,7 +148,7 @@ export interface EmailOptions {
     cc?: EmailAddress | EmailAddress[];
 
     from: EmailAddress;
-    headers?: Record<string, string>;
+    headers?: EmailHeaders;
     html?: string;
     priority?: Priority;
     replyTo?: EmailAddress;
@@ -208,143 +222,3 @@ export interface Result<T = unknown> {
     success: boolean;
 }
 
-/**
- * AWS SES configuration
- */
-export interface AwsSesConfig extends BaseConfig {
-    accessKeyId: string;
-    apiVersion?: string;
-    endpoint?: string;
-    maxAttempts?: number;
-    region: string;
-    secretAccessKey: string;
-    sessionToken?: string;
-}
-
-/**
- * Resend configuration
- */
-export interface ResendConfig extends BaseConfig {
-    apiKey: string;
-    endpoint?: string;
-}
-
-/**
- * SMTP configuration
- */
-export interface SmtpConfig extends BaseConfig {
-    authMethod?: "LOGIN" | "PLAIN" | "CRAM-MD5" | "OAUTH2";
-    dkim?: {
-        domainName: string;
-        keySelector: string;
-        privateKey: string;
-    };
-    host: string;
-    maxConnections?: number;
-    oauth2?: {
-        accessToken?: string;
-        clientId: string;
-        clientSecret: string;
-        expires?: number;
-        refreshToken: string;
-        user: string;
-    };
-    password?: string;
-    pool?: boolean;
-    port: number;
-    rejectUnauthorized?: boolean;
-    secure?: boolean;
-    user?: string;
-}
-
-/**
- * HTTP email configuration
- */
-export interface HttpEmailConfig {
-    apiKey?: string;
-    endpoint: string;
-    headers?: Record<string, string>;
-    method?: "GET" | "POST" | "PUT";
-}
-
-/**
- * Zeptomail configuration
- */
-export interface ZeptomailConfig extends BaseConfig {
-    endpoint?: string;
-    token: string;
-}
-
-/**
- * Failover configuration
- */
-export interface FailoverConfig extends BaseConfig {
-    /**
-     * Array of provider instances or provider factories to use in failover order
-     * Can be Provider instances or ProviderFactory functions
-     */
-    mailers: unknown[];
-
-    /**
-     * Time in milliseconds to wait before trying the next provider (default: 60)
-     */
-    retryAfter?: number;
-}
-
-/**
- * Round Robin configuration
- */
-export interface RoundRobinConfig extends BaseConfig {
-    /**
-     * Array of provider instances or provider factories to use for round-robin distribution
-     * Can be Provider instances or ProviderFactory functions
-     */
-    mailers: unknown[];
-
-    /**
-     * Time in milliseconds to wait before retrying with next provider if current is unavailable (default: 60)
-     */
-    retryAfter?: number;
-}
-
-/**
- * MailCrab configuration (for local development/testing)
- */
-export interface MailCrabConfig extends BaseConfig {
-    /**
-     * MailCrab host (default: localhost)
-     */
-    host?: string;
-
-    /**
-     * MailCrab port (default: 1025)
-     */
-    port?: number;
-
-    /**
-     * Use secure connection (default: false)
-     */
-    secure?: boolean;
-}
-
-/**
- * Nodemailer configuration
- * Accepts any nodemailer transport configuration
- * Common transports: SMTP, Sendmail, SES, etc.
- */
-export interface NodemailerConfig extends BaseConfig {
-    /**
-     * Default from address (optional, can be overridden per email)
-     */
-    defaultFrom?: EmailAddress;
-
-    /**
-     * Nodemailer transport configuration
-     * Can be a transport object or a transport name (e.g., 'smtp', 'sendmail')
-     * For SMTP: { host, port, secure, auth: { user, pass } }
-     * For Sendmail: { path: '/usr/sbin/sendmail' }
-     * For SES: { SES: { ... } }
-     * See: https://nodemailer.com/transports/
-     */
-    transport: Record<string, unknown> | string;
-}

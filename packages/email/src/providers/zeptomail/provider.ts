@@ -1,9 +1,9 @@
 import { EmailError, RequiredOptionError } from "../../errors/email-error";
-import type { EmailAddress, EmailResult, Result, ZeptomailConfig } from "../../types";
-import { createLogger, generateMessageId, makeRequest, retry, validateEmailOptions } from "../../utils";
+import type { EmailAddress, EmailResult, Result } from "../../types";
+import { createLogger, generateMessageId, headersToRecord, makeRequest, retry, validateEmailOptions } from "../../utils";
 import type { ProviderFactory } from "../provider";
 import { defineProvider } from "../provider";
-import type { ZeptomailEmailOptions } from "./types";
+import type { ZeptomailConfig, ZeptomailEmailOptions } from "./types";
 
 // Constants
 const PROVIDER_NAME = "zeptomail";
@@ -197,15 +197,19 @@ export const zeptomailProvider: ProviderFactory<ZeptomailConfig, unknown, Zeptom
                     }
 
                     // Add custom headers if present
-                    if (emailOptions.headers && Object.keys(emailOptions.headers).length > 0) {
-                        // Zeptomail doesn't have a dedicated field for custom headers, so we'll merge them into mime_headers
-                        if (!payload.mime_headers) {
-                            payload.mime_headers = {};
-                        }
+                    if (emailOptions.headers) {
+                        const headersRecord = headersToRecord(emailOptions.headers);
 
-                        Object.entries(emailOptions.headers).forEach(([key, value]) => {
-                            payload.mime_headers[key] = value;
-                        });
+                        if (Object.keys(headersRecord).length > 0) {
+                            // Zeptomail doesn't have a dedicated field for custom headers, so we'll merge them into mime_headers
+                            if (!payload.mime_headers) {
+                                payload.mime_headers = {};
+                            }
+
+                            Object.entries(headersRecord).forEach(([key, value]) => {
+                                payload.mime_headers[key] = value;
+                            });
+                        }
                     }
 
                     // Add attachments if present

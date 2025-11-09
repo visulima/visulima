@@ -1,9 +1,9 @@
 import { EmailError, RequiredOptionError } from "../../errors/email-error";
-import type { EmailOptions, EmailResult, FailoverConfig, Result } from "../../types";
+import type { EmailOptions, EmailResult, Result } from "../../types";
 import { createLogger } from "../../utils";
 import type { Provider, ProviderFactory } from "../provider";
 import { defineProvider } from "../provider";
-import type { FailoverEmailOptions } from "./types";
+import type { FailoverConfig, FailoverEmailOptions } from "./types";
 
 // Type guard to check if something is a ProviderFactory
 function isProviderFactory(value: unknown): value is ProviderFactory<unknown, unknown, EmailOptions> {

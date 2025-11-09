@@ -5,7 +5,8 @@ import { detectMimeType, generateContentId, readFileAsBuffer } from "./attachmen
 import type { Provider } from "./providers/provider";
 import { htmlToText } from "./template-engines/html-to-text";
 import type { TemplateRenderer } from "./template-engines/types";
-import type { Attachment, EmailAddress, EmailOptions, EmailResult, Priority, Receipt, Result } from "./types";
+import type { Attachment, EmailAddress, EmailHeaders, EmailOptions, EmailResult, Priority, Receipt, Result } from "./types";
+import { headersToRecord } from "./utils";
 
 /**
  * Mailable interface - represents an email that can be sent
@@ -132,9 +133,12 @@ export class MailMessage {
 
     /**
      * Set multiple headers
+     * Accepts both Record<string, string> and ImmutableHeaders
      */
-    setHeaders(headers: Record<string, string>): this {
-        Object.assign(this.headers, headers);
+    setHeaders(headers: EmailHeaders): this {
+        const headersRecord = headersToRecord(headers);
+
+        Object.assign(this.headers, headersRecord);
 
         return this;
     }

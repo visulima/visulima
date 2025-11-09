@@ -1,4 +1,12 @@
-import type { EmailOptions } from "../../types";
+import type { BaseConfig, EmailOptions } from "../../types";
+
+/**
+ * Zeptomail configuration
+ */
+export interface ZeptomailConfig extends BaseConfig {
+    endpoint?: string;
+    token: string;
+}
 
 /**
  * Zeptomail-specific email options

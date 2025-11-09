@@ -1,4 +1,32 @@
-import type { EmailOptions } from "../../types";
+import type { BaseConfig, EmailAddress, EmailOptions } from "../../types";
+
+/**
+ * SMTP configuration
+ */
+export interface SmtpConfig extends BaseConfig {
+    authMethod?: "LOGIN" | "PLAIN" | "CRAM-MD5" | "OAUTH2";
+    dkim?: {
+        domainName: string;
+        keySelector: string;
+        privateKey: string;
+    };
+    host: string;
+    maxConnections?: number;
+    oauth2?: {
+        accessToken?: string;
+        clientId: string;
+        clientSecret: string;
+        expires?: number;
+        refreshToken: string;
+        user: string;
+    };
+    password?: string;
+    pool?: boolean;
+    port: number;
+    rejectUnauthorized?: boolean;
+    secure?: boolean;
+    user?: string;
+}
 
 /**
  * SMTP-specific email options

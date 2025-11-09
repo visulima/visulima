@@ -1,9 +1,9 @@
 import { EmailError, RequiredOptionError } from "../../errors/email-error";
-import type { EmailResult, HttpEmailConfig, Result } from "../../types";
-import { generateMessageId, makeRequest, validateEmailOptions } from "../../utils";
+import type { EmailResult, Result } from "../../types";
+import { generateMessageId, headersToRecord, makeRequest, validateEmailOptions } from "../../utils";
 import type { ProviderFactory } from "../provider";
 import { defineProvider } from "../provider";
-import type { HttpEmailOptions } from "./types";
+import type { HttpEmailConfig, HttpEmailOptions } from "./types";
 
 const PROVIDER_NAME = "http";
 const DEFAULT_METHOD = "POST";
@@ -30,7 +30,7 @@ export const httpProvider: ProviderFactory<HttpEmailConfig, unknown, HttpEmailOp
     const getStandardHeaders = (): Record<string, string> => {
         const headers: Record<string, string> = {
             "Content-Type": "application/json",
-            ...options.headers,
+            ...(options.headers ? headersToRecord(options.headers) : {}),
         };
 
         if (options.apiKey) {
@@ -163,7 +163,7 @@ export const httpProvider: ProviderFactory<HttpEmailConfig, unknown, HttpEmailOp
                 const headers = getStandardHeaders();
 
                 if (emailOptions.headers) {
-                    Object.assign(headers, emailOptions.headers);
+                    Object.assign(headers, headersToRecord(emailOptions.headers));
                 }
 
                 const payload = formatRequest(emailOptions);
