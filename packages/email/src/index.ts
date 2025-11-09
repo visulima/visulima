@@ -65,8 +65,6 @@ export { EmailError, RequiredOptionError } from "./errors/email-error.js";
 // Export utilities
 export {
     buildMimeMessage,
-    createError,
-    createRequiredError,
     formatEmailAddress,
     formatEmailAddresses,
     generateBoundary,

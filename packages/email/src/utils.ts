@@ -34,21 +34,6 @@ const getNet = (): typeof import("node:net") | undefined => {
     return net;
 };
 
-/**
- * Creates a formatted error message
- * @deprecated Use EmailError directly instead
- */
-export const createError = (component: string, message: string, opts?: { cause?: Error | unknown; code?: string }): Error => {
-    return new EmailError(component, message, opts);
-};
-
-/**
- * Creates an error for missing required options
- * @deprecated Use RequiredOptionError directly instead
- */
-export const createRequiredError = (component: string, name: string | string[]): Error => {
-    return new RequiredOptionError(component, name);
-};
 
 /**
  * Generates a random message ID for emails
@@ -435,8 +420,8 @@ export const buildMimeMessage = <T extends EmailOptions>(options: T): string => 
             const contentType = attachment.contentType || "application/octet-stream";
             message.push(`Content-Type: ${contentType}; name="${attachment.filename}"`);
             
-            // Content-Disposition (prefer contentDisposition over disposition for backward compatibility)
-            const disposition = attachment.contentDisposition || attachment.disposition || "attachment";
+            // Content-Disposition
+            const disposition = attachment.contentDisposition || "attachment";
             message.push(`Content-Disposition: ${disposition}; filename="${attachment.filename}"`);
             
             // Content-ID for inline attachments

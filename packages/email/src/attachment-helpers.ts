@@ -43,19 +43,13 @@ export interface AttachmentOptions {
     contentType?: string;
 
     /**
-     * Disposition type: 'attachment' (default) or 'inline'
-     * @deprecated Use contentDisposition instead
-     */
-    disposition?: "attachment" | "inline";
-
-    /**
      * Content disposition: 'attachment' (default) or 'inline'
      */
     contentDisposition?: "attachment" | "inline";
 
     /**
      * Content-ID for inline attachments (used in HTML with cid:)
-     * If not provided and disposition is 'inline', will be auto-generated
+     * If not provided and contentDisposition is 'inline', will be auto-generated
      */
     cid?: string;
 
