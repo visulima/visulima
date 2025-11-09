@@ -20,32 +20,9 @@ export type {
     ZeptomailConfig,
 } from "./types.js";
 
-// Export providers
-export {
-    awsSesProvider,
-    defineProvider,
-    failoverProvider,
-    httpProvider,
-    mailCrabProvider,
-    nodemailerProvider,
-    resendProvider,
-    roundRobinProvider,
-    smtpProvider,
-    zeptomailProvider,
-    type Provider,
-    type ProviderFactory,
-} from "./providers/index.js";
-
-// Export provider-specific types
-export type { AwsSesEmailOptions } from "./providers/aws-ses/types.js";
-export type { FailoverEmailOptions } from "./providers/failover/types.js";
-export type { HttpEmailOptions } from "./providers/http/types.js";
-export type { MailCrabEmailOptions } from "./providers/mailcrab/types.js";
-export type { NodemailerEmailOptions } from "./providers/nodemailer/types.js";
-export type { ResendEmailOptions, ResendEmailTag } from "./providers/resend/types.js";
-export type { RoundRobinEmailOptions } from "./providers/roundrobin/types.js";
-export type { SmtpEmailOptions } from "./providers/smtp/types.js";
-export type { ZeptomailEmailOptions } from "./providers/zeptomail/types.js";
+// Export core provider types (needed for Mail class)
+export { defineProvider } from "./providers/provider.js";
+export type { Provider, ProviderFactory } from "./providers/provider.js";
 
 // Export Mail class and related
 export { createMail, Mail, MailMessage, type Mailable } from "./mail.js";
