@@ -1,45 +1,10 @@
+import { createHash, randomBytes } from "node:crypto";
+import { Socket } from "node:net";
+
 import { EmailError } from "./errors/email-error";
 import type { EmailAddress, EmailHeaders, EmailOptions, ImmutableHeaders, Logger, Priority, Result } from "./types";
 
 const hasBuffer = globalThis.Buffer !== undefined;
-const isNode = typeof process !== "undefined" && process.versions?.node;
-
-let cryptoModule: { createHash: typeof import("node:crypto").createHash; randomBytes: typeof import("node:crypto").randomBytes } | undefined;
-let netModule: { createConnection: typeof import("node:net").createConnection; Socket: typeof import("node:net").Socket } | undefined;
-
-const getCrypto = async (): Promise<typeof cryptoModule> => {
-    if (!cryptoModule && isNode) {
-        try {
-            const crypto = await import("node:crypto");
-
-            cryptoModule = {
-                createHash: crypto.createHash,
-                randomBytes: crypto.randomBytes,
-            };
-        } catch {
-            // Ignore if not available
-        }
-    }
-
-    return cryptoModule;
-};
-
-const getNet = async (): Promise<typeof netModule> => {
-    if (!netModule && isNode) {
-        try {
-            const net = await import("node:net");
-
-            netModule = {
-                createConnection: net.createConnection,
-                Socket: net.Socket,
-            };
-        } catch {
-            // Ignore if not available
-        }
-    }
-
-    return netModule;
-};
 
 /**
  * Creates a logger from options
@@ -469,33 +434,15 @@ const toBase64 = (content: string | Buffer | Uint8Array): string => {
  * Generate boundary string for multipart emails
  * Works across Node.js, Deno, Bun, and Workers
  */
-export const generateBoundary = async (): Promise<string> => {
-    const crypto = await getCrypto();
-
-    if (crypto) {
-        return `----_=_NextPart_${crypto.randomBytes(16).toString("hex")}`;
-    }
-
-    const array = new Uint8Array(16);
-
-    if (globalThis.crypto !== undefined && globalThis.crypto.getRandomValues) {
-        globalThis.crypto.getRandomValues(array);
-    } else {
-        for (let i = 0; i < array.length; i++) {
-            array[i] = Math.floor(Math.random() * 256);
-        }
-    }
-
-    const hex = [...array].map((b) => b.toString(16).padStart(2, "0")).join("");
-
-    return `----_=_NextPart_${hex}`;
+export const generateBoundary = (): string => {
+    return `----_=_NextPart_${randomBytes(16).toString("hex")}`;
 };
 
 /**
  * Build a MIME message from email options
  */
 export const buildMimeMessage = async <T extends EmailOptions>(options: T): Promise<string> => {
-    const boundary = await generateBoundary();
+    const boundary = generateBoundary();
     const message: string[] = [];
 
     message.push(`From: ${formatEmailAddress(options.from)}`);
@@ -602,17 +549,11 @@ export const buildMimeMessage = async <T extends EmailOptions>(options: T): Prom
 
 /**
  * Check if a port is available on a host
- * Only works in Node.js environments (requires net module)
+ * Works across environments with polyfills
  */
-export const isPortAvailable = async (host: string, port: number): Promise<boolean> => {
-    const net = await getNet();
-
-    if (!net) {
-        return true;
-    }
-
+export const isPortAvailable = (host: string, port: number): Promise<boolean> => {
     return new Promise<boolean>((resolve) => {
-        const socket = new net.Socket();
+        const socket = new Socket();
 
         const onError = (): void => {
             socket.destroy();

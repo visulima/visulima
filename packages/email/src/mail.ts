@@ -2,6 +2,7 @@ import { basename } from "node:path";
 
 import type { AttachmentDataOptions, AttachmentOptions } from "./attachment-helpers";
 import { detectMimeType, generateContentId, readFileAsBuffer } from "./attachment-helpers";
+import type { EmailEncrypter, EmailSigner } from "./crypto";
 import type { Provider } from "./providers/provider";
 import { htmlToText } from "./template-engines/html-to-text";
 import type { TemplateRenderer } from "./template-engines/types";
@@ -58,6 +59,10 @@ export class MailMessage {
     private tagsValue: string[] = [];
 
     private provider?: Provider;
+
+    private signer?: EmailSigner;
+
+    private encrypter?: EmailEncrypter;
 
     /**
      * Set the sender address
@@ -285,6 +290,44 @@ export class MailMessage {
     }
 
     /**
+     * Sign the email message using a signer (DKIM or S/MIME)
+     * @param signer The signer instance to use
+     * @example
+     * ```ts
+     * import { createDkimSigner } from '@visulima/email/crypto';
+     * const signer = createDkimSigner({
+     *   domainName: 'example.com',
+     *   keySelector: 'default',
+     *   privateKey: '-----BEGIN PRIVATE KEY-----...'
+     * });
+     * message.sign(signer)
+     * ```
+     */
+    sign(signer: EmailSigner): this {
+        this.signer = signer;
+
+        return this;
+    }
+
+    /**
+     * Encrypt the email message using an encrypter (S/MIME)
+     * @param encrypter The encrypter instance to use
+     * @example
+     * ```ts
+     * import { createSmimeEncrypter } from '@visulima/email/crypto';
+     * const encrypter = createSmimeEncrypter({
+     *   certificates: '/path/to/certificate.crt'
+     * });
+     * message.encrypt(encrypter)
+     * ```
+     */
+    encrypt(encrypter: EmailEncrypter): this {
+        this.encrypter = encrypter;
+
+        return this;
+    }
+
+    /**
      * Render a template and set as HTML content
      * Accepts a render function for flexible template engine support
      * @example
@@ -380,7 +423,7 @@ export class MailMessage {
             throw new Error("Either text or html content is required");
         }
 
-        const emailOptions: EmailOptions = {
+        let emailOptions: EmailOptions = {
             from: this.fromAddress,
             html: this.htmlContent,
             subject: this.subjectText,
@@ -414,6 +457,16 @@ export class MailMessage {
 
         if (this.tagsValue.length > 0) {
             emailOptions.tags = this.tagsValue;
+        }
+
+        // Apply signing before encryption (sign then encrypt)
+        if (this.signer) {
+            emailOptions = await this.signer.sign(emailOptions);
+        }
+
+        // Apply encryption (encrypts the signed message if signing was applied)
+        if (this.encrypter) {
+            emailOptions = await this.encrypter.encrypt(emailOptions);
         }
 
         return emailOptions;
