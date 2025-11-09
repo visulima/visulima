@@ -75,7 +75,11 @@
         "provenance": true
     },
     "dependencies": {
+        "@react-email/render": "^1.0.0",
         "@visulima/error": "5.0.4",
+        "handlebars": "^4.7.8",
+        "html-to-text": "^9.0.5",
+        "mjml": "^4.15.3",
         "mime": "^4.0.4",
         "nodemailer": "^6.9.16"
     },
@@ -87,6 +91,7 @@
         "@arethetypeswrong/cli": "^0.18.1",
         "@secretlint/secretlint-rule-preset-recommend": "^9.3.3",
         "@total-typescript/ts-reset": "^0.6.1",
+        "@types/handlebars": "^4.1.0",
         "@types/mime": "^3.0.4",
         "@types/node": "22.15.27",
         "@types/nodemailer": "^6.4.14",
