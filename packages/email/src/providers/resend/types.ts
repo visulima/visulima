@@ -1,4 +1,4 @@
-import type { EmailOptions, EmailTag } from "../../types.js";
+import type { EmailOptions, EmailTag } from "../../types";
 
 /**
  * Resend-specific email tag type with additional constraints

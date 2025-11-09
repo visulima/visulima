@@ -1,11 +1,11 @@
 import nodemailerModule from "nodemailer";
 
-import { EmailError, RequiredOptionError } from "../../errors/email-error.js";
-import type { EmailResult, NodemailerConfig, Result } from "../../types.js";
-import { generateMessageId, validateEmailOptions } from "../../utils.js";
-import type { ProviderFactory } from "../provider.js";
-import { defineProvider } from "../provider.js";
-import type { NodemailerEmailOptions } from "./types.js";
+import { EmailError, RequiredOptionError } from "../../errors/email-error";
+import type { EmailResult, NodemailerConfig, Result } from "../../types";
+import { generateMessageId, validateEmailOptions } from "../../utils";
+import type { ProviderFactory } from "../provider";
+import { defineProvider } from "../provider";
+import type { NodemailerEmailOptions } from "./types";
 
 // Constants
 const PROVIDER_NAME = "nodemailer";

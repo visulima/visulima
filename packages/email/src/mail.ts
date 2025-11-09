@@ -1,11 +1,11 @@
 import { basename } from "node:path";
 
-import type { AttachmentDataOptions, AttachmentOptions } from "./attachment-helpers.js";
-import { detectMimeType, generateContentId, readFileAsBuffer } from "./attachment-helpers.js";
-import type { Provider } from "./providers/provider.js";
-import { htmlToText } from "./template-engines/html-to-text.js";
-import type { TemplateRenderer } from "./template-engines/types.js";
-import type { Attachment, EmailAddress, EmailOptions, EmailResult, Result } from "./types.js";
+import type { AttachmentDataOptions, AttachmentOptions } from "./attachment-helpers";
+import { detectMimeType, generateContentId, readFileAsBuffer } from "./attachment-helpers";
+import type { Provider } from "./providers/provider";
+import { htmlToText } from "./template-engines/html-to-text";
+import type { TemplateRenderer } from "./template-engines/types";
+import type { Attachment, EmailAddress, EmailOptions, EmailResult, Result } from "./types";
 
 /**
  * Mailable interface - represents an email that can be sent

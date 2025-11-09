@@ -1,7 +1,7 @@
 import { render } from "@react-email/render";
 
-import { EmailError } from "../errors/email-error.js";
-import type { TemplateRenderer } from "./types.js";
+import { EmailError } from "../errors/email-error";
+import type { TemplateRenderer } from "./types";
 
 /**
  * Render React Email component to HTML

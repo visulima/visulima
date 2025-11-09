@@ -1,4 +1,4 @@
-import type { EmailOptions } from "../../types.js";
+import type { EmailOptions } from "../../types";
 
 /**
  * HTTP-specific email options

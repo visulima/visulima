@@ -1,9 +1,9 @@
-import { EmailError, RequiredOptionError } from "../../errors/email-error.js";
-import type { EmailAddress, EmailResult, Result, ZeptomailConfig } from "../../types.js";
-import { createLogger, generateMessageId, makeRequest, retry, validateEmailOptions } from "../../utils.js";
-import type { ProviderFactory } from "../provider.js";
-import { defineProvider } from "../provider.js";
-import type { ZeptomailEmailOptions } from "./types.js";
+import { EmailError, RequiredOptionError } from "../../errors/email-error";
+import type { EmailAddress, EmailResult, Result, ZeptomailConfig } from "../../types";
+import { createLogger, generateMessageId, makeRequest, retry, validateEmailOptions } from "../../utils";
+import type { ProviderFactory } from "../provider";
+import { defineProvider } from "../provider";
+import type { ZeptomailEmailOptions } from "./types";
 
 // Constants
 const PROVIDER_NAME = "zeptomail";

@@ -1,9 +1,9 @@
-import { EmailError, RequiredOptionError } from "../../errors/email-error.js";
-import type { EmailAddress, EmailResult, ResendConfig, Result } from "../../types.js";
-import { createLogger, generateMessageId, makeRequest, retry, validateEmailOptions } from "../../utils.js";
-import type { ProviderFactory } from "../provider.js";
-import { defineProvider } from "../provider.js";
-import type { ResendEmailOptions, ResendEmailTag } from "./types.js";
+import { EmailError, RequiredOptionError } from "../../errors/email-error";
+import type { EmailAddress, EmailResult, ResendConfig, Result } from "../../types";
+import { createLogger, generateMessageId, makeRequest, retry, validateEmailOptions } from "../../utils";
+import type { ProviderFactory } from "../provider";
+import { defineProvider } from "../provider";
+import type { ResendEmailOptions, ResendEmailTag } from "./types";
 
 const PROVIDER_NAME = "resend";
 const DEFAULT_ENDPOINT = "https://api.resend.com";

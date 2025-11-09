@@ -187,6 +187,27 @@ import { WelcomeEmail } from "./emails/WelcomeEmail";
 await message.view(renderReactEmail, <WelcomeEmail name="John" />);
 ```
 
+### Vue Email
+
+```typescript
+import { renderVueEmail } from "@visulima/email/template/vue-email";
+import { MyTemplate } from "./emails/MyTemplate";
+
+// Render HTML
+await message.view(renderVueEmail, MyTemplate, {
+    title: "some title",
+}, {
+    pretty: true,
+});
+
+// Render plain text
+await message.view(renderVueEmail, MyTemplate, {
+    title: "some title",
+}, {
+    plainText: true,
+});
+```
+
 ## Auto-Generate Text from HTML
 
 When using templates, text can be automatically generated from HTML:

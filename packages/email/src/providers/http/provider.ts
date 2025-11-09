@@ -1,9 +1,9 @@
-import { EmailError, RequiredOptionError } from "../../errors/email-error.js";
-import type { EmailResult, HttpEmailConfig, Result } from "../../types.js";
-import { generateMessageId, makeRequest, validateEmailOptions } from "../../utils.js";
-import type { ProviderFactory } from "../provider.js";
-import { defineProvider } from "../provider.js";
-import type { HttpEmailOptions } from "./types.js";
+import { EmailError, RequiredOptionError } from "../../errors/email-error";
+import type { EmailResult, HttpEmailConfig, Result } from "../../types";
+import { generateMessageId, makeRequest, validateEmailOptions } from "../../utils";
+import type { ProviderFactory } from "../provider";
+import { defineProvider } from "../provider";
+import type { HttpEmailOptions } from "./types";
 
 const PROVIDER_NAME = "http";
 const DEFAULT_METHOD = "POST";

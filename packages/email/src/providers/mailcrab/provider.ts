@@ -1,8 +1,8 @@
-import type { EmailResult, MailCrabConfig, Result } from "../../types.js";
-import type { ProviderFactory } from "../provider.js";
-import { defineProvider } from "../provider.js";
-import { smtpProvider } from "../smtp/index.js";
-import type { MailCrabEmailOptions } from "./types.js";
+import type { EmailResult, MailCrabConfig, Result } from "../../types";
+import type { ProviderFactory } from "../provider";
+import { defineProvider } from "../provider";
+import { smtpProvider } from "../smtp/index";
+import type { MailCrabEmailOptions } from "./types";
 
 // Constants
 const PROVIDER_NAME = "mailcrab";

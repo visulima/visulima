@@ -4,12 +4,12 @@ import type { Socket } from "node:net";
 import { createConnection } from "node:net";
 import { connect } from "node:tls";
 
-import { EmailError, RequiredOptionError } from "../../errors/email-error.js";
-import type { EmailResult, Result, SmtpConfig } from "../../types.js";
-import { buildMimeMessage, generateMessageId, isPortAvailable, validateEmailOptions } from "../../utils.js";
-import type { ProviderFactory } from "../provider.js";
-import { defineProvider } from "../provider.js";
-import type { SmtpEmailOptions } from "./types.js";
+import { EmailError, RequiredOptionError } from "../../errors/email-error";
+import type { EmailResult, Result, SmtpConfig } from "../../types";
+import { buildMimeMessage, generateMessageId, isPortAvailable, validateEmailOptions } from "../../utils";
+import type { ProviderFactory } from "../provider";
+import { defineProvider } from "../provider";
+import type { SmtpEmailOptions } from "./types";
 
 // Constants
 const PROVIDER_NAME = "smtp";

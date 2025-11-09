@@ -1,4 +1,4 @@
-import type { EmailOptions } from "../../types.js";
+import type { EmailOptions } from "../../types";
 
 /**
  * Nodemailer-specific email options
