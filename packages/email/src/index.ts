@@ -59,17 +59,8 @@ export {
     type AttachmentOptions,
 } from "./attachment-helpers.js";
 
-// Export template engines
-export {
-    htmlToText,
-    registerHandlebarsHelper,
-    registerHandlebarsPartial,
-    renderHandlebars,
-    renderMjml,
-    renderReactEmail,
-    type TemplateEngine,
-    type TemplateOptions,
-} from "./template-engines/index.js";
+// Export template engine types
+export type { TemplateRenderer } from "./template-engines/index.js";
 
 // Export errors
 export { EmailError, RequiredOptionError } from "./errors/email-error.js";

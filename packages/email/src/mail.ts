@@ -8,13 +8,7 @@ import {
     generateContentId,
     readFileAsBuffer,
 } from "./attachment-helpers.js";
-import {
-    htmlToText,
-    renderHandlebars,
-    renderMjml,
-    renderReactEmail,
-    type TemplateEngine,
-} from "./template-engines/index.js";
+import type { TemplateRenderer } from "./template-engines/types.js";
 
 /**
  * Mailable interface - represents an email that can be sent
@@ -23,7 +17,7 @@ export interface Mailable {
     /**
      * Build the email message
      */
-    build(): EmailOptions | Promise<EmailOptions>;
+    build(): Promise<EmailOptions>;
 }
 
 /**
@@ -265,78 +259,35 @@ export class MailMessage {
 
     /**
      * Render a template and set as HTML content
-     * Supports React Email, Handlebars, MJML, and plain HTML
+     * Accepts a render function for flexible template engine support
      *
      * @example
      * ```ts
-     * // Handlebars
-     * message.view('welcome', { name: 'John' }, { engine: 'handlebars' })
+     * import { renderHandlebars } from '@visulima/email/handlebars';
+     * message.view(renderHandlebars, '<h1>Hello {{name}}!</h1>', { name: 'John' })
      *
-     * // MJML
-     * message.view(mjmlTemplate, { name: 'John' }, { engine: 'mjml' })
+     * import { renderMjml } from '@visulima/email/mjml';
+     * message.view(renderMjml, mjmlTemplate)
      *
-     * // React Email
-     * message.view(<WelcomeEmail name="John" />, {}, { engine: 'react-email' })
+     * import { renderReactEmail } from '@visulima/email/react-email';
+     * message.view(renderReactEmail, <WelcomeEmail name="John" />)
      * ```
      */
     async view(
-        template: string | unknown,
+        render: TemplateRenderer,
+        template: unknown,
         data?: Record<string, unknown>,
-        options?: { engine?: TemplateEngine; autoText?: boolean; [key: string]: unknown },
+        options?: { autoText?: boolean; [key: string]: unknown },
     ): Promise<this> {
-        const engine = options?.engine || "html";
-        let html: string;
-
         try {
-            switch (engine) {
-                case "react-email": {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    html = await renderReactEmail(template as any, {
-                        plainText: options?.plainText as boolean | undefined,
-                        pretty: options?.pretty as boolean | undefined,
-                    });
-                    break;
-                }
-                case "handlebars": {
-                    if (typeof template !== "string") {
-                        throw new Error("Handlebars template must be a string");
-                    }
-                    html = renderHandlebars(template, data, options as Record<string, unknown>);
-                    break;
-                }
-                case "mjml": {
-                    if (typeof template !== "string") {
-                        throw new Error("MJML template must be a string");
-                    }
-                    html = renderMjml(template, {
-                        fonts: options?.fonts as Record<string, string> | undefined,
-                        keepComments: options?.keepComments as boolean | undefined,
-                        beautify: options?.beautify as boolean | undefined,
-                        minify: options?.minify as boolean | undefined,
-                        validationLevel: options?.validationLevel as "strict" | "soft" | "skip" | undefined,
-                    });
-                    break;
-                }
-                case "html":
-                default: {
-                    if (typeof template !== "string") {
-                        throw new Error("HTML template must be a string");
-                    }
-                    // If data is provided, treat as Handlebars template
-                    if (data && Object.keys(data).length > 0) {
-                        html = renderHandlebars(template, data, options as Record<string, unknown>);
-                    } else {
-                        html = template;
-                    }
-                    break;
-                }
-            }
-
+            const html = await render(template, data, options);
             this.html(html);
 
             // Auto-generate text from HTML if requested
             if (options?.autoText !== false && html) {
                 try {
+                    // Dynamic import to avoid requiring html-to-text if not needed
+                    const { htmlToText } = await import("./template-engines/html-to-text.js");
                     const text = htmlToText(html);
                     if (text && !this.textContent) {
                         this.text(text);
@@ -346,7 +297,7 @@ export class MailMessage {
                 }
             }
         } catch (error) {
-            throw new Error(`Failed to render ${engine} template: ${(error as Error).message}`);
+            throw new Error(`Failed to render template: ${(error as Error).message}`);
         }
 
         return this;
@@ -354,41 +305,28 @@ export class MailMessage {
 
     /**
      * Render a text template and set as text content
-     * Supports Handlebars for text templates
      *
      * @example
      * ```ts
-     * message.viewText('Hello {{name}}!', { name: 'John' }, { engine: 'handlebars' })
+     * import { renderHandlebars } from '@visulima/email/handlebars';
+     * message.viewText(renderHandlebars, 'Hello {{name}}!', { name: 'John' })
      * ```
      */
-    viewText(
+    async viewText(
+        render: TemplateRenderer,
         template: string,
         data?: Record<string, unknown>,
-        options?: { engine?: TemplateEngine; [key: string]: unknown },
-    ): this {
-        const engine = options?.engine || "html";
-
+        options?: Record<string, unknown>,
+    ): Promise<this> {
         try {
-            switch (engine) {
-                case "handlebars": {
-                    const text = renderHandlebars(template, data, options as Record<string, unknown>);
-                    this.text(text);
-                    break;
-                }
-                case "html":
-                default: {
-                    // If data is provided, treat as Handlebars template
-                    if (data && Object.keys(data).length > 0) {
-                        const text = renderHandlebars(template, data, options as Record<string, unknown>);
-                        this.text(text);
-                    } else {
-                        this.text(template);
-                    }
-                    break;
-                }
+            const text = await render(template, data, options);
+            if (typeof text === "string") {
+                this.text(text);
+            } else {
+                throw new Error("Text renderer must return a string");
             }
         } catch (error) {
-            throw new Error(`Failed to render ${engine} text template: ${(error as Error).message}`);
+            throw new Error(`Failed to render text template: ${(error as Error).message}`);
         }
 
         return this;
@@ -397,7 +335,7 @@ export class MailMessage {
     /**
      * Build the email options
      */
-    build(): EmailOptions {
+    async build(): Promise<EmailOptions> {
         if (!this.fromAddress) {
             throw new Error("From address is required");
         }
@@ -410,6 +348,8 @@ export class MailMessage {
         // Auto-generate text from HTML if HTML exists but text doesn't
         if (this.htmlContent && !this.textContent) {
             try {
+                // Dynamic import to avoid requiring html-to-text if not needed
+                const { htmlToText } = await import("./template-engines/html-to-text.js");
                 this.textContent = htmlToText(this.htmlContent);
             } catch {
                 // Ignore errors in text conversion
@@ -459,7 +399,7 @@ export class MailMessage {
             throw new Error("No provider configured. Use mailer() method to set a provider.");
         }
 
-        const emailOptions = this.build();
+        const emailOptions = await this.build();
         return this.provider.sendEmail(emailOptions);
     }
 }

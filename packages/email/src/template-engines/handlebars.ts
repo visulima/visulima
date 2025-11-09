@@ -1,7 +1,5 @@
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const Handlebars = require("handlebars");
-import type { CompileOptions, HelperDelegate } from "handlebars";
 import { EmailError } from "../errors/email-error.js";
+import type { TemplateRenderer } from "./types.js";
 
 /**
  * Render Handlebars template
@@ -10,15 +8,30 @@ import { EmailError } from "../errors/email-error.js";
  * @param options - Handlebars compile options
  * @returns Rendered HTML string
  */
-export const renderHandlebars = (
-    template: string,
+export const renderHandlebars: TemplateRenderer = (
+    template: unknown,
     data?: Record<string, unknown>,
-    options?: CompileOptions,
+    options?: Record<string, unknown>,
 ): string => {
     try {
+        // Dynamic import to make handlebars optional
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const Handlebars = require("handlebars");
+
+        if (typeof template !== "string") {
+            throw new Error("Handlebars template must be a string");
+        }
+
         const compiled = Handlebars.compile(template, options);
         return compiled(data || {});
     } catch (error) {
+        if (error instanceof Error && error.message.includes("Cannot find module")) {
+            throw new EmailError(
+                "handlebars",
+                "Handlebars is not installed. Please install it: pnpm add handlebars",
+                { cause: error },
+            );
+        }
         throw new EmailError(
             "handlebars",
             `Failed to render Handlebars template: ${(error as Error).message}`,
@@ -32,8 +45,21 @@ export const renderHandlebars = (
  * @param name - Helper name
  * @param helper - Helper function
  */
-export const registerHandlebarsHelper = (name: string, helper: HelperDelegate): void => {
-    Handlebars.registerHelper(name, helper);
+export const registerHandlebarsHelper = (name: string, helper: unknown): void => {
+    try {
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const Handlebars = require("handlebars");
+        Handlebars.registerHelper(name, helper);
+    } catch (error) {
+        if (error instanceof Error && error.message.includes("Cannot find module")) {
+            throw new EmailError(
+                "handlebars",
+                "Handlebars is not installed. Please install it: pnpm add handlebars",
+                { cause: error },
+            );
+        }
+        throw error;
+    }
 };
 
 /**
@@ -42,5 +68,18 @@ export const registerHandlebarsHelper = (name: string, helper: HelperDelegate): 
  * @param partial - Partial template string
  */
 export const registerHandlebarsPartial = (name: string, partial: string): void => {
-    Handlebars.registerPartial(name, partial);
+    try {
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const Handlebars = require("handlebars");
+        Handlebars.registerPartial(name, partial);
+    } catch (error) {
+        if (error instanceof Error && error.message.includes("Cannot find module")) {
+            throw new EmailError(
+                "handlebars",
+                "Handlebars is not installed. Please install it: pnpm add handlebars",
+                { cause: error },
+            );
+        }
+        throw error;
+    }
 };

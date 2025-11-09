@@ -1,4 +1,3 @@
-import { convert } from "html-to-text";
 import { EmailError } from "../errors/email-error.js";
 
 /**
@@ -24,6 +23,10 @@ export const htmlToText = (
     },
 ): string => {
     try {
+        // Dynamic import to make html-to-text optional
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const { convert } = require("html-to-text");
+
         return convert(html, {
             wordwrap: options?.wordwrap ?? 80,
             preserveNewlines: options?.preserveNewlines ?? false,
@@ -31,6 +34,13 @@ export const htmlToText = (
             selectors: options?.selectors,
         });
     } catch (error) {
+        if (error instanceof Error && error.message.includes("Cannot find module")) {
+            throw new EmailError(
+                "html-to-text",
+                "html-to-text is not installed. Please install it: pnpm add html-to-text",
+                { cause: error },
+            );
+        }
         throw new EmailError(
             "html-to-text",
             `Failed to convert HTML to text: ${(error as Error).message}`,

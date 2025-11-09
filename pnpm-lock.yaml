@@ -1676,24 +1676,12 @@ importers:
 
   packages/email:
     dependencies:
-      '@react-email/render':
-        specifier: ^1.0.0
-        version: 1.4.0(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@visulima/error':
         specifier: 5.0.4
         version: link:../error
-      handlebars:
-        specifier: ^4.7.8
-        version: 4.7.8
-      html-to-text:
-        specifier: ^9.0.5
-        version: 9.0.5
       mime:
         specifier: ^4.0.4
         version: 4.1.0
-      mjml:
-        specifier: ^4.15.3
-        version: 4.16.1
       nodemailer:
         specifier: ^6.9.16
         version: 6.10.1
@@ -1710,6 +1698,9 @@ importers:
       '@arethetypeswrong/cli':
         specifier: ^0.18.1
         version: 0.18.2
+      '@react-email/render':
+        specifier: ^1.0.0
+        version: 1.4.0(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@secretlint/secretlint-rule-preset-recommend':
         specifier: ^9.3.3
         version: 9.3.4
@@ -1746,6 +1737,15 @@ importers:
       eslint:
         specifier: 9.27.0
         version: 9.27.0(jiti@2.6.1)
+      handlebars:
+        specifier: ^4.7.8
+        version: 4.7.8
+      html-to-text:
+        specifier: ^9.0.5
+        version: 9.0.5
+      mjml:
+        specifier: ^4.15.3
+        version: 4.16.1
       prettier:
         specifier: ^3.5.3
         version: 3.6.2
