@@ -1,0 +1,135 @@
+---
+title: Installation
+description: Install and set up @visulima/email in your project
+---
+
+# Installation
+
+@visulima/email is available as an npm package and can be installed using your preferred package manager.
+
+## Package Managers
+
+### npm
+
+```bash
+npm install @visulima/email
+```
+
+### yarn
+
+```bash
+yarn add @visulima/email
+```
+
+### pnpm
+
+```bash
+pnpm add @visulima/email
+```
+
+## Requirements
+
+- **Node.js**: 20.19 or higher, up to 25.x
+- **TypeScript**: Optional but recommended for full type safety
+
+## Provider Dependencies
+
+@visulima/email uses peer dependencies for providers. You only need to install the providers you plan to use.
+
+### Resend
+
+```bash
+# No additional dependencies needed
+# Just configure with your API key
+```
+
+### AWS SES
+
+```bash
+# No additional dependencies needed
+# Uses native fetch API
+```
+
+### SMTP
+
+```bash
+# No additional dependencies needed
+# Uses native Node.js SMTP support
+```
+
+### Nodemailer
+
+```bash
+# Nodemailer is included as a dependency
+# No additional installation needed
+```
+
+## Template Engine Dependencies
+
+Template engines are optional peer dependencies. Install only the ones you need:
+
+### Handlebars
+
+```bash
+npm install handlebars
+# or
+yarn add handlebars
+# or
+pnpm add handlebars
+```
+
+### MJML
+
+```bash
+npm install mjml
+# or
+yarn add mjml
+# or
+pnpm add mjml
+```
+
+### React Email
+
+```bash
+npm install @react-email/render
+# or
+yarn add @react-email/render
+# or
+pnpm add @react-email/render
+```
+
+### HTML-to-Text
+
+```bash
+npm install html-to-text
+# or
+yarn add html-to-text
+# or
+pnpm add html-to-text
+```
+
+## TypeScript Support
+
+@visulima/email is written in TypeScript and provides full type definitions. No additional type packages are required.
+
+```typescript
+import type { Mail, MailMessage, Provider } from "@visulima/email";
+```
+
+## Verify Installation
+
+After installation, verify that @visulima/email is working correctly:
+
+```typescript
+import { createMail } from "@visulima/email";
+import { resendProvider } from "@visulima/email/providers/resend";
+
+const mail = createMail(resendProvider({ apiKey: "test" }));
+console.log("@visulima/email is installed and ready!");
+```
+
+## Next Steps
+
+- [Getting Started](/docs/package/email/getting-started/introduction) - Learn how to use @visulima/email
+- [Configuration](/docs/package/email/getting-started/configuration) - Configure providers for your needs
+- [Sending Mail](/docs/package/email/getting-started/sending-mail) - Send your first email
