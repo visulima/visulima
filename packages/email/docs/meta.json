@@ -1,0 +1,51 @@
+{
+    "pages": [
+        "index",
+        "installation",
+        {
+            "title": "Getting Started",
+            "pages": [
+                "getting-started/introduction",
+                "getting-started/configuration",
+                "getting-started/sending-mail"
+            ]
+        },
+        {
+            "title": "Mail Messages",
+            "pages": [
+                "mail-messages/building-messages",
+                "mail-messages/mailable-classes",
+                "mail-messages/attachments",
+                "mail-messages/inline-attachments",
+                "mail-messages/customizing-messages"
+            ]
+        },
+        {
+            "title": "Providers",
+            "pages": [
+                "providers/introduction",
+                "providers/aws-ses",
+                "providers/resend",
+                "providers/smtp",
+                "providers/zeptomail",
+                "providers/http",
+                "providers/nodemailer",
+                "providers/failover",
+                "providers/roundrobin",
+                "providers/mailcrab"
+            ]
+        },
+        {
+            "title": "Template Engines",
+            "pages": [
+                "templates/introduction",
+                "templates/handlebars",
+                "templates/mjml",
+                "templates/react-email",
+                "templates/html-to-text"
+            ]
+        },
+        "local-development",
+        "testing"
+    ]
+}

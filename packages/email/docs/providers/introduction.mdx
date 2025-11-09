@@ -1,0 +1,108 @@
+---
+title: Providers Introduction
+description: Learn about email providers in @visulima/email
+---
+
+# Providers
+
+Providers are responsible for actually sending emails. @visulima/email supports multiple providers, allowing you to choose the best one for your needs or switch providers without changing your code.
+
+## Available Providers
+
+- **[AWS SES](/docs/package/email/providers/aws-ses)** - Amazon Simple Email Service
+- **[Resend](/docs/package/email/providers/resend)** - Modern email API for developers
+- **[SMTP](/docs/package/email/providers/smtp)** - Standard SMTP protocol
+- **[Zeptomail](/docs/package/email/providers/zeptomail)** - Zeptomail email service
+- **[HTTP](/docs/package/email/providers/http)** - Generic HTTP API provider
+- **[Nodemailer](/docs/package/email/providers/nodemailer)** - Popular Node.js email library wrapper
+- **[Failover](/docs/package/email/providers/failover)** - Automatic failover between multiple providers
+- **[Round Robin](/docs/package/email/providers/roundrobin)** - Load balancing across multiple providers
+- **[MailCrab](/docs/package/email/providers/mailcrab)** - Local development email testing
+
+## Provider Interface
+
+All providers implement a common interface:
+
+```typescript
+interface Provider {
+  initialize(opts?: Record<string, unknown>): Promise<void>;
+  isAvailable(): Promise<boolean>;
+  sendEmail(options: EmailOptions): Promise<Result<EmailResult>>;
+  validateCredentials?(): Promise<boolean>;
+  getEmail?(id: string): Promise<Result<unknown>>;
+  shutdown?(): Promise<void>;
+}
+```
+
+## Using Providers
+
+### Import from Separate Exports
+
+Each provider is exported from its own path for better tree-shaking:
+
+```typescript
+import { resendProvider } from "@visulima/email/providers/resend";
+import { smtpProvider } from "@visulima/email/providers/smtp";
+```
+
+### Create Provider Instance
+
+```typescript
+const resend = resendProvider({
+  apiKey: "re_xxx",
+});
+```
+
+### Use with Mail
+
+```typescript
+import { createMail } from "@visulima/email";
+
+const mail = createMail(resend);
+```
+
+## Switching Providers
+
+Since all providers implement the same interface, you can switch providers without changing your email code:
+
+```typescript
+// Use Resend in production
+const productionMail = createMail(resendProvider({ apiKey: process.env.RESEND_API_KEY! }));
+
+// Use SMTP in development
+const developmentMail = createMail(
+  smtpProvider({
+    host: "localhost",
+    port: 1025,
+    secure: false,
+  }),
+);
+
+// Same code works with both
+const sendEmail = async (mail: Mail) => {
+  await mail.message().to("user@example.com").from("sender@example.com").subject("Hello").html("<h1>Hello</h1>").send();
+};
+```
+
+## Provider-Specific Options
+
+Some providers support additional options in `EmailOptions`:
+
+### Resend
+
+```typescript
+import type { ResendEmailOptions } from "@visulima/email/providers/resend";
+
+const options: ResendEmailOptions = {
+  from: { email: "sender@example.com" },
+  to: "user@example.com",
+  subject: "Hello",
+  html: "<h1>Hello</h1>",
+  tags: [{ name: "category", value: "welcome" }], // Resend-specific
+};
+```
+
+## Next Steps
+
+- Explore individual provider documentation
+- [Configuration](/docs/package/email/getting-started/configuration) - Learn how to configure providers
