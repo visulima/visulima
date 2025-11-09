@@ -7,7 +7,6 @@ export type {
     EmailOptions,
     EmailResult,
     EmailTag,
-    ErrorOptions,
     FeatureFlags,
     FailoverConfig,
     HttpEmailConfig,
@@ -59,6 +58,9 @@ export {
     type AttachmentDataOptions,
     type AttachmentOptions,
 } from "./attachment-helpers.js";
+
+// Export errors
+export { EmailError, RequiredOptionError } from "./errors/email-error.js";
 
 // Export utilities
 export {

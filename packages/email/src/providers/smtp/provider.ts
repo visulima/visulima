@@ -5,7 +5,8 @@ import { Buffer } from 'node:buffer'
 import * as crypto from 'node:crypto'
 import * as net from 'node:net'
 import * as tls from 'node:tls'
-import { buildMimeMessage, createError, createRequiredError, generateMessageId, isPortAvailable, validateEmailOptions } from '../../utils.js'
+import { buildMimeMessage, generateMessageId, isPortAvailable, validateEmailOptions } from '../../utils.js'
+import { EmailError, RequiredOptionError } from '../../errors/email-error.js'
 import { defineProvider } from '../provider.js'
 
 // Constants
@@ -23,7 +24,7 @@ const DEFAULT_POOL_WAIT_TIMEOUT = 30_000
 export const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions> = defineProvider((opts: SmtpConfig = {} as SmtpConfig) => {
   // Validate required options
   if (!opts.host) {
-    throw createRequiredError(PROVIDER_NAME, 'host')
+    throw new RequiredOptionError(PROVIDER_NAME, 'host')
   }
 
   // Initialize with defaults
@@ -111,7 +112,7 @@ export const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions
 
       onError = (err: Error) => {
         cleanup()
-        reject(createError(PROVIDER_NAME, `Socket error: ${err.message}`, { cause: err }))
+        reject(new EmailError(PROVIDER_NAME, `Socket error: ${err.message}`, { cause: err }))
       }
 
       onData = (data: Buffer) => {
@@ -131,7 +132,7 @@ export const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions
                 resolve(responseBuffer)
               }
               else {
-                reject(createError(PROVIDER_NAME, `Expected ${expectedCodes.join(' or ')}, got ${lastLineCode}: ${responseBuffer.trim()}`))
+                reject(new EmailError(PROVIDER_NAME, `Expected ${expectedCodes.join(' or ')}, got ${lastLineCode}: ${responseBuffer.trim()}`))
               }
             }
           }
@@ -141,7 +142,7 @@ export const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions
       // Set up timeout
       timeoutHandle = setTimeout(() => {
         cleanup()
-        reject(createError(PROVIDER_NAME, `Command timeout after ${options.timeout}ms: ${command?.substring(0, 50)}...`))
+        reject(new EmailError(PROVIDER_NAME, `Command timeout after ${options.timeout}ms: ${command?.substring(0, 50)}...`))
       }, options.timeout)
 
       socket.on('data', onData)
@@ -181,7 +182,7 @@ export const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions
           if (index !== -1) {
             connectionQueue.splice(index, 1)
           }
-          reject(createError(PROVIDER_NAME, `Connection queue timeout after ${DEFAULT_POOL_WAIT_TIMEOUT}ms`))
+          reject(new EmailError(PROVIDER_NAME, `Connection queue timeout after ${DEFAULT_POOL_WAIT_TIMEOUT}ms`))
         }, DEFAULT_POOL_WAIT_TIMEOUT)
 
         connectionQueue.push(queueItem)
@@ -205,12 +206,12 @@ export const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions
         // Handle connection timeout
         socket.on('timeout', () => {
           socket.destroy()
-          reject(createError(PROVIDER_NAME, `Connection timeout to ${options.host}:${options.port} after ${options.timeout}ms`))
+          reject(new EmailError(PROVIDER_NAME, `Connection timeout to ${options.host}:${options.port} after ${options.timeout}ms`))
         })
 
         // Handle errors
         socket.on('error', (err) => {
-          reject(createError(PROVIDER_NAME, `Connection error: ${err.message}`, { cause: err }))
+          reject(new EmailError(PROVIDER_NAME, `Connection error: ${err.message}`, { cause: err }))
         })
 
         // Wait for connection and server greeting
@@ -223,12 +224,12 @@ export const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions
           }
           else {
             socket.destroy()
-            reject(createError(PROVIDER_NAME, `Unexpected server greeting: ${greeting.trim()}`))
+            reject(new EmailError(PROVIDER_NAME, `Unexpected server greeting: ${greeting.trim()}`))
           }
         })
       }
       catch (err) {
-        reject(createError(PROVIDER_NAME, `Failed to create connection: ${(err as Error).message}`, { cause: err as Error }))
+        reject(new EmailError(PROVIDER_NAME, `Failed to create connection: ${(err as Error).message}`, { cause: err as Error }))
       }
     })
   }
@@ -254,13 +255,13 @@ export const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions
 
         // Handle TLS connection errors
         tlsSocket.on('error', (err) => {
-          reject(createError(PROVIDER_NAME, `TLS connection error: ${err.message}`, { cause: err }))
+          reject(new EmailError(PROVIDER_NAME, `TLS connection error: ${err.message}`, { cause: err }))
         })
 
         // Handle timeout
         tlsSocket.on('timeout', () => {
           tlsSocket.destroy()
-          reject(createError(PROVIDER_NAME, `TLS connection timeout after ${options.timeout}ms`))
+          reject(new EmailError(PROVIDER_NAME, `TLS connection timeout after ${options.timeout}ms`))
         })
 
         // Resolve when secure connection is established
@@ -269,7 +270,7 @@ export const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions
         })
       }
       catch (err) {
-        reject(createError(PROVIDER_NAME, `Failed to upgrade to TLS: ${(err as Error).message}`, { cause: err as Error }))
+        reject(new EmailError(PROVIDER_NAME, `Failed to upgrade to TLS: ${(err as Error).message}`, { cause: err as Error }))
       }
     })
   }
@@ -346,7 +347,7 @@ export const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions
     // Get supported AUTH methods
     const authCapability = Object.keys(capabilities).find(key => key.toUpperCase() === 'AUTH')
     if (!authCapability && (options.user || options.password)) {
-      throw createError(PROVIDER_NAME, 'Server does not support authentication')
+      throw new EmailError(PROVIDER_NAME, 'Server does not support authentication')
     }
 
     // Add null check before accessing capabilities with authCapability
@@ -360,7 +361,7 @@ export const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions
           : supportedMethods.includes('PLAIN') ? 'PLAIN' : null)
 
     if (!authMethod) {
-      throw createError(PROVIDER_NAME, 'No supported authentication methods')
+      throw new EmailError(PROVIDER_NAME, 'No supported authentication methods')
     }
 
     // Handle OAUTH2 authentication if configured
@@ -376,7 +377,7 @@ export const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions
       catch (error) {
         const errorMessage = (error as Error).message
         if (errorMessage.includes('535') || errorMessage.includes('Authentication failed')) {
-          throw createError(PROVIDER_NAME, 'Authentication failed: Invalid OAuth2 credentials')
+          throw new EmailError(PROVIDER_NAME, 'Authentication failed: Invalid OAuth2 credentials')
         }
         throw error
       }
@@ -408,7 +409,7 @@ export const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions
       catch (error) {
         const errorMessage = (error as Error).message
         if (errorMessage.includes('535') || errorMessage.includes('Authentication failed')) {
-          throw createError(PROVIDER_NAME, 'Authentication failed: Invalid username or password')
+          throw new EmailError(PROVIDER_NAME, 'Authentication failed: Invalid username or password')
         }
         throw error
       }
@@ -438,7 +439,7 @@ export const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions
       catch (error) {
         const errorMessage = (error as Error).message
         if (errorMessage.includes('535') || errorMessage.includes('Authentication failed')) {
-          throw createError(PROVIDER_NAME, 'Authentication failed: Invalid username or password')
+          throw new EmailError(PROVIDER_NAME, 'Authentication failed: Invalid username or password')
         }
         throw error
       }
@@ -459,13 +460,13 @@ export const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions
       catch (error) {
         const errorMessage = (error as Error).message
         if (errorMessage.includes('535') || errorMessage.includes('Authentication failed')) {
-          throw createError(PROVIDER_NAME, 'Authentication failed: Invalid username or password')
+          throw new EmailError(PROVIDER_NAME, 'Authentication failed: Invalid username or password')
         }
         throw error
       }
     }
 
-    throw createError(PROVIDER_NAME, 'Authentication failed - no valid credentials or method')
+    throw new EmailError(PROVIDER_NAME, 'Authentication failed - no valid credentials or method')
   }
 
   /**
@@ -550,7 +551,7 @@ export const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions
       try {
         // Check if SMTP server is available
         if (!await this.isAvailable()) {
-          throw createError(
+          throw new EmailError(
             PROVIDER_NAME,
             `SMTP server not available at ${options.host}:${options.port}`,
           )
@@ -559,7 +560,7 @@ export const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions
         isInitialized = true
       }
       catch (error) {
-        throw createError(
+        throw new EmailError(
           PROVIDER_NAME,
           `Failed to initialize: ${(error as Error).message}`,
           { cause: error as Error },
@@ -600,7 +601,7 @@ export const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions
         if (validationErrors.length > 0) {
           return {
             success: false,
-            error: createError(
+            error: new EmailError(
               PROVIDER_NAME,
               `Invalid email options: ${validationErrors.join(', ')}`,
             ),
@@ -642,7 +643,7 @@ export const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions
             catch (error) {
               // STARTTLS not supported or failed, continue with plain connection
               if (options.rejectUnauthorized !== false) {
-                throw createError(
+                throw new EmailError(
                   PROVIDER_NAME,
                   `STARTTLS failed or not supported: ${(error as Error).message}`,
                   { cause: error as Error },
@@ -846,7 +847,7 @@ export const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions
       catch (error) {
         return {
           success: false,
-          error: createError(
+          error: new EmailError(
             PROVIDER_NAME,
             `Failed to send email: ${(error as Error).message}`,
             { cause: error as Error },

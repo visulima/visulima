@@ -1,4 +1,5 @@
-import type { Attachment, EmailAddress, EmailOptions, ErrorOptions, Result } from "./types.js";
+import type { Attachment, EmailAddress, EmailOptions, Result } from "./types.js";
+import { EmailError, RequiredOptionError } from "./errors/email-error.js";
 
 // Runtime detection - Buffer availability (Node.js, Bun have it; Deno, Workers don't)
 const hasBuffer = typeof globalThis.Buffer !== "undefined";
@@ -35,26 +36,18 @@ const getNet = (): typeof import("node:net") | undefined => {
 
 /**
  * Creates a formatted error message
+ * @deprecated Use EmailError directly instead
  */
-export const createError = (component: string, message: string, opts?: ErrorOptions): Error => {
-    const err = new Error(`[@visulima/email] [${component}] ${message}`, opts);
-    if (Error.captureStackTrace) {
-        Error.captureStackTrace(err, createError);
-    }
-    return err;
+export const createError = (component: string, message: string, opts?: { cause?: Error | unknown; code?: string }): Error => {
+    return new EmailError(component, message, opts);
 };
 
 /**
  * Creates an error for missing required options
+ * @deprecated Use RequiredOptionError directly instead
  */
 export const createRequiredError = (component: string, name: string | string[]): Error => {
-    if (Array.isArray(name)) {
-        return createError(
-            component,
-            `Missing required options: ${name.map((n) => `'${n}'`).join(", ")}`,
-        );
-    }
-    return createError(component, `Missing required option: '${name}'`);
+    return new RequiredOptionError(component, name);
 };
 
 /**
@@ -80,7 +73,7 @@ export const validateEmail = (email: string): boolean => {
  */
 export const formatEmailAddress = (address: EmailAddress): string => {
     if (!validateEmail(address.email)) {
-        throw createError("email", `Invalid email address: ${address.email}`);
+        throw new EmailError("email", `Invalid email address: ${address.email}`);
     }
 
     return address.name ? `${address.name} <${address.email}>` : address.email;
@@ -255,7 +248,7 @@ export const makeRequest = async (
                 },
                 error: isSuccess
                     ? undefined
-                    : createError(
+                    : new EmailError(
                           "http",
                           `Request failed with status ${response.status}`,
                           { code: response.status.toString() },
@@ -270,7 +263,7 @@ export const makeRequest = async (
             if (error instanceof Error && error.name === "AbortError") {
                 return {
                     success: false,
-                    error: createError("http", `Request timed out after ${options.timeout}ms`),
+                    error: new EmailError("http", `Request timed out after ${options.timeout}ms`),
                 };
             }
 
@@ -279,7 +272,7 @@ export const makeRequest = async (
     } catch (error) {
         return {
             success: false,
-            error: createError(
+            error: new EmailError(
                 "http",
                 `Request failed: ${error instanceof Error ? error.message : String(error)}`,
                 { cause: error instanceof Error ? error : new Error(String(error)) },

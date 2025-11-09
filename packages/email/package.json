@@ -75,6 +75,7 @@
         "provenance": true
     },
     "dependencies": {
+        "@visulima/error": "5.0.4",
         "mime": "^4.0.4",
         "nodemailer": "^6.9.16"
     },
