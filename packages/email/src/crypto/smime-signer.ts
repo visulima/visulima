@@ -12,7 +12,6 @@ import {
     id_Data,
     id_MessageDigest,
     id_RSASSA_PKCS1_v1_5,
-    id_RSASSA_PSS,
     id_SHA256,
     id_SignedData,
     id_SigningTime,
