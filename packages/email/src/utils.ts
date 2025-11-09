@@ -1,5 +1,5 @@
-import { EmailError } from "./errors/email-error.js";
-import type { EmailAddress, EmailOptions, Logger, Result } from "./types.js";
+import { EmailError } from "./errors/email-error";
+import type { EmailAddress, EmailOptions, Logger, Result } from "./types";
 
 const hasBuffer = globalThis.Buffer !== undefined;
 const isNode = typeof process !== "undefined" && process.versions?.node;

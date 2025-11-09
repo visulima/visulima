@@ -1,11 +1,11 @@
 import { createHash, createHmac, randomUUID } from "node:crypto";
 
-import { EmailError, RequiredOptionError } from "../../errors/email-error.js";
-import type { AwsSesConfig, EmailAddress, EmailOptions, EmailResult, Result } from "../../types.js";
-import { createLogger, makeRequest, validateEmailOptions } from "../../utils.js";
-import type { ProviderFactory } from "../provider.js";
-import { defineProvider } from "../provider.js";
-import type { AwsSesEmailOptions } from "./types.js";
+import { EmailError, RequiredOptionError } from "../../errors/email-error";
+import type { AwsSesConfig, EmailAddress, EmailOptions, EmailResult, Result } from "../../types";
+import { createLogger, makeRequest, validateEmailOptions } from "../../utils";
+import type { ProviderFactory } from "../provider";
+import { defineProvider } from "../provider";
+import type { AwsSesEmailOptions } from "./types";
 
 const hasBuffer = globalThis.Buffer !== undefined;
 

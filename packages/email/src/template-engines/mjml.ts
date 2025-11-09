@@ -1,7 +1,7 @@
 import mjml2html from "mjml";
 
-import { EmailError } from "../errors/email-error.js";
-import type { TemplateRenderer } from "./types.js";
+import { EmailError } from "../errors/email-error";
+import type { TemplateRenderer } from "./types";
 
 /**
  * Render MJML to HTML

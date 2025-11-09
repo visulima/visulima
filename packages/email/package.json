@@ -47,6 +47,10 @@
             "types": "./dist/template-engines/react-email.d.ts",
             "default": "./dist/template-engines/react-email.js"
         },
+        "./template/vue-email": {
+            "types": "./dist/template-engines/vue-email.d.ts",
+            "default": "./dist/template-engines/vue-email.js"
+        },
         "./template/html-to-text": {
             "types": "./dist/template-engines/html-to-text.d.ts",
             "default": "./dist/template-engines/html-to-text.js"
@@ -133,12 +137,16 @@
     },
     "peerDependencies": {
         "@react-email/render": "^1.0.0",
+        "@vue-email/render": "^1.0.0",
         "handlebars": "^4.7.8",
         "mjml": "^4.15.3",
         "nodemailer": "^6.9.16"
     },
     "peerDependenciesMeta": {
         "@react-email/render": {
+            "optional": true
+        },
+        "@vue-email/render": {
             "optional": true
         },
         "handlebars": {
@@ -170,7 +178,7 @@
         "@types/mjml": "^4.7.4",
         "@types/node": "24.10.0",
         "@types/nodemailer": "^7.0.3",
-        "@visulima/packem": "2.0.0-alpha.30",
+        "@visulima/packem": "2.0.0-alpha.33",
         "@vitest/coverage-v8": "^4.0.8",
         "@vitest/ui": "^4.0.8",
         "conventional-changelog-conventionalcommits": "9.1.0",

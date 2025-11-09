@@ -1,9 +1,9 @@
-export { type AttachmentDataOptions, type AttachmentOptions, detectMimeType, generateContentId, readFileAsBuffer } from "./attachment-helpers.js";
-export { EmailError, RequiredOptionError } from "./errors/email-error.js";
-export { createMail, Mail, type Mailable, MailMessage } from "./mail.js";
-export type { Provider, ProviderFactory } from "./providers/provider.js";
-export { defineProvider } from "./providers/provider.js";
-export type { TemplateRenderer } from "./template-engines/index.js";
+export { type AttachmentDataOptions, type AttachmentOptions, detectMimeType, generateContentId, readFileAsBuffer } from "./attachment-helpers";
+export { EmailError, RequiredOptionError } from "./errors/email-error";
+export { createMail, Mail, type Mailable, MailMessage } from "./mail";
+export type { Provider, ProviderFactory } from "./providers/provider";
+export { defineProvider } from "./providers/provider";
+export type { TemplateRenderer } from "./template-engines/types";
 export type {
     Attachment,
     AwsSesConfig,
@@ -24,7 +24,8 @@ export type {
     RoundRobinConfig,
     SmtpConfig,
     ZeptomailConfig,
-} from "./types.js";
+} from "./types";
+
 export {
     buildMimeMessage,
     createLogger,
@@ -37,4 +38,4 @@ export {
     retry,
     validateEmail,
     validateEmailOptions,
-} from "./utils.js";
+} from "./utils";

@@ -1,4 +1,4 @@
-import type { EmailOptions, EmailResult, FeatureFlags, MaybePromise, Result } from "../types.js";
+import type { EmailOptions, EmailResult, FeatureFlags, MaybePromise, Result } from "../types";
 
 /**
  * Standard provider interface for email services

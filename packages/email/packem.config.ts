@@ -4,6 +4,7 @@ import transformer from "@visulima/packem/transformer/esbuild";
 
 // eslint-disable-next-line import/no-unused-modules
 export default defineConfig({
+    runtime: "node",
     rollup: {
         license: {
             path: "./LICENSE.md",
@@ -11,8 +12,6 @@ export default defineConfig({
         requireCJS: {
             builtinNodeModules: true,
         },
-        external: ["nodemailer"],
     },
     transformer,
-    failOnWarn: false,
 }) as BuildConfig;

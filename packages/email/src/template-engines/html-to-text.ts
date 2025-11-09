@@ -1,6 +1,6 @@
 import { convert } from "html-to-text";
 
-import { EmailError } from "../errors/email-error.js";
+import { EmailError } from "../errors/email-error";
 
 /**
  * Convert HTML to plain text
