@@ -58,10 +58,10 @@ export interface Attachment {
     cid?: string;
 
     /**
-     * Attachment content (string or Buffer)
+     * Attachment content (string, Buffer, or Promise<Uint8Array> for async loading)
      * Required if path, href, or raw are not provided
      */
-    content?: string | Buffer;
+    content?: string | Buffer | Promise<Uint8Array>;
 
     /**
      * Content disposition: 'attachment' (default) or 'inline'
@@ -121,6 +121,11 @@ export interface EmailTag {
 }
 
 /**
+ * Priority levels for email messages
+ */
+export type Priority = "high" | "normal" | "low";
+
+/**
  * Common email options that all providers support
  */
 export interface EmailOptions {
@@ -131,8 +136,10 @@ export interface EmailOptions {
     from: EmailAddress;
     headers?: Record<string, string>;
     html?: string;
+    priority?: Priority;
     replyTo?: EmailAddress;
     subject: string;
+    tags?: string[];
 
     text?: string;
 
@@ -149,6 +156,48 @@ export interface EmailResult {
     sent: boolean;
     timestamp: Date;
 }
+
+/**
+ * Receipt type for email sending results
+ * Uses discriminated union for type safety
+ */
+export type Receipt =
+    | {
+          /**
+           * Indicates that the email was sent successfully
+           */
+          readonly successful: true;
+          /**
+           * The unique identifier for the message that was sent
+           */
+          readonly messageId: string;
+          /**
+           * Optional provider name
+           */
+          readonly provider?: string;
+          /**
+           * Optional response data from provider
+           */
+          readonly response?: unknown;
+          /**
+           * Timestamp when email was sent
+           */
+          readonly timestamp: Date;
+      }
+    | {
+          /**
+           * Indicates that the email failed to send
+           */
+          readonly successful: false;
+          /**
+           * An array of error messages that occurred during the sending process
+           */
+          readonly errorMessages: readonly string[];
+          /**
+           * Optional provider name
+           */
+          readonly provider?: string;
+      };
 
 /**
  * Generic result type

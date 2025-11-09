@@ -6,6 +6,7 @@
         "./template/handlebars": "./src/template-engines/handlebars.ts",
         "./template/mjml": "./src/template-engines/mjml.ts",
         "./template/react-email": "./src/template-engines/react-email.ts",
+        "./template/vue-email": "./src/template-engines/vue-email.ts",
         "./template/html-to-text": "./src/template-engines/html-to-text.ts",
         "./providers/aws-ses": "./src/providers/aws-ses/index.ts",
         "./providers/http": "./src/providers/http/index.ts",

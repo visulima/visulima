@@ -12,9 +12,14 @@
         "zeptomail",
         "http"
     ],
-    "author": {
-        "name": "Daniel Bannert",
-        "email": "d.bannert@anolilab.de"
+    "homepage": "https://visulima.com/packages/email",
+    "bugs": {
+        "url": "https://github.com/visulima/visulima/issues"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/visulima/visulima.git",
+        "directory": "packages/email"
     },
     "funding": [
         {
@@ -26,8 +31,11 @@
             "url": "https://anolilab.com/support"
         }
     ],
-    "homepage": "https://visulima.com/packages/email",
     "license": "MIT",
+    "author": {
+        "name": "Daniel Bannert",
+        "email": "d.bannert@anolilab.de"
+    },
     "sideEffects": false,
     "type": "module",
     "exports": {
@@ -98,14 +106,6 @@
         "README.md",
         "CHANGELOG.md"
     ],
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/visulima/visulima.git",
-        "directory": "packages/email"
-    },
-    "bugs": {
-        "url": "https://github.com/visulima/visulima/issues"
-    },
     "scripts": {
         "build": "packem build --development",
         "build:prod": "packem build --production",
@@ -123,21 +123,47 @@
         "test:ui": "vitest --ui --coverage.enabled=true",
         "test:watch": "vitest"
     },
-    "engines": {
-        "node": ">=20.19 <=25.*"
-    },
-    "publishConfig": {
-        "access": "public",
-        "provenance": true
-    },
     "dependencies": {
         "@visulima/error": "5.0.4",
         "html-to-text": "^9.0.5",
         "mime": "^4.1.0"
     },
+    "devDependencies": {
+        "@anolilab/eslint-config": "^16.4.2",
+        "@anolilab/prettier-config": "^6.0.7",
+        "@anolilab/semantic-release-pnpm": "2.0.5",
+        "@anolilab/semantic-release-preset": "^11.0.5",
+        "@arethetypeswrong/cli": "^0.18.2",
+        "@react-email/render": "^2.0.0",
+        "@secretlint/secretlint-rule-preset-recommend": "^11.2.5",
+        "@total-typescript/ts-reset": "^0.6.1",
+        "@types/mime": "^4.0.0",
+        "@types/mjml": "^4.7.4",
+        "@types/node": "24.10.0",
+        "@types/nodemailer": "^7.0.3",
+        "@visulima/error": "workspace:*",
+        "@visulima/packem": "2.0.0-alpha.33",
+        "@vitest/coverage-v8": "^4.0.8",
+        "@vitest/ui": "^4.0.8",
+        "@vue-email/render": "0.0.9",
+        "conventional-changelog-conventionalcommits": "9.1.0",
+        "esbuild": "^0.26.0",
+        "eslint": "9.39.1",
+        "handlebars": "^4.7.8",
+        "html-to-text": "^9.0.5",
+        "mjml": "^4.16.1",
+        "nodemailer": "^7.0.10",
+        "prettier": "^3.6.2",
+        "publint": "^0.3.15",
+        "rimraf": "^6.1.0",
+        "secretlint": "11.2.5",
+        "semantic-release": "^25.0.2",
+        "typescript": "^5.9.3",
+        "vitest": "^4.0.8"
+    },
     "peerDependencies": {
         "@react-email/render": "^1.0.0",
-        "@vue-email/render": "^1.0.0",
+        "@vue-email/render": "0.0.9",
         "handlebars": "^4.7.8",
         "mjml": "^4.15.3",
         "nodemailer": "^6.9.16"
@@ -159,36 +185,11 @@
             "optional": true
         }
     },
-    "devDependencies": {
-        "@anolilab/prettier-config": "^6.0.7",
-        "@react-email/render": "^2.0.0",
-        "handlebars": "^4.7.8",
-        "html-to-text": "^9.0.5",
-        "mjml": "^4.16.1",
-        "nodemailer": "^7.0.10",
-        "publint": "^0.3.15",
-        "@anolilab/eslint-config": "^16.4.2",
-        "@anolilab/semantic-release-pnpm": "2.0.5",
-        "@anolilab/semantic-release-preset": "^11.0.5",
-        "@arethetypeswrong/cli": "^0.18.2",
-        "@secretlint/secretlint-rule-preset-recommend": "^11.2.5",
-        "@total-typescript/ts-reset": "^0.6.1",
-        "@types/handlebars": "^4.1.0",
-        "@types/mime": "^4.0.0",
-        "@types/mjml": "^4.7.4",
-        "@types/node": "24.10.0",
-        "@types/nodemailer": "^7.0.3",
-        "@visulima/packem": "2.0.0-alpha.33",
-        "@vitest/coverage-v8": "^4.0.8",
-        "@vitest/ui": "^4.0.8",
-        "conventional-changelog-conventionalcommits": "9.1.0",
-        "esbuild": "^0.26.0",
-        "eslint": "9.39.1",
-        "prettier": "^3.6.2",
-        "rimraf": "^6.1.0",
-        "secretlint": "11.2.5",
-        "semantic-release": "^25.0.2",
-        "typescript": "^5.9.3",
-        "vitest": "^4.0.8"
+    "engines": {
+        "node": ">=20.19 <=25.*"
+    },
+    "publishConfig": {
+        "access": "public",
+        "provenance": true
     }
 }

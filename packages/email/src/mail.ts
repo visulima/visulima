@@ -5,7 +5,7 @@ import { detectMimeType, generateContentId, readFileAsBuffer } from "./attachmen
 import type { Provider } from "./providers/provider";
 import { htmlToText } from "./template-engines/html-to-text";
 import type { TemplateRenderer } from "./template-engines/types";
-import type { Attachment, EmailAddress, EmailOptions, EmailResult, Result } from "./types";
+import type { Attachment, EmailAddress, EmailOptions, EmailResult, Priority, Receipt, Result } from "./types";
 
 /**
  * Mailable interface - represents an email that can be sent
@@ -51,6 +51,10 @@ export class MailMessage {
     private attachments: Attachment[] = [];
 
     private replyToAddress?: EmailAddress;
+
+    private priorityValue?: Priority;
+
+    private tagsValue: string[] = [];
 
     private provider?: Provider;
 
@@ -250,6 +254,24 @@ export class MailMessage {
     }
 
     /**
+     * Set the email priority
+     */
+    priority(priority: Priority): this {
+        this.priorityValue = priority;
+
+        return this;
+    }
+
+    /**
+     * Set email tags
+     */
+    tags(tags: string | string[]): this {
+        this.tagsValue = Array.isArray(tags) ? tags : [tags];
+
+        return this;
+    }
+
+    /**
      * Set the provider to use for sending
      */
     mailer(provider: Provider): this {
@@ -382,6 +404,14 @@ export class MailMessage {
             emailOptions.replyTo = this.replyToAddress;
         }
 
+        if (this.priorityValue) {
+            emailOptions.priority = this.priorityValue;
+        }
+
+        if (this.tagsValue.length > 0) {
+            emailOptions.tags = this.tagsValue;
+        }
+
         return emailOptions;
     }
 
@@ -437,6 +467,84 @@ export class Mail {
      */
     async sendEmail(options: EmailOptions): Promise<Result<EmailResult>> {
         return this.provider.sendEmail(options);
+    }
+
+    /**
+     * Sends multiple messages using the email service.
+     * Returns an async iterable that yields receipts for each sent message.
+     *
+     * @example
+     * ```ts
+     * const messages = [
+     *   { from: "sender@example.com", to: "user1@example.com", subject: "Hello 1", html: "<h1>Hello</h1>" },
+     *   { from: "sender@example.com", to: "user2@example.com", subject: "Hello 2", html: "<h1>Hello</h1>" },
+     * ];
+     *
+     * for await (const receipt of mail.sendMany(messages)) {
+     *   if (receipt.successful) {
+     *     console.log("Sent:", receipt.messageId);
+     *   } else {
+     *     console.error("Failed:", receipt.errorMessages);
+     *   }
+     * }
+     * ```
+     *
+     * @param messages - An iterable of email options or mailables to send
+     * @param options - Optional parameters for sending (e.g., abort signal)
+     * @returns An async iterable that yields receipts for each sent message
+     */
+    async *sendMany(
+        messages: Iterable<EmailOptions | Mailable> | AsyncIterable<EmailOptions | Mailable>,
+        options?: { signal?: AbortSignal },
+    ): AsyncIterable<Receipt> {
+        const providerName = this.provider.name;
+
+        for await (const message of messages) {
+            // Check for abort signal
+            if (options?.signal?.aborted) {
+                yield {
+                    successful: false,
+                    errorMessages: ["Send operation was aborted"],
+                    provider: providerName,
+                };
+
+                return;
+            }
+
+            try {
+                // Convert mailable to email options if needed
+                const emailOptions: EmailOptions = "build" in message && typeof message.build === "function" ? await message.build() : message;
+
+                // Send the email
+                const result = await this.provider.sendEmail(emailOptions);
+
+                if (result.success && result.data) {
+                    yield {
+                        successful: true,
+                        messageId: result.data.messageId,
+                        provider: result.data.provider || providerName,
+                        response: result.data.response,
+                        timestamp: result.data.timestamp,
+                    };
+                } else {
+                    const errorMessages = result.error instanceof Error ? [result.error.message] : [String(result.error || "Unknown error")];
+
+                    yield {
+                        successful: false,
+                        errorMessages,
+                        provider: providerName,
+                    };
+                }
+            } catch (error) {
+                const errorMessages = error instanceof Error ? [error.message] : [String(error)];
+
+                yield {
+                    successful: false,
+                    errorMessages,
+                    provider: providerName,
+                };
+            }
+        }
     }
 }
 
