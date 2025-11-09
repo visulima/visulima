@@ -51,6 +51,42 @@
             "types": "./dist/template-engines/html-to-text.d.ts",
             "default": "./dist/template-engines/html-to-text.js"
         },
+        "./providers/aws-ses": {
+            "types": "./dist/providers/aws-ses/index.d.ts",
+            "default": "./dist/providers/aws-ses/index.js"
+        },
+        "./providers/http": {
+            "types": "./dist/providers/http/index.d.ts",
+            "default": "./dist/providers/http/index.js"
+        },
+        "./providers/resend": {
+            "types": "./dist/providers/resend/index.d.ts",
+            "default": "./dist/providers/resend/index.js"
+        },
+        "./providers/smtp": {
+            "types": "./dist/providers/smtp/index.d.ts",
+            "default": "./dist/providers/smtp/index.js"
+        },
+        "./providers/zeptomail": {
+            "types": "./dist/providers/zeptomail/index.d.ts",
+            "default": "./dist/providers/zeptomail/index.js"
+        },
+        "./providers/failover": {
+            "types": "./dist/providers/failover/index.d.ts",
+            "default": "./dist/providers/failover/index.js"
+        },
+        "./providers/roundrobin": {
+            "types": "./dist/providers/roundrobin/index.d.ts",
+            "default": "./dist/providers/roundrobin/index.js"
+        },
+        "./providers/mailcrab": {
+            "types": "./dist/providers/mailcrab/index.d.ts",
+            "default": "./dist/providers/mailcrab/index.js"
+        },
+        "./providers/nodemailer": {
+            "types": "./dist/providers/nodemailer/index.d.ts",
+            "default": "./dist/providers/nodemailer/index.js"
+        },
         "./package.json": "./package.json"
     },
     "files": [
