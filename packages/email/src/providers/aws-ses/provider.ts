@@ -2,7 +2,10 @@ import { createHash, createHmac, randomUUID } from "node:crypto";
 
 import { EmailError, RequiredOptionError } from "../../errors/email-error";
 import type { EmailAddress, EmailOptions, EmailResult, Result } from "../../types";
-import { createLogger, headersToRecord, makeRequest, validateEmailOptions } from "../../utils";
+import { createLogger } from "../../utils/create-logger";
+import { headersToRecord } from "../../utils/headers-to-record";
+import { makeRequest } from "../../utils/make-request";
+import { validateEmailOptions } from "../../utils/validate-email-options";
 import type { ProviderFactory } from "../provider";
 import { defineProvider } from "../provider";
 import type { AwsSesConfig, AwsSesEmailOptions } from "./types";

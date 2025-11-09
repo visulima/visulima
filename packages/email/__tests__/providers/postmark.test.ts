@@ -2,15 +2,29 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { postmarkProvider } from "../../src/providers/postmark/index.js";
 import type { PostmarkEmailOptions } from "../../src/providers/postmark/types.js";
-import * as utils from "../../src/utils.js";
+import { makeRequest } from "../../src/utils/make-request.js";
+import { retry } from "../../src/utils/retry.js";
 
-// Mock the utils module
-vi.mock(import("../../src/utils.js"), async () => {
-    const actual = await vi.importActual("../../src/utils.js");
-
+// Mock retry and makeRequest for testing
+// Mock the makeRequest function
+vi.mock(import("../../src/utils/make-request.js"), () => {
     return {
-        ...actual,
-        makeRequest: vi.fn(),
+        makeRequest: vi.fn((url, options, data) =>
+        // Return a mock result that matches the expected structure
+            Promise.resolve({
+                data: {
+                    body: { id: "test-message-id" },
+                    statusCode: 200,
+                },
+                success: true,
+            }),
+        ),
+    };
+});
+
+// Mock the retry function
+vi.mock(import("../../src/utils/retry.js"), () => {
+    return {
         retry: vi.fn(async (function_) => await function_()),
     };
 });
@@ -70,7 +84,7 @@ describe(postmarkProvider, () => {
 
     describe("isAvailable", () => {
         it("should check API availability", async () => {
-            const makeRequestSpy = vi.spyOn(utils, "makeRequest").mockResolvedValue({
+            (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValue({
                 data: {
                     body: {},
                     headers: {},
@@ -83,12 +97,19 @@ describe(postmarkProvider, () => {
 
             const isAvailable = await provider.isAvailable();
 
-            expect(makeRequestSpy).toHaveBeenCalledWith();
+            expect(makeRequest).toHaveBeenCalledWith(`${provider.endpoint}/server`, {
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-Postmark-Server-Token": "test123",
+                },
+                method: "GET",
+                timeout: 30_000,
+            });
             expect(isAvailable).toBe(true);
         });
 
         it("should return false if API is unavailable", async () => {
-            (utils.makeRequest as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+            (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
                 error: new Error("API Error"),
                 success: false,
             });
@@ -103,7 +124,7 @@ describe(postmarkProvider, () => {
 
     describe("sendEmail", () => {
         it("should send email successfully", async () => {
-            const makeRequestSpy = vi.spyOn(utils, "makeRequest").mockResolvedValue({
+            (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValue({
                 data: {
                     body: { MessageID: "test-message-id" },
                     statusCode: 200,
@@ -123,7 +144,17 @@ describe(postmarkProvider, () => {
 
             expect(result.success).toBe(true);
             expect(result.data?.messageId).toBeDefined();
-            expect(makeRequestSpy).toHaveBeenCalledWith();
+            expect(makeRequest as ReturnType<typeof vi.fn>).toHaveBeenCalledWith(
+                `${provider.endpoint}/email`,
+                expect.objectContaining({
+                    headers: expect.objectContaining({
+                        "Content-Type": "application/json",
+                        "X-Postmark-Server-Token": "test123",
+                    }),
+                    method: "POST",
+                }),
+                expect.any(String),
+            );
         });
 
         it("should validate email options", async () => {
@@ -137,7 +168,7 @@ describe(postmarkProvider, () => {
         });
 
         it("should format recipients correctly", async () => {
-            const makeRequestSpy = vi.spyOn(utils, "makeRequest").mockResolvedValue({
+            (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValue({
                 data: {
                     body: { MessageID: "test-id" },
                     statusCode: 200,
@@ -155,7 +186,19 @@ describe(postmarkProvider, () => {
 
             await provider.sendEmail(emailOptions);
 
-            const callArgs = makeRequestSpy.mock.calls[0];
+            expect(makeRequest as ReturnType<typeof vi.fn>).toHaveBeenCalledWith(
+                `${provider.endpoint}/email`,
+                expect.objectContaining({
+                    headers: expect.objectContaining({
+                        "Content-Type": "application/json",
+                        "X-Postmark-Server-Token": "test123",
+                    }),
+                    method: "POST",
+                }),
+                expect.any(String),
+            );
+
+            const callArgs = (makeRequest as ReturnType<typeof vi.fn>).mock.calls[0];
             const payload = JSON.parse(callArgs[2] as string);
 
             expect(payload.From).toBe("Sender <sender@example.com>");
@@ -163,7 +206,7 @@ describe(postmarkProvider, () => {
         });
 
         it("should include CC and BCC recipients", async () => {
-            const makeRequestSpy = vi.spyOn(utils, "makeRequest").mockResolvedValue({
+            (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValue({
                 data: {
                     body: { MessageID: "test-id" },
                     statusCode: 200,
@@ -183,7 +226,19 @@ describe(postmarkProvider, () => {
 
             await provider.sendEmail(emailOptions);
 
-            const callArgs = makeRequestSpy.mock.calls[0];
+            expect(makeRequest as ReturnType<typeof vi.fn>).toHaveBeenCalledWith(
+                `${provider.endpoint}/email`,
+                expect.objectContaining({
+                    headers: expect.objectContaining({
+                        "Content-Type": "application/json",
+                        "X-Postmark-Server-Token": "test123",
+                    }),
+                    method: "POST",
+                }),
+                expect.any(String),
+            );
+
+            const callArgs = (makeRequest as ReturnType<typeof vi.fn>).mock.calls[0];
             const payload = JSON.parse(callArgs[2] as string);
 
             expect(payload.Cc).toBeDefined();
@@ -191,7 +246,7 @@ describe(postmarkProvider, () => {
         });
 
         it("should include template if provided", async () => {
-            const makeRequestMock = utils.makeRequest as ReturnType<typeof vi.fn>;
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
 
             makeRequestMock.mockResolvedValue({
                 data: {
@@ -236,7 +291,7 @@ describe(postmarkProvider, () => {
         });
 
         it("should include template alias if provided", async () => {
-            const makeRequestSpy = vi.spyOn(utils, "makeRequest").mockResolvedValue({
+            (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValue({
                 data: {
                     body: { MessageID: "test-id" },
                     statusCode: 200,
@@ -256,7 +311,19 @@ describe(postmarkProvider, () => {
 
             await provider.sendEmail(emailOptions);
 
-            const callArgs = makeRequestSpy.mock.calls[0];
+            expect(makeRequest as ReturnType<typeof vi.fn>).toHaveBeenCalledWith(
+                `${provider.endpoint}/email`,
+                expect.objectContaining({
+                    headers: expect.objectContaining({
+                        "Content-Type": "application/json",
+                        "X-Postmark-Server-Token": "test123",
+                    }),
+                    method: "POST",
+                }),
+                expect.any(String),
+            );
+
+            const callArgs = (makeRequest as ReturnType<typeof vi.fn>).mock.calls[0];
             const payload = JSON.parse(callArgs[2] as string);
 
             expect(payload.TemplateAlias).toBe("welcome-template");
@@ -264,7 +331,7 @@ describe(postmarkProvider, () => {
         });
 
         it("should include tracking options", async () => {
-            const makeRequestSpy = vi.spyOn(utils, "makeRequest").mockResolvedValue({
+            (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValue({
                 data: {
                     body: { MessageID: "test-id" },
                     statusCode: 200,
@@ -284,7 +351,19 @@ describe(postmarkProvider, () => {
 
             await provider.sendEmail(emailOptions);
 
-            const callArgs = makeRequestSpy.mock.calls[0];
+            expect(makeRequest as ReturnType<typeof vi.fn>).toHaveBeenCalledWith(
+                `${provider.endpoint}/email`,
+                expect.objectContaining({
+                    headers: expect.objectContaining({
+                        "Content-Type": "application/json",
+                        "X-Postmark-Server-Token": "test123",
+                    }),
+                    method: "POST",
+                }),
+                expect.any(String),
+            );
+
+            const callArgs = (makeRequest as ReturnType<typeof vi.fn>).mock.calls[0];
             const payload = JSON.parse(callArgs[2] as string);
 
             expect(payload.TrackOpens).toBe(true);
@@ -292,7 +371,7 @@ describe(postmarkProvider, () => {
         });
 
         it("should include tag", async () => {
-            const makeRequestSpy = vi.spyOn(utils, "makeRequest").mockResolvedValue({
+            (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValue({
                 data: {
                     body: { MessageID: "test-id" },
                     statusCode: 200,
@@ -311,14 +390,26 @@ describe(postmarkProvider, () => {
 
             await provider.sendEmail(emailOptions);
 
-            const callArgs = makeRequestSpy.mock.calls[0];
+            expect(makeRequest as ReturnType<typeof vi.fn>).toHaveBeenCalledWith(
+                `${provider.endpoint}/email`,
+                expect.objectContaining({
+                    headers: expect.objectContaining({
+                        "Content-Type": "application/json",
+                        "X-Postmark-Server-Token": "test123",
+                    }),
+                    method: "POST",
+                }),
+                expect.any(String),
+            );
+
+            const callArgs = (makeRequest as ReturnType<typeof vi.fn>).mock.calls[0];
             const payload = JSON.parse(callArgs[2] as string);
 
             expect(payload.Tag).toBe("tag1"); // Only first tag
         });
 
         it("should include custom headers", async () => {
-            const makeRequestSpy = vi.spyOn(utils, "makeRequest").mockResolvedValue({
+            (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValue({
                 data: {
                     body: { MessageID: "test-id" },
                     statusCode: 200,
@@ -337,7 +428,19 @@ describe(postmarkProvider, () => {
 
             await provider.sendEmail(emailOptions);
 
-            const callArgs = makeRequestSpy.mock.calls[0];
+            expect(makeRequest as ReturnType<typeof vi.fn>).toHaveBeenCalledWith(
+                `${provider.endpoint}/email`,
+                expect.objectContaining({
+                    headers: expect.objectContaining({
+                        "Content-Type": "application/json",
+                        "X-Postmark-Server-Token": "test123",
+                    }),
+                    method: "POST",
+                }),
+                expect.any(String),
+            );
+
+            const callArgs = (makeRequest as ReturnType<typeof vi.fn>).mock.calls[0];
             const payload = JSON.parse(callArgs[2] as string);
 
             expect(payload.Headers).toBeDefined();
@@ -347,7 +450,7 @@ describe(postmarkProvider, () => {
         });
 
         it("should include attachments", async () => {
-            const makeRequestSpy = vi.spyOn(utils, "makeRequest").mockResolvedValue({
+            (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValue({
                 data: {
                     body: { MessageID: "test-id" },
                     statusCode: 200,
@@ -372,7 +475,19 @@ describe(postmarkProvider, () => {
 
             await provider.sendEmail(emailOptions);
 
-            const callArgs = makeRequestSpy.mock.calls[0];
+            expect(makeRequest as ReturnType<typeof vi.fn>).toHaveBeenCalledWith(
+                `${provider.endpoint}/email`,
+                expect.objectContaining({
+                    headers: expect.objectContaining({
+                        "Content-Type": "application/json",
+                        "X-Postmark-Server-Token": "test123",
+                    }),
+                    method: "POST",
+                }),
+                expect.any(String),
+            );
+
+            const callArgs = (makeRequest as ReturnType<typeof vi.fn>).mock.calls[0];
             const payload = JSON.parse(callArgs[2] as string);
 
             expect(payload.Attachments).toBeDefined();
@@ -381,7 +496,7 @@ describe(postmarkProvider, () => {
         });
 
         it("should handle errors gracefully", async () => {
-            (utils.makeRequest as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+            (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
                 error: new Error("API Error"),
                 success: false,
             });

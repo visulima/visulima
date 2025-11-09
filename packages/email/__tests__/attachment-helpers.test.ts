@@ -1,0 +1,138 @@
+import { readFile } from "node:fs/promises";
+
+import { describe, expect, it, vi } from "vitest";
+
+import type { AttachmentDataOptions, AttachmentOptions } from "../src/attachment-helpers.js";
+import { detectMimeType, generateContentId, readFileAsBuffer } from "../src/attachment-helpers.js";
+
+vi.mock(import("node:fs/promises"), () => {
+    return {
+        readFile: vi.fn(),
+    };
+});
+
+describe("attachment-helpers", () => {
+    describe(detectMimeType, () => {
+        it("should detect MIME type for common file extensions", () => {
+            expect(detectMimeType("document.pdf")).toBe("application/pdf");
+            expect(detectMimeType("image.png")).toBe("image/png");
+            expect(detectMimeType("text.txt")).toBe("text/plain");
+            expect(detectMimeType("script.js")).toBe("text/javascript");
+        });
+
+        it("should fallback to application/octet-stream for unknown extensions", () => {
+            expect(detectMimeType("file.unknown")).toBe("application/octet-stream");
+            expect(detectMimeType("noextension")).toBe("application/octet-stream");
+            expect(detectMimeType("")).toBe("application/octet-stream");
+        });
+
+        it("should handle files with multiple extensions", () => {
+            expect(detectMimeType("archive.tar.gz")).toBe("application/gzip");
+            expect(detectMimeType("document.docx")).toBe("application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+        });
+    });
+
+    describe(generateContentId, () => {
+        it("should generate a valid Content-ID format", () => {
+            const cid = generateContentId("test-image.png");
+
+            expect(cid).toMatch(/^test-image-png-[a-z0-9]{7}@email$/);
+        });
+
+        it("should sanitize filenames with special characters", () => {
+            const cid = generateContentId("test image (1).png");
+
+            expect(cid).toMatch(/^test-image-1-png-[a-z0-9]{7}@email$/);
+        });
+
+        it("should convert to lowercase", () => {
+            const cid = generateContentId("TEST-IMAGE.PNG");
+
+            expect(cid).toMatch(/^test-image-png-[a-z0-9]{7}@email$/);
+        });
+
+        it("should generate unique IDs for the same filename", () => {
+            const cid1 = generateContentId("test.png");
+            const cid2 = generateContentId("test.png");
+
+            expect(cid1).not.toBe(cid2);
+            expect(cid1).toMatch(/^test-png-[a-z0-9]{7}@email$/);
+            expect(cid2).toMatch(/^test-png-[a-z0-9]{7}@email$/);
+        });
+    });
+
+    describe(readFileAsBuffer, () => {
+        it("should read file content as Buffer", async () => {
+            const mockBuffer = Buffer.from("test content");
+
+            vi.mocked(readFile).mockResolvedValue(mockBuffer);
+
+            const result = await readFileAsBuffer("/path/to/file.txt");
+
+            expect(readFile).toHaveBeenCalledWith("/path/to/file.txt");
+            expect(result).toBe(mockBuffer);
+        });
+
+        it("should propagate errors from readFile", async () => {
+            const error = new Error("File not found");
+
+            vi.mocked(readFile).mockRejectedValue(error);
+
+            await expect(readFileAsBuffer("/nonexistent/file.txt")).rejects.toThrow("File not found");
+        });
+    });
+
+    describe("attachmentOptions interface", () => {
+        it("should allow all optional properties", () => {
+            const options: AttachmentOptions = {
+                cid: "test@example.com",
+                contentDisposition: "inline",
+                contentType: "image/png",
+                encoding: "base64",
+                filename: "test.png",
+                headers: { "X-Custom": "value" },
+            };
+
+            expect(options.cid).toBe("test@example.com");
+            expect(options.contentDisposition).toBe("inline");
+            expect(options.contentType).toBe("image/png");
+            expect(options.encoding).toBe("base64");
+            expect(options.filename).toBe("test.png");
+            expect(options.headers).toEqual({ "X-Custom": "value" });
+        });
+
+        it("should allow minimal options", () => {
+            const options: AttachmentOptions = {};
+
+            expect(options).toEqual({});
+        });
+    });
+
+    describe("attachmentDataOptions interface", () => {
+        it("should require filename", () => {
+            const options: AttachmentDataOptions = {
+                filename: "required.txt",
+            };
+
+            expect(options.filename).toBe("required.txt");
+        });
+
+        it("should allow all AttachmentOptions properties", () => {
+            const options: AttachmentDataOptions = {
+                cid: "test@example.com",
+                contentDisposition: "attachment",
+                contentType: "text/plain",
+                encoding: "7bit",
+                filename: "test.txt",
+                headers: { "X-Test": "value" },
+            };
+
+            expect(options.filename).toBe("test.txt");
+            expect(options.cid).toBe("test@example.com");
+            expect(options.contentDisposition).toBe("attachment");
+            expect(options.contentType).toBe("text/plain");
+            expect(options.encoding).toBe("7bit");
+            expect(options.headers).toEqual({ "X-Test": "value" });
+        });
+    });
+});

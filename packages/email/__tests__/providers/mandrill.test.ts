@@ -2,7 +2,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { mandrillProvider } from "../../src/providers/mandrill/index.js";
 import type { MandrillEmailOptions } from "../../src/providers/mandrill/types.js";
-import * as utils from "../../src/utils.js";
+import { makeRequest } from "../../src/utils/make-request.js";
+import { retry } from "../../src/utils/retry.js";
 
 vi.mock(import("../../src/utils.js"), async () => {
     const actual = await vi.importActual("../../src/utils.js");

@@ -164,7 +164,8 @@ describe(MailMessage, () => {
         it("should accept string email", () => {
             const message = new MailMessage();
 
-            message.from("sender@example.com");
+            message.mailer(provider);
+            message.from("sender@example.com").to("user@example.com").subject("Test").html("<h1>Test</h1>");
 
             expect(message.build().from).toEqual({ email: "sender@example.com" });
         });
@@ -172,7 +173,8 @@ describe(MailMessage, () => {
         it("should accept EmailAddress object", () => {
             const message = new MailMessage();
 
-            message.from({ email: "sender@example.com", name: "Sender" });
+            message.mailer(provider);
+            message.from({ email: "sender@example.com", name: "Sender" }).to("user@example.com").subject("Test").html("<h1>Test</h1>");
 
             expect(message.build().from).toEqual({ email: "sender@example.com", name: "Sender" });
         });
@@ -183,7 +185,7 @@ describe(MailMessage, () => {
             const message = new MailMessage();
 
             message.mailer(provider);
-            message.to("user@example.com");
+            message.from("sender@example.com").to("user@example.com");
 
             const options = message.build();
 
@@ -194,7 +196,7 @@ describe(MailMessage, () => {
             const message = new MailMessage();
 
             message.mailer(provider);
-            message.to(["user1@example.com", "user2@example.com"]);
+            message.from("sender@example.com").to(["user1@example.com", "user2@example.com"]);
 
             const options = message.build();
 
@@ -205,7 +207,7 @@ describe(MailMessage, () => {
             const message = new MailMessage();
 
             message.mailer(provider);
-            message.to({ email: "user@example.com", name: "User" });
+            message.from("sender@example.com").to({ email: "user@example.com", name: "User" });
 
             const options = message.build();
 
@@ -218,7 +220,7 @@ describe(MailMessage, () => {
             const message = new MailMessage();
 
             message.mailer(provider);
-            message.to("user@example.com").cc("cc@example.com");
+            message.from("sender@example.com").to("user@example.com").cc("cc@example.com");
 
             const options = message.build();
 
@@ -229,7 +231,7 @@ describe(MailMessage, () => {
             const message = new MailMessage();
 
             message.mailer(provider);
-            message.to("user@example.com").bcc("bcc@example.com");
+            message.from("sender@example.com").to("user@example.com").bcc("bcc@example.com");
 
             const options = message.build();
 
@@ -242,7 +244,7 @@ describe(MailMessage, () => {
             const message = new MailMessage();
 
             message.mailer(provider);
-            message.to("user@example.com").subject("Test Subject");
+            message.from("sender@example.com").to("user@example.com").subject("Test Subject");
 
             expect(message.build().subject).toBe("Test Subject");
         });
@@ -253,7 +255,7 @@ describe(MailMessage, () => {
             const message = new MailMessage();
 
             message.mailer(provider);
-            message.to("user@example.com").text("Plain text");
+            message.from("sender@example.com").to("user@example.com").text("Plain text");
 
             expect(message.build().text).toBe("Plain text");
         });
@@ -262,7 +264,7 @@ describe(MailMessage, () => {
             const message = new MailMessage();
 
             message.mailer(provider);
-            message.to("user@example.com").html("<h1>HTML</h1>");
+            message.from("sender@example.com").to("user@example.com").html("<h1>HTML</h1>");
 
             expect(message.build().html).toBe("<h1>HTML</h1>");
         });
@@ -273,7 +275,7 @@ describe(MailMessage, () => {
             const message = new MailMessage();
 
             message.mailer(provider);
-            message.to("user@example.com").attach("file.txt", "content");
+            message.from("sender@example.com").to("user@example.com").attach("file.txt", "content");
 
             const options = message.build();
 
@@ -311,40 +313,40 @@ describe(MailMessage, () => {
     });
 
     describe("build() validation", () => {
-        it("should throw error if from is missing", () => {
+        it("should throw error if from is missing", async () => {
             const message = new MailMessage();
 
             message.mailer(provider);
             message.to("user@example.com").subject("Test").html("<h1>Test</h1>");
 
-            expect(() => message.build()).toThrow("From address is required");
+            await expect(message.build()).rejects.toThrow("From address is required");
         });
 
-        it("should throw error if to is missing", () => {
+        it("should throw error if to is missing", async () => {
             const message = new MailMessage();
 
             message.mailer(provider);
             message.from("sender@example.com").subject("Test").html("<h1>Test</h1>");
 
-            expect(() => message.build()).toThrow("At least one recipient is required");
+            await expect(message.build()).rejects.toThrow("At least one recipient is required");
         });
 
-        it("should throw error if subject is missing", () => {
+        it("should throw error if subject is missing", async () => {
             const message = new MailMessage();
 
             message.mailer(provider);
             message.to("user@example.com").from("sender@example.com").html("<h1>Test</h1>");
 
-            expect(() => message.build()).toThrow("Subject is required");
+            await expect(message.build()).rejects.toThrow("Subject is required");
         });
 
-        it("should throw error if neither text nor html is provided", () => {
+        it("should throw error if neither text nor html is provided", async () => {
             const message = new MailMessage();
 
             message.mailer(provider);
             message.to("user@example.com").from("sender@example.com").subject("Test");
 
-            expect(() => message.build()).toThrow("Either text or html content is required");
+            await expect(message.build()).rejects.toThrow("Either text or html content is required");
         });
     });
 });

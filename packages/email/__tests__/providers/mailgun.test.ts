@@ -2,15 +2,28 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { mailgunProvider } from "../../src/providers/mailgun/index.js";
 import type { MailgunEmailOptions } from "../../src/providers/mailgun/types.js";
-import * as utils from "../../src/utils.js";
+import { makeRequest } from "../../src/utils/make-request.js";
+import { retry } from "../../src/utils/retry.js";
 
-// Mock the utils module
-vi.mock(import("../../src/utils.js"), async () => {
-    const actual = await vi.importActual("../../src/utils.js");
-
+// Mock the makeRequest function
+vi.mock(import("../../src/utils/make-request.js"), () => {
     return {
-        ...actual,
-        makeRequest: vi.fn(),
+        makeRequest: vi.fn((url, options, data) =>
+        // Return a mock result that matches the expected structure
+            Promise.resolve({
+                data: {
+                    body: { id: "test-message-id" },
+                    statusCode: 200,
+                },
+                success: true,
+            }),
+        ),
+    };
+});
+
+// Mock the retry function
+vi.mock(import("../../src/utils/retry.js"), () => {
+    return {
         retry: vi.fn(async (function_) => await function_()),
     };
 });
@@ -77,7 +90,7 @@ describe(mailgunProvider, () => {
 
     describe("isAvailable", () => {
         it("should check API availability", async () => {
-            const makeRequestSpy = vi.spyOn(utils, "makeRequest").mockResolvedValue({
+            (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValue({
                 data: {
                     body: {},
                     headers: {},
@@ -90,12 +103,19 @@ describe(mailgunProvider, () => {
 
             const isAvailable = await provider.isAvailable();
 
-            expect(makeRequestSpy).toHaveBeenCalledWith();
+            expect(makeRequest as ReturnType<typeof vi.fn>).toHaveBeenCalledWith(`${provider.endpoint}/v3/domains/example.com`, {
+                headers: {
+                    Authorization: "Basic YXBpOnRlc3QxMjM=",
+                    "Content-Type": "application/json",
+                },
+                method: "GET",
+                timeout: 30_000,
+            });
             expect(isAvailable).toBe(true);
         });
 
         it("should return false if API is unavailable", async () => {
-            (utils.makeRequest as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+            (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
                 error: new Error("API Error"),
                 success: false,
             });
@@ -110,7 +130,7 @@ describe(mailgunProvider, () => {
 
     describe("sendEmail", () => {
         it("should send email successfully", async () => {
-            const makeRequestSpy = vi.spyOn(utils, "makeRequest").mockResolvedValue({
+            (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValue({
                 data: {
                     body: { id: "test-message-id", message: "Queued. Thank you." },
                     statusCode: 200,
@@ -130,7 +150,18 @@ describe(mailgunProvider, () => {
 
             expect(result.success).toBe(true);
             expect(result.data?.messageId).toBeDefined();
-            expect(makeRequestSpy).toHaveBeenCalledWith();
+            expect(makeRequest as ReturnType<typeof vi.fn>).toHaveBeenCalledWith(
+                `${provider.endpoint}/v3/example.com/messages`,
+                {
+                    headers: {
+                        Authorization: "Basic YXBpOnRlc3QxMjM=",
+                        "Content-Type": "application/x-www-form-urlencoded",
+                    },
+                    method: "POST",
+                    timeout: 30_000,
+                },
+                expect.any(String),
+            ); // Form data
         });
 
         it("should validate email options", async () => {
@@ -144,7 +175,7 @@ describe(mailgunProvider, () => {
         });
 
         it("should format recipients correctly", async () => {
-            const makeRequestSpy = vi.spyOn(utils, "makeRequest").mockResolvedValue({
+            (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValue({
                 data: {
                     body: { id: "test-id", message: "Queued" },
                     statusCode: 200,
@@ -162,7 +193,7 @@ describe(mailgunProvider, () => {
 
             await provider.sendEmail(emailOptions);
 
-            const callArgs = makeRequestSpy.mock.calls[0];
+            const callArgs = (makeRequest as ReturnType<typeof vi.fn>).mock.calls[0];
             const body = callArgs[2] as string;
 
             expect(body).toContain("from=Sender%20%3Csender%40example.com%3E");
@@ -170,7 +201,7 @@ describe(mailgunProvider, () => {
         });
 
         it("should include CC and BCC recipients", async () => {
-            const makeRequestSpy = vi.spyOn(utils, "makeRequest").mockResolvedValue({
+            (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValue({
                 data: {
                     body: { id: "test-id", message: "Queued" },
                     statusCode: 200,
@@ -190,7 +221,7 @@ describe(mailgunProvider, () => {
 
             await provider.sendEmail(emailOptions);
 
-            const callArgs = makeRequestSpy.mock.calls[0];
+            const callArgs = (makeRequest as ReturnType<typeof vi.fn>).mock.calls[0];
             const body = callArgs[2] as string;
 
             expect(body).toContain("cc=cc%40example.com");
@@ -198,7 +229,7 @@ describe(mailgunProvider, () => {
         });
 
         it("should include template if provided", async () => {
-            const makeRequestMock = utils.makeRequest as ReturnType<typeof vi.fn>;
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
 
             makeRequestMock.mockResolvedValue({
                 data: {
@@ -243,7 +274,7 @@ describe(mailgunProvider, () => {
         });
 
         it("should include tags", async () => {
-            const makeRequestSpy = vi.spyOn(utils, "makeRequest").mockResolvedValue({
+            (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValue({
                 data: {
                     body: { id: "test-id", message: "Queued" },
                     statusCode: 200,
@@ -262,7 +293,7 @@ describe(mailgunProvider, () => {
 
             await provider.sendEmail(emailOptions);
 
-            const callArgs = makeRequestSpy.mock.calls[0];
+            const callArgs = (makeRequest as ReturnType<typeof vi.fn>).mock.calls[0];
             const body = callArgs[2] as string;
 
             expect(body).toContain("o%3Atag=tag1");
@@ -270,7 +301,7 @@ describe(mailgunProvider, () => {
         });
 
         it("should include tracking options", async () => {
-            const makeRequestSpy = vi.spyOn(utils, "makeRequest").mockResolvedValue({
+            (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValue({
                 data: {
                     body: { id: "test-id", message: "Queued" },
                     statusCode: 200,
@@ -290,7 +321,7 @@ describe(mailgunProvider, () => {
 
             await provider.sendEmail(emailOptions);
 
-            const callArgs = makeRequestSpy.mock.calls[0];
+            const callArgs = (makeRequest as ReturnType<typeof vi.fn>).mock.calls[0];
             const body = callArgs[2] as string;
 
             expect(body).toContain("o%3Aclicktracking=yes");
@@ -298,7 +329,7 @@ describe(mailgunProvider, () => {
         });
 
         it("should include custom headers", async () => {
-            const makeRequestSpy = vi.spyOn(utils, "makeRequest").mockResolvedValue({
+            (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValue({
                 data: {
                     body: { id: "test-id", message: "Queued" },
                     statusCode: 200,
@@ -317,14 +348,14 @@ describe(mailgunProvider, () => {
 
             await provider.sendEmail(emailOptions);
 
-            const callArgs = makeRequestSpy.mock.calls[0];
+            const callArgs = (makeRequest as ReturnType<typeof vi.fn>).mock.calls[0];
             const body = callArgs[2] as string;
 
             expect(body).toContain("h%3AX-Custom=value");
         });
 
         it("should handle errors gracefully", async () => {
-            (utils.makeRequest as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+            (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
                 error: new Error("API Error"),
                 success: false,
             });

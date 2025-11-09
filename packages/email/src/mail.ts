@@ -7,7 +7,7 @@ import type { Provider } from "./providers/provider";
 import { htmlToText } from "./template-engines/html-to-text";
 import type { TemplateRenderer } from "./template-engines/types";
 import type { Attachment, EmailAddress, EmailHeaders, EmailOptions, EmailResult, Priority, Receipt, Result } from "./types";
-import { headersToRecord } from "./utils";
+import { headersToRecord } from "./utils/headers-to-record";
 
 /**
  * Mailable interface - represents an email that can be sent

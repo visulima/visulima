@@ -2,7 +2,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { resendProvider } from "../../src/providers/resend/index.js";
 import type { ResendEmailOptions } from "../../src/providers/resend/types.js";
-import * as utils from "../../src/utils.js";
+import { makeRequest } from "../../src/utils/make-request.js";
+import { retry } from "../../src/utils/retry.js";
 
 // Mock the utils module
 vi.mock(import("../../src/utils.js"), async () => {
@@ -78,7 +79,7 @@ describe(resendProvider, () => {
         });
 
         it("should check API availability for non-standard keys", async () => {
-            const makeRequestSpy = vi.spyOn(utils, "makeRequest").mockResolvedValue({
+            (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValue({
                 data: {
                     body: {},
                     headers: {},
@@ -91,14 +92,21 @@ describe(resendProvider, () => {
 
             const isAvailable = await provider.isAvailable();
 
-            expect(makeRequestSpy).toHaveBeenCalledWith();
+            expect(makeRequest as ReturnType<typeof vi.fn>).toHaveBeenCalledWith(`${provider.endpoint}/domains`, {
+                headers: {
+                    Authorization: "Bearer custom_key",
+                    "Content-Type": "application/json",
+                },
+                method: "GET",
+                timeout: 30_000,
+            });
             expect(isAvailable).toBe(true);
         });
     });
 
     describe("sendEmail", () => {
         it("should send email successfully", async () => {
-            const makeRequestSpy = vi.spyOn(utils, "makeRequest").mockResolvedValue({
+            (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValue({
                 data: {
                     body: { id: "test-message-id" },
                     headers: {},
@@ -119,7 +127,18 @@ describe(resendProvider, () => {
 
             expect(result.success).toBe(true);
             expect(result.data?.messageId).toBe("test-message-id");
-            expect(makeRequestSpy).toHaveBeenCalledWith();
+            expect(makeRequest as ReturnType<typeof vi.fn>).toHaveBeenCalledWith(
+                `${provider.endpoint}/emails`,
+                {
+                    headers: {
+                        Authorization: "Bearer re_test123",
+                        "Content-Type": "application/json",
+                    },
+                    method: "POST",
+                    timeout: 30_000,
+                },
+                expect.any(String),
+            ); // JSON payload
         });
 
         it("should validate email options", async () => {
@@ -133,7 +152,7 @@ describe(resendProvider, () => {
         });
 
         it("should format recipients correctly", async () => {
-            const makeRequestSpy = vi.spyOn(utils, "makeRequest").mockResolvedValue({
+            (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValue({
                 data: {
                     body: { id: "test-id" },
                     headers: {},
@@ -152,7 +171,7 @@ describe(resendProvider, () => {
 
             await provider.sendEmail(emailOptions);
 
-            const callArgs = makeRequestSpy.mock.calls[0];
+            const callArgs = (makeRequest as ReturnType<typeof vi.fn>).mock.calls[0];
             const payload = JSON.parse(callArgs[2] as string);
 
             expect(payload.from).toBe("Sender <sender@example.com>");
@@ -160,7 +179,7 @@ describe(resendProvider, () => {
         });
 
         it("should include tags if provided", async () => {
-            const makeRequestSpy = vi.spyOn(utils, "makeRequest").mockResolvedValue({
+            (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValue({
                 data: {
                     body: { id: "test-id" },
                     headers: {},
@@ -183,7 +202,7 @@ describe(resendProvider, () => {
 
             await provider.sendEmail(emailOptions);
 
-            const callArgs = makeRequestSpy.mock.calls[0];
+            const callArgs = (makeRequest as ReturnType<typeof vi.fn>).mock.calls[0];
             const payload = JSON.parse(callArgs[2] as string);
 
             expect(payload.tags).toEqual([
@@ -210,7 +229,7 @@ describe(resendProvider, () => {
 
         it("should include template if provided", async () => {
             // Mock makeRequest to handle sendEmail call
-            const makeRequestMock = utils.makeRequest as ReturnType<typeof vi.fn>;
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
 
             makeRequestMock.mockResolvedValue({
                 data: {
@@ -282,7 +301,7 @@ describe(resendProvider, () => {
         });
 
         it("should handle errors gracefully", async () => {
-            (utils.makeRequest as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+            (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
                 error: new Error("API Error"),
                 success: false,
             });

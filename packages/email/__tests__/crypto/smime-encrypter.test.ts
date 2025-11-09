@@ -43,7 +43,9 @@ vi.mock(import("pkijs"), async () => {
                     encryptedContent: new Uint8Array([1, 2, 3]),
                 },
                 recipientInfos: [],
-                toSchema: vi.fn(() => { return { toBER: vi.fn(() => new Uint8Array([1, 2, 3])) }; }),
+                toSchema: vi.fn(() => {
+                    return { toBER: vi.fn(() => new Uint8Array([1, 2, 3])) };
+                }),
                 version: options?.version || 0,
             });
         }
