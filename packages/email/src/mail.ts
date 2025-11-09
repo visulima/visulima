@@ -8,6 +8,13 @@ import {
     generateContentId,
     readFileAsBuffer,
 } from "./attachment-helpers.js";
+import {
+    htmlToText,
+    renderHandlebars,
+    renderMjml,
+    renderReactEmail,
+    type TemplateEngine,
+} from "./template-engines/index.js";
 
 /**
  * Mailable interface - represents an email that can be sent
@@ -257,6 +264,137 @@ export class MailMessage {
     }
 
     /**
+     * Render a template and set as HTML content
+     * Supports React Email, Handlebars, MJML, and plain HTML
+     *
+     * @example
+     * ```ts
+     * // Handlebars
+     * message.view('welcome', { name: 'John' }, { engine: 'handlebars' })
+     *
+     * // MJML
+     * message.view(mjmlTemplate, { name: 'John' }, { engine: 'mjml' })
+     *
+     * // React Email
+     * message.view(<WelcomeEmail name="John" />, {}, { engine: 'react-email' })
+     * ```
+     */
+    async view(
+        template: string | unknown,
+        data?: Record<string, unknown>,
+        options?: { engine?: TemplateEngine; autoText?: boolean; [key: string]: unknown },
+    ): Promise<this> {
+        const engine = options?.engine || "html";
+        let html: string;
+
+        try {
+            switch (engine) {
+                case "react-email": {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    html = await renderReactEmail(template as any, {
+                        plainText: options?.plainText as boolean | undefined,
+                        pretty: options?.pretty as boolean | undefined,
+                    });
+                    break;
+                }
+                case "handlebars": {
+                    if (typeof template !== "string") {
+                        throw new Error("Handlebars template must be a string");
+                    }
+                    html = renderHandlebars(template, data, options as Record<string, unknown>);
+                    break;
+                }
+                case "mjml": {
+                    if (typeof template !== "string") {
+                        throw new Error("MJML template must be a string");
+                    }
+                    html = renderMjml(template, {
+                        fonts: options?.fonts as Record<string, string> | undefined,
+                        keepComments: options?.keepComments as boolean | undefined,
+                        beautify: options?.beautify as boolean | undefined,
+                        minify: options?.minify as boolean | undefined,
+                        validationLevel: options?.validationLevel as "strict" | "soft" | "skip" | undefined,
+                    });
+                    break;
+                }
+                case "html":
+                default: {
+                    if (typeof template !== "string") {
+                        throw new Error("HTML template must be a string");
+                    }
+                    // If data is provided, treat as Handlebars template
+                    if (data && Object.keys(data).length > 0) {
+                        html = renderHandlebars(template, data, options as Record<string, unknown>);
+                    } else {
+                        html = template;
+                    }
+                    break;
+                }
+            }
+
+            this.html(html);
+
+            // Auto-generate text from HTML if requested
+            if (options?.autoText !== false && html) {
+                try {
+                    const text = htmlToText(html);
+                    if (text && !this.textContent) {
+                        this.text(text);
+                    }
+                } catch {
+                    // Ignore errors in text conversion
+                }
+            }
+        } catch (error) {
+            throw new Error(`Failed to render ${engine} template: ${(error as Error).message}`);
+        }
+
+        return this;
+    }
+
+    /**
+     * Render a text template and set as text content
+     * Supports Handlebars for text templates
+     *
+     * @example
+     * ```ts
+     * message.viewText('Hello {{name}}!', { name: 'John' }, { engine: 'handlebars' })
+     * ```
+     */
+    viewText(
+        template: string,
+        data?: Record<string, unknown>,
+        options?: { engine?: TemplateEngine; [key: string]: unknown },
+    ): this {
+        const engine = options?.engine || "html";
+
+        try {
+            switch (engine) {
+                case "handlebars": {
+                    const text = renderHandlebars(template, data, options as Record<string, unknown>);
+                    this.text(text);
+                    break;
+                }
+                case "html":
+                default: {
+                    // If data is provided, treat as Handlebars template
+                    if (data && Object.keys(data).length > 0) {
+                        const text = renderHandlebars(template, data, options as Record<string, unknown>);
+                        this.text(text);
+                    } else {
+                        this.text(template);
+                    }
+                    break;
+                }
+            }
+        } catch (error) {
+            throw new Error(`Failed to render ${engine} text template: ${(error as Error).message}`);
+        }
+
+        return this;
+    }
+
+    /**
      * Build the email options
      */
     build(): EmailOptions {
@@ -269,6 +407,15 @@ export class MailMessage {
         if (!this.subjectText) {
             throw new Error("Subject is required");
         }
+        // Auto-generate text from HTML if HTML exists but text doesn't
+        if (this.htmlContent && !this.textContent) {
+            try {
+                this.textContent = htmlToText(this.htmlContent);
+            } catch {
+                // Ignore errors in text conversion
+            }
+        }
+
         if (!this.textContent && !this.htmlContent) {
             throw new Error("Either text or html content is required");
         }

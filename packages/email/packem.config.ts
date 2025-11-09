@@ -11,7 +11,8 @@ export default defineConfig({
         requireCJS: {
             builtinNodeModules: true,
         },
-        external: ["nodemailer"],
+        external: ["nodemailer", "mjml", "handlebars", "@react-email/render", "html-to-text"],
     },
     transformer,
+    failOnWarn: false,
 }) as BuildConfig;
