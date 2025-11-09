@@ -396,7 +396,10 @@ export const sendGridProvider: ProviderFactory<SendGridConfig, unknown, SendGrid
                     const responseHeaders = (result.data as { headers?: Headers })?.headers;
                     let messageId: string;
 
-                    messageId = responseHeaders && responseHeaders instanceof Headers ? responseHeaders.get("X-Message-Id") || generateMessageId() : generateMessageId();
+                    messageId
+                        = responseHeaders && responseHeaders instanceof Headers
+                            ? responseHeaders.get("X-Message-Id") || generateMessageId()
+                            : generateMessageId();
 
                     logger.debug("Email sent successfully", { messageId });
 

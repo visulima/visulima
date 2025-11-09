@@ -111,6 +111,10 @@
             "types": "./dist/providers/mock/index.d.ts",
             "default": "./dist/providers/mock/index.js"
         },
+        "./crypto": {
+            "types": "./dist/crypto/index.d.ts",
+            "default": "./dist/crypto/index.js"
+        },
         "./providers/sendgrid": {
             "types": "./dist/providers/sendgrid/index.d.ts",
             "default": "./dist/providers/sendgrid/index.js"
@@ -222,6 +226,7 @@
         "@vitest/coverage-v8": "^4.0.8",
         "@vitest/ui": "^4.0.8",
         "@vue-email/render": "0.0.9",
+        "asn1js": "^3.0.0",
         "conventional-changelog-conventionalcommits": "9.1.0",
         "esbuild": "^0.26.0",
         "eslint": "9.39.1",
@@ -229,6 +234,8 @@
         "html-to-text": "^9.0.5",
         "mjml": "^4.16.1",
         "nodemailer": "^7.0.10",
+        "@opentelemetry/api": "^1.0.0",
+        "pkijs": "^3.0.0",
         "prettier": "^3.6.2",
         "publint": "^0.3.15",
         "rimraf": "^6.1.0",
@@ -241,9 +248,11 @@
         "@opentelemetry/api": "^1.0.0 || ^2.0.0",
         "@react-email/render": "^1.0.0",
         "@vue-email/render": "0.0.9",
+        "asn1js": "^3.0.0",
         "handlebars": "^4.7.8",
         "mjml": "^4.15.3",
-        "nodemailer": "^6.9.16"
+        "nodemailer": "^6.9.16",
+        "pkijs": "^3.0.0"
     },
     "peerDependenciesMeta": {
         "@opentelemetry/api": {
@@ -255,6 +264,9 @@
         "@vue-email/render": {
             "optional": true
         },
+        "asn1js": {
+            "optional": true
+        },
         "handlebars": {
             "optional": true
         },
@@ -262,6 +274,9 @@
             "optional": true
         },
         "nodemailer": {
+            "optional": true
+        },
+        "pkijs": {
             "optional": true
         }
     },
