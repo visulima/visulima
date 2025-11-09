@@ -13,8 +13,10 @@ Providers are responsible for actually sending emails. @visulima/email supports 
 - **[Resend](/docs/package/email/providers/resend)** - Modern email API for developers
 - **[SMTP](/docs/package/email/providers/smtp)** - Standard SMTP protocol
 - **[Zeptomail](/docs/package/email/providers/zeptomail)** - Zeptomail email service
+- **[Plunk](/docs/package/email/providers/plunk)** - Modern email platform built on AWS SES
 - **[HTTP](/docs/package/email/providers/http)** - Generic HTTP API provider
 - **[Nodemailer](/docs/package/email/providers/nodemailer)** - Popular Node.js email library wrapper
+- **[Mock](/docs/package/email/providers/mock)** - In-memory provider for testing
 - **[Failover](/docs/package/email/providers/failover)** - Automatic failover between multiple providers
 - **[Round Robin](/docs/package/email/providers/roundrobin)** - Load balancing across multiple providers
 - **[MailCrab](/docs/package/email/providers/mailcrab)** - Local development email testing
@@ -30,6 +32,8 @@ These providers work in **Node.js**, **Deno**, **Bun**, and **Cloudflare Workers
 - ✅ **Resend** - Uses Fetch API, works everywhere
 - ✅ **HTTP** - Uses Fetch API, works everywhere
 - ✅ **Zeptomail** - Uses Fetch API, works everywhere
+- ✅ **Plunk** - Uses Fetch API, works everywhere
+- ✅ **Mock** - In-memory provider, works everywhere
 - ✅ **Failover** - Works if all wrapped providers support your runtime
 - ✅ **Round Robin** - Works if all wrapped providers support your runtime
 
@@ -49,6 +53,8 @@ These providers require Node.js built-in modules and only work in **Node.js**:
 | Resend      | ✅      | ✅   | ✅   | ✅                 |
 | HTTP        | ✅      | ✅   | ✅   | ✅                 |
 | Zeptomail   | ✅      | ✅   | ✅   | ✅                 |
+| Plunk       | ✅      | ✅   | ✅   | ✅                 |
+| Mock        | ✅      | ✅   | ✅   | ✅                 |
 | AWS SES     | ✅      | ❌   | ❌   | ❌                 |
 | SMTP        | ✅      | ❌   | ❌   | ❌                 |
 | MailCrab    | ✅      | ❌   | ❌   | ❌                 |
@@ -60,9 +66,10 @@ These providers require Node.js built-in modules and only work in **Node.js**:
 
 ### Choosing a Provider
 
-- **For Cloudflare Workers, Deno, or Bun**: Use Resend, HTTP, or Zeptomail
+- **For Cloudflare Workers, Deno, or Bun**: Use Resend, HTTP, Zeptomail, Plunk, or Mock
 - **For Node.js**: You can use any provider
-- **For cross-runtime compatibility**: Use Resend, HTTP, or Zeptomail, or wrap Node.js-only providers in Failover/Round Robin with universal providers as fallbacks
+- **For testing**: Use Mock provider to test email logic without sending real emails
+- **For cross-runtime compatibility**: Use Resend, HTTP, Zeptomail, Plunk, or Mock, or wrap Node.js-only providers in Failover/Round Robin with universal providers as fallbacks
 
 ## Provider Interface
 

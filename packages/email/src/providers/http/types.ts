@@ -1,6 +1,16 @@
 import type { EmailOptions } from "../../types";
 
 /**
+ * HTTP email configuration
+ */
+export interface HttpEmailConfig {
+    apiKey?: string;
+    endpoint: string;
+    headers?: Record<string, string>;
+    method?: "GET" | "POST" | "PUT";
+}
+
+/**
  * HTTP-specific email options
  */
 export interface HttpEmailOptions extends EmailOptions {

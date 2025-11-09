@@ -1,4 +1,17 @@
-import type { EmailOptions } from "../../types";
+import type { BaseConfig, EmailOptions } from "../../types";
+
+/**
+ * AWS SES configuration
+ */
+export interface AwsSesConfig extends BaseConfig {
+    accessKeyId: string;
+    apiVersion?: string;
+    endpoint?: string;
+    maxAttempts?: number;
+    region: string;
+    secretAccessKey: string;
+    sessionToken?: string;
+}
 
 /**
  * AWS SES-specific email options

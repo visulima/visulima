@@ -1,5 +1,5 @@
 import { EmailError } from "./errors/email-error";
-import type { EmailAddress, EmailOptions, Logger, Priority, Result } from "./types";
+import type { EmailAddress, EmailHeaders, EmailOptions, ImmutableHeaders, Logger, Priority, Result } from "./types";
 
 const hasBuffer = globalThis.Buffer !== undefined;
 const isNode = typeof process !== "undefined" && process.versions?.node;
@@ -219,6 +219,26 @@ export const formatEmailAddresses = (addresses: EmailAddress | EmailAddress[]): 
     }
 
     return formatEmailAddress(addresses);
+};
+
+/**
+ * Converts EmailHeaders (Record<string, string> or ImmutableHeaders) to Record<string, string>
+ * This allows us to work with headers uniformly regardless of their input type
+ */
+export const headersToRecord = (headers: EmailHeaders): Record<string, string> => {
+    // If it's already a plain object, return it
+    if (!(headers instanceof Headers)) {
+        return headers;
+    }
+
+    // Convert Headers instance to plain object
+    const record: Record<string, string> = {};
+
+    headers.forEach((value, key) => {
+        record[key] = value;
+    });
+
+    return record;
 };
 
 /**
@@ -499,7 +519,10 @@ export const buildMimeMessage = async <T extends EmailOptions>(options: T): Prom
     message.push(`Subject: ${options.subject}`, "MIME-Version: 1.0");
 
     if (options.headers) {
-        Object.entries(options.headers).forEach(([key, value]) => {
+        // Convert ImmutableHeaders to Record<string, string> if needed
+        const headersRecord = headersToRecord(options.headers);
+
+        Object.entries(headersRecord).forEach(([key, value]) => {
             message.push(`${key}: ${value}`);
         });
     }

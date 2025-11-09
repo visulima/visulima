@@ -5,11 +5,11 @@ import { createConnection } from "node:net";
 import { connect } from "node:tls";
 
 import { EmailError, RequiredOptionError } from "../../errors/email-error";
-import type { EmailResult, Result, SmtpConfig } from "../../types";
+import type { EmailResult, Result } from "../../types";
 import { buildMimeMessage, generateMessageId, isPortAvailable, validateEmailOptions } from "../../utils";
 import type { ProviderFactory } from "../provider";
 import { defineProvider } from "../provider";
-import type { SmtpEmailOptions } from "./types";
+import type { SmtpConfig, SmtpEmailOptions } from "./types";
 
 // Constants
 const PROVIDER_NAME = "smtp";

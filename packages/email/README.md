@@ -244,6 +244,117 @@ const roundRobin = roundRobinProvider({
 
 **Note:** The round robin provider starts at a random provider and then rotates through providers for each subsequent email. If a provider is unavailable, it will automatically try the next provider in the rotation.
 
+### Plunk Provider
+
+Plunk is a modern email platform built on top of AWS SES, offering transactional emails, automations, and broadcasts.
+
+```typescript
+import { createMail, plunkProvider } from "@visulima/email/providers/plunk";
+
+// Create Plunk provider
+const plunk = plunkProvider({
+    apiKey: "your-plunk-api-key",
+    endpoint: "https://api.useplunk.com/v1", // Optional, defaults to this
+});
+
+// Use Plunk provider
+const mail = createMail(plunk);
+
+// Send email with Plunk-specific options
+const result = await mail.message()
+    .to("user@example.com")
+    .from("sender@example.com")
+    .subject("Welcome")
+    .html("<h1>Welcome!</h1>")
+    .send();
+
+// Or use Plunk-specific features
+import type { PlunkEmailOptions } from "@visulima/email/providers/plunk";
+
+const plunkOptions: PlunkEmailOptions = {
+    from: { email: "sender@example.com" },
+    to: { email: "user@example.com" },
+    subject: "Welcome",
+    html: "<h1>Welcome!</h1>",
+    subscriber: "user@example.com", // For tracking
+    subscriberId: "user-123", // Optional subscriber ID
+    templateId: "template-id", // Use template
+    data: { name: "John" }, // Template data
+};
+
+await mail.sendEmail(plunkOptions);
+```
+
+### Mock Provider (for Testing)
+
+The mock provider is designed for testing and development. It stores emails in memory without actually sending them, allowing you to test your email logic without hitting real email services.
+
+```typescript
+import { createMail, mockProvider } from "@visulima/email/providers/mock";
+
+// Create mock provider
+const mock = mockProvider({
+    debug: true, // Enable debug logging
+    delay: 100, // Simulate 100ms delay
+    failureRate: 0.1, // 10% failure rate for testing error handling
+});
+
+// Use mock provider
+const mail = createMail(mock);
+
+// Send email (stored in memory)
+const result = await mail.message()
+    .to("user@example.com")
+    .from("sender@example.com")
+    .subject("Test")
+    .html("<h1>Test</h1>")
+    .send();
+
+// Access stored emails
+const sentEmails = mock.getSentEmails();
+console.log(`Sent ${sentEmails.length} emails`);
+
+// Get last sent message
+const lastMessage = mock.getLastSentMessage();
+console.log("Last subject:", lastMessage?.options.subject);
+
+// Find messages by criteria
+const welcomeEmails = mock.getMessagesBySubject("Welcome");
+const userEmails = mock.getMessagesTo("user@example.com");
+
+// Simulate failures for testing
+mock.setFailureRate(1.0); // Always fail
+mock.setNextResponse({
+    successful: false,
+    errorMessages: ["Test error"],
+});
+
+// Clear stored messages
+mock.clearSentMessages();
+
+// Reset provider to initial state
+mock.reset();
+```
+
+**Mock Provider Helper Methods:**
+
+- `getSentEmails()` / `getSentMessages()` - Get all sent emails
+- `getLastSentMessage()` - Get the last sent message
+- `getSentMessagesCount()` - Get count of sent messages
+- `clearSentMessages()` - Clear all stored messages
+- `setNextResponse(receipt)` - Set response for next send (one-time)
+- `setDefaultResponse(receipt)` - Set default response
+- `setFailureRate(rate)` - Set failure rate (0.0 to 1.0)
+- `setDelay(ms)` - Set fixed delay
+- `setRandomDelay(min, max)` - Set random delay range
+- `findMessageBy(predicate)` - Find first matching message
+- `findMessagesBy(predicate)` - Find all matching messages
+- `getMessagesTo(email)` - Get messages sent to email
+- `getMessagesBySubject(subject)` - Get messages by subject
+- `waitForMessageCount(count, timeout)` - Wait for message count
+- `waitForMessage(predicate, timeout)` - Wait for matching message
+- `reset()` - Reset to initial state
+
 ### MailCrab Provider (for Development)
 
 MailCrab is a local SMTP server for testing emails during development. This provider is a convenience wrapper around the SMTP provider with MailCrab defaults.
@@ -275,7 +386,9 @@ const result = await mail.message().to("user@example.com").from("sender@example.
 - **Failover** - Automatic failover between multiple providers
 - **HTTP** - Generic HTTP API provider
 - **MailCrab** - Local development email testing (SMTP wrapper)
+- **Mock** - In-memory provider for testing (no actual emails sent)
 - **Nodemailer** - Popular Node.js email library wrapper
+- **Plunk** - Modern email platform built on AWS SES
 - **Resend** - Resend email service
 - **Round Robin** - Load balancing across multiple providers
 - **SMTP** - Standard SMTP protocol
@@ -292,6 +405,8 @@ These providers work in **Node.js**, **Deno**, **Bun**, and **Cloudflare Workers
 - ✅ **Resend** - Uses Fetch API
 - ✅ **HTTP** - Uses Fetch API
 - ✅ **Zeptomail** - Uses Fetch API
+- ✅ **Plunk** - Uses Fetch API
+- ✅ **Mock** - In-memory provider, works everywhere
 - ✅ **Failover** - Runtime depends on wrapped providers (works if all wrapped providers support the runtime)
 - ✅ **Round Robin** - Runtime depends on wrapped providers (works if all wrapped providers support the runtime)
 
@@ -321,6 +436,8 @@ Template engines are optional peer dependencies and work where their underlying 
 | Resend      | ✅      | ✅   | ✅   | ✅                 |
 | HTTP        | ✅      | ✅   | ✅   | ✅                 |
 | Zeptomail   | ✅      | ✅   | ✅   | ✅                 |
+| Plunk       | ✅      | ✅   | ✅   | ✅                 |
+| Mock        | ✅      | ✅   | ✅   | ✅                 |
 | AWS SES     | ✅      | ❌   | ❌   | ❌                 |
 | SMTP        | ✅      | ❌   | ❌   | ❌                 |
 | MailCrab    | ✅      | ❌   | ❌   | ❌                 |

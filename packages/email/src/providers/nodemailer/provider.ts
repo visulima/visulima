@@ -1,11 +1,11 @@
 import nodemailerModule from "nodemailer";
 
 import { EmailError, RequiredOptionError } from "../../errors/email-error";
-import type { EmailResult, NodemailerConfig, Result } from "../../types";
-import { generateMessageId, validateEmailOptions } from "../../utils";
+import type { EmailResult, Result } from "../../types";
+import { generateMessageId, headersToRecord, validateEmailOptions } from "../../utils";
 import type { ProviderFactory } from "../provider";
 import { defineProvider } from "../provider";
-import type { NodemailerEmailOptions } from "./types";
+import type { NodemailerConfig, NodemailerEmailOptions } from "./types";
 
 // Constants
 const PROVIDER_NAME = "nodemailer";
@@ -102,7 +102,7 @@ export const nodemailerProvider: ProviderFactory<NodemailerConfig, unknown, Node
             }
 
             if (emailOptions.headers) {
-                mailOptions.headers = emailOptions.headers;
+                mailOptions.headers = headersToRecord(emailOptions.headers);
             }
 
             // Handle attachments
