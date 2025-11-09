@@ -263,13 +263,13 @@ export class MailMessage {
      *
      * @example
      * ```ts
-     * import { renderHandlebars } from '@visulima/email/handlebars';
+     * import { renderHandlebars } from '@visulima/email/template/handlebars';
      * message.view(renderHandlebars, '<h1>Hello {{name}}!</h1>', { name: 'John' })
      *
-     * import { renderMjml } from '@visulima/email/mjml';
+     * import { renderMjml } from '@visulima/email/template/mjml';
      * message.view(renderMjml, mjmlTemplate)
      *
-     * import { renderReactEmail } from '@visulima/email/react-email';
+     * import { renderReactEmail } from '@visulima/email/template/react-email';
      * message.view(renderReactEmail, <WelcomeEmail name="John" />)
      * ```
      */
@@ -308,7 +308,7 @@ export class MailMessage {
      *
      * @example
      * ```ts
-     * import { renderHandlebars } from '@visulima/email/handlebars';
+     * import { renderHandlebars } from '@visulima/email/template/handlebars';
      * message.viewText(renderHandlebars, 'Hello {{name}}!', { name: 'John' })
      * ```
      */

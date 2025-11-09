@@ -35,19 +35,19 @@
             "types": "./dist/index.d.ts",
             "default": "./dist/index.js"
         },
-        "./handlebars": {
+        "./template/handlebars": {
             "types": "./dist/template-engines/handlebars.d.ts",
             "default": "./dist/template-engines/handlebars.js"
         },
-        "./mjml": {
+        "./template/mjml": {
             "types": "./dist/template-engines/mjml.d.ts",
             "default": "./dist/template-engines/mjml.js"
         },
-        "./react-email": {
+        "./template/react-email": {
             "types": "./dist/template-engines/react-email.d.ts",
             "default": "./dist/template-engines/react-email.js"
         },
-        "./html-to-text": {
+        "./template/html-to-text": {
             "types": "./dist/template-engines/html-to-text.d.ts",
             "default": "./dist/template-engines/html-to-text.js"
         },
