@@ -2,7 +2,8 @@ import type { EmailAddress, EmailResult, Result } from "../../types.js";
 import type { ResendConfig } from "../../types.js";
 import type { ProviderFactory } from "../provider.js";
 import type { ResendEmailOptions, ResendEmailTag } from "./types.js";
-import { createError, createRequiredError, generateMessageId, makeRequest, retry, validateEmailOptions } from "../../utils.js";
+import { generateMessageId, makeRequest, retry, validateEmailOptions } from "../../utils.js";
+import { EmailError, RequiredOptionError } from "../../errors/email-error.js";
 import { defineProvider } from "../provider.js";
 
 // Constants
@@ -44,7 +45,7 @@ export const resendProvider: ProviderFactory<ResendConfig, unknown, ResendEmailO
     (opts: ResendConfig = {} as ResendConfig) => {
         // Validate required options
         if (!opts.apiKey) {
-            throw createRequiredError(PROVIDER_NAME, "apiKey");
+            throw new RequiredOptionError(PROVIDER_NAME, "apiKey");
         }
 
         // Initialize with defaults
@@ -91,13 +92,13 @@ export const resendProvider: ProviderFactory<ResendConfig, unknown, ResendEmailO
                 try {
                     // Test endpoint availability and credentials
                     if (!(await this.isAvailable())) {
-                        throw createError(PROVIDER_NAME, "Resend API not available or invalid API key");
+                        throw new EmailError(PROVIDER_NAME, "Resend API not available or invalid API key");
                     }
 
                     isInitialized = true;
                     debug("Provider initialized successfully");
                 } catch (error) {
-                    throw createError(
+                    throw new EmailError(
                         PROVIDER_NAME,
                         `Failed to initialize: ${(error as Error).message}`,
                         { cause: error as Error },
@@ -181,7 +182,7 @@ export const resendProvider: ProviderFactory<ResendConfig, unknown, ResendEmailO
                     if (validationErrors.length > 0) {
                         return {
                             success: false,
-                            error: createError(PROVIDER_NAME, `Invalid email options: ${validationErrors.join(", ")}`),
+                            error: new EmailError(PROVIDER_NAME, `Invalid email options: ${validationErrors.join(", ")}`),
                         };
                     }
 
@@ -261,7 +262,7 @@ export const resendProvider: ProviderFactory<ResendConfig, unknown, ResendEmailO
                         if (tagValidationErrors.length > 0) {
                             return {
                                 success: false,
-                                error: createError(PROVIDER_NAME, `Invalid email tags: ${tagValidationErrors.join(", ")}`),
+                                error: new EmailError(PROVIDER_NAME, `Invalid email tags: ${tagValidationErrors.join(", ")}`),
                             };
                         }
 
@@ -314,7 +315,7 @@ export const resendProvider: ProviderFactory<ResendConfig, unknown, ResendEmailO
                         debug("API request failed when sending email", result.error);
                         return {
                             success: false,
-                            error: result.error || createError(PROVIDER_NAME, "Failed to send email"),
+                            error: result.error || new EmailError(PROVIDER_NAME, "Failed to send email"),
                         };
                     }
 
@@ -341,7 +342,7 @@ export const resendProvider: ProviderFactory<ResendConfig, unknown, ResendEmailO
                     debug("Exception sending email", error);
                     return {
                         success: false,
-                        error: createError(
+                        error: new EmailError(
                             PROVIDER_NAME,
                             `Failed to send email: ${(error as Error).message}`,
                             { cause: error as Error },
@@ -367,7 +368,7 @@ export const resendProvider: ProviderFactory<ResendConfig, unknown, ResendEmailO
                     if (!id) {
                         return {
                             success: false,
-                            error: createError(PROVIDER_NAME, "Email ID is required to retrieve email details"),
+                            error: new EmailError(PROVIDER_NAME, "Email ID is required to retrieve email details"),
                         };
                     }
 
@@ -402,7 +403,7 @@ export const resendProvider: ProviderFactory<ResendConfig, unknown, ResendEmailO
                         debug("API request failed when retrieving email", result.error);
                         return {
                             success: false,
-                            error: createError(
+                            error: new EmailError(
                                 PROVIDER_NAME,
                                 `Failed to retrieve email: ${result.error?.message || "Unknown error"}`,
                                 { cause: result.error },
@@ -419,7 +420,7 @@ export const resendProvider: ProviderFactory<ResendConfig, unknown, ResendEmailO
                     debug("Exception retrieving email", error);
                     return {
                         success: false,
-                        error: createError(
+                        error: new EmailError(
                             PROVIDER_NAME,
                             `Failed to retrieve email: ${(error as Error).message}`,
                             { cause: error as Error },

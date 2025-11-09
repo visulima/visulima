@@ -3,7 +3,7 @@ import type { FailoverConfig } from "../../types.js";
 import type { ProviderFactory } from "../provider.js";
 import type { Provider } from "../provider.js";
 import type { FailoverEmailOptions } from "./types.js";
-import { createError, createRequiredError } from "../../utils.js";
+import { EmailError, RequiredOptionError } from "../../errors/email-error.js";
 import { defineProvider } from "../provider.js";
 
 // Type guard to check if something is a ProviderFactory
@@ -32,7 +32,7 @@ export const failoverProvider: ProviderFactory<FailoverConfig, unknown, Failover
     (opts: FailoverConfig = {} as FailoverConfig) => {
         // Validate required options
         if (!opts.mailers || opts.mailers.length === 0) {
-            throw createRequiredError(PROVIDER_NAME, "mailers");
+            throw new RequiredOptionError(PROVIDER_NAME, "mailers");
         }
 
         // Initialize with defaults
@@ -89,7 +89,7 @@ export const failoverProvider: ProviderFactory<FailoverConfig, unknown, Failover
             }
 
             if (providers.length === 0) {
-                throw createError(PROVIDER_NAME, "No providers could be initialized");
+                throw new EmailError(PROVIDER_NAME, "No providers could be initialized");
             }
         };
 
@@ -122,7 +122,7 @@ export const failoverProvider: ProviderFactory<FailoverConfig, unknown, Failover
                     isInitialized = true;
                     debug(`Failover provider initialized with ${providers.length} provider(s)`);
                 } catch (error) {
-                    throw createError(
+                    throw new EmailError(
                         PROVIDER_NAME,
                         `Failed to initialize: ${(error as Error).message}`,
                         { cause: error as Error },
@@ -170,12 +170,12 @@ export const failoverProvider: ProviderFactory<FailoverConfig, unknown, Failover
                     if (providers.length === 0) {
                         return {
                             success: false,
-                            error: createError(PROVIDER_NAME, "No providers available"),
+                            error: new EmailError(PROVIDER_NAME, "No providers available"),
                         };
                     }
 
-                    const errors: Error[] = [];
-                    let lastError: Error | undefined;
+                    const errors: (Error | unknown)[] = [];
+                    let lastError: Error | unknown | undefined;
 
                     // Try each provider in order
                     for (let i = 0; i < providers.length; i++) {
@@ -189,7 +189,7 @@ export const failoverProvider: ProviderFactory<FailoverConfig, unknown, Failover
                             const isAvailable = await provider.isAvailable();
                             if (!isAvailable) {
                                 debug(`Provider ${providerName} is not available, skipping`);
-                                errors.push(createError(PROVIDER_NAME, `Provider ${providerName} is not available`));
+                                errors.push(new EmailError(PROVIDER_NAME, `Provider ${providerName} is not available`));
                                 continue;
                             }
 
@@ -211,12 +211,14 @@ export const failoverProvider: ProviderFactory<FailoverConfig, unknown, Failover
                             if (result.error) {
                                 lastError = result.error;
                                 errors.push(result.error);
-                                debug(`Failed to send via ${providerName}:`, result.error.message);
+                                const errorMessage = result.error instanceof Error ? result.error.message : String(result.error);
+                                debug(`Failed to send via ${providerName}:`, errorMessage);
                             }
                         } catch (error) {
                             lastError = error instanceof Error ? error : new Error(String(error));
                             errors.push(lastError);
-                            debug(`Exception sending via ${providerName}:`, lastError.message);
+                            const errorMessage = lastError instanceof Error ? lastError.message : String(lastError);
+                            debug(`Exception sending via ${providerName}:`, errorMessage);
                         }
 
                         // If this isn't the last provider, wait before trying the next one
@@ -227,10 +229,10 @@ export const failoverProvider: ProviderFactory<FailoverConfig, unknown, Failover
                     }
 
                     // All providers failed
-                    const errorMessages = errors.map((e) => e.message).join("; ");
+                    const errorMessages = errors.map((e) => (e instanceof Error ? e.message : String(e))).join("; ");
                     return {
                         success: false,
-                        error: createError(
+                        error: new EmailError(
                             PROVIDER_NAME,
                             `All providers failed. Errors: ${errorMessages}`,
                             { cause: lastError },
@@ -239,7 +241,7 @@ export const failoverProvider: ProviderFactory<FailoverConfig, unknown, Failover
                 } catch (error) {
                     return {
                         success: false,
-                        error: createError(
+                        error: new EmailError(
                             PROVIDER_NAME,
                             `Failed to send email: ${(error as Error).message}`,
                             { cause: error as Error },

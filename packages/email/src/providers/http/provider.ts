@@ -2,7 +2,8 @@ import type { EmailResult, Result } from "../../types.js";
 import type { HttpEmailConfig } from "../../types.js";
 import type { ProviderFactory } from "../provider.js";
 import type { HttpEmailOptions } from "./types.js";
-import { createError, createRequiredError, generateMessageId, makeRequest, validateEmailOptions } from "../../utils.js";
+import { generateMessageId, makeRequest, validateEmailOptions } from "../../utils.js";
+import { EmailError, RequiredOptionError } from "../../errors/email-error.js";
 import { defineProvider } from "../provider.js";
 
 // Constants
@@ -17,7 +18,7 @@ export const httpProvider: ProviderFactory<HttpEmailConfig, unknown, HttpEmailOp
     (opts: HttpEmailConfig = {} as HttpEmailConfig) => {
         // Validate required options
         if (!opts.endpoint) {
-            throw createRequiredError(PROVIDER_NAME, "endpoint");
+            throw new RequiredOptionError(PROVIDER_NAME, "endpoint");
         }
 
         // Initialize with defaults
@@ -104,7 +105,7 @@ export const httpProvider: ProviderFactory<HttpEmailConfig, unknown, HttpEmailOp
 
                 // Check if the API endpoint is available
                 if (!(await this.isAvailable())) {
-                    throw createError(PROVIDER_NAME, "API endpoint not available");
+                    throw new EmailError(PROVIDER_NAME, "API endpoint not available");
                 }
 
                 isInitialized = true;
@@ -165,7 +166,7 @@ export const httpProvider: ProviderFactory<HttpEmailConfig, unknown, HttpEmailOp
                     if (validationErrors.length > 0) {
                         return {
                             success: false,
-                            error: createError(PROVIDER_NAME, `Invalid email options: ${validationErrors.join(", ")}`),
+                            error: new EmailError(PROVIDER_NAME, `Invalid email options: ${validationErrors.join(", ")}`),
                         };
                     }
 
@@ -205,7 +206,7 @@ export const httpProvider: ProviderFactory<HttpEmailConfig, unknown, HttpEmailOp
                     if (!result.success) {
                         return {
                             success: false,
-                            error: createError(
+                            error: new EmailError(
                                 PROVIDER_NAME,
                                 `Failed to send email: ${result.error?.message || "Unknown error"}`,
                                 { cause: result.error },
@@ -244,7 +245,7 @@ export const httpProvider: ProviderFactory<HttpEmailConfig, unknown, HttpEmailOp
                 } catch (error) {
                     return {
                         success: false,
-                        error: createError(
+                        error: new EmailError(
                             PROVIDER_NAME,
                             `Failed to send email: ${(error as Error).message}`,
                             { cause: error as Error },

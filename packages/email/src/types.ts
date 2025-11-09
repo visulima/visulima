@@ -97,16 +97,9 @@ export interface EmailResult {
 export interface Result<T = unknown> {
     success: boolean;
     data?: T;
-    error?: Error;
+    error?: Error | unknown;
 }
 
-/**
- * Error options
- */
-export interface ErrorOptions {
-    cause?: Error;
-    code?: string;
-}
 
 /**
  * AWS SES configuration

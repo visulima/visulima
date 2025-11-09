@@ -3,7 +3,7 @@ import type { RoundRobinConfig } from "../../types.js";
 import type { ProviderFactory } from "../provider.js";
 import type { Provider } from "../provider.js";
 import type { RoundRobinEmailOptions } from "./types.js";
-import { createError, createRequiredError } from "../../utils.js";
+import { EmailError, RequiredOptionError } from "../../errors/email-error.js";
 import { defineProvider } from "../provider.js";
 
 // Type guard to check if something is a ProviderFactory
@@ -32,7 +32,7 @@ export const roundRobinProvider: ProviderFactory<RoundRobinConfig, unknown, Roun
     (opts: RoundRobinConfig = {} as RoundRobinConfig) => {
         // Validate required options
         if (!opts.mailers || opts.mailers.length === 0) {
-            throw createRequiredError(PROVIDER_NAME, "mailers");
+            throw new RequiredOptionError(PROVIDER_NAME, "mailers");
         }
 
         // Initialize with defaults
@@ -90,7 +90,7 @@ export const roundRobinProvider: ProviderFactory<RoundRobinConfig, unknown, Roun
             }
 
             if (providers.length === 0) {
-                throw createError(PROVIDER_NAME, "No providers could be initialized");
+                throw new EmailError(PROVIDER_NAME, "No providers could be initialized");
             }
 
             // Initialize currentIndex to a random provider
@@ -171,7 +171,7 @@ export const roundRobinProvider: ProviderFactory<RoundRobinConfig, unknown, Roun
                     isInitialized = true;
                     debug(`Round robin provider initialized with ${providers.length} provider(s)`);
                 } catch (error) {
-                    throw createError(
+                    throw new EmailError(
                         PROVIDER_NAME,
                         `Failed to initialize: ${(error as Error).message}`,
                         { cause: error as Error },
@@ -219,7 +219,7 @@ export const roundRobinProvider: ProviderFactory<RoundRobinConfig, unknown, Roun
                     if (providers.length === 0) {
                         return {
                             success: false,
-                            error: createError(PROVIDER_NAME, "No providers available"),
+                            error: new EmailError(PROVIDER_NAME, "No providers available"),
                         };
                     }
 
@@ -229,7 +229,7 @@ export const roundRobinProvider: ProviderFactory<RoundRobinConfig, unknown, Roun
                     if (!provider) {
                         return {
                             success: false,
-                            error: createError(PROVIDER_NAME, "No available providers found"),
+                            error: new EmailError(PROVIDER_NAME, "No available providers found"),
                         };
                     }
 
@@ -253,7 +253,7 @@ export const roundRobinProvider: ProviderFactory<RoundRobinConfig, unknown, Roun
 
                     // If send failed, try the next provider (failover behavior)
                     debug(`Failed to send via ${providerName}, trying next provider`);
-                    const errors: Error[] = [];
+                    const errors: (Error | unknown)[] = [];
                     if (result.error) {
                         errors.push(result.error);
                     }
@@ -298,7 +298,7 @@ export const roundRobinProvider: ProviderFactory<RoundRobinConfig, unknown, Roun
                     const errorMessages = errors.map((e) => e.message).join("; ");
                     return {
                         success: false,
-                        error: createError(
+                        error: new EmailError(
                             PROVIDER_NAME,
                             `Failed to send email via all providers. Errors: ${errorMessages}`,
                             { cause: errors[0] },
@@ -307,7 +307,7 @@ export const roundRobinProvider: ProviderFactory<RoundRobinConfig, unknown, Roun
                 } catch (error) {
                     return {
                         success: false,
-                        error: createError(
+                        error: new EmailError(
                             PROVIDER_NAME,
                             `Failed to send email: ${(error as Error).message}`,
                             { cause: error as Error },

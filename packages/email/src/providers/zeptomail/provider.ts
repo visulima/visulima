@@ -1,7 +1,8 @@
 import type { EmailAddress, EmailResult, Result, ZeptomailConfig } from '../../types.js'
 import type { ProviderFactory } from '../provider.js'
 import type { ZeptomailEmailOptions } from './types.js'
-import { createError, createRequiredError, generateMessageId, makeRequest, retry, validateEmailOptions } from '../../utils.js'
+import { generateMessageId, makeRequest, retry, validateEmailOptions } from '../../utils.js'
+import { EmailError, RequiredOptionError } from '../../errors/email-error.js'
 import { defineProvider } from '../provider.js'
 
 // Constants
@@ -16,12 +17,12 @@ const DEFAULT_RETRIES = 3
 export const zeptomailProvider: ProviderFactory<ZeptomailConfig, unknown, ZeptomailEmailOptions> = defineProvider((opts: ZeptomailConfig = {} as ZeptomailConfig) => {
   // Validate required options
   if (!opts.token) {
-    throw createRequiredError(PROVIDER_NAME, 'token')
+    throw new RequiredOptionError(PROVIDER_NAME, 'token')
   }
 
   // Make sure token has correct format
   if (!opts.token.startsWith('Zoho-enczapikey ')) {
-    throw createError(
+    throw new EmailError(
       PROVIDER_NAME,
       'Token should be in the format "Zoho-enczapikey <your_api_key>"',
     )
@@ -74,7 +75,7 @@ export const zeptomailProvider: ProviderFactory<ZeptomailConfig, unknown, Zeptom
       try {
         // Test endpoint availability and credentials
         if (!await this.isAvailable()) {
-          throw createError(
+          throw new EmailError(
             PROVIDER_NAME,
             'Zeptomail API not available or invalid token',
           )
@@ -84,7 +85,7 @@ export const zeptomailProvider: ProviderFactory<ZeptomailConfig, unknown, Zeptom
         debug('Provider initialized successfully')
       }
       catch (error) {
-        throw createError(
+        throw new EmailError(
           PROVIDER_NAME,
           `Failed to initialize: ${(error as Error).message}`,
           { cause: error as Error },
@@ -123,7 +124,7 @@ export const zeptomailProvider: ProviderFactory<ZeptomailConfig, unknown, Zeptom
         if (validationErrors.length > 0) {
           return {
             success: false,
-            error: createError(
+            error: new EmailError(
               PROVIDER_NAME,
               `Invalid email options: ${validationErrors.join(', ')}`,
             ),
@@ -285,7 +286,7 @@ export const zeptomailProvider: ProviderFactory<ZeptomailConfig, unknown, Zeptom
 
           return {
             success: false,
-            error: createError(
+            error: new EmailError(
               PROVIDER_NAME,
               `Failed to send email: ${errorMessage}`,
               { cause: result.error },
@@ -314,7 +315,7 @@ export const zeptomailProvider: ProviderFactory<ZeptomailConfig, unknown, Zeptom
         debug('Exception sending email', error)
         return {
           success: false,
-          error: createError(
+          error: new EmailError(
             PROVIDER_NAME,
             `Failed to send email: ${(error as Error).message}`,
             { cause: error as Error },

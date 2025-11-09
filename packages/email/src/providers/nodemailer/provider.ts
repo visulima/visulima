@@ -1,7 +1,8 @@
 import type { EmailResult, Result, NodemailerConfig } from "../../types.js";
 import type { ProviderFactory } from "../provider.js";
 import type { NodemailerEmailOptions } from "./types.js";
-import { createError, createRequiredError, generateMessageId, validateEmailOptions } from "../../utils.js";
+import { generateMessageId, validateEmailOptions } from "../../utils.js";
+import { EmailError, RequiredOptionError } from "../../errors/email-error.js";
 import { defineProvider } from "../provider.js";
 
 // Import nodemailer using ESM import
@@ -18,7 +19,7 @@ export const nodemailerProvider: ProviderFactory<NodemailerConfig, unknown, Node
     (opts: NodemailerConfig = {} as NodemailerConfig) => {
         // Validate required options
         if (!opts.transport) {
-            throw createRequiredError(PROVIDER_NAME, "transport");
+            throw new RequiredOptionError(PROVIDER_NAME, "transport");
         }
 
         // Transporter instance (lazy initialized)
@@ -50,7 +51,7 @@ export const nodemailerProvider: ProviderFactory<NodemailerConfig, unknown, Node
                 await transporter.verify();
                 isInitialized = true;
             } catch (error) {
-                throw createError(
+                throw new EmailError(
                     PROVIDER_NAME,
                     `Failed to initialize nodemailer transport: ${error instanceof Error ? error.message : String(error)}`,
                     { cause: error instanceof Error ? error : new Error(String(error)) },
@@ -178,7 +179,7 @@ export const nodemailerProvider: ProviderFactory<NodemailerConfig, unknown, Node
                 if (validationErrors.length > 0) {
                     return {
                         success: false,
-                        error: createError(PROVIDER_NAME, `Validation failed: ${validationErrors.join(", ")}`),
+                        error: new EmailError(PROVIDER_NAME, `Validation failed: ${validationErrors.join(", ")}`),
                     };
                 }
 
@@ -212,7 +213,7 @@ export const nodemailerProvider: ProviderFactory<NodemailerConfig, unknown, Node
                 } catch (error) {
                     return {
                         success: false,
-                        error: createError(
+                        error: new EmailError(
                             PROVIDER_NAME,
                             `Failed to send email: ${error instanceof Error ? error.message : String(error)}`,
                             { cause: error instanceof Error ? error : new Error(String(error)) },

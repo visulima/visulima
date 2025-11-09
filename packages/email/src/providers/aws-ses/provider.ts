@@ -1,7 +1,8 @@
 import type { AwsSesConfig, EmailAddress, EmailOptions, EmailResult, Result } from "../../types.js";
 import type { ProviderFactory } from "../provider.js";
 import type { AwsSesEmailOptions } from "./types.js";
-import { createError, createRequiredError, makeRequest, validateEmailOptions } from "../../utils.js";
+import { makeRequest, validateEmailOptions } from "../../utils.js";
+import { EmailError, RequiredOptionError } from "../../errors/email-error.js";
 import { defineProvider } from "../provider.js";
 
 // Runtime detection for crypto and Buffer
@@ -153,7 +154,7 @@ export const awsSesProvider: ProviderFactory<AwsSesConfig, unknown, AwsSesEmailO
             // Validate required credentials
             if (!options.accessKeyId || !options.secretAccessKey) {
                 debug("Missing required credentials: accessKeyId or secretAccessKey");
-                throw createRequiredError(PROVIDER_NAME, ["accessKeyId", "secretAccessKey"]);
+                throw new RequiredOptionError(PROVIDER_NAME, ["accessKeyId", "secretAccessKey"]);
             }
 
             try {
@@ -416,7 +417,7 @@ export const awsSesProvider: ProviderFactory<AwsSesConfig, unknown, AwsSesEmailO
                     // Validate email options
                     const validationErrors = validateEmailOptions(emailOpts);
                     if (validationErrors.length > 0) {
-                        throw createError(PROVIDER_NAME, `Invalid email options: ${validationErrors.join(", ")}`);
+                        throw new EmailError(PROVIDER_NAME, `Invalid email options: ${validationErrors.join(", ")}`);
                     }
 
                     // Prepare AWS SES specific options
@@ -471,7 +472,7 @@ export const awsSesProvider: ProviderFactory<AwsSesConfig, unknown, AwsSesEmailO
                 } catch (error) {
                     return {
                         success: false,
-                        error: createError(
+                        error: new EmailError(
                             PROVIDER_NAME,
                             `Failed to send email: ${error instanceof Error ? error.message : String(error)}`,
                             { cause: error instanceof Error ? error : new Error(String(error)) },
