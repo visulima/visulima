@@ -35,10 +35,10 @@ const resend = resendProvider({ apiKey: "re_xxx" });
 
 // Or use SMTP
 const smtp = smtpProvider({
-  host: "smtp.example.com",
-  port: 587,
-  user: "user@example.com",
-  password: "password",
+    host: "smtp.example.com",
+    port: 587,
+    user: "user@example.com",
+    password: "password",
 });
 ```
 
@@ -47,13 +47,7 @@ const smtp = smtpProvider({
 Mail messages are built using the fluent `MailMessage` API:
 
 ```typescript
-const result = await mail
-  .message()
-  .to("user@example.com")
-  .from("sender@example.com")
-  .subject("Hello")
-  .html("<h1>Hello World</h1>")
-  .send();
+const result = await mail.message().to("user@example.com").from("sender@example.com").subject("Hello").html("<h1>Hello World</h1>").send();
 ```
 
 ### Mailable Classes
@@ -64,16 +58,16 @@ For more complex emails, you can create Mailable classes:
 import type { Mailable, EmailOptions } from "@visulima/email";
 
 class WelcomeEmail implements Mailable {
-  constructor(private user: { name: string; email: string }) {}
+    constructor(private user: { name: string; email: string }) {}
 
-  async build(): Promise<EmailOptions> {
-    return {
-      from: { email: "noreply@example.com" },
-      to: { email: this.user.email, name: this.user.name },
-      subject: "Welcome!",
-      html: `<h1>Welcome ${this.user.name}!</h1>`,
-    };
-  }
+    async build(): Promise<EmailOptions> {
+        return {
+            from: { email: "noreply@example.com" },
+            to: { email: this.user.email, name: this.user.name },
+            subject: "Welcome!",
+            html: `<h1>Welcome ${this.user.name}!</h1>`,
+        };
+    }
 }
 
 await mail.send(new WelcomeEmail({ name: "John", email: "john@example.com" }));
@@ -89,7 +83,7 @@ import { resendProvider } from "@visulima/email/providers/resend";
 
 // 1. Create a provider
 const resend = resendProvider({
-  apiKey: process.env.RESEND_API_KEY!,
+    apiKey: process.env.RESEND_API_KEY!,
 });
 
 // 2. Create a Mail instance
@@ -97,19 +91,19 @@ const mail = createMail(resend);
 
 // 3. Build and send a message
 const result = await mail
-  .message()
-  .to("user@example.com")
-  .from("sender@example.com")
-  .subject("Welcome!")
-  .html("<h1>Welcome to our service!</h1>")
-  .text("Welcome to our service!")
-  .send();
+    .message()
+    .to("user@example.com")
+    .from("sender@example.com")
+    .subject("Welcome!")
+    .html("<h1>Welcome to our service!</h1>")
+    .text("Welcome to our service!")
+    .send();
 
 // 4. Handle the result
 if (result.success) {
-  console.log("Email sent successfully:", result.data?.messageId);
+    console.log("Email sent successfully:", result.data?.messageId);
 } else {
-  console.error("Failed to send email:", result.error);
+    console.error("Failed to send email:", result.error);
 }
 ```
 

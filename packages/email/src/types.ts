@@ -10,14 +10,24 @@ export type MaybePromise<T> = T | Promise<T>;
  */
 export interface FeatureFlags {
     attachments?: boolean;
+    batchSending?: boolean;
+    customHeaders?: boolean;
     html?: boolean;
+    replyTo?: boolean;
+    scheduling?: boolean;
+    tagging?: boolean;
     templates?: boolean;
     tracking?: boolean;
-    customHeaders?: boolean;
-    batchSending?: boolean;
-    scheduling?: boolean;
-    replyTo?: boolean;
-    tagging?: boolean;
+}
+
+/**
+ * Logger interface for email package logging
+ */
+export interface Logger {
+    debug: (message: string, ...args: unknown[]) => void;
+    error?: (message: string, ...args: unknown[]) => void;
+    info?: (message: string, ...args: unknown[]) => void;
+    warn?: (message: string, ...args: unknown[]) => void;
 }
 
 /**
@@ -25,16 +35,17 @@ export interface FeatureFlags {
  */
 export interface BaseConfig {
     debug?: boolean;
-    timeout?: number;
+    logger?: Logger;
     retries?: number;
+    timeout?: number;
 }
 
 /**
  * Email address with optional name
  */
 export interface EmailAddress {
-    name?: string;
     email: string;
+    name?: string;
 }
 
 /**
@@ -42,9 +53,9 @@ export interface EmailAddress {
  */
 export interface Attachment {
     /**
-     * Filename for the attachment
+     * Content-ID for inline attachments (used in HTML with cid:)
      */
-    filename: string;
+    cid?: string;
 
     /**
      * Attachment content (string or Buffer)
@@ -53,10 +64,29 @@ export interface Attachment {
     content?: string | Buffer;
 
     /**
-     * File path to read attachment from
-     * Alternative to content
+     * Content disposition: 'attachment' (default) or 'inline'
      */
-    path?: string;
+    contentDisposition?: "attachment" | "inline";
+
+    /**
+     * MIME type of the attachment
+     */
+    contentType?: string;
+
+    /**
+     * Content transfer encoding (e.g., 'base64', '7bit', 'quoted-printable')
+     */
+    encoding?: string;
+
+    /**
+     * Filename for the attachment
+     */
+    filename: string;
+
+    /**
+     * Custom headers for this attachment
+     */
+    headers?: Record<string, string>;
 
     /**
      * URL to fetch attachment from
@@ -70,29 +100,10 @@ export interface Attachment {
     httpHeaders?: Record<string, string>;
 
     /**
-     * MIME type of the attachment
+     * File path to read attachment from
+     * Alternative to content
      */
-    contentType?: string;
-
-    /**
-     * Content disposition: 'attachment' (default) or 'inline'
-     */
-    contentDisposition?: "attachment" | "inline";
-
-    /**
-     * Content-ID for inline attachments (used in HTML with cid:)
-     */
-    cid?: string;
-
-    /**
-     * Content transfer encoding (e.g., 'base64', '7bit', 'quoted-printable')
-     */
-    encoding?: string;
-
-    /**
-     * Custom headers for this attachment
-     */
-    headers?: Record<string, string>;
+    path?: string;
 
     /**
      * Raw attachment data (alternative to content)
@@ -113,23 +124,19 @@ export interface EmailTag {
  * Common email options that all providers support
  */
 export interface EmailOptions {
-    // Required fields
+    attachments?: Attachment[];
+    bcc?: EmailAddress | EmailAddress[];
+    cc?: EmailAddress | EmailAddress[];
+
     from: EmailAddress;
-    to: EmailAddress | EmailAddress[];
+    headers?: Record<string, string>;
+    html?: string;
+    replyTo?: EmailAddress;
     subject: string;
 
-    // Optional fields - commonly supported
     text?: string;
-    html?: string;
-    cc?: EmailAddress | EmailAddress[];
-    bcc?: EmailAddress | EmailAddress[];
-    headers?: Record<string, string>;
 
-    // File attachments - providers that don't support it will gracefully ignore
-    attachments?: Attachment[];
-
-    // Reply-to address - providers that don't support it will gracefully ignore
-    replyTo?: EmailAddress;
+    to: EmailAddress | EmailAddress[];
 }
 
 /**
@@ -137,33 +144,32 @@ export interface EmailOptions {
  */
 export interface EmailResult {
     messageId: string;
-    sent: boolean;
-    timestamp: Date;
     provider?: string;
     response?: unknown;
+    sent: boolean;
+    timestamp: Date;
 }
 
 /**
  * Generic result type
  */
 export interface Result<T = unknown> {
-    success: boolean;
     data?: T;
     error?: Error | unknown;
+    success: boolean;
 }
-
 
 /**
  * AWS SES configuration
  */
 export interface AwsSesConfig extends BaseConfig {
-    region: string;
     accessKeyId: string;
-    secretAccessKey: string;
-    sessionToken?: string;
+    apiVersion?: string;
     endpoint?: string;
     maxAttempts?: number;
-    apiVersion?: string;
+    region: string;
+    secretAccessKey: string;
+    sessionToken?: string;
 }
 
 /**
@@ -177,48 +183,47 @@ export interface ResendConfig extends BaseConfig {
 /**
  * SMTP configuration
  */
-export interface SmtpConfig {
-    host: string;
-    port: number;
-    secure?: boolean;
-    user?: string;
-    password?: string;
-    rejectUnauthorized?: boolean;
-    pool?: boolean;
-    maxConnections?: number;
-    timeout?: number;
+export interface SmtpConfig extends BaseConfig {
+    authMethod?: "LOGIN" | "PLAIN" | "CRAM-MD5" | "OAUTH2";
     dkim?: {
         domainName: string;
         keySelector: string;
         privateKey: string;
     };
-    authMethod?: "LOGIN" | "PLAIN" | "CRAM-MD5" | "OAUTH2";
+    host: string;
+    maxConnections?: number;
     oauth2?: {
-        user: string;
+        accessToken?: string;
         clientId: string;
         clientSecret: string;
-        refreshToken: string;
-        accessToken?: string;
         expires?: number;
+        refreshToken: string;
+        user: string;
     };
+    password?: string;
+    pool?: boolean;
+    port: number;
+    rejectUnauthorized?: boolean;
+    secure?: boolean;
+    user?: string;
 }
 
 /**
  * HTTP email configuration
  */
 export interface HttpEmailConfig {
-    endpoint: string;
     apiKey?: string;
-    method?: "GET" | "POST" | "PUT";
+    endpoint: string;
     headers?: Record<string, string>;
+    method?: "GET" | "POST" | "PUT";
 }
 
 /**
  * Zeptomail configuration
  */
 export interface ZeptomailConfig extends BaseConfig {
-    token: string;
     endpoint?: string;
+    token: string;
 }
 
 /**
@@ -229,7 +234,7 @@ export interface FailoverConfig extends BaseConfig {
      * Array of provider instances or provider factories to use in failover order
      * Can be Provider instances or ProviderFactory functions
      */
-    mailers: Array<unknown>;
+    mailers: unknown[];
 
     /**
      * Time in milliseconds to wait before trying the next provider (default: 60)
@@ -245,7 +250,7 @@ export interface RoundRobinConfig extends BaseConfig {
      * Array of provider instances or provider factories to use for round-robin distribution
      * Can be Provider instances or ProviderFactory functions
      */
-    mailers: Array<unknown>;
+    mailers: unknown[];
 
     /**
      * Time in milliseconds to wait before retrying with next provider if current is unavailable (default: 60)
@@ -280,6 +285,11 @@ export interface MailCrabConfig extends BaseConfig {
  */
 export interface NodemailerConfig extends BaseConfig {
     /**
+     * Default from address (optional, can be overridden per email)
+     */
+    defaultFrom?: EmailAddress;
+
+    /**
      * Nodemailer transport configuration
      * Can be a transport object or a transport name (e.g., 'smtp', 'sendmail')
      * For SMTP: { host, port, secure, auth: { user, pass } }
@@ -288,9 +298,4 @@ export interface NodemailerConfig extends BaseConfig {
      * See: https://nodemailer.com/transports/
      */
     transport: Record<string, unknown> | string;
-
-    /**
-     * Default from address (optional, can be overridden per email)
-     */
-    defaultFrom?: EmailAddress;
 }

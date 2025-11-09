@@ -1,36 +1,19 @@
-import type { AwsSesConfig, EmailAddress, EmailOptions, EmailResult, Result } from "../../types.js";
-import type { ProviderFactory } from "../provider.js";
-import type { AwsSesEmailOptions } from "./types.js";
-import { makeRequest, validateEmailOptions } from "../../utils.js";
+import { createHash, createHmac, randomUUID } from "node:crypto";
+
 import { EmailError, RequiredOptionError } from "../../errors/email-error.js";
+import type { AwsSesConfig, EmailAddress, EmailOptions, EmailResult, Result } from "../../types.js";
+import { createLogger, makeRequest, validateEmailOptions } from "../../utils.js";
+import type { ProviderFactory } from "../provider.js";
 import { defineProvider } from "../provider.js";
+import type { AwsSesEmailOptions } from "./types.js";
 
-// Runtime detection for crypto and Buffer
-const hasBuffer = typeof globalThis.Buffer !== "undefined";
-const isNode = typeof process !== "undefined" && process.versions?.node;
+const hasBuffer = globalThis.Buffer !== undefined;
 
-// Lazy load Node.js crypto module
-let crypto: typeof import("node:crypto") | undefined;
-const getCrypto = (): typeof import("node:crypto") => {
-    if (!crypto && isNode) {
-        try {
-            // eslint-disable-next-line @typescript-eslint/no-require-imports
-            crypto = require("node:crypto");
-        } catch {
-            // Ignore if not available
-        }
-    }
-    if (!crypto) {
-        throw new Error("Crypto module is required for AWS SES provider");
-    }
-    return crypto;
-};
-
-// Helper to get Buffer
 const getBuffer = (): typeof globalThis.Buffer => {
     if (!hasBuffer) {
         throw new Error("Buffer is required for AWS SES provider");
     }
+
     return globalThis.Buffer;
 };
 
@@ -40,451 +23,408 @@ const PROVIDER_NAME = "aws-ses";
  * Default options for AWS SES provider
  */
 const defaultOptions: Partial<AwsSesConfig> = {
-    region: "us-east-1",
-    maxAttempts: 3,
     apiVersion: "2010-12-01",
+    maxAttempts: 3,
+    region: "us-east-1",
 };
 
 /**
  * AWS SES Email Provider Implementation - Zero dependency version
  * Uses native Node.js APIs instead of AWS SDK
  */
-export const awsSesProvider: ProviderFactory<AwsSesConfig, unknown, AwsSesEmailOptions> = defineProvider(
-    (opts: AwsSesConfig = {} as AwsSesConfig) => {
-        // Merge with defaults
-        const options = { ...defaultOptions, ...opts } as Required<AwsSesConfig>;
+export const awsSesProvider: ProviderFactory<AwsSesConfig, unknown, AwsSesEmailOptions> = defineProvider((options_: AwsSesConfig = {} as AwsSesConfig) => {
+    const options = { ...defaultOptions, ...options_ } as Required<AwsSesConfig>;
 
-        // Debug helper
-        const debug = (message: string, ...args: unknown[]): void => {
-            if (options.debug) {
-                console.log(`[AWS-SES] ${message}`, ...args);
+    const logger = createLogger("AWS-SES", options.debug, options_.logger);
+
+    /**
+     * Create canonical request for AWS Signature V4
+     */
+    const createCanonicalRequest = (method: string, path: string, query: Record<string, string>, headers: Record<string, string>, payload: string): string => {
+        const canonicalQueryString = Object.keys(query)
+            .sort()
+            .map((key) => {
+                const value = query[key];
+
+                return value === undefined ? "" : `${encodeURIComponent(key)}=${encodeURIComponent(value)}`;
+            })
+            .filter(Boolean)
+            .join("&");
+
+        const canonicalHeaders = `${Object.keys(headers)
+            .sort()
+            .map((key) => `${key.toLowerCase()}:${headers[key]}`)
+            .join("\n")}\n`;
+
+        const signedHeaders = Object.keys(headers)
+            .sort()
+            .map((key) => key.toLowerCase())
+            .join(";");
+
+        const payloadHash = createHash("sha256").update(payload).digest("hex");
+
+        return [method, path, canonicalQueryString, canonicalHeaders, signedHeaders, payloadHash].join("\n");
+    };
+
+    /**
+     * Create string to sign for AWS Signature V4
+     */
+    const createStringToSign = (timestamp: string, region: string, canonicalRequest: string): string => {
+        const date = timestamp.slice(0, 8);
+        const hash = createHash("sha256").update(canonicalRequest).digest("hex");
+
+        return ["AWS4-HMAC-SHA256", timestamp, `${date}/${region}/ses/aws4_request`, hash].join("\n");
+    };
+
+    /**
+     * Calculate AWS Signature V4
+     */
+    const calculateSignature = (secretKey: string, timestamp: string, region: string, stringToSign: string): string => {
+        const date = timestamp.slice(0, 8);
+
+        const kDate = createHmac("sha256", `AWS4${secretKey}`).update(date).digest();
+
+        const kRegion = createHmac("sha256", kDate).update(region).digest();
+
+        const kService = createHmac("sha256", kRegion).update("ses").digest();
+
+        const kSigning = createHmac("sha256", kService).update("aws4_request").digest();
+
+        return createHmac("sha256", kSigning).update(stringToSign).digest("hex");
+    };
+
+    /**
+     * Create AWS SES authorization header
+     */
+    const createAuthHeader = (accessKeyId: string, timestamp: string, region: string, headers: Record<string, string>, signature: string): string => {
+        const date = timestamp.slice(0, 8);
+        const signedHeaders = Object.keys(headers)
+            .sort()
+            .map((key) => key.toLowerCase())
+            .join(";");
+
+        return [
+            `AWS4-HMAC-SHA256 Credential=${accessKeyId}/${date}/${region}/ses/aws4_request`,
+            `SignedHeaders=${signedHeaders}`,
+            `Signature=${signature}`,
+        ].join(", ");
+    };
+
+    /**
+     * Make an HTTP request to AWS SES API using runtime-agnostic makeRequest
+     */
+    const makeAwsRequest = async (action: string, params: Record<string, unknown>): Promise<Record<string, unknown>> => {
+        if (!options.accessKeyId || !options.secretAccessKey) {
+            logger.debug("Missing required credentials: accessKeyId or secretAccessKey");
+            throw new RequiredOptionError(PROVIDER_NAME, ["accessKeyId", "secretAccessKey"]);
+        }
+
+        try {
+            const region = options.region || (defaultOptions.region as string);
+            const apiVersion = options.apiVersion || defaultOptions.apiVersion;
+            const host = options.endpoint || `email.${region}.amazonaws.com`;
+            const path = "/";
+            const method = "POST";
+
+            logger.debug("Making request to AWS SES:", { action, host, region });
+
+            const body = new URLSearchParams();
+
+            body.append("Action", action);
+            body.append("Version", apiVersion as string);
+
+            Object.entries(params).forEach(([key, value]) => {
+                if (value !== undefined && value !== null) {
+                    body.append(key, String(value));
+                }
+            });
+
+            const bodyString = body.toString();
+
+            logger.debug("Request body:", bodyString);
+
+            const now = new Date();
+            const amzDate = now.toISOString().replaceAll(/[:-]|\.\d{3}/g, "");
+
+            const Buffer = getBuffer();
+
+            const headers: Record<string, string> = {
+                "Content-Length": Buffer.byteLength(bodyString).toString(),
+                "Content-Type": "application/x-www-form-urlencoded",
+                Host: host,
+                "X-Amz-Date": amzDate,
+            };
+
+            if (options.sessionToken) {
+                headers["X-Amz-Security-Token"] = options.sessionToken;
             }
-        };
 
-        /**
-         * Create canonical request for AWS Signature V4
-         */
-        const createCanonicalRequest = (
-            method: string,
-            path: string,
-            query: Record<string, string>,
-            headers: Record<string, string>,
-            payload: string,
-        ): string => {
-            const canonicalQueryString = Object.keys(query)
-                .sort()
-                .map((key) => `${encodeURIComponent(key)}=${encodeURIComponent(query[key])}`)
-                .join("&");
+            logger.debug("Request headers:", headers);
 
-            const canonicalHeaders = `${Object.keys(headers)
-                .sort()
-                .map((key) => `${key.toLowerCase()}:${headers[key]}`)
-                .join("\n")}\n`;
+            const canonicalRequest = createCanonicalRequest(method, path, {}, headers, bodyString);
 
-            const signedHeaders = Object.keys(headers)
-                .sort()
-                .map((key) => key.toLowerCase())
-                .join(";");
+            const stringToSign = createStringToSign(amzDate, region, canonicalRequest);
 
-            const cryptoModule = getCrypto();
-            const payloadHash = cryptoModule.createHash("sha256").update(payload).digest("hex");
+            const signature = calculateSignature(options.secretAccessKey, amzDate, region, stringToSign);
 
-            return [method, path, canonicalQueryString, canonicalHeaders, signedHeaders, payloadHash].join("\n");
-        };
+            headers.Authorization = createAuthHeader(options.accessKeyId, amzDate, region, headers, signature);
 
-        /**
-         * Create string to sign for AWS Signature V4
-         */
-        const createStringToSign = (timestamp: string, region: string, canonicalRequest: string): string => {
-            const cryptoModule = getCrypto();
-            const date = timestamp.substring(0, 8);
-            const hash = cryptoModule.createHash("sha256").update(canonicalRequest).digest("hex");
+            logger.debug("Making HTTPS request to:", `https://${host}${path}`);
 
-            return ["AWS4-HMAC-SHA256", timestamp, `${date}/${region}/ses/aws4_request`, hash].join("\n");
-        };
+            const url = `https://${host}${path}`;
+            const result = await makeRequest(
+                url,
+                {
+                    headers,
+                    method,
+                },
+                bodyString,
+            );
 
-        /**
-         * Calculate AWS Signature V4
-         */
-        const calculateSignature = (secretKey: string, timestamp: string, region: string, stringToSign: string): string => {
-            const cryptoModule = getCrypto();
-            const date = timestamp.substring(0, 8);
-
-            const kDate = cryptoModule.createHmac("sha256", `AWS4${secretKey}`).update(date).digest();
-
-            const kRegion = cryptoModule.createHmac("sha256", kDate).update(region).digest();
-
-            const kService = cryptoModule.createHmac("sha256", kRegion).update("ses").digest();
-
-            const kSigning = cryptoModule.createHmac("sha256", kService).update("aws4_request").digest();
-
-            return cryptoModule.createHmac("sha256", kSigning).update(stringToSign).digest("hex");
-        };
-
-        /**
-         * Create AWS SES authorization header
-         */
-        const createAuthHeader = (
-            accessKeyId: string,
-            timestamp: string,
-            region: string,
-            headers: Record<string, string>,
-            signature: string,
-        ): string => {
-            const date = timestamp.substring(0, 8);
-            const signedHeaders = Object.keys(headers)
-                .sort()
-                .map((key) => key.toLowerCase())
-                .join(";");
-
-            return [
-                `AWS4-HMAC-SHA256 Credential=${accessKeyId}/${date}/${region}/ses/aws4_request`,
-                `SignedHeaders=${signedHeaders}`,
-                `Signature=${signature}`,
-            ].join(", ");
-        };
-
-        /**
-         * Make an HTTP request to AWS SES API using runtime-agnostic makeRequest
-         */
-        const makeAwsRequest = async (
-            action: string,
-            params: Record<string, unknown>,
-        ): Promise<Record<string, unknown>> => {
-            // Validate required credentials
-            if (!options.accessKeyId || !options.secretAccessKey) {
-                debug("Missing required credentials: accessKeyId or secretAccessKey");
-                throw new RequiredOptionError(PROVIDER_NAME, ["accessKeyId", "secretAccessKey"]);
+            if (!result.success) {
+                throw result.error || new Error("AWS SES API request failed");
             }
 
+            const responseData = (result.data as { body?: string; statusCode?: number })?.body;
+
+            if (!responseData) {
+                throw new Error("No response body from AWS SES");
+            }
+
+            const responseStatus = (result.data as { body?: string; statusCode?: number })?.statusCode;
+
+            logger.debug("Response status:", responseStatus);
+            logger.debug("Response data:", responseData);
+
+            const statusCode = responseStatus;
+
+            if (statusCode && statusCode >= 200 && statusCode < 300) {
+                const parsedResult: Record<string, unknown> = {};
+
+                if (action === "SendRawEmail") {
+                    const messageIdMatch = responseData.match(/<MessageId>(.*?)<\/MessageId>/);
+
+                    if (messageIdMatch && messageIdMatch[1]) {
+                        parsedResult.MessageId = messageIdMatch[1];
+                        logger.debug("Extracted MessageId:", parsedResult.MessageId);
+                    }
+                } else if (action === "GetSendQuota") {
+                    const maxMatch = responseData.match(/<Max24HourSend>(.*?)<\/Max24HourSend>/);
+
+                    if (maxMatch && maxMatch[1]) {
+                        parsedResult.Max24HourSend = Number.parseFloat(maxMatch[1]);
+                        logger.debug("Extracted Max24HourSend:", parsedResult.Max24HourSend);
+                    }
+                }
+
+                return parsedResult;
+            }
+
+            const errorMatch = responseData.match(/<Message>(.*?)<\/Message>/);
+            const errorMessage = errorMatch ? errorMatch[1] : "Unknown AWS SES error";
+
+            logger.debug("AWS SES Error:", errorMessage);
+            throw new Error(`AWS SES API Error: ${errorMessage}`);
+        } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+
+            logger.debug("makeAwsRequest exception:", errorMessage);
+            throw error instanceof Error ? error : new Error(errorMessage);
+        }
+    };
+
+    /**
+     * Format email address for email headers
+     */
+    const formatEmailAddress = (address: EmailAddress): string => address.name ? `${address.name} <${address.email}>` : address.email;
+
+    /**
+     * Generate MIME message for email
+     */
+    const generateMimeMessage = (options: EmailOptions): string => {
+        const boundary = `----=${randomUUID().replaceAll("-", "")}`;
+        const now = new Date().toString();
+        const messageId = `<${randomUUID().replaceAll("-", "")}@${options.from.email.split("@")[1]}>`;
+
+        let message = "";
+
+        message += `From: ${formatEmailAddress(options.from)}\r\n`;
+
+        message += Array.isArray(options.to) ? `To: ${options.to.map(formatEmailAddress).join(", ")}\r\n` : `To: ${formatEmailAddress(options.to)}\r\n`;
+
+        // Add CC if present
+        if (options.cc) {
+            message += Array.isArray(options.cc) ? `Cc: ${options.cc.map(formatEmailAddress).join(", ")}\r\n` : `Cc: ${formatEmailAddress(options.cc)}\r\n`;
+        }
+
+        // Add BCC if present
+        if (options.bcc) {
+            message += Array.isArray(options.bcc) ? `Bcc: ${options.bcc.map(formatEmailAddress).join(", ")}\r\n` : `Bcc: ${formatEmailAddress(options.bcc)}\r\n`;
+        }
+
+        // Add other headers
+        message += `Subject: ${options.subject}\r\n`;
+        message += `Date: ${now}\r\n`;
+        message += `Message-ID: ${messageId}\r\n`;
+        message += "MIME-Version: 1.0\r\n";
+
+        // Add custom headers if provided
+        if (options.headers) {
+            for (const [name, value] of Object.entries(options.headers)) {
+                message += `${name}: ${value}\r\n`;
+            }
+        }
+
+        // Start multipart message
+        message += `Content-Type: multipart/alternative; boundary="${boundary}"\r\n\r\n`;
+
+        // Add plain text part if provided
+        if (options.text) {
+            message += `--${boundary}\r\n`;
+            message += "Content-Type: text/plain; charset=UTF-8\r\n";
+            message += "Content-Transfer-Encoding: quoted-printable\r\n\r\n";
+            message += `${options.text.replaceAll(/([=\r\n])/g, "=$1")}\r\n\r\n`;
+        }
+
+        // Add HTML part if provided
+        if (options.html) {
+            message += `--${boundary}\r\n`;
+            message += "Content-Type: text/html; charset=UTF-8\r\n";
+            message += "Content-Transfer-Encoding: quoted-printable\r\n\r\n";
+            message += `${options.html.replaceAll(/([=\r\n])/g, "=$1")}\r\n\r\n`;
+        }
+
+        // Close the MIME message
+        message += `--${boundary}--\r\n`;
+
+        return message;
+    };
+
+    return {
+        features: {
+            attachments: false, // Not implemented in this version
+            batchSending: false,
+            customHeaders: true,
+            html: true,
+            replyTo: false, // Explicitly state that reply-to is not supported
+            scheduling: false, // Explicitly state that scheduling is not supported
+            tagging: false, // Explicitly state that tagging is not supported
+            templates: false,
+            tracking: false,
+        },
+
+        /**
+         * Get provider instance - returns null since we don't use AWS SDK
+         */
+        getInstance: () => null,
+
+        /**
+         * Initialize the AWS SES provider
+         */
+        initialize(): void {
+            // Nothing special needed here
+            logger.debug("Initializing AWS SES provider with options:", {
+                accessKeyId: options.accessKeyId ? `***${options.accessKeyId.slice(-4)}` : undefined,
+                endpoint: options.endpoint,
+                region: options.region,
+                secretAccessKey: options.secretAccessKey ? "***" : undefined,
+            });
+        },
+
+        /**
+         * Check if AWS SES is available
+         */
+        async isAvailable(): Promise<boolean> {
             try {
-                const region = options.region || (defaultOptions.region as string);
-                const apiVersion = options.apiVersion || defaultOptions.apiVersion;
-                const host = options.endpoint || `email.${region}.amazonaws.com`;
-                const path = "/";
-                const method = "POST";
+                const response = await makeAwsRequest("GetSendQuota", {});
 
-                debug("Making request to AWS SES:", { action, region, host });
+                return !!(response.Max24HourSend as number | undefined);
+            } catch {
+                return false;
+            }
+        },
 
-                // Prepare request body
-                const body = new URLSearchParams();
-                body.append("Action", action);
-                body.append("Version", apiVersion as string);
+        name: PROVIDER_NAME,
 
-                // Add parameters to body
-                Object.entries(params).forEach(([key, value]) => {
-                    if (value !== undefined && value !== null) {
-                        body.append(key, String(value));
-                    }
-                });
+        options,
 
-                const bodyString = body.toString();
-                debug("Request body:", bodyString);
+        /**
+         * Send email using AWS SES with the Raw Email API
+         * This avoids issues with the complex XML structure of the regular SendEmail API
+         */
+        async sendEmail(emailOptions: AwsSesEmailOptions): Promise<Result<EmailResult>> {
+            try {
+                // Validate email options
+                const validationErrors = validateEmailOptions(emailOptions);
 
-                // Create timestamp for signing
-                const now = new Date();
-                const amzDate = now.toISOString().replace(/[:-]|\.\d{3}/g, "");
+                if (validationErrors.length > 0) {
+                    throw new EmailError(PROVIDER_NAME, `Invalid email options: ${validationErrors.join(", ")}`);
+                }
 
-                // Get Buffer for byte length calculation
+                // Prepare AWS SES specific options
+                const params: Record<string, unknown> = {};
+
+                if (emailOptions.configurationSetName) {
+                    params.ConfigurationSetName = emailOptions.configurationSetName;
+                }
+
+                if (emailOptions.sourceArn) {
+                    params.SourceArn = emailOptions.sourceArn;
+                }
+
+                if (emailOptions.returnPath) {
+                    params.ReturnPath = emailOptions.returnPath;
+                }
+
+                if (emailOptions.returnPathArn) {
+                    params.ReturnPathArn = emailOptions.returnPathArn;
+                }
+
+                if (emailOptions.messageTags && Object.keys(emailOptions.messageTags).length > 0) {
+                    Object.entries(emailOptions.messageTags).forEach(([name, value], index) => {
+                        params[`Tags.member.${index + 1}.Name`] = name;
+                        params[`Tags.member.${index + 1}.Value`] = value;
+                    });
+                }
+
+                // Generate the MIME message
+                const rawMessage = generateMimeMessage(emailOptions);
+
+                // Base64 encode the raw message
                 const Buffer = getBuffer();
+                const encodedMessage = Buffer.from(rawMessage).toString("base64");
 
-                // Prepare headers for signing
-                const headers: Record<string, string> = {
-                    Host: host,
-                    "Content-Type": "application/x-www-form-urlencoded",
-                    "Content-Length": Buffer.byteLength(bodyString).toString(),
-                    "X-Amz-Date": amzDate,
-                };
+                // Add the raw message data
+                params["RawMessage.Data"] = encodedMessage;
 
-                // Add session token if provided
-                if (options.sessionToken) {
-                    headers["X-Amz-Security-Token"] = options.sessionToken;
-                }
+                // Send the raw email
+                const response = await makeAwsRequest("SendRawEmail", params);
 
-                debug("Request headers:", headers);
-
-                // Create canonical request
-                const canonicalRequest = createCanonicalRequest(method, path, {}, headers, bodyString);
-
-                // Create string to sign
-                const stringToSign = createStringToSign(amzDate, region, canonicalRequest);
-
-                // Calculate signature
-                const signature = calculateSignature(options.secretAccessKey, amzDate, region, stringToSign);
-
-                // Create authorization header
-                headers.Authorization = createAuthHeader(options.accessKeyId, amzDate, region, headers, signature);
-
-                debug("Making HTTPS request to:", `https://${host}${path}`);
-
-                // Use runtime-agnostic makeRequest
-                const url = `https://${host}${path}`;
-                const result = await makeRequest(
-                    url,
-                    {
-                        method,
-                        headers,
+                return {
+                    data: {
+                        messageId: (response.MessageId as string) || "",
+                        provider: PROVIDER_NAME,
+                        response,
+                        sent: true,
+                        timestamp: new Date(),
                     },
-                    bodyString,
-                );
-
-                if (!result.success) {
-                    throw result.error || new Error("AWS SES API request failed");
-                }
-
-                const responseData = result.data?.body as string;
-                if (!responseData) {
-                    throw new Error("No response body from AWS SES");
-                }
-
-                debug("Response status:", result.data?.statusCode);
-                debug("Response data:", responseData);
-
-                const statusCode = result.data?.statusCode as number | undefined;
-                if (statusCode && statusCode >= 200 && statusCode < 300) {
-                    // Parse XML response (simple parsing for common patterns)
-                    const parsedResult: Record<string, unknown> = {};
-
-                    // Extract common SES response patterns
-                    // This is a simplified parser that extracts just what we need
-                    if (action === "SendRawEmail") {
-                        const messageIdMatch = responseData.match(/<MessageId>(.*?)<\/MessageId>/);
-                        if (messageIdMatch && messageIdMatch[1]) {
-                            parsedResult.MessageId = messageIdMatch[1];
-                            debug("Extracted MessageId:", parsedResult.MessageId);
-                        }
-                    } else if (action === "GetSendQuota") {
-                        const maxMatch = responseData.match(/<Max24HourSend>(.*?)<\/Max24HourSend>/);
-                        if (maxMatch && maxMatch[1]) {
-                            parsedResult.Max24HourSend = Number.parseFloat(maxMatch[1]);
-                            debug("Extracted Max24HourSend:", parsedResult.Max24HourSend);
-                        }
-                    }
-
-                    return parsedResult;
-                } else {
-                    // Extract error from XML
-                    const errorMatch = responseData.match(/<Message>(.*?)<\/Message>/);
-                    const errorMessage = errorMatch ? errorMatch[1] : "Unknown AWS SES error";
-                    debug("AWS SES Error:", errorMessage);
-                    throw new Error(`AWS SES API Error: ${errorMessage}`);
-                }
+                    success: true,
+                };
             } catch (error) {
-                const errorMessage = error instanceof Error ? error.message : String(error);
-                debug("makeAwsRequest exception:", errorMessage);
-                throw error instanceof Error ? error : new Error(errorMessage);
+                return {
+                    error: new EmailError(PROVIDER_NAME, `Failed to send email: ${error instanceof Error ? error.message : String(error)}`, {
+                        cause: error instanceof Error ? error : new Error(String(error)),
+                    }),
+                    success: false,
+                };
             }
-        };
+        },
 
         /**
-         * Format email address for email headers
+         * Validate AWS SES credentials
          */
-        const formatEmailAddress = (address: EmailAddress): string => {
-            return address.name ? `${address.name} <${address.email}>` : address.email;
-        };
-
-        /**
-         * Generate MIME message for email
-         */
-        const generateMimeMessage = (options: EmailOptions): string => {
-            const cryptoModule = getCrypto();
-            // Generate a boundary string for MIME parts
-            const boundary = `----=${cryptoModule.randomUUID().replace(/-/g, "")}`;
-            const now = new Date().toString();
-            const messageId = `<${cryptoModule.randomUUID().replace(/-/g, "")}@${options.from.email.split("@")[1]}>`;
-
-            let message = "";
-
-            // Add email headers
-            message += `From: ${formatEmailAddress(options.from)}\r\n`;
-
-            // Add To header
-            if (Array.isArray(options.to)) {
-                message += `To: ${options.to.map(formatEmailAddress).join(", ")}\r\n`;
-            } else {
-                message += `To: ${formatEmailAddress(options.to)}\r\n`;
-            }
-
-            // Add CC if present
-            if (options.cc) {
-                if (Array.isArray(options.cc)) {
-                    message += `Cc: ${options.cc.map(formatEmailAddress).join(", ")}\r\n`;
-                } else {
-                    message += `Cc: ${formatEmailAddress(options.cc)}\r\n`;
-                }
-            }
-
-            // Add BCC if present
-            if (options.bcc) {
-                if (Array.isArray(options.bcc)) {
-                    message += `Bcc: ${options.bcc.map(formatEmailAddress).join(", ")}\r\n`;
-                } else {
-                    message += `Bcc: ${formatEmailAddress(options.bcc)}\r\n`;
-                }
-            }
-
-            // Add other headers
-            message += `Subject: ${options.subject}\r\n`;
-            message += `Date: ${now}\r\n`;
-            message += `Message-ID: ${messageId}\r\n`;
-            message += "MIME-Version: 1.0\r\n";
-
-            // Add custom headers if provided
-            if (options.headers) {
-                for (const [name, value] of Object.entries(options.headers)) {
-                    message += `${name}: ${value}\r\n`;
-                }
-            }
-
-            // Start multipart message
-            message += `Content-Type: multipart/alternative; boundary="${boundary}"\r\n\r\n`;
-
-            // Add plain text part if provided
-            if (options.text) {
-                message += `--${boundary}\r\n`;
-                message += "Content-Type: text/plain; charset=UTF-8\r\n";
-                message += "Content-Transfer-Encoding: quoted-printable\r\n\r\n";
-                message += `${options.text.replace(/([=\r\n])/g, "=$1")}\r\n\r\n`;
-            }
-
-            // Add HTML part if provided
-            if (options.html) {
-                message += `--${boundary}\r\n`;
-                message += "Content-Type: text/html; charset=UTF-8\r\n";
-                message += "Content-Transfer-Encoding: quoted-printable\r\n\r\n";
-                message += `${options.html.replace(/([=\r\n])/g, "=$1")}\r\n\r\n`;
-            }
-
-            // Close the MIME message
-            message += `--${boundary}--\r\n`;
-
-            return message;
-        };
-
-        return {
-            name: PROVIDER_NAME,
-            features: {
-                attachments: false, // Not implemented in this version
-                html: true,
-                templates: false,
-                tracking: false,
-                customHeaders: true,
-                batchSending: false,
-                tagging: false, // Explicitly state that tagging is not supported
-                scheduling: false, // Explicitly state that scheduling is not supported
-                replyTo: false, // Explicitly state that reply-to is not supported
-            },
-            options,
-
-            /**
-             * Initialize the AWS SES provider
-             */
-            initialize(): void {
-                // Nothing special needed here
-                debug("Initializing AWS SES provider with options:", {
-                    region: options.region,
-                    accessKeyId: options.accessKeyId ? `***${options.accessKeyId.slice(-4)}` : undefined,
-                    secretAccessKey: options.secretAccessKey ? "***" : undefined,
-                    endpoint: options.endpoint,
-                });
-            },
-
-            /**
-             * Check if AWS SES is available
-             */
-            async isAvailable(): Promise<boolean> {
-                try {
-                    const response = await makeAwsRequest("GetSendQuota", {});
-                    return !!(response.Max24HourSend as number | undefined);
-                } catch {
-                    return false;
-                }
-            },
-
-            /**
-             * Validate AWS SES credentials
-             */
-            async validateCredentials(): Promise<boolean> {
-                return this.isAvailable();
-            },
-
-            /**
-             * Send email using AWS SES with the Raw Email API
-             * This avoids issues with the complex XML structure of the regular SendEmail API
-             */
-            async sendEmail(emailOpts: AwsSesEmailOptions): Promise<Result<EmailResult>> {
-                try {
-                    // Validate email options
-                    const validationErrors = validateEmailOptions(emailOpts);
-                    if (validationErrors.length > 0) {
-                        throw new EmailError(PROVIDER_NAME, `Invalid email options: ${validationErrors.join(", ")}`);
-                    }
-
-                    // Prepare AWS SES specific options
-                    const params: Record<string, unknown> = {};
-
-                    if (emailOpts.configurationSetName) {
-                        params.ConfigurationSetName = emailOpts.configurationSetName;
-                    }
-
-                    if (emailOpts.sourceArn) {
-                        params.SourceArn = emailOpts.sourceArn;
-                    }
-
-                    if (emailOpts.returnPath) {
-                        params.ReturnPath = emailOpts.returnPath;
-                    }
-
-                    if (emailOpts.returnPathArn) {
-                        params.ReturnPathArn = emailOpts.returnPathArn;
-                    }
-
-                    if (emailOpts.messageTags && Object.keys(emailOpts.messageTags).length > 0) {
-                        Object.entries(emailOpts.messageTags).forEach(([name, value], index) => {
-                            params[`Tags.member.${index + 1}.Name`] = name;
-                            params[`Tags.member.${index + 1}.Value`] = value;
-                        });
-                    }
-
-                    // Generate the MIME message
-                    const rawMessage = generateMimeMessage(emailOpts);
-
-                    // Base64 encode the raw message
-                    const Buffer = getBuffer();
-                    const encodedMessage = Buffer.from(rawMessage).toString("base64");
-
-                    // Add the raw message data
-                    params["RawMessage.Data"] = encodedMessage;
-
-                    // Send the raw email
-                    const response = await makeAwsRequest("SendRawEmail", params);
-
-                    return {
-                        success: true,
-                        data: {
-                            messageId: (response.MessageId as string) || "",
-                            sent: true,
-                            timestamp: new Date(),
-                            provider: PROVIDER_NAME,
-                            response,
-                        },
-                    };
-                } catch (error) {
-                    return {
-                        success: false,
-                        error: new EmailError(
-                            PROVIDER_NAME,
-                            `Failed to send email: ${error instanceof Error ? error.message : String(error)}`,
-                            { cause: error instanceof Error ? error : new Error(String(error)) },
-                        ),
-                    };
-                }
-            },
-
-            /**
-             * Get provider instance - returns null since we don't use AWS SDK
-             */
-            getInstance: () => null,
-        };
-    },
-);
+        async validateCredentials(): Promise<boolean> {
+            return this.isAvailable();
+        },
+    };
+});

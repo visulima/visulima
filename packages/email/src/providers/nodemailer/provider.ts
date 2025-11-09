@@ -1,13 +1,11 @@
-import type { EmailResult, Result, NodemailerConfig } from "../../types.js";
-import type { ProviderFactory } from "../provider.js";
-import type { NodemailerEmailOptions } from "./types.js";
-import { generateMessageId, validateEmailOptions } from "../../utils.js";
-import { EmailError, RequiredOptionError } from "../../errors/email-error.js";
-import { defineProvider } from "../provider.js";
-
-// Import nodemailer using ESM import
-// This ensures packem detects it as a dependency
 import nodemailerModule from "nodemailer";
+
+import { EmailError, RequiredOptionError } from "../../errors/email-error.js";
+import type { EmailResult, NodemailerConfig, Result } from "../../types.js";
+import { generateMessageId, validateEmailOptions } from "../../utils.js";
+import type { ProviderFactory } from "../provider.js";
+import { defineProvider } from "../provider.js";
+import type { NodemailerEmailOptions } from "./types.js";
 
 // Constants
 const PROVIDER_NAME = "nodemailer";
@@ -16,24 +14,22 @@ const PROVIDER_NAME = "nodemailer";
  * Nodemailer Provider for sending emails via nodemailer
  */
 export const nodemailerProvider: ProviderFactory<NodemailerConfig, unknown, NodemailerEmailOptions> = defineProvider(
-    (opts: NodemailerConfig = {} as NodemailerConfig) => {
+    (options: NodemailerConfig = {} as NodemailerConfig) => {
         // Validate required options
-        if (!opts.transport) {
+        if (!options.transport) {
             throw new RequiredOptionError(PROVIDER_NAME, "transport");
         }
 
         // Transporter instance (lazy initialized)
         let transporter: ReturnType<typeof nodemailerModule.createTransport> | undefined;
 
-        const getNodemailer = () => nodemailerModule;
-
         /**
          * Create transporter from transport configuration
          */
         const createTransporter = (transport?: Record<string, unknown> | string) => {
-            const nm = getNodemailer();
-            const transportConfig = transport || opts.transport;
-            return nm.createTransport(transportConfig as Parameters<typeof nm.createTransport>[0]);
+            const transportConfig = transport || options.transport;
+
+            return nodemailerModule.createTransport(transportConfig as Parameters<typeof nodemailerModule.createTransport>[0]);
         };
 
         let isInitialized = false;
@@ -51,71 +47,67 @@ export const nodemailerProvider: ProviderFactory<NodemailerConfig, unknown, Node
                 await transporter.verify();
                 isInitialized = true;
             } catch (error) {
-                throw new EmailError(
-                    PROVIDER_NAME,
-                    `Failed to initialize nodemailer transport: ${error instanceof Error ? error.message : String(error)}`,
-                    { cause: error instanceof Error ? error : new Error(String(error)) },
-                );
+                throw new EmailError(PROVIDER_NAME, `Failed to initialize nodemailer transport: ${error instanceof Error ? error.message : String(error)}`, {
+                    cause: error instanceof Error ? error : new Error(String(error)),
+                });
             }
         };
 
         /**
          * Convert EmailOptions to nodemailer mail options
          */
-        const convertToNodemailerOptions = (emailOpts: NodemailerEmailOptions) => {
+        const convertToNodemailerOptions = (emailOptions: NodemailerEmailOptions) => {
             const mailOptions: Record<string, unknown> = {
-                from: opts.defaultFrom
-                    ? opts.defaultFrom.name
-                        ? `${opts.defaultFrom.name} <${opts.defaultFrom.email}>`
-                        : opts.defaultFrom.email
-                    : emailOpts.from.name
-                      ? `${emailOpts.from.name} <${emailOpts.from.email}>`
-                      : emailOpts.from.email,
-                to: Array.isArray(emailOpts.to)
-                    ? emailOpts.to.map((addr) => (addr.name ? `${addr.name} <${addr.email}>` : addr.email))
-                    : emailOpts.to.name
-                      ? `${emailOpts.to.name} <${emailOpts.to.email}>`
-                      : emailOpts.to.email,
-                subject: emailOpts.subject,
+                from: options.defaultFrom
+                    ? options.defaultFrom.name
+                        ? `${options.defaultFrom.name} <${options.defaultFrom.email}>`
+                        : options.defaultFrom.email
+                    : emailOptions.from.name
+                        ? `${emailOptions.from.name} <${emailOptions.from.email}>`
+                        : emailOptions.from.email,
+                subject: emailOptions.subject,
+                to: Array.isArray(emailOptions.to)
+                    ? emailOptions.to.map((addr) => addr.name ? `${addr.name} <${addr.email}>` : addr.email)
+                    : emailOptions.to.name
+                        ? `${emailOptions.to.name} <${emailOptions.to.email}>`
+                        : emailOptions.to.email,
             };
 
-            if (emailOpts.text) {
-                mailOptions.text = emailOpts.text;
+            if (emailOptions.text) {
+                mailOptions.text = emailOptions.text;
             }
 
-            if (emailOpts.html) {
-                mailOptions.html = emailOpts.html;
+            if (emailOptions.html) {
+                mailOptions.html = emailOptions.html;
             }
 
-            if (emailOpts.cc) {
-                mailOptions.cc = Array.isArray(emailOpts.cc)
-                    ? emailOpts.cc.map((addr) => (addr.name ? `${addr.name} <${addr.email}>` : addr.email))
-                    : emailOpts.cc.name
-                      ? `${emailOpts.cc.name} <${emailOpts.cc.email}>`
-                      : emailOpts.cc.email;
+            if (emailOptions.cc) {
+                mailOptions.cc = Array.isArray(emailOptions.cc)
+                    ? emailOptions.cc.map((addr) => (addr.name ? `${addr.name} <${addr.email}>` : addr.email))
+                    : emailOptions.cc.name
+                        ? `${emailOptions.cc.name} <${emailOptions.cc.email}>`
+                        : emailOptions.cc.email;
             }
 
-            if (emailOpts.bcc) {
-                mailOptions.bcc = Array.isArray(emailOpts.bcc)
-                    ? emailOpts.bcc.map((addr) => (addr.name ? `${addr.name} <${addr.email}>` : addr.email))
-                    : emailOpts.bcc.name
-                      ? `${emailOpts.bcc.name} <${emailOpts.bcc.email}>`
-                      : emailOpts.bcc.email;
+            if (emailOptions.bcc) {
+                mailOptions.bcc = Array.isArray(emailOptions.bcc)
+                    ? emailOptions.bcc.map((addr) => (addr.name ? `${addr.name} <${addr.email}>` : addr.email))
+                    : emailOptions.bcc.name
+                        ? `${emailOptions.bcc.name} <${emailOptions.bcc.email}>`
+                        : emailOptions.bcc.email;
             }
 
-            if (emailOpts.replyTo) {
-                mailOptions.replyTo = emailOpts.replyTo.name
-                    ? `${emailOpts.replyTo.name} <${emailOpts.replyTo.email}>`
-                    : emailOpts.replyTo.email;
+            if (emailOptions.replyTo) {
+                mailOptions.replyTo = emailOptions.replyTo.name ? `${emailOptions.replyTo.name} <${emailOptions.replyTo.email}>` : emailOptions.replyTo.email;
             }
 
-            if (emailOpts.headers) {
-                mailOptions.headers = emailOpts.headers;
+            if (emailOptions.headers) {
+                mailOptions.headers = emailOptions.headers;
             }
 
             // Handle attachments
-            if (emailOpts.attachments && emailOpts.attachments.length > 0) {
-                mailOptions.attachments = emailOpts.attachments.map((attachment) => {
+            if (emailOptions.attachments && emailOptions.attachments.length > 0) {
+                mailOptions.attachments = emailOptions.attachments.map((attachment) => {
                     const nodemailerAttachment: Record<string, unknown> = {
                         filename: attachment.filename,
                     };
@@ -165,14 +157,12 @@ export const nodemailerProvider: ProviderFactory<NodemailerConfig, unknown, Node
         };
 
         return {
-            name: PROVIDER_NAME,
             features: {
                 attachments: true,
-                html: true,
                 customHeaders: true,
+                html: true,
                 replyTo: true,
             },
-            options: opts,
 
             /**
              * Initialize the provider
@@ -187,23 +177,30 @@ export const nodemailerProvider: ProviderFactory<NodemailerConfig, unknown, Node
                     if (!transporter) {
                         transporter = createTransporter();
                     }
+
                     await transporter.verify();
+
                     return true;
                 } catch {
                     return false;
                 }
             },
 
+            name: PROVIDER_NAME,
+
+            options,
+
             /**
              * Send email using nodemailer
              */
-            sendEmail: async (emailOpts: NodemailerEmailOptions): Promise<Result<EmailResult>> => {
+            sendEmail: async (emailOptions: NodemailerEmailOptions): Promise<Result<EmailResult>> => {
                 // Validate email options
-                const validationErrors = validateEmailOptions(emailOpts);
+                const validationErrors = validateEmailOptions(emailOptions);
+
                 if (validationErrors.length > 0) {
                     return {
-                        success: false,
                         error: new EmailError(PROVIDER_NAME, `Validation failed: ${validationErrors.join(", ")}`),
+                        success: false,
                     };
                 }
 
@@ -214,50 +211,31 @@ export const nodemailerProvider: ProviderFactory<NodemailerConfig, unknown, Node
                     }
 
                     // Use transport override if provided, otherwise use default
-                    const emailTransporter = emailOpts.transportOverride
-                        ? createTransporter(emailOpts.transportOverride)
-                        : transporter!;
+                    const emailTransporter = emailOptions.transportOverride ? createTransporter(emailOptions.transportOverride) : transporter!;
 
                     // Convert to nodemailer format
-                    const mailOptions = convertToNodemailerOptions(emailOpts);
+                    const mailOptions = convertToNodemailerOptions(emailOptions);
 
                     // Send email
                     const info = await emailTransporter.sendMail(mailOptions);
 
                     return {
-                        success: true,
                         data: {
                             messageId: info.messageId || generateMessageId(),
-                            sent: true,
-                            timestamp: new Date(),
                             provider: PROVIDER_NAME,
                             response: info,
+                            sent: true,
+                            timestamp: new Date(),
                         },
+                        success: true,
                     };
                 } catch (error) {
                     return {
+                        error: new EmailError(PROVIDER_NAME, `Failed to send email: ${error instanceof Error ? error.message : String(error)}`, {
+                            cause: error instanceof Error ? error : new Error(String(error)),
+                        }),
                         success: false,
-                        error: new EmailError(
-                            PROVIDER_NAME,
-                            `Failed to send email: ${error instanceof Error ? error.message : String(error)}`,
-                            { cause: error instanceof Error ? error : new Error(String(error)) },
-                        ),
                     };
-                }
-            },
-
-            /**
-             * Validate credentials
-             */
-            validateCredentials: async (): Promise<boolean> => {
-                try {
-                    if (!transporter) {
-                        transporter = createTransporter();
-                    }
-                    await transporter.verify();
-                    return true;
-                } catch {
-                    return false;
                 }
             },
 
@@ -268,8 +246,26 @@ export const nodemailerProvider: ProviderFactory<NodemailerConfig, unknown, Node
                 if (transporter && typeof transporter.close === "function") {
                     transporter.close();
                 }
+
                 transporter = undefined;
                 isInitialized = false;
+            },
+
+            /**
+             * Validate credentials
+             */
+            validateCredentials: async (): Promise<boolean> => {
+                try {
+                    if (!transporter) {
+                        transporter = createTransporter();
+                    }
+
+                    await transporter.verify();
+
+                    return true;
+                } catch {
+                    return false;
+                }
             },
         };
     },

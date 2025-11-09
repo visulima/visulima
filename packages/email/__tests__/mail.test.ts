@@ -1,47 +1,49 @@
-import { describe, expect, it, vi, beforeEach } from "vitest";
-import { createMail, MailMessage, type Mailable, type EmailOptions } from "../src/mail.js";
-import { resendProvider } from "../src/providers/resend/index.js";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+import type { EmailOptions, Mailable } from "../src/mail.js";
+import { createMail, MailMessage } from "../src/mail.js";
 import type { Provider } from "../src/providers/provider.js";
+import { resendProvider } from "../src/providers/resend/index.js";
 import type { EmailResult, Result } from "../src/types.js";
 
 // Mock provider for testing
 const createMockProvider = (): Provider => {
     return {
-        name: "mock",
         features: {
             attachments: true,
+            batchSending: false,
+            customHeaders: true,
             html: true,
+            replyTo: true,
+            scheduling: false,
+            tagging: false,
             templates: false,
             tracking: false,
-            customHeaders: true,
-            batchSending: false,
-            scheduling: false,
-            replyTo: true,
-            tagging: false,
         },
-        options: {},
         async initialize(): Promise<void> {
             // Mock implementation
         },
         async isAvailable(): Promise<boolean> {
             return true;
         },
+        name: "mock",
+        options: {},
         async sendEmail(): Promise<Result<EmailResult>> {
             return {
-                success: true,
                 data: {
                     messageId: "test-message-id",
+                    provider: "mock",
                     sent: true,
                     timestamp: new Date(),
-                    provider: "mock",
                 },
+                success: true,
             };
         },
     };
 };
 
-describe("Mail", () => {
-    describe("createMail", () => {
+describe("mail", () => {
+    describe(createMail, () => {
         it("should create a Mail instance with a provider", () => {
             const provider = createMockProvider();
             const mail = createMail(provider);
@@ -53,7 +55,7 @@ describe("Mail", () => {
         });
     });
 
-    describe("Mail.message()", () => {
+    describe("mail.message()", () => {
         it("should create a MailMessage instance", () => {
             const provider = createMockProvider();
             const mail = createMail(provider);
@@ -67,19 +69,13 @@ describe("Mail", () => {
             const sendEmailSpy = vi.spyOn(provider, "sendEmail");
             const mail = createMail(provider);
 
-            await mail
-                .message()
-                .to("user@example.com")
-                .from("sender@example.com")
-                .subject("Test")
-                .html("<h1>Test</h1>")
-                .send();
+            await mail.message().to("user@example.com").from("sender@example.com").subject("Test").html("<h1>Test</h1>").send();
 
-            expect(sendEmailSpy).toHaveBeenCalledOnce();
+            expect(sendEmailSpy).toHaveBeenCalledTimes(1);
         });
     });
 
-    describe("Mail.send()", () => {
+    describe("mail.send()", () => {
         it("should send a mailable instance", async () => {
             const provider = createMockProvider();
             const sendEmailSpy = vi.spyOn(provider, "sendEmail");
@@ -89,20 +85,20 @@ describe("Mail", () => {
                 build(): EmailOptions {
                     return {
                         from: { email: "sender@example.com" },
-                        to: { email: "user@example.com" },
-                        subject: "Test",
                         html: "<h1>Test</h1>",
+                        subject: "Test",
+                        to: { email: "user@example.com" },
                     };
                 }
             }
 
             await mail.send(new TestMailable());
 
-            expect(sendEmailSpy).toHaveBeenCalledOnce();
+            expect(sendEmailSpy).toHaveBeenCalledTimes(1);
         });
     });
 
-    describe("Mail.sendEmail()", () => {
+    describe("mail.sendEmail()", () => {
         it("should send email options directly", async () => {
             const provider = createMockProvider();
             const sendEmailSpy = vi.spyOn(provider, "sendEmail");
@@ -110,9 +106,9 @@ describe("Mail", () => {
 
             const emailOptions: EmailOptions = {
                 from: { email: "sender@example.com" },
-                to: { email: "user@example.com" },
-                subject: "Test",
                 html: "<h1>Test</h1>",
+                subject: "Test",
+                to: { email: "user@example.com" },
             };
 
             await mail.sendEmail(emailOptions);
@@ -122,7 +118,7 @@ describe("Mail", () => {
     });
 });
 
-describe("MailMessage", () => {
+describe(MailMessage, () => {
     let provider: Provider;
 
     beforeEach(() => {
@@ -132,19 +128,17 @@ describe("MailMessage", () => {
     describe("fluent interface", () => {
         it("should chain methods", () => {
             const message = new MailMessage();
+
             message.mailer(provider);
 
-            const result = message
-                .to("user@example.com")
-                .from("sender@example.com")
-                .subject("Test")
-                .html("<h1>Test</h1>");
+            const result = message.to("user@example.com").from("sender@example.com").subject("Test").html("<h1>Test</h1>");
 
             expect(result).toBe(message);
         });
 
         it("should build email options", () => {
             const message = new MailMessage();
+
             message.mailer(provider);
 
             message.to("user@example.com").from("sender@example.com").subject("Test").html("<h1>Test</h1>");
@@ -152,16 +146,16 @@ describe("MailMessage", () => {
             const options = message.build();
 
             expect(options).toEqual({
-                from: { email: "sender@example.com" },
-                to: { email: "user@example.com" },
-                subject: "Test",
-                html: "<h1>Test</h1>",
-                text: undefined,
-                cc: undefined,
-                bcc: undefined,
-                headers: undefined,
                 attachments: undefined,
+                bcc: undefined,
+                cc: undefined,
+                from: { email: "sender@example.com" },
+                headers: undefined,
+                html: "<h1>Test</h1>",
                 replyTo: undefined,
+                subject: "Test",
+                text: undefined,
+                to: { email: "user@example.com" },
             });
         });
     });
@@ -169,6 +163,7 @@ describe("MailMessage", () => {
     describe("from()", () => {
         it("should accept string email", () => {
             const message = new MailMessage();
+
             message.from("sender@example.com");
 
             expect(message.build().from).toEqual({ email: "sender@example.com" });
@@ -176,6 +171,7 @@ describe("MailMessage", () => {
 
         it("should accept EmailAddress object", () => {
             const message = new MailMessage();
+
             message.from({ email: "sender@example.com", name: "Sender" });
 
             expect(message.build().from).toEqual({ email: "sender@example.com", name: "Sender" });
@@ -185,28 +181,34 @@ describe("MailMessage", () => {
     describe("to()", () => {
         it("should accept string email", () => {
             const message = new MailMessage();
+
             message.mailer(provider);
             message.to("user@example.com");
 
             const options = message.build();
+
             expect(options.to).toEqual({ email: "user@example.com" });
         });
 
         it("should accept array of strings", () => {
             const message = new MailMessage();
+
             message.mailer(provider);
             message.to(["user1@example.com", "user2@example.com"]);
 
             const options = message.build();
+
             expect(options.to).toEqual([{ email: "user1@example.com" }, { email: "user2@example.com" }]);
         });
 
         it("should accept EmailAddress object", () => {
             const message = new MailMessage();
+
             message.mailer(provider);
             message.to({ email: "user@example.com", name: "User" });
 
             const options = message.build();
+
             expect(options.to).toEqual({ email: "user@example.com", name: "User" });
         });
     });
@@ -214,19 +216,23 @@ describe("MailMessage", () => {
     describe("cc() and bcc()", () => {
         it("should set CC recipients", () => {
             const message = new MailMessage();
+
             message.mailer(provider);
             message.to("user@example.com").cc("cc@example.com");
 
             const options = message.build();
+
             expect(options.cc).toEqual({ email: "cc@example.com" });
         });
 
         it("should set BCC recipients", () => {
             const message = new MailMessage();
+
             message.mailer(provider);
             message.to("user@example.com").bcc("bcc@example.com");
 
             const options = message.build();
+
             expect(options.bcc).toEqual({ email: "bcc@example.com" });
         });
     });
@@ -234,6 +240,7 @@ describe("MailMessage", () => {
     describe("subject()", () => {
         it("should set subject", () => {
             const message = new MailMessage();
+
             message.mailer(provider);
             message.to("user@example.com").subject("Test Subject");
 
@@ -244,6 +251,7 @@ describe("MailMessage", () => {
     describe("text() and html()", () => {
         it("should set text content", () => {
             const message = new MailMessage();
+
             message.mailer(provider);
             message.to("user@example.com").text("Plain text");
 
@@ -252,6 +260,7 @@ describe("MailMessage", () => {
 
         it("should set HTML content", () => {
             const message = new MailMessage();
+
             message.mailer(provider);
             message.to("user@example.com").html("<h1>HTML</h1>");
 
@@ -262,17 +271,19 @@ describe("MailMessage", () => {
     describe("attach()", () => {
         it("should add attachment", () => {
             const message = new MailMessage();
+
             message.mailer(provider);
             message.to("user@example.com").attach("file.txt", "content");
 
             const options = message.build();
+
             expect(options.attachments).toHaveLength(1);
             expect(options.attachments?.[0]).toEqual({
-                filename: "file.txt",
+                cid: undefined,
                 content: "content",
                 contentType: undefined,
                 disposition: undefined,
-                cid: undefined,
+                filename: "file.txt",
                 path: undefined,
             });
         });
@@ -282,25 +293,27 @@ describe("MailMessage", () => {
         it("should send email using provider", async () => {
             const sendEmailSpy = vi.spyOn(provider, "sendEmail");
             const message = new MailMessage();
+
             message.mailer(provider);
 
             await message.to("user@example.com").from("sender@example.com").subject("Test").html("<h1>Test</h1>").send();
 
-            expect(sendEmailSpy).toHaveBeenCalledOnce();
+            expect(sendEmailSpy).toHaveBeenCalledTimes(1);
         });
 
         it("should throw error if no provider is set", async () => {
             const message = new MailMessage();
 
-            await expect(
-                message.to("user@example.com").from("sender@example.com").subject("Test").html("<h1>Test</h1>").send(),
-            ).rejects.toThrow("No provider configured");
+            await expect(message.to("user@example.com").from("sender@example.com").subject("Test").html("<h1>Test</h1>").send()).rejects.toThrow(
+                "No provider configured",
+            );
         });
     });
 
     describe("build() validation", () => {
         it("should throw error if from is missing", () => {
             const message = new MailMessage();
+
             message.mailer(provider);
             message.to("user@example.com").subject("Test").html("<h1>Test</h1>");
 
@@ -309,6 +322,7 @@ describe("MailMessage", () => {
 
         it("should throw error if to is missing", () => {
             const message = new MailMessage();
+
             message.mailer(provider);
             message.from("sender@example.com").subject("Test").html("<h1>Test</h1>");
 
@@ -317,6 +331,7 @@ describe("MailMessage", () => {
 
         it("should throw error if subject is missing", () => {
             const message = new MailMessage();
+
             message.mailer(provider);
             message.to("user@example.com").from("sender@example.com").html("<h1>Test</h1>");
 
@@ -325,6 +340,7 @@ describe("MailMessage", () => {
 
         it("should throw error if neither text nor html is provided", () => {
             const message = new MailMessage();
+
             message.mailer(provider);
             message.to("user@example.com").from("sender@example.com").subject("Test");
 

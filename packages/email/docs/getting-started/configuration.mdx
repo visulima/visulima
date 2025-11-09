@@ -17,9 +17,9 @@ Each provider has its own configuration options. Here are examples for common pr
 import { resendProvider } from "@visulima/email/providers/resend";
 
 const resend = resendProvider({
-  apiKey: process.env.RESEND_API_KEY!,
-  timeout: 30000, // Optional: request timeout in milliseconds
-  retries: 3, // Optional: number of retry attempts
+    apiKey: process.env.RESEND_API_KEY!,
+    timeout: 30000, // Optional: request timeout in milliseconds
+    retries: 3, // Optional: number of retry attempts
 });
 ```
 
@@ -29,11 +29,11 @@ const resend = resendProvider({
 import { awsSesProvider } from "@visulima/email/providers/aws-ses";
 
 const awsSes = awsSesProvider({
-  accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
-  region: "us-east-1", // Optional, defaults to us-east-1
-  timeout: 30000, // Optional
-  retries: 3, // Optional
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+    region: "us-east-1", // Optional, defaults to us-east-1
+    timeout: 30000, // Optional
+    retries: 3, // Optional
 });
 ```
 
@@ -43,13 +43,13 @@ const awsSes = awsSesProvider({
 import { smtpProvider } from "@visulima/email/providers/smtp";
 
 const smtp = smtpProvider({
-  host: "smtp.example.com",
-  port: 587,
-  secure: false, // true for 465, false for other ports
-  user: process.env.SMTP_USER!,
-  password: process.env.SMTP_PASSWORD!,
-  timeout: 30000, // Optional
-  retries: 3, // Optional
+    host: "smtp.example.com",
+    port: 587,
+    secure: false, // true for 465, false for other ports
+    user: process.env.SMTP_USER!,
+    password: process.env.SMTP_PASSWORD!,
+    timeout: 30000, // Optional
+    retries: 3, // Optional
 });
 ```
 
@@ -59,9 +59,9 @@ const smtp = smtpProvider({
 import { zeptomailProvider } from "@visulima/email/providers/zeptomail";
 
 const zeptomail = zeptomailProvider({
-  apiKey: process.env.ZEPTOMAIL_API_KEY!,
-  timeout: 30000, // Optional
-  retries: 3, // Optional
+    apiKey: process.env.ZEPTOMAIL_API_KEY!,
+    timeout: 30000, // Optional
+    retries: 3, // Optional
 });
 ```
 
@@ -82,7 +82,7 @@ Then use them in your code:
 
 ```typescript
 const resend = resendProvider({
-  apiKey: process.env.RESEND_API_KEY!,
+    apiKey: process.env.RESEND_API_KEY!,
 });
 ```
 
@@ -111,10 +111,10 @@ import { smtpProvider } from "@visulima/email/providers/smtp";
 
 const resend = resendProvider({ apiKey: "re_xxx" });
 const smtp = smtpProvider({
-  host: "smtp.example.com",
-  port: 587,
-  user: "user@example.com",
-  password: "password",
+    host: "smtp.example.com",
+    port: 587,
+    user: "user@example.com",
+    password: "password",
 });
 
 // Use Resend for production
@@ -134,18 +134,18 @@ import { resendProvider } from "@visulima/email/providers/resend";
 import { smtpProvider } from "@visulima/email/providers/smtp";
 
 const failover = failoverProvider({
-  mailers: [
-    resendProvider({ apiKey: "re_xxx" }),
-    smtpProvider({
-      host: "smtp.example.com",
-      port: 587,
-      user: "user@example.com",
-      password: "password",
-    }),
-  ],
-  retryAfter: 60, // Wait 60ms before trying next provider
-  timeout: 30000,
-  retries: 3,
+    mailers: [
+        resendProvider({ apiKey: "re_xxx" }),
+        smtpProvider({
+            host: "smtp.example.com",
+            port: 587,
+            user: "user@example.com",
+            password: "password",
+        }),
+    ],
+    retryAfter: 60, // Wait 60ms before trying next provider
+    timeout: 30000,
+    retries: 3,
 });
 ```
 
@@ -159,18 +159,18 @@ import { resendProvider } from "@visulima/email/providers/resend";
 import { smtpProvider } from "@visulima/email/providers/smtp";
 
 const roundRobin = roundRobinProvider({
-  mailers: [
-    resendProvider({ apiKey: "re_xxx" }),
-    smtpProvider({
-      host: "smtp.example.com",
-      port: 587,
-      user: "user@example.com",
-      password: "password",
-    }),
-  ],
-  retryAfter: 60,
-  timeout: 30000,
-  retries: 3,
+    mailers: [
+        resendProvider({ apiKey: "re_xxx" }),
+        smtpProvider({
+            host: "smtp.example.com",
+            port: 587,
+            user: "user@example.com",
+            password: "password",
+        }),
+    ],
+    retryAfter: 60,
+    timeout: 30000,
+    retries: 3,
 });
 ```
 

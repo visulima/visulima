@@ -10,9 +10,9 @@ export interface AwsSesEmailOptions extends EmailOptions {
     configurationSetName?: string;
 
     /**
-     * Source ARN for sending authorization
+     * Message tags as key-value pairs
      */
-    sourceArn?: string;
+    messageTags?: Record<string, string>;
 
     /**
      * Return path email address
@@ -25,7 +25,7 @@ export interface AwsSesEmailOptions extends EmailOptions {
     returnPathArn?: string;
 
     /**
-     * Message tags as key-value pairs
+     * Source ARN for sending authorization
      */
-    messageTags?: Record<string, string>;
+    sourceArn?: string;
 }

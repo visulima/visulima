@@ -1,4 +1,6 @@
 import { describe, expect, it } from "vitest";
+
+import type { EmailAddress, EmailOptions } from "../src/utils.js";
 import {
     createError,
     createRequiredError,
@@ -7,12 +9,10 @@ import {
     generateMessageId,
     validateEmail,
     validateEmailOptions,
-    type EmailAddress,
-    type EmailOptions,
 } from "../src/utils.js";
 
 describe("utils", () => {
-    describe("createError", () => {
+    describe(createError, () => {
         it("should create an error with component prefix", () => {
             const error = createError("test", "Something went wrong");
 
@@ -30,7 +30,7 @@ describe("utils", () => {
         });
     });
 
-    describe("createRequiredError", () => {
+    describe(createRequiredError, () => {
         it("should create error for single missing option", () => {
             const error = createRequiredError("test", "apiKey");
 
@@ -44,7 +44,7 @@ describe("utils", () => {
         });
     });
 
-    describe("generateMessageId", () => {
+    describe(generateMessageId, () => {
         it("should generate a message ID", () => {
             const messageId = generateMessageId();
 
@@ -59,7 +59,7 @@ describe("utils", () => {
         });
     });
 
-    describe("validateEmail", () => {
+    describe(validateEmail, () => {
         it("should validate correct email addresses", () => {
             expect(validateEmail("user@example.com")).toBe(true);
             expect(validateEmail("user.name@example.co.uk")).toBe(true);
@@ -74,7 +74,7 @@ describe("utils", () => {
         });
     });
 
-    describe("formatEmailAddress", () => {
+    describe(formatEmailAddress, () => {
         it("should format email without name", () => {
             const address: EmailAddress = { email: "user@example.com" };
             const formatted = formatEmailAddress(address);
@@ -96,7 +96,7 @@ describe("utils", () => {
         });
     });
 
-    describe("formatEmailAddresses", () => {
+    describe(formatEmailAddresses, () => {
         it("should format single address", () => {
             const address: EmailAddress = { email: "user@example.com" };
             const formatted = formatEmailAddresses(address);
@@ -105,23 +105,20 @@ describe("utils", () => {
         });
 
         it("should format array of addresses", () => {
-            const addresses: EmailAddress[] = [
-                { email: "user1@example.com" },
-                { email: "user2@example.com", name: "User 2" },
-            ];
+            const addresses: EmailAddress[] = [{ email: "user1@example.com" }, { email: "user2@example.com", name: "User 2" }];
             const formatted = formatEmailAddresses(addresses);
 
             expect(formatted).toBe("user1@example.com, User 2 <user2@example.com>");
         });
     });
 
-    describe("validateEmailOptions", () => {
+    describe(validateEmailOptions, () => {
         it("should validate correct email options", () => {
             const options: EmailOptions = {
                 from: { email: "sender@example.com" },
-                to: { email: "user@example.com" },
-                subject: "Test",
                 html: "<h1>Test</h1>",
+                subject: "Test",
+                to: { email: "user@example.com" },
             };
 
             const errors = validateEmailOptions(options);
@@ -143,8 +140,8 @@ describe("utils", () => {
         it("should return error if neither text nor html is provided", () => {
             const options: EmailOptions = {
                 from: { email: "sender@example.com" },
-                to: { email: "user@example.com" },
                 subject: "Test",
+                to: { email: "user@example.com" },
             };
 
             const errors = validateEmailOptions(options);
@@ -155,9 +152,9 @@ describe("utils", () => {
         it("should validate email addresses", () => {
             const options: EmailOptions = {
                 from: { email: "invalid-email" },
-                to: { email: "user@example.com" },
-                subject: "Test",
                 html: "<h1>Test</h1>",
+                subject: "Test",
+                to: { email: "user@example.com" },
             };
 
             const errors = validateEmailOptions(options);
@@ -167,12 +164,12 @@ describe("utils", () => {
 
         it("should validate CC and BCC addresses", () => {
             const options: EmailOptions = {
-                from: { email: "sender@example.com" },
-                to: { email: "user@example.com" },
-                subject: "Test",
-                html: "<h1>Test</h1>",
-                cc: { email: "invalid-cc" },
                 bcc: { email: "invalid-bcc" },
+                cc: { email: "invalid-cc" },
+                from: { email: "sender@example.com" },
+                html: "<h1>Test</h1>",
+                subject: "Test",
+                to: { email: "user@example.com" },
             };
 
             const errors = validateEmailOptions(options);

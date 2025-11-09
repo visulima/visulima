@@ -19,18 +19,63 @@ Providers are responsible for actually sending emails. @visulima/email supports 
 - **[Round Robin](/docs/package/email/providers/roundrobin)** - Load balancing across multiple providers
 - **[MailCrab](/docs/package/email/providers/mailcrab)** - Local development email testing
 
+## Runtime Support
+
+Different providers support different JavaScript runtimes. Choose providers based on your deployment target:
+
+### Universal Providers (All Runtimes)
+
+These providers work in **Node.js**, **Deno**, **Bun**, and **Cloudflare Workers**:
+
+- ✅ **Resend** - Uses Fetch API, works everywhere
+- ✅ **HTTP** - Uses Fetch API, works everywhere
+- ✅ **Zeptomail** - Uses Fetch API, works everywhere
+- ✅ **Failover** - Works if all wrapped providers support your runtime
+- ✅ **Round Robin** - Works if all wrapped providers support your runtime
+
+### Node.js Only Providers
+
+These providers require Node.js built-in modules and only work in **Node.js**:
+
+- ⚠️ **AWS SES** - Requires `node:crypto` for AWS Signature V4 signing
+- ⚠️ **SMTP** - Requires `node:net` and `node:tls` for SMTP connections
+- ⚠️ **MailCrab** - Wraps SMTP provider (requires Node.js)
+- ⚠️ **Nodemailer** - Requires the `nodemailer` package (Node.js only)
+
+### Runtime Compatibility
+
+| Provider    | Node.js | Deno | Bun  | Cloudflare Workers |
+| ----------- | ------- | ---- | ---- | ------------------ |
+| Resend      | ✅      | ✅   | ✅   | ✅                 |
+| HTTP        | ✅      | ✅   | ✅   | ✅                 |
+| Zeptomail   | ✅      | ✅   | ✅   | ✅                 |
+| AWS SES     | ✅      | ❌   | ❌   | ❌                 |
+| SMTP        | ✅      | ❌   | ❌   | ❌                 |
+| MailCrab    | ✅      | ❌   | ❌   | ❌                 |
+| Nodemailer  | ✅      | ❌   | ❌   | ❌                 |
+| Failover    | ✅\*    | ✅\* | ✅\* | ✅\*               |
+| Round Robin | ✅\*    | ✅\* | ✅\* | ✅\*               |
+
+\* Runtime support depends on the wrapped providers. Works if all wrapped providers support the runtime.
+
+### Choosing a Provider
+
+- **For Cloudflare Workers, Deno, or Bun**: Use Resend, HTTP, or Zeptomail
+- **For Node.js**: You can use any provider
+- **For cross-runtime compatibility**: Use Resend, HTTP, or Zeptomail, or wrap Node.js-only providers in Failover/Round Robin with universal providers as fallbacks
+
 ## Provider Interface
 
 All providers implement a common interface:
 
 ```typescript
 interface Provider {
-  initialize(opts?: Record<string, unknown>): Promise<void>;
-  isAvailable(): Promise<boolean>;
-  sendEmail(options: EmailOptions): Promise<Result<EmailResult>>;
-  validateCredentials?(): Promise<boolean>;
-  getEmail?(id: string): Promise<Result<unknown>>;
-  shutdown?(): Promise<void>;
+    initialize(opts?: Record<string, unknown>): Promise<void>;
+    isAvailable(): Promise<boolean>;
+    sendEmail(options: EmailOptions): Promise<Result<EmailResult>>;
+    validateCredentials?(): Promise<boolean>;
+    getEmail?(id: string): Promise<Result<unknown>>;
+    shutdown?(): Promise<void>;
 }
 ```
 
@@ -49,7 +94,7 @@ import { smtpProvider } from "@visulima/email/providers/smtp";
 
 ```typescript
 const resend = resendProvider({
-  apiKey: "re_xxx",
+    apiKey: "re_xxx",
 });
 ```
 
@@ -71,16 +116,16 @@ const productionMail = createMail(resendProvider({ apiKey: process.env.RESEND_AP
 
 // Use SMTP in development
 const developmentMail = createMail(
-  smtpProvider({
-    host: "localhost",
-    port: 1025,
-    secure: false,
-  }),
+    smtpProvider({
+        host: "localhost",
+        port: 1025,
+        secure: false,
+    }),
 );
 
 // Same code works with both
 const sendEmail = async (mail: Mail) => {
-  await mail.message().to("user@example.com").from("sender@example.com").subject("Hello").html("<h1>Hello</h1>").send();
+    await mail.message().to("user@example.com").from("sender@example.com").subject("Hello").html("<h1>Hello</h1>").send();
 };
 ```
 
@@ -94,11 +139,11 @@ Some providers support additional options in `EmailOptions`:
 import type { ResendEmailOptions } from "@visulima/email/providers/resend";
 
 const options: ResendEmailOptions = {
-  from: { email: "sender@example.com" },
-  to: "user@example.com",
-  subject: "Hello",
-  html: "<h1>Hello</h1>",
-  tags: [{ name: "category", value: "welcome" }], // Resend-specific
+    from: { email: "sender@example.com" },
+    to: "user@example.com",
+    subject: "Hello",
+    html: "<h1>Hello</h1>",
+    tags: [{ name: "category", value: "welcome" }], // Resend-specific
 };
 ```
 
