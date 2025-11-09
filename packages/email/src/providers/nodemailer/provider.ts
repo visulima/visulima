@@ -118,19 +118,45 @@ export const nodemailerProvider: ProviderFactory<NodemailerConfig, unknown, Node
                 mailOptions.attachments = emailOpts.attachments.map((attachment) => {
                     const nodemailerAttachment: Record<string, unknown> = {
                         filename: attachment.filename,
-                        content: attachment.content,
                     };
+
+                    // Content priority: raw > content > path (path would need async handling)
+                    if (attachment.raw !== undefined) {
+                        nodemailerAttachment.content = attachment.raw;
+                    } else if (attachment.content !== undefined) {
+                        nodemailerAttachment.content = attachment.content;
+                    } else if (attachment.path) {
+                        nodemailerAttachment.path = attachment.path;
+                    }
 
                     if (attachment.contentType) {
                         nodemailerAttachment.contentType = attachment.contentType;
                     }
 
-                    if (attachment.disposition) {
-                        nodemailerAttachment.contentDisposition = attachment.disposition;
+                    // Prefer contentDisposition over disposition
+                    const disposition = attachment.contentDisposition || attachment.disposition;
+                    if (disposition) {
+                        nodemailerAttachment.contentDisposition = disposition;
                     }
 
                     if (attachment.cid) {
                         nodemailerAttachment.cid = attachment.cid;
+                    }
+
+                    if (attachment.encoding) {
+                        nodemailerAttachment.encoding = attachment.encoding;
+                    }
+
+                    if (attachment.headers) {
+                        nodemailerAttachment.headers = attachment.headers;
+                    }
+
+                    if (attachment.href) {
+                        nodemailerAttachment.href = attachment.href;
+                    }
+
+                    if (attachment.httpHeaders) {
+                        nodemailerAttachment.httpHeaders = attachment.httpHeaders;
                     }
 
                     return nodemailerAttachment;

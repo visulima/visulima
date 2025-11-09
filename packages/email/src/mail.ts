@@ -149,8 +149,10 @@ export class MailMessage {
             filename,
             content,
             contentType,
-            disposition: options?.disposition || "attachment",
+            contentDisposition: options?.contentDisposition || options?.disposition || "attachment",
             cid: options?.cid,
+            encoding: options?.encoding,
+            headers: options?.headers,
         });
 
         return this;
@@ -173,8 +175,10 @@ export class MailMessage {
             filename: options.filename,
             content,
             contentType,
-            disposition: options.disposition || "attachment",
+            contentDisposition: options.contentDisposition || options.disposition || "attachment",
             cid: options.cid,
+            encoding: options.encoding,
+            headers: options.headers,
         });
 
         return this;
@@ -201,7 +205,7 @@ export class MailMessage {
             filename,
             content,
             contentType,
-            disposition: "inline",
+            contentDisposition: "inline",
             cid,
         });
 
@@ -232,7 +236,7 @@ export class MailMessage {
             filename,
             content,
             contentType,
-            disposition: "inline",
+            contentDisposition: "inline",
             cid,
         });
 

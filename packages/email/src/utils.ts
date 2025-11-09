@@ -428,20 +428,63 @@ export const buildMimeMessage = <T extends EmailOptions>(options: T): string => 
 
     // Attachments
     if (options.attachments && options.attachments.length > 0) {
-        options.attachments.forEach((attachment: Attachment) => {
+        for (const attachment of options.attachments) {
             message.push(`--${boundary}`);
-            message.push(
-                `Content-Type: ${attachment.contentType || "application/octet-stream"}; name="${attachment.filename}"`,
-            );
-            message.push(`Content-Disposition: ${attachment.disposition || "attachment"}; filename="${attachment.filename}"`);
+            
+            // Content-Type
+            const contentType = attachment.contentType || "application/octet-stream";
+            message.push(`Content-Type: ${contentType}; name="${attachment.filename}"`);
+            
+            // Content-Disposition (prefer contentDisposition over disposition for backward compatibility)
+            const disposition = attachment.contentDisposition || attachment.disposition || "attachment";
+            message.push(`Content-Disposition: ${disposition}; filename="${attachment.filename}"`);
+            
+            // Content-ID for inline attachments
             if (attachment.cid) {
                 message.push(`Content-ID: <${attachment.cid}>`);
             }
-            message.push("Content-Transfer-Encoding: base64");
+            
+            // Custom headers for this attachment
+            if (attachment.headers) {
+                Object.entries(attachment.headers).forEach(([key, value]) => {
+                    message.push(`${key}: ${value}`);
+                });
+            }
+            
+            // Content-Transfer-Encoding
+            const encoding = attachment.encoding || "base64";
+            message.push(`Content-Transfer-Encoding: ${encoding}`);
             message.push("");
-            message.push(toBase64(attachment.content));
+            
+            // Attachment content
+            let attachmentContent: string | Buffer | undefined;
+            
+            // Priority: raw > content > (path/href would need async handling, but buildMimeMessage is sync)
+            if (attachment.raw !== undefined) {
+                attachmentContent = attachment.raw;
+            } else if (attachment.content !== undefined) {
+                attachmentContent = attachment.content;
+            } else {
+                // Note: path and href require async operations, so they should be resolved before calling buildMimeMessage
+                // For now, we'll throw an error if neither content nor raw is provided
+                throw new EmailError(
+                    "attachment",
+                    `Attachment '${attachment.filename}' must have content, raw, or be resolved from path/href before building MIME message`,
+                );
+            }
+            
+            // Encode content based on encoding type
+            if (encoding === "base64") {
+                message.push(toBase64(attachmentContent));
+            } else if (encoding === "7bit" || encoding === "8bit") {
+                message.push(typeof attachmentContent === "string" ? attachmentContent : attachmentContent.toString("utf-8"));
+            } else {
+                // For other encodings, default to base64
+                message.push(toBase64(attachmentContent));
+            }
+            
             message.push("");
-        });
+        }
     }
 
     message.push(`--${boundary}--`);
