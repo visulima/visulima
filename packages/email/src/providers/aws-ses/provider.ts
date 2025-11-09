@@ -236,7 +236,7 @@ export const awsSesProvider: ProviderFactory<AwsSesConfig, unknown, AwsSesEmailO
     /**
      * Format email address for email headers
      */
-    const formatEmailAddress = (address: EmailAddress): string => address.name ? `${address.name} <${address.email}>` : address.email;
+    const formatEmailAddress = (address: EmailAddress): string => (address.name ? `${address.name} <${address.email}>` : address.email);
 
     /**
      * Generate MIME message for email
@@ -259,7 +259,9 @@ export const awsSesProvider: ProviderFactory<AwsSesConfig, unknown, AwsSesEmailO
 
         // Add BCC if present
         if (options.bcc) {
-            message += Array.isArray(options.bcc) ? `Bcc: ${options.bcc.map(formatEmailAddress).join(", ")}\r\n` : `Bcc: ${formatEmailAddress(options.bcc)}\r\n`;
+            message += Array.isArray(options.bcc)
+                ? `Bcc: ${options.bcc.map(formatEmailAddress).join(", ")}\r\n`
+                : `Bcc: ${formatEmailAddress(options.bcc)}\r\n`;
         }
 
         // Add other headers

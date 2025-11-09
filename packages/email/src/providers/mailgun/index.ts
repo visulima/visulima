@@ -1,0 +1,3 @@
+export type { Provider, ProviderFactory } from "../provider";
+export { mailgunProvider } from "./provider";
+export type { MailgunConfig, MailgunEmailOptions } from "./types";

@@ -9,17 +9,34 @@ Providers are responsible for actually sending emails. @visulima/email supports 
 
 ## Available Providers
 
-- **[AWS SES](/docs/package/email/providers/aws-ses)** - Amazon Simple Email Service
-- **[Resend](/docs/package/email/providers/resend)** - Modern email API for developers
-- **[SMTP](/docs/package/email/providers/smtp)** - Standard SMTP protocol
-- **[Zeptomail](/docs/package/email/providers/zeptomail)** - Zeptomail email service
-- **[Plunk](/docs/package/email/providers/plunk)** - Modern email platform built on AWS SES
+- **[AWS SES](/docs/package/email/providers/aws-ses)** - Amazon Simple Email Service ([API Docs](https://docs.aws.amazon.com/ses/latest/APIReference-V2/Welcome.html))
+- **[Resend](/docs/package/email/providers/resend)** - Modern email API for developers ([API Docs](https://resend.com/docs/api-reference/emails/send-email))
+- **[Brevo](/docs/package/email/providers/brevo)** - Email marketing and transactional email platform (formerly Sendinblue) ([API Docs](https://developers.brevo.com/reference/sendtransacemail))
+- **[Mailgun](/docs/package/email/providers/mailgun)** - Developer-friendly email API service ([API Docs](https://documentation.mailgun.com/en/latest/api_reference.html))
+- **[Mailjet](/docs/package/email/providers/mailjet)** - Email marketing and transactional email platform ([API Docs](https://dev.mailjet.com/email/guides/send-api-v31/))
+- **[MailerSend](/docs/package/email/providers/mailersend)** - Modern email API for developers ([API Docs](https://developers.mailersend.com/api/v1/email.html))
+- **[Mandrill](/docs/package/email/providers/mandrill)** - Mailchimp Transactional Email ([API Docs](https://mailchimp.com/developer/transactional/api/messages/send-new-message/))
+- **[MailPace](/docs/package/email/providers/mailpace)** - Simple transactional email service ([API Docs](https://docs.mailpace.com/api))
+- **[Mailtrap](/docs/package/email/providers/mailtrap)** - Email testing and development tool ([API Docs](https://mailtrap.io/api-docs))
+- **[Postal](/docs/package/email/providers/postal)** - Self-hosted email server ([API Docs](https://postal.atech.media/docs/developer/sending))
+- **[Postmark](/docs/package/email/providers/postmark)** - Transactional email service focused on deliverability ([API Docs](https://postmarkapp.com/developer/api/email-api))
+- **[Azure](/docs/package/email/providers/azure)** - Microsoft Azure Communication Services ([API Docs](https://learn.microsoft.com/en-us/azure/communication-services/concepts/email/email-overview))
+- **[Infobip](/docs/package/email/providers/infobip)** - Global communication platform ([API Docs](https://www.infobip.com/docs/api/channels/email/send-email))
+- **[Scaleway](/docs/package/email/providers/scaleway)** - European cloud provider email service ([API Docs](https://www.scaleway.com/en/docs/messaging-and-queuing/transactional-email/api-reference/))
+- **[AhaSend](/docs/package/email/providers/ahasend)** - Email delivery service ([API Docs](https://api.ahasend.com/docs))
+- **[Mailomat](/docs/package/email/providers/mailomat)** - Email service provider ([API Docs](https://api.mailomat.com/docs))
+- **[Sweego](/docs/package/email/providers/sweego)** - Email delivery service ([API Docs](https://api.sweego.com/docs))
+- **[SendGrid](/docs/package/email/providers/sendgrid)** - Cloud-based email service for transactional and marketing emails ([API Docs](https://docs.sendgrid.com/api-reference/mail-send/mail-send))
+- **[SMTP](/docs/package/email/providers/smtp)** - Standard SMTP protocol ([RFC 5321](https://tools.ietf.org/html/rfc5321))
+- **[Zeptomail](/docs/package/email/providers/zeptomail)** - Zeptomail email service ([API Docs](https://www.zeptomail.com/docs/api/))
+- **[Plunk](/docs/package/email/providers/plunk)** - Modern email platform built on AWS SES ([API Docs](https://docs.useplunk.com/api-reference))
 - **[HTTP](/docs/package/email/providers/http)** - Generic HTTP API provider
-- **[Nodemailer](/docs/package/email/providers/nodemailer)** - Popular Node.js email library wrapper
+- **[Nodemailer](/docs/package/email/providers/nodemailer)** - Popular Node.js email library wrapper ([API Docs](https://nodemailer.com/about/))
 - **[Mock](/docs/package/email/providers/mock)** - In-memory provider for testing
 - **[Failover](/docs/package/email/providers/failover)** - Automatic failover between multiple providers
 - **[Round Robin](/docs/package/email/providers/roundrobin)** - Load balancing across multiple providers
-- **[MailCrab](/docs/package/email/providers/mailcrab)** - Local development email testing
+- **[MailCrab](/docs/package/email/providers/mailcrab)** - Local development email testing ([Docs](https://mailcrab.app/))
+- **[OpenTelemetry](/docs/package/email/providers/opentelemetry)** - OpenTelemetry instrumentation wrapper for observability ([API Docs](https://opentelemetry.io/docs/))
 
 ## Runtime Support
 
@@ -32,10 +49,27 @@ These providers work in **Node.js**, **Deno**, **Bun**, and **Cloudflare Workers
 - ✅ **Resend** - Uses Fetch API, works everywhere
 - ✅ **HTTP** - Uses Fetch API, works everywhere
 - ✅ **Zeptomail** - Uses Fetch API, works everywhere
+- ✅ **Brevo** - Uses Fetch API, works everywhere
+- ✅ **Mailgun** - Uses Fetch API, works everywhere
+- ✅ **Mailjet** - Uses Fetch API, works everywhere
+- ✅ **MailerSend** - Uses Fetch API, works everywhere
+- ✅ **Mandrill** - Uses Fetch API, works everywhere
+- ✅ **MailPace** - Uses Fetch API, works everywhere
+- ✅ **Mailtrap** - Uses Fetch API, works everywhere
+- ✅ **Postal** - Uses Fetch API, works everywhere
+- ✅ **Postmark** - Uses Fetch API, works everywhere
+- ✅ **Azure** - Uses Fetch API, works everywhere (requires OAuth2 token or connection string)
+- ✅ **Infobip** - Uses Fetch API, works everywhere
+- ✅ **Scaleway** - Uses Fetch API, works everywhere
+- ✅ **AhaSend** - Uses Fetch API, works everywhere
+- ✅ **Mailomat** - Uses Fetch API, works everywhere
+- ✅ **Sweego** - Uses Fetch API, works everywhere
+- ✅ **SendGrid** - Uses Fetch API, works everywhere
 - ✅ **Plunk** - Uses Fetch API, works everywhere
 - ✅ **Mock** - In-memory provider, works everywhere
 - ✅ **Failover** - Works if all wrapped providers support your runtime
 - ✅ **Round Robin** - Works if all wrapped providers support your runtime
+- ✅ **OpenTelemetry** - Works if wrapped provider supports your runtime
 
 ### Node.js Only Providers
 
@@ -53,6 +87,22 @@ These providers require Node.js built-in modules and only work in **Node.js**:
 | Resend      | ✅      | ✅   | ✅   | ✅                 |
 | HTTP        | ✅      | ✅   | ✅   | ✅                 |
 | Zeptomail   | ✅      | ✅   | ✅   | ✅                 |
+| Brevo       | ✅      | ✅   | ✅   | ✅                 |
+| Mailgun     | ✅      | ✅   | ✅   | ✅                 |
+| Mailjet     | ✅      | ✅   | ✅   | ✅                 |
+| MailerSend  | ✅      | ✅   | ✅   | ✅                 |
+| Mandrill    | ✅      | ✅   | ✅   | ✅                 |
+| MailPace    | ✅      | ✅   | ✅   | ✅                 |
+| Mailtrap    | ✅      | ✅   | ✅   | ✅                 |
+| Postal      | ✅      | ✅   | ✅   | ✅                 |
+| Postmark    | ✅      | ✅   | ✅   | ✅                 |
+| Azure       | ✅      | ✅   | ✅   | ✅                 |
+| Infobip     | ✅      | ✅   | ✅   | ✅                 |
+| Scaleway    | ✅      | ✅   | ✅   | ✅                 |
+| AhaSend     | ✅      | ✅   | ✅   | ✅                 |
+| Mailomat    | ✅      | ✅   | ✅   | ✅                 |
+| Sweego      | ✅      | ✅   | ✅   | ✅                 |
+| SendGrid    | ✅      | ✅   | ✅   | ✅                 |
 | Plunk       | ✅      | ✅   | ✅   | ✅                 |
 | Mock        | ✅      | ✅   | ✅   | ✅                 |
 | AWS SES     | ✅      | ❌   | ❌   | ❌                 |
@@ -61,15 +111,17 @@ These providers require Node.js built-in modules and only work in **Node.js**:
 | Nodemailer  | ✅      | ❌   | ❌   | ❌                 |
 | Failover    | ✅\*    | ✅\* | ✅\* | ✅\*               |
 | Round Robin | ✅\*    | ✅\* | ✅\* | ✅\*               |
+| OpenTelemetry | ✅\*    | ✅\* | ✅\* | ✅\*               |
 
 \* Runtime support depends on the wrapped providers. Works if all wrapped providers support the runtime.
 
 ### Choosing a Provider
 
-- **For Cloudflare Workers, Deno, or Bun**: Use Resend, HTTP, Zeptomail, Plunk, or Mock
+- **For Cloudflare Workers, Deno, or Bun**: Use Resend, HTTP, Zeptomail, Brevo, Mailgun, Mailjet, MailerSend, Mandrill, MailPace, Mailtrap, Postal, Postmark, SendGrid, Plunk, Azure, Infobip, Scaleway, AhaSend, Mailomat, Sweego, or Mock
 - **For Node.js**: You can use any provider
-- **For testing**: Use Mock provider to test email logic without sending real emails
-- **For cross-runtime compatibility**: Use Resend, HTTP, Zeptomail, Plunk, or Mock, or wrap Node.js-only providers in Failover/Round Robin with universal providers as fallbacks
+- **For testing**: Use Mock or Mailtrap provider to test email logic without sending real emails
+- **For observability**: Use OpenTelemetry provider to wrap any provider and add distributed tracing and metrics
+- **For cross-runtime compatibility**: Use Resend, HTTP, Zeptomail, Brevo, Mailgun, Mailjet, MailerSend, Mandrill, MailPace, Mailtrap, Postal, Postmark, SendGrid, Plunk, Azure, Infobip, Scaleway, AhaSend, Mailomat, Sweego, or Mock, or wrap Node.js-only providers in Failover/Round Robin with universal providers as fallbacks
 
 ## Provider Interface
 

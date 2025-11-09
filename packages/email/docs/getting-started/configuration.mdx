@@ -65,6 +65,226 @@ const zeptomail = zeptomailProvider({
 });
 ```
 
+### Brevo
+
+```typescript
+import { brevoProvider } from "@visulima/email/providers/brevo";
+
+const brevo = brevoProvider({
+    apiKey: process.env.BREVO_API_KEY!,
+    endpoint: "https://api.brevo.com/v3", // Optional, defaults to this
+    timeout: 30000, // Optional
+    retries: 3, // Optional
+});
+```
+
+### Mailjet
+
+```typescript
+import { mailjetProvider } from "@visulima/email/providers/mailjet";
+
+const mailjet = mailjetProvider({
+    apiKey: process.env.MAILJET_API_KEY!,
+    apiSecret: process.env.MAILJET_API_SECRET!,
+    endpoint: "https://api.mailjet.com", // Optional, defaults to this
+    timeout: 30000, // Optional
+    retries: 3, // Optional
+});
+```
+
+### MailerSend
+
+```typescript
+import { mailerSendProvider } from "@visulima/email/providers/mailersend";
+
+const mailerSend = mailerSendProvider({
+    apiToken: process.env.MAILERSEND_API_TOKEN!,
+    endpoint: "https://api.mailersend.com", // Optional, defaults to this
+    timeout: 30000, // Optional
+    retries: 3, // Optional
+});
+```
+
+### Mandrill
+
+```typescript
+import { mandrillProvider } from "@visulima/email/providers/mandrill";
+
+const mandrill = mandrillProvider({
+    apiKey: process.env.MANDRILL_API_KEY!,
+    endpoint: "https://mandrillapp.com/api/1.0", // Optional, defaults to this
+    timeout: 30000, // Optional
+    retries: 3, // Optional
+});
+```
+
+### MailPace
+
+```typescript
+import { mailPaceProvider } from "@visulima/email/providers/mailpace";
+
+const mailPace = mailPaceProvider({
+    apiToken: process.env.MAILPACE_API_TOKEN!,
+    endpoint: "https://app.mailpace.com/api/v1", // Optional, defaults to this
+    timeout: 30000, // Optional
+    retries: 3, // Optional
+});
+```
+
+### Mailtrap
+
+```typescript
+import { mailtrapProvider } from "@visulima/email/providers/mailtrap";
+
+const mailtrap = mailtrapProvider({
+    apiToken: process.env.MAILTRAP_API_TOKEN!,
+    endpoint: "https://send.api.mailtrap.io", // Optional, defaults to this
+    timeout: 30000, // Optional
+    retries: 3, // Optional
+});
+```
+
+### Postal
+
+```typescript
+import { postalProvider } from "@visulima/email/providers/postal";
+
+const postal = postalProvider({
+    host: process.env.POSTAL_HOST!,
+    apiKey: process.env.POSTAL_API_KEY!,
+    endpoint: `https://${process.env.POSTAL_HOST}/api/v1`, // Optional, auto-generated from host
+    timeout: 30000, // Optional
+    retries: 3, // Optional
+});
+```
+
+### Azure Communication Services
+
+```typescript
+import { azureProvider } from "@visulima/email/providers/azure";
+
+// Using access token
+const azure = azureProvider({
+    accessToken: process.env.AZURE_ACCESS_TOKEN!,
+    region: process.env.AZURE_REGION!, // e.g., "eastus", "westus"
+    endpoint: `https://${process.env.AZURE_REGION}.communication.azure.com`, // Optional, auto-generated
+    timeout: 30000, // Optional
+    retries: 3, // Optional
+});
+
+// Or using connection string
+const azureWithConnectionString = azureProvider({
+    connectionString: process.env.AZURE_CONNECTION_STRING!,
+    region: process.env.AZURE_REGION!,
+});
+```
+
+### Infobip
+
+```typescript
+import { infobipProvider } from "@visulima/email/providers/infobip";
+
+const infobip = infobipProvider({
+    apiKey: process.env.INFOBIP_API_KEY!,
+    baseUrl: "https://api.infobip.com", // Optional, defaults to this
+    timeout: 30000, // Optional
+    retries: 3, // Optional
+});
+```
+
+### Scaleway
+
+```typescript
+import { scalewayProvider } from "@visulima/email/providers/scaleway";
+
+const scaleway = scalewayProvider({
+    apiKey: process.env.SCALEWAY_API_KEY!,
+    region: process.env.SCALEWAY_REGION!, // e.g., "fr-par", "nl-ams"
+    endpoint: "https://api.scaleway.com/transactional-email/v1alpha1", // Optional, defaults to this
+    timeout: 30000, // Optional
+    retries: 3, // Optional
+});
+```
+
+### AhaSend
+
+```typescript
+import { ahaSendProvider } from "@visulima/email/providers/ahasend";
+
+const ahaSend = ahaSendProvider({
+    apiKey: process.env.AHASEND_API_KEY!,
+    endpoint: "https://api.ahasend.com", // Optional, defaults to this
+    timeout: 30000, // Optional
+    retries: 3, // Optional
+});
+```
+
+### Mailomat
+
+```typescript
+import { mailomatProvider } from "@visulima/email/providers/mailomat";
+
+const mailomat = mailomatProvider({
+    apiKey: process.env.MAILOMAT_API_KEY!,
+    endpoint: "https://api.mailomat.com", // Optional, defaults to this
+    timeout: 30000, // Optional
+    retries: 3, // Optional
+});
+```
+
+### Sweego
+
+```typescript
+import { sweegoProvider } from "@visulima/email/providers/sweego";
+
+const sweego = sweegoProvider({
+    apiKey: process.env.SWEEGO_API_KEY!,
+    endpoint: "https://api.sweego.com", // Optional, defaults to this
+    timeout: 30000, // Optional
+    retries: 3, // Optional
+});
+```
+
+### Mailgun
+
+```typescript
+import { mailgunProvider } from "@visulima/email/providers/mailgun";
+
+const mailgun = mailgunProvider({
+    apiKey: process.env.MAILGUN_API_KEY!,
+    domain: process.env.MAILGUN_DOMAIN!, // Required: Your Mailgun domain
+    endpoint: "https://api.mailgun.net", // Optional: Use https://api.eu.mailgun.net for EU accounts
+    timeout: 30000, // Optional
+    retries: 3, // Optional
+});
+```
+
+### Postmark
+
+```typescript
+import { postmarkProvider } from "@visulima/email/providers/postmark";
+
+const postmark = postmarkProvider({
+    serverToken: process.env.POSTMARK_SERVER_TOKEN!,
+    endpoint: "https://api.postmarkapp.com", // Optional, defaults to this
+    timeout: 30000, // Optional
+    retries: 3, // Optional
+});
+```
+
+### SendGrid
+
+```typescript
+import { sendGridProvider } from "@visulima/email/providers/sendgrid";
+
+const sendgrid = sendGridProvider({
+    apiKey: process.env.SENDGRID_API_KEY!,
+    endpoint: "https://api.sendgrid.com/v3", // Optional, defaults to this
+    timeout: 30000, // Optional
+    retries: 3, // Optional
+});
+```
+
 ### Plunk
 
 ```typescript
@@ -105,6 +325,28 @@ AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
 SMTP_USER=user@example.com
 SMTP_PASSWORD=password
 ZEPTOMAIL_TOKEN=Zoho-enczapikey <your_api_key>
+BREVO_API_KEY=your-brevo-api-key
+MAILJET_API_KEY=your-mailjet-api-key
+MAILJET_API_SECRET=your-mailjet-api-secret
+MAILERSEND_API_TOKEN=your-mailersend-api-token
+MANDRILL_API_KEY=your-mandrill-api-key
+MAILPACE_API_TOKEN=your-mailpace-api-token
+MAILTRAP_API_TOKEN=your-mailtrap-api-token
+POSTAL_HOST=your-postal-server.com
+POSTAL_API_KEY=your-postal-api-key
+AZURE_ACCESS_TOKEN=your-azure-access-token
+AZURE_REGION=eastus
+AZURE_CONNECTION_STRING=endpoint=https://...;accesskey=...
+INFOBIP_API_KEY=your-infobip-api-key
+SCALEWAY_API_KEY=your-scaleway-api-key
+SCALEWAY_REGION=fr-par
+AHASEND_API_KEY=your-ahasend-api-key
+MAILOMAT_API_KEY=your-mailomat-api-key
+SWEEGO_API_KEY=your-sweego-api-key
+MAILGUN_API_KEY=your-mailgun-api-key
+MAILGUN_DOMAIN=your-domain.com
+POSTMARK_SERVER_TOKEN=your-postmark-server-token
+SENDGRID_API_KEY=SG.your-sendgrid-api-key
 PLUNK_API_KEY=your-plunk-api-key
 ```
 
@@ -145,11 +387,29 @@ const smtp = smtpProvider(smtpConfig);
 ```
 
 Each provider exports its own config type from its provider path. For example:
+
 - `ResendConfig` from `@visulima/email/providers/resend`
 - `SmtpConfig` from `@visulima/email/providers/smtp`
 - `AwsSesConfig` from `@visulima/email/providers/aws-ses`
+- `BrevoConfig` from `@visulima/email/providers/brevo`
+- `MailgunConfig` from `@visulima/email/providers/mailgun`
+- `MailjetConfig` from `@visulima/email/providers/mailjet`
+- `MailerSendConfig` from `@visulima/email/providers/mailersend`
+- `MandrillConfig` from `@visulima/email/providers/mandrill`
+- `MailPaceConfig` from `@visulima/email/providers/mailpace`
+- `MailtrapConfig` from `@visulima/email/providers/mailtrap`
+- `PostalConfig` from `@visulima/email/providers/postal`
+- `PostmarkConfig` from `@visulima/email/providers/postmark`
+- `AzureConfig` from `@visulima/email/providers/azure`
+- `InfobipConfig` from `@visulima/email/providers/infobip`
+- `ScalewayConfig` from `@visulima/email/providers/scaleway`
+- `AhaSendConfig` from `@visulima/email/providers/ahasend`
+- `MailomatConfig` from `@visulima/email/providers/mailomat`
+- `SweegoConfig` from `@visulima/email/providers/sweego`
+- `SendGridConfig` from `@visulima/email/providers/sendgrid`
 - `PlunkConfig` from `@visulima/email/providers/plunk`
 - `MockConfig` from `@visulima/email/providers/mock`
+- `OpenTelemetryConfig` from `@visulima/email/providers/opentelemetry`
 - And so on for other providers
 
 ## Provider Factory Pattern

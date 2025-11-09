@@ -83,7 +83,7 @@ export const nodemailerProvider: ProviderFactory<NodemailerConfig, unknown, Node
 
             if (emailOptions.cc) {
                 mailOptions.cc = Array.isArray(emailOptions.cc)
-                    ? emailOptions.cc.map((addr) => (addr.name ? `${addr.name} <${addr.email}>` : addr.email))
+                    ? emailOptions.cc.map((addr) => addr.name ? `${addr.name} <${addr.email}>` : addr.email)
                     : emailOptions.cc.name
                         ? `${emailOptions.cc.name} <${emailOptions.cc.email}>`
                         : emailOptions.cc.email;
@@ -91,7 +91,7 @@ export const nodemailerProvider: ProviderFactory<NodemailerConfig, unknown, Node
 
             if (emailOptions.bcc) {
                 mailOptions.bcc = Array.isArray(emailOptions.bcc)
-                    ? emailOptions.bcc.map((addr) => (addr.name ? `${addr.name} <${addr.email}>` : addr.email))
+                    ? emailOptions.bcc.map((addr) => addr.name ? `${addr.name} <${addr.email}>` : addr.email)
                     : emailOptions.bcc.name
                         ? `${emailOptions.bcc.name} <${emailOptions.bcc.email}>`
                         : emailOptions.bcc.email;

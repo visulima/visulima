@@ -23,7 +23,7 @@ export interface Mailable {
  */
 const normalizeAddresses = (address: EmailAddress | EmailAddress[] | string | string[]): EmailAddress[] => {
     if (Array.isArray(address)) {
-        return address.map((addr) => (typeof addr === "string" ? { email: addr } : addr));
+        return address.map((addr) => typeof addr === "string" ? { email: addr } : addr);
     }
 
     return typeof address === "string" ? [{ email: address }] : [address];
@@ -133,7 +133,7 @@ export class MailMessage {
 
     /**
      * Set multiple headers
-     * Accepts both Record<string, string> and ImmutableHeaders
+     * Accepts both Record&lt;string, string> and ImmutableHeaders
      */
     setHeaders(headers: EmailHeaders): this {
         const headersRecord = headersToRecord(headers);
@@ -476,7 +476,6 @@ export class Mail {
     /**
      * Sends multiple messages using the email service.
      * Returns an async iterable that yields receipts for each sent message.
-     *
      * @example
      * ```ts
      * const messages = [
@@ -492,12 +491,11 @@ export class Mail {
      *   }
      * }
      * ```
-     *
-     * @param messages - An iterable of email options or mailables to send
-     * @param options - Optional parameters for sending (e.g., abort signal)
+     * @param messages An iterable of email options or mailables to send
+     * @param options Optional parameters for sending (e.g., abort signal)
      * @returns An async iterable that yields receipts for each sent message
      */
-    async *sendMany(
+    async* sendMany(
         messages: Iterable<EmailOptions | Mailable> | AsyncIterable<EmailOptions | Mailable>,
         options?: { signal?: AbortSignal },
     ): AsyncIterable<Receipt> {
@@ -507,9 +505,9 @@ export class Mail {
             // Check for abort signal
             if (options?.signal?.aborted) {
                 yield {
-                    successful: false,
                     errorMessages: ["Send operation was aborted"],
                     provider: providerName,
+                    successful: false,
                 };
 
                 return;
@@ -524,28 +522,28 @@ export class Mail {
 
                 if (result.success && result.data) {
                     yield {
-                        successful: true,
                         messageId: result.data.messageId,
                         provider: result.data.provider || providerName,
                         response: result.data.response,
+                        successful: true,
                         timestamp: result.data.timestamp,
                     };
                 } else {
                     const errorMessages = result.error instanceof Error ? [result.error.message] : [String(result.error || "Unknown error")];
 
                     yield {
-                        successful: false,
                         errorMessages,
                         provider: providerName,
+                        successful: false,
                     };
                 }
             } catch (error) {
                 const errorMessages = error instanceof Error ? [error.message] : [String(error)];
 
                 yield {
-                    successful: false,
                     errorMessages,
                     provider: providerName,
+                    successful: false,
                 };
             }
         }

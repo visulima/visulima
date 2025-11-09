@@ -1,5 +1,6 @@
 import type { Tracer } from "@opentelemetry/api";
 import { context, SpanStatusCode, trace } from "@opentelemetry/api";
+
 import { EmailError, RequiredOptionError } from "../../errors/email-error";
 import type { EmailOptions, EmailResult, Result } from "../../types";
 import { createLogger } from "../../utils";
@@ -177,6 +178,17 @@ export const opentelemetryProvider: ProviderFactory<OpenTelemetryConfig, unknown
             },
 
             /**
+             * Get the wrapped provider instance
+             */
+            getInstance(): Provider {
+                if (!wrappedProvider) {
+                    throw new EmailError(PROVIDER_NAME, "Provider not initialized. Call initialize() first.");
+                }
+
+                return wrappedProvider;
+            },
+
+            /**
              * Initialize the OpenTelemetry provider and wrapped provider
              */
             async initialize(): Promise<void> {
@@ -228,6 +240,7 @@ export const opentelemetryProvider: ProviderFactory<OpenTelemetryConfig, unknown
 
                     // Set span attributes
                     const attributes = createSpanAttributes(emailOptions, options.recordContent);
+
                     span.setAttributes(attributes);
 
                     // Add provider name attribute
@@ -236,9 +249,7 @@ export const opentelemetryProvider: ProviderFactory<OpenTelemetryConfig, unknown
                     }
 
                     // Execute the email send within the span context
-                    const result = await context.with(trace.setSpan(context.active(), span), async () => {
-                        return await wrappedProvider.sendEmail(emailOptions);
-                    });
+                    const result = await context.with(trace.setSpan(context.active(), span), async () => await wrappedProvider.sendEmail(emailOptions));
 
                     if (result.success && result.data) {
                         // Record success
@@ -296,14 +307,14 @@ export const opentelemetryProvider: ProviderFactory<OpenTelemetryConfig, unknown
             },
 
             /**
-             * Get the wrapped provider instance
+             * Shutdown the wrapped provider
              */
-            getInstance(): Provider {
-                if (!wrappedProvider) {
-                    throw new EmailError(PROVIDER_NAME, "Provider not initialized. Call initialize() first.");
+            async shutdown(): Promise<void> {
+                if (wrappedProvider && wrappedProvider.shutdown) {
+                    await wrappedProvider.shutdown();
                 }
 
-                return wrappedProvider;
+                isInitialized = false;
             },
 
             /**
@@ -324,18 +335,6 @@ export const opentelemetryProvider: ProviderFactory<OpenTelemetryConfig, unknown
                     return false;
                 }
             },
-
-            /**
-             * Shutdown the wrapped provider
-             */
-            async shutdown(): Promise<void> {
-                if (wrappedProvider && wrappedProvider.shutdown) {
-                    await wrappedProvider.shutdown();
-                }
-
-                isInitialized = false;
-            },
         };
     },
 );
-

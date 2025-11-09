@@ -4,8 +4,8 @@ import type { BaseConfig, EmailOptions, EmailResult, Receipt } from "../../types
  * Random delay range configuration
  */
 export interface RandomDelayRange {
-    min: number;
     max: number;
+    min: number;
 }
 
 /**
@@ -13,16 +13,9 @@ export interface RandomDelayRange {
  */
 export interface MockConfig extends BaseConfig {
     /**
-     * Whether to simulate failures (default: false)
-     * When true, sendEmail will return an error
+     * Default response to return for send operations
      */
-    simulateFailure?: boolean;
-
-    /**
-     * Failure rate (0-1) for simulating random failures (default: 0)
-     * 0 = never fail, 1 = always fail
-     */
-    failureRate?: number;
+    defaultResponse?: Receipt;
 
     /**
      * Delay in milliseconds before resolving (default: 0)
@@ -31,15 +24,22 @@ export interface MockConfig extends BaseConfig {
     delay?: number;
 
     /**
+     * Failure rate (0-1) for simulating random failures (default: 0)
+     * 0 = never fail, 1 = always fail
+     */
+    failureRate?: number;
+
+    /**
      * Random delay range in milliseconds
      * When set, delay will be randomly chosen between min and max
      */
     randomDelayRange?: RandomDelayRange;
 
     /**
-     * Default response to return for send operations
+     * Whether to simulate failures (default: false)
+     * When true, sendEmail will return an error
      */
-    defaultResponse?: Receipt;
+    simulateFailure?: boolean;
 }
 
 /**
@@ -58,4 +58,3 @@ export interface MockEmailEntry {
     result: EmailResult;
     timestamp: Date;
 }
-

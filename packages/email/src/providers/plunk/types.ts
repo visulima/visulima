@@ -13,6 +13,11 @@ export interface PlunkConfig extends BaseConfig {
  */
 export interface PlunkEmailOptions extends EmailOptions {
     /**
+     * Data to pass to the email template
+     */
+    data?: Record<string, unknown>;
+
+    /**
      * Subscriber email (used for tracking and analytics)
      * If not provided, uses the first 'to' address
      */
@@ -24,13 +29,7 @@ export interface PlunkEmailOptions extends EmailOptions {
     subscriberId?: string;
 
     /**
-     * Data to pass to the email template
-     */
-    data?: Record<string, unknown>;
-
-    /**
      * Template ID for template-based emails
      */
     templateId?: string;
 }
-
