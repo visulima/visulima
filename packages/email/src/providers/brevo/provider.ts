@@ -2,7 +2,6 @@ import { Buffer } from "node:buffer";
 
 import { EmailError, RequiredOptionError } from "../../errors/email-error";
 import type { EmailAddress, EmailResult, Result } from "../../types";
-import { createLogger } from "../../utils/create-logger";
 import { generateMessageId } from "../../utils/generate-message-id";
 import { headersToRecord } from "../../utils/headers-to-record";
 import { makeRequest } from "../../utils/make-request";
@@ -10,6 +9,7 @@ import { retry } from "../../utils/retry";
 import { validateEmailOptions } from "../../utils/validate-email-options";
 import type { ProviderFactory } from "../provider";
 import { defineProvider } from "../provider";
+import { createProviderLogger, formatSendGridAddresses, handleProviderError, ProviderState } from "../utils";
 import type { BrevoConfig, BrevoEmailOptions } from "./types";
 
 const PROVIDER_NAME = "brevo";
@@ -17,24 +17,6 @@ const DEFAULT_ENDPOINT = "https://api.brevo.com/v3";
 const DEFAULT_TIMEOUT = 30_000;
 const DEFAULT_RETRIES = 3;
 
-/**
- * Format email address for Brevo
- */
-function formatAddress(address: EmailAddress): { email: string; name?: string } {
-    return {
-        email: address.email,
-        ...address.name && { name: address.name },
-    };
-}
-
-/**
- * Format email addresses array for Brevo
- */
-function formatAddresses(addresses: EmailAddress | EmailAddress[]): { email: string; name?: string }[] {
-    const addressList = Array.isArray(addresses) ? addresses : [addresses];
-
-    return addressList.map(formatAddress);
-}
 
 /**
  * Brevo Provider for sending emails through Brevo API
@@ -53,9 +35,8 @@ export const brevoProvider: ProviderFactory<BrevoConfig, unknown, BrevoEmailOpti
         ...options_.logger && { logger: options_.logger },
     };
 
-    let isInitialized = false;
-
-    const logger = createLogger(PROVIDER_NAME, options.debug, options_.logger);
+    const providerState = new ProviderState();
+    const logger = createProviderLogger(PROVIDER_NAME, options.debug, options_.logger);
 
     return {
         endpoint: options.endpoint,
@@ -86,9 +67,7 @@ export const brevoProvider: ProviderFactory<BrevoConfig, unknown, BrevoEmailOpti
                     };
                 }
 
-                if (!isInitialized) {
-                    await this.initialize();
-                }
+                await providerState.ensureInitialized(() => this.initialize(), PROVIDER_NAME);
 
                 const headers: Record<string, string> = {
                     "api-key": options.apiKey,
@@ -123,10 +102,9 @@ export const brevoProvider: ProviderFactory<BrevoConfig, unknown, BrevoEmailOpti
                     success: true,
                 };
             } catch (error) {
-                logger.debug("Exception retrieving email", error);
 
                 return {
-                    error: new EmailError(PROVIDER_NAME, `Failed to retrieve email: ${(error as Error).message}`, { cause: error as Error }),
+                    error: handleProviderError(PROVIDER_NAME, "retrieve email", error, logger),
                     success: false,
                 };
             }
@@ -136,20 +114,13 @@ export const brevoProvider: ProviderFactory<BrevoConfig, unknown, BrevoEmailOpti
          * Initialize the Brevo provider
          */
         async initialize(): Promise<void> {
-            if (isInitialized) {
-                return;
-            }
-
-            try {
+            await providerState.ensureInitialized(async () => {
                 if (!await this.isAvailable()) {
                     throw new EmailError(PROVIDER_NAME, "Brevo API not available or invalid API key");
                 }
 
-                isInitialized = true;
                 logger.debug("Provider initialized successfully");
-            } catch (error) {
-                throw new EmailError(PROVIDER_NAME, `Failed to initialize: ${(error as Error).message}`, { cause: error as Error });
-            }
+            }, PROVIDER_NAME);
         },
 
         /**
@@ -212,9 +183,7 @@ export const brevoProvider: ProviderFactory<BrevoConfig, unknown, BrevoEmailOpti
                     };
                 }
 
-                if (!isInitialized) {
-                    await this.initialize();
-                }
+                await providerState.ensureInitialized(() => this.initialize(), PROVIDER_NAME);
 
                 // Build payload for Brevo API
                 const payload: Record<string, unknown> = {
@@ -363,10 +332,8 @@ export const brevoProvider: ProviderFactory<BrevoConfig, unknown, BrevoEmailOpti
                     success: true,
                 };
             } catch (error) {
-                logger.debug("Exception sending email", error);
-
                 return {
-                    error: new EmailError(PROVIDER_NAME, `Failed to send email: ${(error as Error).message}`, { cause: error as Error }),
+                    error: handleProviderError(PROVIDER_NAME, "send email", error, logger),
                     success: false,
                 };
             }

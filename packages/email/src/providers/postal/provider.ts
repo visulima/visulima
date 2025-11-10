@@ -2,7 +2,6 @@ import { Buffer } from "node:buffer";
 
 import { EmailError, RequiredOptionError } from "../../errors/email-error";
 import type { EmailAddress, EmailResult, Result } from "../../types";
-import { createLogger } from "../../utils/create-logger";
 import { generateMessageId } from "../../utils/generate-message-id";
 import { headersToRecord } from "../../utils/headers-to-record";
 import { makeRequest } from "../../utils/make-request";
@@ -10,30 +9,13 @@ import { retry } from "../../utils/retry";
 import { validateEmailOptions } from "../../utils/validate-email-options";
 import type { ProviderFactory } from "../provider";
 import { defineProvider } from "../provider";
+import { createProviderLogger, formatPostalAddresses, handleProviderError, ProviderState } from "../utils";
 import type { PostalConfig, PostalEmailOptions } from "./types";
 
 const PROVIDER_NAME = "postal";
 const DEFAULT_TIMEOUT = 30_000;
 const DEFAULT_RETRIES = 3;
 
-/**
- * Format email address for Postal
- */
-function formatAddress(address: EmailAddress): { address: string; name?: string } {
-    return {
-        address: address.email,
-        ...address.name && { name: address.name },
-    };
-}
-
-/**
- * Format email addresses array for Postal
- */
-function formatAddresses(addresses: EmailAddress | EmailAddress[]): { address: string; name?: string }[] {
-    const addressList = Array.isArray(addresses) ? addresses : [addresses];
-
-    return addressList.map(formatAddress);
-}
 
 /**
  * Postal Provider for sending emails through Postal API
@@ -59,9 +41,8 @@ export const postalProvider: ProviderFactory<PostalConfig, unknown, PostalEmailO
         ...options_.logger && { logger: options_.logger },
     };
 
-    let isInitialized = false;
-
-    const logger = createLogger(PROVIDER_NAME, options.debug, options_.logger);
+    const providerState = new ProviderState();
+    const logger = createProviderLogger(PROVIDER_NAME, options.debug, options_.logger);
 
     return {
         features: {

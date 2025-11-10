@@ -2,7 +2,6 @@ import { Buffer } from "node:buffer";
 
 import { EmailError, RequiredOptionError } from "../../errors/email-error";
 import type { EmailAddress, EmailResult, Result } from "../../types";
-import { createLogger } from "../../utils/create-logger";
 import { generateMessageId } from "../../utils/generate-message-id";
 import { headersToRecord } from "../../utils/headers-to-record";
 import { makeRequest } from "../../utils/make-request";
@@ -10,6 +9,7 @@ import { retry } from "../../utils/retry";
 import { validateEmailOptions } from "../../utils/validate-email-options";
 import type { ProviderFactory } from "../provider";
 import { defineProvider } from "../provider";
+import { createProviderLogger, formatSendGridAddress, formatSendGridAddresses, handleProviderError, ProviderState } from "../utils";
 import type { ScalewayConfig, ScalewayEmailOptions } from "./types";
 
 const PROVIDER_NAME = "scaleway";
@@ -17,24 +17,6 @@ const DEFAULT_ENDPOINT = "https://api.scaleway.com/transactional-email/v1alpha1"
 const DEFAULT_TIMEOUT = 30_000;
 const DEFAULT_RETRIES = 3;
 
-/**
- * Format email address for Scaleway
- */
-function formatAddress(address: EmailAddress): { email: string; name?: string } {
-    return {
-        email: address.email,
-        ...address.name && { name: address.name },
-    };
-}
-
-/**
- * Format email addresses array for Scaleway
- */
-function formatAddresses(addresses: EmailAddress | EmailAddress[]): { email: string; name?: string }[] {
-    const addressList = Array.isArray(addresses) ? addresses : [addresses];
-
-    return addressList.map(formatAddress);
-}
 
 /**
  * Scaleway Provider for sending emails through Scaleway API
@@ -61,9 +43,8 @@ export const scalewayProvider: ProviderFactory<ScalewayConfig, unknown, Scaleway
             ...options_.logger && { logger: options_.logger },
         };
 
-        let isInitialized = false;
-
-        const logger = createLogger(PROVIDER_NAME, options.debug, options_.logger);
+        const providerState = new ProviderState();
+        const logger = createProviderLogger(PROVIDER_NAME, options.debug, options_.logger);
 
         return {
             features: {
@@ -92,9 +73,7 @@ export const scalewayProvider: ProviderFactory<ScalewayConfig, unknown, Scaleway
                         };
                     }
 
-                    if (!isInitialized) {
-                        await this.initialize();
-                    }
+                await providerState.ensureInitialized(() => this.initialize(), PROVIDER_NAME);
 
                     const headers: Record<string, string> = {
                         "Content-Type": "application/json",
@@ -131,10 +110,9 @@ export const scalewayProvider: ProviderFactory<ScalewayConfig, unknown, Scaleway
                         success: true,
                     };
                 } catch (error) {
-                    logger.debug("Exception retrieving email", error);
 
                     return {
-                        error: new EmailError(PROVIDER_NAME, `Failed to retrieve email: ${(error as Error).message}`, { cause: error as Error }),
+                        error: handleProviderError(PROVIDER_NAME, "retrieve email", error, logger),
                         success: false,
                     };
                 }
@@ -144,20 +122,13 @@ export const scalewayProvider: ProviderFactory<ScalewayConfig, unknown, Scaleway
              * Initialize the Scaleway provider
              */
             async initialize(): Promise<void> {
-                if (isInitialized) {
-                    return;
-                }
-
-                try {
+                await providerState.ensureInitialized(async () => {
                     if (!await this.isAvailable()) {
                         throw new EmailError(PROVIDER_NAME, "Scaleway API not available or invalid API key");
                     }
 
-                    isInitialized = true;
                     logger.debug("Provider initialized successfully");
-                } catch (error) {
-                    throw new EmailError(PROVIDER_NAME, `Failed to initialize: ${(error as Error).message}`, { cause: error as Error });
-                }
+                }, PROVIDER_NAME);
             },
 
             /**
@@ -195,9 +166,7 @@ export const scalewayProvider: ProviderFactory<ScalewayConfig, unknown, Scaleway
                         };
                     }
 
-                    if (!isInitialized) {
-                        await this.initialize();
-                    }
+                await providerState.ensureInitialized(() => this.initialize(), PROVIDER_NAME);
 
                     // Build payload for Scaleway API
                     const payload: Record<string, unknown> = {
@@ -206,7 +175,7 @@ export const scalewayProvider: ProviderFactory<ScalewayConfig, unknown, Scaleway
                             ...emailOptions.from.name && { name: emailOptions.from.name },
                         },
                         subject: emailOptions.subject,
-                        to: formatAddresses(emailOptions.to),
+                        to: formatSendGridAddresses(emailOptions.to),
                     };
 
                     // Add HTML content
@@ -221,17 +190,17 @@ export const scalewayProvider: ProviderFactory<ScalewayConfig, unknown, Scaleway
 
                     // Add CC
                     if (emailOptions.cc) {
-                        payload.cc = formatAddresses(emailOptions.cc);
+                        payload.cc = formatSendGridAddresses(emailOptions.cc);
                     }
 
                     // Add BCC
                     if (emailOptions.bcc) {
-                        payload.bcc = formatAddresses(emailOptions.bcc);
+                        payload.bcc = formatSendGridAddresses(emailOptions.bcc);
                     }
 
                     // Add reply-to
                     if (emailOptions.replyTo) {
-                        payload.replyTo = formatAddress(emailOptions.replyTo);
+                        payload.replyTo = formatSendGridAddress(emailOptions.replyTo);
                     }
 
                     // Add template
@@ -336,10 +305,8 @@ export const scalewayProvider: ProviderFactory<ScalewayConfig, unknown, Scaleway
                         success: true,
                     };
                 } catch (error) {
-                    logger.debug("Exception sending email", error);
-
                     return {
-                        error: new EmailError(PROVIDER_NAME, `Failed to send email: ${(error as Error).message}`, { cause: error as Error }),
+                        error: handleProviderError(PROVIDER_NAME, "send email", error, logger),
                         success: false,
                     };
                 }

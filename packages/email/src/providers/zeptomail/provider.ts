@@ -1,6 +1,5 @@
 import { EmailError, RequiredOptionError } from "../../errors/email-error";
 import type { EmailAddress, EmailResult, Result } from "../../types";
-import { createLogger } from "../../utils/create-logger";
 import { generateMessageId } from "../../utils/generate-message-id";
 import { headersToRecord } from "../../utils/headers-to-record";
 import { makeRequest } from "../../utils/make-request";
@@ -8,6 +7,7 @@ import { retry } from "../../utils/retry";
 import { validateEmailOptions } from "../../utils/validate-email-options";
 import type { ProviderFactory } from "../provider";
 import { defineProvider } from "../provider";
+import { createProviderLogger, formatZeptomailAddress, formatZeptomailAddresses, handleProviderError, ProviderState } from "../utils";
 import type { ZeptomailConfig, ZeptomailEmailOptions } from "./types";
 
 // Constants
@@ -40,9 +40,8 @@ export const zeptomailProvider: ProviderFactory<ZeptomailConfig, unknown, Zeptom
             token: options_.token,
         };
 
-        let isInitialized = false;
-
-        const logger = createLogger(PROVIDER_NAME, options.debug, options_.logger);
+        const providerState = new ProviderState();
+        const logger = createProviderLogger(PROVIDER_NAME, options.debug, options_.logger);
 
         return {
             features: {
@@ -61,21 +60,14 @@ export const zeptomailProvider: ProviderFactory<ZeptomailConfig, unknown, Zeptom
              * Initialize the Zeptomail provider
              */
             async initialize(): Promise<void> {
-                if (isInitialized) {
-                    return;
-                }
-
-                try {
+                await providerState.ensureInitialized(async () => {
                     // Test endpoint availability and credentials
                     if (!await this.isAvailable()) {
                         throw new EmailError(PROVIDER_NAME, "Zeptomail API not available or invalid token");
                     }
 
-                    isInitialized = true;
                     logger.debug("Provider initialized successfully");
-                } catch (error) {
-                    throw new EmailError(PROVIDER_NAME, `Failed to initialize: ${(error as Error).message}`, { cause: error as Error });
-                }
+                }, PROVIDER_NAME);
             },
 
             /**
@@ -120,34 +112,14 @@ export const zeptomailProvider: ProviderFactory<ZeptomailConfig, unknown, Zeptom
                     }
 
                     // Make sure provider is initialized
-                    if (!isInitialized) {
-                        await this.initialize();
-                    }
+                await providerState.ensureInitialized(() => this.initialize(), PROVIDER_NAME);
 
-                    // Format a single EmailAddress for Zeptomail
-                    const formatSingleAddress = (address: EmailAddress) => {
-                        return {
-                            address: address.email,
-                            name: address.name || undefined,
-                        };
-                    };
-
-                    // Format array of email addresses for Zeptomail
-                    const formatEmailAddresses = (addresses: EmailAddress | EmailAddress[]) => {
-                        const addressList = Array.isArray(addresses) ? addresses : [addresses];
-
-                        return addressList.map((addr) => {
-                            return {
-                                email_address: formatSingleAddress(addr),
-                            };
-                        });
-                    };
 
                     // Prepare request payload
                     const payload: Record<string, any> = {
-                        from: formatSingleAddress(emailOptions.from),
+                        from: formatZeptomailAddress(emailOptions.from),
                         subject: emailOptions.subject,
-                        to: formatEmailAddresses(emailOptions.to),
+                        to: formatZeptomailAddresses(emailOptions.to),
                     };
 
                     // Add text body if present
@@ -162,17 +134,17 @@ export const zeptomailProvider: ProviderFactory<ZeptomailConfig, unknown, Zeptom
 
                     // Add CC if present
                     if (emailOptions.cc) {
-                        payload.cc = formatEmailAddresses(emailOptions.cc);
+                        payload.cc = formatZeptomailAddresses(emailOptions.cc);
                     }
 
                     // Add BCC if present
                     if (emailOptions.bcc) {
-                        payload.bcc = formatEmailAddresses(emailOptions.bcc);
+                        payload.bcc = formatZeptomailAddresses(emailOptions.bcc);
                     }
 
                     // Add reply-to if present
                     if (emailOptions.replyTo) {
-                        payload.reply_to = [formatSingleAddress(emailOptions.replyTo)];
+                        payload.reply_to = [formatZeptomailAddress(emailOptions.replyTo)];
                     }
 
                     // Add tracking options if present
@@ -305,10 +277,8 @@ export const zeptomailProvider: ProviderFactory<ZeptomailConfig, unknown, Zeptom
                         success: true,
                     };
                 } catch (error) {
-                    logger.debug("Exception sending email", error);
-
                     return {
-                        error: new EmailError(PROVIDER_NAME, `Failed to send email: ${(error as Error).message}`, { cause: error as Error }),
+                        error: handleProviderError(PROVIDER_NAME, "send email", error, logger),
                         success: false,
                     };
                 }

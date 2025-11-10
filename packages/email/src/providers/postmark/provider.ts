@@ -2,7 +2,6 @@ import { Buffer } from "node:buffer";
 
 import { EmailError, RequiredOptionError } from "../../errors/email-error";
 import type { EmailAddress, EmailResult, Result } from "../../types";
-import { createLogger } from "../../utils/create-logger";
 import { generateMessageId } from "../../utils/generate-message-id";
 import { headersToRecord } from "../../utils/headers-to-record";
 import { makeRequest } from "../../utils/make-request";
@@ -10,6 +9,7 @@ import { retry } from "../../utils/retry";
 import { validateEmailOptions } from "../../utils/validate-email-options";
 import type { ProviderFactory } from "../provider";
 import { defineProvider } from "../provider";
+import { createPostmarkAttachment, createProviderLogger, formatAddress, handleProviderError, ProviderState } from "../utils";
 import type { PostmarkConfig, PostmarkEmailOptions } from "./types";
 
 const PROVIDER_NAME = "postmark";
@@ -17,25 +17,6 @@ const DEFAULT_ENDPOINT = "https://api.postmarkapp.com";
 const DEFAULT_TIMEOUT = 30_000;
 const DEFAULT_RETRIES = 3;
 
-/**
- * Format email address for Postmark
- */
-function formatAddress(address: EmailAddress): string {
-    if (address.name) {
-        return `${address.name} <${address.email}>`;
-    }
-
-    return address.email;
-}
-
-/**
- * Format email addresses array for Postmark
- */
-function formatAddresses(addresses: EmailAddress | EmailAddress[]): string {
-    const addressList = Array.isArray(addresses) ? addresses : [addresses];
-
-    return addressList.map(formatAddress).join(",");
-}
 
 /**
  * Postmark Provider for sending emails through Postmark API
@@ -55,9 +36,8 @@ export const postmarkProvider: ProviderFactory<PostmarkConfig, unknown, Postmark
             ...options_.logger && { logger: options_.logger },
         };
 
-        let isInitialized = false;
-
-        const logger = createLogger(PROVIDER_NAME, options.debug, options_.logger);
+    const providerState = new ProviderState();
+    const logger = createProviderLogger(PROVIDER_NAME, options.debug, options_.logger);
 
         return {
             endpoint: options.endpoint,
@@ -88,9 +68,7 @@ export const postmarkProvider: ProviderFactory<PostmarkConfig, unknown, Postmark
                         };
                     }
 
-                    if (!isInitialized) {
-                        await this.initialize();
-                    }
+                await providerState.ensureInitialized(() => this.initialize(), PROVIDER_NAME);
 
                     const headers: Record<string, string> = {
                         "Content-Type": "application/json",
@@ -127,34 +105,25 @@ export const postmarkProvider: ProviderFactory<PostmarkConfig, unknown, Postmark
                         success: true,
                     };
                 } catch (error) {
-                    logger.debug("Exception retrieving email", error);
-
                     return {
-                        error: new EmailError(PROVIDER_NAME, `Failed to retrieve email: ${(error as Error).message}`, { cause: error as Error }),
+                        error: handleProviderError(PROVIDER_NAME, "retrieve email", error, logger),
                         success: false,
                     };
                 }
             },
 
-            /**
-             * Initialize the Postmark provider
-             */
-            async initialize(): Promise<void> {
-                if (isInitialized) {
-                    return;
+        /**
+         * Initialize the Postmark provider
+         */
+        async initialize(): Promise<void> {
+            await providerState.ensureInitialized(async () => {
+                if (!await this.isAvailable()) {
+                    throw new EmailError(PROVIDER_NAME, "Postmark API not available or invalid server token");
                 }
 
-                try {
-                    if (!await this.isAvailable()) {
-                        throw new EmailError(PROVIDER_NAME, "Postmark API not available or invalid server token");
-                    }
-
-                    isInitialized = true;
-                    logger.debug("Provider initialized successfully");
-                } catch (error) {
-                    throw new EmailError(PROVIDER_NAME, `Failed to initialize: ${(error as Error).message}`, { cause: error as Error });
-                }
-            },
+                logger.debug("Provider initialized successfully");
+            }, PROVIDER_NAME);
+        },
 
             /**
              * Check if Postmark API is available and credentials are valid
@@ -216,9 +185,7 @@ export const postmarkProvider: ProviderFactory<PostmarkConfig, unknown, Postmark
                         };
                     }
 
-                    if (!isInitialized) {
-                        await this.initialize();
-                    }
+                await providerState.ensureInitialized(() => this.initialize(), PROVIDER_NAME);
 
                     // Build payload for Postmark API
                     const payload: Record<string, unknown> = {
@@ -313,32 +280,7 @@ export const postmarkProvider: ProviderFactory<PostmarkConfig, unknown, Postmark
                     // Add attachments
                     if (emailOptions.attachments && emailOptions.attachments.length > 0) {
                         payload.Attachments = await Promise.all(
-                            emailOptions.attachments.map(async (attachment) => {
-                                let content: string;
-
-                                if (attachment.content) {
-                                    if (typeof attachment.content === "string") {
-                                        content = attachment.content;
-                                    } else if (attachment.content instanceof Promise) {
-                                        const buffer = await attachment.content;
-
-                                        content = Buffer.from(buffer).toString("base64");
-                                    } else {
-                                        content = attachment.content.toString("base64");
-                                    }
-                                } else if (attachment.raw) {
-                                    content = typeof attachment.raw === "string" ? attachment.raw : attachment.raw.toString("base64");
-                                } else {
-                                    throw new EmailError(PROVIDER_NAME, `Attachment ${attachment.filename} has no content`);
-                                }
-
-                                return {
-                                    Content: content,
-                                    ContentType: attachment.contentType || "application/octet-stream",
-                                    Name: attachment.filename,
-                                    ...attachment.cid && { ContentID: attachment.cid },
-                                };
-                            }),
+                            emailOptions.attachments.map(async (attachment) => createPostmarkAttachment(attachment, PROVIDER_NAME)),
                         );
                     }
 
@@ -392,10 +334,8 @@ export const postmarkProvider: ProviderFactory<PostmarkConfig, unknown, Postmark
                         success: true,
                     };
                 } catch (error) {
-                    logger.debug("Exception sending email", error);
-
                     return {
-                        error: new EmailError(PROVIDER_NAME, `Failed to send email: ${(error as Error).message}`, { cause: error as Error }),
+                        error: handleProviderError(PROVIDER_NAME, "send email", error, logger),
                         success: false,
                     };
                 }

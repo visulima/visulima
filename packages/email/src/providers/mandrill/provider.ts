@@ -2,7 +2,6 @@ import { Buffer } from "node:buffer";
 
 import { EmailError, RequiredOptionError } from "../../errors/email-error";
 import type { EmailAddress, EmailResult, Result } from "../../types";
-import { createLogger } from "../../utils/create-logger";
 import { generateMessageId } from "../../utils/generate-message-id";
 import { headersToRecord } from "../../utils/headers-to-record";
 import { makeRequest } from "../../utils/make-request";
@@ -10,6 +9,7 @@ import { retry } from "../../utils/retry";
 import { validateEmailOptions } from "../../utils/validate-email-options";
 import type { ProviderFactory } from "../provider";
 import { defineProvider } from "../provider";
+import { createProviderLogger, formatMandrillAddresses, handleProviderError, ProviderState } from "../utils";
 import type { MandrillConfig, MandrillEmailOptions } from "./types";
 
 const PROVIDER_NAME = "mandrill";
@@ -17,25 +17,6 @@ const DEFAULT_ENDPOINT = "https://mandrillapp.com/api/1.0";
 const DEFAULT_TIMEOUT = 30_000;
 const DEFAULT_RETRIES = 3;
 
-/**
- * Format email address for Mandrill
- */
-function formatAddress(address: EmailAddress): { email: string; name?: string; type?: string } {
-    return {
-        email: address.email,
-        ...address.name && { name: address.name },
-        type: "to",
-    };
-}
-
-/**
- * Format email addresses array for Mandrill
- */
-function formatAddresses(addresses: EmailAddress | EmailAddress[]): { email: string; name?: string; type?: string }[] {
-    const addressList = Array.isArray(addresses) ? addresses : [addresses];
-
-    return addressList.map(formatAddress);
-}
 
 /**
  * Mandrill Provider for sending emails through Mandrill API
@@ -55,9 +36,8 @@ export const mandrillProvider: ProviderFactory<MandrillConfig, unknown, Mandrill
             ...options_.logger && { logger: options_.logger },
         };
 
-        let isInitialized = false;
-
-        const logger = createLogger(PROVIDER_NAME, options.debug, options_.logger);
+        const providerState = new ProviderState();
+        const logger = createProviderLogger(PROVIDER_NAME, options.debug, options_.logger);
 
         return {
             features: {
@@ -86,9 +66,7 @@ export const mandrillProvider: ProviderFactory<MandrillConfig, unknown, Mandrill
                         };
                     }
 
-                    if (!isInitialized) {
-                        await this.initialize();
-                    }
+                await providerState.ensureInitialized(() => this.initialize(), PROVIDER_NAME);
 
                     logger.debug("Retrieving email details", { id });
 
@@ -134,10 +112,9 @@ export const mandrillProvider: ProviderFactory<MandrillConfig, unknown, Mandrill
                         success: true,
                     };
                 } catch (error) {
-                    logger.debug("Exception retrieving email", error);
 
                     return {
-                        error: new EmailError(PROVIDER_NAME, `Failed to retrieve email: ${(error as Error).message}`, { cause: error as Error }),
+                        error: handleProviderError(PROVIDER_NAME, "retrieve email", error, logger),
                         success: false,
                     };
                 }
@@ -147,20 +124,13 @@ export const mandrillProvider: ProviderFactory<MandrillConfig, unknown, Mandrill
              * Initialize the Mandrill provider
              */
             async initialize(): Promise<void> {
-                if (isInitialized) {
-                    return;
-                }
-
-                try {
+                await providerState.ensureInitialized(async () => {
                     if (!await this.isAvailable()) {
                         throw new EmailError(PROVIDER_NAME, "Mandrill API not available or invalid API key");
                     }
 
-                    isInitialized = true;
                     logger.debug("Provider initialized successfully");
-                } catch (error) {
-                    throw new EmailError(PROVIDER_NAME, `Failed to initialize: ${(error as Error).message}`, { cause: error as Error });
-                }
+                }, PROVIDER_NAME);
             },
 
             /**
@@ -230,9 +200,7 @@ export const mandrillProvider: ProviderFactory<MandrillConfig, unknown, Mandrill
                         };
                     }
 
-                    if (!isInitialized) {
-                        await this.initialize();
-                    }
+                await providerState.ensureInitialized(() => this.initialize(), PROVIDER_NAME);
 
                     // Build message for Mandrill API
                     const message: Record<string, unknown> = {
@@ -241,12 +209,12 @@ export const mandrillProvider: ProviderFactory<MandrillConfig, unknown, Mandrill
                         subject: emailOptions.subject,
                         text: emailOptions.text || "",
                         ...emailOptions.from.name && { from_name: emailOptions.from.name },
-                        to: formatAddresses(emailOptions.to),
+                        to: formatMandrillAddresses(emailOptions.to, "to"),
                     };
 
                     // Add CC
                     if (emailOptions.cc) {
-                        const ccAddresses = formatAddresses(emailOptions.cc);
+                        const ccAddresses = formatMandrillAddresses(emailOptions.cc, "cc");
 
                         for (const addr of ccAddresses) {
                             addr.type = "cc";
@@ -257,7 +225,7 @@ export const mandrillProvider: ProviderFactory<MandrillConfig, unknown, Mandrill
 
                     // Add BCC
                     if (emailOptions.bcc) {
-                        const bccAddresses = formatAddresses(emailOptions.bcc);
+                        const bccAddresses = formatMandrillAddresses(emailOptions.bcc, "bcc");
 
                         for (const addr of bccAddresses) {
                             addr.type = "bcc";
@@ -418,10 +386,8 @@ export const mandrillProvider: ProviderFactory<MandrillConfig, unknown, Mandrill
                         success: true,
                     };
                 } catch (error) {
-                    logger.debug("Exception sending email", error);
-
                     return {
-                        error: new EmailError(PROVIDER_NAME, `Failed to send email: ${(error as Error).message}`, { cause: error as Error }),
+                        error: handleProviderError(PROVIDER_NAME, "send email", error, logger),
                         success: false,
                     };
                 }

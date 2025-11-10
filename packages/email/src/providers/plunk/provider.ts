@@ -2,7 +2,6 @@ import { Buffer } from "node:buffer";
 
 import { EmailError, RequiredOptionError } from "../../errors/email-error";
 import type { EmailAddress, EmailResult, Result } from "../../types";
-import { createLogger } from "../../utils/create-logger";
 import { generateMessageId } from "../../utils/generate-message-id";
 import { headersToRecord } from "../../utils/headers-to-record";
 import { makeRequest } from "../../utils/make-request";
@@ -10,6 +9,7 @@ import { retry } from "../../utils/retry";
 import { validateEmailOptions } from "../../utils/validate-email-options";
 import type { ProviderFactory } from "../provider";
 import { defineProvider } from "../provider";
+import { createProviderLogger, handleProviderError, ProviderState } from "../utils";
 import type { PlunkConfig, PlunkEmailOptions } from "./types";
 
 const PROVIDER_NAME = "plunk";
@@ -33,9 +33,8 @@ export const plunkProvider: ProviderFactory<PlunkConfig, unknown, PlunkEmailOpti
         timeout: options_.timeout || DEFAULT_TIMEOUT,
     };
 
-    let isInitialized = false;
-
-    const logger = createLogger(PROVIDER_NAME, options.debug, options_.logger);
+    const providerState = new ProviderState();
+    const logger = createProviderLogger(PROVIDER_NAME, options.debug, options_.logger);
 
     return {
         features: {
@@ -64,9 +63,7 @@ export const plunkProvider: ProviderFactory<PlunkConfig, unknown, PlunkEmailOpti
                     };
                 }
 
-                if (!isInitialized) {
-                    await this.initialize();
-                }
+                await providerState.ensureInitialized(() => this.initialize(), PROVIDER_NAME);
 
                 const headers: Record<string, string> = {
                     Authorization: `Bearer ${options.apiKey}`,
@@ -101,10 +98,9 @@ export const plunkProvider: ProviderFactory<PlunkConfig, unknown, PlunkEmailOpti
                     success: true,
                 };
             } catch (error) {
-                logger.debug("Exception retrieving email", error);
 
                 return {
-                    error: new EmailError(PROVIDER_NAME, `Failed to retrieve email: ${(error as Error).message}`, { cause: error as Error }),
+                    error: handleProviderError(PROVIDER_NAME, "retrieve email", error, logger),
                     success: false,
                 };
             }
@@ -114,20 +110,13 @@ export const plunkProvider: ProviderFactory<PlunkConfig, unknown, PlunkEmailOpti
          * Initialize the Plunk provider
          */
         async initialize(): Promise<void> {
-            if (isInitialized) {
-                return;
-            }
-
-            try {
+            await providerState.ensureInitialized(async () => {
                 if (!await this.isAvailable()) {
                     throw new EmailError(PROVIDER_NAME, "Plunk API not available or invalid API key");
                 }
 
-                isInitialized = true;
                 logger.debug("Provider initialized successfully");
-            } catch (error) {
-                throw new EmailError(PROVIDER_NAME, `Failed to initialize: ${(error as Error).message}`, { cause: error as Error });
-            }
+            }, PROVIDER_NAME);
         },
 
         /**
@@ -169,9 +158,7 @@ export const plunkProvider: ProviderFactory<PlunkConfig, unknown, PlunkEmailOpti
                     };
                 }
 
-                if (!isInitialized) {
-                    await this.initialize();
-                }
+                await providerState.ensureInitialized(() => this.initialize(), PROVIDER_NAME);
 
                 const formatRecipients = (addresses: EmailAddress | EmailAddress[]): string[] => {
                     if (Array.isArray(addresses)) {
@@ -338,10 +325,8 @@ export const plunkProvider: ProviderFactory<PlunkConfig, unknown, PlunkEmailOpti
                     success: true,
                 };
             } catch (error) {
-                logger.debug("Exception sending email", error);
-
                 return {
-                    error: new EmailError(PROVIDER_NAME, `Failed to send email: ${(error as Error).message}`, { cause: error as Error }),
+                    error: handleProviderError(PROVIDER_NAME, "send email", error, logger),
                     success: false,
                 };
             }

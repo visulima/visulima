@@ -2,7 +2,6 @@ import { Buffer } from "node:buffer";
 
 import { EmailError, RequiredOptionError } from "../../errors/email-error";
 import type { EmailAddress, EmailResult, Result } from "../../types";
-import { createLogger } from "../../utils/create-logger";
 import { generateMessageId } from "../../utils/generate-message-id";
 import { headersToRecord } from "../../utils/headers-to-record";
 import { makeRequest } from "../../utils/make-request";
@@ -10,6 +9,7 @@ import { retry } from "../../utils/retry";
 import { validateEmailOptions } from "../../utils/validate-email-options";
 import type { ProviderFactory } from "../provider";
 import { defineProvider } from "../provider";
+import { createProviderLogger, formatSendGridAddress, formatSendGridAddresses, handleProviderError, ProviderState } from "../utils";
 import type { MailerSendConfig, MailerSendEmailOptions } from "./types";
 
 const PROVIDER_NAME = "mailersend";
@@ -17,24 +17,6 @@ const DEFAULT_ENDPOINT = "https://api.mailersend.com";
 const DEFAULT_TIMEOUT = 30_000;
 const DEFAULT_RETRIES = 3;
 
-/**
- * Format email address for MailerSend
- */
-function formatAddress(address: EmailAddress): { email: string; name?: string } {
-    return {
-        email: address.email,
-        ...address.name && { name: address.name },
-    };
-}
-
-/**
- * Format email addresses array for MailerSend
- */
-function formatAddresses(addresses: EmailAddress | EmailAddress[]): { email: string; name?: string }[] {
-    const addressList = Array.isArray(addresses) ? addresses : [addresses];
-
-    return addressList.map(formatAddress);
-}
 
 /**
  * MailerSend Provider for sending emails through MailerSend API
@@ -54,9 +36,8 @@ export const mailerSendProvider: ProviderFactory<MailerSendConfig, unknown, Mail
             ...options_.logger && { logger: options_.logger },
         };
 
-        let isInitialized = false;
-
-        const logger = createLogger(PROVIDER_NAME, options.debug, options_.logger);
+    const providerState = new ProviderState();
+    const logger = createProviderLogger(PROVIDER_NAME, options.debug, options_.logger);
 
         return {
             features: {
@@ -85,9 +66,7 @@ export const mailerSendProvider: ProviderFactory<MailerSendConfig, unknown, Mail
                         };
                     }
 
-                    if (!isInitialized) {
-                        await this.initialize();
-                    }
+                await providerState.ensureInitialized(() => this.initialize(), PROVIDER_NAME);
 
                     const headers: Record<string, string> = {
                         Authorization: `Bearer ${options.apiToken}`,
@@ -124,34 +103,26 @@ export const mailerSendProvider: ProviderFactory<MailerSendConfig, unknown, Mail
                         success: true,
                     };
                 } catch (error) {
-                    logger.debug("Exception retrieving email", error);
 
-                    return {
-                        error: new EmailError(PROVIDER_NAME, `Failed to retrieve email: ${(error as Error).message}`, { cause: error as Error }),
-                        success: false,
-                    };
+                return {
+                    error: handleProviderError(PROVIDER_NAME, "retrieve email", error, logger),
+                    success: false,
+                };
                 }
             },
 
             /**
              * Initialize the MailerSend provider
              */
-            async initialize(): Promise<void> {
-                if (isInitialized) {
-                    return;
+        async initialize(): Promise<void> {
+            await providerState.ensureInitialized(async () => {
+                if (!await this.isAvailable()) {
+                    throw new EmailError(PROVIDER_NAME, "MailerSend API not available or invalid API token");
                 }
 
-                try {
-                    if (!await this.isAvailable()) {
-                        throw new EmailError(PROVIDER_NAME, "MailerSend API not available or invalid API token");
-                    }
-
-                    isInitialized = true;
-                    logger.debug("Provider initialized successfully");
-                } catch (error) {
-                    throw new EmailError(PROVIDER_NAME, `Failed to initialize: ${(error as Error).message}`, { cause: error as Error });
-                }
-            },
+                logger.debug("Provider initialized successfully");
+            }, PROVIDER_NAME);
+        },
 
             /**
              * Check if MailerSend API is available and credentials are valid
@@ -213,15 +184,13 @@ export const mailerSendProvider: ProviderFactory<MailerSendConfig, unknown, Mail
                         };
                     }
 
-                    if (!isInitialized) {
-                        await this.initialize();
-                    }
+                await providerState.ensureInitialized(() => this.initialize(), PROVIDER_NAME);
 
                     // Build payload for MailerSend API
                     const payload: Record<string, unknown> = {
-                        from: formatAddress(emailOptions.from),
+                        from: { email: emailOptions.from.email, name: emailOptions.from.name },
                         subject: emailOptions.subject,
-                        to: formatAddresses(emailOptions.to),
+                        to: formatSendGridAddresses(emailOptions.to),
                     };
 
                     // Add HTML content
@@ -236,17 +205,17 @@ export const mailerSendProvider: ProviderFactory<MailerSendConfig, unknown, Mail
 
                     // Add CC
                     if (emailOptions.cc) {
-                        payload.cc = formatAddresses(emailOptions.cc);
+                        payload.cc = formatSendGridAddresses(emailOptions.cc);
                     }
 
                     // Add BCC
                     if (emailOptions.bcc) {
-                        payload.bcc = formatAddresses(emailOptions.bcc);
+                        payload.bcc = formatSendGridAddresses(emailOptions.bcc);
                     }
 
                     // Add reply-to
                     if (emailOptions.replyTo) {
-                        payload.reply_to = formatAddress(emailOptions.replyTo);
+                        payload.reply_to = formatSendGridAddress(emailOptions.replyTo);
                     }
 
                     // Add template
@@ -367,10 +336,8 @@ export const mailerSendProvider: ProviderFactory<MailerSendConfig, unknown, Mail
                         success: true,
                     };
                 } catch (error) {
-                    logger.debug("Exception sending email", error);
-
                     return {
-                        error: new EmailError(PROVIDER_NAME, `Failed to send email: ${(error as Error).message}`, { cause: error as Error }),
+                        error: handleProviderError(PROVIDER_NAME, "send email", error, logger),
                         success: false,
                     };
                 }
