@@ -2,7 +2,6 @@ import { Buffer } from "node:buffer";
 
 import { EmailError, RequiredOptionError } from "../../errors/email-error";
 import type { EmailAddress, EmailResult, Result } from "../../types";
-import { createLogger } from "../../utils/create-logger";
 import { generateMessageId } from "../../utils/generate-message-id";
 import { headersToRecord } from "../../utils/headers-to-record";
 import { makeRequest } from "../../utils/make-request";
@@ -10,6 +9,7 @@ import { retry } from "../../utils/retry";
 import { validateEmailOptions } from "../../utils/validate-email-options";
 import type { ProviderFactory } from "../provider";
 import { defineProvider } from "../provider";
+import { createMailgunAttachment, createProviderLogger, formatAddress, handleProviderError, ProviderState } from "../utils";
 import type { MailgunConfig, MailgunEmailOptions } from "./types";
 
 const PROVIDER_NAME = "mailgun";
@@ -17,25 +17,6 @@ const DEFAULT_ENDPOINT = "https://api.mailgun.net";
 const DEFAULT_TIMEOUT = 30_000;
 const DEFAULT_RETRIES = 3;
 
-/**
- * Format email address for Mailgun
- */
-function formatAddress(address: EmailAddress): string {
-    if (address.name) {
-        return `${address.name} <${address.email}>`;
-    }
-
-    return address.email;
-}
-
-/**
- * Format email addresses array for Mailgun
- */
-function formatAddresses(addresses: EmailAddress | EmailAddress[]): string[] {
-    const addressList = Array.isArray(addresses) ? addresses : [addresses];
-
-    return addressList.map(formatAddress);
-}
 
 /**
  * Convert object to form data format
@@ -84,9 +65,8 @@ export const mailgunProvider: ProviderFactory<MailgunConfig, unknown, MailgunEma
         ...options_.logger && { logger: options_.logger },
     };
 
-    let isInitialized = false;
-
-    const logger = createLogger(PROVIDER_NAME, options.debug, options_.logger);
+    const providerState = new ProviderState();
+    const logger = createProviderLogger(PROVIDER_NAME, options.debug, options_.logger);
 
     return {
         endpoint: options.endpoint,
@@ -117,9 +97,7 @@ export const mailgunProvider: ProviderFactory<MailgunConfig, unknown, MailgunEma
                     };
                 }
 
-                if (!isInitialized) {
-                    await this.initialize();
-                }
+                await providerState.ensureInitialized(() => this.initialize(), PROVIDER_NAME);
 
                 // Mailgun uses events API to retrieve message info
                 const auth = Buffer.from(`api:${options.apiKey}`).toString("base64");
@@ -156,10 +134,8 @@ export const mailgunProvider: ProviderFactory<MailgunConfig, unknown, MailgunEma
                     success: true,
                 };
             } catch (error) {
-                logger.debug("Exception retrieving email", error);
-
                 return {
-                    error: new EmailError(PROVIDER_NAME, `Failed to retrieve email: ${(error as Error).message}`, { cause: error as Error }),
+                    error: handleProviderError(PROVIDER_NAME, "retrieve email", error, logger),
                     success: false,
                 };
             }
@@ -169,20 +145,13 @@ export const mailgunProvider: ProviderFactory<MailgunConfig, unknown, MailgunEma
          * Initialize the Mailgun provider
          */
         async initialize(): Promise<void> {
-            if (isInitialized) {
-                return;
-            }
-
-            try {
+            await providerState.ensureInitialized(async () => {
                 if (!await this.isAvailable()) {
                     throw new EmailError(PROVIDER_NAME, "Mailgun API not available or invalid API key/domain");
                 }
 
-                isInitialized = true;
                 logger.debug("Provider initialized successfully");
-            } catch (error) {
-                throw new EmailError(PROVIDER_NAME, `Failed to initialize: ${(error as Error).message}`, { cause: error as Error });
-            }
+            }, PROVIDER_NAME);
         },
 
         /**
@@ -246,9 +215,7 @@ export const mailgunProvider: ProviderFactory<MailgunConfig, unknown, MailgunEma
                     };
                 }
 
-                if (!isInitialized) {
-                    await this.initialize();
-                }
+                await providerState.ensureInitialized(() => this.initialize(), PROVIDER_NAME);
 
                 // Build form data for Mailgun API
                 const formData: Record<string, unknown> = {
@@ -356,27 +323,8 @@ export const mailgunProvider: ProviderFactory<MailgunConfig, unknown, MailgunEma
                     // For now, we'll use form-urlencoded and base64 encode attachments
                     // In a real implementation, you'd use FormData
                     for (let i = 0; i < emailOptions.attachments.length; i++) {
-                        const attachment = emailOptions.attachments[i];
-
-                        let content: string;
-
-                        if (attachment.content) {
-                            if (typeof attachment.content === "string") {
-                                content = attachment.content;
-                            } else if (attachment.content instanceof Promise) {
-                                const buffer = await attachment.content;
-
-                                content = Buffer.from(buffer).toString("base64");
-                            } else {
-                                content = attachment.content.toString("base64");
-                            }
-                        } else if (attachment.raw) {
-                            content = typeof attachment.raw === "string" ? attachment.raw : attachment.raw.toString("base64");
-                        } else {
-                            throw new EmailError(PROVIDER_NAME, `Attachment ${attachment.filename} has no content`);
-                        }
-
-                        formData[`attachment[${i}]`] = content;
+                        const attachmentData = await createMailgunAttachment(emailOptions.attachments[i], PROVIDER_NAME, i);
+                        formData[attachmentData.key] = attachmentData.content;
                     }
                 }
 
@@ -433,10 +381,8 @@ export const mailgunProvider: ProviderFactory<MailgunConfig, unknown, MailgunEma
                     success: true,
                 };
             } catch (error) {
-                logger.debug("Exception sending email", error);
-
                 return {
-                    error: new EmailError(PROVIDER_NAME, `Failed to send email: ${(error as Error).message}`, { cause: error as Error }),
+                    error: handleProviderError(PROVIDER_NAME, "send email", error, logger),
                     success: false,
                 };
             }

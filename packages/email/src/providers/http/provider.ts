@@ -6,6 +6,7 @@ import { makeRequest } from "../../utils/make-request";
 import { validateEmailOptions } from "../../utils/validate-email-options";
 import type { ProviderFactory } from "../provider";
 import { defineProvider } from "../provider";
+import { ProviderState, createProviderLogger, handleProviderError } from "../utils";
 import type { HttpEmailConfig, HttpEmailOptions } from "./types";
 
 const PROVIDER_NAME = "http";
@@ -26,6 +27,9 @@ export const httpProvider: ProviderFactory<HttpEmailConfig, unknown, HttpEmailOp
         headers: options_.headers || {},
         method: options_.method || DEFAULT_METHOD,
     };
+
+    const providerState = new ProviderState();
+    const logger = createProviderLogger(PROVIDER_NAME, options_.debug, options_.logger);
 
     /**
      * Create standard headers for API requests
@@ -71,8 +75,6 @@ export const httpProvider: ProviderFactory<HttpEmailConfig, unknown, HttpEmailOp
         return payload;
     };
 
-    let isInitialized = false;
-
     return {
         features: {
             attachments: false,
@@ -90,15 +92,11 @@ export const httpProvider: ProviderFactory<HttpEmailConfig, unknown, HttpEmailOp
          * Initialize the HTTP provider
          */
         async initialize(): Promise<void> {
-            if (isInitialized) {
-                return;
-            }
-
-            if (!await this.isAvailable()) {
-                throw new EmailError(PROVIDER_NAME, "API endpoint not available");
-            }
-
-            isInitialized = true;
+            await providerState.ensureInitialized(async () => {
+                if (!await this.isAvailable()) {
+                    throw new EmailError(PROVIDER_NAME, "API endpoint not available");
+                }
+            }, PROVIDER_NAME);
         },
 
         /**
@@ -159,9 +157,7 @@ export const httpProvider: ProviderFactory<HttpEmailConfig, unknown, HttpEmailOp
                     };
                 }
 
-                if (!isInitialized) {
-                    await this.initialize();
-                }
+                await providerState.ensureInitialized(() => this.initialize(), PROVIDER_NAME);
 
                 const headers = getStandardHeaders();
 
@@ -220,7 +216,7 @@ export const httpProvider: ProviderFactory<HttpEmailConfig, unknown, HttpEmailOp
                 };
             } catch (error) {
                 return {
-                    error: new EmailError(PROVIDER_NAME, `Failed to send email: ${(error as Error).message}`, { cause: error as Error }),
+                    error: handleProviderError(PROVIDER_NAME, "send email", error, logger),
                     success: false,
                 };
             }

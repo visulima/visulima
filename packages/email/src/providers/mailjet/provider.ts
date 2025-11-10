@@ -2,7 +2,6 @@ import { Buffer } from "node:buffer";
 
 import { EmailError, RequiredOptionError } from "../../errors/email-error";
 import type { EmailAddress, EmailResult, Result } from "../../types";
-import { createLogger } from "../../utils/create-logger";
 import { generateMessageId } from "../../utils/generate-message-id";
 import { headersToRecord } from "../../utils/headers-to-record";
 import { makeRequest } from "../../utils/make-request";
@@ -10,6 +9,7 @@ import { retry } from "../../utils/retry";
 import { validateEmailOptions } from "../../utils/validate-email-options";
 import type { ProviderFactory } from "../provider";
 import { defineProvider } from "../provider";
+import { createProviderLogger, formatMailjetAddress, formatMailjetAddresses, handleProviderError, ProviderState } from "../utils";
 import type { MailjetConfig, MailjetEmailOptions } from "./types";
 
 const PROVIDER_NAME = "mailjet";
@@ -17,24 +17,6 @@ const DEFAULT_ENDPOINT = "https://api.mailjet.com";
 const DEFAULT_TIMEOUT = 30_000;
 const DEFAULT_RETRIES = 3;
 
-/**
- * Format email address for Mailjet
- */
-function formatAddress(address: EmailAddress): { Email: string; Name?: string } {
-    return {
-        Email: address.email,
-        ...address.name && { Name: address.name },
-    };
-}
-
-/**
- * Format email addresses array for Mailjet
- */
-function formatAddresses(addresses: EmailAddress | EmailAddress[]): { Email: string; Name?: string }[] {
-    const addressList = Array.isArray(addresses) ? addresses : [addresses];
-
-    return addressList.map(formatAddress);
-}
 
 /**
  * Mailjet Provider for sending emails through Mailjet API
@@ -58,9 +40,8 @@ export const mailjetProvider: ProviderFactory<MailjetConfig, unknown, MailjetEma
         ...options_.logger && { logger: options_.logger },
     };
 
-    let isInitialized = false;
-
-    const logger = createLogger(PROVIDER_NAME, options.debug, options_.logger);
+    const providerState = new ProviderState();
+    const logger = createProviderLogger(PROVIDER_NAME, options.debug, options_.logger);
 
     return {
         features: {
@@ -89,9 +70,7 @@ export const mailjetProvider: ProviderFactory<MailjetConfig, unknown, MailjetEma
                     };
                 }
 
-                if (!isInitialized) {
-                    await this.initialize();
-                }
+                await providerState.ensureInitialized(() => this.initialize(), PROVIDER_NAME);
 
                 const auth = Buffer.from(`${options.apiKey}:${options.apiSecret}`).toString("base64");
                 const headers: Record<string, string> = {
@@ -127,10 +106,9 @@ export const mailjetProvider: ProviderFactory<MailjetConfig, unknown, MailjetEma
                     success: true,
                 };
             } catch (error) {
-                logger.debug("Exception retrieving email", error);
 
                 return {
-                    error: new EmailError(PROVIDER_NAME, `Failed to retrieve email: ${(error as Error).message}`, { cause: error as Error }),
+                    error: handleProviderError(PROVIDER_NAME, "retrieve email", error, logger),
                     success: false,
                 };
             }
@@ -140,20 +118,13 @@ export const mailjetProvider: ProviderFactory<MailjetConfig, unknown, MailjetEma
          * Initialize the Mailjet provider
          */
         async initialize(): Promise<void> {
-            if (isInitialized) {
-                return;
-            }
-
-            try {
+            await providerState.ensureInitialized(async () => {
                 if (!await this.isAvailable()) {
                     throw new EmailError(PROVIDER_NAME, "Mailjet API not available or invalid API credentials");
                 }
 
-                isInitialized = true;
                 logger.debug("Provider initialized successfully");
-            } catch (error) {
-                throw new EmailError(PROVIDER_NAME, `Failed to initialize: ${(error as Error).message}`, { cause: error as Error });
-            }
+            }, PROVIDER_NAME);
         },
 
         /**
@@ -217,15 +188,13 @@ export const mailjetProvider: ProviderFactory<MailjetConfig, unknown, MailjetEma
                     };
                 }
 
-                if (!isInitialized) {
-                    await this.initialize();
-                }
+                await providerState.ensureInitialized(() => this.initialize(), PROVIDER_NAME);
 
                 // Build message for Mailjet API
                 const message: Record<string, unknown> = {
-                    From: formatAddress(emailOptions.from),
+                    From: formatMailjetAddress(emailOptions.from),
                     Subject: emailOptions.subject,
-                    To: formatAddresses(emailOptions.to),
+                    To: formatMailjetAddresses(emailOptions.to),
                 };
 
                 // Add HTML content
@@ -240,17 +209,17 @@ export const mailjetProvider: ProviderFactory<MailjetConfig, unknown, MailjetEma
 
                 // Add CC
                 if (emailOptions.cc) {
-                    message.Cc = formatAddresses(emailOptions.cc);
+                    message.Cc = formatMailjetAddresses(emailOptions.cc);
                 }
 
                 // Add BCC
                 if (emailOptions.bcc) {
-                    message.Bcc = formatAddresses(emailOptions.bcc);
+                    message.Bcc = formatMailjetAddresses(emailOptions.bcc);
                 }
 
                 // Add reply-to
                 if (emailOptions.replyTo) {
-                    message.ReplyTo = formatAddress(emailOptions.replyTo);
+                    message.ReplyTo = formatMailjetAddress(emailOptions.replyTo);
                 }
 
                 // Add template
@@ -404,10 +373,8 @@ export const mailjetProvider: ProviderFactory<MailjetConfig, unknown, MailjetEma
                     success: true,
                 };
             } catch (error) {
-                logger.debug("Exception sending email", error);
-
                 return {
-                    error: new EmailError(PROVIDER_NAME, `Failed to send email: ${(error as Error).message}`, { cause: error as Error }),
+                    error: handleProviderError(PROVIDER_NAME, "send email", error, logger),
                     success: false,
                 };
             }

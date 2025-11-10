@@ -1,6 +1,5 @@
 import { EmailError, RequiredOptionError } from "../../errors/email-error";
 import type { EmailAddress, EmailResult, Result } from "../../types";
-import { createLogger } from "../../utils/create-logger";
 import { generateMessageId } from "../../utils/generate-message-id";
 import { headersToRecord } from "../../utils/headers-to-record";
 import { makeRequest } from "../../utils/make-request";
@@ -8,6 +7,7 @@ import { retry } from "../../utils/retry";
 import { validateEmailOptions } from "../../utils/validate-email-options";
 import type { ProviderFactory } from "../provider";
 import { defineProvider } from "../provider";
+import { createProviderLogger, formatAddress, formatAddressEmails, handleProviderError, ProviderState } from "../utils";
 import type { ResendConfig, ResendEmailOptions, ResendEmailTag } from "./types";
 
 const PROVIDER_NAME = "resend";
@@ -54,9 +54,8 @@ export const resendProvider: ProviderFactory<ResendConfig, unknown, ResendEmailO
         timeout: options_.timeout || DEFAULT_TIMEOUT,
     };
 
-    let isInitialized = false;
-
-    const logger = createLogger(PROVIDER_NAME, options.debug, options_.logger);
+    const providerState = new ProviderState();
+    const logger = createProviderLogger(PROVIDER_NAME, options.debug, options_.logger);
 
     return {
         features: {
@@ -76,18 +75,16 @@ export const resendProvider: ProviderFactory<ResendConfig, unknown, ResendEmailO
          * @param id Email ID to retrieve
          * @returns Email details
          */
-        async getEmail(id: string): Promise<Result<unknown>> {
-            try {
-                if (!id) {
-                    return {
-                        error: new EmailError(PROVIDER_NAME, "Email ID is required to retrieve email details"),
-                        success: false,
-                    };
-                }
+            async getEmail(id: string): Promise<Result<unknown>> {
+                try {
+                    if (!id) {
+                        return {
+                            error: new EmailError(PROVIDER_NAME, "Email ID is required to retrieve email details"),
+                            success: false,
+                        };
+                    }
 
-                if (!isInitialized) {
-                    await this.initialize();
-                }
+                    await providerState.ensureInitialized(() => this.initialize(), PROVIDER_NAME);
 
                 const headers: Record<string, string> = {
                     Authorization: `Bearer ${options.apiKey}`,
@@ -122,10 +119,8 @@ export const resendProvider: ProviderFactory<ResendConfig, unknown, ResendEmailO
                     success: true,
                 };
             } catch (error) {
-                logger.debug("Exception retrieving email", error);
-
                 return {
-                    error: new EmailError(PROVIDER_NAME, `Failed to retrieve email: ${(error as Error).message}`, { cause: error as Error }),
+                    error: handleProviderError(PROVIDER_NAME, "retrieve email", error, logger),
                     success: false,
                 };
             }
@@ -135,20 +130,13 @@ export const resendProvider: ProviderFactory<ResendConfig, unknown, ResendEmailO
          * Initialize the Resend provider
          */
         async initialize(): Promise<void> {
-            if (isInitialized) {
-                return;
-            }
-
-            try {
+            await providerState.ensureInitialized(async () => {
                 if (!await this.isAvailable()) {
                     throw new EmailError(PROVIDER_NAME, "Resend API not available or invalid API key");
                 }
 
-                isInitialized = true;
                 logger.debug("Provider initialized successfully");
-            } catch (error) {
-                throw new EmailError(PROVIDER_NAME, `Failed to initialize: ${(error as Error).message}`, { cause: error as Error });
-            }
+            }, PROVIDER_NAME);
         },
 
         /**
@@ -230,37 +218,27 @@ export const resendProvider: ProviderFactory<ResendConfig, unknown, ResendEmailO
                     };
                 }
 
-                if (!isInitialized) {
-                    await this.initialize();
-                }
-
-                const formatRecipients = (addresses: EmailAddress | EmailAddress[]): string[] => {
-                    if (Array.isArray(addresses)) {
-                        return addresses.map((address) => address.name ? `${address.name} <${address.email}>` : address.email);
-                    }
-
-                    return [addresses.name ? `${addresses.name} <${addresses.email}>` : addresses.email];
-                };
+                await providerState.ensureInitialized(() => this.initialize(), PROVIDER_NAME);
 
                 const payload: Record<string, unknown> = {
-                    from: emailOptions.from.name ? `${emailOptions.from.name} <${emailOptions.from.email}>` : emailOptions.from.email,
+                    from: formatAddress(emailOptions.from),
                     headers: emailOptions.headers ? headersToRecord(emailOptions.headers) : {},
                     html: emailOptions.html,
                     subject: emailOptions.subject,
                     text: emailOptions.text,
-                    to: formatRecipients(emailOptions.to),
+                    to: formatAddressEmails(emailOptions.to),
                 };
 
                 if (emailOptions.cc) {
-                    payload.cc = formatRecipients(emailOptions.cc);
+                    payload.cc = formatAddressEmails(emailOptions.cc);
                 }
 
                 if (emailOptions.bcc) {
-                    payload.bcc = formatRecipients(emailOptions.bcc);
+                    payload.bcc = formatAddressEmails(emailOptions.bcc);
                 }
 
                 if (emailOptions.replyTo) {
-                    payload.reply_to = emailOptions.replyTo.name ? `${emailOptions.replyTo.name} <${emailOptions.replyTo.email}>` : emailOptions.replyTo.email;
+                    payload.reply_to = formatAddress(emailOptions.replyTo);
                 }
 
                 if (emailOptions.templateId) {
@@ -362,10 +340,8 @@ export const resendProvider: ProviderFactory<ResendConfig, unknown, ResendEmailO
                     success: true,
                 };
             } catch (error) {
-                logger.debug("Exception sending email", error);
-
                 return {
-                    error: new EmailError(PROVIDER_NAME, `Failed to send email: ${(error as Error).message}`, { cause: error as Error }),
+                    error: handleProviderError(PROVIDER_NAME, "send email", error, logger),
                     success: false,
                 };
             }
