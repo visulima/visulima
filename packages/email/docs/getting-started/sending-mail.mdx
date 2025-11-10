@@ -1,0 +1,179 @@
+---
+title: Sending Mail
+description: Learn different ways to send emails with @visulima/email
+---
+
+# Sending Mail
+
+This guide covers the different ways to send emails with @visulima/email.
+
+## Using the Message Builder
+
+The most common way to send emails is using the fluent message builder API:
+
+```typescript
+import { createMail } from "@visulima/email";
+import { resendProvider } from "@visulima/email/providers/resend";
+
+const mail = createMail(resendProvider({ apiKey: "re_xxx" }));
+
+const result = await mail.message().to("user@example.com").from("sender@example.com").subject("Hello").html("<h1>Hello World</h1>").text("Hello World").send();
+```
+
+### Chaining Methods
+
+The message builder supports method chaining for a fluent API:
+
+```typescript
+const result = await mail
+    .message()
+    .to("user@example.com")
+    .cc("cc@example.com")
+    .bcc("bcc@example.com")
+    .from("sender@example.com")
+    .replyTo("reply@example.com")
+    .subject("Hello")
+    .html("<h1>Hello World</h1>")
+    .text("Hello World")
+    .send();
+```
+
+### Multiple Recipients
+
+You can send to multiple recipients:
+
+```typescript
+const result = await mail
+    .message()
+    .to(["user1@example.com", "user2@example.com"])
+    .from("sender@example.com")
+    .subject("Hello")
+    .html("<h1>Hello World</h1>")
+    .send();
+```
+
+Or use the `EmailAddress` format:
+
+```typescript
+const result = await mail
+    .message()
+    .to([
+        { email: "user1@example.com", name: "User 1" },
+        { email: "user2@example.com", name: "User 2" },
+    ])
+    .from({ email: "sender@example.com", name: "Sender" })
+    .subject("Hello")
+    .html("<h1>Hello World</h1>")
+    .send();
+```
+
+## Using Mailable Classes
+
+For reusable email templates, create Mailable classes:
+
+```typescript
+import type { Mailable, EmailOptions } from "@visulima/email";
+
+class WelcomeEmail implements Mailable {
+    constructor(private user: { name: string; email: string }) {}
+
+    async build(): Promise<EmailOptions> {
+        return {
+            from: { email: "noreply@example.com" },
+            to: { email: this.user.email, name: this.user.name },
+            subject: `Welcome, ${this.user.name}!`,
+            html: `<h1>Welcome ${this.user.name}!</h1><p>Thanks for joining us.</p>`,
+            text: `Welcome ${this.user.name}! Thanks for joining us.`,
+        };
+    }
+}
+
+const mail = createMail(resendProvider({ apiKey: "re_xxx" }));
+const result = await mail.send(new WelcomeEmail({ name: "John", email: "john@example.com" }));
+```
+
+## Direct Email Sending
+
+You can also send emails directly using `EmailOptions`:
+
+```typescript
+import type { EmailOptions } from "@visulima/email";
+
+const mail = createMail(resendProvider({ apiKey: "re_xxx" }));
+
+const emailOptions: EmailOptions = {
+    from: { email: "sender@example.com" },
+    to: { email: "user@example.com" },
+    subject: "Hello",
+    html: "<h1>Hello World</h1>",
+    text: "Hello World",
+};
+
+const result = await mail.sendEmail(emailOptions);
+```
+
+## Handling Results
+
+All sending methods return a `Result<EmailResult>` object:
+
+```typescript
+const result = await mail.message().to("user@example.com").from("sender@example.com").subject("Hello").html("<h1>Hello</h1>").send();
+
+if (result.success) {
+    console.log("Email sent:", result.data?.messageId);
+    console.log("Provider:", result.data?.provider);
+    console.log("Timestamp:", result.data?.timestamp);
+} else {
+    console.error("Failed to send email:", result.error);
+}
+```
+
+## Error Handling
+
+Always check the result and handle errors appropriately:
+
+```typescript
+try {
+    const result = await mail.message().to("user@example.com").from("sender@example.com").subject("Hello").html("<h1>Hello</h1>").send();
+
+    if (!result.success) {
+        // Handle provider-specific errors
+        if (result.error instanceof Error) {
+            console.error("Error:", result.error.message);
+        }
+        // Retry logic, fallback provider, etc.
+    }
+} catch (error) {
+    // Handle unexpected errors
+    console.error("Unexpected error:", error);
+}
+```
+
+## Setting a Provider Per Message
+
+You can override the default provider for a specific message:
+
+```typescript
+import { smtpProvider } from "@visulima/email/providers/smtp";
+
+const mail = createMail(resendProvider({ apiKey: "re_xxx" }));
+
+// Use default provider (Resend)
+await mail.message().to("user@example.com").from("sender@example.com").subject("Hello").html("<h1>Hello</h1>").send();
+
+// Override with SMTP for this message
+const smtp = smtpProvider({
+    host: "smtp.example.com",
+    port: 587,
+    user: "user@example.com",
+    password: "password",
+});
+
+await mail.message().mailer(smtp).to("user@example.com").from("sender@example.com").subject("Hello").html("<h1>Hello</h1>").send();
+```
+
+## Next Steps
+
+- [Building Messages](/docs/package/email/mail-messages/building-messages) - Learn more about the message builder
+- [Mailable Classes](/docs/package/email/mail-messages/mailable-classes) - Create reusable email templates
+- [Attachments](/docs/package/email/mail-messages/attachments) - Add attachments to your emails
