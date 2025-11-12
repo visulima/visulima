@@ -89,9 +89,6 @@
         "test:watch": "vitest",
         "ts:coverage": "typescript-coverage-report"
     },
-    "dependencies": {
-        "type-fest": "^5.2.0"
-    },
     "devDependencies": {
         "@anolilab/eslint-config": "^16.4.2",
         "@anolilab/semantic-release-pnpm": "2.0.5",
@@ -113,6 +110,7 @@
         "rimraf": "6.1.0",
         "secretlint": "11.2.5",
         "semantic-release": "^25.0.2",
+        "type-fest": "^5.2.0",
         "typescript": "5.9.3",
         "typescript-coverage-report": "^1.1.1",
         "vitest": "^4.0.8",

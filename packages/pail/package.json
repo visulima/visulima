@@ -220,8 +220,7 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@visulima/colorize": "1.4.27",
-        "type-fest": "^5.2.0"
+        "@visulima/colorize": "1.4.27"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "^16.4.2",
@@ -253,6 +252,7 @@
         "secretlint": "11.2.5",
         "semantic-release": "25.0.2",
         "terminal-size": "^4.0.0",
+        "type-fest": "^5.2.0",
         "typescript": "5.9.3",
         "vitest": "^4.0.8"
     },
