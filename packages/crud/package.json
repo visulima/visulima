@@ -1,6 +1,6 @@
 {
     "name": "@visulima/crud",
-    "version": "2.0.44",
+    "version": "2.0.45",
     "description": "visulima crud",
     "keywords": [
         "anolilab",
@@ -81,8 +81,8 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@visulima/pagination": "4.0.3",
-        "@visulima/prisma-dmmf-transformer": "2.0.35",
+        "@visulima/pagination": "4.0.4",
+        "@visulima/prisma-dmmf-transformer": "2.0.36",
         "http-errors": "^2.0.0",
         "path-to-regexp": "^8.3.0"
     },
