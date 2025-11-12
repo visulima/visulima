@@ -1,3 +1,21 @@
+## @visulima/package [4.1.5](https://github.com/visulima/visulima/compare/@visulima/package@4.1.4...@visulima/package@4.1.5) (2025-11-12)
+
+### Bug Fixes
+
+* **deps:** update type-fest dependency across multiple packages ([93e13be](https://github.com/visulima/visulima/commit/93e13be5248207968a96303710db2a0604d16b9b))
+* update package configurations and TypeScript definitions ([b59aa59](https://github.com/visulima/visulima/commit/b59aa59dac1508216b944f4b917fb4a7ab1f70a4))
+
+### Miscellaneous Chores
+
+* Add jsr file to all packages for release ([#565](https://github.com/visulima/visulima/issues/565)) ([ec91652](https://github.com/visulima/visulima/commit/ec91652b4e4112adf14ba152c1239a7703ba425a))
+* update license files and clean up TypeScript definitions ([fe668cc](https://github.com/visulima/visulima/commit/fe668cc26de23591d4df54a0954455ebbe31b22d))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 4.0.5
+* **@visulima/path:** upgraded to 2.0.4
+
 ## @visulima/package [4.1.4](https://github.com/visulima/visulima/compare/@visulima/package@4.1.3...@visulima/package@4.1.4) (2025-11-07)
 
 ### Bug Fixes
