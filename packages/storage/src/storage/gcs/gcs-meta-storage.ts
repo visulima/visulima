@@ -121,7 +121,7 @@ class GCSMetaStorage<T extends File = File> extends MetaStorage<T> {
 
     /**
      * Returns metafile URL path for the given upload ID.
-     * @param id - Upload ID to get metafile path for
+     * @param id Upload ID to get metafile path for
      * @returns Full URL path to the metafile in GCS
      */
     private getMetaPath(id: string): string {

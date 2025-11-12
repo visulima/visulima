@@ -452,11 +452,11 @@ export class Tus<
 
     /**
      * Send TUS protocol response with required headers.
-     * @param response - Node.js ServerResponse to send response to
-     * @param uploadResponse - Response data with body, headers, and status code
-     * @param uploadResponse.body - Response body content
-     * @param uploadResponse.headers - HTTP headers to include in response
-     * @param uploadResponse.statusCode - HTTP status code for the response
+     * @param response Node.js ServerResponse to send response to
+     * @param uploadResponse Response data with body, headers, and status code
+     * @param uploadResponse.body Response body content
+     * @param uploadResponse.headers HTTP headers to include in response
+     * @param uploadResponse.statusCode HTTP status code for the response
      */
     public override send(response: NodeResponse, { body = "", headers = {}, statusCode = 200 }: UploadResponse): void {
         super.send(response, {

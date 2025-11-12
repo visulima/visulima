@@ -17,14 +17,14 @@ class RequestReadStream extends PassThrough {
     public __mockAbort(data?: any): void {
         // Use the PassThrough write method and emit abort
         this.write(data ?? this.__mockdata);
-            this.emit("aborted");
+        this.emit("aborted");
         this.end();
     }
 
     public __mockPipeError(destination: FileWriteStream, data?: any): void {
         // Use the PassThrough write method and emit error on destination
         this.write(data ?? this.__mockdata);
-            destination.emit("error", new Error("Broken pipe"));
+        destination.emit("error", new Error("Broken pipe"));
     }
 }
 /* eslint-enable no-underscore-dangle */

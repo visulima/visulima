@@ -151,11 +151,14 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
                 // Create lazyWritePart ensuring body stream and signal are preserved
                 const signalFromPart = (part as any).signal;
                 const lazyWritePart: any = { ...file, ...part };
+
                 // Explicitly preserve body stream reference and signal
                 lazyWritePart.body = part.body;
+
                 if (signalFromPart) {
                     (lazyWritePart as any).signal = signalFromPart;
                 }
+
                 const [bytesWritten, errorCode] = await this.lazyWrite(lazyWritePart);
 
                 if (errorCode) {
@@ -357,10 +360,12 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
             pipeline(part.body, lengthChecker, checksumChecker, destination, (error) => {
                 if (error) {
                     cleanupStreams();
+
                     // Check if error is due to abort signal
                     if (signal && signal.aborted) {
                         return resolve([Number.NaN, keepPartial ? undefined : ERRORS.REQUEST_ABORTED]);
                     }
+
                     // Convert other pipeline errors to error codes
                     return resolve([Number.NaN, ERRORS.FILE_ERROR]);
                 }

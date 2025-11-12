@@ -326,8 +326,8 @@ class GCStorage extends BaseStorage<GCSFile, FileReturn> {
 
     /**
      * Get uploaded file by ID with content buffer.
-     * @param id - File query object containing the file ID
-     * @param id.id - Unique identifier of the file to retrieve
+     * @param id File query object containing the file ID
+     * @param id.id Unique identifier of the file to retrieve
      * @returns Promise resolving to file object with content buffer
      */
     public async get({ id }: FileQuery): Promise<FileReturn> {

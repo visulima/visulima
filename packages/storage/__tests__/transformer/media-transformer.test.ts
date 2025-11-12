@@ -128,29 +128,26 @@ describe(MediaTransformer, () => {
             const query = { format: "webp", height: 600, quality: 80, width: 800 };
             const result = await transformer.handle("test-id", query);
 
-            expect(mockImageInstance.transform).toHaveBeenCalledWith(
-                "test-id",
-                [
-                    {
-                        options: {
-                            fit: undefined,
-                            height: 600,
-                            position: undefined,
-                            width: 800,
-                            withoutEnlargement: undefined,
-                            withoutReduction: undefined,
-                        },
-                        type: "resize",
+            expect(mockImageInstance.transform).toHaveBeenCalledWith("test-id", [
+                {
+                    options: {
+                        fit: undefined,
+                        height: 600,
+                        position: undefined,
+                        width: 800,
+                        withoutEnlargement: undefined,
+                        withoutReduction: undefined,
                     },
-                    {
-                        options: {
-                            format: "webp",
-                            quality: 80,
-                        },
-                        type: "format",
+                    type: "resize",
+                },
+                {
+                    options: {
+                        format: "webp",
+                        quality: 80,
                     },
-                ],
-            );
+                    type: "format",
+                },
+            ]);
 
             expect(result).toEqual({
                 buffer: mockResult.buffer,
@@ -191,29 +188,26 @@ describe(MediaTransformer, () => {
             const query = new URLSearchParams("width=800&height=600&format=webp&quality=80");
             const result = await transformer.handle("test-id", query);
 
-            expect(mockImageInstance.transform).toHaveBeenCalledWith(
-                "test-id",
-                [
-                    {
-                        options: {
-                            fit: undefined,
-                            height: 600,
-                            position: undefined,
-                            width: 800,
-                            withoutEnlargement: undefined,
-                            withoutReduction: undefined,
-                        },
-                        type: "resize",
+            expect(mockImageInstance.transform).toHaveBeenCalledWith("test-id", [
+                {
+                    options: {
+                        fit: undefined,
+                        height: 600,
+                        position: undefined,
+                        width: 800,
+                        withoutEnlargement: undefined,
+                        withoutReduction: undefined,
                     },
-                    {
-                        options: {
-                            format: "webp",
-                            quality: 80,
-                        },
-                        type: "format",
+                    type: "resize",
+                },
+                {
+                    options: {
+                        format: "webp",
+                        quality: 80,
                     },
-                ],
-            );
+                    type: "format",
+                },
+            ]);
 
             expect(result).toEqual({
                 buffer: mockResult.buffer,
@@ -254,29 +248,26 @@ describe(MediaTransformer, () => {
             const queryString = "width=800&height=600&format=webp&quality=80";
             const result = await transformer.handle("test-id", queryString);
 
-            expect(mockImageInstance.transform).toHaveBeenCalledWith(
-                "test-id",
-                [
-                    {
-                        options: {
-                            fit: undefined,
-                            height: 600,
-                            position: undefined,
-                            width: 800,
-                            withoutEnlargement: undefined,
-                            withoutReduction: undefined,
-                        },
-                        type: "resize",
+            expect(mockImageInstance.transform).toHaveBeenCalledWith("test-id", [
+                {
+                    options: {
+                        fit: undefined,
+                        height: 600,
+                        position: undefined,
+                        width: 800,
+                        withoutEnlargement: undefined,
+                        withoutReduction: undefined,
                     },
-                    {
-                        options: {
-                            format: "webp",
-                            quality: 80,
-                        },
-                        type: "format",
+                    type: "resize",
+                },
+                {
+                    options: {
+                        format: "webp",
+                        quality: 80,
                     },
-                ],
-            );
+                    type: "format",
+                },
+            ]);
 
             expect(result).toEqual({
                 buffer: mockResult.buffer,

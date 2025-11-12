@@ -47,16 +47,16 @@ abstract class BaseTransformer<
 
     /**
      * Transform a file with the given steps.
-     * @param fileId - Unique identifier of the file to transform
-     * @param steps - Array of transformation steps to apply
+     * @param fileId Unique identifier of the file to transform
+     * @param steps Array of transformation steps to apply
      * @returns Promise resolving to transformation result
      */
     public abstract transform(fileId: string, steps: any[]): Promise<any>;
 
     /**
      * Stream transform a file with the given steps (for large files).
-     * @param fileId - Unique identifier of the file to transform
-     * @param steps - Array of transformation steps to apply
+     * @param fileId Unique identifier of the file to transform
+     * @param steps Array of transformation steps to apply
      * @returns Promise resolving to streaming result with headers, size, and stream
      */
     public async transformStream?(fileId: string, steps: any[]): Promise<{ headers?: Record<string, string>; size?: number; stream: Readable }> {
@@ -82,7 +82,7 @@ abstract class BaseTransformer<
 
     /**
      * Get content type from transformation result based on format.
-     * @param result - Transformation result object containing format information
+     * @param result Transformation result object containing format information
      * @returns Content type string (MIME type)
      */
     // eslint-disable-next-line class-methods-use-this

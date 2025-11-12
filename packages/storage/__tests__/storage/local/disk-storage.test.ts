@@ -219,6 +219,7 @@ describe(DiskStorage, () => {
 
             // Mock the lazyWrite method to simulate a filesystem error
             const mockLazyWrite = vi.fn().mockResolvedValue([Number.NaN, ERRORS.FILE_ERROR]);
+
             vi.spyOn(storage as any, "lazyWrite").mockImplementationOnce(mockLazyWrite);
 
             const write = storage.write({ ...metafile, body: readStream, start: 0 });
@@ -842,13 +843,13 @@ describe(DiskStorage, () => {
             // Check that we have the file
             const initialList = await storage.list();
 
-            expect(initialList.length).toBe(1);
+            expect(initialList).toHaveLength(1);
 
             // Purge all files (older than 0 seconds means any file)
             // Note: purge(0) might not work if 0 is falsy, so use a very small value
             const purgeResult = await storage.purge(0.001); // 1ms - should purge all files
 
-            expect(purgeResult.items.length).toBe(1); // Should purge the file
+            expect(purgeResult.items).toHaveLength(1); // Should purge the file
 
             // Restore fake timers
             vi.useFakeTimers();
@@ -959,7 +960,6 @@ describe(DiskStorage, () => {
         });
 
         it("should handle MP4 video files correctly", async () => {
-
             // Create a simple test file with video content
             const videoContent = Buffer.from("fake mp4 content for testing");
 
@@ -974,15 +974,21 @@ describe(DiskStorage, () => {
 
             // Write content and verify the write operation succeeded
             const writeResult = await storage.write({ ...diskFile, body: Readable.from(videoContent), start: 0 });
+
             expect(writeResult.bytesWritten).toBe(videoContent.length);
 
             // Verify the file exists on disk
             const filePath = join(storage.directory, diskFile.name);
-            const fileExists = await fsp.access(filePath).then(() => true).catch(() => false);
+            const fileExists = await fsp
+                .access(filePath)
+                .then(() => true)
+                .catch(() => false);
+
             expect(fileExists).toBe(true);
 
             // Check file size on disk
             const stats = await fsp.stat(filePath);
+
             expect(stats.size).toBe(videoContent.length);
 
             // Verify MP4 streaming

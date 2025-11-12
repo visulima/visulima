@@ -61,9 +61,9 @@ export const createStreamingResponse = (
 
 /**
  * Create a range-limited stream from a source stream for partial content requests.
- * @param sourceStream - Source readable stream to limit
- * @param start - Start byte position (inclusive)
- * @param end - End byte position (inclusive, optional)
+ * @param sourceStream Source readable stream to limit
+ * @param start Start byte position (inclusive)
+ * @param end End byte position (inclusive, optional)
  * @returns New readable stream limited to the specified byte range
  */
 export const createRangeStream = (sourceStream: Readable, start: number, end?: number): Readable => {
@@ -117,7 +117,7 @@ export const shouldUseStreaming = (fileSize: number, threshold: number = 1024 * 
 
 /**
  * Calculate optimal chunk size for streaming based on file size.
- * @param fileSize - Size of the file in bytes
+ * @param fileSize Size of the file in bytes
  * @returns Optimal chunk size in bytes (64KB for small files, 256KB for medium, 1MB for large)
  */
 export const getOptimalChunkSize = (fileSize: number): number => {
@@ -139,9 +139,9 @@ export const getOptimalChunkSize = (fileSize: number): number => {
 
 /**
  * Create a timeout wrapper for streaming operations that destroys the stream on timeout.
- * @param stream - Readable stream to wrap with timeout
- * @param timeoutMs - Timeout duration in milliseconds
- * @param errorMessage - Error message to use when timeout occurs
+ * @param stream Readable stream to wrap with timeout
+ * @param timeoutMs Timeout duration in milliseconds
+ * @param errorMessage Error message to use when timeout occurs
  * @returns The same stream instance with timeout handling attached
  */
 export const withTimeout = <T extends Readable>(stream: T, timeoutMs: number, errorMessage = "Stream operation timed out"): T => {
@@ -157,9 +157,9 @@ export const withTimeout = <T extends Readable>(stream: T, timeoutMs: number, er
 
 /**
  * Monitor stream performance and log metrics including throughput and chunk count.
- * @param stream - Readable stream to monitor
- * @param label - Label for identifying this stream in logs
- * @param logger - Optional logger instance with debug method
+ * @param stream Readable stream to monitor
+ * @param label Label for identifying this stream in logs
+ * @param logger Optional logger instance with debug method
  * @returns The same stream instance with monitoring attached
  */
 export const monitorStreamPerformance = (stream: Readable, label: string, logger?: { debug: (message: string, ...arguments_: any[]) => void }): Readable => {

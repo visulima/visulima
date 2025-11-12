@@ -84,8 +84,8 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
 > {
     /**
      * Creates a new ImageTransformer instance.
-     * @param storage - The storage backend for retrieving and storing image files
-     * @param config - Configuration options for image transformation including cache settings and size limits
+     * @param storage The storage backend for retrieving and storing image files
+     * @param config Configuration options for image transformation including cache settings and size limits
      */
     public constructor(storage: BaseStorage<TFile, TFileReturn>, config: ImageTransformerConfig = {}) {
         const logger = config.logger || storage.logger;
@@ -103,8 +103,8 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
 
     /**
      * Resize an image to specified dimensions with optional fit mode.
-     * @param fileId - Unique identifier of the image file to resize
-     * @param options - Resize options including width, height, and fit mode
+     * @param fileId Unique identifier of the image file to resize
+     * @param options Resize options including width, height, and fit mode
      * @returns Promise resolving to transformed image result
      */
     public async resize(fileId: string, options: ResizeOptions): Promise<TransformResult<TFileReturn>> {
