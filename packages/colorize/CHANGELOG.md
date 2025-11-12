@@ -1,3 +1,27 @@
+## @visulima/colorize [1.4.28](https://github.com/visulima/visulima/compare/@visulima/colorize@1.4.27...@visulima/colorize@1.4.28) (2025-11-12)
+
+### Bug Fixes
+
+* update package configurations and TypeScript definitions ([b59aa59](https://github.com/visulima/visulima/commit/b59aa59dac1508216b944f4b917fb4a7ab1f70a4))
+
+### Miscellaneous Chores
+
+* Add jsr file to all packages for release ([#565](https://github.com/visulima/visulima/issues/565)) ([ec91652](https://github.com/visulima/visulima/commit/ec91652b4e4112adf14ba152c1239a7703ba425a))
+* update license files and clean up TypeScript definitions ([fe668cc](https://github.com/visulima/visulima/commit/fe668cc26de23591d4df54a0954455ebbe31b22d))
+
+### Code Refactoring
+
+* **colorize:** simplify TypeScript definitions and remove unused plugin configuration ([fcc0649](https://github.com/visulima/visulima/commit/fcc0649fbedaead34eb090ffb2d3afb2ad3b2fe7))
+
+### Tests
+
+* **colorize:** correct Colorize function name in test output ([ffee5b4](https://github.com/visulima/visulima/commit/ffee5b4cda5eba7d0f6b116a25e5c5d5d0ed460b))
+
+
+### Dependencies
+
+* **@visulima/is-ansi-color-supported:** upgraded to 2.3.4
+
 ## @visulima/colorize [1.4.27](https://github.com/visulima/visulima/compare/@visulima/colorize@1.4.26...@visulima/colorize@1.4.27) (2025-11-07)
 
 ### Bug Fixes
