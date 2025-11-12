@@ -1,3 +1,28 @@
+## @visulima/cerebro [2.1.1](https://github.com/visulima/visulima/compare/@visulima/cerebro@2.1.0...@visulima/cerebro@2.1.1) (2025-11-12)
+
+### Bug Fixes
+
+* **cerebro:** bump version to 2.1.0 ([86fbddd](https://github.com/visulima/visulima/commit/86fbddd56ac8ecf25f75266cb0e685b6c702263c))
+* **cerebro:** enhance documentation ([390dc3d](https://github.com/visulima/visulima/commit/390dc3d0198c427c8f43f687ad6250667c5b2491))
+* update package configurations and TypeScript definitions ([b59aa59](https://github.com/visulima/visulima/commit/b59aa59dac1508216b944f4b917fb4a7ab1f70a4))
+
+### Miscellaneous Chores
+
+* update license files and clean up TypeScript definitions ([fe668cc](https://github.com/visulima/visulima/commit/fe668cc26de23591d4df54a0954455ebbe31b22d))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.28
+* **@visulima/tabular:** upgraded to 3.1.2
+* **@visulima/boxen:** upgraded to 2.0.9
+* **@visulima/command-line-args:** upgraded to 1.0.3
+* **@visulima/error:** upgraded to 5.0.5
+* **@visulima/find-cache-dir:** upgraded to 2.0.5
+* **@visulima/pail:** upgraded to 3.2.1
+* **@visulima/path:** upgraded to 2.0.4
+* **@visulima/string:** upgraded to 2.0.5
+
 ## @visulima/cerebro [2.1.0](https://github.com/visulima/visulima/compare/@visulima/cerebro@2.0.3...@visulima/cerebro@2.1.0) (2025-11-07)
 
 ### Features
