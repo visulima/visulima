@@ -1,3 +1,19 @@
+## @visulima/error-handler [1.0.12](https://github.com/visulima/visulima/compare/@visulima/error-handler@1.0.11...@visulima/error-handler@1.0.12) (2025-11-12)
+
+### Bug Fixes
+
+* update package configurations and TypeScript definitions ([b59aa59](https://github.com/visulima/visulima/commit/b59aa59dac1508216b944f4b917fb4a7ab1f70a4))
+
+### Miscellaneous Chores
+
+* Add jsr file to all packages for release ([#565](https://github.com/visulima/visulima/issues/565)) ([ec91652](https://github.com/visulima/visulima/commit/ec91652b4e4112adf14ba152c1239a7703ba425a))
+
+
+### Dependencies
+
+* **@visulima/boxen:** upgraded to 2.0.9
+* **@visulima/error:** upgraded to 5.0.5
+
 ## @visulima/error-handler [1.0.11](https://github.com/visulima/visulima/compare/@visulima/error-handler@1.0.10...@visulima/error-handler@1.0.11) (2025-11-07)
 
 ### Bug Fixes
