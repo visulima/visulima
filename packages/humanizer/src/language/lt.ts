@@ -1,4 +1,4 @@
-import type { DurationUnitMeasures } from "../types";
+import type { DurationUnitMeasures, DurationLanguage } from "../types";
 import createDurationLanguage from "./util/create-duration-language";
 
 const getLithuanianForm = (counter: number): number => {
@@ -50,7 +50,7 @@ const ltUnitMap: Record<string, keyof DurationUnitMeasures> = {
     valandų: "h",
 } as const;
 
-export const durationLanguage = createDurationLanguage(
+export const durationLanguage: DurationLanguage = createDurationLanguage(
     (counter) => (counter % 10 === 0 || (counter % 100 >= 10 && counter % 100 <= 20) ? "metų" : "metai"),
     (counter) => ["mėnuo", "mėnesiai", "mėnesių"][getLithuanianForm(counter)] as string,
     (counter) => ["savaitė", "savaitės", "savaičių"][getLithuanianForm(counter)] as string,

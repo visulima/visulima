@@ -1,4 +1,4 @@
-import type { DurationUnitMeasures } from "../types";
+import type { DurationUnitMeasures, DurationLanguage } from "../types";
 import createDurationLanguage from "./util/create-duration-language";
 
 // Map Albanian aliases to standard keys
@@ -30,7 +30,7 @@ const sqUnitMap: Record<string, keyof DurationUnitMeasures> = {
     vitet: "y", // definite plural
 } as const;
 
-export const durationLanguage = createDurationLanguage(
+export const durationLanguage: DurationLanguage = createDurationLanguage(
     (counter) => (counter === 1 ? "vit" : "vjet"),
     "muaj",
     "javë",

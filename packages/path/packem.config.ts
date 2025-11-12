@@ -1,4 +1,5 @@
 import { dirname, resolve } from "node:path";
+import isolatedDeclarationTransformer from "@visulima/packem/dts/isolated/transformer/typescript";
 import { writeFile, mkdir } from "node:fs/promises";
 import type { BuildConfig } from "@visulima/packem/config";
 import { defineConfig } from "@visulima/packem/config";
@@ -54,5 +55,6 @@ export default defineConfig({
         },
     },
     transformer,
+    isolatedDeclarationTransformer,
     cjsInterop: true,
 }) as BuildConfig;

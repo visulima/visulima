@@ -189,7 +189,7 @@ const printCommandHelp = <OD extends OptionDefinition<any>>(logger: Console, run
 class HelpCommand implements ICommand {
     public name = "help";
 
-    public options = [
+    public options: OptionDefinition<string>[] = [
         {
             description: "Display only the specified group",
             name: "group",
@@ -197,7 +197,7 @@ class HelpCommand implements ICommand {
         } as OptionDefinition<string>,
     ];
 
-    private readonly commands: Map<string, ICommand>;
+    private readonly commands: Map<string, ICommand> = new Map<string, ICommand>();
 
     public constructor(commands: Map<string, ICommand>) {
         this.commands = commands;

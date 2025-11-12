@@ -49,7 +49,7 @@ class MessageFormatterProcessor<L extends string = string> implements StringifyA
      * Sets the stringify function for object serialization.
      * @param function_ The stringify function to use for serializing objects
      */
-    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line , @typescript-eslint/no-explicit-any
     public setStringify(function_: any): void {
         this.#stringify = function_;
     }

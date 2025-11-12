@@ -103,6 +103,6 @@ const findCacheDirectorySync = (name: string, options?: Options): string | undef
 };
 
 // eslint-disable-next-line unicorn/prevent-abbreviations
-export const findCacheDir = findCacheDirectory;
+export const findCacheDir: (name: string, options?: Options) => Promise<string | undefined> = findCacheDirectory;
 // eslint-disable-next-line unicorn/prevent-abbreviations
-export const findCacheDirSync = findCacheDirectorySync;
+export const findCacheDirSync: (name: string, options?: Options) => string | undefined = findCacheDirectorySync;

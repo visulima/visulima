@@ -355,12 +355,12 @@ const processIntoStyledSegments = (input: string, options: SliceOptions): Styled
                     // Use the original input's order for consistency
                     if (input.indexOf("\u001B[39m") < input.indexOf("\u001B[49m")) {
                         // Remove fg/bg closings we've already added
-                        // eslint-disable-next-line sonarjs/no-gratuitous-expressions
+                        // eslint-disable-next-line sonarjs/no-gratuitous-expressions, sonarjs/no-nested-conditional, unicorn/no-nested-ternary
                         closingParts.length -= needsForegroundClose && needsBackgroundClose ? 2 : needsForegroundClose || needsBackgroundClose ? 1 : 0;
                         closingParts.push("\u001B[39m", "\u001B[49m");
                     } else if (input.indexOf("\u001B[49m") < input.indexOf("\u001B[39m")) {
                         // Remove fg/bg closings we've already added
-                        // eslint-disable-next-line sonarjs/no-gratuitous-expressions
+                        // eslint-disable-next-line sonarjs/no-gratuitous-expressions, sonarjs/no-nested-conditional, unicorn/no-nested-ternary
                         closingParts.length -= needsForegroundClose && needsBackgroundClose ? 2 : needsForegroundClose || needsBackgroundClose ? 1 : 0;
                         closingParts.push("\u001B[49m", "\u001B[39m");
                     }
@@ -374,7 +374,7 @@ const processIntoStyledSegments = (input: string, options: SliceOptions): Styled
                         };
                     })
                     .filter((item) => item.position >= 0)
-                    .sort((a, b) => b.position - a.position); // Sort in reverse order of application
+                    .toSorted((a, b) => b.position - a.position); // Sort in reverse order of application
 
                 for (const item of activeFormatStyles) {
                     if (closingSequences.includes(item.style.close)) {
@@ -518,7 +518,7 @@ export type SliceOptions = {
  * @returns The sliced string with ANSI codes preserved.
  */
 // eslint-disable-next-line sonarjs/cognitive-complexity
-export const slice = (inputString: string, startIndex = 0, endIndex = Number.MAX_SAFE_INTEGER, options: SliceOptions = {}): string => {
+export const slice: (inputString: string, startIndex?: number, endIndex?: number, options?: SliceOptions) => string = (inputString: string, startIndex = 0, endIndex = Number.MAX_SAFE_INTEGER, options: SliceOptions = {}): string => {
     const config = {
         segmenter: defaultSegmenter,
         ...options,
@@ -540,7 +540,7 @@ export const slice = (inputString: string, startIndex = 0, endIndex = Number.MAX
 
     if (!inputString.includes("\u001B")) {
         // ASCII-only strings can be sliced directly
-        // eslint-disable-next-line no-control-regex
+        // eslint-disable-next-line no-control-regex, sonarjs/no-control-regex
         if (/^[\u0000-\u007F]*$/.test(inputString)) {
             return inputString.slice(startIndex, endIndex);
         }

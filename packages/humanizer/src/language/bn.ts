@@ -1,4 +1,4 @@
-import type { DurationUnitMeasures } from "../types";
+import type { DurationUnitMeasures, DurationLanguage } from "../types";
 import createDurationLanguage from "./util/create-duration-language";
 
 // Map Bengali aliases to standard keys
@@ -13,7 +13,7 @@ const bnUnitMap: Record<string, keyof DurationUnitMeasures> = {
     সেকেন্ড: "s",
 };
 
-export const durationLanguage = createDurationLanguage(
+export const durationLanguage: DurationLanguage = createDurationLanguage(
     "বছর",
     "মাস",
     "সপ্তাহ",

@@ -6,6 +6,6 @@ const colorize: ColorizeType = new ColorizeImpl() as ColorizeType;
 export default colorize as ColorizeType;
 
 // eslint-disable-next-line unicorn/prefer-export-from
-export const Colorize = ColorizeImpl;
+export const Colorize: new () => ColorizeType = ColorizeImpl;
 
 export type { AnsiColors, AnsiStyles, ColorizeType } from "./types";

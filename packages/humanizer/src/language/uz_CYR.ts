@@ -1,4 +1,4 @@
-import type { DurationUnitMeasures } from "../types";
+import type { DurationUnitMeasures, DurationLanguage } from "../types";
 import createDurationLanguage from "./util/create-duration-language";
 
 // Map Uzbek Cyrillic aliases to standard keys
@@ -23,7 +23,7 @@ const uzCyrUnitMap: Record<string, keyof DurationUnitMeasures> = {
 } as const;
 
 // Uzbek Cyrillic uses the same form for singular and plural
-export const durationLanguage = createDurationLanguage(
+export const durationLanguage: DurationLanguage = createDurationLanguage(
     "йил",
     "ой",
     "ҳафта",

@@ -1,4 +1,4 @@
-import type { DurationUnitMeasures } from "../types";
+import type { DurationUnitMeasures, DurationLanguage } from "../types";
 import createDurationLanguage from "./util/create-duration-language";
 
 // Map Sorani Kurdish aliases to standard keys
@@ -13,7 +13,7 @@ const ckbUnitMap: Record<string, keyof DurationUnitMeasures> = {
     هەفتە: "w",
 };
 
-export const durationLanguage = createDurationLanguage(
+export const durationLanguage: DurationLanguage = createDurationLanguage(
     "ساڵ",
     "مانگ",
     "هەفتە",

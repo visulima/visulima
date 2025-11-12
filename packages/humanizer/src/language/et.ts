@@ -1,4 +1,4 @@
-import type { DurationUnitMeasures } from "../types";
+import type { DurationUnitMeasures, DurationLanguage } from "../types";
 import createDurationLanguage from "./util/create-duration-language";
 
 // Map Estonian aliases to standard keys
@@ -30,7 +30,7 @@ const etUnitMap: Record<string, keyof DurationUnitMeasures> = {
     tundi: "h",
 } as const;
 
-export const durationLanguage = createDurationLanguage(
+export const durationLanguage: DurationLanguage = createDurationLanguage(
     (counter) => `aasta${counter === 1 ? "" : "t"}`,
     (counter) => `kuu${counter === 1 ? "" : "d"}`,
     (counter) => `nädal${counter === 1 ? "" : "at"}`,

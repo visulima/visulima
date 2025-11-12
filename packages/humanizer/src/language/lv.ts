@@ -1,4 +1,4 @@
-import type { DurationUnitMeasures } from "../types";
+import type { DurationUnitMeasures, DurationLanguage } from "../types";
 import createDurationLanguage from "./util/create-duration-language";
 
 const getLatvianForm = (counter: number) => counter % 10 === 1 && counter % 100 !== 11;
@@ -34,7 +34,7 @@ const lvUnitMap: Record<string, keyof DurationUnitMeasures> = {
     stundas: "h",
 } as const;
 
-export const durationLanguage = createDurationLanguage(
+export const durationLanguage: DurationLanguage = createDurationLanguage(
     (counter) => (getLatvianForm(counter) ? "gads" : "gadi"),
     (counter) => (getLatvianForm(counter) ? "mēnesis" : "mēneši"),
     (counter) => (getLatvianForm(counter) ? "nedēļa" : "nedēļas"),

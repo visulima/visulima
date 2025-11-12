@@ -18,7 +18,7 @@
         "@eslint/eslintrc": "^3.3.1",
         "@tailwindcss/postcss": "^4.1.17",
         "@types/node": "^24",
-        "@types/react": "^19.2.2",
+        "@types/react": "^19.2.3",
         "@types/react-dom": "^19.2.2",
         "eslint": "^9",
         "eslint-config-next": "16.0.1",

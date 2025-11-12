@@ -14,7 +14,7 @@ import type { DefaultLoggerTypes } from "./types";
  * console.log(EXTENDED_RFC_5424_LOG_LEVELS.error); // 5
  * ```
  */
-export const EXTENDED_RFC_5424_LOG_LEVELS = {
+export const EXTENDED_RFC_5424_LOG_LEVELS: Record<string, number> = {
     alert: 7, // Action must be taken immediately. Example: Entire website down, database unavailable, etc. This should trigger the SMS alerts and wake you up.
     critical: 6, // Critical conditions. Example: Application component unavailable, unexpected exception.
     debug: 1, // Detailed debug information.
@@ -143,4 +143,4 @@ export const LOG_TYPES: DefaultLoggerTypes = {
  * This helps distinguish between intentional empty messages and undefined values.
  * @internal
  */
-export const EMPTY_SYMBOL = Symbol("EMPTY");
+export const EMPTY_SYMBOL: symbol = Symbol("EMPTY");

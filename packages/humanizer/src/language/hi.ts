@@ -1,4 +1,4 @@
-import type { DurationUnitMeasures } from "../types";
+import type { DurationUnitMeasures, DurationLanguage } from "../types";
 import createDurationLanguage from "./util/create-duration-language";
 
 // Map Hindi aliases to standard keys
@@ -35,7 +35,7 @@ const hiUnitMap: Record<string, keyof DurationUnitMeasures> = {
     हफ्ते: "w",
 } as const;
 
-export const durationLanguage = createDurationLanguage(
+export const durationLanguage: DurationLanguage = createDurationLanguage(
     "साल",
     (counter) => (counter === 1 ? "महीना" : "महीने"),
     (counter) => (counter === 1 ? "हफ़्ता" : "हफ्ते"),

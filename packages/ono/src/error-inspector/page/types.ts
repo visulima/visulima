@@ -105,7 +105,13 @@ export type ContextContentOptions = {
 export type { HeadersLike, RequestLike, RequestLikeType };
 
 // Export runtime detection constants
-export const runtime = {
+export const runtime: {
+    hasNativeHeaders: boolean;
+    hasNativeRequest: boolean;
+    isBun: boolean;
+    isDeno: boolean;
+    isNodeJS: string | false;
+} = {
     hasNativeHeaders,
     hasNativeRequest,
     isBun,

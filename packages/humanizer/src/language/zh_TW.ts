@@ -1,4 +1,4 @@
-import type { DurationUnitMeasures } from "../types";
+import type { DurationUnitMeasures, DurationLanguage } from "../types";
 import createDurationLanguage from "./util/create-duration-language";
 
 // Map Traditional Chinese aliases to standard keys
@@ -19,7 +19,7 @@ const zhTWUnitMap: Record<string, keyof DurationUnitMeasures> = {
     週: "w",
 } as const;
 
-export const durationLanguage = createDurationLanguage(
+export const durationLanguage: DurationLanguage = createDurationLanguage(
     "年",
     "個月",
     "周",

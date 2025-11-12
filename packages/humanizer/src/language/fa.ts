@@ -1,4 +1,4 @@
-import type { DurationUnitMeasures } from "../types";
+import type { DurationUnitMeasures, DurationLanguage } from "../types";
 import createDurationLanguage from "./util/create-duration-language";
 
 // Map Persian aliases to standard keys
@@ -18,7 +18,7 @@ const faUnitMap: Record<string, keyof DurationUnitMeasures> = {
     هفته: "w",
 } as const;
 
-export const durationLanguage = createDurationLanguage(
+export const durationLanguage: DurationLanguage = createDurationLanguage(
     "سال",
     "ماه",
     "هفته",

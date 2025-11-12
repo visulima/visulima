@@ -13,7 +13,7 @@ import process from "../util/process";
 import getMarkerLines from "./get-marker-lines";
 import type { CodeFrameNodeLocation, CodeFrameOptions } from "./types";
 
-export const CODE_FRAME_POINTER = process.platform === "win32" && !process.env?.WT_SESSION ? ">" : "❯";
+export const CODE_FRAME_POINTER: string = process.platform === "win32" && !process.env?.WT_SESSION ? ">" : "❯";
 
 /**
  * Generate a code frame from string and an error location.

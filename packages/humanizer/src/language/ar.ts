@@ -1,4 +1,4 @@
-import type { DurationUnitMeasures } from "../types";
+import type { DurationUnitMeasures, DurationLanguage } from "../types";
 import createDurationLanguage from "./util/create-duration-language";
 
 // Map Arabic aliases to standard keys
@@ -33,7 +33,7 @@ const getArabicForm = (counter: number): number => {
     return 0;
 };
 
-export const durationLanguage = {
+export const durationLanguage: DurationLanguage = {
     ...createDurationLanguage(
         (counter) => ["سنة", "سنتان", "سنوات"][getArabicForm(counter)] as string,
         (counter) => ["شهر", "شهران", "أشهر"][getArabicForm(counter)] as string,

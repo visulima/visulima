@@ -1,4 +1,4 @@
-import type { DurationUnitMeasures } from "../types";
+import type { DurationUnitMeasures, DurationLanguage } from "../types";
 import createDurationLanguage from "./util/create-duration-language";
 
 // Map Catalan aliases to standard keys
@@ -21,7 +21,7 @@ const caUnitMap: Record<string, keyof DurationUnitMeasures> = {
     setmanes: "w",
 };
 
-export const durationLanguage = createDurationLanguage(
+export const durationLanguage: DurationLanguage = createDurationLanguage(
     (counter) => `any${counter === 1 ? "" : "s"}`,
     (counter) => `mes${counter === 1 ? "" : "os"}`,
     (counter) => `setman${counter === 1 ? "a" : "es"}`,

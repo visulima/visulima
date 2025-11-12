@@ -1,4 +1,4 @@
-import type { DurationUnitMeasures } from "../types";
+import type { DurationUnitMeasures, DurationLanguage } from "../types";
 import createDurationLanguage from "./util/create-duration-language";
 
 // Map Tamil aliases to standard keys
@@ -32,7 +32,7 @@ const taUnitMap: Record<string, keyof DurationUnitMeasures> = {
     வினாடி: "s",
 } as const;
 
-export const durationLanguage = createDurationLanguage(
+export const durationLanguage: DurationLanguage = createDurationLanguage(
     (counter) => (counter === 1 ? "வருடம்" : "ஆண்டுகள்"),
     (counter) => (counter === 1 ? "மாதம்" : "மாதங்கள்"),
     (counter) => (counter === 1 ? "வாரம்" : "வாரங்கள்"),

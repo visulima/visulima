@@ -110,7 +110,7 @@ class InteractiveManager {
      * @param count Number of lines to remove (defaults to lastLength)
      * @throws {TypeError} If the specified stream is not available
      */
-    public erase(stream: StreamType, count = this.#lastLength): void {
+    public erase(stream: StreamType, count: number = this.#lastLength): void {
         if (this.#stream[stream] === undefined) {
             throw new TypeError(`Stream "${stream}" is not available`);
         }
@@ -156,7 +156,7 @@ class InteractiveManager {
      * @param stream Stream to suspend
      * @param erase erase output
      */
-    public suspend(stream: StreamType, erase = true): void {
+    public suspend(stream: StreamType, erase: boolean = true): void {
         if (!this.#isSuspended) {
             this.#isSuspended = true;
 
@@ -173,7 +173,7 @@ class InteractiveManager {
      * @param separateHistory If `true`, will add an empty line to the history output for individual recorded lines and console logs
      * @returns Success status
      */
-    public unhook(separateHistory = true): boolean {
+    public unhook(separateHistory: boolean = true): boolean {
         if (this.#isActive) {
             Object.values(this.#stream).forEach((hook) => hook.inactive(separateHistory));
 
@@ -189,7 +189,7 @@ class InteractiveManager {
      * @param rows Text lines to write to standard output
      * @param from Index of the line starting from which the contents of the terminal are being overwritten
      */
-    public update(stream: StreamType, rows: string[], from = 0): void {
+    public update(stream: StreamType, rows: string[], from: number = 0): void {
         if (rows.length > 0) {
             if (this.#stream[stream] === undefined) {
                 throw new TypeError(`Stream "${stream}" is not available`);
@@ -233,7 +233,7 @@ class InteractiveManager {
         }
     }
 
-    #clear(status = false): void {
+    #clear(status: boolean = false): void {
         this.#isActive = status;
         this.#lastLength = 0;
         this.#outside = 0;

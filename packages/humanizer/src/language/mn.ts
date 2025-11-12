@@ -1,4 +1,4 @@
-import type { DurationUnitMeasures } from "../types";
+import type { DurationUnitMeasures, DurationLanguage } from "../types";
 import createDurationLanguage from "./util/create-duration-language";
 
 // Map Mongolian aliases to standard keys
@@ -27,7 +27,7 @@ const mnUnitMap: Record<string, keyof DurationUnitMeasures> = {
 } as const;
 
 // Mongolian doesn't use plural forms for time units
-export const durationLanguage = createDurationLanguage(
+export const durationLanguage: DurationLanguage = createDurationLanguage(
     "жил",
     "сар",
     "долоо хоног",

@@ -1,6 +1,6 @@
 import DOMPurify from "isomorphic-dompurify";
-import type { Theme } from "src/types";
 
+import type { Theme } from "../types";
 import { sanitizeCspNonce } from "./utils/sanitize";
 
 // HTML escape function for text content

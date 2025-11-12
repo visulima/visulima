@@ -1,4 +1,4 @@
-import type { DurationUnitMeasures } from "../types";
+import type { DurationUnitMeasures, DurationLanguage } from "../types";
 import createDurationLanguage from "./util/create-duration-language";
 import getCzechOrSlovakForm from "./util/duration/get-czech-or-slovak-form";
 
@@ -33,7 +33,7 @@ const csUnitMap: Record<string, keyof DurationUnitMeasures> = {
     týdny: "w",
 } as const;
 
-export const durationLanguage = createDurationLanguage(
+export const durationLanguage: DurationLanguage = createDurationLanguage(
     (counter) => ["rok", "roku", "roky", "let"][getCzechOrSlovakForm(counter)] as string,
     (counter) => ["měsíc", "měsíce", "měsíce", "měsíců"][getCzechOrSlovakForm(counter)] as string,
     (counter) => ["týden", "týdne", "týdny", "týdnů"][getCzechOrSlovakForm(counter)] as string,

@@ -1,4 +1,4 @@
-import type { DurationUnitMeasures } from "../types";
+import type { DurationUnitMeasures,DurationLanguage } from "../types";
 import createDurationLanguage from "./util/create-duration-language";
 
 // Map Afrikaans aliases to standard keys
@@ -21,7 +21,7 @@ const afUnitMap: Record<string, keyof DurationUnitMeasures> = {
     weke: "w",
 };
 
-export const durationLanguage = createDurationLanguage(
+export const durationLanguage: DurationLanguage = createDurationLanguage(
     "jaar",
     (counter) => `maand${counter === 1 ? "" : "e"}`,
     (counter) => (counter === 1 ? "week" : "weke"),

@@ -1,4 +1,4 @@
-import type { DurationUnitMeasures } from "../types";
+import type { DurationUnitMeasures, DurationLanguage } from "../types";
 import createDurationLanguage from "./util/create-duration-language";
 import getSlavicForm from "./util/duration/get-slavic-form";
 
@@ -22,7 +22,7 @@ const bgUnitMap: Record<string, keyof DurationUnitMeasures> = {
     часа: "h",
 };
 
-export const durationLanguage = createDurationLanguage(
+export const durationLanguage: DurationLanguage = createDurationLanguage(
     (counter) => ["години", "година", "години"][getSlavicForm(counter)] as string,
     (counter) => ["месеца", "месец", "месеца"][getSlavicForm(counter)] as string,
     (counter) => ["седмици", "седмица", "седмици"][getSlavicForm(counter)] as string,

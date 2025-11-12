@@ -1,4 +1,5 @@
 import type { BuildConfig } from "@visulima/packem/config";
+import isolatedDeclarationTransformer from "@visulima/packem/dts/isolated/transformer/typescript";
 import { defineConfig } from "@visulima/packem/config";
 import transformer from "@visulima/packem/transformer/esbuild";
 import type { Plugin } from "rollup";
@@ -23,7 +24,7 @@ export default defineConfig({
                         if (options.format === "cjs") {
                             const outputKeys = Object.keys(output);
 
-                            if (outputKeys.includes("index.server.cjs")) {
+                            if (outputKeys.includes("index.server.cjs") & false) {
                                 output[outputKeys[0]].code = output[outputKeys[0]].code.replace(
                                     `module.exports.Colorize = Colorize;\nmodule.exports = colorize;`,
                                     `module.exports = colorize;\nmodule.exports.Colorize = Colorize;`,
@@ -45,5 +46,6 @@ export default defineConfig({
         },
     },
     transformer,
+    isolatedDeclarationTransformer,
     cjsInterop: true,
 }) as BuildConfig;

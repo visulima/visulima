@@ -100,4 +100,4 @@ export const commandLineArgs = (optionDefinitions: OptionDefinition | ReadonlyAr
  * Alias for commandLineArgs with a more concise name.
  * @see commandLineArgs
  */
-export const parseArgs = commandLineArgs;
+export const parseArgs: (optionDefinitions: OptionDefinition | ReadonlyArray<OptionDefinition>, options: ParseOptions) => CommandLineOptions = commandLineArgs;

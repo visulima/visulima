@@ -8,6 +8,7 @@ const colorize: ColorizeType = new ColorizeImpl() as ColorizeType;
 export const makeTaggedTemplate = (instance: ColorizeType): (firstString: TemplateStringsArray, ...arguments_: any[]) => string =>
     makeColorizeTemplate(makeTemplate(instance));
 
-export const template = makeTemplate(colorize);
+export const template: (string: string) => string = makeTemplate(colorize);
 
-export default makeColorizeTemplate(template);
+const _default: (firstString: TemplateStringsArray, ...arguments_: any[]) => string = makeColorizeTemplate(template);
+export default _default;

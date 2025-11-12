@@ -12,9 +12,9 @@ const isColorSupported = (): ColorSupportLevel =>
         return coreIsColorSupported();
     })();
 
-export const isStdoutColorSupported = isColorSupported;
+export const isStdoutColorSupported: () => ColorSupportLevel = isColorSupported;
 
-export const isStderrColorSupported = isColorSupported;
+export const isStderrColorSupported: () => ColorSupportLevel = isColorSupported;
 
 export { SPACE_16_COLORS, SPACE_256_COLORS, SPACE_MONO, SPACE_TRUE_COLORS } from "./color-spaces";
 export type { ColorSupportLevel } from "./types";

@@ -1,4 +1,4 @@
-import type { DurationUnitMeasures } from "../types";
+import type { DurationUnitMeasures, DurationLanguage } from "../types";
 import createDurationLanguage from "./util/create-duration-language";
 
 // Map English aliases to standard keys
@@ -37,7 +37,7 @@ export const englishUnitMap: Record<string, keyof DurationUnitMeasures> = {
     yrs: "y",
 };
 
-export const durationLanguage = createDurationLanguage(
+export const durationLanguage: DurationLanguage = createDurationLanguage(
     (counter) => `year${counter === 1 ? "" : "s"}`,
     (counter) => `month${counter === 1 ? "" : "s"}`,
     (counter) => `week${counter === 1 ? "" : "s"}`,

@@ -448,8 +448,8 @@ export type Options = {
 };
 
 // eslint-disable-next-line no-template-curly-in-string
-export const configDirectoryPlaceholder = "${configDir}";
-export const implicitBaseUrlSymbol = Symbol("implicitBaseUrl");
+export const configDirectoryPlaceholder: string = "${configDir}";
+export const implicitBaseUrlSymbol: symbol = Symbol("implicitBaseUrl");
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
 export const readTsConfig = (tsconfigPath: string, options?: Options): TsConfigJsonResolved => {

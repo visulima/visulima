@@ -1,4 +1,4 @@
-import type { DurationUnitMeasures } from "../types";
+import type { DurationUnitMeasures, DurationLanguage } from "../types";
 import createDurationLanguage from "./util/create-duration-language";
 
 // Map Swahili aliases to standard keys
@@ -27,7 +27,7 @@ const swUnitMap: Record<string, keyof DurationUnitMeasures> = {
     wk: "w",
 } as const;
 
-export const durationLanguage = {
+export const durationLanguage: DurationLanguage = {
     _numberFirst: true,
     ...createDurationLanguage(
         (counter) => (counter === 1 ? "mwaka" : "miaka"),

@@ -1,4 +1,4 @@
-import type { DurationUnitMeasures } from "../types";
+import type { DurationUnitMeasures, DurationLanguage } from "../types";
 import createDurationLanguage from "./util/create-duration-language";
 
 // Map Malay aliases to standard keys
@@ -29,7 +29,7 @@ const msUnitMap: Record<string, keyof DurationUnitMeasures> = {
 } as const;
 
 // Malay doesn't use plural forms for time units
-export const durationLanguage = createDurationLanguage(
+export const durationLanguage: DurationLanguage = createDurationLanguage(
     "tahun",
     "bulan",
     "minggu",

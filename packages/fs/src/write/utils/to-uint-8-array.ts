@@ -1,7 +1,7 @@
 const encoder = new TextEncoder();
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types,@typescript-eslint/no-explicit-any
-const toUint8Array = (contents: any) => {
+const toUint8Array = (contents: any): Uint8Array => {
     if (contents instanceof Uint8Array) {
         return contents;
     }

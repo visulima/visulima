@@ -1,4 +1,4 @@
-import type { DurationUnitMeasures } from "../types";
+import type { DurationUnitMeasures, DurationLanguage } from "../types";
 import createDurationLanguage from "./util/create-duration-language";
 
 // Map Norwegian aliases to standard keys
@@ -30,7 +30,7 @@ const noUnitMap: Record<string, keyof DurationUnitMeasures> = {
     uker: "w",
 } as const;
 
-export const durationLanguage = createDurationLanguage(
+export const durationLanguage: DurationLanguage = createDurationLanguage(
     "år",
     (counter) => `måned${counter === 1 ? "" : "er"}`,
     (counter) => `uke${counter === 1 ? "" : "r"}`,

@@ -9,7 +9,9 @@ import isAccessibleSync from "../is-accessible-sync";
 import type { ContentType, ReadFileOptions } from "../types";
 import assertValidFileOrDirectoryPath from "../utils/assert-valid-file-or-directory-path";
 
-const decompressionMethods = {
+type DecompressionMethod = (buffer: Buffer, callback: (error: Error | null, result: Buffer) => void) => void;
+
+const decompressionMethods: Record<string, DecompressionMethod> = {
     brotli: brotliDecompressSync,
     gzip: unzipSync,
     none: (buffer: Buffer) => buffer,
@@ -67,10 +69,9 @@ const readFileSync = <O extends ReadFileOptions<keyof typeof decompressionMethod
     const { buffer, compression, encoding, flag } = options ?? {};
 
     // @ts-expect-error - TS doesn't like our typed `encoding` option
-    // eslint-disable-next-line security/detect-non-literal-fs-filename
     const content = nodeReadFileSync(path, flag ? { encoding, flag } : { encoding });
 
-    const decompressed = decompressionMethods[compression ?? "none"](content);
+    const decompressed = (decompressionMethods[compression ?? "none"] as DecompressionMethod)(content);
 
     return (buffer ? decompressed : decompressed.toString()) as ContentType<O>;
 };

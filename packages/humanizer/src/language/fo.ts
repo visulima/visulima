@@ -1,4 +1,4 @@
-import type { DurationUnitMeasures } from "../types";
+import type { DurationUnitMeasures, DurationLanguage } from "../types";
 import createDurationLanguage from "./util/create-duration-language";
 
 // Map Faroese aliases to standard keys
@@ -28,7 +28,7 @@ const foUnitMap: Record<string, keyof DurationUnitMeasures> = {
     vikur: "w",
 } as const;
 
-export const durationLanguage = createDurationLanguage(
+export const durationLanguage: DurationLanguage = createDurationLanguage(
     "ár",
     (counter) => (counter === 1 ? "mánaður" : "mánaðir"),
     (counter) => (counter === 1 ? "vika" : "vikur"),

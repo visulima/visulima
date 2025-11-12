@@ -1,4 +1,4 @@
-import type { DurationUnitMeasures } from "../types";
+import type { DurationUnitMeasures, DurationLanguage } from "../types";
 import createDurationLanguage from "./util/create-duration-language";
 
 // Map German aliases to standard keys
@@ -30,7 +30,7 @@ const deUnitMap: Record<string, keyof DurationUnitMeasures> = {
     wochen: "w",
 } as const;
 
-export const durationLanguage = createDurationLanguage(
+export const durationLanguage: DurationLanguage = createDurationLanguage(
     (counter) => `Jahr${counter === 1 ? "" : "e"}`,
     (counter) => `Monat${counter === 1 ? "" : "e"}`,
     (counter) => `Woche${counter === 1 ? "" : "n"}`,

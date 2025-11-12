@@ -1,4 +1,4 @@
-import type { DurationUnitMeasures } from "../types";
+import type { DurationUnitMeasures, DurationLanguage } from "../types";
 import createDurationLanguage from "./util/create-duration-language";
 
 // Map Croatian aliases to standard keys
@@ -37,7 +37,7 @@ const hrUnitMap: Record<string, keyof DurationUnitMeasures> = {
     tjedni: "w",
 } as const;
 
-export const durationLanguage = createDurationLanguage(
+export const durationLanguage: DurationLanguage = createDurationLanguage(
     (counter) => {
         if (counter % 10 === 2 || counter % 10 === 3 || counter % 10 === 4) {
             return "godine";

@@ -1,4 +1,4 @@
-import type { DurationUnitMeasures } from "../types";
+import type { DurationUnitMeasures, DurationLanguage } from "../types";
 import createDurationLanguage from "./util/create-duration-language";
 
 // Map Finnish aliases to standard keys
@@ -33,7 +33,7 @@ const fiUnitMap: Record<string, keyof DurationUnitMeasures> = {
     vuotta: "y",
 } as const;
 
-export const durationLanguage = createDurationLanguage(
+export const durationLanguage: DurationLanguage = createDurationLanguage(
     (counter) => (counter === 1 ? "vuosi" : "vuotta"),
     (counter) => (counter === 1 ? "kuukausi" : "kuukautta"),
     (counter) => `viikko${counter === 1 ? "" : "a"}`,

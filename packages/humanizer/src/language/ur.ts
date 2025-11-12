@@ -1,4 +1,4 @@
-import type { DurationUnitMeasures } from "../types";
+import type { DurationUnitMeasures, DurationLanguage } from "../types";
 import createDurationLanguage from "./util/create-duration-language";
 
 // Map Urdu aliases to standard keys
@@ -27,7 +27,7 @@ const urUnitMap: Record<string, keyof DurationUnitMeasures> = {
     ہفتے: "w",
 } as const;
 
-export const durationLanguage = createDurationLanguage(
+export const durationLanguage: DurationLanguage = createDurationLanguage(
     "سال",
     (counter) => (counter === 1 ? "مہینہ" : "مہینے"),
     (counter) => (counter === 1 ? "ہفتہ" : "ہفتے"),

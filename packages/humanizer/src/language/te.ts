@@ -1,4 +1,4 @@
-import type { DurationUnitMeasures } from "../types";
+import type { DurationUnitMeasures, DurationLanguage } from "../types";
 import createDurationLanguage from "./util/create-duration-language";
 
 // Map Telugu aliases to standard keys
@@ -30,7 +30,7 @@ const teUnitMap: Record<string, keyof DurationUnitMeasures> = {
     సెకన్లు: "s",
 } as const;
 
-export const durationLanguage = createDurationLanguage(
+export const durationLanguage: DurationLanguage = createDurationLanguage(
     (counter) => `సంవత్స${counter === 1 ? "రం" : "రాల"}`,
     (counter) => `నెల${counter === 1 ? "" : "ల"}`,
     (counter) => (counter === 1 ? "వారం" : "వారాలు"),

@@ -9,10 +9,13 @@ import isAccessible from "../is-accessible";
 import type { ContentType, ReadFileOptions } from "../types";
 import assertValidFileOrDirectoryPath from "../utils/assert-valid-file-or-directory-path";
 
-const decompressionMethods = {
+type DecompressionMethod = (buffer: Buffer, callback: (error: Error | null, result: Buffer) => void) => void;
+
+const decompressionMethods: Record<string, DecompressionMethod> = {
     brotli: brotliDecompress,
     gzip: unzip,
     none: (buffer: Buffer, callback: (error: Error | null, result: Buffer) => void) => {
+        // eslint-disable-next-line unicorn/no-null
         callback(null, buffer);
     },
 } as const;
@@ -73,13 +76,11 @@ const readFile = async <O extends ReadFileOptions<keyof typeof decompressionMeth
     const { buffer, compression, encoding, flag } = options ?? {};
 
     // @ts-expect-error - TS doesn't like our typed `encoding` option
-    // eslint-disable-next-line security/detect-non-literal-fs-filename
     return await nodeReadFile(path, flag ? { encoding, flag } : { encoding })
         .then(
             async (content) =>
-                // eslint-disable-next-line compat/compat
                 await new Promise<ContentType<O> | undefined>((resolve, reject) => {
-                    decompressionMethods[compression ?? "none"](content as Buffer, (error, result) => {
+                    (decompressionMethods[compression ?? "none"] as DecompressionMethod)(content as Buffer, (error, result) => {
                         if (error) {
                             reject(error);
                         } else {
