@@ -23,10 +23,12 @@ SOFTWARE.
 <!-- DEPENDENCIES -->
 
 # Licenses of bundled dependencies
+
 The published @visulima/bytes artifact additionally contains code with the following licenses:
 
 # Bundled dependencies:
-## @jsr/std__bytes
+
+## @jsr/std\_\_bytes
 
 > MIT License
 >
@@ -55,10 +57,12 @@ The published @visulima/bytes artifact additionally contains code with the follo
 <!-- TYPE_DEPENDENCIES -->
 
 # Licenses of bundled types
+
 The published @visulima/bytes artifact additionally contains code with the following licenses:
 
 # Bundled types:
-## @jsr/std__bytes
+
+## @jsr/std\_\_bytes
 
 > MIT License
 >

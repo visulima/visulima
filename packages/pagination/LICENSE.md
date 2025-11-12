@@ -67,11 +67,14 @@ Repository: https://github.com/payloadcms/qs-esm.git
 <!-- TYPE_DEPENDENCIES -->
 
 # Licenses of bundled types
+
 The published @visulima/pagination artifact additionally contains code with the following licenses:
 MIT
 
 # Bundled types:
+
 ## openapi-types
+
 License: MIT
 By: Joseph Spencer
 Repository: https://github.com/kogosoftwarellc/open-api/tree/master/packages/openapi-types

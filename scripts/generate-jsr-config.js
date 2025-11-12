@@ -68,9 +68,7 @@ function expandGlobExport(exportKey, globPath, packageDir) {
 
     // Convert glob pattern to regex: escape all regex meta-characters, then replace * with .*
     const escapedPattern = escapeRegex(filePattern);
-    const patternRegex = new RegExp(
-        "^" + escapedPattern.replace(/\*/g, ".*") + "$"
-    );
+    const patternRegex = new RegExp("^" + escapedPattern.replace(/\*/g, ".*") + "$");
 
     // Read directory and find matching files
     const files = readdirSync(fullDirPath, { withFileTypes: true })
@@ -157,9 +155,7 @@ function convertExports(packageExports, packageDir) {
                 let distPath = null;
 
                 if (value.import) {
-                    distPath = typeof value.import === "string"
-                        ? value.import
-                        : value.import.default;
+                    distPath = typeof value.import === "string" ? value.import : value.import.default;
                 } else if (value.default) {
                     distPath = value.default;
                 } else if (value.types) {
@@ -167,9 +163,7 @@ function convertExports(packageExports, packageDir) {
                 } else {
                     // Use the first available path
                     const firstValue = Object.values(value)[0];
-                    distPath = typeof firstValue === "string"
-                        ? firstValue
-                        : firstValue?.default || firstValue?.types;
+                    distPath = typeof firstValue === "string" ? firstValue : firstValue?.default || firstValue?.types;
                 }
 
                 if (distPath) {
@@ -211,9 +205,7 @@ function getMainExport(packageExports) {
 
         // Get import or default
         if (mainExport.import) {
-            return typeof mainExport.import === "string"
-                ? mainExport.import
-                : mainExport.import.default;
+            return typeof mainExport.import === "string" ? mainExport.import : mainExport.import.default;
         }
 
         if (mainExport.default) {

@@ -397,8 +397,8 @@ describe("parses tsconfig", () => {
 
             writeJsonSync(join(distribution, "tsconfig.json"), {
                 compilerOptions: {
-                    rewriteRelativeImportExtensions: true,
                     allowImportingTsExtensions: false,
+                    rewriteRelativeImportExtensions: true,
                 },
             });
 

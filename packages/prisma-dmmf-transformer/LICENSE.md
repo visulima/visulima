@@ -26,11 +26,14 @@ SOFTWARE.
 <!-- TYPE_DEPENDENCIES -->
 
 # Licenses of bundled types
+
 The published @visulima/prisma-dmmf-transformer artifact additionally contains code with the following licenses:
 MIT
 
 # Bundled types:
+
 ## @types/json-schema
+
 License: MIT
 By: Boris Cherny, Lucian Buzzo, Roland Groza, Jason Kwok
 Repository: https://github.com/DefinitelyTyped/DefinitelyTyped.git

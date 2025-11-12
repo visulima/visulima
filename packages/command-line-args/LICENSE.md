@@ -230,11 +230,14 @@ Repository: git+https://github.com/visulima/visulima.git
 <!-- TYPE_DEPENDENCIES -->
 
 # Licenses of bundled types
+
 The published @visulima/command-line-args artifact additionally contains code with the following licenses:
 MIT
 
 # Bundled types:
+
 ## @visulima/error
+
 License: MIT
 By: Daniel Bannert
 Repository: git+https://github.com/visulima/visulima.git

@@ -99,15 +99,15 @@ ROARR.write = () => {
 
 // Configure rslog to write to /dev/null
 rslogLogger.override({
-    log: () => {},
+    debug: () => {},
+    error: () => {},
+    greet: () => {},
     info: () => {},
-    start: () => {},
+    log: () => {},
     ready: () => {},
+    start: () => {},
     success: () => {},
     warn: () => {},
-    error: () => {},
-    debug: () => {},
-    greet: () => {},
 });
 
 describe("deep object", async () => {

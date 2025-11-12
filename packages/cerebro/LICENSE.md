@@ -264,11 +264,14 @@ Repository: git+https://github.com/visulima/visulima.git
 >
 >
 > # Licenses of bundled types
+>
 > The published @visulima/command-line-args artifact additionally contains code with the following licenses:
 > MIT
 >
 > # Bundled types:
+>
 > ## @visulima/error
+>
 > License: MIT
 > By: Daniel Bannert
 > Repository: git+https://github.com/visulima/visulima.git
@@ -1258,11 +1261,14 @@ Repository: git+https://github.com/visulima/visulima.git
 >
 >
 > # Licenses of bundled types
+>
 > The published @visulima/command-line-args artifact additionally contains code with the following licenses:
 > MIT
 >
 > # Bundled types:
+>
 > ## @visulima/error
+>
 > License: MIT
 > By: Daniel Bannert
 > Repository: git+https://github.com/visulima/visulima.git
@@ -1946,7 +1952,7 @@ Repository: github:watson/ci-info
 > SOFTWARE.
 
 <!-- /DEPENDENCIES -->
->
+
 > # Licenses of bundled types
 >
 > The published @visulima/command-line-args artifact additionally contains code with the following licenses:
@@ -2226,11 +2232,14 @@ Repository: git+https://github.com/visulima/visulima.git
 >
 >
 > # Licenses of bundled types
+>
 > The published @visulima/command-line-args artifact additionally contains code with the following licenses:
 > MIT
 >
 > # Bundled types:
+>
 > ## @visulima/error
+>
 > License: MIT
 > By: Daniel Bannert
 > Repository: git+https://github.com/visulima/visulima.git
@@ -3189,11 +3198,14 @@ Repository: git+https://github.com/visulima/visulima.git
 >
 >
 > # Licenses of bundled types
+>
 > The published @visulima/command-line-args artifact additionally contains code with the following licenses:
 > MIT
 >
 > # Bundled types:
+>
 > ## @visulima/error
+>
 > License: MIT
 > By: Daniel Bannert
 > Repository: git+https://github.com/visulima/visulima.git

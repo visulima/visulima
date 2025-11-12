@@ -623,11 +623,14 @@ Repository: sindresorhus/terminal-size
 <!-- TYPE_DEPENDENCIES -->
 
 # Licenses of bundled types
+
 The published @visulima/pail artifact additionally contains code with the following licenses:
 MIT
 
 # Bundled types:
+
 ## safe-stable-stringify
+
 License: MIT
 By: Ruben Bridgewater
 Repository: git+https://github.com/BridgeAR/safe-stable-stringify.git

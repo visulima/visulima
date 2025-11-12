@@ -47,11 +47,14 @@ Repository: sindresorhus/dot-prop
 <!-- TYPE_DEPENDENCIES -->
 
 # Licenses of bundled types
+
 The published @visulima/package artifact additionally contains code with the following licenses:
 MIT
 
 # Bundled types:
+
 ## @inquirer/core
+
 License: MIT
 By: Simon Boudrias
 Repository: https://github.com/SBoudrias/Inquirer.js.git
@@ -79,9 +82,10 @@ Repository: https://github.com/SBoudrias/Inquirer.js.git
 > FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 > OTHER DEALINGS IN THE SOFTWARE.
 
----------------------------------------
+---
 
 ## @inquirer/type
+
 License: MIT
 By: Simon Boudrias
 Repository: https://github.com/SBoudrias/Inquirer.js.git
