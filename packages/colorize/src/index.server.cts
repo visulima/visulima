@@ -1,10 +1,12 @@
 import ColorizeImpl from "./colorize.server";
 import type { ColorizeType } from "./types";
 
-const colorize: ColorizeType = new ColorizeImpl() as ColorizeType;
+type ColorizeTypeWithColorize = ColorizeType & { Colorize: typeof ColorizeImpl };
 
-export default colorize as ColorizeType;
+const colorize: ColorizeTypeWithColorize = new ColorizeImpl() as ColorizeTypeWithColorize;
 
-export const Colorize: new () => ColorizeType = ColorizeImpl;
+colorize.Colorize = ColorizeImpl;
+
+export default colorize as ColorizeTypeWithColorize;
 
 export type { AnsiColors, AnsiStyles, ColorizeType } from "./types";
