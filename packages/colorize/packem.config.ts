@@ -14,33 +14,6 @@ export default defineConfig({
         license: {
             path: "./LICENSE.md",
         },
-        plugins: [
-            // workaround for the issue with default and named exports in the cjs build
-            {
-                enforce: "post",
-                plugin: <Plugin>{
-                    name: "colorize-plugin",
-                    generateBundle(options, output) {
-                        if (options.format === "cjs") {
-                            const outputKeys = Object.keys(output);
-
-                            if (outputKeys.includes("index.server.cjs") & false) {
-                                output[outputKeys[0]].code = output[outputKeys[0]].code.replace(
-                                    `module.exports.Colorize = Colorize;\nmodule.exports = colorize;`,
-                                    `module.exports = colorize;\nmodule.exports.Colorize = Colorize;`,
-                                );
-
-                                // prod
-                                output[outputKeys[0]].code = output[outputKeys[0]].code.replace(
-                                    `exports.Colorize=X;exports.default=V`,
-                                    `module.exports=V;module.exports.Colorize=X`,
-                                );
-                            }
-                        }
-                    },
-                },
-            },
-        ],
         requireCJS: {
             builtinNodeModules: true,
         },
