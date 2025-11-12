@@ -1,3 +1,28 @@
+## @visulima/pail [3.2.1](https://github.com/visulima/visulima/compare/@visulima/pail@3.2.0...@visulima/pail@3.2.1) (2025-11-12)
+
+### Bug Fixes
+
+* **deps:** update type-fest dependency across multiple packages ([93e13be](https://github.com/visulima/visulima/commit/93e13be5248207968a96303710db2a0604d16b9b))
+* update package configurations and TypeScript definitions ([b59aa59](https://github.com/visulima/visulima/commit/b59aa59dac1508216b944f4b917fb4a7ab1f70a4))
+
+### Miscellaneous Chores
+
+* Add jsr file to all packages for release ([#565](https://github.com/visulima/visulima/issues/565)) ([ec91652](https://github.com/visulima/visulima/commit/ec91652b4e4112adf14ba152c1239a7703ba425a))
+* **pail:** add rslog logging to benchmarks ([c5675c8](https://github.com/visulima/visulima/commit/c5675c880a81a979a713771d6c82f6d2682daaaa))
+* **pail:** integrate roarr logging into benchmarks ([563bb52](https://github.com/visulima/visulima/commit/563bb52b7311ad9a3bfc4de6a2ff0593b2cfcc44))
+* **pail:** update benchmark results and add rslog performance metrics ([123e2b5](https://github.com/visulima/visulima/commit/123e2b533dc3a75e6bab45055a4055897824630b))
+* update license files and clean up TypeScript definitions ([fe668cc](https://github.com/visulima/visulima/commit/fe668cc26de23591d4df54a0954455ebbe31b22d))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.28
+* **@visulima/error:** upgraded to 5.0.5
+* **@visulima/fmt:** upgraded to 1.1.20
+* **@visulima/inspector:** upgraded to 1.0.29
+* **@visulima/redact:** upgraded to 2.0.4
+* **@visulima/string:** upgraded to 2.0.5
+
 ## @visulima/pail [3.2.0](https://github.com/visulima/visulima/compare/@visulima/pail@3.1.0...@visulima/pail@3.2.0) (2025-11-07)
 
 ### Features

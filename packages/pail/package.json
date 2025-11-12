@@ -1,6 +1,6 @@
 {
     "name": "@visulima/pail",
-    "version": "3.2.0",
+    "version": "3.2.1",
     "description": "Highly configurable Logger for Node.js, Edge and Browser.",
     "keywords": [
         "ansi",
@@ -220,7 +220,7 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@visulima/colorize": "1.4.27"
+        "@visulima/colorize": "1.4.28"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "^16.4.2",
@@ -232,12 +232,12 @@
         "@secretlint/secretlint-rule-preset-recommend": "^11.2.5",
         "@total-typescript/ts-reset": "^0.6.1",
         "@types/node": "24.10.0",
-        "@visulima/error": "5.0.4",
-        "@visulima/fmt": "1.1.19",
-        "@visulima/inspector": "1.0.28",
+        "@visulima/error": "5.0.5",
+        "@visulima/fmt": "1.1.20",
+        "@visulima/inspector": "1.0.29",
         "@visulima/packem": "2.0.0-alpha.36",
-        "@visulima/redact": "2.0.3",
-        "@visulima/string": "2.0.4",
+        "@visulima/redact": "2.0.4",
+        "@visulima/string": "2.0.5",
         "@vitest/coverage-v8": "^4.0.8",
         "@vitest/ui": "^4.0.8",
         "cli-spinners": "3.3.0",
@@ -258,7 +258,7 @@
     },
     "peerDependencies": {
         "@opentelemetry/api": "^1.9",
-        "@visulima/redact": "2.0.3",
+        "@visulima/redact": "2.0.4",
         "rotating-file-stream": "^3.2.7"
     },
     "peerDependenciesMeta": {
