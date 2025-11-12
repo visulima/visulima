@@ -1,4 +1,4 @@
-import type { DurationUnitMeasures, DurationLanguage } from "../types";
+import type { DurationLanguage, DurationUnitMeasures } from "../types";
 import createDurationLanguage from "./util/create-duration-language";
 
 // Map Malay aliases to standard keys

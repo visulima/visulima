@@ -1,3 +1,4 @@
+/* eslint-disable prefer-destructuring */
 import ColorizeImpl from "./colorize.browser";
 import type { ColorizeType, ColorValueHex } from "./types";
 

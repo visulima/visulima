@@ -1,4 +1,4 @@
-import type { DurationUnitMeasures, DurationLanguage } from "../types";
+import type { DurationLanguage, DurationUnitMeasures } from "../types";
 import createDurationLanguage from "./util/create-duration-language";
 
 const getLatvianForm = (counter: number) => counter % 10 === 1 && counter % 100 !== 11;

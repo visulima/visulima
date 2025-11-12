@@ -122,11 +122,14 @@ Repository: https://github.com/tapjs/signal-exit.git
 <!-- TYPE_DEPENDENCIES -->
 
 # Licenses of bundled types
+
 The published @visulima/ansi artifact additionally contains code with the following licenses:
 MIT
 
 # Bundled types:
+
 ## restore-cursor
+
 License: MIT
 By: Sindre Sorhus
 Repository: sindresorhus/restore-cursor

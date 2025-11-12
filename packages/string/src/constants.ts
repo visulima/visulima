@@ -110,7 +110,7 @@ export const RE_ANSI: RegExp = /[\u001B\u009B](?:[[()#;?]{0,10}(?:\d{1,4}(?:;\d{
 export const RE_VALID_ANSI_PAIRS: RegExp = /\u001B\[(\d+(?:;\d+)*)?m[^\u001B]*(?:\u001B\[(?:\d+(?:;\d+)*)?m|$)/g;
 
 // Matches OSC 8 hyperlinks and captures the *text* part (group 1)
-// eslint-disable-next-line no-control-regex, sonarjs/regex-complexity, sonarjs/no-control-regex
+// eslint-disable-next-line no-control-regex, sonarjs/no-control-regex
 export const RE_VALID_HYPERLINKS: RegExp = /\u001B\]8;[^\u0007\u001B]*(?:\u0007|\u001B\\)(.*?)\u001B\]8;;(?:\u0007|\u001B\\)/g;
 
 /**

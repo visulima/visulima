@@ -286,11 +286,14 @@ Repository: git+https://github.com/visulima/visulima.git
 >
 >
 > # Licenses of bundled types
+>
 > The published @visulima/fs artifact additionally contains code with the following licenses:
 > MIT
 >
 > # Bundled types:
+>
 > ## is-fs-case-sensitive
+>
 > License: MIT
 > By: Hiroki Osame
 > Repository: privatenumber/is-fs-case-sensitive

@@ -215,7 +215,7 @@ const internalParseTsConfig = (tsconfigPath: string, options?: Options, circular
         }
     } else if (config.files) {
         // eslint-disable-next-line @typescript-eslint/no-use-before-define
-        config.files = config.files.map((file) => (file.startsWith(configDirectoryPlaceholder) ? file : normalizePath(file)));
+        config.files = config.files.map((file) => file.startsWith(configDirectoryPlaceholder) ? file : normalizePath(file));
     }
 
     if (config.watchOptions) {
