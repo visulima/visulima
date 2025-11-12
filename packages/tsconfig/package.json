@@ -70,8 +70,7 @@
         "@visulima/fs": "4.0.4",
         "@visulima/path": "2.0.3",
         "jsonc-parser": "^3.3.1",
-        "resolve-pkg-maps": "^1.0.0",
-        "type-fest": "^5.2.0"
+        "resolve-pkg-maps": "^1.0.0"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "^16.4.2",
@@ -95,6 +94,7 @@
         "secretlint": "11.2.5",
         "semantic-release": "^25.0.2",
         "tempy": "^3.1.0",
+        "type-fest": "^5.2.0",
         "typedoc": "0.28.14",
         "typedoc-plugin-markdown": "4.9.0",
         "typedoc-plugin-rename-defaults": "0.7.3",
