@@ -4,10 +4,10 @@ import { join } from "node:path";
 import { PassThrough } from "node:stream";
 import { pipeline } from "node:stream/promises";
 
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { temporaryDirectory } from "tempy";
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
 
 import { StreamChecksum, streamChecksum } from "../../../src/utils/pipes/stream-checksum";
-import { testRoot } from "../../__helpers__/config";
 
 const createTestFile = async (path: string, filepath: string) => {
     await mkdir(path, { recursive: true });
@@ -16,18 +16,15 @@ const createTestFile = async (path: string, filepath: string) => {
 
 describe("utils", () => {
     describe("pipes", () => {
-        const directory = join(testRoot, "stream-checksum");
-        const file = join(directory, "test.txt");
+        let directory: string;
+        let file: string;
 
-        beforeAll(async () => {
-            try {
-                await rm(directory, { force: true, recursive: true });
-            } catch {
-                // ignore if directory doesn't exist
-            }
+        beforeEach(async () => {
+            directory = temporaryDirectory();
+            file = join(directory, "test.txt");
         });
 
-        afterAll(async () => {
+        afterEach(async () => {
             try {
                 await rm(directory, { force: true, recursive: true });
             } catch {
@@ -37,7 +34,7 @@ describe("utils", () => {
 
         describe(StreamChecksum, () => {
             it("should create StreamChecksum instance with correct properties and validate checksum mismatch", async () => {
-                expect.assertions(4);
+                expect.assertions(5);
 
                 await createTestFile(directory, file);
 
@@ -51,7 +48,7 @@ describe("utils", () => {
                 await expect(pipeline(stream, transformer)).rejects.toThrow("Checksum mismatch");
 
                 expect(transformer).toBeInstanceOf(StreamChecksum);
-                expect(transformer.calculatedDigest).toBeTruthy();
+                expect(transformer.calculatedDigest).toBe("CY9rzUYh03PK3k6DJie09g==");
             });
         });
 
@@ -70,7 +67,7 @@ describe("utils", () => {
             });
 
             it("should return a StreamChecksum instance with correct properties when checksum provided", async () => {
-                expect.assertions(3);
+                expect.assertions(4);
 
                 await createTestFile(directory, file);
 

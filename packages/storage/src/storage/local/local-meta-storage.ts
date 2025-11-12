@@ -1,7 +1,9 @@
 import { utimes } from "node:fs/promises";
 import { tmpdir } from "node:os";
 
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { ensureDir, readFile, remove, writeFile } from "@visulima/fs";
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { join, normalize } from "@visulima/path";
 
 import MetaStorage from "../meta-storage";
@@ -26,13 +28,13 @@ class LocalMetaStorage<T extends File = File> extends MetaStorage<T> {
     }
 
     /**
-     * Returns metafile path
+     * Returns metafile path.
      * @param id upload id
      */
     public getMetaPath = (id: string): string => normalize(`${this.directory}/${this.prefix}${id}${this.suffix}`);
 
     /**
-     * Returns upload id from metafile path
+     * Returns upload id from metafile path.
      * @internal
      */
     public getIdFromPath = (metaFilePath: string): string => metaFilePath.slice(`${this.directory}/${this.prefix}`.length, -this.suffix.length);
@@ -46,7 +48,9 @@ class LocalMetaStorage<T extends File = File> extends MetaStorage<T> {
             transformedMetadata.metadata = stringifyMetadata(file.metadata);
         }
 
-        await writeFile(this.getMetaPath(id), JSON.stringify(transformedMetadata));
+        await writeFile(this.getMetaPath(id), JSON.stringify(transformedMetadata), {
+            recursive: true,
+        });
 
         return file;
     }

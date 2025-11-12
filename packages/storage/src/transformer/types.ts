@@ -195,7 +195,7 @@ export interface ExtractChannelOptions extends TransformOptions {
 }
 
 /**
- * Channel join options
+ * Options for joining multiple images as color channels into a single image.
  */
 export interface JoinChannelOptions extends TransformOptions {
     /** Images to join as channels */
@@ -203,7 +203,7 @@ export interface JoinChannelOptions extends TransformOptions {
 }
 
 /**
- * Band boolean options
+ * Options for performing boolean operations on image bands.
  */
 export interface BandboolOptions extends TransformOptions {
     /** Boolean operation: and, or, eor */
@@ -211,7 +211,7 @@ export interface BandboolOptions extends TransformOptions {
 }
 
 /**
- * Affine transformation options
+ * Options for applying affine transformations (rotation, scaling, shearing, translation) to images.
  */
 export interface AffineOptions extends TransformOptions {
     /** Background color for areas outside the transformed image */
@@ -223,7 +223,7 @@ export interface AffineOptions extends TransformOptions {
 }
 
 /**
- * Dilate options
+ * Options for applying morphological dilation operation to images.
  */
 export interface DilateOptions extends TransformOptions {
     /** Kernel size for dilation */
@@ -231,7 +231,7 @@ export interface DilateOptions extends TransformOptions {
 }
 
 /**
- * Erode options
+ * Options for applying morphological erosion operation to images.
  */
 export interface ErodeOptions extends TransformOptions {
     /** Kernel size for erosion */
@@ -239,7 +239,7 @@ export interface ErodeOptions extends TransformOptions {
 }
 
 /**
- * Pipeline colourspace options
+ * Options for setting the colourspace used for internal processing pipeline operations.
  */
 export interface PipelineColourspaceOptions extends TransformOptions {
     /** Colourspace for internal operations */
@@ -247,7 +247,7 @@ export interface PipelineColourspaceOptions extends TransformOptions {
 }
 
 /**
- * To colourspace options
+ * Options for converting images to a target colourspace.
  */
 export interface ToColourspaceOptions extends TransformOptions {
     /** Target colourspace */

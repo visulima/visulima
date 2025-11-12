@@ -89,9 +89,9 @@ const storage = new NetlifyBlobStorage({
         directory: "/tmp/upload-metafiles",
     },
 
+    siteID: process.env.NETLIFY_SITE_ID, // Optional
     // Netlify Blob specific config
     storeName: "uploads",
-    siteID: process.env.NETLIFY_SITE_ID, // Optional
     token: process.env.NETLIFY_TOKEN, // Optional
 });
 ```
@@ -162,6 +162,7 @@ const file = await storage.create(request, {
 
 // Metadata is stored with the blob and can be retrieved
 const retrieved = await storage.get({ id: file.id });
+
 console.log(retrieved.metadata); // { author: "John Doe", ... }
 ```
 
@@ -182,8 +183,8 @@ export const handler: Handler = async (event) => {
 
     if (!key) {
         return {
-            statusCode: 400,
             body: JSON.stringify({ error: "Missing key" }),
+            statusCode: 400,
         };
     }
 
@@ -191,20 +192,20 @@ export const handler: Handler = async (event) => {
 
     if (!blob) {
         return {
-            statusCode: 404,
             body: JSON.stringify({ error: "Not found" }),
+            statusCode: 404,
         };
     }
 
     const metadata = await store.getMetadata(key);
 
     return {
-        statusCode: 200,
+        body: await blob.text(),
         headers: {
             "Content-Type": metadata?.contentType || "application/octet-stream",
         },
-        body: await blob.text(),
         isBase64Encoded: false,
+        statusCode: 200,
     };
 };
 ```
@@ -253,8 +254,8 @@ const file = await storage.create(request, {
 
 // The naming function can create folder structure
 const storage = new NetlifyBlobStorage({
-    storeName: "uploads",
     filename: (file) => `images/${Date.now()}-${file.originalName}`,
+    storeName: "uploads",
 });
 ```
 
@@ -289,10 +290,10 @@ const files = await storage.list(100); // Get first 100 files
 
 ```typescript
 const storage = new NetlifyBlobStorage({
-    storeName: "uploads",
     genericConfig: {
         cache: new MemoryCache(), // Use memory cache for metadata
     },
+    storeName: "uploads",
 });
 ```
 
@@ -353,7 +354,7 @@ try {
 // Check file size limits
 const MAX_SIZE = 500 * 1024 * 1024; // 500MB (Netlify plan dependent)
 
-if (file.size && file.size > MAX_SIZE) {
+if (file.size > 0 && file.size > MAX_SIZE) {
     console.error("File too large for Netlify Blob");
 }
 ```

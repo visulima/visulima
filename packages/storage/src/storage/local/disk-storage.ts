@@ -1,10 +1,10 @@
 import { createReadStream, createWriteStream } from "node:fs";
-import { copyFile, mkdir, rename, stat, truncate, unlink } from "node:fs/promises";
+import { copyFile, stat, truncate } from "node:fs/promises";
 import type { IncomingMessage } from "node:http";
 import type { Readable } from "node:stream";
 import { pipeline } from "node:stream";
 
-import { ensureFile, readFile, remove, walk } from "@visulima/fs";
+import { ensureDir, ensureFile, move, readFile, remove, walk } from "@visulima/fs";
 import { join } from "@visulima/path";
 import etag from "etag";
 
@@ -94,6 +94,7 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
         try {
             await ensureFile(path);
             file.bytesWritten = 0;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
             throwErrorCode(ERRORS.FILE_ERROR, error.message);
         }
@@ -108,7 +109,9 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
     public async write(part: FilePart | FileQuery | TFile): Promise<TFile> {
         let file: TFile;
 
-        if ("contentType" in part && "metadata" in part && !("body" in part) && !("start" in part)) {
+        const isFullFile = "contentType" in part && "metadata" in part && !("body" in part) && !("start" in part);
+
+        if (isFullFile) {
             // part is a full file object (not a FilePart)
             file = part as TFile;
         } else {
@@ -145,7 +148,15 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
                     return throwErrorCode(ERRORS.UNSUPPORTED_CHECKSUM_ALGORITHM);
                 }
 
-                const [bytesWritten, errorCode] = await this.lazyWrite({ ...part, ...file });
+                // Create lazyWritePart ensuring body stream and signal are preserved
+                const signalFromPart = (part as any).signal;
+                const lazyWritePart: any = { ...file, ...part };
+                // Explicitly preserve body stream reference and signal
+                lazyWritePart.body = part.body;
+                if (signalFromPart) {
+                    (lazyWritePart as any).signal = signalFromPart;
+                }
+                const [bytesWritten, errorCode] = await this.lazyWrite(lazyWritePart);
 
                 if (errorCode) {
                     await truncate(path, file.bytesWritten);
@@ -182,8 +193,9 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
 
         try {
             content = (await readFile(this.getFilePath(name), { buffer: true })) as Buffer;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
-            if (error.code === "ENOENT") {
+            if (error.code === "ENOENT" || error.code === "EPERM") {
                 return throwErrorCode(ERRORS.FILE_NOT_FOUND, error.message);
             }
 
@@ -205,10 +217,10 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
     }
 
     public override async getStream({ id }: FileQuery): Promise<{ headers?: Record<string, string>; size?: number; stream: Readable }> {
-        const file = await this.checkIfExpired(await this.meta.get(id));
-        const { bytesWritten, contentType, expiredAt, modifiedAt, name, size } = file;
-
         try {
+            const file = await this.checkIfExpired(await this.meta.get(id));
+            const { bytesWritten, contentType, expiredAt, modifiedAt, name, size } = file;
+
             // Create a readable stream directly from the file
             const stream = createReadStream(this.getFilePath(name));
 
@@ -224,12 +236,10 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
                 size: size || bytesWritten,
                 stream,
             };
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
-            if (error.code === "ENOENT") {
-                throw throwErrorCode(ERRORS.FILE_NOT_FOUND, error.message);
-            }
-
-            throw error;
+            // Convert any filesystem error when reading metadata to FILE_NOT_FOUND
+            throw throwErrorCode(ERRORS.FILE_NOT_FOUND, error.message);
         }
     }
 
@@ -256,11 +266,11 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
         const source = this.getFilePath(name);
 
         try {
-            await rename(source, destination);
+            await move(source, destination);
         } catch (error: any) {
             if (error?.code === "EXDEV") {
                 await this.copy(source, destination);
-                await unlink(source);
+                await remove(source);
             }
         }
     }
@@ -303,6 +313,8 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
             const lengthChecker = new StreamLength(part.contentLength || (part.size as number) - part.start);
             const checksumChecker = streamChecksum(part.checksum as string, part.checksumAlgorithm as string);
             const keepPartial = !part.checksum;
+            // Check for signal on part object
+            const signal = (part as any).signal as AbortSignal | undefined;
 
             const cleanupStreams = (): void => {
                 destination.close();
@@ -319,12 +331,38 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
             checksumChecker.on("error", () => failWithCode(ERRORS.CHECKSUM_MISMATCH));
 
             part.body.on("aborted", () => failWithCode(keepPartial ? undefined : ERRORS.REQUEST_ABORTED));
+            part.body.on("error", (error) => {
+                cleanupStreams();
+                reject(error);
+            });
+
+            // Check if signal is already aborted before starting pipeline
+            if (signal?.aborted) {
+                return failWithCode(keepPartial ? undefined : ERRORS.REQUEST_ABORTED);
+            }
+
+            // Handle AbortController signal manually
+            // Note: We handle signal manually instead of using pipeline options for better compatibility
+            if (signal) {
+                signal.addEventListener("abort", () => {
+                    cleanupStreams();
+                    destination.destroy();
+                    lengthChecker.destroy();
+                    checksumChecker.destroy();
+                    part.body.destroy();
+                    resolve([Number.NaN, keepPartial ? undefined : ERRORS.REQUEST_ABORTED]);
+                });
+            }
 
             pipeline(part.body, lengthChecker, checksumChecker, destination, (error) => {
                 if (error) {
                     cleanupStreams();
-
-                    return reject(error);
+                    // Check if error is due to abort signal
+                    if (signal && signal.aborted) {
+                        return resolve([Number.NaN, keepPartial ? undefined : ERRORS.REQUEST_ABORTED]);
+                    }
+                    // Convert other pipeline errors to error codes
+                    return resolve([Number.NaN, ERRORS.FILE_ERROR]);
                 }
 
                 return resolve([part.start + destination.bytesWritten]);
@@ -333,7 +371,7 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
     }
 
     private async accessCheck(): Promise<void> {
-        await mkdir(this.directory, { recursive: true });
+        await ensureDir(this.directory);
     }
 }
 

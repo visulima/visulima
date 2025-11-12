@@ -1,4 +1,5 @@
-import { beforeEach, describe, expect, expectTypeOf, it, vi } from "vitest";
+/* eslint-disable vitest/prefer-spy-on */
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { MediaTransformerConfig } from "../../src/transformer";
 import MediaTransformer from "../../src/transformer/media-transformer";
@@ -10,28 +11,31 @@ const mockStorage = {
 };
 
 // Mock transformer classes
-const MockImageTransformer = vi.fn().mockImplementation(() => {
-    return {
-        clearCache: vi.fn(),
-        getCacheStats: vi.fn(),
-        transform: vi.fn(),
-    };
+const MockImageTransformer = vi.fn().mockImplementation(function (this: any) {
+    // Define methods on the mock instance
+    this.clearCache = vi.fn();
+    this.getCacheStats = vi.fn().mockReturnValue({ maxSize: -1, size: 0 });
+    this.transform = vi.fn();
+
+    return this;
 });
 
-const MockVideoTransformer = vi.fn().mockImplementation(() => {
-    return {
-        clearCache: vi.fn(),
-        getCacheStats: vi.fn(),
-        transform: vi.fn(),
-    };
+const MockVideoTransformer = vi.fn().mockImplementation(function (this: any) {
+    // Define methods on the mock instance
+    this.clearCache = vi.fn();
+    this.getCacheStats = vi.fn().mockReturnValue({ maxSize: -1, size: 0 });
+    this.transform = vi.fn();
+
+    return this;
 });
 
-const MockAudioTransformer = vi.fn().mockImplementation(() => {
-    return {
-        clearCache: vi.fn(),
-        getCacheStats: vi.fn(),
-        transform: vi.fn(),
-    };
+const MockAudioTransformer = vi.fn().mockImplementation(function (this: any) {
+    // Define methods on the mock instance
+    this.clearCache = vi.fn();
+    this.getCacheStats = vi.fn().mockReturnValue({ maxSize: -1, size: 0 });
+    this.transform = vi.fn();
+
+    return this;
 });
 
 // Mock individual transformers
@@ -88,39 +92,201 @@ describe(MediaTransformer, () => {
     });
 
     describe("query parsing", () => {
-        it("should accept object query parameters", () => {
-            expect.assertions(0);
+        let transformer: MediaTransformer;
 
-            const query = {
+        beforeEach(() => {
+            transformer = new MediaTransformer(mockStorage as any, {
+                ImageTransformer: MockImageTransformer,
+            });
+        });
+
+        it("should parse object query parameters", async () => {
+            expect.assertions(2);
+
+            const mockFile = {
+                content: Buffer.from("mock image data"),
+                contentType: "image/jpeg",
+                id: "test-id",
+                size: 1000,
+            };
+
+            const mockResult = {
+                buffer: Buffer.from("transformed data"),
                 format: "webp",
                 height: 600,
-                quality: 80,
+                originalFile: mockFile,
+                size: 800,
                 width: 800,
             };
 
-            // Test that handle method can process object queries
-            // (Full integration test would require mocking storage.get)
-            expectTypeOf(query).toBeObject();
+            mockStorage.get.mockResolvedValue(mockFile);
+
+            const mockImageInstance = MockImageTransformer.mock.results[0].value;
+
+            mockImageInstance.transform.mockResolvedValue(mockResult);
+
+            const query = { format: "webp", height: 600, quality: 80, width: 800 };
+            const result = await transformer.handle("test-id", query);
+
+            expect(mockImageInstance.transform).toHaveBeenCalledWith(
+                "test-id",
+                [
+                    {
+                        options: {
+                            fit: undefined,
+                            height: 600,
+                            position: undefined,
+                            width: 800,
+                            withoutEnlargement: undefined,
+                            withoutReduction: undefined,
+                        },
+                        type: "resize",
+                    },
+                    {
+                        options: {
+                            format: "webp",
+                            quality: 80,
+                        },
+                        type: "format",
+                    },
+                ],
+            );
+
+            expect(result).toEqual({
+                buffer: mockResult.buffer,
+                format: "webp",
+                height: 600,
+                mediaType: "image",
+                originalFile: mockFile,
+                size: 800,
+                width: 800,
+            });
         });
 
-        it("should accept URLSearchParams as query parameters", () => {
-            expect.assertions(1);
+        it("should parse URLSearchParams query parameters", async () => {
+            expect.assertions(2);
 
-            const parameters = new URLSearchParams("width=800&height=600&format=webp&quality=80");
+            const mockFile = {
+                content: Buffer.from("mock image data"),
+                contentType: "image/jpeg",
+                id: "test-id",
+                size: 1000,
+            };
 
-            // Test that handle method can process URLSearchParams
-            // (Full integration test would require mocking storage.get)
-            expect(parameters instanceof URLSearchParams).toBe(true);
+            const mockResult = {
+                buffer: Buffer.from("transformed data"),
+                format: "webp",
+                height: 600,
+                originalFile: mockFile,
+                size: 800,
+                width: 800,
+            };
+
+            mockStorage.get.mockResolvedValue(mockFile);
+
+            const mockImageInstance = MockImageTransformer.mock.results[0].value;
+
+            mockImageInstance.transform.mockResolvedValue(mockResult);
+
+            const query = new URLSearchParams("width=800&height=600&format=webp&quality=80");
+            const result = await transformer.handle("test-id", query);
+
+            expect(mockImageInstance.transform).toHaveBeenCalledWith(
+                "test-id",
+                [
+                    {
+                        options: {
+                            fit: undefined,
+                            height: 600,
+                            position: undefined,
+                            width: 800,
+                            withoutEnlargement: undefined,
+                            withoutReduction: undefined,
+                        },
+                        type: "resize",
+                    },
+                    {
+                        options: {
+                            format: "webp",
+                            quality: 80,
+                        },
+                        type: "format",
+                    },
+                ],
+            );
+
+            expect(result).toEqual({
+                buffer: mockResult.buffer,
+                format: "webp",
+                height: 600,
+                mediaType: "image",
+                originalFile: mockFile,
+                size: 800,
+                width: 800,
+            });
         });
 
-        it("should accept query string parameters", () => {
-            expect.assertions(0);
+        it("should parse query string parameters", async () => {
+            expect.assertions(2);
+
+            const mockFile = {
+                content: Buffer.from("mock image data"),
+                contentType: "image/jpeg",
+                id: "test-id",
+                size: 1000,
+            };
+
+            const mockResult = {
+                buffer: Buffer.from("transformed data"),
+                format: "webp",
+                height: 600,
+                originalFile: mockFile,
+                size: 800,
+                width: 800,
+            };
+
+            mockStorage.get.mockResolvedValue(mockFile);
+
+            const mockImageInstance = MockImageTransformer.mock.results[0].value;
+
+            mockImageInstance.transform.mockResolvedValue(mockResult);
 
             const queryString = "width=800&height=600&format=webp&quality=80";
+            const result = await transformer.handle("test-id", queryString);
 
-            // Test that fetch method accepts query strings
-            // (Full integration test would require mocking storage.get)
-            expectTypeOf(queryString).toBeString();
+            expect(mockImageInstance.transform).toHaveBeenCalledWith(
+                "test-id",
+                [
+                    {
+                        options: {
+                            fit: undefined,
+                            height: 600,
+                            position: undefined,
+                            width: 800,
+                            withoutEnlargement: undefined,
+                            withoutReduction: undefined,
+                        },
+                        type: "resize",
+                    },
+                    {
+                        options: {
+                            format: "webp",
+                            quality: 80,
+                        },
+                        type: "format",
+                    },
+                ],
+            );
+
+            expect(result).toEqual({
+                buffer: mockResult.buffer,
+                format: "webp",
+                height: 600,
+                mediaType: "image",
+                originalFile: mockFile,
+                size: 800,
+                width: 800,
+            });
         });
     });
 

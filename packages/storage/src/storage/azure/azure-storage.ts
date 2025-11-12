@@ -344,7 +344,9 @@ class AzureStorage extends BaseStorage<AzureFile, FileReturn> {
     }
 
     /**
-     * Prefixes the given filePath with the storage root location
+     * Prefixes the given filePath with the storage root location (assetFolder if configured).
+     * @param filePath - Relative file path to prefix
+     * @returns Full path with asset folder prefix if configured, otherwise returns original path
      */
     private getFullPath(filePath: string): string {
         if (this.assetFolder !== undefined) {

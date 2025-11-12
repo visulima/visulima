@@ -20,13 +20,13 @@ export type S3MetaStorageOptions = MetaStorageOptions
 export type S3StorageOptions = BaseStorageOptions<S3File>
     & S3ClientConfig & {
         /**
-         *   Specifying access rules for uploaded files
+         * Specifying access rules for uploaded files.
          */
         acl?: ObjectCannedACL;
 
         /**
-         * S3 bucket
-         * @defaultValue 'node-Upload'
+         * S3 bucket name.
+         * @default 'node-Upload'
          */
         bucket?: string;
 
@@ -63,8 +63,8 @@ export type S3StorageOptions = BaseStorageOptions<S3File>
         metaStorageConfig?: LocalMetaStorageOptions | S3MetaStorageOptions;
 
         /**
-         * The parts size that the client should use for presigned multipart unloading
-         * @defaultValue '16MB'
+         * The parts size that the client should use for presigned multipart unloading.
+         * @default '16MB'
          */
         partSize?: number | string;
     };

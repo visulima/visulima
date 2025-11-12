@@ -65,9 +65,9 @@ class VideoTransformer<TFile extends File = File, TFileReturn extends FileReturn
     TFileReturn
 > {
     /**
-     * Creates a new VideoTransformer instance
-     * @param storage The storage backend for retrieving and storing video files
-     * @param config Configuration options for video transformation including cache settings, codec defaults, and size limits
+     * Creates a new VideoTransformer instance.
+     * @param storage - The storage backend for retrieving and storing video files
+     * @param config - Configuration options for video transformation including cache settings, codec defaults, and size limits
      */
     public constructor(storage: BaseStorage<TFile, TFileReturn>, config: VideoTransformerConfig = {}) {
         const logger = config.logger || storage.logger;
@@ -87,7 +87,10 @@ class VideoTransformer<TFile extends File = File, TFileReturn extends FileReturn
     }
 
     /**
-     * Resize a video
+     * Resize a video to specified dimensions with optional fit mode.
+     * @param fileId - Unique identifier of the video file to resize
+     * @param options - Resize options including width, height, and fit mode
+     * @returns Promise resolving to transformed video result
      */
     public async resize(fileId: string, options: VideoResizeOptions): Promise<VideoTransformResult<TFileReturn>> {
         return this.transform(fileId, [{ options, type: "resize" }]);

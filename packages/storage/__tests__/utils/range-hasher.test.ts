@@ -2,11 +2,11 @@ import { Hash } from "node:crypto";
 import { mkdir, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { temporaryDirectory } from "tempy";
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
 
 import RangeChecksum from "../../src/utils/range-checksum";
 import RangeHasher from "../../src/utils/range-hasher";
-import { testRoot as rootPath } from "../__helpers__/config";
 
 const createTestFile = async (testRoot: string, filepath: string) => {
     await mkdir(testRoot, { recursive: true });
@@ -14,15 +14,13 @@ const createTestFile = async (testRoot: string, filepath: string) => {
 };
 
 describe("utils", async () => {
-    const testRoot = join(rootPath, "range-hasher");
-    const filepath = join(testRoot, "file.ext");
+    let testRoot: string;
+    let filepath: string;
 
     beforeEach(async () => {
-        try {
-            await rm(testRoot, { force: true, recursive: true });
-        } catch {
-            // ignore if directory doesn't exist
-        }
+        testRoot = temporaryDirectory();
+        filepath = join(testRoot, "file.ext");
+        await createTestFile(testRoot, filepath);
     });
 
     afterEach(async () => {
@@ -37,8 +35,6 @@ describe("utils", async () => {
         it("should generate correct hex hash after updating from filesystem", async () => {
             expect.assertions(2);
 
-            await createTestFile(testRoot, filepath);
-
             const rangeHasher = new RangeHasher();
 
             expect(rangeHasher.hex(filepath)).toBe("");
@@ -50,8 +46,6 @@ describe("utils", async () => {
 
         it("should generate correct base64 hash after updating from filesystem", async () => {
             expect.assertions(2);
-
-            await createTestFile(testRoot, filepath);
 
             const rangeHasher = new RangeHasher();
 
@@ -73,8 +67,6 @@ describe("utils", async () => {
 
         it("should update from filesystem and return hash instances", async () => {
             expect.assertions(3);
-
-            await createTestFile(testRoot, filepath);
 
             const rangeHasher = new RangeHasher();
 

@@ -3,10 +3,10 @@ import { mkdir, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { pipeline } from "node:stream";
 
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { temporaryDirectory } from "tempy";
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
 
 import StreamLength from "../../../src/utils/pipes/stream-length";
-import { testRoot } from "../../__helpers__/config";
 
 const createTestFile = async (path: string, filepath: string) => {
     await mkdir(path, { recursive: true });
@@ -15,7 +15,13 @@ const createTestFile = async (path: string, filepath: string) => {
 
 describe("utils", () => {
     describe("pipes", () => {
-        const directory = join(testRoot, "stream-length");
+        let directory: string;
+        let file: string;
+
+        beforeEach(async () => {
+            directory = temporaryDirectory();
+            file = join(directory, "test.txt");
+        });
 
         afterEach(async () => {
             try {
@@ -25,17 +31,7 @@ describe("utils", () => {
             }
         });
 
-        beforeEach(async () => {
-            try {
-                await rm(directory, { force: true, recursive: true });
-            } catch {
-                // ignore if directory doesn't exist
-            }
-        });
-
         describe(StreamLength, () => {
-            const file = join(directory, "test.txt");
-
             it("should create StreamLength instance and track stream length correctly", async () => {
                 expect.assertions(3);
 

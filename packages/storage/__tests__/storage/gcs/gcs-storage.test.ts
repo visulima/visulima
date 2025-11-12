@@ -27,8 +27,10 @@ const mockAuthRequest = vi.fn();
 
 vi.mock(import("google-auth-library"), () => {
     return {
-        GoogleAuth: vi.fn(() => {
-            return { request: mockAuthRequest };
+        GoogleAuth: vi.fn().mockImplementation(function (this: any, config: any) {
+            this.request = mockAuthRequest;
+
+            return this;
         }),
     };
 });
@@ -67,7 +69,7 @@ describe(GCStorage, async () => {
 
             mockAuthRequest.mockRejectedValueOnce({ code: 404, detail: "meta not found" }); // getMeta
             mockAuthRequest.mockResolvedValueOnce({
-                headers: { get: (name: string) => (name === "location" ? uri : name === "X-Goog-Upload-Status" ? "active" : undefined) },
+                headers: { get: (name: string) => name === "location" ? uri : name === "X-Goog-Upload-Status" ? "active" : undefined },
                 status: 200,
             }); // create
             mockAuthRequest.mockResolvedValueOnce("_saveOk"); // saveMeta
@@ -102,7 +104,7 @@ describe(GCStorage, async () => {
         it("should handle TTL option and set expiration timestamp", async () => {
             mockAuthRequest.mockRejectedValueOnce({ code: 404, detail: "meta not found" }); // getMeta
             mockAuthRequest.mockResolvedValueOnce({
-                headers: { get: (name: string) => (name === "location" ? uri : name === "X-Goog-Upload-Status" ? "active" : undefined) },
+                headers: { get: (name: string) => name === "location" ? uri : name === "X-Goog-Upload-Status" ? "active" : undefined },
                 status: 200,
             }); // create
             mockAuthRequest.mockResolvedValueOnce("_saveOk"); // saveMeta
@@ -231,7 +233,7 @@ describe(GCStorage, async () => {
             // Mock the makeRequest to return a response with range header
             const mockMakeRequest = vi.fn().mockResolvedValue({
                 data: "",
-                headers: { get: (header: string) => (header === "range" ? "0-5" : null) },
+                headers: { get: (header: string) => header === "range" ? "0-5" : null },
                 status: 308,
             });
 

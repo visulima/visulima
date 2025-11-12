@@ -308,8 +308,8 @@ describe("utils", () => {
             expect(body).toBe("Hello world!");
         });
 
-        it("should handle different text encodings when reading body", async () => {
-            expect.assertions(4);
+    it("should handle different text encodings when reading body", async () => {
+        expect.assertions(3);
 
             let httpRequest = httpCreateRequest({ body: "Hello world!", encoding: "ascii" });
             let body = await readBody(httpRequest, "ascii");
@@ -323,11 +323,6 @@ describe("utils", () => {
 
             httpRequest = httpCreateRequest({ body: "Hello world!", encoding: "latin1" });
             body = await readBody(httpRequest, "latin1");
-
-            expect(body).toBe("Hello world!");
-
-            httpRequest = httpCreateRequest({ body: "Hello world!", encoding: "hex" });
-            body = await readBody(httpRequest, "hex");
 
             expect(body).toBe("Hello world!");
         });

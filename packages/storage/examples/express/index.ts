@@ -110,21 +110,21 @@ const imageTransformer = new ImageTransformer(storage, {
 
 const onComplete: express.RequestHandler = (req, res) => {
     const file = req.body as DiskFile;
-    
+
     // Sanitize file.name and file.originalName to prevent path traversal
     const safeName = sanitizeFilename(file.name);
     const safeOriginalName = sanitizeFilename(file.originalName);
-    
+
     if (!safeName || !safeOriginalName) {
         return res.status(400).json({ error: "Invalid filename." });
     }
-    
+
     let moving = processes.get(safeName);
     if (!moving) {
         moving = { percent: 0 } as Moving;
         processes.set(safeName, moving);
     }
-    
+
     if (!moving.status) {
         moving.status = "moving";
         const source = path.resolve(uploadDirectory, safeName);

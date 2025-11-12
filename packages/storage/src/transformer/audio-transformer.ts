@@ -61,9 +61,9 @@ class AudioTransformer<TFile extends File = File, TFileReturn extends FileReturn
     TFileReturn
 > {
     /**
-     * Creates a new AudioTransformer instance
-     * @param storage The storage backend for retrieving and storing audio files
-     * @param config Configuration options for audio transformation including cache settings, codec defaults, and size limits
+     * Creates a new AudioTransformer instance.
+     * @param storage - The storage backend for retrieving and storing audio files
+     * @param config - Configuration options for audio transformation including cache settings, codec defaults, and size limits
      */
     public constructor(storage: BaseStorage<TFile, TFileReturn>, config: AudioTransformerConfig = {}) {
         const logger = config.logger || storage.logger;
@@ -82,7 +82,10 @@ class AudioTransformer<TFile extends File = File, TFileReturn extends FileReturn
     }
 
     /**
-     * Resample audio to different sample rate
+     * Resample audio to different sample rate.
+     * @param fileId - Unique identifier of the audio file to resample
+     * @param options - Resample options including target sample rate
+     * @returns Promise resolving to transformed audio result
      */
     public async resample(fileId: string, options: AudioResampleOptions): Promise<AudioTransformResult<TFileReturn>> {
         return this.transform(fileId, [{ options, type: "resample" }]);

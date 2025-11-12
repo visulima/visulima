@@ -46,12 +46,18 @@ abstract class BaseTransformer<
     }
 
     /**
-     * Transform a file with the given steps
+     * Transform a file with the given steps.
+     * @param fileId - Unique identifier of the file to transform
+     * @param steps - Array of transformation steps to apply
+     * @returns Promise resolving to transformation result
      */
     public abstract transform(fileId: string, steps: any[]): Promise<any>;
 
     /**
-     * Stream transform a file with the given steps (for large files)
+     * Stream transform a file with the given steps (for large files).
+     * @param fileId - Unique identifier of the file to transform
+     * @param steps - Array of transformation steps to apply
+     * @returns Promise resolving to streaming result with headers, size, and stream
      */
     public async transformStream?(fileId: string, steps: any[]): Promise<{ headers?: Record<string, string>; size?: number; stream: Readable }> {
         // Default implementation falls back to regular transform
@@ -75,7 +81,9 @@ abstract class BaseTransformer<
     }
 
     /**
-     * Get content type from transformation result
+     * Get content type from transformation result based on format.
+     * @param result - Transformation result object containing format information
+     * @returns Content type string (MIME type)
      */
     // eslint-disable-next-line class-methods-use-this
     protected getContentTypeFromResult(result: any): string {
@@ -89,6 +97,32 @@ abstract class BaseTransformer<
         }
 
         return "application/octet-stream";
+    }
+
+    /**
+     * Clear cache for a specific file or all files
+     * @param fileId Optional file identifier to clear cache for specific file
+     */
+    public clearCache(fileId?: string): void {
+        if (fileId) {
+            // Clear cache for specific file
+            this.cache?.delete(fileId);
+        } else {
+            // Clear all cache
+            this.cache?.clear?.();
+        }
+    }
+
+    /**
+     * Get cache statistics
+     * @returns Cache statistics including max size and current size
+     */
+    public getCacheStats(): { maxSize: number; size: number } {
+        // Default implementation - subclasses can override for more specific stats
+        return {
+            maxSize: -1, // -1 indicates unlimited or unknown max size
+            size: this.cache?.size ?? 0,
+        };
     }
 }
 

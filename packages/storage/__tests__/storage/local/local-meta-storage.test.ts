@@ -1,21 +1,17 @@
 import { rm } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import { basename, join } from "node:path";
+import { basename } from "node:path";
 
+import { temporaryDirectory } from "tempy";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import LocalMetaStorage from "../../../src/storage/local/local-meta-storage";
-import { metafile, testRoot as uploadRoot } from "../../__helpers__/config";
+import { metafile } from "../../__helpers__/config";
 
 describe(LocalMetaStorage, () => {
-    const testRoot = join(uploadRoot, "local-meta-storage");
+    let testRoot: string;
 
     beforeEach(async () => {
-        try {
-            await rm(testRoot, { force: true, recursive: true });
-        } catch {
-            // ignore if directory doesn't exist
-        }
+        testRoot = temporaryDirectory();
     });
 
     afterEach(async () => {
@@ -40,7 +36,7 @@ describe(LocalMetaStorage, () => {
         expect.assertions(2);
 
         const meta = new LocalMetaStorage({
-            directory: join(tmpdir(), "meta"),
+            directory: testRoot,
             prefix: ".",
             suffix: ".",
         });

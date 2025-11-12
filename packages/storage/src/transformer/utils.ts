@@ -3,9 +3,9 @@ import mime from "mime";
 import type { FileReturn } from "../storage/utils/file";
 
 /**
- * Check if a content type is valid for a specific media type
- * @param contentType MIME content type string
- * @param expectedType Expected media type ('image', 'video', or 'audio')
+ * Check if a content type is valid for a specific media type.
+ * @param contentType - MIME content type string to validate
+ * @param expectedType - Expected media type ('image', 'video', or 'audio')
  * @returns True if the content type is valid for the expected media type
  */
 export const isValidMediaType = (contentType: string | undefined, expectedType: "image" | "video" | "audio"): boolean => {
@@ -17,8 +17,8 @@ export const isValidMediaType = (contentType: string | undefined, expectedType: 
 };
 
 /**
- * Get format (extension) from content type using mime package
- * @param contentType MIME content type string
+ * Get format (extension) from content type using mime package.
+ * @param contentType - MIME content type string to extract format from
  * @returns Format string or undefined if not found
  */
 export const getFormatFromContentType = (contentType: string | undefined): string | undefined => {
@@ -30,11 +30,13 @@ export const getFormatFromContentType = (contentType: string | undefined): strin
 };
 
 /**
- * Validate a media file for a specific type
- * @param file File to validate
- * @param expectedType Expected media type
- * @param config Validation configuration
- * @throws Error if validation fails
+ * Validate a media file for a specific type with size and format checks.
+ * @param file - File to validate
+ * @param expectedType - Expected media type ('image', 'video', or 'audio')
+ * @param config - Validation configuration with optional maxSize and supportedFormats
+ * @param config.maxSize - Maximum allowed file size in bytes
+ * @param config.supportedFormats - Array of supported file formats
+ * @throws Error if validation fails (size exceeded, wrong type, or unsupported format)
  */
 export const validateMediaFile = (
     file: FileReturn,
@@ -65,9 +67,9 @@ export const validateMediaFile = (
 };
 
 /**
- * Validate that a content type is known and supported by the mime package
- * @param contentType MIME content type string
- * @returns True if the content type is known
+ * Validate that a content type is known and supported by the mime package.
+ * @param contentType - MIME content type string to check
+ * @returns True if the content type is known and has a registered extension
  */
 export const isKnownContentType = (contentType: string | undefined): boolean => {
     if (!contentType) {

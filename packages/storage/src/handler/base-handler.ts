@@ -283,10 +283,11 @@ abstract class BaseHandler<
     }
 
     /**
-     * @param {Request} request
-     * @param {Response}response
-     * @throws {UploadError}
-     * @returns {Promise<ResponseFile<TFile> | PaginationResult<TFile> | TFile[]>}
+     * Retrieve a file or list of files based on the request path.
+     * @param request - Node.js IncomingMessage with optional originalUrl
+     * @param response - Node.js ServerResponse
+     * @throws {UploadError} When file is not found or storage error occurs
+     * @returns Promise resolving to a single file, paginated list, or array of files
      */
     public async get(request: NodeRequest, response: NodeResponse): Promise<ResponseFile<TFile> | ResponseList<TFile>>;
 
@@ -443,9 +444,11 @@ abstract class BaseHandler<
     }
 
     /**
-     * Returns user upload list
+     * Returns a list of uploaded files with optional pagination support.
+     * @param request - Node.js IncomingMessage containing query parameters for pagination
+     * @param _response - Node.js ServerResponse (unused)
+     * @returns Promise resolving to a paginated or complete list of uploaded files
      */
-
     public async list(request: NodeRequest, _response: NodeResponse): Promise<ResponseList<TFile>> {
         const url = new URL(request.url || "", "http://localhost");
         const limit = url.searchParams.get("limit");
@@ -477,7 +480,10 @@ abstract class BaseHandler<
     }
 
     /**
-     * Stream download a file with resumable support
+     * Stream download a file with resumable support using HTTP range requests.
+     * @param request - Node.js IncomingMessage with optional originalUrl and range header
+     * @param response - Node.js ServerResponse to stream the file to
+     * @throws {HttpError} When file is not found or streaming is not supported
      */
     public async download(request: NodeRequest & { originalUrl?: string }, response: NodeResponse): Promise<void> {
         const pathMatch = filePathUrlMatcher(getRealPath(request));
@@ -579,7 +585,9 @@ abstract class BaseHandler<
     }
 
     /**
-     * Send Error to client
+     * Send an error response to the client with appropriate status code and message.
+     * @param response - Node.js ServerResponse to send error to
+     * @param error - Error object to convert to HTTP error response
      */
     public sendError(response: NodeResponse, error: Error): void {
         let httpError: HttpError;
@@ -596,10 +604,10 @@ abstract class BaseHandler<
     }
 
     /**
-     * Negotiate content type based on Accept header and supported formats
-     * @param request HTTP request object
-     * @param supportedTypes Array of supported MIME types
-     * @returns Best matching content type or undefined if no match
+     * Negotiate content type based on Accept header and supported formats.
+     * @param request - HTTP request object containing Accept header
+     * @param supportedTypes - Array of supported MIME types to match against
+     * @returns Best matching content type or undefined if no match found
      */
     public negotiateContentType(request: NodeRequest, supportedTypes: string[]): string | undefined {
         const acceptHeader = request.headers.accept;
@@ -612,7 +620,10 @@ abstract class BaseHandler<
     }
 
     /**
-     * Parse HTTP Range header and return start/end positions
+     * Parse HTTP Range header and return start/end byte positions for partial content requests.
+     * @param rangeHeader - HTTP Range header value (e.g., "bytes=0-1023")
+     * @param fileSize - Total size of the file in bytes
+     * @returns Object with start and end positions, or undefined if range is invalid
      */
     public parseRangeHeader(rangeHeader: string | undefined, fileSize: number): { end: number; start: number } | undefined {
         if (!rangeHeader || !rangeHeader.startsWith("bytes=")) {
@@ -662,7 +673,16 @@ abstract class BaseHandler<
     }
 
     /**
-     * Send streaming response to client with proper backpressure handling
+     * Send streaming response to client with proper backpressure handling and range request support.
+     * @param response - Node.js ServerResponse to stream data to
+     * @param stream - Readable stream containing the file data
+     * @param options - Streaming options including headers, range, size, and status code
+     * @param options.headers - HTTP headers to include in the response
+     * @param options.range - Optional byte range for partial content requests
+     * @param options.range.start - Start byte position (inclusive)
+     * @param options.range.end - End byte position (inclusive)
+     * @param options.size - Total file size in bytes
+     * @param options.statusCode - HTTP status code (default: 200)
      */
     public sendStream(
         response: NodeResponse,
@@ -706,8 +726,8 @@ abstract class BaseHandler<
     }
 
     /**
-     * Assemble error responses by merging defaults with custom overrides
-     * @param customErrors Custom error responses to override defaults
+     * Assemble error responses by merging defaults with custom overrides.
+     * @param customErrors - Custom error responses to override defaults
      */
     public assembleErrors = (customErrors = {}): void => {
         this.internalErrorResponses = {
@@ -720,10 +740,10 @@ abstract class BaseHandler<
     };
 
     /**
-     * Build file URL from request and file data
-     * @param request HTTP request with optional originalUrl
-     * @param file File object containing ID and content type
-     * @returns Constructed file URL
+     * Build file URL from request and file data.
+     * @param request - HTTP request with optional originalUrl property
+     * @param file - File object containing ID and content type
+     * @returns Constructed file URL with extension based on content type
      */
     protected buildFileUrl(request: NodeRequest & { originalUrl?: string }, file: TFile): string {
         const url = new URL(request.originalUrl || (request.url as string), "http://localhost");
@@ -735,10 +755,10 @@ abstract class BaseHandler<
     }
 
     /**
-     * Finish upload by sending final response to client
-     * @param _request HTTP request (unused parameter)
-     * @param response HTTP response object
-     * @param uploadResponse Final upload response data
+     * Finish upload by sending final response to client with completed file data.
+     * @param _request - HTTP request (unused parameter)
+     * @param response - HTTP response object to send final response to
+     * @param uploadResponse - Final upload response data containing body, headers, and status code
      */
     protected finish(_request: NodeRequest, response: NodeResponse, uploadResponse: UploadResponse): void {
         const { statusCode } = uploadResponse;
@@ -763,8 +783,8 @@ abstract class BaseHandler<
     }
 
     /**
-     * Compose and register HTTP method handlers
-     * Registers all available handler methods (GET, POST, PUT, DELETE, etc.) with the handler map
+     * Compose and register HTTP method handlers.
+     * Registers all available handler methods (GET, POST, PUT, DELETE, etc.) with the handler map.
      */
     protected compose = (): void => {
         const child = this.constructor as typeof BaseHandler;
@@ -785,7 +805,9 @@ abstract class BaseHandler<
     };
 
     /**
-     * Convert Web API Request to Node.js IncomingMessage for handler compatibility
+     * Convert Web API Request to Node.js IncomingMessage for handler compatibility.
+     * @param request - Web API Request object to convert
+     * @returns Promise resolving to Node.js IncomingMessage compatible object
      */
     protected async convertRequestToNode(request: Request): Promise<IncomingMessage> {
         const url = new URL(request.url || "/");
@@ -833,7 +855,10 @@ abstract class BaseHandler<
     }
 
     /**
-     * Handle the response from handlers for fetch requests
+     * Handle the response from handlers for fetch requests and convert to Web API Response.
+     * @param request - Web API Request object
+     * @param file - Response file or list from handler
+     * @returns Promise resolving to Web API Response object
      */
     protected async handleFetchResponse(request: Request, file: ResponseFile<TFile> | ResponseList<TFile>): Promise<globalThis.Response> {
         // Handle different response types
@@ -911,7 +936,8 @@ abstract class BaseHandler<
     }
 
     /**
-     * Create a mock ServerResponse for handlers to write to
+     * Create a mock ServerResponse for handlers to write to when processing Web API requests.
+     * @returns Mock ServerResponse object with minimal implementation
      */
     protected createMockResponse(): ServerResponse {
         let responseStatus = 200;
@@ -944,7 +970,9 @@ abstract class BaseHandler<
     }
 
     /**
-     * Convert headers to Web API Headers format
+     * Convert headers to Web API Headers format by flattening arrays and converting to strings.
+     * @param headers - Headers object with potentially array values
+     * @returns Headers object with all values as strings
      */
     protected convertHeaders(headers: Record<string, number | string | string[]>): Record<string, string> {
         const result: Record<string, string> = {};
@@ -957,7 +985,9 @@ abstract class BaseHandler<
     }
 
     /**
-     * Create Response from UploadResponse
+     * Create Web API Response from UploadResponse object.
+     * @param uploadResponse - Upload response containing body, headers, and status code
+     * @returns Web API Response object
      */
     protected createResponse(uploadResponse: UploadResponse): globalThis.Response {
         const { body, headers = {}, statusCode } = uploadResponse;
@@ -986,7 +1016,9 @@ abstract class BaseHandler<
     }
 
     /**
-     * Create error Response
+     * Create error Response from Error object with appropriate status code and message.
+     * @param error - Error object to convert to HTTP error response
+     * @returns Web API Response object with error details
      */
     protected createErrorResponse(error: Error): globalThis.Response {
         let httpError: HttpError;
@@ -1005,10 +1037,10 @@ abstract class BaseHandler<
     }
 
     /**
-     * Create a range-limited stream that properly handles backpressure
-     * @param sourceStream Source readable stream
-     * @param start Start byte position (inclusive)
-     * @param end End byte position (inclusive)
+     * Create a range-limited stream that properly handles backpressure.
+     * @param sourceStream - Source readable stream to limit
+     * @param start - Start byte position (inclusive)
+     * @param end - End byte position (inclusive)
      * @returns New readable stream limited to the specified byte range
      */
     // eslint-disable-next-line class-methods-use-this
@@ -1073,9 +1105,9 @@ abstract class BaseHandler<
     }
 
     /**
-     * Pipe streams with proper backpressure handling
-     * @param source Source readable stream
-     * @param destination Destination response stream
+     * Pipe streams with proper backpressure handling and error management.
+     * @param source - Source readable stream to pipe from
+     * @param destination - Destination response stream to pipe to
      */
     private pipeWithBackpressure(source: Readable, destination: NodeResponse): void {
         let isDestroyed = false;

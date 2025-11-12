@@ -133,7 +133,7 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
     private readonly logger: Logger | undefined;
 
     /**
-     * Creates a new MediaTransformer instance
+     * Creates a new MediaTransformer instance.
      * @param storage The storage backend for retrieving and storing media files
      * @param config Configuration options for the media transformer including transformer classes and settings
      * @throws Error if no transformer classes are provided in the configuration

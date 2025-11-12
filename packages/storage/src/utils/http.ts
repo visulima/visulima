@@ -54,7 +54,7 @@ export const readBody = (
         request.setEncoding(encoding);
         // eslint-disable-next-line consistent-return
         request.on("data", (chunk) => {
-            if (limit && body.length > limit) {
+            if (limit && body.length + chunk.length > limit) {
                 return reject(new Error("Request body length limit exceeded"));
             }
 

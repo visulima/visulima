@@ -32,7 +32,6 @@ export const metadata = {
     custom: "",
     lastModified: 1_635_398_061_454,
     mimeType: "video/mp4",
-    // eslint-disable-next-line radar/no-duplicate-string
     name: "testfile.mp4",
     sha1,
     size,
