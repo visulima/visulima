@@ -1,3 +1,15 @@
+## @visulima/ono [1.0.11](https://github.com/visulima/visulima/compare/@visulima/ono@1.0.10...@visulima/ono@1.0.11) (2025-11-12)
+
+### Bug Fixes
+
+* update package configurations and TypeScript definitions ([b59aa59](https://github.com/visulima/visulima/commit/b59aa59dac1508216b944f4b917fb4a7ab1f70a4))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 5.0.5
+* **@visulima/path:** upgraded to 2.0.4
+
 ## @visulima/ono [1.0.10](https://github.com/visulima/visulima/compare/@visulima/ono@1.0.9...@visulima/ono@1.0.10) (2025-11-07)
 
 ### Bug Fixes
