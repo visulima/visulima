@@ -16,11 +16,9 @@ const has = (object: object, property: string): boolean => hop.call(object, prop
 const extend = <T, S extends object>(target: T, source: S): S & T => {
     type Extended = S & T;
 
-    for (const property in source) {
-        if (has(source, property)) {
-            // eslint-disable-next-line no-param-reassign,@typescript-eslint/no-explicit-any
-            (target as any)[property] = source[property];
-        }
+    for (const property of Object.keys(source)) {
+        // eslint-disable-next-line no-param-reassign,@typescript-eslint/no-explicit-any
+        (target as any)[property] = source[property as keyof S];
     }
 
     return target as Extended;
@@ -31,7 +29,10 @@ const extend = <T, S extends object>(target: T, source: S): S & T => {
  * Handles indentation level detection and normalization based on options.
  * @param strings Array of string parts from a template literal.
  * @param firstInterpolatedValueSetsIndentationLevel Flag indicating special indentation handling.
- * @param options Outdent options.
+ * @param options
+ * @param options.newline Normalize all newlines in the template literal to this value.
+ * @param options.trimLeadingNewline Whether to trim the leading newline in the template literal.
+ * @param options.trimTrailingNewline Whether to trim the trailing newline in the template literal.
  * @returns Array of strings with indentation removed.
  */
 const internalOutdentArray = (strings: ReadonlyArray<string>, firstInterpolatedValueSetsIndentationLevel: boolean, options: Options): string[] => {
@@ -149,6 +150,7 @@ const createInstance = (options: Options): Outdent => {
     function outdent(stringsOrOptions: TemplateStringsArray, ...values: any[]): string;
     function outdent(stringsOrOptions: Options): Outdent;
 
+    // eslint-disable-next-line sonarjs/cognitive-complexity
     function outdent(stringsOrOptions: Options | TemplateStringsArray, ...values: any[]): Outdent | string {
         // Call signature: outdent`template literal`
         if (isTemplateStringsArray(stringsOrOptions)) {
@@ -223,12 +225,13 @@ const createInstance = (options: Options): Outdent => {
 // Create the default outdent instance with default options
 const defaultOutdent: Outdent = createInstance({
     cache: true, // Enable caching by default
+    // eslint-disable-next-line unicorn/no-null
     newline: null,
     trimLeadingNewline: true,
     trimTrailingNewline: true,
 });
 
-export const outdent = defaultOutdent;
+export const outdent: Outdent = defaultOutdent;
 
 /**
  * Represents the outdent function, which can be called as a template tag

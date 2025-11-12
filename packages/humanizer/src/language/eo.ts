@@ -1,4 +1,4 @@
-import type { DurationUnitMeasures } from "../types";
+import type { DurationUnitMeasures, DurationLanguage } from "../types";
 import createDurationLanguage from "./util/create-duration-language";
 
 // Map Esperanto aliases to standard keys
@@ -30,7 +30,7 @@ const eoUnitMap: Record<string, keyof DurationUnitMeasures> = {
     tagoj: "d",
 } as const;
 
-export const durationLanguage = createDurationLanguage(
+export const durationLanguage: DurationLanguage = createDurationLanguage(
     (counter) => `jaro${counter === 1 ? "" : "j"}`,
     (counter) => `monato${counter === 1 ? "" : "j"}`,
     (counter) => `semajno${counter === 1 ? "" : "j"}`,

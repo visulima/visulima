@@ -348,7 +348,7 @@ class PailServerImpl<T extends string = string, L extends string = string> exten
      * logger.restoreStd(); // Restore original streams
      * ```
      */
-    public wrapStd() {
+    public wrapStd(): void {
         this.#wrapStream(this.stdout, "log");
         this.#wrapStream(this.stderr, "log");
     }
@@ -367,7 +367,7 @@ class PailServerImpl<T extends string = string, L extends string = string> exten
      * // Streams are restored to original behavior
      * ```
      */
-    public restoreStd() {
+    public restoreStd(): void {
         this.#restoreStream(this.stdout);
         this.#restoreStream(this.stderr);
     }
@@ -562,7 +562,7 @@ class PailServerImpl<T extends string = string, L extends string = string> exten
         return reporter;
     }
 
-    #wrapStream(stream: NodeJS.WriteStream | undefined, type: LiteralUnion<DefaultLogTypes, L>) {
+    #wrapStream(stream: NodeJS.WriteStream | undefined, type: LiteralUnion<DefaultLogTypes, L>): void {
         if (!stream) {
             return;
         }

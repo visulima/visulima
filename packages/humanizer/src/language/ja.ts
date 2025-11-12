@@ -1,4 +1,4 @@
-import type { DurationUnitMeasures } from "../types";
+import type { DurationUnitMeasures, DurationLanguage } from "../types";
 import createDurationLanguage from "./util/create-duration-language";
 
 // Map Japanese aliases to standard keys
@@ -27,7 +27,7 @@ const jaUnitMap: Record<string, keyof DurationUnitMeasures> = {
     週間: "w",
 } as const;
 
-export const durationLanguage = createDurationLanguage(
+export const durationLanguage: DurationLanguage = createDurationLanguage(
     "年",
     "ヶ月",
     "週間",

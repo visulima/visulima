@@ -1,4 +1,4 @@
-import type { DurationUnitMeasures } from "../types";
+import type { DurationUnitMeasures, DurationLanguage } from "../types";
 import createDurationLanguage from "./util/create-duration-language";
 
 // Map Icelandic aliases to standard keys
@@ -32,7 +32,7 @@ const isUnitMap: Record<string, keyof DurationUnitMeasures> = {
     vikur: "w",
 } as const;
 
-export const durationLanguage = createDurationLanguage(
+export const durationLanguage: DurationLanguage = createDurationLanguage(
     "ár",
     (counter) => `mánuð${counter === 1 ? "ur" : "ir"}`,
     (counter) => `vik${counter === 1 ? "a" : "ur"}`,

@@ -1,4 +1,4 @@
-import type { DurationUnitMeasures } from "../types";
+import type { DurationUnitMeasures, DurationLanguage } from "../types";
 import createDurationLanguage from "./util/create-duration-language";
 
 // Map Khmer aliases to standard keys
@@ -21,7 +21,7 @@ const kmUnitMap: Record<string, keyof DurationUnitMeasures> = {
     សប្តាហ៍: "w", // sâpdah
 } as const;
 
-export const durationLanguage = createDurationLanguage(
+export const durationLanguage: DurationLanguage = createDurationLanguage(
     "ឆ្នាំ",
     "ខែ",
     "សប្តាហ៍",

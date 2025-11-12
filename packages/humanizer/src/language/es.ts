@@ -1,4 +1,4 @@
-import type { DurationUnitMeasures } from "../types";
+import type { DurationUnitMeasures, DurationLanguage } from "../types";
 import createDurationLanguage from "./util/create-duration-language";
 
 // Map Spanish aliases to standard keys
@@ -28,7 +28,7 @@ const esUnitMap: Record<string, keyof DurationUnitMeasures> = {
     semanas: "w",
 } as const;
 
-export const durationLanguage = createDurationLanguage(
+export const durationLanguage: DurationLanguage = createDurationLanguage(
     (counter) => `año${counter === 1 ? "" : "s"}`,
     (counter) => `mes${counter === 1 ? "" : "es"}`,
     (counter) => `semana${counter === 1 ? "" : "s"}`,

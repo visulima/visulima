@@ -1,4 +1,4 @@
-import type { DurationUnitMeasures } from "../types";
+import type { DurationUnitMeasures, DurationLanguage } from "../types";
 import createDurationLanguage from "./util/create-duration-language";
 
 // Map Macedonian aliases to standard keys
@@ -33,7 +33,7 @@ const mkUnitMap: Record<string, keyof DurationUnitMeasures> = {
     часа: "h",
 } as const;
 
-export const durationLanguage = createDurationLanguage(
+export const durationLanguage: DurationLanguage = createDurationLanguage(
     (counter) => (counter === 1 ? "година" : "години"),
     (counter) => (counter === 1 ? "месец" : "месеци"),
     (counter) => (counter === 1 ? "недела" : "недели"),

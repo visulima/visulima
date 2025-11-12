@@ -36,7 +36,7 @@ const detectRuntime = (): RuntimeName | undefined => {
     return undefined;
 };
 
-const runtime = detectRuntime();
+const runtime: RuntimeName | undefined = detectRuntime();
 
 // https://runtime-keys.proposal.wintercg.org/
 export type RuntimeName = "bun" | "deno" | "edge-light" | "fastly" | "lagon" | "netlify" | "node" | "workerd";

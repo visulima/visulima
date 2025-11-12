@@ -1,4 +1,4 @@
-import type { DurationUnitMeasures } from "../types";
+import type { DurationUnitMeasures, DurationLanguage } from "../types";
 import createDurationLanguage from "./util/create-duration-language";
 
 const getPolishForm = (counter: number): number => {
@@ -57,7 +57,7 @@ const plUnitMap: Record<string, keyof DurationUnitMeasures> = {
     tygodnie: "w",
 } as const;
 
-export const durationLanguage = createDurationLanguage(
+export const durationLanguage: DurationLanguage = createDurationLanguage(
     (counter) => ["rok", "roku", "lata", "lat"][getPolishForm(counter)] as string,
     (counter) => ["miesiąc", "miesiąca", "miesiące", "miesięcy"][getPolishForm(counter)] as string,
     (counter) => ["tydzień", "tygodnia", "tygodnie", "tygodni"][getPolishForm(counter)] as string,

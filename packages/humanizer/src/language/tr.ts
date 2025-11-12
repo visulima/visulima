@@ -1,4 +1,4 @@
-import type { DurationUnitMeasures } from "../types";
+import type { DurationUnitMeasures, DurationLanguage } from "../types";
 import createDurationLanguage from "./util/create-duration-language";
 
 // Map Turkish aliases to standard keys
@@ -22,7 +22,7 @@ const trUnitMap: Record<string, keyof DurationUnitMeasures> = {
     yıl: "y",
 } as const;
 
-export const durationLanguage = createDurationLanguage(
+export const durationLanguage: DurationLanguage = createDurationLanguage(
     "yıl",
     "ay",
     "hafta",

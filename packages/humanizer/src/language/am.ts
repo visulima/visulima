@@ -1,4 +1,4 @@
-import type { DurationUnitMeasures } from "../types";
+import type { DurationUnitMeasures, DurationLanguage } from "../types";
 import createDurationLanguage from "./util/create-duration-language";
 
 // Map Amharic aliases to standard keys
@@ -13,7 +13,7 @@ const amUnitMap: Record<string, keyof DurationUnitMeasures> = {
     ደቂቃ: "m",
 };
 
-export const durationLanguage = createDurationLanguage(
+export const durationLanguage: DurationLanguage = createDurationLanguage(
     "ዓመት",
     "ወር",
     "ሳምንት",

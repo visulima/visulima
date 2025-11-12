@@ -1,4 +1,4 @@
-import type { DurationUnitMeasures } from "../types";
+import type { DurationUnitMeasures, DurationLanguage } from "../types";
 import createDurationLanguage from "./util/create-duration-language";
 
 // Map Italian aliases to standard keys
@@ -31,7 +31,7 @@ const itUnitMap: Record<string, keyof DurationUnitMeasures> = {
     settimane: "w",
 } as const;
 
-export const durationLanguage = createDurationLanguage(
+export const durationLanguage: DurationLanguage = createDurationLanguage(
     (counter) => (counter === 1 ? "anno" : "anni"),
     (counter) => (counter === 1 ? "mese" : "mesi"),
     (counter) => (counter === 1 ? "settimana" : "settimane"),

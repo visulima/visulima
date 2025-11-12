@@ -111,7 +111,7 @@ export const createPail = <T extends string = string, L extends string = string>
  * PAIL_LOG_LEVEL=debug node app.js
  * ```
  */
-export const pail = createPail();
+export const pail: PailServerType<string, string> = createPail();
 
 export type { PailServerType as Pail } from "./pail.server";
 export type { MultiBarOptions, ProgressBarOptions, ProgressBarPayload, ProgressBarStyle, SingleBarOptions } from "./progress-bar";

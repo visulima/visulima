@@ -15,7 +15,7 @@ export const bufferToUint8Array = (buf: Buffer): Uint8Array => new Uint8Array(bu
  * @param x The value to check.
  * @returns True if x is a Uint8Array or Buffer, false otherwise.
  */
-export const isUint8Array
+export const isUint8Array: (x: unknown) => x is Uint8Array
     = typeof Buffer === "function"
         ? (x: unknown): x is Uint8Array => x instanceof Uint8Array || Buffer.isBuffer(x)
         : (x: unknown): x is Uint8Array => x instanceof Uint8Array;

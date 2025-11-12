@@ -1,4 +1,4 @@
-import type { DurationUnitMeasures } from "../types";
+import type { DurationUnitMeasures, DurationLanguage } from "../types";
 import createDurationLanguage from "./util/create-duration-language";
 
 // Map Hebrew aliases to standard keys
@@ -30,7 +30,7 @@ const heUnitMap: Record<string, keyof DurationUnitMeasures> = {
     שעות: "h",
 } as const;
 
-export const durationLanguage = createDurationLanguage(
+export const durationLanguage: DurationLanguage = createDurationLanguage(
     (counter) => (counter === 1 ? "שנה" : "שנים"),
     (counter) => (counter === 1 ? "חודש" : "חודשים"),
     (counter) => (counter === 1 ? "שבוע" : "שבועות"),

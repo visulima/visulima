@@ -47,8 +47,7 @@ class JsonReporter<L extends string = string> extends AbstractJsonReporter<L> im
      * Sets the stdout stream for the reporter.
      * @param stdout_ The writable stream to use for stdout output
      */
-    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-    public setStdout(stdout_: NodeJS.WriteStream) {
+    public setStdout(stdout_: NodeJS.WriteStream): void {
         this.#stdout = stdout_;
     }
 
@@ -56,8 +55,7 @@ class JsonReporter<L extends string = string> extends AbstractJsonReporter<L> im
      * Sets the stderr stream for the reporter.
      * @param stderr_ The writable stream to use for stderr output
      */
-    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-    public setStderr(stderr_: NodeJS.WriteStream) {
+    public setStderr(stderr_: NodeJS.WriteStream): void {
         this.#stderr = stderr_;
     }
 

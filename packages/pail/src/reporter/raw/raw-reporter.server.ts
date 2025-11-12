@@ -26,13 +26,11 @@ class RawReporter<L extends string = string> implements StreamAwareReporter<L> {
         this.#inspectOptions = inspectOptions;
     }
 
-    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-    public setStdout(stdout_: NodeJS.WriteStream) {
+    public setStdout(stdout_: NodeJS.WriteStream): void {
         this.#stdout = stdout_;
     }
 
-    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-    public setStderr(stderr_: NodeJS.WriteStream) {
+    public setStderr(stderr_: NodeJS.WriteStream): void {
         this.#stderr = stderr_;
     }
 

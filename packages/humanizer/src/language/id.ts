@@ -1,4 +1,4 @@
-import type { DurationUnitMeasures } from "../types";
+import type { DurationUnitMeasures, DurationLanguage } from "../types";
 import createDurationLanguage from "./util/create-duration-language";
 
 // Map Indonesian aliases to standard keys
@@ -27,7 +27,7 @@ const idUnitMap: Record<string, keyof DurationUnitMeasures> = {
     thn: "y",
 } as const;
 
-export const durationLanguage = createDurationLanguage(
+export const durationLanguage: DurationLanguage = createDurationLanguage(
     "tahun", // Indonesian doesn't use plural forms for time units
     "bulan",
     "minggu",

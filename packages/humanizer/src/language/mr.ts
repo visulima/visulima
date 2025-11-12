@@ -1,4 +1,4 @@
-import type { DurationUnitMeasures } from "../types";
+import type { DurationUnitMeasures, DurationLanguage } from "../types";
 import createDurationLanguage from "./util/create-duration-language";
 
 // Map Marathi aliases to standard keys
@@ -26,7 +26,7 @@ const mrUnitMap: Record<string, keyof DurationUnitMeasures> = {
     सेकंद: "s",
 } as const;
 
-export const durationLanguage = createDurationLanguage(
+export const durationLanguage: DurationLanguage = createDurationLanguage(
     (counter) => (counter === 1 ? "वर्ष" : "वर्षे"),
     (counter) => (counter === 1 ? "महिना" : "महिने"),
     (counter) => (counter === 1 ? "आठवडा" : "आठवडे"),

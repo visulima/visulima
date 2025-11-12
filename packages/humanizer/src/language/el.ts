@@ -1,4 +1,4 @@
-import type { DurationUnitMeasures } from "../types";
+import type { DurationUnitMeasures, DurationLanguage } from "../types";
 import createDurationLanguage from "./util/create-duration-language";
 
 // Map Greek aliases to standard keys
@@ -36,7 +36,7 @@ const elementUnitMap: Record<string, keyof DurationUnitMeasures> = {
     ώρες: "h",
 } as const;
 
-export const durationLanguage = createDurationLanguage(
+export const durationLanguage: DurationLanguage = createDurationLanguage(
     (counter) => (counter === 1 ? "χρόνος" : "χρόνια"),
     (counter) => (counter === 1 ? "μήνας" : "μήνες"),
     (counter) => (counter === 1 ? "εβδομάδα" : "εβδομάδες"),

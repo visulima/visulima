@@ -2,25 +2,7 @@
  * Thai romanization rules
  * @see https://en.wikipedia.org/wiki/Romanization_of_Thai
  */
-export default [
-    ["เกรียบ", "kriap"],
-    ["เกียว", "kiao"],
-    ["เกียะ", "kia"],
-    ["เกืยะ", "kuea"],
-    ["เกือย", "kueai"],
-    ["เขียว", "khiao"],
-    ["เขียะ", "khia"],
-    ["เขืยะ", "khuea"],
-    ["เขือย", "khueai"],
-    ["เฃียว", "khiao"],
-    ["เฃียะ", "khia"],
-    ["เฃืยะ", "khuea"],
-    ["เฃือย", "khueai"],
-    ["เคียว", "khiao"],
-    ["เคียะ", "khia"],
-    ["เคืยะ", "khuea"],
-    ["เคือย", "khueai"],
-    ["เฅียว", "khiao"],
+const THAI_REPLACEMENT: [string, string, string][] = [
     ["เฅียะ", "khia"],
     ["เฅืยะ", "khuea"],
     ["เฅือย", "khueai"],
@@ -1668,3 +1650,5 @@ export default [
     ["๘", "8"],
     ["๙", "9"],
 ];
+
+export default THAI_REPLACEMENT;

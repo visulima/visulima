@@ -42,7 +42,7 @@ import { INTERNAL_STRIP_JSON_REGEX } from "../constants";
  * // }
  * ```
  */
-const stripJsonComments = (jsonString: string, { whitespace = true } = {}): string =>
+const stripJsonComments: (jsonString: string, options?: { whitespace?: boolean }) => string = (jsonString: string, { whitespace = true } = {}): string =>
     // This regular expression translates to:
     //
     //   /quoted-string|line-comment|block-comment/g

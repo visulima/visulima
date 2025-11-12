@@ -1,4 +1,4 @@
-import type { DurationUnitMeasures } from "../types";
+import type { DurationUnitMeasures, DurationLanguage } from "../types";
 import createDurationLanguage from "./util/create-duration-language";
 
 // Map Swedish aliases to standard keys
@@ -29,7 +29,7 @@ const svUnitMap: Record<string, keyof DurationUnitMeasures> = {
     veckor: "w",
 } as const;
 
-export const durationLanguage = createDurationLanguage(
+export const durationLanguage: DurationLanguage = createDurationLanguage(
     "år",
     (counter) => `månad${counter === 1 ? "" : "er"}`,
     (counter) => `veck${counter === 1 ? "a" : "or"}`,

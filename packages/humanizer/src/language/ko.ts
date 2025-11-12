@@ -1,4 +1,4 @@
-import type { DurationUnitMeasures } from "../types";
+import type { DurationUnitMeasures, DurationLanguage } from "../types";
 import createDurationLanguage from "./util/create-duration-language";
 
 // Map Korean aliases to standard keys
@@ -22,7 +22,7 @@ const koUnitMap: Record<string, keyof DurationUnitMeasures> = {
     해: "y",
 } as const;
 
-export const durationLanguage = createDurationLanguage(
+export const durationLanguage: DurationLanguage = createDurationLanguage(
     "년",
     "개월",
     "주일",

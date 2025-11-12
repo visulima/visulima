@@ -1,4 +1,4 @@
-import type { DurationUnitMeasures } from "../types";
+import type { DurationUnitMeasures, DurationLanguage } from "../types";
 import createDurationLanguage from "./util/create-duration-language";
 
 // Map Welsh aliases to standard keys
@@ -34,7 +34,7 @@ const cyUnitMap: Record<string, keyof DurationUnitMeasures> = {
 // These functions handle the most common cases for numbers.
 const pluralize = (counter: number, singular: string, plural: string): string => (counter === 1 ? singular : plural);
 
-export const durationLanguage = createDurationLanguage(
+export const durationLanguage: DurationLanguage = createDurationLanguage(
     (counter) => pluralize(counter, "flwyddyn", "blynedd"), // Mutation blwyddyn -> flwyddyn / blynedd
     "mis",
     "wythnos",

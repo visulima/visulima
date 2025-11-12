@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/method-signature-style */
 import type {
     CharAt,
     Concat,
@@ -50,7 +51,7 @@ declare global {
          * Returns true if searchString appears as a substring of the result of converting this
          * object to a String, at one or more positions that are greater than or equal to
          * position; otherwise, returns false.
-         * @param searchString search string
+         * @param searchString
          * @param position If position is undefined, 0 is assumed, so as to search all of the String.
          */
         includes<T extends string = string, S extends string = string, P extends number = 0>(this: T, searchString: S, position?: P): Includes<T, S, P>;

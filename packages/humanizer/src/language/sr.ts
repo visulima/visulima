@@ -1,4 +1,4 @@
-import type { DurationUnitMeasures } from "../types";
+import type { DurationUnitMeasures, DurationLanguage } from "../types";
 import createDurationLanguage from "./util/create-duration-language";
 import getSlavicForm from "./util/duration/get-slavic-form";
 
@@ -61,7 +61,7 @@ const srUnitMap: Record<string, keyof DurationUnitMeasures> = {
     ч: "h", // час
 } as const;
 
-export const durationLanguage = createDurationLanguage(
+export const durationLanguage: DurationLanguage = createDurationLanguage(
     (counter) => ["години", "година", "године"][getSlavicForm(counter)] as string,
     (counter) => ["месеци", "месец", "месеца"][getSlavicForm(counter)] as string,
     (counter) => ["недељи", "недеља", "недеље"][getSlavicForm(counter)] as string,

@@ -1,4 +1,4 @@
-import type { DurationUnitMeasures } from "../types";
+import type { DurationUnitMeasures, DurationLanguage } from "../types";
 import createDurationLanguage from "./util/create-duration-language";
 
 // Map Slovenian aliases to standard keys
@@ -44,7 +44,7 @@ const slUnitMap: Record<string, keyof DurationUnitMeasures> = {
     uri: "h",
 } as const;
 
-export const durationLanguage = createDurationLanguage(
+export const durationLanguage: DurationLanguage = createDurationLanguage(
     (counter) => {
         if (counter % 10 === 1) {
             return "leto";

@@ -1,7 +1,7 @@
 import createDurationLanguage from "./util/create-duration-language";
 import getSlavicForm from "./util/duration/get-slavic-form";
 
-export const durationLanguage = createDurationLanguage(
+export const durationLanguage: DurationLanguage = createDurationLanguage(
     (counter) => ["godini", "godina", "godine"][getSlavicForm(counter)] as string,
     (counter) => ["meseci", "mesec", "meseca"][getSlavicForm(counter)] as string,
     (counter) => ["nedelji", "nedelja", "nedelje"][getSlavicForm(counter)] as string,

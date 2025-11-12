@@ -1,4 +1,4 @@
-import type { DurationUnitMeasures } from "../types";
+import type { DurationUnitMeasures, DurationLanguage } from "../types";
 import createDurationLanguage from "./util/create-duration-language";
 
 // Map Chinese (Simplified) aliases to standard keys
@@ -19,7 +19,7 @@ const zhCNUnitMap: Record<string, keyof DurationUnitMeasures> = {
     秒钟: "s",
 } as const;
 
-export const durationLanguage = createDurationLanguage(
+export const durationLanguage: DurationLanguage = createDurationLanguage(
     "年",
     "个月",
     "周",

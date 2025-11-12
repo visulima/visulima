@@ -52,7 +52,7 @@ export const createPail = <T extends string = string, L extends string = string>
  * pail.error("Something went wrong", new Error("Test error"));
  * ```
  */
-export const pail = createPail();
+export const pail: PailBrowserType<string, string> = createPail();
 
 export type { PailBrowserType as Pail } from "./pail.browser";
 export type {

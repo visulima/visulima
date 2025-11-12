@@ -1,4 +1,4 @@
-import type { DurationUnitMeasures } from "../types";
+import type { DurationUnitMeasures, DurationLanguage } from "../types";
 import createDurationLanguage from "./util/create-duration-language";
 
 // Map Kurdish (Kurmanji) aliases to standard keys
@@ -26,7 +26,7 @@ const kuUnitMap: Record<string, keyof DurationUnitMeasures> = {
     seet: "h", // Sometimes 'saet' or 'seat' is used
 } as const;
 
-export const durationLanguage = createDurationLanguage(
+export const durationLanguage: DurationLanguage = createDurationLanguage(
     "sal",
     "meh",
     "hefte",

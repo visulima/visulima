@@ -1,4 +1,4 @@
-import type { DurationUnitMeasures } from "../types";
+import type { DurationUnitMeasures, DurationLanguage } from "../types";
 import createDurationLanguage from "./util/create-duration-language";
 
 // Map Thai aliases to standard keys
@@ -24,7 +24,7 @@ const thUnitMap: Record<string, keyof DurationUnitMeasures> = {
 } as const;
 
 // Thai doesn't use plural forms for units
-export const durationLanguage = createDurationLanguage(
+export const durationLanguage: DurationLanguage = createDurationLanguage(
     "ปี",
     "เดือน",
     "สัปดาห์",
