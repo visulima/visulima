@@ -69,12 +69,12 @@ describe("option-processor", () => {
 
             const toolbox = {
                 options: {
-                    "no-verbose": false,
+                    noVerbose: false,
                 },
             };
 
             const command = {
-                options: [{ name: "verbose", type: Boolean } as OptionDefinition<boolean>],
+                options: [{ name: "no-verbose", type: Boolean } as OptionDefinition<boolean>],
             };
 
             processOptionNames(command);

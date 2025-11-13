@@ -68,25 +68,25 @@ cli.addCommand({
             alias: "o",
             type: String,
             description: "Output directory",
-            defaultValue: "dist"
+            defaultValue: "dist",
         },
         {
             name: "production",
             alias: "p",
             type: Boolean,
-            description: "Build for production"
+            description: "Build for production",
         },
         {
             name: "watch",
             alias: "w",
             type: Boolean,
-            description: "Watch for changes"
-        }
+            description: "Watch for changes",
+        },
     ],
     argument: {
         name: "target",
         description: "Build target (optional)",
-        type: String
+        type: String,
     },
     execute: ({ options, argument, logger, env }) => {
         const target = argument[0] || "all";
@@ -118,13 +118,13 @@ cli.addCommand({
             name: "DEPLOY_ENV",
             description: "Deployment environment",
             type: String,
-            defaultValue: "staging"
+            defaultValue: "staging",
         },
         {
             name: "API_KEY",
             description: "API key for deployment",
-            type: String
-        }
+            type: String,
+        },
     ],
     execute: ({ env, logger }) => {
         logger.info(`Deploying to ${env.DEPLOY_ENV}`);
@@ -181,16 +181,14 @@ cli.addCommand({
     description: "Example command showing toolbox usage",
     options: [
         { name: "verbose", alias: "v", type: Boolean, description: "Verbose output" },
-        { name: "count", alias: "c", type: Number, description: "Count value", defaultValue: 1 }
+        { name: "count", alias: "c", type: Number, description: "Count value", defaultValue: 1 },
     ],
     argument: {
         name: "input",
         description: "Input file",
-        type: String
+        type: String,
     },
-    env: [
-        { name: "DEBUG", type: Boolean, description: "Debug mode" }
-    ],
+    env: [{ name: "DEBUG", type: Boolean, description: "Debug mode" }],
     execute: ({ logger, options, argument, env, runtime, argv }) => {
         // Use logger for output
         logger.info("Command started");
@@ -214,7 +212,7 @@ cli.addCommand({
         logger.info(`CLI name: ${runtime.cliName}`);
 
         // Access original argv
-        logger.debug(`Full command: ${argv.join(' ')}`);
+        logger.debug(`Full command: ${argv.join(" ")}`);
     },
 });
 ```
@@ -241,8 +239,8 @@ import { Cerebro } from "@visulima/cerebro";
 import versionCommand from "@visulima/cerebro/command/version";
 
 const cli = new Cerebro("my-cli", {
-  packageName: "my-cli",
-  packageVersion: "1.0.0"
+    packageName: "my-cli",
+    packageVersion: "1.0.0",
 });
 
 cli.addCommand(versionCommand);
@@ -355,6 +353,7 @@ my-cli completion --runtime=node --shell=zsh > ~/.my-cli-completion.zsh
 ### Setup Instructions
 
 **Bash:**
+
 ```bash
 my-cli completion --shell=bash > ~/.my-cli-completion.bash
 echo 'source ~/.my-cli-completion.bash' >> ~/.bashrc
@@ -362,6 +361,7 @@ source ~/.bashrc
 ```
 
 **Zsh:**
+
 ```bash
 my-cli completion --shell=zsh > ~/.my-cli-completion.zsh
 echo 'source ~/.my-cli-completion.zsh' >> ~/.zshrc
@@ -369,17 +369,20 @@ source ~/.zshrc
 ```
 
 **Fish:**
+
 ```bash
 my-cli completion --shell=fish > ~/.config/fish/completions/my-cli.fish
 ```
 
 **PowerShell:**
+
 ```powershell
 my-cli completion --shell=powershell > $PROFILE.CurrentUserAllHosts
 . $PROFILE.CurrentUserAllHosts
 ```
 
 After setting up, users can press `TAB` to autocomplete:
+
 - Command names
 - Option flags (both long `--option` and short `-o`)
 - Option values (when applicable)
@@ -388,6 +391,7 @@ After setting up, users can press `TAB` to autocomplete:
 ### Troubleshooting
 
 If completions don't work:
+
 1. Ensure `@bomb.sh/tab` is installed
 2. Verify the completion script was sourced in your shell profile
 3. Try restarting your shell or running `source ~/.bashrc` (or equivalent)

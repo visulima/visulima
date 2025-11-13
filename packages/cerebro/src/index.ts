@@ -112,5 +112,4 @@ export { VisulimaError } from "@visulima/error";
  * });
  * ```
  */
-export const createCerebro = <T extends Console = Console>(name: string, options?: CliOptions<T>): InstanceType<typeof Cli<T>> =>
-    new Cli<T>(name, options);
+export const createCerebro = <T extends Console = Console>(name: string, options?: CliOptions<T>): InstanceType<typeof Cli<T>> => new Cli<T>(name, options);

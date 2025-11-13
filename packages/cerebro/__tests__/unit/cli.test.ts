@@ -144,6 +144,73 @@ describe("cli", () => {
         expect(execute).toHaveBeenCalledWith(expect.any(Object));
     });
 
+    it("should allow --no-clean flag and set clean to false in options", async () => {
+        expect.assertions(3);
+
+        const cli = new Cli("MyCLI", { argv: ["a", "--no-clean"] });
+
+        const execute = vi.fn();
+
+        cli.addCommand({
+            execute,
+            name: "a",
+            options: [{ name: "no-clean", type: Boolean }],
+        });
+
+        await cli.run({
+            shouldExitProcess: false,
+        });
+
+        expect(execute).toHaveBeenCalledTimes(1);
+
+        const toolbox = execute.mock.calls[0]?.[0];
+
+        expect(toolbox?.options?.clean).toBe(false);
+        expect(toolbox?.options?.noClean).toBeUndefined();
+    });
+
+    it("should allow --clean flag and set clean to true in options", async () => {
+        expect.assertions(2);
+
+        const cli = new Cli("MyCLI", { argv: ["a", "--clean"] });
+
+        const execute = vi.fn();
+
+        cli.addCommand({
+            execute,
+            name: "a",
+            options: [{ name: "no-clean", type: Boolean }],
+        });
+
+        await cli.run({
+            shouldExitProcess: false,
+        });
+
+        expect(execute).toHaveBeenCalledTimes(1);
+
+        const toolbox = execute.mock.calls[0]?.[0];
+
+        expect(toolbox?.options?.clean).toBe(true);
+    });
+
+    it("should throw error when both --clean and --no-clean are provided", async () => {
+        expect.assertions(1);
+
+        const cli = new Cli("MyCLI", { argv: ["a", "--clean", "--no-clean"] });
+
+        cli.addCommand({
+            execute: vi.fn(),
+            name: "a",
+            options: [{ name: "no-clean", type: Boolean }],
+        });
+
+        await expect(
+            cli.run({
+                shouldExitProcess: false,
+            }),
+        ).rejects.toThrow("Options \"clean\" and \"no-clean\" cannot be used together");
+    });
+
     describe("runCommand", () => {
         it("should execute a command programmatically from within another command", async () => {
             expect.assertions(3);
