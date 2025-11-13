@@ -1,6 +1,6 @@
 {
     "name": "@visulima/colorize",
-    "version": "1.4.27",
+    "version": "1.4.28",
     "exports": {
         ".": "./src/index.server.mts",
         "./browser": "./src/index.browser.ts",

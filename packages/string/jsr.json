@@ -1,6 +1,6 @@
 {
     "name": "@visulima/string",
-    "version": "2.0.4",
+    "version": "2.0.5",
     "exports": {
         "./native-string-types": "./dist/native-string-types.d.ts",
         ".": "./src/index.ts",

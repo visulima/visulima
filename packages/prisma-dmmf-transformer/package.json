@@ -98,7 +98,7 @@
         "@types/json-schema": "7.0.15",
         "@types/micromatch": "4.0.10",
         "@types/node": "24.10.0",
-        "@visulima/packem": "2.0.0-alpha.36",
+        "@visulima/packem": "2.0.0-alpha.37",
         "@vitest/coverage-v8": "4.0.8",
         "ajv": "8.17.1",
         "ajv-formats": "3.0.1",

@@ -1,6 +1,6 @@
 {
     "name": "@visulima/pail",
-    "version": "3.2.0",
+    "version": "3.2.1",
     "exports": {
         ".": "./src/index.server.ts",
         "./browser": "./src/index.browser.ts",
