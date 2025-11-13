@@ -1,6 +1,6 @@
 {
     "name": "@visulima/vite-overlay",
-    "version": "1.3.6",
+    "version": "1.3.7",
     "description": "Improved vite overlay",
     "keywords": [
         "vite",
@@ -81,7 +81,7 @@
         "@shikijs/cli": "3.15.0",
         "@shikijs/langs": "3.15.0",
         "@shikijs/themes": "3.15.0",
-        "@visulima/error": "5.0.5",
+        "@visulima/error": "5.0.6",
         "fastest-levenshtein": "^1.0.16",
         "shiki": "3.15.0"
     },
@@ -102,7 +102,7 @@
         "@types/hast": "3.0.4",
         "@types/node": "24.10.0",
         "@visulima/packem": "2.0.0-alpha.37",
-        "@visulima/path": "2.0.4",
+        "@visulima/path": "2.0.5",
         "@vitest/coverage-v8": "^4.0.8",
         "@vitest/ui": "^4.0.8",
         "conventional-changelog-conventionalcommits": "9.1.0",
