@@ -1,3 +1,15 @@
+## @visulima/error-handler [1.0.13](https://github.com/visulima/visulima/compare/@visulima/error-handler@1.0.12...@visulima/error-handler@1.0.13) (2025-11-13)
+
+### Bug Fixes
+
+* bump packem, to fix minified version of the code ([2a36ceb](https://github.com/visulima/visulima/commit/2a36ceb09251b0ca1178701a26547a871ed717a7))
+
+
+### Dependencies
+
+* **@visulima/boxen:** upgraded to 2.0.10
+* **@visulima/error:** upgraded to 5.0.6
+
 ## @visulima/error-handler [1.0.12](https://github.com/visulima/visulima/compare/@visulima/error-handler@1.0.11...@visulima/error-handler@1.0.12) (2025-11-12)
 
 ### Bug Fixes
