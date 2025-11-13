@@ -1,4 +1,4 @@
-const GCSConfig = {
+const GCSConfig: Record<string, string | string[]> = {
     authScopes: [
         "https://www.googleapis.com/auth/iam",
         "https://www.googleapis.com/auth/cloud-platform",

@@ -27,7 +27,10 @@ const mockAuthRequest = vi.fn();
 
 vi.mock(import("google-auth-library"), () => {
     return {
-        GoogleAuth: vi.fn().mockImplementation(function (this: any, config: any) {
+        GoogleAuth: vi.fn().mockImplementation(function (
+            this: import("google-auth-library").GoogleAuth,
+            config: import("../../../src/storage/gcs/types").GCStorageOptions,
+        ) {
             this.request = mockAuthRequest;
 
             return this;
@@ -177,7 +180,7 @@ describe(GCStorage, async () => {
                 status: 200,
             });
 
-            vi.spyOn(storage as any, "makeRequest").mockImplementation(mockMakeRequest);
+            vi.spyOn(storage as unknown as { makeRequest: typeof mockMakeRequest }, "makeRequest").mockImplementation(mockMakeRequest);
 
             const body = testfile.asReadable;
             const gcsFile = await storage.write({
@@ -212,7 +215,7 @@ describe(GCStorage, async () => {
                 status: 400,
             });
 
-            vi.spyOn(storage as any, "makeRequest").mockImplementation(mockMakeRequest);
+            vi.spyOn(storage as unknown as { makeRequest: typeof mockMakeRequest }, "makeRequest").mockImplementation(mockMakeRequest);
 
             try {
                 await storage.write({ contentLength: 0, id: metafile.id });
@@ -237,7 +240,7 @@ describe(GCStorage, async () => {
                 status: 308,
             });
 
-            vi.spyOn(storage as any, "makeRequest").mockImplementation(mockMakeRequest);
+            vi.spyOn(storage as unknown as { makeRequest: typeof mockMakeRequest }, "makeRequest").mockImplementation(mockMakeRequest);
 
             const gcsFile = await storage.write({ contentLength: 0, id: metafile.id });
 

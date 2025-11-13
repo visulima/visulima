@@ -3,7 +3,7 @@
 import type { Express } from "express";
 import express from "express";
 
-type Authorized<T> = T & { user?: any };
+type Authorized<T> = T & { user?: Record<string, unknown> };
 
 const app: Express = express();
 

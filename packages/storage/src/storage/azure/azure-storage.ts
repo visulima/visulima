@@ -16,9 +16,9 @@ import AzureMetaStorage from "./azure-meta-storage";
 import type { AzureStorageOptions } from "./types";
 
 class AzureStorage extends BaseStorage<AzureFile, FileReturn> {
-    public static override readonly name = "azure";
+    public static override readonly name: string = "azure";
 
-    public override checksumTypes = ["md5"];
+    public override checksumTypes: string[] = ["md5"];
 
     protected meta: MetaStorage<AzureFile>;
 

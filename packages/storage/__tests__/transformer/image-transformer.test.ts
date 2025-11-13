@@ -118,7 +118,7 @@ describe("imageTransformer streaming", () => {
             // Temporarily remove the transformStream method
             const originalTransformStream = transformer.transformStream;
 
-            delete (transformer as any).transformStream;
+            delete (transformer as unknown as { transformStream?: typeof originalTransformStream }).transformStream;
 
             await expect(transformer.transformStream!("test-image", [])).rejects.toThrow();
 

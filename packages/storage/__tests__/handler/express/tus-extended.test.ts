@@ -13,7 +13,7 @@ import app from "../../__helpers__/express-app";
 
 describe("tUS Extended Tests (matching tus-node-server e2e)", () => {
     const STORE_PATH = "/files";
-    let server: any;
+    let server: Tus<File>;
     let listener: ReturnType<typeof createServer>;
     let agent: supertest.SuperAgentTest;
 

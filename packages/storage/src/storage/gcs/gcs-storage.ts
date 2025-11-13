@@ -40,9 +40,9 @@ const validateStatus = (code: number): boolean => (code >= 200 && code < 300) ||
  * ```
  */
 class GCStorage extends BaseStorage<GCSFile, FileReturn> {
-    public static override readonly name = "gcs";
+    public static override readonly name: string = "gcs";
 
-    public override checksumTypes = ["md5", "crc32c"];
+    public override checksumTypes: string[] = ["md5", "crc32c"];
 
     protected meta: MetaStorage<GCSFile>;
 

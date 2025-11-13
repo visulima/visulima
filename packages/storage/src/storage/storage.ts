@@ -73,7 +73,7 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
 
     protected namingFunction: (file: TFile, request: any) => string;
 
-    protected validation = new Validator<TFile>();
+    protected validation: Validator<TFile> = new Validator<TFile>();
 
     protected abstract meta: MetaStorage<TFile>;
 

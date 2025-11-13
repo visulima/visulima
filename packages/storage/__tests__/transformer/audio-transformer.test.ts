@@ -29,14 +29,14 @@ describe(AudioTransformer, () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
-        transformer = new AudioTransformer(mockStorage as any, {});
+        transformer = new AudioTransformer(mockStorage as import("../../src/storage/storage").BaseStorage, {});
     });
 
     describe("constructor", () => {
         it("should create transformer with default configuration", () => {
             expect.assertions(1);
 
-            const transformer = new AudioTransformer(mockStorage as any);
+            const transformer = new AudioTransformer(mockStorage as import("../../src/storage/storage").BaseStorage);
 
             expect(transformer).toBeInstanceOf(AudioTransformer);
         });
@@ -50,7 +50,7 @@ describe(AudioTransformer, () => {
                 maxAudioSize: 50 * 1024 * 1024,
             };
 
-            const transformer = new AudioTransformer(mockStorage as any, config);
+            const transformer = new AudioTransformer(mockStorage as import("../../src/storage/storage").BaseStorage, config);
 
             expect(transformer).toBeInstanceOf(AudioTransformer);
         });

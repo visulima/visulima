@@ -547,8 +547,8 @@ export class Tus<
     }
 }
 
-export const TUS_RESUMABLE = TUS_RESUMABLE_VERSION;
-export const TUS_VERSION = TUS_VERSION_VERSION;
+export const TUS_RESUMABLE: string = TUS_RESUMABLE_VERSION;
+export const TUS_VERSION: string = TUS_VERSION_VERSION;
 
 /**
  * Serialize metadata object to TUS protocol format.

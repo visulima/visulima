@@ -66,7 +66,7 @@ abstract class BaseHandler<
     /**
      * Map of registered HTTP method handlers
      */
-    protected registeredHandlers = new Map<string, AsyncHandler<NodeRequest, NodeResponse>>();
+    protected registeredHandlers: Map<string, AsyncHandler<NodeRequest, NodeResponse>> = new Map<string, AsyncHandler<NodeRequest, NodeResponse>>();
 
     /**
      * Logger instance for debugging and error reporting

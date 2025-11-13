@@ -229,9 +229,9 @@ describe("baseHandler", () => {
         expect.assertions(1);
 
         // Spy on storage.getMeta to throw FileNotFound error
-        const error = new Error("Not found");
+        const error = new Error("Not found") as Error & { UploadErrorCode?: string };
 
-        (error as any).UploadErrorCode = "FileNotFound";
+        error.UploadErrorCode = "FileNotFound";
         const spy = vi.spyOn(storage, "getMeta").mockRejectedValueOnce(error);
 
         const request = createRequest({ method: "GET", url: "/files/999-999-999/metadata" });
@@ -423,9 +423,9 @@ describe("baseHandler", () => {
             it("should return 404 for non-existent files", async () => {
                 expect.assertions(1);
 
-                const error = new Error("Not found");
+                const error = new Error("Not found") as Error & { UploadErrorCode?: string };
 
-                (error as any).UploadErrorCode = "FileNotFound";
+                error.UploadErrorCode = "FileNotFound";
 
                 const getMetaSpy = vi.spyOn(storage, "getMeta").mockRejectedValue(error);
 
@@ -452,7 +452,7 @@ describe("baseHandler", () => {
                 // Mock storage without getStream method
                 const originalGetStream = storage.getStream;
 
-                (storage as any).getStream = undefined;
+                (storage as unknown as { getStream?: typeof originalGetStream }).getStream = undefined;
 
                 const getMetaSpy = vi.spyOn(storage, "getMeta").mockResolvedValue({
                     bytesWritten: 100,
@@ -482,7 +482,7 @@ describe("baseHandler", () => {
                 expect(response.statusCode).toBe(501);
 
                 // Restore getStream method
-                (storage as any).getStream = originalGetStream;
+                (storage as unknown as { getStream?: typeof originalGetStream }).getStream = originalGetStream;
                 getMetaSpy.mockRestore();
             });
         });

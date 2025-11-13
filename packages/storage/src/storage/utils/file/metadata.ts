@@ -1,10 +1,11 @@
 import isRecord from "../../../utils/primitives/is-record";
 
-const ASCII_SPACE = " ".codePointAt(0);
-const ASCII_COMMA = ",".codePointAt(0);
-const BASE64_REGEX = /^[\d+/A-Z]*={0,2}$/i;
+const ASCII_SPACE: string = " ".codePointAt(0);
+const ASCII_COMMA: string = ",".codePointAt(0);
+const BASE64_REGEX: RegExp = /^[\d+/A-Z]*={0,2}$/i;
 
-const isNumeric = (input: unknown) => typeof input !== "string" ? false : !Number.isNaN(input) && !Number.isNaN(parseFloat(input)) && isFinite(input);
+const isNumeric: boolean = (input: unknown) =>
+    (typeof input !== "string" ? false : !Number.isNaN(input) && !Number.isNaN(parseFloat(input)) && isFinite(input));
 
 export class Metadata {
     [key: string]: any;
@@ -32,7 +33,7 @@ export class Metadata {
 
 export const isMetadata = (raw: unknown): raw is Metadata => isRecord(raw);
 
-export const validateKey = (key: string) => {
+export const validateKey = (key: string): boolean => {
     if (key.length === 0) {
         return false;
     }
@@ -48,7 +49,7 @@ export const validateKey = (key: string) => {
     return true;
 };
 
-export const validateValue = (value: string) => {
+export const validateValue = (value: string): boolean => {
     if (value.length % 4 !== 0) {
         return false;
     }

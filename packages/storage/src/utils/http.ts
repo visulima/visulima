@@ -178,7 +178,7 @@ export const getBaseUrl = (request: IncomingMessage): string => {
 
 export const normalizeHookResponse
     = <T>(callback: (file: T) => Promise<UploadResponse>) =>
-        async (file: T) => {
+        async (file: T): Promise<UploadResponse> => {
             const response = await callback(file);
 
             if (isRecord(response)) {
@@ -193,15 +193,17 @@ export const normalizeHookResponse
 /**
  * @internal
  */
-export const normalizeOnErrorResponse = (callback: (error: HttpError) => UploadResponse) => (error: HttpError) => {
-    if (isRecord(error)) {
-        const { body, headers, statusCode, ...rest } = error;
+export const normalizeOnErrorResponse
+    = (callback: (error: HttpError) => UploadResponse): (error: HttpError) => UploadResponse =>
+        (error: HttpError): UploadResponse => {
+            if (isRecord(error)) {
+                const { body, headers, statusCode, ...rest } = error;
 
-        return callback({ body: body ?? (rest as HttpErrorBody), headers, statusCode });
-    }
+                return callback({ body: body ?? (rest as HttpErrorBody), headers, statusCode });
+            }
 
-    return callback({ body: error ?? "unknown error", statusCode: 500 });
-};
+            return callback({ body: error ?? "unknown error", statusCode: 500 });
+        };
 
 /**
  * Extracts the real path from a request URL, excluding query parameters.
@@ -232,7 +234,7 @@ export const getRealPath = (request: IncomingMessage & { originalUrl?: string })
 /**
  * @internal
  */
-export const uuidRegex = /(?:[\dA-Z]+-){2}[\dA-Z]+/i;
+export const uuidRegex: RegExp = /(?:[\dA-Z]+-){2}[\dA-Z]+/i;
 
 /**
  * Extracts a UUID identifier from the request URL path.

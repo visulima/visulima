@@ -8,20 +8,20 @@ class RequestReadStream extends PassThrough {
 
     public __mockdata = "12345";
 
-    public __mockSend(data?: any): void {
+    public __mockSend(data?: Buffer | string): void {
         // Use the PassThrough write method instead of emitting events directly
         this.write(data ?? this.__mockdata);
         this.end();
     }
 
-    public __mockAbort(data?: any): void {
+    public __mockAbort(data?: Buffer | string): void {
         // Use the PassThrough write method and emit abort
         this.write(data ?? this.__mockdata);
         this.emit("aborted");
         this.end();
     }
 
-    public __mockPipeError(destination: FileWriteStream, data?: any): void {
+    public __mockPipeError(destination: FileWriteStream, data?: Buffer | string): void {
         // Use the PassThrough write method and emit error on destination
         this.write(data ?? this.__mockdata);
         destination.emit("error", new Error("Broken pipe"));

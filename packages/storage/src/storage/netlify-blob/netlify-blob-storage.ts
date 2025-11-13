@@ -23,9 +23,9 @@ import type { NetlifyBlobStorageOptions } from "./types";
  * ```
  */
 class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile, FileReturn> {
-    public static override readonly name = "netlify-blob";
+    public static override readonly name: string = "netlify-blob";
 
-    public override checksumTypes = ["md5"];
+    public override checksumTypes: string[] = ["md5"];
 
     protected meta: MetaStorage<NetlifyBlobFile>;
 

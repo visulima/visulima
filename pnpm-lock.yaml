@@ -4814,8 +4814,8 @@ importers:
         specifier: workspace:*
         version: link:../humanizer
       '@visulima/packem':
-        specifier: 2.0.0-alpha.32
-        version: 2.0.0-alpha.32(42b8ddc07cf03a36ec19430aed26ea73)
+        specifier: 2.0.0-alpha.36
+        version: 2.0.0-alpha.36(0dd42aac4e9609ce2e6fbbd0de9865bb)
       '@visulima/path':
         specifier: workspace:*
         version: link:../path
@@ -4858,9 +4858,6 @@ importers:
       mediabunny:
         specifier: ^1.24.4
         version: 1.24.6
-      memfs:
-        specifier: 4.50.0
-        version: 4.50.0
       node-fetch:
         specifier: ^3.3.2
         version: 3.3.2
@@ -8430,42 +8427,6 @@ packages:
   '@jsdevtools/ono@7.1.3':
     resolution: {integrity: sha512-4JQNk+3mVzK3xh2rqd6RB4J46qUR19azEHBneZyTZM+c456qOrbbM/5xcR8huNCCcbVt7+UmizG6GuUvPvKUYg==}
 
-  '@jsonjoy.com/base64@1.1.2':
-    resolution: {integrity: sha512-q6XAnWQDIMA3+FTiOYajoYqySkO+JSat0ytXGSuRdq9uXE7o92gzuQwQM14xaCRlBLGq3v5miDGC4vkVTn54xA==}
-    engines: {node: '>=10.0'}
-    peerDependencies:
-      tslib: '2'
-
-  '@jsonjoy.com/buffers@1.2.1':
-    resolution: {integrity: sha512-12cdlDwX4RUM3QxmUbVJWqZ/mrK6dFQH4Zxq6+r1YXKXYBNgZXndx2qbCJwh3+WWkCSn67IjnlG3XYTvmvYtgA==}
-    engines: {node: '>=10.0'}
-    peerDependencies:
-      tslib: '2'
-
-  '@jsonjoy.com/codegen@1.0.0':
-    resolution: {integrity: sha512-E8Oy+08cmCf0EK/NMxpaJZmOxPqM+6iSe2S4nlSBrPZOORoDJILxtbSUEDKQyTamm/BVAhIGllOBNU79/dwf0g==}
-    engines: {node: '>=10.0'}
-    peerDependencies:
-      tslib: '2'
-
-  '@jsonjoy.com/json-pack@1.21.0':
-    resolution: {integrity: sha512-+AKG+R2cfZMShzrF2uQw34v3zbeDYUqnQ+jg7ORic3BGtfw9p/+N6RJbq/kkV8JmYZaINknaEQ2m0/f693ZPpg==}
-    engines: {node: '>=10.0'}
-    peerDependencies:
-      tslib: '2'
-
-  '@jsonjoy.com/json-pointer@1.0.2':
-    resolution: {integrity: sha512-Fsn6wM2zlDzY1U+v4Nc8bo3bVqgfNTGcn6dMgs6FjrEnt4ZCe60o6ByKRjOGlI2gow0aE/Q41QOigdTqkyK5fg==}
-    engines: {node: '>=10.0'}
-    peerDependencies:
-      tslib: '2'
-
-  '@jsonjoy.com/util@1.9.0':
-    resolution: {integrity: sha512-pLuQo+VPRnN8hfPqUTLTHk126wuYdXVxE6aDmjSeV4NCAgyxWbiOIeNJVtID3h1Vzpoi9m4jXezf73I6LgabgQ==}
-    engines: {node: '>=10.0'}
-    peerDependencies:
-      tslib: '2'
-
   '@jsr/std__bytes@1.0.6':
     resolution: {integrity: sha512-St6yKggjFGhxS52IFLJWvkchRFbAKg2Xh8UxA4S1EGz7GJ2Ui+ssDDldj/w2c8vCxvl6qgR0HaYbKeFJNqujmA==, tarball: https://npm.jsr.io/~/11/@jsr/std__bytes/1.0.6.tgz}
 
@@ -9888,15 +9849,6 @@ packages:
     engines: {node: '>=14.0.0'}
     peerDependencies:
       rollup: ^1.20.0||^2.0.0||^3.0.0||^4.0.0
-    peerDependenciesMeta:
-      rollup:
-        optional: true
-
-  '@rollup/plugin-commonjs@28.0.6':
-    resolution: {integrity: sha512-XSQB1K7FUU5QP+3lOQmVCE3I0FcbbNvmNT4VJSj93iUjayaARrTQeoRdiYQoftAJBLrR9t2agwAd3ekaTgHNlw==}
-    engines: {node: '>=16.0.0 || 14 >= 14.17'}
-    peerDependencies:
-      rollup: ^2.68.0||^3.0.0||^4.0.0
     peerDependenciesMeta:
       rollup:
         optional: true
@@ -12086,6 +12038,7 @@ packages:
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   '@visulima/cerebro@2.1.0':
     resolution: {integrity: sha512-NpqhRvHaLoH792axNgmUzATn2xj4C6qzdZG0/qN2tnfGB3zuJC4Hs4X/CFzK3ThwRcpaBB55aD0HRLy2co3HQQ==}
 >>>>>>> f254cb680 (fix(upload): update code)
@@ -12103,6 +12056,8 @@ packages:
     engines: {node: '>=18.0.0 <=23.x'}
     os: [darwin, linux, win32]
 
+=======
+>>>>>>> 0e4d0bf23 (chore: Update pnpm-lock.yaml and package.json to reflect dependency version changes, including upgrading @visulima/packem to 2.0.0-alpha.36 and removing deprecated memfs dependency. Refactor type definitions in test files for improved type safety and clarity.)
   '@visulima/cerebro@2.1.0':
     resolution: {integrity: sha512-NpqhRvHaLoH792axNgmUzATn2xj4C6qzdZG0/qN2tnfGB3zuJC4Hs4X/CFzK3ThwRcpaBB55aD0HRLy2co3HQQ==}
     engines: {node: '>=20.19 <=25.x'}
@@ -12144,16 +12099,6 @@ packages:
     resolution: {integrity: sha512-YJ2W5L3MUy3DIxJCSptTGYHEEWW3y/0RZF0jtNxH3D0ZnJwkopkpeSZpTfi2wYG0wm2gX9MqE9grs4o9L51yBw==}
     engines: {node: '>=20.* <=24.*'}
 
-  '@visulima/error@4.6.1':
-    resolution: {integrity: sha512-dkObYJfyytzCXyTgOa9zXsvHE3Fn4hglRbE4wQqQ+SKRs1xMCuOJzbJ5UNNNK5I5vxPlv15NzibzSwOZq9Nxqg==}
-    engines: {node: '>=18.0.0 <=24.x'}
-    os: [darwin, linux, win32]
-    peerDependencies:
-      ai: ^5.0.30
-    peerDependenciesMeta:
-      ai:
-        optional: true
-
   '@visulima/find-cache-dir@1.0.34':
     resolution: {integrity: sha512-eQXTTD+C9UBVRoUoytlVM0SJK+MsUFemXAHJFuoyLVcMFwsFKYrKum9VxRstQszLreSavzDJ71w5ZfY4sX/h2A==}
     engines: {node: '>=18.0.0 <=23.x'}
@@ -12161,11 +12106,6 @@ packages:
   '@visulima/find-cache-dir@2.0.4':
     resolution: {integrity: sha512-Wv6vd/Wl1hYaPHHzG+lUbfhw7nvvOwtLxsAmzo+hZCLbzy0ZgCdXU2XWQYHcqKNvsA4keRrFLzGX5IahHWIvbg==}
     engines: {node: '>=20.19 <=25.x'}
-
-  '@visulima/fmt@1.1.15':
-    resolution: {integrity: sha512-r0+HmEwvbgz2ey+I7NyNfaDF6qHmsUYxmZ2nUl9nWUunyLQO2f1IYy/ZJFLBnsaYpbhqWXG32lFlUtmar4c3rQ==}
-    engines: {node: '>=18.0.0 <=23.x'}
-    os: [darwin, linux, win32]
 
   '@visulima/fs@3.1.8':
     resolution: {integrity: sha512-LQLoX/G/9Tv6YUgiPoC1DZ2O8NGJuVFIuGYwvWI07BKZX2idOu9UOeI9Ozr84+k8B6Wdwo/g1gEkDMssInBp0w==}
@@ -12198,6 +12138,7 @@ packages:
         optional: true
 
 <<<<<<< HEAD
+<<<<<<< HEAD
   '@visulima/fs@4.0.6':
     resolution: {integrity: sha512-jabaGZ3m78ROqhe9tJN6zT1V2JX1oM9pJrAQA9SagkPImgW/FjLYul1zcXqu4CvcS3B6pelM1eui/oWRrOYPkw==}
     engines: {node: '>=20.19 <=25.x'}
@@ -12213,13 +12154,11 @@ packages:
     engines: {node: '>=18.0.0 <=23.x'}
 >>>>>>> 721736f8b (chore: refactor storage documentation: Remove emoji from feature list in introduction.mdx for improved clarity and consistency.)
 
+=======
+>>>>>>> 0e4d0bf23 (chore: Update pnpm-lock.yaml and package.json to reflect dependency version changes, including upgrading @visulima/packem to 2.0.0-alpha.36 and removing deprecated memfs dependency. Refactor type definitions in test files for improved type safety and clarity.)
   '@visulima/humanizer@2.0.3':
     resolution: {integrity: sha512-hZiexDsfyFwEHetwC+vM6OyTJGeoLlSkzNyVXKffB9tbxU+/XKddeFvwbtinu9+udJ8mtXxD2rrxIJT5MDRzOQ==}
     engines: {node: '>=20.19 <=25.x'}
-
-  '@visulima/inspector@1.0.24':
-    resolution: {integrity: sha512-qV8+tm35NY1XBKbfMoygvgx1Nz05zBeyoyjV6Fi/JMouUHOhpFkX79tHRtg1IWj8c42OR8FLCmP5WFDLcrUGKg==}
-    engines: {node: '>=18.0.0 <=23.x'}
 
   '@visulima/is-ansi-color-supported@2.2.14':
     resolution: {integrity: sha512-5Z3V97wvXl+0b4uykb0jKG7nPhLfXG0pl5mdyAhIuUzCNRqwk6Tn7Upb16WyWafeKd7kTHY9nr78uTiPtOYuXg==}
@@ -12272,31 +12211,6 @@ packages:
     engines: {node: '>=20.19 <=25.x'}
     os: [darwin, linux, win32]
 
-  '@visulima/packem-rollup@1.0.0-alpha.25':
-    resolution: {integrity: sha512-Zrj+eaXxWkYJScu2Z51YN7FE9c5Wr7a2IGJM2hKZ4DAO0Onjtwzzn7RCDmX39L7t2Jas6t9d62c5KoggAPcUbQ==}
-    engines: {node: '>=20.19.* <=25.*'}
-    peerDependencies:
-      '@swc/core': '*'
-      esbuild: '>=0.25.11'
-      oxc-transform: '*'
-      p-queue: '*'
-      rollup: '>=4'
-      sucrase: '*'
-      typescript: '*'
-    peerDependenciesMeta:
-      '@swc/core':
-        optional: true
-      esbuild:
-        optional: true
-      oxc-transform:
-        optional: true
-      p-queue:
-        optional: true
-      sucrase:
-        optional: true
-      typescript:
-        optional: true
-
   '@visulima/packem-rollup@1.0.0-alpha.27':
     resolution: {integrity: sha512-ixYdaFbrtfhpX9/2Ly+Em4+1mfggA9hA2W6qbTVEGgOlcTMT7ECmWF9NTcP6Pd64eKhDVpNyEAMx64K6eaUJYg==}
     engines: {node: '>=20.19.* <=25.*'}
@@ -12328,6 +12242,7 @@ packages:
     peerDependencies:
       rollup: ^4.52.4
 
+<<<<<<< HEAD
 <<<<<<< HEAD
   '@visulima/packem@2.0.0-alpha.37':
     resolution: {integrity: sha512-q7vP0Cua7NaB0veHE6GXqt09EKdKyoRGpDPYx5ZYX0aoqDLqpRHPeQgLgUhvh7OmDp+YfhBUvL9zQFV9ly3XCg==}
@@ -12421,6 +12336,8 @@ packages:
       which-pm-runs:
         optional: true
 
+=======
+>>>>>>> 0e4d0bf23 (chore: Update pnpm-lock.yaml and package.json to reflect dependency version changes, including upgrading @visulima/packem to 2.0.0-alpha.36 and removing deprecated memfs dependency. Refactor type definitions in test files for improved type safety and clarity.)
   '@visulima/packem@2.0.0-alpha.36':
     resolution: {integrity: sha512-ahqH60otokC6WDGYdiXkp5hOqrr4elU78+Tyce9lePfvqiM76tdALeVDtIAxSXxcFegtF4NZZY6H4ZW0J/5rMA==}
 >>>>>>> 721736f8b (chore: refactor storage documentation: Remove emoji from feature list in introduction.mdx for improved clarity and consistency.)
@@ -12509,19 +12426,6 @@ packages:
       typescript:
         optional: true
       which-pm-runs:
-        optional: true
-
-  '@visulima/pail@2.1.28':
-    resolution: {integrity: sha512-qzUR9DXqvT0Mwcs/lanAAzcBRLajZc3t/FmbLvL5Ua+x+DBsfGOMn+zyuLTBDu7/gBR35ftLJuCc9szFDVrgkw==}
-    engines: {node: '>=18.0.0 <=23.x'}
-    os: [darwin, linux, win32]
-    peerDependencies:
-      '@visulima/redact': 1.0.15
-      rotating-file-stream: ^3.1.1
-    peerDependenciesMeta:
-      '@visulima/redact':
-        optional: true
-      rotating-file-stream:
         optional: true
 
   '@visulima/pail@3.2.0':
@@ -12650,6 +12554,7 @@ packages:
     engines: {node: '>=20.19 <=25.x'}
 
 <<<<<<< HEAD
+<<<<<<< HEAD
   '@visulima/tabular@3.1.2':
     resolution: {integrity: sha512-/C6JgnAvTKY47DhqEWdU42phCnWzsPiy1NOGvuu6/KiZkyibCUXIUzY76GGbzanxuGLxCaGOfhpJZvemXVkB4A==}
     engines: {node: '>=20.19 <=25.x'}
@@ -12661,14 +12566,12 @@ packages:
     resolution: {integrity: sha512-cWNikaoyUcEuDGx+CLPSo7KleiPgw/Tq3lkidpXNtWQ1+HJx1XJNbfmicPpxvlbwgXLuzv28cz3Uo8XYokJe6g==}
     engines: {node: '>=20.19 <=25.x'}
 
+=======
+>>>>>>> 0e4d0bf23 (chore: Update pnpm-lock.yaml and package.json to reflect dependency version changes, including upgrading @visulima/packem to 2.0.0-alpha.36 and removing deprecated memfs dependency. Refactor type definitions in test files for improved type safety and clarity.)
   '@visulima/tabular@3.1.1':
     resolution: {integrity: sha512-dSkB/UlAhRi1nQdsJWilC6bQHVjzI/w+xt27RD/cNvNhEF6Jmp/ci7UOYWw3LmND0xzBwWrNSrM4Dhu/ZrlviQ==}
 >>>>>>> 721736f8b (chore: refactor storage documentation: Remove emoji from feature list in introduction.mdx for improved clarity and consistency.)
     engines: {node: '>=20.19 <=25.x'}
-
-  '@visulima/tsconfig@1.1.22':
-    resolution: {integrity: sha512-3y+Oa/pjKW9gLYbS2EJ0OKOwbPIaPdgSn+E1p06YHz0df3COzDwugJhB8+JpPEkoTCyf9w30e527RC6CFSmI0w==}
-    engines: {node: '>=18.0.0 <=23.x'}
 
   '@visulima/tsconfig@1.2.0':
     resolution: {integrity: sha512-6PCtTUl8dchyjIpsoOnyrn62iya+NuZ3hKkJsQM6rj+29wNJ8Py5mps80pGMcpeEFwVd3hCOcndpV7IWE1KDXQ==}
@@ -16385,12 +16288,6 @@ packages:
     resolution: {integrity: sha512-XxwI8EOhVQgWp6iDL+3b0r86f4d6AX6zSU55HfB4ydCEuXLXc5FcYeOu+nnGftS4TEju/11rt4KJPTMgbfmv4A==}
     engines: {node: '>=10.13.0'}
 
-  glob-to-regex.js@1.2.0:
-    resolution: {integrity: sha512-QMwlOQKU/IzqMUOAZWubUOT8Qft+Y0KQWnX9nK3ch0CJg0tTp4TvGZsTfudYKv2NzoQSyPcnA6TYeIQ3jGichQ==}
-    engines: {node: '>=10.0'}
-    peerDependencies:
-      tslib: '2'
-
   glob-to-regexp@0.4.1:
     resolution: {integrity: sha512-lkX1HJXwyMcprw/5YUZc2s7DrpAiHB21/V+E1rHUrVNokkvB6bqMzT0VfV6/86ZNabt1k14YOIaT7nDvOX3Iiw==}
 
@@ -16721,10 +16618,6 @@ packages:
   html-escaper@2.0.2:
     resolution: {integrity: sha512-H2iMtd0I4Mt5eYiapRdIDjp+XzelXQ0tFE4JS7YFwFevXXMmOp9myNrUvCg0D6ws8iqkRPBfKHgbwig1SmlLfg==}
 
-  html-minifier-next@3.2.2:
-    resolution: {integrity: sha512-/SotSfGwjL2bCkwxrl4B5T48PPLQyZG7qsY2cOxfZt8djPLWK7XvFiPeGURqcV01JWI8OpFgClfSBLj/7vOHjQ==}
-    hasBin: true
-
   html-minifier-next@4.1.1:
     resolution: {integrity: sha512-Oc49HBmUYFO/1Vcr8m+mZLINV9d4XBQ1WSubGmy9+AYjO28p8BNrMDBTdVF6W1fVc/pQZqGpaufoOKKApPUn4g==}
     hasBin: true
@@ -16796,10 +16689,6 @@ packages:
     resolution: {integrity: sha512-5gs5ytaNjBrh5Ow3zrvdUUY+0VxIuWVL4i9irt6friV+BqdCfmV11CQTWMiBYWHbXhco+J1kHfTOUkePhCDvMA==}
     engines: {node: '>=18'}
     hasBin: true
-
-  hyperdyperid@1.2.0:
-    resolution: {integrity: sha512-Y93lCzHYgGWdrJ66yIktxiaGULYc6oGiABxhcO5AufBeOyoIdZF7bIfLaOrbM0iGIOXQQgxxRrFEnb+Y6w1n4A==}
-    engines: {node: '>=10.18'}
 
   iconv-lite@0.4.24:
     resolution: {integrity: sha512-v3MXnZAcvnywkTUEZomIActle7RXXeedOR31wwl7VlyoXO4Qi9arvSenNQWne1TcRwhCL1HwLI21bEqdpj8/rA==}
@@ -18428,9 +18317,6 @@ packages:
 
   mediabunny@1.24.6:
     resolution: {integrity: sha512-GODsNvKeig2Zhj2NCABBskVgJS1IMltP0uX/I0ltFksPCHpshreZhJEMwc903YbgdsW3RT7e6uvLX6UtlmeIkQ==}
-
-  memfs@4.50.0:
-    resolution: {integrity: sha512-N0LUYQMUA1yS5tJKmMtU9yprPm6ZIg24yr/OVv/7t6q0kKDIho4cBbXRi1XKttUmNYDYgF/q45qrKE/UhGO0CA==}
 
   memoizee@0.4.17:
     resolution: {integrity: sha512-DGqD7Hjpi/1or4F/aYAspXKNm5Yili0QDAFAY4QYvpqpgiY6+1jOfqpmByzjxbWd/T9mChbCArXAbDAsTm5oXA==}
@@ -22188,12 +22074,6 @@ packages:
   thenify@3.3.1:
     resolution: {integrity: sha512-RVZSIV5IG10Hk3enotrhvz0T9em6cyHBLkH/YAZuKqd8hRkKhSfCGIcP2KUY0EPxndzANBmNllzWPwak+bheSw==}
 
-  thingies@2.5.0:
-    resolution: {integrity: sha512-s+2Bwztg6PhWUD7XMfeYm5qliDdSiZm7M7n8KjTkIsm3l/2lgVRc2/Gx/v+ZX8lT4FMA+i8aQvhcWylldc+ZNw==}
-    engines: {node: '>=10.18'}
-    peerDependencies:
-      tslib: ^2
-
   thread-stream@3.1.0:
     resolution: {integrity: sha512-OqyPZ9u96VohAyMfJykzmivOrY2wfMSf3C5TtFJVgN+Hm6aj+voFhlK+kZEIv2FBh1X6Xp3DlnCOfEQ3B2J86A==}
 
@@ -22354,12 +22234,6 @@ packages:
   traverse@0.6.9:
     resolution: {integrity: sha512-7bBrcF+/LQzSgFmT0X5YclVqQxtv7TDJ1f8Wj7ibBu/U6BMLeOpUxuZjV7rMc44UtKxlnMFigdhFAIszSX1DMg==}
     engines: {node: '>= 0.4'}
-
-  tree-dump@1.1.0:
-    resolution: {integrity: sha512-rMuvhU4MCDbcbnleZTFezWsaZXRFemSqAM+7jPnzUl1fo9w3YEKOxAeui0fz3OI4EU4hf23iyA7uQRVko+UaBA==}
-    engines: {node: '>=10.0'}
-    peerDependencies:
-      tslib: '2'
 
   tree-kill@1.2.2:
     resolution: {integrity: sha512-L0Orpi8qGpRG//Nd+H90vFB+3iHnue1zSSGmNOOCh1GLJ7rUKVwV2HvijphGQS2UmhUZewS9VgvxYIdgr+fG1A==}
@@ -26436,42 +26310,6 @@ snapshots:
 
   '@jsdevtools/ono@7.1.3': {}
 
-  '@jsonjoy.com/base64@1.1.2(tslib@2.8.1)':
-    dependencies:
-      tslib: 2.8.1
-
-  '@jsonjoy.com/buffers@1.2.1(tslib@2.8.1)':
-    dependencies:
-      tslib: 2.8.1
-
-  '@jsonjoy.com/codegen@1.0.0(tslib@2.8.1)':
-    dependencies:
-      tslib: 2.8.1
-
-  '@jsonjoy.com/json-pack@1.21.0(tslib@2.8.1)':
-    dependencies:
-      '@jsonjoy.com/base64': 1.1.2(tslib@2.8.1)
-      '@jsonjoy.com/buffers': 1.2.1(tslib@2.8.1)
-      '@jsonjoy.com/codegen': 1.0.0(tslib@2.8.1)
-      '@jsonjoy.com/json-pointer': 1.0.2(tslib@2.8.1)
-      '@jsonjoy.com/util': 1.9.0(tslib@2.8.1)
-      hyperdyperid: 1.2.0
-      thingies: 2.5.0(tslib@2.8.1)
-      tree-dump: 1.1.0(tslib@2.8.1)
-      tslib: 2.8.1
-
-  '@jsonjoy.com/json-pointer@1.0.2(tslib@2.8.1)':
-    dependencies:
-      '@jsonjoy.com/codegen': 1.0.0(tslib@2.8.1)
-      '@jsonjoy.com/util': 1.9.0(tslib@2.8.1)
-      tslib: 2.8.1
-
-  '@jsonjoy.com/util@1.9.0(tslib@2.8.1)':
-    dependencies:
-      '@jsonjoy.com/buffers': 1.2.1(tslib@2.8.1)
-      '@jsonjoy.com/codegen': 1.0.0(tslib@2.8.1)
-      tslib: 2.8.1
-
   '@jsr/std__bytes@1.0.6': {}
 
   '@juggle/resize-observer@3.4.0': {}
@@ -27910,18 +27748,6 @@ snapshots:
   '@rolldown/pluginutils@1.0.0-beta.50': {}
 
   '@rollup/plugin-alias@5.1.1(rollup@4.53.2)':
-    optionalDependencies:
-      rollup: 4.53.2
-
-  '@rollup/plugin-commonjs@28.0.6(rollup@4.53.2)':
-    dependencies:
-      '@rollup/pluginutils': 5.3.0(rollup@4.53.2)
-      commondir: 1.0.1
-      estree-walker: 2.0.2
-      fdir: 6.5.0(picomatch@4.0.3)
-      is-reference: 1.2.1
-      magic-string: 0.30.21
-      picomatch: 4.0.3
     optionalDependencies:
       rollup: 4.53.2
 
@@ -31125,6 +30951,7 @@ snapshots:
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   '@visulima/cerebro@2.1.3(@bomb.sh/tab@0.0.9(cac@6.7.14)(citty@0.1.6)(commander@14.0.2))(@visulima/boxen@packages+boxen)(@visulima/find-cache-dir@2.0.4)(@visulima/pail@3.2.0(@opentelemetry/api@1.9.0)(rotating-file-stream@3.2.7))(github-slugger@2.0.0)':
 =======
 <<<<<<< HEAD
@@ -31158,6 +30985,8 @@ snapshots:
 >>>>>>> 9c44fef2a (fix(upload): update code)
 >>>>>>> f254cb680 (fix(upload): update code)
 =======
+=======
+>>>>>>> 0e4d0bf23 (chore: Update pnpm-lock.yaml and package.json to reflect dependency version changes, including upgrading @visulima/packem to 2.0.0-alpha.36 and removing deprecated memfs dependency. Refactor type definitions in test files for improved type safety and clarity.)
   '@visulima/cerebro@2.1.0(@bomb.sh/tab@0.0.9(cac@6.7.14)(citty@0.1.6)(commander@14.0.2))(@visulima/boxen@packages+boxen)(@visulima/find-cache-dir@2.0.4)(@visulima/pail@3.2.0(@opentelemetry/api@1.9.0)(@visulima/redact@packages+redact)(rotating-file-stream@3.2.7))(github-slugger@2.0.0)':
 >>>>>>> 721736f8b (chore: refactor storage documentation: Remove emoji from feature list in introduction.mdx for improved clarity and consistency.)
     dependencies:
@@ -31217,10 +31046,6 @@ snapshots:
 
   '@visulima/css-style-inject@1.0.0-alpha.9': {}
 
-  '@visulima/error@4.6.1(ai@5.0.92(zod@4.1.12))':
-    optionalDependencies:
-      ai: 5.0.92(zod@4.1.12)
-
   '@visulima/find-cache-dir@1.0.34(yaml@2.8.1)':
     dependencies:
       '@visulima/fs': 3.1.8(yaml@2.8.1)
@@ -31229,8 +31054,6 @@ snapshots:
       - yaml
 
   '@visulima/find-cache-dir@2.0.4': {}
-
-  '@visulima/fmt@1.1.15': {}
 
   '@visulima/fs@3.1.8(yaml@2.8.1)':
     dependencies:
@@ -31252,6 +31075,7 @@ snapshots:
       yaml: 2.8.1
 
 <<<<<<< HEAD
+<<<<<<< HEAD
   '@visulima/fs@4.0.6(yaml@2.8.1)':
     dependencies:
       '@visulima/path': 2.0.5
@@ -31261,9 +31085,9 @@ snapshots:
   '@visulima/humanizer@1.2.2': {}
 >>>>>>> 721736f8b (chore: refactor storage documentation: Remove emoji from feature list in introduction.mdx for improved clarity and consistency.)
 
+=======
+>>>>>>> 0e4d0bf23 (chore: Update pnpm-lock.yaml and package.json to reflect dependency version changes, including upgrading @visulima/packem to 2.0.0-alpha.36 and removing deprecated memfs dependency. Refactor type definitions in test files for improved type safety and clarity.)
   '@visulima/humanizer@2.0.3': {}
-
-  '@visulima/inspector@1.0.24': {}
 
   '@visulima/is-ansi-color-supported@2.2.14': {}
 
@@ -31392,11 +31216,11 @@ snapshots:
     transitivePeerDependencies:
       - '@types/node'
 
-  '@visulima/packem-rollup@1.0.0-alpha.25(@swc/core@1.13.5)(@types/node@24.10.0)(esbuild@0.25.12)(picomatch@4.0.3)(rolldown@1.0.0-beta.50)(rollup@4.53.2)(sucrase@3.35.0)(typescript@5.9.3)(yaml@2.8.1)':
+  '@visulima/packem-rollup@1.0.0-alpha.27(@swc/core@1.13.5)(@types/node@24.10.0)(esbuild@0.25.12)(picomatch@4.0.3)(rolldown@1.0.0-beta.50)(rollup@4.53.2)(sucrase@3.35.0)(typescript@5.9.3)(yaml@2.8.1)':
     dependencies:
       '@babel/parser': 7.28.4
       '@rollup/plugin-alias': 5.1.1(rollup@4.53.2)
-      '@rollup/plugin-commonjs': 28.0.6(rollup@4.53.2)
+      '@rollup/plugin-commonjs': 29.0.0(rollup@4.53.2)
       '@rollup/plugin-dynamic-import-vars': 2.1.5(rollup@4.53.2)
       '@rollup/plugin-inject': 5.0.5(rollup@4.53.2)
       '@rollup/plugin-json': 6.1.0(rollup@4.53.2)
@@ -31413,7 +31237,7 @@ snapshots:
       cjs-module-lexer: 2.1.1
       clean-css: 5.3.3
       glob-parent: 6.0.2
-      html-minifier-next: 3.2.2
+      html-minifier-next: 4.1.1
       magic-string: 0.30.19
       mlly: 1.8.0
       oxc-parser: 0.93.0
@@ -31500,6 +31324,7 @@ snapshots:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   '@visulima/packem@2.0.0-alpha.37(0bbbca349d5c5bd398ca6feb54597b53)':
 =======
 =======
@@ -31527,17 +31352,25 @@ snapshots:
 =======
   '@visulima/packem@2.0.0-alpha.32(42b8ddc07cf03a36ec19430aed26ea73)':
 >>>>>>> 721736f8b (chore: refactor storage documentation: Remove emoji from feature list in introduction.mdx for improved clarity and consistency.)
+=======
+  '@visulima/packem@2.0.0-alpha.36(0dd42aac4e9609ce2e6fbbd0de9865bb)':
+>>>>>>> 0e4d0bf23 (chore: Update pnpm-lock.yaml and package.json to reflect dependency version changes, including upgrading @visulima/packem to 2.0.0-alpha.36 and removing deprecated memfs dependency. Refactor type definitions in test files for improved type safety and clarity.)
     dependencies:
       '@antfu/install-pkg': 1.1.0
       '@clack/prompts': 0.11.0
       '@rollup/pluginutils': 5.3.0(rollup@4.53.2)
 <<<<<<< HEAD
+<<<<<<< HEAD
       '@visulima/cerebro': 2.1.3(@bomb.sh/tab@0.0.9(cac@6.7.14)(citty@0.1.6)(commander@14.0.2))(@visulima/boxen@packages+boxen)(@visulima/find-cache-dir@2.0.4)(@visulima/pail@3.2.0(@opentelemetry/api@1.9.0)(rotating-file-stream@3.2.7))(github-slugger@2.0.0)
+=======
+      '@visulima/cerebro': 2.1.0(@bomb.sh/tab@0.0.9(cac@6.7.14)(citty@0.1.6)(commander@14.0.2))(@visulima/boxen@packages+boxen)(@visulima/find-cache-dir@2.0.4)(@visulima/pail@3.2.0(@opentelemetry/api@1.9.0)(@visulima/redact@packages+redact)(rotating-file-stream@3.2.7))(github-slugger@2.0.0)
+>>>>>>> 0e4d0bf23 (chore: Update pnpm-lock.yaml and package.json to reflect dependency version changes, including upgrading @visulima/packem to 2.0.0-alpha.36 and removing deprecated memfs dependency. Refactor type definitions in test files for improved type safety and clarity.)
       '@visulima/colorize': 1.4.27
       '@visulima/find-cache-dir': 2.0.4
       '@visulima/fs': 4.0.4(yaml@2.8.1)
       '@visulima/humanizer': 2.0.3
       '@visulima/package': 4.1.4(@types/node@24.10.0)
+<<<<<<< HEAD
       '@visulima/packem-rollup': 1.0.0-alpha.27(@swc/core@1.13.5)(@types/node@24.10.0)(esbuild@0.27.0)(picomatch@4.0.3)(rolldown@1.0.0-beta.50)(rollup@4.53.2)(sucrase@3.35.0)(typescript@5.9.3)(yaml@2.8.1)
       '@visulima/packem-share': 1.0.0-alpha.13(@types/node@24.10.0)(rollup@4.53.2)(yaml@2.8.1)
       '@visulima/pail': 3.2.0(@opentelemetry/api@1.9.0)(@visulima/redact@packages+redact)(rotating-file-stream@3.2.7)
@@ -31636,20 +31469,23 @@ snapshots:
       '@visulima/humanizer': 1.2.2
       '@visulima/package': 4.0.0(@types/node@24.10.0)
       '@visulima/packem-rollup': 1.0.0-alpha.25(@swc/core@1.13.5)(@types/node@24.10.0)(esbuild@0.25.12)(picomatch@4.0.3)(rolldown@1.0.0-beta.50)(rollup@4.53.2)(sucrase@3.35.0)(typescript@5.9.3)(yaml@2.8.1)
+=======
+      '@visulima/packem-rollup': 1.0.0-alpha.27(@swc/core@1.13.5)(@types/node@24.10.0)(esbuild@0.25.12)(picomatch@4.0.3)(rolldown@1.0.0-beta.50)(rollup@4.53.2)(sucrase@3.35.0)(typescript@5.9.3)(yaml@2.8.1)
+>>>>>>> 0e4d0bf23 (chore: Update pnpm-lock.yaml and package.json to reflect dependency version changes, including upgrading @visulima/packem to 2.0.0-alpha.36 and removing deprecated memfs dependency. Refactor type definitions in test files for improved type safety and clarity.)
       '@visulima/packem-share': 1.0.0-alpha.13(@types/node@24.10.0)(rollup@4.53.2)(yaml@2.8.1)
-      '@visulima/pail': 2.1.28(ai@5.0.92(zod@4.1.12))(rotating-file-stream@3.2.7)
+      '@visulima/pail': 3.2.0(@opentelemetry/api@1.9.0)(@visulima/redact@packages+redact)(rotating-file-stream@3.2.7)
       '@visulima/path': 1.4.0
       '@visulima/rollup-plugin-css': 1.0.0-alpha.7(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@csstools/postcss-slow-plugins@2.0.0(postcss@8.5.6))(@swc/core@1.13.5)(@tailwindcss/node@4.1.17)(@tailwindcss/oxide@4.1.17)(@types/node@24.10.0)(@visulima/css-style-inject@1.0.0-alpha.9)(cssnano@7.1.2(postcss@8.5.6))(esbuild@0.25.12)(icss-utils@5.1.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(postcss-load-config@6.0.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.20.6)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rollup@4.53.2)(sucrase@3.35.0)(typedoc-plugin-markdown@4.9.0(typedoc@0.28.14(typescript@5.9.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.14(typescript@5.9.3)))(typedoc@0.28.14(typescript@5.9.3))(typescript@5.9.3)(yaml@2.8.1)
-      '@visulima/source-map': 1.0.20
-      '@visulima/tabular': 2.0.2
-      '@visulima/tsconfig': 1.1.22(yaml@2.8.1)
+      '@visulima/source-map': 2.0.3
+      '@visulima/tabular': 3.1.1
+      '@visulima/tsconfig': 2.1.0(yaml@2.8.1)
       browserslist: 4.26.2
       cjs-module-lexer: 2.1.1
       clean-css: 5.3.3
       defu: 6.1.4
       fastest-levenshtein: 1.0.16
       hookable: 5.5.3
-      html-minifier-next: 3.2.2
+      html-minifier-next: 4.1.1
       jiti: 2.6.0
       magic-string: 0.30.19
       mlly: 1.8.0
@@ -31682,14 +31518,16 @@ snapshots:
       typedoc-plugin-rename-defaults: 0.7.3(typedoc@0.28.14(typescript@5.9.3))
       typescript: 5.9.3
     transitivePeerDependencies:
-      - '@75lb/nature'
+      - '@bomb.sh/tab'
       - '@csstools/css-parser-algorithms'
       - '@csstools/css-tokenizer'
       - '@csstools/postcss-slow-plugins'
+      - '@opentelemetry/api'
       - '@types/node'
+      - '@visulima/boxen'
       - '@visulima/css-style-inject'
       - '@visulima/redact'
-      - ai
+      - github-slugger
       - p-queue
       - rolldown
       - rotating-file-stream
@@ -31767,18 +31605,6 @@ snapshots:
       - rolldown
       - rotating-file-stream
       - yaml
-
-  '@visulima/pail@2.1.28(ai@5.0.92(zod@4.1.12))(rotating-file-stream@3.2.7)':
-    dependencies:
-      '@visulima/colorize': 1.4.23
-      '@visulima/error': 4.6.1(ai@5.0.92(zod@4.1.12))
-      '@visulima/fmt': 1.1.15
-      '@visulima/inspector': 1.0.24
-      safe-stable-stringify: 2.5.0
-    optionalDependencies:
-      rotating-file-stream: 3.2.7
-    transitivePeerDependencies:
-      - ai
 
   '@visulima/pail@3.2.0(@opentelemetry/api@1.9.0)(@visulima/redact@packages+redact)(rotating-file-stream@3.2.7)':
     dependencies:
@@ -31910,23 +31736,17 @@ snapshots:
       '@jridgewell/trace-mapping': 0.3.31
 
 <<<<<<< HEAD
+<<<<<<< HEAD
   '@visulima/tabular@3.1.2': {}
 
   '@visulima/tabular@3.1.3': {}
 =======
   '@visulima/tabular@2.0.2': {}
 
+=======
+>>>>>>> 0e4d0bf23 (chore: Update pnpm-lock.yaml and package.json to reflect dependency version changes, including upgrading @visulima/packem to 2.0.0-alpha.36 and removing deprecated memfs dependency. Refactor type definitions in test files for improved type safety and clarity.)
   '@visulima/tabular@3.1.1': {}
 >>>>>>> 721736f8b (chore: refactor storage documentation: Remove emoji from feature list in introduction.mdx for improved clarity and consistency.)
-
-  '@visulima/tsconfig@1.1.22(yaml@2.8.1)':
-    dependencies:
-      '@visulima/fs': 3.1.8(yaml@2.8.1)
-      '@visulima/path': 1.4.0
-      jsonc-parser: 3.3.1
-      resolve-pkg-maps: 1.0.0
-    transitivePeerDependencies:
-      - yaml
 
   '@visulima/tsconfig@1.2.0(yaml@2.8.1)':
     dependencies:
@@ -34913,7 +34733,7 @@ snapshots:
       - eslint-import-resolver-webpack
       - supports-color
 
-  eslint-config-standard-jsx@11.0.0(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint@8.57.0):
+  eslint-config-standard-jsx@11.0.0(eslint-plugin-react@7.37.5(eslint@9.39.1(jiti@2.6.1)))(eslint@8.57.0):
     dependencies:
       eslint: 8.57.0
       eslint-plugin-react: 7.37.5(eslint@8.57.0)
@@ -36532,10 +36352,6 @@ snapshots:
     dependencies:
       is-glob: 4.0.3
 
-  glob-to-regex.js@1.2.0(tslib@2.8.1):
-    dependencies:
-      tslib: 2.8.1
-
   glob-to-regexp@0.4.1: {}
 
   glob@10.4.5:
@@ -36938,15 +36754,6 @@ snapshots:
 
   html-escaper@2.0.2: {}
 
-  html-minifier-next@3.2.2:
-    dependencies:
-      change-case: 4.1.2
-      clean-css: 5.3.3
-      commander: 14.0.2
-      entities: 7.0.0
-      relateurl: 0.2.7
-      terser: 5.44.0
-
   html-minifier-next@4.1.1:
     dependencies:
       '@types/relateurl': 0.2.33
@@ -37039,8 +36846,6 @@ snapshots:
   humannames@1.0.5: {}
 
   husky@9.1.7: {}
-
-  hyperdyperid@1.2.0: {}
 
   iconv-lite@0.4.24:
     dependencies:
@@ -39064,15 +38869,6 @@ snapshots:
     dependencies:
       '@types/dom-mediacapture-transform': 0.1.11
       '@types/dom-webcodecs': 0.1.13
-
-  memfs@4.50.0:
-    dependencies:
-      '@jsonjoy.com/json-pack': 1.21.0(tslib@2.8.1)
-      '@jsonjoy.com/util': 1.9.0(tslib@2.8.1)
-      glob-to-regex.js: 1.2.0(tslib@2.8.1)
-      thingies: 2.5.0(tslib@2.8.1)
-      tree-dump: 1.1.0(tslib@2.8.1)
-      tslib: 2.8.1
 
   memoizee@0.4.17:
     dependencies:
@@ -42987,7 +42783,7 @@ snapshots:
     dependencies:
       eslint: 8.57.0
       eslint-config-standard: 17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.46.4(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3))(eslint@8.57.0))(eslint-plugin-n@15.7.0(eslint@8.57.0))(eslint-plugin-promise@6.4.0(eslint@8.57.0))(eslint@8.57.0)
-      eslint-config-standard-jsx: 11.0.0(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint@8.57.0)
+      eslint-config-standard-jsx: 11.0.0(eslint-plugin-react@7.37.5(eslint@9.39.1(jiti@2.6.1)))(eslint@8.57.0)
       eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.46.4(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.1(jiti@2.6.1))
       eslint-plugin-n: 15.7.0(eslint@8.57.0)
       eslint-plugin-promise: 6.4.0(eslint@8.57.0)
@@ -43775,10 +43571,6 @@ snapshots:
     dependencies:
       any-promise: 1.3.0
 
-  thingies@2.5.0(tslib@2.8.1):
-    dependencies:
-      tslib: 2.8.1
-
   thread-stream@3.1.0:
     dependencies:
       real-require: 0.2.0
@@ -43924,10 +43716,6 @@ snapshots:
       gopd: 1.2.0
       typedarray.prototype.slice: 1.0.3
       which-typed-array: 1.1.19
-
-  tree-dump@1.1.0(tslib@2.8.1):
-    dependencies:
-      tslib: 2.8.1
 
   tree-kill@1.2.2: {}
 

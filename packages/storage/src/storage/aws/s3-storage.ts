@@ -62,9 +62,9 @@ const PART_SIZE = 16 * 1024 * 1024;
  * ```
  */
 class S3Storage extends BaseStorage<S3File, FileReturn> {
-    public static override readonly name = "s3";
+    public static override readonly name: string = "s3";
 
-    public override checksumTypes = ["md5", "crc32", "crc32c", "sha1", "sha256"];
+    public override checksumTypes: string[] = ["md5", "crc32", "crc32c", "sha1", "sha256"];
 
     protected bucket: string;
 

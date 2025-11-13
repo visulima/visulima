@@ -43,7 +43,7 @@ export type ErrorResponses<T extends string = string> = {
  * Mapping of error codes to HttpError response objects.
  * @returns Map of error codes to standardized HTTP error responses
  */
-export const ErrorMap = (() => {
+export const ErrorMap: ErrorResponses<ERRORS> = (() => {
     const errors: Record<string, [number, string]> = {
         BadRequest: [400, "Bad request"],
         ChecksumMismatch: [460, "Checksum mismatch"],
@@ -70,7 +70,7 @@ export const ErrorMap = (() => {
         UnsupportedMediaType: [415, "Unsupported media type"],
     };
 
-    const errorMap: ErrorResponses = {};
+    const errorMap: ErrorResponses<ERRORS> = {};
 
     (Object.keys(errors) as ERRORS[]).forEach((code) => {
         const [statusCode, message] = errors[code] as [number, string];

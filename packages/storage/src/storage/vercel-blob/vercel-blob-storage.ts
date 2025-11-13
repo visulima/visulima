@@ -23,9 +23,9 @@ import VercelBlobFile from "./vercel-blob-file";
  * ```
  */
 class VercelBlobStorage extends BaseStorage<VercelBlobFile, FileReturn> {
-    public static override readonly name = "vercel-blob";
+    public static override readonly name: string = "vercel-blob";
 
-    public override checksumTypes = ["md5"];
+    public override checksumTypes: string[] = ["md5"];
 
     protected meta: MetaStorage<VercelBlobFile>;
 

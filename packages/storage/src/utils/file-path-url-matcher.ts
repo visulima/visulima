@@ -10,9 +10,10 @@ import { match } from "path-to-regexp";
  * // { uuid: "abc123", ext: "jpg", metadata: "metadata" }
  * ```
  */
-const filePathUrlMatcher = match<PathMatch>(["/:uuid", "/*path/:uuid.:ext/:metadata", "/*path/:uuid/:metadata", "/*path/:uuid.:ext", "/*path/:uuid"], {
-    decode: decodeURIComponent,
-});
+const filePathUrlMatcher: ReturnType<typeof match<PathMatch>> = match<PathMatch>(
+    ["/:uuid", "/*path/:uuid.:ext/:metadata", "/*path/:uuid/:metadata", "/*path/:uuid.:ext", "/*path/:uuid"],
+    { decode: decodeURIComponent },
+);
 
 /**
  * Parsed URL components from file path matching.

@@ -29,14 +29,14 @@ describe(VideoTransformer, () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
-        transformer = new VideoTransformer(mockStorage as any, {});
+        transformer = new VideoTransformer(mockStorage as import("../../src/storage/storage").BaseStorage, {});
     });
 
     describe("constructor", () => {
         it("should create transformer with default configuration", () => {
             expect.assertions(1);
 
-            const transformer = new VideoTransformer(mockStorage as any);
+            const transformer = new VideoTransformer(mockStorage as import("../../src/storage/storage").BaseStorage);
 
             expect(transformer).toBeInstanceOf(VideoTransformer);
         });
@@ -50,7 +50,7 @@ describe(VideoTransformer, () => {
                 maxVideoSize: 100 * 1024 * 1024,
             };
 
-            const transformer = new VideoTransformer(mockStorage as any, config);
+            const transformer = new VideoTransformer(mockStorage as import("../../src/storage/storage").BaseStorage, config);
 
             expect(transformer).toBeInstanceOf(VideoTransformer);
         });

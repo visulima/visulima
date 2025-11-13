@@ -8,7 +8,7 @@ describe("utils", () => {
     describe(Validator, () => {
         const validator = new Validator();
 
-        const size: Required<ValidatorConfig<any>> = {
+        const size: Required<ValidatorConfig<{ size: number }>> = {
             isValid(file) {
                 return file.size <= this.value;
             },

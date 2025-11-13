@@ -207,8 +207,8 @@ describe(DiskStorage, () => {
                 await storage.write({ id: metafile.id });
 
                 expect.fail("Expected write to reject");
-            } catch (error: any) {
-                expect(error).toHaveProperty("UploadErrorCode", "FileNotFound");
+            } catch (error: unknown) {
+                expect(error as Error & { UploadErrorCode?: string }).toHaveProperty("UploadErrorCode", "FileNotFound");
             } finally {
                 mockMetaGet.mockRestore();
             }
@@ -220,7 +220,7 @@ describe(DiskStorage, () => {
             // Mock the lazyWrite method to simulate a filesystem error
             const mockLazyWrite = vi.fn().mockResolvedValue([Number.NaN, ERRORS.FILE_ERROR]);
 
-            vi.spyOn(storage as any, "lazyWrite").mockImplementationOnce(mockLazyWrite);
+            vi.spyOn(storage as unknown as { lazyWrite: typeof mockLazyWrite }, "lazyWrite").mockImplementationOnce(mockLazyWrite);
 
             const write = storage.write({ ...metafile, body: readStream, start: 0 });
 
@@ -249,7 +249,7 @@ describe(DiskStorage, () => {
                 },
             });
 
-            const writePart: any = {
+            const writePart: import("../../../src/storage/utils/file").FilePart & { signal?: AbortSignal } = {
                 ...metafile,
                 body: bodyStream,
                 checksum: "test-checksum", // Add checksum so keepPartial is false and abort throws error
@@ -747,7 +747,7 @@ describe(DiskStorage, () => {
                     }),
                     signal,
                     start: 0, // Required for hasContent() to return true
-                } as any);
+                } as import("../../../src/storage/utils/file").FilePart & { signal?: AbortSignal });
 
                 // Advance timers to trigger abort
                 vi.advanceTimersByTime(5);
