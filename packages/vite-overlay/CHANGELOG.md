@@ -1,3 +1,15 @@
+## @visulima/vite-overlay [1.3.7](https://github.com/visulima/visulima/compare/@visulima/vite-overlay@1.3.6...@visulima/vite-overlay@1.3.7) (2025-11-13)
+
+### Bug Fixes
+
+* bump packem, to fix minified version of the code ([2a36ceb](https://github.com/visulima/visulima/commit/2a36ceb09251b0ca1178701a26547a871ed717a7))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 5.0.6
+* **@visulima/path:** upgraded to 2.0.5
+
 ## @visulima/vite-overlay [1.3.6](https://github.com/visulima/visulima/compare/@visulima/vite-overlay@1.3.5...@visulima/vite-overlay@1.3.6) (2025-11-12)
 
 ### Bug Fixes
