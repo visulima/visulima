@@ -1,3 +1,9 @@
+## @visulima/connect [3.0.27](https://github.com/visulima/visulima/compare/@visulima/connect@3.0.26...@visulima/connect@3.0.27) (2025-11-13)
+
+### Bug Fixes
+
+* bump packem, to fix minified version of the code ([2a36ceb](https://github.com/visulima/visulima/commit/2a36ceb09251b0ca1178701a26547a871ed717a7))
+
 ## @visulima/connect [3.0.26](https://github.com/visulima/visulima/compare/@visulima/connect@3.0.25...@visulima/connect@3.0.26) (2025-11-12)
 
 ### Bug Fixes
