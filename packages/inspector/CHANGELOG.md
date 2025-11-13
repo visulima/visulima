@@ -1,3 +1,14 @@
+## @visulima/inspector [1.0.30](https://github.com/visulima/visulima/compare/@visulima/inspector@1.0.29...@visulima/inspector@1.0.30) (2025-11-13)
+
+### Bug Fixes
+
+* bump packem, to fix minified version of the code ([2a36ceb](https://github.com/visulima/visulima/commit/2a36ceb09251b0ca1178701a26547a871ed717a7))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.29
+
 ## @visulima/inspector [1.0.29](https://github.com/visulima/visulima/compare/@visulima/inspector@1.0.28...@visulima/inspector@1.0.29) (2025-11-12)
 
 ### Bug Fixes
