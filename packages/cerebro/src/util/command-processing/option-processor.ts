@@ -92,27 +92,47 @@ export const mapNegatableOptions = <O extends OptionDefinition<unknown>, TLogger
     }
 
     const options = toolbox.options as IToolbox["options"];
-    const negatableKeys = Object.keys(options).filter((key) => key.startsWith("no-"));
+
+    // Build a map of negated options by their camelCase name
+    const negatedOptionMap = new Map<string, OptionDefinition<unknown>>();
+
+    for (const option of command.options) {
+        // Track options that start with "no-" by their camelCase name
+        if (option.name.startsWith("no-")) {
+            const camelCaseName = camelCase(option.name);
+
+            negatedOptionMap.set(camelCaseName, option as OptionDefinition<unknown>);
+        }
+    }
+
+    // Find keys in options that match negated options (camelCase keys)
+    const negatableKeys = Object.keys(options).filter((key) => negatedOptionMap.has(key));
 
     if (negatableKeys.length === 0) {
         return;
     }
 
-    const optionMapByName = new Map<string, OptionDefinition<unknown>>();
+    for (const negatedKey of negatableKeys) {
+        // Extract the non-negated key (e.g., "noClean" -> "clean")
+        // Remove "no" prefix and lowercase the first letter
+        const thirdChar = negatedKey.charAt(2);
 
-    for (const option of command.options) {
-        optionMapByName.set(option.name, option as OptionDefinition<unknown>);
-    }
-
-    for (const key of negatableKeys) {
-        const nonNegatedKey: string = key.replace(/^no-/, "");
-        const option = optionMapByName.get(nonNegatedKey);
-
-        if (option) {
-            option.__negated__ = true;
+        if (!thirdChar) {
+            continue;
         }
 
-        options[nonNegatedKey] = !options[key];
+        const nonNegatedKey = thirdChar.toLowerCase() + negatedKey.slice(3);
+        const negatedOption = negatedOptionMap.get(negatedKey);
+
+        if (negatedOption) {
+            negatedOption.__negated__ = true;
+        }
+
+        // Map the negated value to the non-negated key
+        options[nonNegatedKey] = !options[negatedKey];
+
+        // Remove the original negated key
+        Reflect.deleteProperty(options, negatedKey);
     }
 };
 

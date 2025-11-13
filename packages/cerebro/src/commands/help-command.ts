@@ -98,8 +98,14 @@ const printGeneralHelp = (logger: Console, runtime: ICli<Console>, commands: Map
     );
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any,sonarjs/cognitive-complexity
-const printCommandHelp = <OD extends OptionDefinition<any>>(logger: Console, runtime: ICli<Console>, commands: Map<string, ICommand<OD>>, name: string): void => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const printCommandHelp = <OD extends OptionDefinition<any>>(
+    logger: Console,
+    runtime: ICli<Console>,
+    commands: Map<string, ICommand<OD>>,
+    name: string,
+    // eslint-disable-next-line sonarjs/cognitive-complexity
+): void => {
     // Try to find command by name first
     let command = commands.get(name) as ICommand<OD> | undefined;
 
@@ -213,7 +219,12 @@ class HelpCommand<TLogger extends Console = Console> implements ICommand<OptionD
         }
 
         if (commandName === "help") {
-            printGeneralHelp(logger, runtime as unknown as ICli<Console>, this.commands as unknown as Map<string, ICommand>, typeof options?.group === "string" ? options.group : undefined);
+            printGeneralHelp(
+                logger,
+                runtime as unknown as ICli<Console>,
+                this.commands as unknown as Map<string, ICommand>,
+                typeof options?.group === "string" ? options.group : undefined,
+            );
         } else {
             printCommandHelp(logger, runtime as unknown as ICli<Console>, this.commands as unknown as Map<string, ICommand>, commandName as string);
         }

@@ -5,6 +5,7 @@ import { VERBOSITY_DEBUG, VERBOSITY_NORMAL, VERBOSITY_QUIET, VERBOSITY_VERBOSE }
 import defaultOptions from "./default-options";
 import CerebroError from "./errors/cerebro-error";
 import CommandNotFoundError from "./errors/command-not-found-error";
+import ConflictingOptionsError from "./errors/conflicting-options-error";
 import PluginManager from "./plugin-manager";
 import type { Cli as ICli, CliRunOptions, CommandSection as ICommandSection, RunCommandOptions } from "./types/cli";
 import type { Command as ICommand, OptionDefinition } from "./types/command";
@@ -223,6 +224,25 @@ export class Cli<T extends Console = Console> implements ICli<T> {
         toolbox.argv = this.#getArgv();
 
         const hasOptions = command.options && command.options.length > 0;
+
+        // Check for conflicts between negated and non-negated options before mapping
+        if (hasOptions && command.options) {
+            const negatedOptions = command.options.filter((option) => option.name.startsWith("no-"));
+
+            for (const negatedOption of negatedOptions) {
+                const nonNegatedName = negatedOption.name.replace("no-", "");
+                const negatedFlag = `--${negatedOption.name}`;
+                const nonNegatedFlag = `--${nonNegatedName}`;
+
+                // Check if both flags are present in the raw command arguments
+                const hasNegatedFlag = commandArguments.includes(negatedFlag);
+                const hasNonNegatedFlag = commandArguments.includes(nonNegatedFlag);
+
+                if (hasNegatedFlag && hasNonNegatedFlag) {
+                    throw new ConflictingOptionsError(nonNegatedName, negatedOption.name);
+                }
+            }
+        }
 
         if (hasOptions) {
             mapNegatableOptions(toolbox, command);

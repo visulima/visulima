@@ -130,7 +130,11 @@ export type PossibleEnvDefinition = EnvDefinition<boolean> | EnvDefinition<numbe
  * });
  * ```
  */
-export interface Command<O extends OptionDefinition<unknown> = OptionDefinition<unknown>, TLogger extends Console = Console, TContext extends IToolbox<TLogger> = IToolbox<TLogger>> {
+export interface Command<
+    O extends OptionDefinition<unknown> = OptionDefinition<unknown>,
+    TLogger extends Console = Console,
+    TContext extends IToolbox<TLogger> = IToolbox<TLogger>,
+> {
     /**
      * @internal
      */

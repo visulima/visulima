@@ -10,7 +10,10 @@ import findAlternatives from "../general/find-alternatives";
 /**
  * Validates unknown options and provides helpful suggestions.
  */
-const validateUnknownOptions = <OD extends OptionDefinition<unknown>, TLogger extends Console = Console>(commandArguments: CommandLineOptions, command: ICommand<OD, TLogger>): void => {
+const validateUnknownOptions = <OD extends OptionDefinition<unknown>, TLogger extends Console = Console>(
+    commandArguments: CommandLineOptions,
+    command: ICommand<OD, TLogger>,
+): void => {
     const errors: string[] = [];
 
     if (commandArguments._unknown) {
