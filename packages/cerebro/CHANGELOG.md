@@ -1,3 +1,9 @@
+## @visulima/cerebro [2.1.3](https://github.com/visulima/visulima/compare/@visulima/cerebro@2.1.2...@visulima/cerebro@2.1.3) (2025-11-13)
+
+### Bug Fixes
+
+* add support for conflicting options in CLI commands ([258b360](https://github.com/visulima/visulima/commit/258b360714f9341a3807da78b6f74d5cb61f3bc6))
+
 ## @visulima/cerebro [2.1.2](https://github.com/visulima/visulima/compare/@visulima/cerebro@2.1.1...@visulima/cerebro@2.1.2) (2025-11-13)
 
 ### Bug Fixes
