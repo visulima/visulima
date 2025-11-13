@@ -1,3 +1,14 @@
+## @visulima/command-line-args [1.0.4](https://github.com/visulima/visulima/compare/@visulima/command-line-args@1.0.3...@visulima/command-line-args@1.0.4) (2025-11-13)
+
+### Bug Fixes
+
+* bump packem, to fix minified version of the code ([2a36ceb](https://github.com/visulima/visulima/commit/2a36ceb09251b0ca1178701a26547a871ed717a7))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 5.0.6
+
 ## @visulima/command-line-args [1.0.3](https://github.com/visulima/visulima/compare/@visulima/command-line-args@1.0.2...@visulima/command-line-args@1.0.3) (2025-11-12)
 
 ### Bug Fixes
