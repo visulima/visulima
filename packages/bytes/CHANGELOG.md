@@ -1,3 +1,9 @@
+## @visulima/bytes [2.0.5](https://github.com/visulima/visulima/compare/@visulima/bytes@2.0.4...@visulima/bytes@2.0.5) (2025-11-13)
+
+### Bug Fixes
+
+* bump packem, to fix minified version of the code ([2a36ceb](https://github.com/visulima/visulima/commit/2a36ceb09251b0ca1178701a26547a871ed717a7))
+
 ## @visulima/bytes [2.0.4](https://github.com/visulima/visulima/compare/@visulima/bytes@2.0.3...@visulima/bytes@2.0.4) (2025-11-12)
 
 ### Bug Fixes
