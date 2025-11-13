@@ -1,3 +1,19 @@
+## @visulima/pail [3.2.2](https://github.com/visulima/visulima/compare/@visulima/pail@3.2.1...@visulima/pail@3.2.2) (2025-11-13)
+
+### Bug Fixes
+
+* bump packem, to fix minified version of the code ([2a36ceb](https://github.com/visulima/visulima/commit/2a36ceb09251b0ca1178701a26547a871ed717a7))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.29
+* **@visulima/error:** upgraded to 5.0.6
+* **@visulima/fmt:** upgraded to 1.1.21
+* **@visulima/inspector:** upgraded to 1.0.30
+* **@visulima/redact:** upgraded to 2.0.5
+* **@visulima/string:** upgraded to 2.0.6
+
 ## @visulima/pail [3.2.1](https://github.com/visulima/visulima/compare/@visulima/pail@3.2.0...@visulima/pail@3.2.1) (2025-11-12)
 
 ### Bug Fixes
