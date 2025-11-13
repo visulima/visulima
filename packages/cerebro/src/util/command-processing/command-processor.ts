@@ -50,13 +50,13 @@ const buildOptionMaps = <OD extends OptionDefinition<unknown>>(
  * @param extraOptions Additional options to merge into toolbox.
  * @returns The prepared toolbox instance.
  */
-export const prepareToolbox = <OD extends OptionDefinition<unknown>>(
-    command: ICommand<OD>,
+export const prepareToolbox = <OD extends OptionDefinition<unknown>, TLogger extends Console = Console>(
+    command: ICommand<OD, TLogger>,
     parsedArgs: CommandLineOptions,
     booleanValues: Record<string, unknown>,
     extraOptions: Record<string, unknown>,
-): IToolbox => {
-    const toolbox = new EmptyToolbox(command.name, command) as unknown as IToolbox;
+): IToolbox<TLogger> => {
+    const toolbox = new EmptyToolbox(command.name, command as unknown as ICommand) as unknown as IToolbox<TLogger>;
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const { _all, positionals } = parsedArgs;
@@ -89,8 +89,8 @@ export const prepareToolbox = <OD extends OptionDefinition<unknown>>(
  * @returns Object containing merged arguments, boolean values, and parsed args.
  * @throws {Error} When an argument has both multiple and lazyMultiple options.
  */
-export const processCommandArgs = <OD extends OptionDefinition<unknown>>(
-    command: ICommand<OD>,
+export const processCommandArgs = <OD extends OptionDefinition<unknown>, TLogger extends Console = Console>(
+    command: ICommand<OD, TLogger>,
     commandArguments: string[],
     defaultOptions: OptionDefinition<unknown>[],
 ): {
@@ -158,8 +158,8 @@ export const processCommandArgs = <OD extends OptionDefinition<unknown>>(
  * @param _commandArgs Parsed command arguments.
  * @returns Promise resolving to the command execution result.
  */
-export const executeCommand = async <OD extends OptionDefinition<unknown>>(
-    command: ICommand<OD>,
-    toolbox: IToolbox,
+export const executeCommand = async <OD extends OptionDefinition<unknown>, TLogger extends Console = Console>(
+    command: ICommand<OD, TLogger>,
+    toolbox: IToolbox<TLogger>,
     _commandArgs: CommandLineOptions,
 ): Promise<unknown> => await command.execute(toolbox);

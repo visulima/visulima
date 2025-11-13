@@ -6,7 +6,7 @@ import defaultOptions from "./default-options";
 import CerebroError from "./errors/cerebro-error";
 import CommandNotFoundError from "./errors/command-not-found-error";
 import PluginManager from "./plugin-manager";
-import type { Cli as ICli, CliRunOptions, CommandSection as ICommandSection, ExtendedLogger, RunCommandOptions } from "./types/cli";
+import type { Cli as ICli, CliRunOptions, CommandSection as ICommandSection, RunCommandOptions } from "./types/cli";
 import type { Command as ICommand, OptionDefinition } from "./types/command";
 import type { Plugin } from "./types/plugin";
 import type { Toolbox as IToolbox } from "./types/toolbox";
@@ -24,15 +24,15 @@ import { validateCommandName, validateNonEmptyString, validateObject, validateSt
 import { sanitizeArguments } from "./util/security";
 
 // eslint-disable-next-line regexp/no-unused-capturing-group
-const OPTION_REGEX_SHORT = /^-([^\d-])$/;
+const OPTION_REGEX_SHORT: RegExp = /^-([^\d-])$/;
 // eslint-disable-next-line regexp/no-unused-capturing-group
-const OPTION_REGEX_LONG = /^--(\S+)/;
+const OPTION_REGEX_LONG: RegExp = /^--(\S+)/;
 // eslint-disable-next-line regexp/no-unused-capturing-group
-const OPTION_REGEX_COMBINED = /^-([^\d-]{2,})$/;
+const OPTION_REGEX_COMBINED: RegExp = /^-([^\d-]{2,})$/;
 
 const isOption = (argument: string): boolean => OPTION_REGEX_SHORT.test(argument) || OPTION_REGEX_LONG.test(argument) || OPTION_REGEX_COMBINED.test(argument);
 
-export type CliOptions<T extends ExtendedLogger = ExtendedLogger> = {
+export type CliOptions<T extends Console = Console> = {
     argv?: ReadonlyArray<string>;
     cwd?: string;
     logger?: T;
@@ -40,7 +40,7 @@ export type CliOptions<T extends ExtendedLogger = ExtendedLogger> = {
     packageVersion?: string;
 };
 
-export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
+export class Cli<T extends Console = Console> implements ICli<T> {
     readonly #logger: T;
 
     readonly #options: CliOptions<T>;
@@ -55,9 +55,9 @@ export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
 
     readonly #packageName: string | undefined;
 
-    #pluginManager?: PluginManager;
+    #pluginManager?: PluginManager<T>;
 
-    readonly #commands: Map<string, ICommand>;
+    readonly #commands: Map<string, ICommand<OptionDefinition<unknown>, T>>;
 
     /** Map of command path keys to full command paths for nested command lookup */
     readonly #commandPaths: Map<string, string[]>;
@@ -66,7 +66,7 @@ export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
      * Map of commands keyed by their full path string (e.g., "deploy staging")
      * This allows correct resolution when different paths share the same leaf name
      */
-    readonly #commandsByPath: Map<string, ICommand>;
+    readonly #commandsByPath: Map<string, ICommand<OptionDefinition<unknown>, T>>;
 
     #defaultCommand: string;
 
@@ -195,7 +195,7 @@ export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
      * Common command execution logic shared between run() and runCommand().
      */
     #executeCommandInternal(
-        command: ICommand,
+        command: ICommand<OptionDefinition<unknown>, T>,
         commandArguments: string[],
         extraOptions: Record<string, unknown>,
         pathKey: string,
@@ -204,7 +204,7 @@ export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
         booleanValues: Record<string, unknown>;
         commandArgs: CommandLineOptions;
         parsedArgs: CommandLineOptions;
-        toolbox: IToolbox;
+        toolbox: IToolbox<T>;
     } {
         this.#logger.debug(`command '${pathKey}' found, parsing command args: ${commandArguments.join(", ")}`);
 
@@ -217,9 +217,9 @@ export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
 
         validateRequiredOptions(arguments_, commandArgs, command);
 
-        const toolbox = prepareToolbox(command, parsedArgs, booleanValues, extraOptions);
+        const toolbox = prepareToolbox<OptionDefinition<unknown>, T>(command, parsedArgs, booleanValues, extraOptions);
 
-        toolbox.runtime = this as ICli;
+        toolbox.runtime = this as ICli<T>;
         toolbox.argv = this.#getArgv();
 
         const hasOptions = command.options && command.options.length > 0;
@@ -325,9 +325,9 @@ export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
         this.#defaultCommand = "help";
         this.#commandSection = {};
 
-        this.#commands = new Map<string, ICommand>();
+        this.#commands = new Map<string, ICommand<OptionDefinition<unknown>, T>>();
         this.#commandPaths = new Map<string, string[]>();
-        this.#commandsByPath = new Map<string, ICommand>();
+        this.#commandsByPath = new Map<string, ICommand<OptionDefinition<unknown>, T>>();
     }
 
     /**
@@ -417,7 +417,7 @@ export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
      * ```
      */
     // eslint-disable-next-line sonarjs/cognitive-complexity
-    public addCommand<OD extends OptionDefinition<unknown> = OptionDefinition<unknown>>(command: ICommand<OD>): this {
+    public addCommand<OD extends OptionDefinition<unknown> = OptionDefinition<unknown>>(command: ICommand<OD, T>): this {
         // Validate command input
         validateObject(command, "Command");
         validateCommandName(command.name);
@@ -465,7 +465,7 @@ export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
             }
         }
 
-        validateDuplicateOptions(command);
+        validateDuplicateOptions(command as unknown as ICommand<OptionDefinition<unknown>, Console>);
         addNegatableOptions(command as { name: string; options?: OptionDefinition<unknown>[] });
         processOptionNames(command as { options?: OptionDefinition<unknown>[] });
 
@@ -523,7 +523,7 @@ export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
      * });
      * ```
      */
-    public addPlugin(plugin: Plugin): this {
+    public addPlugin(plugin: Plugin<T>): this {
         this.getPluginManager().register(plugin);
 
         return this;
@@ -533,7 +533,7 @@ export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
      * Gets the plugin manager instance for advanced plugin management.
      * @returns The plugin manager instance
      */
-    public getPluginManager(): PluginManager {
+    public getPluginManager(): PluginManager<T> {
         if (this.#pluginManager) {
             return this.#pluginManager;
         }
@@ -578,7 +578,7 @@ export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
      * Gets all registered commands.
      * @returns A map of command names to command definitions
      */
-    public getCommands(): Map<string, ICommand> {
+    public getCommands(): Map<string, ICommand<OptionDefinition<unknown>, T>> {
         return this.#commands;
     }
 
@@ -637,7 +637,7 @@ export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
         const { autoDispose = true, shouldExitProcess = true, ...otherExtraOptions } = extraOptions;
 
         if (!this.#commands.has("help")) {
-            this.addCommand(new HelpCommand(this.#commands));
+            this.addCommand(new HelpCommand<T>(this.#commands));
         }
 
         const commandNames = this.#getCommandNames();
@@ -725,7 +725,7 @@ export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
         const pathKey = getCommandPathKey(parsedCommandPath);
         const storedPath = this.#commandPaths.get(pathKey);
 
-        let command: ICommand | undefined;
+        let command: ICommand<OptionDefinition<unknown>, T> | undefined;
 
         if (storedPath) {
             command = this.#commandsByPath.get(pathKey);
@@ -764,7 +764,7 @@ export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
         try {
             if (!this.#pluginsInitialized && pluginManager.hasPlugins()) {
                 await pluginManager.init({
-                    cli: this as ICli,
+                    cli: this as ICli<T>,
                     cwd: this.#cwd,
                     logger: this.#logger,
                 });
@@ -772,9 +772,9 @@ export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
                 this.#pluginsInitialized = true;
             }
 
-            await pluginManager.executeLifecycle("execute", toolbox);
+            await pluginManager.executeLifecycle("execute", toolbox as IToolbox<T>);
 
-            await pluginManager.executeLifecycle("beforeCommand", toolbox);
+            await pluginManager.executeLifecycle("beforeCommand", toolbox as IToolbox<T>);
 
             let result: unknown;
 
@@ -798,11 +798,11 @@ export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
                 result = await executeCommand(command, toolbox, commandArgs);
             }
 
-            await pluginManager.executeLifecycle("afterCommand", toolbox, result);
+            await pluginManager.executeLifecycle("afterCommand", toolbox as IToolbox<T>, result);
 
             return shouldExitProcess ? exitProcess(0) : undefined;
         } catch (error) {
-            await pluginManager.executeErrorHandlers(error as Error, toolbox);
+            await pluginManager.executeErrorHandlers(error as Error, toolbox as IToolbox<T>);
 
             throw error;
         } finally {
@@ -845,7 +845,7 @@ export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
         const pathKey = getCommandPathKey(commandPath);
         const storedPath = this.#commandPaths.get(pathKey);
 
-        const command: ICommand | undefined = storedPath ? this.#commandsByPath.get(pathKey) : this.#commands.get(commandName);
+        const command: ICommand<OptionDefinition<unknown>, T> | undefined = storedPath ? this.#commandsByPath.get(pathKey) : this.#commands.get(commandName);
 
         if (!command) {
             const allCommandPaths = this.#getAllCommandPaths();
@@ -870,7 +870,7 @@ export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
         try {
             if (!this.#pluginsInitialized && pluginManager.hasPlugins()) {
                 await pluginManager.init({
-                    cli: this as ICli,
+                    cli: this as ICli<T>,
                     cwd: this.#cwd,
                     logger: this.#logger,
                 });
@@ -878,9 +878,9 @@ export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
                 this.#pluginsInitialized = true;
             }
 
-            await pluginManager.executeLifecycle("execute", toolbox);
+            await pluginManager.executeLifecycle("execute", toolbox as IToolbox<T>);
 
-            await pluginManager.executeLifecycle("beforeCommand", toolbox);
+            await pluginManager.executeLifecycle("beforeCommand", toolbox as IToolbox<T>);
 
             let result: unknown;
 
@@ -904,11 +904,11 @@ export class Cli<T extends ExtendedLogger = ExtendedLogger> implements ICli {
                 result = await executeCommand(command, toolbox, commandArgs);
             }
 
-            await pluginManager.executeLifecycle("afterCommand", toolbox, result);
+            await pluginManager.executeLifecycle("afterCommand", toolbox as IToolbox<T>, result);
 
             return result;
         } catch (error) {
-            await pluginManager.executeErrorHandlers(error as Error, toolbox);
+            await pluginManager.executeErrorHandlers(error as Error, toolbox as IToolbox<T>);
 
             throw error;
         }

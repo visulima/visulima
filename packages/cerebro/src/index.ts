@@ -1,6 +1,6 @@
 import type { CliOptions } from "./cli";
 import { Cli } from "./cli";
-import type { ExtendedLogger, VERBOSITY_LEVEL } from "./types/cli";
+import type { VERBOSITY_LEVEL } from "./types/cli";
 
 declare global {
     // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -87,7 +87,7 @@ declare namespace NodeJS {
 export type { CliOptions } from "./cli";
 export { Cli as Cerebro } from "./cli";
 export { VERBOSITY_DEBUG, VERBOSITY_NORMAL, VERBOSITY_QUIET, VERBOSITY_VERBOSE } from "./constants";
-export type { Cli, CliRunOptions, ExtendedLogger, OutputType, RunCommandOptions, VERBOSITY_LEVEL } from "./types/cli";
+export type { Cli, CliRunOptions, OutputType, RunCommandOptions, VERBOSITY_LEVEL } from "./types/cli";
 export type { ArgumentDefinition, Command, EnvDefinition, OptionDefinition } from "./types/command";
 export type { CreateEnv, CreateOptions, OptionNameToCamelCase } from "./types/option-types";
 export type { Plugin, PluginContext } from "./types/plugin";
@@ -112,5 +112,5 @@ export { VisulimaError } from "@visulima/error";
  * });
  * ```
  */
-export const createCerebro = <T extends ExtendedLogger = ExtendedLogger>(name: string, options?: CliOptions<T>): InstanceType<typeof Cli<T>> =>
+export const createCerebro = <T extends Console = Console>(name: string, options?: CliOptions<T>): InstanceType<typeof Cli<T>> =>
     new Cli<T>(name, options);

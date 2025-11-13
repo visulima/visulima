@@ -73,8 +73,8 @@ export const addNegatableOptions = <OD extends OptionDefinition<unknown>>(comman
  * @param command The command object with option definitions
  * @param command.options The command options array
  */
-export const mapNegatableOptions = <O extends OptionDefinition<unknown>>(
-    toolbox: IToolbox,
+export const mapNegatableOptions = <O extends OptionDefinition<unknown>, TLogger extends Console = Console>(
+    toolbox: IToolbox<TLogger>,
     command: {
         options?: ReadonlyArray<
             | O
@@ -124,8 +124,8 @@ export const mapNegatableOptions = <O extends OptionDefinition<unknown>>(
  * @param command.options The command options array
  */
 
-export const mapImpliedOptions = <O extends OptionDefinition<unknown>>(
-    toolbox: IToolbox,
+export const mapImpliedOptions = <O extends OptionDefinition<unknown>, TLogger extends Console = Console>(
+    toolbox: IToolbox<TLogger>,
     command: {
         options?: ReadonlyArray<
             | O

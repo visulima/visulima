@@ -10,7 +10,7 @@ import findAlternatives from "../general/find-alternatives";
 /**
  * Validates unknown options and provides helpful suggestions.
  */
-const validateUnknownOptions = <OD extends OptionDefinition<unknown>>(commandArguments: CommandLineOptions, command: ICommand<OD>): void => {
+const validateUnknownOptions = <OD extends OptionDefinition<unknown>, TLogger extends Console = Console>(commandArguments: CommandLineOptions, command: ICommand<OD, TLogger>): void => {
     const errors: string[] = [];
 
     if (commandArguments._unknown) {
@@ -45,10 +45,10 @@ const validateUnknownOptions = <OD extends OptionDefinition<unknown>>(commandArg
  * Validates that all required options are present.
  * Uses pre-computed required options metadata from command registration for performance.
  */
-export const validateRequiredOptions = <OD extends OptionDefinition<unknown>>(
+export const validateRequiredOptions = <OD extends OptionDefinition<unknown>, TLogger extends Console = Console>(
     arguments_: PossibleOptionDefinition<OD>[],
     commandArguments: CommandLineOptions,
-    command: ICommand<OD>,
+    command: ICommand<OD, TLogger>,
 ): void => {
     const missingOptions = command.__requiredOptions__
         ? listMissingArguments(command.__requiredOptions__, commandArguments, true)
@@ -70,10 +70,10 @@ export const validateRequiredOptions = <OD extends OptionDefinition<unknown>>(
  * Validates for conflicting options.
  * Uses pre-computed conflict metadata from command registration for performance.
  */
-export const validateConflictingOptions = <OD extends OptionDefinition<unknown>>(
+export const validateConflictingOptions = <OD extends OptionDefinition<unknown>, TLogger extends Console = Console>(
     arguments_: PossibleOptionDefinition<OD>[],
     commandArguments: IToolbox["options"],
-    command: ICommand<OD>,
+    command: ICommand<OD, TLogger>,
 ): void => {
     const conflicts = command.__conflictingOptions__ ?? arguments_.filter((argument) => argument.conflicts !== undefined);
 
