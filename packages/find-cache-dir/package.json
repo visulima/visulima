@@ -1,6 +1,6 @@
 {
     "name": "@visulima/find-cache-dir",
-    "version": "2.0.5",
+    "version": "2.0.6",
     "description": "Finds the common standard cache directory",
     "keywords": [
         "visulima",
@@ -72,9 +72,9 @@
         "@secretlint/secretlint-rule-preset-recommend": "^11.2.5",
         "@total-typescript/ts-reset": "^0.6.1",
         "@types/node": "24.10.0",
-        "@visulima/fs": "4.0.5",
+        "@visulima/fs": "4.0.6",
         "@visulima/packem": "2.0.0-alpha.37",
-        "@visulima/path": "2.0.4",
+        "@visulima/path": "2.0.5",
         "@vitest/coverage-v8": "^4.0.8",
         "@vitest/ui": "^4.0.8",
         "conventional-changelog-conventionalcommits": "9.1.0",
