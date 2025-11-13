@@ -397,13 +397,13 @@ importers:
         specifier: 24.10.0
         version: 24.10.0
       '@visulima/colorize':
-        specifier: 1.4.28
+        specifier: 1.4.29
         version: link:../colorize
       '@visulima/packem':
         specifier: 2.0.0-alpha.37
         version: 2.0.0-alpha.37(0bbbca349d5c5bd398ca6feb54597b53)
       '@visulima/path':
-        specifier: 2.0.4
+        specifier: 2.0.5
         version: link:../path
       '@vitest/coverage-v8':
         specifier: ^4.0.8
@@ -469,16 +469,16 @@ importers:
   packages/api-platform:
     dependencies:
       '@visulima/connect':
-        specifier: 3.0.26
+        specifier: 3.0.27
         version: link:../connect
       '@visulima/fs':
-        specifier: 4.0.5
+        specifier: 4.0.6
         version: link:../fs
       '@visulima/jsdoc-open-api':
-        specifier: 2.0.93
+        specifier: 2.0.94
         version: link:../jsdoc-open-api
       '@visulima/path':
-        specifier: 2.0.4
+        specifier: 2.0.5
         version: link:../path
       accepts:
         specifier: ^1.3.8
@@ -590,7 +590,7 @@ importers:
         specifier: ^5.28.5
         version: 5.28.5(@swc/core@1.13.5)(esbuild@0.25.12)
       '@visulima/crud':
-        specifier: 2.0.45
+        specifier: 2.0.46
         version: link:../crud
       '@vitest/coverage-v8':
         specifier: ^4.0.8
@@ -746,16 +746,16 @@ importers:
         specifier: 24.10.0
         version: 24.10.0
       '@visulima/colorize':
-        specifier: 1.4.28
+        specifier: 1.4.29
         version: link:../colorize
       '@visulima/packem':
         specifier: 2.0.0-alpha.37
         version: 2.0.0-alpha.37(0bbbca349d5c5bd398ca6feb54597b53)
       '@visulima/path':
-        specifier: 2.0.4
+        specifier: 2.0.5
         version: link:../path
       '@visulima/string':
-        specifier: 2.0.5
+        specifier: 2.0.6
         version: link:../string
       '@vitest/coverage-v8':
         specifier: ^4.0.8
@@ -890,10 +890,10 @@ importers:
   packages/cerebro:
     dependencies:
       '@visulima/colorize':
-        specifier: 1.4.28
+        specifier: 1.4.29
         version: link:../colorize
       '@visulima/tabular':
-        specifier: 3.1.2
+        specifier: 3.1.3
         version: link:../tabular
       fastest-levenshtein:
         specifier: ^1.0.16
@@ -924,28 +924,28 @@ importers:
         specifier: 24.10.0
         version: 24.10.0
       '@visulima/boxen':
-        specifier: 2.0.9
+        specifier: 2.0.10
         version: link:../boxen
       '@visulima/command-line-args':
-        specifier: 1.0.3
+        specifier: 1.0.4
         version: link:../command-line-args
       '@visulima/error':
-        specifier: 5.0.5
+        specifier: 5.0.6
         version: link:../error
       '@visulima/find-cache-dir':
-        specifier: 2.0.5
+        specifier: 2.0.6
         version: link:../find-cache-dir
       '@visulima/packem':
         specifier: 2.0.0-alpha.37
         version: 2.0.0-alpha.37(0bbbca349d5c5bd398ca6feb54597b53)
       '@visulima/pail':
-        specifier: 3.2.1
+        specifier: 3.2.2
         version: link:../pail
       '@visulima/path':
-        specifier: 2.0.4
+        specifier: 2.0.5
         version: link:../path
       '@visulima/string':
-        specifier: 2.0.5
+        specifier: 2.0.6
         version: link:../string
       '@vitest/coverage-v8':
         specifier: ^4.0.8
@@ -1086,7 +1086,7 @@ importers:
   packages/colorize:
     dependencies:
       '@visulima/is-ansi-color-supported':
-        specifier: 2.3.4
+        specifier: 2.3.5
         version: link:../is-ansi-color-supported
     devDependencies:
       '@anolilab/eslint-config':
@@ -1246,7 +1246,7 @@ importers:
         specifier: 24.10.0
         version: 24.10.0
       '@visulima/error':
-        specifier: 5.0.5
+        specifier: 5.0.6
         version: link:../error
       '@visulima/packem':
         specifier: 2.0.0-alpha.37
@@ -1428,10 +1428,10 @@ importers:
   packages/crud:
     dependencies:
       '@visulima/pagination':
-        specifier: 4.0.4
+        specifier: 4.0.5
         version: link:../pagination
       '@visulima/prisma-dmmf-transformer':
-        specifier: 2.0.36
+        specifier: 2.0.37
         version: link:../prisma-dmmf-transformer
       http-errors:
         specifier: ^2.0.0
@@ -1700,7 +1700,7 @@ importers:
         specifier: 2.0.0-alpha.37
         version: 2.0.0-alpha.37(0bbbca349d5c5bd398ca6feb54597b53)
       '@visulima/path':
-        specifier: 2.0.4
+        specifier: 2.0.5
         version: link:../path
       '@vitest/coverage-v8':
         specifier: ^4.0.8
@@ -1748,10 +1748,10 @@ importers:
         specifier: ^2.2.4
         version: 2.2.4
       '@visulima/boxen':
-        specifier: 2.0.9
+        specifier: 2.0.10
         version: link:../boxen
       '@visulima/error':
-        specifier: 5.0.5
+        specifier: 5.0.6
         version: link:../error
       http-errors:
         specifier: ^2.0.0
@@ -1887,13 +1887,13 @@ importers:
         specifier: 24.10.0
         version: 24.10.0
       '@visulima/fs':
-        specifier: 4.0.5
+        specifier: 4.0.6
         version: link:../fs
       '@visulima/packem':
         specifier: 2.0.0-alpha.37
         version: 2.0.0-alpha.37(0bbbca349d5c5bd398ca6feb54597b53)
       '@visulima/path':
-        specifier: 2.0.4
+        specifier: 2.0.5
         version: link:../path
       '@vitest/coverage-v8':
         specifier: ^4.0.8
@@ -1998,7 +1998,7 @@ importers:
   packages/fs:
     dependencies:
       '@visulima/path':
-        specifier: 2.0.4
+        specifier: 2.0.5
         version: link:../path
     devDependencies:
       '@anolilab/eslint-config':
@@ -2020,7 +2020,7 @@ importers:
         specifier: 24.10.0
         version: 24.10.0
       '@visulima/error':
-        specifier: 5.0.5
+        specifier: 5.0.6
         version: link:../error
       '@visulima/packem':
         specifier: 2.0.0-alpha.37
@@ -2113,8 +2113,6 @@ importers:
       vitest:
         specifier: ^4.0.8
         version: 4.0.8(@types/debug@4.1.12)(@types/node@24.10.0)(@vitest/ui@4.0.8)(jiti@2.6.1)(jsdom@27.1.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.0)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
-
-  packages/fs/__bench__/fixtures/a/b: {}
 
   packages/fs/__fixtures__/find-up: {}
 
@@ -2356,7 +2354,7 @@ importers:
         specifier: 24.10.0
         version: 24.10.0
       '@visulima/colorize':
-        specifier: 1.4.28
+        specifier: 1.4.29
         version: link:../colorize
       '@visulima/packem':
         specifier: 2.0.0-alpha.37
@@ -2544,7 +2542,7 @@ importers:
         specifier: ^5.28.5
         version: 5.28.5(@swc/core@1.13.5)
       '@visulima/fs':
-        specifier: 4.0.5
+        specifier: 4.0.6
         version: link:../fs
       '@vitest/coverage-v8':
         specifier: ^4.0.8
@@ -2698,7 +2696,7 @@ importers:
         specifier: ^3.15.0
         version: 3.15.0
       '@visulima/error':
-        specifier: 5.0.5
+        specifier: 5.0.6
         version: link:../error
       ai:
         specifier: ^4.0.0 || ^5.0.0
@@ -2750,7 +2748,7 @@ importers:
         specifier: 2.0.0-alpha.37
         version: 2.0.0-alpha.37(0bbbca349d5c5bd398ca6feb54597b53)
       '@visulima/path':
-        specifier: 2.0.4
+        specifier: 2.0.5
         version: link:../path
       '@vitest/coverage-v8':
         specifier: ^4.0.8
@@ -2859,10 +2857,10 @@ importers:
         specifier: ^5.1.20
         version: 5.1.20(@types/node@24.10.0)
       '@visulima/fs':
-        specifier: 4.0.5
+        specifier: 4.0.6
         version: link:../fs
       '@visulima/path':
-        specifier: 2.0.4
+        specifier: 2.0.5
         version: link:../path
       json5:
         specifier: ^2.2.3
@@ -3043,7 +3041,7 @@ importers:
   packages/pail:
     dependencies:
       '@visulima/colorize':
-        specifier: 1.4.28
+        specifier: 1.4.29
         version: link:../colorize
     devDependencies:
       '@anolilab/eslint-config':
@@ -3074,22 +3072,22 @@ importers:
         specifier: 24.10.0
         version: 24.10.0
       '@visulima/error':
-        specifier: 5.0.5
+        specifier: 5.0.6
         version: link:../error
       '@visulima/fmt':
-        specifier: 1.1.20
+        specifier: 1.1.21
         version: link:../fmt
       '@visulima/inspector':
-        specifier: 1.0.29
+        specifier: 1.0.30
         version: link:../inspector
       '@visulima/packem':
         specifier: 2.0.0-alpha.37
-        version: 2.0.0-alpha.37(9977623c185956010d12d01e22ebacdd)
+        version: 2.0.0-alpha.37(674539ad26bcad2f56a44ac9111ffc18)
       '@visulima/redact':
-        specifier: 2.0.4
+        specifier: 2.0.5
         version: link:../redact
       '@visulima/string':
-        specifier: 2.0.5
+        specifier: 2.0.6
         version: link:../string
       '@vitest/coverage-v8':
         specifier: ^4.0.8
@@ -3548,7 +3546,7 @@ importers:
         specifier: 2.0.0-alpha.37
         version: 2.0.0-alpha.37(0bbbca349d5c5bd398ca6feb54597b53)
       '@visulima/path':
-        specifier: 2.0.4
+        specifier: 2.0.5
         version: link:../path
       '@vitest/coverage-v8':
         specifier: ^4.0.8
@@ -3611,7 +3609,7 @@ importers:
         specifier: 24.10.0
         version: 24.10.0
       '@visulima/colorize':
-        specifier: 1.4.28
+        specifier: 1.4.29
         version: link:../colorize
       '@visulima/packem':
         specifier: 2.0.0-alpha.37
@@ -3755,13 +3753,13 @@ importers:
         specifier: 24.10.0
         version: 24.10.0
       '@visulima/colorize':
-        specifier: 1.4.28
+        specifier: 1.4.29
         version: link:../colorize
       '@visulima/packem':
         specifier: 2.0.0-alpha.37
         version: 2.0.0-alpha.37(0bbbca349d5c5bd398ca6feb54597b53)
       '@visulima/string':
-        specifier: 2.0.5
+        specifier: 2.0.6
         version: link:../string
       '@vitest/coverage-v8':
         specifier: ^4.0.8
@@ -3842,10 +3840,10 @@ importers:
   packages/tsconfig:
     dependencies:
       '@visulima/fs':
-        specifier: 4.0.5
+        specifier: 4.0.6
         version: link:../fs
       '@visulima/path':
-        specifier: 2.0.4
+        specifier: 2.0.5
         version: link:../path
       jsonc-parser:
         specifier: ^3.3.1
@@ -3979,7 +3977,7 @@ importers:
         specifier: 3.15.0
         version: 3.15.0
       '@visulima/error':
-        specifier: 5.0.5
+        specifier: 5.0.6
         version: link:../error
       fastest-levenshtein:
         specifier: ^1.0.16
@@ -4037,7 +4035,7 @@ importers:
         specifier: 2.0.0-alpha.37
         version: 2.0.0-alpha.37(0bbbca349d5c5bd398ca6feb54597b53)
       '@visulima/path':
-        specifier: 2.0.4
+        specifier: 2.0.5
         version: link:../path
       '@vitest/coverage-v8':
         specifier: ^4.0.8
@@ -9440,8 +9438,8 @@ packages:
       yaml:
         optional: true
 
-  '@visulima/fs@4.0.5':
-    resolution: {integrity: sha512-6JquGA30lfYx3kWIyHZ86HMVw2KIkLf8Mz9PmVMGgkQS6d3rrgAqqZc1Tf7m/cgNt3TEmBGW5yp58mSKmP6CQg==}
+  '@visulima/fs@4.0.6':
+    resolution: {integrity: sha512-jabaGZ3m78ROqhe9tJN6zT1V2JX1oM9pJrAQA9SagkPImgW/FjLYul1zcXqu4CvcS3B6pelM1eui/oWRrOYPkw==}
     engines: {node: '>=20.19 <=25.x'}
     os: [darwin, linux, win32]
     peerDependencies:
@@ -9625,8 +9623,8 @@ packages:
     engines: {node: '>=20.19 <=25.x'}
     os: [darwin, linux, win32]
 
-  '@visulima/path@2.0.4':
-    resolution: {integrity: sha512-zReNsd29FsFAESO7o0BZPJaC9z5cMhQeRdCzgY+hc9pma6VPGyQzEprNQbQNNxDnpM82ct1hjdOHwMujgXKK8Q==}
+  '@visulima/path@2.0.5':
+    resolution: {integrity: sha512-DBQe4IeEn1Yx03HQUlxog4sDJEQiVKnr2Kdm1acK6CgdcNN0fveoTfSvPsrxTKmMqdTgBbvB6UMUFh53cV+jgg==}
     engines: {node: '>=20.19 <=25.x'}
     os: [darwin, linux, win32]
 
@@ -9726,6 +9724,10 @@ packages:
 
   '@visulima/tabular@3.1.2':
     resolution: {integrity: sha512-/C6JgnAvTKY47DhqEWdU42phCnWzsPiy1NOGvuu6/KiZkyibCUXIUzY76GGbzanxuGLxCaGOfhpJZvemXVkB4A==}
+    engines: {node: '>=20.19 <=25.x'}
+
+  '@visulima/tabular@3.1.3':
+    resolution: {integrity: sha512-egA4Zh+iP94W8Aj9HCVvtyXAwgZATVvnNEPZj3zgx2WqM7HCmKfMhRFwlGIeuBYFT0pR/5D8xQChc0j4gQL2/Q==}
     engines: {node: '>=20.19 <=25.x'}
 
   '@visulima/tsconfig@1.2.0':
@@ -20630,8 +20632,8 @@ snapshots:
 
   '@anolilab/rc@2.0.5(yaml@2.8.1)':
     dependencies:
-      '@visulima/fs': 4.0.5(yaml@2.8.1)
-      '@visulima/path': 2.0.4
+      '@visulima/fs': 4.0.6(yaml@2.8.1)
+      '@visulima/path': 2.0.5
       ini: 6.0.0
       ts-deepmerge: 7.0.3
     transitivePeerDependencies:
@@ -20640,8 +20642,8 @@ snapshots:
   '@anolilab/semantic-release-clean-package-json@3.0.5(yaml@2.8.1)':
     dependencies:
       '@semantic-release/error': 4.0.0
-      '@visulima/fs': 4.0.5(yaml@2.8.1)
-      '@visulima/path': 2.0.4
+      '@visulima/fs': 4.0.6(yaml@2.8.1)
+      '@visulima/path': 2.0.5
     transitivePeerDependencies:
       - yaml
 
@@ -20649,9 +20651,9 @@ snapshots:
     dependencies:
       '@anolilab/rc': 2.0.5(yaml@2.8.1)
       '@semantic-release/error': 4.0.0
-      '@visulima/fs': 4.0.5(yaml@2.8.1)
+      '@visulima/fs': 4.0.6(yaml@2.8.1)
       '@visulima/package': 4.1.4(@types/node@24.10.0)
-      '@visulima/path': 2.0.4
+      '@visulima/path': 2.0.5
       execa: 9.6.0
       ini: 6.0.0
       normalize-url: 8.1.0
@@ -26409,13 +26411,12 @@ snapshots:
       '@visulima/pail': 3.2.0(@opentelemetry/api@1.9.0)(@visulima/redact@packages+redact)(rotating-file-stream@3.2.7)
       github-slugger: 2.0.0
 
-  '@visulima/cerebro@2.1.3(@visulima/boxen@packages+boxen)(@visulima/find-cache-dir@2.0.4)(@visulima/pail@3.2.0(@opentelemetry/api@1.9.0)(@visulima/redact@packages+redact)(rotating-file-stream@3.2.7))(github-slugger@2.0.0)':
+  '@visulima/cerebro@2.1.3(@visulima/find-cache-dir@2.0.4)(@visulima/pail@3.2.0(@opentelemetry/api@1.9.0)(@visulima/redact@packages+redact)(rotating-file-stream@3.2.7))(github-slugger@2.0.0)':
     dependencies:
       '@visulima/colorize': 1.4.28
       '@visulima/tabular': 3.1.2
       fastest-levenshtein: 1.0.16
     optionalDependencies:
-      '@visulima/boxen': link:packages/boxen
       '@visulima/find-cache-dir': 2.0.4
       '@visulima/pail': 3.2.0(@opentelemetry/api@1.9.0)(@visulima/redact@packages+redact)(rotating-file-stream@3.2.7)
       github-slugger: 2.0.0
@@ -26462,9 +26463,9 @@ snapshots:
     optionalDependencies:
       yaml: 2.8.1
 
-  '@visulima/fs@4.0.5(yaml@2.8.1)':
+  '@visulima/fs@4.0.6(yaml@2.8.1)':
     dependencies:
-      '@visulima/path': 2.0.4
+      '@visulima/path': 2.0.5
     optionalDependencies:
       yaml: 2.8.1
 
@@ -26574,7 +26575,7 @@ snapshots:
       '@visulima/path': 1.4.0
       '@visulima/rollup-plugin-css': 1.0.0-alpha.7(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@csstools/postcss-slow-plugins@2.0.0(postcss@8.5.6))(@swc/core@1.13.5)(@tailwindcss/node@4.1.17)(@tailwindcss/oxide@4.1.17)(@types/node@24.10.0)(@visulima/css-style-inject@1.0.0-alpha.9)(cssnano@7.1.2(postcss@8.5.6))(esbuild@0.27.0)(icss-utils@5.1.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(postcss-load-config@6.0.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.20.6)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rollup@4.53.2)(sucrase@3.35.0)(typedoc-plugin-markdown@4.9.0(typedoc@0.28.14(typescript@5.9.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.14(typescript@5.9.3)))(typedoc@0.28.14(typescript@5.9.3))(typescript@5.9.3)(yaml@2.8.1)
       '@visulima/source-map': 2.0.3
-      '@visulima/tabular': 3.1.2
+      '@visulima/tabular': 3.1.3
       '@visulima/tsconfig': 2.1.0(yaml@2.8.1)
       browserslist: 4.26.2
       cjs-module-lexer: 2.1.1
@@ -26630,12 +26631,12 @@ snapshots:
       - rotating-file-stream
       - yaml
 
-  '@visulima/packem@2.0.0-alpha.37(9977623c185956010d12d01e22ebacdd)':
+  '@visulima/packem@2.0.0-alpha.37(674539ad26bcad2f56a44ac9111ffc18)':
     dependencies:
       '@antfu/install-pkg': 1.1.0
       '@clack/prompts': 0.11.0
       '@rollup/pluginutils': 5.3.0(rollup@4.53.2)
-      '@visulima/cerebro': 2.1.3(@visulima/boxen@packages+boxen)(@visulima/find-cache-dir@2.0.4)(@visulima/pail@3.2.0(@opentelemetry/api@1.9.0)(@visulima/redact@packages+redact)(rotating-file-stream@3.2.7))(github-slugger@2.0.0)
+      '@visulima/cerebro': 2.1.3(@visulima/find-cache-dir@2.0.4)(@visulima/pail@3.2.0(@opentelemetry/api@1.9.0)(@visulima/redact@packages+redact)(rotating-file-stream@3.2.7))(github-slugger@2.0.0)
       '@visulima/colorize': 1.4.27
       '@visulima/find-cache-dir': 2.0.4
       '@visulima/fs': 4.0.4(yaml@2.8.1)
@@ -26647,7 +26648,7 @@ snapshots:
       '@visulima/path': 1.4.0
       '@visulima/rollup-plugin-css': 1.0.0-alpha.7(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@csstools/postcss-slow-plugins@2.0.0(postcss@8.5.6))(@swc/core@1.13.5)(@tailwindcss/node@4.1.17)(@tailwindcss/oxide@4.1.17)(@types/node@24.10.0)(@visulima/css-style-inject@1.0.0-alpha.9)(cssnano@7.1.2(postcss@8.5.6))(esbuild@0.27.0)(icss-utils@5.1.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(postcss-load-config@6.0.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.20.6)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rollup@4.53.2)(sucrase@3.35.0)(typedoc-plugin-markdown@4.9.0(typedoc@0.28.14(typescript@5.9.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.14(typescript@5.9.3)))(typedoc@0.28.14(typescript@5.9.3))(typescript@5.9.3)(yaml@2.8.1)
       '@visulima/source-map': 2.0.3
-      '@visulima/tabular': 3.1.2
+      '@visulima/tabular': 3.1.3
       '@visulima/tsconfig': 2.1.0(yaml@2.8.1)
       browserslist: 4.26.2
       cjs-module-lexer: 2.1.1
@@ -26716,7 +26717,7 @@ snapshots:
 
   '@visulima/path@2.0.3': {}
 
-  '@visulima/path@2.0.4': {}
+  '@visulima/path@2.0.5': {}
 
   '@visulima/rollup-plugin-css@1.0.0-alpha.7(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@csstools/postcss-slow-plugins@2.0.0(postcss@8.5.6))(@swc/core@1.13.5)(@tailwindcss/node@4.1.17)(@tailwindcss/oxide@4.1.17)(@types/node@24.10.0)(@visulima/css-style-inject@1.0.0-alpha.9)(cssnano@7.1.2(postcss@8.5.6))(esbuild@0.27.0)(icss-utils@5.1.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(postcss-load-config@6.0.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.20.6)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rollup@4.53.2)(sucrase@3.35.0)(typedoc-plugin-markdown@4.9.0(typedoc@0.28.14(typescript@5.9.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.14(typescript@5.9.3)))(typedoc@0.28.14(typescript@5.9.3))(typescript@5.9.3)(yaml@2.8.1)':
     dependencies:
@@ -26769,6 +26770,8 @@ snapshots:
       '@jridgewell/trace-mapping': 0.3.31
 
   '@visulima/tabular@3.1.2': {}
+
+  '@visulima/tabular@3.1.3': {}
 
   '@visulima/tsconfig@1.2.0(yaml@2.8.1)':
     dependencies:
