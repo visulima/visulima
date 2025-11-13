@@ -1,3 +1,14 @@
+## @visulima/colorize [1.4.29](https://github.com/visulima/visulima/compare/@visulima/colorize@1.4.28...@visulima/colorize@1.4.29) (2025-11-13)
+
+### Bug Fixes
+
+* bump packem, to fix minified version of the code ([2a36ceb](https://github.com/visulima/visulima/commit/2a36ceb09251b0ca1178701a26547a871ed717a7))
+
+
+### Dependencies
+
+* **@visulima/is-ansi-color-supported:** upgraded to 2.3.5
+
 ## @visulima/colorize [1.4.28](https://github.com/visulima/visulima/compare/@visulima/colorize@1.4.27...@visulima/colorize@1.4.28) (2025-11-12)
 
 ### Bug Fixes
