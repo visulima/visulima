@@ -4,10 +4,6 @@ import type { Plugin } from "./plugin";
 
 export type CommandSection = { footer?: string; header?: string };
 
-export type ExtendedLogger = Console & {
-    debug: (...args: unknown[]) => void;
-};
-
 export type CliRunOptions = {
     [key: string]: unknown;
 
@@ -37,20 +33,20 @@ export type RunCommandOptions = {
     argv?: string[];
 };
 
-export interface Cli {
+export interface Cli<T extends Console> {
     /**
      * Add an arbitrary command to the CLI.
      * @param command The command to add.
      * @returns self
      */
-    addCommand: <OD extends OptionDefinition<unknown> = OptionDefinition<unknown>>(command: ICommand<OD>) => this;
+    addCommand: <OD extends OptionDefinition<unknown> = OptionDefinition<unknown>>(command: ICommand<OD, T>) => this;
 
     /**
      * Add a plugin to extend the CLI functionality
      * @param plugin The plugin to add.
      * @returns self
      */
-    addPlugin: (plugin: Plugin) => this;
+    addPlugin: (plugin: Plugin<T>) => this;
 
     /**
      * Disposes the CLI instance and cleans up resources
@@ -60,7 +56,7 @@ export interface Cli {
 
     getCliName: () => string;
 
-    getCommands: () => Map<string, ICommand>;
+    getCommands: () => Map<string, ICommand<OptionDefinition<unknown>, T>>;
 
     getCommandSection: () => CommandSection;
 
@@ -74,7 +70,7 @@ export interface Cli {
      * Get the plugin manager instance
      * @returns The plugin manager
      */
-    getPluginManager: () => PluginManager;
+    getPluginManager: () => PluginManager<T>;
 
     run: (extraOptions?: CliRunOptions) => Promise<void>;
 

@@ -12,11 +12,11 @@ type Logger = Console;
 class PluginManager<T extends Logger = Logger> {
     private readonly logger: T;
 
-    private readonly plugins = new Map<string, Plugin>();
+    private readonly plugins = new Map<string, Plugin<T>>();
 
     private initialized = false;
 
-    private cachedDependencyOrder: Plugin[] | undefined = undefined;
+    private cachedDependencyOrder: Plugin<T>[] | undefined = undefined;
 
     public constructor(logger: T) {
         this.logger = logger;
@@ -35,7 +35,7 @@ class PluginManager<T extends Logger = Logger> {
      * @param plugin The plugin to register
      * @throws {Error} If plugin name is already registered or dependencies are invalid
      */
-    public register(plugin: Plugin): void {
+    public register(plugin: Plugin<T>): void {
         if (this.initialized) {
             throw new Error(`Cannot register plugin "${plugin.name}" after initialization`);
         }
@@ -59,7 +59,7 @@ class PluginManager<T extends Logger = Logger> {
      * @param context The plugin context for initialization
      */
     // eslint-disable-next-line sonarjs/cognitive-complexity
-    public async init(context: PluginContext): Promise<void> {
+    public async init(context: PluginContext<T>): Promise<void> {
         if (this.initialized) {
             throw new Error("PluginManager already initialized");
         }
@@ -107,7 +107,7 @@ class PluginManager<T extends Logger = Logger> {
      * @param toolbox The command toolbox (for command-specific hooks)
      * @param result The command result (for afterCommand hook)
      */
-    public async executeLifecycle(hook: "beforeCommand" | "afterCommand" | "execute", toolbox: Toolbox, result?: unknown): Promise<void> {
+    public async executeLifecycle(hook: "beforeCommand" | "afterCommand" | "execute", toolbox: Toolbox<T>, result?: unknown): Promise<void> {
         if (!this.initialized) {
             throw new Error("PluginManager not initialized");
         }
@@ -127,8 +127,8 @@ class PluginManager<T extends Logger = Logger> {
                 try {
                     // eslint-disable-next-line no-await-in-loop
                     await (hook === "afterCommand"
-                        ? (hookFunction as (toolbox: Toolbox, result: unknown) => Promise<void> | void)(toolbox, result)
-                        : (hookFunction as (toolbox: Toolbox) => Promise<void> | void)(toolbox));
+                        ? (hookFunction as (toolbox: Toolbox<T>, result: unknown) => Promise<void> | void)(toolbox, result)
+                        : (hookFunction as (toolbox: Toolbox<T>) => Promise<void> | void)(toolbox));
                 } catch (error) {
                     this.logger.error(`Error in ${hook} hook for plugin "${plugin.name}":`, error as Error);
 
@@ -143,7 +143,7 @@ class PluginManager<T extends Logger = Logger> {
      * @param error The error that occurred
      * @param toolbox The command toolbox
      */
-    public async executeErrorHandlers(error: Error, toolbox: Toolbox): Promise<void> {
+    public async executeErrorHandlers(error: Error, toolbox: Toolbox<T>): Promise<void> {
         if (!this.initialized) {
             return;
         }
@@ -173,12 +173,12 @@ class PluginManager<T extends Logger = Logger> {
      * Gets all registered plugins in dependency order.
      * @returns Array of plugins sorted by dependencies
      */
-    public getDependencyOrder(): Plugin[] {
+    public getDependencyOrder(): Plugin<T>[] {
         if (this.cachedDependencyOrder !== undefined) {
             return this.cachedDependencyOrder;
         }
 
-        const ordered: Plugin[] = [];
+        const ordered: Plugin<T>[] = [];
         const visited = new Set<string>();
         const visiting = new Set<string>();
 

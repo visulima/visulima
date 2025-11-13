@@ -13,7 +13,7 @@ const EMPTY_GROUP_KEY = "__Other";
 
 const upperFirstChar = (string_: string): string => string_.charAt(0).toUpperCase() + string_.slice(1);
 
-const printGeneralHelp = (logger: Console, runtime: ICli, commands: Map<string, ICommand>, groupOption: string | undefined) => {
+const printGeneralHelp = (logger: Console, runtime: ICli<Console>, commands: Map<string, ICommand>, groupOption: string | undefined) => {
     logger.debug("no command given, printing general help...");
 
     let filteredCommands = [...new Set(commands.values())].filter((command) => !command.hidden);
@@ -99,7 +99,7 @@ const printGeneralHelp = (logger: Console, runtime: ICli, commands: Map<string, 
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any,sonarjs/cognitive-complexity
-const printCommandHelp = <OD extends OptionDefinition<any>>(logger: Console, runtime: ICli, commands: Map<string, ICommand<OD>>, name: string): void => {
+const printCommandHelp = <OD extends OptionDefinition<any>>(logger: Console, runtime: ICli<Console>, commands: Map<string, ICommand<OD>>, name: string): void => {
     // Try to find command by name first
     let command = commands.get(name) as ICommand<OD> | undefined;
 
@@ -186,7 +186,7 @@ const printCommandHelp = <OD extends OptionDefinition<any>>(logger: Console, run
     ((logger as Console & { raw?: (...args: unknown[]) => void })?.raw ?? logger.log)(commandLineUsage(usageGroups));
 };
 
-class HelpCommand implements ICommand {
+class HelpCommand<TLogger extends Console = Console> implements ICommand<OptionDefinition<string>, TLogger> {
     public name = "help";
 
     public options: OptionDefinition<string>[] = [
@@ -197,13 +197,13 @@ class HelpCommand implements ICommand {
         } as OptionDefinition<string>,
     ];
 
-    private readonly commands: Map<string, ICommand> = new Map<string, ICommand>();
+    private readonly commands: Map<string, ICommand<OptionDefinition<unknown>, TLogger>>;
 
-    public constructor(commands: Map<string, ICommand>) {
+    public constructor(commands: Map<string, ICommand<OptionDefinition<unknown>, TLogger>>) {
         this.commands = commands;
     }
 
-    public execute(toolbox: IToolbox): void {
+    public execute(toolbox: IToolbox<TLogger>): void {
         const { commandName, logger, options, runtime } = toolbox;
 
         const { footer, header } = runtime.getCommandSection();
@@ -213,9 +213,9 @@ class HelpCommand implements ICommand {
         }
 
         if (commandName === "help") {
-            printGeneralHelp(logger, runtime, this.commands, typeof options?.group === "string" ? options.group : undefined);
+            printGeneralHelp(logger, runtime as unknown as ICli<Console>, this.commands as unknown as Map<string, ICommand>, typeof options?.group === "string" ? options.group : undefined);
         } else {
-            printCommandHelp(logger, runtime, this.commands, commandName as string);
+            printCommandHelp(logger, runtime as unknown as ICli<Console>, this.commands as unknown as Map<string, ICommand>, commandName as string);
         }
 
         if (footer) {

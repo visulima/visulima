@@ -105,5 +105,5 @@ export interface Toolbox<
     /**
      * This is the instance of the CLI that is running the command.
      */
-    runtime: ICli;
+    runtime: ICli<TLogger>;
 }
