@@ -1,3 +1,16 @@
+## @visulima/boxen [2.0.10](https://github.com/visulima/visulima/compare/@visulima/boxen@2.0.9...@visulima/boxen@2.0.10) (2025-11-13)
+
+### Bug Fixes
+
+* bump packem, to fix minified version of the code ([2a36ceb](https://github.com/visulima/visulima/commit/2a36ceb09251b0ca1178701a26547a871ed717a7))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.29
+* **@visulima/path:** upgraded to 2.0.5
+* **@visulima/string:** upgraded to 2.0.6
+
 ## @visulima/boxen [2.0.9](https://github.com/visulima/visulima/compare/@visulima/boxen@2.0.8...@visulima/boxen@2.0.9) (2025-11-12)
 
 ### Bug Fixes
