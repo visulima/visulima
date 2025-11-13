@@ -6,10 +6,10 @@ import type { BaseStorageOptions } from "../../src/storage/types";
 import type { File } from "../../src/storage/utils/file";
 import { hash } from "./utils";
 
-async function* generateChunks(): AsyncIterableIterator<string> {
+const generateChunks = async function* (): AsyncIterableIterator<string> {
     yield "xz".repeat(16);
     yield "xz".repeat(16);
-}
+};
 
 const id = "e8fed598250d10ea-7f59007b4b7cf67-120941ca7dc37b78";
 const contentType = "video/mp4";
@@ -47,7 +47,7 @@ export const testfile = {
 };
 
 export const metafile = {
-    bytesWritten: null as number | null,
+    bytesWritten: undefined as number | undefined,
     contentType,
     id,
     metadata,

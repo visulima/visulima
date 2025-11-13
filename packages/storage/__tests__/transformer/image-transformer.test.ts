@@ -11,7 +11,7 @@ describe("imageTransformer streaming", () => {
     const transformer = new ImageTransformer(storage);
 
     // Mock the storage methods
-    const mockGet = vi.spyOn(storage, "get").mockResolvedValue({
+    vi.spyOn(storage, "get").mockResolvedValue({
         content: Buffer.from("fake image data"),
         contentType: "image/jpeg",
         ETag: "etag123",
@@ -45,7 +45,11 @@ describe("imageTransformer streaming", () => {
                 width: 800,
             });
 
-            const result = await transformer.transformStream!("test-image", [{ options: { height: 600, width: 800 }, type: "resize" }]);
+            if (!transformer.transformStream) {
+                throw new Error("transformStream is not available");
+            }
+
+            const result = await transformer.transformStream("test-image", [{ options: { height: 600, width: 800 }, type: "resize" }]);
 
             expect(result).toBeDefined();
             expect(result.stream).toBeInstanceOf(Readable);
@@ -80,9 +84,13 @@ describe("imageTransformer streaming", () => {
                 width: 400,
             });
 
-            const result = await transformer.transformStream!("test-image", [{ options: { format: "webp" }, type: "format" }]);
+            if (!transformer.transformStream) {
+                throw new Error("transformStream is not available");
+            }
 
-            expect(result.headers!["Content-Type"]).toBe("image/webp");
+            const result = await transformer.transformStream("test-image", [{ options: { format: "webp" }, type: "format" }]);
+
+            expect(result.headers?.["Content-Type"]).toBe("image/webp");
 
             mockTransform.mockRestore();
         });
@@ -105,9 +113,13 @@ describe("imageTransformer streaming", () => {
                 size: 512,
             });
 
-            const result = await transformer.transformStream!("test-image", []);
+            if (!transformer.transformStream) {
+                throw new Error("transformStream is not available");
+            }
 
-            expect(result.headers!["Content-Type"]).toBe("application/octet-stream");
+            const result = await transformer.transformStream("test-image", []);
+
+            expect(result.headers?.["Content-Type"]).toBe("application/octet-stream");
 
             mockTransform.mockRestore();
         });
@@ -120,7 +132,11 @@ describe("imageTransformer streaming", () => {
 
             delete (transformer as unknown as { transformStream?: typeof originalTransformStream }).transformStream;
 
-            await expect(transformer.transformStream!("test-image", [])).rejects.toThrow();
+            if (transformer.transformStream) {
+                await expect(transformer.transformStream("test-image", [])).rejects.toThrow("Transform stream is not available");
+            } else {
+                expect(transformer.transformStream).toBeUndefined();
+            }
 
             // Restore the method
             transformer.transformStream = originalTransformStream;
@@ -131,7 +147,11 @@ describe("imageTransformer streaming", () => {
 
             const mockTransform = vi.spyOn(transformer, "transform").mockRejectedValue(new Error("Transform failed"));
 
-            await expect(transformer.transformStream!("test-image", [])).rejects.toThrow();
+            if (!transformer.transformStream) {
+                throw new Error("transformStream is not available");
+            }
+
+            await expect(transformer.transformStream("test-image", [])).rejects.toThrow("Transform failed");
 
             mockTransform.mockRestore();
         });

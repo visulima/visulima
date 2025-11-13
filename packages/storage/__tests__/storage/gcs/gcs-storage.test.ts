@@ -1,5 +1,4 @@
 import type { Response as NodeFetchResponse } from "node-fetch";
-import fetch from "node-fetch";
 import { createRequest } from "node-mocks-http";
 import { afterEach, beforeEach, describe, expect, expectTypeOf, it, vi } from "vitest";
 
@@ -27,9 +26,9 @@ const mockAuthRequest = vi.fn();
 
 vi.mock(import("google-auth-library"), () => {
     return {
-        GoogleAuth: vi.fn().mockImplementation(function (
+        GoogleAuth: vi.fn().mockImplementation(function GoogleAuthMock(
             this: import("google-auth-library").GoogleAuth,
-            config: import("../../../src/storage/gcs/types").GCStorageOptions,
+            _config: import("../../../src/storage/gcs/types").GCStorageOptions,
         ) {
             this.request = mockAuthRequest;
 
@@ -72,7 +71,19 @@ describe(GCStorage, async () => {
 
             mockAuthRequest.mockRejectedValueOnce({ code: 404, detail: "meta not found" }); // getMeta
             mockAuthRequest.mockResolvedValueOnce({
-                headers: { get: (name: string) => (name === "location" ? uri : name === "X-Goog-Upload-Status" ? "active" : undefined) },
+                headers: {
+                    get: (name: string) => {
+                        if (name === "location") {
+                            return uri;
+                        }
+
+                        if (name === "X-Goog-Upload-Status") {
+                            return "active";
+                        }
+
+                        return undefined;
+                    },
+                },
                 status: 200,
             }); // create
             mockAuthRequest.mockResolvedValueOnce("_saveOk"); // saveMeta
@@ -107,7 +118,19 @@ describe(GCStorage, async () => {
         it("should handle TTL option and set expiration timestamp", async () => {
             mockAuthRequest.mockRejectedValueOnce({ code: 404, detail: "meta not found" }); // getMeta
             mockAuthRequest.mockResolvedValueOnce({
-                headers: { get: (name: string) => (name === "location" ? uri : name === "X-Goog-Upload-Status" ? "active" : undefined) },
+                headers: {
+                    get: (name: string) => {
+                        if (name === "location") {
+                            return uri;
+                        }
+
+                        if (name === "X-Goog-Upload-Status") {
+                            return "active";
+                        }
+
+                        return undefined;
+                    },
+                },
                 status: 200,
             }); // create
             mockAuthRequest.mockResolvedValueOnce("_saveOk"); // saveMeta
@@ -176,7 +199,7 @@ describe(GCStorage, async () => {
             // Mock the makeRequest method for the write operation
             const mockMakeRequest = vi.fn().mockResolvedValue({
                 data: "uploaded",
-                headers: { get: () => null },
+                headers: { get: () => undefined },
                 status: 200,
             });
 
@@ -211,7 +234,7 @@ describe(GCStorage, async () => {
             // Mock the makeRequest to return error response
             const mockMakeRequest = vi.fn().mockResolvedValue({
                 data: "Bad Request",
-                headers: { get: () => null },
+                headers: { get: () => undefined },
                 status: 400,
             });
 
@@ -236,7 +259,15 @@ describe(GCStorage, async () => {
             // Mock the makeRequest to return a response with range header
             const mockMakeRequest = vi.fn().mockResolvedValue({
                 data: "",
-                headers: { get: (header: string) => (header === "range" ? "0-5" : null) },
+                headers: {
+                    get: (header: string) => {
+                        if (header === "range") {
+                            return "0-5";
+                        }
+
+                        return undefined;
+                    },
+                },
                 status: 308,
             });
 

@@ -6,14 +6,12 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import Multipart from "../../../src/handler/multipart";
 import DiskStorage from "../../../src/storage/local/disk-storage";
-import { metadata, storageOptions, testfile } from "../../__helpers__/config";
+import { storageOptions, testfile } from "../../__helpers__/config";
 import app from "../../__helpers__/express-app";
 import { waitForStorageReady } from "../../__helpers__/utils";
 
 describe("http Multipart", () => {
     let response: supertest.Response;
-    let fileUri = "";
-    const uri = "";
 
     const basePath = "/http-multipart";
     let directory: string;
@@ -76,11 +74,6 @@ describe("http Multipart", () => {
             expect(response.status).toBe(200);
             expect(response.body.size).toBeDefined();
             expect(response.header.location).toBeDefined();
-
-            // Set fileUri for subsequent tests
-            if (response.header.location) {
-                fileUri = response.header.location.replace(/^\/\/[^/]+\//, "/");
-            }
         });
 
         it("should return 415 for unsupported file types", async () => {
@@ -122,9 +115,9 @@ describe("http Multipart", () => {
             const test = await create();
 
             const { location } = test.header;
-            const fileUri = location.replace(/^\/\/[^/]+\//, "/"); // Remove //host:port/ and keep /path/
+            const deleteFileUri = location.replace(/^\/\/[^/]+\//, "/"); // Remove //host:port/ and keep /path/
 
-            response = await supertest(app).delete(fileUri);
+            response = await supertest(app).delete(deleteFileUri);
 
             expect(response.status).toBe(204);
         });
@@ -139,13 +132,6 @@ describe("http Multipart", () => {
     });
 
     describe("get", () => {
-        beforeAll(async () => {
-            // Create a file for testing
-            const test = await create();
-
-            fileUri = test.header.location.replace(/^\/\/[^/]+\//, "/"); // Remove //host:port/ and keep /path/
-        });
-
         it("should return file metadata", async () => {
             expect.assertions(4);
 
@@ -154,8 +140,8 @@ describe("http Multipart", () => {
 
             expect(uploadResponse.status).toBe(200);
 
-            const fileUri = uploadResponse.header.location.replace(/^\/\/[^/]+\//, "/");
-            const metadataUri = `${fileUri}/metadata`;
+            const metadataFileUri = uploadResponse.header.location.replace(/^\/\/[^/]+\//, "/");
+            const metadataUri = `${metadataFileUri}/metadata`;
 
             response = await supertest(app).get(metadataUri);
 

@@ -257,7 +257,7 @@ describe("utils", () => {
         it.each([["/"], ["/files"], ["/3"], ["/files/files"]])("should throw error for invalid Express-style URLs: %p", (url) => {
             expect.assertions(1);
 
-            expect(() => getIdFromRequest(createRequest({ url }))).toThrow();
+            expect(() => getIdFromRequest(createRequest({ url }))).toThrow("Invalid request URL");
         });
 
         it("should return the real path from request URL or originalUrl", () => {
@@ -284,15 +284,15 @@ describe("utils", () => {
 
             let testRequest = createRequest({ url: "" });
 
-            expect(() => getRealPath(testRequest)).toThrow();
+            expect(() => getRealPath(testRequest)).toThrow("Invalid request URL");
 
             testRequest = createRequest({});
 
-            expect(() => getRealPath(testRequest)).toThrow();
+            expect(() => getRealPath(testRequest)).toThrow("Invalid request URL");
 
             testRequest = createRequest({ originalUrl: "" });
 
-            expect(() => getRealPath(testRequest)).toThrow();
+            expect(() => getRealPath(testRequest)).toThrow("Invalid request URL");
         });
 
         it("should read body and return correct string content", async () => {

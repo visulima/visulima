@@ -381,7 +381,11 @@ describe(DiskStorage, () => {
             await storage.write({ ...file, body: Readable.from("test"), start: 0 });
 
             // Wait for the file to be at least 1 second old
-            await new Promise((resolve) => setTimeout(resolve, 1100));
+            await new Promise<void>((resolve) => {
+                setTimeout(() => {
+                    resolve();
+                }, 1100);
+            });
 
             const list = await storage.purge(1); // Purge files older than 1 second
 
@@ -538,7 +542,7 @@ describe(DiskStorage, () => {
                 const { cleanup, storage: readonlyStorage } = await createReadonlyStorage();
 
                 try {
-                    await expect(readonlyStorage.create(request, metafile)).rejects.toThrow();
+                    await expect(readonlyStorage.create(request, metafile)).rejects.toThrow("Permission denied");
                 } finally {
                     await cleanup();
                 }
@@ -551,7 +555,7 @@ describe(DiskStorage, () => {
 
                 try {
                     // Try to write to readonly directory
-                    await expect(readonlyStorage.write({ ...metafile, body: Readable.from("test") })).rejects.toThrow();
+                    await expect(readonlyStorage.write({ ...metafile, body: Readable.from("test") })).rejects.toThrow("Permission denied");
                 } finally {
                     await cleanup();
                 }
@@ -574,7 +578,7 @@ describe(DiskStorage, () => {
 
                 // This would typically fail with ENOSPC in real scenarios
                 // For testing, we verify the error handling path exists
-                await expect(storage.write(hugeFile)).rejects.toThrow();
+                await expect(storage.write(hugeFile)).rejects.toThrow("File error");
             });
         });
 
@@ -621,7 +625,7 @@ describe(DiskStorage, () => {
                 // Test with Windows reserved names
                 const reservedNames = ["CON", "PRN", "AUX", "NUL", "COM1", "LPT1"];
 
-                for (const name of reservedNames) {
+                const reservedFilePromises = reservedNames.map(async (name) => {
                     const reservedFile = {
                         ...metafile,
                         id: name,
@@ -633,7 +637,9 @@ describe(DiskStorage, () => {
 
                     expect(diskFile).toBeDefined();
                     expect(diskFile.id).not.toBe(name); // Should generate different ID
-                }
+                });
+
+                await Promise.all(reservedFilePromises);
             });
         });
 
@@ -683,7 +689,7 @@ describe(DiskStorage, () => {
 
                 const specialChars = ["file with spaces.txt", "file-with-dashes.txt", "file_with_underscores.txt"];
 
-                for (const filename of specialChars) {
+                const specialFilePromises = specialChars.map(async (filename) => {
                     const specialFile = {
                         ...metafile,
                         id: filename,
@@ -696,7 +702,9 @@ describe(DiskStorage, () => {
                     expect(diskFile).toBeDefined();
                     expect(diskFile.originalName).toBe(filename); // Original name should be preserved
                     expect(diskFile.name).toBe(`anonymous/${filename}`); // Generated name follows naming convention
-                }
+                });
+
+                await Promise.all(specialFilePromises);
             });
 
             it("should handle extremely long filenames", async () => {
@@ -752,7 +760,7 @@ describe(DiskStorage, () => {
                 // Advance timers to trigger abort
                 vi.advanceTimersByTime(5);
 
-                await expect(writePromise).rejects.toThrow();
+                await expect(writePromise).rejects.toThrow("Aborted");
 
                 // Verify the file state is clean
                 const meta = await storage.getMeta(metafile.id);
@@ -774,7 +782,7 @@ describe(DiskStorage, () => {
                 let chunksSent = 0;
                 const failingStream = new Readable({
                     read() {
-                        chunksSent++;
+                        chunksSent += 1;
 
                         if (chunksSent === 1) {
                             this.push(Buffer.from("some data"));
@@ -800,7 +808,7 @@ describe(DiskStorage, () => {
                 let chunksSent = 0;
                 const partialFailStream = new Readable({
                     read() {
-                        chunksSent++;
+                        chunksSent += 1;
 
                         if (chunksSent === 1) {
                             this.push(Buffer.from("chunk1"));
@@ -838,7 +846,11 @@ describe(DiskStorage, () => {
             await storage.write({ ...testFile, body: Readable.from("test"), start: 0 });
 
             // Wait for file operations to complete
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise<void>((resolve) => {
+                setTimeout(() => {
+                    resolve();
+                }, 100);
+            });
 
             // Check that we have the file
             const initialList = await storage.list();
@@ -873,7 +885,11 @@ describe(DiskStorage, () => {
             await fsp.writeFile(metaPath, "corrupted json data");
 
             // Wait for file to be old enough
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise<void>((resolve) => {
+                setTimeout(() => {
+                    resolve();
+                }, 100);
+            });
 
             // Purge should handle corrupted metadata gracefully
             // Use a very small value since purge(0) doesn't work (0 is falsy)
@@ -932,7 +948,7 @@ describe(DiskStorage, () => {
             await fsp.writeFile(metaPath, "invalid json");
 
             // Should handle corruption gracefully
-            await expect(storage.getMeta(metafile.id)).rejects.toThrow();
+            await expect(storage.getMeta(metafile.id)).rejects.toThrow("Invalid metadata");
         });
 
         it("should handle inconsistent metadata states", async () => {
@@ -1019,7 +1035,7 @@ describe(DiskStorage, () => {
                 { contentType: "image/jpeg", name: "image.jpg" },
             ];
 
-            for (const mediaFile of mediaFiles) {
+            const mediaFilePromises = mediaFiles.map(async (mediaFile) => {
                 const testFile = {
                     ...metafile,
                     contentType: mediaFile.contentType,
@@ -1040,7 +1056,9 @@ describe(DiskStorage, () => {
                     // Some MIME types might be rejected, which is also valid behavior
                     expect(error).toBeDefined();
                 }
-            }
+            });
+
+            await Promise.all(mediaFilePromises);
         });
     });
 
@@ -1106,7 +1124,7 @@ describe(DiskStorage, () => {
             };
 
             // This should be rejected by the validator
-            await expect(storage.create(request, invalidMimeFile)).rejects.toThrow();
+            await expect(storage.create(request, invalidMimeFile)).rejects.toThrow("Invalid MIME type");
 
             // Test with negative file size
             const negativeSizeFile = {
@@ -1114,7 +1132,7 @@ describe(DiskStorage, () => {
                 size: -1,
             };
 
-            await expect(storage.create(request, negativeSizeFile)).rejects.toThrow();
+            await expect(storage.create(request, negativeSizeFile)).rejects.toThrow("Invalid file size");
         });
     });
 });

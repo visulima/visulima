@@ -25,7 +25,7 @@ describe("utils", () => {
                 validator.verify({
                     size: 150,
                 }),
-            ).rejects.toThrow();
+            ).rejects.toThrow("Request entity too large");
         });
     });
 });

@@ -36,9 +36,9 @@ describe(AudioTransformer, () => {
         it("should create transformer with default configuration", () => {
             expect.assertions(1);
 
-            const transformer = new AudioTransformer(mockStorage as import("../../src/storage/storage").BaseStorage);
+            const newTransformer = new AudioTransformer(mockStorage as import("../../src/storage/storage").BaseStorage);
 
-            expect(transformer).toBeInstanceOf(AudioTransformer);
+            expect(newTransformer).toBeInstanceOf(AudioTransformer);
         });
 
         it("should create transformer with custom configuration", () => {
@@ -50,9 +50,9 @@ describe(AudioTransformer, () => {
                 maxAudioSize: 50 * 1024 * 1024,
             };
 
-            const transformer = new AudioTransformer(mockStorage as import("../../src/storage/storage").BaseStorage, config);
+            const newTransformer = new AudioTransformer(mockStorage as import("../../src/storage/storage").BaseStorage, config);
 
-            expect(transformer).toBeInstanceOf(AudioTransformer);
+            expect(newTransformer).toBeInstanceOf(AudioTransformer);
         });
     });
 

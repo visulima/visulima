@@ -21,6 +21,7 @@ export default createConfig(
         files: ["__tests__/**"],
         rules: {
             "vitest/prefer-called-exactly-once-with": "off",
+            "vitest/require-mock-type-parameters": "off",
         },
     },
 );

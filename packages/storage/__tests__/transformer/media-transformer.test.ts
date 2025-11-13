@@ -11,7 +11,7 @@ const mockStorage = {
 };
 
 // Mock transformer classes
-const MockImageTransformer = vi.fn().mockImplementation(function (this: {
+const MockImageTransformer = vi.fn().mockImplementation(function MockImageTransformerMock(this: {
     clearCache: ReturnType<typeof vi.fn>;
     getCacheStats: ReturnType<typeof vi.fn>;
     transform: ReturnType<typeof vi.fn>;
@@ -24,7 +24,7 @@ const MockImageTransformer = vi.fn().mockImplementation(function (this: {
     return this;
 });
 
-const MockVideoTransformer = vi.fn().mockImplementation(function (this: {
+const MockVideoTransformer = vi.fn().mockImplementation(function MockVideoTransformerMock(this: {
     clearCache: ReturnType<typeof vi.fn>;
     getCacheStats: ReturnType<typeof vi.fn>;
     transform: ReturnType<typeof vi.fn>;
@@ -37,7 +37,7 @@ const MockVideoTransformer = vi.fn().mockImplementation(function (this: {
     return this;
 });
 
-const MockAudioTransformer = vi.fn().mockImplementation(function (this: {
+const MockAudioTransformer = vi.fn().mockImplementation(function MockAudioTransformerMock(this: {
     clearCache: ReturnType<typeof vi.fn>;
     getCacheStats: ReturnType<typeof vi.fn>;
     transform: ReturnType<typeof vi.fn>;

@@ -340,7 +340,11 @@ describe("baseHandler", () => {
                 });
 
                 // Wait for error handling
-                await new Promise((resolve) => setTimeout(resolve, 10));
+                await new Promise<void>((resolve) => {
+                    setTimeout(() => {
+                        resolve();
+                    }, 10);
+                });
 
                 expect(sendErrorSpy).toHaveBeenCalledTimes(1);
                 expect(sendErrorSpy).toHaveBeenCalledWith(response, expect.any(Error));

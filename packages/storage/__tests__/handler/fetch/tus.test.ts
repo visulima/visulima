@@ -18,7 +18,7 @@ describe("fetch Tus", () => {
     let directory: string;
 
     const create = (): Request =>
-        new Request(`${basePath}`, {
+        new Request(basePath, {
             headers: {
                 "Tus-Resumable": "1.0.0",
                 "Upload-Length": metadata.size.toString(),
@@ -57,12 +57,14 @@ describe("fetch Tus", () => {
             const tusHandler = new Tus({ storage });
 
             // Wait for storage to be ready
-            await new Promise((resolve) => {
-                const checkReady = () => {
+            await new Promise<void>((resolve) => {
+                const checkReady = (): void => {
                     if (storage.isReady) {
-                        resolve(undefined);
+                        resolve();
                     } else {
-                        setTimeout(checkReady, 10);
+                        setTimeout(() => {
+                            checkReady();
+                        }, 10);
                     }
                 };
 
@@ -79,7 +81,7 @@ describe("fetch Tus", () => {
         it("should handle invalid upload length with error response", async () => {
             expect.assertions(2);
 
-            const request = new Request(`${basePath}`, {
+            const request = new Request(basePath, {
                 headers: {
                     "Tus-Resumable": "1.0.0",
                     "Upload-Length": "invalid",
@@ -91,12 +93,14 @@ describe("fetch Tus", () => {
             const tusHandler = new Tus({ storage });
 
             // Wait for storage to be ready
-            await new Promise((resolve) => {
-                const checkReady = () => {
+            await new Promise<void>((resolve) => {
+                const checkReady = (): void => {
                     if (storage.isReady) {
-                        resolve(undefined);
+                        resolve();
                     } else {
-                        setTimeout(checkReady, 10);
+                        setTimeout(() => {
+                            checkReady();
+                        }, 10);
                     }
                 };
 
@@ -117,7 +121,7 @@ describe("fetch Tus", () => {
         it("should return 204 with Tus protocol headers for OPTIONS request", async () => {
             expect.assertions(5);
 
-            const request = new Request(`${basePath}`, {
+            const request = new Request(basePath, {
                 headers: {
                     "Tus-Resumable": "1.0.0",
                 },
@@ -128,12 +132,14 @@ describe("fetch Tus", () => {
             const tusHandler = new Tus({ storage });
 
             // Wait for storage to be ready
-            await new Promise((resolve) => {
-                const checkReady = () => {
+            await new Promise<void>((resolve) => {
+                const checkReady = (): void => {
                     if (storage.isReady) {
-                        resolve(undefined);
+                        resolve();
                     } else {
-                        setTimeout(checkReady, 10);
+                        setTimeout(() => {
+                            checkReady();
+                        }, 10);
                     }
                 };
 
@@ -154,7 +160,7 @@ describe("fetch Tus", () => {
         it("should return 412 for POST request without Tus-Resumable header", async () => {
             expect.assertions(2);
 
-            const request = new Request(`${basePath}`, {
+            const request = new Request(basePath, {
                 headers: {
                     "Upload-Length": metadata.size.toString(),
                     "Upload-Metadata": `name ${Buffer.from(metadata.name).toString("base64")},size ${Buffer.from(metadata.size.toString()).toString("base64")},mimeType ${Buffer.from(metadata.mimeType).toString("base64")}`,
@@ -166,12 +172,14 @@ describe("fetch Tus", () => {
             const tusHandler = new Tus({ storage });
 
             // Wait for storage to be ready
-            await new Promise((resolve) => {
-                const checkReady = () => {
+            await new Promise<void>((resolve) => {
+                const checkReady = (): void => {
                     if (storage.isReady) {
-                        resolve(undefined);
+                        resolve();
                     } else {
-                        setTimeout(checkReady, 10);
+                        setTimeout(() => {
+                            checkReady();
+                        }, 10);
                     }
                 };
 
@@ -191,7 +199,7 @@ describe("fetch Tus", () => {
         it("should return 412 for POST request with invalid Tus-Resumable version", async () => {
             expect.assertions(2);
 
-            const request = new Request(`${basePath}`, {
+            const request = new Request(basePath, {
                 headers: {
                     "Tus-Resumable": "0.2.2",
                     "Upload-Length": metadata.size.toString(),
@@ -204,12 +212,14 @@ describe("fetch Tus", () => {
             const tusHandler = new Tus({ storage });
 
             // Wait for storage to be ready
-            await new Promise((resolve) => {
-                const checkReady = () => {
+            await new Promise<void>((resolve) => {
+                const checkReady = (): void => {
                     if (storage.isReady) {
-                        resolve(undefined);
+                        resolve();
                     } else {
-                        setTimeout(checkReady, 10);
+                        setTimeout(() => {
+                            checkReady();
+                        }, 10);
                     }
                 };
 
@@ -229,7 +239,7 @@ describe("fetch Tus", () => {
         it("should accept OPTIONS request without Tus-Resumable header", async () => {
             expect.assertions(1);
 
-            const request = new Request(`${basePath}`, {
+            const request = new Request(basePath, {
                 method: "OPTIONS",
             });
 
@@ -237,12 +247,14 @@ describe("fetch Tus", () => {
             const tusHandler = new Tus({ storage });
 
             // Wait for storage to be ready
-            await new Promise((resolve) => {
-                const checkReady = () => {
+            await new Promise<void>((resolve) => {
+                const checkReady = (): void => {
                     if (storage.isReady) {
-                        resolve(undefined);
+                        resolve();
                     } else {
-                        setTimeout(checkReady, 10);
+                        setTimeout(() => {
+                            checkReady();
+                        }, 10);
                     }
                 };
 

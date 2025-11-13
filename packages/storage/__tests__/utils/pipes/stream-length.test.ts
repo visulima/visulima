@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { pipeline } from "node:stream";
 
 import { temporaryDirectory } from "tempy";
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import StreamLength from "../../../src/utils/pipes/stream-length";
 

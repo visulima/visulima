@@ -2,7 +2,7 @@ import { PassThrough } from "node:stream";
 
 class FileWriteStream extends PassThrough {
     public get bytesWritten(): number {
-        // @ts-ignore
+        // @ts-ignore - PassThrough.readableLength is a valid property but not in type definitions
         return super.readableLength;
     }
 

@@ -1,5 +1,3 @@
-// import Cors from "cors";
-
 import type { Express } from "express";
 import express from "express";
 

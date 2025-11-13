@@ -12,17 +12,17 @@ describe("fetch Multipart", () => {
     const basePath = "http://localhost/multipart/";
     let directory: string;
 
-    function create(): Request {
+    const create = (): Request => {
         const formData = new FormData();
 
         formData.append("file", new Blob([testfile.asBuffer], { type: testfile.contentType }), testfile.name);
         formData.append("custom", "customField");
 
-        return new Request(`${basePath}`, {
+        return new Request(basePath.toString(), {
             body: formData,
             method: "POST",
         });
-    }
+    };
 
     beforeAll(async () => {
         directory = temporaryDirectory();
@@ -64,7 +64,7 @@ describe("fetch Multipart", () => {
         it("should handle invalid request data with error response", async () => {
             expect.assertions(2);
 
-            const request = new Request(`${basePath}`, {
+            const request = new Request(basePath.toString(), {
                 body: JSON.stringify({ invalid: "data" }),
                 headers: {
                     "content-type": "application/json",
@@ -91,7 +91,7 @@ describe("fetch Multipart", () => {
         it("should return 204 with proper CORS headers for OPTIONS request", async () => {
             expect.assertions(2);
 
-            const request = new Request(`${basePath}`, {
+            const request = new Request(basePath.toString(), {
                 method: "OPTIONS",
             });
 

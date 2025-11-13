@@ -30,12 +30,14 @@ describe("tUS Extended Tests (matching tus-node-server e2e)", () => {
         });
 
         // Wait for storage to be ready
-        await new Promise((resolve) => {
-            const checkReady = () => {
+        await new Promise<void>((resolve) => {
+            const checkReady = (): void => {
                 if (storage.isReady) {
-                    resolve(undefined);
+                    resolve();
                 } else {
-                    setTimeout(checkReady, 10);
+                    setTimeout(() => {
+                        checkReady();
+                    }, 10);
                 }
             };
 
@@ -152,6 +154,8 @@ describe("tUS Extended Tests (matching tus-node-server e2e)", () => {
         });
 
         it("should return 410 Gone for expired upload", async () => {
+            expect.assertions(1);
+
             // Create a separate file for this test
             const response = await expiredAgent
                 .post(`${STORE_PATH}-expired`)
@@ -163,12 +167,18 @@ describe("tUS Extended Tests (matching tus-node-server e2e)", () => {
             const testFileId = response.headers.location.split("/").pop();
 
             // Wait for the file to expire (50ms + buffer)
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise<void>((resolve) => {
+                setTimeout(() => {
+                    resolve();
+                }, 100);
+            });
 
             await expiredAgent.head(`${STORE_PATH}-expired/${testFileId}`).set("Tus-Resumable", TUS_RESUMABLE).expect(410);
         });
 
         it("should return 410 Gone for PATCH on expired upload", async () => {
+            expect.assertions(1);
+
             // Create a separate file for this test
             const response = await expiredAgent
                 .post(`${STORE_PATH}-expired`)
@@ -180,7 +190,11 @@ describe("tUS Extended Tests (matching tus-node-server e2e)", () => {
             const testFileId = response.headers.location.split("/").pop();
 
             // Wait for the file to expire (50ms + buffer)
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise<void>((resolve) => {
+                setTimeout(() => {
+                    resolve();
+                }, 100);
+            });
 
             await expiredAgent
                 .patch(`${STORE_PATH}-expired/${testFileId}`)
@@ -195,7 +209,11 @@ describe("tUS Extended Tests (matching tus-node-server e2e)", () => {
             expect.assertions(3);
 
             // Wait a bit more for expiration
-            await new Promise((resolve) => setTimeout(resolve, 200));
+            await new Promise<void>((resolve) => {
+                setTimeout(() => {
+                    resolve();
+                }, 200);
+            });
 
             // Files should be deleted by expiration, so purge should find 0 items
             const deleted = await expiredServer.storage.purge();
@@ -222,7 +240,11 @@ describe("tUS Extended Tests (matching tus-node-server e2e)", () => {
 
             // Wait for storage to be ready
             while (!maxSizeStorage.isReady) {
-                await new Promise((resolve) => setTimeout(resolve, 10));
+                await new Promise<void>((resolve) => {
+                    setTimeout(() => {
+                        resolve();
+                    }, 10);
+                });
             }
 
             maxSizeServer = new Tus<File>({ storage: maxSizeStorage });
@@ -321,7 +343,11 @@ describe("tUS Extended Tests (matching tus-node-server e2e)", () => {
 
             // Wait for storage to be ready
             while (!deferredExpiredStorage.isReady) {
-                await new Promise((resolve) => setTimeout(resolve, 10));
+                await new Promise<void>((resolve) => {
+                    setTimeout(() => {
+                        resolve();
+                    }, 10);
+                });
             }
 
             deferredExpiredServer = new Tus<File>({ storage: deferredExpiredStorage });
@@ -375,8 +401,14 @@ describe("tUS Extended Tests (matching tus-node-server e2e)", () => {
         });
 
         it("should return 410 for expired deferred upload", async () => {
+            expect.assertions(1);
+
             // Wait for expiration
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise<void>((resolve) => {
+                setTimeout(() => {
+                    resolve();
+                }, 100);
+            });
 
             await deferredAgent
                 .patch(`${STORE_PATH}-deferred-expired/${deferredFileId}`)
@@ -403,7 +435,11 @@ describe("tUS Extended Tests (matching tus-node-server e2e)", () => {
 
             // Wait for storage to be ready
             while (!terminationStorage.isReady) {
-                await new Promise((resolve) => setTimeout(resolve, 10));
+                await new Promise<void>((resolve) => {
+                    setTimeout(() => {
+                        resolve();
+                    }, 10);
+                });
             }
 
             // Create server with termination disabled for finished uploads
@@ -427,6 +463,8 @@ describe("tUS Extended Tests (matching tus-node-server e2e)", () => {
         });
 
         it("should allow terminating unfinished uploads", async () => {
+            expect.assertions(1);
+
             // Create an upload but don't complete it
             const response = await terminationAgent
                 .post(`${STORE_PATH}-termination`)
@@ -442,6 +480,8 @@ describe("tUS Extended Tests (matching tus-node-server e2e)", () => {
         });
 
         it("should disallow terminating finished uploads when disabled", async () => {
+            expect.assertions(1);
+
             // Create and complete an upload
             const response = await terminationAgent
                 .post(`${STORE_PATH}-termination`)
@@ -538,10 +578,14 @@ describe("tUS Extended Tests (matching tus-node-server e2e)", () => {
 
     describe("error scenarios", () => {
         it("should return 404 for HEAD on non-existent file", async () => {
+            expect.assertions(1);
+
             await agent.head(`${STORE_PATH}/non-existent-file-id`).set("Tus-Resumable", TUS_RESUMABLE).expect(404);
         });
 
         it("should return 404 for PATCH on non-existent file", async () => {
+            expect.assertions(1);
+
             await agent
                 .patch(`${STORE_PATH}/non-existent-file-id`)
                 .set("Tus-Resumable", TUS_RESUMABLE)
@@ -552,6 +596,8 @@ describe("tUS Extended Tests (matching tus-node-server e2e)", () => {
         });
 
         it("should return 404 for invalid paths", async () => {
+            expect.assertions(1);
+
             await agent
                 .patch(`${STORE_PATH}/`)
                 .set("Tus-Resumable", TUS_RESUMABLE)
@@ -562,6 +608,8 @@ describe("tUS Extended Tests (matching tus-node-server e2e)", () => {
         });
 
         it("should validate Upload-Offset header", async () => {
+            expect.assertions(1);
+
             const response = await agent
                 .post(STORE_PATH)
                 .set("Tus-Resumable", TUS_RESUMABLE)
@@ -581,6 +629,8 @@ describe("tUS Extended Tests (matching tus-node-server e2e)", () => {
         });
 
         it("should validate Content-Type header", async () => {
+            expect.assertions(1);
+
             const response = await agent
                 .post(STORE_PATH)
                 .set("Tus-Resumable", TUS_RESUMABLE)

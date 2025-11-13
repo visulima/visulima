@@ -36,9 +36,9 @@ describe(VideoTransformer, () => {
         it("should create transformer with default configuration", () => {
             expect.assertions(1);
 
-            const transformer = new VideoTransformer(mockStorage as import("../../src/storage/storage").BaseStorage);
+            const newTransformer = new VideoTransformer(mockStorage as import("../../src/storage/storage").BaseStorage);
 
-            expect(transformer).toBeInstanceOf(VideoTransformer);
+            expect(newTransformer).toBeInstanceOf(VideoTransformer);
         });
 
         it("should create transformer with custom configuration", () => {
@@ -50,9 +50,9 @@ describe(VideoTransformer, () => {
                 maxVideoSize: 100 * 1024 * 1024,
             };
 
-            const transformer = new VideoTransformer(mockStorage as import("../../src/storage/storage").BaseStorage, config);
+            const newTransformer = new VideoTransformer(mockStorage as import("../../src/storage/storage").BaseStorage, config);
 
-            expect(transformer).toBeInstanceOf(VideoTransformer);
+            expect(newTransformer).toBeInstanceOf(VideoTransformer);
         });
     });
 
