@@ -1,3 +1,9 @@
+## @visulima/cerebro [2.1.2](https://github.com/visulima/visulima/compare/@visulima/cerebro@2.1.1...@visulima/cerebro@2.1.2) (2025-11-13)
+
+### Bug Fixes
+
+* update CLI and plugin manager types to use Console instead of ExtendedLogger ([ff6d2cb](https://github.com/visulima/visulima/commit/ff6d2cbaceccfbde47b6bfb6e957a6077fa1db0d))
+
 ## @visulima/cerebro [2.1.1](https://github.com/visulima/visulima/compare/@visulima/cerebro@2.1.0...@visulima/cerebro@2.1.1) (2025-11-12)
 
 ### Bug Fixes

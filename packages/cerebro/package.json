@@ -1,6 +1,6 @@
 {
     "name": "@visulima/cerebro",
-    "version": "2.1.1",
+    "version": "2.1.2",
     "description": "A delightful toolkit for building cross-runtime CLIs for Node.js, Deno, and Bun.",
     "keywords": [
         "command",
