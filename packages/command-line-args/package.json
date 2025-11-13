@@ -1,6 +1,6 @@
 {
     "name": "@visulima/command-line-args",
-    "version": "1.0.3",
+    "version": "1.0.4",
     "description": "A mature, feature-complete library to parse command-line options.",
     "keywords": [
         "visulima",
@@ -69,7 +69,7 @@
         "@secretlint/secretlint-rule-preset-recommend": "^11.2.5",
         "@total-typescript/ts-reset": "^0.6.1",
         "@types/node": "24.10.0",
-        "@visulima/error": "5.0.5",
+        "@visulima/error": "5.0.6",
         "@visulima/packem": "2.0.0-alpha.37",
         "@vitest/coverage-v8": "^4.0.8",
         "@vitest/ui": "^4.0.8",
