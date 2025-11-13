@@ -1,3 +1,9 @@
+## @visulima/fmt [1.1.21](https://github.com/visulima/visulima/compare/@visulima/fmt@1.1.20...@visulima/fmt@1.1.21) (2025-11-13)
+
+### Bug Fixes
+
+* bump packem, to fix minified version of the code ([2a36ceb](https://github.com/visulima/visulima/commit/2a36ceb09251b0ca1178701a26547a871ed717a7))
+
 ## @visulima/fmt [1.1.20](https://github.com/visulima/visulima/compare/@visulima/fmt@1.1.19...@visulima/fmt@1.1.20) (2025-11-12)
 
 ### Bug Fixes
