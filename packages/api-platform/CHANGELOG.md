@@ -1,3 +1,18 @@
+## @visulima/api-platform [3.0.58](https://github.com/visulima/visulima/compare/@visulima/api-platform@3.0.57...@visulima/api-platform@3.0.58) (2025-11-13)
+
+### Bug Fixes
+
+* bump packem, to fix minified version of the code ([2a36ceb](https://github.com/visulima/visulima/commit/2a36ceb09251b0ca1178701a26547a871ed717a7))
+
+
+### Dependencies
+
+* **@visulima/connect:** upgraded to 3.0.27
+* **@visulima/fs:** upgraded to 4.0.6
+* **@visulima/jsdoc-open-api:** upgraded to 2.0.94
+* **@visulima/path:** upgraded to 2.0.5
+* **@visulima/crud:** upgraded to 2.0.46
+
 ## @visulima/api-platform [3.0.57](https://github.com/visulima/visulima/compare/@visulima/api-platform@3.0.56...@visulima/api-platform@3.0.57) (2025-11-12)
 
 ### Bug Fixes
