@@ -1,3 +1,22 @@
+## @visulima/cerebro [2.1.4](https://github.com/visulima/visulima/compare/@visulima/cerebro@2.1.3...@visulima/cerebro@2.1.4) (2025-11-13)
+
+### Bug Fixes
+
+* bump packem, to fix minified version of the code ([2a36ceb](https://github.com/visulima/visulima/commit/2a36ceb09251b0ca1178701a26547a871ed717a7))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.29
+* **@visulima/tabular:** upgraded to 3.1.3
+* **@visulima/boxen:** upgraded to 2.0.10
+* **@visulima/command-line-args:** upgraded to 1.0.4
+* **@visulima/error:** upgraded to 5.0.6
+* **@visulima/find-cache-dir:** upgraded to 2.0.6
+* **@visulima/pail:** upgraded to 3.2.2
+* **@visulima/path:** upgraded to 2.0.5
+* **@visulima/string:** upgraded to 2.0.6
+
 ## @visulima/cerebro [2.1.3](https://github.com/visulima/visulima/compare/@visulima/cerebro@2.1.2...@visulima/cerebro@2.1.3) (2025-11-13)
 
 ### Bug Fixes
