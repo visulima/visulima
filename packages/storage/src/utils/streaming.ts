@@ -229,6 +229,12 @@ export const createBandwidthLimitedStream = (sourceStream: Readable, bytesPerSec
             const delay = targetDelay - timeSinceLastChunk;
 
             const timeout = setTimeout(() => {
+                // Remove timeout from array after it fires
+                const index = pendingTimeouts.indexOf(timeout);
+                if (index > -1) {
+                    pendingTimeouts.splice(index, 1);
+                }
+
                 try {
                     if (!targetStream.destroyed) {
                         targetStream.push(chunk);

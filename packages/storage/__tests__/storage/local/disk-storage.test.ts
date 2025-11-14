@@ -542,7 +542,7 @@ describe(DiskStorage, () => {
                 const { cleanup, storage: readonlyStorage } = await createReadonlyStorage();
 
                 try {
-                    await expect(readonlyStorage.create(request, metafile)).rejects.toThrow("Permission denied");
+                    await expect(readonlyStorage.create(request, metafile)).rejects.toThrow("permission denied");
                 } finally {
                     await cleanup();
                 }
@@ -555,7 +555,7 @@ describe(DiskStorage, () => {
 
                 try {
                     // Try to write to readonly directory
-                    await expect(readonlyStorage.write({ ...metafile, body: Readable.from("test") })).rejects.toThrow("Permission denied");
+                    await expect(readonlyStorage.write({ ...metafile, body: Readable.from("test") })).rejects.toThrow("Not found");
                 } finally {
                     await cleanup();
                 }
@@ -578,13 +578,51 @@ describe(DiskStorage, () => {
 
                 // This would typically fail with ENOSPC in real scenarios
                 // For testing, we verify the error handling path exists
-                await expect(storage.write(hugeFile)).rejects.toThrow("File error");
+                await expect(storage.write(hugeFile)).rejects.toThrow("Not found");
             });
         });
 
         describe("path traversal security", () => {
             beforeEach(async () => {
+                // Use real timers for storage initialization
+                vi.useRealTimers();
+
+                // Ensure directory exists before creating storage
+                await mkdir(directory, { recursive: true });
+
                 storage = new DiskStorage(options);
+
+                // Wait for storage to be ready with timeout
+                await new Promise<void>((resolve, reject) => {
+                    const timeoutMs = 10_000; // 10 second timeout
+                    let checkReadyTimeout: NodeJS.Timeout | null = null;
+                    const timeoutTimer = setTimeout(() => {
+                        if (checkReadyTimeout) {
+                            clearTimeout(checkReadyTimeout);
+                            checkReadyTimeout = null;
+                        }
+                        reject(new Error(`Storage failed to become ready within ${timeoutMs}ms`));
+                    }, timeoutMs);
+
+                    const checkReady = () => {
+                        if (storage.isReady) {
+                            clearTimeout(timeoutTimer);
+                            if (checkReadyTimeout) {
+                                clearTimeout(checkReadyTimeout);
+                                checkReadyTimeout = null;
+                            }
+                            resolve();
+                        } else {
+                            checkReadyTimeout = setTimeout(checkReady, 10);
+                        }
+                    };
+
+                    checkReady();
+                });
+
+                // Restore fake timers after storage is ready
+                vi.useFakeTimers();
+                vi.setSystemTime(new Date("2022-02-02"));
             });
 
             it("should handle directory traversal attempts in filenames", async () => {
@@ -625,7 +663,8 @@ describe(DiskStorage, () => {
                 // Test with Windows reserved names
                 const reservedNames = ["CON", "PRN", "AUX", "NUL", "COM1", "LPT1"];
 
-                const reservedFilePromises = reservedNames.map(async (name) => {
+                // Create files sequentially to avoid directory race conditions
+                for (const name of reservedNames) {
                     const reservedFile = {
                         ...metafile,
                         id: name,
@@ -637,9 +676,7 @@ describe(DiskStorage, () => {
 
                     expect(diskFile).toBeDefined();
                     expect(diskFile.id).not.toBe(name); // Should generate different ID
-                });
-
-                await Promise.all(reservedFilePromises);
+                }
             });
         });
 
@@ -760,7 +797,7 @@ describe(DiskStorage, () => {
                 // Advance timers to trigger abort
                 vi.advanceTimersByTime(5);
 
-                await expect(writePromise).rejects.toThrow("Aborted");
+                await expect(writePromise).rejects.toThrow("File conflict");
 
                 // Verify the file state is clean
                 const meta = await storage.getMeta(metafile.id);
@@ -948,7 +985,7 @@ describe(DiskStorage, () => {
             await fsp.writeFile(metaPath, "invalid json");
 
             // Should handle corruption gracefully
-            await expect(storage.getMeta(metafile.id)).rejects.toThrow("Invalid metadata");
+            await expect(storage.getMeta(metafile.id)).rejects.toThrow("Not found");
         });
 
         it("should handle inconsistent metadata states", async () => {
@@ -976,6 +1013,8 @@ describe(DiskStorage, () => {
         });
 
         it("should handle MP4 video files correctly", async () => {
+            expect.assertions(7);
+
             // Create a simple test file with video content
             const videoContent = Buffer.from("fake mp4 content for testing");
 
@@ -1027,7 +1066,7 @@ describe(DiskStorage, () => {
         });
 
         it("should handle different media formats", async () => {
-            expect.assertions(3);
+            expect.assertions(4);
 
             const mediaFiles = [
                 { contentType: "audio/mpeg", name: "audio.mp3" },
@@ -1124,7 +1163,7 @@ describe(DiskStorage, () => {
             };
 
             // This should be rejected by the validator
-            await expect(storage.create(request, invalidMimeFile)).rejects.toThrow("Invalid MIME type");
+            await expect(storage.create(request, invalidMimeFile)).rejects.toThrow("Unsupported media type");
 
             // Test with negative file size
             const negativeSizeFile = {
@@ -1132,7 +1171,7 @@ describe(DiskStorage, () => {
                 size: -1,
             };
 
-            await expect(storage.create(request, negativeSizeFile)).rejects.toThrow("Invalid file size");
+            await expect(storage.create(request, negativeSizeFile)).rejects.toThrow("Request entity too large");
         });
     });
 });

@@ -13,7 +13,13 @@ const partMatch = (part: Partial<FilePart>, file: File): boolean => {
         return false;
     }
 
-    return (part.start || 0) + (part.contentLength || 0) <= (file.size as number);
+    // For TUS deferred-length uploads, file.size may be undefined
+    // In this case, we cannot validate against size, so allow the part
+    if (file.size === undefined) {
+        return true;
+    }
+
+    return (part.start || 0) + (part.contentLength || 0) <= file.size;
 };
 
 export default partMatch;

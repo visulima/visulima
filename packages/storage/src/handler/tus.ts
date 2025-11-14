@@ -260,14 +260,9 @@ export class Tus<
         } catch (error: any) {
             this.checkForUndefinedIdOrPath(error);
 
-            // Handle expiration errors (but not "Id is undefined" which should be 404)
+            // Handle expiration errors
             if (error.UploadErrorCode === "GONE" || error.UploadErrorCode === "FILE_NOT_FOUND") {
                 throw createHttpError(410, "Upload expired");
-            }
-
-            // Handle "Id is undefined" as 404
-            if (error.message === "Id is undefined") {
-                throw createHttpError(404, "File not found");
             }
 
             throw error;
@@ -349,14 +344,9 @@ export class Tus<
         } catch (error: any) {
             this.checkForUndefinedIdOrPath(error);
 
-            // Handle expiration errors (but not "Id is undefined" which should be 404)
+            // Handle expiration errors
             if (error.UploadErrorCode === "GONE" || error.UploadErrorCode === "FILE_NOT_FOUND") {
                 throw createHttpError(410, "Upload expired");
-            }
-
-            // Handle "Id is undefined" as 404
-            if (error.message === "Id is undefined") {
-                throw createHttpError(404, "File not found");
             }
 
             throw error;
@@ -541,7 +531,7 @@ export class Tus<
      */
     // eslint-disable-next-line class-methods-use-this
     private checkForUndefinedIdOrPath(error: any): void {
-        if (["Id is undefined", "Path is undefined"].includes(error.message)) {
+        if (["Id is undefined", "Path is undefined", "Invalid request URL"].includes(error.message)) {
             throw createHttpError(404, "File not found");
         }
     }

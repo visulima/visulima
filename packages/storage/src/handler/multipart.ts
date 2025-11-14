@@ -139,27 +139,7 @@ class Multipart<
                 start: 0,
             });
 
-            // Wait for the file to be completed
-            const completedFile = await this.storage.write({
-                body: Readable.from(new Uint8Array(0)), // Empty buffer to signal completion
-                contentLength: 0,
-                id: file.id,
-                start: filePart.size,
-            });
-
-            if (completedFile.status === "completed") {
-                return {
-                    ...completedFile,
-                    headers: {
-                        Location: this.buildFileUrl(request, completedFile),
-                        ...completedFile.expiredAt === undefined ? {} : { "X-Upload-Expires": completedFile.expiredAt.toString() },
-                        ...completedFile.ETag === undefined ? {} : { ETag: completedFile.ETag },
-                    },
-                    statusCode: 200,
-                };
-            }
-
-            // Process metadata parts
+            // Process metadata parts before checking completion
             for (const part of parts) {
                 if (!part.isFile && part.name) {
                     let data = {};
@@ -177,6 +157,38 @@ class Multipart<
                     Object.assign(config.metadata, data);
                 }
             }
+
+            // Wait for the file to be completed
+            const completedFile = await this.storage.write({
+                body: Readable.from(new Uint8Array(0)), // Empty buffer to signal completion
+                contentLength: 0,
+                id: file.id,
+                start: filePart.size,
+            });
+
+            // Update completed file with metadata if any was provided
+            let finalFile = completedFile;
+            if (Object.keys(config.metadata).length > 0) {
+                // Merge metadata from parts with existing file metadata
+                const mergedMetadata = {
+                    ...completedFile.metadata,
+                    ...config.metadata,
+                };
+                const updatedFile = await this.storage.update({ id: completedFile.id }, { metadata: mergedMetadata });
+                // Preserve the completed status after metadata update
+                finalFile = { ...updatedFile, status: completedFile.status };
+            }
+
+            // Always return a response - file should be completed at this point
+            return {
+                ...finalFile,
+                headers: {
+                    Location: this.buildFileUrl(request, finalFile),
+                    ...finalFile.expiredAt === undefined ? {} : { "X-Upload-Expires": finalFile.expiredAt.toString() },
+                    ...finalFile.ETag === undefined ? {} : { ETag: finalFile.ETag },
+                },
+                statusCode: 200,
+            };
         } catch (error) {
             if (error instanceof MaxFileSizeExceededError) {
                 throw createHttpError(413, "File size limit exceeded");
@@ -331,27 +343,7 @@ class Multipart<
                 start: 0,
             });
 
-            // Wait for the file to be completed
-            const completedFile = await this.storage.write({
-                body: Readable.from(new Uint8Array(0)), // Empty buffer to signal completion
-                contentLength: 0,
-                id: file.id,
-                start: filePart.size,
-            });
-
-            if (completedFile.status === "completed") {
-                return {
-                    ...completedFile,
-                    headers: {
-                        Location: this.buildFileUrl({} as any, completedFile),
-                        ...completedFile.expiredAt === undefined ? {} : { "X-Upload-Expires": completedFile.expiredAt.toString() },
-                        ...completedFile.ETag === undefined ? {} : { ETag: completedFile.ETag },
-                    },
-                    statusCode: 200,
-                };
-            }
-
-            // Process metadata parts
+            // Process metadata parts before checking completion
             for (const part of parts) {
                 if (!part.isFile && part.name) {
                     let data = {};
@@ -369,6 +361,38 @@ class Multipart<
                     Object.assign(config.metadata, data);
                 }
             }
+
+            // Wait for the file to be completed
+            const completedFile = await this.storage.write({
+                body: Readable.from(new Uint8Array(0)), // Empty buffer to signal completion
+                contentLength: 0,
+                id: file.id,
+                start: filePart.size,
+            });
+
+            // Update completed file with metadata if any was provided
+            let finalFile = completedFile;
+            if (Object.keys(config.metadata).length > 0) {
+                // Merge metadata from parts with existing file metadata
+                const mergedMetadata = {
+                    ...completedFile.metadata,
+                    ...config.metadata,
+                };
+                const updatedFile = await this.storage.update({ id: completedFile.id }, { metadata: mergedMetadata });
+                // Preserve the completed status after metadata update
+                finalFile = { ...updatedFile, status: completedFile.status };
+            }
+
+            // Always return a response - file should be completed at this point
+            return {
+                ...finalFile,
+                headers: {
+                    Location: this.buildFileUrl({} as any, finalFile),
+                    ...finalFile.expiredAt === undefined ? {} : { "X-Upload-Expires": finalFile.expiredAt.toString() },
+                    ...finalFile.ETag === undefined ? {} : { ETag: finalFile.ETag },
+                },
+                statusCode: 200,
+            };
         } catch (error) {
             if (error instanceof MaxFileSizeExceededError) {
                 throw createHttpError(413, "File size limit exceeded");
@@ -392,7 +416,7 @@ class Multipart<
      */
     // eslint-disable-next-line class-methods-use-this
     private checkForUndefinedIdOrPath(error: any): void {
-        if (["Id is undefined", "Path is undefined"].includes(error.message)) {
+        if (["Id is undefined", "Path is undefined", "Invalid request URL"].includes(error.message)) {
             throw createHttpError(404, "File not found");
         }
     }

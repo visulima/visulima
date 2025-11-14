@@ -154,17 +154,18 @@ describe("tUS Extended Tests (matching tus-node-server e2e)", () => {
         });
 
         it("should return 410 Gone for expired upload", async () => {
-            expect.assertions(1);
+            expect.assertions(2);
 
             // Create a separate file for this test
-            const response = await expiredAgent
+            const createResponse = await expiredAgent
                 .post(`${STORE_PATH}-expired`)
                 .set("Tus-Resumable", TUS_RESUMABLE)
                 .set("Upload-Length", "1000")
-                .set("Upload-Metadata", serializeMetadata(metadata))
-                .expect(201);
+                .set("Upload-Metadata", serializeMetadata(metadata));
 
-            const testFileId = response.headers.location.split("/").pop();
+            expect(createResponse.status).toBe(201);
+
+            const testFileId = createResponse.headers.location.split("/").pop();
 
             // Wait for the file to expire (50ms + buffer)
             await new Promise<void>((resolve) => {
@@ -173,21 +174,24 @@ describe("tUS Extended Tests (matching tus-node-server e2e)", () => {
                 }, 100);
             });
 
-            await expiredAgent.head(`${STORE_PATH}-expired/${testFileId}`).set("Tus-Resumable", TUS_RESUMABLE).expect(410);
+            const headResponse = await expiredAgent.head(`${STORE_PATH}-expired/${testFileId}`).set("Tus-Resumable", TUS_RESUMABLE);
+
+            expect(headResponse.status).toBe(410);
         });
 
         it("should return 410 Gone for PATCH on expired upload", async () => {
-            expect.assertions(1);
+            expect.assertions(2);
 
             // Create a separate file for this test
-            const response = await expiredAgent
+            const createResponse = await expiredAgent
                 .post(`${STORE_PATH}-expired`)
                 .set("Tus-Resumable", TUS_RESUMABLE)
                 .set("Upload-Length", "1000")
-                .set("Upload-Metadata", serializeMetadata(metadata))
-                .expect(201);
+                .set("Upload-Metadata", serializeMetadata(metadata));
 
-            const testFileId = response.headers.location.split("/").pop();
+            expect(createResponse.status).toBe(201);
+
+            const testFileId = createResponse.headers.location.split("/").pop();
 
             // Wait for the file to expire (50ms + buffer)
             await new Promise<void>((resolve) => {
@@ -196,13 +200,14 @@ describe("tUS Extended Tests (matching tus-node-server e2e)", () => {
                 }, 100);
             });
 
-            await expiredAgent
+            const patchResponse = await expiredAgent
                 .patch(`${STORE_PATH}-expired/${testFileId}`)
                 .set("Tus-Resumable", TUS_RESUMABLE)
                 .set("Upload-Offset", "0")
                 .set("Content-Type", "application/offset+octet-stream")
-                .send("test")
-                .expect(410);
+                .send("test");
+
+            expect(patchResponse.status).toBe(410);
         });
 
         it("should handle purge of expired files", async () => {
@@ -410,13 +415,14 @@ describe("tUS Extended Tests (matching tus-node-server e2e)", () => {
                 }, 100);
             });
 
-            await deferredAgent
+            const response = await deferredAgent
                 .patch(`${STORE_PATH}-deferred-expired/${deferredFileId}`)
                 .set("Tus-Resumable", TUS_RESUMABLE)
                 .set("Upload-Offset", "9")
                 .set("Content-Type", "application/offset+octet-stream")
-                .send("more data")
-                .expect(410);
+                .send("more data");
+
+            expect(response.status).toBe(410);
         });
     });
 
@@ -463,46 +469,53 @@ describe("tUS Extended Tests (matching tus-node-server e2e)", () => {
         });
 
         it("should allow terminating unfinished uploads", async () => {
-            expect.assertions(1);
+            expect.assertions(2);
 
             // Create an upload but don't complete it
-            const response = await terminationAgent
+            const createResponse = await terminationAgent
                 .post(`${STORE_PATH}-termination`)
                 .set("Tus-Resumable", TUS_RESUMABLE)
                 .set("Upload-Length", "100")
-                .set("Upload-Metadata", serializeMetadata(metadata))
-                .expect(201);
+                .set("Upload-Metadata", serializeMetadata(metadata));
 
-            const uploadId = response.headers.location.split("/").pop();
+            expect(createResponse.status).toBe(201);
+
+            const uploadId = createResponse.headers.location.split("/").pop();
 
             // Terminate the unfinished upload
-            await terminationAgent.delete(`${STORE_PATH}-termination/${uploadId}`).set("Tus-Resumable", TUS_RESUMABLE).expect(204);
+            const deleteResponse = await terminationAgent.delete(`${STORE_PATH}-termination/${uploadId}`).set("Tus-Resumable", TUS_RESUMABLE);
+
+            expect(deleteResponse.status).toBe(204);
         });
 
         it("should disallow terminating finished uploads when disabled", async () => {
-            expect.assertions(1);
+            expect.assertions(3);
 
             // Create and complete an upload
-            const response = await terminationAgent
+            const createResponse = await terminationAgent
                 .post(`${STORE_PATH}-termination`)
                 .set("Tus-Resumable", TUS_RESUMABLE)
                 .set("Upload-Length", "100")
-                .set("Upload-Metadata", serializeMetadata(metadata))
-                .expect(201);
+                .set("Upload-Metadata", serializeMetadata(metadata));
 
-            completedUploadId = response.headers.location.split("/").pop();
+            expect(createResponse.status).toBe(201);
+
+            completedUploadId = createResponse.headers.location.split("/").pop();
 
             // Complete the upload
-            await terminationAgent
+            const patchResponse = await terminationAgent
                 .patch(`${STORE_PATH}-termination/${completedUploadId}`)
                 .set("Tus-Resumable", TUS_RESUMABLE)
                 .set("Upload-Offset", "0")
                 .set("Content-Type", "application/offset+octet-stream")
-                .send(Buffer.alloc(100, "a"))
-                .expect(200);
+                .send(Buffer.alloc(100, "a"));
+
+            expect(patchResponse.status).toBe(200);
 
             // Try to terminate the completed upload - should fail
-            await terminationAgent.delete(`${STORE_PATH}-termination/${completedUploadId}`).set("Tus-Resumable", TUS_RESUMABLE).expect(400);
+            const deleteResponse = await terminationAgent.delete(`${STORE_PATH}-termination/${completedUploadId}`).set("Tus-Resumable", TUS_RESUMABLE);
+
+            expect(deleteResponse.status).toBe(400);
         });
     });
 
@@ -580,75 +593,83 @@ describe("tUS Extended Tests (matching tus-node-server e2e)", () => {
         it("should return 404 for HEAD on non-existent file", async () => {
             expect.assertions(1);
 
-            await agent.head(`${STORE_PATH}/non-existent-file-id`).set("Tus-Resumable", TUS_RESUMABLE).expect(404);
+            const response = await agent.head(`${STORE_PATH}/non-existent-file-id`).set("Tus-Resumable", TUS_RESUMABLE);
+
+            expect(response.status).toBe(404);
         });
 
         it("should return 404 for PATCH on non-existent file", async () => {
             expect.assertions(1);
 
-            await agent
+            const response = await agent
                 .patch(`${STORE_PATH}/non-existent-file-id`)
                 .set("Tus-Resumable", TUS_RESUMABLE)
                 .set("Upload-Offset", "0")
                 .set("Content-Type", "application/offset+octet-stream")
-                .send("test")
-                .expect(404);
+                .send("test");
+
+            expect(response.status).toBe(404);
         });
 
         it("should return 404 for invalid paths", async () => {
             expect.assertions(1);
 
-            await agent
+            const response = await agent
                 .patch(`${STORE_PATH}/`)
                 .set("Tus-Resumable", TUS_RESUMABLE)
                 .set("Upload-Offset", "0")
                 .set("Content-Type", "application/offset+octet-stream")
-                .send("test")
-                .expect(404);
+                .send("test");
+
+            expect(response.status).toBe(404);
         });
 
         it("should validate Upload-Offset header", async () => {
-            expect.assertions(1);
+            expect.assertions(2);
 
-            const response = await agent
+            const createResponse = await agent
                 .post(STORE_PATH)
                 .set("Tus-Resumable", TUS_RESUMABLE)
                 .set("Upload-Length", "100")
-                .set("Upload-Metadata", serializeMetadata(metadata))
-                .expect(201);
+                .set("Upload-Metadata", serializeMetadata(metadata));
 
-            const uploadId = response.headers.location.split("/").pop();
+            expect(createResponse.status).toBe(201);
+
+            const uploadId = createResponse.headers.location.split("/").pop();
 
             // Try PATCH without Upload-Offset header
-            await agent
+            const response = await agent
                 .patch(`${STORE_PATH}/${uploadId}`)
                 .set("Tus-Resumable", TUS_RESUMABLE)
                 .set("Content-Type", "application/offset+octet-stream")
-                .send("test")
-                .expect(412);
+                .send("test");
+
+            expect(response.status).toBe(412);
         });
 
         it("should validate Content-Type header", async () => {
-            expect.assertions(1);
+            expect.assertions(2);
 
-            const response = await agent
+            const createResponse = await agent
                 .post(STORE_PATH)
                 .set("Tus-Resumable", TUS_RESUMABLE)
                 .set("Upload-Length", "100")
-                .set("Upload-Metadata", serializeMetadata(metadata))
-                .expect(201);
+                .set("Upload-Metadata", serializeMetadata(metadata));
 
-            const uploadId = response.headers.location.split("/").pop();
+            expect(createResponse.status).toBe(201);
+
+            const uploadId = createResponse.headers.location.split("/").pop();
 
             // Try PATCH without proper Content-Type header
             // The TUS spec requires application/offset+octet-stream for PATCH requests
-            await agent
+            const response = await agent
                 .patch(`${STORE_PATH}/${uploadId}`)
                 .set("Tus-Resumable", TUS_RESUMABLE)
                 .set("Upload-Offset", "0")
                 .set("Content-Type", "text/plain") // Wrong content type
-                .send("test")
-                .expect(412);
+                .send("test");
+
+            expect(response.status).toBe(412);
         });
     });
 });

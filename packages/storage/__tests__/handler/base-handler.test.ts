@@ -20,13 +20,30 @@ describe("baseHandler", () => {
         directory = temporaryDirectory();
         storage = new DiskStorage({ ...storageOptions, directory, logger: console });
 
-        // Wait for storage to be ready
-        await new Promise((resolve) => {
+        // Wait for storage to be ready with timeout
+        await new Promise<void>((resolve, reject) => {
+            const timeoutMs = 10_000; // 10 second timeout
+            let checkReadyTimeout: NodeJS.Timeout | null = null;
+            const timeoutTimer = setTimeout(() => {
+                // Clear any scheduled checkReady timeouts to avoid leaks
+                if (checkReadyTimeout) {
+                    clearTimeout(checkReadyTimeout);
+                    checkReadyTimeout = null;
+                }
+                reject(new Error(`Storage failed to become ready within ${timeoutMs}ms`));
+            }, timeoutMs);
+
             const checkReady = () => {
                 if (storage.isReady) {
-                    resolve(undefined);
+                    // Clear timeout timer and any scheduled checkReady timeouts when storage becomes ready
+                    clearTimeout(timeoutTimer);
+                    if (checkReadyTimeout) {
+                        clearTimeout(checkReadyTimeout);
+                        checkReadyTimeout = null;
+                    }
+                    resolve();
                 } else {
-                    setTimeout(checkReady, 10);
+                    checkReadyTimeout = setTimeout(checkReady, 10);
                 }
             };
 

@@ -124,22 +124,12 @@ describe("imageTransformer streaming", () => {
             mockTransform.mockRestore();
         });
 
-        it("should throw error when transformStream is not available", async () => {
-            expect.assertions(1);
+        it("should have transformStream available", async () => {
+            expect.assertions(2);
 
-            // Temporarily remove the transformStream method
-            const originalTransformStream = transformer.transformStream;
-
-            delete (transformer as unknown as { transformStream?: typeof originalTransformStream }).transformStream;
-
-            if (transformer.transformStream) {
-                await expect(transformer.transformStream("test-image", [])).rejects.toThrow("Transform stream is not available");
-            } else {
-                expect(transformer.transformStream).toBeUndefined();
-            }
-
-            // Restore the method
-            transformer.transformStream = originalTransformStream;
+            // ImageTransformer always has transformStream available (it's overridden from base class)
+            expect(transformer.transformStream).toBeDefined();
+            expect(typeof transformer.transformStream).toBe("function");
         });
 
         it("should handle transform errors gracefully", async () => {

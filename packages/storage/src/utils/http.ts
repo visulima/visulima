@@ -225,7 +225,7 @@ export const getRealPath = (request: IncomingMessage & { originalUrl?: string })
     }
 
     if (!realPath) {
-        throw new TypeError("Path is undefined");
+        throw new TypeError("Invalid request URL");
     }
 
     return realPath;
@@ -260,7 +260,7 @@ export const getIdFromRequest = (request: IncomingMessage & { originalUrl?: stri
         }
     }
 
-    throw new Error("Id is undefined");
+    throw new Error("Invalid request URL");
 };
 
 /**
