@@ -1,6 +1,6 @@
 {
     "name": "@visulima/ono",
-    "version": "1.0.11",
+    "version": "1.0.12",
     "exports": {
         ".": "./src/index.ts",
         "./page/context": "./src/error-inspector/page/create-request-context.ts",
