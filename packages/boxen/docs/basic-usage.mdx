@@ -1,0 +1,398 @@
+---
+title: Basic Usage
+description: Learn the fundamentals of creating boxes with Boxen
+---
+
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+This guide covers the fundamental concepts of using Boxen. By the end, you'll be comfortable creating boxes with various styles and configurations.
+
+## Your First Box
+
+The simplest way to use Boxen is to pass a string:
+
+```typescript
+import { boxen } from "@visulima/boxen";
+
+console.log(boxen("Hello, World!"));
+```
+
+Output:
+```
+┌─────────────┐
+│Hello, World!│
+└─────────────┘
+```
+
+## Adding Padding
+
+Make your boxes more spacious with padding:
+
+```typescript
+console.log(boxen("unicorn", { padding: 1 }));
+```
+
+Output:
+```
+┌─────────────┐
+│             │
+│   unicorn   │
+│             │
+└─────────────┘
+```
+
+<Callout type="info">
+The padding option accepts either a number or an object for fine-grained control.
+</Callout>
+
+<Tabs items={['Simple', 'Advanced']}>
+  <Tab value="Simple">
+    ```typescript
+    // Equal padding on all sides
+    boxen("text", { padding: 2 });
+    ```
+  </Tab>
+  <Tab value="Advanced">
+    ```typescript
+    // Different padding per side
+    boxen("text", { 
+        padding: { 
+            top: 1, 
+            right: 3, 
+            bottom: 1, 
+            left: 3 
+        } 
+    });
+    ```
+  </Tab>
+</Tabs>
+
+## Adding Margin
+
+Create space around your box with margin:
+
+```typescript
+console.log(boxen("spaced out", { margin: 1 }));
+```
+
+Output:
+```
+
+   ┌───────────┐
+   │spaced out │
+   └───────────┘
+
+```
+
+Like padding, margin can be a number or an object:
+
+```typescript
+boxen("text", { 
+    margin: { 
+        top: 2, 
+        right: 4, 
+        bottom: 2, 
+        left: 4 
+    } 
+});
+```
+
+## Border Styles
+
+Boxen comes with several pre-defined border styles:
+
+### Single (Default)
+
+```typescript
+console.log(boxen("single", { borderStyle: "single" }));
+```
+
+```
+┌──────┐
+│single│
+└──────┘
+```
+
+### Double
+
+```typescript
+console.log(boxen("double", { borderStyle: "double" }));
+```
+
+```
+╔══════╗
+║double║
+╚══════╝
+```
+
+### Round
+
+```typescript
+console.log(boxen("round", { borderStyle: "round" }));
+```
+
+```
+╭─────╮
+│round│
+╰─────╯
+```
+
+### Bold
+
+```typescript
+console.log(boxen("bold", { borderStyle: "bold" }));
+```
+
+```
+┏━━━━┓
+┃bold┃
+┗━━━━┛
+```
+
+### Classic
+
+```typescript
+console.log(boxen("classic", { borderStyle: "classic" }));
+```
+
+```
++-------+
+|classic|
++-------+
+```
+
+### Arrow
+
+```typescript
+console.log(boxen("arrow", { borderStyle: "arrow" }));
+```
+
+```
+↘↓↓↓↓↓↙
+→arrow←
+↗↑↑↑↑↑↖
+```
+
+## Combining Options
+
+You can combine multiple options to create more sophisticated boxes:
+
+```typescript
+console.log(
+    boxen("Welcome to my CLI app!", {
+        padding: 1,
+        margin: 1,
+        borderStyle: "double"
+    })
+);
+```
+
+Output:
+```
+
+   ╔═══════════════════════════╗
+   ║                           ║
+   ║  Welcome to my CLI app!   ║
+   ║                           ║
+   ╚═══════════════════════════╝
+
+```
+
+## Headers and Footers
+
+Add context to your boxes with headers and footers:
+
+```typescript
+console.log(
+    boxen("unicorns love rainbows", {
+        headerText: "magical",
+        headerAlignment: "center"
+    })
+);
+```
+
+Output:
+```
+┌────── magical ───────┐
+│unicorns love rainbows│
+└──────────────────────┘
+```
+
+With both header and footer:
+
+```typescript
+console.log(
+    boxen("Important message", {
+        headerText: "NOTICE",
+        headerAlignment: "center",
+        footerText: "Press any key to continue",
+        footerAlignment: "center",
+        padding: 1
+    })
+);
+```
+
+## Text Alignment
+
+Control how text is aligned within the box:
+
+<Tabs items={['Left', 'Center', 'Right']}>
+  <Tab value="Left">
+    ```typescript
+    console.log(boxen("Left", { 
+        textAlignment: "left", 
+        width: 20 
+    }));
+    ```
+  </Tab>
+  <Tab value="Center">
+    ```typescript
+    console.log(boxen("Center", { 
+        textAlignment: "center", 
+        width: 20 
+    }));
+    ```
+  </Tab>
+  <Tab value="Right">
+    ```typescript
+    console.log(boxen("Right", { 
+        textAlignment: "right", 
+        width: 20 
+    }));
+    ```
+  </Tab>
+</Tabs>
+
+## Multi-line Text
+
+Boxen handles multi-line text automatically:
+
+```typescript
+const message = `Line 1
+Line 2
+Line 3`;
+
+console.log(boxen(message, { padding: 1 }));
+```
+
+Output:
+```
+┌────────┐
+│        │
+│ Line 1 │
+│ Line 2 │
+│ Line 3 │
+│        │
+└────────┘
+```
+
+## Fixed Dimensions
+
+Set specific width and height for your boxes:
+
+<Tabs items={['Width', 'Height', 'Both']}>
+  <Tab value="Width">
+    ```typescript
+    console.log(boxen("Fixed width", { width: 30 }));
+    ```
+  </Tab>
+  <Tab value="Height">
+    ```typescript
+    console.log(boxen("Fixed height", { height: 7 }));
+    ```
+  </Tab>
+  <Tab value="Both">
+    ```typescript
+    console.log(boxen("Fixed size", { 
+        width: 30, 
+        height: 7 
+    }));
+    ```
+  </Tab>
+</Tabs>
+
+<Callout type="warn">
+Setting a fixed width disables terminal overflow handling. The box may appear broken if the user's terminal is not wide enough.
+</Callout>
+
+## Floating Boxes
+
+Position your box on the terminal:
+
+```typescript
+// Float right
+console.log(boxen("Right side", { float: "right" }));
+
+// Center
+console.log(boxen("Centered", { float: "center" }));
+
+// Left (default)
+console.log(boxen("Left side", { float: "left" }));
+```
+
+## Practical Examples
+
+### Success Message
+
+```typescript
+console.log(
+    boxen("Operation completed successfully!", {
+        padding: 1,
+        borderStyle: "round",
+        headerText: "SUCCESS",
+        headerAlignment: "center"
+    })
+);
+```
+
+### Warning Box
+
+```typescript
+console.log(
+    boxen("Please review the following warnings", {
+        padding: 1,
+        borderStyle: "bold",
+        headerText: "WARNING",
+        headerAlignment: "left",
+        width: 50
+    })
+);
+```
+
+### Info Panel
+
+```typescript
+console.log(
+    boxen(`Version: 1.0.0
+Status: Running
+Uptime: 5 days`, {
+        padding: 1,
+        margin: 1,
+        borderStyle: "single",
+        headerText: "System Information",
+        headerAlignment: "center"
+    })
+);
+```
+
+## Next Steps
+
+<Cards>
+  <Card
+    title="Styling Options"
+    description="Learn about colors and custom borders"
+    href="/styling-options"
+  />
+  <Card
+    title="Advanced Usage"
+    description="Master complex customizations"
+    href="/advanced-usage"
+  />
+  <Card
+    title="Examples"
+    description="See real-world use cases"
+    href="/examples"
+  />
+</Cards>
