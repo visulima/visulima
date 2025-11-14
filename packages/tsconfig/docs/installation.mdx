@@ -1,0 +1,97 @@
+---
+title: Installation
+description: How to install @visulima/tsconfig in your project
+---
+
+# Installation
+
+## Package Manager
+
+Install `@visulima/tsconfig` using your preferred package manager:
+
+<Tabs items={['npm', 'pnpm', 'yarn', 'bun']}>
+  <Tab value="npm">
+    ```bash
+    npm install @visulima/tsconfig
+    ```
+  </Tab>
+  <Tab value="pnpm">
+    ```bash
+    pnpm add @visulima/tsconfig
+    ```
+  </Tab>
+  <Tab value="yarn">
+    ```bash
+    yarn add @visulima/tsconfig
+    ```
+  </Tab>
+  <Tab value="bun">
+    ```bash
+    bun add @visulima/tsconfig
+    ```
+  </Tab>
+</Tabs>
+
+## Requirements
+
+### Node.js Version
+
+The package requires Node.js version 18.0.0 or higher.
+
+```json title="package.json"
+{
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
+```
+
+### TypeScript Version
+
+For the best experience with full type support, use TypeScript 5.0 or higher:
+
+```bash
+npm install -D typescript@latest
+```
+
+## Peer Dependencies
+
+All required dependencies are bundled with the package. No additional peer dependencies are needed.
+
+## Verification
+
+Verify your installation by running a simple test:
+
+```typescript
+import { findTsConfig } from "@visulima/tsconfig";
+
+const result = await findTsConfig();
+console.log("Found tsconfig at:", result.path);
+```
+
+If the import works without errors, you're ready to go!
+
+## Module System Support
+
+The package supports both ESM and CommonJS:
+
+### ESM (Recommended)
+
+```typescript
+import { findTsConfig, readTsConfig, writeTsConfig } from "@visulima/tsconfig";
+import type { TsConfigJson } from "@visulima/tsconfig";
+```
+
+### CommonJS
+
+```javascript
+const { findTsConfig, readTsConfig, writeTsConfig } = require("@visulima/tsconfig");
+```
+
+## TypeScript Configuration
+
+No additional TypeScript configuration is required. The package includes type definitions that work automatically with TypeScript's module resolution.
+
+## Next Steps
+
+Now that you have installed the package, proceed to the [Getting Started](/getting-started) guide to learn how to use it.
