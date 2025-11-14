@@ -27,11 +27,6 @@ export const getVitestConfig = (options: ViteUserConfig = {}) => {
             typecheck: {
                 enabled: false,
             },
-            // Force ANSI colors for tests
-            env: {
-                FORCE_COLOR: "1",
-                ...options.test?.env,
-            },
             ...options.test,
             exclude: [...configDefaults.exclude, "__fixtures__/**", ...(options.test?.exclude ?? [])],
         },
