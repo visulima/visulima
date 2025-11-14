@@ -10,11 +10,11 @@ For instance, you can use `green` to make `` green`Hello World!` `` pop, `` red`
   </p>
 </div>
 
-<br />
+
 
 <div align="center">
 
-[![TypeScript](https://img.shields.io/badge/Typescript-294E80.svg?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/) [![npm](https://img.shields.io/npm/v/@visulima/colorize/latest.svg?style=for-the-badge&logo=npm)](https://www.npmjs.com/package/@visulima/colorize/v/latest) [![license](https://img.shields.io/npm/l/@visulima/colorize?color=blueviolet&style=for-the-badge)](LICENSE.md)
+[![TypeScript](https://img.shields.io/badge/Typescript-294E80.svg?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/) [![npm](https://img.shields.io/npm/v/@visulima/colorize/latest.svg?style=for-the-badge&logo=npm)](https://www.npmjs.com/package/@visulima/colorize/v/latest) [![license](https://img.shields.io/npm/l/@visulima/colorize?color=blueviolet&style=for-the-badge)](https://github.com/visulima/visulima/blob/main/packages/colorize/LICENSE.md)
 
 </div>
 
@@ -921,7 +921,7 @@ Gradient:
 
 ## License
 
-The visulima colorize is open-sourced software licensed under the [MIT](LICENSE.md)
+The visulima colorize is open-sourced software licensed under the [MIT](https://github.com/visulima/visulima/blob/main/packages/colorize/LICENSE.md)
 
 
 [colors.js]: https://github.com/Marak/colors.js

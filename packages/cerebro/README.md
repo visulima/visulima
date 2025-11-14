@@ -9,18 +9,18 @@
 [@visulima/tabular](https://github.com/visulima/visulima/tree/main/packages/tabular) and
 [fastest-levenshtein](https://github.com/ka-weihe/fastest-levenshtein)
 
-<br />
+
 
 I would recommend reading this [guide](https://clig.dev/) on how to make user-friendly command-line tools.
 
   </p>
 </div>
 
-<br />
+
 
 <div align="center">
 
-[![TypeScript](https://img.shields.io/badge/Typescript-294E80.svg?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/) [![npm](https://img.shields.io/npm/v/@visulima/cerebro/latest.svg?style=for-the-badge&logo=npm)](https://www.npmjs.com/package/@visulima/cerebro/v/latest) [![license](https://img.shields.io/npm/l/@visulima/cerebro?color=blueviolet&style=for-the-badge)](LICENSE.md)
+[![TypeScript](https://img.shields.io/badge/Typescript-294E80.svg?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/) [![npm](https://img.shields.io/npm/v/@visulima/cerebro/latest.svg?style=for-the-badge&logo=npm)](https://www.npmjs.com/package/@visulima/cerebro/v/latest) [![license](https://img.shields.io/npm/l/@visulima/cerebro?color=blueviolet&style=for-the-badge)](https://github.com/visulima/visulima/blob/main/packages/cerebro/LICENSE.md)
 
 </div>
 
@@ -430,6 +430,6 @@ If you would like to help take a look at the [list of issues](https://github.com
 
 ## License
 
-The visulima package is open-sourced software licensed under the [MIT](LICENSE.md)
+The visulima package is open-sourced software licensed under the [MIT](https://github.com/visulima/visulima/blob/main/packages/cerebro/LICENSE.md)
 
 

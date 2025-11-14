@@ -5,11 +5,11 @@
   </p>
 </div>
 
-<br />
+
 
 <div align="center">
 
-[![TypeScript](https://img.shields.io/badge/Typescript-294E80.svg?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/) [![npm](https://img.shields.io/npm/v/@visulima/ono/latest.svg?style=for-the-badge&logo=npm)](https://www.npmjs.com/package/@visulima/ono/v/latest) [![license](https://img.shields.io/npm/l/@visulima/ono?color=blueviolet&style=for-the-badge)](LICENSE.md)
+[![TypeScript](https://img.shields.io/badge/Typescript-294E80.svg?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/) [![npm](https://img.shields.io/npm/v/@visulima/ono/latest.svg?style=for-the-badge&logo=npm)](https://www.npmjs.com/package/@visulima/ono/v/latest) [![license](https://img.shields.io/npm/l/@visulima/ono?color=blueviolet&style=for-the-badge)](https://github.com/visulima/visulima/blob/main/packages/ono/LICENSE.md)
 
 </div>
 
@@ -607,5 +607,5 @@ If you would like to help take a look at the [list of issues](https://github.com
 
 ## License
 
-The visulima error is open-sourced software licensed under the [MIT](LICENSE.md)
+The visulima error is open-sourced software licensed under the [MIT](https://github.com/visulima/visulima/blob/main/packages/ono/LICENSE.md)
 

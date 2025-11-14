@@ -2,9 +2,9 @@
   <h3>Visulima jsdoc-open-api</h3>
   <p>
     Generate OpenAPI (Swagger) specifications automatically from your JSDoc comments.
-    <br />
+    
     This package parses your existing code comments to create comprehensive API documentation, saving you time and effort.
-    <br />
+    
     It is designed for speed and minimal runtime overhead, building upon the foundations of JSDoc and Swagger standards.
   </p>
   <p>
@@ -14,11 +14,11 @@
   </p>
 </div>
 
-<br />
+
 
 <div align="center">
 
-[![TypeScript](https://img.shields.io/badge/Typescript-294E80.svg?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/) [![npm](https://img.shields.io/npm/v/@visulima/jsdoc-open-api/latest.svg?style=for-the-badge&logo=npm)](https://www.npmjs.com/package/@visulima/jsdoc-open-api/v/latest) [![license](https://img.shields.io/npm/l/@visulima/jsdoc-open-api?color=blueviolet&style=for-the-badge)](LICENSE.md)
+[![TypeScript](https://img.shields.io/badge/Typescript-294E80.svg?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/) [![npm](https://img.shields.io/npm/v/@visulima/jsdoc-open-api/latest.svg?style=for-the-badge&logo=npm)](https://www.npmjs.com/package/@visulima/jsdoc-open-api/v/latest) [![license](https://img.shields.io/npm/l/@visulima/jsdoc-open-api?color=blueviolet&style=for-the-badge)](https://github.com/visulima/visulima/blob/main/packages/jsdoc-open-api/LICENSE.md)
 
 </div>
 
@@ -527,7 +527,7 @@ Contributions are welcome! Please refer to the [Contribution Guidelines](../../.
 
 ## License
 
-This project is licensed under the **MIT License**. See the [LICENSE.md](LICENSE.md) file for details.
+This project is licensed under the **MIT License**. See the [LICENSE.md](https://github.com/visulima/visulima/blob/main/packages/jsdoc-open-api/LICENSE.md) file for details.
 
 ---
 
