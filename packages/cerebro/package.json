@@ -155,7 +155,7 @@
         "vitest": "^4.0.9"
     },
     "peerDependencies": {
-        "@bomb.sh/tab": "^0.0.7",
+        "@bomb.sh/tab": "^0.0.9",
         "@visulima/boxen": "2.0.10",
         "@visulima/find-cache-dir": "2.0.6",
         "@visulima/pail": "3.2.2",
