@@ -1,7 +1,7 @@
 import express from "express";
 import type { UploadFile } from "@visulima/upload";
 import { Multipart } from "@visulima/upload";
-import { GCStorage } from "@visulima/upload/gcs";
+import { GCStorage } from "@visulima/upload/provider/gcs";
 import Cors from "cors";
 
 const PORT = process.env.PORT || 3002;

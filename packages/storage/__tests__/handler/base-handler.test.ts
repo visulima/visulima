@@ -30,6 +30,7 @@ describe("baseHandler", () => {
                     clearTimeout(checkReadyTimeout);
                     checkReadyTimeout = null;
                 }
+
                 reject(new Error(`Storage failed to become ready within ${timeoutMs}ms`));
             }, timeoutMs);
 
@@ -37,10 +38,12 @@ describe("baseHandler", () => {
                 if (storage.isReady) {
                     // Clear timeout timer and any scheduled checkReady timeouts when storage becomes ready
                     clearTimeout(timeoutTimer);
+
                     if (checkReadyTimeout) {
                         clearTimeout(checkReadyTimeout);
                         checkReadyTimeout = null;
                     }
+
                     resolve();
                 } else {
                     checkReadyTimeout = setTimeout(checkReady, 10);

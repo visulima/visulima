@@ -531,7 +531,7 @@ export class Tus<
      */
     // eslint-disable-next-line class-methods-use-this
     private checkForUndefinedIdOrPath(error: any): void {
-        if (["Id is undefined", "Path is undefined", "Invalid request URL"].includes(error.message)) {
+        if (["Id is undefined", "Invalid request URL", "Path is undefined"].includes(error.message)) {
             throw createHttpError(404, "File not found");
         }
     }

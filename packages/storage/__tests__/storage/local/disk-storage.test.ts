@@ -601,16 +601,19 @@ describe(DiskStorage, () => {
                             clearTimeout(checkReadyTimeout);
                             checkReadyTimeout = null;
                         }
+
                         reject(new Error(`Storage failed to become ready within ${timeoutMs}ms`));
                     }, timeoutMs);
 
                     const checkReady = () => {
                         if (storage.isReady) {
                             clearTimeout(timeoutTimer);
+
                             if (checkReadyTimeout) {
                                 clearTimeout(checkReadyTimeout);
                                 checkReadyTimeout = null;
                             }
+
                             resolve();
                         } else {
                             checkReadyTimeout = setTimeout(checkReady, 10);

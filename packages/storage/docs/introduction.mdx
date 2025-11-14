@@ -150,7 +150,8 @@ Use the ImageTransformer class for programmatic image processing:
 
 ```ts
 import { LRUCache } from "lru-cache";
-import { DiskStorage, ImageTransformer } from "@visulima/upload";
+import { DiskStorage } from "@visulima/upload";
+import ImageTransformer from "@visulima/upload/transformers/image";
 
 const storage = new DiskStorage({ directory: "./uploads" });
 

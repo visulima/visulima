@@ -94,7 +94,7 @@ describe("utils", () => {
 
             appendHeader(response, "head", "value");
 
-            expect(response.getHeaders()).toEqual({ head: "value" });
+            expect(response.getHeaders()).toStrictEqual({ head: "value" });
         });
 
         it("should append multiple header values to existing header", () => {
@@ -103,7 +103,7 @@ describe("utils", () => {
             appendHeader(response, "head", "value1");
             appendHeader(response, "head", "value2");
 
-            expect(response.getHeaders()).toEqual({ head: "value,value1,value2" });
+            expect(response.getHeaders()).toStrictEqual({ head: "value,value1,value2" });
         });
 
         it("should set headers and expose them in access-control-expose-headers", () => {
@@ -111,7 +111,7 @@ describe("utils", () => {
 
             setHeaders(response, { head: "value" });
 
-            expect(response.getHeaders()).toEqual({ "access-control-expose-headers": "head", head: "value" });
+            expect(response.getHeaders()).toStrictEqual({ "access-control-expose-headers": "head", head: "value" });
         });
 
         it("should set multiple header values and expose them correctly", () => {
@@ -119,7 +119,7 @@ describe("utils", () => {
 
             setHeaders(response, { head: ["value1", "value2"] });
 
-            expect(response.getHeaders()).toEqual({ "access-control-expose-headers": "head,head", head: ["value1", "value2"] });
+            expect(response.getHeaders()).toStrictEqual({ "access-control-expose-headers": "head,head", head: ["value1", "value2"] });
         });
 
         it("should extract host from request headers", () => {
@@ -142,7 +142,7 @@ describe("utils", () => {
             });
             const result = await callback(request);
 
-            expect(result).toEqual({ body: "body" });
+            expect(result).toStrictEqual({ body: "body" });
         });
 
         it("should handle thrown errors in normalized hook response", async () => {
@@ -162,13 +162,13 @@ describe("utils", () => {
                 return { body: "body" };
             });
 
-            await expect(callback(response)).resolves.toEqual({ body: "body" });
+            await expect(callback(response)).resolves.toStrictEqual({ body: "body" });
 
             const function2 = normalizeOnErrorResponse(() => {
                 return { body: "body" };
             });
 
-            expect(function2(response)).toEqual({ body: "body" });
+            expect(function2(response)).toStrictEqual({ body: "body" });
         });
 
         it("should handle thrown errors in normalized on error response", async () => {
@@ -194,7 +194,7 @@ describe("utils", () => {
 
             const metadata = await getMetadata(request);
 
-            expect(metadata).toEqual({});
+            expect(metadata).toStrictEqual({});
         });
 
         it("should parse metadata from JSON request body", async () => {
@@ -213,7 +213,7 @@ describe("utils", () => {
             };
             const metadata = await getMetadata(request);
 
-            expect(metadata).toEqual({
+            expect(metadata).toStrictEqual({
                 encoding: "",
                 md5: "",
                 mime,

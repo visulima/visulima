@@ -112,7 +112,7 @@ describe(GCStorage, async () => {
 
             mockAuthRequest.mockRejectedValue(errorObject);
 
-            await expect(storage.create(request, metafile)).rejects.toEqual(errorObject);
+            await expect(storage.create(request, metafile)).rejects.toStrictEqual(errorObject);
         });
 
         it("should handle TTL option and set expiration timestamp", async () => {
@@ -244,7 +244,7 @@ describe(GCStorage, async () => {
                 await storage.write({ contentLength: 0, id: metafile.id });
             } catch (error) {
                 // eslint-disable-next-line no-secrets/no-secrets
-                expect(error).toEqual(new FetchError("Bad Request", "GCS400", { uri: "http://api.com?upload_id=123456789" }));
+                expect(error).toStrictEqual(new FetchError("Bad Request", "GCS400", { uri: "http://api.com?upload_id=123456789" }));
                 expect(error).toMatchSnapshot();
             }
         });
@@ -383,13 +383,13 @@ describe(GCStorage, async () => {
                 name: "ClientError",
             };
 
-            expect(storage.normalizeError(error)).toEqual(expect.objectContaining({ code: "GCS400", statusCode: 400 }));
+            expect(storage.normalizeError(error)).toStrictEqual(expect.objectContaining({ code: "GCS400", statusCode: 400 }));
         });
 
         it("should normalize non-client errors with generic error code", () => {
             expect.assertions(1);
 
-            expect(storage.normalizeError(new Error("unknown") as ClientError)).toEqual(expect.objectContaining({ code: "GenericUploadError" }));
+            expect(storage.normalizeError(new Error("unknown") as ClientError)).toStrictEqual(expect.objectContaining({ code: "GenericUploadError" }));
         });
     });
 });
