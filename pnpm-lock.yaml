@@ -2114,8 +2114,6 @@ importers:
         specifier: ^4.0.9
         version: 4.0.9(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.9)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 
-  packages/fs/__bench__/fixtures/a/b: {}
-
   packages/fs/__fixtures__/find-up: {}
 
   packages/fs/__fixtures__/package/cjs:

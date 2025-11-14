@@ -239,7 +239,7 @@
         "express": "^4.21.2",
         "fastify": "^4.29.1",
         "koa": "^2.15.4",
-        "next": "^13.5.6",
+        "next": "^13.5.11",
         "rate-limiter-flexible": "^5.0.5",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
