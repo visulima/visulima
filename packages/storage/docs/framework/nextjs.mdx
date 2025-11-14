@@ -1,0 +1,418 @@
+# Next.js Integration
+
+Use Visulima upload with Next.js for file uploads and on-demand image transformations. Next.js 15+ supports the Web API, so you can also use the [fetch method](#fetch-method) for simpler integration.
+
+## Installation
+
+```sh
+npm install @visulima/upload next
+```
+
+```sh
+yarn add @visulima/upload next
+```
+
+```sh
+pnpm add @visulima/upload next
+```
+
+## API Routes Setup
+
+Create API routes for file upload and image transformation:
+
+```ts
+// app/api/upload/route.ts
+import { DiskStorage, Multipart } from "@visulima/upload";
+import { NextRequest, NextResponse } from "next/server";
+
+const uploadDirectory = "./uploads";
+
+// Initialize storage and multipart handler
+const storage = new DiskStorage({ directory: uploadDirectory });
+const multipart = new Multipart({ storage });
+
+export async function POST(request: NextRequest) {
+    try {
+        // Create a mock response object for multipart parsing
+        const mockRes = {
+            statusCode: 200,
+            setHeader: () => {},
+            end: () => {},
+        };
+
+        // Parse multipart form data
+        const result = await multipart.parseRequest(request as any, mockRes as any);
+
+        if (result.files && result.files.length > 0) {
+            const file = result.files[0];
+
+            return NextResponse.json({
+                id: file.id,
+                filename: file.filename,
+                size: file.size,
+                url: `/api/files/${file.id}`,
+            });
+        }
+
+        return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
+    } catch (error) {
+        console.error("Upload error:", error);
+        return NextResponse.json({ error: "Upload failed" }, { status: 500 });
+    }
+}
+```
+
+## Fetch Method (Next.js 15+)
+
+Next.js 15+ supports Web API Request/Response objects natively. You can use the `fetch` method for simpler integration:
+
+```ts
+// app/api/upload/route.ts
+import { DiskStorage, Multipart } from "@visulima/upload";
+
+const storage = new DiskStorage({ directory: "./uploads" });
+const multipart = new Multipart({ storage });
+
+export async function POST(request: Request) {
+    try {
+        return await multipart.fetch(request);
+    } catch (error) {
+        console.error("Upload error:", error);
+        return Response.json({ error: "Upload failed" }, { status: 500 });
+    }
+}
+```
+
+This approach eliminates the need for manual parsing and response creation, making your code much simpler.
+
+## Image Transformation API Route
+
+```ts
+// app/api/files/[id]/route.ts
+import { LRUCache } from "lru-cache";
+import { DiskStorage, ImageTransformer } from "@visulima/upload";
+import { NextRequest, NextResponse } from "next/server";
+
+const uploadDirectory = "./uploads";
+
+// Initialize storage
+const storage = new DiskStorage({ directory: uploadDirectory });
+
+// Initialize cache for transformed images
+const cache = new LRUCache({
+    max: 1000, // Maximum number of cached items
+    ttl: 3600000, // 1 hour in milliseconds
+});
+
+// Initialize image transformer
+const imageTransformer = new ImageTransformer(storage, {
+    cache,
+    maxImageSize: 10 * 1024 * 1024, // 10MB
+    cacheTtl: 3600, // 1 hour
+});
+
+export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+    try {
+        const { id } = params;
+        const { searchParams } = new URL(request.url);
+
+        // Get transformation parameters
+        const width = searchParams.get("width");
+        const height = searchParams.get("height");
+        const fit = searchParams.get("fit");
+        const position = searchParams.get("position");
+        const quality = searchParams.get("quality");
+        const lossless = searchParams.get("lossless");
+        const effort = searchParams.get("effort");
+        const alphaQuality = searchParams.get("alphaQuality");
+        const loop = searchParams.get("loop");
+        const delay = searchParams.get("delay");
+
+        // Check if any transformation parameters are provided
+        const hasTransformParams = width || height || fit || position || quality || lossless || effort || alphaQuality || loop || delay;
+
+        if (!hasTransformParams) {
+            // No transformation requested, serve original file
+            try {
+                const file = await storage.get({ id });
+
+                const response = new NextResponse(file.content, {
+                    status: 200,
+                    headers: {
+                        "Content-Type": file.contentType,
+                        "Content-Length": file.size.toString(),
+                        ETag: file.ETag,
+                        "Cache-Control": "public, max-age=31536000", // Cache for 1 year
+                        ...(file.expiredAt && { "X-Upload-Expires": file.expiredAt.toString() }),
+                        ...(file.modifiedAt && { "Last-Modified": file.modifiedAt.toString() }),
+                    },
+                });
+
+                return response;
+            } catch (error) {
+                console.error("Error serving original file:", error);
+                return NextResponse.json({ error: "File not found" }, { status: 404 });
+            }
+        }
+
+        // Parse transformation options
+        const transformOptions: any = {};
+
+        if (width) transformOptions.width = Number(width);
+        if (height) transformOptions.height = Number(height);
+        if (fit) transformOptions.fit = fit;
+        if (position) transformOptions.position = position;
+        if (quality) transformOptions.quality = Number(quality);
+        if (lossless !== null) transformOptions.lossless = lossless === "true";
+        if (effort) transformOptions.effort = Number(effort);
+        if (alphaQuality) transformOptions.alphaQuality = Number(alphaQuality);
+        if (loop !== null) transformOptions.loop = Number(loop);
+        if (delay) transformOptions.delay = Number(delay);
+
+        // Apply transformation
+        const result = await imageTransformer.transform(id, transformOptions);
+
+        // Return transformed image
+        const response = new NextResponse(result.buffer, {
+            status: 200,
+            headers: {
+                "Content-Type": `image/${result.format}`,
+                "Content-Length": result.buffer.length.toString(),
+                "Cache-Control": "public, max-age=3600", // Cache for 1 hour
+                "X-Transformed": "true",
+            },
+        });
+
+        return response;
+    } catch (error) {
+        console.error("Error transforming image:", error);
+        return NextResponse.json({ error: "Image transformation failed" }, { status: 500 });
+    }
+}
+```
+
+## Client-side Usage
+
+Create a React component for uploading and displaying images:
+
+```tsx
+// components/ImageUpload.tsx
+"use client";
+
+import { useState } from "react";
+
+export default function ImageUpload() {
+    const [uploadedFile, setUploadedFile] = useState<{ id: string; filename: string } | null>(null);
+    const [uploading, setUploading] = useState(false);
+
+    const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        setUploading(true);
+
+        try {
+            const formData = new FormData();
+            formData.append("file", file);
+
+            const response = await fetch("/api/upload", {
+                method: "POST",
+                body: formData,
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                setUploadedFile(result);
+            } else {
+                console.error("Upload failed:", result.error);
+            }
+        } catch (error) {
+            console.error("Upload error:", error);
+        } finally {
+            setUploading(false);
+        }
+    };
+
+    return (
+        <div>
+            <input type="file" accept="image/*" onChange={handleFileUpload} disabled={uploading} />
+
+            {uploading && <p>Uploading...</p>}
+
+            {uploadedFile && (
+                <div>
+                    <h3>Uploaded: {uploadedFile.filename}</h3>
+
+                    {/* Original image */}
+                    <img src={`/api/files/${uploadedFile.id}`} alt="Original" style={{ maxWidth: "300px", margin: "10px" }} />
+
+                    {/* Transformed images */}
+                    <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+                        <div>
+                            <h4>Thumbnail (300x200)</h4>
+                            <img src={`/api/files/${uploadedFile.id}?width=300&height=200&fit=cover&quality=80`} alt="Thumbnail" />
+                        </div>
+
+                        <div>
+                            <h4>WebP (800px wide)</h4>
+                            <img src={`/api/files/${uploadedFile.id}?width=800&format=webp&quality=85`} alt="WebP version" />
+                        </div>
+
+                        <div>
+                            <h4>Grayscale</h4>
+                            <img src={`/api/files/${uploadedFile.id}?width=400&height=300&grayscale=true`} alt="Grayscale" />
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}
+```
+
+## Next.js Image Component Integration
+
+Use Next.js Image component with transformed URLs:
+
+```tsx
+// components/OptimizedImage.tsx
+import Image from "next/image";
+
+interface OptimizedImageProps {
+    fileId: string;
+    width: number;
+    height: number;
+    alt: string;
+    quality?: number;
+    fit?: "cover" | "contain" | "fill" | "inside" | "outside";
+}
+
+export default function OptimizedImage({ fileId, width, height, alt, quality = 80, fit = "cover" }: OptimizedImageProps) {
+    const transformUrl = `/api/files/${fileId}?width=${width}&height=${height}&fit=${fit}&quality=${quality}&format=webp`;
+
+    return (
+        <Image
+            src={transformUrl}
+            alt={alt}
+            width={width}
+            height={height}
+            priority={false}
+            placeholder="blur"
+            blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R+IRjWjBqO6O2mhP//Z"
+        />
+    );
+}
+```
+
+## Programmatic Transformations
+
+Create server-side transformations for pre-processing:
+
+```ts
+// app/api/transform/route.ts
+import { LRUCache } from "lru-cache";
+import { DiskStorage, ImageTransformer } from "@visulima/upload";
+import { NextRequest, NextResponse } from "next/server";
+
+const storage = new DiskStorage({ directory: "./uploads" });
+
+// Initialize cache for transformed images
+const cache = new LRUCache({
+    max: 1000, // Maximum number of cached items
+    ttl: 3600000, // 1 hour in milliseconds
+});
+
+const imageTransformer = new ImageTransformer(storage, {
+    cache,
+    maxImageSize: 10 * 1024 * 1024,
+});
+
+export async function POST(request: NextRequest) {
+    try {
+        const { fileId, transformations } = await request.json();
+
+        const results = [];
+
+        for (const transform of transformations) {
+            const result = await imageTransformer.transform(fileId, transform);
+            results.push({
+                ...transform,
+                size: result.buffer.length,
+                format: result.format,
+                url: `/api/files/${fileId}?${new URLSearchParams(transform as any).toString()}`,
+            });
+        }
+
+        return NextResponse.json({ results });
+    } catch (error) {
+        console.error("Batch transformation error:", error);
+        return NextResponse.json({ error: "Transformation failed" }, { status: 500 });
+    }
+}
+```
+
+## Configuration
+
+Add environment variables for configuration:
+
+```bash
+# .env.local
+UPLOAD_DIR=./uploads
+MAX_IMAGE_SIZE=10485760  # 10MB
+CACHE_TTL=3600          # 1 hour
+```
+
+```ts
+// lib/upload-config.ts
+import { DiskStorage, ImageTransformer } from "@visulima/upload";
+
+export const storage = new DiskStorage({
+    directory: process.env.UPLOAD_DIR || "./uploads",
+    logger: console,
+});
+
+export const imageTransformer = new ImageTransformer(storage, {
+    maxImageSize: parseInt(process.env.MAX_IMAGE_SIZE || "10485760"),
+    cacheTtl: parseInt(process.env.CACHE_TTL || "3600"),
+    logger: console,
+});
+```
+
+## Error Handling
+
+Handle transformation errors gracefully:
+
+```ts
+// app/api/files/[id]/route.ts
+export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+    try {
+        // ... transformation logic ...
+    } catch (error: any) {
+        console.error("Image transformation error:", error);
+
+        // Handle specific error types
+        if (error.message?.includes("not found")) {
+            return NextResponse.json({ error: "File not found" }, { status: 404 });
+        }
+
+        if (error.message?.includes("exceeds maximum")) {
+            return NextResponse.json({ error: "File too large" }, { status: 413 });
+        }
+
+        if (error.message?.includes("Unsupported image format")) {
+            return NextResponse.json({ error: "Unsupported image format" }, { status: 415 });
+        }
+
+        return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    }
+}
+```
+
+## Performance Optimization
+
+1. **Enable Response Caching**: Use Next.js caching for transformed images
+2. **Optimize Bundle Size**: Import only needed transformation functions
+3. **Use WebP/AVIF**: Serve modern formats for better compression
+4. **Implement Image Preloading**: Generate common sizes during upload
+5. **Monitor Performance**: Track transformation times and cache hit rates

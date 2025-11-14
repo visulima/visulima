@@ -1,0 +1,121 @@
+# Google Cloud Storage
+
+## Overview
+
+Google Cloud Storage is a unified object storage for developers and enterprises, from live data serving to data analytics/ML to data archiving. It integrates seamlessly with Visulima upload's image transformation capabilities.
+
+## Installation
+
+> Note: If you hit this error: "TypeError: Expected signal to be an instanceof AbortSignal" [#784](https://github.com/node-fetch/node-fetch/issues/784).
+
+```sh
+npm install @google-cloud/storage gaxios
+```
+
+```sh
+yarn add @google-cloud/storage gaxios
+```
+
+```sh
+pnpm add @google-cloud/storage gaxios
+```
+
+## Usage
+
+```ts
+import { LRUCache } from "lru-cache";
+import { GCStorage, ImageTransformer } from "@visulima/upload";
+
+const storage = new GCStorage({
+    bucket: "upload",
+    projectId: "test",
+    maxUploadSize: "1GB",
+    logger: console,
+    expiration: { maxAge: "1h", purgeInterval: "15min" },
+});
+
+// Initialize cache for transformed images
+const cache = new LRUCache({
+    max: 1000, // Maximum number of cached items
+    ttl: 3600000, // 1 hour in milliseconds
+});
+
+// Initialize image transformer for on-demand transformations
+const imageTransformer = new ImageTransformer(storage, {
+    cache,
+    maxImageSize: 10 * 1024 * 1024, // 10MB
+    cacheTtl: 3600, // 1 hour
+});
+
+// Upload a file
+const file = await storage.put(fileBuffer, { filename: "image.jpg" });
+
+// Transform the uploaded image
+const thumbnail = await imageTransformer.resize(file.id, {
+    width: 300,
+    height: 200,
+    fit: "cover",
+    quality: 80,
+});
+```
+
+## Image Transformations
+
+Google Cloud Storage works seamlessly with Visulima upload's image transformation features:
+
+```ts
+// Resize images
+const resized = await imageTransformer.resize("file-id", {
+    width: 800,
+    height: 600,
+    fit: "cover",
+});
+
+// Convert formats
+const webp = await imageTransformer.transform("file-id", {
+    format: "webp",
+    quality: 85,
+});
+
+// Crop images
+const cropped = await imageTransformer.crop("file-id", {
+    width: 400,
+    height: 300,
+    left: 100,
+    top: 50,
+});
+```
+
+## Configuration
+
+| Name          | Type   | Description                               | Default |
+| :------------ | :----- | :---------------------------------------- | :------ |
+| bucket        | string | The name of the bucket to use             |         |
+| projectId     | string | Google Cloud project ID                   |         |
+| maxUploadSize | string | Maximum upload size (e.g., "1GB", "10MB") |         |
+| expiration    | object | File expiration configuration             |         |
+| logger        | Logger | Logger instance                           |         |
+
+## Performance Considerations
+
+1. **Global CDN**: GCS automatically serves files through Google's global CDN
+2. **Caching**: Enable transformation caching to reduce processing overhead
+3. **Signed URLs**: Use signed URLs for private files with transformations
+4. **Lifecycle Policies**: Configure automatic cleanup of temporary transformations
+
+## Signed URLs with Transformations
+
+For private files, combine signed URLs with transformations:
+
+```ts
+// Generate a signed URL for a transformed image
+const signedUrl = await storage.getSignedUrl(fileId, {
+    expires: Date.now() + 3600000, // 1 hour
+    transform: {
+        width: 500,
+        height: 500,
+        fit: "cover",
+        format: "webp",
+    },
+});
+```
