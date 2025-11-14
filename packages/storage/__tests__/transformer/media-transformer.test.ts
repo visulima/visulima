@@ -161,7 +161,7 @@ describe(MediaTransformer, () => {
                 },
             ]);
 
-            expect(result).toEqual({
+            expect(result).toStrictEqual({
                 buffer: mockResult.buffer,
                 format: "webp",
                 height: 600,
@@ -221,7 +221,7 @@ describe(MediaTransformer, () => {
                 },
             ]);
 
-            expect(result).toEqual({
+            expect(result).toStrictEqual({
                 buffer: mockResult.buffer,
                 format: "webp",
                 height: 600,
@@ -281,7 +281,7 @@ describe(MediaTransformer, () => {
                 },
             ]);
 
-            expect(result).toEqual({
+            expect(result).toStrictEqual({
                 buffer: mockResult.buffer,
                 format: "webp",
                 height: 600,

@@ -90,7 +90,8 @@ This approach eliminates the need for manual parsing and response creation, maki
 ```ts
 // app/api/files/[id]/route.ts
 import { LRUCache } from "lru-cache";
-import { DiskStorage, ImageTransformer } from "@visulima/upload";
+import { DiskStorage } from "@visulima/upload";
+import ImageTransformer from "@visulima/upload/transformers/image";
 import { NextRequest, NextResponse } from "next/server";
 
 const uploadDirectory = "./uploads";
@@ -312,7 +313,8 @@ Create server-side transformations for pre-processing:
 ```ts
 // app/api/transform/route.ts
 import { LRUCache } from "lru-cache";
-import { DiskStorage, ImageTransformer } from "@visulima/upload";
+import { DiskStorage } from "@visulima/upload";
+import ImageTransformer from "@visulima/upload/transformers/image";
 import { NextRequest, NextResponse } from "next/server";
 
 const storage = new DiskStorage({ directory: "./uploads" });
@@ -365,7 +367,8 @@ CACHE_TTL=3600          # 1 hour
 
 ```ts
 // lib/upload-config.ts
-import { DiskStorage, ImageTransformer } from "@visulima/upload";
+import { DiskStorage } from "@visulima/upload";
+import ImageTransformer from "@visulima/upload/transformers/image";
 
 export const storage = new DiskStorage({
     directory: process.env.UPLOAD_DIR || "./uploads",

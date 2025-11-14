@@ -24,7 +24,8 @@ pnpm add @google-cloud/storage gaxios
 
 ```ts
 import { LRUCache } from "lru-cache";
-import { GCStorage, ImageTransformer } from "@visulima/upload";
+import { GCStorage } from "@visulima/upload/provider/gcs";
+import ImageTransformer from "@visulima/upload/transformers/image";
 
 const storage = new GCStorage({
     bucket: "upload",

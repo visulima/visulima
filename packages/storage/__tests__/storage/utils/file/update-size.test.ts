@@ -11,7 +11,7 @@ describe("file", () => {
             const file = { ...metafile, id: "123" };
             const updatedFile = updateSize(file, 50);
 
-            expect(updatedFile).toEqual({ ...file, size: 50 });
+            expect(updatedFile).toStrictEqual({ ...file, size: 50 });
         });
 
         it("should not update file size when new size is larger than current size", () => {
@@ -25,7 +25,7 @@ describe("file", () => {
             };
             const updatedFile = updateSize(file, 200);
 
-            expect(updatedFile).toEqual(file);
+            expect(updatedFile).toStrictEqual(file);
         });
 
         it("should not update file size when new size equals current size", () => {
@@ -39,7 +39,7 @@ describe("file", () => {
             };
             const updatedFile = updateSize(file, 100);
 
-            expect(updatedFile).toEqual(file);
+            expect(updatedFile).toStrictEqual(file);
         });
 
         it("should handle negative size values", () => {
@@ -53,7 +53,7 @@ describe("file", () => {
             };
             const updatedFile = updateSize(file, -50);
 
-            expect(updatedFile).toEqual({ ...file, size: -50 });
+            expect(updatedFile).toStrictEqual({ ...file, size: -50 });
         });
 
         it("should handle zero size values", () => {
@@ -67,7 +67,7 @@ describe("file", () => {
             };
             const updatedFile = updateSize(file, 0);
 
-            expect(updatedFile).toEqual({ ...file, size: 0 });
+            expect(updatedFile).toStrictEqual({ ...file, size: 0 });
         });
     });
 });

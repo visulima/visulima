@@ -14,6 +14,7 @@ export default createConfig(
             ".secretlintrc.cjs",
             "package.json",
             ".prettierrc.cjs",
+            "**/README.md",
             "README.md",
         ],
     },

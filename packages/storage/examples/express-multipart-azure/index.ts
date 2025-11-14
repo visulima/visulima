@@ -1,7 +1,7 @@
 import express from "express";
 import type { File as UploadFile } from "@visulima/upload";
 import { Multipart } from "@visulima/upload";
-import { AzureStorage } from "@visulima/upload/azure";
+import { AzureStorage } from "@visulima/upload/provider/azure";
 import Cors from "cors";
 
 const PORT = process.env.PORT || 3002;
