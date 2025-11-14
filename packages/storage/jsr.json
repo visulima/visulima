@@ -1,0 +1,19 @@
+{
+    "name": "@visulima/upload",
+    "version": "0.0.0",
+    "exports": {
+        ".": "./src/index.ts",
+        "./provider/azure": "./src/storage/azure/index.ts",
+        "./provider/aws": "./src/storage/aws/index.ts",
+        "./provider/aws/s3/clients": "./src/storage/aws/clients/index.ts",
+        "./provider/gcs": "./src/storage/gcs/index.ts",
+        "./provider/vercel": "./src/storage/vercel-blob/index.ts",
+        "./provider/netlify": "./src/storage/netlify-blob/index.ts",
+        "./provider/local": "./src/storage/local/index.ts",
+        "./openapi": "./src/openapi/index.ts",
+        "./transformers/audio": "./src/transformer/audio-transformer.ts",
+        "./transformers/video": "./src/transformer/video-transformer.ts",
+        "./transformers/image": "./src/transformer/image-transformer.ts",
+        "./transformer": "./src/transformer/index.ts"
+    }
+}
