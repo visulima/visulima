@@ -9,7 +9,7 @@
 
 <div align="center">
 
-[![typescript-image]][typescript-url] [![npm-image]][npm-url] [![license-image]][license-url]
+[![TypeScript](https://img.shields.io/badge/Typescript-294E80.svg?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/) [![npm](https://img.shields.io/npm/v/@visulima/path/latest.svg?style=for-the-badge&logo=npm)](https://www.npmjs.com/package/@visulima/path/v/latest) [![license](https://img.shields.io/npm/l/@visulima/path?color=blueviolet&style=for-the-badge)](LICENSE.md)
 
 </div>
 
@@ -98,12 +98,6 @@ If you would like to help take a look at the [list of issues](https://github.com
 
 ## License
 
-The visulima path is open-sourced software licensed under the [MIT][license-url]
+The visulima path is open-sourced software licensed under the [MIT](LICENSE.md)
 
-[typescript-image]: https://img.shields.io/badge/Typescript-294E80.svg?style=for-the-badge&logo=typescript
 
-[typescript-url]: https://www.typescriptlang.org/ "TypeScript" "typescript"
-[license-image]: https://img.shields.io/npm/l/@visulima/path?color=blueviolet&style=for-the-badge
-[license-url]: LICENSE.md "license"
-[npm-image]: https://img.shields.io/npm/v/@visulima/path/latest.svg?style=for-the-badge&logo=npm
-[npm-url]: https://www.npmjs.com/package/@visulima/path/v/latest "npm"

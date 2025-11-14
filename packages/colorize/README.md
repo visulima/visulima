@@ -14,7 +14,7 @@ For instance, you can use `green` to make `` green`Hello World!` `` pop, `` red`
 
 <div align="center">
 
-[![typescript-image]][typescript-url] [![npm-image]][npm-url] [![license-image]][license-url]
+[![TypeScript](https://img.shields.io/badge/Typescript-294E80.svg?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/) [![npm](https://img.shields.io/npm/v/@visulima/colorize/latest.svg?style=for-the-badge&logo=npm)](https://www.npmjs.com/package/@visulima/colorize/v/latest) [![license](https://img.shields.io/npm/l/@visulima/colorize?color=blueviolet&style=for-the-badge)](LICENSE.md)
 
 </div>
 
@@ -921,15 +921,9 @@ Gradient:
 
 ## License
 
-The visulima colorize is open-sourced software licensed under the [MIT][license-url]
+The visulima colorize is open-sourced software licensed under the [MIT](LICENSE.md)
 
-[typescript-image]: https://img.shields.io/badge/Typescript-294E80.svg?style=for-the-badge&logo=typescript
 
-[typescript-url]: https://www.typescriptlang.org/ "TypeScript" "typescript"
-[license-image]: https://img.shields.io/npm/l/@visulima/colorize?color=blueviolet&style=for-the-badge
-[license-url]: LICENSE.md "license"
-[npm-image]: https://img.shields.io/npm/v/@visulima/colorize/latest.svg?style=for-the-badge&logo=npm
-[npm-url]: https://www.npmjs.com/package/@visulima/colorize/v/latest "npm"
 [colors.js]: https://github.com/Marak/colors.js
 [colorette]: https://github.com/jorgebucaran/colorette
 [picocolors]: https://github.com/alexeyraspopov/picocolors
