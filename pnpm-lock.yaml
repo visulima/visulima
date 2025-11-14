@@ -199,8 +199,11 @@ importers:
       '@storybook/test-runner':
         specifier: ^0.24.1
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 0.24.1(@types/node@24.10.1)(esbuild-register@3.6.0(esbuild@0.27.0))(storybook@10.1.0(@testing-library/dom@10.4.1)(prettier@3.6.2)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))
 =======
+=======
+>>>>>>> d0b82ad5f (chore: resolve merge conflicts and update package versions in pnpm-lock.yaml)
 <<<<<<< HEAD
         version: 0.24.1(@types/node@24.10.1)(esbuild-register@3.6.0(esbuild@0.27.0))(storybook@10.0.8(@testing-library/dom@10.4.1)(msw@2.12.2(@types/node@24.10.1)(typescript@5.9.3))(prettier@3.6.2)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(vite@7.2.4(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))
 =======
@@ -210,7 +213,13 @@ importers:
         version: 0.24.1(@types/node@24.10.0)(esbuild-register@3.6.0(esbuild@0.27.0))(storybook@10.0.7(@testing-library/dom@10.4.1)(msw@2.12.1(@types/node@24.10.0)(typescript@5.9.3))(prettier@3.6.2)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(vite@7.2.2(@types/node@24.10.0)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@24.10.0)(typescript@5.9.3))
 >>>>>>> 05bd95035 (feat: new storage package (#527))
 >>>>>>> d99502360 (feat: new storage package (#527))
+<<<<<<< HEAD
 >>>>>>> efb87dc29 (feat: new storage package (#527))
+=======
+=======
+        version: 0.24.1(@types/node@24.10.1)(esbuild-register@3.6.0(esbuild@0.27.0))(storybook@10.0.7(@testing-library/dom@10.4.1)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(prettier@3.6.2)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@24.10.1)(typescript@5.9.3))
+>>>>>>> c8abe5160 (chore: resolve merge conflicts and update package versions in pnpm-lock.yaml)
+>>>>>>> d0b82ad5f (chore: resolve merge conflicts and update package versions in pnpm-lock.yaml)
       '@storybook/testing-library':
         specifier: ~0.2.2
         version: 0.2.2
@@ -2271,8 +2280,6 @@ importers:
 
   packages/fs/__bench__/fixtures/a/b: {}
 
-  packages/fs/__bench__/fixtures/a/b: {}
-
   packages/fs/__fixtures__/find-up: {}
 
   packages/fs/__fixtures__/package/cjs:
@@ -3779,16 +3786,16 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^16.4.2
-        version: 16.4.2(b0a42e7b2a3b3c0c8afcbf10ebfa4226)
+        version: 16.4.2(a58d2f26202166501ef363e6af9ad42a)
       '@anolilab/prettier-config':
         specifier: ^6.0.7
         version: 6.0.7(prettier@3.6.2)
       '@anolilab/semantic-release-pnpm':
         specifier: 2.0.5
-        version: 2.0.5(@types/node@24.10.0)(yaml@2.8.1)
+        version: 2.0.5(@types/node@24.10.1)(yaml@2.8.1)
       '@anolilab/semantic-release-preset':
         specifier: ^11.0.5
-        version: 11.0.5(@anolilab/semantic-release-pnpm@2.0.5(@types/node@24.10.0)(yaml@2.8.1))(@semantic-release/npm@13.1.1(semantic-release@25.0.2(typescript@5.9.3)))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+        version: 11.0.5(@anolilab/semantic-release-pnpm@2.0.5(@types/node@24.10.1)(yaml@2.8.1))(@semantic-release/npm@13.1.1(semantic-release@25.0.2(typescript@5.9.3)))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
       '@arethetypeswrong/cli':
         specifier: ^0.18.2
         version: 0.18.2
@@ -3827,7 +3834,7 @@ importers:
         version: 2.0.5
       '@types/node':
         specifier: ^24.10.0
-        version: 24.10.0
+        version: 24.10.1
       '@types/supertest':
         specifier: ^6.0.3
         version: 6.0.3
@@ -3845,16 +3852,16 @@ importers:
         version: link:../humanizer
       '@visulima/packem':
         specifier: 2.0.0-alpha.36
-        version: 2.0.0-alpha.36(b6f628ee8c8c6f4eda46717cc79f4281)
+        version: 2.0.0-alpha.36(a8734eb3e47b48230a342818524b3df8)
       '@visulima/path':
         specifier: workspace:*
         version: link:../path
       '@vitest/coverage-v8':
         specifier: ^4.0.8
-        version: 4.0.8(@vitest/browser@4.0.8(msw@2.12.1(@types/node@24.10.0)(typescript@5.9.3))(vite@7.2.2(@types/node@24.10.0)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.8))(vitest@4.0.8)
+        version: 4.0.9(@vitest/browser@4.0.9(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.9))(vitest@4.0.9)
       '@vitest/ui':
         specifier: ^4.0.8
-        version: 4.0.8(vitest@4.0.8)
+        version: 4.0.9(vitest@4.0.9)
       aws-crt:
         specifier: ^1.27.5
         version: 1.27.5
@@ -3893,7 +3900,7 @@ importers:
         version: 3.3.2
       node-mocks-http:
         specifier: ^1.17.2
-        version: 1.17.2(@types/express@5.0.5)(@types/node@24.10.0)
+        version: 1.17.2(@types/express@5.0.5)(@types/node@24.10.1)
       openapi-types:
         specifier: ^12.1.3
         version: 12.1.3
@@ -3923,7 +3930,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: ^4.0.8
-        version: 4.0.8(@types/debug@4.1.12)(@types/node@24.10.0)(@vitest/ui@4.0.8)(jiti@2.6.1)(jsdom@27.1.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.0)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+        version: 4.0.9(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.9)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 
   packages/storage/examples/bun:
     dependencies:
@@ -4243,7 +4250,7 @@ importers:
         version: 5.0.5
       ts-node-dev:
         specifier: ^2.0.0
-        version: 2.0.0(@swc/core@1.13.5)(@types/node@24.10.0)(typescript@5.9.3)
+        version: 2.0.0(@swc/core@1.13.5)(@types/node@24.10.1)(typescript@5.9.3)
 
   packages/storage/examples/hono:
     dependencies:
@@ -4268,7 +4275,7 @@ importers:
     devDependencies:
       '@types/node':
         specifier: ^24.10.0
-        version: 24.10.0
+        version: 24.10.1
       tsx:
         specifier: ^4.20.6
         version: 4.20.6
@@ -4281,7 +4288,7 @@ importers:
     devDependencies:
       '@types/node':
         specifier: ^24.10.0
-        version: 24.10.0
+        version: 24.10.1
       tsx:
         specifier: ^4.20.6
         version: 4.20.6
@@ -6357,6 +6364,9 @@ packages:
   '@emnapi/core@1.5.0':
     resolution: {integrity: sha512-sbP8GzB1WDzacS8fgNPpHlp6C9VZe+SJP3F90W9rLemaQj2PzIuTEl1qDOYQf58YIpyjViI24y9aPWCjEzY2cg==}
 
+  '@emnapi/runtime@1.5.0':
+    resolution: {integrity: sha512-97/BJ3iXHww3djw6hYIfErCZFee7qCtrneuLa20UXFCOTCfBM2cvQHjWJ2EG0s0MtdNwInarqCTz35i4wWXHsQ==}
+
   '@emnapi/runtime@1.7.1':
     resolution: {integrity: sha512-PVtJr5CmLwYAU9PZDMITZoR5iAOShYREoR45EyyLrbntV50mdePTgUn4AmOw90Ifcj+x2kRjdzr1HP3RrNiHGA==}
 
@@ -7059,10 +7069,22 @@ packages:
     resolution: {integrity: sha512-A5P/LfWGFSl6nsckYtjw9da+19jB8hkJ6ACTGcDfEJ0aE+l2n2El7dsVM7UVHZQ9s2lmYMWlrS21YLy2IR1LUw==}
     engines: {node: '>=18'}
 
+  '@img/sharp-darwin-arm64@0.34.4':
+    resolution: {integrity: sha512-sitdlPzDVyvmINUdJle3TNHl+AG9QcwiAMsXmccqsCOMZNIdW2/7S26w0LyU8euiLVzFBL3dXPwVCq/ODnf2vA==}
+    engines: {node: ^18.17.0 || ^20.3.0 || >=21.0.0}
+    cpu: [arm64]
+    os: [darwin]
+
   '@img/sharp-darwin-arm64@0.34.5':
     resolution: {integrity: sha512-imtQ3WMJXbMY4fxb/Ndp6HBTNVtWCUI0WdobyheGf5+ad6xX8VIDO8u2xE4qc/fr08CKG/7dDseFtn6M6g/r3w==}
     engines: {node: ^18.17.0 || ^20.3.0 || >=21.0.0}
     cpu: [arm64]
+    os: [darwin]
+
+  '@img/sharp-darwin-x64@0.34.4':
+    resolution: {integrity: sha512-rZheupWIoa3+SOdF/IcUe1ah4ZDpKBGWcsPX6MT0lYniH9micvIU7HQkYTfrx5Xi8u+YqwLtxC/3vl8TQN6rMg==}
+    engines: {node: ^18.17.0 || ^20.3.0 || >=21.0.0}
+    cpu: [x64]
     os: [darwin]
 
   '@img/sharp-darwin-x64@0.34.5':
@@ -7071,9 +7093,19 @@ packages:
     cpu: [x64]
     os: [darwin]
 
+  '@img/sharp-libvips-darwin-arm64@1.2.3':
+    resolution: {integrity: sha512-QzWAKo7kpHxbuHqUC28DZ9pIKpSi2ts2OJnoIGI26+HMgq92ZZ4vk8iJd4XsxN+tYfNJxzH6W62X5eTcsBymHw==}
+    cpu: [arm64]
+    os: [darwin]
+
   '@img/sharp-libvips-darwin-arm64@1.2.4':
     resolution: {integrity: sha512-zqjjo7RatFfFoP0MkQ51jfuFZBnVE2pRiaydKJ1G/rHZvnsrHAOcQALIi9sA5co5xenQdTugCvtb1cuf78Vf4g==}
     cpu: [arm64]
+    os: [darwin]
+
+  '@img/sharp-libvips-darwin-x64@1.2.3':
+    resolution: {integrity: sha512-Ju+g2xn1E2AKO6YBhxjj+ACcsPQRHT0bhpglxcEf+3uyPY+/gL8veniKoo96335ZaPo03bdDXMv0t+BBFAbmRA==}
+    cpu: [x64]
     os: [darwin]
 
   '@img/sharp-libvips-darwin-x64@1.2.4':
@@ -7081,14 +7113,29 @@ packages:
     cpu: [x64]
     os: [darwin]
 
+  '@img/sharp-libvips-linux-arm64@1.2.3':
+    resolution: {integrity: sha512-I4RxkXU90cpufazhGPyVujYwfIm9Nk1QDEmiIsaPwdnm013F7RIceaCc87kAH+oUB1ezqEvC6ga4m7MSlqsJvQ==}
+    cpu: [arm64]
+    os: [linux]
+
   '@img/sharp-libvips-linux-arm64@1.2.4':
     resolution: {integrity: sha512-excjX8DfsIcJ10x1Kzr4RcWe1edC9PquDRRPx3YVCvQv+U5p7Yin2s32ftzikXojb1PIFc/9Mt28/y+iRklkrw==}
     cpu: [arm64]
     os: [linux]
 
+  '@img/sharp-libvips-linux-arm@1.2.3':
+    resolution: {integrity: sha512-x1uE93lyP6wEwGvgAIV0gP6zmaL/a0tGzJs/BIDDG0zeBhMnuUPm7ptxGhUbcGs4okDJrk4nxgrmxpib9g6HpA==}
+    cpu: [arm]
+    os: [linux]
+
   '@img/sharp-libvips-linux-arm@1.2.4':
     resolution: {integrity: sha512-bFI7xcKFELdiNCVov8e44Ia4u2byA+l3XtsAj+Q8tfCwO6BQ8iDojYdvoPMqsKDkuoOo+X6HZA0s0q11ANMQ8A==}
     cpu: [arm]
+    os: [linux]
+
+  '@img/sharp-libvips-linux-ppc64@1.2.3':
+    resolution: {integrity: sha512-Y2T7IsQvJLMCBM+pmPbM3bKT/yYJvVtLJGfCs4Sp95SjvnFIjynbjzsa7dY1fRJX45FTSfDksbTp6AGWudiyCg==}
+    cpu: [ppc64]
     os: [linux]
 
   '@img/sharp-libvips-linux-ppc64@1.2.4':
@@ -7101,9 +7148,19 @@ packages:
     cpu: [riscv64]
     os: [linux]
 
+  '@img/sharp-libvips-linux-s390x@1.2.3':
+    resolution: {integrity: sha512-RgWrs/gVU7f+K7P+KeHFaBAJlNkD1nIZuVXdQv6S+fNA6syCcoboNjsV2Pou7zNlVdNQoQUpQTk8SWDHUA3y/w==}
+    cpu: [s390x]
+    os: [linux]
+
   '@img/sharp-libvips-linux-s390x@1.2.4':
     resolution: {integrity: sha512-qmp9VrzgPgMoGZyPvrQHqk02uyjA0/QrTO26Tqk6l4ZV0MPWIW6LTkqOIov+J1yEu7MbFQaDpwdwJKhbJvuRxQ==}
     cpu: [s390x]
+    os: [linux]
+
+  '@img/sharp-libvips-linux-x64@1.2.3':
+    resolution: {integrity: sha512-3JU7LmR85K6bBiRzSUc/Ff9JBVIFVvq6bomKE0e63UXGeRw2HPVEjoJke1Yx+iU4rL7/7kUjES4dZ/81Qjhyxg==}
+    cpu: [x64]
     os: [linux]
 
   '@img/sharp-libvips-linux-x64@1.2.4':
@@ -7111,14 +7168,30 @@ packages:
     cpu: [x64]
     os: [linux]
 
+  '@img/sharp-libvips-linuxmusl-arm64@1.2.3':
+    resolution: {integrity: sha512-F9q83RZ8yaCwENw1GieztSfj5msz7GGykG/BA+MOUefvER69K/ubgFHNeSyUu64amHIYKGDs4sRCMzXVj8sEyw==}
+    cpu: [arm64]
+    os: [linux]
+
   '@img/sharp-libvips-linuxmusl-arm64@1.2.4':
     resolution: {integrity: sha512-FVQHuwx1IIuNow9QAbYUzJ+En8KcVm9Lk5+uGUQJHaZmMECZmOlix9HnH7n1TRkXMS0pGxIJokIVB9SuqZGGXw==}
     cpu: [arm64]
     os: [linux]
 
+  '@img/sharp-libvips-linuxmusl-x64@1.2.3':
+    resolution: {integrity: sha512-U5PUY5jbc45ANM6tSJpsgqmBF/VsL6LnxJmIf11kB7J5DctHgqm0SkuXzVWtIY90GnJxKnC/JT251TDnk1fu/g==}
+    cpu: [x64]
+    os: [linux]
+
   '@img/sharp-libvips-linuxmusl-x64@1.2.4':
     resolution: {integrity: sha512-+LpyBk7L44ZIXwz/VYfglaX/okxezESc6UxDSoyo2Ks6Jxc4Y7sGjpgU9s4PMgqgjj1gZCylTieNamqA1MF7Dg==}
     cpu: [x64]
+    os: [linux]
+
+  '@img/sharp-linux-arm64@0.34.4':
+    resolution: {integrity: sha512-YXU1F/mN/Wu786tl72CyJjP/Ngl8mGHN1hST4BGl+hiW5jhCnV2uRVTNOcaYPs73NeT/H8Upm3y9582JVuZHrQ==}
+    engines: {node: ^18.17.0 || ^20.3.0 || >=21.0.0}
+    cpu: [arm64]
     os: [linux]
 
   '@img/sharp-linux-arm64@0.34.5':
@@ -7127,10 +7200,22 @@ packages:
     cpu: [arm64]
     os: [linux]
 
+  '@img/sharp-linux-arm@0.34.4':
+    resolution: {integrity: sha512-Xyam4mlqM0KkTHYVSuc6wXRmM7LGN0P12li03jAnZ3EJWZqj83+hi8Y9UxZUbxsgsK1qOEwg7O0Bc0LjqQVtxA==}
+    engines: {node: ^18.17.0 || ^20.3.0 || >=21.0.0}
+    cpu: [arm]
+    os: [linux]
+
   '@img/sharp-linux-arm@0.34.5':
     resolution: {integrity: sha512-9dLqsvwtg1uuXBGZKsxem9595+ujv0sJ6Vi8wcTANSFpwV/GONat5eCkzQo/1O6zRIkh0m/8+5BjrRr7jDUSZw==}
     engines: {node: ^18.17.0 || ^20.3.0 || >=21.0.0}
     cpu: [arm]
+    os: [linux]
+
+  '@img/sharp-linux-ppc64@0.34.4':
+    resolution: {integrity: sha512-F4PDtF4Cy8L8hXA2p3TO6s4aDt93v+LKmpcYFLAVdkkD3hSxZzee0rh6/+94FpAynsuMpLX5h+LRsSG3rIciUQ==}
+    engines: {node: ^18.17.0 || ^20.3.0 || >=21.0.0}
+    cpu: [ppc64]
     os: [linux]
 
   '@img/sharp-linux-ppc64@0.34.5':
@@ -7145,10 +7230,22 @@ packages:
     cpu: [riscv64]
     os: [linux]
 
+  '@img/sharp-linux-s390x@0.34.4':
+    resolution: {integrity: sha512-qVrZKE9Bsnzy+myf7lFKvng6bQzhNUAYcVORq2P7bDlvmF6u2sCmK2KyEQEBdYk+u3T01pVsPrkj943T1aJAsw==}
+    engines: {node: ^18.17.0 || ^20.3.0 || >=21.0.0}
+    cpu: [s390x]
+    os: [linux]
+
   '@img/sharp-linux-s390x@0.34.5':
     resolution: {integrity: sha512-nQtCk0PdKfho3eC5MrbQoigJ2gd1CgddUMkabUj+rBevs8tZ2cULOx46E7oyX+04WGfABgIwmMC0VqieTiR4jg==}
     engines: {node: ^18.17.0 || ^20.3.0 || >=21.0.0}
     cpu: [s390x]
+    os: [linux]
+
+  '@img/sharp-linux-x64@0.34.4':
+    resolution: {integrity: sha512-ZfGtcp2xS51iG79c6Vhw9CWqQC8l2Ot8dygxoDoIQPTat/Ov3qAa8qpxSrtAEAJW+UjTXc4yxCjNfxm4h6Xm2A==}
+    engines: {node: ^18.17.0 || ^20.3.0 || >=21.0.0}
+    cpu: [x64]
     os: [linux]
 
   '@img/sharp-linux-x64@0.34.5':
@@ -7157,10 +7254,22 @@ packages:
     cpu: [x64]
     os: [linux]
 
+  '@img/sharp-linuxmusl-arm64@0.34.4':
+    resolution: {integrity: sha512-8hDVvW9eu4yHWnjaOOR8kHVrew1iIX+MUgwxSuH2XyYeNRtLUe4VNioSqbNkB7ZYQJj9rUTT4PyRscyk2PXFKA==}
+    engines: {node: ^18.17.0 || ^20.3.0 || >=21.0.0}
+    cpu: [arm64]
+    os: [linux]
+
   '@img/sharp-linuxmusl-arm64@0.34.5':
     resolution: {integrity: sha512-fprJR6GtRsMt6Kyfq44IsChVZeGN97gTD331weR1ex1c1rypDEABN6Tm2xa1wE6lYb5DdEnk03NZPqA7Id21yg==}
     engines: {node: ^18.17.0 || ^20.3.0 || >=21.0.0}
     cpu: [arm64]
+    os: [linux]
+
+  '@img/sharp-linuxmusl-x64@0.34.4':
+    resolution: {integrity: sha512-lU0aA5L8QTlfKjpDCEFOZsTYGn3AEiO6db8W5aQDxj0nQkVrZWmN3ZP9sYKWJdtq3PWPhUNlqehWyXpYDcI9Sg==}
+    engines: {node: ^18.17.0 || ^20.3.0 || >=21.0.0}
+    cpu: [x64]
     os: [linux]
 
   '@img/sharp-linuxmusl-x64@0.34.5':
@@ -7169,10 +7278,21 @@ packages:
     cpu: [x64]
     os: [linux]
 
+  '@img/sharp-wasm32@0.34.4':
+    resolution: {integrity: sha512-33QL6ZO/qpRyG7woB/HUALz28WnTMI2W1jgX3Nu2bypqLIKx/QKMILLJzJjI+SIbvXdG9fUnmrxR7vbi1sTBeA==}
+    engines: {node: ^18.17.0 || ^20.3.0 || >=21.0.0}
+    cpu: [wasm32]
+
   '@img/sharp-wasm32@0.34.5':
     resolution: {integrity: sha512-OdWTEiVkY2PHwqkbBI8frFxQQFekHaSSkUIJkwzclWZe64O1X4UlUjqqqLaPbUpMOQk6FBu/HtlGXNblIs0huw==}
     engines: {node: ^18.17.0 || ^20.3.0 || >=21.0.0}
     cpu: [wasm32]
+
+  '@img/sharp-win32-arm64@0.34.4':
+    resolution: {integrity: sha512-2Q250do/5WXTwxW3zjsEuMSv5sUU4Tq9VThWKlU2EYLm4MB7ZeMwF+SFJutldYODXF6jzc6YEOC+VfX0SZQPqA==}
+    engines: {node: ^18.17.0 || ^20.3.0 || >=21.0.0}
+    cpu: [arm64]
+    os: [win32]
 
   '@img/sharp-win32-arm64@0.34.5':
     resolution: {integrity: sha512-WQ3AgWCWYSb2yt+IG8mnC6Jdk9Whs7O0gxphblsLvdhSpSTtmu69ZG1Gkb6NuvxsNACwiPV6cNSZNzt0KPsw7g==}
@@ -7180,10 +7300,22 @@ packages:
     cpu: [arm64]
     os: [win32]
 
+  '@img/sharp-win32-ia32@0.34.4':
+    resolution: {integrity: sha512-3ZeLue5V82dT92CNL6rsal6I2weKw1cYu+rGKm8fOCCtJTR2gYeUfY3FqUnIJsMUPIH68oS5jmZ0NiJ508YpEw==}
+    engines: {node: ^18.17.0 || ^20.3.0 || >=21.0.0}
+    cpu: [ia32]
+    os: [win32]
+
   '@img/sharp-win32-ia32@0.34.5':
     resolution: {integrity: sha512-FV9m/7NmeCmSHDD5j4+4pNI8Cp3aW+JvLoXcTUo0IqyjSfAZJ8dIUmijx1qaJsIiU+Hosw6xM5KijAWRJCSgNg==}
     engines: {node: ^18.17.0 || ^20.3.0 || >=21.0.0}
     cpu: [ia32]
+    os: [win32]
+
+  '@img/sharp-win32-x64@0.34.4':
+    resolution: {integrity: sha512-xIyj4wpYs8J18sVN3mSQjwrw7fKUqRw+Z5rnHNCy5fYTxigBz81u5mOMPmFumwjcn8+ld1ppptMBCLic1nz6ig==}
+    engines: {node: ^18.17.0 || ^20.3.0 || >=21.0.0}
+    cpu: [x64]
     os: [win32]
 
   '@img/sharp-win32-x64@0.34.5':
@@ -7475,10 +7607,6 @@ packages:
   '@napi-rs/wasm-runtime@1.0.7':
     resolution: {integrity: sha512-SeDnOO0Tk7Okiq6DbXmmBODgOAb9dp9gjlphokTUxmt8U3liIP1ZsozBahH69j/RJv+Rfs6IwUKHTgQYJ/HBAw==}
 
-<<<<<<< HEAD
-  '@next/env@16.0.3':
-    resolution: {integrity: sha512-IqgtY5Vwsm14mm/nmQaRMmywCU+yyMIYfk3/MHZ2ZTJvwVbBn3usZnjMi1GacrMVzVcAxJShTCpZlPs26EdEjQ==}
-=======
   '@netlify/blobs@10.3.3':
     resolution: {integrity: sha512-yhw0AxB/Felk0KlWtCAqxWcV4xchPumxdlpmdJWlxkVQPoOR7dTPwXsQ6Y4W46oA83QaDD6Rgroi3OKbvg5OBQ==}
     engines: {node: ^14.16.0 || >=16.0.0}
@@ -7495,9 +7623,8 @@ packages:
     resolution: {integrity: sha512-dyJeuggzQM8+Dsi0T8Z9UjfLJ6vCmNC36W6WE2aqzfTdTw4wPkh2xlEu4LoD75+TGuYK7jIhEoU2QcCXOzfyAQ==}
     engines: {node: ^18.14.0 || >=20}
 
-  '@next/env@16.0.1':
-    resolution: {integrity: sha512-LFvlK0TG2L3fEOX77OC35KowL8D7DlFF45C0OvKMC4hy8c/md1RC4UMNDlUGJqfCoCS2VWrZ4dSE6OjaX5+8mw==}
->>>>>>> 05bd95035 (feat: new storage package (#527))
+  '@next/env@16.0.3':
+    resolution: {integrity: sha512-IqgtY5Vwsm14mm/nmQaRMmywCU+yyMIYfk3/MHZ2ZTJvwVbBn3usZnjMi1GacrMVzVcAxJShTCpZlPs26EdEjQ==}
 
   '@next/eslint-plugin-next@16.0.3':
     resolution: {integrity: sha512-6sPWmZetzFWMsz7Dhuxsdmbu3fK+/AxKRtj7OB0/3OZAI2MHB/v2FeYh271LZ9abvnM1WIwWc/5umYjx0jo5sQ==}
@@ -11351,6 +11478,7 @@ packages:
         optional: true
 
 <<<<<<< HEAD
+<<<<<<< HEAD
   '@tsconfig/node22@22.0.5':
     resolution: {integrity: sha512-hLf2ld+sYN/BtOJjHUWOk568dvjFQkHnLNa6zce25GIH+vxKfvTgm3qpaH6ToF5tu/NN0IH66s+Bb5wElHrLcw==}
 =======
@@ -11358,6 +11486,8 @@ packages:
   '@tsconfig/node22@22.0.3':
     resolution: {integrity: sha512-9UTUkYWI58+MiZhwcQWx2TNZbzkGRss9SCyjrSYeqkMIDYq8jv2FSRknrLOjsRmcYFUsYj79m/bgQYSD/yiRxw==}
 =======
+=======
+>>>>>>> c8abe5160 (chore: resolve merge conflicts and update package versions in pnpm-lock.yaml)
   '@tsconfig/node10@1.0.12':
     resolution: {integrity: sha512-UCYBaeFvM11aU2y3YPZ//O5Rhj+xKyzy7mvcIoAjASbigy8mHMryP5cK7dgjlz2hWxh1g5pLw084E0a/wlUSFQ==}
 
@@ -11370,10 +11500,15 @@ packages:
   '@tsconfig/node16@1.0.4':
     resolution: {integrity: sha512-vxhUy4J8lyeyinH7Azl1pdd43GJhZH/tP2weN8TntQblOY+A0XbT8DJk1/oCPuOOyg/Ja757rG0CgHcWC8OfMA==}
 
+<<<<<<< HEAD
   '@tsconfig/node22@22.0.2':
     resolution: {integrity: sha512-Kmwj4u8sDRDrMYRoN9FDEcXD8UpBSaPQQ24Gz+Gamqfm7xxn+GBR7ge/Z7pK8OXNGyUzbSwJj+TH6B+DS/epyA==}
 >>>>>>> 05bd95035 (feat: new storage package (#527))
 >>>>>>> d99502360 (feat: new storage package (#527))
+=======
+  '@tsconfig/node22@22.0.3':
+    resolution: {integrity: sha512-9UTUkYWI58+MiZhwcQWx2TNZbzkGRss9SCyjrSYeqkMIDYq8jv2FSRknrLOjsRmcYFUsYj79m/bgQYSD/yiRxw==}
+>>>>>>> c8abe5160 (chore: resolve merge conflicts and update package versions in pnpm-lock.yaml)
 
   '@tsconfig/svelte@5.0.6':
     resolution: {integrity: sha512-yGxYL0I9eETH1/DR9qVJey4DAsCdeau4a9wYPKuXfEhm8lFO8wg+LLYJjIpAm6Fw7HSlhepPhYPDop75485yWQ==}
@@ -22066,6 +22201,10 @@ packages:
   shallowequal@1.1.0:
     resolution: {integrity: sha512-y0m1JoUZSlPAjXVtPPW70aZWfIL/dSP7AFkRnniLCrK/8MDKog3TySTBmckD+RObVxH0v4Tox67+F14PdED2oQ==}
 
+  sharp@0.34.4:
+    resolution: {integrity: sha512-FUH39xp3SBPnxWvd5iib1X8XY7J0K0X7d93sie9CJg2PO8/7gmg89Nve6OjItK53/MlAushNNxteBYfM6DEuoA==}
+    engines: {node: ^18.17.0 || ^20.3.0 || >=21.0.0}
+
   sharp@0.34.5:
     resolution: {integrity: sha512-Ou9I5Ft9WNcCbXrU9cMgPBcCK8LiwLqcbywW3t4oDV37n1pzpuNLsYiAV8eODnjbtQlSDwZ2cUEeQz4E54Hltg==}
     engines: {node: ^18.17.0 || ^20.3.0 || >=21.0.0}
@@ -26826,9 +26965,14 @@ snapshots:
       '@emnapi/wasi-threads': 1.1.0
       tslib: 2.8.1
 
+  '@emnapi/runtime@1.5.0':
+    dependencies:
+      tslib: 2.8.1
+
   '@emnapi/runtime@1.7.1':
     dependencies:
       tslib: 2.8.1
+    optional: true
 
   '@emnapi/wasi-threads@1.1.0':
     dependencies:
@@ -27565,9 +27709,19 @@ snapshots:
 
   '@img/colour@1.0.0': {}
 
+  '@img/sharp-darwin-arm64@0.34.4':
+    optionalDependencies:
+      '@img/sharp-libvips-darwin-arm64': 1.2.3
+    optional: true
+
   '@img/sharp-darwin-arm64@0.34.5':
     optionalDependencies:
       '@img/sharp-libvips-darwin-arm64': 1.2.4
+    optional: true
+
+  '@img/sharp-darwin-x64@0.34.4':
+    optionalDependencies:
+      '@img/sharp-libvips-darwin-x64': 1.2.3
     optional: true
 
   '@img/sharp-darwin-x64@0.34.5':
@@ -27575,16 +27729,31 @@ snapshots:
       '@img/sharp-libvips-darwin-x64': 1.2.4
     optional: true
 
+  '@img/sharp-libvips-darwin-arm64@1.2.3':
+    optional: true
+
   '@img/sharp-libvips-darwin-arm64@1.2.4':
+    optional: true
+
+  '@img/sharp-libvips-darwin-x64@1.2.3':
     optional: true
 
   '@img/sharp-libvips-darwin-x64@1.2.4':
     optional: true
 
+  '@img/sharp-libvips-linux-arm64@1.2.3':
+    optional: true
+
   '@img/sharp-libvips-linux-arm64@1.2.4':
     optional: true
 
+  '@img/sharp-libvips-linux-arm@1.2.3':
+    optional: true
+
   '@img/sharp-libvips-linux-arm@1.2.4':
+    optional: true
+
+  '@img/sharp-libvips-linux-ppc64@1.2.3':
     optional: true
 
   '@img/sharp-libvips-linux-ppc64@1.2.4':
@@ -27593,16 +27762,33 @@ snapshots:
   '@img/sharp-libvips-linux-riscv64@1.2.4':
     optional: true
 
+  '@img/sharp-libvips-linux-s390x@1.2.3':
+    optional: true
+
   '@img/sharp-libvips-linux-s390x@1.2.4':
+    optional: true
+
+  '@img/sharp-libvips-linux-x64@1.2.3':
     optional: true
 
   '@img/sharp-libvips-linux-x64@1.2.4':
     optional: true
 
+  '@img/sharp-libvips-linuxmusl-arm64@1.2.3':
+    optional: true
+
   '@img/sharp-libvips-linuxmusl-arm64@1.2.4':
     optional: true
 
+  '@img/sharp-libvips-linuxmusl-x64@1.2.3':
+    optional: true
+
   '@img/sharp-libvips-linuxmusl-x64@1.2.4':
+    optional: true
+
+  '@img/sharp-linux-arm64@0.34.4':
+    optionalDependencies:
+      '@img/sharp-libvips-linux-arm64': 1.2.3
     optional: true
 
   '@img/sharp-linux-arm64@0.34.5':
@@ -27610,9 +27796,19 @@ snapshots:
       '@img/sharp-libvips-linux-arm64': 1.2.4
     optional: true
 
+  '@img/sharp-linux-arm@0.34.4':
+    optionalDependencies:
+      '@img/sharp-libvips-linux-arm': 1.2.3
+    optional: true
+
   '@img/sharp-linux-arm@0.34.5':
     optionalDependencies:
       '@img/sharp-libvips-linux-arm': 1.2.4
+    optional: true
+
+  '@img/sharp-linux-ppc64@0.34.4':
+    optionalDependencies:
+      '@img/sharp-libvips-linux-ppc64': 1.2.3
     optional: true
 
   '@img/sharp-linux-ppc64@0.34.5':
@@ -27625,9 +27821,19 @@ snapshots:
       '@img/sharp-libvips-linux-riscv64': 1.2.4
     optional: true
 
+  '@img/sharp-linux-s390x@0.34.4':
+    optionalDependencies:
+      '@img/sharp-libvips-linux-s390x': 1.2.3
+    optional: true
+
   '@img/sharp-linux-s390x@0.34.5':
     optionalDependencies:
       '@img/sharp-libvips-linux-s390x': 1.2.4
+    optional: true
+
+  '@img/sharp-linux-x64@0.34.4':
+    optionalDependencies:
+      '@img/sharp-libvips-linux-x64': 1.2.3
     optional: true
 
   '@img/sharp-linux-x64@0.34.5':
@@ -27635,9 +27841,19 @@ snapshots:
       '@img/sharp-libvips-linux-x64': 1.2.4
     optional: true
 
+  '@img/sharp-linuxmusl-arm64@0.34.4':
+    optionalDependencies:
+      '@img/sharp-libvips-linuxmusl-arm64': 1.2.3
+    optional: true
+
   '@img/sharp-linuxmusl-arm64@0.34.5':
     optionalDependencies:
       '@img/sharp-libvips-linuxmusl-arm64': 1.2.4
+    optional: true
+
+  '@img/sharp-linuxmusl-x64@0.34.4':
+    optionalDependencies:
+      '@img/sharp-libvips-linuxmusl-x64': 1.2.3
     optional: true
 
   '@img/sharp-linuxmusl-x64@0.34.5':
@@ -27645,15 +27861,29 @@ snapshots:
       '@img/sharp-libvips-linuxmusl-x64': 1.2.4
     optional: true
 
+  '@img/sharp-wasm32@0.34.4':
+    dependencies:
+      '@emnapi/runtime': 1.5.0
+    optional: true
+
   '@img/sharp-wasm32@0.34.5':
     dependencies:
       '@emnapi/runtime': 1.7.1
     optional: true
 
+  '@img/sharp-win32-arm64@0.34.4':
+    optional: true
+
   '@img/sharp-win32-arm64@0.34.5':
     optional: true
 
+  '@img/sharp-win32-ia32@0.34.4':
+    optional: true
+
   '@img/sharp-win32-ia32@0.34.5':
+    optional: true
+
+  '@img/sharp-win32-x64@0.34.4':
     optional: true
 
   '@img/sharp-win32-x64@0.34.5':
@@ -27754,7 +27984,7 @@ snapshots:
       jest-util: 30.2.0
       slash: 3.0.0
 
-  '@jest/core@30.2.0(esbuild-register@3.6.0(esbuild@0.27.0))(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@24.10.0)(typescript@5.9.3))':
+  '@jest/core@30.2.0(esbuild-register@3.6.0(esbuild@0.27.0))(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@24.10.1)(typescript@5.9.3))':
     dependencies:
       '@jest/console': 30.2.0
       '@jest/pattern': 30.0.1
@@ -27769,11 +27999,7 @@ snapshots:
       exit-x: 0.2.2
       graceful-fs: 4.2.11
       jest-changed-files: 30.2.0
-<<<<<<< HEAD
-      jest-config: 30.2.0(@types/node@24.10.1)(esbuild-register@3.6.0(esbuild@0.27.0))
-=======
-      jest-config: 30.2.0(@types/node@24.10.0)(esbuild-register@3.6.0(esbuild@0.27.0))(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@24.10.0)(typescript@5.9.3))
->>>>>>> 05bd95035 (feat: new storage package (#527))
+      jest-config: 30.2.0(@types/node@24.10.1)(esbuild-register@3.6.0(esbuild@0.27.0))(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@24.10.1)(typescript@5.9.3))
       jest-haste-map: 30.2.0
       jest-message-util: 30.2.0
       jest-regex-util: 30.0.1
@@ -28059,26 +28285,23 @@ snapshots:
   '@napi-rs/wasm-runtime@0.2.12':
     dependencies:
       '@emnapi/core': 1.5.0
-      '@emnapi/runtime': 1.7.1
+      '@emnapi/runtime': 1.5.0
       '@tybys/wasm-util': 0.10.1
     optional: true
 
   '@napi-rs/wasm-runtime@0.2.4':
     dependencies:
       '@emnapi/core': 1.5.0
-      '@emnapi/runtime': 1.7.1
+      '@emnapi/runtime': 1.5.0
       '@tybys/wasm-util': 0.9.0
 
   '@napi-rs/wasm-runtime@1.0.7':
     dependencies:
       '@emnapi/core': 1.5.0
-      '@emnapi/runtime': 1.7.1
+      '@emnapi/runtime': 1.5.0
       '@tybys/wasm-util': 0.10.1
     optional: true
 
-<<<<<<< HEAD
-  '@next/env@16.0.3': {}
-=======
   '@netlify/blobs@10.3.3':
     dependencies:
       '@netlify/dev-utils': 4.3.1
@@ -28118,8 +28341,7 @@ snapshots:
 
   '@netlify/runtime-utils@2.2.1': {}
 
-  '@next/env@16.0.1': {}
->>>>>>> 05bd95035 (feat: new storage package (#527))
+  '@next/env@16.0.3': {}
 
   '@next/eslint-plugin-next@16.0.3':
     dependencies:
@@ -31602,8 +31824,11 @@ snapshots:
       qs: 6.14.0
 
 <<<<<<< HEAD
+<<<<<<< HEAD
   '@storybook/test-runner@0.24.1(@types/node@24.10.1)(esbuild-register@3.6.0(esbuild@0.27.0))(storybook@10.1.0(@testing-library/dom@10.4.1)(prettier@3.6.2)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))':
 =======
+=======
+>>>>>>> d0b82ad5f (chore: resolve merge conflicts and update package versions in pnpm-lock.yaml)
 <<<<<<< HEAD
   '@storybook/test-runner@0.24.1(@types/node@24.10.1)(esbuild-register@3.6.0(esbuild@0.27.0))(storybook@10.0.8(@testing-library/dom@10.4.1)(msw@2.12.2(@types/node@24.10.1)(typescript@5.9.3))(prettier@3.6.2)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(vite@7.2.4(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))':
 =======
@@ -31613,7 +31838,13 @@ snapshots:
   '@storybook/test-runner@0.24.1(@types/node@24.10.0)(esbuild-register@3.6.0(esbuild@0.27.0))(storybook@10.0.7(@testing-library/dom@10.4.1)(msw@2.12.1(@types/node@24.10.0)(typescript@5.9.3))(prettier@3.6.2)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(vite@7.2.2(@types/node@24.10.0)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@24.10.0)(typescript@5.9.3))':
 >>>>>>> 05bd95035 (feat: new storage package (#527))
 >>>>>>> d99502360 (feat: new storage package (#527))
+<<<<<<< HEAD
 >>>>>>> efb87dc29 (feat: new storage package (#527))
+=======
+=======
+  '@storybook/test-runner@0.24.1(@types/node@24.10.1)(esbuild-register@3.6.0(esbuild@0.27.0))(storybook@10.0.7(@testing-library/dom@10.4.1)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(prettier@3.6.2)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@24.10.1)(typescript@5.9.3))':
+>>>>>>> c8abe5160 (chore: resolve merge conflicts and update package versions in pnpm-lock.yaml)
+>>>>>>> d0b82ad5f (chore: resolve merge conflicts and update package versions in pnpm-lock.yaml)
     dependencies:
       '@babel/core': 7.28.5
       '@babel/generator': 7.28.5
@@ -31623,22 +31854,14 @@ snapshots:
       '@swc/core': 1.13.5
       '@swc/jest': 0.2.39(@swc/core@1.13.5)
       expect-playwright: 0.8.0
-<<<<<<< HEAD
-      jest: 30.2.0(@types/node@24.10.1)(esbuild-register@3.6.0(esbuild@0.27.0))
-=======
-      jest: 30.2.0(@types/node@24.10.0)(esbuild-register@3.6.0(esbuild@0.27.0))(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@24.10.0)(typescript@5.9.3))
->>>>>>> 05bd95035 (feat: new storage package (#527))
+      jest: 30.2.0(@types/node@24.10.1)(esbuild-register@3.6.0(esbuild@0.27.0))(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@24.10.1)(typescript@5.9.3))
       jest-circus: 30.2.0
       jest-environment-node: 30.2.0
       jest-junit: 16.0.0
       jest-process-manager: 0.4.0
       jest-runner: 30.2.0
       jest-serializer-html: 7.1.0
-<<<<<<< HEAD
-      jest-watch-typeahead: 3.0.1(jest@30.2.0(@types/node@24.10.1)(esbuild-register@3.6.0(esbuild@0.27.0)))
-=======
-      jest-watch-typeahead: 3.0.1(jest@30.2.0(@types/node@24.10.0)(esbuild-register@3.6.0(esbuild@0.27.0))(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@24.10.0)(typescript@5.9.3)))
->>>>>>> 05bd95035 (feat: new storage package (#527))
+      jest-watch-typeahead: 3.0.1(jest@30.2.0(@types/node@24.10.1)(esbuild-register@3.6.0(esbuild@0.27.0))(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@24.10.1)(typescript@5.9.3)))
       nyc: 15.1.0
       playwright: 1.56.1
       playwright-core: 1.56.1
@@ -33024,11 +33247,14 @@ snapshots:
     optional: true
 
 <<<<<<< HEAD
+<<<<<<< HEAD
   '@tsconfig/node22@22.0.5': {}
 =======
 <<<<<<< HEAD
   '@tsconfig/node22@22.0.3': {}
 =======
+=======
+>>>>>>> c8abe5160 (chore: resolve merge conflicts and update package versions in pnpm-lock.yaml)
   '@tsconfig/node10@1.0.12': {}
 
   '@tsconfig/node12@1.0.11': {}
@@ -33037,9 +33263,13 @@ snapshots:
 
   '@tsconfig/node16@1.0.4': {}
 
+<<<<<<< HEAD
   '@tsconfig/node22@22.0.2': {}
 >>>>>>> 05bd95035 (feat: new storage package (#527))
 >>>>>>> d99502360 (feat: new storage package (#527))
+=======
+  '@tsconfig/node22@22.0.3': {}
+>>>>>>> c8abe5160 (chore: resolve merge conflicts and update package versions in pnpm-lock.yaml)
 
   '@tsconfig/svelte@5.0.6': {}
 
@@ -33163,7 +33393,7 @@ snapshots:
 
   '@types/etag@1.8.4':
     dependencies:
-      '@types/node': 24.10.0
+      '@types/node': 24.10.1
 
   '@types/express-serve-static-core@4.19.5':
     dependencies:
@@ -33430,7 +33660,7 @@ snapshots:
     dependencies:
       '@types/cookiejar': 2.1.5
       '@types/methods': 1.1.4
-      '@types/node': 24.10.0
+      '@types/node': 24.10.1
       form-data: 4.0.4
 
   '@types/supertest@6.0.3':
@@ -33460,7 +33690,7 @@ snapshots:
 
   '@types/type-is@1.6.7':
     dependencies:
-      '@types/node': 24.10.0
+      '@types/node': 24.10.1
 
   '@types/unist@2.0.10': {}
 
@@ -33898,8 +34128,11 @@ snapshots:
       - '@types/node'
 
 <<<<<<< HEAD
+<<<<<<< HEAD
   '@visulima/package@4.1.7(@types/node@24.10.1)':
 =======
+=======
+>>>>>>> d0b82ad5f (chore: resolve merge conflicts and update package versions in pnpm-lock.yaml)
 <<<<<<< HEAD
   '@visulima/package@4.1.6(@types/node@24.10.1)':
 >>>>>>> efb87dc29 (feat: new storage package (#527))
@@ -33926,6 +34159,9 @@ snapshots:
   '@visulima/packem-rollup@1.0.0-alpha.27(@swc/core@1.13.5)(@types/node@24.10.1)(esbuild@0.27.0)(picomatch@4.0.3)(rolldown@1.0.0-beta.50)(rollup@4.53.2)(sucrase@3.35.0)(typescript@5.9.3)(yaml@2.8.1)':
 =======
   '@visulima/packem-rollup@1.0.0-alpha.27(@swc/core@1.13.5)(@types/node@24.10.0)(esbuild@0.25.12)(picomatch@4.0.3)(rolldown@1.0.0-beta.50)(rollup@4.53.2)(sucrase@3.35.0)(typescript@5.9.3)(yaml@2.8.1)':
+=======
+  '@visulima/packem-rollup@1.0.0-alpha.27(@swc/core@1.13.5)(@types/node@24.10.1)(esbuild@0.25.12)(picomatch@4.0.3)(rolldown@1.0.0-beta.50)(rollup@4.53.2)(sucrase@3.35.0)(typescript@5.9.3)(yaml@2.8.1)':
+>>>>>>> d521ee3ab (chore: resolve merge conflicts and update package versions in pnpm-lock.yaml)
     dependencies:
       '@babel/parser': 7.28.4
       '@rollup/plugin-alias': 5.1.1(rollup@4.53.2)
@@ -33939,8 +34175,8 @@ snapshots:
       '@rollup/pluginutils': 5.3.0(rollup@4.53.2)
       '@visulima/find-cache-dir': 1.0.34(yaml@2.8.1)
       '@visulima/fs': 3.1.8(yaml@2.8.1)
-      '@visulima/package': 4.0.0(@types/node@24.10.0)
-      '@visulima/packem-share': 1.0.0-alpha.13(@types/node@24.10.0)(rollup@4.53.2)(yaml@2.8.1)
+      '@visulima/package': 4.0.0(@types/node@24.10.1)
+      '@visulima/packem-share': 1.0.0-alpha.13(@types/node@24.10.1)(rollup@4.53.2)(yaml@2.8.1)
       '@visulima/path': 1.4.0
       '@visulima/source-map': 1.0.20
       cjs-module-lexer: 2.1.1
@@ -33971,10 +34207,17 @@ snapshots:
       - rolldown
       - yaml
 
+<<<<<<< HEAD
   '@visulima/packem-rollup@1.0.0-alpha.27(@swc/core@1.13.5)(@types/node@24.10.0)(esbuild@0.27.0)(picomatch@4.0.3)(rolldown@1.0.0-beta.50)(rollup@4.53.2)(sucrase@3.35.0)(typescript@5.9.3)(yaml@2.8.1)':
 >>>>>>> 05bd95035 (feat: new storage package (#527))
 >>>>>>> d99502360 (feat: new storage package (#527))
+<<<<<<< HEAD
 >>>>>>> efb87dc29 (feat: new storage package (#527))
+=======
+=======
+  '@visulima/packem-rollup@1.0.0-alpha.27(@swc/core@1.13.5)(@types/node@24.10.1)(esbuild@0.27.0)(picomatch@4.0.3)(rolldown@1.0.0-beta.50)(rollup@4.53.2)(sucrase@3.35.0)(typescript@5.9.3)(yaml@2.8.1)':
+>>>>>>> c8abe5160 (chore: resolve merge conflicts and update package versions in pnpm-lock.yaml)
+>>>>>>> d0b82ad5f (chore: resolve merge conflicts and update package versions in pnpm-lock.yaml)
     dependencies:
       '@babel/parser': 7.28.4
       '@rollup/plugin-alias': 5.1.1(rollup@4.53.3)
@@ -34080,6 +34323,7 @@ snapshots:
       - yaml
 
 <<<<<<< HEAD
+<<<<<<< HEAD
   '@visulima/packem-share@1.0.0-alpha.14(@types/node@24.10.1)(rollup@4.53.3)(yaml@2.8.1)':
     dependencies:
       '@visulima/colorize': 1.4.27
@@ -34093,6 +34337,8 @@ snapshots:
 
   '@visulima/packem@2.0.0-alpha.37(7a6293a8e18ed886ce94cde29eb6ae84)':
 =======
+=======
+>>>>>>> d0b82ad5f (chore: resolve merge conflicts and update package versions in pnpm-lock.yaml)
 <<<<<<< HEAD
   '@visulima/packem@2.0.0-alpha.37(46e9d823fb7da27182a859d71d4bad4a)':
 =======
@@ -34100,6 +34346,9 @@ snapshots:
   '@visulima/packem@2.0.0-alpha.37(a8b2e1e18ab4dfba609511b5bcacc9ca)':
 =======
   '@visulima/packem@2.0.0-alpha.36(b6f628ee8c8c6f4eda46717cc79f4281)':
+=======
+  '@visulima/packem@2.0.0-alpha.36(a8734eb3e47b48230a342818524b3df8)':
+>>>>>>> c8abe5160 (chore: resolve merge conflicts and update package versions in pnpm-lock.yaml)
     dependencies:
       '@antfu/install-pkg': 1.1.0
       '@clack/prompts': 0.11.0
@@ -34109,12 +34358,12 @@ snapshots:
       '@visulima/find-cache-dir': 2.0.4
       '@visulima/fs': 4.0.4(yaml@2.8.1)
       '@visulima/humanizer': 2.0.3
-      '@visulima/package': 4.1.4(@types/node@24.10.0)
-      '@visulima/packem-rollup': 1.0.0-alpha.27(@swc/core@1.13.5)(@types/node@24.10.0)(esbuild@0.25.12)(picomatch@4.0.3)(rolldown@1.0.0-beta.50)(rollup@4.53.2)(sucrase@3.35.0)(typescript@5.9.3)(yaml@2.8.1)
-      '@visulima/packem-share': 1.0.0-alpha.13(@types/node@24.10.0)(rollup@4.53.2)(yaml@2.8.1)
+      '@visulima/package': 4.1.4(@types/node@24.10.1)
+      '@visulima/packem-rollup': 1.0.0-alpha.27(@swc/core@1.13.5)(@types/node@24.10.1)(esbuild@0.25.12)(picomatch@4.0.3)(rolldown@1.0.0-beta.50)(rollup@4.53.2)(sucrase@3.35.0)(typescript@5.9.3)(yaml@2.8.1)
+      '@visulima/packem-share': 1.0.0-alpha.13(@types/node@24.10.1)(rollup@4.53.2)(yaml@2.8.1)
       '@visulima/pail': 3.2.0(@opentelemetry/api@1.9.0)(@visulima/redact@packages+redact)(rotating-file-stream@3.2.7)
       '@visulima/path': 1.4.0
-      '@visulima/rollup-plugin-css': 1.0.0-alpha.7(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@csstools/postcss-slow-plugins@2.0.0(postcss@8.5.6))(@swc/core@1.13.5)(@tailwindcss/node@4.1.17)(@tailwindcss/oxide@4.1.17)(@types/node@24.10.0)(@visulima/css-style-inject@1.0.0-alpha.9)(cssnano@7.1.2(postcss@8.5.6))(esbuild@0.25.12)(icss-utils@5.1.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(postcss-load-config@6.0.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.20.6)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rollup@4.53.2)(sucrase@3.35.0)(typedoc-plugin-markdown@4.9.0(typedoc@0.28.14(typescript@5.9.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.14(typescript@5.9.3)))(typedoc@0.28.14(typescript@5.9.3))(typescript@5.9.3)(yaml@2.8.1)
+      '@visulima/rollup-plugin-css': 1.0.0-alpha.7(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@csstools/postcss-slow-plugins@2.0.0(postcss@8.5.6))(@swc/core@1.13.5)(@tailwindcss/node@4.1.17)(@tailwindcss/oxide@4.1.17)(@types/node@24.10.1)(@visulima/css-style-inject@1.0.0-alpha.9)(cssnano@7.1.2(postcss@8.5.6))(esbuild@0.25.12)(icss-utils@5.1.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(postcss-load-config@6.0.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.20.6)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rollup@4.53.2)(sucrase@3.35.0)(typedoc-plugin-markdown@4.9.0(typedoc@0.28.14(typescript@5.9.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.14(typescript@5.9.3)))(typedoc@0.28.14(typescript@5.9.3))(typescript@5.9.3)(yaml@2.8.1)
       '@visulima/source-map': 2.0.3
       '@visulima/tabular': 3.1.3
       '@visulima/tsconfig': 2.1.0(yaml@2.8.1)
@@ -34172,10 +34421,17 @@ snapshots:
       - rotating-file-stream
       - yaml
 
+<<<<<<< HEAD
   '@visulima/packem@2.0.0-alpha.37(0bbbca349d5c5bd398ca6feb54597b53)':
 >>>>>>> 05bd95035 (feat: new storage package (#527))
 >>>>>>> d99502360 (feat: new storage package (#527))
+<<<<<<< HEAD
 >>>>>>> efb87dc29 (feat: new storage package (#527))
+=======
+=======
+  '@visulima/packem@2.0.0-alpha.37(a8b2e1e18ab4dfba609511b5bcacc9ca)':
+>>>>>>> c8abe5160 (chore: resolve merge conflicts and update package versions in pnpm-lock.yaml)
+>>>>>>> d0b82ad5f (chore: resolve merge conflicts and update package versions in pnpm-lock.yaml)
     dependencies:
       '@antfu/install-pkg': 1.1.0
       '@clack/prompts': 0.11.0
@@ -34415,8 +34671,11 @@ snapshots:
   '@visulima/path@2.0.5': {}
 
 <<<<<<< HEAD
+<<<<<<< HEAD
   '@visulima/rollup-plugin-css@1.0.0-alpha.7(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@csstools/postcss-slow-plugins@2.0.0(postcss@8.5.6))(@swc/core@1.13.5)(@tailwindcss/node@4.1.17)(@tailwindcss/oxide@4.1.17)(@types/node@24.10.1)(@visulima/css-style-inject@1.0.0-alpha.9)(cssnano@7.1.2(postcss@8.5.6))(esbuild@0.27.0)(icss-utils@5.1.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(oxc-transform@0.96.0)(postcss-load-config@6.0.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.20.6)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rollup@4.53.3)(sucrase@3.35.0)(typedoc-plugin-markdown@4.9.0(typedoc@0.28.14(typescript@5.9.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.14(typescript@5.9.3)))(typedoc@0.28.14(typescript@5.9.3))(typescript@5.9.3)(yaml@2.8.1)':
 =======
+=======
+>>>>>>> d0b82ad5f (chore: resolve merge conflicts and update package versions in pnpm-lock.yaml)
 <<<<<<< HEAD
   '@visulima/rollup-plugin-css@1.0.0-alpha.7(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@csstools/postcss-slow-plugins@2.0.0(postcss@8.5.6))(@swc/core@1.13.5)(@tailwindcss/node@4.1.17)(@tailwindcss/oxide@4.1.17)(@types/node@24.10.1)(@visulima/css-style-inject@1.0.0-alpha.9)(cssnano@7.1.2(postcss@8.5.6))(esbuild@0.27.0)(icss-utils@5.1.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(postcss-load-config@6.0.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.20.6)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rollup@4.53.3)(sucrase@3.35.0)(typedoc-plugin-markdown@4.9.0(typedoc@0.28.14(typescript@5.9.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.14(typescript@5.9.3)))(typedoc@0.28.14(typescript@5.9.3))(typescript@5.9.3)(yaml@2.8.1)':
 =======
@@ -34424,6 +34683,9 @@ snapshots:
   '@visulima/rollup-plugin-css@1.0.0-alpha.7(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@csstools/postcss-slow-plugins@2.0.0(postcss@8.5.6))(@swc/core@1.13.5)(@tailwindcss/node@4.1.17)(@tailwindcss/oxide@4.1.17)(@types/node@24.10.1)(@visulima/css-style-inject@1.0.0-alpha.9)(cssnano@7.1.2(postcss@8.5.6))(esbuild@0.27.0)(icss-utils@5.1.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(postcss-load-config@6.0.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.20.6)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rollup@4.53.2)(sucrase@3.35.0)(typedoc-plugin-markdown@4.9.0(typedoc@0.28.14(typescript@5.9.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.14(typescript@5.9.3)))(typedoc@0.28.14(typescript@5.9.3))(typescript@5.9.3)(yaml@2.8.1)':
 =======
   '@visulima/rollup-plugin-css@1.0.0-alpha.7(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@csstools/postcss-slow-plugins@2.0.0(postcss@8.5.6))(@swc/core@1.13.5)(@tailwindcss/node@4.1.17)(@tailwindcss/oxide@4.1.17)(@types/node@24.10.0)(@visulima/css-style-inject@1.0.0-alpha.9)(cssnano@7.1.2(postcss@8.5.6))(esbuild@0.25.12)(icss-utils@5.1.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(postcss-load-config@6.0.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.20.6)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rollup@4.53.2)(sucrase@3.35.0)(typedoc-plugin-markdown@4.9.0(typedoc@0.28.14(typescript@5.9.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.14(typescript@5.9.3)))(typedoc@0.28.14(typescript@5.9.3))(typescript@5.9.3)(yaml@2.8.1)':
+=======
+  '@visulima/rollup-plugin-css@1.0.0-alpha.7(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@csstools/postcss-slow-plugins@2.0.0(postcss@8.5.6))(@swc/core@1.13.5)(@tailwindcss/node@4.1.17)(@tailwindcss/oxide@4.1.17)(@types/node@24.10.1)(@visulima/css-style-inject@1.0.0-alpha.9)(cssnano@7.1.2(postcss@8.5.6))(esbuild@0.25.12)(icss-utils@5.1.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(postcss-load-config@6.0.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.20.6)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rollup@4.53.2)(sucrase@3.35.0)(typedoc-plugin-markdown@4.9.0(typedoc@0.28.14(typescript@5.9.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.14(typescript@5.9.3)))(typedoc@0.28.14(typescript@5.9.3))(typescript@5.9.3)(yaml@2.8.1)':
+>>>>>>> c8abe5160 (chore: resolve merge conflicts and update package versions in pnpm-lock.yaml)
     dependencies:
       '@csstools/css-parser-algorithms': 3.0.5(@csstools/css-tokenizer@3.0.4)
       '@csstools/css-tokenizer': 3.0.4
@@ -34431,8 +34693,8 @@ snapshots:
       '@rollup/pluginutils': 5.3.0(rollup@4.53.2)
       '@visulima/css-style-inject': 1.0.0-alpha.9
       '@visulima/fs': 3.1.8(yaml@2.8.1)
-      '@visulima/package': 4.0.0(@types/node@24.10.0)
-      '@visulima/packem-share': 1.0.0-alpha.13(@types/node@24.10.0)(rollup@4.53.2)(yaml@2.8.1)
+      '@visulima/package': 4.0.0(@types/node@24.10.1)
+      '@visulima/packem-share': 1.0.0-alpha.13(@types/node@24.10.1)(rollup@4.53.2)(yaml@2.8.1)
       '@visulima/path': 1.4.0
       mlly: 1.8.0
       oxc-resolver: 11.8.2
@@ -34464,10 +34726,17 @@ snapshots:
       - '@types/node'
       - yaml
 
+<<<<<<< HEAD
   '@visulima/rollup-plugin-css@1.0.0-alpha.7(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@csstools/postcss-slow-plugins@2.0.0(postcss@8.5.6))(@swc/core@1.13.5)(@tailwindcss/node@4.1.17)(@tailwindcss/oxide@4.1.17)(@types/node@24.10.0)(@visulima/css-style-inject@1.0.0-alpha.9)(cssnano@7.1.2(postcss@8.5.6))(esbuild@0.27.0)(icss-utils@5.1.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(postcss-load-config@6.0.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.20.6)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rollup@4.53.2)(sucrase@3.35.0)(typedoc-plugin-markdown@4.9.0(typedoc@0.28.14(typescript@5.9.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.14(typescript@5.9.3)))(typedoc@0.28.14(typescript@5.9.3))(typescript@5.9.3)(yaml@2.8.1)':
 >>>>>>> 05bd95035 (feat: new storage package (#527))
 >>>>>>> d99502360 (feat: new storage package (#527))
+<<<<<<< HEAD
 >>>>>>> efb87dc29 (feat: new storage package (#527))
+=======
+=======
+  '@visulima/rollup-plugin-css@1.0.0-alpha.7(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@csstools/postcss-slow-plugins@2.0.0(postcss@8.5.6))(@swc/core@1.13.5)(@tailwindcss/node@4.1.17)(@tailwindcss/oxide@4.1.17)(@types/node@24.10.1)(@visulima/css-style-inject@1.0.0-alpha.9)(cssnano@7.1.2(postcss@8.5.6))(esbuild@0.27.0)(icss-utils@5.1.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(postcss-load-config@6.0.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.20.6)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rollup@4.53.2)(sucrase@3.35.0)(typedoc-plugin-markdown@4.9.0(typedoc@0.28.14(typescript@5.9.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.14(typescript@5.9.3)))(typedoc@0.28.14(typescript@5.9.3))(typescript@5.9.3)(yaml@2.8.1)':
+>>>>>>> c8abe5160 (chore: resolve merge conflicts and update package versions in pnpm-lock.yaml)
+>>>>>>> d0b82ad5f (chore: resolve merge conflicts and update package versions in pnpm-lock.yaml)
     dependencies:
       '@csstools/css-parser-algorithms': 3.0.5(@csstools/css-tokenizer@3.0.4)
       '@csstools/css-tokenizer': 3.0.4
@@ -36598,16 +36867,12 @@ snapshots:
 
   commenting@1.1.0: {}
 
-<<<<<<< HEAD
-  commitizen@4.3.1(@types/node@24.10.1)(typescript@5.9.3):
-=======
   commist@1.1.0:
     dependencies:
       leven: 2.1.0
       minimist: 1.2.8
 
-  commitizen@4.3.1(@types/node@24.10.0)(typescript@5.9.3):
->>>>>>> 05bd95035 (feat: new storage package (#527))
+  commitizen@4.3.1(@types/node@24.10.1)(typescript@5.9.3):
     dependencies:
       cachedir: 2.3.0
       cz-conventional-changelog: 3.3.0(@types/node@24.10.1)(typescript@5.9.3)
@@ -40704,23 +40969,15 @@ snapshots:
       - babel-plugin-macros
       - supports-color
 
-<<<<<<< HEAD
-  jest-cli@30.2.0(@types/node@24.10.1)(esbuild-register@3.6.0(esbuild@0.27.0)):
-=======
-  jest-cli@30.2.0(@types/node@24.10.0)(esbuild-register@3.6.0(esbuild@0.27.0))(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@24.10.0)(typescript@5.9.3)):
->>>>>>> 05bd95035 (feat: new storage package (#527))
+  jest-cli@30.2.0(@types/node@24.10.1)(esbuild-register@3.6.0(esbuild@0.27.0))(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@24.10.1)(typescript@5.9.3)):
     dependencies:
-      '@jest/core': 30.2.0(esbuild-register@3.6.0(esbuild@0.27.0))(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@24.10.0)(typescript@5.9.3))
+      '@jest/core': 30.2.0(esbuild-register@3.6.0(esbuild@0.27.0))(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@24.10.1)(typescript@5.9.3))
       '@jest/test-result': 30.2.0
       '@jest/types': 30.2.0
       chalk: 4.1.2
       exit-x: 0.2.2
       import-local: 3.2.0
-<<<<<<< HEAD
-      jest-config: 30.2.0(@types/node@24.10.1)(esbuild-register@3.6.0(esbuild@0.27.0))
-=======
-      jest-config: 30.2.0(@types/node@24.10.0)(esbuild-register@3.6.0(esbuild@0.27.0))(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@24.10.0)(typescript@5.9.3))
->>>>>>> 05bd95035 (feat: new storage package (#527))
+      jest-config: 30.2.0(@types/node@24.10.1)(esbuild-register@3.6.0(esbuild@0.27.0))(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@24.10.1)(typescript@5.9.3))
       jest-util: 30.2.0
       jest-validate: 30.2.0
       yargs: 17.7.2
@@ -40731,11 +40988,7 @@ snapshots:
       - supports-color
       - ts-node
 
-<<<<<<< HEAD
-  jest-config@30.2.0(@types/node@24.10.1)(esbuild-register@3.6.0(esbuild@0.27.0)):
-=======
-  jest-config@30.2.0(@types/node@24.10.0)(esbuild-register@3.6.0(esbuild@0.27.0))(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@24.10.0)(typescript@5.9.3)):
->>>>>>> 05bd95035 (feat: new storage package (#527))
+  jest-config@30.2.0(@types/node@24.10.1)(esbuild-register@3.6.0(esbuild@0.27.0))(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@24.10.1)(typescript@5.9.3)):
     dependencies:
       '@babel/core': 7.28.5
       '@jest/get-type': 30.1.0
@@ -40764,7 +41017,7 @@ snapshots:
     optionalDependencies:
       '@types/node': 24.10.1
       esbuild-register: 3.6.0(esbuild@0.27.0)
-      ts-node: 10.9.2(@swc/core@1.13.5)(@types/node@24.10.0)(typescript@5.9.3)
+      ts-node: 10.9.2(@swc/core@1.13.5)(@types/node@24.10.1)(typescript@5.9.3)
     transitivePeerDependencies:
       - babel-plugin-macros
       - supports-color
@@ -40990,19 +41243,11 @@ snapshots:
       leven: 3.1.0
       pretty-format: 30.2.0
 
-<<<<<<< HEAD
-  jest-watch-typeahead@3.0.1(jest@30.2.0(@types/node@24.10.1)(esbuild-register@3.6.0(esbuild@0.27.0))):
+  jest-watch-typeahead@3.0.1(jest@30.2.0(@types/node@24.10.1)(esbuild-register@3.6.0(esbuild@0.27.0))(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@24.10.1)(typescript@5.9.3))):
     dependencies:
       ansi-escapes: 7.1.1
       chalk: 5.6.2
-      jest: 30.2.0(@types/node@24.10.1)(esbuild-register@3.6.0(esbuild@0.27.0))
-=======
-  jest-watch-typeahead@3.0.1(jest@30.2.0(@types/node@24.10.0)(esbuild-register@3.6.0(esbuild@0.27.0))(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@24.10.0)(typescript@5.9.3))):
-    dependencies:
-      ansi-escapes: 7.1.1
-      chalk: 5.6.2
-      jest: 30.2.0(@types/node@24.10.0)(esbuild-register@3.6.0(esbuild@0.27.0))(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@24.10.0)(typescript@5.9.3))
->>>>>>> 05bd95035 (feat: new storage package (#527))
+      jest: 30.2.0(@types/node@24.10.1)(esbuild-register@3.6.0(esbuild@0.27.0))(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@24.10.1)(typescript@5.9.3))
       jest-regex-util: 30.0.1
       jest-watcher: 30.2.0
       slash: 5.1.0
@@ -41034,20 +41279,12 @@ snapshots:
       merge-stream: 2.0.0
       supports-color: 8.1.1
 
-<<<<<<< HEAD
-  jest@30.2.0(@types/node@24.10.1)(esbuild-register@3.6.0(esbuild@0.27.0)):
-=======
-  jest@30.2.0(@types/node@24.10.0)(esbuild-register@3.6.0(esbuild@0.27.0))(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@24.10.0)(typescript@5.9.3)):
->>>>>>> 05bd95035 (feat: new storage package (#527))
+  jest@30.2.0(@types/node@24.10.1)(esbuild-register@3.6.0(esbuild@0.27.0))(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@24.10.1)(typescript@5.9.3)):
     dependencies:
-      '@jest/core': 30.2.0(esbuild-register@3.6.0(esbuild@0.27.0))(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@24.10.0)(typescript@5.9.3))
+      '@jest/core': 30.2.0(esbuild-register@3.6.0(esbuild@0.27.0))(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@24.10.1)(typescript@5.9.3))
       '@jest/types': 30.2.0
       import-local: 3.2.0
-<<<<<<< HEAD
-      jest-cli: 30.2.0(@types/node@24.10.1)(esbuild-register@3.6.0(esbuild@0.27.0))
-=======
-      jest-cli: 30.2.0(@types/node@24.10.0)(esbuild-register@3.6.0(esbuild@0.27.0))(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@24.10.0)(typescript@5.9.3))
->>>>>>> 05bd95035 (feat: new storage package (#527))
+      jest-cli: 30.2.0(@types/node@24.10.1)(esbuild-register@3.6.0(esbuild@0.27.0))(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@24.10.1)(typescript@5.9.3))
     transitivePeerDependencies:
       - '@types/node'
       - babel-plugin-macros
@@ -43393,7 +43630,7 @@ snapshots:
       '@next/swc-win32-x64-msvc': 16.0.3
       '@opentelemetry/api': 1.9.0
       '@playwright/test': 1.56.1
-      sharp: 0.34.5
+      sharp: 0.34.4
     transitivePeerDependencies:
       - '@babel/core'
       - babel-plugin-macros
@@ -45167,7 +45404,7 @@ snapshots:
       '@protobufjs/path': 1.1.2
       '@protobufjs/pool': 1.1.0
       '@protobufjs/utf8': 1.1.0
-      '@types/node': 24.10.0
+      '@types/node': 24.10.1
       long: 5.3.2
 >>>>>>> efb87dc29 (feat: new storage package (#527))
 
@@ -46514,6 +46751,36 @@ snapshots:
 
   shallowequal@1.1.0: {}
 
+  sharp@0.34.4:
+    dependencies:
+      '@img/colour': 1.0.0
+      detect-libc: 2.1.2
+      semver: 7.7.3
+    optionalDependencies:
+      '@img/sharp-darwin-arm64': 0.34.4
+      '@img/sharp-darwin-x64': 0.34.4
+      '@img/sharp-libvips-darwin-arm64': 1.2.3
+      '@img/sharp-libvips-darwin-x64': 1.2.3
+      '@img/sharp-libvips-linux-arm': 1.2.3
+      '@img/sharp-libvips-linux-arm64': 1.2.3
+      '@img/sharp-libvips-linux-ppc64': 1.2.3
+      '@img/sharp-libvips-linux-s390x': 1.2.3
+      '@img/sharp-libvips-linux-x64': 1.2.3
+      '@img/sharp-libvips-linuxmusl-arm64': 1.2.3
+      '@img/sharp-libvips-linuxmusl-x64': 1.2.3
+      '@img/sharp-linux-arm': 0.34.4
+      '@img/sharp-linux-arm64': 0.34.4
+      '@img/sharp-linux-ppc64': 0.34.4
+      '@img/sharp-linux-s390x': 0.34.4
+      '@img/sharp-linux-x64': 0.34.4
+      '@img/sharp-linuxmusl-arm64': 0.34.4
+      '@img/sharp-linuxmusl-x64': 0.34.4
+      '@img/sharp-wasm32': 0.34.4
+      '@img/sharp-win32-arm64': 0.34.4
+      '@img/sharp-win32-ia32': 0.34.4
+      '@img/sharp-win32-x64': 0.34.4
+    optional: true
+
   sharp@0.34.5:
     dependencies:
       '@img/colour': 1.0.0
@@ -46901,9 +47168,26 @@ snapshots:
   standard@17.1.2(@typescript-eslint/parser@8.48.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3)):
     dependencies:
       eslint: 8.57.0
+<<<<<<< HEAD
       eslint-config-standard: 17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.48.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3))(eslint@8.57.0))(eslint-plugin-n@15.7.0(eslint@8.57.0))(eslint-plugin-promise@6.4.0(eslint@8.57.0))(eslint@8.57.0)
       eslint-config-standard-jsx: 11.0.0(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint@8.57.0)
       eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.48.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.1(jiti@2.6.1))
+=======
+<<<<<<< HEAD
+      eslint-config-standard: 17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.47.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3))(eslint@8.57.0))(eslint-plugin-n@15.7.0(eslint@8.57.0))(eslint-plugin-promise@6.4.0(eslint@8.57.0))(eslint@8.57.0)
+      eslint-config-standard-jsx: 11.0.0(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint@8.57.0)
+=======
+<<<<<<< HEAD
+      eslint-config-standard: 17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.47.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3))(eslint@8.57.0))(eslint-plugin-n@15.7.0(eslint@9.39.1(jiti@2.6.1)))(eslint-plugin-promise@6.4.0(eslint@9.39.1(jiti@2.6.1)))(eslint@8.57.0)
+      eslint-config-standard-jsx: 11.0.0(eslint-plugin-react@7.37.5(eslint@9.39.1(jiti@2.6.1)))(eslint@8.57.0)
+>>>>>>> c8abe5160 (chore: resolve merge conflicts and update package versions in pnpm-lock.yaml)
+      eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.47.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.1(jiti@2.6.1))
+=======
+      eslint-config-standard: 17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.46.4(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3))(eslint@8.57.0))(eslint-plugin-n@15.7.0(eslint@8.57.0))(eslint-plugin-promise@6.4.0(eslint@8.57.0))(eslint@8.57.0)
+      eslint-config-standard-jsx: 11.0.0(eslint-plugin-react@7.37.5(eslint@9.39.1(jiti@2.6.1)))(eslint@8.57.0)
+      eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.46.4(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.1(jiti@2.6.1))
+>>>>>>> d521ee3ab (chore: resolve merge conflicts and update package versions in pnpm-lock.yaml)
+>>>>>>> d0b82ad5f (chore: resolve merge conflicts and update package versions in pnpm-lock.yaml)
       eslint-plugin-n: 15.7.0(eslint@8.57.0)
       eslint-plugin-promise: 6.4.0(eslint@8.57.0)
       eslint-plugin-react: 7.37.5(eslint@8.57.0)
@@ -47316,11 +47600,14 @@ snapshots:
   swagger-ui-dist@4.19.1: {}
 
 <<<<<<< HEAD
+<<<<<<< HEAD
   swagger-ui-react@4.19.1(@types/react-dom@19.2.3(@types/react@19.2.6))(@types/react@19.2.6)(debug@4.4.3)(react-dom@19.2.0(react@19.2.0))(react@19.2.0):
 =======
 <<<<<<< HEAD
   swagger-ui-react@4.19.1(@types/react-dom@19.2.3(@types/react@19.2.4))(@types/react@19.2.4)(debug@4.4.3)(react-dom@19.2.0(react@19.2.0))(react@19.2.0):
 =======
+=======
+>>>>>>> c8abe5160 (chore: resolve merge conflicts and update package versions in pnpm-lock.yaml)
   swagger-ui-dist@5.30.2:
     dependencies:
       '@scarf/scarf': 1.4.0
@@ -47330,9 +47617,13 @@ snapshots:
       express: 5.1.0
       swagger-ui-dist: 5.30.2
 
+<<<<<<< HEAD
   swagger-ui-react@4.19.1(@types/react-dom@19.2.2(@types/react@19.2.3))(@types/react@19.2.3)(debug@4.4.3)(react-dom@19.2.0(react@19.2.0))(react@19.2.0):
 >>>>>>> 05bd95035 (feat: new storage package (#527))
 >>>>>>> d99502360 (feat: new storage package (#527))
+=======
+  swagger-ui-react@4.19.1(@types/react-dom@19.2.3(@types/react@19.2.4))(@types/react@19.2.4)(debug@4.4.3)(react-dom@19.2.0(react@19.2.0))(react@19.2.0):
+>>>>>>> c8abe5160 (chore: resolve merge conflicts and update package versions in pnpm-lock.yaml)
     dependencies:
       '@babel/runtime-corejs3': 7.28.4
       '@braintree/sanitize-url': 6.0.2
@@ -47900,7 +48191,7 @@ snapshots:
 
   ts-mixer@6.0.4: {}
 
-  ts-node-dev@2.0.0(@swc/core@1.13.5)(@types/node@24.10.0)(typescript@5.9.3):
+  ts-node-dev@2.0.0(@swc/core@1.13.5)(@types/node@24.10.1)(typescript@5.9.3):
     dependencies:
       chokidar: 3.6.0
       dynamic-dedupe: 0.3.0
@@ -47910,7 +48201,7 @@ snapshots:
       rimraf: 2.7.1
       source-map-support: 0.5.21
       tree-kill: 1.2.2
-      ts-node: 10.9.2(@swc/core@1.13.5)(@types/node@24.10.0)(typescript@5.9.3)
+      ts-node: 10.9.2(@swc/core@1.13.5)(@types/node@24.10.1)(typescript@5.9.3)
       tsconfig: 7.0.0
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -47918,14 +48209,14 @@ snapshots:
       - '@swc/wasm'
       - '@types/node'
 
-  ts-node@10.9.2(@swc/core@1.13.5)(@types/node@24.10.0)(typescript@5.9.3):
+  ts-node@10.9.2(@swc/core@1.13.5)(@types/node@24.10.1)(typescript@5.9.3):
     dependencies:
       '@cspotcode/source-map-support': 0.8.1
       '@tsconfig/node10': 1.0.12
       '@tsconfig/node12': 1.0.11
       '@tsconfig/node14': 1.0.3
       '@tsconfig/node16': 1.0.4
-      '@types/node': 24.10.0
+      '@types/node': 24.10.1
       acorn: 8.15.0
       acorn-walk: 8.3.4
       arg: 4.1.3
