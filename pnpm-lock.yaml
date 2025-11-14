@@ -31,6 +31,18 @@ importers:
   .:
     dependencies:
       '@anolilab/commitlint-config':
+<<<<<<< HEAD
+=======
+        specifier: ^6.0.6
+        version: 6.0.6(@commitlint/cli@20.1.0(@types/node@24.10.1)(typescript@5.9.3))(@types/node@24.10.1)(typescript@5.9.3)
+      '@anolilab/lint-staged-config':
+        specifier: ^3.0.37
+        version: 3.0.37(@types/node@24.10.1)(eslint@9.39.1(jiti@2.6.1))(husky@9.1.7)(lint-staged@16.2.6)(prettier@3.6.2)(secretlint@11.2.5)(vitest@4.0.9)(yaml@2.8.1)
+      '@anolilab/multi-semantic-release':
+        specifier: 3.0.0-alpha.3
+        version: 3.0.0-alpha.3(semantic-release@25.0.2(typescript@5.9.3))(typescript@5.9.3)
+      '@anolilab/prettier-config':
+>>>>>>> 97ff10ae2 (chore: update semantic release dependencies across multiple packages)
         specifier: ^6.0.7
         version: 6.0.7(@commitlint/cli@20.1.0(@types/node@24.10.1)(typescript@5.9.3))(@types/node@24.10.1)(typescript@5.9.3)
       '@anolilab/lint-staged-config':
@@ -406,11 +418,23 @@ importers:
         specifier: ^6.0.8
         version: 6.0.8(prettier@3.6.2)
       '@anolilab/semantic-release-pnpm':
+<<<<<<< HEAD
         specifier: 3.0.0
         version: 3.0.0(@types/node@24.10.1)(yaml@2.8.1)
       '@anolilab/semantic-release-preset':
         specifier: ^12.0.0
+<<<<<<< HEAD
         version: 12.0.1(@anolilab/semantic-release-pnpm@3.0.0(@types/node@24.10.1)(yaml@2.8.1))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+=======
+        version: 12.0.0(@anolilab/semantic-release-pnpm@3.0.0(@types/node@24.10.1)(yaml@2.8.1))(@semantic-release/npm@13.1.1(semantic-release@25.0.2(typescript@5.9.3)))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+=======
+        specifier: 3.0.0-alpha.2
+        version: 3.0.0-alpha.2(@types/node@24.10.1)(yaml@2.8.1)
+      '@anolilab/semantic-release-preset':
+        specifier: 12.0.0-alpha.2
+        version: 12.0.0-alpha.2(@anolilab/semantic-release-pnpm@3.0.0-alpha.2(@types/node@24.10.1)(yaml@2.8.1))(@semantic-release/npm@13.1.1(semantic-release@25.0.2(typescript@5.9.3)))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+>>>>>>> 97ff10ae2 (chore: update semantic release dependencies across multiple packages)
+>>>>>>> 32112bd3b (chore: update semantic release dependencies across multiple packages)
       '@arethetypeswrong/cli':
         specifier: ^0.18.2
         version: 0.18.2
@@ -545,11 +569,23 @@ importers:
         specifier: ^6.0.8
         version: 6.0.8(prettier@3.6.2)
       '@anolilab/semantic-release-pnpm':
+<<<<<<< HEAD
         specifier: ^3.0.0
         version: 3.1.0(@types/node@24.10.1)(yaml@2.8.1)
       '@anolilab/semantic-release-preset':
         specifier: ^12.0.0
+<<<<<<< HEAD
         version: 12.0.1(@anolilab/semantic-release-pnpm@3.1.0(@types/node@24.10.1)(yaml@2.8.1))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+=======
+        version: 12.0.0(@anolilab/semantic-release-pnpm@3.0.0(@types/node@24.10.1)(yaml@2.8.1))(@semantic-release/npm@13.1.1(semantic-release@25.0.2(typescript@5.9.3)))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+=======
+        specifier: 3.0.0-alpha.2
+        version: 3.0.0-alpha.2(@types/node@24.10.1)(yaml@2.8.1)
+      '@anolilab/semantic-release-preset':
+        specifier: 12.0.0-alpha.2
+        version: 12.0.0-alpha.2(@anolilab/semantic-release-pnpm@3.0.0-alpha.2(@types/node@24.10.1)(yaml@2.8.1))(@semantic-release/npm@13.1.1(semantic-release@25.0.2(typescript@5.9.3)))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+>>>>>>> 97ff10ae2 (chore: update semantic release dependencies across multiple packages)
+>>>>>>> 32112bd3b (chore: update semantic release dependencies across multiple packages)
       '@eslint-react/eslint-plugin':
         specifier: 2.3.7
         version: 2.3.7(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3)
@@ -761,11 +797,23 @@ importers:
         specifier: ^6.0.8
         version: 6.0.8(prettier@3.6.2)
       '@anolilab/semantic-release-pnpm':
+<<<<<<< HEAD
         specifier: ^3.0.0
         version: 3.1.0(@types/node@24.10.1)(yaml@2.8.1)
       '@anolilab/semantic-release-preset':
         specifier: ^12.0.0
+<<<<<<< HEAD
         version: 12.0.1(@anolilab/semantic-release-pnpm@3.1.0(@types/node@24.10.1)(yaml@2.8.1))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+=======
+        version: 12.0.0(@anolilab/semantic-release-pnpm@3.0.0(@types/node@24.10.1)(yaml@2.8.1))(@semantic-release/npm@13.1.1(semantic-release@25.0.2(typescript@5.9.3)))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+=======
+        specifier: 3.0.0-alpha.2
+        version: 3.0.0-alpha.2(@types/node@24.10.1)(yaml@2.8.1)
+      '@anolilab/semantic-release-preset':
+        specifier: 12.0.0-alpha.2
+        version: 12.0.0-alpha.2(@anolilab/semantic-release-pnpm@3.0.0-alpha.2(@types/node@24.10.1)(yaml@2.8.1))(@semantic-release/npm@13.1.1(semantic-release@25.0.2(typescript@5.9.3)))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+>>>>>>> 97ff10ae2 (chore: update semantic release dependencies across multiple packages)
+>>>>>>> 32112bd3b (chore: update semantic release dependencies across multiple packages)
       '@arethetypeswrong/cli':
         specifier: ^0.18.2
         version: 0.18.2
@@ -854,11 +902,23 @@ importers:
         specifier: ^6.0.8
         version: 6.0.8(prettier@3.6.2)
       '@anolilab/semantic-release-pnpm':
+<<<<<<< HEAD
         specifier: 3.0.0
         version: 3.0.0(@types/node@24.10.1)(yaml@2.8.1)
       '@anolilab/semantic-release-preset':
         specifier: ^12.0.0
+<<<<<<< HEAD
         version: 12.0.1(@anolilab/semantic-release-pnpm@3.0.0(@types/node@24.10.1)(yaml@2.8.1))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+=======
+        version: 12.0.0(@anolilab/semantic-release-pnpm@3.0.0(@types/node@24.10.1)(yaml@2.8.1))(@semantic-release/npm@13.1.1(semantic-release@25.0.2(typescript@5.9.3)))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+=======
+        specifier: 3.0.0-alpha.2
+        version: 3.0.0-alpha.2(@types/node@24.10.1)(yaml@2.8.1)
+      '@anolilab/semantic-release-preset':
+        specifier: 12.0.0-alpha.2
+        version: 12.0.0-alpha.2(@anolilab/semantic-release-pnpm@3.0.0-alpha.2(@types/node@24.10.1)(yaml@2.8.1))(@semantic-release/npm@13.1.1(semantic-release@25.0.2(typescript@5.9.3)))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+>>>>>>> 97ff10ae2 (chore: update semantic release dependencies across multiple packages)
+>>>>>>> 32112bd3b (chore: update semantic release dependencies across multiple packages)
       '@arethetypeswrong/cli':
         specifier: ^0.18.2
         version: 0.18.2
@@ -933,11 +993,23 @@ importers:
         specifier: ^6.0.8
         version: 6.0.8(prettier@3.6.2)
       '@anolilab/semantic-release-pnpm':
+<<<<<<< HEAD
         specifier: ^3.0.0
         version: 3.1.0(@types/node@24.10.1)(yaml@2.8.1)
       '@anolilab/semantic-release-preset':
         specifier: ^12.0.0
+<<<<<<< HEAD
         version: 12.0.1(@anolilab/semantic-release-pnpm@3.1.0(@types/node@24.10.1)(yaml@2.8.1))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+=======
+        version: 12.0.0(@anolilab/semantic-release-pnpm@3.0.0(@types/node@24.10.1)(yaml@2.8.1))(@semantic-release/npm@13.1.1(semantic-release@25.0.2(typescript@5.9.3)))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+=======
+        specifier: 3.0.0-alpha.2
+        version: 3.0.0-alpha.2(@types/node@24.10.1)(yaml@2.8.1)
+      '@anolilab/semantic-release-preset':
+        specifier: 12.0.0-alpha.2
+        version: 12.0.0-alpha.2(@anolilab/semantic-release-pnpm@3.0.0-alpha.2(@types/node@24.10.1)(yaml@2.8.1))(@semantic-release/npm@13.1.1(semantic-release@25.0.2(typescript@5.9.3)))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+>>>>>>> 97ff10ae2 (chore: update semantic release dependencies across multiple packages)
+>>>>>>> 32112bd3b (chore: update semantic release dependencies across multiple packages)
       '@arethetypeswrong/cli':
         specifier: ^0.18.2
         version: 0.18.2
@@ -1123,11 +1195,23 @@ importers:
         specifier: ^6.0.8
         version: 6.0.8(prettier@3.6.2)
       '@anolilab/semantic-release-pnpm':
+<<<<<<< HEAD
         specifier: ^3.0.0
         version: 3.1.0(@types/node@24.10.1)(yaml@2.8.1)
       '@anolilab/semantic-release-preset':
         specifier: ^12.0.0
+<<<<<<< HEAD
         version: 12.0.1(@anolilab/semantic-release-pnpm@3.1.0(@types/node@24.10.1)(yaml@2.8.1))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+=======
+        version: 12.0.0(@anolilab/semantic-release-pnpm@3.0.0(@types/node@24.10.1)(yaml@2.8.1))(@semantic-release/npm@13.1.1(semantic-release@25.0.2(typescript@5.9.3)))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+=======
+        specifier: 3.0.0-alpha.2
+        version: 3.0.0-alpha.2(@types/node@24.10.1)(yaml@2.8.1)
+      '@anolilab/semantic-release-preset':
+        specifier: 12.0.0-alpha.2
+        version: 12.0.0-alpha.2(@anolilab/semantic-release-pnpm@3.0.0-alpha.2(@types/node@24.10.1)(yaml@2.8.1))(@semantic-release/npm@13.1.1(semantic-release@25.0.2(typescript@5.9.3)))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+>>>>>>> 97ff10ae2 (chore: update semantic release dependencies across multiple packages)
+>>>>>>> 32112bd3b (chore: update semantic release dependencies across multiple packages)
       '@rushstack/eslint-plugin-security':
         specifier: ^0.13.0
         version: 0.13.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3)
@@ -1255,11 +1339,23 @@ importers:
         specifier: ^16.4.4
         version: 16.4.4(ea9ea12e12150cd3e906a0240a4e712c)
       '@anolilab/semantic-release-pnpm':
+<<<<<<< HEAD
         specifier: 3.0.0
         version: 3.0.0(@types/node@24.10.1)(yaml@2.8.1)
       '@anolilab/semantic-release-preset':
         specifier: ^12.0.0
+<<<<<<< HEAD
         version: 12.0.1(@anolilab/semantic-release-pnpm@3.0.0(@types/node@24.10.1)(yaml@2.8.1))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+=======
+        version: 12.0.0(@anolilab/semantic-release-pnpm@3.0.0(@types/node@24.10.1)(yaml@2.8.1))(@semantic-release/npm@13.1.1(semantic-release@25.0.2(typescript@5.9.3)))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+=======
+        specifier: 3.0.0-alpha.2
+        version: 3.0.0-alpha.2(@types/node@24.10.1)(yaml@2.8.1)
+      '@anolilab/semantic-release-preset':
+        specifier: 12.0.0-alpha.2
+        version: 12.0.0-alpha.2(@anolilab/semantic-release-pnpm@3.0.0-alpha.2(@types/node@24.10.1)(yaml@2.8.1))(@semantic-release/npm@13.1.1(semantic-release@25.0.2(typescript@5.9.3)))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+>>>>>>> 97ff10ae2 (chore: update semantic release dependencies across multiple packages)
+>>>>>>> 32112bd3b (chore: update semantic release dependencies across multiple packages)
       '@arethetypeswrong/cli':
         specifier: ^0.18.2
         version: 0.18.2
@@ -1386,11 +1482,23 @@ importers:
         specifier: ^6.0.8
         version: 6.0.8(prettier@3.6.2)
       '@anolilab/semantic-release-pnpm':
+<<<<<<< HEAD
         specifier: ^3.0.0
         version: 3.1.0(@types/node@24.10.1)(yaml@2.8.1)
       '@anolilab/semantic-release-preset':
         specifier: ^12.0.0
+<<<<<<< HEAD
         version: 12.0.1(@anolilab/semantic-release-pnpm@3.1.0(@types/node@24.10.1)(yaml@2.8.1))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+=======
+        version: 12.0.0(@anolilab/semantic-release-pnpm@3.0.0(@types/node@24.10.1)(yaml@2.8.1))(@semantic-release/npm@13.1.1(semantic-release@25.0.2(typescript@5.9.3)))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+=======
+        specifier: 3.0.0-alpha.2
+        version: 3.0.0-alpha.2(@types/node@24.10.1)(yaml@2.8.1)
+      '@anolilab/semantic-release-preset':
+        specifier: 12.0.0-alpha.2
+        version: 12.0.0-alpha.2(@anolilab/semantic-release-pnpm@3.0.0-alpha.2(@types/node@24.10.1)(yaml@2.8.1))(@semantic-release/npm@13.1.1(semantic-release@25.0.2(typescript@5.9.3)))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+>>>>>>> 97ff10ae2 (chore: update semantic release dependencies across multiple packages)
+>>>>>>> 32112bd3b (chore: update semantic release dependencies across multiple packages)
       '@arethetypeswrong/cli':
         specifier: ^0.18.2
         version: 0.18.2
@@ -1474,11 +1582,23 @@ importers:
         specifier: ^6.0.8
         version: 6.0.8(prettier@3.6.2)
       '@anolilab/semantic-release-pnpm':
+<<<<<<< HEAD
         specifier: ^3.0.0
         version: 3.1.0(@types/node@24.10.1)(yaml@2.8.1)
       '@anolilab/semantic-release-preset':
         specifier: ^12.0.0
+<<<<<<< HEAD
         version: 12.0.1(@anolilab/semantic-release-pnpm@3.1.0(@types/node@24.10.1)(yaml@2.8.1))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+=======
+        version: 12.0.0(@anolilab/semantic-release-pnpm@3.0.0(@types/node@24.10.1)(yaml@2.8.1))(@semantic-release/npm@13.1.1(semantic-release@25.0.2(typescript@5.9.3)))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+=======
+        specifier: 3.0.0-alpha.2
+        version: 3.0.0-alpha.2(@types/node@24.10.1)(yaml@2.8.1)
+      '@anolilab/semantic-release-preset':
+        specifier: 12.0.0-alpha.2
+        version: 12.0.0-alpha.2(@anolilab/semantic-release-pnpm@3.0.0-alpha.2(@types/node@24.10.1)(yaml@2.8.1))(@semantic-release/npm@13.1.1(semantic-release@25.0.2(typescript@5.9.3)))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+>>>>>>> 97ff10ae2 (chore: update semantic release dependencies across multiple packages)
+>>>>>>> 32112bd3b (chore: update semantic release dependencies across multiple packages)
       '@eslint-react/eslint-plugin':
         specifier: 2.3.7
         version: 2.3.7(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3)
@@ -1591,11 +1711,23 @@ importers:
         specifier: ^6.0.8
         version: 6.0.8(prettier@3.6.2)
       '@anolilab/semantic-release-pnpm':
+<<<<<<< HEAD
         specifier: ^3.0.0
         version: 3.1.0(@types/node@24.10.1)(yaml@2.8.1)
       '@anolilab/semantic-release-preset':
         specifier: ^12.0.0
+<<<<<<< HEAD
         version: 12.0.1(@anolilab/semantic-release-pnpm@3.1.0(@types/node@24.10.1)(yaml@2.8.1))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+=======
+        version: 12.0.0(@anolilab/semantic-release-pnpm@3.0.0(@types/node@24.10.1)(yaml@2.8.1))(@semantic-release/npm@13.1.1(semantic-release@25.0.2(typescript@5.9.3)))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+=======
+        specifier: 3.0.0-alpha.2
+        version: 3.0.0-alpha.2(@types/node@24.10.1)(yaml@2.8.1)
+      '@anolilab/semantic-release-preset':
+        specifier: 12.0.0-alpha.2
+        version: 12.0.0-alpha.2(@anolilab/semantic-release-pnpm@3.0.0-alpha.2(@types/node@24.10.1)(yaml@2.8.1))(@semantic-release/npm@13.1.1(semantic-release@25.0.2(typescript@5.9.3)))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+>>>>>>> 97ff10ae2 (chore: update semantic release dependencies across multiple packages)
+>>>>>>> 32112bd3b (chore: update semantic release dependencies across multiple packages)
       '@arethetypeswrong/cli':
         specifier: ^0.18.2
         version: 0.18.2
@@ -1843,11 +1975,23 @@ importers:
         specifier: ^6.0.8
         version: 6.0.8(prettier@3.6.2)
       '@anolilab/semantic-release-pnpm':
+<<<<<<< HEAD
         specifier: ^3.0.0
         version: 3.1.0(@types/node@24.10.1)(yaml@2.8.1)
       '@anolilab/semantic-release-preset':
         specifier: ^12.0.0
+<<<<<<< HEAD
         version: 12.0.1(@anolilab/semantic-release-pnpm@3.1.0(@types/node@24.10.1)(yaml@2.8.1))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+=======
+        version: 12.0.0(@anolilab/semantic-release-pnpm@3.0.0(@types/node@24.10.1)(yaml@2.8.1))(@semantic-release/npm@13.1.1(semantic-release@25.0.2(typescript@5.9.3)))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+=======
+        specifier: 3.0.0-alpha.2
+        version: 3.0.0-alpha.2(@types/node@24.10.1)(yaml@2.8.1)
+      '@anolilab/semantic-release-preset':
+        specifier: 12.0.0-alpha.2
+        version: 12.0.0-alpha.2(@anolilab/semantic-release-pnpm@3.0.0-alpha.2(@types/node@24.10.1)(yaml@2.8.1))(@semantic-release/npm@13.1.1(semantic-release@25.0.2(typescript@5.9.3)))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+>>>>>>> 97ff10ae2 (chore: update semantic release dependencies across multiple packages)
+>>>>>>> 32112bd3b (chore: update semantic release dependencies across multiple packages)
       '@arethetypeswrong/cli':
         specifier: ^0.18.2
         version: 0.18.2
@@ -1934,11 +2078,23 @@ importers:
         specifier: ^16.4.4
         version: 16.4.4(ea9ea12e12150cd3e906a0240a4e712c)
       '@anolilab/semantic-release-pnpm':
+<<<<<<< HEAD
         specifier: 3.0.0
         version: 3.0.0(@types/node@24.10.1)(yaml@2.8.1)
       '@anolilab/semantic-release-preset':
         specifier: ^12.0.0
+<<<<<<< HEAD
         version: 12.0.1(@anolilab/semantic-release-pnpm@3.0.0(@types/node@24.10.1)(yaml@2.8.1))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+=======
+        version: 12.0.0(@anolilab/semantic-release-pnpm@3.0.0(@types/node@24.10.1)(yaml@2.8.1))(@semantic-release/npm@13.1.1(semantic-release@25.0.2(typescript@5.9.3)))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+=======
+        specifier: 3.0.0-alpha.2
+        version: 3.0.0-alpha.2(@types/node@24.10.1)(yaml@2.8.1)
+      '@anolilab/semantic-release-preset':
+        specifier: 12.0.0-alpha.2
+        version: 12.0.0-alpha.2(@anolilab/semantic-release-pnpm@3.0.0-alpha.2(@types/node@24.10.1)(yaml@2.8.1))(@semantic-release/npm@13.1.1(semantic-release@25.0.2(typescript@5.9.3)))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+>>>>>>> 97ff10ae2 (chore: update semantic release dependencies across multiple packages)
+>>>>>>> 32112bd3b (chore: update semantic release dependencies across multiple packages)
       '@arethetypeswrong/cli':
         specifier: ^0.18.2
         version: 0.18.2
@@ -2033,11 +2189,23 @@ importers:
         specifier: ^6.0.8
         version: 6.0.8(prettier@3.6.2)
       '@anolilab/semantic-release-pnpm':
+<<<<<<< HEAD
         specifier: 3.0.0
         version: 3.0.0(@types/node@24.10.1)(yaml@2.8.1)
       '@anolilab/semantic-release-preset':
         specifier: ^12.0.0
+<<<<<<< HEAD
         version: 12.0.1(@anolilab/semantic-release-pnpm@3.0.0(@types/node@24.10.1)(yaml@2.8.1))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+=======
+        version: 12.0.0(@anolilab/semantic-release-pnpm@3.0.0(@types/node@24.10.1)(yaml@2.8.1))(@semantic-release/npm@13.1.1(semantic-release@25.0.2(typescript@5.9.3)))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+=======
+        specifier: 3.0.0-alpha.2
+        version: 3.0.0-alpha.2(@types/node@24.10.1)(yaml@2.8.1)
+      '@anolilab/semantic-release-preset':
+        specifier: 12.0.0-alpha.2
+        version: 12.0.0-alpha.2(@anolilab/semantic-release-pnpm@3.0.0-alpha.2(@types/node@24.10.1)(yaml@2.8.1))(@semantic-release/npm@13.1.1(semantic-release@25.0.2(typescript@5.9.3)))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+>>>>>>> 97ff10ae2 (chore: update semantic release dependencies across multiple packages)
+>>>>>>> 32112bd3b (chore: update semantic release dependencies across multiple packages)
       '@arethetypeswrong/cli':
         specifier: ^0.18.2
         version: 0.18.2
@@ -2108,11 +2276,23 @@ importers:
         specifier: ^6.0.8
         version: 6.0.8(prettier@3.6.2)
       '@anolilab/semantic-release-pnpm':
+<<<<<<< HEAD
         specifier: ^3.0.0
         version: 3.1.0(@types/node@24.10.1)(yaml@2.8.1)
       '@anolilab/semantic-release-preset':
         specifier: ^12.0.0
+<<<<<<< HEAD
         version: 12.0.1(@anolilab/semantic-release-pnpm@3.1.0(@types/node@24.10.1)(yaml@2.8.1))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+=======
+        version: 12.0.0(@anolilab/semantic-release-pnpm@3.0.0(@types/node@24.10.1)(yaml@2.8.1))(@semantic-release/npm@13.1.1(semantic-release@25.0.2(typescript@5.9.3)))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+=======
+        specifier: 3.0.0-alpha.2
+        version: 3.0.0-alpha.2(@types/node@24.10.1)(yaml@2.8.1)
+      '@anolilab/semantic-release-preset':
+        specifier: 12.0.0-alpha.2
+        version: 12.0.0-alpha.2(@anolilab/semantic-release-pnpm@3.0.0-alpha.2(@types/node@24.10.1)(yaml@2.8.1))(@semantic-release/npm@13.1.1(semantic-release@25.0.2(typescript@5.9.3)))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+>>>>>>> 97ff10ae2 (chore: update semantic release dependencies across multiple packages)
+>>>>>>> 32112bd3b (chore: update semantic release dependencies across multiple packages)
       '@arethetypeswrong/cli':
         specifier: ^0.18.2
         version: 0.18.2
@@ -2175,11 +2355,23 @@ importers:
         specifier: ^6.0.8
         version: 6.0.8(prettier@3.6.2)
       '@anolilab/semantic-release-pnpm':
+<<<<<<< HEAD
         specifier: ^3.0.0
         version: 3.1.0(@types/node@24.10.1)(yaml@2.8.1)
       '@anolilab/semantic-release-preset':
         specifier: ^12.0.0
+<<<<<<< HEAD
         version: 12.0.1(@anolilab/semantic-release-pnpm@3.1.0(@types/node@24.10.1)(yaml@2.8.1))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+=======
+        version: 12.0.0(@anolilab/semantic-release-pnpm@3.0.0(@types/node@24.10.1)(yaml@2.8.1))(@semantic-release/npm@13.1.1(semantic-release@25.0.2(typescript@5.9.3)))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+=======
+        specifier: 3.0.0-alpha.2
+        version: 3.0.0-alpha.2(@types/node@24.10.1)(yaml@2.8.1)
+      '@anolilab/semantic-release-preset':
+        specifier: 12.0.0-alpha.2
+        version: 12.0.0-alpha.2(@anolilab/semantic-release-pnpm@3.0.0-alpha.2(@types/node@24.10.1)(yaml@2.8.1))(@semantic-release/npm@13.1.1(semantic-release@25.0.2(typescript@5.9.3)))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+>>>>>>> 97ff10ae2 (chore: update semantic release dependencies across multiple packages)
+>>>>>>> 32112bd3b (chore: update semantic release dependencies across multiple packages)
       '@arethetypeswrong/cli':
         specifier: ^0.18.2
         version: 0.18.2
@@ -2313,11 +2505,23 @@ importers:
         specifier: ^6.0.8
         version: 6.0.8(prettier@3.6.2)
       '@anolilab/semantic-release-pnpm':
+<<<<<<< HEAD
         specifier: ^3.0.0
         version: 3.1.0(@types/node@24.10.1)(yaml@2.8.1)
       '@anolilab/semantic-release-preset':
         specifier: ^12.0.0
+<<<<<<< HEAD
         version: 12.0.1(@anolilab/semantic-release-pnpm@3.1.0(@types/node@24.10.1)(yaml@2.8.1))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+=======
+        version: 12.0.0(@anolilab/semantic-release-pnpm@3.0.0(@types/node@24.10.1)(yaml@2.8.1))(@semantic-release/npm@13.1.1(semantic-release@25.0.2(typescript@5.9.3)))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+=======
+        specifier: 3.0.0-alpha.2
+        version: 3.0.0-alpha.2(@types/node@24.10.1)(yaml@2.8.1)
+      '@anolilab/semantic-release-preset':
+        specifier: 12.0.0-alpha.2
+        version: 12.0.0-alpha.2(@anolilab/semantic-release-pnpm@3.0.0-alpha.2(@types/node@24.10.1)(yaml@2.8.1))(@semantic-release/npm@13.1.1(semantic-release@25.0.2(typescript@5.9.3)))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+>>>>>>> 97ff10ae2 (chore: update semantic release dependencies across multiple packages)
+>>>>>>> 32112bd3b (chore: update semantic release dependencies across multiple packages)
       '@arethetypeswrong/cli':
         specifier: ^0.18.2
         version: 0.18.2
@@ -2421,11 +2625,23 @@ importers:
         specifier: ^6.0.8
         version: 6.0.8(prettier@3.6.2)
       '@anolilab/semantic-release-pnpm':
+<<<<<<< HEAD
         specifier: ^3.0.0
         version: 3.1.0(@types/node@24.10.1)(yaml@2.8.1)
       '@anolilab/semantic-release-preset':
         specifier: ^12.0.0
+<<<<<<< HEAD
         version: 12.0.1(@anolilab/semantic-release-pnpm@3.1.0(@types/node@24.10.1)(yaml@2.8.1))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+=======
+        version: 12.0.0(@anolilab/semantic-release-pnpm@3.0.0(@types/node@24.10.1)(yaml@2.8.1))(@semantic-release/npm@13.1.1(semantic-release@25.0.2(typescript@5.9.3)))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+=======
+        specifier: 3.0.0-alpha.2
+        version: 3.0.0-alpha.2(@types/node@24.10.1)(yaml@2.8.1)
+      '@anolilab/semantic-release-preset':
+        specifier: 12.0.0-alpha.2
+        version: 12.0.0-alpha.2(@anolilab/semantic-release-pnpm@3.0.0-alpha.2(@types/node@24.10.1)(yaml@2.8.1))(@semantic-release/npm@13.1.1(semantic-release@25.0.2(typescript@5.9.3)))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+>>>>>>> 97ff10ae2 (chore: update semantic release dependencies across multiple packages)
+>>>>>>> 32112bd3b (chore: update semantic release dependencies across multiple packages)
       '@arethetypeswrong/cli':
         specifier: ^0.18.2
         version: 0.18.2
@@ -2502,11 +2718,23 @@ importers:
         specifier: ^16.4.4
         version: 16.4.4(ea9ea12e12150cd3e906a0240a4e712c)
       '@anolilab/semantic-release-pnpm':
+<<<<<<< HEAD
         specifier: 3.0.0
         version: 3.0.0(@types/node@24.10.1)(yaml@2.8.1)
       '@anolilab/semantic-release-preset':
         specifier: ^12.0.0
+<<<<<<< HEAD
         version: 12.0.1(@anolilab/semantic-release-pnpm@3.0.0(@types/node@24.10.1)(yaml@2.8.1))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+=======
+        version: 12.0.0(@anolilab/semantic-release-pnpm@3.0.0(@types/node@24.10.1)(yaml@2.8.1))(@semantic-release/npm@13.1.1(semantic-release@25.0.2(typescript@5.9.3)))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+=======
+        specifier: 3.0.0-alpha.2
+        version: 3.0.0-alpha.2(@types/node@24.10.1)(yaml@2.8.1)
+      '@anolilab/semantic-release-preset':
+        specifier: 12.0.0-alpha.2
+        version: 12.0.0-alpha.2(@anolilab/semantic-release-pnpm@3.0.0-alpha.2(@types/node@24.10.1)(yaml@2.8.1))(@semantic-release/npm@13.1.1(semantic-release@25.0.2(typescript@5.9.3)))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+>>>>>>> 97ff10ae2 (chore: update semantic release dependencies across multiple packages)
+>>>>>>> 32112bd3b (chore: update semantic release dependencies across multiple packages)
       '@arethetypeswrong/cli':
         specifier: ^0.18.2
         version: 0.18.2
@@ -2605,11 +2833,23 @@ importers:
         specifier: ^6.0.8
         version: 6.0.8(prettier@3.6.2)
       '@anolilab/semantic-release-pnpm':
+<<<<<<< HEAD
         specifier: ^3.0.0
         version: 3.1.0(@types/node@24.10.1)(yaml@2.8.1)
       '@anolilab/semantic-release-preset':
         specifier: ^12.0.0
+<<<<<<< HEAD
         version: 12.0.1(@anolilab/semantic-release-pnpm@3.1.0(@types/node@24.10.1)(yaml@2.8.1))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+=======
+        version: 12.0.0(@anolilab/semantic-release-pnpm@3.0.0(@types/node@24.10.1)(yaml@2.8.1))(@semantic-release/npm@13.1.1(semantic-release@25.0.2(typescript@5.9.3)))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+=======
+        specifier: 3.0.0-alpha.2
+        version: 3.0.0-alpha.2(@types/node@24.10.1)(yaml@2.8.1)
+      '@anolilab/semantic-release-preset':
+        specifier: 12.0.0-alpha.2
+        version: 12.0.0-alpha.2(@anolilab/semantic-release-pnpm@3.0.0-alpha.2(@types/node@24.10.1)(yaml@2.8.1))(@semantic-release/npm@13.1.1(semantic-release@25.0.2(typescript@5.9.3)))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+>>>>>>> 97ff10ae2 (chore: update semantic release dependencies across multiple packages)
+>>>>>>> 32112bd3b (chore: update semantic release dependencies across multiple packages)
       '@arethetypeswrong/cli':
         specifier: ^0.18.2
         version: 0.18.2
@@ -2687,11 +2927,23 @@ importers:
         specifier: ^6.0.8
         version: 6.0.8(prettier@3.6.2)
       '@anolilab/semantic-release-pnpm':
+<<<<<<< HEAD
         specifier: ^3.0.0
         version: 3.1.0(@types/node@24.10.1)(yaml@2.8.1)
       '@anolilab/semantic-release-preset':
         specifier: ^12.0.0
+<<<<<<< HEAD
         version: 12.0.1(@anolilab/semantic-release-pnpm@3.1.0(@types/node@24.10.1)(yaml@2.8.1))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+=======
+        version: 12.0.0(@anolilab/semantic-release-pnpm@3.0.0(@types/node@24.10.1)(yaml@2.8.1))(@semantic-release/npm@13.1.1(semantic-release@25.0.2(typescript@5.9.3)))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+=======
+        specifier: 3.0.0-alpha.2
+        version: 3.0.0-alpha.2(@types/node@24.10.1)(yaml@2.8.1)
+      '@anolilab/semantic-release-preset':
+        specifier: 12.0.0-alpha.2
+        version: 12.0.0-alpha.2(@anolilab/semantic-release-pnpm@3.0.0-alpha.2(@types/node@24.10.1)(yaml@2.8.1))(@semantic-release/npm@13.1.1(semantic-release@25.0.2(typescript@5.9.3)))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+>>>>>>> 97ff10ae2 (chore: update semantic release dependencies across multiple packages)
+>>>>>>> 32112bd3b (chore: update semantic release dependencies across multiple packages)
       '@types/cli-progress':
         specifier: ^3.11.6
         version: 3.11.6
@@ -2766,11 +3018,23 @@ importers:
         specifier: ^6.0.8
         version: 6.0.8(prettier@3.6.2)
       '@anolilab/semantic-release-pnpm':
+<<<<<<< HEAD
         specifier: 3.0.0
         version: 3.0.0(@types/node@24.10.1)(yaml@2.8.1)
       '@anolilab/semantic-release-preset':
         specifier: ^12.0.0
+<<<<<<< HEAD
         version: 12.0.1(@anolilab/semantic-release-pnpm@3.0.0(@types/node@24.10.1)(yaml@2.8.1))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+=======
+        version: 12.0.0(@anolilab/semantic-release-pnpm@3.0.0(@types/node@24.10.1)(yaml@2.8.1))(@semantic-release/npm@13.1.1(semantic-release@25.0.2(typescript@5.9.3)))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+=======
+        specifier: 3.0.0-alpha.2
+        version: 3.0.0-alpha.2(@types/node@24.10.1)(yaml@2.8.1)
+      '@anolilab/semantic-release-preset':
+        specifier: 12.0.0-alpha.2
+        version: 12.0.0-alpha.2(@anolilab/semantic-release-pnpm@3.0.0-alpha.2(@types/node@24.10.1)(yaml@2.8.1))(@semantic-release/npm@13.1.1(semantic-release@25.0.2(typescript@5.9.3)))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+>>>>>>> 97ff10ae2 (chore: update semantic release dependencies across multiple packages)
+>>>>>>> 32112bd3b (chore: update semantic release dependencies across multiple packages)
       '@arethetypeswrong/cli':
         specifier: ^0.18.2
         version: 0.18.2
@@ -2881,8 +3145,17 @@ importers:
         specifier: ^6.0.8
         version: 6.0.8(prettier@3.6.2)
       '@anolilab/semantic-release-preset':
+<<<<<<< HEAD
         specifier: ^12.0.0
+<<<<<<< HEAD
         version: 12.0.1(@anolilab/semantic-release-pnpm@3.1.0(@types/node@24.10.1)(yaml@2.8.1))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+=======
+        version: 12.0.0(@anolilab/semantic-release-pnpm@3.0.0(@types/node@24.10.1)(yaml@2.8.1))(@semantic-release/npm@13.1.1(semantic-release@25.0.2(typescript@5.9.3)))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+=======
+        specifier: 12.0.0-alpha.2
+        version: 12.0.0-alpha.2(@anolilab/semantic-release-pnpm@3.0.0-alpha.2(@types/node@24.10.1)(yaml@2.8.1))(@semantic-release/npm@13.1.1(semantic-release@25.0.2(typescript@5.9.3)))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+>>>>>>> 97ff10ae2 (chore: update semantic release dependencies across multiple packages)
+>>>>>>> 32112bd3b (chore: update semantic release dependencies across multiple packages)
       '@arethetypeswrong/cli':
         specifier: ^0.18.2
         version: 0.18.2
@@ -3045,11 +3318,23 @@ importers:
         specifier: ^6.0.8
         version: 6.0.8(prettier@3.6.2)
       '@anolilab/semantic-release-pnpm':
+<<<<<<< HEAD
         specifier: ^3.0.0
         version: 3.1.0(@types/node@24.10.1)(yaml@2.8.1)
       '@anolilab/semantic-release-preset':
         specifier: ^12.0.0
+<<<<<<< HEAD
         version: 12.0.1(@anolilab/semantic-release-pnpm@3.1.0(@types/node@24.10.1)(yaml@2.8.1))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+=======
+        version: 12.0.0(@anolilab/semantic-release-pnpm@3.0.0(@types/node@24.10.1)(yaml@2.8.1))(@semantic-release/npm@13.1.1(semantic-release@25.0.2(typescript@5.9.3)))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+=======
+        specifier: 3.0.0-alpha.2
+        version: 3.0.0-alpha.2(@types/node@24.10.1)(yaml@2.8.1)
+      '@anolilab/semantic-release-preset':
+        specifier: 12.0.0-alpha.2
+        version: 12.0.0-alpha.2(@anolilab/semantic-release-pnpm@3.0.0-alpha.2(@types/node@24.10.1)(yaml@2.8.1))(@semantic-release/npm@13.1.1(semantic-release@25.0.2(typescript@5.9.3)))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+>>>>>>> 97ff10ae2 (chore: update semantic release dependencies across multiple packages)
+>>>>>>> 32112bd3b (chore: update semantic release dependencies across multiple packages)
       '@arethetypeswrong/cli':
         specifier: ^0.18.2
         version: 0.18.2
@@ -3150,11 +3435,23 @@ importers:
         specifier: ^6.0.8
         version: 6.0.8(prettier@3.6.2)
       '@anolilab/semantic-release-pnpm':
+<<<<<<< HEAD
         specifier: ^3.0.0
         version: 3.1.0(@types/node@24.10.1)(yaml@2.8.1)
       '@anolilab/semantic-release-preset':
         specifier: ^12.0.0
+<<<<<<< HEAD
         version: 12.0.1(@anolilab/semantic-release-pnpm@3.1.0(@types/node@24.10.1)(yaml@2.8.1))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+=======
+        version: 12.0.0(@anolilab/semantic-release-pnpm@3.0.0(@types/node@24.10.1)(yaml@2.8.1))(@semantic-release/npm@13.1.1(semantic-release@25.0.2(typescript@5.9.3)))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+=======
+        specifier: 3.0.0-alpha.2
+        version: 3.0.0-alpha.2(@types/node@24.10.1)(yaml@2.8.1)
+      '@anolilab/semantic-release-preset':
+        specifier: 12.0.0-alpha.2
+        version: 12.0.0-alpha.2(@anolilab/semantic-release-pnpm@3.0.0-alpha.2(@types/node@24.10.1)(yaml@2.8.1))(@semantic-release/npm@13.1.1(semantic-release@25.0.2(typescript@5.9.3)))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+>>>>>>> 97ff10ae2 (chore: update semantic release dependencies across multiple packages)
+>>>>>>> 32112bd3b (chore: update semantic release dependencies across multiple packages)
       '@arethetypeswrong/cli':
         specifier: ^0.18.2
         version: 0.18.2
@@ -3217,11 +3514,23 @@ importers:
         specifier: ^6.0.8
         version: 6.0.8(prettier@3.6.2)
       '@anolilab/semantic-release-pnpm':
+<<<<<<< HEAD
         specifier: ^3.0.0
         version: 3.1.0(@types/node@24.10.1)(yaml@2.8.1)
       '@anolilab/semantic-release-preset':
         specifier: ^12.0.0
+<<<<<<< HEAD
         version: 12.0.1(@anolilab/semantic-release-pnpm@3.1.0(@types/node@24.10.1)(yaml@2.8.1))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+=======
+        version: 12.0.0(@anolilab/semantic-release-pnpm@3.0.0(@types/node@24.10.1)(yaml@2.8.1))(@semantic-release/npm@13.1.1(semantic-release@25.0.2(typescript@5.9.3)))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+=======
+        specifier: 3.0.0-alpha.2
+        version: 3.0.0-alpha.2(@types/node@24.10.1)(yaml@2.8.1)
+      '@anolilab/semantic-release-preset':
+        specifier: 12.0.0-alpha.2
+        version: 12.0.0-alpha.2(@anolilab/semantic-release-pnpm@3.0.0-alpha.2(@types/node@24.10.1)(yaml@2.8.1))(@semantic-release/npm@13.1.1(semantic-release@25.0.2(typescript@5.9.3)))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+>>>>>>> 97ff10ae2 (chore: update semantic release dependencies across multiple packages)
+>>>>>>> 32112bd3b (chore: update semantic release dependencies across multiple packages)
       '@arethetypeswrong/cli':
         specifier: ^0.18.2
         version: 0.18.2
@@ -3420,11 +3729,23 @@ importers:
         specifier: ^6.0.8
         version: 6.0.8(prettier@3.6.2)
       '@anolilab/semantic-release-pnpm':
+<<<<<<< HEAD
         specifier: ^3.0.0
         version: 3.1.0(@types/node@24.10.1)(yaml@2.8.1)
       '@anolilab/semantic-release-preset':
         specifier: ^12.0.0
+<<<<<<< HEAD
         version: 12.0.1(@anolilab/semantic-release-pnpm@3.1.0(@types/node@24.10.1)(yaml@2.8.1))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+=======
+        version: 12.0.0(@anolilab/semantic-release-pnpm@3.0.0(@types/node@24.10.1)(yaml@2.8.1))(@semantic-release/npm@13.1.1(semantic-release@25.0.2(typescript@5.9.3)))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+=======
+        specifier: 3.0.0-alpha.2
+        version: 3.0.0-alpha.2(@types/node@24.10.1)(yaml@2.8.1)
+      '@anolilab/semantic-release-preset':
+        specifier: 12.0.0-alpha.2
+        version: 12.0.0-alpha.2(@anolilab/semantic-release-pnpm@3.0.0-alpha.2(@types/node@24.10.1)(yaml@2.8.1))(@semantic-release/npm@13.1.1(semantic-release@25.0.2(typescript@5.9.3)))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+>>>>>>> 97ff10ae2 (chore: update semantic release dependencies across multiple packages)
+>>>>>>> 32112bd3b (chore: update semantic release dependencies across multiple packages)
       '@arethetypeswrong/cli':
         specifier: ^0.18.2
         version: 0.18.2
@@ -3508,11 +3829,23 @@ importers:
         specifier: ^6.0.8
         version: 6.0.8(prettier@3.6.2)
       '@anolilab/semantic-release-pnpm':
+<<<<<<< HEAD
         specifier: ^3.0.0
         version: 3.1.0(@types/node@24.10.1)(yaml@2.8.1)
       '@anolilab/semantic-release-preset':
         specifier: ^12.0.0
+<<<<<<< HEAD
         version: 12.0.1(@anolilab/semantic-release-pnpm@3.1.0(@types/node@24.10.1)(yaml@2.8.1))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+=======
+        version: 12.0.0(@anolilab/semantic-release-pnpm@3.0.0(@types/node@24.10.1)(yaml@2.8.1))(@semantic-release/npm@13.1.1(semantic-release@25.0.2(typescript@5.9.3)))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+=======
+        specifier: 3.0.0-alpha.2
+        version: 3.0.0-alpha.2(@types/node@24.10.1)(yaml@2.8.1)
+      '@anolilab/semantic-release-preset':
+        specifier: 12.0.0-alpha.2
+        version: 12.0.0-alpha.2(@anolilab/semantic-release-pnpm@3.0.0-alpha.2(@types/node@24.10.1)(yaml@2.8.1))(@semantic-release/npm@13.1.1(semantic-release@25.0.2(typescript@5.9.3)))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+>>>>>>> 97ff10ae2 (chore: update semantic release dependencies across multiple packages)
+>>>>>>> 32112bd3b (chore: update semantic release dependencies across multiple packages)
       '@arethetypeswrong/cli':
         specifier: ^0.18.2
         version: 0.18.2
@@ -3590,11 +3923,23 @@ importers:
         specifier: ^6.0.8
         version: 6.0.8(prettier@3.6.2)
       '@anolilab/semantic-release-pnpm':
+<<<<<<< HEAD
         specifier: ^3.0.0
         version: 3.1.0(@types/node@24.10.1)(yaml@2.8.1)
       '@anolilab/semantic-release-preset':
         specifier: ^12.0.0
+<<<<<<< HEAD
         version: 12.0.1(@anolilab/semantic-release-pnpm@3.1.0(@types/node@24.10.1)(yaml@2.8.1))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+=======
+        version: 12.0.0(@anolilab/semantic-release-pnpm@3.0.0(@types/node@24.10.1)(yaml@2.8.1))(@semantic-release/npm@13.1.1(semantic-release@25.0.2(typescript@5.9.3)))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+=======
+        specifier: 3.0.0-alpha.2
+        version: 3.0.0-alpha.2(@types/node@24.10.1)(yaml@2.8.1)
+      '@anolilab/semantic-release-preset':
+        specifier: 12.0.0-alpha.2
+        version: 12.0.0-alpha.2(@anolilab/semantic-release-pnpm@3.0.0-alpha.2(@types/node@24.10.1)(yaml@2.8.1))(@semantic-release/npm@13.1.1(semantic-release@25.0.2(typescript@5.9.3)))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+>>>>>>> 97ff10ae2 (chore: update semantic release dependencies across multiple packages)
+>>>>>>> 32112bd3b (chore: update semantic release dependencies across multiple packages)
       '@arethetypeswrong/cli':
         specifier: ^0.18.2
         version: 0.18.2
@@ -3691,11 +4036,23 @@ importers:
         specifier: ^6.0.8
         version: 6.0.8(prettier@3.6.2)
       '@anolilab/semantic-release-pnpm':
+<<<<<<< HEAD
         specifier: 3.0.0
         version: 3.0.0(@types/node@24.10.1)(yaml@2.8.1)
       '@anolilab/semantic-release-preset':
         specifier: ^12.0.0
+<<<<<<< HEAD
         version: 12.0.1(@anolilab/semantic-release-pnpm@3.0.0(@types/node@24.10.1)(yaml@2.8.1))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+=======
+        version: 12.0.0(@anolilab/semantic-release-pnpm@3.0.0(@types/node@24.10.1)(yaml@2.8.1))(@semantic-release/npm@13.1.1(semantic-release@25.0.2(typescript@5.9.3)))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+=======
+        specifier: 3.0.0-alpha.2
+        version: 3.0.0-alpha.2(@types/node@24.10.1)(yaml@2.8.1)
+      '@anolilab/semantic-release-preset':
+        specifier: 12.0.0-alpha.2
+        version: 12.0.0-alpha.2(@anolilab/semantic-release-pnpm@3.0.0-alpha.2(@types/node@24.10.1)(yaml@2.8.1))(@semantic-release/npm@13.1.1(semantic-release@25.0.2(typescript@5.9.3)))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+>>>>>>> 97ff10ae2 (chore: update semantic release dependencies across multiple packages)
+>>>>>>> 32112bd3b (chore: update semantic release dependencies across multiple packages)
       '@arethetypeswrong/cli':
         specifier: ^0.18.2
         version: 0.18.2
@@ -3791,11 +4148,11 @@ importers:
         specifier: ^6.0.7
         version: 6.0.7(prettier@3.6.2)
       '@anolilab/semantic-release-pnpm':
-        specifier: 2.0.5
-        version: 2.0.5(@types/node@24.10.1)(yaml@2.8.1)
+        specifier: 3.0.0-alpha.2
+        version: 3.0.0-alpha.2(@types/node@24.10.1)(yaml@2.8.1)
       '@anolilab/semantic-release-preset':
-        specifier: ^11.0.5
-        version: 11.0.5(@anolilab/semantic-release-pnpm@2.0.5(@types/node@24.10.1)(yaml@2.8.1))(@semantic-release/npm@13.1.1(semantic-release@25.0.2(typescript@5.9.3)))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+        specifier: 12.0.0-alpha.2
+        version: 12.0.0-alpha.2(@anolilab/semantic-release-pnpm@3.0.0-alpha.2(@types/node@24.10.1)(yaml@2.8.1))(@semantic-release/npm@13.1.1(semantic-release@25.0.2(typescript@5.9.3)))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
       '@arethetypeswrong/cli':
         specifier: ^0.18.2
         version: 0.18.2
@@ -4299,11 +4656,19 @@ importers:
         specifier: 16.4.4
         version: 16.4.4(56cbc9fac025eea02d97cbf65424f9e1)
       '@anolilab/semantic-release-pnpm':
+<<<<<<< HEAD
         specifier: 3.0.0
         version: 3.0.0(@types/node@24.10.1)(yaml@2.8.1)
       '@anolilab/semantic-release-preset':
         specifier: 12.0.0
         version: 12.0.0(@anolilab/semantic-release-pnpm@3.0.0(@types/node@24.10.1)(yaml@2.8.1))(@semantic-release/npm@13.1.1(semantic-release@25.0.2(typescript@5.9.3)))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+=======
+        specifier: 3.0.0-alpha.2
+        version: 3.0.0-alpha.2(@types/node@24.10.1)(yaml@2.8.1)
+      '@anolilab/semantic-release-preset':
+        specifier: 12.0.0-alpha.2
+        version: 12.0.0-alpha.2(@anolilab/semantic-release-pnpm@3.0.0-alpha.2(@types/node@24.10.1)(yaml@2.8.1))(@semantic-release/npm@13.1.1(semantic-release@25.0.2(typescript@5.9.3)))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+>>>>>>> 97ff10ae2 (chore: update semantic release dependencies across multiple packages)
       '@arethetypeswrong/cli':
         specifier: 0.18.2
         version: 0.18.2
@@ -4443,11 +4808,23 @@ importers:
         specifier: 6.0.8
         version: 6.0.8(prettier@3.6.2)
       '@anolilab/semantic-release-pnpm':
+<<<<<<< HEAD
         specifier: 3.0.0
         version: 3.0.0(@types/node@24.10.1)(yaml@2.8.1)
       '@anolilab/semantic-release-preset':
         specifier: ^12.0.0
+<<<<<<< HEAD
         version: 12.0.1(@anolilab/semantic-release-pnpm@3.0.0(@types/node@24.10.1)(yaml@2.8.1))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+=======
+        version: 12.0.0(@anolilab/semantic-release-pnpm@3.0.0(@types/node@24.10.1)(yaml@2.8.1))(@semantic-release/npm@13.1.1(semantic-release@25.0.2(typescript@5.9.3)))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+=======
+        specifier: 3.0.0-alpha.2
+        version: 3.0.0-alpha.2(@types/node@24.10.1)(yaml@2.8.1)
+      '@anolilab/semantic-release-preset':
+        specifier: 12.0.0-alpha.2
+        version: 12.0.0-alpha.2(@anolilab/semantic-release-pnpm@3.0.0-alpha.2(@types/node@24.10.1)(yaml@2.8.1))(@semantic-release/npm@13.1.1(semantic-release@25.0.2(typescript@5.9.3)))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+>>>>>>> 97ff10ae2 (chore: update semantic release dependencies across multiple packages)
+>>>>>>> 32112bd3b (chore: update semantic release dependencies across multiple packages)
       '@arethetypeswrong/cli':
         specifier: ^0.18.2
         version: 0.18.2
@@ -4567,11 +4944,23 @@ importers:
         specifier: ^6.0.8
         version: 6.0.8(prettier@3.6.2)
       '@anolilab/semantic-release-pnpm':
+<<<<<<< HEAD
         specifier: 3.0.0
         version: 3.0.0(@types/node@24.10.1)(yaml@2.8.1)
       '@anolilab/semantic-release-preset':
         specifier: ^12.0.0
+<<<<<<< HEAD
         version: 12.0.1(@anolilab/semantic-release-pnpm@3.0.0(@types/node@24.10.1)(yaml@2.8.1))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+=======
+        version: 12.0.0(@anolilab/semantic-release-pnpm@3.0.0(@types/node@24.10.1)(yaml@2.8.1))(@semantic-release/npm@13.1.1(semantic-release@25.0.2(typescript@5.9.3)))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+=======
+        specifier: 3.0.0-alpha.2
+        version: 3.0.0-alpha.2(@types/node@24.10.1)(yaml@2.8.1)
+      '@anolilab/semantic-release-preset':
+        specifier: 12.0.0-alpha.2
+        version: 12.0.0-alpha.2(@anolilab/semantic-release-pnpm@3.0.0-alpha.2(@types/node@24.10.1)(yaml@2.8.1))(@semantic-release/npm@13.1.1(semantic-release@25.0.2(typescript@5.9.3)))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+>>>>>>> 97ff10ae2 (chore: update semantic release dependencies across multiple packages)
+>>>>>>> 32112bd3b (chore: update semantic release dependencies across multiple packages)
       '@arethetypeswrong/cli':
         specifier: ^0.18.2
         version: 0.18.2
@@ -4701,11 +5090,23 @@ importers:
         specifier: ^6.0.8
         version: 6.0.8(prettier@3.6.2)
       '@anolilab/semantic-release-pnpm':
+<<<<<<< HEAD
         specifier: 3.0.0
         version: 3.0.0(@types/node@24.10.1)(yaml@2.8.1)
       '@anolilab/semantic-release-preset':
         specifier: ^12.0.0
+<<<<<<< HEAD
         version: 12.0.1(@anolilab/semantic-release-pnpm@3.0.0(@types/node@24.10.1)(yaml@2.8.1))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+=======
+        version: 12.0.0(@anolilab/semantic-release-pnpm@3.0.0(@types/node@24.10.1)(yaml@2.8.1))(@semantic-release/npm@13.1.1(semantic-release@25.0.2(typescript@5.9.3)))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+=======
+        specifier: 3.0.0-alpha.2
+        version: 3.0.0-alpha.2(@types/node@24.10.1)(yaml@2.8.1)
+      '@anolilab/semantic-release-preset':
+        specifier: 12.0.0-alpha.2
+        version: 12.0.0-alpha.2(@anolilab/semantic-release-pnpm@3.0.0-alpha.2(@types/node@24.10.1)(yaml@2.8.1))(@semantic-release/npm@13.1.1(semantic-release@25.0.2(typescript@5.9.3)))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)
+>>>>>>> 97ff10ae2 (chore: update semantic release dependencies across multiple packages)
+>>>>>>> 32112bd3b (chore: update semantic release dependencies across multiple packages)
       '@arethetypeswrong/cli':
         specifier: ^0.18.2
         version: 0.18.2
@@ -5428,14 +5829,35 @@ packages:
       vitest:
         optional: true
 
+<<<<<<< HEAD
   '@anolilab/multi-semantic-release@3.1.0':
     resolution: {integrity: sha512-0ZO0Fg1xCdujQWG5eEVCbrN6DBjnBhTxiSs5j/69WCsMLZ1708vF/tu839Zbe3YCO7w7iwso7zfg+AnWb2EorA==}
+=======
+<<<<<<< HEAD
+  '@anolilab/multi-semantic-release@3.0.0':
+    resolution: {integrity: sha512-sJ7UjzJ2LNNIYj51rQTa16mqWuuUVBfEOhcMxNvA1gc1FCrfD2rNq0DOwjB9zhEyeFXaBiiXOeIe2N9NJ2KnIg==}
+=======
+  '@anolilab/multi-semantic-release@3.0.0-alpha.3':
+    resolution: {integrity: sha512-7NygV04ubmxqxg7/jaLLBPQPOQEx8KC8718GH6jyywfv6dmEsZ+7VlG8C9n/81bWkNf7i0ClLCQwHWxonMiDpw==}
+>>>>>>> 97ff10ae2 (chore: update semantic release dependencies across multiple packages)
+>>>>>>> 32112bd3b (chore: update semantic release dependencies across multiple packages)
     engines: {node: ^22.14.0 || >=24.10.0}
     os: [darwin, linux, win32]
     hasBin: true
     peerDependencies:
       semantic-release: '>=24'
+<<<<<<< HEAD
+=======
 
+  '@anolilab/prettier-config@6.0.7':
+    resolution: {integrity: sha512-2lIZNOHvl+AWX4csUO8kbvrmR2DIMJMlkuKfW1t3Acz+M8Xif4WA/KLH8O8nqzclo+Eq5EMhJbYgLoA7VLHY9Q==}
+    engines: {node: '>=20.18.* <=24.*'}
+    hasBin: true
+    peerDependencies:
+      prettier: ^3.6.2
+>>>>>>> 97ff10ae2 (chore: update semantic release dependencies across multiple packages)
+
+<<<<<<< HEAD
   '@anolilab/prettier-config@6.0.8':
     resolution: {integrity: sha512-FQVidJ5inFYZASfLNk4aUCI/OWmvPoPLH2/jekbfcn8/NOlDStClm2nsbxG9nEqB6u8dH+AYn2Ba/6dQRMM44A==}
     engines: {node: '>=20.18.* <=25.*'}
@@ -5443,6 +5865,7 @@ packages:
     peerDependencies:
       prettier: ^3.6.2
 
+<<<<<<< HEAD
   '@anolilab/rc@3.0.0':
     resolution: {integrity: sha512-/31OxbQenvwX2qk5vlZU8OKUsvjHLLS/YiwWYznG1CvYVDRLbTWFdsxW5KkLuIPEJ5R4wsO76/q/DJPgjJ7UoA==}
     engines: {node: ^22.14.0 || >=24.10.0}
@@ -5473,6 +5896,31 @@ packages:
     os: [darwin, linux, win32]
     peerDependencies:
       '@anolilab/semantic-release-pnpm': 3.0.0
+=======
+  '@anolilab/rc@2.0.5':
+    resolution: {integrity: sha512-z/a2M30+Cc1o3lazbBjV9gB52VLvEierUIEVys+DzDwpcYOskijfTzsjn6afr1dY36Pb+EtnibmWx0EoGdnvRA==}
+    engines: {node: '>=20.8.1'}
+=======
+  '@anolilab/rc@3.0.0-alpha.2':
+    resolution: {integrity: sha512-GpmjTxjIuZd/VGLYqF7f07Ayz+TH+heN+hKpg0kff8g7RXiMf4jd0OZXCek6GFuOpq2DwYMXEgt9Sz24HZPmCw==}
+    engines: {node: ^22.14.0 || >=24.10.0}
+>>>>>>> b97fbaa57 (chore: update semantic release dependencies across multiple packages)
+
+  '@anolilab/semantic-release-clean-package-json@4.0.0-alpha.2':
+    resolution: {integrity: sha512-5mjRLFNGKkcQhlf7jtwCvmZVLI5dxm3UjWks9bdRMn+9kaDY30upNmXTxi3cHGiTzrHiR66pp4gKP61thXBmdg==}
+    engines: {node: ^22.14.0 || >=24.10.0}
+
+  '@anolilab/semantic-release-pnpm@3.0.0-alpha.2':
+    resolution: {integrity: sha512-nLWHPGUZ2ypP3ghQfcARGo6mBH4vEOPF2NT0wK17QAPLk2+58f2H2LctCfL01jjNWYm0HgGTFXkqX84HcG7eGQ==}
+    engines: {node: ^22.14.0 || >=24.10.0}
+
+  '@anolilab/semantic-release-preset@12.0.0-alpha.2':
+    resolution: {integrity: sha512-IZv7LWntGwKb/EcQwOv9S/hmZotsyrua6HPETPlD36ahz6aA+q3YgAZyEGTcVeV7vMUIebeSVOdzFfPMd3pKDw==}
+    engines: {node: ^22.14.0 || >=24.10.0}
+    os: [darwin, linux, win32]
+    peerDependencies:
+      '@anolilab/semantic-release-pnpm': 3.0.0-alpha.2
+>>>>>>> 97ff10ae2 (chore: update semantic release dependencies across multiple packages)
       '@semantic-release/npm': ^13.1.1
       semantic-release: ^25.0.2
       semantic-release-yarn: ^3.0.2
@@ -6364,9 +6812,6 @@ packages:
   '@emnapi/core@1.5.0':
     resolution: {integrity: sha512-sbP8GzB1WDzacS8fgNPpHlp6C9VZe+SJP3F90W9rLemaQj2PzIuTEl1qDOYQf58YIpyjViI24y9aPWCjEzY2cg==}
 
-  '@emnapi/runtime@1.5.0':
-    resolution: {integrity: sha512-97/BJ3iXHww3djw6hYIfErCZFee7qCtrneuLa20UXFCOTCfBM2cvQHjWJ2EG0s0MtdNwInarqCTz35i4wWXHsQ==}
-
   '@emnapi/runtime@1.7.1':
     resolution: {integrity: sha512-PVtJr5CmLwYAU9PZDMITZoR5iAOShYREoR45EyyLrbntV50mdePTgUn4AmOw90Ifcj+x2kRjdzr1HP3RrNiHGA==}
 
@@ -7069,22 +7514,10 @@ packages:
     resolution: {integrity: sha512-A5P/LfWGFSl6nsckYtjw9da+19jB8hkJ6ACTGcDfEJ0aE+l2n2El7dsVM7UVHZQ9s2lmYMWlrS21YLy2IR1LUw==}
     engines: {node: '>=18'}
 
-  '@img/sharp-darwin-arm64@0.34.4':
-    resolution: {integrity: sha512-sitdlPzDVyvmINUdJle3TNHl+AG9QcwiAMsXmccqsCOMZNIdW2/7S26w0LyU8euiLVzFBL3dXPwVCq/ODnf2vA==}
-    engines: {node: ^18.17.0 || ^20.3.0 || >=21.0.0}
-    cpu: [arm64]
-    os: [darwin]
-
   '@img/sharp-darwin-arm64@0.34.5':
     resolution: {integrity: sha512-imtQ3WMJXbMY4fxb/Ndp6HBTNVtWCUI0WdobyheGf5+ad6xX8VIDO8u2xE4qc/fr08CKG/7dDseFtn6M6g/r3w==}
     engines: {node: ^18.17.0 || ^20.3.0 || >=21.0.0}
     cpu: [arm64]
-    os: [darwin]
-
-  '@img/sharp-darwin-x64@0.34.4':
-    resolution: {integrity: sha512-rZheupWIoa3+SOdF/IcUe1ah4ZDpKBGWcsPX6MT0lYniH9micvIU7HQkYTfrx5Xi8u+YqwLtxC/3vl8TQN6rMg==}
-    engines: {node: ^18.17.0 || ^20.3.0 || >=21.0.0}
-    cpu: [x64]
     os: [darwin]
 
   '@img/sharp-darwin-x64@0.34.5':
@@ -7093,19 +7526,9 @@ packages:
     cpu: [x64]
     os: [darwin]
 
-  '@img/sharp-libvips-darwin-arm64@1.2.3':
-    resolution: {integrity: sha512-QzWAKo7kpHxbuHqUC28DZ9pIKpSi2ts2OJnoIGI26+HMgq92ZZ4vk8iJd4XsxN+tYfNJxzH6W62X5eTcsBymHw==}
-    cpu: [arm64]
-    os: [darwin]
-
   '@img/sharp-libvips-darwin-arm64@1.2.4':
     resolution: {integrity: sha512-zqjjo7RatFfFoP0MkQ51jfuFZBnVE2pRiaydKJ1G/rHZvnsrHAOcQALIi9sA5co5xenQdTugCvtb1cuf78Vf4g==}
     cpu: [arm64]
-    os: [darwin]
-
-  '@img/sharp-libvips-darwin-x64@1.2.3':
-    resolution: {integrity: sha512-Ju+g2xn1E2AKO6YBhxjj+ACcsPQRHT0bhpglxcEf+3uyPY+/gL8veniKoo96335ZaPo03bdDXMv0t+BBFAbmRA==}
-    cpu: [x64]
     os: [darwin]
 
   '@img/sharp-libvips-darwin-x64@1.2.4':
@@ -7113,29 +7536,14 @@ packages:
     cpu: [x64]
     os: [darwin]
 
-  '@img/sharp-libvips-linux-arm64@1.2.3':
-    resolution: {integrity: sha512-I4RxkXU90cpufazhGPyVujYwfIm9Nk1QDEmiIsaPwdnm013F7RIceaCc87kAH+oUB1ezqEvC6ga4m7MSlqsJvQ==}
-    cpu: [arm64]
-    os: [linux]
-
   '@img/sharp-libvips-linux-arm64@1.2.4':
     resolution: {integrity: sha512-excjX8DfsIcJ10x1Kzr4RcWe1edC9PquDRRPx3YVCvQv+U5p7Yin2s32ftzikXojb1PIFc/9Mt28/y+iRklkrw==}
     cpu: [arm64]
     os: [linux]
 
-  '@img/sharp-libvips-linux-arm@1.2.3':
-    resolution: {integrity: sha512-x1uE93lyP6wEwGvgAIV0gP6zmaL/a0tGzJs/BIDDG0zeBhMnuUPm7ptxGhUbcGs4okDJrk4nxgrmxpib9g6HpA==}
-    cpu: [arm]
-    os: [linux]
-
   '@img/sharp-libvips-linux-arm@1.2.4':
     resolution: {integrity: sha512-bFI7xcKFELdiNCVov8e44Ia4u2byA+l3XtsAj+Q8tfCwO6BQ8iDojYdvoPMqsKDkuoOo+X6HZA0s0q11ANMQ8A==}
     cpu: [arm]
-    os: [linux]
-
-  '@img/sharp-libvips-linux-ppc64@1.2.3':
-    resolution: {integrity: sha512-Y2T7IsQvJLMCBM+pmPbM3bKT/yYJvVtLJGfCs4Sp95SjvnFIjynbjzsa7dY1fRJX45FTSfDksbTp6AGWudiyCg==}
-    cpu: [ppc64]
     os: [linux]
 
   '@img/sharp-libvips-linux-ppc64@1.2.4':
@@ -7148,19 +7556,9 @@ packages:
     cpu: [riscv64]
     os: [linux]
 
-  '@img/sharp-libvips-linux-s390x@1.2.3':
-    resolution: {integrity: sha512-RgWrs/gVU7f+K7P+KeHFaBAJlNkD1nIZuVXdQv6S+fNA6syCcoboNjsV2Pou7zNlVdNQoQUpQTk8SWDHUA3y/w==}
-    cpu: [s390x]
-    os: [linux]
-
   '@img/sharp-libvips-linux-s390x@1.2.4':
     resolution: {integrity: sha512-qmp9VrzgPgMoGZyPvrQHqk02uyjA0/QrTO26Tqk6l4ZV0MPWIW6LTkqOIov+J1yEu7MbFQaDpwdwJKhbJvuRxQ==}
     cpu: [s390x]
-    os: [linux]
-
-  '@img/sharp-libvips-linux-x64@1.2.3':
-    resolution: {integrity: sha512-3JU7LmR85K6bBiRzSUc/Ff9JBVIFVvq6bomKE0e63UXGeRw2HPVEjoJke1Yx+iU4rL7/7kUjES4dZ/81Qjhyxg==}
-    cpu: [x64]
     os: [linux]
 
   '@img/sharp-libvips-linux-x64@1.2.4':
@@ -7168,30 +7566,14 @@ packages:
     cpu: [x64]
     os: [linux]
 
-  '@img/sharp-libvips-linuxmusl-arm64@1.2.3':
-    resolution: {integrity: sha512-F9q83RZ8yaCwENw1GieztSfj5msz7GGykG/BA+MOUefvER69K/ubgFHNeSyUu64amHIYKGDs4sRCMzXVj8sEyw==}
-    cpu: [arm64]
-    os: [linux]
-
   '@img/sharp-libvips-linuxmusl-arm64@1.2.4':
     resolution: {integrity: sha512-FVQHuwx1IIuNow9QAbYUzJ+En8KcVm9Lk5+uGUQJHaZmMECZmOlix9HnH7n1TRkXMS0pGxIJokIVB9SuqZGGXw==}
     cpu: [arm64]
     os: [linux]
 
-  '@img/sharp-libvips-linuxmusl-x64@1.2.3':
-    resolution: {integrity: sha512-U5PUY5jbc45ANM6tSJpsgqmBF/VsL6LnxJmIf11kB7J5DctHgqm0SkuXzVWtIY90GnJxKnC/JT251TDnk1fu/g==}
-    cpu: [x64]
-    os: [linux]
-
   '@img/sharp-libvips-linuxmusl-x64@1.2.4':
     resolution: {integrity: sha512-+LpyBk7L44ZIXwz/VYfglaX/okxezESc6UxDSoyo2Ks6Jxc4Y7sGjpgU9s4PMgqgjj1gZCylTieNamqA1MF7Dg==}
     cpu: [x64]
-    os: [linux]
-
-  '@img/sharp-linux-arm64@0.34.4':
-    resolution: {integrity: sha512-YXU1F/mN/Wu786tl72CyJjP/Ngl8mGHN1hST4BGl+hiW5jhCnV2uRVTNOcaYPs73NeT/H8Upm3y9582JVuZHrQ==}
-    engines: {node: ^18.17.0 || ^20.3.0 || >=21.0.0}
-    cpu: [arm64]
     os: [linux]
 
   '@img/sharp-linux-arm64@0.34.5':
@@ -7200,22 +7582,10 @@ packages:
     cpu: [arm64]
     os: [linux]
 
-  '@img/sharp-linux-arm@0.34.4':
-    resolution: {integrity: sha512-Xyam4mlqM0KkTHYVSuc6wXRmM7LGN0P12li03jAnZ3EJWZqj83+hi8Y9UxZUbxsgsK1qOEwg7O0Bc0LjqQVtxA==}
-    engines: {node: ^18.17.0 || ^20.3.0 || >=21.0.0}
-    cpu: [arm]
-    os: [linux]
-
   '@img/sharp-linux-arm@0.34.5':
     resolution: {integrity: sha512-9dLqsvwtg1uuXBGZKsxem9595+ujv0sJ6Vi8wcTANSFpwV/GONat5eCkzQo/1O6zRIkh0m/8+5BjrRr7jDUSZw==}
     engines: {node: ^18.17.0 || ^20.3.0 || >=21.0.0}
     cpu: [arm]
-    os: [linux]
-
-  '@img/sharp-linux-ppc64@0.34.4':
-    resolution: {integrity: sha512-F4PDtF4Cy8L8hXA2p3TO6s4aDt93v+LKmpcYFLAVdkkD3hSxZzee0rh6/+94FpAynsuMpLX5h+LRsSG3rIciUQ==}
-    engines: {node: ^18.17.0 || ^20.3.0 || >=21.0.0}
-    cpu: [ppc64]
     os: [linux]
 
   '@img/sharp-linux-ppc64@0.34.5':
@@ -7230,22 +7600,10 @@ packages:
     cpu: [riscv64]
     os: [linux]
 
-  '@img/sharp-linux-s390x@0.34.4':
-    resolution: {integrity: sha512-qVrZKE9Bsnzy+myf7lFKvng6bQzhNUAYcVORq2P7bDlvmF6u2sCmK2KyEQEBdYk+u3T01pVsPrkj943T1aJAsw==}
-    engines: {node: ^18.17.0 || ^20.3.0 || >=21.0.0}
-    cpu: [s390x]
-    os: [linux]
-
   '@img/sharp-linux-s390x@0.34.5':
     resolution: {integrity: sha512-nQtCk0PdKfho3eC5MrbQoigJ2gd1CgddUMkabUj+rBevs8tZ2cULOx46E7oyX+04WGfABgIwmMC0VqieTiR4jg==}
     engines: {node: ^18.17.0 || ^20.3.0 || >=21.0.0}
     cpu: [s390x]
-    os: [linux]
-
-  '@img/sharp-linux-x64@0.34.4':
-    resolution: {integrity: sha512-ZfGtcp2xS51iG79c6Vhw9CWqQC8l2Ot8dygxoDoIQPTat/Ov3qAa8qpxSrtAEAJW+UjTXc4yxCjNfxm4h6Xm2A==}
-    engines: {node: ^18.17.0 || ^20.3.0 || >=21.0.0}
-    cpu: [x64]
     os: [linux]
 
   '@img/sharp-linux-x64@0.34.5':
@@ -7254,22 +7612,10 @@ packages:
     cpu: [x64]
     os: [linux]
 
-  '@img/sharp-linuxmusl-arm64@0.34.4':
-    resolution: {integrity: sha512-8hDVvW9eu4yHWnjaOOR8kHVrew1iIX+MUgwxSuH2XyYeNRtLUe4VNioSqbNkB7ZYQJj9rUTT4PyRscyk2PXFKA==}
-    engines: {node: ^18.17.0 || ^20.3.0 || >=21.0.0}
-    cpu: [arm64]
-    os: [linux]
-
   '@img/sharp-linuxmusl-arm64@0.34.5':
     resolution: {integrity: sha512-fprJR6GtRsMt6Kyfq44IsChVZeGN97gTD331weR1ex1c1rypDEABN6Tm2xa1wE6lYb5DdEnk03NZPqA7Id21yg==}
     engines: {node: ^18.17.0 || ^20.3.0 || >=21.0.0}
     cpu: [arm64]
-    os: [linux]
-
-  '@img/sharp-linuxmusl-x64@0.34.4':
-    resolution: {integrity: sha512-lU0aA5L8QTlfKjpDCEFOZsTYGn3AEiO6db8W5aQDxj0nQkVrZWmN3ZP9sYKWJdtq3PWPhUNlqehWyXpYDcI9Sg==}
-    engines: {node: ^18.17.0 || ^20.3.0 || >=21.0.0}
-    cpu: [x64]
     os: [linux]
 
   '@img/sharp-linuxmusl-x64@0.34.5':
@@ -7278,21 +7624,10 @@ packages:
     cpu: [x64]
     os: [linux]
 
-  '@img/sharp-wasm32@0.34.4':
-    resolution: {integrity: sha512-33QL6ZO/qpRyG7woB/HUALz28WnTMI2W1jgX3Nu2bypqLIKx/QKMILLJzJjI+SIbvXdG9fUnmrxR7vbi1sTBeA==}
-    engines: {node: ^18.17.0 || ^20.3.0 || >=21.0.0}
-    cpu: [wasm32]
-
   '@img/sharp-wasm32@0.34.5':
     resolution: {integrity: sha512-OdWTEiVkY2PHwqkbBI8frFxQQFekHaSSkUIJkwzclWZe64O1X4UlUjqqqLaPbUpMOQk6FBu/HtlGXNblIs0huw==}
     engines: {node: ^18.17.0 || ^20.3.0 || >=21.0.0}
     cpu: [wasm32]
-
-  '@img/sharp-win32-arm64@0.34.4':
-    resolution: {integrity: sha512-2Q250do/5WXTwxW3zjsEuMSv5sUU4Tq9VThWKlU2EYLm4MB7ZeMwF+SFJutldYODXF6jzc6YEOC+VfX0SZQPqA==}
-    engines: {node: ^18.17.0 || ^20.3.0 || >=21.0.0}
-    cpu: [arm64]
-    os: [win32]
 
   '@img/sharp-win32-arm64@0.34.5':
     resolution: {integrity: sha512-WQ3AgWCWYSb2yt+IG8mnC6Jdk9Whs7O0gxphblsLvdhSpSTtmu69ZG1Gkb6NuvxsNACwiPV6cNSZNzt0KPsw7g==}
@@ -7300,22 +7635,10 @@ packages:
     cpu: [arm64]
     os: [win32]
 
-  '@img/sharp-win32-ia32@0.34.4':
-    resolution: {integrity: sha512-3ZeLue5V82dT92CNL6rsal6I2weKw1cYu+rGKm8fOCCtJTR2gYeUfY3FqUnIJsMUPIH68oS5jmZ0NiJ508YpEw==}
-    engines: {node: ^18.17.0 || ^20.3.0 || >=21.0.0}
-    cpu: [ia32]
-    os: [win32]
-
   '@img/sharp-win32-ia32@0.34.5':
     resolution: {integrity: sha512-FV9m/7NmeCmSHDD5j4+4pNI8Cp3aW+JvLoXcTUo0IqyjSfAZJ8dIUmijx1qaJsIiU+Hosw6xM5KijAWRJCSgNg==}
     engines: {node: ^18.17.0 || ^20.3.0 || >=21.0.0}
     cpu: [ia32]
-    os: [win32]
-
-  '@img/sharp-win32-x64@0.34.4':
-    resolution: {integrity: sha512-xIyj4wpYs8J18sVN3mSQjwrw7fKUqRw+Z5rnHNCy5fYTxigBz81u5mOMPmFumwjcn8+ld1ppptMBCLic1nz6ig==}
-    engines: {node: ^18.17.0 || ^20.3.0 || >=21.0.0}
-    cpu: [x64]
     os: [win32]
 
   '@img/sharp-win32-x64@0.34.5':
@@ -17383,9 +17706,9 @@ packages:
     resolution: {integrity: sha512-X7rqawQBvfdjS10YU1y1YVreA3SsLrW9dX2CewP2EbBJM4ypVNLDkO5y04gejPwKIY9lR+7r9gn3rFPt/kmWFg==}
     engines: {node: ^14.17.0 || ^16.13.0 || >=18.0.0}
 
-  ini@6.0.0:
-    resolution: {integrity: sha512-IBTdIkzZNOpqm7q3dRqJvMaldXjDHWkEDfrwGEQTs5eaQMWV+djAhR+wahyNNMAa+qpbDUhBMVt4ZKNwpPm7xQ==}
-    engines: {node: ^20.17.0 || >=22.9.0}
+  ini@5.0.0:
+    resolution: {integrity: sha512-+N0ngpO3e7cRUWOJAS7qw0IZIVc6XPrW4MlFBdD066F2L4k1L6ker3hLqSq7iXxU5tgS4WGkIUElWn5vogAEnw==}
+    engines: {node: ^18.17.0 || >=20.5.0}
 
   inquirer@8.2.5:
     resolution: {integrity: sha512-QAgPDQMEgrDssk1XiwwHoOGYF9BAbUcc1+j+FhEvaOt8/cKRqyLn0U5qA6F74fGhTMGxf92pOvPBeh29jQJDTQ==}
@@ -22201,10 +22524,6 @@ packages:
   shallowequal@1.1.0:
     resolution: {integrity: sha512-y0m1JoUZSlPAjXVtPPW70aZWfIL/dSP7AFkRnniLCrK/8MDKog3TySTBmckD+RObVxH0v4Tox67+F14PdED2oQ==}
 
-  sharp@0.34.4:
-    resolution: {integrity: sha512-FUH39xp3SBPnxWvd5iib1X8XY7J0K0X7d93sie9CJg2PO8/7gmg89Nve6OjItK53/MlAushNNxteBYfM6DEuoA==}
-    engines: {node: ^18.17.0 || ^20.3.0 || >=21.0.0}
-
   sharp@0.34.5:
     resolution: {integrity: sha512-Ou9I5Ft9WNcCbXrU9cMgPBcCK8LiwLqcbywW3t4oDV37n1pzpuNLsYiAV8eODnjbtQlSDwZ2cUEeQz4E54Hltg==}
     engines: {node: ^18.17.0 || ^20.3.0 || >=21.0.0}
@@ -25079,7 +25398,15 @@ snapshots:
       - '@types/node'
       - yaml
 
+<<<<<<< HEAD
   '@anolilab/multi-semantic-release@3.1.0(semantic-release@25.0.2(typescript@5.9.3))(typescript@5.9.3)':
+=======
+<<<<<<< HEAD
+  '@anolilab/multi-semantic-release@3.0.0(semantic-release@25.0.2(typescript@5.9.3))(typescript@5.9.3)':
+=======
+  '@anolilab/multi-semantic-release@3.0.0-alpha.3(semantic-release@25.0.2(typescript@5.9.3))(typescript@5.9.3)':
+>>>>>>> 97ff10ae2 (chore: update semantic release dependencies across multiple packages)
+>>>>>>> 32112bd3b (chore: update semantic release dependencies across multiple packages)
     dependencies:
       '@semrel-extra/topo': 1.14.1
       '@visulima/fs': 4.1.0(yaml@2.8.1)
@@ -25102,19 +25429,35 @@ snapshots:
       - supports-color
       - typescript
 
+<<<<<<< HEAD
+=======
+  '@anolilab/prettier-config@6.0.7(prettier@3.6.2)':
+    dependencies:
+      prettier: 3.6.2
+
+<<<<<<< HEAD
+>>>>>>> 97ff10ae2 (chore: update semantic release dependencies across multiple packages)
   '@anolilab/prettier-config@6.0.8(prettier@3.6.2)':
     dependencies:
       prettier: 3.6.2
 
+<<<<<<< HEAD
   '@anolilab/rc@3.0.0(yaml@2.8.1)':
+=======
+  '@anolilab/rc@2.0.5(yaml@2.8.1)':
+=======
+  '@anolilab/rc@3.0.0-alpha.2(yaml@2.8.1)':
+>>>>>>> b97fbaa57 (chore: update semantic release dependencies across multiple packages)
+>>>>>>> 97ff10ae2 (chore: update semantic release dependencies across multiple packages)
     dependencies:
       '@visulima/fs': 4.1.0(yaml@2.8.1)
       '@visulima/path': 2.0.5
-      ini: 6.0.0
+      ini: 5.0.0
       ts-deepmerge: 7.0.3
     transitivePeerDependencies:
       - yaml
 
+<<<<<<< HEAD
   '@anolilab/rc@3.1.0(yaml@2.8.1)':
     dependencies:
       '@visulima/fs': 4.1.0(yaml@2.8.1)
@@ -25124,7 +25467,13 @@ snapshots:
     transitivePeerDependencies:
       - yaml
 
+=======
+<<<<<<< HEAD
+>>>>>>> 32112bd3b (chore: update semantic release dependencies across multiple packages)
   '@anolilab/semantic-release-clean-package-json@4.0.0(yaml@2.8.1)':
+=======
+  '@anolilab/semantic-release-clean-package-json@4.0.0-alpha.2(yaml@2.8.1)':
+>>>>>>> 97ff10ae2 (chore: update semantic release dependencies across multiple packages)
     dependencies:
       '@semantic-release/error': 4.0.0
       '@visulima/fs': 4.1.0(yaml@2.8.1)
@@ -25133,6 +25482,7 @@ snapshots:
     transitivePeerDependencies:
       - yaml
 
+<<<<<<< HEAD
   '@anolilab/semantic-release-clean-package-json@4.1.0(yaml@2.8.1)':
     dependencies:
       '@semantic-release/error': 4.0.0
@@ -25142,10 +25492,19 @@ snapshots:
     transitivePeerDependencies:
       - yaml
 
+=======
+<<<<<<< HEAD
+>>>>>>> 32112bd3b (chore: update semantic release dependencies across multiple packages)
   '@anolilab/semantic-release-pnpm@3.0.0(@types/node@24.10.1)(yaml@2.8.1)':
     dependencies:
       '@actions/core': 1.11.1
       '@anolilab/rc': 3.0.0(yaml@2.8.1)
+=======
+  '@anolilab/semantic-release-pnpm@3.0.0-alpha.2(@types/node@24.10.1)(yaml@2.8.1)':
+    dependencies:
+      '@actions/core': 1.11.1
+      '@anolilab/rc': 3.0.0-alpha.2(yaml@2.8.1)
+>>>>>>> 97ff10ae2 (chore: update semantic release dependencies across multiple packages)
       '@semantic-release/error': 4.0.0
       '@visulima/fs': 4.1.0(yaml@2.8.1)
       '@visulima/package': 4.1.7(@types/node@24.10.1)
@@ -25170,7 +25529,7 @@ snapshots:
       '@visulima/path': 2.0.5
       env-ci: 11.2.0
       execa: 9.6.0
-      ini: 6.0.0
+      ini: 5.0.0
       normalize-url: 8.1.0
       registry-auth-token: 5.1.0
       semver: 7.7.3
@@ -25178,9 +25537,15 @@ snapshots:
       - '@types/node'
       - yaml
 
+<<<<<<< HEAD
   '@anolilab/semantic-release-preset@12.0.0(@anolilab/semantic-release-pnpm@3.0.0(@types/node@24.10.1)(yaml@2.8.1))(@semantic-release/npm@13.1.1(semantic-release@25.0.2(typescript@5.9.3)))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)':
     dependencies:
       '@anolilab/semantic-release-clean-package-json': 4.0.0(yaml@2.8.1)
+=======
+  '@anolilab/semantic-release-preset@12.0.0-alpha.2(@anolilab/semantic-release-pnpm@3.0.0-alpha.2(@types/node@24.10.1)(yaml@2.8.1))(@semantic-release/npm@13.1.1(semantic-release@25.0.2(typescript@5.9.3)))(semantic-release@25.0.2(typescript@5.9.3))(yaml@2.8.1)':
+    dependencies:
+      '@anolilab/semantic-release-clean-package-json': 4.0.0-alpha.2(yaml@2.8.1)
+>>>>>>> 97ff10ae2 (chore: update semantic release dependencies across multiple packages)
       '@semantic-release/changelog': 6.0.3(semantic-release@25.0.2(typescript@5.9.3))
       '@semantic-release/commit-analyzer': 13.0.1(semantic-release@25.0.2(typescript@5.9.3))
       '@semantic-release/exec': 7.1.0(semantic-release@25.0.2(typescript@5.9.3))
@@ -25190,7 +25555,11 @@ snapshots:
       conventional-changelog-conventionalcommits: 9.1.0
       semantic-release: 25.0.2(typescript@5.9.3)
     optionalDependencies:
+<<<<<<< HEAD
       '@anolilab/semantic-release-pnpm': 3.0.0(@types/node@24.10.1)(yaml@2.8.1)
+=======
+      '@anolilab/semantic-release-pnpm': 3.0.0-alpha.2(@types/node@24.10.1)(yaml@2.8.1)
+>>>>>>> 97ff10ae2 (chore: update semantic release dependencies across multiple packages)
       '@semantic-release/npm': 13.1.1(semantic-release@25.0.2(typescript@5.9.3))
     transitivePeerDependencies:
       - supports-color
@@ -26965,14 +27334,9 @@ snapshots:
       '@emnapi/wasi-threads': 1.1.0
       tslib: 2.8.1
 
-  '@emnapi/runtime@1.5.0':
-    dependencies:
-      tslib: 2.8.1
-
   '@emnapi/runtime@1.7.1':
     dependencies:
       tslib: 2.8.1
-    optional: true
 
   '@emnapi/wasi-threads@1.1.0':
     dependencies:
@@ -27709,19 +28073,9 @@ snapshots:
 
   '@img/colour@1.0.0': {}
 
-  '@img/sharp-darwin-arm64@0.34.4':
-    optionalDependencies:
-      '@img/sharp-libvips-darwin-arm64': 1.2.3
-    optional: true
-
   '@img/sharp-darwin-arm64@0.34.5':
     optionalDependencies:
       '@img/sharp-libvips-darwin-arm64': 1.2.4
-    optional: true
-
-  '@img/sharp-darwin-x64@0.34.4':
-    optionalDependencies:
-      '@img/sharp-libvips-darwin-x64': 1.2.3
     optional: true
 
   '@img/sharp-darwin-x64@0.34.5':
@@ -27729,31 +28083,16 @@ snapshots:
       '@img/sharp-libvips-darwin-x64': 1.2.4
     optional: true
 
-  '@img/sharp-libvips-darwin-arm64@1.2.3':
-    optional: true
-
   '@img/sharp-libvips-darwin-arm64@1.2.4':
-    optional: true
-
-  '@img/sharp-libvips-darwin-x64@1.2.3':
     optional: true
 
   '@img/sharp-libvips-darwin-x64@1.2.4':
     optional: true
 
-  '@img/sharp-libvips-linux-arm64@1.2.3':
-    optional: true
-
   '@img/sharp-libvips-linux-arm64@1.2.4':
     optional: true
 
-  '@img/sharp-libvips-linux-arm@1.2.3':
-    optional: true
-
   '@img/sharp-libvips-linux-arm@1.2.4':
-    optional: true
-
-  '@img/sharp-libvips-linux-ppc64@1.2.3':
     optional: true
 
   '@img/sharp-libvips-linux-ppc64@1.2.4':
@@ -27762,33 +28101,16 @@ snapshots:
   '@img/sharp-libvips-linux-riscv64@1.2.4':
     optional: true
 
-  '@img/sharp-libvips-linux-s390x@1.2.3':
-    optional: true
-
   '@img/sharp-libvips-linux-s390x@1.2.4':
-    optional: true
-
-  '@img/sharp-libvips-linux-x64@1.2.3':
     optional: true
 
   '@img/sharp-libvips-linux-x64@1.2.4':
     optional: true
 
-  '@img/sharp-libvips-linuxmusl-arm64@1.2.3':
-    optional: true
-
   '@img/sharp-libvips-linuxmusl-arm64@1.2.4':
     optional: true
 
-  '@img/sharp-libvips-linuxmusl-x64@1.2.3':
-    optional: true
-
   '@img/sharp-libvips-linuxmusl-x64@1.2.4':
-    optional: true
-
-  '@img/sharp-linux-arm64@0.34.4':
-    optionalDependencies:
-      '@img/sharp-libvips-linux-arm64': 1.2.3
     optional: true
 
   '@img/sharp-linux-arm64@0.34.5':
@@ -27796,19 +28118,9 @@ snapshots:
       '@img/sharp-libvips-linux-arm64': 1.2.4
     optional: true
 
-  '@img/sharp-linux-arm@0.34.4':
-    optionalDependencies:
-      '@img/sharp-libvips-linux-arm': 1.2.3
-    optional: true
-
   '@img/sharp-linux-arm@0.34.5':
     optionalDependencies:
       '@img/sharp-libvips-linux-arm': 1.2.4
-    optional: true
-
-  '@img/sharp-linux-ppc64@0.34.4':
-    optionalDependencies:
-      '@img/sharp-libvips-linux-ppc64': 1.2.3
     optional: true
 
   '@img/sharp-linux-ppc64@0.34.5':
@@ -27821,19 +28133,9 @@ snapshots:
       '@img/sharp-libvips-linux-riscv64': 1.2.4
     optional: true
 
-  '@img/sharp-linux-s390x@0.34.4':
-    optionalDependencies:
-      '@img/sharp-libvips-linux-s390x': 1.2.3
-    optional: true
-
   '@img/sharp-linux-s390x@0.34.5':
     optionalDependencies:
       '@img/sharp-libvips-linux-s390x': 1.2.4
-    optional: true
-
-  '@img/sharp-linux-x64@0.34.4':
-    optionalDependencies:
-      '@img/sharp-libvips-linux-x64': 1.2.3
     optional: true
 
   '@img/sharp-linux-x64@0.34.5':
@@ -27841,19 +28143,9 @@ snapshots:
       '@img/sharp-libvips-linux-x64': 1.2.4
     optional: true
 
-  '@img/sharp-linuxmusl-arm64@0.34.4':
-    optionalDependencies:
-      '@img/sharp-libvips-linuxmusl-arm64': 1.2.3
-    optional: true
-
   '@img/sharp-linuxmusl-arm64@0.34.5':
     optionalDependencies:
       '@img/sharp-libvips-linuxmusl-arm64': 1.2.4
-    optional: true
-
-  '@img/sharp-linuxmusl-x64@0.34.4':
-    optionalDependencies:
-      '@img/sharp-libvips-linuxmusl-x64': 1.2.3
     optional: true
 
   '@img/sharp-linuxmusl-x64@0.34.5':
@@ -27861,29 +28153,15 @@ snapshots:
       '@img/sharp-libvips-linuxmusl-x64': 1.2.4
     optional: true
 
-  '@img/sharp-wasm32@0.34.4':
-    dependencies:
-      '@emnapi/runtime': 1.5.0
-    optional: true
-
   '@img/sharp-wasm32@0.34.5':
     dependencies:
       '@emnapi/runtime': 1.7.1
     optional: true
 
-  '@img/sharp-win32-arm64@0.34.4':
-    optional: true
-
   '@img/sharp-win32-arm64@0.34.5':
     optional: true
 
-  '@img/sharp-win32-ia32@0.34.4':
-    optional: true
-
   '@img/sharp-win32-ia32@0.34.5':
-    optional: true
-
-  '@img/sharp-win32-x64@0.34.4':
     optional: true
 
   '@img/sharp-win32-x64@0.34.5':
@@ -28285,20 +28563,20 @@ snapshots:
   '@napi-rs/wasm-runtime@0.2.12':
     dependencies:
       '@emnapi/core': 1.5.0
-      '@emnapi/runtime': 1.5.0
+      '@emnapi/runtime': 1.7.1
       '@tybys/wasm-util': 0.10.1
     optional: true
 
   '@napi-rs/wasm-runtime@0.2.4':
     dependencies:
       '@emnapi/core': 1.5.0
-      '@emnapi/runtime': 1.5.0
+      '@emnapi/runtime': 1.7.1
       '@tybys/wasm-util': 0.9.0
 
   '@napi-rs/wasm-runtime@1.0.7':
     dependencies:
       '@emnapi/core': 1.5.0
-      '@emnapi/runtime': 1.5.0
+      '@emnapi/runtime': 1.7.1
       '@tybys/wasm-util': 0.10.1
     optional: true
 
@@ -38096,7 +38374,7 @@ snapshots:
       eslint: 9.39.1(jiti@2.6.1)
       eslint-import-resolver-node: 0.3.9
       eslint-import-resolver-typescript: 3.6.1(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.32.0(eslint@9.39.1(jiti@2.6.1)))(eslint@9.39.1(jiti@2.6.1))
-      eslint-plugin-import: 2.32.0(eslint-import-resolver-typescript@3.6.1(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.32.0(eslint@9.39.1(jiti@2.6.1)))(eslint@9.39.1(jiti@2.6.1)))(eslint@9.39.1(jiti@2.6.1))
+      eslint-plugin-import: 2.32.0(eslint-import-resolver-typescript@3.6.1)(eslint@9.39.1(jiti@2.6.1))
       eslint-plugin-jsx-a11y: 6.10.2(eslint@9.39.1(jiti@2.6.1))
       eslint-plugin-react: 7.37.5(eslint@9.39.1(jiti@2.6.1))
       eslint-plugin-react-hooks: 7.0.1(eslint@9.39.1(jiti@2.6.1))
@@ -38146,7 +38424,7 @@ snapshots:
       enhanced-resolve: 5.18.3
       eslint: 9.39.1(jiti@2.6.1)
       eslint-module-utils: 2.12.1(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.1(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.32.0(eslint@9.39.1(jiti@2.6.1)))(eslint@9.39.1(jiti@2.6.1)))(eslint@9.39.1(jiti@2.6.1))
-      eslint-plugin-import: 2.32.0(eslint-import-resolver-typescript@3.6.1(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.32.0(eslint@9.39.1(jiti@2.6.1)))(eslint@9.39.1(jiti@2.6.1)))(eslint@9.39.1(jiti@2.6.1))
+      eslint-plugin-import: 2.32.0(eslint-import-resolver-typescript@3.6.1)(eslint@9.39.1(jiti@2.6.1))
       fast-glob: 3.3.3
       get-tsconfig: 4.10.1
       is-core-module: 2.16.1
@@ -38300,7 +38578,7 @@ snapshots:
       - eslint-import-resolver-webpack
       - supports-color
 
-  eslint-plugin-import@2.32.0(eslint-import-resolver-typescript@3.6.1(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.32.0(eslint@9.39.1(jiti@2.6.1)))(eslint@9.39.1(jiti@2.6.1)))(eslint@9.39.1(jiti@2.6.1)):
+  eslint-plugin-import@2.32.0(eslint-import-resolver-typescript@3.6.1)(eslint@9.39.1(jiti@2.6.1)):
     dependencies:
       '@rtsao/scc': 1.1.0
       array-includes: 3.1.9
@@ -40401,7 +40679,7 @@ snapshots:
 
   ini@4.1.3: {}
 
-  ini@6.0.0: {}
+  ini@5.0.0: {}
 
   inquirer@8.2.5:
     dependencies:
@@ -43630,7 +43908,7 @@ snapshots:
       '@next/swc-win32-x64-msvc': 16.0.3
       '@opentelemetry/api': 1.9.0
       '@playwright/test': 1.56.1
-      sharp: 0.34.4
+      sharp: 0.34.5
     transitivePeerDependencies:
       - '@babel/core'
       - babel-plugin-macros
@@ -46751,36 +47029,6 @@ snapshots:
 
   shallowequal@1.1.0: {}
 
-  sharp@0.34.4:
-    dependencies:
-      '@img/colour': 1.0.0
-      detect-libc: 2.1.2
-      semver: 7.7.3
-    optionalDependencies:
-      '@img/sharp-darwin-arm64': 0.34.4
-      '@img/sharp-darwin-x64': 0.34.4
-      '@img/sharp-libvips-darwin-arm64': 1.2.3
-      '@img/sharp-libvips-darwin-x64': 1.2.3
-      '@img/sharp-libvips-linux-arm': 1.2.3
-      '@img/sharp-libvips-linux-arm64': 1.2.3
-      '@img/sharp-libvips-linux-ppc64': 1.2.3
-      '@img/sharp-libvips-linux-s390x': 1.2.3
-      '@img/sharp-libvips-linux-x64': 1.2.3
-      '@img/sharp-libvips-linuxmusl-arm64': 1.2.3
-      '@img/sharp-libvips-linuxmusl-x64': 1.2.3
-      '@img/sharp-linux-arm': 0.34.4
-      '@img/sharp-linux-arm64': 0.34.4
-      '@img/sharp-linux-ppc64': 0.34.4
-      '@img/sharp-linux-s390x': 0.34.4
-      '@img/sharp-linux-x64': 0.34.4
-      '@img/sharp-linuxmusl-arm64': 0.34.4
-      '@img/sharp-linuxmusl-x64': 0.34.4
-      '@img/sharp-wasm32': 0.34.4
-      '@img/sharp-win32-arm64': 0.34.4
-      '@img/sharp-win32-ia32': 0.34.4
-      '@img/sharp-win32-x64': 0.34.4
-    optional: true
-
   sharp@0.34.5:
     dependencies:
       '@img/colour': 1.0.0
@@ -47184,7 +47432,7 @@ snapshots:
       eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.47.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.1(jiti@2.6.1))
 =======
       eslint-config-standard: 17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.46.4(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3))(eslint@8.57.0))(eslint-plugin-n@15.7.0(eslint@8.57.0))(eslint-plugin-promise@6.4.0(eslint@8.57.0))(eslint@8.57.0)
-      eslint-config-standard-jsx: 11.0.0(eslint-plugin-react@7.37.5(eslint@9.39.1(jiti@2.6.1)))(eslint@8.57.0)
+      eslint-config-standard-jsx: 11.0.0(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint@8.57.0)
       eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.46.4(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.1(jiti@2.6.1))
 >>>>>>> d521ee3ab (chore: resolve merge conflicts and update package versions in pnpm-lock.yaml)
 >>>>>>> d0b82ad5f (chore: resolve merge conflicts and update package versions in pnpm-lock.yaml)
