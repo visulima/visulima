@@ -41,7 +41,7 @@
 - **Word Wrapping**: Automatic or configurable word wrapping
 - **Truncation**: Smart content truncation with customizable options
 
-## Installation
+## Install
 
 ```bash
 npm install @visulima/tabular

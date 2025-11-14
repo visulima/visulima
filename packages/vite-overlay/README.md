@@ -40,7 +40,7 @@
 - **Real-time Updates** - Hot Module Replacement (HMR) integration for instant error feedback
 - **Comprehensive Testing** - Extensive e2e test coverage for reliability
 
-## Installation
+## Install
 
 ```sh
 npm install @visulima/vite-overlay

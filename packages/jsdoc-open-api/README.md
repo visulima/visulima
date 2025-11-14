@@ -43,7 +43,7 @@
 - **Framework Integration:** Includes helpers like a Webpack plugin (useful for Next.js).
 - **Performance:** Focused on speed and low overhead.
 
-## Installation
+## Install
 
 ```sh
 npm install @visulima/jsdoc-open-api

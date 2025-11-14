@@ -21,11 +21,19 @@ It’s built on top of
 
 </div>
 
+---
+
 <div align="center">
-  <sub>Built with ❤︎ by <a href="https://twitter.com/_prisis_">Daniel Bannert</a></sub>
+    <p>
+        <sup>
+            Daniel Bannert's open source work is supported by the community on <a href="https://github.com/sponsors/prisis">GitHub Sponsors</a>
+        </sup>
+    </p>
 </div>
 
-## Installation
+---
+
+## Install
 
 ```sh
 npm install @visulima/health-check
@@ -183,7 +191,7 @@ post on why we think this is important](https://medium.com/the-node-js-collectio
 
 ## Contributing
 
-If you would like to help take a look at the [list of issues](https://github.com/visulima/visulima/issues) and check our [Contributing](.github/CONTRIBUTING.md) guild.
+If you would like to help take a look at the [list of issues](https://github.com/visulima/visulima/issues) and check our [Contributing](.github/CONTRIBUTING.md) guidelines.
 
 > **Note:** please note that this project is released with a Contributor Code of Conduct. By participating in this project you agree to abide by its terms.
 
