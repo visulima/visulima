@@ -1,0 +1,73 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`gcs > .create() > should handle existing files correctly 1`] = `
+{
+  "bytesWritten": 64,
+  "contentType": "video/mp4",
+  "createdAt": "2022-02-02T00:00:00.000Z",
+  "id": "e8fed598250d10ea-7f59007b4b7cf67-120941ca7dc37b78",
+  "metadata": {
+    "custom": "",
+    "lastModified": 1635398061454,
+    "mimeType": "video/mp4",
+    "name": "testfile.mp4",
+    "sha1": "ZAPAntzKARqtb+j3B529GAOf3kI=",
+    "size": 64,
+  },
+  "name": "testfile.mp4",
+  "originalName": "testfile.mp4",
+  "size": 64,
+  "uri": "http://api.com?upload_id=123456789",
+}
+`;
+
+exports[`gcs > .create() > should make API request and set file status and URI 1`] = `
+GCSFile {
+  "ETag": undefined,
+  "GCSUploadURI": undefined,
+  "bytesWritten": 0,
+  "content": undefined,
+  "contentType": "video/mp4",
+  "createdAt": "2022-02-02T00:00:00.000Z",
+  "expiredAt": 1643763600000,
+  "hash": undefined,
+  "id": "e8fed598250d10ea-7f59007b4b7cf67-120941ca7dc37b78",
+  "metadata": {
+    "custom": "",
+    "lastModified": 1635398061454,
+    "mimeType": "video/mp4",
+    "name": "testfile.mp4",
+    "sha1": "ZAPAntzKARqtb+j3B529GAOf3kI=",
+    "size": 64,
+  },
+  "modifiedAt": undefined,
+  "name": "anonymous/testfile.mp4",
+  "originalName": "testfile.mp4",
+  "size": 64,
+  "status": "created",
+  "uri": "http://api.com?upload_id=123456789",
+}
+`;
+
+exports[`gcs > .write() > should make API request and set file status and bytesWritten 1`] = `
+{
+  "bytesWritten": 64,
+  "contentType": "video/mp4",
+  "id": "e8fed598250d10ea-7f59007b4b7cf67-120941ca7dc37b78",
+  "metadata": {
+    "custom": "",
+    "lastModified": 1635398061454,
+    "mimeType": "video/mp4",
+    "name": "testfile.mp4",
+    "sha1": "ZAPAntzKARqtb+j3B529GAOf3kI=",
+    "size": 64,
+  },
+  "name": "testfile.mp4",
+  "originalName": "testfile.mp4",
+  "size": 64,
+  "status": "completed",
+  "uri": "https://storage.googleapis.com/storage/v1/b/test-bucket/o/testfile.mp4",
+}
+`;
+
+exports[`gcs > .write() > should send normalized error for API failures 1`] = `[FetchError: Bad Request]`;
