@@ -1,0 +1,436 @@
+---
+title: String Width
+description: Calculate visual width of strings with Unicode, ANSI, and emoji support.
+---
+
+# String Width
+
+Accurate visual width calculation for strings containing Unicode characters, ANSI escape codes, emojis, and more.
+
+## Basic Width Calculation
+
+The `getStringWidth` function calculates the visual width of strings for terminal and display purposes.
+
+### Simple Examples
+
+```typescript
+import { getStringWidth } from '@visulima/string';
+
+// Regular ASCII
+getStringWidth('hello');            // 5
+getStringWidth('hello world');      // 11
+
+// Empty string
+getStringWidth('');                 // 0
+
+// Numbers and symbols
+getStringWidth('12345');            // 5
+getStringWidth('!@#$%');            // 5
+```
+
+### Unicode Characters
+
+```typescript
+// Full-width CJK characters (width 2)
+getStringWidth('あいう');           // 6
+getStringWidth('こんにちは');        // 10
+getStringWidth('你好');             // 4
+getStringWidth('안녕');             // 4
+
+// Mixed ASCII and CJK
+getStringWidth('Hello 世界');       // 9 (5 + 4)
+```
+
+### Emoji Support
+
+```typescript
+// Single emoji (width 2)
+getStringWidth('👋');               // 2
+getStringWidth('🎉');               // 2
+
+// Multiple emojis
+getStringWidth('👋🎉🎂');           // 6
+
+// Text with emojis
+getStringWidth('Hello 👋 World');   // 13 (5 + 2 + 1 + 5)
+
+// Complex emoji sequences
+getStringWidth('👨‍👩‍👧‍👦');          // 2 (family emoji with ZWJ)
+```
+
+### ANSI Escape Codes
+
+```typescript
+// ANSI codes ignored by default
+getStringWidth('\x1b[31mRed\x1b[39m');      // 3
+
+// Bold text
+getStringWidth('\x1b[1mBold\x1b[22m');      // 4
+
+// Multiple colors
+const colored = '\x1b[31mRed\x1b[0m and \x1b[32mGreen\x1b[0m';
+getStringWidth(colored);                     // 13 ('Red and Green')
+
+// Include ANSI codes in width
+getStringWidth('\x1b[31mRed\x1b[39m', {
+  countAnsiEscapeCodes: true
+});                                          // 11
+```
+
+### Special Characters
+
+```typescript
+// Tab characters (default width 8)
+getStringWidth('\t');               // 8
+getStringWidth('a\tb');             // 10 (1 + 8 + 1)
+
+// Zero-width characters
+getStringWidth('a\u200Bb');         // 2 (zero-width space ignored)
+
+// Control characters
+getStringWidth('\x00\x01');         // 0 (control chars have width 0)
+
+// Combining marks
+getStringWidth('e\u0301');          // 1 (é with combining acute accent)
+```
+
+## Width Options
+
+### Custom Character Widths
+
+```typescript
+import type { StringWidthOptions } from '@visulima/string';
+
+// Regular characters
+getStringWidth('hello', {
+  regularWidth: 2
+});                                 // 10 (each char = 2)
+
+// Full-width characters
+getStringWidth('你好', {
+  fullWidth: 3
+});                                 // 6 (each char = 3 instead of 2)
+
+// Emoji width
+getStringWidth('👋👋', {
+  emojiWidth: 1
+});                                 // 2 (each emoji = 1 instead of 2)
+
+// Wide characters
+getStringWidth('ｆｕｌｌｗｉｄｔｈ', {
+  wideWidth: 3
+});                                 // custom width
+```
+
+### Tab Width
+
+```typescript
+// Default tab width is 8
+getStringWidth('\t');               // 8
+
+// Custom tab width
+getStringWidth('\t', {
+  tabWidth: 4
+});                                 // 4
+
+getStringWidth('a\tb\tc', {
+  tabWidth: 2
+});                                 // 7 (1 + 2 + 1 + 2 + 1)
+```
+
+### Ambiguous Characters
+
+```typescript
+// Some characters have ambiguous width
+// Default: treated as narrow (width 1)
+getStringWidth('±§');               // 2
+
+// Treat ambiguous as wide (width 2)
+getStringWidth('±§', {
+  ambiguousIsNarrow: false
+});                                 // 4
+```
+
+### Control Characters
+
+```typescript
+// Control characters default to width 0
+getStringWidth('\x00\x01\x02');     // 0
+
+// Custom control character width
+getStringWidth('\x00\x01', {
+  controlWidth: 1
+});                                 // 2
+```
+
+### Complete Options
+
+```typescript
+interface StringWidthOptions {
+  // Treat ambiguous-width characters as narrow
+  ambiguousIsNarrow?: boolean;      // default: true
+  
+  // Width of ANSI escape sequences
+  ansiWidth?: number;               // default: 0
+  
+  // Width of control characters
+  controlWidth?: number;            // default: 0
+  
+  // Include ANSI codes in width calculation
+  countAnsiEscapeCodes?: boolean;   // default: false
+  
+  // Width of emoji characters
+  emojiWidth?: number;              // default: 2
+  
+  // Width of full-width characters
+  fullWidth?: number;               // default: 2
+  
+  // Width of regular characters
+  regularWidth?: number;            // default: 1
+  
+  // Width of tab characters
+  tabWidth?: number;                // default: 8
+  
+  // Width of wide characters
+  wideWidth?: number;               // default: 2
+}
+```
+
+## Width with Truncation
+
+The `getStringTruncatedWidth` function combines width calculation with truncation support.
+
+### Basic Truncation
+
+```typescript
+import { getStringTruncatedWidth } from '@visulima/string';
+
+getStringTruncatedWidth('hello world', {
+  limit: 8
+});
+// { width: 8, truncated: true, ellipsed: false, index: 8 }
+
+getStringTruncatedWidth('hello', {
+  limit: 10
+});
+// { width: 5, truncated: false, ellipsed: false, index: 5 }
+```
+
+### With Ellipsis
+
+```typescript
+getStringTruncatedWidth('hello world', {
+  limit: 8,
+  ellipsis: '...'
+});
+// { width: 8, truncated: true, ellipsed: true, index: 5 }
+// String would be truncated at index 5 to fit "he..." in 8 width
+
+getStringTruncatedWidth('hello world', {
+  limit: 8,
+  ellipsis: '…'
+});
+// { width: 8, truncated: true, ellipsed: true, index: 7 }
+```
+
+### With Unicode
+
+```typescript
+// CJK characters
+getStringTruncatedWidth('あいうえお', {
+  limit: 6,
+  ellipsis: '...',
+  fullWidth: 2
+});
+// { width: 6, truncated: true, ellipsed: true, index: 2 }
+// Truncated at character 2: "あい..."
+
+// Emojis
+getStringTruncatedWidth('👋👋👋👋', {
+  limit: 5,
+  ellipsis: '...',
+  emojiWidth: 2
+});
+// { width: 5, truncated: true, ellipsed: true, index: 1 }
+```
+
+### With ANSI Codes
+
+```typescript
+const colored = '\x1b[31mRed Text\x1b[39m';
+
+getStringTruncatedWidth(colored, {
+  limit: 5,
+  ellipsis: '...'
+});
+// Width calculated without ANSI codes
+// { width: 5, truncated: true, ellipsed: true, index: ... }
+
+getStringTruncatedWidth(colored, {
+  limit: 15,
+  ellipsis: '...',
+  countAnsiEscapeCodes: true
+});
+// Width includes ANSI codes
+```
+
+### Custom Ellipsis Width
+
+```typescript
+// Auto-calculated ellipsis width
+getStringTruncatedWidth('hello world', {
+  limit: 8,
+  ellipsis: '...'
+});
+// Ellipsis width calculated automatically
+
+// Explicit ellipsis width
+getStringTruncatedWidth('hello world', {
+  limit: 8,
+  ellipsis: '…',
+  ellipsisWidth: 1
+});
+// Use specified width for ellipsis
+```
+
+### Result Interface
+
+```typescript
+interface StringTruncatedWidthResult {
+  // The calculated visual width
+  width: number;
+  
+  // Whether the string was truncated
+  truncated: boolean;
+  
+  // Whether an ellipsis was added
+  ellipsed: boolean;
+  
+  // The index at which truncation occurred
+  index: number;
+}
+```
+
+### Complete Options
+
+```typescript
+interface StringTruncatedWidthOptions extends StringWidthOptions {
+  // String to append when truncation occurs
+  ellipsis?: string;                // default: ''
+  
+  // Width of ellipsis (auto-calculated if not provided)
+  ellipsisWidth?: number;
+  
+  // Maximum width limit for the string
+  limit?: number;                   // default: Infinity
+}
+```
+
+## Use Cases
+
+### Terminal Output
+
+```typescript
+// Calculate width for terminal padding
+const text = 'Hello World';
+const width = getStringWidth(text);
+const padding = ' '.repeat(80 - width);
+console.log(text + padding + '|');
+```
+
+### Column Alignment
+
+```typescript
+const columns = ['Name', 'Age', '都市'];
+const widths = columns.map(col => getStringWidth(col));
+const maxWidth = Math.max(...widths);
+
+// Pad each column to max width
+const aligned = columns.map((col, i) => {
+  const padding = ' '.repeat(maxWidth - widths[i]);
+  return col + padding;
+});
+```
+
+### Progress Bars
+
+```typescript
+const progress = 0.6;
+const barWidth = 50;
+const filled = Math.floor(progress * barWidth);
+
+const bar = '█'.repeat(filled) + '░'.repeat(barWidth - filled);
+const width = getStringWidth(bar, { emojiWidth: 1 });
+```
+
+### Text Wrapping
+
+```typescript
+const text = 'A long string with 中文 and emojis 👋';
+const maxWidth = 20;
+
+let currentLine = '';
+let currentWidth = 0;
+
+for (const char of text) {
+  const charWidth = getStringWidth(char);
+  
+  if (currentWidth + charWidth > maxWidth) {
+    console.log(currentLine);
+    currentLine = char;
+    currentWidth = charWidth;
+  } else {
+    currentLine += char;
+    currentWidth += charWidth;
+  }
+}
+```
+
+### Table Formatting
+
+```typescript
+const data = [
+  ['Name', 'Country', 'City'],
+  ['John', 'USA', 'New York'],
+  ['田中', '日本', '東京'],
+  ['Ahmed', 'مصر', 'Cairo']
+];
+
+// Calculate max width for each column
+const columnWidths = data[0].map((_, colIndex) => {
+  return Math.max(...data.map(row => getStringWidth(row[colIndex])));
+});
+
+// Format table
+data.forEach(row => {
+  const formatted = row.map((cell, i) => {
+    const width = getStringWidth(cell);
+    const padding = ' '.repeat(columnWidths[i] - width);
+    return cell + padding;
+  }).join(' | ');
+  
+  console.log(formatted);
+});
+```
+
+## Best Practices
+
+1. Always use `getStringWidth` instead of `string.length` for visual width
+2. Consider emoji width when calculating column widths
+3. Account for ANSI codes in colored terminal output
+4. Use `ambiguousIsNarrow: false` for East Asian applications
+5. Test with various Unicode characters for international apps
+6. Cache width calculations for frequently measured strings
+
+## Performance Tips
+
+1. Width calculation is relatively fast but avoid in tight loops
+2. Cache results for static strings
+3. Use `countAnsiEscapeCodes: false` (default) unless needed
+4. Consider batching width calculations
+
+## Next Steps
+
+- [String Manipulation](/docs/string-manipulation) - Truncate and format strings
+- [Text Alignment](/docs/string-manipulation#text-alignment) - Align text based on width
+- [API Reference](/docs/api/width) - Complete width calculation API

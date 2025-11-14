@@ -1,0 +1,485 @@
+---
+title: TypeScript Support
+description: Enhanced TypeScript type definitions and type-safe native string operations.
+---
+
+# TypeScript Support
+
+@visulima/string is written in TypeScript and provides comprehensive type definitions with advanced type-level string manipulation.
+
+## Type Definitions
+
+The library exports all necessary types for type-safe string operations.
+
+### Importing Types
+
+```typescript
+import type {
+  CaseOptions,
+  TruncateOptions,
+  StringWidthOptions,
+  SlugifyOptions,
+  OptionsTransliterate
+} from '@visulima/string';
+```
+
+### Case Conversion Types
+
+```typescript
+import type {
+  CamelCase,
+  PascalCase,
+  SnakeCase,
+  KebabCase,
+  ConstantCase,
+  DotCase,
+  PathCase,
+  TitleCase,
+  SentenceCase
+} from '@visulima/string';
+
+// Type-level case conversion
+type Input = 'hello-world';
+type Camel = CamelCase<Input>;      // 'helloWorld'
+type Pascal = PascalCase<Input>;    // 'HelloWorld'
+type Snake = SnakeCase<Input>;      // 'hello_world'
+type Kebab = KebabCase<Input>;      // 'hello-world'
+type Constant = ConstantCase<Input>;// 'HELLO_WORLD'
+```
+
+### Using in Functions
+
+```typescript
+import { camelCase } from '@visulima/string';
+import type { CamelCase } from '@visulima/string';
+
+function convertToCamel<T extends string>(input: T): CamelCase<T> {
+  return camelCase(input) as CamelCase<T>;
+}
+
+const result = convertToCamel('hello-world');
+// result type: 'helloWorld'
+```
+
+## Native String Type Extensions
+
+Enhanced type definitions for native JavaScript string methods.
+
+### Configuration
+
+Add to your `tsconfig.json`:
+
+```json title="tsconfig.json"
+{
+  "compilerOptions": {
+    "types": ["@visulima/string/native-string-types"]
+  }
+}
+```
+
+Or use a triple-slash reference:
+
+```typescript
+/// <reference types="@visulima/string/native-string-types" />
+```
+
+### String Method Types
+
+#### charAt
+
+```typescript
+const str = "Hello";
+
+// Type-safe character access
+str.charAt<typeof str, 0>();  // type: 'H'
+str.charAt<typeof str, 1>();  // type: 'e'
+str.charAt<typeof str, 4>();  // type: 'o'
+```
+
+#### slice
+
+```typescript
+const str = "Hello, World!";
+
+str.slice<typeof str, 0, 5>();   // type: 'Hello'
+str.slice<typeof str, 7, 12>();  // type: 'World'
+str.slice<typeof str, -6>();     // type: 'World!'
+```
+
+#### split
+
+```typescript
+const str = "Hello, World!";
+
+str.split<typeof str, ", ">();   // type: ['Hello', 'World!']
+str.split<typeof str, " ">();    // type: ['Hello,', 'World!']
+```
+
+#### concat
+
+```typescript
+const str = "Hello";
+
+str.concat<typeof str, " World">();  // type: 'Hello World'
+str.concat<typeof str, "!">();       // type: 'Hello!'
+```
+
+#### toLowerCase / toUpperCase
+
+```typescript
+const str = "Hello, World!";
+
+str.toLowerCase<typeof str>();   // type: 'hello, world!'
+str.toUpperCase<typeof str>();   // type: 'HELLO, WORLD!'
+```
+
+#### startsWith / endsWith
+
+```typescript
+const str = "Hello, World!";
+
+str.startsWith<typeof str, "Hello">();  // type: true
+str.startsWith<typeof str, "World">();  // type: false
+str.endsWith<typeof str, "World!">();   // type: true
+str.endsWith<typeof str, "Hello">();    // type: false
+```
+
+#### includes
+
+```typescript
+const str = "Hello, World!";
+
+str.includes<typeof str, "World", 0>();   // type: true
+str.includes<typeof str, "World", 10>();  // type: false
+str.includes<typeof str, "xyz", 0>();     // type: false
+```
+
+#### padStart / padEnd
+
+```typescript
+const str = "Hello";
+
+str.padStart<typeof str, 10, "_">();  // type: '_____Hello'
+str.padEnd<typeof str, 10, "_">();    // type: 'Hello_____'
+```
+
+#### trim / trimStart / trimEnd
+
+```typescript
+const str = "  hello  ";
+
+str.trim<typeof str>();       // type: 'hello'
+str.trimStart<typeof str>();  // type: 'hello  '
+str.trimEnd<typeof str>();    // type: '  hello'
+```
+
+#### replace / replaceAll
+
+```typescript
+const str = "Hello World";
+
+str.replace<typeof str, "World", "TypeScript">();
+// type: 'Hello TypeScript'
+
+str.replaceAll<typeof str, "l", "L">();
+// type: 'HeLLo WorLd'
+```
+
+#### repeat
+
+```typescript
+const str = "abc";
+
+str.repeat<typeof str, 3>();  // type: 'abcabcabc'
+str.repeat<typeof str, 2>();  // type: 'abcabc'
+```
+
+### Template Literal Types
+
+```typescript
+// Combine with template literal types
+type Greeting<T extends string> = `Hello, ${T}!`;
+
+const name = "World";
+type Message = Greeting<typeof name>;  // 'Hello, World!'
+
+// With case conversion
+type UpperGreeting<T extends string> = Uppercase<Greeting<T>>;
+type Lower = UpperGreeting<"world">;   // 'HELLO, WORLD!'
+```
+
+## Generic Type Utilities
+
+### String Manipulation Types
+
+```typescript
+import type {
+  Split,
+  Join,
+  Repeat,
+  Reverse,
+  Trim,
+  TrimStart,
+  TrimEnd,
+  Replace,
+  ReplaceAll
+} from '@visulima/string';
+
+// Split string into array
+type Words = Split<"hello-world", "-">;  // ['hello', 'world']
+
+// Join array into string
+type Joined = Join<['hello', 'world'], "-">;  // 'hello-world'
+
+// Repeat string
+type Repeated = Repeat<"abc", 3>;  // 'abcabcabc'
+
+// Reverse string
+type Reversed = Reverse<"hello">;  // 'olleh'
+```
+
+### Type Guards
+
+```typescript
+import type {
+  IsStringLiteral,
+  IsNumberLiteral,
+  IsBooleanLiteral
+} from '@visulima/string';
+
+// Check if type is string literal
+type IsStr = IsStringLiteral<"hello">;    // true
+type NotStr = IsStringLiteral<string>;    // false
+
+// Check if type is number literal
+type IsNum = IsNumberLiteral<42>;         // true
+type NotNum = IsNumberLiteral<number>;    // false
+```
+
+### Array Types
+
+```typescript
+import type {
+  IsStringLiteralArray,
+  All,
+  Any
+} from '@visulima/string';
+
+// Check if all items are string literals
+type AreStrings = IsStringLiteralArray<['a', 'b', 'c']>;  // true
+
+// All items match condition
+type AllMatch = All<[true, true, true]>;  // true
+
+// Any item matches condition
+type AnyMatch = Any<[false, true, false]>;  // true
+```
+
+## Type-Safe Options
+
+### Case Conversion Options
+
+```typescript
+import type { CaseOptions, LocaleOptions } from '@visulima/string';
+
+const options: CaseOptions = {
+  locale: 'en',
+  knownAcronyms: ['API', 'URL', 'XML'],
+  cache: true,
+  cacheMaxSize: 1000
+};
+
+const localeOptions: LocaleOptions = {
+  locale: 'ja'  // Japanese
+};
+```
+
+### String Width Options
+
+```typescript
+import type { StringWidthOptions } from '@visulima/string';
+
+const widthOptions: StringWidthOptions = {
+  ambiguousIsNarrow: true,
+  emojiWidth: 2,
+  fullWidth: 2,
+  regularWidth: 1,
+  tabWidth: 4,
+  countAnsiEscapeCodes: false
+};
+```
+
+### Truncate Options
+
+```typescript
+import type { TruncateOptions } from '@visulima/string';
+
+const truncateOptions: TruncateOptions = {
+  ellipsis: '...',
+  position: 'end',
+  preferTruncationOnSpace: true,
+  width: {
+    emojiWidth: 2,
+    fullWidth: 2
+  }
+};
+```
+
+### Slugify Options
+
+```typescript
+import type { SlugifyOptions } from '@visulima/string';
+
+const slugifyOptions: SlugifyOptions = {
+  allowedChars: 'a-z0-9-',
+  separator: '-',
+  lowercase: true,
+  transliterate: true,
+  fixChineseSpacing: true,
+  replaceBefore: {
+    'C++': 'cpp'
+  }
+};
+```
+
+## Advanced Type Patterns
+
+### Conditional Types
+
+```typescript
+import type { CamelCase, SnakeCase } from '@visulima/string';
+
+type ConvertCase<
+  T extends string,
+  Format extends 'camel' | 'snake'
+> = Format extends 'camel'
+  ? CamelCase<T>
+  : Format extends 'snake'
+  ? SnakeCase<T>
+  : T;
+
+type Result1 = ConvertCase<'hello-world', 'camel'>;  // 'helloWorld'
+type Result2 = ConvertCase<'hello-world', 'snake'>;  // 'hello_world'
+```
+
+### Mapped Types
+
+```typescript
+type CaseMap<T extends Record<string, string>> = {
+  [K in keyof T]: CamelCase<T[K]>
+};
+
+type Original = {
+  firstName: 'john-doe';
+  lastName: 'jane-smith';
+};
+
+type Converted = CaseMap<Original>;
+// {
+//   firstName: 'johnDoe';
+//   lastName: 'janeSmith';
+// }
+```
+
+### Generic Constraints
+
+```typescript
+function convertKeys<T extends Record<string, any>>(
+  obj: T
+): { [K in keyof T as CamelCase<string & K>]: T[K] } {
+  // Implementation
+}
+
+const result = convertKeys({
+  'first-name': 'John',
+  'last-name': 'Doe'
+});
+// Type: { firstName: string; lastName: string; }
+```
+
+## Type Inference
+
+### Automatic Type Inference
+
+```typescript
+import { camelCase } from '@visulima/string';
+
+// Type is inferred automatically
+const result1 = camelCase('hello-world');
+// Type: string
+
+// With explicit generic
+const result2 = camelCase<'hello-world'>('hello-world');
+// Type: specific literal type
+```
+
+### Function Overloads
+
+```typescript
+import { truncate } from '@visulima/string';
+
+// Multiple overloads for different options
+truncate('hello', 3);
+truncate('hello', 3, { position: 'end' });
+truncate('hello', 3, { position: 'start' });
+```
+
+## Best Practices
+
+1. Import types separately from runtime code
+2. Use const assertions for literal types
+3. Leverage type inference when possible
+4. Use generic constraints for reusable utilities
+5. Prefer type-level operations for compile-time checks
+6. Document complex generic types
+
+## Type-Safe Patterns
+
+### Builder Pattern
+
+```typescript
+class StringBuilder<T extends string = ''> {
+  private value: T;
+  
+  constructor(initial: T) {
+    this.value = initial;
+  }
+  
+  append<U extends string>(text: U): StringBuilder<`${T}${U}`> {
+    return new StringBuilder(`${this.value}${text}` as `${T}${U}`);
+  }
+  
+  getValue(): T {
+    return this.value;
+  }
+}
+
+const result = new StringBuilder('')
+  .append('Hello')
+  .append(' ')
+  .append('World')
+  .getValue();
+// Type: 'Hello World'
+```
+
+### Type-Safe Configuration
+
+```typescript
+interface Config<T extends string> {
+  input: T;
+  output: CamelCase<T>;
+  transform: (input: T) => CamelCase<T>;
+}
+
+const config: Config<'hello-world'> = {
+  input: 'hello-world',
+  output: 'helloWorld',
+  transform: (input) => camelCase(input) as any
+};
+```
+
+## Next Steps
+
+- [API Reference](/docs/api) - Complete API documentation
+- [Testing](/docs/testing) - Testing utilities
+- [Examples](/docs/examples) - More code examples
