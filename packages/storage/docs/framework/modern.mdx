@@ -1,0 +1,308 @@
+# Modern Frameworks (Fetch API)
+
+Use Visulima upload with modern frameworks that support the Web Fetch API, including Hono, Cloudflare Workers, Deno, Bun, and other Web API environments.
+
+## Installation
+
+```sh
+npm install @visulima/upload
+```
+
+```sh
+yarn add @visulima/upload
+```
+
+```sh
+pnpm add @visulima/upload
+```
+
+## Overview
+
+Modern frameworks that use the Web Fetch API can take advantage of the `fetch()` method, which provides native Web API Request/Response support without conversion layers.
+
+## Hono
+
+Hono is a fast, lightweight web framework for Node runtimes and Web API environments.
+
+```ts
+import { Hono } from "hono";
+import { DiskStorage, Multipart } from "@visulima/upload";
+
+const app = new Hono();
+
+// Initialize storage and handler
+const storage = new DiskStorage({ directory: "./uploads" });
+const multipart = new Multipart({ storage });
+
+// File upload endpoint
+app.post("/upload", async (c) => {
+    try {
+        return await multipart.fetch(c.req.raw);
+    } catch (error) {
+        return c.json({ error: "Upload failed" }, 500);
+    }
+});
+
+// File listing endpoint
+app.get("/files", async (c) => {
+    try {
+        return await multipart.fetch(c.req.raw);
+    } catch (error) {
+        return c.json({ error: "Failed to list files" }, 500);
+    }
+});
+
+// File download endpoint
+app.get("/files/:id", async (c) => {
+    try {
+        return await multipart.fetch(c.req.raw);
+    } catch (error) {
+        return c.json({ error: "File not found" }, 404);
+    }
+});
+
+export default app;
+```
+
+## Cloudflare Workers
+
+Cloudflare Workers do not provide a writable filesystem. `DiskStorage` is not supported. Use a remote/object storage adapter suitable for Workers (e.g., R2) or proxy uploads to a Node server using supported adapters (S3, GCS, Azure, local disk). When running Hono on Workers, prefer storage backends that operate over HTTP APIs instead of local disk.
+
+## Deno
+
+Deno provides native TypeScript support and Web API compatibility.
+
+```ts
+import { DiskStorage, Multipart } from "npm:@visulima/upload";
+
+// Initialize storage and handler
+const storage = new DiskStorage({ directory: "./uploads" });
+const multipart = new Multipart({ storage });
+
+// HTTP server
+Deno.serve(async (request: Request) => {
+    const url = new URL(request.url);
+
+    try {
+        // Route requests
+        if (url.pathname === "/upload" && request.method === "POST") {
+            return await multipart.fetch(request);
+        }
+
+        if (url.pathname === "/files" && request.method === "GET") {
+            return await multipart.fetch(request);
+        }
+
+        if (url.pathname.startsWith("/files/") && request.method === "GET") {
+            return await multipart.fetch(request);
+        }
+
+        return new Response("Not found", { status: 404 });
+    } catch (error) {
+        console.error("Request error:", error);
+        return Response.json({ error: "Internal server error" }, { status: 500 });
+    }
+});
+```
+
+## Bun
+
+Bun is a fast JavaScript runtime with Web API support.
+
+```ts
+import { DiskStorage, Multipart } from "@visulima/upload";
+
+// Initialize storage and handler
+const storage = new DiskStorage({ directory: "./uploads" });
+const multipart = new Multipart({ storage });
+
+// HTTP server
+const server = Bun.serve({
+    port: 3000,
+    async fetch(request: Request): Promise<Response> {
+        const url = new URL(request.url);
+
+        try {
+            // Route requests
+            if (url.pathname === "/upload" && request.method === "POST") {
+                return await multipart.fetch(request);
+            }
+
+            if (url.pathname === "/files" && request.method === "GET") {
+                return await multipart.fetch(request);
+            }
+
+            if (url.pathname.startsWith("/files/") && request.method === "GET") {
+                return await multipart.fetch(request);
+            }
+
+            return new Response("Not found", { status: 404 });
+        } catch (error) {
+            console.error("Request error:", error);
+            return Response.json({ error: "Internal server error" }, { status: 500 });
+        }
+    },
+});
+
+console.log(`Server running on port ${server.port}`);
+```
+
+## TUS Protocol Support
+
+The `fetch` method also supports TUS resumable uploads:
+
+```ts
+import { DiskStorage, Tus } from "@visulima/upload";
+
+const storage = new DiskStorage({ directory: "./uploads" });
+const tus = new Tus({ storage });
+
+// TUS endpoints
+app.post("/upload/tus", async (c) => {
+    return await tus.fetch(c.req.raw);
+});
+
+app.patch("/upload/tus/:id", async (c) => {
+    return await tus.fetch(c.req.raw);
+});
+
+app.head("/upload/tus/:id", async (c) => {
+    return await tus.fetch(c.req.raw);
+});
+```
+
+## Image Transformations
+
+Combine with image transformations for on-demand processing:
+
+```ts
+import { LRUCache } from "lru-cache";
+import { DiskStorage, Multipart } from "@visulima/upload";
+import ImageTransformer from "@visulima/upload/transformers/image";
+
+const storage = new DiskStorage({ directory: "./uploads" });
+const multipart = new Multipart({ storage });
+
+// Initialize cache for transformed images
+const cache = new LRUCache({
+    max: 1000, // Maximum number of cached items
+    ttl: 3600000, // 1 hour in milliseconds
+});
+
+const imageTransformer = new ImageTransformer(storage, {
+    cache,
+    maxImageSize: 10 * 1024 * 1024, // 10MB
+});
+
+// Upload endpoint
+app.post("/upload", async (c) => {
+    return await multipart.fetch(c.req.raw);
+});
+
+// Image transformation endpoint (resize + optional format)
+app.get("/images/:id", async (c) => {
+    const { id } = c.req.param();
+    const url = new URL(c.req.url);
+
+    // Get transformation parameters
+    const width = url.searchParams.get("width");
+    const height = url.searchParams.get("height");
+    const fit = url.searchParams.get("fit") || "cover";
+    const quality = url.searchParams.get("quality") || "80";
+    const format = url.searchParams.get("format") || undefined;
+
+    try {
+        let result;
+
+        if (width || height) {
+            result = await imageTransformer.resize(id, {
+                width: width ? Number(width) : undefined,
+                height: height ? Number(height) : undefined,
+                fit: fit as "cover" | "contain" | "fill" | "inside" | "outside",
+                quality: quality ? Number(quality) : undefined,
+            });
+        } else {
+            // No resize options provided; fall back to format conversion if requested
+            result = await imageTransformer.convertFormat(id, (format || "jpeg") as any, {
+                quality: quality ? Number(quality) : undefined,
+            });
+        }
+
+        return new Response(result.buffer, {
+            headers: {
+                "Content-Type": `image/${result.format}`,
+                "Cache-Control": "public, max-age=3600",
+            },
+        });
+    } catch (error) {
+        return c.json({ error: "Image transformation failed" }, 500);
+    }
+});
+```
+
+## Error Handling
+
+Handle errors consistently across frameworks:
+
+```ts
+app.use("*", async (c) => {
+    try {
+        // Your route handlers here
+        return await multipart.fetch(c.req.raw);
+    } catch (error) {
+        console.error("Request error:", error);
+
+        // Return appropriate error response
+        return c.json(
+            {
+                error: "Request failed",
+                message: error instanceof Error ? error.message : "Unknown error",
+            },
+            500,
+        );
+    }
+});
+```
+
+## Configuration
+
+Configure storage and upload options:
+
+```ts
+import { DiskStorage, Multipart } from "@visulima/upload";
+
+const storage = new DiskStorage({
+    directory: "./uploads",
+    expiration: { maxAge: "7d" }, // Files expire in 7 days
+});
+
+const multipart = new Multipart({
+    storage,
+    // Additional multipart options can be configured here
+});
+```
+
+## OpenAPI (Swagger)
+
+If you expose HTTP endpoints, you can generate OpenAPI specs for both multipart (XHR) and TUS routes and serve Swagger UI. See the Hono example for combining `xhrOpenApiSpec` and `tusOpenApiSpec` and mounting `/openapi.json`.
+
+## Performance Tips
+
+1. **Initialize once**: Create storage and handler instances outside request handlers
+2. **Use appropriate storage**: Choose storage backends based on your deployment environment
+3. **Enable caching**: For image transformations, enable caching for better performance
+4. **Handle large files**: Configure appropriate limits for your use case
+5. **Monitor errors**: Log and monitor upload errors for debugging
+
+## Supported Frameworks
+
+The `fetch` method works with any framework or runtime that supports the Web Fetch API:
+
+- **Hono** - Lightweight web framework
+- **Cloudflare Workers** - Serverless functions
+- **Deno** - Secure runtime
+- **Bun** - Fast JavaScript runtime
+- **Next.js 15+** - With Web API support
+- **Vercel Edge Functions** - Serverless edge functions
+- **Netlify Edge Functions** - Serverless edge functions
+- **Any Web API compatible environment**
