@@ -1,0 +1,13 @@
+{
+  "title": "@visulima/path",
+  "pages": [
+    "index",
+    "introduction",
+    "installation",
+    "getting-started",
+    "api-reference",
+    "utility-functions",
+    "examples",
+    "migration-guide"
+  ]
+}
