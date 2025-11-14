@@ -1,4 +1,5 @@
-import { File as DiskFile, DiskStorage, ImageTransformer, Multipart } from "@visulima/upload";
+import { File as DiskFile, DiskStorage, Multipart } from "@visulima/upload";
+import ImageTransformer from "@visulima/upload/transformers/image";
 import { copyFile } from "copy-file";
 import express from "express";
 import swaggerUi from "swagger-ui-express";

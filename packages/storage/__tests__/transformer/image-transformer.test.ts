@@ -1,7 +1,7 @@
 import { Readable } from "node:stream";
 
 import { temporaryDirectory } from "tempy";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, expectTypeOf, it, vi } from "vitest";
 
 import DiskStorage from "../../src/storage/local/disk-storage";
 import ImageTransformer from "../../src/transformer/image-transformer";
@@ -54,7 +54,7 @@ describe("imageTransformer streaming", () => {
             expect(result).toBeDefined();
             expect(result.stream).toBeInstanceOf(Readable);
             expect(result.size).toBe(2048);
-            expect(result.headers).toEqual({
+            expect(result.headers).toStrictEqual({
                 "Content-Length": "2048",
                 "Content-Type": "image/png",
                 "X-Image-Height": "600",
@@ -129,7 +129,8 @@ describe("imageTransformer streaming", () => {
 
             // ImageTransformer always has transformStream available (it's overridden from base class)
             expect(transformer.transformStream).toBeDefined();
-            expect(typeof transformer.transformStream).toBe("function");
+
+            expectTypeOf(transformer.transformStream).toBeFunction();
         });
 
         it("should handle transform errors gracefully", async () => {

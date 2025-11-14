@@ -116,6 +116,14 @@
             "types": "./dist/openapi/index.d.ts",
             "import": "./dist/openapi/index.js"
         },
+        "./http/multipart": {
+            "types": "./dist/handler/multipart.d.ts",
+            "import": "./dist/handler/multipart.js"
+        },
+        "./http/tus": {
+            "types": "./dist/handler/tus.d.ts",
+            "import": "./dist/handler/tus.js"
+        },
         "./transformers/audio": {
             "types": "./dist/transformer/audio-transformer.d.ts",
             "import": "./dist/transformer/audio-transformer.js"
@@ -273,7 +281,7 @@
         }
     },
     "engines": {
-        "node": ">=20.19 <=24.x"
+        "node": ">=20.19 <=25.x"
     },
     "publishConfig": {
         "access": "public",

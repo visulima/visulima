@@ -95,7 +95,7 @@ Add on-demand image transformations with URL query parameters:
 import express from "express";
 import { LRUCache } from "lru-cache";
 import { DiskStorage, Multipart } from "@visulima/upload";
-import { ImageTransformer } from "@visulima/upload/transformers/image";
+import ImageTransformer from "@visulima/upload/transformers/image";
 
 const app = express();
 const PORT = 3000;

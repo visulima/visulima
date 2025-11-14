@@ -7,7 +7,7 @@ describe("utils", () => {
         it("should correctly match valid file paths and extract parameters", () => {
             expect.assertions(3);
 
-            expect(matcher("/files/123")).toEqual({
+            expect(matcher("/files/123")).toStrictEqual({
                 params: {
                     path: ["files"],
                     uuid: "123",
@@ -15,14 +15,14 @@ describe("utils", () => {
                 path: "/files/123",
             });
 
-            expect(matcher("/files/123/")).toEqual({
+            expect(matcher("/files/123/")).toStrictEqual({
                 params: {
                     path: ["files"],
                     uuid: "123",
                 },
                 path: "/files/123/",
             });
-            expect(matcher("/files/123/456")).toEqual({
+            expect(matcher("/files/123/456")).toStrictEqual({
                 params: {
                     metadata: "456",
                     path: ["files"],
@@ -35,13 +35,13 @@ describe("utils", () => {
         it("should match paths that look like UUIDs", () => {
             expect.assertions(2);
 
-            expect(matcher("/files")).toEqual({
+            expect(matcher("/files")).toStrictEqual({
                 params: {
                     uuid: "files",
                 },
                 path: "/files",
             });
-            expect(matcher("/files/")).toEqual({
+            expect(matcher("/files/")).toStrictEqual({
                 params: {
                     uuid: "files",
                 },
@@ -52,7 +52,7 @@ describe("utils", () => {
         it("should match metadata requests correctly", () => {
             expect.assertions(1);
 
-            expect(matcher("/files/123-456-789/metadata")).toEqual({
+            expect(matcher("/files/123-456-789/metadata")).toStrictEqual({
                 params: {
                     metadata: "metadata",
                     path: ["files"],

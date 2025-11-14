@@ -8,7 +8,7 @@ describe("utils", () => {
             it("should transform object values using a mapper function", () => {
                 expect.assertions(1);
 
-                expect(mapValues({ a: "test" }, (value) => `${value}2`)).toEqual({ a: "test2" });
+                expect(mapValues({ a: "test" }, (value) => `${value}2`)).toStrictEqual({ a: "test2" });
             });
         });
     });

@@ -168,6 +168,7 @@ class Multipart<
 
             // Update completed file with metadata if any was provided
             let finalFile = completedFile;
+
             if (Object.keys(config.metadata).length > 0) {
                 // Merge metadata from parts with existing file metadata
                 const mergedMetadata = {
@@ -175,6 +176,7 @@ class Multipart<
                     ...config.metadata,
                 };
                 const updatedFile = await this.storage.update({ id: completedFile.id }, { metadata: mergedMetadata });
+
                 // Preserve the completed status after metadata update
                 finalFile = { ...updatedFile, status: completedFile.status };
             }
@@ -290,6 +292,7 @@ class Multipart<
      * @param request Web API Request containing multipart data
      * @returns Promise resolving to ResponseFile with upload result
      */
+    // eslint-disable-next-line sonarjs/cognitive-complexity
     private async postFetch(request: Request): Promise<ResponseFile<TFile>> {
         // Validate content type
         if (!RE_MIME.test(request.headers.get("content-type")?.split(";")[0] ?? "")) {
@@ -372,6 +375,7 @@ class Multipart<
 
             // Update completed file with metadata if any was provided
             let finalFile = completedFile;
+
             if (Object.keys(config.metadata).length > 0) {
                 // Merge metadata from parts with existing file metadata
                 const mergedMetadata = {
@@ -379,6 +383,7 @@ class Multipart<
                     ...config.metadata,
                 };
                 const updatedFile = await this.storage.update({ id: completedFile.id }, { metadata: mergedMetadata });
+
                 // Preserve the completed status after metadata update
                 finalFile = { ...updatedFile, status: completedFile.status };
             }
@@ -414,9 +419,9 @@ class Multipart<
      * Check if error is related to undefined ID or path and throw appropriate HTTP error.
      * @param error Error object to check
      */
-    // eslint-disable-next-line class-methods-use-this
+    // eslint-disable-next-line class-methods-use-this, @typescript-eslint/no-explicit-any
     private checkForUndefinedIdOrPath(error: any): void {
-        if (["Id is undefined", "Path is undefined", "Invalid request URL"].includes(error.message)) {
+        if (["Id is undefined", "Invalid request URL", "Path is undefined"].includes(error.message)) {
             throw createHttpError(404, "File not found");
         }
     }

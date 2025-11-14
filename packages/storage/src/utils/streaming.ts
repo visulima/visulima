@@ -231,7 +231,8 @@ export const createBandwidthLimitedStream = (sourceStream: Readable, bytesPerSec
             const timeout = setTimeout(() => {
                 // Remove timeout from array after it fires
                 const index = pendingTimeouts.indexOf(timeout);
-                if (index > -1) {
+
+                if (index !== -1) {
                     pendingTimeouts.splice(index, 1);
                 }
 

@@ -5,15 +5,11 @@ export type {
     AudioResampleOptions,
     AudioTransformationStep,
     AudioTransformerConfig,
-    // Audio types
     AudioTransformOptions,
     AudioTransformResult,
-    // Image types
     CropOptions,
     ImageTransformerConfig,
-    // Generic types
     MediaTransformationStep,
-    // Unified media types
     MediaTransformerConfig,
     MediaTransformQuery,
     MediaTransformResult,
@@ -27,7 +23,6 @@ export type {
     VideoRotateOptions,
     VideoTransformationStep,
     VideoTransformerConfig,
-    // Video types
     VideoTransformOptions,
     VideoTransformResult,
 } from "./types";
