@@ -1,0 +1,311 @@
+---
+title: Usage Guide
+description: Learn how to use the Vite error overlay plugin in your development workflow.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
+
+# Usage Guide
+
+This guide covers the essential features and workflows when using `@visulima/vite-overlay` in your development process.
+
+## Basic Usage
+
+After installation, the plugin automatically activates during development. It intercepts and enhances errors in your application:
+
+```typescript title="vite.config.ts"
+import { defineConfig } from "vite";
+import errorOverlay from "@visulima/vite-overlay";
+
+export default defineConfig({
+    plugins: [errorOverlay()],
+});
+```
+
+## Understanding the Error Overlay
+
+When an error occurs, you'll see an enhanced overlay with several sections:
+
+### Error Header
+- Error name and type (client-side or server-side)
+- Error message
+- Framework detection indicator
+
+### Code Frame
+Shows the problematic code with:
+- Syntax highlighting
+- Line numbers
+- Column indicators
+- Surrounding context
+
+### Stack Trace
+Displays the error stack with:
+- Original source file paths (not compiled paths)
+- Clickable file locations
+- Function names and line numbers
+
+### Solution Panel (when available)
+Provides:
+- Suggested fixes
+- Common causes
+- Links to relevant documentation
+
+## Error Types
+
+### Client-Side Runtime Errors
+
+The plugin automatically captures and displays runtime errors:
+
+```javascript title="app.js"
+// This will trigger the error overlay
+function buggyFunction() {
+    const obj = null;
+    console.log(obj.property); // TypeError: Cannot read properties of null
+}
+
+buggyFunction();
+```
+
+### Unhandled Promise Rejections
+
+Catches async errors that might otherwise go unnoticed:
+
+```javascript title="api.js"
+async function fetchData() {
+    const response = await fetch("/api/data");
+    return response.json(); // Will show error if fetch fails
+}
+
+// Unhandled rejection will be caught
+fetchData();
+```
+
+### Import Resolution Errors
+
+Helps debug module import issues:
+
+```javascript title="main.js"
+// Shows detailed error with suggestions
+import { nonExistentFunction } from "./utils";
+```
+
+### TypeScript Errors
+
+Displays errors in original TypeScript files:
+
+```typescript title="types.ts"
+interface User {
+    name: string;
+    email: string;
+}
+
+// Type error shown in original .ts file
+const user: User = {
+    name: "John",
+    // Missing email property
+};
+```
+
+### Server-Side Rendering (SSR) Errors
+
+Captures and displays SSR build-time errors:
+
+```typescript title="server.tsx"
+export async function render() {
+    // SSR errors are enhanced with source maps
+    throw new Error("SSR rendering failed");
+}
+```
+
+## Keyboard Shortcuts
+
+Navigate the error overlay efficiently with keyboard shortcuts:
+
+| Shortcut | Action |
+|----------|--------|
+| `ESC` | Close the error overlay (client-side errors only) |
+| `←` | Navigate to previous error (when multiple errors exist) |
+| `→` | Navigate to next error (when multiple errors exist) |
+| `Tab` | Switch between original and compiled code views |
+
+<Callout type="info">
+Server-side errors cannot be dismissed with ESC as they require code fixes to resolve.
+</Callout>
+
+## Error Cause Chains
+
+When errors have causes, you can navigate through the entire chain:
+
+```javascript title="error-chain.js"
+function deepFunction() {
+    throw new Error("Deep error");
+}
+
+function middleFunction() {
+    try {
+        deepFunction();
+    } catch (error) {
+        throw new Error("Middle error", { cause: error });
+    }
+}
+
+function topFunction() {
+    try {
+        middleFunction();
+    } catch (error) {
+        throw new Error("Top error", { cause: error });
+    }
+}
+
+// The overlay shows all three errors in the chain
+topFunction();
+```
+
+The overlay displays:
+1. Top-level error with full context
+2. Navigation controls to move through causes
+3. Each error's source location and stack trace
+
+## Framework-Specific Features
+
+### React Error Boundaries
+
+The plugin integrates with React error boundaries:
+
+```tsx title="ErrorBoundary.tsx"
+class ErrorBoundary extends React.Component {
+    componentDidCatch(error, errorInfo) {
+        // Errors are automatically captured and displayed
+        console.error(error, errorInfo);
+    }
+
+    render() {
+        return this.props.children;
+    }
+}
+```
+
+### Vue Component Errors
+
+Vue component errors are enhanced with component context:
+
+```vue title="Component.vue"
+<script setup>
+// Component errors show Vue-specific information
+const data = ref(null);
+
+// This error includes Vue component context
+console.log(data.value.missing);
+</script>
+```
+
+## Disabling for Specific Errors
+
+You can disable client-side error logging if needed:
+
+```typescript title="vite.config.ts"
+import { defineConfig } from "vite";
+import errorOverlay from "@visulima/vite-overlay";
+
+export default defineConfig({
+    plugins: [
+        errorOverlay({
+            logClientRuntimeError: false, // Disables client error overlay
+        }),
+    ],
+});
+```
+
+<Callout type="warn">
+Disabling client error logging means runtime errors won't show in the overlay, but they'll still appear in the browser console.
+</Callout>
+
+## Working with Source Maps
+
+The plugin automatically uses source maps to display original source code. Ensure source maps are enabled in your Vite config:
+
+```typescript title="vite.config.ts"
+import { defineConfig } from "vite";
+import errorOverlay from "@visulima/vite-overlay";
+
+export default defineConfig({
+    plugins: [errorOverlay()],
+    build: {
+        sourcemap: true, // Ensures source maps are available
+    },
+});
+```
+
+## Development Workflow Tips
+
+### Quick Error Resolution
+
+1. Read the error message and type
+2. Check the code frame for the exact location
+3. Review the stack trace for the error path
+4. Look at the solution panel for suggestions
+5. Fix the code and save (HMR will refresh)
+
+### Debugging Complex Errors
+
+1. Use the error navigation arrows to see all errors
+2. Navigate through error cause chains
+3. Check both original and compiled code views
+4. Copy stack traces for sharing with team members
+
+### Performance Considerations
+
+The plugin is optimized for performance:
+- Deduplicates identical errors
+- Caches recent errors to prevent spam
+- Only activates in development mode
+- Uses efficient source map parsing
+
+## Common Scenarios
+
+### Scenario 1: Type Error
+
+```typescript title="example.ts"
+const user = { name: "Alice" };
+console.log(user.age.toString()); // Error shown with suggestion
+```
+
+The overlay shows:
+- TypeError with clear message
+- Exact line and column
+- Suggestion to check property existence
+
+### Scenario 2: Import Error
+
+```typescript title="main.ts"
+import { helperFunction } from "./helpers"; // File doesn't exist
+```
+
+The overlay shows:
+- Import resolution error
+- Suggestions for similar file names
+- Directory structure context
+
+### Scenario 3: Async Error
+
+```typescript title="async.ts"
+async function loadData() {
+    const data = await fetch("/api/data");
+    return data.unknownMethod(); // Error in async context
+}
+
+loadData();
+```
+
+The overlay shows:
+- Full async stack trace
+- Original source location
+- Cause chain if applicable
+
+## Next Steps
+
+- [Configuration](/docs/configuration) - Customize the plugin behavior
+- [API Reference](/docs/api-reference) - Explore advanced features
+- [Examples](/docs/examples) - See more detailed examples
+- [Troubleshooting](/docs/troubleshooting) - Resolve common issues

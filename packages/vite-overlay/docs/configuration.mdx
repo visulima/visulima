@@ -1,0 +1,380 @@
+---
+title: Configuration
+description: Configure the Vite error overlay plugin to match your project needs.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# Configuration
+
+The `@visulima/vite-overlay` plugin accepts a configuration object to customize its behavior. This guide covers all available options.
+
+## Configuration Options
+
+```typescript title="vite.config.ts"
+import { defineConfig } from "vite";
+import errorOverlay from "@visulima/vite-overlay";
+
+export default defineConfig({
+    plugins: [
+        errorOverlay({
+            // Configuration options
+            logClientRuntimeError: true,
+            reactPluginName: "@vitejs/plugin-react",
+            solutionFinders: [],
+            showBallonButton: true,
+        }),
+    ],
+});
+```
+
+## Available Options
+
+### logClientRuntimeError
+
+Controls whether client-side runtime errors are logged and displayed in the overlay.
+
+- **Type:** `boolean`
+- **Default:** `true`
+- **Required:** No
+
+```typescript title="vite.config.ts"
+errorOverlay({
+    logClientRuntimeError: true, // Show client-side errors
+});
+```
+
+**Use Cases:**
+
+Enable (default):
+- Development debugging
+- Testing error boundaries
+- Catching unhandled rejections
+
+Disable:
+- When you have custom error handling
+- For specific testing scenarios
+- When errors are too noisy
+
+<Callout type="info">
+Disabling this option only affects the overlay display. Errors still appear in the browser console.
+</Callout>
+
+### reactPluginName
+
+Specifies a custom React plugin name for detection. Useful when using custom or modified React plugins.
+
+- **Type:** `string`
+- **Default:** `undefined` (auto-detects standard React plugins)
+- **Required:** No
+
+```typescript title="vite.config.ts"
+errorOverlay({
+    reactPluginName: "my-custom-react-plugin",
+});
+```
+
+**Auto-detected React plugins:**
+- `vite:react-swc`
+- `vite:react-refresh`
+- `vite:react-babel`
+- `@vitejs/plugin-react`
+
+**Example with custom plugin:**
+
+```typescript title="vite.config.ts"
+import { defineConfig } from "vite";
+import myCustomReactPlugin from "./my-react-plugin";
+import errorOverlay from "@visulima/vite-overlay";
+
+export default defineConfig({
+    plugins: [
+        myCustomReactPlugin(),
+        errorOverlay({
+            reactPluginName: "my-custom-react-plugin",
+        }),
+    ],
+});
+```
+
+### vuePluginName
+
+Specifies a custom Vue plugin name for detection. Similar to `reactPluginName` but for Vue projects.
+
+- **Type:** `string`
+- **Default:** `undefined` (auto-detects standard Vue plugins)
+- **Required:** No
+
+```typescript title="vite.config.ts"
+errorOverlay({
+    vuePluginName: "my-custom-vue-plugin",
+});
+```
+
+**Auto-detected Vue plugins:**
+- `vite:vue`
+- `@vitejs/plugin-vue`
+
+### solutionFinders
+
+An array of custom solution finder functions that provide intelligent error analysis and suggested fixes.
+
+- **Type:** `SolutionFinder[]`
+- **Default:** `[]`
+- **Required:** No
+
+```typescript title="vite.config.ts"
+import type { SolutionFinder } from "@visulima/error/solution";
+
+const customSolutionFinder: SolutionFinder = {
+    name: "custom-finder",
+    priority: 10,
+    async handle(error, context) {
+        if (error.message.includes("API_KEY")) {
+            return {
+                header: "Missing API Key",
+                body: "Make sure to set your API key in the .env file:\n\n```bash\nAPI_KEY=your_key_here\n```",
+            };
+        }
+        return undefined;
+    },
+};
+
+errorOverlay({
+    solutionFinders: [customSolutionFinder],
+});
+```
+
+**Solution Finder Interface:**
+
+```typescript
+interface SolutionFinder {
+    name: string;
+    priority: number;
+    handle: (error: ErrorInfo, context: ErrorContext) => Promise<Solution | undefined>;
+}
+
+interface Solution {
+    header: string; // Markdown supported
+    body: string;   // Markdown supported
+}
+
+interface ErrorInfo {
+    name: string;
+    message: string;
+    stack?: string;
+    hint?: string;
+}
+
+interface ErrorContext {
+    file: string;
+    line: number;
+    language: string;
+    snippet: string;
+}
+```
+
+**Priority System:**
+
+Solution finders are executed in priority order (highest first). Built-in finders have these priorities:
+- `errorHintFinder`: 100
+- `createViteSolutionFinder`: 50
+- `ruleBasedFinder`: 0
+
+Set your custom finder priority accordingly.
+
+### showBallonButton
+
+Controls whether to show the balloon notification button for errors.
+
+- **Type:** `boolean`
+- **Default:** `true`
+- **Required:** No
+
+```typescript title="vite.config.ts"
+errorOverlay({
+    showBallonButton: false, // Hide balloon button
+});
+```
+
+## Complete Configuration Example
+
+Here's a comprehensive example with all options:
+
+```typescript title="vite.config.ts"
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import errorOverlay from "@visulima/vite-overlay";
+import type { SolutionFinder } from "@visulima/error/solution";
+
+// Custom solution finder for API errors
+const apiErrorFinder: SolutionFinder = {
+    name: "api-error-finder",
+    priority: 15,
+    async handle(error, context) {
+        if (error.message.includes("fetch failed")) {
+            return {
+                header: "API Request Failed",
+                body: `
+Check the following:
+1. Is your API server running?
+2. Is the URL correct?
+3. Check CORS configuration
+4. Verify network connectivity
+                `.trim(),
+            };
+        }
+        return undefined;
+    },
+};
+
+// Custom solution finder for environment variables
+const envVarFinder: SolutionFinder = {
+    name: "env-var-finder",
+    priority: 20,
+    async handle(error, context) {
+        const envVarMatch = error.message.match(/VITE_(\w+)/);
+        if (envVarMatch) {
+            const varName = envVarMatch[0];
+            return {
+                header: `Missing Environment Variable: ${varName}`,
+                body: `
+Add \`${varName}\` to your \`.env\` file:
+
+\`\`\`bash
+${varName}=your_value_here
+\`\`\`
+
+Then restart your dev server.
+                `.trim(),
+            };
+        }
+        return undefined;
+    },
+};
+
+export default defineConfig({
+    plugins: [
+        react(),
+        errorOverlay({
+            logClientRuntimeError: true,
+            reactPluginName: "@vitejs/plugin-react",
+            solutionFinders: [apiErrorFinder, envVarFinder],
+            showBallonButton: true,
+        }),
+    ],
+});
+```
+
+## Environment-Specific Configuration
+
+You can configure the plugin differently based on the environment:
+
+```typescript title="vite.config.ts"
+import { defineConfig } from "vite";
+import errorOverlay from "@visulima/vite-overlay";
+
+export default defineConfig(({ mode }) => ({
+    plugins: [
+        errorOverlay({
+            logClientRuntimeError: mode === "development",
+            // Only show detailed errors in development
+        }),
+    ],
+}));
+```
+
+## Configuration for Monorepos
+
+In monorepo setups, you might want different configurations per package:
+
+```typescript title="packages/app/vite.config.ts"
+import { defineConfig } from "vite";
+import errorOverlay from "@visulima/vite-overlay";
+import { sharedSolutionFinders } from "../../shared-config";
+
+export default defineConfig({
+    plugins: [
+        errorOverlay({
+            solutionFinders: sharedSolutionFinders,
+        }),
+    ],
+});
+```
+
+## TypeScript Configuration
+
+For better type support when creating custom solution finders:
+
+```typescript title="vite.config.ts"
+import { defineConfig } from "vite";
+import errorOverlay from "@visulima/vite-overlay";
+import type { SolutionFinder } from "@visulima/error/solution";
+
+const customFinder: SolutionFinder = {
+    name: "my-finder",
+    priority: 10,
+    async handle(error, context) {
+        // TypeScript provides full autocomplete here
+        return undefined;
+    },
+};
+
+export default defineConfig({
+    plugins: [
+        errorOverlay({
+            solutionFinders: [customFinder],
+        }),
+    ],
+});
+```
+
+## Best Practices
+
+### Solution Finder Priority
+
+- Use high priority (50+) for project-specific errors
+- Use medium priority (10-49) for framework-specific errors
+- Use low priority (0-9) for generic fallback solutions
+
+### Error Message Formatting
+
+Solution messages support Markdown:
+
+```typescript
+const finder: SolutionFinder = {
+    name: "example",
+    priority: 10,
+    async handle(error, context) {
+        return {
+            header: "**Error Title** with *formatting*",
+            body: `
+## Solution Steps
+
+1. First step
+2. Second step
+
+\`\`\`javascript
+// Code example
+const fix = "like this";
+\`\`\`
+
+[Documentation](https://example.com)
+            `.trim(),
+        };
+    },
+};
+```
+
+### Performance Considerations
+
+- Keep solution finder logic fast (< 100ms)
+- Use early returns to skip irrelevant errors
+- Cache expensive computations
+- Avoid network requests in finders
+
+## Next Steps
+
+- [API Reference](/docs/api-reference) - Explore the full API
+- [Examples](/docs/examples) - See more configuration examples
+- [Troubleshooting](/docs/troubleshooting) - Common configuration issues
