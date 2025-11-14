@@ -1,0 +1,503 @@
+---
+title: VisulimaError Class
+description: Enhanced error class with additional properties and functionality
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
+
+The `VisulimaError` class is an enhanced error class that extends the native JavaScript `Error` with additional properties and functionality.
+
+## Overview
+
+`VisulimaError` provides:
+
+- Additional context through hints and locations
+- Proper error cause chaining
+- Custom titles and metadata
+- Type safety with TypeScript
+- Serialization support
+
+## Basic Usage
+
+### Creating a VisulimaError
+
+```typescript title="Basic VisulimaError"
+import { VisulimaError } from "@visulima/error";
+
+const error = new VisulimaError({
+    name: "ValidationError",
+    message: "Invalid user input"
+});
+
+throw error;
+```
+
+### With All Properties
+
+```typescript title="VisulimaError with all properties"
+const error = new VisulimaError({
+    name: "DatabaseError",
+    message: "Failed to connect to database",
+    title: "Database Connection Failed",
+    hint: "Check your database credentials",
+    location: {
+        file: "/path/to/file.ts",
+        line: 42,
+        column: 10
+    },
+    cause: originalError
+});
+```
+
+## Properties
+
+### name
+
+Type: `string`
+
+The error name/type. This is inherited from the standard Error class.
+
+```typescript
+const error = new VisulimaError({
+    name: "CustomError",
+    message: "Something went wrong"
+});
+
+console.log(error.name); // "CustomError"
+```
+
+### message
+
+Type: `string`
+
+The error message describing what went wrong.
+
+```typescript
+const error = new VisulimaError({
+    name: "Error",
+    message: "User not found"
+});
+
+console.log(error.message); // "User not found"
+```
+
+### hint
+
+Type: `string | string[] | undefined`
+
+Helpful suggestions or guidance for resolving the error.
+
+```typescript
+const error = new VisulimaError({
+    name: "ConfigError",
+    message: "Missing required configuration"
+});
+
+error.hint = "Add DATABASE_URL to your .env file";
+
+// Or multiple hints
+error.hint = [
+    "Check your .env file",
+    "Ensure all required variables are set",
+    "Restart your application after changes"
+];
+```
+
+### title
+
+Type: `string | undefined`
+
+An optional title for the error, useful for categorization or display purposes.
+
+```typescript
+const error = new VisulimaError({
+    name: "AuthenticationError",
+    message: "Invalid credentials",
+    title: "Authentication Failed"
+});
+
+console.log(error.title); // "Authentication Failed"
+```
+
+### loc (location)
+
+Type: `ErrorLocation | undefined`
+
+The location where the error occurred.
+
+```typescript
+interface ErrorLocation {
+    file?: string;
+    line?: number;
+    column?: number;
+}
+
+const error = new VisulimaError({
+    name: "SyntaxError",
+    message: "Unexpected token",
+    location: {
+        file: "/src/config.ts",
+        line: 15,
+        column: 8
+    }
+});
+```
+
+### cause
+
+Type: `unknown`
+
+The underlying error that caused this error, enabling error chaining.
+
+```typescript
+try {
+    await database.connect();
+} catch (originalError) {
+    throw new VisulimaError({
+        name: "ConnectionError",
+        message: "Failed to establish database connection",
+        cause: originalError
+    });
+}
+```
+
+### type
+
+Type: `"VisulimaError"`
+
+A constant string identifier for VisulimaError instances. This is useful for type checking.
+
+```typescript
+const error = new VisulimaError({
+    name: "Error",
+    message: "Test"
+});
+
+console.log(error.type); // "VisulimaError"
+```
+
+## Methods
+
+### setLocation(location)
+
+Update the error's location.
+
+```typescript
+const error = new VisulimaError({
+    name: "Error",
+    message: "Parse error"
+});
+
+error.setLocation({
+    file: "/src/parser.ts",
+    line: 100,
+    column: 5
+});
+```
+
+### setName(name)
+
+Update the error's name.
+
+```typescript
+const error = new VisulimaError({
+    name: "Error",
+    message: "Something happened"
+});
+
+error.setName("CustomError");
+console.log(error.name); // "CustomError"
+```
+
+### setMessage(message)
+
+Update the error's message.
+
+```typescript
+const error = new VisulimaError({
+    name: "Error",
+    message: "Initial message"
+});
+
+error.setMessage("Updated message");
+console.log(error.message); // "Updated message"
+```
+
+### setHint(hint)
+
+Update the error's hint.
+
+```typescript
+const error = new VisulimaError({
+    name: "Error",
+    message: "Configuration invalid"
+});
+
+error.setHint("Check your config.json file");
+// or
+error.setHint([
+    "Verify the JSON syntax",
+    "Ensure all required fields are present"
+]);
+```
+
+## Creating Custom Error Classes
+
+The recommended approach is to extend `VisulimaError`:
+
+### Simple Extension
+
+```typescript
+import { VisulimaError } from "@visulima/error";
+
+class ValidationError extends VisulimaError {
+    constructor(message: string) {
+        super({
+            name: "ValidationError",
+            message
+        });
+    }
+}
+
+throw new ValidationError("Email is required");
+```
+
+### With Additional Properties
+
+```typescript
+class HttpError extends VisulimaError {
+    public readonly statusCode: number;
+    
+    constructor(statusCode: number, message: string) {
+        super({
+            name: "HttpError",
+            message
+        });
+        this.statusCode = statusCode;
+    }
+}
+
+const error = new HttpError(404, "Resource not found");
+console.log(error.statusCode); // 404
+```
+
+### Domain-Specific Error
+
+```typescript
+class DatabaseError extends VisulimaError {
+    public readonly query?: string;
+    public readonly table?: string;
+    
+    constructor(message: string, options?: {
+        query?: string;
+        table?: string;
+        cause?: unknown;
+    }) {
+        super({
+            name: "DatabaseError",
+            message,
+            cause: options?.cause
+        });
+        
+        this.query = options?.query;
+        this.table = options?.table;
+        
+        this.hint = this.generateHint();
+    }
+    
+    private generateHint(): string[] {
+        const hints: string[] = [];
+        
+        if (this.table) {
+            hints.push(`Check if table '${this.table}' exists`);
+        }
+        
+        if (this.query) {
+            hints.push(`Review the SQL query: ${this.query}`);
+        }
+        
+        hints.push("Verify database connection is active");
+        
+        return hints;
+    }
+}
+
+// Usage
+throw new DatabaseError("Query failed", {
+    query: "SELECT * FROM users",
+    table: "users",
+    cause: sqlError
+});
+```
+
+## Type Guards
+
+### isVisulimaError
+
+Check if an error is a VisulimaError instance:
+
+```typescript
+import { isVisulimaError } from "@visulima/error";
+
+try {
+    throw new VisulimaError({ name: "Error", message: "Test" });
+} catch (error) {
+    if (isVisulimaError(error)) {
+        console.log("This is a VisulimaError");
+        console.log(error.hint); // Type-safe access to hint
+    }
+}
+```
+
+## Best Practices
+
+### 1. Use Descriptive Names
+
+```typescript
+// Good
+new VisulimaError({
+    name: "DatabaseConnectionError",
+    message: "Failed to connect to PostgreSQL"
+});
+
+// Avoid
+new VisulimaError({
+    name: "Error",
+    message: "Something went wrong"
+});
+```
+
+### 2. Provide Helpful Hints
+
+```typescript
+// Good - Actionable hints
+const error = new VisulimaError({
+    name: "ConfigError",
+    message: "Missing API key"
+});
+
+error.hint = [
+    "Set OPENAI_API_KEY in your .env file",
+    "Get your API key from https://platform.openai.com/api-keys",
+    "Restart the server after adding the key"
+];
+
+// Avoid - Vague hints
+error.hint = "Check your configuration";
+```
+
+### 3. Chain Errors Properly
+
+```typescript
+// Good - Preserve the error chain
+try {
+    await fetchData();
+} catch (networkError) {
+    throw new VisulimaError({
+        name: "DataFetchError",
+        message: "Failed to fetch data",
+        cause: networkError
+    });
+}
+
+// Avoid - Losing context
+try {
+    await fetchData();
+} catch (error) {
+    throw new VisulimaError({
+        name: "Error",
+        message: "Error occurred"
+    });
+}
+```
+
+### 4. Create Domain-Specific Error Classes
+
+```typescript
+// Good - Clear hierarchy
+class AuthenticationError extends VisulimaError {}
+class AuthorizationError extends VisulimaError {}
+class ValidationError extends VisulimaError {}
+
+// Each can have specific properties and behavior
+```
+
+### 5. Include Location When Available
+
+```typescript
+const error = new VisulimaError({
+    name: "ParseError",
+    message: "Invalid JSON syntax",
+    location: {
+        file: configFile,
+        line: lineNumber,
+        column: columnNumber
+    }
+});
+```
+
+## TypeScript Integration
+
+### Type-Safe Error Properties
+
+```typescript
+import type { ErrorProperties, ErrorLocation, ErrorHint } from "@visulima/error";
+
+const props: ErrorProperties = {
+    name: "CustomError",
+    message: "Something went wrong",
+    hint: ["Check the logs", "Try again later"],
+    location: {
+        file: "/src/index.ts",
+        line: 42,
+        column: 10
+    }
+};
+
+const error = new VisulimaError(props);
+```
+
+### Generic Error Handling
+
+```typescript
+function handleError(error: unknown): void {
+    if (isVisulimaError(error)) {
+        console.error(`${error.name}: ${error.message}`);
+        
+        if (error.hint) {
+            const hints = Array.isArray(error.hint) ? error.hint : [error.hint];
+            hints.forEach(hint => console.log(`Hint: ${hint}`));
+        }
+        
+        if (error.loc) {
+            console.log(`Location: ${error.loc.file}:${error.loc.line}`);
+        }
+    } else if (error instanceof Error) {
+        console.error(error.message);
+    } else {
+        console.error("Unknown error:", error);
+    }
+}
+```
+
+## Comparison with Standard Error
+
+| Feature | Standard Error | VisulimaError |
+|---------|---------------|---------------|
+| Basic message | Yes | Yes |
+| Stack trace | Yes | Yes |
+| Error name | Yes | Yes |
+| Error cause | Yes (ES2022+) | Yes |
+| Hints/suggestions | No | Yes |
+| Location metadata | No | Yes |
+| Custom title | No | Yes |
+| Type identifier | No | Yes |
+| Setter methods | No | Yes |
+
+## See Also
+
+- [Quick Start Guide](./quick-start.md)
+- [Custom Error Classes](./custom-errors.md)
+- [Error Rendering](./rendering.md)
+- [API Reference](./api-reference.md)
