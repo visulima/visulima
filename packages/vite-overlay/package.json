@@ -100,11 +100,11 @@
         "@tailwindcss/typography": "^0.5.19",
         "@total-typescript/ts-reset": "^0.6.1",
         "@types/hast": "3.0.4",
-        "@types/node": "24.10.0",
+        "@types/node": "24.10.1",
         "@visulima/packem": "2.0.0-alpha.37",
         "@visulima/path": "2.0.5",
-        "@vitest/coverage-v8": "^4.0.8",
-        "@vitest/ui": "^4.0.8",
+        "@vitest/coverage-v8": "^4.0.9",
+        "@vitest/ui": "^4.0.9",
         "conventional-changelog-conventionalcommits": "9.1.0",
         "cssnano": "7.1.2",
         "esbuild": "^0.27.0",
@@ -121,7 +121,7 @@
         "tailwindcss": "^4.1.17",
         "typescript": "^5.9.3",
         "vite": "^7.2.2",
-        "vitest": "^4.0.8"
+        "vitest": "^4.0.9"
     },
     "peerDependencies": {
         "vite": "^6 || ^7 || ^8"
