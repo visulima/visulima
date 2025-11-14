@@ -131,7 +131,7 @@
         "@arethetypeswrong/cli": "^0.18.2",
         "@bomb.sh/tab": "^0.0.9",
         "@total-typescript/ts-reset": "^0.6.1",
-        "@types/node": "24.10.0",
+        "@types/node": "24.10.1",
         "@visulima/boxen": "2.0.10",
         "@visulima/command-line-args": "1.0.4",
         "@visulima/error": "5.0.6",
@@ -140,7 +140,7 @@
         "@visulima/pail": "3.2.2",
         "@visulima/path": "2.0.5",
         "@visulima/string": "2.0.6",
-        "@vitest/coverage-v8": "^4.0.8",
+        "@vitest/coverage-v8": "^4.0.9",
         "ci-info": "^4.3.1",
         "commander": "14.0.2",
         "conventional-changelog-conventionalcommits": "9.1.0",
@@ -152,7 +152,7 @@
         "rimraf": "6.1.0",
         "semantic-release": "25.0.2",
         "typescript": "5.9.3",
-        "vitest": "^4.0.8"
+        "vitest": "^4.0.9"
     },
     "peerDependencies": {
         "@bomb.sh/tab": "^0.0.7",

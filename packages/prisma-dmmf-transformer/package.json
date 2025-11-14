@@ -97,9 +97,9 @@
         "@prisma/internals": "6.19.0",
         "@types/json-schema": "7.0.15",
         "@types/micromatch": "4.0.10",
-        "@types/node": "24.10.0",
+        "@types/node": "24.10.1",
         "@visulima/packem": "2.0.0-alpha.37",
-        "@vitest/coverage-v8": "4.0.8",
+        "@vitest/coverage-v8": "4.0.9",
         "ajv": "8.17.1",
         "ajv-formats": "3.0.1",
         "conventional-changelog-conventionalcommits": "9.1.0",
@@ -112,7 +112,7 @@
         "rimraf": "6.1.0",
         "semantic-release": "25.0.2",
         "typescript": "5.9.3",
-        "vitest": "4.0.8"
+        "vitest": "4.0.9"
     },
     "peerDependencies": {
         "@prisma/client": "3.* || 4.* || 5.* || 6.*",

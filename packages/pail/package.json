@@ -231,15 +231,15 @@
         "@opentelemetry/api": "^1.9",
         "@secretlint/secretlint-rule-preset-recommend": "^11.2.5",
         "@total-typescript/ts-reset": "^0.6.1",
-        "@types/node": "24.10.0",
+        "@types/node": "24.10.1",
         "@visulima/error": "5.0.6",
         "@visulima/fmt": "1.1.21",
         "@visulima/inspector": "1.0.30",
         "@visulima/packem": "2.0.0-alpha.37",
         "@visulima/redact": "2.0.5",
         "@visulima/string": "2.0.6",
-        "@vitest/coverage-v8": "^4.0.8",
-        "@vitest/ui": "^4.0.8",
+        "@vitest/coverage-v8": "^4.0.9",
+        "@vitest/ui": "^4.0.9",
         "cli-spinners": "3.3.0",
         "conventional-changelog-conventionalcommits": "9.1.0",
         "esbuild": "0.27.0",
@@ -254,7 +254,7 @@
         "terminal-size": "^4.0.0",
         "type-fest": "^5.2.0",
         "typescript": "5.9.3",
-        "vitest": "^4.0.8"
+        "vitest": "^4.0.9"
     },
     "peerDependencies": {
         "@opentelemetry/api": "^1.9",
