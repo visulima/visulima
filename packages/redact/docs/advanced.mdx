@@ -1,0 +1,643 @@
+---
+title: Advanced Topics
+description: Advanced features, patterns, and best practices for Visulima Redact
+---
+
+# Advanced Topics
+
+This guide covers advanced features, optimization techniques, and best practices for using Visulima Redact effectively in production environments.
+
+## Performance Optimization
+
+### Rule Ordering
+
+The order of rules can impact performance. Place more specific rules before wildcard rules:
+
+```typescript
+// Good: Specific rules first
+const rules = [
+  'password',
+  'apiKey',
+  'token',
+  '*secret*'  // Wildcard last
+];
+
+// Less optimal: Wildcard first
+const rules = [
+  '*secret*',  // Will be checked for every key
+  'password',
+  'apiKey',
+  'token'
+];
+```
+
+### Reusing Rule Arrays
+
+If you're redacting many objects with the same rules, define the rules array once:
+
+```typescript
+const sensitiveFields = [
+  'password',
+  'apiKey',
+  'token',
+  'creditCard'
+];
+
+// Reuse for multiple operations
+const user1 = redact(userData1, sensitiveFields);
+const user2 = redact(userData2, sensitiveFields);
+const user3 = redact(userData3, sensitiveFields);
+```
+
+### Batch Processing
+
+For large datasets, consider processing in batches to manage memory:
+
+```typescript
+import { redact } from '@visulima/redact';
+
+function redactBatch(items: any[], rules: Rules, batchSize = 100) {
+  const results = [];
+  
+  for (let i = 0; i < items.length; i += batchSize) {
+    const batch = items.slice(i, i + batchSize);
+    const redacted = batch.map(item => redact(item, rules));
+    results.push(...redacted);
+  }
+  
+  return results;
+}
+```
+
+## Custom Rule Patterns
+
+### Creating Custom Rules
+
+Define your own patterns for domain-specific sensitive data:
+
+```typescript
+import type { Rules } from '@visulima/redact';
+
+const customRules: Rules = [
+  // Match custom ID format
+  {
+    key: 'customerId',
+    pattern: /^CUST-[0-9]{8}$/,
+    replacement: '<CUSTOMER_ID>'
+  },
+  
+  // Match internal reference numbers
+  {
+    key: 'reference',
+    pattern: /^REF-[A-Z]{3}-\d{6}$/,
+    replacement: '<REFERENCE>'
+  },
+  
+  // Match employee IDs
+  {
+    key: 'employeeId',
+    pattern: /^EMP\d{5}$/,
+    replacement: '<EMPLOYEE_ID>'
+  }
+];
+```
+
+### Combining Rule Sets
+
+Merge standard rules with custom rules:
+
+```typescript
+import { standardRules } from '@visulima/redact';
+
+const applicationRules: Rules = [
+  ...standardRules,
+  { key: 'tenantId', replacement: '<TENANT>' },
+  { key: 'sessionId', replacement: '<SESSION>' },
+  { key: 'correlationId', replacement: '<CORRELATION>' }
+];
+```
+
+## Deep Redaction
+
+### Understanding Deep Mode
+
+The `deep` flag enables recursive pattern matching in string values:
+
+```typescript
+const rules: Rules = [
+  {
+    key: 'email',
+    pattern: /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g,
+    replacement: '<EMAIL>',
+    deep: true
+  }
+];
+
+const data = {
+  message: 'Contact john@example.com or jane@example.org for details',
+  metadata: {
+    text: 'Send to admin@company.com'
+  }
+};
+
+const result = redact(data, rules);
+// All emails in all string values are redacted
+```
+
+### Pattern Matching Strategies
+
+Different patterns for different use cases:
+
+```typescript
+const securityRules: Rules = [
+  // Exact match
+  { key: 'password', replacement: '[REDACTED]' },
+  
+  // Prefix wildcard
+  { key: '*_token', replacement: '[TOKEN]' },
+  
+  // Suffix wildcard
+  { key: 'secret_*', replacement: '[SECRET]' },
+  
+  // Contains wildcard
+  { key: '*credential*', replacement: '[CREDENTIAL]' },
+  
+  // Regex pattern
+  {
+    key: 'apikey',
+    pattern: /^[A-Za-z0-9]{32,}$/,
+    replacement: '[API_KEY]',
+    deep: true
+  }
+];
+```
+
+## Working with Complex Types
+
+### Custom Object Types
+
+Handle custom class instances:
+
+```typescript
+class User {
+  constructor(
+    public id: string,
+    public email: string,
+    public password: string
+  ) {}
+  
+  toJSON() {
+    return {
+      id: this.id,
+      email: this.email,
+      password: this.password
+    };
+  }
+}
+
+const user = new User('123', 'user@example.com', 'secret');
+
+// Convert to plain object first
+const redacted = redact(user.toJSON(), ['password', 'email']);
+```
+
+### Handling Mixed Collections
+
+Redact arrays containing different types:
+
+```typescript
+const mixedData = [
+  { type: 'user', password: 'secret1' },
+  { type: 'admin', apiKey: 'key123' },
+  'plain string with email@example.com',
+  new Map([['token', 'abc123']])
+];
+
+const rules = ['password', 'apiKey', 'token'];
+const result = redact(mixedData, rules);
+// Each item is redacted according to its type
+```
+
+## Circular Reference Handling
+
+### How It Works
+
+Visulima Redact automatically handles circular references:
+
+```typescript
+const obj: any = {
+  name: 'test',
+  password: 'secret'
+};
+
+obj.self = obj;
+obj.nested = { parent: obj };
+
+const result = redact(obj, ['password']);
+// Circular references are preserved in the result
+```
+
+### Debugging Circular Structures
+
+Use the logger option to debug circular reference handling:
+
+```typescript
+const result = redact(circularObj, rules, {
+  logger: {
+    debug: (...args) => console.log('[Debug]:', ...args)
+  }
+});
+```
+
+## JSON String Handling
+
+### Automatic JSON Detection
+
+Strings containing valid JSON are automatically parsed and redacted:
+
+```typescript
+const jsonString = JSON.stringify({
+  user: 'john',
+  password: 'secret',
+  apiKey: 'key123'
+});
+
+const result = redact(jsonString, ['password', 'apiKey']);
+// Returns JSON string with redacted values
+```
+
+### Nested JSON Strings
+
+Handle JSON strings within objects:
+
+```typescript
+const data = {
+  config: '{"database":{"password":"secret"}}',
+  metadata: '{"token":"abc123"}'
+};
+
+const result = redact(data, ['password', 'token']);
+// JSON strings are parsed, redacted, and re-stringified
+```
+
+## URL Parameter Handling
+
+### Query String Redaction
+
+Automatically redacts URL query parameters:
+
+```typescript
+const urls = [
+  'https://api.example.com/users?token=abc123&id=456',
+  'https://auth.example.com/login?password=secret&user=john',
+  'https://api.example.com/data?apiKey=key123'
+];
+
+const result = redact(urls, ['token', 'password', 'apiKey']);
+// Parameter values are redacted while preserving URL structure
+```
+
+### Malformed URL Handling
+
+Handles malformed URLs gracefully:
+
+```typescript
+const urls = [
+  'http://example.com?key=value',
+  'http://example.com?key',  // No value
+  'http://example.com?',      // Empty query
+  'http://example.com'        // No query
+];
+
+const result = redact(urls, ['key']);
+// All variations are handled correctly
+```
+
+## Error Redaction
+
+### Comprehensive Error Handling
+
+Redact errors while preserving important properties:
+
+```typescript
+const error = new Error('Database connection failed');
+error.code = 'ECONNREFUSED';
+error.config = {
+  host: 'localhost',
+  password: 'secret',
+  username: 'admin'
+};
+
+const redacted = redact(error, ['password']);
+// Error properties preserved, sensitive data redacted
+```
+
+### Custom Error Classes
+
+Handle custom error classes:
+
+```typescript
+class ApiError extends Error {
+  constructor(
+    message: string,
+    public statusCode: number,
+    public apiKey?: string
+  ) {
+    super(message);
+  }
+}
+
+const error = new ApiError('Unauthorized', 401, 'key123');
+const redacted = redact(error, ['apiKey']);
+```
+
+## Map and Set Operations
+
+### Map Redaction
+
+Redact Map entries by key:
+
+```typescript
+const credentials = new Map([
+  ['username', 'john'],
+  ['password', 'secret'],
+  ['apiKey', 'key123'],
+  ['role', 'admin']
+]);
+
+const result = redact(credentials, ['password', 'apiKey']);
+// Map structure preserved, values redacted
+```
+
+### Set Redaction
+
+Redact objects within Sets:
+
+```typescript
+const users = new Set([
+  { id: 1, password: 'secret1' },
+  { id: 2, password: 'secret2' }
+]);
+
+const result = redact(users, ['password']);
+// Each object in Set is redacted
+```
+
+## Excluding Rules Dynamically
+
+### Conditional Exclusion
+
+Exclude rules based on runtime conditions:
+
+```typescript
+function redactForUser(data: any, userRole: string) {
+  const baseRules = ['password', 'apiKey', 'ssn'];
+  
+  // Admins can see more data
+  const exclude = userRole === 'admin' 
+    ? ['apiKey']  // Admins can see API keys
+    : [];
+  
+  return redact(data, baseRules, { exclude });
+}
+```
+
+### Environment-based Exclusion
+
+Different redaction for different environments:
+
+```typescript
+const isDevelopment = process.env.NODE_ENV === 'development';
+
+const result = redact(data, sensitiveRules, {
+  exclude: isDevelopment 
+    ? ['email', 'phone']  // Show more in dev
+    : []
+});
+```
+
+## Best Practices
+
+### Security Guidelines
+
+1. **Default to Redaction**: When in doubt, redact rather than expose
+2. **Review Standard Rules**: Understand what `standardRules` includes
+3. **Test Thoroughly**: Ensure all sensitive data is caught
+4. **Regular Audits**: Periodically review what's being redacted
+
+```typescript
+// Good: Comprehensive rules
+const rules = [
+  ...standardRules,
+  '*token*',
+  '*key*',
+  '*secret*',
+  '*password*'
+];
+
+// Less secure: Minimal rules
+const rules = ['password'];
+```
+
+### Testing Strategies
+
+Create comprehensive tests for your redaction logic:
+
+```typescript
+import { describe, it, expect } from 'vitest';
+import { redact } from '@visulima/redact';
+
+describe('Data Redaction', () => {
+  it('redacts all password fields', () => {
+    const data = {
+      userPassword: 'secret1',
+      adminPassword: 'secret2',
+      dbPassword: 'secret3'
+    };
+    
+    const result = redact(data, ['*password']);
+    
+    expect(result.userPassword).toBe('<USERPASSWORD>');
+    expect(result.adminPassword).toBe('<ADMINPASSWORD>');
+    expect(result.dbPassword).toBe('<DBPASSWORD>');
+  });
+  
+  it('preserves non-sensitive data', () => {
+    const data = {
+      id: '123',
+      name: 'John',
+      password: 'secret'
+    };
+    
+    const result = redact(data, ['password']);
+    
+    expect(result.id).toBe('123');
+    expect(result.name).toBe('John');
+    expect(result.password).toBe('<PASSWORD>');
+  });
+});
+```
+
+### Documentation
+
+Document your redaction strategy:
+
+```typescript
+/**
+ * Redacts sensitive customer data according to GDPR requirements.
+ * 
+ * Redacted fields:
+ * - Personal: email, phone, ssn, address
+ * - Financial: creditCard, bankAccount
+ * - Authentication: password, apiKey, tokens
+ * 
+ * @param customer - Customer data object
+ * @returns Redacted customer data safe for logging
+ */
+function redactCustomerData(customer: Customer) {
+  return redact(customer, [
+    'email',
+    'phone',
+    'ssn',
+    'address',
+    'creditCard',
+    'bankAccount',
+    'password',
+    'apiKey',
+    '*token*'
+  ]);
+}
+```
+
+### Performance Monitoring
+
+Monitor redaction performance in production:
+
+```typescript
+import { redact } from '@visulima/redact';
+
+function redactWithMetrics(data: any, rules: Rules) {
+  const start = performance.now();
+  const result = redact(data, rules);
+  const duration = performance.now() - start;
+  
+  if (duration > 100) {
+    console.warn(`Slow redaction: ${duration}ms`);
+  }
+  
+  return result;
+}
+```
+
+## Compliance Considerations
+
+### GDPR Compliance
+
+Use redaction to comply with GDPR requirements:
+
+```typescript
+const gdprFields = [
+  'email',
+  'phone',
+  'address',
+  'firstName',
+  'lastName',
+  'ssn',
+  'taxId',
+  'birthdate'
+];
+
+function prepareForLogging(userData: any) {
+  return redact(userData, gdprFields);
+}
+```
+
+### PCI DSS Compliance
+
+Protect payment card data:
+
+```typescript
+const pciFields = [
+  'creditCard',
+  'cardNumber',
+  'cvv',
+  'cvd',
+  'pan',
+  'securityCode',
+  'expiryDate'
+];
+
+function sanitizePaymentData(payment: any) {
+  return redact(payment, pciFields);
+}
+```
+
+## Debugging Redaction
+
+### Enable Debug Logging
+
+Use the logger option for debugging:
+
+```typescript
+const result = redact(data, rules, {
+  logger: {
+    debug: (message, ...args) => {
+      console.debug('[Redact]:', message, ...args);
+    }
+  }
+});
+```
+
+### Verify Redaction Coverage
+
+Check that all expected fields are redacted:
+
+```typescript
+function verifyRedaction(original: any, redacted: any, rules: string[]) {
+  rules.forEach(rule => {
+    const originalValue = original[rule];
+    const redactedValue = redacted[rule];
+    
+    if (originalValue === redactedValue) {
+      console.warn(`Rule "${rule}" did not redact value`);
+    }
+  });
+}
+```
+
+## Migration Guide
+
+### From fast-redact
+
+If migrating from `fast-redact`:
+
+```typescript
+// fast-redact
+const fastRedact = require('fast-redact');
+const redact = fastRedact({ paths: ['password', 'apiKey'] });
+const result = redact({ password: 'secret' });
+
+// Visulima Redact
+import { redact } from '@visulima/redact';
+const result = redact({ password: 'secret' }, ['password', 'apiKey']);
+```
+
+### From Custom Solutions
+
+Replace custom redaction logic:
+
+```typescript
+// Before: Custom implementation
+function customRedact(obj: any) {
+  const result = { ...obj };
+  if (result.password) result.password = '[REDACTED]';
+  if (result.apiKey) result.apiKey = '[REDACTED]';
+  return result;
+}
+
+// After: Visulima Redact
+import { redact } from '@visulima/redact';
+const result = redact(obj, ['password', 'apiKey']);
+```
+
+This covers advanced usage patterns and best practices. Adapt these techniques to your specific security and compliance requirements.
