@@ -133,7 +133,7 @@ describe(errorOverlayPlugin, () => {
         });
 
         it("should expose overlay API in client script", () => {
-            expect.assertions(5);
+            expect.assertions(4);
 
             const script = generateClientScript("development", ["error"]);
 
@@ -141,7 +141,6 @@ describe(errorOverlayPlugin, () => {
             expect(script).toContain("open: function");
             expect(script).toContain("close: function");
             expect(script).toContain("sendError:");
-            expect(script).toContain("window.__flameSendError"); // Backward compatibility
         });
     });
 });

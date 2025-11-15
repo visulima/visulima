@@ -184,9 +184,6 @@ window.__visulima_overlay__ = {
     sendError: sendError
 };
 
-// Backward compatibility: keep __flameSendError for existing code
-window.__flameSendError = sendError;
-
 ${consoleInterceptors}
 `;
 };

@@ -72,13 +72,6 @@ test.describe("Balloon Customization", () => {
         });
 
         expect(hasSendError).toBe(true);
-
-        // Check backward compatibility with __flameSendError
-        const hasFlameSendError = await page.evaluate(() => {
-            return typeof (window as any).__flameSendError === "function";
-        });
-
-        expect(hasFlameSendError).toBe(true);
     });
 
     test("should have open and close methods in API", async ({ page }) => {
@@ -189,23 +182,6 @@ test.describe("Balloon Customization", () => {
         await page.evaluate(() => {
             const error = new Error("Test error sent via API");
             window.__visulima_overlay__?.sendError(error);
-        });
-
-        await waitForErrorOverlay(page, 15_000);
-
-        // Overlay should be visible
-        const overlay = page.locator("#__v_o__root");
-        await expect(overlay).toBeVisible();
-    });
-
-    test("should maintain backward compatibility with __flameSendError", async ({ page }) => {
-        await page.goto("/error-test");
-        await waitForErrorTestPage(page);
-
-        // Send error via old API
-        await page.evaluate(() => {
-            const error = new Error("Test error sent via legacy API");
-            (window as any).__flameSendError(error);
         });
 
         await waitForErrorOverlay(page, 15_000);
