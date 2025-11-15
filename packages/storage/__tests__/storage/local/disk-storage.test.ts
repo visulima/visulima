@@ -1069,7 +1069,7 @@ describe(DiskStorage, () => {
         });
 
         it("should handle different media formats", async () => {
-            expect.assertions(4);
+            expect.assertions(3);
 
             const mediaFiles = [
                 { contentType: "audio/mpeg", name: "audio.mp3" },

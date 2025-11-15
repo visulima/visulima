@@ -4,6 +4,7 @@ import { Readable } from "node:stream";
 import type { MultipartPart } from "@remix-run/multipart-parser";
 import { parseMultipartRequest as parseMultipartRequestWeb } from "@remix-run/multipart-parser";
 import { MaxFileSizeExceededError, MultipartParseError, parseMultipartRequest } from "@remix-run/multipart-parser/node";
+// eslint-disable-next-line import/no-extraneous-dependencies
 import createHttpError from "http-errors";
 
 import type { FileInit, UploadFile } from "../storage/utils/file";
@@ -15,6 +16,7 @@ import ValidationError from "../utils/validation-error";
 import BaseHandler from "./base-handler";
 import type { Handlers, ResponseFile, UploadOptions } from "./types";
 
+// eslint-disable-next-line sonarjs/anchor-precedence
 const RE_MIME = /^multipart\/.+|application\/x-www-form-urlencoded$/i;
 
 /**

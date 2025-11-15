@@ -814,11 +814,14 @@ abstract class BaseHandler<
         let bodyBuffer = new Uint8Array();
 
         // Check if request has body and arrayBuffer method (Web API Request)
-        if ("body" in request && "arrayBuffer" in request && typeof (request as any).arrayBuffer === "function") {
+        if ("body" in request && request.body !== null && "arrayBuffer" in request && typeof (request as any).arrayBuffer === "function") {
             try {
-                bodyBuffer = new Uint8Array(await (request as any).arrayBuffer());
-            } catch {
-                // Ignore errors, bodyBuffer remains empty
+                const arrayBuf = await (request as any).arrayBuffer();
+
+                bodyBuffer = new Uint8Array(arrayBuf);
+            } catch (error) {
+                // Log error but continue with empty body
+                this.logger?.debug("[convertRequestToNode] Error reading body: %O", error);
             }
         }
 
@@ -835,6 +838,8 @@ abstract class BaseHandler<
         // Copy headers and ensure content-type is preserved for multipart data
         const headers = Object.fromEntries((request.headers as any)?.entries?.() || []);
 
+        const pathWithQuery = url.pathname + url.search;
+
         const nodeRequest = Object.assign(readableStream, {
             destroy: () => {},
             destroyed: false,
@@ -843,7 +848,8 @@ abstract class BaseHandler<
             httpVersionMajor: 1,
             httpVersionMinor: 1,
             method: request.method,
-            url: url.pathname + url.search,
+            originalUrl: pathWithQuery, // Set originalUrl for getIdFromRequest compatibility
+            url: pathWithQuery,
         }) as any as NodeRequest;
 
         // Add body data if present

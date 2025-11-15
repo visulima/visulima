@@ -1,4 +1,5 @@
 export { default as Multipart } from "./handler/multipart";
+export { default as Rest } from "./handler/rest";
 export { Tus, TUS_RESUMABLE, TUS_VERSION } from "./handler/tus";
 export type { AsyncHandler, BaseHandler, Handlers, MethodHandler, RequestEvent, UploadErrorEvent, UploadEvent, UploadOptions } from "./handler/types";
 export { default as DiskStorage } from "./storage/local/disk-storage";
