@@ -11,7 +11,7 @@ import type { IndexHtmlTransformResult, Plugin, PluginOption, TransformOptions, 
 import findLanguageBasedOnExtension from "../../../shared/utils/find-language-based-on-extension";
 import { DEFAULT_ERROR_MESSAGE, DEFAULT_ERROR_NAME, MESSAGE_TYPE, PLUGIN_NAME, RECENT_ERROR_TTL_MS } from "./constants";
 import { patchOverlay } from "./overlay/patch-overlay";
-import type { DevelopmentLogger, ExtendedError, RawErrorData, RecentErrorTracker, VisulimaViteOverlayErrorPayload, ViteErrorData } from "./types";
+import type { BalloonConfig, DevelopmentLogger, ExtendedError, RawErrorData, RecentErrorTracker, VisulimaViteOverlayErrorPayload, ViteErrorData } from "./types";
 import createViteSolutionFinder from "./utils/create-vite-solution-finder";
 import buildExtendedErrorData from "./utils/error-processing";
 import generateClientScript from "./utils/generate-client-script";
@@ -570,7 +570,9 @@ const hasVuePlugin = (plugins: PluginOption[], vuePluginName?: string): boolean 
  * @param options.reactPluginName Custom React plugin name (optional)
  * @param options.solutionFinders Custom solution finders (optional)
  * @param options.vuePluginName Custom Vue plugin name (optional)
- * @param options.showBallonButton Whether to show the balloon button (optional)
+ * @param options.showBallonButton Whether to show the balloon button (optional, deprecated - use overlay.balloon.enabled)
+ * @param options.overlay Balloon overlay configuration (optional)
+ * @param options.overlay.balloon Balloon trigger configuration (optional)
  * @returns The Vite plugin configuration
  */
 const errorOverlayPlugin = (
@@ -579,6 +581,9 @@ const errorOverlayPlugin = (
         forwardedConsoleMethods?: string[];
         // @deprecated Please use the new forwardConsole option
         logClientRuntimeError?: boolean;
+        overlay?: {
+            balloon?: BalloonConfig;
+        };
         reactPluginName?: string;
         showBallonButton?: boolean;
         solutionFinders?: SolutionFinder[];
@@ -681,7 +686,12 @@ const errorOverlayPlugin = (
                 return null;
             }
 
-            return patchOverlay(code, options?.showBallonButton ?? true);
+            // Backward compatibility: showBallonButton takes precedence over overlay.balloon.enabled
+            const balloonEnabled = options?.showBallonButton !== undefined
+                ? options.showBallonButton
+                : (options?.overlay?.balloon?.enabled ?? true);
+
+            return patchOverlay(code, balloonEnabled, options?.overlay?.balloon);
         },
 
         transformIndexHtml(): IndexHtmlTransformResult {
@@ -690,7 +700,7 @@ const errorOverlayPlugin = (
                 tags: [
                     {
                         attrs: { type: "module" },
-                        children: generateClientScript(mode, forwardedConsoleMethods),
+                        children: generateClientScript(mode, forwardedConsoleMethods, options?.overlay?.balloon),
                         injectTo: "head" as const,
                         tag: "script",
                     },

@@ -396,6 +396,42 @@ class ErrorOverlay extends HTMLElement {
                 balloonText.textContent = total === 1 ? "Error" : "Errors";
             }
 
+            // Apply balloon configuration if available
+            // eslint-disable-next-line no-undef
+            if (typeof balloonConfig !== "undefined" && balloonConfig) {
+                // Apply custom styles
+                if (balloonConfig.style) {
+                    Object.entries(balloonConfig.style).forEach(([key, value]) => {
+                        if (value) {
+                            // Convert camelCase to kebab-case for CSS properties
+                            const cssKey = key.replace(/([A-Z])/g, "-$1").toLowerCase();
+                            balloon.style.setProperty(cssKey, value);
+                        }
+                    });
+                }
+
+                // Apply position if specified (but allow localStorage override)
+                if (balloonConfig.position && !localStorage.getItem("v-o-balloon")) {
+                    const positionStyles = {
+                        "bottom-left": { bottom: "8px", left: "8px" },
+                        "bottom-right": { bottom: "8px", right: "8px" },
+                        "top-left": { left: "8px", top: "8px" },
+                        "top-right": { right: "8px", top: "8px" },
+                    };
+
+                    const styles = positionStyles[balloonConfig.position];
+                    if (styles) {
+                        // Clear existing position styles
+                        balloon.style.top = "";
+                        balloon.style.bottom = "";
+                        balloon.style.left = "";
+                        balloon.style.right = "";
+                        Object.assign(balloon.style, styles);
+                        balloon.setAttribute("data-balloon-position", balloonConfig.position);
+                    }
+                }
+            }
+
             this._restoreBalloonState();
 
             balloon.classList.toggle("hidden", total <= 0);

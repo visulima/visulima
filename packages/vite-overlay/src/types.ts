@@ -104,3 +104,28 @@ export interface ErrorProcessingResult {
 }
 
 export type StackFrameValidator = (line: string) => boolean;
+
+/**
+ * Balloon position options
+ */
+export type BalloonPosition = "top-left" | "top-right" | "bottom-left" | "bottom-right";
+
+/**
+ * Custom style options for the balloon trigger
+ */
+export interface BalloonStyle {
+    readonly background?: string;
+    readonly color?: string;
+    readonly borderRadius?: string;
+    readonly [key: string]: string | undefined;
+}
+
+/**
+ * Balloon configuration options
+ */
+export interface BalloonConfig {
+    readonly enabled?: boolean;
+    readonly position?: BalloonPosition;
+    readonly icon?: string;
+    readonly style?: BalloonStyle;
+}

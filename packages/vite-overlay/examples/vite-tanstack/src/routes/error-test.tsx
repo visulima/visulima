@@ -10,8 +10,8 @@ function ErrorTestPage() {
             throw new Error("This is a simple test error from line " + new Error().stack?.split("\n")[1]?.match(/:(\d+):/)?.[1]);
         } catch (error) {
             // Send error directly to our overlay system to bypass React's error boundaries
-            if (typeof window !== "undefined" && (window as any).__flameSendError) {
-                (window as any).__flameSendError(error);
+            if (typeof window !== "undefined" && (window as any).__visulima_overlay__?.sendError) {
+                (window as any).__visulima_overlay__.sendError(error);
             }
             throw error; // Re-throw to still trigger React's error handling if needed
         }
