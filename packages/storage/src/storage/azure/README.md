@@ -204,7 +204,7 @@ Azure supports conditional operations using ETags:
 // Conditional get (only if not modified)
 const file = await storage.get({
     conditions: {
-        ifNoneMatch: "\"etag-value\"",
+        ifNoneMatch: '"etag-value"',
     },
     id: fileId,
 });
@@ -212,7 +212,7 @@ const file = await storage.get({
 // Conditional update
 await storage.update({ id: fileId }, metadata, {
     conditions: {
-        ifMatch: "\"current-etag\"",
+        ifMatch: '"current-etag"',
     },
 });
 ```

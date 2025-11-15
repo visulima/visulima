@@ -125,7 +125,7 @@ describe("imageTransformer streaming", () => {
         });
 
         it("should have transformStream available", async () => {
-            expect.assertions(2);
+            expect.assertions(1);
 
             // ImageTransformer always has transformStream available (it's overridden from base class)
             expect(transformer.transformStream).toBeDefined();

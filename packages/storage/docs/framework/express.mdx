@@ -18,6 +18,8 @@ pnpm add @visulima/upload express
 
 ## Basic File Upload
 
+### Multipart Handler (Form-based Uploads)
+
 ````ts
 import express from "express";
 import { DiskStorage, Multipart } from "@visulima/upload";
@@ -84,6 +86,52 @@ app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
 ````
+
+### REST Handler (Direct Binary Uploads)
+
+```ts
+import express from "express";
+import { DiskStorage, Rest } from "@visulima/upload";
+
+const app = express();
+const PORT = 3000;
+
+const storage = new DiskStorage({ directory: "./uploads" });
+const rest = new Rest({ storage });
+
+// Upload file with raw binary data
+app.post("/files", rest.handle, (req, res) => {
+    const file = req.body;
+    res.json(file);
+});
+
+// Create or update file (requires ID in URL)
+app.put("/files/:id", rest.handle, (req, res) => {
+    const file = req.body;
+    res.json(file);
+});
+
+// Delete single file
+app.delete("/files/:id", rest.handle, (req, res) => {
+    res.status(204).send();
+});
+
+// Batch delete multiple files via query parameter
+// DELETE /files?ids=id1,id2,id3
+app.delete("/files", rest.handle, (req, res) => {
+    res.status(204).send();
+});
+
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+});
+```
+
+### Choosing Between Handlers
+
+- **Multipart**: Use for traditional web form uploads (`multipart/form-data`)
+- **REST**: Use for direct binary uploads, API-first applications, or when you need PUT support
+- **TUS**: Use for large files or when you need resumable uploads
 
 Note: The `handle` middleware attaches the completed `UploadFile` to `req.body` for POST/PUT uploads and streams/serves files for GET.
 
