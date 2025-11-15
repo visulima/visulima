@@ -11,6 +11,8 @@ import sunIcon from "lucide-static/icons/sun.svg?data-uri&encoding=css";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import closeIcon from "lucide-static/icons/x.svg?data-uri&encoding=css";
 
+import type { BalloonConfig, BalloonPosition } from "../types";
+
 import Editors from "../../../../shared/utils/editors";
 import styleCss from "./client/index.css";
 import FlameErrorOverlay from "./client/runtime.js?raw";
@@ -212,36 +214,97 @@ const rootElement = (
 </div>`;
 
 /**
+ * Gets the default position styles for a balloon position
+ */
+const getPositionStyles = (position: BalloonPosition = "bottom-right"): string => {
+    const positions: Record<BalloonPosition, string> = {
+        "top-left": "top: 8px; left: 8px;",
+        "top-right": "top: 8px; right: 8px;",
+        "bottom-left": "bottom: 8px; left: 8px;",
+        "bottom-right": "bottom: 8px; right: 8px;",
+    };
+
+    return positions[position];
+};
+
+/**
+ * Generates inline styles from balloon style configuration
+ */
+const generateBalloonStyles = (style?: BalloonConfig["style"], position?: BalloonPosition): string => {
+    const styles: string[] = [];
+
+    if (position) {
+        styles.push(getPositionStyles(position));
+    } else {
+        styles.push(getPositionStyles("bottom-right"));
+    }
+
+    if (style) {
+        Object.entries(style).forEach(([key, value]) => {
+            if (value) {
+                // Convert camelCase to kebab-case for CSS properties
+                const cssKey = key.replace(/([A-Z])/g, "-$1").toLowerCase();
+                styles.push(`${cssKey}: ${value};`);
+            }
+        });
+    }
+
+    return styles.join(" ");
+};
+
+/**
+ * Generates the balloon button HTML with custom configuration
+ */
+const generateBalloonButton = (balloonConfig?: BalloonConfig): string => {
+    if (balloonConfig?.enabled === false) {
+        return "";
+    }
+
+    const position = balloonConfig?.position || "bottom-right";
+    const customStyle = generateBalloonStyles(balloonConfig?.style, position);
+    const iconHtml = balloonConfig?.icon
+        ? `<img src="${balloonConfig.icon}" alt="" class="w-4 h-4" />`
+        : "";
+
+    // Build the button HTML with optional icon
+    const buttonContent = iconHtml
+        ? `${iconHtml}\n    <span id="__v_o__balloon_count" class="inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-white/20 text-white font-bold">0</span>\n    <span id="__v_o__balloon_text">Errors</span>`
+        : `<span id="__v_o__balloon_count" class="inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-white/20 text-white font-bold">0</span>\n    <span id="__v_o__balloon_text">Errors</span>`;
+
+    return `
+<button type="button" id="__v_o__balloon" title="Toggle error overlay" aria-label="Toggle error overlay" class="fixed z-[2147483647] inline-flex items-center gap-2 px-2.5 py-1.5 rounded-full bg-[var(--ono-v-red-orange)] text-white font-sans text-xs leading-none shadow-lg cursor-pointer transition-all duration-200 hover:brightness-105" style="${customStyle}" data-balloon-position="${position}">
+    ${buttonContent}
+</button>`;
+};
+
+/**
  * Generates the overlay template with dynamic editor options.
  */
-const generateOverlayTemplate = (showBalloonButton: boolean): string => {
+const generateOverlayTemplate = (showBalloonButton: boolean, balloonConfig?: BalloonConfig): string => {
     const editorOptions = generateEditorOptions();
 
     return `<style>${styleCss}</style>
 ${rootElement("__v_o__root", editorOptions)}
 
-${
-    showBalloonButton
-        ? `
-<button type="button" id="__v_o__balloon" title="Toggle error overlay" aria-label="Toggle error overlay" class="fixed z-[2147483647] inline-flex items-center gap-2 px-2.5 py-1.5 rounded-full bg-[var(--ono-v-red-orange)] text-white font-sans text-xs leading-none shadow-lg cursor-pointer transition-all duration-200 hover:brightness-105" style="bottom: 8px; right: 8px;">
-    <span id="__v_o__balloon_count" class="inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-white/20 text-white font-bold">0</span>
-    <span id="__v_o__balloon_text">Errors</span>
-</button>`
-        : ""
-}`;
+${showBalloonButton ? generateBalloonButton(balloonConfig) : ""}`;
 };
 
 /**
  * Patches Vite's client code to replace the default error overlay with our custom overlay.
+ * @param code The Vite client code to patch
+ * @param showBalloonButton Whether to show the balloon button
+ * @param balloonConfig Optional balloon configuration
  */
-export const patchOverlay = (code: string, showBalloonButton: boolean): string => {
-    const overlayTemplate = generateOverlayTemplate(showBalloonButton);
+export const patchOverlay = (code: string, showBalloonButton: boolean, balloonConfig?: BalloonConfig): string => {
+    const overlayTemplate = generateOverlayTemplate(showBalloonButton, balloonConfig);
+    const balloonConfigJson = JSON.stringify(balloonConfig || null);
 
     const templateString = `const overlayTemplate = ${JSON.stringify(overlayTemplate)};`;
+    const configString = `const balloonConfig = ${balloonConfigJson};`;
 
-    let patched = code.replace(VITE_CLIENT_CLASS, `${templateString}\n${FlameErrorOverlay}\nclass ViteErrorOverlay`);
+    let patched = code.replace(VITE_CLIENT_CLASS, `${templateString}\n${configString}\n${FlameErrorOverlay}\nclass ViteErrorOverlay`);
 
-    patched = patched.replace(VITE_ERROR_OVERLAY_CLASS, `${templateString}\n${FlameErrorOverlay}\nvar ViteErrorOverlay = `);
+    patched = patched.replace(VITE_ERROR_OVERLAY_CLASS, `${templateString}\n${configString}\n${FlameErrorOverlay}\nvar ViteErrorOverlay = `);
 
     patched = `${patched}\n\n${WINDOW_ERROR_OVERLAY_GLOBAL};`;
 
