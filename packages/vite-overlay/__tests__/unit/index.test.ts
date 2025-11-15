@@ -133,13 +133,15 @@ describe(errorOverlayPlugin, () => {
         });
 
         it("should expose overlay API in client script", () => {
-            expect.assertions(3);
+            expect.assertions(5);
 
             const script = generateClientScript("development", ["error"]);
 
             expect(script).toContain("window.__visulima_overlay__");
             expect(script).toContain("open: function");
             expect(script).toContain("close: function");
+            expect(script).toContain("sendError:");
+            expect(script).toContain("window.__flameSendError"); // Backward compatibility
         });
     });
 });

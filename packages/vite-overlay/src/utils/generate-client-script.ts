@@ -159,8 +159,6 @@ window.addEventListener("unhandledrejection", function (evt) {
     sendError(evt.reason);
 });
 
-window.__flameSendError = sendError;
-
 // Expose overlay API for manual control
 window.__visulima_overlay__ = {
     open: function() {
@@ -181,8 +179,13 @@ window.__visulima_overlay__ = {
     // Get the current overlay instance if available
     getInstance: function() {
         return globalThis.__v_o__current || null;
-    }
+    },
+    // Send/report an error to the overlay
+    sendError: sendError
 };
+
+// Backward compatibility: keep __flameSendError for existing code
+window.__flameSendError = sendError;
 
 ${consoleInterceptors}
 `;
