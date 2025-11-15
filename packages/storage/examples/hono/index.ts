@@ -3,7 +3,7 @@ import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 import { swaggerUI } from "@hono/swagger-ui";
 import type { Context } from "hono";
-import { Multipart, DiskStorage, Tus } from "@visulima/upload";
+import { Multipart, DiskStorage, Rest, Tus } from "@visulima/upload";
 import { xhrOpenApiSpec, tusOpenApiSpec } from "@visulima/upload/openapi";
 import { MediaTransformer } from "@visulima/upload/transformer";
 import ImageTransformer from "@visulima/upload/transformers/image";
@@ -36,6 +36,12 @@ const mediaTransformer = new MediaTransformer(storage, {
 
 // Multipart handler
 const multipart = new Multipart({
+    storage,
+    mediaTransformer,
+});
+
+// REST handler for direct binary uploads
+const rest = new Rest({
     storage,
     mediaTransformer,
 });
@@ -81,6 +87,62 @@ app.delete("/files/:id", async (c: Context) => {
         return await multipart.fetch(request);
     } catch (error: any) {
         console.error("Delete file(s) error:", error);
+        return c.json({ error: error.message || "Failed to delete file(s)" }, 500);
+    }
+});
+
+// REST API routes for direct binary uploads
+app.post("/files-rest", async (c: Context) => {
+    const request = c.req.raw;
+
+    try {
+        return await rest.fetch(request);
+    } catch (error: any) {
+        console.error("REST upload error:", error);
+        return c.json({ error: error.message || "REST upload failed" }, 500);
+    }
+});
+
+app.put("/files-rest/:id", async (c: Context) => {
+    const request = c.req.raw;
+
+    try {
+        return await rest.fetch(request);
+    } catch (error: any) {
+        console.error("REST update error:", error);
+        return c.json({ error: error.message || "REST update failed" }, 500);
+    }
+});
+
+app.get("/files-rest/:id?", async (c: Context) => {
+    const request = c.req.raw;
+
+    try {
+        return await rest.fetch(request);
+    } catch (error: any) {
+        console.error("REST get error:", error);
+        return c.json({ error: error.message || "Failed to get file(s)" }, 500);
+    }
+});
+
+app.head("/files-rest/:id", async (c: Context) => {
+    const request = c.req.raw;
+
+    try {
+        return await rest.fetch(request);
+    } catch (error: any) {
+        console.error("REST head error:", error);
+        return c.json({ error: error.message || "Failed to get file metadata" }, 500);
+    }
+});
+
+app.delete("/files-rest/:id?", async (c: Context) => {
+    const request = c.req.raw;
+
+    try {
+        return await rest.fetch(request);
+    } catch (error: any) {
+        console.error("REST delete error:", error);
         return c.json({ error: error.message || "Failed to delete file(s)" }, 500);
     }
 });

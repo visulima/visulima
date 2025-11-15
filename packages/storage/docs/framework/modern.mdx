@@ -20,6 +20,12 @@ pnpm add @visulima/upload
 
 Modern frameworks that use the Web Fetch API can take advantage of the `fetch()` method, which provides native Web API Request/Response support without conversion layers.
 
+## Choosing the Right Handler
+
+- **Multipart**: Use for traditional web form uploads (`multipart/form-data`)
+- **REST**: Use for direct binary uploads, API-first applications, or when you need PUT support
+- **TUS**: Use for large files, unreliable networks, or when you need resumable uploads
+
 ## Hono
 
 Hono is a fast, lightweight web framework for Node runtimes and Web API environments.
@@ -146,6 +152,52 @@ const server = Bun.serve({
 
 console.log(`Server running on port ${server.port}`);
 ```
+
+## REST Handler (Direct Binary Uploads)
+
+The REST handler provides a clean REST API for direct binary file uploads:
+
+```ts
+import { DiskStorage, Rest } from "@visulima/upload";
+
+const storage = new DiskStorage({ directory: "./uploads" });
+const rest = new Rest({ storage });
+
+// Upload file with raw binary data
+app.post("/files", async (c) => {
+    return await rest.fetch(c.req.raw);
+});
+
+// Create or update file (requires ID in URL)
+app.put("/files/:id", async (c) => {
+    return await rest.fetch(c.req.raw);
+});
+
+// Delete single file
+app.delete("/files/:id", async (c) => {
+    return await rest.fetch(c.req.raw);
+});
+
+// Batch delete multiple files
+app.delete("/files", async (c) => {
+    const url = new URL(c.req.url);
+    // Delete via query parameter: ?ids=id1,id2,id3
+    // Or via JSON body: { "ids": ["id1", "id2"] }
+    return await rest.fetch(c.req.raw);
+});
+
+// Get file metadata
+app.head("/files/:id", async (c) => {
+    return await rest.fetch(c.req.raw);
+});
+```
+
+### REST Handler Features
+
+- **Direct binary uploads**: Upload raw binary data without multipart encoding
+- **PUT support**: Create or update files with PUT method
+- **Batch delete**: Delete multiple files in one request
+- **RESTful API**: Clean REST interface for file operations
 
 ## TUS Protocol Support
 

@@ -19,6 +19,7 @@
 
 ## Features
 
+- **Multiple Upload Handlers**: Multipart (form-based), REST (direct binary), and TUS (resumable) uploads
 - Parent directories are created automatically as needed (like S3 and Azure)
 - Content types are inferred from file extensions (like the filesystem)
 - Files are by default marked as readable via the web (like a filesystem + web server)
@@ -29,6 +30,7 @@
 - Non-image files are also supported
 - Web access to files can be disabled and reenabled
 - GIF is supported, including animation, with full support for scaling and cropping
+- Batch operations: Delete multiple files in a single request
 - On fire about minimizing file sizes for your resized images? You can plug in `imagemin` and compatible tools using the `postprocessors` option.
 
 ## Installation

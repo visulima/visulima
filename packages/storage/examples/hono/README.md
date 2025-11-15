@@ -6,6 +6,7 @@ This example demonstrates how to use the Visulima Upload package with modern fra
 
 - Native Web API Request/Response support using the `fetch()` method
 - **Multipart file uploads** - Traditional form-based uploads
+- **REST API uploads** - Direct binary uploads via POST/PUT
 - **TUS resumable uploads** - Robust, resumable file uploads with pause/resume support
 - File listing endpoint
 - **Image transformation support** - Resize, crop, convert formats with caching
@@ -14,12 +15,13 @@ This example demonstrates how to use the Visulima Upload package with modern fra
 - **Swagger/OpenAPI documentation** - Interactive API documentation
 - Compatible with Hono, Cloudflare Workers, Deno, Bun, and other Web API frameworks
 
-## TUS vs Multipart Uploads
+## Choosing the Right Upload Method
 
-This example provides both upload methods:
+This example provides three upload methods:
 
-- **Multipart uploads** are simpler for small files and basic use cases
-- **TUS resumable uploads** are recommended for:
+- **Multipart uploads** (`multipart/form-data`) - Traditional form-based uploads, best for web forms
+- **REST uploads** (direct binary) - Clean REST API for direct binary uploads, best for API-first applications
+- **TUS resumable uploads** - Recommended for:
     - Large files (>100MB)
     - Unreliable network connections
     - Mobile applications
@@ -59,6 +61,15 @@ The server will start on `http://localhost:3000`.
 - `POST /files` - Upload files (multipart/form-data)
 - `GET /files/:id` - Download file (supports image transformations via query parameters)
 - `DELETE /files/:id` - Delete file
+
+### REST API Uploads (Direct Binary)
+
+- `POST /files-rest` - Upload file with raw binary data
+- `PUT /files-rest/:id` - Create or update file (requires ID in URL)
+- `GET /files-rest/:id` - Download file
+- `DELETE /files-rest/:id` - Delete single file
+- `DELETE /files-rest?ids=id1,id2,id3` - Batch delete multiple files
+- `HEAD /files-rest/:id` - Get file metadata
 
 ### TUS Resumable Uploads
 
@@ -107,6 +118,44 @@ List uploaded files:
 
 ```bash
 curl http://localhost:3000/files
+```
+
+### REST API Uploads
+
+Upload a file with raw binary data:
+
+```bash
+curl -X POST http://localhost:3000/files-rest \
+  -H "Content-Type: image/jpeg" \
+  -H "Content-Disposition: attachment; filename=\"photo.jpg\"" \
+  -H "X-File-Metadata: {\"description\":\"My photo\"}" \
+  --data-binary @/path/to/your/file.jpg
+```
+
+Create or update a file with PUT:
+
+```bash
+curl -X PUT http://localhost:3000/files-rest/your-file-id \
+  -H "Content-Type: image/png" \
+  --data-binary @/path/to/your/file.png
+```
+
+Batch delete multiple files:
+
+```bash
+# Via query parameter
+curl -X DELETE "http://localhost:3000/files-rest?ids=id1,id2,id3"
+
+# Via JSON body
+curl -X DELETE http://localhost:3000/files-rest \
+  -H "Content-Type: application/json" \
+  -d '{"ids": ["id1", "id2", "id3"]}'
+```
+
+Get file metadata:
+
+```bash
+curl -X HEAD http://localhost:3000/files-rest/your-file-id -v
 ```
 
 ### TUS Resumable Uploads

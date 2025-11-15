@@ -11,6 +11,8 @@
         "./provider/netlify": "./src/storage/netlify-blob/index.ts",
         "./provider/local": "./src/storage/local/index.ts",
         "./openapi": "./src/openapi/index.ts",
+        "./http/multipart": "./src/handler/multipart.ts",
+        "./http/tus": "./src/handler/tus.ts",
         "./transformers/audio": "./src/transformer/audio-transformer.ts",
         "./transformers/video": "./src/transformer/video-transformer.ts",
         "./transformers/image": "./src/transformer/image-transformer.ts",

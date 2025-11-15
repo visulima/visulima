@@ -184,7 +184,17 @@ export const normalizeHookResponse
             if (isRecord(response)) {
                 const { body, headers, statusCode, ...rest } = response;
 
-                return { body: body ?? rest, headers, statusCode };
+                const result: UploadResponse = { body: body ?? rest };
+
+                if (headers !== undefined) {
+                    result.headers = headers;
+                }
+
+                if (statusCode !== undefined) {
+                    result.statusCode = statusCode;
+                }
+
+                return result;
             }
 
             return { body: response ?? "" };
@@ -215,7 +225,13 @@ export const normalizeOnErrorResponse
  */
 export const getRealPath = (request: IncomingMessage & { originalUrl?: string }): string => {
     // Exclude the query params from the path
-    let realPath = ((request.originalUrl || request.url) as string).split("?")[0];
+    // Prefer originalUrl (full path) over url (may be stripped by Express routing)
+    let realPath = (((request.originalUrl || request.url) as string) || "").split("?")[0];
+
+    // Ensure path starts with / for consistent parsing
+    if (realPath && !realPath.startsWith("/")) {
+        realPath = `/${realPath}`;
+    }
 
     // If it's an absolute URL, extract the pathname
     if (realPath.startsWith("http")) {
@@ -250,6 +266,11 @@ export const getIdFromRequest = (request: IncomingMessage & { originalUrl?: stri
     // Extract UUID from the path by finding the last UUID-like segment
     const segments = realPath.split("/").filter(Boolean);
 
+    if (segments.length === 0) {
+        throw new Error("Invalid request URL");
+    }
+
+    // Try to find a UUID-like segment first (check from the end)
     for (let index = segments.length - 1; index >= 0; index--) {
         const segment = segments[index];
         // Remove file extension if present
@@ -260,6 +281,31 @@ export const getIdFromRequest = (request: IncomingMessage & { originalUrl?: stri
         }
     }
 
+    // If no UUID found, check if the last segment looks like a valid ID
+    const lastSegment = segments[segments.length - 1];
+    const cleanLastSegment = lastSegment.replace(/\.[^/.]+$/, "");
+
+    // Common path names that should never be treated as IDs
+    const commonPathNames = ["files", "metadata", "upload", "download", "http-rest"];
+
+    // Reject if it's a common path name
+    if (commonPathNames.includes(cleanLastSegment.toLowerCase())) {
+        throw new Error("Invalid request URL");
+    }
+
+    // Reject if too short (less than 8 characters) - this catches paths like "/3"
+    if (cleanLastSegment.length < 8) {
+        throw new Error("Invalid request URL");
+    }
+
+    // For paths with multiple segments, if the last segment is >= 8 chars and not a common name, use it
+    // This allows non-UUID IDs (like nanoid) to work
+    if (segments.length > 1) {
+        return cleanLastSegment;
+    }
+
+    // Single segment paths that aren't UUIDs and aren't common names but are >= 8 chars
+    // These could be valid IDs, but we're conservative and reject them unless they match UUID pattern
     throw new Error("Invalid request URL");
 };
 
@@ -274,14 +320,16 @@ export const getRequestStream = (request: IncomingMessage | Request): Readable =
         return Readable.fromWeb(request.body as any);
     }
 
+    // Check if request has body property with buffer data (converted Web API request)
+    // This should be checked before instanceof Readable to prioritize body data
+    if ("body" in request && request.body && request.body instanceof Uint8Array) {
+        // Convert Uint8Array to Buffer for Readable.from to work correctly
+        return Readable.from(Buffer.from(request.body));
+    }
+
     // Node.js IncomingMessage - should be a Readable stream
     if (request instanceof Readable) {
         return request;
-    }
-
-    // Check if request has body property with buffer data (converted Web API request)
-    if ("body" in request && request.body && request.body instanceof Uint8Array) {
-        return Readable.from(request.body);
     }
 
     // Fallback - create an empty readable stream

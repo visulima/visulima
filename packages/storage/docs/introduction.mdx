@@ -41,34 +41,52 @@ pnpm add @visulima/upload
 ### Node.js/Express
 
 ```ts
-import { DiskStorage, Multipart } from "@visulima/upload";
+import { DiskStorage, Multipart, Rest } from "@visulima/upload";
 
 const storage = new DiskStorage({ directory: "./uploads" });
-const multipart = new Multipart({ storage });
 
-// Express middleware usage
+// Multipart handler (for form-based uploads)
+const multipart = new Multipart({ storage });
 app.use("/upload", multipart.upload, (req, res) => {
     res.json({ id: req.file?.id });
 });
+
+// REST handler (for direct binary uploads)
+const rest = new Rest({ storage });
+app.use("/files", rest.handle);
 ```
 
 ### Modern Frameworks (Hono, Cloudflare Workers)
 
 ```ts
-import { DiskStorage, Multipart } from "@visulima/upload";
+import { DiskStorage, Multipart, Rest } from "@visulima/upload";
 
 const storage = new DiskStorage({ directory: "./uploads" });
-const multipart = new Multipart({ storage });
 
-// Direct fetch method usage
+// Multipart handler
+const multipart = new Multipart({ storage });
 app.post("/upload", async (c) => {
     return await multipart.fetch(c.req.raw);
 });
+
+// REST handler (for direct binary uploads)
+const rest = new Rest({ storage });
+app.post("/files", async (c) => {
+    return await rest.fetch(c.req.raw);
+});
 ```
+
+## Upload Handlers
+
+Visulima upload provides three handlers for different upload scenarios:
+
+- **Multipart**: Traditional `multipart/form-data` uploads (web forms)
+- **REST**: Direct binary uploads via POST/PUT (raw binary data)
+- **TUS**: Resumable uploads with chunking support (large files, unreliable networks)
 
 ## API Methods
 
-Visulima upload provides multiple API methods for different environments:
+All handlers provide multiple API methods for different environments:
 
 ### `handle()` - Node.js/Express
 
