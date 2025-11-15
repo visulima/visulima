@@ -7,7 +7,7 @@
         "dev": "tsx index.ts"
     },
     "dependencies": {
-        "@visulima/upload": "workspace:*",
+        "@visulima/storage": "workspace:*",
         "cors": "2.8.5",
         "copy-file": "^11.1.0",
         "dotenv": "^17.2.3",
