@@ -140,7 +140,14 @@ export class Tus<
             headers = { "Upload-Expires": new Date(file.expiredAt).toUTCString() };
         }
 
-        headers = { ...headers, ...this.buildHeaders(file, { Location: this.buildFileUrl(request, file) }) };
+        // Build TUS headers and ensure Location header is set (required by TUS protocol)
+        const locationUrl = this.buildFileUrl(request, file);
+        headers = { ...headers, ...this.buildHeaders(file, { Location: locationUrl }) };
+        
+        // Ensure Location header is present (TUS protocol requirement)
+        if (!headers.Location) {
+            headers.Location = locationUrl;
+        }
 
         if (file.bytesWritten > 0) {
             headers["Upload-Offset"] = file.bytesWritten.toString();
