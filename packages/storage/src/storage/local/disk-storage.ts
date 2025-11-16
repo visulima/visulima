@@ -67,7 +67,7 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
         if (fileInit.ttl) {
             const ttlMs = typeof fileInit.ttl === "string" ? toMilliseconds(fileInit.ttl) : fileInit.ttl;
 
-            if (ttlMs !== null) {
+            if (ttlMs !== undefined) {
                 processedConfig.expiredAt = Date.now() + ttlMs;
             }
         }

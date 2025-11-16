@@ -81,25 +81,6 @@ abstract class BaseTransformer<
     }
 
     /**
-     * Get content type from transformation result based on format.
-     * @param result Transformation result object containing format information
-     * @returns Content type string (MIME type)
-     */
-    // eslint-disable-next-line class-methods-use-this
-    protected getContentTypeFromResult(result: any): string {
-        // If result has a format, try to get content type from mime
-        if (result?.format) {
-            const contentType = mime.getType(result.format);
-
-            if (contentType) {
-                return contentType;
-            }
-        }
-
-        return "application/octet-stream";
-    }
-
-    /**
      * Clear cache for a specific file or all files
      * @param fileId Optional file identifier to clear cache for specific file
      */
@@ -119,10 +100,30 @@ abstract class BaseTransformer<
      */
     public getCacheStats(): { maxSize: number; size: number } {
         // Default implementation - subclasses can override for more specific stats
+        // Cache interface doesn't have a size property, so we return 0 as default
         return {
             maxSize: -1, // -1 indicates unlimited or unknown max size
-            size: this.cache?.size ?? 0,
+            size: (this.cache as any)?.size ?? 0,
         };
+    }
+
+    /**
+     * Get content type from transformation result based on format.
+     * @param result Transformation result object containing format information
+     * @returns Content type string (MIME type)
+     */
+    // eslint-disable-next-line class-methods-use-this
+    protected getContentTypeFromResult(result: any): string {
+        // If result has a format, try to get content type from mime
+        if (result?.format) {
+            const contentType = mime.getType(result.format);
+
+            if (contentType) {
+                return contentType;
+            }
+        }
+
+        return "application/octet-stream";
     }
 }
 

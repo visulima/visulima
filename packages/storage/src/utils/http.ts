@@ -1,9 +1,9 @@
 import type { IncomingMessage, OutgoingHttpHeader, ServerResponse } from "node:http";
 import { Readable } from "node:stream";
 
+// eslint-disable-next-line import/no-extraneous-dependencies
 import typeis, { hasBody } from "type-is";
 
-import filePathUrlMatcher from "./file-path-url-matcher";
 import getLastOne from "./primitives/get-last-one";
 import isRecord from "./primitives/is-record";
 import type { Header, Headers, HttpError, HttpErrorBody, IncomingMessageWithBody, UploadResponse } from "./types";
@@ -228,8 +228,12 @@ export const getRealPath = (request: IncomingMessage & { originalUrl?: string })
     // Prefer originalUrl (full path) over url (may be stripped by Express routing)
     let realPath = (((request.originalUrl || request.url) as string) || "").split("?")[0];
 
+    if (!realPath) {
+        throw new TypeError("Invalid request URL");
+    }
+
     // Ensure path starts with / for consistent parsing
-    if (realPath && !realPath.startsWith("/")) {
+    if (!realPath.startsWith("/")) {
         realPath = `/${realPath}`;
     }
 
@@ -238,10 +242,6 @@ export const getRealPath = (request: IncomingMessage & { originalUrl?: string })
         const url = new URL(realPath);
 
         realPath = url.pathname;
-    }
-
-    if (!realPath) {
-        throw new TypeError("Invalid request URL");
     }
 
     return realPath;
@@ -273,6 +273,11 @@ export const getIdFromRequest = (request: IncomingMessage & { originalUrl?: stri
     // Try to find a UUID-like segment first (check from the end)
     for (let index = segments.length - 1; index >= 0; index--) {
         const segment = segments[index];
+
+        if (!segment) {
+            continue;
+        }
+
         // Remove file extension if present
         const cleanSegment = segment.replace(/\.[^/.]+$/, "");
 
@@ -290,6 +295,11 @@ export const getIdFromRequest = (request: IncomingMessage & { originalUrl?: stri
 
     // If no UUID found, check if the last segment looks like a valid ID
     const lastSegment = segments[segments.length - 1];
+
+    if (!lastSegment) {
+        throw new Error("Invalid request URL");
+    }
+
     const cleanLastSegment = lastSegment.replace(/\.[^/.]+$/, "");
 
     // Common path names that should never be treated as IDs

@@ -68,7 +68,8 @@ export class Validator<T> {
             const isValid = await validator.isValid(t);
 
             if (!isValid) {
-                const response = toResponse(validator.response || ErrorMap[code]);
+                const errorResponse = validator.response || (code in ErrorMap ? ErrorMap[code as keyof typeof ErrorMap] : ErrorMap.UnknownError);
+                const response = toResponse(errorResponse);
                 const { body, headers, message, statusCode } = response as any;
 
                 throw new ValidationError(code, statusCode as number, (body || message) as HttpErrorBody, headers as Headers);

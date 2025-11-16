@@ -65,7 +65,7 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile, FileReturn> {
         if (config.ttl) {
             const ttlMs = typeof config.ttl === "string" ? toMilliseconds(config.ttl) : config.ttl;
 
-            processedConfig.expiredAt = ttlMs === null ? undefined : Date.now() + ttlMs;
+            processedConfig.expiredAt = ttlMs === undefined ? undefined : Date.now() + ttlMs;
         }
 
         const file = new NetlifyBlobFile(processedConfig);
@@ -138,7 +138,8 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile, FileReturn> {
                 const buffer = Buffer.concat(chunks);
 
                 // Upload to Netlify Blob
-                await this.store.set(file.name, buffer, {
+                // Convert Buffer to ArrayBuffer for Netlify Blob API
+                await this.store.set(file.name, buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength), {
                     metadata: {
                         contentType: file.contentType,
                         ...file.metadata,
@@ -166,7 +167,7 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile, FileReturn> {
     }
 
     public async delete({ id }: FileQuery): Promise<NetlifyBlobFile> {
-        const file = await this.getMeta(id).catch(() => null);
+        const file = await this.getMeta(id).catch(() => undefined);
 
         if (file?.pathname) {
             file.status = "deleted";
@@ -205,11 +206,13 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile, FileReturn> {
 
         // Get metadata - Netlify Blobs stores metadata separately
         // We'll use the file metadata from our meta storage as primary source
+        // eslint-disable-next-line unicorn/no-null
         let blobMetadata: { contentType?: string; metadata?: Record<string, any> } | null = null;
 
         try {
             // Try to get metadata if the API supports it
             // If not supported, we'll fall back to file metadata
+            // eslint-disable-next-line unicorn/no-null
             blobMetadata = await (this.store as any).getMetadata?.(file.pathname) || null;
         } catch {
             // Metadata retrieval not supported or failed, use file metadata
@@ -247,9 +250,11 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile, FileReturn> {
         }
 
         // Get source metadata if available
+        // eslint-disable-next-line unicorn/no-null
         let sourceMetadata: { contentType?: string; metadata?: Record<string, any> } | null = null;
 
         try {
+            // eslint-disable-next-line unicorn/no-null
             sourceMetadata = await (this.store as any).getMetadata?.(sourceFile.pathname) || null;
         } catch {
             // Metadata retrieval not supported, use file metadata
@@ -259,7 +264,8 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile, FileReturn> {
         const arrayBuffer = await sourceBlob.arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);
 
-        await this.store.set(destination, buffer, {
+        // Convert Buffer to ArrayBuffer for Netlify Blob API
+        await this.store.set(destination, buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength), {
             metadata: sourceMetadata || {
                 contentType: sourceFile.contentType,
                 ...sourceFile.metadata,
@@ -281,17 +287,19 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile, FileReturn> {
     }
 
     public override async list(limit = 1000): Promise<NetlifyBlobFile[]> {
-        const listResult = await this.store.list({
-            limit,
-        });
+        // Netlify Blob list doesn't support limit option directly
+        // We'll get all results and limit manually if needed
+        const listResult = await this.store.list();
 
         const files: NetlifyBlobFile[] = [];
 
         for await (const blob of listResult.blobs) {
             // Try to get metadata if available
+            // eslint-disable-next-line unicorn/no-null
             let metadata: { contentType?: string; metadata?: Record<string, any> } | null = null;
 
             try {
+                // eslint-disable-next-line unicorn/no-null
                 metadata = await (this.store as any).getMetadata?.(blob.key) || null;
             } catch {
                 // Metadata retrieval not supported
@@ -303,15 +311,24 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile, FileReturn> {
                 originalName: blob.key,
             });
 
-            file.createdAt = blob.createdAt?.toISOString();
+            // Netlify Blob ListResultBlob may not have createdAt, updatedAt, or size properties
+            // Use type assertion to access them if they exist
+            const blobWithDates = blob as any;
+
+            file.createdAt = blobWithDates.createdAt?.toISOString();
             file.id = blob.key;
-            file.modifiedAt = blob.updatedAt?.toISOString();
+            file.modifiedAt = blobWithDates.updatedAt?.toISOString();
             file.name = blob.key;
             file.pathname = blob.key;
-            file.size = blob.size;
+            file.size = blobWithDates.size;
             file.url = this.getBlobUrl(blob.key);
 
             files.push(file);
+
+            // Apply limit if specified
+            if (files.length >= limit) {
+                break;
+            }
         }
 
         return files;

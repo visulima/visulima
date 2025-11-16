@@ -3,8 +3,11 @@ import { Readable } from "node:stream";
 import { setInterval } from "node:timers";
 import { inspect } from "node:util";
 
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { parseBytes } from "@visulima/humanizer";
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { normalize } from "@visulima/path";
+// eslint-disable-next-line import/no-extraneous-dependencies
 import typeis from "type-is";
 
 import type { Cache } from "../utils/cache";
@@ -105,7 +108,6 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
             enableCompression: false,
             usePrefixes: false,
             useServerSideCopy: true,
-            ...this.optimizations,
         };
 
         if (options.assetFolder !== undefined) {
@@ -216,9 +218,7 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
     public async saveMeta(file: TFile): Promise<TFile> {
         this.updateTimestamps(file);
 
-        this.cache.set(file.id, file, {
-            size: Object.keys(file).length,
-        });
+        this.cache.set(file.id, file);
 
         return this.meta.save(file.id, file);
     }
@@ -239,9 +239,7 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
         try {
             const file = await this.meta.get(id);
 
-            this.cache.set(file.id, file, {
-                size: Object.keys(file).length,
-            });
+            this.cache.set(file.id, file);
 
             return { ...file };
         } catch {
@@ -252,9 +250,9 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
     public async checkIfExpired(file: TFile): Promise<TFile> {
         if (isExpired(file)) {
             // eslint-disable-next-line no-void
-            void this.delete(file).catch(() => null);
+            void this.delete(file).catch(() => undefined);
             // eslint-disable-next-line no-void
-            void this.deleteMeta(file.id).catch(() => null);
+            void this.deleteMeta(file.id).catch(() => undefined);
 
             return throwErrorCode(ERRORS.GONE);
         }
@@ -314,7 +312,7 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
                 ...file.ETag && { ETag: file.ETag },
                 ...file.modifiedAt && { "Last-Modified": file.modifiedAt.toString() },
             },
-            size: file.size,
+            size: typeof file.size === "number" ? file.size : undefined,
             stream,
         };
     }
@@ -341,7 +339,7 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
             const ttlValue = processedMetadata.ttl;
             const ttlMs = typeof ttlValue === "string" ? toMilliseconds(ttlValue) : ttlValue;
 
-            if (ttlMs !== null) {
+            if (ttlMs !== undefined) {
                 processedMetadata.expiredAt = Date.now() + (ttlMs as number);
             }
 

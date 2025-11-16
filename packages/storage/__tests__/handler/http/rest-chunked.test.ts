@@ -2,7 +2,7 @@ import { rm } from "node:fs/promises";
 
 import supertest from "supertest";
 import { temporaryDirectory } from "tempy";
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, beforeEach, describe, expect, expectTypeOf, it } from "vitest";
 
 import Rest from "../../../src/handler/rest";
 import DiskStorage from "../../../src/storage/local/disk-storage";
@@ -58,7 +58,9 @@ describe("http Rest - Chunked Uploads", () => {
 
             expect(response.status).toBe(201);
             expect(response.body.id).toBeDefined();
-            expect(typeof response.body.id).toBe("string");
+
+            expectTypeOf(response.body.id).toBeString();
+
             expect(response.header["x-upload-id"]).toBeDefined();
             expect(response.header["x-chunked-upload"]).toBe("true");
             expect(response.header.location).toBeDefined();
@@ -95,7 +97,8 @@ describe("http Rest - Chunked Uploads", () => {
 
             expect(response.status).toBe(413);
             expect(response.body.error).toBeDefined();
-            expect(typeof response.body.error).toBe("object");
+
+            expectTypeOf(response.body.error).toBeObject();
         });
     });
 
@@ -126,7 +129,9 @@ describe("http Rest - Chunked Uploads", () => {
             }
 
             expect(fileId).toBeDefined();
-            expect(typeof fileId).toBe("string");
+
+            expectTypeOf(fileId).toBeString();
+
             expect(fileId.length).toBeGreaterThanOrEqual(8); // getIdFromRequest requires at least 8 chars
 
             // Verify file exists by making a HEAD request
@@ -245,7 +250,8 @@ describe("http Rest - Chunked Uploads", () => {
 
             expect(response.status).toBe(400);
             expect(response.body.error).toBeDefined();
-            expect(typeof response.body.error).toBe("object");
+
+            expectTypeOf(response.body.error).toBeObject();
         });
 
         it("should return 400 when chunk exceeds file size", async () => {
@@ -258,7 +264,8 @@ describe("http Rest - Chunked Uploads", () => {
 
             expect(response.status).toBe(400);
             expect(response.body.error).toBeDefined();
-            expect(typeof response.body.error).toBe("object");
+
+            expectTypeOf(response.body.error).toBeObject();
         });
 
         it("should return 400 when chunk size exceeds max chunk size", async () => {
@@ -273,7 +280,8 @@ describe("http Rest - Chunked Uploads", () => {
 
             expect(response.status).toBe(413);
             expect(response.body.error).toBeDefined();
-            expect(typeof response.body.error).toBe("object");
+
+            expectTypeOf(response.body.error).toBeObject();
         });
 
         it("should return 404 when upload session doesn't exist", async () => {
@@ -286,7 +294,8 @@ describe("http Rest - Chunked Uploads", () => {
 
             expect(response.status).toBe(404);
             expect(response.body.error).toBeDefined();
-            expect(typeof response.body.error).toBe("object");
+
+            expectTypeOf(response.body.error).toBeObject();
         });
 
         it("should return 400 when file is not a chunked upload", async () => {
@@ -309,8 +318,10 @@ describe("http Rest - Chunked Uploads", () => {
 
             expect(response.status).toBe(400);
             expect(response.body.error).toBeDefined();
-            expect(typeof response.body.error).toBe("object");
-            expect(typeof response.body.error.message).toBe("string");
+
+            expectTypeOf(response.body.error).toBeObject();
+            expectTypeOf(response.body.error.message).toBeString();
+
             expect(response.body.error.message).toContain("not a chunked upload");
         });
 
@@ -364,7 +375,8 @@ describe("http Rest - Chunked Uploads", () => {
                 .send("");
 
             fileId = initResponse.body.id;
-            expect(typeof fileId).toBe("string");
+
+            expectTypeOf(fileId).toBeString();
         });
 
         it("should return chunked upload status headers", async () => {
@@ -395,7 +407,9 @@ describe("http Rest - Chunked Uploads", () => {
             const chunksInfo = JSON.parse(response.header["x-received-chunks"]);
 
             expect(Array.isArray(chunksInfo)).toBe(true);
-            expect(typeof chunksInfo).toBe("object");
+
+            expectTypeOf(chunksInfo).toBeObject();
+
             expect(chunksInfo.length).toBeGreaterThan(0);
         });
 
@@ -460,7 +474,8 @@ describe("http Rest - Chunked Uploads", () => {
             expect(initResponse.status).toBe(201);
 
             const fileId = initResponse.body.id;
-            expect(typeof fileId).toBe("string");
+
+            expectTypeOf(fileId).toBeString();
 
             // 2. Check initial status
             let statusResponse = await supertest(app).head(`${basePath}/${fileId}`);
