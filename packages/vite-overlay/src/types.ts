@@ -129,3 +129,16 @@ export interface BalloonConfig {
     readonly icon?: string;
     readonly style?: BalloonStyle;
 }
+
+/**
+ * Overlay configuration options
+ */
+export interface OverlayConfig {
+    readonly balloon?: BalloonConfig;
+    /**
+     * Custom CSS to inject into the overlay for styling customization.
+     * This CSS will be injected into the shadow DOM and can be used to override
+     * the default styles of the overlay and button elements.
+     */
+    readonly customCSS?: string;
+}
