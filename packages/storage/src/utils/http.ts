@@ -276,6 +276,13 @@ export const getIdFromRequest = (request: IncomingMessage & { originalUrl?: stri
         // Remove file extension if present
         const cleanSegment = segment.replace(/\.[^/.]+$/, "");
 
+        // Skip common path names
+        const commonPathNames = ["files", "metadata", "upload", "download", "http-rest", "http-rest-chunked"];
+
+        if (commonPathNames.includes(cleanSegment.toLowerCase())) {
+            continue;
+        }
+
         if (uuidRegex.test(cleanSegment)) {
             return cleanSegment;
         }
@@ -286,7 +293,7 @@ export const getIdFromRequest = (request: IncomingMessage & { originalUrl?: stri
     const cleanLastSegment = lastSegment.replace(/\.[^/.]+$/, "");
 
     // Common path names that should never be treated as IDs
-    const commonPathNames = ["files", "metadata", "upload", "download", "http-rest"];
+    const commonPathNames = ["files", "metadata", "upload", "download", "http-rest", "http-rest-chunked"];
 
     // Reject if it's a common path name
     if (commonPathNames.includes(cleanLastSegment.toLowerCase())) {
