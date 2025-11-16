@@ -126,6 +126,10 @@
             "types": "./dist/handler/tus.d.ts",
             "import": "./dist/handler/tus.js"
         },
+        "./http/rest": {
+            "types": "./dist/handler/rest.d.ts",
+            "import": "./dist/handler/rest.js"
+        },
         "./transformers/audio": {
             "types": "./dist/transformer/audio-transformer.d.ts",
             "import": "./dist/transformer/audio-transformer.js"
