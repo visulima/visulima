@@ -93,6 +93,26 @@ export default defineConfig({
             // Whether to show the balloon button in the overlay (default: true)
             showBallonButton: true,
 
+            // Overlay configuration (optional)
+            overlay: {
+                // Balloon button configuration
+                balloon: {
+                    enabled: true,
+                    position: "bottom-right", // "top-left" | "top-right" | "bottom-left" | "bottom-right"
+                    icon: "", // Optional custom icon URL
+                    style: {
+                        background: "#ff4628",
+                        color: "#ffffff",
+                    },
+                },
+                // Custom CSS to inject for styling customization
+                customCSS: `
+                    #__v_o__balloon {
+                        border-radius: 20px;
+                    }
+                `,
+            },
+
             // Custom solution finder functions (optional)
             solutionFinders: [],
 
@@ -112,6 +132,9 @@ export default defineConfig({
 | `reactPluginName`         | `string`           | `undefined` | Custom React plugin name for detection (useful for custom React plugins) |
 | `vuePluginName`           | `string`           | `undefined` | Custom Vue plugin name for detection (useful for custom Vue plugins)     |
 | `showBallonButton`        | `boolean`          | `true`      | Whether to show the floating balloon button for error navigation         |
+| `overlay`                  | `OverlayConfig`    | `undefined` | Overlay configuration options                                            |
+| `overlay.balloon`          | `BalloonConfig`    | `undefined` | Balloon button configuration                                              |
+| `overlay.customCSS`        | `string`           | `undefined` | Custom CSS to inject for styling customization                           |
 | `solutionFinders`         | `SolutionFinder[]` | `[]`        | Array of custom solution finder functions for enhanced error analysis    |
 | `logClientRuntimeError`   | `boolean`          | `undefined` | **@deprecated** Use `forwardConsole` instead                             |
 
@@ -252,6 +275,95 @@ The error overlay uses a custom design system with CSS custom properties:
 --ono-v-surface: #0d1117;
 --ono-v-text: #c9d1d9;
 ```
+
+### Custom CSS Injection
+
+You can inject custom CSS to override the default styles of the overlay and button elements. Use the `overlay.customCSS` option to provide your custom styles:
+
+```typescript
+export default defineConfig({
+    plugins: [
+        errorOverlay({
+            overlay: {
+                customCSS: `
+                    /* Customize the balloon button */
+                    #__v_o__balloon {
+                        border-radius: 20px;
+                        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+                    }
+
+                    /* Customize the overlay panel */
+                    #__v_o__panel {
+                        border-radius: 12px;
+                    }
+
+                    /* Customize the backdrop */
+                    #__v_o__backdrop {
+                        background-color: rgba(0, 0, 0, 0.7);
+                    }
+                `,
+            },
+        }),
+    ],
+});
+```
+
+#### Available Element IDs for Customization
+
+The following element IDs can be targeted in your custom CSS:
+
+**Main Overlay Elements:**
+- `__v_o__root` - Root container element
+- `__v_o__backdrop` - Backdrop element behind the overlay
+- `__v_o__notch` - Notch container at the top of the overlay
+- `__v_o__panel` - Main panel container
+- `__v_o__overlay` - Overlay content container
+
+**Navigation & Pagination:**
+- `__v_o__error-overlay-pagination-previous` - Previous error button
+- `__v_o__error-overlay-pagination-next` - Next error button
+- `__v_o__error-overlay_pagination_count` - Pagination count container
+- `__v_o__pagination_current` - Current page number display
+- `__v_o__pagination_total` - Total page number display
+
+**History:**
+- `__v_o__history_toggle` - History toggle button
+- `__v_o__history_indicator` - History indicator container
+- `__v_o__history_count` - History count display
+- `__v_o__history_total` - History total display
+- `__v_o__history_timestamp` - History timestamp display
+- `__v_o__history_layer_depth` - History layer depth container
+- `__v_o__history_layer_depth_1` - History layer depth level 1
+- `__v_o__history_layer_depth_2` - History layer depth level 2
+
+**Header Elements:**
+- `__v_o__header` - Header container
+- `__v_o__header_loader` - Header loader skeleton
+- `__v_o__title` - Title container
+- `__v_o__heading` - Error heading/name
+- `__v_o__filelink` - File link button
+- `__v_o__mode` - Mode switch container (original/compiled)
+- `__v_o__copy_error` - Copy error button
+- `__v_o__close` - Close button
+
+**Balloon Button:**
+- `__v_o__balloon` - Floating balloon button
+- `__v_o__balloon_count` - Error count badge in balloon
+- `__v_o__balloon_text` - Text label in balloon
+
+**Message & Content:**
+- `__v_o__message_loader` - Message loader skeleton
+- `__v_o__message` - Error message container
+- `__v_o__body` - Body container
+- `__v_o__body_loader` - Body loader skeleton
+- `__v_o__solutions` - Solutions container
+- `__v_o__solutions_container` - Solutions content container
+- `__v_o__stacktrace` - Stack trace details element
+
+**Other:**
+- `__v_o__editor` - Editor selector container
+- `editor-selector` - Editor selector dropdown
+- `v-o-theme-switch` - Theme switch container
 
 ## Browser Support
 

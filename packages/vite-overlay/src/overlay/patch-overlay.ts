@@ -280,10 +280,12 @@ const generateBalloonButton = (balloonConfig?: BalloonConfig): string => {
 /**
  * Generates the overlay template with dynamic editor options.
  */
-const generateOverlayTemplate = (showBalloonButton: boolean, balloonConfig?: BalloonConfig): string => {
+const generateOverlayTemplate = (showBalloonButton: boolean, balloonConfig?: BalloonConfig, customCSS?: string): string => {
     const editorOptions = generateEditorOptions();
+    const customStyleTag = customCSS ? `<style>${customCSS}</style>` : "";
 
     return `<style>${styleCss}</style>
+${customStyleTag}
 ${rootElement("__v_o__root", editorOptions)}
 
 ${showBalloonButton ? generateBalloonButton(balloonConfig) : ""}`;
@@ -294,9 +296,10 @@ ${showBalloonButton ? generateBalloonButton(balloonConfig) : ""}`;
  * @param code The Vite client code to patch
  * @param showBalloonButton Whether to show the balloon button
  * @param balloonConfig Optional balloon configuration
+ * @param customCSS Optional custom CSS to inject into the overlay
  */
-export const patchOverlay = (code: string, showBalloonButton: boolean, balloonConfig?: BalloonConfig): string => {
-    const overlayTemplate = generateOverlayTemplate(showBalloonButton, balloonConfig);
+export const patchOverlay = (code: string, showBalloonButton: boolean, balloonConfig?: BalloonConfig, customCSS?: string): string => {
+    const overlayTemplate = generateOverlayTemplate(showBalloonButton, balloonConfig, customCSS);
     const balloonConfigJson = JSON.stringify(balloonConfig || null);
 
     const templateString = `const overlayTemplate = ${JSON.stringify(overlayTemplate)};`;

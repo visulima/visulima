@@ -199,4 +199,47 @@ var ErrorOverlay = class {
             }
         });
     });
+
+    describe("custom CSS injection", () => {
+        it("should include custom CSS when provided", () => {
+            expect.assertions(2);
+
+            const inputCode = `class ErrorOverlay {}`;
+            const customCSS = `#__v_o__balloon { border-radius: 20px; }`;
+
+            const result = patchOverlay(inputCode, true, undefined, customCSS);
+
+            expect(result).toContain("<style>");
+            expect(result).toContain("#__v_o__balloon { border-radius: 20px; }");
+        });
+
+        it("should not include custom CSS style tag when not provided", () => {
+            expect.assertions(1);
+
+            const inputCode = `class ErrorOverlay {}`;
+
+            const result = patchOverlay(inputCode, true);
+
+            // Should only contain the default style tag, not an empty custom one
+            const styleTagMatches = result.match(/<style>/g);
+            expect(styleTagMatches?.length).toBe(1);
+        });
+
+        it("should include custom CSS with balloon config", () => {
+            expect.assertions(3);
+
+            const inputCode = `class ErrorOverlay {}`;
+            const balloonConfig = {
+                enabled: true,
+                position: "top-left" as const,
+            };
+            const customCSS = `#__v_o__panel { border-radius: 12px; }`;
+
+            const result = patchOverlay(inputCode, true, balloonConfig, customCSS);
+
+            expect(result).toContain("balloonConfig");
+            expect(result).toContain("#__v_o__panel { border-radius: 12px; }");
+            expect(result).toContain("__v_o__balloon");
+        });
+    });
 });
