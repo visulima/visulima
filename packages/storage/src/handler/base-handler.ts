@@ -817,7 +817,6 @@ abstract class BaseHandler<
         if ("body" in request && request.body !== null && "arrayBuffer" in request && typeof (request as any).arrayBuffer === "function") {
             try {
                 const arrayBuf = await (request as any).arrayBuffer();
-
                 bodyBuffer = new Uint8Array(arrayBuf);
             } catch (error) {
                 // Log error but continue with empty body
@@ -930,13 +929,24 @@ abstract class BaseHandler<
             return this.createResponse(completed);
         }
 
+        // Ensure Location header is present and properly exposed for TUS protocol
+        const convertedHeaders = this.convertHeaders({
+            ...headers,
+            "Access-Control-Expose-Headers":
+                "location,upload-expires,upload-offset,upload-length,upload-metadata,upload-defer-length,tus-resumable,tus-extension,tus-max-size,tus-version,tus-checksum-algorithm,cache-control",
+            ...basicFile.hash === undefined ? {} : { [`X-Range-${basicFile.hash?.algorithm.toUpperCase()}`]: basicFile.hash?.value },
+        });
+
+        // Ensure Location header is present (TUS protocol requirement)
+        // Fetch API normalizes header names to lowercase, so we check both cases
+        if (headers.Location && !convertedHeaders.location && !convertedHeaders.Location) {
+            convertedHeaders.location = String(headers.Location);
+        } else if (headers.location && !convertedHeaders.location && !convertedHeaders.Location) {
+            convertedHeaders.location = String(headers.location);
+        }
+
         return new Response(undefined, {
-            headers: this.convertHeaders({
-                ...headers,
-                "Access-Control-Expose-Headers":
-                    "location,upload-expires,upload-offset,upload-length,upload-metadata,upload-defer-length,tus-resumable,tus-extension,tus-max-size,tus-version,tus-checksum-algorithm,cache-control",
-                ...basicFile.hash === undefined ? {} : { [`X-Range-${basicFile.hash?.algorithm.toUpperCase()}`]: basicFile.hash?.value },
-            }),
+            headers: convertedHeaders,
             status: statusCode,
         });
     }
