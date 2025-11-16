@@ -4,31 +4,46 @@ import { createMultipartAdapter } from "../multipart-adapter";
 
 // Mock XMLHttpRequest
 class MockXMLHttpRequest {
-    public onload: ((event: Event) => void) | null = null;
-    public onerror: ((event: Event) => void) | null = null;
-    public onprogress: ((event: ProgressEvent) => void) | null = null;
     public readyState = 0;
-    public status = 0;
+
+    public status = 200;
+
+    public statusText = "OK";
+
     public responseText = "";
+
+    public response = "";
+
+    private eventListeners = new Map<string, Set<(event: Event) => void>>();
+
+    private uploadEventListeners = new Map<string, Set<(event: ProgressEvent) => void>>();
+
     public upload = {
         addEventListener: vi.fn((event: string, handler: (event: ProgressEvent) => void) => {
-            if (event === "progress") {
-                this.onprogress = handler;
+            if (!this.uploadEventListeners.has(event)) {
+                this.uploadEventListeners.set(event, new Set());
             }
+
+            this.uploadEventListeners.get(event)?.add(handler);
         }),
+        removeEventListener: vi.fn(),
     };
+
     public open = vi.fn();
+
     public send = vi.fn((data?: FormData) => {
         // Simulate upload progress
         setTimeout(() => {
-            if (this.onprogress) {
+            const handlers = this.uploadEventListeners.get("progress");
+
+            if (handlers) {
                 const progressEvent = {
                     lengthComputable: true,
                     loaded: 50,
                     total: 100,
                 } as ProgressEvent;
 
-                this.onprogress(progressEvent);
+                handlers.forEach((handler) => handler(progressEvent));
             }
         }, 10);
 
@@ -37,37 +52,69 @@ class MockXMLHttpRequest {
             this.readyState = 4;
             this.status = 200;
             this.responseText = JSON.stringify({
+                contentType: "image/jpeg",
                 id: "test-id",
                 name: "test-name",
                 originalName: "test.jpg",
                 size: 100,
-                contentType: "image/jpeg",
                 status: "completed",
             });
+            this.response = this.responseText;
 
-            if (this.onload) {
-                this.onload(new Event("load"));
+            const handlers = this.eventListeners.get("load");
+
+            if (handlers) {
+                handlers.forEach((handler) => handler(new Event("load")));
             }
         }, 20);
     });
+
     public setRequestHeader = vi.fn();
+
+    public getResponseHeader = vi.fn((name: string) => {
+        if (name === "Location") {
+            return null;
+        }
+
+        return null;
+    });
+
+    public addEventListener = vi.fn((event: string, handler: (event: Event) => void) => {
+        if (!this.eventListeners.has(event)) {
+            this.eventListeners.set(event, new Set());
+        }
+
+        this.eventListeners.get(event)?.add(handler);
+    });
+
+    public removeEventListener = vi.fn();
+
+    public abort = vi.fn(() => {
+        const handlers = this.eventListeners.get("abort");
+
+        if (handlers) {
+            handlers.forEach((handler) => handler(new Event("abort")));
+        }
+    });
 }
 
-describe("createMultipartAdapter", () => {
+describe(createMultipartAdapter, () => {
     let originalXHR: typeof XMLHttpRequest;
 
     beforeEach(() => {
-        originalXHR = global.XMLHttpRequest;
+        originalXHR = globalThis.XMLHttpRequest;
         // @ts-expect-error - Mock XMLHttpRequest
-        global.XMLHttpRequest = MockXMLHttpRequest;
+        globalThis.XMLHttpRequest = MockXMLHttpRequest;
     });
 
     afterEach(() => {
-        global.XMLHttpRequest = originalXHR;
+        globalThis.XMLHttpRequest = originalXHR;
         vi.clearAllMocks();
     });
 
     it("should create adapter with correct options", () => {
+        expect.assertions(4);
+
         const adapter = createMultipartAdapter({
             endpoint: "/api/upload",
             metadata: { test: "value" },
@@ -80,6 +127,8 @@ describe("createMultipartAdapter", () => {
     });
 
     it("should upload file successfully", async () => {
+        expect.assertions(4);
+
         const adapter = createMultipartAdapter({
             endpoint: "/api/upload",
         });
@@ -94,12 +143,14 @@ describe("createMultipartAdapter", () => {
     });
 
     it("should handle upload progress", async () => {
+        expect.assertions(1);
+
         const adapter = createMultipartAdapter({
             endpoint: "/api/upload",
         });
 
         let progressReceived = false;
-        const uploader = adapter.uploader;
+        const { uploader } = adapter;
 
         uploader.on("ITEM_PROGRESS", () => {
             progressReceived = true;
@@ -117,23 +168,27 @@ describe("createMultipartAdapter", () => {
     });
 
     it("should handle upload errors", async () => {
+        expect.assertions(1);
+
+        // Create a new mock XHR that simulates error
+        class ErrorMockXMLHttpRequest extends MockXMLHttpRequest {
+            public send = vi.fn((data?: FormData) => {
+                setTimeout(() => {
+                    const handlers = this.eventListeners.get("error");
+
+                    if (handlers) {
+                        handlers.forEach((handler) => handler(new Event("error")));
+                    }
+                }, 10);
+            });
+        }
+
+        // @ts-expect-error - Mock XMLHttpRequest
+        globalThis.XMLHttpRequest = ErrorMockXMLHttpRequest as unknown as typeof XMLHttpRequest;
+
         const adapter = createMultipartAdapter({
             endpoint: "/api/upload",
         });
-
-        // Mock XHR to simulate error
-        const mockXHR = new MockXMLHttpRequest();
-
-        mockXHR.send = vi.fn(() => {
-            setTimeout(() => {
-                if (mockXHR.onerror) {
-                    mockXHR.onerror(new Event("error"));
-                }
-            }, 10);
-        });
-
-        // @ts-expect-error - Mock XMLHttpRequest
-        global.XMLHttpRequest = vi.fn(() => mockXHR) as unknown as typeof XMLHttpRequest;
 
         const file = new File(["test content"], "test.jpg", { type: "image/jpeg" });
 
@@ -141,6 +196,8 @@ describe("createMultipartAdapter", () => {
     });
 
     it("should abort upload", () => {
+        expect.assertions(1);
+
         const adapter = createMultipartAdapter({
             endpoint: "/api/upload",
         });
@@ -149,6 +206,8 @@ describe("createMultipartAdapter", () => {
     });
 
     it("should clear uploads", () => {
+        expect.assertions(1);
+
         const adapter = createMultipartAdapter({
             endpoint: "/api/upload",
         });
@@ -156,4 +215,3 @@ describe("createMultipartAdapter", () => {
         expect(() => adapter.clear()).not.toThrow();
     });
 });
-

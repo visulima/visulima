@@ -4,41 +4,76 @@ import { createUploader } from "../uploader";
 
 // Mock XMLHttpRequest
 class MockXMLHttpRequest {
-    public onload: ((event: Event) => void) | null = null;
-    public onerror: ((event: Event) => void) | null = null;
-    public onprogress: ((event: ProgressEvent) => void) | null = null;
     public readyState = 0;
+
     public status = 200;
+
+    public statusText = "OK";
+
     public responseText = "";
+
+    public response = "";
+
+    private eventListeners = new Map<string, Set<(event: Event) => void>>();
+
+    private uploadEventListeners = new Map<string, Set<(event: ProgressEvent) => void>>();
+
     public upload = {
         addEventListener: vi.fn((event: string, handler: (event: ProgressEvent) => void) => {
-            if (event === "progress") {
-                this.onprogress = handler;
+            if (!this.uploadEventListeners.has(event)) {
+                this.uploadEventListeners.set(event, new Set());
             }
+
+            this.uploadEventListeners.get(event)?.add(handler);
         }),
+        removeEventListener: vi.fn(),
     };
+
     public open = vi.fn();
+
     public send = vi.fn();
+
     public setRequestHeader = vi.fn();
-    public abort = vi.fn();
+
+    public getResponseHeader = vi.fn(() => null);
+
+    public addEventListener = vi.fn((event: string, handler: (event: Event) => void) => {
+        if (!this.eventListeners.has(event)) {
+            this.eventListeners.set(event, new Set());
+        }
+
+        this.eventListeners.get(event)?.add(handler);
+    });
+
+    public removeEventListener = vi.fn();
+
+    public abort = vi.fn(() => {
+        const handlers = this.eventListeners.get("abort");
+
+        if (handlers) {
+            handlers.forEach((handler) => handler(new Event("abort")));
+        }
+    });
 }
 
-describe("createUploader", () => {
+describe(createUploader, () => {
     let originalXHR: typeof XMLHttpRequest;
 
     beforeEach(() => {
-        originalXHR = global.XMLHttpRequest;
+        originalXHR = globalThis.XMLHttpRequest;
         // @ts-expect-error - Mock XMLHttpRequest
-        global.XMLHttpRequest = MockXMLHttpRequest;
+        globalThis.XMLHttpRequest = MockXMLHttpRequest;
         vi.clearAllMocks();
     });
 
     afterEach(() => {
-        global.XMLHttpRequest = originalXHR;
+        globalThis.XMLHttpRequest = originalXHR;
         vi.restoreAllMocks();
     });
 
     it("should create uploader instance", () => {
+        expect.assertions(6);
+
         const uploader = createUploader({
             endpoint: "/api/upload",
         });
@@ -52,6 +87,8 @@ describe("createUploader", () => {
     });
 
     it("should add file and emit ITEM_START event", () => {
+        expect.assertions(3);
+
         const uploader = createUploader({
             endpoint: "/api/upload",
         });
@@ -65,9 +102,15 @@ describe("createUploader", () => {
         expect(itemId).toBeDefined();
         // ITEM_START is emitted when add is called
         expect(onItemStart).toHaveBeenCalled();
+        expect(onItemStart).toHaveBeenCalledWith(expect.objectContaining({
+            id: expect.any(String),
+            file: expect.any(File),
+        }));
     });
 
     it("should handle event listeners", () => {
+        expect.assertions(1);
+
         const uploader = createUploader({
             endpoint: "/api/upload",
         });
@@ -90,16 +133,21 @@ describe("createUploader", () => {
     });
 
     it("should abort upload", () => {
+        expect.assertions(1);
+
         const uploader = createUploader({
             endpoint: "/api/upload",
         });
         const file = new File(["test"], "test.jpg", { type: "image/jpeg" });
 
         uploader.add(file);
+
         expect(() => uploader.abort()).not.toThrow();
     });
 
     it("should clear all uploads", () => {
+        expect.assertions(1);
+
         const uploader = createUploader({
             endpoint: "/api/upload",
         });
@@ -112,4 +160,3 @@ describe("createUploader", () => {
         expect(() => uploader.clear()).not.toThrow();
     });
 });
-
