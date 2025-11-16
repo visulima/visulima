@@ -142,8 +142,9 @@ export class Tus<
 
         // Build TUS headers and ensure Location header is set (required by TUS protocol)
         const locationUrl = this.buildFileUrl(request, file);
+
         headers = { ...headers, ...this.buildHeaders(file, { Location: locationUrl }) };
-        
+
         // Ensure Location header is present (TUS protocol requirement)
         if (!headers.Location) {
             headers.Location = locationUrl;

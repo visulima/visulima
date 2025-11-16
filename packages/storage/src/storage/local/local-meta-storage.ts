@@ -6,6 +6,7 @@ import { ensureDir, readFile, remove, writeFile } from "@visulima/fs";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { join, normalize } from "@visulima/path";
 
+import { ERRORS, throwErrorCode } from "../../utils/errors";
 import MetaStorage from "../meta-storage";
 import type { MetaStorageOptions } from "../types";
 import type { File } from "../utils/file";
@@ -64,19 +65,27 @@ class LocalMetaStorage<T extends File = File> extends MetaStorage<T> {
     }
 
     public override async get(id: string): Promise<T> {
-        const json = await readFile(this.getMetaPath(id));
+        try {
+            const json = await readFile(this.getMetaPath(id));
 
-        if (json === undefined) {
-            throw new TypeError("Invalid metafile");
+            if (json === undefined) {
+                throw new TypeError("Invalid metafile");
+            }
+
+            const file = JSON.parse(json) as T;
+
+            if (file.metadata && typeof file.metadata === "string") {
+                file.metadata = parseMetadata(file.metadata);
+            }
+
+            return file;
+        } catch (error) {
+            if (error instanceof Error && error.message.includes("ENOENT")) {
+                throw throwErrorCode(ERRORS.FILE_NOT_FOUND);
+            }
+
+            throw error;
         }
-
-        const file = JSON.parse(json) as T;
-
-        if (file.metadata && typeof file.metadata === "string") {
-            file.metadata = parseMetadata(file.metadata);
-        }
-
-        return file;
     }
 
     public override async delete(id: string): Promise<void> {

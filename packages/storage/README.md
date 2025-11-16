@@ -20,6 +20,7 @@
 ## Features
 
 - **Multiple Upload Handlers**: Multipart (form-based), REST (direct binary), and TUS (resumable) uploads
+- **Chunked Uploads**: REST handler supports client-side chunked uploads for large files
 - Parent directories are created automatically as needed (like S3 and Azure)
 - Content types are inferred from file extensions (like the filesystem)
 - Files are by default marked as readable via the web (like a filesystem + web server)
@@ -227,6 +228,89 @@ interface Cache<K = string, V = any> {
 ```
 
 For more information, see the [BentoCache documentation](https://bentocache.dev/docs/introduction).
+
+## Chunked Uploads
+
+The REST handler supports client-side chunked uploads for large files. This allows you to upload files in smaller pieces, reducing memory usage and enabling resumable uploads.
+
+### Initializing a Chunked Upload
+
+```typescript
+import { Rest } from "@visulima/upload/handler/rest";
+
+const rest = new Rest({ storage });
+
+// Initialize chunked upload
+const initResponse = await fetch("/files", {
+    method: "POST",
+    headers: {
+        "X-Chunked-Upload": "true",
+        "X-Total-Size": "10485760", // Total file size in bytes
+        "Content-Length": "0",
+        "Content-Type": "application/octet-stream",
+    },
+});
+
+const { id } = await initResponse.json();
+// id is the upload session ID
+```
+
+### Uploading Chunks
+
+```typescript
+// Upload chunk 1 (bytes 0-524288)
+await fetch(`/files/${id}`, {
+    method: "PATCH",
+    headers: {
+        "X-Chunk-Offset": "0",
+        "Content-Length": "524288",
+        "Content-Type": "application/octet-stream",
+    },
+    body: chunk1,
+});
+
+// Upload chunk 2 (bytes 524288-1048576) - can be out of order
+await fetch(`/files/${id}`, {
+    method: "PATCH",
+    headers: {
+        "X-Chunk-Offset": "524288",
+        "Content-Length": "524288",
+        "Content-Type": "application/octet-stream",
+    },
+    body: chunk2,
+});
+```
+
+### Checking Upload Progress
+
+```typescript
+// Check upload status
+const statusResponse = await fetch(`/files/${id}`, {
+    method: "HEAD",
+});
+
+const offset = statusResponse.headers.get("X-Upload-Offset");
+const complete = statusResponse.headers.get("X-Upload-Complete");
+const chunks = JSON.parse(statusResponse.headers.get("X-Received-Chunks") || "[]");
+
+console.log(`Uploaded: ${offset} bytes, Complete: ${complete}`);
+```
+
+### Features
+
+- **Out-of-Order Chunks**: Chunks can be uploaded in any order
+- **Idempotency**: Duplicate chunks are safely ignored
+- **Resumable**: Check progress and resume from last uploaded chunk
+- **Progress Tracking**: Real-time upload progress via HEAD requests
+- **Chunk Size Limits**: Maximum 100MB per chunk (configurable)
+
+### Response Headers
+
+- `X-Upload-ID`: Upload session ID (returned on initialization)
+- `X-Chunked-Upload`: Indicates chunked upload mode
+- `X-Upload-Offset`: Current upload offset in bytes
+- `X-Upload-Complete`: "true" when upload is complete, "false" otherwise
+- `X-Received-Chunks`: JSON array of received chunks `[{ offset, length }]`
 
 ## Supported Node.js Versions
 

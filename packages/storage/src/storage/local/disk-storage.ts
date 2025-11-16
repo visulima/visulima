@@ -141,7 +141,11 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
             const startPosition = (part as FilePart).start || 0;
 
             await ensureFile(path);
-            file.bytesWritten = startPosition;
+
+            // Only reset bytesWritten to startPosition if it's the first write (bytesWritten is 0)
+            if (file.bytesWritten === 0) {
+                file.bytesWritten = startPosition;
+            }
 
             if (hasContent(part)) {
                 if (this.isUnsupportedChecksum(part.checksumAlgorithm)) {
@@ -167,7 +171,12 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
                     return throwErrorCode(errorCode);
                 }
 
-                file.bytesWritten = bytesWritten;
+                // Update bytesWritten to the expected position after writing
+                const expectedBytesWritten = startPosition + (part.contentLength || 0);
+
+                file.bytesWritten = Math.max(file.bytesWritten || 0, expectedBytesWritten);
+                // Also update with the actual bytes written from lazyWrite
+                file.bytesWritten = Math.max(file.bytesWritten || 0, bytesWritten);
                 file.status = getFileStatus(file);
 
                 await this.saveMeta(file);
