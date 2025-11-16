@@ -162,7 +162,7 @@ class S3Storage extends BaseStorage<S3File, FileReturn> {
         if (config.ttl) {
             const ttlMs = typeof config.ttl === "string" ? toMilliseconds(config.ttl) : config.ttl;
 
-            if (ttlMs !== null) {
+            if (ttlMs !== undefined) {
                 processedConfig.expiredAt = Date.now() + ttlMs;
             }
         }
@@ -285,9 +285,7 @@ class S3Storage extends BaseStorage<S3File, FileReturn> {
                 file.bytesWritten += part.contentLength || 0;
             }
 
-            this.cache.set(file.id, file, {
-                size: Object.keys(file).length,
-            });
+            this.cache.set(file.id, file);
 
             file.status = getFileStatus(file);
 
@@ -307,7 +305,7 @@ class S3Storage extends BaseStorage<S3File, FileReturn> {
     }
 
     public async delete({ id }: FileQuery): Promise<S3File> {
-        const file = await this.getMeta(id).catch(() => null);
+        const file = await this.getMeta(id).catch(() => undefined);
 
         if (file) {
             file.status = "deleted";
@@ -448,23 +446,22 @@ class S3Storage extends BaseStorage<S3File, FileReturn> {
             Key: id,
         };
 
-        const { Body, ContentLength, ContentType, ETag, Expires, LastModified, Metadata } = await this.client.send(new GetObjectCommand(parameters));
+        const { Body, ContentLength, ContentType, ETag, Expires, LastModified } = await this.client.send(new GetObjectCommand(parameters));
 
         await this.checkIfExpired({ expiredAt: Expires } as S3File);
-
-        const { originalName, ...meta } = Metadata || {};
 
         // Convert S3 stream to Node.js Readable stream
         const stream = Body as SdkStream<any>;
         const readableStream = new Readable({
             read() {
-                stream.on("data", (chunk) => {
+                stream.on("data", (chunk: Buffer) => {
                     this.push(chunk);
                 });
                 stream.on("end", () => {
+                    // eslint-disable-next-line unicorn/no-null
                     this.push(null);
                 });
-                stream.on("error", (error) => {
+                stream.on("error", (error: Error) => {
                     this.destroy(error);
                 });
             },
@@ -472,7 +469,7 @@ class S3Storage extends BaseStorage<S3File, FileReturn> {
 
         return {
             headers: {
-                "Content-Length": ContentLength?.toString(),
+                "Content-Length": ContentLength?.toString() ?? "0",
                 "Content-Type": ContentType as string,
                 ...ETag && { ETag },
                 ...Expires && { "X-Upload-Expires": Expires.toString() },

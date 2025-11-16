@@ -4,6 +4,7 @@ import { PassThrough, Readable } from "node:stream";
 import { format } from "node:url";
 
 import { paginate } from "@visulima/pagination";
+// eslint-disable-next-line import/no-extraneous-dependencies
 import createHttpError, { isHttpError } from "http-errors";
 import mime from "mime";
 
@@ -16,7 +17,7 @@ import filePathUrlMatcher from "../utils/file-path-url-matcher";
 import { HeaderUtilities } from "../utils/headers";
 import { getBaseUrl, getRealPath, setHeaders, uuidRegex } from "../utils/http";
 import pick from "../utils/primitives/pick";
-import type { HttpError, IncomingMessageWithBody, Logger, ResponseBodyType, UploadResponse } from "../utils/types";
+import type { Header, HttpError, IncomingMessageWithBody, Logger, ResponseBodyType, UploadResponse } from "../utils/types";
 import { isValidationError } from "../utils/validator";
 import type { AsyncHandler, Handlers, MethodHandler, ResponseFile, ResponseList, UploadOptions } from "./types";
 
@@ -259,10 +260,20 @@ abstract class BaseHandler<
 
                         // Merge headers from original response with onComplete response
                         // This preserves chunked upload headers (x-upload-offset, x-upload-complete, etc.)
+                        // Convert Headers to Record<string, string> by converting Header values to strings
+                        const convertHeadersToString = (h: Record<string, Header>): Record<string, string> => {
+                            const result: Record<string, string> = {};
+
+                            for (const [key, value] of Object.entries(h)) {
+                                result[key] = Array.isArray(value) ? value.join(", ") : String(value);
+                            }
+
+                            return result;
+                        };
                         const mergedHeaders: Record<string, string> = {
-                            ...completed.headers,
-                            ...originalHeaders,
-                            ...originalFileHeaders,
+                            ...convertHeadersToString(completed.headers as Record<string, Header>),
+                            ...convertHeadersToString(originalHeaders as Record<string, Header>),
+                            ...convertHeadersToString(originalFileHeaders as Record<string, Header>),
                         };
 
                         // Ensure chunked upload headers are preserved (check all possible case variations)
@@ -308,11 +319,21 @@ abstract class BaseHandler<
 
                     // For chunked upload initialization, include body in response
                     let body: Buffer | string | undefined;
+                    // Convert Headers to Record<string, string>
+                    const convertHeadersToString = (h: Record<string, Header>): Record<string, string> => {
+                        const result: Record<string, string> = {};
+
+                        for (const [key, value] of Object.entries(h)) {
+                            result[key] = Array.isArray(value) ? value.join(", ") : String(value);
+                        }
+
+                        return result;
+                    };
                     const responseHeaders: Record<string, string> = {
-                        ...headers,
+                        ...convertHeadersToString(headers as Record<string, Header>),
                         ...(file as TFile).hash === undefined
                             ? {}
-                            : { [`X-Range-${(file as TFile).hash?.algorithm.toUpperCase()}`]: (file as TFile).hash?.value },
+                            : { [`X-Range-${(file as TFile).hash?.algorithm.toUpperCase()}`]: String((file as TFile).hash?.value) },
                     };
 
                     if (isChunkedUploadInit) {
@@ -386,6 +407,7 @@ abstract class BaseHandler<
                     const file = await this.storage.getMeta(uuid);
 
                     return {
+                        ...file,
                         content: JSON.stringify(file),
                         headers: {
                             "Content-Type": HeaderUtilities.createContentType({
@@ -727,7 +749,12 @@ abstract class BaseHandler<
             return undefined;
         }
 
-        const range = ranges[0].trim();
+        const range = ranges[0]?.trim();
+
+        if (!range) {
+            return undefined;
+        }
+
         const parts = range.split("-");
 
         if (parts.length !== 2) {
@@ -743,15 +770,17 @@ abstract class BaseHandler<
             start = Number.parseInt(startString, 10);
             end = Number.parseInt(endString, 10);
         } else if (startString && !endString) {
-            // bytes=start-
+            // bytes=start- (open-ended range)
             start = Number.parseInt(startString, 10);
             end = fileSize - 1;
         } else if (!startString && endString) {
             // bytes=-end (suffix range)
-            start = fileSize - Number.parseInt(endString, 10);
+            const suffixLength = Number.parseInt(endString, 10);
+
+            start = Math.max(0, fileSize - suffixLength);
             end = fileSize - 1;
         } else {
-            return undefined; // Invalid range
+            return undefined; // Invalid range (both empty)
         }
 
         // Validate range
@@ -884,7 +913,7 @@ abstract class BaseHandler<
         const extendedMethods = methods.includes("download" as any) ? methods : [...methods, "download"];
 
         extendedMethods.forEach((method) => {
-            const handler = (this as MethodHandler<NodeRequest, NodeResponse>)[method];
+            const handler = (this as MethodHandler<NodeRequest, NodeResponse>)[method as Handlers];
 
             if (handler) {
                 this.registeredHandlers.set(method.toUpperCase(), handler);
@@ -904,6 +933,7 @@ abstract class BaseHandler<
         let bodyBuffer = new Uint8Array();
 
         // Check if request has body and arrayBuffer method (Web API Request)
+        // eslint-disable-next-line unicorn/no-null
         if ("body" in request && request.body !== null && "arrayBuffer" in request && typeof (request as any).arrayBuffer === "function") {
             try {
                 const arrayBuf = await (request as any).arrayBuffer();

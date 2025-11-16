@@ -72,11 +72,12 @@ export const createRangeStream = (sourceStream: Readable, start: number, end?: n
 
     return new Readable({
         destroy(error, callback) {
-            sourceStream.destroy(error);
-            callback(error || undefined);
+            sourceStream.destroy(error || undefined);
+            callback(error ?? undefined);
         },
         read(size) {
             if (position >= targetEnd) {
+                // eslint-disable-next-line unicorn/no-null
                 this.push(null); // End of stream
 
                 return;
@@ -213,6 +214,7 @@ export const createBandwidthLimitedStream = (sourceStream: Readable, bytesPerSec
         if (bufferedChunks.length === 0 || isProcessing) {
             // Check if we should end the stream
             if (bufferedChunks.length === 0 && !isProcessing && pendingTimeouts.length === 0 && sourceStream.readableEnded) {
+                // eslint-disable-next-line unicorn/no-null
                 targetStream.push(null);
             }
 
@@ -275,6 +277,7 @@ export const createBandwidthLimitedStream = (sourceStream: Readable, bytesPerSec
         // Process remaining chunks, then end the stream when done
         const checkEnd = () => {
             if (bufferedChunks.length === 0 && !isProcessing && pendingTimeouts.length === 0) {
+                // eslint-disable-next-line unicorn/no-null
                 targetStream.push(null);
             }
         };

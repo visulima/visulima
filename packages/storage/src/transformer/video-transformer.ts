@@ -137,12 +137,12 @@ class VideoTransformer<TFile extends File = File, TFileReturn extends FileReturn
 
         // Check cache first
         if (this.cache) {
-            const cached = this.cache.get(cacheKey);
+            const cached = await Promise.resolve(this.cache.get(cacheKey));
 
             if (cached) {
                 this.logger?.debug("Returning cached transformed video for %s", fileId);
 
-                return cached;
+                return cached as VideoTransformResult<TFileReturn>;
             }
         }
 

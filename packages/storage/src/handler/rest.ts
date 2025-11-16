@@ -95,8 +95,10 @@ class Rest<
         const isChunkedUpload = getHeader(request, "x-chunked-upload", true) === "true";
 
         // For chunked uploads, empty body is allowed (initialization only)
-        if (!isChunkedUpload // Check if request has a body
-            && !hasBody(request)) {
+        if (
+            !isChunkedUpload // Check if request has a body
+            && !hasBody(request)
+        ) {
             throw createHttpError(400, "Request body is required");
         }
 
@@ -381,6 +383,7 @@ class Rest<
                     return this.deleteBatch(parsed as string[]);
                 }
 
+                // eslint-disable-next-line unicorn/no-null
                 if (typeof parsed === "object" && parsed !== null && "ids" in parsed && Array.isArray((parsed as { ids: unknown }).ids)) {
                     // Object with ids array: { ids: ["id1", "id2"] }
                     const idsArray = (parsed as { ids: string[] }).ids;
@@ -489,8 +492,8 @@ class Rest<
         const isChunkedUpload = metadata._chunkedUpload === true;
 
         // For chunked uploads, ensure file.size is set to total size
-        if (isChunkedUpload && metadata._totalSize) {
-            file.size = metadata._totalSize;
+        if (isChunkedUpload && metadata._totalSize && file.size !== metadata._totalSize) {
+            file = { ...file, size: metadata._totalSize };
         }
 
         const totalSize = typeof metadata._totalSize === "number" ? metadata._totalSize : file.size || 0;
@@ -562,18 +565,16 @@ class Rest<
         const isComplete = updatedFile.bytesWritten >= totalSize;
 
         // For completed uploads, ensure bytesWritten equals totalSize
-        if (isComplete) {
-            updatedFile.bytesWritten = totalSize;
-        }
+        const finalFile = isComplete && updatedFile.bytesWritten !== totalSize ? { ...updatedFile, bytesWritten: totalSize } : updatedFile;
 
         return {
-            ...updatedFile,
+            ...finalFile,
             headers: {
-                Location: this.buildFileUrl(request, updatedFile),
+                Location: this.buildFileUrl(request, finalFile),
                 "x-upload-complete": isComplete ? "true" : "false",
-                "x-upload-offset": String(updatedFile.bytesWritten || 0),
-                ...updatedFile.expiredAt === undefined ? {} : { "x-upload-expires": updatedFile.expiredAt?.toString() },
-                ...updatedFile.ETag === undefined ? {} : { etag: updatedFile.ETag },
+                "x-upload-offset": String(finalFile.bytesWritten || 0),
+                ...finalFile.expiredAt === undefined ? {} : { "x-upload-expires": finalFile.expiredAt?.toString() },
+                ...finalFile.ETag === undefined ? {} : { etag: finalFile.ETag },
             },
             statusCode: isComplete ? 200 : 202, // 202 Accepted for partial upload
         };
@@ -589,13 +590,13 @@ class Rest<
         try {
             const id = getIdFromRequest(request);
 
-            const file = await this.storage.getMeta(id);
+            let file = await this.storage.getMeta(id);
             const metadata = file.metadata || {};
             const isChunkedUpload = metadata._chunkedUpload === true;
 
             // For chunked uploads, ensure file.size is set to total size
-            if (isChunkedUpload && metadata._totalSize) {
-                file.size = metadata._totalSize;
+            if (isChunkedUpload && metadata._totalSize && file.size !== metadata._totalSize) {
+                file = { ...file, size: metadata._totalSize };
             }
 
             const headers: Record<string, string | number> = {

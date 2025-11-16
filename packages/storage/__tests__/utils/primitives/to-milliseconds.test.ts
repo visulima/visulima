@@ -17,10 +17,10 @@ describe("utils", () => {
                 expect(toMilliseconds(1)).toBe(1);
             });
 
-            it("should return null for undefined input", () => {
+            it("should return undefined for undefined input", () => {
                 expect.assertions(1);
 
-                expect(toMilliseconds()).toBeNull();
+                expect(toMilliseconds(undefined)).toBeUndefined();
             });
         });
     });
