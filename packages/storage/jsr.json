@@ -13,6 +13,7 @@
         "./openapi": "./src/openapi/index.ts",
         "./http/multipart": "./src/handler/multipart.ts",
         "./http/tus": "./src/handler/tus.ts",
+        "./http/rest": "./src/handler/rest.ts",
         "./transformers/audio": "./src/transformer/audio-transformer.ts",
         "./transformers/video": "./src/transformer/video-transformer.ts",
         "./transformers/image": "./src/transformer/image-transformer.ts",

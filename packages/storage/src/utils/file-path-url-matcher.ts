@@ -14,7 +14,7 @@ const internalMatcher = match<PathMatch>(["/:uuid", "/*path/:uuid.:ext/:metadata
     decode: decodeURIComponent,
 });
 
-const filePathUrlMatcher = (path: string) => {
+const filePathUrlMatcher = (path: string): { params: PathMatch; path: string } | undefined => {
     const result = internalMatcher(path);
 
     if (!result) {
