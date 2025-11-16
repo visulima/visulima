@@ -131,6 +131,7 @@ export const createMultipartAdapter = (options: MultipartAdapterOptions): Multip
                         clearTimeout(timeoutId);
                         timeoutId = undefined;
                     }
+
                     originalCleanup();
                 };
 

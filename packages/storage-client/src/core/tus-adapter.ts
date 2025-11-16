@@ -144,7 +144,22 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
         }
 
         // Handle relative URLs
-        const uploadUrl = location.startsWith("http") ? location : new URL(location, endpoint).href;
+        let uploadUrl: string;
+
+        if (location.startsWith("http")) {
+            uploadUrl = location;
+        } else {
+            // If endpoint is absolute, use it as base; otherwise construct absolute URL
+            try {
+                uploadUrl = new URL(location, endpoint).href;
+            } catch {
+                // If endpoint is relative, try to construct from location
+                // In browser, we can use window.location.origin; in Node, use http://localhost
+                const baseUrl = globalThis.window === undefined ? "http://localhost" : globalThis.location.origin;
+
+                uploadUrl = new URL(location, baseUrl + endpoint).href;
+            }
+        }
 
         // Check if Upload-Offset header is present (Creation With Upload extension)
         const initialOffsetHeader = response.headers.get("Upload-Offset");
@@ -434,122 +449,124 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
         /**
          * Upload a file and return visulima-compatible result
          */
-        upload: async (file: File): Promise<UploadResult> => new Promise((resolve, reject) => {
-            let resolved = false;
+        upload: async (file: File): Promise<UploadResult> =>
+            new Promise((resolve, reject) => {
+                let resolved = false;
 
-            // Store original callbacks before overriding
-            const originalFinishCallback = finishCallback;
-            const originalErrorCallback = errorCallback;
+                // Store original callbacks before overriding
+                const originalFinishCallback = finishCallback;
+                const originalErrorCallback = errorCallback;
 
-            // Safety timeout - store timeout ID so we can clear it
-            let timeoutId: NodeJS.Timeout | undefined;
+                // Safety timeout - store timeout ID so we can clear it
+                let timeoutId: NodeJS.Timeout | undefined;
 
-            // Cleanup function to clear timeout and restore callbacks
-            const cleanupTimeout = (): void => {
-                if (timeoutId) {
-                    clearTimeout(timeoutId);
-                    timeoutId = undefined;
-                }
-                // Restore original callbacks
-                finishCallback = originalFinishCallback;
-                errorCallback = originalErrorCallback;
-            };
-
-            // Set up internal callbacks for this upload
-            const internalFinishCallback = (result: UploadResult) => {
-                if (!resolved) {
-                    resolved = true;
-                    cleanupTimeout();
-                    // Call original callback if set
-                    originalFinishCallback?.(result);
-                    uploadState = null;
-                    resolve(result);
-                }
-            };
-
-            const internalErrorCallback = (error: Error) => {
-                if (!resolved) {
-                    resolved = true;
-                    cleanupTimeout();
-                    // Call original callback if set
-                    originalErrorCallback?.(error);
-
-                    // Don't clear upload state on error if we want to resume
-                    if (!retry || (uploadState && uploadState.retryCount >= maxRetries)) {
-                        uploadState = null;
+                // Cleanup function to clear timeout and restore callbacks
+                const cleanupTimeout = (): void => {
+                    if (timeoutId) {
+                        clearTimeout(timeoutId);
+                        timeoutId = undefined;
                     }
 
-                    reject(error);
-                }
-            };
+                    // Restore original callbacks
+                    finishCallback = originalFinishCallback;
+                    errorCallback = originalErrorCallback;
+                };
 
-            // Temporarily override callbacks for this upload
-            finishCallback = internalFinishCallback;
-            errorCallback = internalErrorCallback;
+                // Set up internal callbacks for this upload
+                const internalFinishCallback = (result: UploadResult) => {
+                    if (!resolved) {
+                        resolved = true;
+                        cleanupTimeout();
+                        // Call original callback if set
+                        originalFinishCallback?.(result);
+                        uploadState = null;
+                        resolve(result);
+                    }
+                };
 
-            // Initialize upload state
-            uploadState = {
-                abortController: new AbortController(),
-                file,
-                isPaused: false,
-                offset: 0,
-                retryCount: 0,
-                uploadUrl: null,
-            };
+                const internalErrorCallback = (error: Error) => {
+                    if (!resolved) {
+                        resolved = true;
+                        cleanupTimeout();
+                        // Call original callback if set
+                        originalErrorCallback?.(error);
 
-            // Start upload process
-            (async () => {
-                try {
-                    startCallback?.();
-
-                    // Create upload or get existing upload URL
-                    let uploadUrl = uploadState?.uploadUrl;
-
-                    if (uploadUrl) {
-                        // Check current offset for resuming
-                        const currentOffset = await getUploadOffset(uploadUrl);
-
-                        if (currentOffset > 0 && uploadState) {
-                            uploadState.offset = currentOffset;
-                            progressCallback?.(Math.round((currentOffset / file.size) * 100), currentOffset);
+                        // Don't clear upload state on error if we want to resume
+                        if (!retry || (uploadState && uploadState.retryCount >= maxRetries)) {
+                            uploadState = null;
                         }
-                    } else {
-                        const { initialOffset, uploadUrl: newUploadUrl } = await createUpload(file);
 
-                        uploadUrl = newUploadUrl;
+                        reject(error);
+                    }
+                };
 
-                        if (uploadState) {
-                            uploadState.uploadUrl = uploadUrl;
-                            uploadState.offset = initialOffset;
+                // Temporarily override callbacks for this upload
+                finishCallback = internalFinishCallback;
+                errorCallback = internalErrorCallback;
 
-                            // If initial offset > 0 (Creation With Upload extension), update progress
-                            if (initialOffset > 0) {
-                                progressCallback?.(Math.round((initialOffset / file.size) * 100), initialOffset);
+                // Initialize upload state
+                uploadState = {
+                    abortController: new AbortController(),
+                    file,
+                    isPaused: false,
+                    offset: 0,
+                    retryCount: 0,
+                    uploadUrl: null,
+                };
+
+                // Start upload process
+                (async () => {
+                    try {
+                        startCallback?.();
+
+                        // Create upload or get existing upload URL
+                        let uploadUrl = uploadState?.uploadUrl;
+
+                        if (uploadUrl) {
+                            // Check current offset for resuming
+                            const currentOffset = await getUploadOffset(uploadUrl);
+
+                            if (currentOffset > 0 && uploadState) {
+                                uploadState.offset = currentOffset;
+                                progressCallback?.(Math.round((currentOffset / file.size) * 100), currentOffset);
+                            }
+                        } else {
+                            const { initialOffset, uploadUrl: newUploadUrl } = await createUpload(file);
+
+                            uploadUrl = newUploadUrl;
+
+                            if (uploadState) {
+                                uploadState.uploadUrl = uploadUrl;
+                                uploadState.offset = initialOffset;
+
+                                // If initial offset > 0 (Creation With Upload extension), update progress
+                                if (initialOffset > 0) {
+                                    progressCallback?.(Math.round((initialOffset / file.size) * 100), initialOffset);
+                                }
                             }
                         }
+
+                        if (!uploadState) {
+                            throw new Error("Upload state lost");
+                        }
+
+                        const uploadResult = await performUpload(file, uploadUrl, uploadState.offset);
+
+                        finishCallback(uploadResult);
+                    } catch (error_) {
+                        errorCallback(error_ instanceof Error ? error_ : new Error(String(error_)));
                     }
+                })();
 
-                    if (!uploadState) {
-                        throw new Error("Upload state lost");
+                // Set timeout
+                timeoutId = setTimeout(() => {
+                    if (!resolved) {
+                        resolved = true;
+                        cleanupTimeout();
+                        uploadState = null;
+                        reject(new Error("Upload timeout"));
                     }
-
-                    const uploadResult = await performUpload(file, uploadUrl, uploadState.offset);
-
-                    finishCallback(uploadResult);
-                } catch (error_) {
-                    errorCallback(error_ instanceof Error ? error_ : new Error(String(error_)));
-                }
-            })();
-
-            // Set timeout
-            timeoutId = setTimeout(() => {
-                if (!resolved) {
-                    resolved = true;
-                    cleanupTimeout();
-                    uploadState = null;
-                    reject(new Error("Upload timeout"));
-                }
-            }, 300_000); // 5 minutes
-        }),
+                }, 300_000); // 5 minutes
+            }),
     };
 };
