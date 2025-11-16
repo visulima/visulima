@@ -58,7 +58,7 @@ class VercelBlobStorage extends BaseStorage<VercelBlobFile, FileReturn> {
         if (config.ttl) {
             const ttlMs = typeof config.ttl === "string" ? toMilliseconds(config.ttl) : config.ttl;
 
-            processedConfig.expiredAt = ttlMs === null ? undefined : Date.now() + ttlMs;
+            processedConfig.expiredAt = ttlMs === undefined ? undefined : Date.now() + ttlMs;
         }
 
         const file = new VercelBlobFile(processedConfig);
@@ -158,7 +158,7 @@ class VercelBlobStorage extends BaseStorage<VercelBlobFile, FileReturn> {
     }
 
     public async delete({ id }: FileQuery): Promise<VercelBlobFile> {
-        const file = await this.getMeta(id).catch(() => null);
+        const file = await this.getMeta(id).catch(() => undefined);
 
         if (file?.url) {
             file.status = "deleted";

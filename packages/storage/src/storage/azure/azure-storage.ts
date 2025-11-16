@@ -100,7 +100,7 @@ class AzureStorage extends BaseStorage<AzureFile, FileReturn> {
         if (config.ttl) {
             const ttlMs = typeof config.ttl === "string" ? toMilliseconds(config.ttl) : config.ttl;
 
-            if (ttlMs !== null) {
+            if (ttlMs !== undefined) {
                 processedConfig.expiredAt = Date.now() + ttlMs;
             }
         }

@@ -8,7 +8,7 @@ export const getRangeEnd = (range: string): number => {
     // Match patterns like "bytes 0-499/1234" or "0-499"
     const match = range.match(/(\d+)-(\d+)/);
 
-    const end = match ? +match[2] : 0;
+    const end = match && match[2] ? +match[2] : 0;
 
     return end > 0 ? end + 1 : 0;
 };

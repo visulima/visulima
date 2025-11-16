@@ -154,7 +154,7 @@ class GCStorage extends BaseStorage<GCSFile, FileReturn> {
         if (config.ttl) {
             const ttlMs = typeof config.ttl === "string" ? toMilliseconds(config.ttl) : config.ttl;
 
-            if (ttlMs !== null) {
+            if (ttlMs !== undefined) {
                 processedConfig.expiredAt = Date.now() + ttlMs;
             }
         }
@@ -267,7 +267,7 @@ class GCStorage extends BaseStorage<GCSFile, FileReturn> {
     }
 
     public async delete({ id }: FileQuery): Promise<GCSFile> {
-        const file = await this.getMeta(id).catch(() => null);
+        const file = await this.getMeta(id).catch(() => undefined);
 
         if (file?.uri) {
             file.status = "deleted";

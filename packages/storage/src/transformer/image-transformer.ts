@@ -356,12 +356,12 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
         const fileQuery: FileQuery = { id: fileId };
         const cacheKey = this.generateCacheKey(fileId, steps);
 
-        const cached = this.cache.get(cacheKey);
+        const cached = this.cache ? await Promise.resolve(this.cache.get(cacheKey)) : undefined;
 
         if (cached) {
             this.logger?.debug("Returning cached transformed image for %s", fileId);
 
-            return cached;
+            return cached as TransformResult<TFileReturn>;
         }
 
         // Get original image from storage

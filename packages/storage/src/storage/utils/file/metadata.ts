@@ -1,11 +1,18 @@
 import isRecord from "../../../utils/primitives/is-record";
 
-const ASCII_SPACE: string = " ".codePointAt(0);
-const ASCII_COMMA: string = ",".codePointAt(0);
+const ASCII_SPACE: number = " ".codePointAt(0) ?? 32;
+const ASCII_COMMA: number = ",".codePointAt(0) ?? 44;
 const BASE64_REGEX: RegExp = /^[\d+/A-Z]*={0,2}$/i;
 
-const isNumeric: boolean = (input: unknown) =>
-    (typeof input !== "string" ? false : !Number.isNaN(input) && !Number.isNaN(parseFloat(input)) && isFinite(input));
+const isNumeric = (input: unknown): boolean => {
+    if (typeof input !== "string") {
+        return false;
+    }
+
+    const number_ = Number.parseFloat(input);
+
+    return !Number.isNaN(number_) && isFinite(number_);
+};
 
 export class Metadata {
     [key: string]: any;
@@ -60,7 +67,7 @@ export const validateValue = (value: string): boolean => {
 export const stringifyMetadata = (metadata: NonNullable<Metadata>): string =>
     Object.entries(metadata)
         .map(([key, value]) => {
-            if (value === null) {
+            if (value === null || value === undefined) {
                 return key;
             }
 
@@ -73,7 +80,7 @@ export const stringifyMetadata = (metadata: NonNullable<Metadata>): string =>
         .join(",");
 
 export const parseMetadata = (string_?: string): Metadata => {
-    const meta: Record<string, string | null> = {};
+    const meta: Record<string, string | undefined> = {};
 
     if (!string_ || string_.trim().length === 0) {
         throw new Error("Metadata string is not valid");
@@ -89,21 +96,23 @@ export const parseMetadata = (string_?: string): Metadata => {
             && (tokens.length === 1 || validateValue(value as string))
             && !((key as string) in meta)
         ) {
-            const decodedValue = tokens.length === 1 ? null : value ? Buffer.from(value, "base64").toString("utf8") : "";
+            const decodedValue = tokens.length === 1 ? undefined : value ? Buffer.from(value, "base64").toString("utf8") : "";
 
             // Try to parse as JSON for objects/arrays, then handle primitives
             let parsedValue: any = decodedValue;
 
-            try {
-                parsedValue = JSON.parse(decodedValue);
-            } catch {
-                // If not valid JSON, keep as string and handle primitives
-                if (decodedValue === "true") {
-                    parsedValue = true;
-                } else if (decodedValue === "false") {
-                    parsedValue = false;
-                } else if (isNumeric(decodedValue)) {
-                    parsedValue = Number(decodedValue);
+            if (decodedValue !== undefined) {
+                try {
+                    parsedValue = JSON.parse(decodedValue);
+                } catch {
+                    // If not valid JSON, keep as string and handle primitives
+                    if (decodedValue === "true") {
+                        parsedValue = true;
+                    } else if (decodedValue === "false") {
+                        parsedValue = false;
+                    } else if (isNumeric(decodedValue)) {
+                        parsedValue = Number(decodedValue);
+                    }
                 }
             }
 

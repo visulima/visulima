@@ -70,7 +70,7 @@ export const ErrorMap: ErrorResponses<ERRORS> = (() => {
         UnsupportedMediaType: [415, "Unsupported media type"],
     };
 
-    const errorMap: ErrorResponses<ERRORS> = {};
+    const errorMap = {} as ErrorResponses<ERRORS>;
 
     (Object.keys(errors) as ERRORS[]).forEach((code) => {
         const [statusCode, message] = errors[code] as [number, string];
@@ -126,7 +126,8 @@ export const isUploadError = (error: unknown): error is UploadError => !!(error 
  * @throws UploadError with the specified code and message
  */
 export const throwErrorCode = (UploadErrorCode: string, detail?: string): never => {
-    const error = new UploadError(detail || (ErrorMap[UploadErrorCode] as HttpError).message);
+    const errorResponse = ErrorMap[UploadErrorCode as ERRORS];
+    const error = new UploadError(detail || errorResponse?.message || ERRORS.UNKNOWN_ERROR);
 
     error.UploadErrorCode = UploadErrorCode as ERRORS;
 

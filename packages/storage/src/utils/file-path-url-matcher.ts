@@ -18,25 +18,29 @@ const filePathUrlMatcher = (path: string) => {
     const result = internalMatcher(path);
 
     if (!result) {
-        return null;
+        return undefined;
     }
 
     // Ensure correct property order: params first, then path
     // Also recreate params object to ensure proper property order
     const { params } = result;
-    const orderedParams: PathMatch = {};
 
-    // Add properties in expected order: metadata, path, uuid, ext
+    // uuid is required, so we must have it from the match
+    if (!params.uuid) {
+        return undefined;
+    }
+
+    const orderedParams: PathMatch = {
+        uuid: params.uuid,
+    };
+
+    // Add optional properties in expected order: metadata, path, ext
     if (params.metadata !== undefined) {
         orderedParams.metadata = params.metadata;
     }
 
     if (params.path !== undefined) {
         orderedParams.path = params.path;
-    }
-
-    if (params.uuid !== undefined) {
-        orderedParams.uuid = params.uuid;
     }
 
     if (params.ext !== undefined) {
