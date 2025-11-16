@@ -1,0 +1,21 @@
+{
+    "name": "storage-client-vue-example",
+    "version": "0.0.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "build": "vue-tsc && vite build",
+        "dev": "vite",
+        "preview": "vite preview"
+    },
+    "dependencies": {
+        "@visulima/storage-client": "workspace:*",
+        "vue": "^3.5.24"
+    },
+    "devDependencies": {
+        "@vitejs/plugin-vue": "^6.0.1",
+        "typescript": "^5.9.3",
+        "vite": "^7.2.2",
+        "vue-tsc": "^3.1.4"
+    }
+}

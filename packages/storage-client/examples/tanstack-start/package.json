@@ -1,0 +1,36 @@
+{
+    "name": "tanstack-start",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "build": "vite build",
+        "dev": "vite dev --port 3000",
+        "serve": "vite preview",
+        "test": "vitest run"
+    },
+    "dependencies": {
+        "@tanstack/react-router": "^1.136.5",
+        "@tanstack/react-start": "^1.136.5",
+        "@tanstack/router-plugin": "^1.136.5",
+        "@visulima/storage": "workspace:*",
+        "@visulima/storage-client": "workspace:*",
+        "nitro": "latest",
+        "react": "^19.2.0",
+        "react-dom": "^19.2.0",
+        "vite-tsconfig-paths": "^5.1.4"
+    },
+    "devDependencies": {
+        "@tanstack/devtools-vite": "^0.3.11",
+        "@testing-library/dom": "^10.4.1",
+        "@testing-library/react": "^16.3.0",
+        "@types/node": "^24.10.1",
+        "@types/react": "^19.2.5",
+        "@types/react-dom": "^19.2.3",
+        "@vitejs/plugin-react": "^5.1.1",
+        "jsdom": "^27.2.0",
+        "typescript": "^5.9.3",
+        "vite": "^7.2.2",
+        "vitest": "^4.0.9",
+        "web-vitals": "^5.1.0"
+    }
+}
