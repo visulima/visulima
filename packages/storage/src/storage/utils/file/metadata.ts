@@ -64,7 +64,9 @@ export const stringifyMetadata = (metadata: NonNullable<Metadata>): string =>
                 return key;
             }
 
-            const encodedValue = Buffer.from(String(value), "utf8").toString("base64");
+            // Serialize objects and arrays as JSON before base64 encoding
+            const stringValue = typeof value === "object" ? JSON.stringify(value) : String(value);
+            const encodedValue = Buffer.from(stringValue, "utf8").toString("base64");
 
             return `${key} ${encodedValue}`;
         })
@@ -89,7 +91,23 @@ export const parseMetadata = (string_?: string): Metadata => {
         ) {
             const decodedValue = tokens.length === 1 ? null : value ? Buffer.from(value, "base64").toString("utf8") : "";
 
-            meta[key as string] = isNumeric(decodedValue) ? Number(decodedValue) : decodedValue;
+            // Try to parse as JSON for objects/arrays, then handle primitives
+            let parsedValue: any = decodedValue;
+
+            try {
+                parsedValue = JSON.parse(decodedValue);
+            } catch {
+                // If not valid JSON, keep as string and handle primitives
+                if (decodedValue === "true") {
+                    parsedValue = true;
+                } else if (decodedValue === "false") {
+                    parsedValue = false;
+                } else if (isNumeric(decodedValue)) {
+                    parsedValue = Number(decodedValue);
+                }
+            }
+
+            meta[key as string] = parsedValue;
         } else {
             throw new Error("Metadata string is not valid");
         }

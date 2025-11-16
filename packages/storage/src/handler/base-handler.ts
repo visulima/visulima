@@ -214,7 +214,9 @@ abstract class BaseHandler<
                     }
                 }
             } else {
-                const { headers, statusCode, ...basicFile } = file as ResponseFile<TFile>;
+                const { headers: fileHeaders, statusCode, ...basicFile } = file as ResponseFile<TFile>;
+                // Preserve headers from the file response
+                const headers = fileHeaders || {};
 
                 this.logger?.debug("[%s]: %s: %d/%d", basicFile.status, basicFile.name, basicFile.bytesWritten, basicFile.size);
 
@@ -233,6 +235,18 @@ abstract class BaseHandler<
 
                         next();
                     } else {
+                        // Preserve original headers before calling onComplete (onComplete might modify them)
+                        const originalHeaders = { ...headers };
+                        const fileWithHeaders = file as ResponseFile<TFile>;
+                        const originalFileHeaders = fileWithHeaders.headers ? { ...fileWithHeaders.headers } : {};
+
+                        // Check if this is a chunked upload by looking at metadata or request headers
+                        const isChunkedUpload
+                            = (basicFile.metadata as any)?._chunkedUpload === true
+                                || (basicFile.metadata as any)?._chunkedUpload === "true"
+                                || request.headers["x-chunked-upload"] === "true"
+                                || request.headers["X-Chunked-Upload"] === "true";
+
                         const completed = await this.storage.onComplete(file as TFile);
 
                         if (completed.headers === undefined) {
@@ -243,16 +257,82 @@ abstract class BaseHandler<
                             throw new TypeError("onComplete must return the key statusCode");
                         }
 
-                        this.finish(request, response, completed);
+                        // Merge headers from original response with onComplete response
+                        // This preserves chunked upload headers (x-upload-offset, x-upload-complete, etc.)
+                        const mergedHeaders: Record<string, string> = {
+                            ...completed.headers,
+                            ...originalHeaders,
+                            ...originalFileHeaders,
+                        };
+
+                        // Ensure chunked upload headers are preserved (check all possible case variations)
+                        let uploadOffset
+                            = originalHeaders["x-upload-offset"]
+                                || originalHeaders["X-Upload-Offset"]
+                                || originalFileHeaders["x-upload-offset"]
+                                || originalFileHeaders["X-Upload-Offset"];
+                        let uploadComplete
+                            = originalHeaders["x-upload-complete"]
+                                || originalHeaders["X-Upload-Complete"]
+                                || originalFileHeaders["x-upload-complete"]
+                                || originalFileHeaders["X-Upload-Complete"];
+
+                        // For chunked uploads, if headers are missing, try to get them from the file's bytesWritten
+                        if (isChunkedUpload && !uploadOffset && basicFile.bytesWritten !== undefined) {
+                            uploadOffset = String(basicFile.bytesWritten);
+                        }
+
+                        if (isChunkedUpload && !uploadComplete && basicFile.status === "completed") {
+                            uploadComplete = "true";
+                        }
+
+                        // Always preserve chunked upload headers if they exist or if this is a chunked upload
+                        if (uploadOffset) {
+                            mergedHeaders["x-upload-offset"] = String(uploadOffset);
+                            mergedHeaders["X-Upload-Offset"] = String(uploadOffset);
+                        }
+
+                        if (uploadComplete) {
+                            mergedHeaders["x-upload-complete"] = String(uploadComplete);
+                            mergedHeaders["X-Upload-Complete"] = String(uploadComplete);
+                        }
+
+                        this.finish(request, response, {
+                            ...completed,
+                            headers: mergedHeaders,
+                        });
                     }
                 } else {
+                    // Check if this is a chunked upload initialization (has X-Chunked-Upload header)
+                    const isChunkedUploadInit = headers["X-Chunked-Upload"] === "true" || headers["x-chunked-upload"] === "true";
+
+                    // For chunked upload initialization, include body in response
+                    let body: Buffer | string | undefined;
+                    const responseHeaders: Record<string, string> = {
+                        ...headers,
+                        ...(file as TFile).hash === undefined
+                            ? {}
+                            : { [`X-Range-${(file as TFile).hash?.algorithm.toUpperCase()}`]: (file as TFile).hash?.value },
+                    };
+
+                    if (isChunkedUploadInit) {
+                        // Serialize the file object as JSON for chunked upload initialization
+                        body = JSON.stringify(basicFile);
+
+                        // Ensure Content-Type is set to application/json
+                        if (!responseHeaders["Content-Type"] && !responseHeaders["content-type"]) {
+                            responseHeaders["Content-Type"] = "application/json; charset=utf-8";
+                        }
+                    }
+
+                    // For HEAD requests, don't send body
+                    if (request.method === "HEAD") {
+                        body = "";
+                    }
+
                     this.send(response, {
-                        headers: {
-                            ...headers,
-                            ...(file as TFile).hash === undefined
-                                ? {}
-                                : { [`X-Range-${(file as TFile).hash?.algorithm.toUpperCase()}`]: (file as TFile).hash?.value },
-                        } as Record<string, string>,
+                        body,
+                        headers: responseHeaders,
                         statusCode,
                     });
                 }
@@ -597,7 +677,17 @@ abstract class BaseHandler<
         } else if (!isValidationError(error) && !isHttpError(error)) {
             httpError = this.storage.normalizeError(error);
         } else {
-            httpError = error;
+            // For http-errors, create a proper HttpError with body
+            httpError = {
+                ...error,
+                body: {
+                    code: "HTTP_ERROR",
+                    message: error.message,
+                    name: error.name,
+                },
+                headers: (error as any).headers || {},
+                statusCode: (error as any).statusCode || 500,
+            } as HttpError;
         }
 
         this.send(response, this.storage.onError(httpError));
@@ -817,6 +907,7 @@ abstract class BaseHandler<
         if ("body" in request && request.body !== null && "arrayBuffer" in request && typeof (request as any).arrayBuffer === "function") {
             try {
                 const arrayBuf = await (request as any).arrayBuffer();
+
                 bodyBuffer = new Uint8Array(arrayBuf);
             } catch (error) {
                 // Log error but continue with empty body
