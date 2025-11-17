@@ -162,8 +162,8 @@ describe("batch Operations", () => {
             expect.assertions(4);
 
             // Create source files
-            const file1 = await storage.create({ ...metafile, id: "source1", name: "source1.mp4" });
-            const file2 = await storage.create({ ...metafile, id: "source2", name: "source2.mp4" });
+            const file1 = await storage.create({ ...metafile, originalName: "source1.mp4" });
+            const file2 = await storage.create({ ...metafile, originalName: "source2.mp4" });
             const stream1 = new RequestReadStream();
             const stream2 = new RequestReadStream();
 
@@ -188,7 +188,7 @@ describe("batch Operations", () => {
             expect.assertions(5);
 
             // Create one source file
-            const file1 = await storage.create({ ...metafile, id: "source1", name: "source1.mp4" });
+            const file1 = await storage.create({ ...metafile, originalName: "source1.mp4" });
             const stream1 = new RequestReadStream();
 
             stream1.__mockSend();
@@ -239,8 +239,8 @@ describe("batch Operations", () => {
             expect.assertions(4);
 
             // Create source files
-            const file1 = await storage.create({ ...metafile, id: "source1", name: "source1.mp4" });
-            const file2 = await storage.create({ ...metafile, id: "source2", name: "source2.mp4" });
+            const file1 = await storage.create({ ...metafile, originalName: "source1.mp4" });
+            const file2 = await storage.create({ ...metafile, originalName: "source2.mp4" });
             const stream1 = new RequestReadStream();
             const stream2 = new RequestReadStream();
 
@@ -265,7 +265,7 @@ describe("batch Operations", () => {
             expect.assertions(4);
 
             // Create one source file
-            const file1 = await storage.create({ ...metafile, id: "source1", name: "source1.mp4" });
+            const file1 = await storage.create({ ...metafile, originalName: "source1.mp4" });
             const stream1 = new RequestReadStream();
 
             stream1.__mockSend();
@@ -339,7 +339,7 @@ describe("batch Operations", () => {
         it("should return correct response structure for copyBatch", async () => {
             expect.assertions(6);
 
-            const file1 = await storage.create({ ...metafile, id: "source1", name: "source1.mp4" });
+            const file1 = await storage.create({ ...metafile, originalName: "source1.mp4" });
             const stream1 = new RequestReadStream();
 
             stream1.__mockSend();
@@ -358,7 +358,7 @@ describe("batch Operations", () => {
         it("should return correct response structure for moveBatch", async () => {
             expect.assertions(6);
 
-            const file1 = await storage.create({ ...metafile, id: "source1", name: "source1.mp4" });
+            const file1 = await storage.create({ ...metafile, originalName: "source1.mp4" });
             const stream1 = new RequestReadStream();
 
             stream1.__mockSend();

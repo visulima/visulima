@@ -3,10 +3,10 @@ import type { UploadResult } from "../react/types";
 const DEFAULT_CHUNK_SIZE = 5 * 1024 * 1024; // 5MB default chunk size
 
 export interface ChunkedRestAdapterOptions {
-    /** Upload endpoint URL */
-    endpoint: string;
     /** Chunk size in bytes (default: 5MB) */
     chunkSize?: number;
+    /** Upload endpoint URL */
+    endpoint: string;
     /** Maximum number of retry attempts */
     maxRetries?: number;
     /** Additional metadata to include with the upload */
@@ -41,13 +41,13 @@ export interface ChunkedRestAdapter {
 }
 
 interface UploadState {
-    fileId?: string;
+    abortController?: AbortController;
+    aborted: boolean;
     file?: File;
+    fileId?: string;
+    paused: boolean;
     totalSize: number;
     uploadedChunks: Set<number>; // Track uploaded chunk offsets
-    paused: boolean;
-    aborted: boolean;
-    abortController?: AbortController;
 }
 
 /**
@@ -73,11 +73,7 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
     /**
      * Retry a fetch request with exponential backoff
      */
-    const fetchWithRetry = async (
-        url: string,
-        init: RequestInit,
-        retriesLeft = maxRetries,
-    ): Promise<Response> => {
+    const fetchWithRetry = async (url: string, init: RequestInit, retriesLeft = maxRetries): Promise<Response> => {
         try {
             const response = await fetch(url, init);
 
@@ -144,7 +140,7 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
     /**
      * Get upload status from server
      */
-    const getUploadStatus = async (fileId: string): Promise<{ offset: number; chunks: Array<{ offset: number; length: number }> }> => {
+    const getUploadStatus = async (fileId: string): Promise<{ chunks: { length: number; offset: number }[]; offset: number }> => {
         const url = endpoint.endsWith("/") ? `${endpoint}${fileId}` : `${endpoint}/${fileId}`;
 
         const response = await fetchWithRetry(url, {
@@ -158,13 +154,14 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
         const offset = Number.parseInt(response.headers.get("X-Upload-Offset") || "0", 10);
         const chunksHeader = response.headers.get("X-Received-Chunks");
 
-        let chunks: Array<{ offset: number; length: number }> = [];
+        let chunks: { length: number; offset: number }[] = [];
 
         if (chunksHeader) {
             try {
                 const parsed = JSON.parse(chunksHeader) as unknown;
+
                 if (Array.isArray(parsed)) {
-                    chunks = parsed as Array<{ offset: number; length: number }>;
+                    chunks = parsed as { length: number; offset: number }[];
                 }
             } catch {
                 // Ignore parse errors
@@ -177,13 +174,7 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
     /**
      * Upload a single chunk
      */
-    const uploadChunk = async (
-        file: File,
-        fileId: string,
-        startOffset: number,
-        endOffset: number,
-        signal: AbortSignal,
-    ): Promise<void> => {
+    const uploadChunk = async (file: File, fileId: string, startOffset: number, endOffset: number, signal: AbortSignal): Promise<void> => {
         const chunk = file.slice(startOffset, endOffset);
         const chunkSize = endOffset - startOffset;
 
@@ -344,7 +335,7 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
 
                 return status.offset;
             } catch {
-                return Array.from(uploadState.uploadedChunks).reduce((sum, offset) => {
+                return [...uploadState.uploadedChunks].reduce((sum, offset) => {
                     const chunkEnd = Math.min(offset + chunkSize, uploadState.totalSize);
 
                     return sum + (chunkEnd - offset);
@@ -503,4 +494,3 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
             }),
     };
 };
-

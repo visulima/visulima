@@ -818,8 +818,19 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
                 // Move the file - move() returns the moved file
                 const movedFile = await this.move(source, destination);
 
-                // Delete source metadata after successful move using the correct ID
-                await this.deleteMeta(sourceId).catch(() => undefined);
+                // Update and save metadata for the moved file
+                // Keep the original ID but update the name to the destination
+                if (sourceFile) {
+                    const updatedFile = { ...sourceFile, ...movedFile, name: destination } as TFile;
+
+                    await this.saveMeta(updatedFile).catch(() => undefined);
+                } else {
+                    // If we couldn't get source metadata, save the moved file metadata
+                    // Use the sourceId as the metadata ID
+                    const fileToSave = { ...movedFile, id: sourceId } as TFile;
+
+                    await this.saveMeta(fileToSave).catch(() => undefined);
+                }
 
                 return { file: movedFile, id: destination, success: true as const };
             } catch (error: unknown) {
@@ -845,7 +856,7 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
                 }
             } else {
                 // Promise rejected - shouldn't happen but handle it
-                failed.push({ error: result.reason?.message || "Move failed", id: "" });
+                failed.push({ error: result.reason?.message || "Move failed", id: result.reason?.id || "" });
             }
         }
 

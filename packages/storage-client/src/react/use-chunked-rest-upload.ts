@@ -204,9 +204,3 @@ export const useChunkedRestUpload = (options: UseChunkedRestUploadOptions): UseC
         upload,
     };
 };
-
-
-
-
-
-
