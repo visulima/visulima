@@ -6,6 +6,7 @@ import { request } from "gaxios";
 import { GoogleAuth } from "google-auth-library";
 
 import package_ from "../../../package.json";
+import { detectFileTypeFromStream } from "../../utils/detect-file-type";
 import { ERRORS, throwErrorCode } from "../../utils/errors";
 import { getHeader } from "../../utils/http";
 import toMilliseconds from "../../utils/primitives/to-milliseconds";
@@ -14,7 +15,7 @@ import LocalMetaStorage from "../local/local-meta-storage";
 import type MetaStorage from "../meta-storage";
 import BaseStorage from "../storage";
 import type { FileInit, FilePart, FileQuery, FileReturn } from "../utils/file";
-import { getFileStatus, partMatch } from "../utils/file";
+import { getFileStatus, hasContent, partMatch } from "../utils/file";
 import FetchError from "./fetch-error";
 import GCSConfig from "./gcs-config";
 import GCSFile from "./gcs-file";
@@ -250,6 +251,29 @@ class GCStorage extends BaseStorage<GCSFile, FileReturn> {
         await this.lock(part.id);
 
         try {
+            // Detect file type from stream if contentType is not set or is default
+            // Only detect on first write (when bytesWritten is 0 or NaN)
+            if (
+                hasContent(part)
+                && (file.bytesWritten === 0 || Number.isNaN(file.bytesWritten))
+                && (!file.contentType || file.contentType === "application/octet-stream")
+            ) {
+                try {
+                    const { fileType, stream: detectedStream } = await detectFileTypeFromStream(part.body);
+
+                    // Update contentType if file type was detected
+                    if (fileType?.mime) {
+                        file.contentType = fileType.mime;
+                    }
+
+                    // Use the stream from file type detection
+                    part.body = detectedStream;
+                } catch {
+                    // If file type detection fails, continue with original stream
+                    // This is not a critical error
+                }
+            }
+
             file.bytesWritten = await this.internalWrite({ ...file, ...part });
 
             file.status = getFileStatus(file);
@@ -308,8 +332,10 @@ class GCStorage extends BaseStorage<GCSFile, FileReturn> {
 
         do {
             requestOptions.body = progress.rewriteToken ? JSON.stringify({ rewriteToken: progress.rewriteToken }) : "";
-            // eslint-disable-next-line no-await-in-loop,unicorn/no-await-expression-member
-            progress = (await this.makeRequest<CopyProgress>(requestOptions)).data;
+            // eslint-disable-next-line no-await-in-loop
+            const response = await this.makeRequest<CopyProgress>(requestOptions);
+
+            progress = response.data || ({} as CopyProgress);
         } while (progress.rewriteToken);
 
         return progress.resource;

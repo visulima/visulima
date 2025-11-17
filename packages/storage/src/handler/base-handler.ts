@@ -242,9 +242,10 @@ abstract class BaseHandler<
                         const originalFileHeaders = fileWithHeaders.headers ? { ...fileWithHeaders.headers } : {};
 
                         // Check if this is a chunked upload by looking at metadata or request headers
+                        const metadata = basicFile.metadata as Record<string, unknown>;
                         const isChunkedUpload
-                            = (basicFile.metadata as any)?._chunkedUpload === true
-                                || (basicFile.metadata as any)?._chunkedUpload === "true"
+                            = metadata?._chunkedUpload === true
+                                || metadata?._chunkedUpload === "true"
                                 || request.headers["x-chunked-upload"] === "true"
                                 || request.headers["X-Chunked-Upload"] === "true";
 
@@ -358,8 +359,9 @@ abstract class BaseHandler<
                     });
                 }
             }
-        } catch (error: any) {
-            const uError = pick(error, ["name", ...(Object.getOwnPropertyNames(error) as (keyof Error)[])]) as UploadError;
+        } catch (error: unknown) {
+            const errorObj = error instanceof Error ? error : new Error(String(error));
+            const uError = pick(errorObj, ["name", ...(Object.getOwnPropertyNames(errorObj) as (keyof Error)[])]) as UploadError;
             const errorEvent = { ...uError, request: pick(request, ["headers", "method", "url"]) };
 
             if (this.listenerCount("error") > 0) {
@@ -399,7 +401,7 @@ abstract class BaseHandler<
         if (pathMatch && pathMatch.params.uuid) {
             const { ext, metadata, uuid: rawUuid } = pathMatch.params;
             // If ext is present, uuid includes the extension, so strip it
-            const uuid = ext ? rawUuid.replace(new RegExp(`\\.${ext}$`), "") : rawUuid;
+            const uuid = ext ? rawUuid.replace(new RegExp(String.raw`\.${ext}$`), "") : rawUuid;
 
             // Handle metadata requests (check this before UUID validation)
             if (metadata === "metadata" && getRealPath(request).endsWith("/metadata")) {
@@ -419,8 +421,9 @@ abstract class BaseHandler<
                         } as Record<string, string>,
                         statusCode: 200,
                     } as ResponseFile<TFile>;
-                } catch (error: any) {
-                    if (error.UploadErrorCode === ERRORS.FILE_NOT_FOUND || error.UploadErrorCode === ERRORS.GONE) {
+                } catch (error: unknown) {
+                    const errorWithCode = error as { UploadErrorCode?: string };
+                    if (errorWithCode.UploadErrorCode === ERRORS.FILE_NOT_FOUND || errorWithCode.UploadErrorCode === ERRORS.GONE) {
                         throw createHttpError(404, "File metadata not found");
                     }
 
@@ -464,7 +467,7 @@ abstract class BaseHandler<
                             } as Record<string, string>,
                             statusCode: 200,
                         } as ResponseFile<TFile>;
-                    } catch (transformError: any) {
+                    } catch (transformError: unknown) {
                         // If transformation fails, check if it's a validation error
                         if (transformError.name === "ValidationError") {
                             throw createHttpError(400, transformError.message);
@@ -533,8 +536,9 @@ abstract class BaseHandler<
                     ...file,
                     contentType,
                 } as ResponseFile<TFile>;
-            } catch (error: any) {
-                if (error.UploadErrorCode === ERRORS.FILE_NOT_FOUND || error.UploadErrorCode === ERRORS.GONE) {
+            } catch (error: unknown) {
+                const errorWithCode = error as { UploadErrorCode?: string };
+                if (errorWithCode.UploadErrorCode === ERRORS.FILE_NOT_FOUND || errorWithCode.UploadErrorCode === ERRORS.GONE) {
                     throw createHttpError(404, "File not found");
                 }
 
@@ -635,8 +639,9 @@ abstract class BaseHandler<
                 size: streamResult.size,
                 statusCode: range ? 206 : 200,
             });
-        } catch (error: any) {
-            if (error.UploadErrorCode === ERRORS.FILE_NOT_FOUND || error.UploadErrorCode === ERRORS.GONE) {
+        } catch (error: unknown) {
+            const errorWithCode = error as { UploadErrorCode?: string };
+            if (errorWithCode.UploadErrorCode === ERRORS.FILE_NOT_FOUND || errorWithCode.UploadErrorCode === ERRORS.GONE) {
                 this.sendError(response, createHttpError(404, "File not found"));
 
                 return;
@@ -707,8 +712,8 @@ abstract class BaseHandler<
                     message: error.message,
                     name: error.name,
                 },
-                headers: (error as any).headers || {},
-                statusCode: (error as any).statusCode || 500,
+                headers: (error as HttpError).headers || {},
+                statusCode: (error as HttpError).statusCode || 500,
             } as HttpError;
         }
 
@@ -910,7 +915,7 @@ abstract class BaseHandler<
 
         // Add download method to available methods if not already included
         const methods = child.methods || BaseHandler.methods;
-        const extendedMethods = methods.includes("download" as any) ? methods : [...methods, "download"];
+        const extendedMethods = methods.includes("download") ? methods : [...methods, "download"];
 
         extendedMethods.forEach((method) => {
             const handler = (this as MethodHandler<NodeRequest, NodeResponse>)[method as Handlers];
@@ -933,10 +938,10 @@ abstract class BaseHandler<
         let bodyBuffer = new Uint8Array();
 
         // Check if request has body and arrayBuffer method (Web API Request)
-        // eslint-disable-next-line unicorn/no-null
-        if ("body" in request && request.body !== null && "arrayBuffer" in request && typeof (request as any).arrayBuffer === "function") {
+
+        if ("body" in request && request.body !== null && "arrayBuffer" in request && typeof (request as Request).arrayBuffer === "function") {
             try {
-                const arrayBuf = await (request as any).arrayBuffer();
+                const arrayBuf = await (request as Request).arrayBuffer();
 
                 bodyBuffer = new Uint8Array(arrayBuf);
             } catch (error) {
@@ -956,7 +961,7 @@ abstract class BaseHandler<
         }
 
         // Copy headers and ensure content-type is preserved for multipart data
-        const headers = Object.fromEntries((request.headers as any)?.entries?.() || []);
+        const headers = Object.fromEntries((request.headers as Headers)?.entries?.() || []);
 
         const pathWithQuery = url.pathname + url.search;
 
@@ -970,7 +975,7 @@ abstract class BaseHandler<
             method: request.method,
             originalUrl: pathWithQuery, // Set originalUrl for getIdFromRequest compatibility
             url: pathWithQuery,
-        }) as any as NodeRequest;
+        }) as NodeRequest;
 
         // Add body data if present
         if (bodyBuffer.length > 0) {
@@ -1029,7 +1034,7 @@ abstract class BaseHandler<
             this.emit(basicFile.status, {
                 ...basicFile,
                 request: {
-                    headers: Object.fromEntries((request.headers as any)?.entries?.() || []),
+                    headers: Object.fromEntries((request.headers as Headers)?.entries?.() || []),
                     method: request.method,
                     url: request.url,
                 },
@@ -1090,7 +1095,7 @@ abstract class BaseHandler<
                 responseHeaders[name] = value;
             },
             statusCode: responseStatus,
-            write: (_data: any) => {
+            write: (_data: unknown) => {
                 // Mock implementation
             },
             writeContinue: () => {},
@@ -1103,7 +1108,7 @@ abstract class BaseHandler<
                 }
             },
             writeProcessing: () => {},
-        } as any as ServerResponse;
+        } as ServerResponse;
     }
 
     /**
@@ -1273,7 +1278,7 @@ abstract class BaseHandler<
 
         source.on("error", (error) => {
             if (!isDestroyed) {
-                this.sendError(destination as any, error);
+                this.sendError(destination as NodeResponse, error);
                 cleanup();
             }
         });

@@ -10,6 +10,7 @@ import { normalize } from "@visulima/path";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import typeis from "type-is";
 
+import { NoOpMetrics } from "../metrics";
 import type { Cache } from "../utils/cache";
 import { NoOpCache } from "../utils/cache";
 import type { ErrorResponses } from "../utils/errors";
@@ -17,10 +18,10 @@ import { ErrorMap, ERRORS, throwErrorCode } from "../utils/errors";
 import { normalizeHookResponse, normalizeOnErrorResponse } from "../utils/http";
 import Locker from "../utils/locker";
 import toMilliseconds from "../utils/primitives/to-milliseconds";
-import type { HttpError, Logger, UploadResponse, ValidatorConfig } from "../utils/types";
+import type { HttpError, Logger, Metrics, UploadResponse, ValidatorConfig } from "../utils/types";
 import { Validator } from "../utils/validator";
 import type MetaStorage from "./meta-storage";
-import type { BaseStorageOptions, PurgeList, StorageOptimizations } from "./types";
+import type { BaseStorageOptions, BatchOperationResponse, PurgeList, StorageOptimizations } from "./types";
 import type { File, FileInit, FilePart, FileQuery } from "./utils/file";
 import { FileName, isExpired, updateMetadata } from "./utils/file";
 import type { FileReturn } from "./utils/file/types";
@@ -60,6 +61,8 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
 
     public readonly logger?: Logger;
 
+    public readonly metrics: Metrics;
+
     public readonly genericConfig: BaseStorageOptions<TFile>;
 
     public maxMetadataSize: number;
@@ -74,7 +77,7 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
 
     protected locker: Locker;
 
-    protected namingFunction: (file: TFile, request: any) => string;
+    protected namingFunction: (file: TFile, request: IncomingMessage) => string;
 
     protected validation: Validator<TFile> = new Validator<TFile>();
 
@@ -123,6 +126,7 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
         this.cache = options.cache ?? new NoOpCache();
 
         this.logger = options.logger;
+        this.metrics = options.metrics ?? new NoOpMetrics();
         this.logger?.debug(`${this.constructor.name} config: ${inspect({ ...config, logger: this.logger.constructor })}`);
 
         const purgeInterval = toMilliseconds(options.expiration?.purgeInterval);
@@ -169,7 +173,7 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
         return extensions;
     }
 
-    public async validate(file: TFile): Promise<any> {
+    public async validate(file: TFile): Promise<boolean> {
         return this.validation.verify(file);
     }
 
@@ -343,7 +347,7 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
                 processedMetadata.expiredAt = Date.now() + (ttlMs as number);
             }
 
-            delete (processedMetadata as any).ttl;
+            delete (processedMetadata as Record<string, unknown>).ttl;
         }
 
         updateMetadata(file as File, processedMetadata);
@@ -356,7 +360,7 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
     /**
      * Apply storage optimizations to file operations
      */
-    protected applyOptimizations(operation: string, ...arguments_: any[]): any[] {
+    protected applyOptimizations(operation: string, ...arguments_: unknown[]): unknown[] {
         switch (operation) {
             case "copy": {
                 return this.optimizeCopy(arguments_[0], arguments_[1]);
@@ -535,14 +539,309 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
      * @param {string} name
      * @param {string} destination
      */
-    public abstract copy(name: string, destination: string, options?: { storageClass?: string }): Promise<any>;
+    public abstract copy(name: string, destination: string, options?: { storageClass?: string }): Promise<TFile>;
 
     /**
      * Move an upload file to a new location.
      * @param {string} name
      * @param {string} destination
      */
-    public abstract move(name: string, destination: string): Promise<any>;
+    public abstract move(name: string, destination: string): Promise<TFile>;
+
+    /**
+     * Delete multiple files in a single operation.
+     * Default implementation processes deletions in parallel.
+     * @param ids Array of file IDs to delete
+     * @returns Promise resolving to batch operation response with successful and failed deletions
+     */
+    public async deleteBatch(ids: string[]): Promise<BatchOperationResponse<TFile>> {
+        const startTime = Date.now();
+        const storageType = this.constructor.name.toLowerCase().replace("storage", "");
+
+        this.metrics.increment("storage.operations.batch.delete.count", 1, {
+            batch_size: ids.length,
+            storage: storageType,
+        });
+
+        const successful: TFile[] = [];
+        const failed: { error: string; id: string }[] = [];
+
+        // Process all deletions in parallel using Promise.allSettled
+        const deletePromises = ids.map(async (id) => {
+            try {
+                const file = await this.delete({ id });
+
+                return { file, id, success: true as const };
+            } catch (error: unknown) {
+                const errorMessage = error instanceof Error ? error.message : "Delete failed";
+
+                this.metrics.increment("storage.operations.delete.error.count", 1, {
+                    error: errorMessage,
+                    storage: storageType,
+                });
+
+                return { error: errorMessage, id, success: false as const };
+            }
+        });
+
+        const results = await Promise.allSettled(deletePromises);
+
+        for (const result of results) {
+            if (result.status === "fulfilled") {
+                if (result.value.success) {
+                    successful.push(result.value.file);
+                } else {
+                    failed.push({ error: result.value.error, id: result.value.id });
+                }
+            } else {
+                // Promise rejected - shouldn't happen but handle it
+                failed.push({ error: result.reason?.message || "Delete failed", id: "" });
+            }
+        }
+
+        const duration = Date.now() - startTime;
+
+        this.metrics.timing("storage.operations.batch.delete.duration", duration, {
+            batch_size: ids.length,
+            storage: storageType,
+        });
+
+        this.metrics.gauge("storage.operations.batch.delete.success_count", successful.length, {
+            storage: storageType,
+        });
+
+        this.metrics.gauge("storage.operations.batch.delete.failed_count", failed.length, {
+            storage: storageType,
+        });
+
+        return {
+            failed,
+            failedCount: failed.length,
+            successful,
+            successfulCount: successful.length,
+        };
+    }
+
+    /**
+     * Copy multiple files in a single operation.
+     * Default implementation processes copies in parallel.
+     * @param operations Array of copy operations with source, destination, and optional options
+     * @returns Promise resolving to batch operation response with successful and failed copies
+     */
+    public async copyBatch(operations: { destination: string; options?: { storageClass?: string }; source: string }[]): Promise<BatchOperationResponse<TFile>> {
+        const startTime = Date.now();
+        const storageType = this.constructor.name.toLowerCase().replace("storage", "");
+
+        this.metrics.increment("storage.operations.batch.copy.count", 1, {
+            batch_size: operations.length,
+            storage: storageType,
+        });
+
+        const successful: TFile[] = [];
+        const failed: { error: string; id: string }[] = [];
+
+        // Process all copies in parallel using Promise.allSettled
+        const copyPromises = operations.map(async ({ destination, options, source }) => {
+            try {
+                await this.copy(source, destination, options);
+                // Try to get the source file metadata to return it
+                // Note: destination is a path, not an ID, so we return source file info
+                const sourceFile = await this.getMeta(source).catch(() => undefined);
+
+                if (sourceFile) {
+                    // Return source file with destination path updated
+                    return { file: { ...sourceFile, name: destination } as TFile, id: destination, success: true as const };
+                }
+
+                // If we can't get source metadata, create a minimal file object
+                return { file: { id: source, name: destination } as TFile, id: destination, success: true as const };
+            } catch (error: unknown) {
+                const errorMessage = error instanceof Error ? error.message : "Copy failed";
+
+                this.metrics.increment("storage.operations.copy.error.count", 1, {
+                    error: errorMessage,
+                    storage: storageType,
+                });
+
+                return { error: errorMessage, id: destination, success: false as const };
+            }
+        });
+
+        const results = await Promise.allSettled(copyPromises);
+
+        for (const result of results) {
+            if (result.status === "fulfilled") {
+                if (result.value.success && result.value.file) {
+                    successful.push(result.value.file);
+                } else {
+                    failed.push({ error: result.value.error || "Copy failed", id: result.value.id });
+                }
+            } else {
+                // Promise rejected - shouldn't happen but handle it
+                failed.push({ error: result.reason?.message || "Copy failed", id: "" });
+            }
+        }
+
+        const duration = Date.now() - startTime;
+
+        this.metrics.timing("storage.operations.batch.copy.duration", duration, {
+            batch_size: operations.length,
+            storage: storageType,
+        });
+
+        this.metrics.gauge("storage.operations.batch.copy.success_count", successful.length, {
+            storage: storageType,
+        });
+
+        this.metrics.gauge("storage.operations.batch.copy.failed_count", failed.length, {
+            storage: storageType,
+        });
+
+        return {
+            failed,
+            failedCount: failed.length,
+            successful,
+            successfulCount: successful.length,
+        };
+    }
+
+    /**
+     * Move multiple files in a single operation.
+     * Default implementation processes moves in parallel.
+     * @param operations Array of move operations with source and destination
+     * @returns Promise resolving to batch operation response with successful and failed moves
+     */
+    public async moveBatch(operations: { destination: string; source: string }[]): Promise<BatchOperationResponse<TFile>> {
+        const startTime = Date.now();
+        const storageType = this.constructor.name.toLowerCase().replace("storage", "");
+
+        this.metrics.increment("storage.operations.batch.move.count", 1, {
+            batch_size: operations.length,
+            storage: storageType,
+        });
+
+        const successful: TFile[] = [];
+        const failed: { error: string; id: string }[] = [];
+
+        // Process all moves in parallel using Promise.allSettled
+        const movePromises = operations.map(async ({ destination, source }) => {
+            try {
+                // Get source file metadata before move
+                const sourceFile = await this.getMeta(source).catch(() => undefined);
+
+                await this.move(source, destination);
+
+                if (sourceFile) {
+                    // Return source file with destination path updated and delete source metadata
+                    await this.deleteMeta(source).catch(() => undefined);
+
+                    return { file: { ...sourceFile, id: source, name: destination } as TFile, id: destination, success: true as const };
+                }
+
+                // If we can't get source metadata, create a minimal file object
+                return { file: { id: source, name: destination } as TFile, id: destination, success: true as const };
+            } catch (error: unknown) {
+                const errorMessage = error instanceof Error ? error.message : "Move failed";
+
+                this.metrics.increment("storage.operations.move.error.count", 1, {
+                    error: errorMessage,
+                    storage: storageType,
+                });
+
+                return { error: errorMessage, id: destination, success: false as const };
+            }
+        });
+
+        const results = await Promise.allSettled(movePromises);
+
+        for (const result of results) {
+            if (result.status === "fulfilled") {
+                if (result.value.success && result.value.file) {
+                    successful.push(result.value.file);
+                } else {
+                    failed.push({ error: result.value.error || "Move failed", id: result.value.id });
+                }
+            } else {
+                // Promise rejected - shouldn't happen but handle it
+                failed.push({ error: result.reason?.message || "Move failed", id: "" });
+            }
+        }
+
+        const duration = Date.now() - startTime;
+
+        this.metrics.timing("storage.operations.batch.move.duration", duration, {
+            batch_size: operations.length,
+            storage: storageType,
+        });
+
+        this.metrics.gauge("storage.operations.batch.move.success_count", successful.length, {
+            storage: storageType,
+        });
+
+        this.metrics.gauge("storage.operations.batch.move.failed_count", failed.length, {
+            storage: storageType,
+        });
+
+        return {
+            failed,
+            failedCount: failed.length,
+            successful,
+            successfulCount: successful.length,
+        };
+    }
+
+    /**
+     * Helper method to instrument an operation with metrics.
+     * Subclasses can use this to wrap their operations.
+     * @param operation Operation name (e.g., "create", "write", "delete")
+     * @param fn Async function to execute
+     * @param attributes Optional attributes to add to metrics
+     * @returns Result of the operation
+     */
+    protected async instrumentOperation<T>(operation: string, function_: () => Promise<T>, attributes?: Record<string, string | number>): Promise<T> {
+        const startTime = Date.now();
+        const storageType = this.constructor.name.toLowerCase().replace("storage", "");
+
+        const baseAttributes = {
+            storage: storageType,
+            ...attributes,
+        };
+
+        try {
+            this.metrics.increment(`storage.operations.${operation}.count`, 1, baseAttributes);
+
+            const result = await function_();
+
+            const duration = Date.now() - startTime;
+
+            this.metrics.timing(`storage.operations.${operation}.duration`, duration, baseAttributes);
+
+            // If result is a file, record file size
+            if (result && typeof result === "object" && "size" in result && typeof result.size === "number") {
+                this.metrics.gauge("storage.files.size", result.size, {
+                    ...baseAttributes,
+                    operation,
+                });
+            }
+
+            return result;
+        } catch (error: unknown) {
+            const duration = Date.now() - startTime;
+            const errorMessage = error instanceof Error ? error.message : "Unknown error";
+
+            this.metrics.timing(`storage.operations.${operation}.duration`, duration, {
+                ...baseAttributes,
+                error: "true",
+            });
+
+            this.metrics.increment(`storage.operations.${operation}.error.count`, 1, {
+                ...baseAttributes,
+                error: errorMessage,
+            });
+
+            throw error;
+        }
+    }
 }
 
 export default BaseStorage;

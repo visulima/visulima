@@ -1,0 +1,119 @@
+# Vercel Blob Storage
+
+## Overview
+
+Vercel Blob Storage is a serverless object storage service optimized for edge deployments. It provides fast, global access to files with automatic CDN distribution.
+
+## Installation
+
+```sh
+npm install @vercel/blob
+```
+
+```sh
+yarn add @vercel/blob
+```
+
+```sh
+pnpm add @vercel/blob
+```
+
+## Usage
+
+```typescript
+import { VercelBlobStorage } from "@visulima/storage/provider/vercel";
+
+const storage = new VercelBlobStorage({
+    token: process.env.BLOB_READ_WRITE_TOKEN,
+    metaStorageConfig: { directory: "/tmp/upload-metafiles" },
+});
+```
+
+## Configuration
+
+### Environment Variables
+
+```typescript
+// Set BLOB_READ_WRITE_TOKEN or VERCEL_BLOB_TOKEN
+process.env.BLOB_READ_WRITE_TOKEN = "vercel_blob_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
+
+const storage = new VercelBlobStorage({
+    // Token is automatically read from environment
+});
+```
+
+### With Token
+
+```typescript
+const storage = new VercelBlobStorage({
+    token: "vercel_blob_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+});
+```
+
+### Advanced Configuration
+
+```typescript
+const storage = new VercelBlobStorage({
+    token: process.env.BLOB_READ_WRITE_TOKEN,
+    multipart: true, // Enable multipart uploads for large files
+    multipart: 10 * 1024 * 1024, // Enable multipart for files > 10MB
+    retryConfig: {
+        maxRetries: 3,
+        initialDelay: 1000,
+    },
+    expiration: {
+        maxAge: "7d",
+        purgeInterval: "1h",
+    },
+});
+```
+
+## Features
+
+- **Global CDN**: Automatic CDN distribution for fast access
+- **Serverless**: Optimized for edge deployments
+- **Multipart Uploads**: Support for large files
+- **Automatic Retry**: Built-in retry mechanism for transient failures
+
+## Basic Operations
+
+```typescript
+// Create a file
+const file = await storage.create(request, {
+    contentType: "image/jpeg",
+    metadata: { filename: "photo.jpg" },
+});
+
+// Write data
+await storage.write({
+    id: file.id,
+    body: imageStream,
+    contentLength: imageSize,
+});
+
+// Get file
+const fileData = await storage.get({ id: file.id });
+
+// Delete file
+await storage.delete({ id: file.id });
+```
+
+## URL Generation
+
+Vercel Blob automatically generates public URLs:
+
+```typescript
+const file = await storage.get({ id: "file-id" });
+
+// file.url - Public URL
+// file.downloadUrl - Download URL
+// file.pathname - File pathname
+```
+
+## Best Practices
+
+1. **Use environment variables** - Store tokens securely
+2. **Enable multipart for large files** - Better performance for files > 10MB
+3. **Configure retry** - Handle transient failures
+4. **Use CDN URLs** - Leverage Vercel's global CDN
+5. **Monitor usage** - Track storage and bandwidth usage

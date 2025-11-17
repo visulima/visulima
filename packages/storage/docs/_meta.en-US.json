@@ -7,5 +7,29 @@
     },
     "packages": {
         "title": "Packages"
+    },
+    "retry-mechanism": {
+        "title": "Retry Mechanism"
+    },
+    "caching": {
+        "title": "Caching"
+    },
+    "chunked-uploads": {
+        "title": "Chunked Uploads"
+    },
+    "tus-handler": {
+        "title": "TUS Handler"
+    },
+    "transformers": {
+        "title": "Media Transformers"
+    },
+    "batch-operations": {
+        "title": "Batch Operations"
+    },
+    "error-handling": {
+        "title": "Error Handling"
+    },
+    "observability": {
+        "title": "Observability & Metrics"
     }
 }

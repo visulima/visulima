@@ -1,37 +1,41 @@
 import { useCallback, useMemo } from "react";
 
 import type { UploadMethod, UploadResult } from "./types";
+import type { UseChunkedRestUploadOptions } from "./use-chunked-rest-upload";
+import { useChunkedRestUpload } from "./use-chunked-rest-upload";
 import type { UseMultipartUploadOptions } from "./use-multipart-upload";
 import { useMultipartUpload } from "./use-multipart-upload";
 import type { UseTusUploadOptions } from "./use-tus-upload";
 import { useTusUpload } from "./use-tus-upload";
 
 export interface UseUploadOptions {
-    /** Chunk size for TUS uploads (default: 1MB) */
+    /** Chunk size for TUS and chunked REST uploads (default: 1MB for TUS, 5MB for chunked REST) */
     chunkSize?: number;
+    /** Chunked REST upload endpoint URL */
+    endpointChunkedRest?: string;
     /** Multipart upload endpoint URL */
     endpointMultipart?: string;
     /** TUS upload endpoint URL */
     endpointTus?: string;
-    /** Maximum number of retry attempts (TUS only) */
+    /** Maximum number of retry attempts (TUS and chunked REST only) */
     maxRetries?: number;
     /** Additional metadata to include with the upload */
     metadata?: Record<string, string>;
-    /** Upload method to use: 'multipart', 'tus', or 'auto'. If undefined, auto-detected based on provided endpoints */
+    /** Upload method to use: 'multipart', 'tus', 'chunked-rest', or 'auto'. If undefined, auto-detected based on provided endpoints */
     method?: UploadMethod;
     /** Callback when upload fails */
     onError?: (error: Error) => void;
-    /** Callback when upload is paused (TUS only) */
+    /** Callback when upload is paused (TUS and chunked REST only) */
     onPause?: () => void;
     /** Callback when upload progress updates */
     onProgress?: (progress: number) => void;
-    /** Callback when upload is resumed (TUS only) */
+    /** Callback when upload is resumed (TUS and chunked REST only) */
     onResume?: () => void;
     /** Callback when upload starts */
     onStart?: () => void;
     /** Callback when upload completes successfully */
     onSuccess?: (file: UploadResult) => void;
-    /** Enable automatic retry on failure (TUS only) */
+    /** Enable automatic retry on failure (TUS and chunked REST only) */
     retry?: boolean;
     /** File size threshold for auto-selecting TUS (default: 10MB) */
     tusThreshold?: number;
@@ -44,13 +48,13 @@ export interface UseUploadReturn {
     currentMethod: UploadMethod;
     /** Last upload error, if any */
     error: Error | null;
-    /** Whether the upload is paused (TUS only) */
+    /** Whether the upload is paused (TUS and chunked REST only) */
     isPaused?: boolean;
     /** Whether an upload is currently in progress */
     isUploading: boolean;
-    /** Current upload offset in bytes (TUS only) */
+    /** Current upload offset in bytes (TUS and chunked REST only) */
     offset?: number;
-    /** Pause the current upload (TUS only) */
+    /** Pause the current upload (TUS and chunked REST only) */
     pause?: () => void;
     /** Current upload progress (0-100) */
     progress: number;
@@ -58,7 +62,7 @@ export interface UseUploadReturn {
     reset: () => void;
     /** Last upload result, if any */
     result: UploadResult | null;
-    /** Resume a paused upload (TUS only) */
+    /** Resume a paused upload (TUS and chunked REST only) */
     resume?: () => Promise<void>;
     /** Upload a file using the configured method */
     upload: (file: File) => Promise<UploadResult>;
@@ -68,14 +72,15 @@ const DEFAULT_TUS_THRESHOLD = 10 * 1024 * 1024; // 10MB
 
 /**
  * React hook for file uploads with automatic method selection
- * Uses custom uploader implementations for both multipart and TUS
- * Automatically chooses between multipart and TUS based on file size and method preference
+ * Uses custom uploader implementations for multipart, TUS, and chunked REST
+ * Automatically chooses between methods based on file size and method preference
  * @param options Upload configuration options
  * @returns Upload functions and state
  */
 export const useUpload = (options: UseUploadOptions): UseUploadReturn => {
     const {
         chunkSize,
+        endpointChunkedRest,
         endpointMultipart,
         endpointTus,
         maxRetries,
@@ -97,24 +102,49 @@ export const useUpload = (options: UseUploadOptions): UseUploadReturn => {
             return method;
         }
 
-        // If only multipart endpoint is provided, use multipart
-        if (endpointMultipart && !endpointTus) {
+        const endpoints = [endpointChunkedRest, endpointMultipart, endpointTus].filter(Boolean);
+
+        // If only one endpoint is provided, use that method
+        if (endpoints.length === 1) {
+            if (endpointChunkedRest) {
+                return "chunked-rest";
+            }
+
+            if (endpointTus) {
+                return "tus";
+            }
+
             return "multipart";
         }
 
-        // If only TUS endpoint is provided, use TUS
-        if (endpointTus && !endpointMultipart) {
-            return "tus";
-        }
-
-        // If both are provided, use auto selection
-        if (endpointMultipart && endpointTus) {
+        // If multiple endpoints are provided, use auto selection
+        if (endpoints.length > 1) {
             return "auto";
         }
 
-        // If neither is provided, throw error
-        throw new Error("At least one endpoint must be provided: endpointMultipart or endpointTus");
-    }, [method, endpointMultipart, endpointTus]);
+        // If none are provided, throw error
+        throw new Error("At least one endpoint must be provided: endpointChunkedRest, endpointMultipart, or endpointTus");
+    }, [method, endpointChunkedRest, endpointMultipart, endpointTus]);
+
+    const chunkedRestOptions: UseChunkedRestUploadOptions | undefined = useMemo(() => {
+        if (!endpointChunkedRest) {
+            return undefined;
+        }
+
+        return {
+            chunkSize,
+            endpoint: endpointChunkedRest,
+            maxRetries,
+            metadata,
+            onError,
+            onPause,
+            onProgress,
+            onResume,
+            onStart,
+            onSuccess,
+            retry,
+        };
+    }, [endpointChunkedRest, chunkSize, metadata, onStart, onSuccess, onError, onProgress, onPause, onResume, retry, maxRetries]);
 
     const multipartOptions: UseMultipartUploadOptions | undefined = useMemo(() => {
         if (!endpointMultipart) {
@@ -151,6 +181,7 @@ export const useUpload = (options: UseUploadOptions): UseUploadReturn => {
         };
     }, [endpointTus, chunkSize, metadata, onStart, onSuccess, onError, onProgress, onPause, onResume, retry, maxRetries]);
 
+    const chunkedRestUpload = chunkedRestOptions ? useChunkedRestUpload(chunkedRestOptions) : null;
     const multipartUpload = multipartOptions ? useMultipartUpload(multipartOptions) : null;
     const tusUpload = tusOptions ? useTusUpload(tusOptions) : null;
 
@@ -160,9 +191,20 @@ export const useUpload = (options: UseUploadOptions): UseUploadReturn => {
                 return detectedMethod;
             }
 
-            // Auto-select TUS for large files, but only if TUS endpoint is available
-            if (file.size > tusThreshold && endpointTus) {
-                return "tus";
+            // Auto-select TUS or chunked REST for large files
+            if (file.size > tusThreshold) {
+                if (endpointTus) {
+                    return "tus";
+                }
+
+                if (endpointChunkedRest) {
+                    return "chunked-rest";
+                }
+            }
+
+            // Prefer chunked REST for medium files if available
+            if (endpointChunkedRest) {
+                return "chunked-rest";
             }
 
             // Fallback to multipart if available
@@ -172,7 +214,7 @@ export const useUpload = (options: UseUploadOptions): UseUploadReturn => {
 
             throw new Error("No available endpoint for upload");
         },
-        [detectedMethod, tusThreshold, endpointMultipart, endpointTus],
+        [detectedMethod, tusThreshold, endpointChunkedRest, endpointMultipart, endpointTus],
     );
 
     const upload = useCallback(
@@ -187,24 +229,34 @@ export const useUpload = (options: UseUploadOptions): UseUploadReturn => {
                 return tusUpload.upload(file);
             }
 
+            if (selectedMethod === "chunked-rest") {
+                if (!chunkedRestUpload) {
+                    throw new Error("Chunked REST endpoint not configured");
+                }
+
+                return chunkedRestUpload.upload(file);
+            }
+
             if (!multipartUpload) {
                 throw new Error("Multipart endpoint not configured");
             }
 
             return multipartUpload.upload(file);
         },
-        [determineMethod, tusUpload, multipartUpload],
+        [determineMethod, tusUpload, chunkedRestUpload, multipartUpload],
     );
 
     const abort = useCallback((): void => {
         tusUpload?.abort();
+        chunkedRestUpload?.abort();
         multipartUpload?.reset();
-    }, [tusUpload, multipartUpload]);
+    }, [tusUpload, chunkedRestUpload, multipartUpload]);
 
     const reset = useCallback((): void => {
         tusUpload?.reset();
+        chunkedRestUpload?.reset();
         multipartUpload?.reset();
-    }, [tusUpload, multipartUpload]);
+    }, [tusUpload, chunkedRestUpload, multipartUpload]);
 
     // Determine current method based on which hook is active
     const currentMethod: UploadMethod = useMemo(() => {
@@ -217,31 +269,60 @@ export const useUpload = (options: UseUploadOptions): UseUploadReturn => {
             return "tus";
         }
 
+        // If chunked REST is uploading or has result, it's being used
+        if (chunkedRestUpload && (chunkedRestUpload.isUploading || chunkedRestUpload.result)) {
+            return "chunked-rest";
+        }
+
         // If multipart is uploading or has result, it's being used
         if (multipartUpload && (multipartUpload.isUploading || multipartUpload.result)) {
             return "multipart";
         }
 
-        // Default based on available endpoints
-        if (endpointTus && endpointMultipart) {
-            return "multipart"; // Default to multipart when both available
+        // Default based on available endpoints (priority: chunked-rest > tus > multipart)
+        if (endpointChunkedRest) {
+            return "chunked-rest";
         }
 
-        return endpointTus ? "tus" : "multipart";
-    }, [detectedMethod, tusUpload, multipartUpload, endpointMultipart, endpointTus]);
+        if (endpointTus) {
+            return "tus";
+        }
+
+        return "multipart";
+    }, [detectedMethod, tusUpload, chunkedRestUpload, multipartUpload, endpointChunkedRest, endpointMultipart, endpointTus]);
 
     return {
         abort,
         currentMethod,
-        error: currentMethod === "tus" ? tusUpload?.error ?? null : multipartUpload?.error ?? null,
-        isPaused: currentMethod === "tus" ? tusUpload?.isPaused : undefined,
-        isUploading: currentMethod === "tus" ? tusUpload?.isUploading ?? false : multipartUpload?.isUploading ?? false,
-        offset: currentMethod === "tus" ? tusUpload?.offset : undefined,
-        pause: currentMethod === "tus" ? tusUpload?.pause : undefined,
-        progress: currentMethod === "tus" ? tusUpload?.progress ?? 0 : multipartUpload?.progress ?? 0,
+        error:
+            currentMethod === "tus"
+                ? tusUpload?.error ?? null
+                : currentMethod === "chunked-rest"
+                  ? chunkedRestUpload?.error ?? null
+                  : multipartUpload?.error ?? null,
+        isPaused: currentMethod === "tus" ? tusUpload?.isPaused : currentMethod === "chunked-rest" ? chunkedRestUpload?.isPaused : undefined,
+        isUploading:
+            currentMethod === "tus"
+                ? tusUpload?.isUploading ?? false
+                : currentMethod === "chunked-rest"
+                  ? chunkedRestUpload?.isUploading ?? false
+                  : multipartUpload?.isUploading ?? false,
+        offset: currentMethod === "tus" ? tusUpload?.offset : currentMethod === "chunked-rest" ? chunkedRestUpload?.offset : undefined,
+        pause: currentMethod === "tus" ? tusUpload?.pause : currentMethod === "chunked-rest" ? chunkedRestUpload?.pause : undefined,
+        progress:
+            currentMethod === "tus"
+                ? tusUpload?.progress ?? 0
+                : currentMethod === "chunked-rest"
+                  ? chunkedRestUpload?.progress ?? 0
+                  : multipartUpload?.progress ?? 0,
         reset,
-        result: currentMethod === "tus" ? tusUpload?.result ?? null : multipartUpload?.result ?? null,
-        resume: currentMethod === "tus" ? tusUpload?.resume : undefined,
+        result:
+            currentMethod === "tus"
+                ? tusUpload?.result ?? null
+                : currentMethod === "chunked-rest"
+                  ? chunkedRestUpload?.result ?? null
+                  : multipartUpload?.result ?? null,
+        resume: currentMethod === "tus" ? tusUpload?.resume : currentMethod === "chunked-rest" ? chunkedRestUpload?.resume : undefined,
         upload,
     };
 };

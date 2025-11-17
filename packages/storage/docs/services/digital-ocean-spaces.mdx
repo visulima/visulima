@@ -1,0 +1,90 @@
+# DigitalOcean Spaces
+
+## Overview
+
+DigitalOcean Spaces is an S3-compatible object storage service. It provides a simple, scalable solution for storing and serving files with global CDN integration.
+
+## Installation
+
+```sh
+npm install @aws-sdk/client-s3 @aws-sdk/credential-providers @aws-sdk/s3-request-presigner @aws-sdk/signature-v4-crt aws-crt
+```
+
+## Usage
+
+DigitalOcean Spaces is S3-compatible, so use the S3Storage with Spaces endpoint:
+
+```typescript
+import { S3Storage } from "@visulima/storage/provider/aws";
+import { digitalOcean } from "@visulima/storage/provider/aws/s3/clients";
+
+const storage = new S3Storage({
+    bucket: "my-space",
+    region: "nyc3", // DigitalOcean region
+    endpoint: "https://nyc3.digitaloceanspaces.com",
+    credentials: {
+        accessKeyId: process.env.SPACES_ACCESS_KEY_ID!,
+        secretAccessKey: process.env.SPACES_SECRET_ACCESS_KEY!,
+    },
+});
+```
+
+## Configuration
+
+### Using Client Helper
+
+```typescript
+import { digitalOcean } from "@visulima/storage/provider/aws/s3/clients";
+
+const clientConfig = digitalOcean({
+    key: process.env.SPACES_ACCESS_KEY_ID!,
+    secret: process.env.SPACES_SECRET_ACCESS_KEY!,
+    region: "nyc3",
+});
+
+const storage = new S3Storage({
+    bucket: "my-space",
+    ...clientConfig,
+});
+```
+
+### Environment Variables
+
+```typescript
+process.env.SPACES_ACCESS_KEY_ID = "your-access-key";
+process.env.SPACES_SECRET_ACCESS_KEY = "your-secret-key";
+
+const storage = new S3Storage({
+    bucket: process.env.SPACES_BUCKET,
+    region: process.env.SPACES_REGION || "nyc3",
+    endpoint: `https://${process.env.SPACES_REGION || "nyc3"}.digitaloceanspaces.com`,
+});
+```
+
+## Regions
+
+Available DigitalOcean Spaces regions:
+
+- `nyc3` - New York 3
+- `sfo3` - San Francisco 3
+- `ams3` - Amsterdam 3
+- `sgp1` - Singapore 1
+- `fra1` - Frankfurt 1
+
+## CDN Integration
+
+DigitalOcean Spaces includes built-in CDN:
+
+```typescript
+// Files are automatically served via CDN
+const file = await storage.get({ id: "file-id" });
+// file.uri includes CDN URL
+```
+
+## Best Practices
+
+1. **Choose appropriate region** - Select region closest to your users
+2. **Use CDN** - Leverage built-in CDN for global distribution
+3. **Configure CORS** - Set up CORS for web applications
+4. **Enable versioning** - Use Spaces versioning for important files
+5. **Monitor usage** - Track storage and bandwidth in DigitalOcean dashboard

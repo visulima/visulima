@@ -2,13 +2,37 @@
     "amazon-s3": {
         "title": "Amazon S3"
     },
+    "azure": {
+        "title": "Azure Blob Storage"
+    },
+    "backblaze-b2": {
+        "title": "Backblaze B2"
+    },
+    "cloudflare-r2": {
+        "title": "Cloudflare R2"
+    },
     "digital-ocean-spaces": {
         "title": "Digital Ocean Spaces"
     },
     "google-cloud-storage": {
         "title": "Google Cloud Storage"
     },
+    "local-disk": {
+        "title": "Local Disk Storage"
+    },
     "minio": {
         "title": "MinIO"
+    },
+    "netlify-blob": {
+        "title": "Netlify Blob"
+    },
+    "tigris": {
+        "title": "Tigris"
+    },
+    "vercel-blob": {
+        "title": "Vercel Blob"
+    },
+    "wasabi": {
+        "title": "Wasabi"
     }
 }

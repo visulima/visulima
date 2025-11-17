@@ -281,9 +281,10 @@ class Rest<
                 id,
                 start: 0,
             });
-        } catch (error: any) {
+        } catch (error: unknown) {
             // File doesn't exist, create new one
-            if (error.UploadErrorCode === ERRORS.FILE_NOT_FOUND || error.code === "ENOENT") {
+            const errorWithCode = error as { UploadErrorCode?: string; code?: string };
+            if (errorWithCode.UploadErrorCode === ERRORS.FILE_NOT_FOUND || errorWithCode.code === "ENOENT") {
                 // Extract original filename from Content-Disposition header if present
                 let originalName: string | undefined;
                 const contentDisposition = getHeader(request, "content-disposition", true);
@@ -383,7 +384,6 @@ class Rest<
                     return this.deleteBatch(parsed as string[]);
                 }
 
-                // eslint-disable-next-line unicorn/no-null
                 if (typeof parsed === "object" && parsed !== null && "ids" in parsed && Array.isArray((parsed as { ids: unknown }).ids)) {
                     // Object with ids array: { ids: ["id1", "id2"] }
                     const idsArray = (parsed as { ids: string[] }).ids;
@@ -479,8 +479,9 @@ class Rest<
 
         try {
             file = await this.storage.getMeta(id);
-        } catch (error: any) {
-            if (error.UploadErrorCode === ERRORS.FILE_NOT_FOUND || error.code === "ENOENT") {
+        } catch (error: unknown) {
+            const errorWithCode = error as { UploadErrorCode?: string; code?: string };
+            if (errorWithCode.UploadErrorCode === ERRORS.FILE_NOT_FOUND || errorWithCode.code === "ENOENT") {
                 throw createHttpError(404, "Upload session not found");
             }
 
@@ -522,11 +523,12 @@ class Rest<
         }
 
         // Track chunks in metadata (for status checking)
-        const chunks = Array.isArray(metadata._chunks) ? [...metadata._chunks] : [];
-        const chunkInfo = { length: contentLength, offset: chunkOffset };
+        type ChunkInfo = { length: number; offset: number; checksum?: string };
+        const chunks: ChunkInfo[] = Array.isArray(metadata._chunks) ? [...metadata._chunks] as ChunkInfo[] : [];
+        const chunkInfo: ChunkInfo = { length: contentLength, offset: chunkOffset };
 
         // Check if this chunk was already uploaded (idempotency)
-        const existingChunk = chunks.find((chunk: any) => chunk.offset === chunkOffset && chunk.length === contentLength);
+        const existingChunk = chunks.find((chunk) => chunk.offset === chunkOffset && chunk.length === contentLength);
 
         if (!existingChunk) {
             chunks.push(chunkInfo);
@@ -538,10 +540,10 @@ class Rest<
         if (chunkChecksum) {
             // Note: Full checksum validation would require reading the stream twice
             // For now, we'll store it for later validation if needed
-            const chunkWithChecksum = chunks.find((chunk: any) => chunk.offset === chunkOffset);
+            const chunkWithChecksum = chunks.find((chunk) => chunk.offset === chunkOffset);
 
             if (chunkWithChecksum) {
-                (chunkWithChecksum as any).checksum = chunkChecksum;
+                chunkWithChecksum.checksum = chunkChecksum;
             }
         }
 
@@ -711,60 +713,31 @@ class Rest<
      * @returns Promise resolving to ResponseList with deletion results
      */
     private async deleteBatch(ids: string[]): Promise<ResponseList<TFile>> {
-        const deletedFiles: TFile[] = [];
-        const errors: { error: string; id: string }[] = [];
-
-        // Delete all files in parallel using Promise.allSettled
-        const deletePromises = ids.map(async (id) => {
-            try {
-                const file = await this.storage.delete({ id });
-
-                if (file.status === undefined) {
-                    return { error: "File not found", id, success: false as const };
-                }
-
-                return { file, id, success: true as const };
-            } catch (error: unknown) {
-                const errorMessage = error instanceof Error ? error.message : "Delete failed";
-
-                return { error: errorMessage, id, success: false as const };
-            }
-        });
-
-        const results = await Promise.allSettled(deletePromises);
-
-        for (const result of results) {
-            if (result.status === "fulfilled") {
-                if (result.value.success) {
-                    deletedFiles.push(result.value.file);
-                } else {
-                    errors.push({ error: result.value.error, id: result.value.id });
-                }
-            } else {
-                // Promise rejected - shouldn't happen but handle it
-                errors.push({ error: result.reason?.message || "Delete failed", id: "" });
-            }
-        }
+        // Use storage-level batch delete if available, otherwise fall back to individual deletes
+        const result = await this.storage.deleteBatch(ids);
 
         // If all deletions failed, return error
-        if (deletedFiles.length === 0 && errors.length > 0) {
-            const failedIds = errors.map((errorItem) => errorItem.id).join(", ");
+        if (result.successfulCount === 0 && result.failedCount > 0) {
+            const failedIds = result.failed.map((errorItem) => errorItem.id).join(", ");
 
             throw createHttpError(404, `Failed to delete files: ${failedIds}`);
         }
 
         // Return successful deletions (partial success is OK)
+        // Always include headers for batch operations to indicate results
         return {
-            data: deletedFiles,
+            data: result.successful,
             headers:
-                errors.length > 0
+                result.failedCount > 0
                     ? {
-                        "X-Delete-Errors": JSON.stringify(errors),
-                        "X-Delete-Failed": String(errors.length),
-                        "X-Delete-Successful": String(deletedFiles.length),
+                        "X-Delete-Errors": JSON.stringify(result.failed),
+                        "X-Delete-Failed": String(result.failedCount),
+                        "X-Delete-Successful": String(result.successfulCount),
                     }
-                    : {},
-            statusCode: deletedFiles.length === ids.length ? 204 : 207, // 207 Multi-Status for partial success
+                    : {
+                        "X-Delete-Successful": String(result.successfulCount),
+                    },
+            statusCode: result.successfulCount === ids.length ? 204 : 207, // 207 Multi-Status for partial success
         };
     }
 

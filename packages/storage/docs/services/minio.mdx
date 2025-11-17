@@ -1,0 +1,95 @@
+# MinIO
+
+## Overview
+
+MinIO is a high-performance, S3-compatible object storage service. It can be self-hosted or used as a managed service, providing S3-compatible APIs.
+
+## Installation
+
+```sh
+npm install @aws-sdk/client-s3 @aws-sdk/credential-providers @aws-sdk/s3-request-presigner @aws-sdk/signature-v4-crt aws-crt
+```
+
+## Usage
+
+MinIO is S3-compatible, so use the S3Storage with MinIO endpoint:
+
+```typescript
+import { S3Storage } from "@visulima/storage/provider/aws";
+import { minio } from "@visulima/storage/provider/aws/s3/clients";
+
+const storage = new S3Storage({
+    bucket: "my-bucket",
+    region: "us-east-1",
+    endpoint: "http://localhost:9000", // MinIO endpoint
+    credentials: {
+        accessKeyId: process.env.MINIO_ACCESS_KEY!,
+        secretAccessKey: process.env.MINIO_SECRET_KEY!,
+    },
+    forcePathStyle: true, // Required for MinIO
+});
+```
+
+## Configuration
+
+### Using Client Helper
+
+```typescript
+import { minio } from "@visulima/storage/provider/aws/s3/clients";
+
+const clientConfig = minio({
+    accessKeyId: process.env.MINIO_ACCESS_KEY!,
+    secretAccessKey: process.env.MINIO_SECRET_KEY!,
+    endpoint: "http://localhost:9000",
+    region: "us-east-1",
+});
+
+const storage = new S3Storage({
+    bucket: "my-bucket",
+    ...clientConfig,
+});
+```
+
+### Self-Hosted MinIO
+
+```typescript
+const storage = new S3Storage({
+    bucket: "my-bucket",
+    endpoint: "http://minio.example.com:9000",
+    region: "us-east-1",
+    credentials: {
+        accessKeyId: "minioadmin",
+        secretAccessKey: "minioadmin",
+    },
+    forcePathStyle: true, // Required for self-hosted MinIO
+});
+```
+
+### Managed MinIO (MinIO Object Storage)
+
+```typescript
+const storage = new S3Storage({
+    bucket: "my-bucket",
+    endpoint: "https://s3.your-minio-instance.com",
+    region: "us-east-1",
+    credentials: {
+        accessKeyId: process.env.MINIO_ACCESS_KEY!,
+        secretAccessKey: process.env.MINIO_SECRET_KEY!,
+    },
+});
+```
+
+## Features
+
+- **S3-Compatible**: Full S3 API compatibility
+- **Self-Hosted**: Deploy on your own infrastructure
+- **High Performance**: Optimized for performance
+- **Distributed**: Support for distributed deployments
+
+## Best Practices
+
+1. **Use forcePathStyle** - Required for self-hosted MinIO
+2. **Configure TLS** - Use HTTPS for production
+3. **Set up access policies** - Configure bucket policies
+4. **Monitor performance** - Track MinIO metrics
+5. **Backup regularly** - Implement backup strategy for self-hosted deployments

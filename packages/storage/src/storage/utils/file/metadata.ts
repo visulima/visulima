@@ -15,7 +15,7 @@ const isNumeric = (input: unknown): boolean => {
 };
 
 export class Metadata {
-    [key: string]: any;
+    [key: string]: unknown;
 
     public psize?: number | string;
 
@@ -99,7 +99,7 @@ export const parseMetadata = (string_?: string): Metadata => {
             const decodedValue = tokens.length === 1 ? undefined : value ? Buffer.from(value, "base64").toString("utf8") : "";
 
             // Try to parse as JSON for objects/arrays, then handle primitives
-            let parsedValue: any = decodedValue;
+            let parsedValue: unknown = decodedValue;
 
             if (decodedValue !== undefined) {
                 try {

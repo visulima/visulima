@@ -1,0 +1,142 @@
+# Netlify Blob Storage
+
+## Overview
+
+Netlify Blob Storage is a serverless object storage service for Netlify deployments. It provides persistent storage for edge functions and serverless applications.
+
+## Installation
+
+```sh
+npm install @netlify/blobs
+```
+
+```sh
+yarn add @netlify/blobs
+```
+
+```sh
+pnpm add @netlify/blobs
+```
+
+## Usage
+
+```typescript
+import { NetlifyBlobStorage } from "@visulima/storage/provider/netlify";
+
+const storage = new NetlifyBlobStorage({
+    storeName: "uploads",
+    siteID: process.env.NETLIFY_SITE_ID,
+    token: process.env.NETLIFY_TOKEN,
+    metaStorageConfig: { directory: "/tmp/upload-metafiles" },
+});
+```
+
+## Configuration
+
+### Environment Variables
+
+```typescript
+// Set NETLIFY_SITE_ID and NETLIFY_TOKEN
+process.env.NETLIFY_SITE_ID = "your-site-id";
+process.env.NETLIFY_TOKEN = "your-token";
+
+const storage = new NetlifyBlobStorage({
+    storeName: "uploads",
+    // Site ID and token are automatically read from environment
+});
+```
+
+### With Credentials
+
+```typescript
+const storage = new NetlifyBlobStorage({
+    storeName: "uploads",
+    siteID: "your-site-id",
+    token: "your-token",
+});
+```
+
+### Advanced Configuration
+
+```typescript
+const storage = new NetlifyBlobStorage({
+    storeName: "uploads",
+    siteID: process.env.NETLIFY_SITE_ID,
+    token: process.env.NETLIFY_TOKEN,
+    retryConfig: {
+        maxRetries: 3,
+        initialDelay: 1000,
+    },
+    expiration: {
+        maxAge: "7d",
+        purgeInterval: "1h",
+    },
+});
+```
+
+## Features
+
+- **Serverless**: Optimized for Netlify Edge Functions
+- **Persistent Storage**: Reliable storage for serverless applications
+- **Automatic Retry**: Built-in retry mechanism for transient failures
+- **Metadata Support**: Rich metadata for file organization
+
+## Basic Operations
+
+```typescript
+// Create a file
+const file = await storage.create(request, {
+    contentType: "image/jpeg",
+    metadata: { filename: "photo.jpg" },
+});
+
+// Write data
+await storage.write({
+    id: file.id,
+    body: imageStream,
+    contentLength: imageSize,
+});
+
+// Get file
+const fileData = await storage.get({ id: file.id });
+
+// Delete file
+await storage.delete({ id: file.id });
+```
+
+## URL Generation
+
+Netlify Blob generates URLs based on your deployment:
+
+```typescript
+const file = await storage.get({ id: "file-id" });
+
+// file.url - Generated URL (typically via Netlify Function)
+// file.pathname - File pathname
+```
+
+## Netlify Edge Functions
+
+Use with Netlify Edge Functions:
+
+```typescript
+import { NetlifyBlobStorage } from "@visulima/storage/provider/netlify";
+
+export default async (request: Request, context: any) => {
+    const storage = new NetlifyBlobStorage({
+        storeName: "uploads",
+        // Credentials are automatically available in Netlify context
+    });
+
+    // Use storage...
+    return new Response("OK");
+};
+```
+
+## Best Practices
+
+1. **Use environment variables** - Store credentials securely
+2. **Configure retry** - Handle transient failures
+3. **Use appropriate store names** - Organize files by store
+4. **Monitor usage** - Track storage usage in Netlify dashboard
+5. **Handle errors gracefully** - Netlify Blob may have rate limits

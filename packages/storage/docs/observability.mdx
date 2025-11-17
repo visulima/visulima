@@ -1,0 +1,269 @@
+# Observability & Metrics
+
+The storage package provides comprehensive observability through structured metrics, allowing you to monitor storage operations, track performance, and identify issues in production.
+
+## Overview
+
+Metrics are collected for all storage operations including:
+
+- **Operation counts** - Track how many operations are performed
+- **Operation durations** - Measure latency (p50, p95, p99)
+- **Error rates** - Monitor failures by operation type
+- **File sizes** - Track file size distributions
+- **Batch operation metrics** - Monitor batch operation performance
+
+## Metrics Interface
+
+The storage package uses a simple `Metrics` interface that can be implemented by any metrics backend:
+
+```typescript
+interface Metrics {
+    increment(name: string, value?: number, attributes?: Record<string, string | number>): void;
+    timing(name: string, duration: number, attributes?: Record<string, string | number>): void;
+    gauge(name: string, value: number, attributes?: Record<string, string | number>): void;
+}
+```
+
+## OpenTelemetry Integration
+
+The package includes built-in support for OpenTelemetry, the industry-standard observability framework. This allows integration with any OpenTelemetry-compatible backend (Prometheus, Datadog, New Relic, Grafana Cloud, etc.).
+
+### Installation
+
+First, install the OpenTelemetry API:
+
+```bash
+pnpm add @opentelemetry/api
+```
+
+### Basic Usage
+
+```typescript
+import { metrics } from "@opentelemetry/api";
+import { OpenTelemetryMetrics } from "@visulima/storage/metrics";
+import { S3Storage } from "@visulima/storage/provider/aws";
+
+// Initialize OpenTelemetry (typically done once in your app)
+const meter = metrics.getMeter("@visulima/storage", "1.0.0");
+
+// Create metrics instance
+const storageMetrics = new OpenTelemetryMetrics(meter);
+
+// Use with storage
+const storage = new S3Storage({
+    bucket: "my-bucket",
+    metrics: storageMetrics,
+});
+```
+
+### Custom Meter
+
+You can also provide a custom meter instance:
+
+```typescript
+import { metrics } from "@opentelemetry/api";
+import { OpenTelemetryMetrics } from "@visulima/storage/metrics";
+
+// Create a meter with custom configuration
+const meter = metrics.getMeter("my-app", "1.0.0", {
+    // Custom meter options
+});
+
+const storageMetrics = new OpenTelemetryMetrics(meter);
+```
+
+## Collected Metrics
+
+The storage package automatically collects the following metrics:
+
+### Operation Metrics
+
+- `storage.operations.{operation}.count` - Counter for operation invocations
+- `storage.operations.{operation}.duration` - Histogram of operation durations (ms)
+- `storage.operations.{operation}.error.count` - Counter for operation errors
+
+**Operations tracked:**
+
+- `create` - File creation
+- `write` - File write operations
+- `get` - File retrieval
+- `delete` - File deletion
+- `copy` - File copy operations
+- `move` - File move operations
+- `update` - Metadata updates
+
+### Batch Operation Metrics
+
+- `storage.operations.batch.{operation}.count` - Counter for batch operations
+- `storage.operations.batch.{operation}.duration` - Histogram of batch operation durations (ms)
+- `storage.operations.batch.{operation}.success_count` - Gauge of successful operations
+- `storage.operations.batch.{operation}.failed_count` - Gauge of failed operations
+
+**Batch operations tracked:**
+
+- `delete` - Batch deletions
+- `copy` - Batch copies
+- `move` - Batch moves
+
+### File Metrics
+
+- `storage.files.size` - Gauge of file sizes (bytes)
+
+### Metric Attributes
+
+All metrics include the following attributes:
+
+- `storage` - Storage backend type (e.g., "s3", "azure", "disk")
+- `operation` - Operation name (for file size metrics)
+- `error` - Error message (for error metrics)
+- `batch_size` - Number of items in batch (for batch operations)
+
+## Custom Metrics Implementation
+
+You can implement your own metrics backend by implementing the `Metrics` interface:
+
+```typescript
+import type { Metrics } from "@visulima/storage";
+import { DiskStorage } from "@visulima/storage";
+
+class CustomMetrics implements Metrics {
+    increment(name: string, value = 1, attributes?: Record<string, string | number>): void {
+        // Send to your metrics backend
+        console.log(`Counter: ${name} = ${value}`, attributes);
+    }
+
+    timing(name: string, duration: number, attributes?: Record<string, string | number>): void {
+        // Send to your metrics backend
+        console.log(`Timing: ${name} = ${duration}ms`, attributes);
+    }
+
+    gauge(name: string, value: number, attributes?: Record<string, string | number>): void {
+        // Send to your metrics backend
+        console.log(`Gauge: ${name} = ${value}`, attributes);
+    }
+}
+
+const storage = new DiskStorage({
+    directory: "./uploads",
+    metrics: new CustomMetrics(),
+});
+```
+
+## Examples
+
+### Prometheus Integration
+
+```typescript
+import { metrics } from "@opentelemetry/api";
+import { MeterProvider, PeriodicExportingMetricReader } from "@opentelemetry/sdk-metrics";
+import { PrometheusExporter } from "@opentelemetry/exporter-prometheus";
+import { OpenTelemetryMetrics } from "@visulima/storage/metrics";
+import { S3Storage } from "@visulima/storage/provider/aws";
+
+// Setup Prometheus exporter
+const exporter = new PrometheusExporter({ port: 9464 });
+
+const meterProvider = new MeterProvider({
+    readers: [new PeriodicExportingMetricReader({ exporter })],
+});
+
+metrics.setGlobalMeterProvider(meterProvider);
+
+const meter = metrics.getMeter("@visulima/storage");
+const storageMetrics = new OpenTelemetryMetrics(meter);
+
+const storage = new S3Storage({
+    bucket: "my-bucket",
+    metrics: storageMetrics,
+});
+```
+
+### Datadog Integration
+
+```typescript
+import { metrics } from "@opentelemetry/api";
+import { MeterProvider, PeriodicExportingMetricReader } from "@opentelemetry/sdk-metrics";
+import { OTLPMetricExporter } from "@opentelemetry/exporter-metrics-otlp-http";
+import { OpenTelemetryMetrics } from "@visulima/storage/metrics";
+import { S3Storage } from "@visulima/storage/provider/aws";
+
+const exporter = new OTLPMetricExporter({
+    url: "https://api.datadoghq.com/api/v2/otlp/v1/metrics",
+    headers: {
+        "DD-API-KEY": process.env.DATADOG_API_KEY!,
+    },
+});
+
+const meterProvider = new MeterProvider({
+    readers: [new PeriodicExportingMetricReader({ exporter })],
+});
+
+metrics.setGlobalMeterProvider(meterProvider);
+
+const meter = metrics.getMeter("@visulima/storage");
+const storageMetrics = new OpenTelemetryMetrics(meter);
+
+const storage = new S3Storage({
+    bucket: "my-bucket",
+    metrics: storageMetrics,
+});
+```
+
+### Using with Instrumentation Helper
+
+For custom storage implementations, you can use the `instrumentOperation` helper method:
+
+```typescript
+import { BaseStorage } from "@visulima/storage";
+
+class MyStorage extends BaseStorage {
+    public async create(request: IncomingMessage, config: FileInit): Promise<File> {
+        return this.instrumentOperation(
+            "create",
+            async () => {
+                // Your implementation
+                const file = await this.doCreate(request, config);
+                return file;
+            },
+            {
+                custom_attribute: "value",
+            },
+        );
+    }
+}
+```
+
+## Best Practices
+
+1. **Use OpenTelemetry for Production** - OpenTelemetry is the industry standard and integrates with all major observability platforms.
+
+2. **Monitor Key Metrics** - Focus on:
+    - Operation latencies (p95, p99)
+    - Error rates
+    - Batch operation success rates
+    - File size distributions
+
+3. **Set Up Alerts** - Configure alerts for:
+    - High error rates (> 1%)
+    - Slow operations (p95 > 1s)
+    - Batch operation failures
+
+4. **Use Attributes Wisely** - Attributes are automatically added but you can add custom ones for filtering and grouping.
+
+5. **No Metrics Overhead** - If no metrics instance is provided, a no-op implementation is used, ensuring zero overhead when metrics are disabled.
+
+## Metric Naming Convention
+
+All metrics follow this naming pattern:
+
+- `storage.operations.{operation}.{type}` - Operation-level metrics
+- `storage.operations.batch.{operation}.{type}` - Batch operation metrics
+- `storage.files.{property}` - File-level metrics
+
+Where:
+
+- `{operation}` is the operation name (create, write, delete, etc.)
+- `{type}` is the metric type (count, duration, error.count)
+- `{property}` is the file property (size)
+
+This consistent naming makes it easy to query and aggregate metrics across all storage operations.

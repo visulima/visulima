@@ -1236,7 +1236,6 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
      * @private
      */
     private parseBooleanParameter(value: string | null): boolean | undefined {
-        // eslint-disable-next-line unicorn/no-null
         if (value === null)
             return undefined;
 

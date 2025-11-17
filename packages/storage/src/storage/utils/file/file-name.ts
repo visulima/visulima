@@ -1,3 +1,4 @@
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { isAbsolute } from "@visulima/path";
 
 const FileName: {

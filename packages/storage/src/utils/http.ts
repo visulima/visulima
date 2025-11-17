@@ -90,7 +90,7 @@ export const getHeader = (request: IncomingMessage, name: string, all = false): 
  * @param limit Maximum body size limit in bytes (default: 16MB)
  * @returns Parsed metadata object, or empty object if not JSON
  */
-export const getMetadata = async (request: IncomingMessageWithBody<Record<any, any>>, limit = 16_777_216): Promise<Record<any, any>> => {
+export const getMetadata = async (request: IncomingMessageWithBody<Record<string, unknown>>, limit = 16_777_216): Promise<Record<string, unknown>> => {
     if (!typeis(request, ["json"])) {
         return {};
     }
@@ -109,7 +109,7 @@ export const getMetadata = async (request: IncomingMessageWithBody<Record<any, a
 
     const raw = await readBody(request, "utf8", limit);
 
-    return { ...JSON.parse(raw) } as Record<any, any>;
+    return { ...JSON.parse(raw) } as Record<string, unknown>;
 };
 
 /**
@@ -334,7 +334,7 @@ export const getRequestStream = (request: IncomingMessage | Request): Readable =
     // Check if it's a Web API Request with ReadableStream body
     if ("body" in request && request.body && typeof request.body.getReader === "function") {
         // Web API ReadableStream - convert to Node.js Readable
-        return Readable.fromWeb(request.body as any);
+        return Readable.fromWeb(request.body as ReadableStream<Uint8Array>);
     }
 
     // Check if request has body property with buffer data (converted Web API request)

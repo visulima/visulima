@@ -176,4 +176,3 @@ Use the Multipart handler when:
 - Uploading from HTML forms
 - You need traditional `multipart/form-data` support
 - Working with web browsers and form submissions
-

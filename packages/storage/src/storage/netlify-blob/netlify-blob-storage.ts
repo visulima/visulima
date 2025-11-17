@@ -3,7 +3,10 @@ import type { Readable } from "node:stream";
 
 import { getStore } from "@netlify/blobs";
 
+import { detectFileTypeFromBuffer } from "../../utils/detect-file-type";
 import toMilliseconds from "../../utils/primitives/to-milliseconds";
+import type { RetryConfig } from "../../utils/retry";
+import { createRetryWrapper } from "../../utils/retry";
 import LocalMetaStorage from "../local/local-meta-storage";
 import type MetaStorage from "../meta-storage";
 import BaseStorage from "../storage";
@@ -37,6 +40,8 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile, FileReturn> {
 
     private store: ReturnType<typeof getStore>;
 
+    private readonly retry: ReturnType<typeof createRetryWrapper>;
+
     public constructor(config: NetlifyBlobStorageOptions) {
         super(config);
 
@@ -50,6 +55,35 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile, FileReturn> {
             ...this.siteID && { siteID: this.siteID },
             ...this.token && { token: this.token },
         });
+
+        // Initialize retry wrapper with config or defaults
+        const retryConfig: RetryConfig = {
+            backoffMultiplier: 2,
+            initialDelay: 1000,
+            maxDelay: 30_000,
+            maxRetries: 3,
+            retryableStatusCodes: [408, 429, 500, 502, 503, 504],
+            shouldRetry: (error: unknown) => {
+                // Network errors
+                if (error instanceof Error) {
+                    const errorCode = (error as any).code;
+
+                    if (errorCode === "ECONNRESET" || errorCode === "ETIMEDOUT" || errorCode === "ENOTFOUND" || errorCode === "ECONNREFUSED") {
+                        return true;
+                    }
+                }
+
+                // HTTP errors
+                if ((error as any).status && [408, 429, 500, 502, 503, 504].includes((error as any).status)) {
+                    return true;
+                }
+
+                return false;
+            },
+            ...config.retryConfig,
+        };
+
+        this.retry = createRetryWrapper(retryConfig);
 
         const { metaStorage, metaStorageConfig } = config;
 
@@ -137,14 +171,32 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile, FileReturn> {
 
                 const buffer = Buffer.concat(chunks);
 
+                // Detect file type from buffer if contentType is not set or is default
+                // Only detect on first write (when bytesWritten is 0 or NaN)
+                if ((file.bytesWritten === 0 || Number.isNaN(file.bytesWritten)) && (!file.contentType || file.contentType === "application/octet-stream")) {
+                    try {
+                        const fileType = await detectFileTypeFromBuffer(buffer);
+
+                        // Update contentType if file type was detected
+                        if (fileType?.mime) {
+                            file.contentType = fileType.mime;
+                        }
+                    } catch {
+                        // If file type detection fails, continue with original contentType
+                        // This is not a critical error
+                    }
+                }
+
                 // Upload to Netlify Blob
                 // Convert Buffer to ArrayBuffer for Netlify Blob API
-                await this.store.set(file.name, buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength), {
-                    metadata: {
-                        contentType: file.contentType,
-                        ...file.metadata,
-                    },
-                });
+                await this.retry(() =>
+                    this.store.set(file.name, buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength), {
+                        metadata: {
+                            contentType: file.contentType,
+                            ...file.metadata,
+                        },
+                    }),
+                );
 
                 // Generate URL - Netlify Blob URLs are based on the store and key
                 file.pathname = file.name;
@@ -173,7 +225,7 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile, FileReturn> {
             file.status = "deleted";
 
             try {
-                await this.store.delete(file.pathname);
+                await this.retry(() => this.store.delete(file.pathname));
             } catch (error) {
                 this.logger?.error("Failed to delete blob from Netlify Blob:", error);
             }
@@ -195,13 +247,13 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile, FileReturn> {
 
         // Fetch the blob from Netlify Blob
         // Note: Netlify Blobs returns Blob or null
-        const blob = await this.store.get(file.pathname, { type: "blob" });
+        const blob = await this.retry(() => this.store.get(file.pathname, { type: "blob" }));
 
         if (!blob) {
             throw new Error("File not found in Netlify Blob");
         }
 
-        const arrayBuffer = await blob.arrayBuffer();
+        const arrayBuffer = await this.retry(() => blob.arrayBuffer());
         const content = Buffer.from(arrayBuffer);
 
         // Get metadata - Netlify Blobs stores metadata separately
@@ -243,7 +295,7 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile, FileReturn> {
         }
 
         // Get the source blob
-        const sourceBlob = await this.store.get(sourceFile.pathname, { type: "blob" });
+        const sourceBlob = await this.retry(() => this.store.get(sourceFile.pathname, { type: "blob" }));
 
         if (!sourceBlob) {
             throw new Error("Source file not found in Netlify Blob");
@@ -261,16 +313,18 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile, FileReturn> {
         }
 
         // Copy by setting the destination with source content
-        const arrayBuffer = await sourceBlob.arrayBuffer();
+        const arrayBuffer = await this.retry(() => sourceBlob.arrayBuffer());
         const buffer = Buffer.from(arrayBuffer);
 
         // Convert Buffer to ArrayBuffer for Netlify Blob API
-        await this.store.set(destination, buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength), {
-            metadata: sourceMetadata || {
-                contentType: sourceFile.contentType,
-                ...sourceFile.metadata,
-            },
-        });
+        await this.retry(() =>
+            this.store.set(destination, buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength), {
+                metadata: sourceMetadata || {
+                    contentType: sourceFile.contentType,
+                    ...sourceFile.metadata,
+                },
+            }),
+        );
 
         return {
             pathname: destination,
@@ -289,7 +343,7 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile, FileReturn> {
     public override async list(limit = 1000): Promise<NetlifyBlobFile[]> {
         // Netlify Blob list doesn't support limit option directly
         // We'll get all results and limit manually if needed
-        const listResult = await this.store.list();
+        const listResult = await this.retry(() => this.store.list());
 
         const files: NetlifyBlobFile[] = [];
 
