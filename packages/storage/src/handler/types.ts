@@ -29,7 +29,10 @@ export interface RequestEvent {
     request: Pick<IncomingMessage, "headers" | "method" | "url">;
 }
 
-export type AsyncHandler<Request, Response> = (request: Request, response: Response) => Promise<void | ResponseFile<UploadFile> | ResponseList<UploadFile> | StreamingResponse>;
+export type AsyncHandler<Request, Response> = (
+    request: Request,
+    response: Response,
+) => Promise<void | ResponseFile<UploadFile> | ResponseList<UploadFile> | StreamingResponse>;
 
 export type Handlers = "delete" | "download" | "get" | "head" | "options" | "patch" | "post" | "put";
 

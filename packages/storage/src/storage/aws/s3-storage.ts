@@ -7,7 +7,9 @@ import type {
     CopyObjectCommandOutput,
     DeleteObjectCommandInput,
     ListObjectsV2CommandInput,
+    ObjectCannedACL,
     Part,
+    StorageClass,
 } from "@aws-sdk/client-s3";
 import {
     AbortMultipartUploadCommand,
@@ -109,7 +111,7 @@ class S3Storage extends BaseStorage<S3File, FileReturn> {
             config.credentials = fromIni({ configFilepath: keyFile });
         }
 
-        this.partSize = typeof this.config.partSize === "string" ? parseBytes(this.config.partSize) : this.config.partSize || PART_SIZE;
+        this.partSize = typeof this.config.partSize === "string" ? parseBytes(this.config.partSize) : (this.config.partSize as number | undefined) || PART_SIZE;
 
         if (this.partSize < MIN_PART_SIZE) {
             throw new Error("Minimum allowed partSize value is 5MB");
@@ -132,24 +134,21 @@ class S3Storage extends BaseStorage<S3File, FileReturn> {
             retryableStatusCodes: [408, 429, 500, 502, 503, 504],
             shouldRetry: (error: unknown) => {
                 // AWS SDK v3 errors
-                if ((error as any).$metadata) {
-                    const statusCode = (error as any).$metadata.httpStatusCode;
+                const errorWithMetadata = error as { $fault?: string; $metadata?: { httpStatusCode?: number }; retryable?: boolean };
+
+                if (errorWithMetadata.$metadata) {
+                    const statusCode = errorWithMetadata.$metadata.httpStatusCode;
 
                     if (statusCode && [408, 429, 500, 502, 503, 504].includes(statusCode)) {
                         return true;
                     }
 
-                    if ((error as any).$fault === "server") {
+                    if (errorWithMetadata.$fault === "server") {
                         return true;
                     }
                 }
 
-                // AWS SDK v2 errors
-                if ((error as any).retryable === true) {
-                    return true;
-                }
-
-                return false;
+                return errorWithMetadata.retryable;
             },
             ...config.retryConfig,
         };
@@ -194,189 +193,196 @@ class S3Storage extends BaseStorage<S3File, FileReturn> {
     }
 
     public async create(request: IncomingMessage, config: FileInit): Promise<S3File> {
-        // Handle TTL option
-        const processedConfig = { ...config };
+        return this.instrumentOperation("create", async () => {
+            // Handle TTL option
+            const processedConfig = { ...config };
 
-        if (config.ttl) {
-            const ttlMs = typeof config.ttl === "string" ? toMilliseconds(config.ttl) : config.ttl;
+            if (config.ttl) {
+                const ttlMs = typeof config.ttl === "string" ? toMilliseconds(config.ttl) : config.ttl;
 
-            if (ttlMs !== undefined) {
-                processedConfig.expiredAt = Date.now() + ttlMs;
+                if (ttlMs !== undefined) {
+                    processedConfig.expiredAt = Date.now() + ttlMs;
+                }
             }
-        }
 
-        const file = new S3File(processedConfig);
+            const file = new S3File(processedConfig);
 
-        file.name = this.namingFunction(file, request);
+            file.name = this.namingFunction(file, request);
 
-        await this.validate(file);
+            await this.validate(file);
 
-        try {
-            const existing = await this.getMeta(file.id);
+            try {
+                const existing = await this.getMeta(file.id);
 
-            if (existing.bytesWritten >= 0) {
-                return existing;
+                if (existing.bytesWritten >= 0) {
+                    return existing;
+                }
+            } catch {
+                // ignore
             }
-        } catch {
-            // ignore
-        }
 
-        const { UploadId } = await this.retry(() =>
-            this.client.send(
-                new CreateMultipartUploadCommand({
-                    ACL: this.config.acl,
-                    Bucket: this.bucket,
-                    ContentType: file.contentType,
-                    Key: file.name,
-                    Metadata: mapValues({ originalName: file.originalName, ...file.metadata }, encodeURI),
-                }),
-            ),
-        );
+            const { UploadId } = await this.retry(() =>
+                this.client.send(
+                    new CreateMultipartUploadCommand({
+                        ACL: this.config.acl as ObjectCannedACL | undefined,
+                        Bucket: this.bucket,
+                        ContentType: file.contentType,
+                        Key: file.name,
+                        Metadata: mapValues({ originalName: file.originalName, ...file.metadata } as Record<string, unknown>, (value) =>
+                            encodeURI(String(value))),
+                    }),
+                ),
+            );
 
-        if (!UploadId) {
-            // @TODO add better error message
-            return throwErrorCode(ERRORS.FILE_ERROR, "s3 create upload error");
-        }
+            if (!UploadId) {
+                // @TODO add better error message
+                return throwErrorCode(ERRORS.FILE_ERROR, "s3 create upload error");
+            }
 
-        file.UploadId = UploadId;
-        file.bytesWritten = 0;
+            file.UploadId = UploadId;
+            file.bytesWritten = 0;
 
-        if (this.config.clientDirectUpload) {
-            file.partSize ??= this.partSize;
-        }
+            if (this.config.clientDirectUpload) {
+                file.partSize ??= this.partSize;
+            }
 
-        await this.saveMeta(file);
+            await this.saveMeta(file);
 
-        file.status = "created";
+            file.status = "created";
 
-        if (this.config.clientDirectUpload) {
-            return this.buildPresigned(file);
-        }
+            if (this.config.clientDirectUpload) {
+                return this.buildPresigned(file);
+            }
 
-        return file;
+            return file;
+        });
     }
 
     public async write(part: FilePart | FileQuery | S3File): Promise<S3File> {
-        let file: S3File;
+        return this.instrumentOperation("write", async () => {
+            let file: S3File;
 
-        if ("contentType" in part && "metadata" in part && !("body" in part) && !("start" in part)) {
-            // part is a full file object (not a FilePart)
-            file = part as S3File;
-        } else {
-            // part is FilePart or FileQuery
-            file = await this.getMeta(part.id);
+            if ("contentType" in part && "metadata" in part && !("body" in part) && !("start" in part)) {
+                // part is a full file object (not a FilePart)
+                file = part as S3File;
+            } else {
+                // part is FilePart or FileQuery
+                file = await this.getMeta(part.id);
 
-            await this.checkIfExpired(file);
-        }
-
-        if (file.status === "completed") {
-            return file;
-        }
-
-        if (typeof part.size === "number" && part.size > 0) {
-            updateSize(file, part.size);
-        }
-
-        if (!partMatch(part, file)) {
-            return throwErrorCode(ERRORS.FILE_CONFLICT);
-        }
-
-        if (this.config.clientDirectUpload) {
-            return this.buildPresigned(file);
-        }
-
-        file.Parts ??= await this.getParts(file);
-        file.bytesWritten = file.Parts.map((item) => item.Size || 0).reduce((p, c) => p + c, 0);
-
-        await this.lock(part.id);
-
-        try {
-            if (hasContent(part)) {
-                if (this.isUnsupportedChecksum(part.checksumAlgorithm)) {
-                    return throwErrorCode(ERRORS.UNSUPPORTED_CHECKSUM_ALGORITHM);
-                }
-
-                // Detect file type from stream if contentType is not set or is default
-                // Only detect on first write (when bytesWritten is 0 or NaN, and it's the first part)
-                if (file.Parts.length === 0 && (!file.contentType || file.contentType === "application/octet-stream")) {
-                    try {
-                        const { fileType, stream: detectedStream } = await detectFileTypeFromStream(part.body);
-
-                        // Update contentType if file type was detected
-                        if (fileType?.mime) {
-                            file.contentType = fileType.mime;
-                        }
-
-                        // Use the stream from file type detection
-                        part.body = detectedStream;
-                    } catch {
-                        // If file type detection fails, continue with original stream
-                        // This is not a critical error
-                    }
-                }
-
-                if (file.Parts.length > this.MAX_PARTS) {
-                    throw new Error(`Exceeded ${this.MAX_PARTS} as part of the upload to ${this.bucket}.`);
-                }
-
-                const partNumber = file.Parts.length + 1;
-
-                const controller = new AbortController();
-                const abortSignal = controller.signal;
-
-                part.body.on("error", () => controller.abort());
-
-                const { ETag } = await this.retry(() =>
-                    this.client.send(
-                        new UploadPartCommand({
-                            Body: part.body,
-                            Bucket: this.bucket,
-                            ContentLength: part.contentLength || 0,
-                            Key: file.name,
-                            PartNumber: partNumber,
-                            UploadId: file.UploadId,
-                            ...part.checksumAlgorithm === "md5" ? { ContentMD5: part.checksum } : {},
-                        }),
-                        { abortSignal } as HttpHandlerOptions,
-                    ),
-                );
-                const uploadPart: Part = { ETag, PartNumber: partNumber, Size: part.contentLength };
-
-                file.Parts = [...file.Parts, uploadPart];
-                file.bytesWritten += part.contentLength || 0;
+                await this.checkIfExpired(file);
             }
-
-            this.cache.set(file.id, file);
-
-            file.status = getFileStatus(file);
 
             if (file.status === "completed") {
-                const [completed] = await this.internalOnComplete(file);
-
-                delete file.Parts;
-
-                file.uri = completed.Location;
-                file.ETag = completed.ETag;
+                return file;
             }
-        } finally {
-            await this.unlock(part.id);
-        }
 
-        return file;
+            if (typeof part.size === "number" && part.size > 0) {
+                updateSize(file, part.size);
+            }
+
+            if (!partMatch(part, file)) {
+                return throwErrorCode(ERRORS.FILE_CONFLICT);
+            }
+
+            if (this.config.clientDirectUpload) {
+                return this.buildPresigned(file);
+            }
+
+            file.Parts ??= await this.getParts(file);
+            file.bytesWritten = file.Parts.map((item) => item.Size || 0).reduce((p, c) => p + c, 0);
+
+            await this.lock(part.id);
+
+            try {
+                if (hasContent(part)) {
+                    if (this.isUnsupportedChecksum(part.checksumAlgorithm)) {
+                        return throwErrorCode(ERRORS.UNSUPPORTED_CHECKSUM_ALGORITHM);
+                    }
+
+                    // Detect file type from stream if contentType is not set or is default
+                    // Only detect on first write (when bytesWritten is 0 or NaN, and it's the first part)
+                    if (file.Parts.length === 0 && (!file.contentType || file.contentType === "application/octet-stream")) {
+                        try {
+                            const { fileType, stream: detectedStream } = await detectFileTypeFromStream(part.body);
+
+                            // Update contentType if file type was detected
+                            if (fileType?.mime) {
+                                file.contentType = fileType.mime;
+                            }
+
+                            // Use the stream from file type detection
+                            part.body = detectedStream;
+                        } catch {
+                            // If file type detection fails, continue with original stream
+                            // This is not a critical error
+                        }
+                    }
+
+                    if (file.Parts.length > this.MAX_PARTS) {
+                        throw new Error(`Exceeded ${this.MAX_PARTS} as part of the upload to ${this.bucket}.`);
+                    }
+
+                    const partNumber = file.Parts.length + 1;
+
+                    const controller = new AbortController();
+                    const abortSignal = controller.signal;
+
+                    part.body.on("error", () => controller.abort());
+
+                    const { ETag } = await this.retry(() =>
+                        this.client.send(
+                            new UploadPartCommand({
+                                Body: part.body,
+                                Bucket: this.bucket,
+                                ContentLength: part.contentLength || 0,
+                                Key: file.name,
+                                PartNumber: partNumber,
+                                UploadId: file.UploadId,
+                                ...part.checksumAlgorithm === "md5" ? { ContentMD5: part.checksum } : {},
+                            }),
+                            { abortSignal } as HttpHandlerOptions,
+                        ),
+                    );
+                    const uploadPart: Part = { ETag, PartNumber: partNumber, Size: part.contentLength };
+
+                    file.Parts = [...file.Parts, uploadPart];
+                    file.bytesWritten += part.contentLength || 0;
+                }
+
+                this.cache.set(file.id, file);
+
+                file.status = getFileStatus(file);
+
+                if (file.status === "completed") {
+                    const [completed] = await this.internalOnComplete(file);
+
+                    delete file.Parts;
+
+                    file.uri = completed.Location;
+                    file.ETag = completed.ETag;
+                }
+            } finally {
+                await this.unlock(part.id);
+            }
+
+            return file;
+        });
     }
 
     public async delete({ id }: FileQuery): Promise<S3File> {
-        const file = await this.getMeta(id).catch(() => undefined);
+        return this.instrumentOperation("delete", async () => {
+            const file = await this.getMeta(id).catch(() => undefined);
 
-        if (file) {
-            file.status = "deleted";
+            if (file) {
+                file.status = "deleted";
 
-            await Promise.all([this.deleteMeta(file.id), this.retry(() => this.abortMultipartUpload(file))]);
+                await Promise.all([this.deleteMeta(file.id), this.retry(() => this.abortMultipartUpload(file))]);
 
-            return { ...file };
-        }
+                return { ...file };
+            }
 
-        return { id } as S3File;
+            return { id } as S3File;
+        });
     }
 
     public override async update({ id }: FileQuery, metadata: Partial<S3File>): Promise<S3File> {
@@ -390,161 +396,183 @@ class S3Storage extends BaseStorage<S3File, FileReturn> {
     }
 
     public async copy(name: string, destination: string, options?: { storageClass?: string }): Promise<CopyObjectCommandOutput> {
-        const CopySource = `${this.bucket}/${name}`;
+        return this.instrumentOperation("copy", async () => {
+            const CopySource = `${this.bucket}/${name}`;
 
-        // Handle absolute vs relative destination paths
-        let Bucket = this.bucket;
-        let Key = destination;
+            // Handle absolute vs relative destination paths
+            let Bucket = this.bucket;
+            let Key = destination;
 
-        if (destination.startsWith("/")) {
-            // Absolute path: /otherBucket/new name -> copy to otherBucket
-            const [, bucketName, ...pathSegments] = destination.split("/");
+            if (destination.startsWith("/")) {
+                // Absolute path: /otherBucket/new name -> copy to otherBucket
+                const [, bucketName, ...pathSegments] = destination.split("/");
 
-            Bucket = bucketName || this.bucket;
-            Key = pathSegments.join("/");
-        }
+                Bucket = bucketName || this.bucket;
+                Key = pathSegments.join("/");
+            }
 
-        const parameters: CopyObjectCommandInput = {
-            Bucket,
-            CopySource,
-            Key,
-            ...options?.storageClass && { StorageClass: options.storageClass as any },
-        };
+            const parameters: CopyObjectCommandInput = {
+                Bucket,
+                CopySource,
+                Key,
+                ...options?.storageClass && { StorageClass: options.storageClass as StorageClass },
+            };
 
-        return this.retry(() => this.client.send(new CopyObjectCommand(parameters)));
+            return this.retry(() => this.client.send(new CopyObjectCommand(parameters)));
+        });
     }
 
-    public async move(name: string, destination: string): Promise<CopyObjectCommandOutput> {
-        const copyOut = await this.copy(name, destination);
-        const parameters: DeleteObjectCommandInput = { Bucket: this.bucket, Key: name };
+    public async move(name: string, destination: string): Promise<S3File> {
+        return this.instrumentOperation("move", async () => {
+            await this.copy(name, destination);
+            const parameters: DeleteObjectCommandInput = { Bucket: this.bucket, Key: name };
 
-        await this.retry(() => this.client.send(new DeleteObjectCommand(parameters)));
+            await this.retry(() => this.client.send(new DeleteObjectCommand(parameters)));
 
-        return copyOut;
+            // Return the moved file metadata (destination)
+            return await this.getMeta(destination);
+        });
     }
 
     public override async list(limit = 1000): Promise<S3File[]> {
-        let parameters: ListObjectsV2CommandInput = {
-            Bucket: this.bucket,
-            MaxKeys: limit,
-        };
-        const items: S3File[] = [];
+        return this.instrumentOperation(
+            "list",
+            async () => {
+                let parameters: ListObjectsV2CommandInput = {
+                    Bucket: this.bucket,
+                    MaxKeys: limit,
+                };
+                const items: S3File[] = [];
 
-        // Declare truncated as a flag that the while loop is based on.
-        let truncated = true;
+                // Declare truncated as a flag that the while loop is based on.
+                let truncated = true;
 
-        while (truncated) {
-            try {
-                // eslint-disable-next-line no-await-in-loop
-                const response = await this.retry(() => this.client.send(new ListObjectsV2Command(parameters)));
+                while (truncated) {
+                    try {
+                        // eslint-disable-next-line no-await-in-loop
+                        const response = await this.retry(() => this.client.send(new ListObjectsV2Command(parameters)));
 
-                // eslint-disable-next-line no-await-in-loop
-                for await (const { Key, LastModified } of response?.Contents || []) {
-                    if (Key !== undefined) {
-                        const { Expires } = await this.retry(() => this.client.send(new HeadObjectCommand({ Bucket: this.bucket, Key })));
+                        // eslint-disable-next-line no-await-in-loop
+                        for await (const { Key, LastModified } of response?.Contents || []) {
+                            if (Key !== undefined) {
+                                const { Expires } = await this.retry(() => this.client.send(new HeadObjectCommand({ Bucket: this.bucket, Key })));
 
-                        if (Expires && isExpired({ expiredAt: Expires } as S3File)) {
-                            await this.delete({ id: Key });
-                        } else {
-                            items.push({
-                                id: Key,
-                                ...LastModified && { createdAt: LastModified },
-                            } as S3File);
+                                if (Expires && isExpired({ expiredAt: Expires } as S3File)) {
+                                    await this.delete({ id: Key });
+                                } else {
+                                    items.push({
+                                        id: Key,
+                                        ...LastModified && { createdAt: LastModified },
+                                    } as S3File);
+                                }
+                            }
                         }
+
+                        truncated = response.IsTruncated || false;
+
+                        if (truncated) {
+                            // Declare a variable to which the key of the last element is assigned to in the response.
+                            parameters = { ...parameters, ContinuationToken: response.NextContinuationToken };
+                        }
+                    } catch (error) {
+                        truncated = false;
+
+                        throw error;
                     }
                 }
 
-                truncated = response.IsTruncated || false;
-
-                if (truncated) {
-                    // Declare a variable to which the key of the last element is assigned to in the response.
-                    parameters = { ...parameters, ContinuationToken: response.NextContinuationToken };
-                }
-            } catch (error) {
-                truncated = false;
-
-                throw error;
-            }
-        }
-
-        return items;
+                return items;
+            },
+            { limit },
+        );
     }
 
     public async get({ id }: FileQuery): Promise<FileReturn> {
-        const parameters = {
-            Bucket: this.bucket,
-            Key: id,
-        };
-        const { Body, ContentLength, ContentType, ETag, Expires, LastModified, Metadata } = await this.retry(() =>
-            this.client.send(new GetObjectCommand(parameters)),
-        );
+        return this.instrumentOperation("get", async () => {
+            const parameters = {
+                Bucket: this.bucket,
+                Key: id,
+            };
+            const { Body, ContentLength, ContentType, ETag, Expires, LastModified, Metadata } = await this.retry(() =>
+                this.client.send(new GetObjectCommand(parameters)),
+            );
 
-        await this.checkIfExpired({ expiredAt: Expires } as S3File);
+            await this.checkIfExpired({ expiredAt: Expires } as S3File);
 
-        const chunks = [];
+            const chunks: Uint8Array[] = [];
 
-        for await (const chunk of Body as SdkStream<any>) {
-            chunks.push(chunk);
-        }
+            if (Body) {
+                // Convert SdkStream to Readable and collect chunks
+                const readable = Readable.fromWeb(Body as ReadableStream<Uint8Array>);
 
-        const { originalName, ...meta } = Metadata || {};
+                for await (const chunk of readable) {
+                    chunks.push(chunk instanceof Uint8Array ? chunk : new Uint8Array(chunk));
+                }
+            }
 
-        return {
-            content: Buffer.concat(chunks),
-            contentType: ContentType as string,
-            ETag,
-            expiredAt: Expires,
-            id,
-            metadata: meta,
-            modifiedAt: LastModified,
-            name: id,
-            originalName: originalName || id,
-            size: Number(ContentLength),
-        };
+            const { originalName, ...meta } = Metadata || {};
+
+            return {
+                content: Buffer.concat(chunks),
+                contentType: ContentType as string,
+                ETag,
+                expiredAt: Expires,
+                id,
+                metadata: meta,
+                modifiedAt: LastModified,
+                name: id,
+                originalName: originalName || id,
+                size: Number(ContentLength),
+            };
+        });
     }
 
     public override async getStream({ id }: FileQuery): Promise<{ headers?: Record<string, string>; size?: number; stream: Readable }> {
-        const parameters = {
-            Bucket: this.bucket,
-            Key: id,
-        };
+        return this.instrumentOperation("getStream", async () => {
+            const parameters = {
+                Bucket: this.bucket,
+                Key: id,
+            };
 
-        const { Body, ContentLength, ContentType, ETag, Expires, LastModified } = await this.retry(() => this.client.send(new GetObjectCommand(parameters)));
+            const { Body, ContentLength, ContentType, ETag, Expires, LastModified } = await this.retry(() =>
+                this.client.send(new GetObjectCommand(parameters)),
+            );
 
-        await this.checkIfExpired({ expiredAt: Expires } as S3File);
+            await this.checkIfExpired({ expiredAt: Expires } as S3File);
 
-        // Convert S3 stream to Node.js Readable stream
-        const stream = Body as SdkStream<any>;
-        const readableStream = new Readable({
-            read() {
-                stream.on("data", (chunk: Buffer) => {
-                    this.push(chunk);
-                });
-                stream.on("end", () => {
-                    // eslint-disable-next-line unicorn/no-null
-                    this.push(null);
-                });
-                stream.on("error", (error: Error) => {
-                    this.destroy(error);
-                });
-            },
+            // Convert S3 stream to Node.js Readable stream
+            const stream = Body as SdkStream<Uint8Array>;
+            const readableStream = new Readable({
+                read() {
+                    stream.on("data", (chunk: Buffer) => {
+                        this.push(chunk);
+                    });
+                    stream.on("end", () => {
+                        // eslint-disable-next-line unicorn/no-null
+                        this.push(null);
+                    });
+                    stream.on("error", (error: Error) => {
+                        this.destroy(error);
+                    });
+                },
+            });
+
+            return {
+                headers: {
+                    "Content-Length": ContentLength?.toString() ?? "0",
+                    "Content-Type": ContentType as string,
+                    ...ETag && { ETag },
+                    ...Expires && { "X-Upload-Expires": Expires.toString() },
+                    ...LastModified && { "Last-Modified": LastModified.toString() },
+                },
+                size: Number(ContentLength),
+                stream: readableStream,
+            };
         });
-
-        return {
-            headers: {
-                "Content-Length": ContentLength?.toString() ?? "0",
-                "Content-Type": ContentType as string,
-                ...ETag && { ETag },
-                ...Expires && { "X-Upload-Expires": Expires.toString() },
-                ...LastModified && { "Last-Modified": LastModified.toString() },
-            },
-            size: Number(ContentLength),
-            stream: readableStream,
-        };
     }
 
-    private async accessCheck(maxWaitTime = 30): Promise<any> {
-        return waitUntilBucketExists({ client: this.client, maxWaitTime }, { Bucket: this.bucket });
+    private async accessCheck(maxWaitTime = 30): Promise<void> {
+        await waitUntilBucketExists({ client: this.client, maxWaitTime }, { Bucket: this.bucket });
     }
 
     private async buildPresigned(file: S3File): Promise<S3File> {
@@ -625,7 +653,7 @@ class S3Storage extends BaseStorage<S3File, FileReturn> {
         );
     }
 
-    private async abortMultipartUpload(file: S3File): Promise<any> {
+    private async abortMultipartUpload(file: S3File): Promise<void> {
         if (file.status === "completed") {
             return;
         }
@@ -639,7 +667,7 @@ class S3Storage extends BaseStorage<S3File, FileReturn> {
         }
     }
 
-    private internalOnComplete = (file: S3File): Promise<[CompleteMultipartUploadOutput, any]> =>
+    private internalOnComplete = (file: S3File): Promise<[CompleteMultipartUploadOutput, S3File]> =>
         Promise.all([this.completeMultipartUpload(file), this.deleteMeta(file.id)]);
 }
 

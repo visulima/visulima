@@ -70,7 +70,12 @@ export class Validator<T> {
             if (!isValid) {
                 const errorResponse = validator.response || (code in ErrorMap ? ErrorMap[code as keyof typeof ErrorMap] : ErrorMap.UnknownError);
                 const response = toResponse(errorResponse);
-                const { body, headers, message, statusCode } = response as any;
+                const { body, headers, message, statusCode } = response as {
+                    body?: unknown;
+                    headers?: Record<string, unknown>;
+                    message?: string;
+                    statusCode?: number;
+                };
 
                 throw new ValidationError(code, statusCode as number, (body || message) as HttpErrorBody, headers as Headers);
             }

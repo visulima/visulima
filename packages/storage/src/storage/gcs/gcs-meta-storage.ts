@@ -115,7 +115,7 @@ class GCSMetaStorage<T extends File = File> extends MetaStorage<T> {
         return this.save(id, file);
     }
 
-    private async accessCheck(): Promise<any> {
+    private async accessCheck(): Promise<GaxiosResponse<unknown>> {
         return this.makeRequest({ url: this.storageBaseURI.replace("/o", "") });
     }
 
@@ -128,7 +128,7 @@ class GCSMetaStorage<T extends File = File> extends MetaStorage<T> {
         return `${this.storageBaseURI}/${this.getMetaName(id)}`;
     }
 
-    private async makeRequest<Data = any>(data: GaxiosOptions): Promise<GaxiosResponse<Data>> {
+    private async makeRequest<Data = unknown>(data: GaxiosOptions): Promise<GaxiosResponse<Data>> {
         if (typeof data.url === "string") {
             // eslint-disable-next-line no-param-reassign
             data.url = data.url

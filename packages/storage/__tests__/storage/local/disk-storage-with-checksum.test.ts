@@ -102,10 +102,10 @@ describe(DiskStorageWithChecksum, () => {
             const { contentType: _, metadata: __, ...metafileWithoutContentType } = metafile;
             const file = await storage.create(request, {
                 ...metafileWithoutContentType,
-                id: uniqueId,
-                name: `${uniqueId}.png`,
                 contentType: undefined,
+                id: uniqueId,
                 metadata: {}, // Empty metadata to avoid mimeType extraction
+                name: `${uniqueId}.png`,
                 size: 18,
             });
 
@@ -115,16 +115,17 @@ describe(DiskStorageWithChecksum, () => {
             const stream = Readable.from(body);
 
             await storage.write({
-                id: file.id,
                 body: stream,
-                start: 0,
                 contentLength: body.length,
+                id: file.id,
+                start: 0,
             });
 
             // Get updated file to check contentType
             const updatedFile = await storage.getMeta(file.id);
+
             expect(updatedFile.contentType).toBe("image/png");
-        }, 15000);
+        }, 15_000);
 
         it("should detect file type when contentType is application/octet-stream", async () => {
             expect.assertions(1);
@@ -138,9 +139,9 @@ describe(DiskStorageWithChecksum, () => {
             const uniqueId = `test-jpg-${Date.now()}-${Math.random()}`;
             const file = await storage.create(request, {
                 ...metafile,
+                contentType: "application/octet-stream",
                 id: uniqueId,
                 name: `${uniqueId}.jpg`,
-                contentType: "application/octet-stream",
                 size: 14,
             });
 
@@ -150,16 +151,17 @@ describe(DiskStorageWithChecksum, () => {
             const stream = Readable.from(body);
 
             await storage.write({
-                id: file.id,
                 body: stream,
-                start: 0,
                 contentLength: body.length,
+                id: file.id,
+                start: 0,
             });
 
             // Get updated file to check contentType
             const updatedFile = await storage.getMeta(file.id);
+
             expect(updatedFile.contentType).toBe("image/jpeg");
-        }, 15000);
+        }, 15_000);
 
         it("should not detect file type when contentType is already set", async () => {
             expect.assertions(1);
@@ -172,26 +174,27 @@ describe(DiskStorageWithChecksum, () => {
             const uniqueId = `test-mp4-${Date.now()}-${Math.random()}`;
             const file = await storage.create(request, {
                 ...metafile,
+                contentType: "video/mp4",
                 id: uniqueId,
                 name: `${uniqueId}.mp4`,
-                contentType: "video/mp4",
                 size: 4,
             });
 
             const body = Readable.from(Buffer.from([0x89, 0x50, 0x4e, 0x47]));
 
             await storage.write({
-                id: file.id,
                 body,
-                start: 0,
                 contentLength: 4,
+                id: file.id,
+                start: 0,
             });
 
             // Get updated file to check contentType
             const updatedFile = await storage.getMeta(file.id);
+
             // Should keep original contentType, not detect PNG
             expect(updatedFile.contentType).toBe("video/mp4");
-        }, 15000);
+        }, 15_000);
 
         it("should not detect file type on subsequent writes", async () => {
             expect.assertions(2);
@@ -206,10 +209,10 @@ describe(DiskStorageWithChecksum, () => {
             const { contentType: _, metadata: __, ...metafileWithoutContentType } = metafile;
             const file = await storage.create(request, {
                 ...metafileWithoutContentType,
-                id: uniqueId,
-                name: `${uniqueId}.png`,
                 contentType: undefined,
+                id: uniqueId,
                 metadata: {}, // Empty metadata to avoid mimeType extraction
+                name: `${uniqueId}.png`,
                 size: 28, // Total size of both chunks
             });
 
@@ -219,14 +222,15 @@ describe(DiskStorageWithChecksum, () => {
 
             // First write - should detect
             const result1 = await storage.write({
-                id: file.id,
                 body: Readable.from(body1),
-                start: 0,
                 contentLength: body1.length,
+                id: file.id,
+                start: 0,
             });
 
             // Get updated file to check contentType
             const updatedFile1 = await storage.getMeta(result1.id);
+
             expect(updatedFile1.contentType).toBe("image/png");
 
             // Reset mock call count
@@ -234,14 +238,14 @@ describe(DiskStorageWithChecksum, () => {
 
             // Second write - should not detect (bytesWritten > 0)
             await storage.write({
-                id: result1.id,
                 body: Readable.from(body2),
-                start: 18, // Start after first chunk
                 contentLength: body2.length,
+                id: result1.id,
+                start: 18, // Start after first chunk
             });
 
             // fileTypeFromBuffer should not be called on second write
             expect(vi.mocked(fileTypeFromBuffer)).not.toHaveBeenCalled();
-        }, 15000);
+        }, 15_000);
     });
 });

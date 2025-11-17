@@ -70,7 +70,8 @@ const defaultRetryConfig: Required<RetryConfig> = {
 export const isRetryableError = (error: unknown, retryableStatusCodes: number[] = defaultRetryConfig.retryableStatusCodes): boolean => {
     // Network errors (ECONNRESET, ETIMEDOUT, etc.)
     if (error instanceof Error) {
-        const errorCode = (error as any).code;
+        const errorWithCode = error as { code?: string };
+        const errorCode = errorWithCode.code;
         const errorName = error.name;
 
         // Network-related errors
@@ -87,31 +88,33 @@ export const isRetryableError = (error: unknown, retryableStatusCodes: number[] 
         }
 
         // AWS SDK errors
-        if ((error as any).$metadata) {
-            const statusCode = (error as any).$metadata.httpStatusCode;
+        const errorWithMetadata = error as { $fault?: string; $metadata?: { httpStatusCode?: number }; retryable?: boolean; statusCode?: number };
+
+        if (errorWithMetadata.$metadata) {
+            const statusCode = errorWithMetadata.$metadata.httpStatusCode;
 
             if (statusCode && retryableStatusCodes.includes(statusCode)) {
                 return true;
             }
 
             // AWS SDK v3 retryable flag
-            if ((error as any).$fault === "server") {
+            if (errorWithMetadata.$fault === "server") {
                 return true;
             }
         }
 
         // AWS SDK v2 errors
-        if ((error as any).retryable === true) {
+        if (errorWithMetadata.retryable === true) {
             return true;
         }
 
         // Azure Storage errors
-        if ((error as any).statusCode && retryableStatusCodes.includes((error as any).statusCode)) {
+        if (errorWithMetadata.statusCode && retryableStatusCodes.includes(errorWithMetadata.statusCode)) {
             return true;
         }
 
         // Check for retryable flag in error
-        if ((error as any).retryable === true) {
+        if (errorWithMetadata.retryable === true) {
             return true;
         }
     }

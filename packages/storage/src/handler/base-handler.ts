@@ -360,8 +360,8 @@ abstract class BaseHandler<
                 }
             }
         } catch (error: unknown) {
-            const errorObj = error instanceof Error ? error : new Error(String(error));
-            const uError = pick(errorObj, ["name", ...(Object.getOwnPropertyNames(errorObj) as (keyof Error)[])]) as UploadError;
+            const errorObject = error instanceof Error ? error : new Error(String(error));
+            const uError = pick(errorObject, ["name", ...(Object.getOwnPropertyNames(errorObject) as (keyof Error)[])]) as UploadError;
             const errorEvent = { ...uError, request: pick(request, ["headers", "method", "url"]) };
 
             if (this.listenerCount("error") > 0) {
@@ -423,6 +423,7 @@ abstract class BaseHandler<
                     } as ResponseFile<TFile>;
                 } catch (error: unknown) {
                     const errorWithCode = error as { UploadErrorCode?: string };
+
                     if (errorWithCode.UploadErrorCode === ERRORS.FILE_NOT_FOUND || errorWithCode.UploadErrorCode === ERRORS.GONE) {
                         throw createHttpError(404, "File metadata not found");
                     }
@@ -538,6 +539,7 @@ abstract class BaseHandler<
                 } as ResponseFile<TFile>;
             } catch (error: unknown) {
                 const errorWithCode = error as { UploadErrorCode?: string };
+
                 if (errorWithCode.UploadErrorCode === ERRORS.FILE_NOT_FOUND || errorWithCode.UploadErrorCode === ERRORS.GONE) {
                     throw createHttpError(404, "File not found");
                 }
@@ -641,6 +643,7 @@ abstract class BaseHandler<
             });
         } catch (error: unknown) {
             const errorWithCode = error as { UploadErrorCode?: string };
+
             if (errorWithCode.UploadErrorCode === ERRORS.FILE_NOT_FOUND || errorWithCode.UploadErrorCode === ERRORS.GONE) {
                 this.sendError(response, createHttpError(404, "File not found"));
 
