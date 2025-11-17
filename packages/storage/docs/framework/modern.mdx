@@ -5,15 +5,15 @@ Use Visulima upload with modern frameworks that support the Web Fetch API, inclu
 ## Installation
 
 ```sh
-npm install @visulima/upload
+npm install @visulima/storage
 ```
 
 ```sh
-yarn add @visulima/upload
+yarn add @visulima/storage
 ```
 
 ```sh
-pnpm add @visulima/upload
+pnpm add @visulima/storage
 ```
 
 ## Overview
@@ -32,7 +32,7 @@ Hono is a fast, lightweight web framework for Node runtimes and Web API environm
 
 ```ts
 import { Hono } from "hono";
-import { DiskStorage, Multipart } from "@visulima/upload";
+import { DiskStorage, Multipart } from "@visulima/storage";
 
 const app = new Hono();
 
@@ -79,7 +79,7 @@ Cloudflare Workers do not provide a writable filesystem. `DiskStorage` is not su
 Deno provides native TypeScript support and Web API compatibility.
 
 ```ts
-import { DiskStorage, Multipart } from "npm:@visulima/upload";
+import { DiskStorage, Multipart } from "npm:@visulima/storage";
 
 // Initialize storage and handler
 const storage = new DiskStorage({ directory: "./uploads" });
@@ -116,7 +116,7 @@ Deno.serve(async (request: Request) => {
 Bun is a fast JavaScript runtime with Web API support.
 
 ```ts
-import { DiskStorage, Multipart } from "@visulima/upload";
+import { DiskStorage, Multipart } from "@visulima/storage";
 
 // Initialize storage and handler
 const storage = new DiskStorage({ directory: "./uploads" });
@@ -158,7 +158,7 @@ console.log(`Server running on port ${server.port}`);
 The REST handler provides a clean REST API for direct binary file uploads:
 
 ```ts
-import { DiskStorage, Rest } from "@visulima/upload";
+import { DiskStorage, Rest } from "@visulima/storage";
 
 const storage = new DiskStorage({ directory: "./uploads" });
 const rest = new Rest({ storage });
@@ -204,7 +204,7 @@ app.head("/files/:id", async (c) => {
 The `fetch` method also supports TUS resumable uploads:
 
 ```ts
-import { DiskStorage, Tus } from "@visulima/upload";
+import { DiskStorage, Tus } from "@visulima/storage";
 
 const storage = new DiskStorage({ directory: "./uploads" });
 const tus = new Tus({ storage });
@@ -229,8 +229,8 @@ Combine with image transformations for on-demand processing:
 
 ```ts
 import { LRUCache } from "lru-cache";
-import { DiskStorage, Multipart } from "@visulima/upload";
-import ImageTransformer from "@visulima/upload/transformers/image";
+import { DiskStorage, Multipart } from "@visulima/storage";
+import ImageTransformer from "@visulima/storage/transformers/image";
 
 const storage = new DiskStorage({ directory: "./uploads" });
 const multipart = new Multipart({ storage });
@@ -321,7 +321,7 @@ app.use("*", async (c) => {
 Configure storage and upload options:
 
 ```ts
-import { DiskStorage, Multipart } from "@visulima/upload";
+import { DiskStorage, Multipart } from "@visulima/storage";
 
 const storage = new DiskStorage({
     directory: "./uploads",

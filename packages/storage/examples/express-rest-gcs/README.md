@@ -20,6 +20,7 @@ pnpm install
 ## Configuration
 
 Google Cloud Storage credentials are loaded from:
+
 - Environment variable `GOOGLE_APPLICATION_CREDENTIALS` pointing to a service account key file
 - Default credentials when running on Google Cloud (GCE, GKE, Cloud Run, etc.)
 
@@ -171,4 +172,3 @@ Use the Multipart handler when:
 - Uploading from HTML forms
 - You need traditional `multipart/form-data` support
 - Working with web browsers and form submissions
-

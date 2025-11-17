@@ -114,9 +114,7 @@ export class Tus<
         const metadataHeader = getHeader(request, "upload-metadata", true);
         // eslint-disable-next-line @typescript-eslint/no-use-before-define
         const metadata = parseMetadata(metadataHeader);
-        const config: FileInit = { metadata };
-
-        config.size = uploadLength;
+        const config: FileInit = { metadata, size: uploadLength };
 
         let file = await this.storage.create(request, config);
 

@@ -22,8 +22,8 @@ pnpm add @azure/storage-blob
 
 ```ts
 import { LRUCache } from "lru-cache";
-import { AzureStorage } from "@visulima/upload/provider/azure";
-import ImageTransformer from "@visulima/upload/transformers/image";
+import { AzureStorage } from "@visulima/storage/provider/azure";
+import ImageTransformer from "@visulima/storage/transformers/image";
 
 const storage = new AzureStorage({
     containerName: "upload",

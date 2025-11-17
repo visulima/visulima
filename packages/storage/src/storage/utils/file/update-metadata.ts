@@ -11,7 +11,6 @@ const deepMerge = (target: Record<string, unknown>, source: Record<string, unkno
     Object.keys(source).forEach((key) => {
         const sourceValue = source[key];
 
-        // eslint-disable-next-line unicorn/no-null
         if (sourceValue !== null && typeof sourceValue === "object" && !Array.isArray(sourceValue)) {
             const targetValue = result[key];
             const targetObject = targetValue && typeof targetValue === "object" && !Array.isArray(targetValue) ? (targetValue as Record<string, unknown>) : {};

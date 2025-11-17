@@ -21,6 +21,7 @@
 
 - **Multiple Upload Handlers**: Multipart (form-based), REST (direct binary), and TUS (resumable) uploads
 - **Chunked Uploads**: REST handler supports client-side chunked uploads for large files
+- **Automatic Retry**: Built-in retry mechanism with exponential backoff for all storage backends (S3, Azure, GCS, Vercel Blob, Netlify Blob)
 - Parent directories are created automatically as needed (like S3 and Azure)
 - Content types are inferred from file extensions (like the filesystem)
 - Files are by default marked as readable via the web (like a filesystem + web server)
@@ -228,6 +229,225 @@ interface Cache<K = string, V = any> {
 ```
 
 For more information, see the [BentoCache documentation](https://bentocache.dev/docs/introduction).
+
+## Retry Mechanism
+
+All storage backends (AWS S3, Azure, GCS, Vercel Blob, Netlify Blob) include automatic retry logic for transient failures. This ensures your uploads and file operations are resilient to network issues, rate limits, and temporary service unavailability.
+
+### Default Behavior
+
+By default, storage operations will retry up to 3 times with exponential backoff:
+
+- Initial delay: 1 second
+- Backoff multiplier: 2x (delays double each retry: 1s → 2s → 4s)
+- Maximum delay: 30 seconds
+- Retryable status codes: 408, 429, 500, 502, 503, 504
+
+### Basic Configuration
+
+Configure retry behavior when creating your storage instance:
+
+```typescript
+import { S3Storage } from "@visulima/storage";
+
+const storage = new S3Storage({
+    bucket: "my-bucket",
+    region: "us-east-1",
+    retryConfig: {
+        maxRetries: 5,
+        initialDelay: 2000,
+        backoffMultiplier: 1.5,
+        maxDelay: 60_000,
+    },
+});
+```
+
+### Advanced Configuration
+
+Customize retry logic with backend-specific error detection:
+
+```typescript
+import { AzureStorage } from "@visulima/storage";
+
+const storage = new AzureStorage({
+    containerName: "uploads",
+    accountName: "myaccount",
+    accountKey: "mykey",
+    retryConfig: {
+        maxRetries: 3,
+        initialDelay: 1000,
+        backoffMultiplier: 2,
+        maxDelay: 30_000,
+        retryableStatusCodes: [408, 429, 500, 502, 503, 504],
+        shouldRetry: (error: unknown) => {
+            // Custom retry logic
+            if (error instanceof Error) {
+                const errorCode = (error as any).code;
+
+                // Retry on network errors
+                if (errorCode === "ECONNRESET" || errorCode === "ETIMEDOUT") {
+                    return true;
+                }
+            }
+
+            // Retry on specific HTTP status codes
+            if ((error as any).statusCode && [429, 503].includes((error as any).statusCode)) {
+                return true;
+            }
+
+            return false;
+        },
+    },
+});
+```
+
+### Retry Configuration Options
+
+```typescript
+interface RetryConfig {
+    /** Maximum number of retry attempts (default: 3) */
+    maxRetries?: number;
+
+    /** Initial delay in milliseconds before first retry (default: 1000) */
+    initialDelay?: number;
+
+    /** Multiplier for exponential backoff (default: 2) */
+    backoffMultiplier?: number;
+
+    /** Maximum delay in milliseconds between retries (default: 30000) */
+    maxDelay?: number;
+
+    /** HTTP status codes that should trigger a retry (default: [408, 429, 500, 502, 503, 504]) */
+    retryableStatusCodes?: number[];
+
+    /** Custom function to determine if an error should be retried */
+    shouldRetry?: (error: unknown) => boolean;
+
+    /** Custom function to calculate delay for a specific retry attempt */
+    calculateDelay?: (attempt: number, error: unknown) => number | undefined;
+}
+```
+
+### Using Retry Utilities Directly
+
+You can also use the retry utilities for custom operations:
+
+```typescript
+import { retry, createRetryWrapper, isRetryableError } from "@visulima/storage";
+
+// One-off retry
+const result = await retry(
+    async () => {
+        // Your operation here
+        return await someOperation();
+    },
+    {
+        maxRetries: 3,
+        initialDelay: 1000,
+    },
+);
+
+// Create a reusable retry wrapper
+const retryWrapper = createRetryWrapper({
+    maxRetries: 5,
+    initialDelay: 2000,
+});
+
+const result = await retryWrapper(async () => {
+    return await someOperation();
+});
+
+// Check if an error is retryable
+if (isRetryableError(error)) {
+    // Handle retryable error
+}
+```
+
+### Supported Error Types
+
+The retry mechanism automatically handles:
+
+- **Network errors**: `ECONNRESET`, `ETIMEDOUT`, `ENOTFOUND`, `ECONNREFUSED`, `EAI_AGAIN`
+- **AWS SDK errors**: Server faults, retryable status codes, SDK v2/v3 error formats
+- **Azure Storage errors**: HTTP status codes, network connection issues
+- **HTTP errors**: 408 (Request Timeout), 429 (Too Many Requests), 5xx (Server Errors)
+
+### Examples by Storage Backend
+
+#### AWS S3
+
+```typescript
+import { S3Storage } from "@visulima/storage";
+
+const storage = new S3Storage({
+    bucket: "my-bucket",
+    region: "us-east-1",
+    retryConfig: {
+        maxRetries: 3,
+        // AWS SDK errors are automatically detected
+    },
+});
+```
+
+#### Azure Blob Storage
+
+```typescript
+import { AzureStorage } from "@visulima/storage";
+
+const storage = new AzureStorage({
+    containerName: "uploads",
+    accountName: "myaccount",
+    accountKey: "mykey",
+    retryConfig: {
+        maxRetries: 5,
+        initialDelay: 2000,
+    },
+});
+```
+
+#### Google Cloud Storage
+
+GCS already has built-in retry support via `gaxios`. The retry mechanism works alongside GCS's native retry logic:
+
+```typescript
+import { GCStorage } from "@visulima/storage";
+
+const storage = new GCStorage({
+    bucket: "my-bucket",
+    projectId: "my-project",
+    retryConfig: {
+        maxRetries: 3,
+        // Works with GCS's existing retryOptions
+    },
+});
+```
+
+#### Vercel Blob
+
+```typescript
+import { VercelBlobStorage } from "@visulima/storage";
+
+const storage = new VercelBlobStorage({
+    token: process.env.BLOB_READ_WRITE_TOKEN,
+    retryConfig: {
+        maxRetries: 3,
+        retryableStatusCodes: [408, 429, 500, 502, 503, 504],
+    },
+});
+```
+
+#### Netlify Blob
+
+```typescript
+import { NetlifyBlobStorage } from "@visulima/storage";
+
+const storage = new NetlifyBlobStorage({
+    storeName: "uploads",
+    retryConfig: {
+        maxRetries: 3,
+    },
+});
+```
 
 ## Chunked Uploads
 

@@ -1,0 +1,81 @@
+# Backblaze B2
+
+## Overview
+
+Backblaze B2 is an S3-compatible cloud storage service with competitive pricing. It provides reliable, cost-effective storage for applications.
+
+## Installation
+
+```sh
+npm install @aws-sdk/client-s3 @aws-sdk/credential-providers @aws-sdk/s3-request-presigner @aws-sdk/signature-v4-crt aws-crt
+```
+
+## Usage
+
+Backblaze B2 is S3-compatible, so use the S3Storage with B2 endpoint:
+
+```typescript
+import { S3Storage } from "@visulima/storage/provider/aws";
+import { backblaze } from "@visulima/storage/provider/aws/s3/clients";
+
+const clientConfig = backblaze({
+    applicationKeyId: process.env.B2_APP_KEY_ID!,
+    applicationKey: process.env.B2_APP_KEY!,
+    region: process.env.B2_REGION || "us-west-000",
+});
+
+const storage = new S3Storage({
+    bucket: "my-bucket",
+    ...clientConfig,
+});
+```
+
+## Configuration
+
+### Environment Variables
+
+```typescript
+process.env.B2_APP_KEY_ID = "your-application-key-id";
+process.env.B2_APP_KEY = "your-application-key";
+process.env.B2_REGION = "us-west-000";
+
+const clientConfig = backblaze(); // Uses environment variables
+const storage = new S3Storage({
+    bucket: "my-bucket",
+    ...clientConfig,
+});
+```
+
+### With Explicit Parameters
+
+```typescript
+const clientConfig = backblaze({
+    applicationKeyId: "your-application-key-id",
+    applicationKey: "your-application-key",
+    region: "us-west-000",
+});
+```
+
+## Regions
+
+Backblaze B2 regions:
+
+- `us-west-000` - US West
+- `us-west-001` - US West (alternate)
+- `us-west-002` - US West (alternate)
+- `eu-central-003` - EU Central
+
+## Features
+
+- **Cost-Effective**: Competitive pricing for storage and egress
+- **S3-Compatible**: Full S3 API compatibility
+- **Reliable**: High durability and availability
+- **Scalable**: Unlimited storage capacity
+
+## Best Practices
+
+1. **Choose appropriate region** - Select region closest to your users
+2. **Monitor costs** - Track storage and egress costs
+3. **Use lifecycle policies** - Automatically manage file lifecycle
+4. **Configure CORS** - Set up CORS for web applications
+5. **Enable versioning** - Use B2 versioning for important files

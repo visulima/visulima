@@ -3,6 +3,7 @@ import type { Readable } from "node:stream";
 
 import { copy, del, list, put } from "@vercel/blob";
 
+import { detectFileTypeFromBuffer } from "../../utils/detect-file-type";
 import toMilliseconds from "../../utils/primitives/to-milliseconds";
 import LocalMetaStorage from "../local/local-meta-storage";
 import type MetaStorage from "../meta-storage";
@@ -129,6 +130,23 @@ class VercelBlobStorage extends BaseStorage<VercelBlobFile, FileReturn> {
                 }
 
                 const buffer = Buffer.concat(chunks);
+
+                // Detect file type from buffer if contentType is not set or is default
+                // Only detect on first write (when bytesWritten is 0 or NaN)
+                if ((file.bytesWritten === 0 || Number.isNaN(file.bytesWritten)) && (!file.contentType || file.contentType === "application/octet-stream")) {
+                    try {
+                        const fileType = await detectFileTypeFromBuffer(buffer);
+
+                        // Update contentType if file type was detected
+                        if (fileType?.mime) {
+                            file.contentType = fileType.mime;
+                        }
+                    } catch {
+                        // If file type detection fails, continue with original contentType
+                        // This is not a critical error
+                    }
+                }
+
                 const blob = new Blob([buffer], { type: file.contentType });
 
                 // Upload to Vercel Blob

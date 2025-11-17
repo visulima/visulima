@@ -2,7 +2,8 @@ import type { IncomingMessage } from "node:http";
 import type { Readable } from "node:stream";
 
 import type { Cache } from "../utils/cache";
-import type { HttpError, HttpErrorBody, Logger, Validation } from "../utils/types";
+import type { RetryConfig } from "../utils/retry";
+import type { HttpError, HttpErrorBody, Logger, Metrics, UploadResponse, Validation } from "../utils/types";
 import type { LocalMetaStorageOptions } from "./local/local-meta-storage";
 import type MetaStorage from "./meta-storage";
 import type { File, FileInit, FilePart, FileQuery, FileReturn, UploadFile } from "./utils/file";
@@ -13,15 +14,15 @@ export interface MetaStorageOptions {
     suffix?: string;
 }
 
-export type OnCreate<TFile extends File = File, TBody = any> = (file: TFile) => Promise<TBody> | TBody;
+export type OnCreate<TFile extends File = File, TBody = UploadResponse> = (file: TFile) => Promise<TBody> | TBody;
 
-export type OnUpdate<TFile extends File = File, TBody = any> = (file: TFile) => Promise<TBody> | TBody;
+export type OnUpdate<TFile extends File = File, TBody = UploadResponse> = (file: TFile) => Promise<TBody> | TBody;
 
-export type OnComplete<TFile extends File = File, TBody = any> = (file: TFile) => Promise<TBody> | TBody;
+export type OnComplete<TFile extends File = File, TBody = UploadResponse> = (file: TFile) => Promise<TBody> | TBody;
 
-export type OnDelete<TFile extends File = File, TBody = any> = (file: TFile) => Promise<TBody> | TBody;
+export type OnDelete<TFile extends File = File, TBody = UploadResponse> = (file: TFile) => Promise<TBody> | TBody;
 
-export type OnError<TBody = HttpErrorBody> = (error: HttpError<TBody>) => any;
+export type OnError<TBody = HttpErrorBody> = (error: HttpError<TBody>) => UploadResponse<TBody>;
 
 export interface PurgeList {
     items: UploadFile[];
@@ -70,7 +71,7 @@ export interface BaseStorageOptions<T extends File = File> extends GenericStorag
      */
     expiration?: ExpirationOptions;
     /** File naming function */
-    filename?: (file: T, request: any) => string;
+    filename?: (file: T, request: IncomingMessage) => string;
     /** Logger injection */
     logger?: Logger;
     /** Limiting the size of custom metadata */
@@ -79,6 +80,8 @@ export interface BaseStorageOptions<T extends File = File> extends GenericStorag
     maxUploadSize?: number | string;
     /** Provide custom meta storage  */
     metaStorage?: MetaStorage<T>;
+    /** Metrics injection for observability */
+    metrics?: Metrics;
 
     /** Callback function that is called when an upload is completed */
     onComplete?: OnComplete<T>;
@@ -153,7 +156,7 @@ export interface StorageOptimizations {
  */
 export interface GenericStorageConfig {
     /** Allow additional properties for specific storage backends */
-    [key: string]: any;
+    [key: string]: unknown;
     /** Base path/prefix for all operations */
     basePath?: string;
     /** Cache TTL */
@@ -164,8 +167,40 @@ export interface GenericStorageConfig {
     logger?: Logger;
     /** Maximum file size */
     maxFileSize?: number | string;
+    /** Metrics instance for observability */
+    metrics?: Metrics;
     /** Storage-specific optimizations */
     optimizations?: StorageOptimizations;
+    /** Retry configuration for transient failures */
+    retryConfig?: RetryConfig;
+}
+
+/**
+ * Batch operation result for a single file
+ */
+export interface BatchOperationResult<T extends File = File> {
+    /** Error message if operation failed */
+    error?: string;
+    /** File that was successfully operated on */
+    file?: T;
+    /** File ID */
+    id: string;
+    /** Whether the operation was successful */
+    success: boolean;
+}
+
+/**
+ * Batch operation response
+ */
+export interface BatchOperationResponse<T extends File = File> {
+    /** Failed operations with error details */
+    failed: { error: string; id: string }[];
+    /** Total number of failed operations */
+    failedCount: number;
+    /** Successfully processed files */
+    successful: T[];
+    /** Total number of successful operations */
+    successfulCount: number;
 }
 
 /**
@@ -173,13 +208,19 @@ export interface GenericStorageConfig {
  */
 export interface GenericStorageOperations<T extends File = File, TReturn extends FileReturn = FileReturn> {
     /** Copy a file */
-    copy: (source: string, destination: string, options?: { storageClass?: string }) => Promise<any>;
+    copy: (source: string, destination: string, options?: { storageClass?: string }) => Promise<T>;
+
+    /** Copy multiple files */
+    copyBatch?: (operations: { destination: string; options?: { storageClass?: string }; source: string }[]) => Promise<BatchOperationResponse<T>>;
 
     /** Create a new file upload */
     create: (request: IncomingMessage, config: FileInit) => Promise<T>;
 
     /** Delete a file */
     delete: (query: FileQuery) => Promise<T>;
+
+    /** Delete multiple files */
+    deleteBatch?: (ids: string[]) => Promise<BatchOperationResponse<T>>;
 
     /** Check if file exists */
     exists: (query: FileQuery) => Promise<boolean>;
@@ -200,7 +241,10 @@ export interface GenericStorageOperations<T extends File = File, TReturn extends
     list: (limit?: number) => Promise<T[]>;
 
     /** Move a file */
-    move: (source: string, destination: string) => Promise<any>;
+    move: (source: string, destination: string) => Promise<T>;
+
+    /** Move multiple files */
+    moveBatch?: (operations: { destination: string; source: string }[]) => Promise<BatchOperationResponse<T>>;
 
     /** Update file metadata */
     update: (query: FileQuery, metadata: Partial<T>) => Promise<T>;

@@ -1,3 +1,5 @@
+export type { UseChunkedRestUploadOptions, UseChunkedRestUploadReturn } from "./use-chunked-rest-upload";
+export { useChunkedRestUpload } from "./use-chunked-rest-upload";
 export type { UseMultipartUploadOptions, UseMultipartUploadReturn } from "./use-multipart-upload";
 export { useMultipartUpload } from "./use-multipart-upload";
 export type { UseTusUploadOptions, UseTusUploadReturn } from "./use-tus-upload";

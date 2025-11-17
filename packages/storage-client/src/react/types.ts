@@ -1,7 +1,7 @@
 /**
  * Upload method type for useUpload hook
  */
-export type UploadMethod = "auto" | "multipart" | "tus";
+export type UploadMethod = "auto" | "chunked-rest" | "multipart" | "tus";
 
 /**
  * File metadata returned from the server (matches OpenAPI FileMeta schema)

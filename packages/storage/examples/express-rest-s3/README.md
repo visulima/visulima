@@ -28,6 +28,7 @@ export S3_ENDPOINT=https://s3.amazonaws.com  # Optional, for custom endpoints
 ```
 
 AWS credentials are loaded from:
+
 - Environment variables (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`)
 - Shared credentials file (`~/.aws/credentials`)
 - IAM role (when running on EC2/ECS/Lambda)
@@ -166,4 +167,3 @@ Use the Multipart handler when:
 - Uploading from HTML forms
 - You need traditional `multipart/form-data` support
 - Working with web browsers and form submissions
-
