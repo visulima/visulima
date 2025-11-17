@@ -5,7 +5,7 @@
  * @returns A new object with transformed values
  * @template T - The type of the transformed values
  */
-const mapValues = <T>(object: Record<string, any>, function_: (value: any) => T): Record<string, T> => {
+const mapValues = <T>(object: Record<string, unknown>, function_: (value: unknown) => T): Record<string, T> => {
     const result: Record<string, T> = {};
 
     Object.keys(object).forEach((key) => {

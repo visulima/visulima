@@ -163,7 +163,11 @@ export const withTimeout = <T extends Readable>(stream: T, timeoutMs: number, er
  * @param logger Optional logger instance with debug method
  * @returns The same stream instance with monitoring attached
  */
-export const monitorStreamPerformance = (stream: Readable, label: string, logger?: { debug: (message: string, ...arguments_: any[]) => void }): Readable => {
+export const monitorStreamPerformance = (
+    stream: Readable,
+    label: string,
+    logger?: { debug: (message: string, ...arguments_: unknown[]) => void },
+): Readable => {
     const startTime = Date.now();
     let totalBytes = 0;
     let chunkCount = 0;

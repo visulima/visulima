@@ -4,8 +4,8 @@ import { pipeline } from "node:stream";
 
 import { ensureFile, remove } from "@visulima/fs";
 
-import { ERRORS, throwErrorCode } from "../../utils/errors";
 import { detectFileTypeFromStream } from "../../utils/detect-file-type";
+import { ERRORS, throwErrorCode } from "../../utils/errors";
 import { streamChecksum } from "../../utils/pipes/stream-checksum";
 import StreamLength from "../../utils/pipes/stream-length";
 import RangeHasher from "../../utils/range-hasher";
@@ -146,6 +146,7 @@ class DiskStorageWithChecksum<TFile extends File = File> extends DiskStorage<TFi
         } catch (error: unknown) {
             await this.hashes.updateFromFs(path, file.bytesWritten);
             const message = error instanceof Error ? error.message : String(error);
+
             return throwErrorCode(ERRORS.FILE_ERROR, message);
         }
     }

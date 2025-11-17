@@ -82,12 +82,13 @@ export const detectFileTypeFromStream = async (
                         detectionPromise = fileTypeFromBuffer(buffer)
                             .then((detected) => {
                                 fileType = detected;
+
                                 return detected; // Return value so promise resolves
                             })
-                            .catch(() => {
+                            .catch(() =>
                                 // Ignore detection errors
-                                return undefined; // Return undefined on error
-                            });
+                                undefined, // Return undefined on error
+                            );
                     }
                 }
 
@@ -116,6 +117,7 @@ export const detectFileTypeFromStream = async (
             new Promise<void>((resolve) => {
                 if (detectionStarted) {
                     resolve();
+
                     return;
                 }
 
@@ -135,10 +137,7 @@ export const detectFileTypeFromStream = async (
 
         // Wait for detection to complete (with timeout)
         if (detectionPromise) {
-            await Promise.race([
-                detectionPromise,
-                new Promise<void>((resolve) => setTimeout(() => resolve(), 150)),
-            ]).catch(() => {
+            await Promise.race([detectionPromise, new Promise<void>((resolve) => setTimeout(() => resolve(), 150))]).catch(() => {
                 // Ignore errors
             });
         }

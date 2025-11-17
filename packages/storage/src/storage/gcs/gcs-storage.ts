@@ -149,205 +149,216 @@ class GCStorage extends BaseStorage<GCSFile, FileReturn> {
     }
 
     public async create(request: IncomingMessage, config: FileInit): Promise<GCSFile> {
-        // Handle TTL option
-        const processedConfig = { ...config };
+        return this.instrumentOperation("create", async () => {
+            // Handle TTL option
+            const processedConfig = { ...config };
 
-        if (config.ttl) {
-            const ttlMs = typeof config.ttl === "string" ? toMilliseconds(config.ttl) : config.ttl;
+            if (config.ttl) {
+                const ttlMs = typeof config.ttl === "string" ? toMilliseconds(config.ttl) : config.ttl;
 
-            if (ttlMs !== undefined) {
-                processedConfig.expiredAt = Date.now() + ttlMs;
+                if (ttlMs !== undefined) {
+                    processedConfig.expiredAt = Date.now() + ttlMs;
+                }
             }
-        }
 
-        const file = new GCSFile(processedConfig);
+            const file = new GCSFile(processedConfig);
 
-        file.name = this.namingFunction(file, request);
+            file.name = this.namingFunction(file, request);
 
-        await this.validate(file);
+            await this.validate(file);
 
-        try {
-            const existing = await this.getMeta(file.id);
+            try {
+                const existing = await this.getMeta(file.id);
 
-            existing.bytesWritten = await this.internalWrite(existing);
+                existing.bytesWritten = await this.internalWrite(existing);
 
-            return existing;
-            // eslint-disable-next-line no-empty
-        } catch {}
+                return existing;
+                // eslint-disable-next-line no-empty
+            } catch {}
 
-        const origin = getHeader(request, "origin");
-        const headers: Record<string, string> = { "Content-Type": "application/json; charset=utf-8" };
+            const origin = getHeader(request, "origin");
+            const headers: Record<string, string> = { "Content-Type": "application/json; charset=utf-8" };
 
-        headers["X-Upload-Content-Length"] = (file.size as number).toString();
-        headers["X-Upload-Content-Type"] = file.contentType;
-        headers["X-Goog-Upload-Protocol"] = "resumable";
-        headers["X-Goog-Upload-Command"] = "start";
+            headers["X-Upload-Content-Length"] = (file.size as number).toString();
+            headers["X-Upload-Content-Type"] = file.contentType;
+            headers["X-Goog-Upload-Protocol"] = "resumable";
+            headers["X-Goog-Upload-Command"] = "start";
 
-        if (origin) {
-            headers.Origin = origin;
-        }
+            if (origin) {
+                headers.Origin = origin;
+            }
 
-        const options: GaxiosOptions = {
-            body: JSON.stringify({ metadata: file.metadata }),
-            headers,
-            method: "POST" as const,
-            params: { name: file.name, size: file.size, uploadType: "resumable" },
-            url: this.uploadBaseURI,
-        };
-        const response = await this.makeRequest(options);
+            const options: GaxiosOptions = {
+                body: JSON.stringify({ metadata: file.metadata }),
+                headers,
+                method: "POST" as const,
+                params: { name: file.name, size: file.size, uploadType: "resumable" },
+                url: this.uploadBaseURI,
+            };
+            const response = await this.makeRequest(options);
 
-        if (response.status !== 200) {
-            throw new Error("Expected 200 response from GCS");
-        }
+            if (response.status !== 200) {
+                throw new Error("Expected 200 response from GCS");
+            }
 
-        const hdr = response.headers.get("X-Goog-Upload-Status") || response.headers.get("x-goog-upload-status");
+            const hdr = response.headers.get("X-Goog-Upload-Status") || response.headers.get("x-goog-upload-status");
 
-        if (hdr !== "active") {
-            throw new Error(`X-Goog-Upload-Status response header expected 'active' got: ${hdr}`);
-        }
+            if (hdr !== "active") {
+                throw new Error(`X-Goog-Upload-Status response header expected 'active' got: ${hdr}`);
+            }
 
-        file.uri = response.headers.get("location") as string;
+            file.uri = response.headers.get("location") as string;
 
-        if (this.config.clientDirectUpload) {
-            file.GCSUploadURI = file.uri;
+            if (this.config.clientDirectUpload) {
+                file.GCSUploadURI = file.uri;
 
-            this.logger?.debug("send uploadURI to client: %s", file.GCSUploadURI);
+                this.logger?.debug("send uploadURI to client: %s", file.GCSUploadURI);
+
+                file.status = "created";
+
+                return file;
+            }
+
+            file.bytesWritten = 0;
+
+            await this.saveMeta(file);
 
             file.status = "created";
 
             return file;
-        }
-
-        file.bytesWritten = 0;
-
-        await this.saveMeta(file);
-
-        file.status = "created";
-
-        return file;
+        });
     }
 
     public async write(part: FilePart | FileQuery | GCSFile): Promise<GCSFile> {
-        let file: GCSFile;
+        return this.instrumentOperation("write", async () => {
+            let file: GCSFile;
 
-        if ("contentType" in part && "metadata" in part && !("body" in part) && !("start" in part)) {
-            // part is a full file object (not a FilePart)
-            file = part as GCSFile;
-        } else {
-            // part is FilePart or FileQuery
-            file = await this.getMeta(part.id);
+            if ("contentType" in part && "metadata" in part && !("body" in part) && !("start" in part)) {
+                // part is a full file object (not a FilePart)
+                file = part as GCSFile;
+            } else {
+                // part is FilePart or FileQuery
+                file = await this.getMeta(part.id);
 
-            await this.checkIfExpired(file);
-        }
-
-        if (file.status === "completed") {
-            return file;
-        }
-
-        if (!partMatch(part, file)) {
-            return throwErrorCode(ERRORS.FILE_CONFLICT);
-        }
-
-        await this.lock(part.id);
-
-        try {
-            // Detect file type from stream if contentType is not set or is default
-            // Only detect on first write (when bytesWritten is 0 or NaN)
-            if (
-                hasContent(part)
-                && (file.bytesWritten === 0 || Number.isNaN(file.bytesWritten))
-                && (!file.contentType || file.contentType === "application/octet-stream")
-            ) {
-                try {
-                    const { fileType, stream: detectedStream } = await detectFileTypeFromStream(part.body);
-
-                    // Update contentType if file type was detected
-                    if (fileType?.mime) {
-                        file.contentType = fileType.mime;
-                    }
-
-                    // Use the stream from file type detection
-                    part.body = detectedStream;
-                } catch {
-                    // If file type detection fails, continue with original stream
-                    // This is not a critical error
-                }
+                await this.checkIfExpired(file);
             }
-
-            file.bytesWritten = await this.internalWrite({ ...file, ...part });
-
-            file.status = getFileStatus(file);
 
             if (file.status === "completed") {
-                file.uri = `${this.storageBaseURI}/${file.name}`;
-
-                await this.internalOnComplete(file);
+                return file;
             }
-        } finally {
-            await this.unlock(part.id);
-        }
 
-        return file;
+            if (!partMatch(part, file)) {
+                return throwErrorCode(ERRORS.FILE_CONFLICT);
+            }
+
+            await this.lock(part.id);
+
+            try {
+                // Detect file type from stream if contentType is not set or is default
+                // Only detect on first write (when bytesWritten is 0 or NaN)
+                if (
+                    hasContent(part)
+                    && (file.bytesWritten === 0 || Number.isNaN(file.bytesWritten))
+                    && (!file.contentType || file.contentType === "application/octet-stream")
+                ) {
+                    try {
+                        const { fileType, stream: detectedStream } = await detectFileTypeFromStream(part.body);
+
+                        // Update contentType if file type was detected
+                        if (fileType?.mime) {
+                            file.contentType = fileType.mime;
+                        }
+
+                        // Use the stream from file type detection
+                        part.body = detectedStream;
+                    } catch {
+                        // If file type detection fails, continue with original stream
+                        // This is not a critical error
+                    }
+                }
+
+                file.bytesWritten = await this.internalWrite({ ...file, ...part });
+
+                file.status = getFileStatus(file);
+
+                if (file.status === "completed") {
+                    file.uri = `${this.storageBaseURI}/${file.name}`;
+
+                    await this.internalOnComplete(file);
+                }
+            } finally {
+                await this.unlock(part.id);
+            }
+
+            return file;
+        });
     }
 
     public async delete({ id }: FileQuery): Promise<GCSFile> {
-        const file = await this.getMeta(id).catch(() => undefined);
+        return this.instrumentOperation("delete", async () => {
+            const file = await this.getMeta(id).catch(() => undefined);
 
-        if (file?.uri) {
-            file.status = "deleted";
+            if (file?.uri) {
+                file.status = "deleted";
 
-            await Promise.all([this.makeRequest({ method: "DELETE", url: file.uri, validateStatus }), this.deleteMeta(file.id)]);
+                await Promise.all([this.makeRequest({ method: "DELETE", url: file.uri, validateStatus }), this.deleteMeta(file.id)]);
 
-            return { ...file };
-        }
+                return { ...file };
+            }
 
-        return { id } as GCSFile;
+            return { id } as GCSFile;
+        });
     }
 
     public async copy(name: string, destination: string): Promise<Record<string, string>> {
-        interface CopyProgress {
-            done: boolean;
-            kind: string;
-            objectSize: number;
-            resource: Record<string, any>;
-            rewriteToken?: string;
-            totalBytesRewritten: number;
-        }
+        return this.instrumentOperation("copy", async () => {
+            interface CopyProgress {
+                done: boolean;
+                kind: string;
+                objectSize: number;
+                resource: Record<string, unknown>;
+                rewriteToken?: string;
+                totalBytesRewritten: number;
+            }
 
-        const baseUrl = new URL(`/${this.bucket}/${name}`, "file://");
-        const resolvedUrl = new URL(encodeURI(destination), baseUrl);
-        const newPath = resolvedUrl.pathname;
-        const [, bucket, ...pathSegments] = newPath.split("/");
-        const filename = pathSegments.join("/");
-        const url = `${this.storageBaseURI}/${name}/rewriteTo/b/${bucket}/o/${filename}`;
+            const baseUrl = new URL(`/${this.bucket}/${name}`, "file://");
+            const resolvedUrl = new URL(encodeURI(destination), baseUrl);
+            const newPath = resolvedUrl.pathname;
+            const [, bucket, ...pathSegments] = newPath.split("/");
+            const filename = pathSegments.join("/");
+            const url = `${this.storageBaseURI}/${name}/rewriteTo/b/${bucket}/o/${filename}`;
 
-        let progress = {} as CopyProgress;
+            let progress = {} as CopyProgress;
 
-        const requestOptions = {
-            body: "",
-            headers: { "Content-Type": "application/json" },
-            method: "POST" as const,
-            url,
-        };
+            const requestOptions = {
+                body: "",
+                headers: { "Content-Type": "application/json" },
+                method: "POST" as const,
+                url,
+            };
 
-        do {
-            requestOptions.body = progress.rewriteToken ? JSON.stringify({ rewriteToken: progress.rewriteToken }) : "";
-            // eslint-disable-next-line no-await-in-loop
-            const response = await this.makeRequest<CopyProgress>(requestOptions);
+            do {
+                requestOptions.body = progress.rewriteToken ? JSON.stringify({ rewriteToken: progress.rewriteToken }) : "";
+                // eslint-disable-next-line no-await-in-loop
+                const response = await this.makeRequest<CopyProgress>(requestOptions);
 
-            progress = response.data || ({} as CopyProgress);
-        } while (progress.rewriteToken);
+                progress = response.data || ({} as CopyProgress);
+            } while (progress.rewriteToken);
 
-        return progress.resource;
+            // Return the copied file metadata
+            return await this.getMeta(destination);
+        });
     }
 
-    public async move(name: string, destination: string): Promise<Record<string, string>> {
-        const resource = await this.copy(name, destination);
-        const url = `${this.storageBaseURI}/${name}`;
+    public async move(name: string, destination: string): Promise<GCSFile> {
+        return this.instrumentOperation("move", async () => {
+            const copiedFile = await this.copy(name, destination);
+            const url = `${this.storageBaseURI}/${name}`;
 
-        await this.makeRequest({ method: "DELETE" as const, url });
+            await this.makeRequest({ method: "DELETE" as const, url });
 
-        return resource;
+            return copiedFile;
+        });
     }
 
     /**
@@ -357,60 +368,75 @@ class GCStorage extends BaseStorage<GCSFile, FileReturn> {
      * @returns Promise resolving to file object with content buffer
      */
     public async get({ id }: FileQuery): Promise<FileReturn> {
-        const { data } = await this.makeRequest({ params: { alt: "json" }, url: `${this.storageBaseURI}/${id}` });
+        return this.instrumentOperation("get", async () => {
+            const { data } = await this.makeRequest<{ timeDeleted?: string; uri?: string }>({ params: { alt: "json" }, url: `${this.storageBaseURI}/${id}` });
 
-        await this.checkIfExpired({ expiredAt: data.timeDeleted } as GCSFile);
+            await this.checkIfExpired({ expiredAt: data.timeDeleted } as GCSFile);
 
-        const response = await this.makeRequest({ params: { alt: "media" }, url: data.uri });
+            if (!data.uri) {
+                throw new Error("File URI not found");
+            }
 
-        return {
-            ...data,
-            content: Buffer.from(response.data),
-        };
+            const response = await this.makeRequest<{ data: unknown }>({ params: { alt: "media" }, url: data.uri });
+
+            const responseData = response.data;
+            const bufferData = typeof responseData === "string" ? Buffer.from(responseData, "utf8") : Buffer.from(responseData as ArrayLike<number>);
+
+            return {
+                ...data,
+                content: bufferData,
+            } as FileReturn;
+        });
     }
 
     public override async list(limit = 1000): Promise<GCSFile[]> {
-        const items: GCSFile[] = [];
+        return this.instrumentOperation(
+            "list",
+            async () => {
+                const items: GCSFile[] = [];
 
-        // Declare truncated as a flag that the while loop is based on.
-        let truncated = true;
-        let parameters: GaxiosOptions = { params: { maxResults: limit }, url: this.storageBaseURI };
+                // Declare truncated as a flag that the while loop is based on.
+                let truncated = true;
+                let parameters: GaxiosOptions = { params: { maxResults: limit }, url: this.storageBaseURI };
 
-        while (truncated) {
-            try {
-                // eslint-disable-next-line no-await-in-loop
-                const { data } = await this.makeRequest<{
-                    items: { metadata?: GCSFile; name: string; timeCreated: string; updated: string }[];
-                    nextPageToken?: string;
-                }>(parameters);
+                while (truncated) {
+                    try {
+                        // eslint-disable-next-line no-await-in-loop
+                        const { data } = await this.makeRequest<{
+                            items: { metadata?: GCSFile; name: string; timeCreated: string; updated: string }[];
+                            nextPageToken?: string;
+                        }>(parameters);
 
-                (data?.items || []).forEach(({ name, timeCreated, updated }) => {
-                    items.push({
-                        createdAt: timeCreated,
-                        id: name,
-                        modifiedAt: updated,
-                    } as GCSFile);
-                });
+                        (data?.items || []).forEach(({ name, timeCreated, updated }) => {
+                            items.push({
+                                createdAt: timeCreated,
+                                id: name,
+                                modifiedAt: updated,
+                            } as GCSFile);
+                        });
 
-                truncated = data?.nextPageToken !== undefined;
+                        truncated = data?.nextPageToken !== undefined;
 
-                if (truncated) {
-                    parameters = { ...parameters, params: { ...parameters.params, pageToken: data.nextPageToken } };
+                        if (truncated) {
+                            parameters = { ...parameters, params: { ...parameters.params, pageToken: data.nextPageToken } };
+                        }
+                    } catch (error) {
+                        truncated = false;
+
+                        throw error;
+                    }
                 }
-            } catch (error) {
-                truncated = false;
 
-                throw error;
-            }
-        }
-
-        return items;
+                return items;
+            },
+            { limit },
+        );
     }
 
     protected async internalWrite(part: GCSFile & Partial<FilePart>): Promise<number> {
         const { body, bytesWritten, size, uri = "" } = part;
         const contentRange = buildContentRange(part);
-        const options: Record<string, any> = { method: "PUT" };
+        const options: Record<string, unknown> = { method: "PUT" };
 
         if (body?.on) {
             const abortController = new AbortController();
@@ -450,9 +476,9 @@ class GCStorage extends BaseStorage<GCSFile, FileReturn> {
         }
     }
 
-    private internalOnComplete = (file: GCSFile): Promise<any> => this.deleteMeta(file.id);
+    private internalOnComplete = (file: GCSFile): Promise<void> => this.deleteMeta(file.id);
 
-    private async makeRequest<T = any>(data: GaxiosOptions): Promise<GaxiosResponse<T>> {
+    private async makeRequest<T = unknown>(data: GaxiosOptions): Promise<GaxiosResponse<T>> {
         if (typeof data.url === "string") {
             // eslint-disable-next-line no-param-reassign
             data.url = data.url
@@ -484,7 +510,7 @@ class GCStorage extends BaseStorage<GCSFile, FileReturn> {
         return this.authClient.request(data);
     }
 
-    private async accessCheck(): Promise<any> {
+    private async accessCheck(): Promise<GaxiosResponse<unknown>> {
         return this.makeRequest({ url: this.storageBaseURI.replace("/o", "") });
     }
 }

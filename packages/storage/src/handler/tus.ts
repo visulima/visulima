@@ -179,9 +179,11 @@ export class Tus<
             if (metadata) {
                 try {
                     await this.storage.update({ id }, { id, metadata });
-                } catch (error: any) {
+                } catch (error: unknown) {
                     // Handle file not found errors as potential expiration
-                    if (error.UploadErrorCode === "FILE_NOT_FOUND") {
+                    const errorWithCode = error as { UploadErrorCode?: string };
+
+                    if (errorWithCode.UploadErrorCode === "FILE_NOT_FOUND") {
                         throw createHttpError(410, "Upload expired");
                     }
 
@@ -195,14 +197,16 @@ export class Tus<
             try {
                 currentFile = await this.storage.getMeta(id);
                 await this.storage.checkIfExpired(currentFile);
-            } catch (error: any) {
+            } catch (error: unknown) {
                 // Handle expiration errors
-                if (error.UploadErrorCode === "GONE") {
+                const errorWithCode = error as { UploadErrorCode?: string };
+
+                if (errorWithCode.UploadErrorCode === "GONE") {
                     throw createHttpError(410, "Upload expired");
                 }
 
                 // Handle file not found errors as potential expiration
-                if (error.UploadErrorCode === "FILE_NOT_FOUND") {
+                if (errorWithCode.UploadErrorCode === "FILE_NOT_FOUND") {
                     throw createHttpError(410, "Upload expired");
                 }
 
@@ -267,11 +271,13 @@ export class Tus<
                 }) as Record<string, string | number>,
                 statusCode: file.status === "completed" ? 200 : 204,
             };
-        } catch (error: any) {
+        } catch (error: unknown) {
             this.checkForUndefinedIdOrPath(error);
 
             // Handle expiration errors
-            if (error.UploadErrorCode === "GONE" || error.UploadErrorCode === "FILE_NOT_FOUND") {
+            const errorWithCode = error as { UploadErrorCode?: string };
+
+            if (errorWithCode.UploadErrorCode === "GONE" || errorWithCode.UploadErrorCode === "FILE_NOT_FOUND") {
                 throw createHttpError(410, "Upload expired");
             }
 
@@ -351,11 +357,13 @@ export class Tus<
             };
 
             return { headers: headers as Record<string, string>, statusCode: 200 } as ResponseFile<TFile>;
-        } catch (error: any) {
+        } catch (error: unknown) {
             this.checkForUndefinedIdOrPath(error);
 
             // Handle expiration errors
-            if (error.UploadErrorCode === "GONE" || error.UploadErrorCode === "FILE_NOT_FOUND") {
+            const errorWithCode = error as { UploadErrorCode?: string };
+
+            if (errorWithCode.UploadErrorCode === "GONE" || errorWithCode.UploadErrorCode === "FILE_NOT_FOUND") {
                 throw createHttpError(410, "Upload expired");
             }
 
@@ -394,10 +402,12 @@ export class Tus<
                 headers: this.buildHeaders(file) as Record<string, string>,
                 statusCode: 204,
             } as ResponseFile<TFile>;
-        } catch (error: any) {
+        } catch (error: unknown) {
             this.checkForUndefinedIdOrPath(error);
 
-            if (error.code === "ENOENT") {
+            const errorWithCode = error as { code?: string };
+
+            if (errorWithCode.code === "ENOENT") {
                 throw createHttpError(404, "File not found");
             }
 
@@ -429,12 +439,13 @@ export class Tus<
             const file = await handler.call(this, nodeRequest as NodeRequest, mockResponse as NodeResponse);
 
             return this.handleFetchResponse(request, file);
-        } catch (error: any) {
-            const uError = pick(error, ["name", ...(Object.getOwnPropertyNames(error) as (keyof Error)[])]) as UploadError;
+        } catch (error: unknown) {
+            const errorObject = error instanceof Error ? error : new Error(String(error));
+            const uError = pick(errorObject, ["name", ...(Object.getOwnPropertyNames(errorObject) as (keyof Error)[])]) as UploadError;
             const errorEvent = {
                 ...uError,
                 request: {
-                    headers: Object.fromEntries((request.headers as any)?.entries?.() || []),
+                    headers: Object.fromEntries((request.headers as globalThis.Headers)?.entries?.() || []),
                     method: request.method,
                     url: request.url,
                 },
@@ -446,7 +457,7 @@ export class Tus<
 
             this.logger?.error("[fetch error]: %O", errorEvent);
 
-            return this.createErrorResponse(error) as any;
+            return this.createErrorResponse(error) as globalThis.Response;
         }
     };
 
@@ -540,8 +551,10 @@ export class Tus<
      * @param error Error object to check
      */
     // eslint-disable-next-line class-methods-use-this
-    private checkForUndefinedIdOrPath(error: any): void {
-        if (["Id is undefined", "Invalid request URL", "Path is undefined"].includes(error.message)) {
+    private checkForUndefinedIdOrPath(error: unknown): void {
+        const message = error instanceof Error ? error.message : String(error);
+
+        if (["Id is undefined", "Invalid request URL", "Path is undefined"].includes(message)) {
             throw createHttpError(404, "File not found");
         }
     }
