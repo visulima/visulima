@@ -182,11 +182,6 @@ class GCStorage extends BaseStorage<GCSFile, FileReturn> {
                 "X-Upload-Content-Type": file.contentType,
             };
 
-            // TODO
-            if (config.origin) {
-                headers.Origin = config.origin;
-            }
-
             const options: GaxiosOptions = {
                 body: JSON.stringify({ metadata: file.metadata }),
                 headers,
