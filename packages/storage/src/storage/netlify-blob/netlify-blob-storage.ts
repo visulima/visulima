@@ -1,4 +1,3 @@
-import type { IncomingMessage } from "node:http";
 import type { Readable } from "node:stream";
 
 import { getStore } from "@netlify/blobs";
@@ -95,7 +94,7 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile, FileReturn> {
         this.isReady = true;
     }
 
-    public async create(request: IncomingMessage, config: FileInit): Promise<NetlifyBlobFile> {
+    public async create(config: FileInit): Promise<NetlifyBlobFile> {
         return this.instrumentOperation("create", async () => {
             // Handle TTL option
             const processedConfig = { ...config };
@@ -108,7 +107,7 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile, FileReturn> {
 
             const file = new NetlifyBlobFile(processedConfig);
 
-            file.name = this.namingFunction(file, request);
+            file.name = this.namingFunction(file);
 
             await this.validate(file);
 

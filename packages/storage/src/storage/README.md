@@ -55,7 +55,7 @@ const storage = new S3Storage({
 });
 
 // Create a file
-const file = await storage.create(request, {
+const file = await storage.create({
     contentType: "image/jpeg",
     metadata: { filename: "photo.jpg" },
     size: 1024 * 1024, // 1MB
@@ -158,7 +158,7 @@ Set expiration times for files during creation or updates:
 
 ```typescript
 // Create file with TTL
-await storage.create(request, {
+await storage.create({
     contentType: "image/jpeg",
     metadata: { filename: "temp.jpg" },
     ttl: "30d", // Expires in 30 days

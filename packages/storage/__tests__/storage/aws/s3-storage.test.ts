@@ -60,7 +60,7 @@ describe(S3Storage, () => {
             s3Mock.on(HeadObjectCommand).rejects();
             s3Mock.on(CreateMultipartUploadCommand).resolves({ UploadId: "123456789" });
 
-            const s3file = await storage.create(request, metafile);
+            const s3file = await storage.create(metafile);
 
             expect(s3file).toMatchSnapshot({
                 createdAt: expect.any(String),
@@ -73,7 +73,7 @@ describe(S3Storage, () => {
 
             s3Mock.on(HeadObjectCommand).resolves(metafileResponse);
 
-            const s3file = await storage.create(request, metafile);
+            const s3file = await storage.create(metafile);
 
             expect(s3file).toMatchSnapshot();
         });
@@ -84,7 +84,7 @@ describe(S3Storage, () => {
             s3Mock.on(HeadObjectCommand).rejects();
             s3Mock.on(CreateMultipartUploadCommand).resolves({});
 
-            await expect(storage.create(request, metafile)).rejects.toMatchSnapshot();
+            await expect(storage.create(metafile)).rejects.toMatchSnapshot();
         });
 
         it("should handle TTL option", async () => {
@@ -93,7 +93,7 @@ describe(S3Storage, () => {
             s3Mock.on(HeadObjectCommand).rejects();
             s3Mock.on(CreateMultipartUploadCommand).resolves({ UploadId: "123456789" });
 
-            const s3file = await storage.create(request, { ...metafile, ttl: "30d" });
+            const s3file = await storage.create({ ...metafile, ttl: "30d" });
 
             expect(s3file.expiredAt).toBeDefined();
 
@@ -316,7 +316,7 @@ describe("s3PresignedStorage", () => {
             s3Mock.on(CreateMultipartUploadCommand).resolves({ UploadId: "123456789" });
             s3Mock.on(ListPartsCommand).resolves({ Parts: [] });
 
-            const s3file = await storage.create(request, metafile);
+            const s3file = await storage.create(metafile);
 
             expect(s3file.partsUrls?.length).toBe(1);
             expect(s3file.partSize).toBeGreaterThan(0);

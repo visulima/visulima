@@ -192,7 +192,7 @@ class S3Storage extends BaseStorage<S3File, FileReturn> {
         return super.normalizeError(error);
     }
 
-    public async create(request: IncomingMessage, config: FileInit): Promise<S3File> {
+    public async create(config: FileInit): Promise<S3File> {
         return this.instrumentOperation("create", async () => {
             // Handle TTL option
             const processedConfig = { ...config };
@@ -207,7 +207,7 @@ class S3Storage extends BaseStorage<S3File, FileReturn> {
 
             const file = new S3File(processedConfig);
 
-            file.name = this.namingFunction(file, request);
+            file.name = this.namingFunction(file);
 
             await this.validate(file);
 

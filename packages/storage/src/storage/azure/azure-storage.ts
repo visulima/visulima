@@ -1,7 +1,6 @@
-import type { IncomingMessage } from "node:http";
-
 import type { BlobBeginCopyFromURLResponse, BlobDeleteIfExistsResponse, BlobItem, ContainerClient } from "@azure/storage-blob";
 import { BlobServiceClient, StorageSharedKeyCredential } from "@azure/storage-blob";
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { normalize } from "@visulima/path";
 
 import { detectFileTypeFromStream } from "../../utils/detect-file-type";
@@ -129,7 +128,7 @@ class AzureStorage extends BaseStorage<AzureFile, FileReturn> {
             .catch((error) => this.logger?.error("Storage access check failed: %O", error));
     }
 
-    public async create(request: IncomingMessage, config: FileInit): Promise<AzureFile> {
+    public async create(config: FileInit): Promise<AzureFile> {
         return this.instrumentOperation("create", async () => {
             // Handle TTL option
             const processedConfig = { ...config };
@@ -144,7 +143,7 @@ class AzureStorage extends BaseStorage<AzureFile, FileReturn> {
 
             const file = new AzureFile(processedConfig);
 
-            file.name = this.namingFunction(file, request);
+            file.name = this.namingFunction(file);
 
             await this.validate(file);
 

@@ -202,7 +202,7 @@ describe("http Rest", () => {
             expect(response.header["content-length"]).toBeDefined();
             expect(response.header["content-type"]).toBeDefined();
             expect(response.header["content-length"]).toBe(String(testfile.size));
-            expect(response.body).toEqual({});
+            expect(response.body).toStrictEqual({});
         });
 
         it("should return 404 for non-existent file", async () => {

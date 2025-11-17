@@ -88,7 +88,7 @@ describe(GCStorage, async () => {
             }); // create
             mockAuthRequest.mockResolvedValueOnce("_saveOk"); // saveMeta
 
-            const gcsFile = await storage.create(request, metafile);
+            const gcsFile = await storage.create(metafile);
 
             expect(gcsFile).toMatchSnapshot();
             expect(mockAuthRequest).toHaveBeenCalledTimes(4);
@@ -100,7 +100,7 @@ describe(GCStorage, async () => {
             mockAuthRequest.mockResolvedValue(metafileResponse());
             mockFetch.mockResolvedValueOnce(new Response("", { headers: { Range: "0-5" }, status: 308 }));
 
-            const gcsFile = await storage.create(request, metafile);
+            const gcsFile = await storage.create(metafile);
 
             expect(gcsFile).toMatchSnapshot();
         });
@@ -112,7 +112,7 @@ describe(GCStorage, async () => {
 
             mockAuthRequest.mockRejectedValue(errorObject);
 
-            await expect(storage.create(request, metafile)).rejects.toStrictEqual(errorObject);
+            await expect(storage.create(metafile)).rejects.toStrictEqual(errorObject);
         });
 
         it("should handle TTL option and set expiration timestamp", async () => {
@@ -135,7 +135,7 @@ describe(GCStorage, async () => {
             }); // create
             mockAuthRequest.mockResolvedValueOnce("_saveOk"); // saveMeta
 
-            const gcsFile = await storage.create(request, { ...metafile, ttl: "7d" });
+            const gcsFile = await storage.create({ ...metafile, ttl: "7d" });
 
             expect(gcsFile.expiredAt).toBeDefined();
 

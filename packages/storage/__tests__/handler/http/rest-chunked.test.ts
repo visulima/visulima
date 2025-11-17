@@ -190,6 +190,8 @@ describe("http Rest - Chunked Uploads", () => {
         });
 
         it("should handle out-of-order chunks", async () => {
+            expect.assertions(8);
+
             // Upload chunk 3 first (out of order)
             await supertest(app)
                 .patch(`${basePath}/${fileId}`)
@@ -221,6 +223,8 @@ describe("http Rest - Chunked Uploads", () => {
         });
 
         it("should handle duplicate chunks (idempotency)", async () => {
+            expect.assertions(6);
+
             // Upload chunk 1
             await supertest(app)
                 .patch(`${basePath}/${fileId}`)
@@ -242,6 +246,8 @@ describe("http Rest - Chunked Uploads", () => {
         });
 
         it("should return 400 when X-Chunk-Offset header is missing", async () => {
+            expect.assertions(6);
+
             response = await supertest(app)
                 .patch(`${basePath}/${fileId}`)
                 .set("Content-Type", "application/octet-stream")
@@ -255,6 +261,8 @@ describe("http Rest - Chunked Uploads", () => {
         });
 
         it("should return 400 when chunk exceeds file size", async () => {
+            expect.assertions(6);
+
             response = await supertest(app)
                 .patch(`${basePath}/${fileId}`)
                 .set("Content-Type", "application/octet-stream")
@@ -269,6 +277,8 @@ describe("http Rest - Chunked Uploads", () => {
         });
 
         it("should return 400 when chunk size exceeds max chunk size", async () => {
+            expect.assertions(6);
+
             const largeChunk = Buffer.alloc(101 * 1024 * 1024); // 101MB (exceeds 100MB limit)
 
             response = await supertest(app)
