@@ -1,6 +1,7 @@
 import type { Readable } from "node:stream";
 import { PassThrough, Transform } from "node:stream";
 
+import type { FileTypeResult } from "file-type";
 import { fileTypeFromBuffer } from "file-type";
 
 /**
@@ -31,120 +32,95 @@ export const detectFileTypeFromStream = async (
 ): Promise<{ fileType?: { ext: string; mime: string }; stream: Readable }> => {
     const sampleSize = options?.sampleSize ?? 4100;
     let fileType: { ext: string; mime: string } | undefined;
+    const chunks: Buffer[] = [];
+    let totalLength = 0;
+    let detectionStarted = false;
+    let detectionPromise: Promise<FileTypeResult | undefined> | undefined;
 
-    try {
-        const detectionChunks: Buffer[] = [];
-        let totalLength = 0;
-        let detectionStarted = false;
-        let detectionPromise: Promise<void> | undefined;
-        let streamEnded = false;
+    // Create output stream that will emit all data
+    const outputStream = new PassThrough({ highWaterMark: 0 });
 
-        // Create output stream that will emit all data
-        // Use highWaterMark: 0 to prevent buffering and ensure data flows through
-        const outputStream = new PassThrough({ highWaterMark: 0 });
+    // Use a Transform stream to peek at data
+    const peekStream = new Transform({
+        objectMode: false,
+        transform(chunk: Buffer, _encoding, callback) {
+            // Collect chunks for detection until we have enough data
+            if (!detectionStarted) {
+                chunks.push(chunk);
+                totalLength += chunk.length;
 
-        // Use a Transform stream to peek at data
-        const peekStream = new Transform({
-            flush(callback) {
-                streamEnded = true;
-
-                // If stream ended before detection started, try with what we have
-                if (!detectionStarted && detectionChunks.length > 0) {
+                // Start detection when we have enough data or first chunk
+                if (totalLength >= sampleSize || totalLength > 0) {
                     detectionStarted = true;
-                    const buffer = Buffer.concat(detectionChunks);
+                    const buffer = Buffer.concat(chunks);
 
+                    // Start detection asynchronously
                     detectionPromise = fileTypeFromBuffer(buffer)
                         .then((detected) => {
                             fileType = detected;
+
+                            return detected; // Return value for promise chain
                         })
-                        .catch(() => {
-                            // Ignore detection errors
-                        });
+                        .catch(() => undefined); // Ignore detection errors
                 }
-
-                // End output stream when peek stream ends
-                // Don't end immediately - let it end naturally when consumed
-                // The stream will end when all data is consumed
-                callback();
-            },
-            objectMode: false,
-            transform(chunk: Buffer, encoding, callback) {
-                if (!detectionStarted) {
-                    detectionChunks.push(chunk);
-                    totalLength += chunk.length;
-
-                    // Start detection when we have enough data or first chunk
-                    if (totalLength >= sampleSize || totalLength > 0) {
-                        detectionStarted = true;
-                        const buffer = Buffer.concat(detectionChunks);
-
-                        // Start detection (async)
-                        detectionPromise = fileTypeFromBuffer(buffer)
-                            .then((detected) => {
-                                fileType = detected;
-
-                                return detected; // Return value so promise resolves
-                            })
-                            .catch(() =>
-                                // Ignore detection errors
-                                undefined, // Return undefined on error
-                            );
-                    }
-                }
-
-                // Pass chunk through - it will be piped to outputStream
-                callback(null, chunk);
-            },
-        });
-
-        // Pipe original stream through peek stream, then peek stream to output stream
-        stream.pipe(peekStream);
-        peekStream.pipe(outputStream);
-
-        stream.on("error", (error) => {
-            peekStream.destroy(error);
-            outputStream.destroy(error);
-        });
-
-        peekStream.on("error", (error) => {
-            if (!outputStream.destroyed) {
-                outputStream.destroy(error);
             }
-        });
 
-        // Wait for first chunk to arrive so detection can start
-        await Promise.race([
-            new Promise<void>((resolve) => {
-                if (detectionStarted) {
-                    resolve();
+            // Pass all chunks through
+            callback(undefined, chunk);
+        },
+    });
 
-                    return;
-                }
+    // Pipe streams
+    stream.pipe(peekStream).pipe(outputStream);
 
-                const timeout = setTimeout(() => resolve(), 10);
+    // Handle errors
+    stream.on("error", (error) => {
+        peekStream.destroy(error);
+        outputStream.destroy(error);
+    });
 
-                peekStream.once("data", () => {
-                    clearTimeout(timeout);
-                    resolve();
-                });
-                peekStream.once("end", () => {
-                    clearTimeout(timeout);
-                    resolve();
-                });
-            }),
-            new Promise<void>((resolve) => setTimeout(() => resolve(), 10)),
-        ]);
-
-        // Wait for detection to complete (with timeout)
-        if (detectionPromise) {
-            await Promise.race([detectionPromise, new Promise<void>((resolve) => setTimeout(() => resolve(), 150))]).catch(() => {
-                // Ignore errors
-            });
+    peekStream.on("error", (error) => {
+        if (!outputStream.destroyed) {
+            outputStream.destroy(error);
         }
+    });
 
-        return { fileType, stream: outputStream };
-    } catch {
-        // If detection fails, just return the original stream
-        return { fileType: undefined, stream };
+    // Wait for first chunk to arrive so detection can start
+    await Promise.race([
+        new Promise<void>((resolve) => {
+            if (detectionStarted) {
+                resolve();
+
+                return;
+            }
+
+            const timeout = setTimeout(() => resolve(), 10);
+
+            peekStream.once("data", () => {
+                clearTimeout(timeout);
+                resolve();
+            });
+            peekStream.once("end", () => {
+                clearTimeout(timeout);
+                resolve();
+            });
+        }),
+        new Promise<void>((resolve) => {
+            setTimeout(() => resolve(), 10);
+        }),
+    ]);
+
+    // Wait for detection to complete (with timeout)
+    if (detectionPromise) {
+        await Promise.race([
+            detectionPromise.then(() => undefined),
+            new Promise<void>((resolve) => {
+                setTimeout(() => resolve(), 150);
+            }),
+        ]).catch(() => {
+            // Ignore errors
+        });
     }
+
+    return { fileType, stream: outputStream };
 };

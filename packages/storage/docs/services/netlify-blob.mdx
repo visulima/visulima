@@ -85,7 +85,7 @@ const storage = new NetlifyBlobStorage({
 
 ```typescript
 // Create a file
-const file = await storage.create(request, {
+const file = await storage.create({
     contentType: "image/jpeg",
     metadata: { filename: "photo.jpg" },
 });

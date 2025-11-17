@@ -1,4 +1,3 @@
-import type { IncomingMessage } from "node:http";
 import type { Readable } from "node:stream";
 
 import type { Cache } from "../utils/cache";
@@ -71,7 +70,7 @@ export interface BaseStorageOptions<T extends File = File> extends GenericStorag
      */
     expiration?: ExpirationOptions;
     /** File naming function */
-    filename?: (file: T, request: IncomingMessage) => string;
+    filename?: (file: T) => string;
     /** Logger injection */
     logger?: Logger;
     /** Limiting the size of custom metadata */
@@ -214,7 +213,7 @@ export interface GenericStorageOperations<T extends File = File, TReturn extends
     copyBatch?: (operations: { destination: string; options?: { storageClass?: string }; source: string }[]) => Promise<BatchOperationResponse<T>>;
 
     /** Create a new file upload */
-    create: (request: IncomingMessage, config: FileInit) => Promise<T>;
+    create: (config: FileInit) => Promise<T>;
 
     /** Delete a file */
     delete: (query: FileQuery) => Promise<T>;

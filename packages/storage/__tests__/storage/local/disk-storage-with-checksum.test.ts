@@ -45,7 +45,7 @@ describe(DiskStorageWithChecksum, () => {
         expect.assertions(2);
 
         const storage = new DiskStorageWithChecksum(options);
-        const diskFile = await storage.create(request, { ...metafile });
+        const diskFile = await storage.create({ ...metafile });
 
         expect(diskFile).toMatchSnapshot("file");
 
@@ -64,7 +64,7 @@ describe(DiskStorageWithChecksum, () => {
         expect.assertions(2);
 
         const storage = new DiskStorageWithChecksum(options);
-        const diskFile = await storage.create(request, { ...metafile });
+        const diskFile = await storage.create({ ...metafile });
 
         await storage.write({ ...diskFile, body: Readable.from("01234"), start: 0 });
 
@@ -100,7 +100,7 @@ describe(DiskStorageWithChecksum, () => {
             const storage = new DiskStorageWithChecksum(options);
             const uniqueId = `test-png-${Date.now()}-${Math.random()}`;
             const { contentType: _, metadata: __, ...metafileWithoutContentType } = metafile;
-            const file = await storage.create(request, {
+            const file = await storage.create({
                 ...metafileWithoutContentType,
                 contentType: undefined,
                 id: uniqueId,
@@ -137,7 +137,7 @@ describe(DiskStorageWithChecksum, () => {
 
             const storage = new DiskStorageWithChecksum(options);
             const uniqueId = `test-jpg-${Date.now()}-${Math.random()}`;
-            const file = await storage.create(request, {
+            const file = await storage.create({
                 ...metafile,
                 contentType: "application/octet-stream",
                 id: uniqueId,
@@ -172,7 +172,7 @@ describe(DiskStorageWithChecksum, () => {
 
             const storage = new DiskStorageWithChecksum(options);
             const uniqueId = `test-mp4-${Date.now()}-${Math.random()}`;
-            const file = await storage.create(request, {
+            const file = await storage.create({
                 ...metafile,
                 contentType: "video/mp4",
                 id: uniqueId,
@@ -207,7 +207,7 @@ describe(DiskStorageWithChecksum, () => {
             const storage = new DiskStorageWithChecksum(options);
             const uniqueId = `test-chunked-${Date.now()}-${Math.random()}`;
             const { contentType: _, metadata: __, ...metafileWithoutContentType } = metafile;
-            const file = await storage.create(request, {
+            const file = await storage.create({
                 ...metafileWithoutContentType,
                 contentType: undefined,
                 id: uniqueId,

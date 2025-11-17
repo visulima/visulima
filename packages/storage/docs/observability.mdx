@@ -217,12 +217,12 @@ For custom storage implementations, you can use the `instrumentOperation` helper
 import { BaseStorage } from "@visulima/storage";
 
 class MyStorage extends BaseStorage {
-    public async create(request: IncomingMessage, config: FileInit): Promise<File> {
+    public async create(config: FileInit): Promise<File> {
         return this.instrumentOperation(
             "create",
             async () => {
                 // Your implementation
-                const file = await this.doCreate(request, config);
+                const file = await this.doCreate(config);
                 return file;
             },
             {

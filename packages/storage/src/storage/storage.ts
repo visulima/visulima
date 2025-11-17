@@ -1,4 +1,3 @@
-import type { IncomingMessage } from "node:http";
 import { Readable } from "node:stream";
 import { setInterval } from "node:timers";
 import { inspect } from "node:util";
@@ -77,7 +76,7 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
 
     protected locker: Locker;
 
-    protected namingFunction: (file: TFile, request: IncomingMessage) => string;
+    protected namingFunction: (file: TFile) => string;
 
     protected validation: Validator<TFile> = new Validator<TFile>();
 
@@ -380,7 +379,7 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
                 return this.optimizeCopy(arguments_[0] as string, arguments_[1] as string);
             }
             case "create": {
-                return this.optimizeCreate(arguments_[0] as IncomingMessage, arguments_[1] as FileInit);
+                return this.optimizeCreate(arguments_[1] as FileInit);
             }
             case "get": {
                 return this.optimizeGet(arguments_[0] as FileQuery);
@@ -394,7 +393,7 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
     /**
      * Optimize file creation with storage-specific settings
      */
-    protected optimizeCreate(request: IncomingMessage, config: FileInit): [IncomingMessage, FileInit] {
+    protected optimizeCreate(config: FileInit): [FileInit] {
         const { optimizations } = this;
 
         // Add optimization metadata
@@ -410,7 +409,7 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
             // This would be implemented by subclasses
         }
 
-        return [request, config];
+        return [config];
     }
 
     /**
@@ -534,9 +533,62 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
     }
 
     /**
+     * Helper method to instrument an operation with metrics.
+     * Subclasses can use this to wrap their operations.
+     * @param operation Operation name (e.g., "create", "write", "delete")
+     * @param fn Async function to execute
+     * @param attributes Optional attributes to add to metrics
+     * @returns Result of the operation
+     */
+    protected async instrumentOperation<T>(operation: string, function_: () => Promise<T>, attributes?: Record<string, string | number>): Promise<T> {
+        const startTime = Date.now();
+        const storageType = this.constructor.name.toLowerCase().replace("storage", "");
+
+        const baseAttributes = {
+            storage: storageType,
+            ...attributes,
+        };
+
+        try {
+            this.metrics.increment(`storage.operations.${operation}.count`, 1, baseAttributes);
+
+            const result = await function_();
+
+            const duration = Date.now() - startTime;
+
+            this.metrics.timing(`storage.operations.${operation}.duration`, duration, baseAttributes);
+
+            // If result is a file, record file size
+            if (result && typeof result === "object" && "size" in result && typeof result.size === "number") {
+                this.metrics.gauge("storage.files.size", result.size, {
+                    ...baseAttributes,
+                    operation,
+                });
+            }
+
+            return result;
+        } catch (error: unknown) {
+            const duration = Date.now() - startTime;
+            const errorMessage = error instanceof Error ? error.message : "Unknown error";
+
+            this.metrics.timing(`storage.operations.${operation}.duration`, duration, {
+                ...baseAttributes,
+                error: "true",
+            });
+
+            this.metrics.increment(`storage.operations.${operation}.error.count`, 1, {
+                ...baseAttributes,
+                error: errorMessage,
+            });
+
+            throw error;
+        }
+    }
+
+    /**
      *  Creates a new upload and saves its metadata
      */
-    public abstract create(request: IncomingMessage, file: FileInit): Promise<TFile>;
+    public abstract create(file: FileInit): Promise<TFile>;
 
     /**
      *  Write part and/or return status of an upload
@@ -740,20 +792,36 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
         // Process all moves in parallel using Promise.allSettled
         const movePromises = operations.map(async ({ destination, source }) => {
             try {
-                // Get source file metadata before move
-                const sourceFile = await this.getMeta(source).catch(() => undefined);
+                // Get source file metadata before move to get the correct ID
+                // Try by source name first, then try name without extension (for DiskStorage)
+                let sourceFile: TFile | undefined;
+                let sourceId: string = source;
 
-                await this.move(source, destination);
+                try {
+                    sourceFile = await this.getMeta(source);
+                    sourceId = sourceFile.id;
+                } catch {
+                    // If getMeta by name fails, try name without extension
+                    // (e.g., if source is "source1.mp4", try ID "source1")
+                    try {
+                        const nameWithoutExtension = source.replace(/\.[^/.]+$/, "");
 
-                if (sourceFile) {
-                    // Return source file with destination path updated and delete source metadata
-                    await this.deleteMeta(source).catch(() => undefined);
-
-                    return { file: { ...sourceFile, id: source, name: destination } as TFile, id: destination, success: true as const };
+                        if (nameWithoutExtension !== source) {
+                            sourceFile = await this.getMeta(nameWithoutExtension);
+                            sourceId = sourceFile.id;
+                        }
+                    } catch {
+                        // If we can't find metadata, use source as ID
+                    }
                 }
 
-                // If we can't get source metadata, create a minimal file object
-                return { file: { id: source, name: destination } as TFile, id: destination, success: true as const };
+                // Move the file - move() returns the moved file
+                const movedFile = await this.move(source, destination);
+
+                // Delete source metadata after successful move using the correct ID
+                await this.deleteMeta(sourceId).catch(() => undefined);
+
+                return { file: movedFile, id: destination, success: true as const };
             } catch (error: unknown) {
                 const errorMessage = error instanceof Error ? error.message : "Move failed";
 
@@ -802,59 +870,6 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
             successful,
             successfulCount: successful.length,
         };
-    }
-
-    /**
-     * Helper method to instrument an operation with metrics.
-     * Subclasses can use this to wrap their operations.
-     * @param operation Operation name (e.g., "create", "write", "delete")
-     * @param fn Async function to execute
-     * @param attributes Optional attributes to add to metrics
-     * @returns Result of the operation
-     */
-    protected async instrumentOperation<T>(operation: string, function_: () => Promise<T>, attributes?: Record<string, string | number>): Promise<T> {
-        const startTime = Date.now();
-        const storageType = this.constructor.name.toLowerCase().replace("storage", "");
-
-        const baseAttributes = {
-            storage: storageType,
-            ...attributes,
-        };
-
-        try {
-            this.metrics.increment(`storage.operations.${operation}.count`, 1, baseAttributes);
-
-            const result = await function_();
-
-            const duration = Date.now() - startTime;
-
-            this.metrics.timing(`storage.operations.${operation}.duration`, duration, baseAttributes);
-
-            // If result is a file, record file size
-            if (result && typeof result === "object" && "size" in result && typeof result.size === "number") {
-                this.metrics.gauge("storage.files.size", result.size, {
-                    ...baseAttributes,
-                    operation,
-                });
-            }
-
-            return result;
-        } catch (error: unknown) {
-            const duration = Date.now() - startTime;
-            const errorMessage = error instanceof Error ? error.message : "Unknown error";
-
-            this.metrics.timing(`storage.operations.${operation}.duration`, duration, {
-                ...baseAttributes,
-                error: "true",
-            });
-
-            this.metrics.increment(`storage.operations.${operation}.error.count`, 1, {
-                ...baseAttributes,
-                error: errorMessage,
-            });
-
-            throw error;
-        }
     }
 }
 

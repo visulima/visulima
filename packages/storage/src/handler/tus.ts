@@ -116,7 +116,7 @@ export class Tus<
         const metadata = parseMetadata(metadataHeader);
         const config: FileInit = { metadata, size: uploadLength };
 
-        let file = await this.storage.create(request, config);
+        let file = await this.storage.create(config);
 
         // 'creation-with-upload' block
         if (typeis(request, ["application/offset+octet-stream"])) {

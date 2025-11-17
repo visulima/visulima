@@ -1,5 +1,4 @@
 import { randomUUID } from "node:crypto";
-import type { IncomingMessage } from "node:http";
 
 import type { GaxiosOptions, GaxiosResponse, RetryConfig } from "gaxios";
 import { request } from "gaxios";
@@ -8,7 +7,6 @@ import { GoogleAuth } from "google-auth-library";
 import package_ from "../../../package.json";
 import { detectFileTypeFromStream } from "../../utils/detect-file-type";
 import { ERRORS, throwErrorCode } from "../../utils/errors";
-import { getHeader } from "../../utils/http";
 import toMilliseconds from "../../utils/primitives/to-milliseconds";
 import type { HttpError } from "../../utils/types";
 import LocalMetaStorage from "../local/local-meta-storage";
@@ -148,7 +146,7 @@ class GCStorage extends BaseStorage<GCSFile, FileReturn> {
         };
     }
 
-    public async create(request: IncomingMessage, config: FileInit): Promise<GCSFile> {
+    public async create(config: FileInit): Promise<GCSFile> {
         return this.instrumentOperation("create", async () => {
             // Handle TTL option
             const processedConfig = { ...config };
@@ -163,7 +161,7 @@ class GCStorage extends BaseStorage<GCSFile, FileReturn> {
 
             const file = new GCSFile(processedConfig);
 
-            file.name = this.namingFunction(file, request);
+            file.name = this.namingFunction(file);
 
             await this.validate(file);
 
@@ -176,16 +174,17 @@ class GCStorage extends BaseStorage<GCSFile, FileReturn> {
                 // eslint-disable-next-line no-empty
             } catch {}
 
-            const origin = getHeader(request, "origin");
-            const headers: Record<string, string> = { "Content-Type": "application/json; charset=utf-8" };
+            const headers: Record<string, string> = {
+                "Content-Type": "application/json; charset=utf-8",
+                "X-Goog-Upload-Command": "start",
+                "X-Goog-Upload-Protocol": "resumable",
+                "X-Upload-Content-Length": (file.size as number).toString(),
+                "X-Upload-Content-Type": file.contentType,
+            };
 
-            headers["X-Upload-Content-Length"] = (file.size as number).toString();
-            headers["X-Upload-Content-Type"] = file.contentType;
-            headers["X-Goog-Upload-Protocol"] = "resumable";
-            headers["X-Goog-Upload-Command"] = "start";
-
-            if (origin) {
-                headers.Origin = origin;
+            // TODO
+            if (config.origin) {
+                headers.Origin = config.origin;
             }
 
             const options: GaxiosOptions = {
