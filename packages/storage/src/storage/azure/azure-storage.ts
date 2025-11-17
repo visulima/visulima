@@ -196,30 +196,42 @@ class AzureStorage extends BaseStorage<AzureFile, FileReturn> {
         });
     }
 
+    /**
+     * Deletes an upload and its metadata
+     * @param query - File query containing the file ID to delete
+     * @returns Promise resolving to the deleted file object with status: "deleted"
+     * @throws {Error} If the file metadata cannot be found
+     */
     public async delete({ id }: FileQuery): Promise<AzureFile> {
         return this.instrumentOperation("delete", async () => {
-            const file = await this.getMeta(id).catch(() => undefined);
+            const file = await this.getMeta(id);
 
-            if (file) {
-                file.status = "deleted";
+            file.status = "deleted";
 
-                await Promise.all([
-                    this.deleteMeta(file.id),
-                    this.retry(() => this.containerClient.getBlockBlobClient(this.getFullPath(file.name)).deleteIfExists()),
-                ]);
+            await Promise.all([
+                this.deleteMeta(file.id),
+                this.retry(() => this.containerClient.getBlockBlobClient(this.getFullPath(file.name)).deleteIfExists()),
+            ]);
 
-                return { ...file };
-            }
-
-            return { id } as AzureFile;
+            return { ...file };
         });
     }
 
-    public async move(name: string, destination: string): Promise<BlobDeleteIfExistsResponse> {
+    /**
+     * Move an upload file to a new location
+     * @param name - Source file name/ID
+     * @param destination - Destination file name/ID
+     * @returns Promise resolving to the moved file object
+     * @throws {Error} If the source file cannot be found
+     */
+    public async move(name: string, destination: string): Promise<AzureFile> {
         return this.instrumentOperation("move", async () => {
+            const copiedFile = await this.copy(name, destination);
             const source = this.getFullPath(name);
 
-            return this.copy(name, destination).then(() => this.retry(() => this.containerClient.getBlockBlobClient(source).deleteIfExists()));
+            await this.retry(() => this.containerClient.getBlockBlobClient(source).deleteIfExists());
+
+            return copiedFile;
         });
     }
 
@@ -347,7 +359,14 @@ class AzureStorage extends BaseStorage<AzureFile, FileReturn> {
         });
     }
 
-    public async copy(name: string, destination: string): Promise<BlobBeginCopyFromURLResponse> {
+    /**
+     * Copy an upload file to a new location
+     * @param name - Source file name/ID
+     * @param destination - Destination file name/ID
+     * @returns Promise resolving to the copied file object
+     * @throws {Error} If the source file cannot be found
+     */
+    public async copy(name: string, destination: string): Promise<AzureFile> {
         return this.instrumentOperation("copy", async () => {
             const source = this.containerClient.getBlockBlobClient(this.getFullPath(name));
 
@@ -368,7 +387,12 @@ class AzureStorage extends BaseStorage<AzureFile, FileReturn> {
 
             const poller = await this.retry(() => target.beginCopyFromURL(source.url));
 
-            return this.retry(() => poller.pollUntilDone());
+            await this.retry(() => poller.pollUntilDone());
+
+            // Get source file metadata and return with destination name
+            const sourceFile = await this.getMeta(name);
+
+            return { ...sourceFile, name: destination, id: destination } as AzureFile;
         });
     }
 

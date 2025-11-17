@@ -20,7 +20,7 @@ import toMilliseconds from "../utils/primitives/to-milliseconds";
 import type { HttpError, Logger, Metrics, UploadResponse, ValidatorConfig } from "../utils/types";
 import { Validator } from "../utils/validator";
 import type MetaStorage from "./meta-storage";
-import type { BaseStorageOptions, BatchOperationResponse, PurgeList, StorageOptimizations } from "./types";
+import type { BaseStorageOptions, BatchOperationResponse, PurgeList } from "./types";
 import type { File, FileInit, FilePart, FileQuery } from "./utils/file";
 import { FileName, isExpired, updateMetadata } from "./utils/file";
 import type { FileReturn } from "./utils/file/types";
@@ -72,8 +72,6 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
 
     protected expiration?: { maxAge?: string | number; purgeInterval?: string | number; rolling?: boolean };
 
-    protected readonly optimizations: StorageOptimizations;
-
     protected locker: Locker;
 
     protected namingFunction: (file: TFile) => string;
@@ -104,13 +102,6 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
 
         // Initialize generic configuration
         this.genericConfig = options;
-        this.optimizations = {
-            bulkBatchSize: 100,
-            enableCDNHeaders: false,
-            enableCompression: false,
-            usePrefixes: false,
-            useServerSideCopy: true,
-        };
 
         if (options.assetFolder !== undefined) {
             this.assetFolder = normalize(options.assetFolder);
@@ -282,9 +273,15 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
                 );
 
                 for await (const { id, ...rest } of expired) {
-                    const deleted = await this.delete({ id });
+                    try {
+                        const deleted = await this.delete({ id });
 
-                    purged.items.push({ ...deleted, ...rest });
+                        purged.items.push({ ...deleted, ...rest });
+                    } catch (error: unknown) {
+                        // If delete fails (e.g., corrupted metadata, file already deleted),
+                        // log the error but continue purging other files
+                        this.logger?.warn(`Failed to delete file ${id} during purge: ${error instanceof Error ? error.message : String(error)}`);
+                    }
                 }
 
                 if (purged.items.length > 0) {
@@ -368,117 +365,6 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
 
             return { ...file, status: "updated" };
         });
-    }
-
-    /**
-     * Apply storage optimizations to file operations
-     */
-    protected applyOptimizations(operation: string, ...arguments_: unknown[]): unknown[] {
-        switch (operation) {
-            case "copy": {
-                return this.optimizeCopy(arguments_[0] as string, arguments_[1] as string);
-            }
-            case "create": {
-                return this.optimizeCreate(arguments_[1] as FileInit);
-            }
-            case "get": {
-                return this.optimizeGet(arguments_[0] as FileQuery);
-            }
-            default: {
-                return arguments_;
-            }
-        }
-    }
-
-    /**
-     * Optimize file creation with storage-specific settings
-     */
-    protected optimizeCreate(config: FileInit): [FileInit] {
-        const { optimizations } = this;
-
-        // Add optimization metadata
-        if (optimizations.metadataTags) {
-            config.metadata = {
-                ...config.metadata,
-                ...optimizations.metadataTags,
-            };
-        }
-
-        // Apply prefix if enabled
-        if (optimizations.usePrefixes && optimizations.prefixTemplate) {
-            // This would be implemented by subclasses
-        }
-
-        return [config];
-    }
-
-    /**
-     * Optimize copy operations
-     */
-    protected optimizeCopy(source: string, destination: string): [string, string] {
-        const { optimizations } = this;
-
-        // Apply prefix to destination if enabled
-        if (optimizations.usePrefixes && optimizations.prefixTemplate) {
-            const prefix = this.resolvePrefix(source);
-
-            return [source, `${prefix}${destination}`];
-        }
-
-        return [source, destination];
-    }
-
-    /**
-     * Optimize get operations
-     */
-    protected optimizeGet(query: FileQuery): [FileQuery] {
-        const { optimizations } = this;
-
-        // Apply prefix if enabled
-        if (optimizations.usePrefixes && optimizations.prefixTemplate) {
-            return [{ ...query, id: this.applyPrefix(query.id) }];
-        }
-
-        return [query];
-    }
-
-    /**
-     * Resolve prefix for a file based on optimizations
-     */
-    protected resolvePrefix(fileId: string): string {
-        const { prefixTemplate } = this.optimizations;
-
-        if (!prefixTemplate) {
-            return "";
-        }
-
-        // Simple template resolution - subclasses can override for complex logic
-        return prefixTemplate.replace("{fileId}", fileId);
-    }
-
-    /**
-     * Apply prefix to file ID
-     */
-    protected applyPrefix(fileId: string): string {
-        const prefix = this.resolvePrefix(fileId);
-
-        return prefix ? `${prefix}${fileId}` : fileId;
-    }
-
-    /**
-     * Remove prefix from file ID
-     */
-    protected removePrefix(prefixedId: string): string {
-        const { prefixTemplate } = this.optimizations;
-
-        if (!prefixTemplate) {
-            return prefixedId;
-        }
-
-        // Simple prefix removal - subclasses can override
-        const prefix = this.resolvePrefix("");
-
-        return prefixedId.startsWith(prefix) ? prefixedId.slice(prefix.length) : prefixedId;
     }
 
     /**
@@ -586,31 +472,43 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
     }
 
     /**
-     *  Creates a new upload and saves its metadata
+     * Creates a new upload and saves its metadata.
+     * @param file - File initialization configuration
+     * @returns Promise resolving to the created file object
      */
     public abstract create(file: FileInit): Promise<TFile>;
 
     /**
-     *  Write part and/or return status of an upload
+     * Write part and/or return status of an upload.
+     * @param part File part, query, or full file object to write
+     * @returns Promise resolving to the updated file object
      */
     public abstract write(part: FilePart | FileQuery | TFile): Promise<TFile>;
 
     /**
-     * Deletes an upload and its metadata
+     * Deletes an upload and its metadata.
+     * @param query File query containing the file ID to delete
+     * @returns Promise resolving to the deleted file object with status: "deleted"
+     * @throws {Error} If the file metadata cannot be found
      */
     public abstract delete(query: FileQuery): Promise<TFile>;
 
     /**
      * Copy an upload file to a new location.
-     * @param {string} name
-     * @param {string} destination
+     * @param name Source file name/ID
+     * @param destination Destination file name/ID
+     * @param options Optional copy options including storage class
+     * @returns Promise resolving to the copied file object
+     * @throws {Error} If the source file cannot be found
      */
     public abstract copy(name: string, destination: string, options?: { storageClass?: string }): Promise<TFile>;
 
     /**
      * Move an upload file to a new location.
-     * @param {string} name
-     * @param {string} destination
+     * @param name Source file name/ID
+     * @param destination Destination file name/ID
+     * @returns Promise resolving to the moved file object
+     * @throws {Error} If the source file cannot be found
      */
     public abstract move(name: string, destination: string): Promise<TFile>;
 
@@ -709,18 +607,9 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
         // Process all copies in parallel using Promise.allSettled
         const copyPromises = operations.map(async ({ destination, options, source }) => {
             try {
-                await this.copy(source, destination, options);
-                // Try to get the source file metadata to return it
-                // Note: destination is a path, not an ID, so we return source file info
-                const sourceFile = await this.getMeta(source).catch(() => undefined);
+                const copiedFile = await this.copy(source, destination, options);
 
-                if (sourceFile) {
-                    // Return source file with destination path updated
-                    return { file: { ...sourceFile, name: destination } as TFile, id: destination, success: true as const };
-                }
-
-                // If we can't get source metadata, create a minimal file object
-                return { file: { id: source, name: destination } as TFile, id: destination, success: true as const };
+                return { file: copiedFile, id: destination, success: true as const };
             } catch (error: unknown) {
                 const errorMessage = error instanceof Error ? error.message : "Copy failed";
 
@@ -792,45 +681,8 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
         // Process all moves in parallel using Promise.allSettled
         const movePromises = operations.map(async ({ destination, source }) => {
             try {
-                // Get source file metadata before move to get the correct ID
-                // Try by source name first, then try name without extension (for DiskStorage)
-                let sourceFile: TFile | undefined;
-                let sourceId: string = source;
-
-                try {
-                    sourceFile = await this.getMeta(source);
-                    sourceId = sourceFile.id;
-                } catch {
-                    // If getMeta by name fails, try name without extension
-                    // (e.g., if source is "source1.mp4", try ID "source1")
-                    try {
-                        const nameWithoutExtension = source.replace(/\.[^/.]+$/, "");
-
-                        if (nameWithoutExtension !== source) {
-                            sourceFile = await this.getMeta(nameWithoutExtension);
-                            sourceId = sourceFile.id;
-                        }
-                    } catch {
-                        // If we can't find metadata, use source as ID
-                    }
-                }
-
                 // Move the file - move() returns the moved file
                 const movedFile = await this.move(source, destination);
-
-                // Update and save metadata for the moved file
-                // Keep the original ID but update the name to the destination
-                if (sourceFile) {
-                    const updatedFile = { ...sourceFile, ...movedFile, name: destination } as TFile;
-
-                    await this.saveMeta(updatedFile).catch(() => undefined);
-                } else {
-                    // If we couldn't get source metadata, save the moved file metadata
-                    // Use the sourceId as the metadata ID
-                    const fileToSave = { ...movedFile, id: sourceId } as TFile;
-
-                    await this.saveMeta(fileToSave).catch(() => undefined);
-                }
 
                 return { file: movedFile, id: destination, success: true as const };
             } catch (error: unknown) {

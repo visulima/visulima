@@ -1,4 +1,5 @@
 import {
+    AbortMultipartUploadCommand,
     CompleteMultipartUploadCommand,
     CopyObjectCommand,
     CreateMultipartUploadCommand,
@@ -194,62 +195,80 @@ describe(S3Storage, () => {
             expect(deleted.status).toBe("deleted");
         });
 
-        it("should ignore if not exist", async () => {
-            expect.assertions(1);
+        it("should return full file object when file exists", async () => {
+            expect.assertions(2);
 
             s3Mock.on(HeadObjectCommand).resolves(metafileResponse);
+            s3Mock.on(DeleteObjectCommand).resolves({});
+            s3Mock.on(AbortMultipartUploadCommand).resolves({});
 
             const deleted = await storage.delete(metafile);
 
             expect(deleted.id).toBe(metafile.id);
+            expect(deleted.status).toBe("deleted");
+        });
+
+        it("should throw error when file does not exist", async () => {
+            expect.assertions(1);
+
+            // Mock getMeta to throw error (file not found)
+            s3Mock.on(HeadObjectCommand).rejects(new Error("File not found"));
+
+            await expect(storage.delete(metafile)).rejects.toThrow();
         });
     });
 
     describe("copy()", () => {
         it("relative", async () => {
-            expect.assertions(1);
+            expect.assertions(2);
 
             s3Mock.resetHistory();
+            s3Mock.on(HeadObjectCommand).resolves(metafileResponse);
             s3Mock.on(CopyObjectCommand).resolves({});
 
-            await storage.copy("name", "new name");
+            const result = await storage.copy("name", "new name");
 
-            expect(s3Mock.call(0).args[0].input).toStrictEqual({
+            expect(s3Mock.call(1).args[0].input).toStrictEqual({
                 Bucket: "bucket",
                 CopySource: "bucket/name",
                 Key: "new name",
             });
+            expect(result.name).toBe("new name");
         });
 
         it("absolute", async () => {
-            expect.assertions(1);
+            expect.assertions(2);
 
             s3Mock.resetHistory();
+            s3Mock.on(HeadObjectCommand).resolves(metafileResponse);
             s3Mock.on(CopyObjectCommand).resolves({});
 
-            await storage.copy("name", "/otherBucket/new name");
+            const result = await storage.copy("name", "/otherBucket/new name");
 
-            expect(s3Mock.call(0).args[0].input).toStrictEqual({
+            expect(s3Mock.call(1).args[0].input).toStrictEqual({
                 Bucket: "otherBucket",
                 CopySource: "bucket/name",
                 Key: "new name",
             });
+            expect(result.name).toBe("new name");
         });
 
         it("with storage class", async () => {
-            expect.assertions(1);
+            expect.assertions(2);
 
             s3Mock.resetHistory();
+            s3Mock.on(HeadObjectCommand).resolves(metafileResponse);
             s3Mock.on(CopyObjectCommand).resolves({});
 
-            await storage.copy("name", "new name", { storageClass: "GLACIER" });
+            const result = await storage.copy("name", "new name", { storageClass: "GLACIER" });
 
-            expect(s3Mock.call(0).args[0].input).toStrictEqual({
+            expect(s3Mock.call(1).args[0].input).toStrictEqual({
                 Bucket: "bucket",
                 CopySource: "bucket/name",
                 Key: "new name",
                 StorageClass: "GLACIER",
             });
+            expect(result.name).toBe("new name");
         });
     });
 
