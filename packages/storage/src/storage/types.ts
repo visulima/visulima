@@ -127,30 +127,6 @@ export type DiskStorageWithChecksumOptions<T extends File> = DiskStorageOptions<
 };
 
 /**
- * Storage optimization configuration
- */
-export interface StorageOptimizations {
-    /** Bulk operation batch size */
-    bulkBatchSize?: number;
-    /** Storage class for cached/transformed files */
-    cacheStorageClass?: string;
-    /** TTL for cached/transformed files */
-    cacheTTL?: number;
-    /** CDN-friendly headers for cached files */
-    enableCDNHeaders?: boolean;
-    /** Enable compression for cached files */
-    enableCompression?: boolean;
-    /** Custom metadata for optimized operations */
-    metadataTags?: Record<string, string>;
-    /** Custom prefix template (e.g., "transforms/{fileId}/") */
-    prefixTemplate?: string;
-    /** Enable prefix-based file organization */
-    usePrefixes?: boolean;
-    /** Enable server-side copy when available */
-    useServerSideCopy?: boolean;
-}
-
-/**
  * Unified storage configuration
  */
 export interface GenericStorageConfig {
@@ -168,8 +144,6 @@ export interface GenericStorageConfig {
     maxFileSize?: number | string;
     /** Metrics instance for observability */
     metrics?: Metrics;
-    /** Storage-specific optimizations */
-    optimizations?: StorageOptimizations;
     /** Retry configuration for transient failures */
     retryConfig?: RetryConfig;
 }
@@ -189,7 +163,7 @@ export interface BatchOperationResult<T extends File = File> {
 }
 
 /**
- * Batch operation response
+ * Response from batch operations (deleteBatch, copyBatch, moveBatch)
  */
 export interface BatchOperationResponse<T extends File = File> {
     /** Failed operations with error details */

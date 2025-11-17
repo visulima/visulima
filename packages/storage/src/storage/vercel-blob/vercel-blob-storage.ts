@@ -181,25 +181,31 @@ class VercelBlobStorage extends BaseStorage<VercelBlobFile, FileReturn> {
         });
     }
 
+    /**
+     * Deletes an upload and its metadata
+     * @param query - File query containing the file ID to delete
+     * @returns Promise resolving to the deleted file object with status: "deleted"
+     * @throws {Error} If the file metadata cannot be found
+     */
     public async delete({ id }: FileQuery): Promise<VercelBlobFile> {
         return this.instrumentOperation("delete", async () => {
-            const file = await this.getMeta(id).catch(() => undefined);
+            const file = await this.getMeta(id);
 
-            if (file?.url) {
-                file.status = "deleted";
-
-                try {
-                    await del(file.url, { token: this.token });
-                } catch (error) {
-                    this.logger?.error("Failed to delete blob from Vercel Blob:", error);
-                }
-
-                await this.deleteMeta(file.id);
-
-                return { ...file };
+            if (!file.url) {
+                throw new Error(`File ${id} does not have a valid URL`);
             }
 
-            return { id } as VercelBlobFile;
+            file.status = "deleted";
+
+            try {
+                await del(file.url, { token: this.token });
+            } catch (error) {
+                this.logger?.error("Failed to delete blob from Vercel Blob:", error);
+            }
+
+            await this.deleteMeta(file.id);
+
+            return { ...file };
         });
     }
 
@@ -233,6 +239,13 @@ class VercelBlobStorage extends BaseStorage<VercelBlobFile, FileReturn> {
         });
     }
 
+    /**
+     * Copy an upload file to a new location
+     * @param name - Source file name/ID
+     * @param destination - Destination file name/ID
+     * @returns Promise resolving to the copied file object
+     * @throws {Error} If the source file cannot be found
+     */
     public async copy(name: string, destination: string): Promise<VercelBlobFile> {
         return this.instrumentOperation("copy", async () => {
             const sourceFile = await this.getMeta(name);
@@ -250,13 +263,20 @@ class VercelBlobStorage extends BaseStorage<VercelBlobFile, FileReturn> {
         });
     }
 
-    public async move(name: string, destination: string): Promise<unknown> {
+    /**
+     * Move an upload file to a new location
+     * @param name - Source file name/ID
+     * @param destination - Destination file name/ID
+     * @returns Promise resolving to the moved file object
+     * @throws {Error} If the source file cannot be found
+     */
+    public async move(name: string, destination: string): Promise<VercelBlobFile> {
         return this.instrumentOperation("move", async () => {
-            const result = await this.copy(name, destination);
+            const copiedFile = await this.copy(name, destination);
 
             await this.delete({ id: name });
 
-            return result;
+            return copiedFile;
         });
     }
 

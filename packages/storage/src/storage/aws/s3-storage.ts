@@ -369,19 +369,21 @@ class S3Storage extends BaseStorage<S3File, FileReturn> {
         });
     }
 
+    /**
+     * Deletes an upload and its metadata
+     * @param query - File query containing the file ID to delete
+     * @returns Promise resolving to the deleted file object with status: "deleted"
+     * @throws {Error} If the file metadata cannot be found
+     */
     public async delete({ id }: FileQuery): Promise<S3File> {
         return this.instrumentOperation("delete", async () => {
-            const file = await this.getMeta(id).catch(() => undefined);
+            const file = await this.getMeta(id);
 
-            if (file) {
-                file.status = "deleted";
+            file.status = "deleted";
 
-                await Promise.all([this.deleteMeta(file.id), this.retry(() => this.abortMultipartUpload(file))]);
+            await Promise.all([this.deleteMeta(file.id), this.retry(() => this.abortMultipartUpload(file))]);
 
-                return { ...file };
-            }
-
-            return { id } as S3File;
+            return { ...file };
         });
     }
 
@@ -395,8 +397,17 @@ class S3Storage extends BaseStorage<S3File, FileReturn> {
         return super.update({ id }, metadata);
     }
 
-    public async copy(name: string, destination: string, options?: { storageClass?: string }): Promise<CopyObjectCommandOutput> {
+    /**
+     * Copy an upload file to a new location
+     * @param name - Source file name/ID
+     * @param destination - Destination file name/ID
+     * @param options - Optional copy options including storage class
+     * @returns Promise resolving to the copied file object
+     * @throws {Error} If the source file cannot be found
+     */
+    public async copy(name: string, destination: string, options?: { storageClass?: string }): Promise<S3File> {
         return this.instrumentOperation("copy", async () => {
+            const sourceFile = await this.getMeta(name);
             const CopySource = `${this.bucket}/${name}`;
 
             // Handle absolute vs relative destination paths
@@ -418,10 +429,20 @@ class S3Storage extends BaseStorage<S3File, FileReturn> {
                 ...options?.storageClass && { StorageClass: options.storageClass as StorageClass },
             };
 
-            return this.retry(() => this.client.send(new CopyObjectCommand(parameters)));
+            await this.retry(() => this.client.send(new CopyObjectCommand(parameters)));
+
+            // Return copied file with destination name (use Key for the actual destination name)
+            return { ...sourceFile, name: Key, id: Key } as S3File;
         });
     }
 
+    /**
+     * Move an upload file to a new location
+     * @param name - Source file name/ID
+     * @param destination - Destination file name/ID
+     * @returns Promise resolving to the moved file object
+     * @throws {Error} If the source file cannot be found
+     */
     public async move(name: string, destination: string): Promise<S3File> {
         return this.instrumentOperation("move", async () => {
             await this.copy(name, destination);
