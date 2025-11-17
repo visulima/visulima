@@ -299,67 +299,54 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
         });
     }
 
+    /**
+     * Deletes an upload and its metadata
+     * @param query - File query containing the file ID to delete
+     * @returns Promise resolving to the deleted file object with status: "deleted"
+     * @throws {Error} If the file metadata cannot be found
+     */
     public async delete({ id }: FileQuery): Promise<TFile> {
         return this.instrumentOperation("delete", async () => {
-            try {
-                const file = await this.getMeta(id);
+            const file = await this.getMeta(id);
 
-                await remove(this.getFilePath(file.name));
-                await this.deleteMeta(id);
+            await remove(this.getFilePath(file.name));
+            await this.deleteMeta(id);
 
-                return { ...file, status: "deleted" };
-            } catch (error: unknown) {
-                this.logger?.error("[error]: Could not delete file: %O", error);
-            }
-
-            return { id } as TFile;
+            return { ...file, status: "deleted" };
         });
     }
 
+    /**
+     * Copy an upload file to a new location
+     * @param name - Source file name/ID
+     * @param destination - Destination file name/ID
+     * @returns Promise resolving to the copied file object
+     * @throws {Error} If the source file cannot be found
+     */
     public async copy(name: string, destination: string): Promise<TFile> {
         return this.instrumentOperation("copy", async () => {
-            await copyFile(this.getFilePath(name), this.getFilePath(destination));
+            const sourceFile = await this.getMeta(name);
 
-            // Try to get source metadata and return with destination name
-            try {
-                const sourceFile = await this.getMeta(name);
+            await copyFile(this.getFilePath(sourceFile.name), this.getFilePath(destination));
 
-                return { ...sourceFile, name: destination } as TFile;
-            } catch {
-                // If no metadata, return minimal file object
-                return { id: name, name: destination } as TFile;
-            }
+            // Return source file metadata with destination name
+            return { ...sourceFile, name: destination } as TFile;
         });
     }
 
+    /**
+     * Move an upload file to a new location
+     * @param name - Source file name/ID
+     * @param destination - Destination file name/ID
+     * @returns Promise resolving to the moved file object
+     * @throws {Error} If the source file cannot be found
+     */
     public async move(name: string, destination: string): Promise<TFile> {
         return this.instrumentOperation("move", async () => {
-            const source = this.getFilePath(name);
+            // Get source metadata first to get the actual file name
+            const sourceFile = await this.getMeta(name);
+            const source = this.getFilePath(sourceFile.name);
             const destinationPath = this.getFilePath(destination);
-
-            // Try to get source metadata before move
-            // Try by name first (in case name == id), then try name without extension
-            let sourceFile: TFile | undefined;
-            let sourceId: string = name;
-
-            try {
-                sourceFile = await this.getMeta(name);
-                sourceId = sourceFile.id;
-            } catch {
-                // If getMeta by name fails, try name without extension
-                // (e.g., if name is "source1.mp4", try ID "source1")
-                try {
-                    const nameWithoutExtension = name.replace(/\.[^/.]+$/, "");
-
-                    if (nameWithoutExtension !== name) {
-                        sourceFile = await this.getMeta(nameWithoutExtension);
-                        sourceId = sourceFile.id;
-                    }
-                } catch {
-                    // If we can't find metadata, continue without it
-                    // sourceId remains as name
-                }
-            }
 
             try {
                 await move(source, destinationPath);
@@ -375,12 +362,7 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
             }
 
             // Return moved file with destination name and correct ID
-            if (sourceFile) {
-                return { ...sourceFile, id: sourceId, name: destination } as TFile;
-            }
-
-            // If no metadata, return minimal file object
-            return { id: sourceId, name: destination } as TFile;
+            return { ...sourceFile, id: sourceFile.id, name: destination } as TFile;
         });
     }
 

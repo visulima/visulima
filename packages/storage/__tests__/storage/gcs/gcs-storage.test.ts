@@ -297,14 +297,13 @@ describe(GCStorage, async () => {
             expect(deleted.status).toBe("deleted");
         });
 
-        it("should handle deletion of non-existent files gracefully", async () => {
+        it("should throw error when deleting non-existent files", async () => {
             expect.assertions(1);
 
-            mockAuthRequest.mockResolvedValue({});
+            // Mock getMeta to throw error (file not found)
+            vi.spyOn(storage, "getMeta").mockRejectedValue(new Error("File not found"));
 
-            const deleted = await storage.delete(metafile);
-
-            expect(deleted.id).toBe(metafile.id);
+            await expect(storage.delete(metafile)).rejects.toThrow();
         });
     });
 

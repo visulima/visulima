@@ -76,8 +76,8 @@ describe("batch Operations", () => {
             await storage.write({ ...file2, body: stream2, start: 0 });
             await storage.write({ ...file3, body: stream3, start: 0 });
 
-            // Delete all files in batch
-            const result: BatchOperationResponse = await storage.deleteBatch(["file1", "file2", "file3"]);
+            // Delete all files in batch using the IDs returned from create()
+            const result: BatchOperationResponse = await storage.deleteBatch([file1.id, file2.id, file3.id]);
 
             expect(result.successfulCount).toBe(3);
             expect(result.failedCount).toBe(0);
@@ -96,29 +96,28 @@ describe("batch Operations", () => {
             await storage.write({ ...file1, body: stream1, start: 0 });
 
             // Try to delete existing file and non-existent file
-            // Note: delete() returns { id } even for non-existent files, so they're counted as successful
-            const result: BatchOperationResponse = await storage.deleteBatch(["file1", "nonexistent"]);
+            // Note: delete() now throws errors for non-existent files
+            const result: BatchOperationResponse = await storage.deleteBatch([file1.id, "nonexistent"]);
 
-            // Both are counted as successful because delete() returns { id } for non-existent files
-            expect(result.successfulCount).toBe(2);
-            expect(result.failedCount).toBe(0);
-            expect(result.successful).toHaveLength(2);
-            expect(result.failed).toHaveLength(0);
+            // One should succeed, one should fail
+            expect(result.successfulCount).toBe(1);
+            expect(result.failedCount).toBe(1);
+            expect(result.successful).toHaveLength(1);
+            expect(result.failed).toHaveLength(1);
         });
 
         it("should handle all failures in batch delete", async () => {
             expect.assertions(4);
 
             // Try to delete non-existent files
-            // Note: delete() returns { id } for non-existent files, so they're considered successful
-            // This matches the behavior of the delete method
+            // Note: delete() now throws errors for non-existent files
             const result: BatchOperationResponse = await storage.deleteBatch(["nonexistent1", "nonexistent2"]);
 
-            // The delete method returns { id } even for non-existent files, so they're counted as successful
-            expect(result.successfulCount).toBe(2);
-            expect(result.failedCount).toBe(0);
-            expect(result.successful).toHaveLength(2);
-            expect(result.failed).toHaveLength(0);
+            // Both should fail
+            expect(result.successfulCount).toBe(0);
+            expect(result.failedCount).toBe(2);
+            expect(result.successful).toHaveLength(0);
+            expect(result.failed).toHaveLength(2);
         });
 
         it("should handle empty array", async () => {
@@ -172,10 +171,10 @@ describe("batch Operations", () => {
             await storage.write({ ...file1, body: stream1, start: 0 });
             await storage.write({ ...file2, body: stream2, start: 0 });
 
-            // Copy files in batch (using file names, which are the paths relative to storage directory)
+            // Copy files in batch (using file IDs)
             const result: BatchOperationResponse = await storage.copyBatch([
-                { destination: join(storage.directory, "dest1.mp4"), source: file1.name },
-                { destination: join(storage.directory, "dest2.mp4"), source: file2.name },
+                { destination: "dest1.mp4", source: file1.id },
+                { destination: "dest2.mp4", source: file2.id },
             ]);
 
             expect(result.successfulCount).toBe(2);
@@ -196,15 +195,15 @@ describe("batch Operations", () => {
 
             // Try to copy existing file and non-existent file
             const result: BatchOperationResponse = await storage.copyBatch([
-                { destination: join(storage.directory, "dest1.mp4"), source: file1.name },
-                { destination: join(storage.directory, "dest2.mp4"), source: "nonexistent.mp4" },
+                { destination: "dest1.mp4", source: file1.id },
+                { destination: "dest2.mp4", source: "nonexistent" },
             ]);
 
             expect(result.successfulCount).toBe(1);
             expect(result.failedCount).toBe(1);
             expect(result.successful).toHaveLength(1);
             expect(result.failed).toHaveLength(1);
-            expect(result.failed[0]?.id).toBe(join(storage.directory, "dest2.mp4"));
+            expect(result.failed[0]?.id).toBe("dest2.mp4");
         });
 
         it("should handle all failures in batch copy", async () => {
@@ -249,10 +248,10 @@ describe("batch Operations", () => {
             await storage.write({ ...file1, body: stream1, start: 0 });
             await storage.write({ ...file2, body: stream2, start: 0 });
 
-            // Move files in batch (using file names, which are the paths relative to storage directory)
+            // Move files in batch (using file IDs)
             const result: BatchOperationResponse = await storage.moveBatch([
-                { destination: join(storage.directory, "dest1.mp4"), source: file1.name },
-                { destination: join(storage.directory, "dest2.mp4"), source: file2.name },
+                { destination: "dest1.mp4", source: file1.id },
+                { destination: "dest2.mp4", source: file2.id },
             ]);
 
             expect(result.successfulCount).toBe(2);
@@ -272,18 +271,17 @@ describe("batch Operations", () => {
             await storage.write({ ...file1, body: stream1, start: 0 });
 
             // Try to move existing file and non-existent file
-            // Note: move() may not throw for non-existent files in some implementations
+            // Note: move() now throws errors for non-existent files
             const result: BatchOperationResponse = await storage.moveBatch([
-                { destination: join(storage.directory, "dest1.mp4"), source: file1.name },
-                { destination: join(storage.directory, "dest2.mp4"), source: join(storage.directory, "nonexistent.mp4") },
+                { destination: "dest1.mp4", source: file1.id },
+                { destination: "dest2.mp4", source: "nonexistent" },
             ]);
 
-            // At least one should succeed (the existing file)
-            expect(result.successfulCount).toBeGreaterThanOrEqual(1);
-            // The non-existent file may or may not fail depending on implementation
-            expect(result.successfulCount + result.failedCount).toBe(2);
-            expect(result.successful).toHaveLength(result.successfulCount);
-            expect(result.failed).toHaveLength(result.failedCount);
+            // One should succeed, one should fail
+            expect(result.successfulCount).toBe(1);
+            expect(result.failedCount).toBe(1);
+            expect(result.successful).toHaveLength(1);
+            expect(result.failed).toHaveLength(1);
         });
 
         it("should handle all failures in batch move", async () => {

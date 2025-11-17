@@ -254,7 +254,7 @@ describe("metrics Instrumentation", () => {
 
                 mockMetrics.reset();
 
-                await storage.copy("testfile.mp4", "copied-file");
+                await storage.copy(metafile.id, "copied-file");
 
                 // Check increment was called
                 const copyIncrement = mockMetrics.incrementCalls.find((call) => call.name === "storage.operations.copy.count");
@@ -285,7 +285,7 @@ describe("metrics Instrumentation", () => {
 
                 mockMetrics.reset();
 
-                await storage.move("testfile.mp4", "moved-file");
+                await storage.move(metafile.id, "moved-file");
 
                 // Check increment was called
                 const moveIncrement = mockMetrics.incrementCalls.find((call) => call.name === "storage.operations.move.count");
