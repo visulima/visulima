@@ -142,7 +142,7 @@
         "vitest": "^4.0.9"
     },
     "peerDependencies": {
-        "ai": "^5.0.68"
+        "ai": "^5.0.93"
     },
     "peerDependenciesMeta": {
         "ai": {
