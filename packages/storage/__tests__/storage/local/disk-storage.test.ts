@@ -45,7 +45,7 @@ const createTestFile = async (storage: DiskStorage, createDummyFile = true): Pro
         }
     }
 
-    await storage.create(createRequest(), structuredClone(metafile));
+    await storage.create(structuredClone(metafile));
 };
 
 const createReadonlyStorage = async (): Promise<{ cleanup: () => Promise<void>; storage: DiskStorage }> => {
@@ -125,7 +125,7 @@ describe(DiskStorage, () => {
         it("should create disk file with correct status and bytesWritten", async () => {
             expect.assertions(4);
 
-            const diskFile = await storage.create(request, metafile);
+            const diskFile = await storage.create(metafile);
 
             expect(diskFile.id).toBeDefined();
             expect(diskFile.bytesWritten).toBe(0);
@@ -138,7 +138,7 @@ describe(DiskStorage, () => {
         it("should reject creation when file size exceeds limits", async () => {
             expect.assertions(1);
 
-            await expect(storage.create(request, { ...metafile, size: 6e10 })).rejects.toThrow(/Request entity too large|ValidationError/);
+            await expect(storage.create({ ...metafile, size: 6e10 })).rejects.toThrow(/Request entity too large|ValidationError/);
         });
     });
 
@@ -342,7 +342,7 @@ describe(DiskStorage, () => {
         it("should delete file and metadata successfully", async () => {
             expect.assertions(2);
 
-            const diskFile = await storage.create(request, { ...metafile });
+            const diskFile = await storage.create({ ...metafile });
 
             await storage.write({ ...diskFile, body: Readable.from("01234"), start: 0 });
 
@@ -376,7 +376,7 @@ describe(DiskStorage, () => {
             vi.useRealTimers();
 
             // Create a file that will be old enough to purge
-            const file = await storage.create(request, metafile);
+            const file = await storage.create(metafile);
 
             await storage.write({ ...file, body: Readable.from("test"), start: 0 });
 
@@ -400,14 +400,14 @@ describe(DiskStorage, () => {
     describe(".copy()", () => {
         beforeEach(async () => {
             storage = new DiskStorage(options);
-            await storage.create(request, structuredClone(metafile));
+            await storage.create(structuredClone(metafile));
         });
 
         it("should copy file to new location", async () => {
             expect.assertions(1);
 
-            // Copy the metadata file to a new location
-            await storage.copy(`${metafile.id}.META`, `${directory}/newname1.META`);
+            // Copy the metadata file to a new location (destination is a filename within storage directory)
+            await storage.copy(`${metafile.id}.META`, "newname1.META");
 
             // List should still show only 1 item since it only shows data files, not metadata
             const list = await storage.list();
@@ -419,13 +419,14 @@ describe(DiskStorage, () => {
     describe(".move()", () => {
         beforeEach(async () => {
             storage = new DiskStorage(options);
-            await storage.create(request, structuredClone(metafile));
+            await storage.create(structuredClone(metafile));
         });
 
         it("should move file to new location", async () => {
             expect.assertions(1);
 
-            await storage.move(`${metafile.id}.META`, `${directory}/newname2.META`);
+            // Move the metadata file to a new location (destination is a filename within storage directory)
+            await storage.move(`${metafile.id}.META`, "newname2.META");
 
             const list = await storage.list();
 
@@ -542,7 +543,7 @@ describe(DiskStorage, () => {
                 const { cleanup, storage: readonlyStorage } = await createReadonlyStorage();
 
                 try {
-                    await expect(readonlyStorage.create(request, metafile)).rejects.toThrow("permission denied");
+                    await expect(readonlyStorage.create(metafile)).rejects.toThrow("permission denied");
                 } finally {
                     await cleanup();
                 }
@@ -638,7 +639,7 @@ describe(DiskStorage, () => {
                 };
 
                 // The storage may allow creation but should generate safe internal IDs
-                const diskFile = await storage.create(request, maliciousFile);
+                const diskFile = await storage.create(maliciousFile);
 
                 expect(diskFile).toBeDefined();
                 expect(diskFile.id).not.toBe("../../../etc/passwd"); // Should generate safe ID
@@ -654,7 +655,7 @@ describe(DiskStorage, () => {
                 };
 
                 // The storage may allow creation but should generate safe internal IDs
-                const diskFile = await storage.create(request, maliciousFile);
+                const diskFile = await storage.create(maliciousFile);
 
                 expect(diskFile).toBeDefined();
                 expect(diskFile.id).not.toBe("/etc/passwd"); // Should generate safe ID
@@ -675,7 +676,7 @@ describe(DiskStorage, () => {
                     };
 
                     // Should create file with safe generated ID
-                    const diskFile = await storage.create(request, reservedFile);
+                    const diskFile = await storage.create(reservedFile);
 
                     expect(diskFile).toBeDefined();
                     expect(diskFile.id).not.toBe(name); // Should generate different ID
@@ -699,7 +700,7 @@ describe(DiskStorage, () => {
                     originalName: unicodeName,
                 };
 
-                const diskFile = await storage.create(request, unicodeFile);
+                const diskFile = await storage.create(unicodeFile);
 
                 expect(diskFile).toBeDefined();
                 expect(diskFile.originalName).toBe(unicodeName); // Original name should be preserved
@@ -717,7 +718,7 @@ describe(DiskStorage, () => {
                     originalName: emojiName,
                 };
 
-                const diskFile = await storage.create(request, emojiFile);
+                const diskFile = await storage.create(emojiFile);
 
                 expect(diskFile).toBeDefined();
                 expect(diskFile.originalName).toBe(emojiName); // Original name should be preserved
@@ -737,7 +738,7 @@ describe(DiskStorage, () => {
                         originalName: filename,
                     };
 
-                    const diskFile = await storage.create(request, specialFile);
+                    const diskFile = await storage.create(specialFile);
 
                     expect(diskFile).toBeDefined();
                     expect(diskFile.originalName).toBe(filename); // Original name should be preserved
@@ -759,7 +760,7 @@ describe(DiskStorage, () => {
                 };
 
                 // Should succeed and generate safe internal ID while preserving original name
-                const diskFile = await storage.create(request, longFile);
+                const diskFile = await storage.create(longFile);
 
                 expect(diskFile).toBeDefined();
                 expect(diskFile.originalName).toBe(longName); // Original name should be preserved
@@ -881,7 +882,7 @@ describe(DiskStorage, () => {
             vi.useRealTimers();
 
             // Create a single test file
-            const testFile = await storage.create(request, { ...metafile, originalName: "test.txt" });
+            const testFile = await storage.create({ ...metafile, originalName: "test.txt" });
 
             await storage.write({ ...testFile, body: Readable.from("test"), start: 0 });
 
@@ -915,7 +916,7 @@ describe(DiskStorage, () => {
             vi.useRealTimers();
 
             // Create a file
-            const testFile = await storage.create(request, metafile);
+            const testFile = await storage.create(metafile);
 
             await storage.write({ ...testFile, body: Readable.from("data"), start: 0 });
 
@@ -957,7 +958,7 @@ describe(DiskStorage, () => {
             expect.assertions(1);
 
             // Create a file
-            const testFile = await storage.create(request, metafile);
+            const testFile = await storage.create(metafile);
 
             await storage.write({ ...testFile, body: Readable.from("test") });
 
@@ -978,7 +979,7 @@ describe(DiskStorage, () => {
             expect.assertions(1);
 
             // Create a file
-            const testFile = await storage.create(request, metafile);
+            const testFile = await storage.create(metafile);
 
             await storage.write({ ...testFile, body: Readable.from("test") });
 
@@ -1028,7 +1029,7 @@ describe(DiskStorage, () => {
                 size: videoContent.length,
             };
 
-            const diskFile = await storage.create(request, mp4File);
+            const diskFile = await storage.create(mp4File);
 
             // Write content and verify the write operation succeeded
             const writeResult = await storage.write({ ...diskFile, body: Readable.from(videoContent), start: 0 });
@@ -1087,7 +1088,7 @@ describe(DiskStorage, () => {
                 };
 
                 try {
-                    const diskFile = await storage.create(request, testFile);
+                    const diskFile = await storage.create(testFile);
 
                     await storage.write({ ...diskFile, body: Readable.from(Buffer.alloc(100)) });
 
@@ -1125,7 +1126,7 @@ describe(DiskStorage, () => {
 
             // Should handle large metadata gracefully or with appropriate limits
             try {
-                const result = await storage.create(request, largeMetadata);
+                const result = await storage.create(largeMetadata);
 
                 expect(result).toBeDefined();
             } catch (error) {
@@ -1148,7 +1149,7 @@ describe(DiskStorage, () => {
                         id: malformedId as string,
                     };
 
-                    return storage.create(request, malformedFile);
+                    return storage.create(malformedFile);
                 }),
             );
 
@@ -1166,7 +1167,7 @@ describe(DiskStorage, () => {
             };
 
             // This should be rejected by the validator
-            await expect(storage.create(request, invalidMimeFile)).rejects.toThrow("Unsupported media type");
+            await expect(storage.create(invalidMimeFile)).rejects.toThrow("Unsupported media type");
 
             // Test with negative file size
             const negativeSizeFile = {
@@ -1174,7 +1175,7 @@ describe(DiskStorage, () => {
                 size: -1,
             };
 
-            await expect(storage.create(request, negativeSizeFile)).rejects.toThrow("Request entity too large");
+            await expect(storage.create(negativeSizeFile)).rejects.toThrow("Request entity too large");
         });
     });
 });

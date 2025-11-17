@@ -168,7 +168,7 @@ class Rest<
         };
 
         // Create file in storage
-        const file = await this.storage.create(request, config);
+        const file = await this.storage.create(config);
 
         // For chunked uploads, don't write data yet - just initialize
         if (isChunkedUpload) {
@@ -318,7 +318,7 @@ class Rest<
                 };
 
                 // Create new file (storage will generate ID)
-                const newFile = await this.storage.create(request, config);
+                const newFile = await this.storage.create(config);
 
                 // Write file data
                 file = await this.storage.write({

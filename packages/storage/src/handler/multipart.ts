@@ -118,7 +118,7 @@ class Multipart<
             config.originalName = filePart.filename;
             config.contentType = filePart.mediaType;
 
-            const file = await this.storage.create(request, config);
+            const file = await this.storage.create(config);
 
             // Create a Readable stream from the bytes data
             let stream: Readable;
@@ -328,14 +328,7 @@ class Multipart<
             config.originalName = filePart.filename;
             config.contentType = filePart.mediaType;
 
-            // Create a minimal IncomingMessage-like object for storage.create
-            // The request is not actually used in this context, but the method signature requires it
-            const mockRequest = {
-                headers: {},
-                method: "POST",
-                url: "/",
-            } as IncomingMessage;
-            const file = await this.storage.create(mockRequest, config);
+            const file = await this.storage.create(config);
 
             // Create a Readable stream from the bytes data
             let stream: Readable;

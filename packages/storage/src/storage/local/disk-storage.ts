@@ -1,13 +1,12 @@
 import { createReadStream, createWriteStream } from "node:fs";
 import { copyFile, stat, truncate } from "node:fs/promises";
-import type { IncomingMessage } from "node:http";
 import type { Readable } from "node:stream";
 import { pipeline } from "node:stream";
 
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { ensureDir, ensureFile, move, readFile, remove, walk } from "@visulima/fs";
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { join } from "@visulima/path";
+import { isAbsolute, join } from "@visulima/path";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import etag from "etag";
 
@@ -64,7 +63,7 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
         return super.normalizeError(error);
     }
 
-    public async create(request: IncomingMessage, fileInit: FileInit): Promise<TFile> {
+    public async create(fileInit: FileInit): Promise<TFile> {
         return this.instrumentOperation("create", async () => {
             // Handle TTL option
             const processedConfig = { ...fileInit };
@@ -89,7 +88,7 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
                 // ignore
             }
 
-            file.name = this.namingFunction(file as TFile, request);
+            file.name = this.namingFunction(file as TFile);
             file.size = Number.isNaN(file.size) ? this.maxUploadSize : file.size;
 
             await this.validate(file as TFile);
@@ -317,26 +316,71 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
         });
     }
 
-    public async copy(name: string, destination: string): Promise<void> {
+    public async copy(name: string, destination: string): Promise<TFile> {
         return this.instrumentOperation("copy", async () => {
-            await copyFile(this.getFilePath(name), destination);
+            await copyFile(this.getFilePath(name), this.getFilePath(destination));
+
+            // Try to get source metadata and return with destination name
+            try {
+                const sourceFile = await this.getMeta(name);
+
+                return { ...sourceFile, name: destination } as TFile;
+            } catch {
+                // If no metadata, return minimal file object
+                return { id: name, name: destination } as TFile;
+            }
         });
     }
 
-    public async move(name: string, destination: string): Promise<void> {
+    public async move(name: string, destination: string): Promise<TFile> {
         return this.instrumentOperation("move", async () => {
             const source = this.getFilePath(name);
+            const destinationPath = this.getFilePath(destination);
+
+            // Try to get source metadata before move
+            // Try by name first (in case name == id), then try name without extension
+            let sourceFile: TFile | undefined;
+            let sourceId: string = name;
 
             try {
-                await move(source, destination);
+                sourceFile = await this.getMeta(name);
+                sourceId = sourceFile.id;
+            } catch {
+                // If getMeta by name fails, try name without extension
+                // (e.g., if name is "source1.mp4", try ID "source1")
+                try {
+                    const nameWithoutExtension = name.replace(/\.[^/.]+$/, "");
+
+                    if (nameWithoutExtension !== name) {
+                        sourceFile = await this.getMeta(nameWithoutExtension);
+                        sourceId = sourceFile.id;
+                    }
+                } catch {
+                    // If we can't find metadata, continue without it
+                    // sourceId remains as name
+                }
+            }
+
+            try {
+                await move(source, destinationPath);
             } catch (error: unknown) {
                 const errorWithCode = error as { code?: string };
 
                 if (errorWithCode?.code === "EXDEV") {
-                    await this.copy(source, destination);
+                    await copyFile(source, destinationPath);
                     await remove(source);
+                } else {
+                    throw error;
                 }
             }
+
+            // Return moved file with destination name and correct ID
+            if (sourceFile) {
+                return { ...sourceFile, id: sourceId, name: destination } as TFile;
+            }
+
+            // If no metadata, return minimal file object
+            return { id: sourceId, name: destination } as TFile;
         });
     }
 
@@ -369,8 +413,14 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
 
     /**
      * Returns path for the uploaded file
+     * If filename is already an absolute path, returns it as-is.
+     * Otherwise, joins it with the storage directory.
      */
     protected getFilePath(filename: string): string {
+        if (isAbsolute(filename)) {
+            return filename;
+        }
+
         return join(this.directory, filename);
     }
 
