@@ -6,6 +6,8 @@ import extractOriginalName from "./extract-original-name";
 import type { Metadata } from "./metadata";
 import type { FileInit, UploadEventType } from "./types";
 
+type DateType = Date | number | string;
+
 const hash = (value: string) => fnv1a(value, { size: 64 }).toString(16);
 
 const generateFileId = (file: File): string => {
@@ -36,11 +38,11 @@ class File implements FileInit {
 
     public status?: UploadEventType;
 
-    public expiredAt?: Date | number | string;
+    public expiredAt?: DateType;
 
-    public createdAt?: Date | number | string;
+    public createdAt?: DateType;
 
-    public modifiedAt?: Date | number | string;
+    public modifiedAt?: DateType;
 
     public hash?: {
         algorithm: string;

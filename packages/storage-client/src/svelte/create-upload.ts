@@ -100,9 +100,7 @@ export const createUpload = (options: CreateUploadOptions): CreateUploadReturn =
     // Auto-detect method based on provided endpoints if method is undefined
     let detectedMethod: UploadMethod;
 
-    if (method !== undefined) {
-        detectedMethod = method;
-    } else {
+    if (method === undefined) {
         const endpoints = [endpointChunkedRest, endpointMultipart, endpointTus].filter(Boolean);
 
         // If only one endpoint is provided, use that method
@@ -121,6 +119,8 @@ export const createUpload = (options: CreateUploadOptions): CreateUploadReturn =
             // If none are provided, throw error
             throw new Error("At least one endpoint must be provided: endpointChunkedRest, endpointMultipart, or endpointTus");
         }
+    } else {
+        detectedMethod = method;
     }
 
     const chunkedRestOptions: CreateChunkedRestUploadOptions | undefined = endpointChunkedRest
@@ -289,15 +289,11 @@ export const createUpload = (options: CreateUploadOptions): CreateUploadReturn =
             multipartUpload?.error ?? { subscribe: () => () => {} },
         ],
         ([current, tusError, chunkedRestError, multipartError]) =>
-            current === "tus"
-                ? tusError
-                : current === "chunked-rest"
-                  ? chunkedRestError
-                  : multipartError ?? null,
+            (current === "tus" ? tusError : current === "chunked-rest" ? chunkedRestError : (multipartError ?? null)),
     );
     const isPaused = derived(
         [currentMethod, tusUpload?.isPaused ?? { subscribe: () => () => {} }, chunkedRestUpload?.isPaused ?? { subscribe: () => () => {} }],
-        ([current, tusPaused, chunkedRestPaused]) => (current === "tus" ? tusPaused : current === "chunked-rest" ? chunkedRestPaused : undefined),
+        ([current, tusPaused, chunkedRestPaused]) => current === "tus" ? tusPaused : current === "chunked-rest" ? chunkedRestPaused : undefined,
     );
     const isUploading = derived(
         [
@@ -307,15 +303,11 @@ export const createUpload = (options: CreateUploadOptions): CreateUploadReturn =
             multipartUpload?.isUploading ?? { subscribe: () => () => {} },
         ],
         ([current, tusIsUploading, chunkedRestIsUploading, multipartIsUploading]) =>
-            current === "tus"
-                ? tusIsUploading ?? false
-                : current === "chunked-rest"
-                  ? chunkedRestIsUploading ?? false
-                  : multipartIsUploading ?? false,
+            (current === "tus" ? (tusIsUploading ?? false) : current === "chunked-rest" ? (chunkedRestIsUploading ?? false) : (multipartIsUploading ?? false)),
     );
     const offset = derived(
         [currentMethod, tusUpload?.offset ?? { subscribe: () => () => {} }, chunkedRestUpload?.offset ?? { subscribe: () => () => {} }],
-        ([current, tusOffset, chunkedRestOffset]) => (current === "tus" ? tusOffset : current === "chunked-rest" ? chunkedRestOffset : undefined),
+        ([current, tusOffset, chunkedRestOffset]) => current === "tus" ? tusOffset : current === "chunked-rest" ? chunkedRestOffset : undefined,
     );
     const progress = derived(
         [
@@ -325,11 +317,7 @@ export const createUpload = (options: CreateUploadOptions): CreateUploadReturn =
             multipartUpload?.progress ?? { subscribe: () => () => {} },
         ],
         ([current, tusProgress, chunkedRestProgress, multipartProgress]) =>
-            current === "tus"
-                ? tusProgress ?? 0
-                : current === "chunked-rest"
-                  ? chunkedRestProgress ?? 0
-                  : multipartProgress ?? 0,
+            (current === "tus" ? (tusProgress ?? 0) : current === "chunked-rest" ? (chunkedRestProgress ?? 0) : (multipartProgress ?? 0)),
     );
     const result = derived(
         [
@@ -339,22 +327,18 @@ export const createUpload = (options: CreateUploadOptions): CreateUploadReturn =
             multipartUpload?.result ?? { subscribe: () => () => {} },
         ],
         ([current, tusRes, chunkedRestRes, multipartRes]) =>
-            current === "tus" ? tusRes ?? null : current === "chunked-rest" ? chunkedRestRes ?? null : multipartRes ?? null,
+            (current === "tus" ? (tusRes ?? null) : current === "chunked-rest" ? (chunkedRestRes ?? null) : (multipartRes ?? null)),
     );
 
     // Create derived stores for functions (they return functions based on current method)
     const pause: Readable<(() => void) | undefined> = derived(
         [currentMethod],
-        ([current]) => (current === "tus" ? tusUpload?.pause : current === "chunked-rest" ? chunkedRestUpload?.pause : undefined) as
-            | (() => void)
-            | undefined,
+        ([current]) => (current === "tus" ? tusUpload?.pause : current === "chunked-rest" ? chunkedRestUpload?.pause : undefined) as (() => void) | undefined,
     );
     const resume: Readable<(() => Promise<void>) | undefined> = derived(
         [currentMethod],
         ([current]) =>
-            (current === "tus" ? tusUpload?.resume : current === "chunked-rest" ? chunkedRestUpload?.resume : undefined) as
-                | (() => Promise<void>)
-                | undefined,
+            (current === "tus" ? tusUpload?.resume : current === "chunked-rest" ? chunkedRestUpload?.resume : undefined) as (() => Promise<void>) | undefined,
     );
 
     return {

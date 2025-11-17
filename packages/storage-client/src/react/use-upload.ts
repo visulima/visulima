@@ -298,30 +298,30 @@ export const useUpload = (options: UseUploadOptions): UseUploadReturn => {
             currentMethod === "tus"
                 ? tusUpload?.error ?? null
                 : currentMethod === "chunked-rest"
-                  ? chunkedRestUpload?.error ?? null
-                  : multipartUpload?.error ?? null,
+                    ? chunkedRestUpload?.error ?? null
+                    : multipartUpload?.error ?? null,
         isPaused: currentMethod === "tus" ? tusUpload?.isPaused : currentMethod === "chunked-rest" ? chunkedRestUpload?.isPaused : undefined,
         isUploading:
             currentMethod === "tus"
                 ? tusUpload?.isUploading ?? false
                 : currentMethod === "chunked-rest"
-                  ? chunkedRestUpload?.isUploading ?? false
-                  : multipartUpload?.isUploading ?? false,
+                    ? chunkedRestUpload?.isUploading ?? false
+                    : multipartUpload?.isUploading ?? false,
         offset: currentMethod === "tus" ? tusUpload?.offset : currentMethod === "chunked-rest" ? chunkedRestUpload?.offset : undefined,
         pause: currentMethod === "tus" ? tusUpload?.pause : currentMethod === "chunked-rest" ? chunkedRestUpload?.pause : undefined,
         progress:
             currentMethod === "tus"
                 ? tusUpload?.progress ?? 0
                 : currentMethod === "chunked-rest"
-                  ? chunkedRestUpload?.progress ?? 0
-                  : multipartUpload?.progress ?? 0,
+                    ? chunkedRestUpload?.progress ?? 0
+                    : multipartUpload?.progress ?? 0,
         reset,
         result:
             currentMethod === "tus"
                 ? tusUpload?.result ?? null
                 : currentMethod === "chunked-rest"
-                  ? chunkedRestUpload?.result ?? null
-                  : multipartUpload?.result ?? null,
+                    ? chunkedRestUpload?.result ?? null
+                    : multipartUpload?.result ?? null,
         resume: currentMethod === "tus" ? tusUpload?.resume : currentMethod === "chunked-rest" ? chunkedRestUpload?.resume : undefined,
         upload,
     };
