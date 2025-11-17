@@ -283,7 +283,8 @@ class Rest<
             });
         } catch (error: unknown) {
             // File doesn't exist, create new one
-            const errorWithCode = error as { UploadErrorCode?: string; code?: string };
+            const errorWithCode = error as { code?: string; UploadErrorCode?: string };
+
             if (errorWithCode.UploadErrorCode === ERRORS.FILE_NOT_FOUND || errorWithCode.code === "ENOENT") {
                 // Extract original filename from Content-Disposition header if present
                 let originalName: string | undefined;
@@ -480,7 +481,8 @@ class Rest<
         try {
             file = await this.storage.getMeta(id);
         } catch (error: unknown) {
-            const errorWithCode = error as { UploadErrorCode?: string; code?: string };
+            const errorWithCode = error as { code?: string; UploadErrorCode?: string };
+
             if (errorWithCode.UploadErrorCode === ERRORS.FILE_NOT_FOUND || errorWithCode.code === "ENOENT") {
                 throw createHttpError(404, "Upload session not found");
             }
@@ -523,8 +525,8 @@ class Rest<
         }
 
         // Track chunks in metadata (for status checking)
-        type ChunkInfo = { length: number; offset: number; checksum?: string };
-        const chunks: ChunkInfo[] = Array.isArray(metadata._chunks) ? [...metadata._chunks] as ChunkInfo[] : [];
+        type ChunkInfo = { checksum?: string; length: number; offset: number };
+        const chunks: ChunkInfo[] = Array.isArray(metadata._chunks) ? ([...metadata._chunks] as ChunkInfo[]) : [];
         const chunkInfo: ChunkInfo = { length: contentLength, offset: chunkOffset };
 
         // Check if this chunk was already uploaded (idempotency)

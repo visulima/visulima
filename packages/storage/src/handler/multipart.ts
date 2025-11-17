@@ -226,10 +226,12 @@ class Multipart<
             }
 
             return { ...file, headers: {}, statusCode: 204 } as ResponseFile<TFile>;
-        } catch (error: any) {
+        } catch (error: unknown) {
             this.checkForUndefinedIdOrPath(error);
 
-            if (error.code === "ENOENT") {
+            const errorWithCode = error as { code?: string };
+
+            if (errorWithCode.code === "ENOENT") {
                 throw createHttpError(404, "File not found");
             }
 
@@ -268,12 +270,13 @@ class Multipart<
             const file = await handler.call(this, nodeRequest as NodeRequest, mockResponse as NodeResponse);
 
             return this.handleFetchResponse(request, file);
-        } catch (error: any) {
-            const uError = pick(error, ["name", ...(Object.getOwnPropertyNames(error) as (keyof Error)[])]) as UploadError;
+        } catch (error: unknown) {
+            const errorObject = error instanceof Error ? error : new Error(String(error));
+            const uError = pick(errorObject, ["name", ...(Object.getOwnPropertyNames(errorObject) as (keyof Error)[])]) as UploadError;
             const errorEvent = {
                 ...uError,
                 request: {
-                    headers: Object.fromEntries((request.headers as any)?.entries?.() || []),
+                    headers: Object.fromEntries((request.headers as globalThis.Headers)?.entries?.() || []),
                     method: request.method,
                     url: request.url,
                 },
@@ -285,7 +288,7 @@ class Multipart<
 
             this.logger?.error("[fetch error]: %O", errorEvent);
 
-            return this.createErrorResponse(error) as any;
+            return this.createErrorResponse(error) as globalThis.Response;
         }
     };
 
@@ -325,7 +328,14 @@ class Multipart<
             config.originalName = filePart.filename;
             config.contentType = filePart.mediaType;
 
-            const file = await this.storage.create({} as any, config);
+            // Create a minimal IncomingMessage-like object for storage.create
+            // The request is not actually used in this context, but the method signature requires it
+            const mockRequest = {
+                headers: {},
+                method: "POST",
+                url: "/",
+            } as IncomingMessage;
+            const file = await this.storage.create(mockRequest, config);
 
             // Create a Readable stream from the bytes data
             let stream: Readable;
@@ -394,7 +404,7 @@ class Multipart<
             return {
                 ...finalFile,
                 headers: {
-                    Location: this.buildFileUrl({} as any, finalFile),
+                    Location: this.buildFileUrl(request as NodeRequest & { originalUrl?: string }, finalFile),
                     ...finalFile.expiredAt === undefined ? {} : { "X-Upload-Expires": finalFile.expiredAt.toString() },
                     ...finalFile.ETag === undefined ? {} : { ETag: finalFile.ETag },
                 },

@@ -123,7 +123,7 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
             ttlAutopurge: true,
         });
 
-        this.cache = options.cache ?? new NoOpCache();
+        this.cache = (options.cache ?? new NoOpCache()) as Cache<string, TFile>;
 
         this.logger = options.logger;
         this.metrics = options.metrics ?? new NoOpMetrics();
@@ -181,13 +181,15 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
      * Check if file exists
      */
     public async exists(query: FileQuery): Promise<boolean> {
-        try {
-            await this.getMeta(query.id);
+        return this.instrumentOperation("exists", async () => {
+            try {
+                await this.getMeta(query.id);
 
-            return true;
-        } catch {
-            return false;
-        }
+                return true;
+            } catch {
+                return false;
+            }
+        });
     }
 
     /**
@@ -269,28 +271,34 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
      * @param maxAge remove upload older than a specified age
      */
     public async purge(maxAge?: number | string): Promise<PurgeList> {
-        const maxAgeMs = toMilliseconds(maxAge || this.expiration?.maxAge);
-        const purged = { items: [], maxAgeMs } as PurgeList;
+        return this.instrumentOperation("purge", async () => {
+            const maxAgeMs = toMilliseconds(maxAge || this.expiration?.maxAge);
+            const purged = { items: [], maxAgeMs } as PurgeList;
 
-        if (maxAgeMs) {
-            const before = Date.now() - maxAgeMs;
-            const list = await this.list();
-            const expired = list.filter(
-                (item) => Number(new Date((this.expiration?.rolling ? item.modifiedAt || item.createdAt : item.createdAt) as number | string)) < before,
-            );
+            if (maxAgeMs) {
+                const before = Date.now() - maxAgeMs;
+                const list = await this.list();
+                const expired = list.filter(
+                    (item) => Number(new Date((this.expiration?.rolling ? item.modifiedAt || item.createdAt : item.createdAt) as number | string)) < before,
+                );
 
-            for await (const { id, ...rest } of expired) {
-                const deleted = await this.delete({ id });
+                for await (const { id, ...rest } of expired) {
+                    const deleted = await this.delete({ id });
 
-                purged.items.push({ ...deleted, ...rest });
+                    purged.items.push({ ...deleted, ...rest });
+                }
+
+                if (purged.items.length > 0) {
+                    this.logger?.info(`Purge: removed ${purged.items.length} uploads`);
+                    // Record purge count as a gauge
+                    this.metrics.gauge("storage.operations.purge.items_count", purged.items.length, {
+                        storage: this.constructor.name.toLowerCase().replace("storage", ""),
+                    });
+                }
             }
 
-            if (purged.items.length > 0) {
-                this.logger?.info(`Purge: removed ${purged.items.length} uploads`);
-            }
-        }
-
-        return purged;
+            return purged;
+        });
     }
 
     /**
@@ -304,29 +312,33 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
      * @param query
      */
     public async getStream({ id }: FileQuery): Promise<{ headers?: Record<string, string>; size?: number; stream: Readable }> {
-        // Default implementation falls back to get() and creates a stream from the buffer
-        // Storage implementations can override this for better streaming performance
-        const file = await this.get({ id });
-        const stream = Readable.from(file.content);
+        return this.instrumentOperation("getStream", async () => {
+            // Default implementation falls back to get() and creates a stream from the buffer
+            // Storage implementations can override this for better streaming performance
+            const file = await this.get({ id });
+            const stream = Readable.from(file.content);
 
-        return {
-            headers: {
-                "Content-Length": String(file.size),
-                "Content-Type": file.contentType,
-                ...file.ETag && { ETag: file.ETag },
-                ...file.modifiedAt && { "Last-Modified": file.modifiedAt.toString() },
-            },
-            size: typeof file.size === "number" ? file.size : undefined,
-            stream,
-        };
+            return {
+                headers: {
+                    "Content-Length": String(file.size),
+                    "Content-Type": file.contentType,
+                    ...file.ETag && { ETag: file.ETag },
+                    ...file.modifiedAt && { "Last-Modified": file.modifiedAt.toString() },
+                },
+                size: typeof file.size === "number" ? file.size : undefined,
+                stream,
+            };
+        });
     }
 
     /**
      * Retrieves a list of upload.
      */
-    // eslint-disable-next-line class-methods-use-this
+
     public async list(_limit = 1000): Promise<TFile[]> {
-        throw new Error("Not implemented");
+        return this.instrumentOperation("list", async () => {
+            throw new Error("Not implemented");
+        });
     }
 
     /**
@@ -334,27 +346,29 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
      * @experimental
      */
     public async update({ id }: FileQuery, metadata: Partial<File>): Promise<TFile> {
-        const file = await this.getMeta(id);
+        return this.instrumentOperation("update", async () => {
+            const file = await this.getMeta(id);
 
-        // Handle TTL option in metadata
-        const processedMetadata = { ...metadata };
+            // Handle TTL option in metadata
+            const processedMetadata = { ...metadata };
 
-        if ("ttl" in processedMetadata && processedMetadata.ttl !== undefined) {
-            const ttlValue = processedMetadata.ttl;
-            const ttlMs = typeof ttlValue === "string" ? toMilliseconds(ttlValue) : ttlValue;
+            if ("ttl" in processedMetadata && processedMetadata.ttl !== undefined) {
+                const ttlValue = processedMetadata.ttl;
+                const ttlMs = typeof ttlValue === "string" ? toMilliseconds(ttlValue) : ttlValue;
 
-            if (ttlMs !== undefined) {
-                processedMetadata.expiredAt = Date.now() + (ttlMs as number);
+                if (ttlMs !== undefined) {
+                    processedMetadata.expiredAt = Date.now() + (ttlMs as number);
+                }
+
+                delete (processedMetadata as Record<string, unknown>).ttl;
             }
 
-            delete (processedMetadata as Record<string, unknown>).ttl;
-        }
+            updateMetadata(file as File, processedMetadata);
 
-        updateMetadata(file as File, processedMetadata);
+            await this.saveMeta(file);
 
-        await this.saveMeta(file);
-
-        return { ...file, status: "updated" };
+            return { ...file, status: "updated" };
+        });
     }
 
     /**
@@ -363,13 +377,13 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
     protected applyOptimizations(operation: string, ...arguments_: unknown[]): unknown[] {
         switch (operation) {
             case "copy": {
-                return this.optimizeCopy(arguments_[0], arguments_[1]);
+                return this.optimizeCopy(arguments_[0] as string, arguments_[1] as string);
             }
             case "create": {
-                return this.optimizeCreate(arguments_[0], arguments_[1]);
+                return this.optimizeCreate(arguments_[0] as IncomingMessage, arguments_[1] as FileInit);
             }
             case "get": {
-                return this.optimizeGet(arguments_[0]);
+                return this.optimizeGet(arguments_[0] as FileQuery);
             }
             default: {
                 return arguments_;
@@ -479,7 +493,7 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
             return throwErrorCode(ERRORS.FILE_LOCKED);
         }
 
-        if (this.config.concurrency && this.config.concurrency < activeUploads.length) {
+        if (this.config.concurrency && typeof this.config.concurrency === "number" && this.config.concurrency < activeUploads.length) {
             return throwErrorCode(ERRORS.STORAGE_BUSY);
         }
 

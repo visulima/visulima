@@ -3,7 +3,7 @@
 /**
  * Simple cache interface that any cache implementation can follow
  */
-export interface Cache<K = string, V = any> {
+export interface Cache<K = string, V = unknown> {
     /** Clear all cache entries */
     clear: () => void | Promise<void>;
 
@@ -31,7 +31,7 @@ export interface CacheOptions {
 /**
  * No-op cache implementation that does nothing (used when caching is disabled)
  */
-export class NoOpCache<K = string, V = any> implements Cache<K, V> {
+export class NoOpCache<K = string, V = unknown> implements Cache<K, V> {
     public get(): undefined {
         return undefined;
     }

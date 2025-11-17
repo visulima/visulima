@@ -65,164 +65,169 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
     }
 
     public async create(request: IncomingMessage, fileInit: FileInit): Promise<TFile> {
-        // Handle TTL option
-        const processedConfig = { ...fileInit };
+        return this.instrumentOperation("create", async () => {
+            // Handle TTL option
+            const processedConfig = { ...fileInit };
 
-        if (fileInit.ttl) {
-            const ttlMs = typeof fileInit.ttl === "string" ? toMilliseconds(fileInit.ttl) : fileInit.ttl;
+            if (fileInit.ttl) {
+                const ttlMs = typeof fileInit.ttl === "string" ? toMilliseconds(fileInit.ttl) : fileInit.ttl;
 
-            if (ttlMs !== undefined) {
-                processedConfig.expiredAt = Date.now() + ttlMs;
-            }
-        }
-
-        const file = new File(processedConfig);
-
-        try {
-            const existing = await this.getMeta(file.id);
-
-            if (existing.status === "completed") {
-                return existing;
-            }
-        } catch {
-            // ignore
-        }
-
-        file.name = this.namingFunction(file as TFile, request);
-        file.size = Number.isNaN(file.size) ? this.maxUploadSize : file.size;
-
-        await this.validate(file as TFile);
-
-        const path = this.getFilePath(file.name);
-
-        try {
-            await ensureFile(path);
-            file.bytesWritten = 0;
-        } catch (error: unknown) {
-            const message = error instanceof Error ? error.message : String(error);
-            throwErrorCode(ERRORS.FILE_ERROR, message);
-        }
-
-        file.status = getFileStatus(file);
-
-        await this.saveMeta(file as TFile);
-
-        return file as TFile;
-    }
-
-    // eslint-disable-next-line sonarjs/cognitive-complexity
-    public async write(part: FilePart | FileQuery | TFile): Promise<TFile> {
-        let file: TFile;
-
-        const isFullFile = "contentType" in part && "metadata" in part && !("body" in part) && !("start" in part);
-
-        if (isFullFile) {
-            // part is a full file object (not a FilePart)
-            file = part as TFile;
-        } else {
-            // part is FilePart or FileQuery
-            file = await this.getMeta(part.id);
-
-            await this.checkIfExpired(file);
-        }
-
-        if (file.status === "completed") {
-            return file;
-        }
-
-        if (part.size !== undefined) {
-            updateSize(file, part.size);
-        }
-
-        if (!partMatch(part, file)) {
-            return throwErrorCode(ERRORS.FILE_CONFLICT);
-        }
-
-        const path = this.getFilePath(file.name);
-
-        await this.lock(path);
-
-        try {
-            const startPosition = (part as FilePart).start || 0;
-
-            await ensureFile(path);
-
-            // Only reset bytesWritten to startPosition if it's the first write (bytesWritten is 0)
-            if (file.bytesWritten === 0) {
-                file.bytesWritten = startPosition;
+                if (ttlMs !== undefined) {
+                    processedConfig.expiredAt = Date.now() + ttlMs;
+                }
             }
 
-            if (hasContent(part)) {
-                if (this.isUnsupportedChecksum(part.checksumAlgorithm)) {
-                    return throwErrorCode(ERRORS.UNSUPPORTED_CHECKSUM_ALGORITHM);
+            const file = new File(processedConfig);
+
+            try {
+                const existing = await this.getMeta(file.id);
+
+                if (existing.status === "completed") {
+                    return existing;
                 }
+            } catch {
+                // ignore
+            }
 
-                // Detect file type from stream if contentType is not set or is default
-                // Only detect on first write (when bytesWritten is 0 or NaN, and start is 0 or undefined)
-                // For chunked uploads, only detect on the first chunk (offset 0)
-                const isFirstChunk = (part as FilePart).start === 0 || (part as FilePart).start === undefined;
+            file.name = this.namingFunction(file as TFile, request);
+            file.size = Number.isNaN(file.size) ? this.maxUploadSize : file.size;
 
-                if (
-                    isFirstChunk
-                    && (file.bytesWritten === 0 || Number.isNaN(file.bytesWritten))
-                    && (!file.contentType || file.contentType === "application/octet-stream")
-                ) {
-                    try {
-                        const { fileType, stream: detectedStream } = await detectFileTypeFromStream(part.body);
+            await this.validate(file as TFile);
 
-                        // Update contentType if file type was detected
-                        if (fileType?.mime) {
-                            file.contentType = fileType.mime;
-                        }
+            const path = this.getFilePath(file.name);
 
-                        // Use the stream from file type detection
-                        // eslint-disable-next-line no-param-reassign
-                        part.body = detectedStream;
-                    } catch {
-                        // If file type detection fails, continue with original stream
-                        // This is not a critical error
-                    }
-                }
-
-                // Create lazyWritePart ensuring body stream and signal are preserved
-                const signalFromPart = (part as FilePart & { signal?: AbortSignal }).signal;
-                const lazyWritePart: FilePart & { signal?: AbortSignal } = { ...file, ...part, body: part.body };
-
-                // Explicitly preserve body stream reference and signal
-
-                if (signalFromPart) {
-                    lazyWritePart.signal = signalFromPart;
-                }
-
-                const [bytesWritten, errorCode] = await this.lazyWrite(lazyWritePart);
-
-                if (errorCode) {
-                    await truncate(path, file.bytesWritten);
-
-                    return throwErrorCode(errorCode);
-                }
-
-                // Update bytesWritten to the expected position after writing
-                const expectedBytesWritten = startPosition + (part.contentLength || 0);
-
-                file.bytesWritten = Math.max(file.bytesWritten || 0, expectedBytesWritten);
-                // Also update with the actual bytes written from lazyWrite
-                file.bytesWritten = Math.max(file.bytesWritten || 0, bytesWritten);
-                file.status = getFileStatus(file);
-
-                await this.saveMeta(file);
-            } else {
+            try {
                 await ensureFile(path);
                 file.bytesWritten = 0;
+            } catch (error: unknown) {
+                const message = error instanceof Error ? error.message : String(error);
+
+                throwErrorCode(ERRORS.FILE_ERROR, message);
             }
 
-            return file;
-        } catch (error: unknown) {
-            const message = error instanceof Error ? error.message : String(error);
-            return throwErrorCode(ERRORS.FILE_ERROR, message);
-        } finally {
-            await this.unlock(path);
-        }
+            file.status = getFileStatus(file);
+
+            await this.saveMeta(file as TFile);
+
+            return file as TFile;
+        });
+    }
+
+    public async write(part: FilePart | FileQuery | TFile): Promise<TFile> {
+        return this.instrumentOperation("write", async () => {
+            let file: TFile;
+
+            const isFullFile = "contentType" in part && "metadata" in part && !("body" in part) && !("start" in part);
+
+            if (isFullFile) {
+                // part is a full file object (not a FilePart)
+                file = part as TFile;
+            } else {
+                // part is FilePart or FileQuery
+                file = await this.getMeta(part.id);
+
+                await this.checkIfExpired(file);
+            }
+
+            if (file.status === "completed") {
+                return file;
+            }
+
+            if (part.size !== undefined) {
+                updateSize(file, part.size);
+            }
+
+            if (!partMatch(part, file)) {
+                return throwErrorCode(ERRORS.FILE_CONFLICT);
+            }
+
+            const path = this.getFilePath(file.name);
+
+            await this.lock(path);
+
+            try {
+                const startPosition = (part as FilePart).start || 0;
+
+                await ensureFile(path);
+
+                // Only reset bytesWritten to startPosition if it's the first write (bytesWritten is 0)
+                if (file.bytesWritten === 0) {
+                    file.bytesWritten = startPosition;
+                }
+
+                if (hasContent(part)) {
+                    if (this.isUnsupportedChecksum(part.checksumAlgorithm)) {
+                        return throwErrorCode(ERRORS.UNSUPPORTED_CHECKSUM_ALGORITHM);
+                    }
+
+                    // Detect file type from stream if contentType is not set or is default
+                    // Only detect on first write (when bytesWritten is 0 or NaN, and start is 0 or undefined)
+                    // For chunked uploads, only detect on the first chunk (offset 0)
+                    const isFirstChunk = (part as FilePart).start === 0 || (part as FilePart).start === undefined;
+
+                    if (
+                        isFirstChunk
+                        && (file.bytesWritten === 0 || Number.isNaN(file.bytesWritten))
+                        && (!file.contentType || file.contentType === "application/octet-stream")
+                    ) {
+                        try {
+                            const { fileType, stream: detectedStream } = await detectFileTypeFromStream(part.body);
+
+                            // Update contentType if file type was detected
+                            if (fileType?.mime) {
+                                file.contentType = fileType.mime;
+                            }
+
+                            // Use the stream from file type detection
+                            // eslint-disable-next-line no-param-reassign
+                            part.body = detectedStream;
+                        } catch {
+                            // If file type detection fails, continue with original stream
+                            // This is not a critical error
+                        }
+                    }
+
+                    // Create lazyWritePart ensuring body stream and signal are preserved
+                    const signalFromPart = (part as FilePart & { signal?: AbortSignal }).signal;
+                    const lazyWritePart: FilePart & { signal?: AbortSignal } = { ...file, ...part, body: part.body };
+
+                    // Explicitly preserve body stream reference and signal
+
+                    if (signalFromPart) {
+                        lazyWritePart.signal = signalFromPart;
+                    }
+
+                    const [bytesWritten, errorCode] = await this.lazyWrite(lazyWritePart);
+
+                    if (errorCode) {
+                        await truncate(path, file.bytesWritten);
+
+                        return throwErrorCode(errorCode);
+                    }
+
+                    // Update bytesWritten to the expected position after writing
+                    const expectedBytesWritten = startPosition + (part.contentLength || 0);
+
+                    file.bytesWritten = Math.max(file.bytesWritten || 0, expectedBytesWritten);
+                    // Also update with the actual bytes written from lazyWrite
+                    file.bytesWritten = Math.max(file.bytesWritten || 0, bytesWritten);
+                    file.status = getFileStatus(file);
+
+                    await this.saveMeta(file);
+                } else {
+                    await ensureFile(path);
+                    file.bytesWritten = 0;
+                }
+
+                return file;
+            } catch (error: unknown) {
+                const message = error instanceof Error ? error.message : String(error);
+
+                return throwErrorCode(ERRORS.FILE_ERROR, message);
+            } finally {
+                await this.unlock(path);
+            }
+        });
     }
 
     /**
@@ -230,120 +235,136 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
      * @param id
      */
     public async get({ id }: FileQuery): Promise<FileReturn> {
-        const file = await this.checkIfExpired(await this.meta.get(id));
-        const { bytesWritten, contentType, expiredAt, metadata, modifiedAt, name, originalName, size } = file;
+        return this.instrumentOperation("get", async () => {
+            const file = await this.checkIfExpired(await this.meta.get(id));
+            const { bytesWritten, contentType, expiredAt, metadata, modifiedAt, name, originalName, size } = file;
 
-        let content: Buffer;
+            let content: Buffer;
 
-        try {
-            content = (await readFile(this.getFilePath(name), { buffer: true })) as Buffer;
-        } catch (error: unknown) {
-            const errorWithCode = error as { code?: string; message?: string };
-            if (errorWithCode.code === "ENOENT" || errorWithCode.code === "EPERM") {
-                const message = error instanceof Error ? error.message : errorWithCode.message || String(error);
-                return throwErrorCode(ERRORS.FILE_NOT_FOUND, message);
+            try {
+                content = (await readFile(this.getFilePath(name), { buffer: true })) as Buffer;
+            } catch (error: unknown) {
+                const errorWithCode = error as { code?: string; message?: string };
+
+                if (errorWithCode.code === "ENOENT" || errorWithCode.code === "EPERM") {
+                    const message = error instanceof Error ? error.message : errorWithCode.message || String(error);
+
+                    return throwErrorCode(ERRORS.FILE_NOT_FOUND, message);
+                }
+
+                throw error;
             }
 
-            throw error;
-        }
-
-        return {
-            content,
-            contentType,
-            ETag: etag(content),
-            expiredAt,
-            id,
-            metadata,
-            modifiedAt,
-            name,
-            originalName,
-            size: size || bytesWritten,
-        };
+            return {
+                content,
+                contentType,
+                ETag: etag(content),
+                expiredAt,
+                id,
+                metadata,
+                modifiedAt,
+                name,
+                originalName,
+                size: size || bytesWritten,
+            };
+        });
     }
 
     public override async getStream({ id }: FileQuery): Promise<{ headers?: Record<string, string>; size?: number; stream: Readable }> {
-        try {
-            const file = await this.checkIfExpired(await this.meta.get(id));
-            const { bytesWritten, contentType, expiredAt, modifiedAt, name, size } = file;
+        return this.instrumentOperation("getStream", async () => {
+            try {
+                const file = await this.checkIfExpired(await this.meta.get(id));
+                const { bytesWritten, contentType, expiredAt, modifiedAt, name, size } = file;
 
-            // Create a readable stream directly from the file
-            const stream = createReadStream(this.getFilePath(name));
+                // Create a readable stream directly from the file
+                const stream = createReadStream(this.getFilePath(name));
 
-            return {
-                headers: {
-                    "Content-Length": String(size || bytesWritten),
-                    "Content-Type": contentType,
-                    ...expiredAt && { "X-Upload-Expires": expiredAt.toString() },
-                    ...modifiedAt && { "Last-Modified": modifiedAt.toString() },
-                    // Note: ETag requires reading the file content, so we don't include it for streaming
-                    // Clients can use HEAD requests to get ETag if needed
-                },
-                size: size || bytesWritten,
-                stream,
-            };
-        } catch (error: unknown) {
-            // Convert any filesystem error when reading metadata to FILE_NOT_FOUND
-            const message = error instanceof Error ? error.message : String(error);
-            throw throwErrorCode(ERRORS.FILE_NOT_FOUND, message);
-        }
+                return {
+                    headers: {
+                        "Content-Length": String(size || bytesWritten),
+                        "Content-Type": contentType,
+                        ...expiredAt && { "X-Upload-Expires": expiredAt.toString() },
+                        ...modifiedAt && { "Last-Modified": modifiedAt.toString() },
+                        // Note: ETag requires reading the file content, so we don't include it for streaming
+                        // Clients can use HEAD requests to get ETag if needed
+                    },
+                    size: size || bytesWritten,
+                    stream,
+                };
+            } catch (error: unknown) {
+                // Convert any filesystem error when reading metadata to FILE_NOT_FOUND
+                const message = error instanceof Error ? error.message : String(error);
+
+                throw throwErrorCode(ERRORS.FILE_NOT_FOUND, message);
+            }
+        });
     }
 
     public async delete({ id }: FileQuery): Promise<TFile> {
-        try {
-            const file = await this.getMeta(id);
+        return this.instrumentOperation("delete", async () => {
+            try {
+                const file = await this.getMeta(id);
 
-            await remove(this.getFilePath(file.name));
-            await this.deleteMeta(id);
+                await remove(this.getFilePath(file.name));
+                await this.deleteMeta(id);
 
-            return { ...file, status: "deleted" };
-        } catch (error: unknown) {
-            this.logger?.error("[error]: Could not delete file: %O", error);
-        }
+                return { ...file, status: "deleted" };
+            } catch (error: unknown) {
+                this.logger?.error("[error]: Could not delete file: %O", error);
+            }
 
-        return { id } as TFile;
+            return { id } as TFile;
+        });
     }
 
     public async copy(name: string, destination: string): Promise<void> {
-        await copyFile(this.getFilePath(name), destination);
+        return this.instrumentOperation("copy", async () => {
+            await copyFile(this.getFilePath(name), destination);
+        });
     }
 
     public async move(name: string, destination: string): Promise<void> {
-        const source = this.getFilePath(name);
+        return this.instrumentOperation("move", async () => {
+            const source = this.getFilePath(name);
 
-        try {
-            await move(source, destination);
-        } catch (error: unknown) {
-            const errorWithCode = error as { code?: string };
-            if (errorWithCode?.code === "EXDEV") {
-                await this.copy(source, destination);
-                await remove(source);
+            try {
+                await move(source, destination);
+            } catch (error: unknown) {
+                const errorWithCode = error as { code?: string };
+
+                if (errorWithCode?.code === "EXDEV") {
+                    await this.copy(source, destination);
+                    await remove(source);
+                }
             }
-        }
+        });
     }
 
     public override async list(): Promise<TFile[]> {
-        const config = {
-            followSymlinks: false,
-            includeDirs: false,
-            includeFiles: true,
-            skip: ["*.META$"],
-        };
-        const uploads: TFile[] = [];
+        return this.instrumentOperation("list", async () => {
+            const config = {
+                followSymlinks: false,
+                includeDirs: false,
+                includeFiles: true,
+                skip: ["*.META$"],
+            };
+            const uploads: TFile[] = [];
 
-        const { directory } = this;
+            const { directory } = this;
 
-        for await (const founding of walk(directory, config)) {
-            const { suffix } = this.meta;
-            const { path } = founding;
+            for await (const founding of walk(directory, config)) {
+                const { suffix } = this.meta;
+                const { path } = founding;
 
-            if (!path.includes(suffix)) {
-                const { birthtime, ctime, mtime } = await stat(path);
+                if (!path.includes(suffix)) {
+                    const { birthtime, ctime, mtime } = await stat(path);
 
-                uploads.push({ createdAt: birthtime || ctime, id: path.replace(directory, ""), modifiedAt: mtime } as TFile);
+                    uploads.push({ createdAt: birthtime || ctime, id: path.replace(directory, ""), modifiedAt: mtime } as TFile);
+                }
             }
-        }
 
-        return uploads;
+            return uploads;
+        });
     }
 
     /**
@@ -360,7 +381,7 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
             const checksumChecker = streamChecksum(part.checksum as string, part.checksumAlgorithm as string);
             const keepPartial = !part.checksum;
             // Check for signal on part object
-            const signal = (part as FilePart & { signal?: AbortSignal }).signal;
+            const { signal } = part as FilePart & { signal?: AbortSignal };
 
             const cleanupStreams = (): void => {
                 destination.close();
