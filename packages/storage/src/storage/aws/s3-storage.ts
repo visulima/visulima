@@ -28,10 +28,13 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import type { HttpHandlerOptions, SdkStream } from "@aws-sdk/types";
 import { parseBytes } from "@visulima/humanizer";
 
+import { detectFileTypeFromStream } from "../../utils/detect-file-type";
 import { ERRORS, throwErrorCode } from "../../utils/errors";
 import mapValues from "../../utils/primitives/map-values";
 import toMilliseconds from "../../utils/primitives/to-milliseconds";
 import toSeconds from "../../utils/primitives/to-seconds";
+import type { RetryConfig } from "../../utils/retry";
+import { createRetryWrapper } from "../../utils/retry";
 import type { HttpError } from "../../utils/types";
 import LocalMetaStorage from "../local/local-meta-storage";
 import type MetaStorage from "../meta-storage";
@@ -79,6 +82,8 @@ class S3Storage extends BaseStorage<S3File, FileReturn> {
 
     private readonly partSize = PART_SIZE;
 
+    private readonly retry: ReturnType<typeof createRetryWrapper>;
+
     public constructor(config: S3StorageOptions) {
         super(config);
 
@@ -117,6 +122,39 @@ class S3Storage extends BaseStorage<S3File, FileReturn> {
         }
 
         this.client = new S3Client(config);
+
+        // Initialize retry wrapper with config or defaults
+        const retryConfig: RetryConfig = {
+            backoffMultiplier: 2,
+            initialDelay: 1000,
+            maxDelay: 30_000,
+            maxRetries: 3,
+            retryableStatusCodes: [408, 429, 500, 502, 503, 504],
+            shouldRetry: (error: unknown) => {
+                // AWS SDK v3 errors
+                if ((error as any).$metadata) {
+                    const statusCode = (error as any).$metadata.httpStatusCode;
+
+                    if (statusCode && [408, 429, 500, 502, 503, 504].includes(statusCode)) {
+                        return true;
+                    }
+
+                    if ((error as any).$fault === "server") {
+                        return true;
+                    }
+                }
+
+                // AWS SDK v2 errors
+                if ((error as any).retryable === true) {
+                    return true;
+                }
+
+                return false;
+            },
+            ...config.retryConfig,
+        };
+
+        this.retry = createRetryWrapper(retryConfig);
 
         const { metaStorage, metaStorageConfig } = config;
 
@@ -183,14 +221,16 @@ class S3Storage extends BaseStorage<S3File, FileReturn> {
             // ignore
         }
 
-        const { UploadId } = await this.client.send(
-            new CreateMultipartUploadCommand({
-                ACL: this.config.acl,
-                Bucket: this.bucket,
-                ContentType: file.contentType,
-                Key: file.name,
-                Metadata: mapValues({ originalName: file.originalName, ...file.metadata }, encodeURI),
-            }),
+        const { UploadId } = await this.retry(() =>
+            this.client.send(
+                new CreateMultipartUploadCommand({
+                    ACL: this.config.acl,
+                    Bucket: this.bucket,
+                    ContentType: file.contentType,
+                    Key: file.name,
+                    Metadata: mapValues({ originalName: file.originalName, ...file.metadata }, encodeURI),
+                }),
+            ),
         );
 
         if (!UploadId) {
@@ -256,6 +296,25 @@ class S3Storage extends BaseStorage<S3File, FileReturn> {
                     return throwErrorCode(ERRORS.UNSUPPORTED_CHECKSUM_ALGORITHM);
                 }
 
+                // Detect file type from stream if contentType is not set or is default
+                // Only detect on first write (when bytesWritten is 0 or NaN, and it's the first part)
+                if (file.Parts.length === 0 && (!file.contentType || file.contentType === "application/octet-stream")) {
+                    try {
+                        const { fileType, stream: detectedStream } = await detectFileTypeFromStream(part.body);
+
+                        // Update contentType if file type was detected
+                        if (fileType?.mime) {
+                            file.contentType = fileType.mime;
+                        }
+
+                        // Use the stream from file type detection
+                        part.body = detectedStream;
+                    } catch {
+                        // If file type detection fails, continue with original stream
+                        // This is not a critical error
+                    }
+                }
+
                 if (file.Parts.length > this.MAX_PARTS) {
                     throw new Error(`Exceeded ${this.MAX_PARTS} as part of the upload to ${this.bucket}.`);
                 }
@@ -267,17 +326,19 @@ class S3Storage extends BaseStorage<S3File, FileReturn> {
 
                 part.body.on("error", () => controller.abort());
 
-                const { ETag } = await this.client.send(
-                    new UploadPartCommand({
-                        Body: part.body,
-                        Bucket: this.bucket,
-                        ContentLength: part.contentLength || 0,
-                        Key: file.name,
-                        PartNumber: partNumber,
-                        UploadId: file.UploadId,
-                        ...part.checksumAlgorithm === "md5" ? { ContentMD5: part.checksum } : {},
-                    }),
-                    { abortSignal } as HttpHandlerOptions,
+                const { ETag } = await this.retry(() =>
+                    this.client.send(
+                        new UploadPartCommand({
+                            Body: part.body,
+                            Bucket: this.bucket,
+                            ContentLength: part.contentLength || 0,
+                            Key: file.name,
+                            PartNumber: partNumber,
+                            UploadId: file.UploadId,
+                            ...part.checksumAlgorithm === "md5" ? { ContentMD5: part.checksum } : {},
+                        }),
+                        { abortSignal } as HttpHandlerOptions,
+                    ),
                 );
                 const uploadPart: Part = { ETag, PartNumber: partNumber, Size: part.contentLength };
 
@@ -310,7 +371,7 @@ class S3Storage extends BaseStorage<S3File, FileReturn> {
         if (file) {
             file.status = "deleted";
 
-            await Promise.all([this.deleteMeta(file.id), this.abortMultipartUpload(file)]);
+            await Promise.all([this.deleteMeta(file.id), this.retry(() => this.abortMultipartUpload(file))]);
 
             return { ...file };
         }
@@ -350,14 +411,14 @@ class S3Storage extends BaseStorage<S3File, FileReturn> {
             ...options?.storageClass && { StorageClass: options.storageClass as any },
         };
 
-        return this.client.send(new CopyObjectCommand(parameters));
+        return this.retry(() => this.client.send(new CopyObjectCommand(parameters)));
     }
 
     public async move(name: string, destination: string): Promise<CopyObjectCommandOutput> {
         const copyOut = await this.copy(name, destination);
         const parameters: DeleteObjectCommandInput = { Bucket: this.bucket, Key: name };
 
-        await this.client.send(new DeleteObjectCommand(parameters));
+        await this.retry(() => this.client.send(new DeleteObjectCommand(parameters)));
 
         return copyOut;
     }
@@ -375,12 +436,12 @@ class S3Storage extends BaseStorage<S3File, FileReturn> {
         while (truncated) {
             try {
                 // eslint-disable-next-line no-await-in-loop
-                const response = await this.client.send(new ListObjectsV2Command(parameters));
+                const response = await this.retry(() => this.client.send(new ListObjectsV2Command(parameters)));
 
                 // eslint-disable-next-line no-await-in-loop
                 for await (const { Key, LastModified } of response?.Contents || []) {
                     if (Key !== undefined) {
-                        const { Expires } = await this.client.send(new HeadObjectCommand({ Bucket: this.bucket, Key }));
+                        const { Expires } = await this.retry(() => this.client.send(new HeadObjectCommand({ Bucket: this.bucket, Key })));
 
                         if (Expires && isExpired({ expiredAt: Expires } as S3File)) {
                             await this.delete({ id: Key });
@@ -414,7 +475,9 @@ class S3Storage extends BaseStorage<S3File, FileReturn> {
             Bucket: this.bucket,
             Key: id,
         };
-        const { Body, ContentLength, ContentType, ETag, Expires, LastModified, Metadata } = await this.client.send(new GetObjectCommand(parameters));
+        const { Body, ContentLength, ContentType, ETag, Expires, LastModified, Metadata } = await this.retry(() =>
+            this.client.send(new GetObjectCommand(parameters)),
+        );
 
         await this.checkIfExpired({ expiredAt: Expires } as S3File);
 
@@ -446,7 +509,7 @@ class S3Storage extends BaseStorage<S3File, FileReturn> {
             Key: id,
         };
 
-        const { Body, ContentLength, ContentType, ETag, Expires, LastModified } = await this.client.send(new GetObjectCommand(parameters));
+        const { Body, ContentLength, ContentType, ETag, Expires, LastModified } = await this.retry(() => this.client.send(new GetObjectCommand(parameters)));
 
         await this.checkIfExpired({ expiredAt: Expires } as S3File);
 
@@ -540,23 +603,25 @@ class S3Storage extends BaseStorage<S3File, FileReturn> {
 
     private async getParts(file: S3File): Promise<Part[]> {
         const parameters = { Bucket: this.bucket, Key: file.name, UploadId: file.UploadId };
-        const { Parts = [] } = await this.client.send(new ListPartsCommand(parameters));
+        const { Parts = [] } = await this.retry(() => this.client.send(new ListPartsCommand(parameters)));
 
         return Parts;
     }
 
     private completeMultipartUpload(file: S3File): Promise<CompleteMultipartUploadOutput> {
-        return this.client.send(
-            new CompleteMultipartUploadCommand({
-                Bucket: this.bucket,
-                Key: file.name,
-                MultipartUpload: {
-                    Parts: file.Parts?.map(({ ETag, PartNumber }) => {
-                        return { ETag, PartNumber };
-                    }),
-                },
-                UploadId: file.UploadId,
-            }),
+        return this.retry(() =>
+            this.client.send(
+                new CompleteMultipartUploadCommand({
+                    Bucket: this.bucket,
+                    Key: file.name,
+                    MultipartUpload: {
+                        Parts: file.Parts?.map(({ ETag, PartNumber }) => {
+                            return { ETag, PartNumber };
+                        }),
+                    },
+                    UploadId: file.UploadId,
+                }),
+            ),
         );
     }
 
@@ -568,7 +633,7 @@ class S3Storage extends BaseStorage<S3File, FileReturn> {
         try {
             const parameters = { Bucket: this.bucket, Key: file.name, UploadId: file.UploadId };
 
-            await this.client.send(new AbortMultipartUploadCommand(parameters));
+            await this.retry(() => this.client.send(new AbortMultipartUploadCommand(parameters)));
         } catch (error) {
             this.logger?.error("abortMultipartUploadError: ", error);
         }

@@ -5,6 +5,7 @@ import { pipeline } from "node:stream";
 import { ensureFile, remove } from "@visulima/fs";
 
 import { ERRORS, throwErrorCode } from "../../utils/errors";
+import { detectFileTypeFromStream } from "../../utils/detect-file-type";
 import { streamChecksum } from "../../utils/pipes/stream-checksum";
 import StreamLength from "../../utils/pipes/stream-length";
 import RangeHasher from "../../utils/range-hasher";
@@ -74,13 +75,44 @@ class DiskStorageWithChecksum<TFile extends File = File> extends DiskStorage<TFi
             const startPosition = (part as FilePart).start || 0;
 
             await ensureFile(path);
-            file.bytesWritten = startPosition;
+
+            // Only reset bytesWritten to startPosition if it's the first write (bytesWritten is 0 or NaN)
+            // This matches the behavior in disk-storage.ts
+            if (file.bytesWritten === 0 || Number.isNaN(file.bytesWritten)) {
+                file.bytesWritten = startPosition;
+            }
 
             await this.hashes.init(path);
 
             if (hasContent(part)) {
                 if (this.isUnsupportedChecksum(part.checksumAlgorithm)) {
                     return throwErrorCode(ERRORS.UNSUPPORTED_CHECKSUM_ALGORITHM);
+                }
+
+                // Detect file type from stream if contentType is not set or is default
+                // Only detect on first write (when bytesWritten is 0 or NaN, and start is 0 or undefined)
+                // For chunked uploads, only detect on the first chunk (offset 0)
+                const isFirstChunk = (part as FilePart).start === 0 || (part as FilePart).start === undefined;
+
+                if (
+                    isFirstChunk
+                    && (file.bytesWritten === 0 || Number.isNaN(file.bytesWritten))
+                    && (!file.contentType || file.contentType === "application/octet-stream")
+                ) {
+                    try {
+                        const { fileType, stream: detectedStream } = await detectFileTypeFromStream(part.body);
+
+                        // Update contentType if file type was detected
+                        if (fileType?.mime) {
+                            file.contentType = fileType.mime;
+                        }
+
+                        // Use the stream from file type detection
+                        part.body = detectedStream;
+                    } catch {
+                        // If file type detection fails, continue with original stream
+                        // This is not a critical error
+                    }
                 }
 
                 const [bytesWritten, errorCode] = await this.lazyWrite({ ...part, ...file });
@@ -111,10 +143,10 @@ class DiskStorageWithChecksum<TFile extends File = File> extends DiskStorage<TFi
             await this.saveMeta(file);
 
             return file;
-        } catch (error: any) {
+        } catch (error: unknown) {
             await this.hashes.updateFromFs(path, file.bytesWritten);
-
-            return throwErrorCode(ERRORS.FILE_ERROR, error.message);
+            const message = error instanceof Error ? error.message : String(error);
+            return throwErrorCode(ERRORS.FILE_ERROR, message);
         }
     }
 

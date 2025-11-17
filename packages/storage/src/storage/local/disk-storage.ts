@@ -4,10 +4,14 @@ import type { IncomingMessage } from "node:http";
 import type { Readable } from "node:stream";
 import { pipeline } from "node:stream";
 
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { ensureDir, ensureFile, move, readFile, remove, walk } from "@visulima/fs";
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { join } from "@visulima/path";
+// eslint-disable-next-line import/no-extraneous-dependencies
 import etag from "etag";
 
+import { detectFileTypeFromStream } from "../../utils/detect-file-type";
 import { ERRORS, throwErrorCode } from "../../utils/errors";
 import { streamChecksum } from "../../utils/pipes/stream-checksum";
 import StreamLength from "../../utils/pipes/stream-length";
@@ -94,9 +98,9 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
         try {
             await ensureFile(path);
             file.bytesWritten = 0;
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } catch (error: any) {
-            throwErrorCode(ERRORS.FILE_ERROR, error.message);
+        } catch (error: unknown) {
+            const message = error instanceof Error ? error.message : String(error);
+            throwErrorCode(ERRORS.FILE_ERROR, message);
         }
 
         file.status = getFileStatus(file);
@@ -106,6 +110,7 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
         return file as TFile;
     }
 
+    // eslint-disable-next-line sonarjs/cognitive-complexity
     public async write(part: FilePart | FileQuery | TFile): Promise<TFile> {
         let file: TFile;
 
@@ -152,15 +157,41 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
                     return throwErrorCode(ERRORS.UNSUPPORTED_CHECKSUM_ALGORITHM);
                 }
 
+                // Detect file type from stream if contentType is not set or is default
+                // Only detect on first write (when bytesWritten is 0 or NaN, and start is 0 or undefined)
+                // For chunked uploads, only detect on the first chunk (offset 0)
+                const isFirstChunk = (part as FilePart).start === 0 || (part as FilePart).start === undefined;
+
+                if (
+                    isFirstChunk
+                    && (file.bytesWritten === 0 || Number.isNaN(file.bytesWritten))
+                    && (!file.contentType || file.contentType === "application/octet-stream")
+                ) {
+                    try {
+                        const { fileType, stream: detectedStream } = await detectFileTypeFromStream(part.body);
+
+                        // Update contentType if file type was detected
+                        if (fileType?.mime) {
+                            file.contentType = fileType.mime;
+                        }
+
+                        // Use the stream from file type detection
+                        // eslint-disable-next-line no-param-reassign
+                        part.body = detectedStream;
+                    } catch {
+                        // If file type detection fails, continue with original stream
+                        // This is not a critical error
+                    }
+                }
+
                 // Create lazyWritePart ensuring body stream and signal are preserved
-                const signalFromPart = (part as any).signal;
-                const lazyWritePart: any = { ...file, ...part };
+                const signalFromPart = (part as FilePart & { signal?: AbortSignal }).signal;
+                const lazyWritePart: FilePart & { signal?: AbortSignal } = { ...file, ...part, body: part.body };
 
                 // Explicitly preserve body stream reference and signal
-                lazyWritePart.body = part.body;
 
                 if (signalFromPart) {
-                    (lazyWritePart as any).signal = signalFromPart;
+                    lazyWritePart.signal = signalFromPart;
                 }
 
                 const [bytesWritten, errorCode] = await this.lazyWrite(lazyWritePart);
@@ -186,8 +217,9 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
             }
 
             return file;
-        } catch (error: any) {
-            return throwErrorCode(ERRORS.FILE_ERROR, error.message);
+        } catch (error: unknown) {
+            const message = error instanceof Error ? error.message : String(error);
+            return throwErrorCode(ERRORS.FILE_ERROR, message);
         } finally {
             await this.unlock(path);
         }
@@ -205,10 +237,11 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
 
         try {
             content = (await readFile(this.getFilePath(name), { buffer: true })) as Buffer;
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } catch (error: any) {
-            if (error.code === "ENOENT" || error.code === "EPERM") {
-                return throwErrorCode(ERRORS.FILE_NOT_FOUND, error.message);
+        } catch (error: unknown) {
+            const errorWithCode = error as { code?: string; message?: string };
+            if (errorWithCode.code === "ENOENT" || errorWithCode.code === "EPERM") {
+                const message = error instanceof Error ? error.message : errorWithCode.message || String(error);
+                return throwErrorCode(ERRORS.FILE_NOT_FOUND, message);
             }
 
             throw error;
@@ -248,10 +281,10 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
                 size: size || bytesWritten,
                 stream,
             };
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } catch (error: any) {
+        } catch (error: unknown) {
             // Convert any filesystem error when reading metadata to FILE_NOT_FOUND
-            throw throwErrorCode(ERRORS.FILE_NOT_FOUND, error.message);
+            const message = error instanceof Error ? error.message : String(error);
+            throw throwErrorCode(ERRORS.FILE_NOT_FOUND, message);
         }
     }
 
@@ -263,7 +296,7 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
             await this.deleteMeta(id);
 
             return { ...file, status: "deleted" };
-        } catch (error: any) {
+        } catch (error: unknown) {
             this.logger?.error("[error]: Could not delete file: %O", error);
         }
 
@@ -279,8 +312,9 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
 
         try {
             await move(source, destination);
-        } catch (error: any) {
-            if (error?.code === "EXDEV") {
+        } catch (error: unknown) {
+            const errorWithCode = error as { code?: string };
+            if (errorWithCode?.code === "EXDEV") {
                 await this.copy(source, destination);
                 await remove(source);
             }
@@ -326,7 +360,7 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
             const checksumChecker = streamChecksum(part.checksum as string, part.checksumAlgorithm as string);
             const keepPartial = !part.checksum;
             // Check for signal on part object
-            const signal = (part as any).signal as AbortSignal | undefined;
+            const signal = (part as FilePart & { signal?: AbortSignal }).signal;
 
             const cleanupStreams = (): void => {
                 destination.close();

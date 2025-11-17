@@ -46,30 +46,17 @@ const swaggerSpec = (
                 },
             },
             schemas: {
-                "X-Chunked-Upload": {
-                    description: "Header to indicate chunked upload initialization. Set to 'true' to initialize a chunked upload session.",
-                    enum: ["true"],
+                "X-Chunk-Checksum": {
+                    description: "SHA256 checksum of the chunk data for validation. Format: 'sha256 <base64-encoded-checksum>'.",
                     type: "string",
-                },
-                "X-Total-Size": {
-                    description: "Total size of the file in bytes for chunked uploads. Required when X-Chunked-Upload is 'true'.",
-                    type: "integer",
                 },
                 "X-Chunk-Offset": {
                     description: "Byte offset for the chunk being uploaded. Required for PATCH requests in chunked uploads.",
                     type: "integer",
                 },
-                "X-Chunk-Checksum": {
-                    description: "SHA256 checksum of the chunk data for validation. Format: 'sha256 <base64-encoded-checksum>'.",
-                    type: "string",
-                },
-                "X-Upload-Offset": {
-                    description: "Current upload offset in bytes. Returned in responses for chunked uploads.",
-                    type: "integer",
-                },
-                "X-Upload-Complete": {
-                    description: "Indicates if the upload is complete. Set to 'true' when all chunks have been uploaded.",
-                    enum: ["true", "false"],
+                "X-Chunked-Upload": {
+                    description: "Header to indicate chunked upload initialization. Set to 'true' to initialize a chunked upload session.",
+                    enum: ["true"],
                     type: "string",
                 },
                 "X-Chunked-Upload-Response": {
@@ -80,6 +67,19 @@ const swaggerSpec = (
                 "X-Received-Chunks": {
                     description: "JSON array of received chunk offsets. Used for resumable uploads.",
                     type: "string",
+                },
+                "X-Total-Size": {
+                    description: "Total size of the file in bytes for chunked uploads. Required when X-Chunked-Upload is 'true'.",
+                    type: "integer",
+                },
+                "X-Upload-Complete": {
+                    description: "Indicates if the upload is complete. Set to 'true' when all chunks have been uploaded.",
+                    enum: ["true", "false"],
+                    type: "string",
+                },
+                "X-Upload-Offset": {
+                    description: "Current upload offset in bytes. Returned in responses for chunked uploads.",
+                    type: "integer",
                 },
                 ...createPaginationSchemaObject(
                     "FileMetaPagination",
@@ -129,7 +129,8 @@ const swaggerSpec = (
                 },
                 get: sharedGet(`${pathHash}RestGetFile`, tags, transformer, supportedTransformerFormat),
                 head: {
-                    description: "Get file metadata and upload progress. For chunked uploads, returns progress information including current offset and completion status.",
+                    description:
+                        "Get file metadata and upload progress. For chunked uploads, returns progress information including current offset and completion status.",
                     operationId: `${pathHash}RestHeadFile`,
                     parameters: [
                         {
@@ -167,24 +168,16 @@ const swaggerSpec = (
                                         type: "string",
                                     },
                                 },
-                                "X-Upload-Expires": {
-                                    description: "Upload expiration date",
-                                    schema: {
-                                        example: "2021-08-25T11:12:26.635Z",
-                                        format: "date-time",
-                                        type: "string",
-                                    },
-                                },
                                 "X-Chunked-Upload": {
                                     description: "Indicates this is a chunked upload session",
                                     schema: {
                                         $ref: "#/components/schemas/X-Chunked-Upload-Response",
                                     },
                                 },
-                                "X-Upload-Offset": {
-                                    description: "Current upload offset in bytes (chunked uploads only)",
+                                "X-Received-Chunks": {
+                                    description: "JSON array of received chunk offsets (chunked uploads only)",
                                     schema: {
-                                        $ref: "#/components/schemas/X-Upload-Offset",
+                                        $ref: "#/components/schemas/X-Received-Chunks",
                                     },
                                 },
                                 "X-Upload-Complete": {
@@ -193,10 +186,18 @@ const swaggerSpec = (
                                         $ref: "#/components/schemas/X-Upload-Complete",
                                     },
                                 },
-                                "X-Received-Chunks": {
-                                    description: "JSON array of received chunk offsets (chunked uploads only)",
+                                "X-Upload-Expires": {
+                                    description: "Upload expiration date",
                                     schema: {
-                                        $ref: "#/components/schemas/X-Received-Chunks",
+                                        example: "2021-08-25T11:12:26.635Z",
+                                        format: "date-time",
+                                        type: "string",
+                                    },
+                                },
+                                "X-Upload-Offset": {
+                                    description: "Current upload offset in bytes (chunked uploads only)",
+                                    schema: {
+                                        $ref: "#/components/schemas/X-Upload-Offset",
                                     },
                                 },
                             },
@@ -276,12 +277,6 @@ const swaggerSpec = (
                                         type: "string",
                                     },
                                 },
-                                "X-Upload-Offset": {
-                                    description: "Current upload offset after this chunk",
-                                    schema: {
-                                        $ref: "#/components/schemas/X-Upload-Offset",
-                                    },
-                                },
                                 "X-Upload-Complete": {
                                     description: "Indicates if upload is complete",
                                     schema: {
@@ -294,6 +289,12 @@ const swaggerSpec = (
                                         example: "2021-08-25T11:12:26.635Z",
                                         format: "date-time",
                                         type: "string",
+                                    },
+                                },
+                                "X-Upload-Offset": {
+                                    description: "Current upload offset after this chunk",
+                                    schema: {
+                                        $ref: "#/components/schemas/X-Upload-Offset",
                                     },
                                 },
                             },
@@ -522,7 +523,8 @@ const swaggerSpec = (
             },
             [path.trimEnd()]: {
                 delete: {
-                    description: "Delete multiple files. Supports batch delete via query parameter (?ids=id1,id2,id3) or JSON body ({ids: [\"id1\", \"id2\"]} or [\"id1\", \"id2\"]).",
+                    description:
+                        "Delete multiple files. Supports batch delete via query parameter (?ids=id1,id2,id3) or JSON body ({ids: [\"id1\", \"id2\"]} or [\"id1\", \"id2\"]).",
                     operationId: `${pathHash}RestBatchDelete`,
                     parameters: [
                         {
@@ -575,10 +577,10 @@ const swaggerSpec = (
                         207: {
                             description: "Multi-Status - Some files deleted successfully",
                             headers: {
-                                "X-Delete-Successful": {
-                                    description: "Number of files successfully deleted",
+                                "X-Delete-Errors": {
+                                    description: "JSON array of deletion errors",
                                     schema: {
-                                        type: "integer",
+                                        type: "string",
                                     },
                                 },
                                 "X-Delete-Failed": {
@@ -587,10 +589,10 @@ const swaggerSpec = (
                                         type: "integer",
                                     },
                                 },
-                                "X-Delete-Errors": {
-                                    description: "JSON array of deletion errors",
+                                "X-Delete-Successful": {
+                                    description: "Number of files successfully deleted",
                                     schema: {
-                                        type: "string",
+                                        type: "integer",
                                     },
                                 },
                             },
@@ -643,7 +645,8 @@ const swaggerSpec = (
                 },
                 get: sharedGetList(`${pathHash}RestGetList`, tags),
                 post: {
-                    description: "Upload a file with raw binary data or initialize a chunked upload session. For chunked uploads, set X-Chunked-Upload: true and X-Total-Size headers.",
+                    description:
+                        "Upload a file with raw binary data or initialize a chunked upload session. For chunked uploads, set X-Chunked-Upload: true and X-Total-Size headers.",
                     operationId: `${pathHash}RestPostFile`,
                     parameters: [
                         {
@@ -670,7 +673,7 @@ const swaggerSpec = (
                             name: "Content-Disposition",
                             required: false,
                             schema: {
-                                example: 'attachment; filename="photo.jpg"',
+                                example: "attachment; filename=\"photo.jpg\"",
                                 type: "string",
                             },
                         },
@@ -680,7 +683,7 @@ const swaggerSpec = (
                             name: "X-File-Metadata",
                             required: false,
                             schema: {
-                                example: '{"description":"My photo"}',
+                                example: "{\"description\":\"My photo\"}",
                                 type: "string",
                             },
                         },
@@ -807,4 +810,3 @@ const swaggerSpec = (
 };
 
 export default swaggerSpec;
-

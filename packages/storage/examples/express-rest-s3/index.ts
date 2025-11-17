@@ -117,4 +117,3 @@ app.listen(PORT, () => {
     console.log('    -H "X-File-Metadata: {\\"description\\":\\"My photo\\"}" \\');
     console.log("    --data-binary @/path/to/file.jpg");
 });
-

@@ -5,15 +5,15 @@ Use Visulima upload with Next.js for file uploads and on-demand image transforma
 ## Installation
 
 ```sh
-npm install @visulima/upload next
+npm install @visulima/storage next
 ```
 
 ```sh
-yarn add @visulima/upload next
+yarn add @visulima/storage next
 ```
 
 ```sh
-pnpm add @visulima/upload next
+pnpm add @visulima/storage next
 ```
 
 ## API Routes Setup
@@ -22,7 +22,7 @@ Create API routes for file upload and image transformation:
 
 ```ts
 // app/api/upload/route.ts
-import { DiskStorage, Multipart } from "@visulima/upload";
+import { DiskStorage, Multipart } from "@visulima/storage";
 import { NextRequest, NextResponse } from "next/server";
 
 const uploadDirectory = "./uploads";
@@ -68,7 +68,7 @@ Next.js 15+ supports Web API Request/Response objects natively. You can use the 
 
 ```ts
 // app/api/upload/route.ts
-import { DiskStorage, Multipart } from "@visulima/upload";
+import { DiskStorage, Multipart } from "@visulima/storage";
 
 const storage = new DiskStorage({ directory: "./uploads" });
 const multipart = new Multipart({ storage });
@@ -90,8 +90,8 @@ This approach eliminates the need for manual parsing and response creation, maki
 ```ts
 // app/api/files/[id]/route.ts
 import { LRUCache } from "lru-cache";
-import { DiskStorage } from "@visulima/upload";
-import ImageTransformer from "@visulima/upload/transformers/image";
+import { DiskStorage } from "@visulima/storage";
+import ImageTransformer from "@visulima/storage/transformers/image";
 import { NextRequest, NextResponse } from "next/server";
 
 const uploadDirectory = "./uploads";
@@ -313,8 +313,8 @@ Create server-side transformations for pre-processing:
 ```ts
 // app/api/transform/route.ts
 import { LRUCache } from "lru-cache";
-import { DiskStorage } from "@visulima/upload";
-import ImageTransformer from "@visulima/upload/transformers/image";
+import { DiskStorage } from "@visulima/storage";
+import ImageTransformer from "@visulima/storage/transformers/image";
 import { NextRequest, NextResponse } from "next/server";
 
 const storage = new DiskStorage({ directory: "./uploads" });
@@ -367,8 +367,8 @@ CACHE_TTL=3600          # 1 hour
 
 ```ts
 // lib/upload-config.ts
-import { DiskStorage } from "@visulima/upload";
-import ImageTransformer from "@visulima/upload/transformers/image";
+import { DiskStorage } from "@visulima/storage";
+import ImageTransformer from "@visulima/storage/transformers/image";
 
 export const storage = new DiskStorage({
     directory: process.env.UPLOAD_DIR || "./uploads",

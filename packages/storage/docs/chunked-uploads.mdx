@@ -1,0 +1,208 @@
+# Chunked Uploads
+
+The REST handler supports client-side chunked uploads for large files. This allows you to upload files in smaller pieces, reducing memory usage and enabling resumable uploads.
+
+## Overview
+
+Chunked uploads are ideal for:
+
+- Large files that exceed memory limits
+- Unreliable network connections
+- Resumable uploads after interruptions
+- Parallel chunk uploads for better performance
+
+## Initializing a Chunked Upload
+
+```typescript
+import { Rest } from "@visulima/storage/provider/aws";
+
+const rest = new Rest({ storage });
+
+// Initialize chunked upload
+const initResponse = await fetch("/files", {
+    method: "POST",
+    headers: {
+        "X-Chunked-Upload": "true",
+        "X-Total-Size": "10485760", // Total file size in bytes
+        "Content-Length": "0",
+        "Content-Type": "application/octet-stream",
+    },
+});
+
+const { id } = await initResponse.json();
+// id is the upload session ID
+```
+
+## Uploading Chunks
+
+```typescript
+// Upload chunk 1 (bytes 0-524288)
+await fetch(`/files/${id}`, {
+    method: "PATCH",
+    headers: {
+        "X-Chunk-Offset": "0",
+        "Content-Length": "524288",
+        "Content-Type": "application/octet-stream",
+    },
+    body: chunk1,
+});
+
+// Upload chunk 2 (bytes 524288-1048576) - can be out of order
+await fetch(`/files/${id}`, {
+    method: "PATCH",
+    headers: {
+        "X-Chunk-Offset": "524288",
+        "Content-Length": "524288",
+        "Content-Type": "application/octet-stream",
+    },
+    body: chunk2,
+});
+```
+
+## Checking Upload Progress
+
+```typescript
+// Check upload status
+const statusResponse = await fetch(`/files/${id}`, {
+    method: "HEAD",
+});
+
+const offset = statusResponse.headers.get("X-Upload-Offset");
+const complete = statusResponse.headers.get("X-Upload-Complete");
+const chunks = JSON.parse(statusResponse.headers.get("X-Received-Chunks") || "[]");
+
+console.log(`Uploaded: ${offset} bytes, Complete: ${complete}`);
+```
+
+## Features
+
+- **Out-of-Order Chunks**: Chunks can be uploaded in any order
+- **Idempotency**: Duplicate chunks are safely ignored
+- **Resumable**: Check progress and resume from last uploaded chunk
+- **Progress Tracking**: Real-time upload progress via HEAD requests
+- **Chunk Size Limits**: Maximum 100MB per chunk (configurable)
+
+## Response Headers
+
+- `X-Upload-ID`: Upload session ID (returned on initialization)
+- `X-Chunked-Upload`: Indicates chunked upload mode
+- `X-Upload-Offset`: Current upload offset in bytes
+- `X-Upload-Complete`: "true" when upload is complete, "false" otherwise
+- `X-Received-Chunks`: JSON array of received chunks `[{ offset, length }]`
+
+## Complete Example
+
+```typescript
+import { Rest } from "@visulima/storage/provider/aws";
+import { DiskStorage } from "@visulima/storage";
+
+const storage = new DiskStorage({ directory: "./uploads" });
+const rest = new Rest({ storage });
+
+// Client-side chunked upload implementation
+async function uploadFileInChunks(file: File, chunkSize = 524288) {
+    const totalSize = file.size;
+
+    // Initialize chunked upload
+    const initResponse = await fetch("/files", {
+        method: "POST",
+        headers: {
+            "X-Chunked-Upload": "true",
+            "X-Total-Size": String(totalSize),
+            "Content-Length": "0",
+            "Content-Type": file.type,
+        },
+    });
+
+    const { id } = await initResponse.json();
+
+    // Upload chunks
+    const chunks = Math.ceil(totalSize / chunkSize);
+    const uploadPromises = [];
+
+    for (let i = 0; i < chunks; i++) {
+        const start = i * chunkSize;
+        const end = Math.min(start + chunkSize, totalSize);
+        const chunk = file.slice(start, end);
+
+        uploadPromises.push(
+            fetch(`/files/${id}`, {
+                method: "PATCH",
+                headers: {
+                    "X-Chunk-Offset": String(start),
+                    "Content-Length": String(end - start),
+                    "Content-Type": "application/octet-stream",
+                },
+                body: chunk,
+            }),
+        );
+    }
+
+    // Wait for all chunks to upload
+    await Promise.all(uploadPromises);
+
+    // Verify completion
+    const statusResponse = await fetch(`/files/${id}`, {
+        method: "HEAD",
+    });
+
+    const complete = statusResponse.headers.get("X-Upload-Complete");
+
+    if (complete === "true") {
+        console.log("Upload complete!");
+        return id;
+    } else {
+        throw new Error("Upload incomplete");
+    }
+}
+```
+
+## Resuming Interrupted Uploads
+
+```typescript
+async function resumeUpload(uploadId: string, file: File, chunkSize = 524288) {
+    // Check current progress
+    const statusResponse = await fetch(`/files/${uploadId}`, {
+        method: "HEAD",
+    });
+
+    const offset = parseInt(statusResponse.headers.get("X-Upload-Offset") || "0");
+    const receivedChunks = JSON.parse(statusResponse.headers.get("X-Received-Chunks") || "[]");
+
+    // Upload remaining chunks
+    const totalSize = file.size;
+    const chunks = Math.ceil(totalSize / chunkSize);
+
+    for (let i = 0; i < chunks; i++) {
+        const start = i * chunkSize;
+        const end = Math.min(start + chunkSize, totalSize);
+
+        // Skip already uploaded chunks
+        const chunkUploaded = receivedChunks.some((chunk: { offset: number; length: number }) => chunk.offset === start && chunk.length === end - start);
+
+        if (chunkUploaded) {
+            continue;
+        }
+
+        const chunk = file.slice(start, end);
+
+        await fetch(`/files/${uploadId}`, {
+            method: "PATCH",
+            headers: {
+                "X-Chunk-Offset": String(start),
+                "Content-Length": String(end - start),
+                "Content-Type": "application/octet-stream",
+            },
+            body: chunk,
+        });
+    }
+}
+```
+
+## Best Practices
+
+1. **Choose appropriate chunk size** - Balance between network efficiency and memory usage (typically 512KB - 5MB)
+2. **Upload chunks in parallel** - Use `Promise.all()` for better performance
+3. **Handle errors gracefully** - Retry failed chunks individually
+4. **Monitor progress** - Use HEAD requests to track upload status
+5. **Verify completion** - Always check `X-Upload-Complete` header before considering upload done

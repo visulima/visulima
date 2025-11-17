@@ -4,8 +4,11 @@ import type { BlobBeginCopyFromURLResponse, BlobDeleteIfExistsResponse, BlobItem
 import { BlobServiceClient, StorageSharedKeyCredential } from "@azure/storage-blob";
 import { normalize } from "@visulima/path";
 
+import { detectFileTypeFromStream } from "../../utils/detect-file-type";
 import { ERRORS, throwErrorCode } from "../../utils/errors";
 import toMilliseconds from "../../utils/primitives/to-milliseconds";
+import type { RetryConfig } from "../../utils/retry";
+import { createRetryWrapper } from "../../utils/retry";
 import LocalMetaStorage from "../local/local-meta-storage";
 import type MetaStorage from "../meta-storage";
 import BaseStorage from "../storage";
@@ -27,6 +30,8 @@ class AzureStorage extends BaseStorage<AzureFile, FileReturn> {
     private readonly containerClient: ContainerClient;
 
     private readonly root: string;
+
+    private readonly retry: ReturnType<typeof createRetryWrapper>;
 
     // eslint-disable-next-line sonarjs/cognitive-complexity
     public constructor(config: AzureStorageOptions) {
@@ -64,6 +69,35 @@ class AzureStorage extends BaseStorage<AzureFile, FileReturn> {
         this.containerClient = this.client.getContainerClient(config.containerName);
 
         this.root = config.root ? normalize(config.root).replace(/^\//, "") : "";
+
+        // Initialize retry wrapper with config or defaults
+        const retryConfig: RetryConfig = {
+            backoffMultiplier: 2,
+            initialDelay: 1000,
+            maxDelay: 30_000,
+            maxRetries: 3,
+            retryableStatusCodes: [408, 429, 500, 502, 503, 504],
+            shouldRetry: (error: unknown) => {
+                // Azure Storage errors
+                if ((error as any).statusCode && [408, 429, 500, 502, 503, 504].includes((error as any).statusCode)) {
+                    return true;
+                }
+
+                // Network errors
+                if (error instanceof Error) {
+                    const errorCode = (error as any).code;
+
+                    if (errorCode === "ECONNRESET" || errorCode === "ETIMEDOUT" || errorCode === "ENOTFOUND" || errorCode === "ECONNREFUSED") {
+                        return true;
+                    }
+                }
+
+                return false;
+            },
+            ...config.retryConfig,
+        };
+
+        this.retry = createRetryWrapper(retryConfig);
 
         if (config.metaStorage) {
             this.meta = config.metaStorage;
@@ -129,16 +163,18 @@ class AzureStorage extends BaseStorage<AzureFile, FileReturn> {
             stringifiedMetaValues[key] = JSON.stringify(value);
         }
 
-        const response = await blobClient.uploadData(Buffer.from(""), {
-            blobHTTPHeaders: {
-                blobContentType: file.contentType,
-            },
-            metadata: {
-                name: file.name,
-                originalName: file.originalName,
-                ...stringifiedMetaValues,
-            },
-        });
+        const response = await this.retry(() =>
+            blobClient.uploadData(Buffer.from(""), {
+                blobHTTPHeaders: {
+                    blobContentType: file.contentType,
+                },
+                metadata: {
+                    name: file.name,
+                    originalName: file.originalName,
+                    ...stringifiedMetaValues,
+                },
+            }),
+        );
 
         if (response.requestId === undefined) {
             // @TODO add better error message
@@ -163,7 +199,10 @@ class AzureStorage extends BaseStorage<AzureFile, FileReturn> {
         if (file) {
             file.status = "deleted";
 
-            await Promise.all([this.deleteMeta(file.id), this.containerClient.getBlockBlobClient(this.getFullPath(file.name)).deleteIfExists()]);
+            await Promise.all([
+                this.deleteMeta(file.id),
+                this.retry(() => this.containerClient.getBlockBlobClient(this.getFullPath(file.name)).deleteIfExists()),
+            ]);
 
             return { ...file };
         }
@@ -174,7 +213,7 @@ class AzureStorage extends BaseStorage<AzureFile, FileReturn> {
     public async move(name: string, destination: string): Promise<BlobDeleteIfExistsResponse> {
         const source = this.getFullPath(name);
 
-        return this.copy(name, destination).then(() => this.containerClient.getBlockBlobClient(source).deleteIfExists());
+        return this.copy(name, destination).then(() => this.retry(() => this.containerClient.getBlockBlobClient(source).deleteIfExists()));
     }
 
     public async write(part: FilePart | FileQuery | AzureFile): Promise<AzureFile> {
@@ -202,19 +241,40 @@ class AzureStorage extends BaseStorage<AzureFile, FileReturn> {
 
         try {
             if (hasContent(part)) {
+                // Detect file type from stream if contentType is not set or is default
+                // Only detect on first write (when bytesWritten is 0 or NaN)
+                if ((file.bytesWritten === 0 || Number.isNaN(file.bytesWritten)) && (!file.contentType || file.contentType === "application/octet-stream")) {
+                    try {
+                        const { fileType, stream: detectedStream } = await detectFileTypeFromStream(part.body);
+
+                        // Update contentType if file type was detected
+                        if (fileType?.mime) {
+                            file.contentType = fileType.mime;
+                        }
+
+                        // Use the stream from file type detection
+                        part.body = detectedStream;
+                    } catch {
+                        // If file type detection fails, continue with original stream
+                        // This is not a critical error
+                    }
+                }
+
                 const blobClient = this.containerClient.getBlockBlobClient(this.getFullPath(file.name));
 
                 const abortController = new AbortController();
 
                 part.body.on("error", () => abortController.abort());
 
-                const response = await blobClient.uploadStream(part.body, undefined, undefined, {
-                    abortSignal: abortController.signal,
-                    blobHTTPHeaders: {
-                        blobContentType: file.contentType ?? "application/octet-stream",
-                    },
-                    metadata: file.metadata,
-                });
+                const response = await this.retry(() =>
+                    blobClient.uploadStream(part.body, undefined, undefined, {
+                        abortSignal: abortController.signal,
+                        blobHTTPHeaders: {
+                            blobContentType: file.contentType ?? "application/octet-stream",
+                        },
+                        metadata: file.metadata,
+                    }),
+                );
 
                 if (response.requestId === undefined) {
                     return throwErrorCode(ERRORS.FILE_ERROR, "azure write upload error");
@@ -242,7 +302,7 @@ class AzureStorage extends BaseStorage<AzureFile, FileReturn> {
     public async get({ id }: FileQuery): Promise<FileReturn> {
         const blobClient = this.containerClient.getBlockBlobClient(id);
 
-        const exists = await blobClient.exists();
+        const exists = await this.retry(() => blobClient.exists());
 
         if (!exists) {
             // Check if metadata exists - if so, file was deleted (GONE), otherwise never existed (NOT_FOUND)
@@ -255,12 +315,12 @@ class AzureStorage extends BaseStorage<AzureFile, FileReturn> {
             }
         }
 
-        const response = await blobClient.getProperties();
+        const response = await this.retry(() => blobClient.getProperties());
 
         const { contentLength, contentType, etag, expiresOn, lastModified, metadata } = response;
 
         return {
-            content: await blobClient.downloadToBuffer(),
+            content: await this.retry(() => blobClient.downloadToBuffer()),
             contentType: contentType as string,
             ETag: etag,
             expiredAt: expiresOn,
@@ -276,7 +336,7 @@ class AzureStorage extends BaseStorage<AzureFile, FileReturn> {
     public async copy(name: string, destination: string): Promise<BlobBeginCopyFromURLResponse> {
         const source = this.containerClient.getBlockBlobClient(this.getFullPath(name));
 
-        const exists = await source.exists();
+        const exists = await this.retry(() => source.exists());
 
         if (!exists) {
             // Check if metadata exists - if so, file was deleted (GONE), otherwise never existed (NOT_FOUND)
@@ -291,9 +351,9 @@ class AzureStorage extends BaseStorage<AzureFile, FileReturn> {
 
         const target = this.containerClient.getBlockBlobClient(this.getFullPath(destination));
 
-        const poller = await target.beginCopyFromURL(source.url);
+        const poller = await this.retry(() => target.beginCopyFromURL(source.url));
 
-        return poller.pollUntilDone();
+        return this.retry(() => poller.pollUntilDone());
     }
 
     public override async list(limit = 1000): Promise<AzureFile[]> {
@@ -313,7 +373,7 @@ class AzureStorage extends BaseStorage<AzureFile, FileReturn> {
                     .byPage({ continuationToken: token, maxPageSize: limit });
 
                 // eslint-disable-next-line no-await-in-loop
-                const next = await iterator.next();
+                const next = await this.retry(() => iterator.next());
                 const response = next.value;
 
                 if (response !== undefined && "segment" in response) {
@@ -357,7 +417,7 @@ class AzureStorage extends BaseStorage<AzureFile, FileReturn> {
     }
 
     private async accessCheck(): Promise<any> {
-        return this.containerClient.getProperties();
+        return this.retry(() => this.containerClient.getProperties());
     }
 }
 

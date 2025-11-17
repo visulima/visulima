@@ -5,15 +5,15 @@ Use Visulima upload with Express.js for file uploads and on-demand image transfo
 ## Installation
 
 ```sh
-npm install @visulima/upload express
+npm install @visulima/storage express
 ```
 
 ```sh
-yarn add @visulima/upload express
+yarn add @visulima/storage express
 ```
 
 ```sh
-pnpm add @visulima/upload express
+pnpm add @visulima/storage express
 ```
 
 ## Basic File Upload
@@ -22,7 +22,7 @@ pnpm add @visulima/upload express
 
 ````ts
 import express from "express";
-import { DiskStorage, Multipart } from "@visulima/upload";
+import { DiskStorage, Multipart } from "@visulima/storage";
 
 const app = express();
 const PORT = 3000;
@@ -49,7 +49,7 @@ For environments that support Web API Request/Response objects, you can also use
 
 ```ts
 import express from "express";
-import { DiskStorage, Multipart } from "@visulima/upload";
+import { DiskStorage, Multipart } from "@visulima/storage";
 
 const app = express();
 const PORT = 3000;
@@ -91,7 +91,7 @@ app.listen(PORT, () => {
 
 ```ts
 import express from "express";
-import { DiskStorage, Rest } from "@visulima/upload";
+import { DiskStorage, Rest } from "@visulima/storage";
 
 const app = express();
 const PORT = 3000;
@@ -142,8 +142,8 @@ Add on-demand image transformations with URL query parameters:
 ```ts
 import express from "express";
 import { LRUCache } from "lru-cache";
-import { DiskStorage, Multipart } from "@visulima/upload";
-import ImageTransformer from "@visulima/upload/transformers/image";
+import { DiskStorage, Multipart } from "@visulima/storage";
+import ImageTransformer from "@visulima/storage/transformers/image";
 
 const app = express();
 const PORT = 3000;
