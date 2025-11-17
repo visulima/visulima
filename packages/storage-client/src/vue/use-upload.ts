@@ -278,45 +278,45 @@ export const useUpload = (options: UseUploadOptions): UseUploadReturn => {
         abort,
         currentMethod,
         error: computed(() =>
-            currentMethod.value === "tus"
-                ? tusUpload?.error.value ?? null
+            (currentMethod.value === "tus"
+                ? (tusUpload?.error.value ?? null)
                 : currentMethod.value === "chunked-rest"
-                  ? chunkedRestUpload?.error.value ?? null
-                  : multipartUpload?.error.value ?? null,
+                  ? (chunkedRestUpload?.error.value ?? null)
+                  : (multipartUpload?.error.value ?? null)),
         ),
         isPaused: computed(() =>
-            currentMethod.value === "tus" ? tusUpload?.isPaused.value : currentMethod.value === "chunked-rest" ? chunkedRestUpload?.isPaused.value : undefined,
+            (currentMethod.value === "tus" ? tusUpload?.isPaused.value : currentMethod.value === "chunked-rest" ? chunkedRestUpload?.isPaused.value : undefined),
         ),
         isUploading: computed(() =>
-            currentMethod.value === "tus"
-                ? tusUpload?.isUploading.value ?? false
+            (currentMethod.value === "tus"
+                ? (tusUpload?.isUploading.value ?? false)
                 : currentMethod.value === "chunked-rest"
-                  ? chunkedRestUpload?.isUploading.value ?? false
-                  : multipartUpload?.isUploading.value ?? false,
+                  ? (chunkedRestUpload?.isUploading.value ?? false)
+                  : (multipartUpload?.isUploading.value ?? false)),
         ),
         offset: computed(() =>
-            currentMethod.value === "tus" ? tusUpload?.offset.value : currentMethod.value === "chunked-rest" ? chunkedRestUpload?.offset.value : undefined,
+            (currentMethod.value === "tus" ? tusUpload?.offset.value : currentMethod.value === "chunked-rest" ? chunkedRestUpload?.offset.value : undefined),
         ),
         pause: computed(() =>
-            currentMethod.value === "tus" ? tusUpload?.pause : currentMethod.value === "chunked-rest" ? chunkedRestUpload?.pause : undefined,
+            (currentMethod.value === "tus" ? tusUpload?.pause : currentMethod.value === "chunked-rest" ? chunkedRestUpload?.pause : undefined),
         ),
         progress: computed(() =>
-            currentMethod.value === "tus"
-                ? tusUpload?.progress.value ?? 0
+            (currentMethod.value === "tus"
+                ? (tusUpload?.progress.value ?? 0)
                 : currentMethod.value === "chunked-rest"
-                  ? chunkedRestUpload?.progress.value ?? 0
-                  : multipartUpload?.progress.value ?? 0,
+                  ? (chunkedRestUpload?.progress.value ?? 0)
+                  : (multipartUpload?.progress.value ?? 0)),
         ),
         reset,
         result: computed(() =>
-            currentMethod.value === "tus"
-                ? tusUpload?.result.value ?? null
+            (currentMethod.value === "tus"
+                ? (tusUpload?.result.value ?? null)
                 : currentMethod.value === "chunked-rest"
-                  ? chunkedRestUpload?.result.value ?? null
-                  : multipartUpload?.result.value ?? null,
+                  ? (chunkedRestUpload?.result.value ?? null)
+                  : (multipartUpload?.result.value ?? null)),
         ),
         resume: computed(() =>
-            currentMethod.value === "tus" ? tusUpload?.resume : currentMethod.value === "chunked-rest" ? chunkedRestUpload?.resume : undefined,
+            (currentMethod.value === "tus" ? tusUpload?.resume : currentMethod.value === "chunked-rest" ? chunkedRestUpload?.resume : undefined),
         ),
         upload,
     };

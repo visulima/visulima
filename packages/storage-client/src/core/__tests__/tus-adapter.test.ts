@@ -83,7 +83,7 @@ describe(createTusAdapter, () => {
         expect(result.status).toBe("completed");
 
         // Verify fetch was called
-        expect(mockFetch).toHaveBeenCalled();
+        expect(mockFetch).toHaveBeenCalledWith();
         expect(mockFetch).toHaveBeenNthCalledWith(
             1,
             "http://localhost/api/upload/tus",

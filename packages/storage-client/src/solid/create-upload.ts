@@ -278,46 +278,42 @@ export const createUpload = (options: CreateUploadOptions): CreateUploadReturn =
         abort,
         currentMethod,
         error: createMemo(() =>
-            currentMethod() === "tus"
-                ? tusUpload?.error() ?? null
+            (currentMethod() === "tus"
+                ? (tusUpload?.error() ?? null)
                 : currentMethod() === "chunked-rest"
-                  ? chunkedRestUpload?.error() ?? null
-                  : multipartUpload?.error() ?? null,
+                  ? (chunkedRestUpload?.error() ?? null)
+                  : (multipartUpload?.error() ?? null)),
         ),
         isPaused: createMemo(() =>
-            currentMethod() === "tus" ? tusUpload?.isPaused() : currentMethod() === "chunked-rest" ? chunkedRestUpload?.isPaused() : undefined,
+            (currentMethod() === "tus" ? tusUpload?.isPaused() : currentMethod() === "chunked-rest" ? chunkedRestUpload?.isPaused() : undefined),
         ),
         isUploading: createMemo(() =>
-            currentMethod() === "tus"
-                ? tusUpload?.isUploading() ?? false
+            (currentMethod() === "tus"
+                ? (tusUpload?.isUploading() ?? false)
                 : currentMethod() === "chunked-rest"
-                  ? chunkedRestUpload?.isUploading() ?? false
-                  : multipartUpload?.isUploading() ?? false,
+                  ? (chunkedRestUpload?.isUploading() ?? false)
+                  : (multipartUpload?.isUploading() ?? false)),
         ),
         offset: createMemo(() =>
-            currentMethod() === "tus" ? tusUpload?.offset() : currentMethod() === "chunked-rest" ? chunkedRestUpload?.offset() : undefined,
+            (currentMethod() === "tus" ? tusUpload?.offset() : currentMethod() === "chunked-rest" ? chunkedRestUpload?.offset() : undefined),
         ),
-        pause: createMemo(() =>
-            currentMethod() === "tus" ? tusUpload?.pause : currentMethod() === "chunked-rest" ? chunkedRestUpload?.pause : undefined,
-        ),
+        pause: createMemo(() => currentMethod() === "tus" ? tusUpload?.pause : currentMethod() === "chunked-rest" ? chunkedRestUpload?.pause : undefined),
         progress: createMemo(() =>
-            currentMethod() === "tus"
-                ? tusUpload?.progress() ?? 0
+            (currentMethod() === "tus"
+                ? (tusUpload?.progress() ?? 0)
                 : currentMethod() === "chunked-rest"
-                  ? chunkedRestUpload?.progress() ?? 0
-                  : multipartUpload?.progress() ?? 0,
+                  ? (chunkedRestUpload?.progress() ?? 0)
+                  : (multipartUpload?.progress() ?? 0)),
         ),
         reset,
         result: createMemo(() =>
-            currentMethod() === "tus"
-                ? tusUpload?.result() ?? null
+            (currentMethod() === "tus"
+                ? (tusUpload?.result() ?? null)
                 : currentMethod() === "chunked-rest"
-                  ? chunkedRestUpload?.result() ?? null
-                  : multipartUpload?.result() ?? null,
+                  ? (chunkedRestUpload?.result() ?? null)
+                  : (multipartUpload?.result() ?? null)),
         ),
-        resume: createMemo(() =>
-            currentMethod() === "tus" ? tusUpload?.resume : currentMethod() === "chunked-rest" ? chunkedRestUpload?.resume : undefined,
-        ),
+        resume: createMemo(() => currentMethod() === "tus" ? tusUpload?.resume : currentMethod() === "chunked-rest" ? chunkedRestUpload?.resume : undefined),
         upload,
     };
 };

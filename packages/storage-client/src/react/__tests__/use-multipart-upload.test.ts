@@ -178,7 +178,7 @@ describe("useMultipartUpload", () => {
         await new Promise((resolve) => setTimeout(resolve, 50));
 
         // Timeout should have been cleared
-        expect(clearTimeoutSpy).toHaveBeenCalled();
+        expect(clearTimeoutSpy).toHaveBeenCalledWith();
         // In Node.js, setTimeout returns a Timeout object.
         expect(clearTimeoutSpy).toHaveBeenCalledWith(expect.anything());
     });
