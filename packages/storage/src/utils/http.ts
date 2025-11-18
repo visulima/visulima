@@ -175,44 +175,6 @@ export const getBaseUrl = (request: IncomingMessage): string => {
     return proto ? `${proto}://${host}` : `//${host}`;
 };
 
-export const normalizeHookResponse
-    = <T>(callback: (file: T) => Promise<UploadResponse> | UploadResponse) =>
-        async (file: T): Promise<UploadResponse> => {
-            const response = await Promise.resolve(callback(file));
-
-            if (isRecord(response)) {
-                const { body, headers, statusCode, ...rest } = response;
-
-                const result: UploadResponse = { body: body ?? rest };
-
-                if (headers !== undefined) {
-                    result.headers = headers;
-                }
-
-                if (statusCode !== undefined) {
-                    result.statusCode = statusCode;
-                }
-
-                return result;
-            }
-
-            return { body: response ?? "" };
-        };
-
-/**
- * @internal
- */
-export const normalizeOnErrorResponse
-    = (callback: (error: HttpError) => UploadResponse): (error: HttpError) => UploadResponse =>
-        (error: HttpError): UploadResponse => {
-            if (isRecord(error)) {
-                const { body, headers, statusCode, ...rest } = error;
-
-                return callback({ body: body ?? (rest as HttpErrorBody), headers, statusCode });
-            }
-
-            return callback({ body: error ?? "unknown error", statusCode: 500 });
-        };
 
 /**
  * Extracts the real path from a request URL, excluding query parameters.

@@ -85,6 +85,13 @@ const PART_SIZE = 16 * 1024 * 1024;
  * - Maximum 10,000 parts per upload (S3 limitation)
  * - Part size is configurable (default: 16MB, minimum: 5MB)
  * - Failed multipart uploads are automatically aborted
+ *
+ * ## Supported Operations
+ * - ✅ create, write, delete, get, getStream, list, update, copy, move
+ * - ✅ Batch operations: deleteBatch, copyBatch, moveBatch (inherited from BaseStorage)
+ * - ❌ exists: Not implemented (use get() and catch FILE_NOT_FOUND error)
+ * - ❌ getUrl: Not implemented (presigned URLs available via buildPresigned for clientDirectUpload)
+ * - ❌ getUploadUrl: Not implemented (presigned URLs available via buildPresigned for clientDirectUpload)
  */
 class S3Storage extends BaseStorage<S3File, FileReturn> {
     public static override readonly name: string = "s3";

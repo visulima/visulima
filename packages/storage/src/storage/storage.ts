@@ -89,14 +89,47 @@ const defaults: BaseStorageOptions = {
  * - Implementations can override caching behavior if needed
  */
 abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileReturn = FileReturn> {
+    /**
+     * Hook called when a new file is created.
+     * @param file The newly created file object.
+     * @remarks This hook is called after file metadata is saved but before returning the file.
+     * Can be used for side effects like logging, notifications, or custom processing.
+     */
     public onCreate: (file: TFile) => Promise<void> | void;
 
+    /**
+     * Hook called when file metadata is updated.
+     * @param file The updated file object.
+     * @remarks This hook is called after metadata is updated and saved.
+     * Can be used for side effects like logging or custom processing.
+     */
     public onUpdate: (file: TFile) => Promise<void> | void;
 
+    /**
+     * Hook called when a file upload is completed.
+     * @param file The completed file object.
+     * @param response The response object that can be modified in place (headers, statusCode, body).
+     * @param request Optional request object for additional context.
+     * @remarks This hook is called when file status becomes "completed".
+     * The response object can be modified directly to add headers or change the status code.
+     */
     public onComplete: (file: TFile, response: unknown, request?: unknown) => Promise<void> | void;
 
+    /**
+     * Hook called when a file is deleted.
+     * @param file The deleted file object.
+     * @remarks This hook is called after the file is deleted but before returning.
+     * Can be used for side effects like cleanup or logging.
+     */
     public onDelete: (file: TFile) => Promise<void> | void;
 
+    /**
+     * Hook called when an error occurs during storage operations.
+     * @param error The HTTP error object that can be modified in place.
+     * @remarks This hook allows customizing error responses by modifying the error object.
+     * The error object can be modified to change headers, statusCode, or body properties.
+     * Error formatting happens in handlers after this hook is called.
+     */
     public onError: (error: HttpError) => Promise<void> | void;
 
     public isReady = true;

@@ -1,4 +1,4 @@
-import { createQuery } from "@tanstack/svelte-query";
+import { QueryClient, createQuery } from "@tanstack/svelte-query";
 import { derived, get, type Readable } from "svelte/store";
 
 import { buildUrl, extractFileMetaFromHeaders, storageQueryKeys } from "../core";
@@ -13,6 +13,8 @@ export interface CreateGetFileOptions {
     transform?: Readable<Record<string, string | number | boolean> | undefined> | Record<string, string | number | boolean>;
     /** Whether to enable the query */
     enabled?: Readable<boolean> | boolean;
+    /** Optional QueryClient to use */
+    queryClient?: QueryClient;
 }
 
 export interface CreateGetFileReturn {
@@ -35,7 +37,7 @@ export interface CreateGetFileReturn {
  * @returns File fetching functions and state stores
  */
 export const createGetFile = (options: CreateGetFileOptions): CreateGetFileReturn => {
-    const { endpoint, id, transform, enabled = true } = options;
+    const { endpoint, id, transform, enabled = true, queryClient } = options;
 
     // Convert to stores if needed
     const idStore: Readable<string> = typeof id === "object" && "subscribe" in id ? id : derived([], () => id as string);
@@ -47,43 +49,54 @@ export const createGetFile = (options: CreateGetFileOptions): CreateGetFileRetur
     const enabledDerived = derived([enabledStore, idStore], ([$enabled, $id]) => $enabled && !!$id);
     const queryKeyDerived = derived([idStore, transformStore], ([$id, $transform]) => storageQueryKeys.files.detail($id, $transform));
 
-    const query = createQuery(() => {
-        const currentId = get(idStore);
-        const currentTransform = get(transformStore);
+    const query = createQuery(
+        () => {
+            const currentId = get(idStore);
+            const currentTransform = get(transformStore);
 
-        return {
-            enabled: get(enabledDerived),
-            queryFn: async () => {
-                const url = buildUrl(endpoint, currentId, currentTransform);
-                const response = await fetch(url, {
-                    method: "GET",
-                });
+            return {
+                enabled: get(enabledDerived),
+                queryFn: async () => {
+                    const url = buildUrl(endpoint, currentId, currentTransform);
+                    const response = await fetch(url, {
+                        method: "GET",
+                    });
 
-                if (!response.ok) {
-                    const errorData = await response.json().catch(() => ({
-                        error: {
-                            code: "RequestFailed",
-                            message: response.statusText,
-                        },
-                    }));
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({
+                            error: {
+                                code: "RequestFailed",
+                                message: response.statusText,
+                            },
+                        }));
 
-                    throw new Error(errorData.error?.message || `Failed to get file: ${response.status} ${response.statusText}`);
-                }
+                        throw new Error(errorData.error?.message || `Failed to get file: ${response.status} ${response.statusText}`);
+                    }
 
-                const blob = await response.blob();
-                const meta = extractFileMetaFromHeaders(currentId, response.headers);
+                    const blob = await response.blob();
+                    const meta = extractFileMetaFromHeaders(currentId, response.headers);
 
-                return { blob, meta };
-            },
-            queryKey: get(queryKeyDerived),
-        };
-    });
+                    return { blob, meta };
+                },
+                queryKey: get(queryKeyDerived),
+            };
+        },
+        () => queryClient
+    );
 
     return {
-        data: derived(query.data, ($data) => $data?.blob),
-        error: derived(query.error, ($error) => ($error as Error) || null),
-        isLoading: query.isLoading,
-        meta: derived(query.data, ($data) => $data?.meta || null),
+        get data() {
+            return query.data?.blob;
+        },
+        get error() {
+            return (query.error as Error) || null;
+        },
+        get isLoading() {
+            return query.isLoading;
+        },
+        get meta() {
+            return query.data?.meta || null;
+        },
         refetch: () => {
             query.refetch();
         },

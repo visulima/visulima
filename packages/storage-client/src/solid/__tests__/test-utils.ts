@@ -1,5 +1,5 @@
-import { QueryClient } from "@tanstack/solid-query";
-import { createRoot } from "solid-js";
+import { QueryClient, QueryClientProvider } from "@tanstack/solid-query";
+import { createRoot, type JSX } from "solid-js";
 
 /**
  * Creates a new QueryClient for each test to ensure isolation
@@ -20,17 +20,14 @@ export const createTestQueryClient = (): QueryClient => {
 };
 
 /**
- * Helper to run a test with a QueryClient
- * Solid.js requires running inside a root context
+ * Helper to run a test in a reactive root
  */
-export const runInQueryClientRoot = <T>(callback: (queryClient: QueryClient) => T): T => {
-    const queryClient = createTestQueryClient();
+export const runInRoot = <T>(callback: () => T): T => {
     let result: T;
-
-    createRoot(() => {
-        result = callback(queryClient);
+    createRoot((dispose) => {
+        result = callback();
+        // We do NOT dispose immediately to allow async updates
+        // This might leak memory in long running processes but is fine for short-lived tests
     });
-
     return result!;
 };
-

@@ -245,6 +245,9 @@ abstract class BaseHandler<
                         // onComplete modifies the response object directly
                         const responseFile = file as ResponseFile<TFile>;
 
+                        // Preserve headers before calling onComplete (in case onComplete clears them)
+                        const originalHeaders = responseFile.headers ? { ...responseFile.headers } : {};
+
                         // Ensure headers and statusCode exist before calling onComplete
                         if (responseFile.headers === undefined) {
                             responseFile.headers = {};
@@ -259,6 +262,18 @@ abstract class BaseHandler<
                         } catch (error) {
                             this.logger?.error("[onComplete error]: %O", error);
                             throw error;
+                        }
+
+                        // Restore headers if they were cleared by onComplete
+                        // Merge original headers with any modifications from onComplete
+                        if (Object.keys(responseFile.headers || {}).length === 0 && Object.keys(originalHeaders).length > 0) {
+                            responseFile.headers = originalHeaders;
+                        } else if (responseFile.headers && Object.keys(originalHeaders).length > 0) {
+                            // Merge original headers with onComplete modifications (original takes precedence for critical headers)
+                            responseFile.headers = {
+                                ...originalHeaders,
+                                ...responseFile.headers,
+                            };
                         }
 
                         this.finish(request, response, responseFile);
@@ -870,18 +885,37 @@ abstract class BaseHandler<
      * @param uploadResponse Final upload response data containing body, headers, and status code
      */
     protected finish(_request: NodeRequest, response: NodeResponse, uploadResponse: UploadResponse | ResponseFile<TFile>): void {
-        const { statusCode } = uploadResponse;
+        // Check if this is a ResponseFile (has 'id' property and 'headers' property) or UploadResponse
+        // ResponseFile extends TFile and adds headers/statusCode, but doesn't have a 'body' property
+        // UploadResponse has a 'body' property
+        const isResponseFile = "id" in uploadResponse && "headers" in uploadResponse && !("body" in uploadResponse);
 
-        let { body, headers } = uploadResponse as UploadResponse;
+        let body: unknown;
+        let headers: Record<string, string | number>;
+        let statusCode: number;
 
-        // If body is not set, this might be a ResponseFile where the file data is spread directly
-        // In that case, use the file object itself as the body
-        if (body === undefined && "id" in uploadResponse) {
-            // This is a ResponseFile - extract file properties for body
-            const { headers: fileHeaders, statusCode: fileStatusCode, ...fileData } = uploadResponse as ResponseFile<TFile>;
+        if (isResponseFile) {
+            // This is a ResponseFile - extract file properties for body and preserve headers
+            const responseFile = uploadResponse as ResponseFile<TFile>;
+            
+            // Explicitly get headers and statusCode to ensure they're preserved
+            const fileHeaders = responseFile.headers || {};
+            const fileStatusCode = responseFile.statusCode || 200;
+            
+            // Extract file data (excluding headers and statusCode)
+            const { headers: _, statusCode: __, ...fileData } = responseFile;
 
             body = fileData;
-            headers = fileHeaders || headers || {};
+            // Create a new object to ensure headers are preserved
+            headers = { ...fileHeaders };
+            statusCode = fileStatusCode;
+        } else {
+            // This is an UploadResponse
+            const uploadResp = uploadResponse as UploadResponse;
+
+            body = uploadResp.body;
+            headers = uploadResp.headers || {};
+            statusCode = uploadResp.statusCode;
         }
 
         if (body && typeof body === "object" && (body as TFile).content !== undefined) {
@@ -1056,7 +1090,26 @@ abstract class BaseHandler<
                 throw error;
             }
 
-            return this.createResponse(responseFile);
+            // Extract file data from responseFile (excluding headers and statusCode) for the body
+            const { headers: responseFileHeaders, statusCode: responseFileStatusCode, ...fileData } = responseFile;
+            
+            // Remove non-serializable properties
+            const cleanFileData = { ...fileData };
+            if ("content" in cleanFileData) {
+                delete cleanFileData.content;
+            }
+            if ("stream" in cleanFileData) {
+                delete cleanFileData.stream;
+            }
+
+            this.logger?.debug("[handleFetchResponse] completed file - fileData keys: %O", Object.keys(fileData));
+            this.logger?.debug("[handleFetchResponse] completed file - cleanFileData: %O", cleanFileData);
+
+            return this.createResponse({
+                body: cleanFileData,
+                headers: responseFileHeaders || headers,
+                statusCode: responseFileStatusCode || statusCode || 200,
+            });
         }
 
         // Ensure Location header is present and properly exposed for TUS protocol
@@ -1094,7 +1147,8 @@ abstract class BaseHandler<
 
         if (statusCode >= 200 && statusCode < 300) {
             // Create a clean copy of basicFile and remove non-serializable properties
-            responseBody = { ...basicFile };
+            // Ensure we always have a body object, even if basicFile is empty
+            responseBody = Object.keys(basicFile).length > 0 ? { ...basicFile } : {};
 
             // Remove content property (Buffer) as it shouldn't be in JSON response
             if ("content" in responseBody) {
@@ -1104,6 +1158,11 @@ abstract class BaseHandler<
             // Remove stream property if present (not serializable)
             if ("stream" in responseBody) {
                 delete responseBody.stream;
+            }
+
+            // Ensure we have at least an empty object for JSON serialization
+            if (Object.keys(responseBody).length === 0) {
+                responseBody = {};
             }
         }
 
@@ -1172,15 +1231,27 @@ abstract class BaseHandler<
     protected createResponse(uploadResponse: UploadResponse): globalThis.Response {
         const { body, headers = {}, statusCode } = uploadResponse;
 
-        let responseBody: BodyInit | undefined;
+        let responseBody: BodyInit | null | undefined = undefined;
 
-        if (typeof body === "string") {
+        // For 204 No Content, body must be null or undefined (Web API Response requirement)
+        if (statusCode === 204) {
+            responseBody = null;
+        } else if (typeof body === "string") {
             responseBody = body;
         } else if (body instanceof Buffer) {
             responseBody = body;
         } else if (body && typeof body === "object") {
             responseBody = JSON.stringify(body);
 
+            if (!headers["Content-Type"]) {
+                headers["Content-Type"] = HeaderUtilities.createContentType({
+                    charset: "utf8",
+                    mediaType: "application/json",
+                });
+            }
+        } else if (body === undefined && statusCode >= 200 && statusCode < 300) {
+            // For successful responses without a body (except 204), return empty JSON object
+            responseBody = "{}";
             if (!headers["Content-Type"]) {
                 headers["Content-Type"] = HeaderUtilities.createContentType({
                     charset: "utf8",

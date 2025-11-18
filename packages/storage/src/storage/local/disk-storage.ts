@@ -330,6 +330,14 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
         });
     }
 
+    /**
+     * Gets an uploaded file as a readable stream for efficient large file handling.
+     * @param query File query containing the file ID to stream.
+     * @param query.id File ID to stream.
+     * @returns Promise resolving to an object containing the stream, headers, and size.
+     * @throws {UploadError} If the file cannot be found (ERRORS.FILE_NOT_FOUND) or has expired (ERRORS.GONE).
+     * @remarks Creates a readable stream directly from the file system for efficient memory usage.
+     */
     public override async getStream({ id }: FileQuery): Promise<{ headers?: Record<string, string>; size?: number; stream: Readable }> {
         return this.instrumentOperation("getStream", async () => {
             try {
@@ -365,7 +373,7 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
      * @param query File query containing the file ID to delete.
      * @param query.id File ID to delete.
      * @returns Promise resolving to the deleted file object with status: "deleted".
-     * @throws {Error} If the file metadata cannot be found.
+     * @throws {UploadError} If the file metadata cannot be found.
      */
     public async delete({ id }: FileQuery): Promise<TFile> {
         return this.instrumentOperation("delete", async () => {
@@ -387,7 +395,7 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
      * @param name Source file name/ID.
      * @param destination Destination file name/ID.
      * @returns Promise resolving to the copied file object.
-     * @throws {Error} If the source file cannot be found.
+     * @throws {UploadError} If the source file cannot be found.
      */
     public async copy(name: string, destination: string): Promise<TFile> {
         return this.instrumentOperation("copy", async () => {
@@ -432,6 +440,11 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
         });
     }
 
+    /**
+     * Retrieves a list of uploaded files.
+     * @returns Promise resolving to an array of file metadata objects.
+     * @remarks Walks the storage directory and returns all files, excluding metadata files.
+     */
     public override async list(): Promise<TFile[]> {
         return this.instrumentOperation("list", async () => {
             const config = {

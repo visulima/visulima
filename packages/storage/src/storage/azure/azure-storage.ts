@@ -17,6 +17,17 @@ import AzureFile from "./azure-file";
 import AzureMetaStorage from "./azure-meta-storage";
 import type { AzureStorageOptions } from "./types";
 
+/**
+ * Azure Blob Storage implementation.
+ * @remarks
+ * ## Supported Operations
+ * - ✅ create, write, delete, get, list, update, copy, move
+ * - ✅ Batch operations: deleteBatch, copyBatch, moveBatch (inherited from BaseStorage)
+ * - ❌ exists: Not implemented (use get() and catch FILE_NOT_FOUND error)
+ * - ❌ getStream: Not implemented (use get() for file retrieval)
+ * - ❌ getUrl: Not implemented (Azure Blob URLs not supported)
+ * - ❌ getUploadUrl: Not implemented (Azure Blob upload URLs handled internally)
+ */
 class AzureStorage extends BaseStorage<AzureFile, FileReturn> {
     public static override readonly name: string = "azure";
 
