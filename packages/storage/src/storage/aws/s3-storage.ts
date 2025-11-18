@@ -31,7 +31,7 @@ import type { HttpHandlerOptions, SdkStream } from "@aws-sdk/types";
 import { parseBytes } from "@visulima/humanizer";
 
 import { detectFileTypeFromStream } from "../../utils/detect-file-type";
-import { ERRORS, throwErrorCode } from "../../utils/errors";
+import { ERRORS, throwErrorCode, UploadError } from "../../utils/errors";
 import mapValues from "../../utils/primitives/map-values";
 import toMilliseconds from "../../utils/primitives/to-milliseconds";
 import toSeconds from "../../utils/primitives/to-seconds";
@@ -51,7 +51,7 @@ const MIN_PART_SIZE = 5 * 1024 * 1024;
 const PART_SIZE = 16 * 1024 * 1024;
 
 /**
- * S3 storage based backend.
+ * Amazon S3 storage implementation.
  * @example
  * ```ts
  * const storage = new S3Storage({
@@ -65,6 +65,26 @@ const PART_SIZE = 16 * 1024 * 1024;
  *  metaStorageConfig: { directory: '/tmp/upload-metafiles' }
  * });
  * ```
+ * @remarks
+ * ## Error Handling
+ * - S3 API errors are normalized with AWS-specific context
+ * - Errors include S3 error codes and metadata for debugging
+ * - Batch operations handle individual failures gracefully
+ *
+ * ## Retry Behavior
+ * - All S3 API calls are wrapped with configurable retry logic via `retryConfig` option
+ * - Default retryable status codes: 408 (Request Timeout), 429 (Too Many Requests),
+ * 500 (Internal Server Error), 502 (Bad Gateway), 503 (Service Unavailable), 504 (Gateway Timeout)
+ * - Retries server-side faults ($fault === "server") automatically
+ * - Custom `shouldRetry` function can be provided for advanced retry logic
+ * - Default retry configuration: maxRetries: 3, initialDelay: 1000ms, maxDelay: 30000ms, backoffMultiplier: 2 (exponential backoff)
+ * - Retry wrapper handles transient network errors and rate limiting
+ *
+ * ## Multipart Uploads
+ * - Large files are automatically split into multipart uploads
+ * - Maximum 10,000 parts per upload (S3 limitation)
+ * - Part size is configurable (default: 16MB, minimum: 5MB)
+ * - Failed multipart uploads are automatically aborted
  */
 class S3Storage extends BaseStorage<S3File, FileReturn> {
     public static override readonly name: string = "s3";
@@ -179,6 +199,12 @@ class S3Storage extends BaseStorage<S3File, FileReturn> {
             .catch((error) => this.logger?.error("Storage access check failed: %O", error));
     }
 
+    /**
+     * Normalizes AWS S3 errors with S3-specific context.
+     * @param error AWS error object with metadata.
+     * @returns Normalized HTTP error with S3 error codes and status codes.
+     * @remarks Extracts HTTP status codes and error codes from AWS SDK error metadata.
+     */
     public override normalizeError(error: AwsError): HttpError {
         if (error.$metadata) {
             return {
@@ -192,6 +218,18 @@ class S3Storage extends BaseStorage<S3File, FileReturn> {
         return super.normalizeError(error);
     }
 
+    /**
+     * Creates a new S3 multipart upload.
+     * @param config File initialization configuration.
+     * @returns Promise resolving to the created file object with UploadId.
+     * @throws {UploadError} If validation fails or S3 API call fails.
+     * @remarks
+     * All S3 API calls are retried automatically on transient failures.
+     * Supports TTL (time-to-live) option in config.
+     * Creates multipart upload for chunked file uploads.
+     * Returns presigned URLs if clientDirectUpload is enabled.
+     * Retries CreateMultipartUploadCommand on failure.
+     */
     public async create(config: FileInit): Promise<S3File> {
         return this.instrumentOperation("create", async () => {
             // Handle TTL option
@@ -250,6 +288,8 @@ class S3Storage extends BaseStorage<S3File, FileReturn> {
 
             file.status = "created";
 
+            await this.onCreate(file);
+
             if (this.config.clientDirectUpload) {
                 return this.buildPresigned(file);
             }
@@ -258,6 +298,19 @@ class S3Storage extends BaseStorage<S3File, FileReturn> {
         });
     }
 
+    /**
+     * Writes data to an S3 multipart upload.
+     * @param part File part containing data to write, file query, or full file object.
+     * @returns Promise resolving to the updated file object.
+     * @throws {UploadError} If file is expired (ERRORS.GONE), conflicts occur (ERRORS.FILE_CONFLICT), or exceeds max parts.
+     * @remarks
+     * All S3 API calls (UploadPartCommand, CompleteMultipartUploadCommand) are retried automatically.
+     * Supports chunked multipart uploads with automatic part management.
+     * Automatically detects file type from stream on first part if contentType is not set.
+     * Maximum 10,000 parts per upload (S3 limitation).
+     * Automatically completes multipart upload when all bytes are written.
+     * Retries UploadPartCommand on transient failures.
+     */
     public async write(part: FilePart | FileQuery | S3File): Promise<S3File> {
         return this.instrumentOperation("write", async () => {
             let file: S3File;
@@ -370,10 +423,12 @@ class S3Storage extends BaseStorage<S3File, FileReturn> {
     }
 
     /**
-     * Deletes an upload and its metadata
-     * @param query - File query containing the file ID to delete
-     * @returns Promise resolving to the deleted file object with status: "deleted"
-     * @throws {Error} If the file metadata cannot be found
+     * Deletes an upload and its metadata.
+     * @param query File query containing the file ID to delete.
+     * @param query.id File ID to delete.
+     * @returns Promise resolving to the deleted file object with status: "deleted".
+     * @throws {UploadError} If the file metadata cannot be found.
+     * @remarks All S3 API calls (DeleteObjectCommand, AbortMultipartUploadCommand) are retried automatically.
      */
     public async delete({ id }: FileQuery): Promise<S3File> {
         return this.instrumentOperation("delete", async () => {
@@ -383,7 +438,11 @@ class S3Storage extends BaseStorage<S3File, FileReturn> {
 
             await Promise.all([this.deleteMeta(file.id), this.retry(() => this.abortMultipartUpload(file))]);
 
-            return { ...file };
+            const deletedFile = { ...file };
+
+            await this.onDelete(deletedFile);
+
+            return deletedFile;
         });
     }
 
@@ -398,12 +457,14 @@ class S3Storage extends BaseStorage<S3File, FileReturn> {
     }
 
     /**
-     * Copy an upload file to a new location
-     * @param name - Source file name/ID
-     * @param destination - Destination file name/ID
-     * @param options - Optional copy options including storage class
-     * @returns Promise resolving to the copied file object
-     * @throws {Error} If the source file cannot be found
+     * Copies an upload file to a new location.
+     * @param name Source file name/ID.
+     * @param destination Destination file name/ID.
+     * @param options Optional copy options including storage class.
+     * @param options.storageClass Optional S3 storage class for the copied object.
+     * @returns Promise resolving to the copied file object.
+     * @throws {UploadError} If the source file cannot be found.
+     * @remarks All S3 API calls (CopyObjectCommand) are retried automatically. Supports absolute paths for cross-bucket copies.
      */
     public async copy(name: string, destination: string, options?: { storageClass?: string }): Promise<S3File> {
         return this.instrumentOperation("copy", async () => {
@@ -432,16 +493,17 @@ class S3Storage extends BaseStorage<S3File, FileReturn> {
             await this.retry(() => this.client.send(new CopyObjectCommand(parameters)));
 
             // Return copied file with destination name (use Key for the actual destination name)
-            return { ...sourceFile, name: Key, id: Key } as S3File;
+            return { ...sourceFile, id: Key, name: Key } as S3File;
         });
     }
 
     /**
-     * Move an upload file to a new location
-     * @param name - Source file name/ID
-     * @param destination - Destination file name/ID
-     * @returns Promise resolving to the moved file object
-     * @throws {Error} If the source file cannot be found
+     * Moves an upload file to a new location.
+     * @param name Source file name/ID.
+     * @param destination Destination file name/ID.
+     * @returns Promise resolving to the moved file object.
+     * @throws {UploadError} If the source file cannot be found.
+     * @remarks All S3 API calls (CopyObjectCommand, DeleteObjectCommand) are retried automatically. Implemented as copy then delete.
      */
     public async move(name: string, destination: string): Promise<S3File> {
         return this.instrumentOperation("move", async () => {
@@ -508,6 +570,17 @@ class S3Storage extends BaseStorage<S3File, FileReturn> {
         );
     }
 
+    /**
+     * Gets an uploaded file by ID.
+     * @param query File query containing the file ID to retrieve.
+     * @param query.id File ID to retrieve.
+     * @returns Promise resolving to the file data including content buffer.
+     * @throws {UploadError} If the file cannot be found (ERRORS.FILE_NOT_FOUND) or has expired (ERRORS.GONE).
+     * @remarks
+     * All S3 API calls (GetObjectCommand) are retried automatically.
+     * Loads the entire file content into memory as a Buffer.
+     * For large files, consider using getStream() instead.
+     */
     public async get({ id }: FileQuery): Promise<FileReturn> {
         return this.instrumentOperation("get", async () => {
             const parameters = {

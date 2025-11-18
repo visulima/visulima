@@ -25,7 +25,22 @@ import type { FileReturn } from "../utils/file/types";
 import LocalMetaStorage from "./local-meta-storage";
 
 /**
- * Local Disk Storage
+ * Local disk-based storage implementation.
+ * @template TFile The file type used by this storage backend.
+ * @remarks
+ * ## Error Handling
+ * - Filesystem operations throw errors directly (no retry logic)
+ * - File not found errors are thrown immediately
+ * - Permission errors are propagated as-is
+ *
+ * ## Retry Behavior
+ * - No automatic retries (filesystem operations are typically immediate)
+ * - Errors are thrown directly for immediate feedback
+ *
+ * ## File Paths
+ * - Files are stored in the configured directory
+ * - Metadata files use the `.META` suffix by default
+ * - File paths are resolved relative to the storage directory
  */
 class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileReturn> {
     public static override readonly name: string = "disk";
@@ -59,10 +74,25 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
             });
     }
 
+    /**
+     * Normalizes errors with disk storage context.
+     * @param error The error to normalize.
+     * @returns Normalized HTTP error.
+     */
     public override normalizeError(error: Error): HttpError {
         return super.normalizeError(error);
     }
 
+    /**
+     * Creates a new file upload and saves its metadata.
+     * @param fileInit File initialization configuration.
+     * @returns Promise resolving to the created file object.
+     * @throws {Error} If validation fails or file already exists and is completed.
+     * @remarks
+     * Supports TTL (time-to-live) option in fileInit.
+     * Creates the file on disk if it doesn't exist.
+     * Returns existing file if it's already completed.
+     */
     public async create(fileInit: FileInit): Promise<TFile> {
         return this.instrumentOperation("create", async () => {
             // Handle TTL option
@@ -108,10 +138,24 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
 
             await this.saveMeta(file as TFile);
 
+            await this.onCreate(file as TFile);
+
             return file as TFile;
         });
     }
 
+    /**
+     * Writes data to a file upload.
+     * @param part File part containing data to write, file query, or full file object.
+     * @returns Promise resolving to the updated file object.
+     * @throws {Error} If file is expired (ERRORS.GONE), locked (ERRORS.FILE_LOCKED), or conflicts occur (ERRORS.FILE_CONFLICT).
+     * @remarks
+     * Supports chunked uploads with start position.
+     * Automatically detects file type from stream on first chunk if contentType is not set.
+     * Validates checksum algorithms if provided.
+     * Uses file locking to prevent concurrent writes.
+     * Updates file status to "completed" when all bytes are written.
+     */
     public async write(part: FilePart | FileQuery | TFile): Promise<TFile> {
         return this.instrumentOperation("write", async () => {
             let file: TFile;
@@ -210,9 +254,19 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
                     file.bytesWritten = Math.max(file.bytesWritten || 0, expectedBytesWritten);
                     // Also update with the actual bytes written from lazyWrite
                     file.bytesWritten = Math.max(file.bytesWritten || 0, bytesWritten);
+                    const previousStatus = file.status;
+
                     file.status = getFileStatus(file);
 
                     await this.saveMeta(file);
+
+                    // Call onComplete hook when file status becomes "completed"
+                    // Note: onComplete in storage layer doesn't have request/response context
+                    // It's only called from handlers with full context
+                    if (file.status === "completed" && previousStatus !== "completed") {
+                        // Storage-level onComplete is a no-op since it doesn't have response context
+                        // The actual onComplete is called from handlers with response object
+                    }
                 } else {
                     await ensureFile(path);
                     file.bytesWritten = 0;
@@ -230,8 +284,15 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
     }
 
     /**
-     * Get uploaded file.
-     * @param id
+     * Gets an uploaded file by ID.
+     * @param query File query containing the file ID to retrieve.
+     * @param query.id File ID to retrieve.
+     * @returns Promise resolving to the file data including content buffer.
+     * @throws {Error} If the file cannot be found (ERRORS.FILE_NOT_FOUND) or has expired (ERRORS.GONE).
+     * @remarks
+     * Loads the entire file content into memory as a Buffer.
+     * For large files, consider using getStream() instead.
+     * Includes ETag (MD5 hash) for content verification.
      */
     public async get({ id }: FileQuery): Promise<FileReturn> {
         return this.instrumentOperation("get", async () => {
@@ -300,10 +361,11 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
     }
 
     /**
-     * Deletes an upload and its metadata
-     * @param query - File query containing the file ID to delete
-     * @returns Promise resolving to the deleted file object with status: "deleted"
-     * @throws {Error} If the file metadata cannot be found
+     * Deletes an upload and its metadata.
+     * @param query File query containing the file ID to delete.
+     * @param query.id File ID to delete.
+     * @returns Promise resolving to the deleted file object with status: "deleted".
+     * @throws {Error} If the file metadata cannot be found.
      */
     public async delete({ id }: FileQuery): Promise<TFile> {
         return this.instrumentOperation("delete", async () => {
@@ -312,16 +374,20 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
             await remove(this.getFilePath(file.name));
             await this.deleteMeta(id);
 
-            return { ...file, status: "deleted" };
+            const deletedFile = { ...file, status: "deleted" } as TFile;
+
+            await this.onDelete(deletedFile);
+
+            return deletedFile;
         });
     }
 
     /**
-     * Copy an upload file to a new location
-     * @param name - Source file name/ID
-     * @param destination - Destination file name/ID
-     * @returns Promise resolving to the copied file object
-     * @throws {Error} If the source file cannot be found
+     * Copies an upload file to a new location.
+     * @param name Source file name/ID.
+     * @param destination Destination file name/ID.
+     * @returns Promise resolving to the copied file object.
+     * @throws {Error} If the source file cannot be found.
      */
     public async copy(name: string, destination: string): Promise<TFile> {
         return this.instrumentOperation("copy", async () => {
@@ -335,11 +401,11 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
     }
 
     /**
-     * Move an upload file to a new location
-     * @param name - Source file name/ID
-     * @param destination - Destination file name/ID
-     * @returns Promise resolving to the moved file object
-     * @throws {Error} If the source file cannot be found
+     * Moves an upload file to a new location.
+     * @param name Source file name/ID.
+     * @param destination Destination file name/ID.
+     * @returns Promise resolving to the moved file object.
+     * @throws {Error} If the source file cannot be found.
      */
     public async move(name: string, destination: string): Promise<TFile> {
         return this.instrumentOperation("move", async () => {

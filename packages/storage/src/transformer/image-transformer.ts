@@ -41,7 +41,9 @@ import type {
 import { getFormatFromContentType, isValidMediaType } from "./utils";
 
 /**
- * Image transformer that uses storage backends to retrieve and transform images
+ * Image transformer that uses storage backends to retrieve and transform images.
+ * @template TFile The file type used by this transformer.
+ * @template TFileReturn The return type for file retrieval operations.
  *
  * Supports URL-based transformations with query parameters for on-demand image processing.
  * @example
@@ -84,8 +86,8 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
 > {
     /**
      * Creates a new ImageTransformer instance.
-     * @param storage The storage backend for retrieving and storing image files
-     * @param config Configuration options for image transformation including cache settings and size limits
+     * @param storage The storage backend for retrieving and storing image files.
+     * @param config Configuration options for image transformation including cache settings and size limits.
      */
     public constructor(storage: BaseStorage<TFile, TFileReturn>, config: ImageTransformerConfig = {}) {
         const logger = config.logger || storage.logger;
@@ -102,255 +104,361 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
     }
 
     /**
-     * Resize an image to specified dimensions with optional fit mode.
-     * @param fileId Unique identifier of the image file to resize
-     * @param options Resize options including width, height, and fit mode
-     * @returns Promise resolving to transformed image result
+     * Resizes an image to specified dimensions with optional fit mode.
+     * @param fileId Unique identifier of the image file to resize.
+     * @param options Resize options including width, height, and fit mode.
+     * @returns Promise resolving to transformed image result.
      */
     public async resize(fileId: string, options: ResizeOptions): Promise<TransformResult<TFileReturn>> {
         return this.transform(fileId, [{ options, type: "resize" }]);
     }
 
     /**
-     * Crop an image
+     * Crops an image to the specified region.
+     * @param fileId Unique identifier of the image file to crop.
+     * @param options Crop options including region coordinates.
+     * @returns Promise resolving to transformed image result.
      */
     public async crop(fileId: string, options: CropOptions): Promise<TransformResult<TFileReturn>> {
         return this.transform(fileId, [{ options, type: "crop" }]);
     }
 
     /**
-     * Rotate an image
+     * Rotates an image by the specified angle.
+     * @param fileId Unique identifier of the image file to rotate.
+     * @param options Rotate options including angle.
+     * @returns Promise resolving to transformed image result.
      */
     public async rotate(fileId: string, options: RotateOptions): Promise<TransformResult<TFileReturn>> {
         return this.transform(fileId, [{ options, type: "rotate" }]);
     }
 
     /**
-     * Convert image format
+     * Converts an image to the specified format.
+     * @param fileId Unique identifier of the image file to convert.
+     * @param format Target image format (e.g., "jpeg", "png", "webp").
+     * @param options Additional transform options.
+     * @returns Promise resolving to transformed image result.
      */
     public async convertFormat(fileId: string, format: string, options: TransformOptions = {}): Promise<TransformResult<TFileReturn>> {
         return this.transform(fileId, [{ options: { ...options, format: format as any }, type: "format" }]);
     }
 
     /**
-     * Apply sharpening to an image
+     * Applies sharpening filter to an image.
+     * @param fileId Unique identifier of the image file to sharpen.
+     * @param options Sharpen options including sigma and flat/jagged threshold.
+     * @returns Promise resolving to transformed image result.
      */
     public async sharpen(fileId: string, options: SharpenOptions = {}): Promise<TransformResult<TFileReturn>> {
         return this.transform(fileId, [{ options, type: "sharpen" }]);
     }
 
     /**
-     * Apply blurring to an image
+     * Applies blurring filter to an image.
+     * @param fileId Unique identifier of the image file to blur.
+     * @param options Blur options including sigma.
+     * @returns Promise resolving to transformed image result.
      */
     public async blur(fileId: string, options: BlurOptions = {}): Promise<TransformResult<TFileReturn>> {
         return this.transform(fileId, [{ options, type: "blur" }]);
     }
 
     /**
-     * Apply median filter to an image
+     * Applies median filter to an image for noise reduction.
+     * @param fileId Unique identifier of the image file to process.
+     * @param options Median filter options including radius.
+     * @returns Promise resolving to transformed image result.
      */
     public async median(fileId: string, options: MedianOptions = {}): Promise<TransformResult<TFileReturn>> {
         return this.transform(fileId, [{ options, type: "median" }]);
     }
 
     /**
-     * Apply CLAHE (Contrast Limited Adaptive Histogram Equalization) to an image
+     * Applies CLAHE (Contrast Limited Adaptive Histogram Equalization) to an image.
+     * @param fileId Unique identifier of the image file to process.
+     * @param options CLAHE options including width, height, and maxSlope.
+     * @returns Promise resolving to transformed image result.
      */
     public async clahe(fileId: string, options: CLAHEOptions = {}): Promise<TransformResult<TFileReturn>> {
         return this.transform(fileId, [{ options, type: "clahe" }]);
     }
 
     /**
-     * Apply convolution to an image
+     * Applies convolution kernel to an image.
+     * @param fileId Unique identifier of the image file to process.
+     * @param options Convolve options including kernel matrix.
+     * @returns Promise resolving to transformed image result.
      */
     public async convolve(fileId: string, options: ConvolveOptions): Promise<TransformResult<TFileReturn>> {
         return this.transform(fileId, [{ options, type: "convolve" }]);
     }
 
     /**
-     * Apply thresholding to an image
+     * Applies thresholding to an image to create a binary image.
+     * @param fileId Unique identifier of the image file to process.
+     * @param options Threshold options including threshold value.
+     * @returns Promise resolving to transformed image result.
      */
     public async threshold(fileId: string, options: ThresholdOptions = {}): Promise<TransformResult<TFileReturn>> {
         return this.transform(fileId, [{ options, type: "threshold" }]);
     }
 
     /**
-     * Apply boolean operation to an image
+     * Applies boolean operation to an image.
+     * @param fileId Unique identifier of the image file to process.
+     * @param options Boolean operation options including operator and operand.
+     * @returns Promise resolving to transformed image result.
      */
     public async boolean(fileId: string, options: BooleanOptions): Promise<TransformResult<TFileReturn>> {
         return this.transform(fileId, [{ options, type: "boolean" }]);
     }
 
     /**
-     * Apply linear transformation to an image
+     * Applies linear transformation to an image.
+     * @param fileId Unique identifier of the image file to process.
+     * @param options Linear transformation options including a and b coefficients.
+     * @returns Promise resolving to transformed image result.
      */
     public async linear(fileId: string, options: LinearOptions): Promise<TransformResult<TFileReturn>> {
         return this.transform(fileId, [{ options, type: "linear" }]);
     }
 
     /**
-     * Apply recombine transformation to an image
+     * Applies recombine transformation to an image using a matrix.
+     * @param fileId Unique identifier of the image file to process.
+     * @param options Recombine options including matrix coefficients.
+     * @returns Promise resolving to transformed image result.
      */
     public async recombine(fileId: string, options: RecombineOptions): Promise<TransformResult<TFileReturn>> {
         return this.transform(fileId, [{ options, type: "recombine" }]);
     }
 
     /**
-     * Apply modulation to an image
+     * Applies modulation (brightness, saturation, hue) to an image.
+     * @param fileId Unique identifier of the image file to process.
+     * @param options Modulate options including brightness, saturation, and hue.
+     * @returns Promise resolving to transformed image result.
      */
     public async modulate(fileId: string, options: ModulateOptions): Promise<TransformResult<TFileReturn>> {
         return this.transform(fileId, [{ options, type: "modulate" }]);
     }
 
     /**
-     * Apply tinting to an image
+     * Applies tinting to an image.
+     * @param fileId Unique identifier of the image file to process.
+     * @param options Tint options including RGB color values.
+     * @returns Promise resolving to transformed image result.
      */
     public async tint(fileId: string, options: TintOptions): Promise<TransformResult<TFileReturn>> {
         return this.transform(fileId, [{ options, type: "tint" }]);
     }
 
     /**
-     * Convert image to greyscale
+     * Converts an image to greyscale.
+     * @param fileId Unique identifier of the image file to convert.
+     * @param options Greyscale conversion options.
+     * @returns Promise resolving to transformed image result.
      */
     public async greyscale(fileId: string, options: GreyscaleOptions = {}): Promise<TransformResult<TFileReturn>> {
         return this.transform(fileId, [{ options, type: "greyscale" }]);
     }
 
     /**
-     * Convert image colourspace
+     * Converts an image to a different colourspace.
+     * @param fileId Unique identifier of the image file to convert.
+     * @param options Colourspace conversion options including target colourspace.
+     * @returns Promise resolving to transformed image result.
      */
     public async colourspace(fileId: string, options: ColourspaceOptions): Promise<TransformResult<TFileReturn>> {
         return this.transform(fileId, [{ options, type: "colourspace" }]);
     }
 
     /**
-     * Extract a channel from an image
+     * Extracts a specific channel from an image.
+     * @param fileId Unique identifier of the image file to process.
+     * @param options Extract channel options including channel index.
+     * @returns Promise resolving to transformed image result.
      */
     public async extractChannel(fileId: string, options: ExtractChannelOptions): Promise<TransformResult<TFileReturn>> {
         return this.transform(fileId, [{ options, type: "extractChannel" }]);
     }
 
     /**
-     * Join channels to an image
+     * Joins channels to an image.
+     * @param fileId Unique identifier of the image file to process.
+     * @param options Join channel options including channel sources.
+     * @returns Promise resolving to transformed image result.
      */
     public async joinChannel(fileId: string, options: JoinChannelOptions): Promise<TransformResult<TFileReturn>> {
         return this.transform(fileId, [{ options, type: "joinChannel" }]);
     }
 
     /**
-     * Apply band boolean operation to an image
+     * Applies band boolean operation to an image.
+     * @param fileId Unique identifier of the image file to process.
+     * @param options Band boolean options including operator.
+     * @returns Promise resolving to transformed image result.
      */
     public async bandbool(fileId: string, options: BandboolOptions): Promise<TransformResult<TFileReturn>> {
         return this.transform(fileId, [{ options, type: "bandbool" }]);
     }
 
     /**
-     * Auto-orient an image based on EXIF data
+     * Auto-orients an image based on EXIF orientation data.
+     * @param fileId Unique identifier of the image file to orient.
+     * @param options Additional transform options.
+     * @returns Promise resolving to transformed image result.
      */
     public async autoOrient(fileId: string, options: TransformOptions = {}): Promise<TransformResult<TFileReturn>> {
         return this.transform(fileId, [{ options, type: "autoOrient" }]);
     }
 
     /**
-     * Flip an image vertically
+     * Flips an image vertically.
+     * @param fileId Unique identifier of the image file to flip.
+     * @param options Additional transform options.
+     * @returns Promise resolving to transformed image result.
      */
     public async flip(fileId: string, options: TransformOptions = {}): Promise<TransformResult<TFileReturn>> {
         return this.transform(fileId, [{ options, type: "flip" }]);
     }
 
     /**
-     * Flop an image horizontally
+     * Flops an image horizontally.
+     * @param fileId Unique identifier of the image file to flop.
+     * @param options Additional transform options.
+     * @returns Promise resolving to transformed image result.
      */
     public async flop(fileId: string, options: TransformOptions = {}): Promise<TransformResult<TFileReturn>> {
         return this.transform(fileId, [{ options, type: "flop" }]);
     }
 
     /**
-     * Flatten image alpha channel
+     * Flattens an image alpha channel onto a background color.
+     * @param fileId Unique identifier of the image file to flatten.
+     * @param options Additional transform options.
+     * @returns Promise resolving to transformed image result.
      */
     public async flatten(fileId: string, options: TransformOptions = {}): Promise<TransformResult<TFileReturn>> {
         return this.transform(fileId, [{ options, type: "flatten" }]);
     }
 
     /**
-     * Unflatten image alpha channel
+     * Unflattens an image alpha channel.
+     * @param fileId Unique identifier of the image file to unflatten.
+     * @param options Additional transform options.
+     * @returns Promise resolving to transformed image result.
      */
     public async unflatten(fileId: string, options: TransformOptions = {}): Promise<TransformResult<TFileReturn>> {
         return this.transform(fileId, [{ options, type: "unflatten" }]);
     }
 
     /**
-     * Apply gamma correction to an image
+     * Applies gamma correction to an image.
+     * @param fileId Unique identifier of the image file to process.
+     * @param options Additional transform options.
+     * @returns Promise resolving to transformed image result.
      */
     public async gamma(fileId: string, options: TransformOptions = {}): Promise<TransformResult<TFileReturn>> {
         return this.transform(fileId, [{ options, type: "gamma" }]);
     }
 
     /**
-     * Negate (invert) an image
+     * Negates (inverts) an image.
+     * @param fileId Unique identifier of the image file to negate.
+     * @param options Additional transform options.
+     * @returns Promise resolving to transformed image result.
      */
     public async negate(fileId: string, options: TransformOptions = {}): Promise<TransformResult<TFileReturn>> {
         return this.transform(fileId, [{ options, type: "negate" }]);
     }
 
     /**
-     * Normalise an image
+     * Normalises an image by enhancing contrast.
+     * @param fileId Unique identifier of the image file to normalise.
+     * @param options Additional transform options.
+     * @returns Promise resolving to transformed image result.
      */
     public async normalise(fileId: string, options: TransformOptions = {}): Promise<TransformResult<TFileReturn>> {
         return this.transform(fileId, [{ options, type: "normalise" }]);
     }
 
     /**
-     * Apply affine transformation to an image
+     * Applies affine transformation to an image.
+     * @param fileId Unique identifier of the image file to transform.
+     * @param options Affine transformation options including matrix.
+     * @returns Promise resolving to transformed image result.
      */
     public async affine(fileId: string, options: AffineOptions): Promise<TransformResult<TFileReturn>> {
         return this.transform(fileId, [{ options, type: "affine" }]);
     }
 
     /**
-     * Apply dilation to an image
+     * Applies dilation (morphological operation) to an image.
+     * @param fileId Unique identifier of the image file to process.
+     * @param options Dilate options including iterations.
+     * @returns Promise resolving to transformed image result.
      */
     public async dilate(fileId: string, options: DilateOptions = {}): Promise<TransformResult<TFileReturn>> {
         return this.transform(fileId, [{ options, type: "dilate" }]);
     }
 
     /**
-     * Apply erosion to an image
+     * Applies erosion (morphological operation) to an image.
+     * @param fileId Unique identifier of the image file to process.
+     * @param options Erode options including iterations.
+     * @returns Promise resolving to transformed image result.
      */
     public async erode(fileId: string, options: ErodeOptions = {}): Promise<TransformResult<TFileReturn>> {
         return this.transform(fileId, [{ options, type: "erode" }]);
     }
 
     /**
-     * Set pipeline colourspace for an image
+     * Sets pipeline colourspace for an image.
+     * @param fileId Unique identifier of the image file to process.
+     * @param options Pipeline colourspace options including colourspace.
+     * @returns Promise resolving to transformed image result.
      */
     public async pipelineColourspace(fileId: string, options: PipelineColourspaceOptions): Promise<TransformResult<TFileReturn>> {
         return this.transform(fileId, [{ options, type: "pipelineColourspace" }]);
     }
 
     /**
-     * Convert colourspace of an image
+     * Converts colourspace of an image.
+     * @param fileId Unique identifier of the image file to convert.
+     * @param options ToColourspace options including target colourspace.
+     * @returns Promise resolving to transformed image result.
      */
     public async toColourspace(fileId: string, options: ToColourspaceOptions): Promise<TransformResult<TFileReturn>> {
         return this.transform(fileId, [{ options, type: "toColourspace" }]);
     }
 
     /**
-     * Remove alpha channel from an image
+     * Removes alpha channel from an image.
+     * @param fileId Unique identifier of the image file to process.
+     * @param options RemoveAlpha transformation options.
+     * @returns Promise resolving to transformed image result.
      */
     public async removeAlpha(fileId: string, options: RemoveAlphaOptions = {}): Promise<TransformResult<TFileReturn>> {
         return this.transform(fileId, [{ options, type: "removeAlpha" }]);
     }
 
     /**
-     * Ensure alpha channel in an image
+     * Ensures alpha channel exists in an image.
+     * @param fileId Unique identifier of the image file to process.
+     * @param options EnsureAlpha transformation options.
+     * @returns Promise resolving to transformed image result.
      */
     public async ensureAlpha(fileId: string, options: EnsureAlphaOptions = {}): Promise<TransformResult<TFileReturn>> {
         return this.transform(fileId, [{ options, type: "ensureAlpha" }]);
     }
 
     /**
-     * Apply a custom transformation pipeline
+     * Applies a custom transformation pipeline to an image.
+     * @param fileId Unique identifier of the image file to transform.
+     * @param steps Array of transformation steps to apply in sequence.
+     * @returns Promise resolving to transformed image result.
      */
     public async transform(fileId: string, steps: TransformationStep[]): Promise<TransformResult<TFileReturn>> {
         const fileQuery: FileQuery = { id: fileId };
@@ -384,7 +492,10 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
     }
 
     /**
-     * Stream transform a file (for large files, falls back to regular transform)
+     * Streams transform of a file (for large files, falls back to regular transform).
+     * @param fileId Unique identifier of the image file to transform.
+     * @param steps Array of transformation steps to apply in sequence.
+     * @returns Promise resolving to stream with headers and size information.
      */
     public override async transformStream(
         fileId: string,
@@ -407,10 +518,10 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
     }
 
     /**
-     * Apply multiple transformations in sequence using Sharp
-     * @param buffer The original image buffer
-     * @param steps Array of transformation steps to apply
-     * @returns Promise resolving to transformed image buffer
+     * Applies multiple transformations in sequence using Sharp.
+     * @param buffer The original image buffer.
+     * @param steps Array of transformation steps to apply.
+     * @returns Promise resolving to transformed image buffer.
      * @private
      */
     private async applyTransformations(buffer: Buffer, steps: TransformationStep[]): Promise<Buffer> {
@@ -570,10 +681,10 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
     }
 
     /**
-     * Apply resize transformation using Sharp
-     * @param sharpInstance The Sharp instance to modify
-     * @param options Resize transformation options
-     * @returns Modified Sharp instance with resize applied
+     * Applies resize transformation using Sharp.
+     * @param sharpInstance The Sharp instance to modify.
+     * @param options Resize transformation options.
+     * @returns Modified Sharp instance with resize applied.
      * @private
      */
     private applyResize(sharpInstance: Sharp, options: ResizeOptions): Sharp {
@@ -611,10 +722,10 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
     }
 
     /**
-     * Apply crop transformation using Sharp
-     * @param sharpInstance The Sharp instance to modify
-     * @param options Crop transformation options
-     * @returns Modified Sharp instance with crop applied
+     * Applies crop transformation using Sharp.
+     * @param sharpInstance The Sharp instance to modify.
+     * @param options Crop transformation options.
+     * @returns Modified Sharp instance with crop applied.
      * @private
      */
     private applyCrop(sharpInstance: Sharp, options: CropOptions): Sharp {
@@ -636,10 +747,10 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
     }
 
     /**
-     * Apply rotate transformation using Sharp
-     * @param sharpInstance The Sharp instance to modify
-     * @param options Rotate transformation options
-     * @returns Modified Sharp instance with rotation applied
+     * Applies rotate transformation using Sharp.
+     * @param sharpInstance The Sharp instance to modify.
+     * @param options Rotate transformation options.
+     * @returns Modified Sharp instance with rotation applied.
      * @private
      */
     private applyRotate(sharpInstance: Sharp, options: RotateOptions): Sharp {
@@ -658,10 +769,10 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
     }
 
     /**
-     * Apply sharpen transformation using Sharp
-     * @param sharpInstance The Sharp instance to modify
-     * @param options Sharpen transformation options
-     * @returns Modified Sharp instance with sharpening applied
+     * Applies sharpen transformation using Sharp.
+     * @param sharpInstance The Sharp instance to modify.
+     * @param options Sharpen transformation options.
+     * @returns Modified Sharp instance with sharpening applied.
      * @private
      */
     private applySharpen(sharpInstance: Sharp, options: SharpenOptions): Sharp {
@@ -684,10 +795,10 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
     }
 
     /**
-     * Apply blur transformation using Sharp
-     * @param sharpInstance The Sharp instance to modify
-     * @param options Blur transformation options
-     * @returns Modified Sharp instance with blurring applied
+     * Applies blur transformation using Sharp.
+     * @param sharpInstance The Sharp instance to modify.
+     * @param options Blur transformation options.
+     * @returns Modified Sharp instance with blurring applied.
      * @private
      */
     private applyBlur(sharpInstance: Sharp, options: BlurOptions): Sharp {
@@ -704,10 +815,10 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
     }
 
     /**
-     * Apply median filter using Sharp
-     * @param sharpInstance The Sharp instance to modify
-     * @param options Median transformation options
-     * @returns Modified Sharp instance with median filter applied
+     * Applies median filter using Sharp.
+     * @param sharpInstance The Sharp instance to modify.
+     * @param options Median transformation options.
+     * @returns Modified Sharp instance with median filter applied.
      * @private
      */
     private applyMedian(sharpInstance: Sharp, options: MedianOptions): Sharp {
@@ -724,10 +835,10 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
     }
 
     /**
-     * Apply CLAHE (Contrast Limited Adaptive Histogram Equalization) using Sharp
-     * @param sharpInstance The Sharp instance to modify
-     * @param options CLAHE transformation options
-     * @returns Modified Sharp instance with CLAHE applied
+     * Applies CLAHE (Contrast Limited Adaptive Histogram Equalization) using Sharp.
+     * @param sharpInstance The Sharp instance to modify.
+     * @param options CLAHE transformation options.
+     * @returns Modified Sharp instance with CLAHE applied.
      * @private
      */
     private applyCLAHE(sharpInstance: Sharp, options: CLAHEOptions): Sharp {
@@ -748,10 +859,10 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
     }
 
     /**
-     * Apply convolution using Sharp
-     * @param sharpInstance The Sharp instance to modify
-     * @param options Convolution transformation options
-     * @returns Modified Sharp instance with convolution applied
+     * Applies convolution using Sharp.
+     * @param sharpInstance The Sharp instance to modify.
+     * @param options Convolution transformation options.
+     * @returns Modified Sharp instance with convolution applied.
      * @private
      */
     private applyConvolve(sharpInstance: Sharp, options: ConvolveOptions): Sharp {
@@ -774,10 +885,10 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
     }
 
     /**
-     * Apply threshold using Sharp
-     * @param sharpInstance The Sharp instance to modify
-     * @param options Threshold transformation options
-     * @returns Modified Sharp instance with thresholding applied
+     * Applies threshold using Sharp.
+     * @param sharpInstance The Sharp instance to modify.
+     * @param options Threshold transformation options.
+     * @returns Modified Sharp instance with thresholding applied.
      * @private
      */
     private applyThreshold(sharpInstance: Sharp, options: ThresholdOptions): Sharp {
@@ -796,10 +907,10 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
     }
 
     /**
-     * Apply boolean operation using Sharp
-     * @param sharpInstance The Sharp instance to modify
-     * @param options Boolean operation options
-     * @returns Modified Sharp instance with boolean operation applied
+     * Applies boolean operation using Sharp.
+     * @param sharpInstance The Sharp instance to modify.
+     * @param options Boolean operation options.
+     * @returns Modified Sharp instance with boolean operation applied.
      * @private
      */
     private applyBoolean(sharpInstance: Sharp, options: BooleanOptions): Sharp {
@@ -816,10 +927,10 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
     }
 
     /**
-     * Apply linear transformation using Sharp
-     * @param sharpInstance The Sharp instance to modify
-     * @param options Linear transformation options
-     * @returns Modified Sharp instance with linear transformation applied
+     * Applies linear transformation using Sharp.
+     * @param sharpInstance The Sharp instance to modify.
+     * @param options Linear transformation options.
+     * @returns Modified Sharp instance with linear transformation applied.
      * @private
      */
     private applyLinear(sharpInstance: Sharp, options: LinearOptions): Sharp {
@@ -836,10 +947,10 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
     }
 
     /**
-     * Apply recombine transformation using Sharp
-     * @param sharpInstance The Sharp instance to modify
-     * @param options Recombine transformation options
-     * @returns Modified Sharp instance with recombine applied
+     * Applies recombine transformation using Sharp.
+     * @param sharpInstance The Sharp instance to modify.
+     * @param options Recombine transformation options.
+     * @returns Modified Sharp instance with recombine applied.
      * @private
      */
     private applyRecombine(sharpInstance: Sharp, options: RecombineOptions): Sharp {
@@ -856,10 +967,10 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
     }
 
     /**
-     * Apply modulate transformation using Sharp
-     * @param sharpInstance The Sharp instance to modify
-     * @param options Modulate transformation options
-     * @returns Modified Sharp instance with modulation applied
+     * Applies modulate transformation using Sharp.
+     * @param sharpInstance The Sharp instance to modify.
+     * @param options Modulate transformation options.
+     * @returns Modified Sharp instance with modulation applied.
      * @private
      */
     private applyModulate(sharpInstance: Sharp, options: ModulateOptions): Sharp {
@@ -881,10 +992,10 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
     }
 
     /**
-     * Apply tint using Sharp
-     * @param sharpInstance The Sharp instance to modify
-     * @param options Tint transformation options
-     * @returns Modified Sharp instance with tinting applied
+     * Applies tint using Sharp.
+     * @param sharpInstance The Sharp instance to modify.
+     * @param options Tint transformation options.
+     * @returns Modified Sharp instance with tinting applied.
      * @private
      */
     private applyTint(sharpInstance: Sharp, options: TintOptions): Sharp {
@@ -901,10 +1012,10 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
     }
 
     /**
-     * Apply greyscale conversion using Sharp
-     * @param sharpInstance The Sharp instance to modify
-     * @param options Greyscale transformation options
-     * @returns Modified Sharp instance converted to greyscale
+     * Applies greyscale conversion using Sharp.
+     * @param sharpInstance The Sharp instance to modify.
+     * @param options Greyscale transformation options.
+     * @returns Modified Sharp instance converted to greyscale.
      * @private
      */
     private applyGreyscale(sharpInstance: Sharp, options: GreyscaleOptions): Sharp {
@@ -921,10 +1032,10 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
     }
 
     /**
-     * Apply colourspace conversion using Sharp
-     * @param sharpInstance The Sharp instance to modify
-     * @param options Colourspace transformation options
-     * @returns Modified Sharp instance with colourspace conversion
+     * Applies colourspace conversion using Sharp.
+     * @param sharpInstance The Sharp instance to modify.
+     * @param options Colourspace transformation options.
+     * @returns Modified Sharp instance with colourspace conversion.
      * @private
      */
     private applyColourspace(sharpInstance: Sharp, options: ColourspaceOptions): Sharp {
@@ -941,10 +1052,10 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
     }
 
     /**
-     * Extract channel using Sharp
-     * @param sharpInstance The Sharp instance to modify
-     * @param options Channel extraction options
-     * @returns Modified Sharp instance with channel extracted
+     * Extracts channel using Sharp.
+     * @param sharpInstance The Sharp instance to modify.
+     * @param options Channel extraction options including channel index.
+     * @returns Modified Sharp instance with channel extracted.
      * @private
      */
     private applyExtractChannel(sharpInstance: Sharp, options: ExtractChannelOptions): Sharp {
@@ -961,10 +1072,10 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
     }
 
     /**
-     * Join channels using Sharp
-     * @param sharpInstance The Sharp instance to modify
-     * @param options Channel joining options
-     * @returns Modified Sharp instance with channels joined
+     * Joins channels using Sharp.
+     * @param sharpInstance The Sharp instance to modify.
+     * @param options Channel joining options including image sources.
+     * @returns Modified Sharp instance with channels joined.
      * @private
      */
     private applyJoinChannel(sharpInstance: Sharp, options: JoinChannelOptions): Sharp {
@@ -981,10 +1092,10 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
     }
 
     /**
-     * Apply band boolean operation using Sharp
-     * @param sharpInstance The Sharp instance to modify
-     * @param options Band boolean options
-     * @returns Modified Sharp instance with band boolean operation applied
+     * Applies band boolean operation using Sharp.
+     * @param sharpInstance The Sharp instance to modify.
+     * @param options Band boolean options including operator.
+     * @returns Modified Sharp instance with band boolean operation applied.
      * @private
      */
     private applyBandbool(sharpInstance: Sharp, options: BandboolOptions): Sharp {
@@ -1001,10 +1112,10 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
     }
 
     /**
-     * Apply affine transformation using Sharp
-     * @param sharpInstance The Sharp instance to modify
-     * @param options Affine transformation options
-     * @returns Modified Sharp instance with affine transformation applied
+     * Applies affine transformation using Sharp.
+     * @param sharpInstance The Sharp instance to modify.
+     * @param options Affine transformation options including matrix.
+     * @returns Modified Sharp instance with affine transformation applied.
      * @private
      */
     private applyAffine(sharpInstance: Sharp, options: AffineOptions): Sharp {
@@ -1024,10 +1135,10 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
     }
 
     /**
-     * Apply dilation using Sharp
-     * @param sharpInstance The Sharp instance to modify
-     * @param options Dilate options
-     * @returns Modified Sharp instance with dilation applied
+     * Applies dilation using Sharp.
+     * @param sharpInstance The Sharp instance to modify.
+     * @param options Dilate options including kernel size.
+     * @returns Modified Sharp instance with dilation applied.
      * @private
      */
     private applyDilate(sharpInstance: Sharp, options: DilateOptions): Sharp {
@@ -1044,10 +1155,10 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
     }
 
     /**
-     * Apply erosion using Sharp
-     * @param sharpInstance The Sharp instance to modify
-     * @param options Erode options
-     * @returns Modified Sharp instance with erosion applied
+     * Applies erosion using Sharp.
+     * @param sharpInstance The Sharp instance to modify.
+     * @param options Erode options including kernel size.
+     * @returns Modified Sharp instance with erosion applied.
      * @private
      */
     private applyErode(sharpInstance: Sharp, options: ErodeOptions): Sharp {
@@ -1064,10 +1175,10 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
     }
 
     /**
-     * Apply pipeline colourspace using Sharp
-     * @param sharpInstance The Sharp instance to modify
-     * @param options Pipeline colourspace options
-     * @returns Modified Sharp instance with pipeline colourspace applied
+     * Applies pipeline colourspace using Sharp.
+     * @param sharpInstance The Sharp instance to modify.
+     * @param options Pipeline colourspace options including target colourspace.
+     * @returns Modified Sharp instance with pipeline colourspace applied.
      * @private
      */
     private applyPipelineColourspace(sharpInstance: Sharp, options: PipelineColourspaceOptions): Sharp {
@@ -1084,10 +1195,10 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
     }
 
     /**
-     * Apply to colourspace using Sharp
-     * @param sharpInstance The Sharp instance to modify
-     * @param options To colourspace options
-     * @returns Modified Sharp instance with colourspace conversion applied
+     * Applies to colourspace conversion using Sharp.
+     * @param sharpInstance The Sharp instance to modify.
+     * @param options To colourspace options including target colourspace.
+     * @returns Modified Sharp instance with colourspace conversion applied.
      * @private
      */
     private applyToColourspace(sharpInstance: Sharp, options: ToColourspaceOptions): Sharp {
@@ -1104,10 +1215,10 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
     }
 
     /**
-     * Apply remove alpha using Sharp
-     * @param sharpInstance The Sharp instance to modify
-     * @param options Remove alpha options
-     * @returns Modified Sharp instance with alpha channel removed
+     * Applies remove alpha using Sharp.
+     * @param sharpInstance The Sharp instance to modify.
+     * @param options Remove alpha transformation options.
+     * @returns Modified Sharp instance with alpha channel removed.
      * @private
      */
     private applyRemoveAlpha(sharpInstance: Sharp, options: RemoveAlphaOptions): Sharp {
@@ -1124,10 +1235,10 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
     }
 
     /**
-     * Apply ensure alpha using Sharp
-     * @param sharpInstance The Sharp instance to modify
-     * @param options Ensure alpha options
-     * @returns Modified Sharp instance with alpha channel ensured
+     * Applies ensure alpha using Sharp.
+     * @param sharpInstance The Sharp instance to modify.
+     * @param options Ensure alpha transformation options.
+     * @returns Modified Sharp instance with alpha channel ensured.
      * @private
      */
     private applyEnsureAlpha(sharpInstance: Sharp, options: EnsureAlphaOptions): Sharp {
@@ -1144,10 +1255,10 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
     }
 
     /**
-     * Apply format and quality transformation using Sharp
-     * @param sharpInstance The Sharp instance to modify
-     * @param options Format and quality transformation options
-     * @returns Modified Sharp instance with format and quality settings applied
+     * Applies format and quality transformation using Sharp.
+     * @param sharpInstance The Sharp instance to modify.
+     * @param options Format and quality transformation options.
+     * @returns Modified Sharp instance with format and quality settings applied.
      * @private
      */
     private applyFormatAndQuality(sharpInstance: Sharp, options: TransformOptions): Sharp {
@@ -1166,9 +1277,9 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
     }
 
     /**
-     * Get format-specific options for Sharp
-     * @param options Transform options containing format-specific settings
-     * @returns Record of format options for Sharp processing
+     * Gets format-specific options for Sharp.
+     * @param options Transform options containing format-specific settings.
+     * @returns Record of format options for Sharp processing.
      * @private
      */
     private getFormatOptions(options: TransformOptions): Record<string, any> {
@@ -1211,10 +1322,10 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
     }
 
     /**
-     * Validate that the file is a supported image
-     * @param file The file to validate
-     * @returns Promise that resolves if validation passes
-     * @throws Error if file size exceeds limits, wrong content type, unsupported format, or invalid image
+     * Validates that the file is a supported image.
+     * @param file The file to validate.
+     * @returns Promise that resolves if validation passes.
+     * @throws Error if file size exceeds limits, wrong content type, unsupported format, or invalid image.
      * @private
      */
     private async validateImage(file: TFileReturn): Promise<void> {
@@ -1250,10 +1361,10 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
     }
 
     /**
-     * Create transformation result with metadata
-     * @param buffer The transformed image buffer
-     * @param originalFile The original file information
-     * @returns Image transformation result with metadata
+     * Creates transformation result with metadata.
+     * @param buffer The transformed image buffer.
+     * @param originalFile The original file information.
+     * @returns Image transformation result with metadata.
      * @private
      */
     private async createTransformResult(buffer: Buffer, originalFile: TFileReturn): Promise<TransformResult<TFileReturn>> {
@@ -1270,10 +1381,10 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
     }
 
     /**
-     * Generate cache key for transformation
-     * @param fileId The file identifier
-     * @param steps Array of transformation steps
-     * @returns Unique cache key string
+     * Generates cache key for transformation.
+     * @param fileId The file identifier.
+     * @param steps Array of transformation steps.
+     * @returns Unique cache key string.
      * @private
      */
     private generateCacheKey(fileId: string, steps: TransformationStep[]): string {

@@ -6,7 +6,7 @@ import { GoogleAuth } from "google-auth-library";
 
 import package_ from "../../../package.json";
 import { detectFileTypeFromStream } from "../../utils/detect-file-type";
-import { ERRORS, throwErrorCode } from "../../utils/errors";
+import { ERRORS, throwErrorCode, UploadError } from "../../utils/errors";
 import toMilliseconds from "../../utils/primitives/to-milliseconds";
 import type { HttpError } from "../../utils/types";
 import LocalMetaStorage from "../local/local-meta-storage";
@@ -219,6 +219,8 @@ class GCStorage extends BaseStorage<GCSFile, FileReturn> {
 
             file.status = "created";
 
+            await this.onCreate(file);
+
             return file;
         });
     }
@@ -289,10 +291,11 @@ class GCStorage extends BaseStorage<GCSFile, FileReturn> {
     }
 
     /**
-     * Deletes an upload and its metadata
-     * @param query - File query containing the file ID to delete
-     * @returns Promise resolving to the deleted file object with status: "deleted"
-     * @throws {Error} If the file metadata cannot be found
+     * Deletes an upload and its metadata.
+     * @param query File query containing the file ID to delete.
+     * @param query.id File ID to delete.
+     * @returns Promise resolving to the deleted file object with status: "deleted".
+     * @throws {UploadError} If the file metadata cannot be found.
      */
     public async delete({ id }: FileQuery): Promise<GCSFile> {
         return this.instrumentOperation("delete", async () => {
@@ -306,16 +309,20 @@ class GCStorage extends BaseStorage<GCSFile, FileReturn> {
 
             await Promise.all([this.makeRequest({ method: "DELETE", url: file.uri, validateStatus }), this.deleteMeta(file.id)]);
 
-            return { ...file };
+            const deletedFile = { ...file };
+
+            await this.onDelete(deletedFile);
+
+            return deletedFile;
         });
     }
 
     /**
-     * Copy an upload file to a new location
-     * @param name - Source file name/ID
-     * @param destination - Destination file name/ID
-     * @returns Promise resolving to the copied file object
-     * @throws {Error} If the source file cannot be found
+     * Copies an upload file to a new location.
+     * @param name Source file name/ID.
+     * @param destination Destination file name/ID.
+     * @returns Promise resolving to the copied file object.
+     * @throws {UploadError} If the source file cannot be found.
      */
     public async copy(name: string, destination: string): Promise<GCSFile> {
         return this.instrumentOperation("copy", async () => {
@@ -358,11 +365,11 @@ class GCStorage extends BaseStorage<GCSFile, FileReturn> {
     }
 
     /**
-     * Move an upload file to a new location
-     * @param name - Source file name/ID
-     * @param destination - Destination file name/ID
-     * @returns Promise resolving to the moved file object
-     * @throws {Error} If the source file cannot be found
+     * Moves an upload file to a new location.
+     * @param name Source file name/ID.
+     * @param destination Destination file name/ID.
+     * @returns Promise resolving to the moved file object.
+     * @throws {UploadError} If the source file cannot be found.
      */
     public async move(name: string, destination: string): Promise<GCSFile> {
         return this.instrumentOperation("move", async () => {
@@ -376,10 +383,11 @@ class GCStorage extends BaseStorage<GCSFile, FileReturn> {
     }
 
     /**
-     * Get uploaded file by ID with content buffer.
-     * @param id File query object containing the file ID
-     * @param id.id Unique identifier of the file to retrieve
-     * @returns Promise resolving to file object with content buffer
+     * Gets an uploaded file by ID with content buffer.
+     * @param query File query object containing the file ID.
+     * @param query.id Unique identifier of the file to retrieve.
+     * @returns Promise resolving to file object with content buffer.
+     * @throws {UploadError} If the file cannot be found (ERRORS.FILE_NOT_FOUND) or has expired (ERRORS.GONE).
      */
     public async get({ id }: FileQuery): Promise<FileReturn> {
         return this.instrumentOperation("get", async () => {

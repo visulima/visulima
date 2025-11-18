@@ -31,5 +31,8 @@
     },
     "observability": {
         "title": "Observability & Metrics"
+    },
+    "authenticated-file-uploads": {
+        "title": "Authenticated File Uploads"
     }
 }

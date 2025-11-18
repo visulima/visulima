@@ -3,6 +3,7 @@ import type { Readable } from "node:stream";
 import { copy, del, list, put } from "@vercel/blob";
 
 import { detectFileTypeFromBuffer } from "../../utils/detect-file-type";
+import { UploadError } from "../../utils/errors";
 import toMilliseconds from "../../utils/primitives/to-milliseconds";
 import LocalMetaStorage from "../local/local-meta-storage";
 import type MetaStorage from "../meta-storage";
@@ -84,6 +85,8 @@ class VercelBlobStorage extends BaseStorage<VercelBlobFile, FileReturn> {
             file.status = getFileStatus(file);
 
             await this.saveMeta(file);
+
+            await this.onCreate(file);
 
             return file;
         });
@@ -182,10 +185,11 @@ class VercelBlobStorage extends BaseStorage<VercelBlobFile, FileReturn> {
     }
 
     /**
-     * Deletes an upload and its metadata
-     * @param query - File query containing the file ID to delete
-     * @returns Promise resolving to the deleted file object with status: "deleted"
-     * @throws {Error} If the file metadata cannot be found
+     * Deletes an upload and its metadata.
+     * @param query File query containing the file ID to delete.
+     * @param query.id File ID to delete.
+     * @returns Promise resolving to the deleted file object with status: "deleted".
+     * @throws {UploadError} If the file metadata cannot be found.
      */
     public async delete({ id }: FileQuery): Promise<VercelBlobFile> {
         return this.instrumentOperation("delete", async () => {
@@ -205,7 +209,11 @@ class VercelBlobStorage extends BaseStorage<VercelBlobFile, FileReturn> {
 
             await this.deleteMeta(file.id);
 
-            return { ...file };
+            const deletedFile = { ...file };
+
+            await this.onDelete(deletedFile);
+
+            return deletedFile;
         });
     }
 
@@ -240,11 +248,11 @@ class VercelBlobStorage extends BaseStorage<VercelBlobFile, FileReturn> {
     }
 
     /**
-     * Copy an upload file to a new location
-     * @param name - Source file name/ID
-     * @param destination - Destination file name/ID
-     * @returns Promise resolving to the copied file object
-     * @throws {Error} If the source file cannot be found
+     * Copies an upload file to a new location.
+     * @param name Source file name/ID.
+     * @param destination Destination file name/ID.
+     * @returns Promise resolving to the copied file object.
+     * @throws {UploadError} If the source file cannot be found.
      */
     public async copy(name: string, destination: string): Promise<VercelBlobFile> {
         return this.instrumentOperation("copy", async () => {
@@ -264,11 +272,11 @@ class VercelBlobStorage extends BaseStorage<VercelBlobFile, FileReturn> {
     }
 
     /**
-     * Move an upload file to a new location
-     * @param name - Source file name/ID
-     * @param destination - Destination file name/ID
-     * @returns Promise resolving to the moved file object
-     * @throws {Error} If the source file cannot be found
+     * Moves an upload file to a new location.
+     * @param name Source file name/ID.
+     * @param destination Destination file name/ID.
+     * @returns Promise resolving to the moved file object.
+     * @throws {UploadError} If the source file cannot be found.
      */
     public async move(name: string, destination: string): Promise<VercelBlobFile> {
         return this.instrumentOperation("move", async () => {
@@ -312,7 +320,9 @@ class VercelBlobStorage extends BaseStorage<VercelBlobFile, FileReturn> {
     private internalOnComplete = (file: VercelBlobFile): Promise<void> => this.deleteMeta(file.id);
 
     /**
-     * Determine if multipart upload should be used for the given file
+     * Determines if multipart upload should be used for the given file.
+     * @param file File object to check.
+     * @returns True if multipart upload should be used, false otherwise.
      */
     private shouldUseMultipart(file: VercelBlobFile): boolean {
         if (typeof this.multipart === "boolean") {

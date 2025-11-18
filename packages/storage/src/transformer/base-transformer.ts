@@ -10,7 +10,7 @@ import type { Logger } from "../utils/types";
 import type { BaseTransformerConfig } from "./types";
 
 /**
- * Abstract base class for all media transformers
+ * Abstract base class for all media transformers.
  *
  * Provides a common interface and shared functionality for image, video, and audio transformers.
  * All transformers must implement the abstract methods defined here.
@@ -28,10 +28,10 @@ abstract class BaseTransformer<
     protected cache?: Cache<string, CacheValue>;
 
     /**
-     * Creates a new BaseTransformer instance with common functionality
-     * @param storage The storage backend for retrieving and storing files
-     * @param config Configuration options for the transformer
-     * @param logger Optional logger instance for logging operations
+     * Creates a new BaseTransformer instance with common functionality.
+     * @param storage The storage backend for retrieving and storing files.
+     * @param config Configuration options for the transformer.
+     * @param logger Optional logger instance for logging operations.
      * @protected
      */
     protected constructor(
@@ -46,18 +46,18 @@ abstract class BaseTransformer<
     }
 
     /**
-     * Transform a file with the given steps.
-     * @param fileId Unique identifier of the file to transform
-     * @param steps Array of transformation steps to apply
-     * @returns Promise resolving to transformation result
+     * Transforms a file with the given steps.
+     * @param fileId Unique identifier of the file to transform.
+     * @param steps Array of transformation steps to apply.
+     * @returns Promise resolving to transformation result.
      */
     public abstract transform(fileId: string, steps: any[]): Promise<any>;
 
     /**
-     * Stream transform a file with the given steps (for large files).
-     * @param fileId Unique identifier of the file to transform
-     * @param steps Array of transformation steps to apply
-     * @returns Promise resolving to streaming result with headers, size, and stream
+     * Streams transform of a file with the given steps (for large files).
+     * @param fileId Unique identifier of the file to transform.
+     * @param steps Array of transformation steps to apply.
+     * @returns Promise resolving to streaming result with headers, size, and stream.
      */
     public async transformStream?(fileId: string, steps: any[]): Promise<{ headers?: Record<string, string>; size?: number; stream: Readable }> {
         // Default implementation falls back to regular transform
@@ -81,8 +81,8 @@ abstract class BaseTransformer<
     }
 
     /**
-     * Clear cache for a specific file or all files
-     * @param fileId Optional file identifier to clear cache for specific file
+     * Clears cache for a specific file or all files.
+     * @param fileId Optional file identifier to clear cache for specific file.
      */
     public clearCache(fileId?: string): void {
         if (fileId) {
@@ -95,8 +95,8 @@ abstract class BaseTransformer<
     }
 
     /**
-     * Get cache statistics
-     * @returns Cache statistics including max size and current size
+     * Gets cache statistics.
+     * @returns Cache statistics including max size and current size.
      */
     public getCacheStats(): { maxSize: number; size: number } {
         // Default implementation - subclasses can override for more specific stats
@@ -108,9 +108,9 @@ abstract class BaseTransformer<
     }
 
     /**
-     * Get content type from transformation result based on format.
-     * @param result Transformation result object containing format information
-     * @returns Content type string (MIME type)
+     * Gets content type from transformation result based on format.
+     * @param result Transformation result object containing format information.
+     * @returns Content type string (MIME type).
      */
     // eslint-disable-next-line class-methods-use-this
     protected getContentTypeFromResult(result: any): string {

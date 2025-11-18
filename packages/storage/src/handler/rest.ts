@@ -84,11 +84,11 @@ class Rest<
     }
 
     /**
-     * Create a new file via POST request with raw binary data.
+     * Creates a new file via POST request with raw binary data.
      * Supports both full file uploads and chunked upload initialization.
-     * For chunked uploads, include headers: X-Chunked-Upload: true, X-Total-Size: &lt;total>
-     * @param request Node.js IncomingMessage with file data
-     * @returns Promise resolving to ResponseFile with upload result
+     * For chunked uploads, include headers: X-Chunked-Upload: true, X-Total-Size: &lt;total>.
+     * @param request Node.js IncomingMessage with file data.
+     * @returns Promise resolving to ResponseFile with upload result.
      */
     public async post(request: NodeRequest): Promise<ResponseFile<TFile>> {
         // Check if this is a chunked upload initialization
@@ -427,11 +427,11 @@ class Rest<
     }
 
     /**
-     * Upload a chunk via PATCH request for chunked uploads.
-     * Headers required: X-Chunk-Offset (byte offset), Content-Length (chunk size)
-     * Optional: X-Chunk-Checksum (SHA256 checksum for validation)
-     * @param request Node.js IncomingMessage with chunk data
-     * @returns Promise resolving to ResponseFile with upload progress
+     * Uploads a chunk via PATCH request for chunked uploads.
+     * Headers required: X-Chunk-Offset (byte offset), Content-Length (chunk size).
+     * Optional: X-Chunk-Checksum (SHA256 checksum for validation).
+     * @param request Node.js IncomingMessage with chunk data.
+     * @returns Promise resolving to ResponseFile with upload progress.
      */
     public async patch(request: NodeRequest): Promise<ResponseFile<TFile>> {
         let id: string;
