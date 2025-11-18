@@ -89,6 +89,7 @@ onlyBuiltDependencies:
   - protobufjs
   - rs-module-lexer
   - sharp
+  - svelte-preprocess
   - tree-sitter
   - tree-sitter-json
   - unrs-resolver

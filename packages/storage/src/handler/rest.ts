@@ -566,7 +566,20 @@ class Rest<
         });
 
         // Check if upload is complete
-        const isComplete = updatedFile.bytesWritten >= totalSize;
+        let isComplete = updatedFile.bytesWritten >= totalSize;
+
+        if (isChunkedUpload) {
+            const isChunksComplete = this.isUploadComplete(chunks, totalSize);
+            isComplete = isChunksComplete;
+
+            // If storage marked it as completed but chunks are missing (out of order upload reaching end), revert status
+            if (updatedFile.status === "completed" && !isComplete) {
+                await this.storage.update({ id }, { status: "part" });
+                // Update local object for response
+                // eslint-disable-next-line no-param-reassign
+                (updatedFile as TFile).status = "part";
+            }
+        }
 
         // For completed uploads, ensure bytesWritten equals totalSize
         const finalFile = isComplete && updatedFile.bytesWritten !== totalSize ? { ...updatedFile, bytesWritten: totalSize } : updatedFile;
@@ -752,6 +765,38 @@ class Rest<
         if (error instanceof Error && ["Id is undefined", "Invalid request URL", "Path is undefined"].includes(error.message)) {
             throw createHttpError(404, "File not found");
         }
+    }
+
+    /**
+     * Check if upload is complete based on chunks coverage.
+     */
+    private isUploadComplete(chunks: { length: number; offset: number }[], totalSize: number): boolean {
+        if (chunks.length === 0) {
+            return false;
+        }
+
+        // Sort by offset
+        const sorted = [...chunks].sort((a, b) => a.offset - b.offset);
+
+        if (sorted[0].offset !== 0) {
+            return false;
+        }
+
+        let currentEnd = sorted[0].length;
+
+        for (let i = 1; i < sorted.length; i++) {
+            const chunk = sorted[i];
+
+            // If gap exists
+            if (chunk.offset > currentEnd) {
+                return false;
+            }
+
+            // Extend currentEnd
+            currentEnd = Math.max(currentEnd, chunk.offset + chunk.length);
+        }
+
+        return currentEnd >= totalSize;
     }
 }
 

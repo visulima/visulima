@@ -101,7 +101,7 @@ describe(createUploader, () => {
 
         expect(itemId).toBeDefined();
         // ITEM_START is emitted when add is called
-        expect(onItemStart).toHaveBeenCalledWith();
+        expect(onItemStart).toHaveBeenCalled();
         expect(onItemStart).toHaveBeenCalledWith(
             expect.objectContaining({
                 file: expect.any(File),

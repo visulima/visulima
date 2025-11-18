@@ -147,9 +147,16 @@ importers:
         version: 4.0.13(@opentelemetry/api@1.9.0)(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.13)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.2(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
         specifier: ^4.0.9
+<<<<<<< HEAD
         version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> b6d1ba6d8 (refactor: update storage client with new query utilities and improved file operations)
+<<<<<<< HEAD
 >>>>>>> dbf100174 (refactor: update storage client with new query utilities and improved file operations)
+=======
+=======
+        version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(happy-dom@15.11.7)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> 2c1e1f65c (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
+>>>>>>> f066ac7cb (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
 
   apps/storybook:
     dependencies:
@@ -568,9 +575,16 @@ importers:
         version: 4.0.13(@opentelemetry/api@1.9.0)(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.13)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.2(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
         specifier: ^4.0.9
+<<<<<<< HEAD
         version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> b6d1ba6d8 (refactor: update storage client with new query utilities and improved file operations)
+<<<<<<< HEAD
 >>>>>>> dbf100174 (refactor: update storage client with new query utilities and improved file operations)
+=======
+=======
+        version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(happy-dom@15.11.7)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> 2c1e1f65c (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
+>>>>>>> f066ac7cb (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
 
   packages/ansi/__fixtures__/package/cjs:
     dependencies:
@@ -881,9 +895,16 @@ importers:
         version: 4.0.13(@opentelemetry/api@1.9.0)(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.13)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.2(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
         specifier: ^4.0.9
+<<<<<<< HEAD
         version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> b6d1ba6d8 (refactor: update storage client with new query utilities and improved file operations)
+<<<<<<< HEAD
 >>>>>>> dbf100174 (refactor: update storage client with new query utilities and improved file operations)
+=======
+=======
+        version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(happy-dom@15.11.7)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> 2c1e1f65c (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
+>>>>>>> f066ac7cb (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
       webpack:
         specifier: ^5.103.0
         version: 5.103.0(@swc/core@1.13.5)(esbuild@0.27.0)
@@ -1008,9 +1029,16 @@ importers:
         version: 4.0.13(@opentelemetry/api@1.9.0)(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.13)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.2(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
         specifier: ^4.0.9
+<<<<<<< HEAD
         version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> b6d1ba6d8 (refactor: update storage client with new query utilities and improved file operations)
+<<<<<<< HEAD
 >>>>>>> dbf100174 (refactor: update storage client with new query utilities and improved file operations)
+=======
+=======
+        version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(happy-dom@15.11.7)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> 2c1e1f65c (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
+>>>>>>> f066ac7cb (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
 
   packages/boxen/__bench__:
     devDependencies:
@@ -1029,9 +1057,16 @@ importers:
         version: 4.0.13(@opentelemetry/api@1.9.0)(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.13)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.2(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
         specifier: ^4.0.9
+<<<<<<< HEAD
         version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> b6d1ba6d8 (refactor: update storage client with new query utilities and improved file operations)
+<<<<<<< HEAD
 >>>>>>> dbf100174 (refactor: update storage client with new query utilities and improved file operations)
+=======
+=======
+        version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(happy-dom@15.11.7)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> 2c1e1f65c (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
+>>>>>>> f066ac7cb (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
 
   packages/boxen/__fixtures__/package/cjs:
     dependencies:
@@ -1162,9 +1197,16 @@ importers:
         version: 4.0.13(@opentelemetry/api@1.9.0)(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.13)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.2(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
         specifier: ^4.0.9
+<<<<<<< HEAD
         version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> b6d1ba6d8 (refactor: update storage client with new query utilities and improved file operations)
+<<<<<<< HEAD
 >>>>>>> dbf100174 (refactor: update storage client with new query utilities and improved file operations)
+=======
+=======
+        version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(happy-dom@15.11.7)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> 2c1e1f65c (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
+>>>>>>> f066ac7cb (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
 
   packages/cerebro:
     dependencies:
@@ -1311,9 +1353,16 @@ importers:
         version: 4.0.13(@opentelemetry/api@1.9.0)(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.13)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.2(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
         specifier: ^4.0.9
+<<<<<<< HEAD
         version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> b6d1ba6d8 (refactor: update storage client with new query utilities and improved file operations)
+<<<<<<< HEAD
 >>>>>>> dbf100174 (refactor: update storage client with new query utilities and improved file operations)
+=======
+=======
+        version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(happy-dom@15.11.7)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> 2c1e1f65c (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
+>>>>>>> f066ac7cb (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
 
   packages/cerebro/__bench__:
     dependencies:
@@ -1357,9 +1406,16 @@ importers:
         version: 4.0.13(@opentelemetry/api@1.9.0)(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.13)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.2(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
         specifier: ^4.0.9
+<<<<<<< HEAD
         version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> b6d1ba6d8 (refactor: update storage client with new query utilities and improved file operations)
+<<<<<<< HEAD
 >>>>>>> dbf100174 (refactor: update storage client with new query utilities and improved file operations)
+=======
+=======
+        version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(happy-dom@15.11.7)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> 2c1e1f65c (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
+>>>>>>> f066ac7cb (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
 
   packages/cerebro/__fixtures__/package/mjs:
     dependencies:
@@ -1547,9 +1603,16 @@ importers:
         version: 4.0.13(@opentelemetry/api@1.9.0)(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.13)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.2(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
         specifier: ^4.0.9
+<<<<<<< HEAD
         version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> b6d1ba6d8 (refactor: update storage client with new query utilities and improved file operations)
+<<<<<<< HEAD
 >>>>>>> dbf100174 (refactor: update storage client with new query utilities and improved file operations)
+=======
+=======
+        version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(happy-dom@15.11.7)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> 2c1e1f65c (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
+>>>>>>> f066ac7cb (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
 
   packages/colorize/__bench__:
     dependencies:
@@ -1730,9 +1793,16 @@ importers:
         version: 4.0.13(@opentelemetry/api@1.9.0)(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.13)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.2(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
         specifier: ^4.0.9
+<<<<<<< HEAD
         version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> b6d1ba6d8 (refactor: update storage client with new query utilities and improved file operations)
+<<<<<<< HEAD
 >>>>>>> dbf100174 (refactor: update storage client with new query utilities and improved file operations)
+=======
+=======
+        version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(happy-dom@15.11.7)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> 2c1e1f65c (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
+>>>>>>> f066ac7cb (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
 
   packages/command-line-args/__bench__:
     dependencies:
@@ -1791,9 +1861,16 @@ importers:
         version: 4.0.13(@opentelemetry/api@1.9.0)(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.13)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.2(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
         specifier: ^4.0.9
+<<<<<<< HEAD
         version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> b6d1ba6d8 (refactor: update storage client with new query utilities and improved file operations)
+<<<<<<< HEAD
 >>>>>>> dbf100174 (refactor: update storage client with new query utilities and improved file operations)
+=======
+=======
+        version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(happy-dom@15.11.7)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> 2c1e1f65c (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
+>>>>>>> f066ac7cb (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
 
   packages/connect:
     dependencies:
@@ -1922,9 +1999,16 @@ importers:
         version: 4.0.13(@opentelemetry/api@1.9.0)(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.13)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.2(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
         specifier: ^4.0.9
+<<<<<<< HEAD
         version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> b6d1ba6d8 (refactor: update storage client with new query utilities and improved file operations)
+<<<<<<< HEAD
 >>>>>>> dbf100174 (refactor: update storage client with new query utilities and improved file operations)
+=======
+=======
+        version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(happy-dom@15.11.7)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> 2c1e1f65c (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
+>>>>>>> f066ac7cb (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
       zod:
         specifier: ^4.1.12
         version: 4.1.12
@@ -2107,9 +2191,16 @@ importers:
         version: 4.0.13(@opentelemetry/api@1.9.0)(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.13)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.2(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
         specifier: ^4.0.9
+<<<<<<< HEAD
         version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> b6d1ba6d8 (refactor: update storage client with new query utilities and improved file operations)
+<<<<<<< HEAD
 >>>>>>> dbf100174 (refactor: update storage client with new query utilities and improved file operations)
+=======
+=======
+        version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(happy-dom@15.11.7)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> 2c1e1f65c (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
+>>>>>>> f066ac7cb (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
 
   packages/deep-clone:
     devDependencies:
@@ -2225,9 +2316,16 @@ importers:
         version: 4.0.13(@opentelemetry/api@1.9.0)(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.13)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.2(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
         specifier: ^4.0.9
+<<<<<<< HEAD
         version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> b6d1ba6d8 (refactor: update storage client with new query utilities and improved file operations)
+<<<<<<< HEAD
 >>>>>>> dbf100174 (refactor: update storage client with new query utilities and improved file operations)
+=======
+=======
+        version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(happy-dom@15.11.7)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> 2c1e1f65c (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
+>>>>>>> f066ac7cb (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
 
   packages/deep-clone/__bench__:
     dependencies:
@@ -2420,9 +2518,16 @@ importers:
         version: 4.0.13(@opentelemetry/api@1.9.0)(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.13)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.2(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
         specifier: ^4.0.9
+<<<<<<< HEAD
         version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> b6d1ba6d8 (refactor: update storage client with new query utilities and improved file operations)
+<<<<<<< HEAD
 >>>>>>> dbf100174 (refactor: update storage client with new query utilities and improved file operations)
+=======
+=======
+        version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(happy-dom@15.11.7)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> 2c1e1f65c (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
+>>>>>>> f066ac7cb (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
 
   packages/error:
     devDependencies:
@@ -2544,9 +2649,16 @@ importers:
         version: 4.0.13(@opentelemetry/api@1.9.0)(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.13)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.2(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
         specifier: ^4.0.9
+<<<<<<< HEAD
         version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> b6d1ba6d8 (refactor: update storage client with new query utilities and improved file operations)
+<<<<<<< HEAD
 >>>>>>> dbf100174 (refactor: update storage client with new query utilities and improved file operations)
+=======
+=======
+        version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(happy-dom@15.11.7)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> 2c1e1f65c (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
+>>>>>>> f066ac7cb (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
 
   packages/error-handler:
     dependencies:
@@ -2689,9 +2801,16 @@ importers:
         version: 4.0.13(@opentelemetry/api@1.9.0)(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.13)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.2(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
         specifier: ^4.0.9
+<<<<<<< HEAD
         version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> b6d1ba6d8 (refactor: update storage client with new query utilities and improved file operations)
+<<<<<<< HEAD
 >>>>>>> dbf100174 (refactor: update storage client with new query utilities and improved file operations)
+=======
+=======
+        version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(happy-dom@15.11.7)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> 2c1e1f65c (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
+>>>>>>> f066ac7cb (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
 
   packages/error-handler/examples/cli:
     dependencies:
@@ -2851,9 +2970,16 @@ importers:
         version: 4.0.13(@opentelemetry/api@1.9.0)(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.13)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.2(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
         specifier: ^4.0.9
+<<<<<<< HEAD
         version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> b6d1ba6d8 (refactor: update storage client with new query utilities and improved file operations)
+<<<<<<< HEAD
 >>>>>>> dbf100174 (refactor: update storage client with new query utilities and improved file operations)
+=======
+=======
+        version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(happy-dom@15.11.7)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> 2c1e1f65c (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
+>>>>>>> f066ac7cb (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
 
   packages/fmt:
     devDependencies:
@@ -2963,9 +3089,16 @@ importers:
         version: 4.0.13(@opentelemetry/api@1.9.0)(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.13)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.2(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
         specifier: ^4.0.9
+<<<<<<< HEAD
         version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> b6d1ba6d8 (refactor: update storage client with new query utilities and improved file operations)
+<<<<<<< HEAD
 >>>>>>> dbf100174 (refactor: update storage client with new query utilities and improved file operations)
+=======
+=======
+        version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(happy-dom@15.11.7)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> 2c1e1f65c (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
+>>>>>>> f066ac7cb (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
 
   packages/fs:
     dependencies:
@@ -3106,10 +3239,20 @@ importers:
         specifier: ^4.0.10
 =======
         specifier: ^4.0.9
+<<<<<<< HEAD
 >>>>>>> 4b3ce96ac (refactor: update storage client with new query utilities and improved file operations)
         version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+<<<<<<< HEAD
 >>>>>>> b6d1ba6d8 (refactor: update storage client with new query utilities and improved file operations)
+<<<<<<< HEAD
 >>>>>>> dbf100174 (refactor: update storage client with new query utilities and improved file operations)
+=======
+=======
+=======
+        version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(happy-dom@15.11.7)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> f318b8801 (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
+>>>>>>> 2c1e1f65c (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
+>>>>>>> f066ac7cb (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
       yaml:
         specifier: ^2.8.1
         version: 2.8.1
@@ -3155,8 +3298,12 @@ importers:
         specifier: ^4.0.10
 =======
         specifier: ^4.0.9
+<<<<<<< HEAD
 >>>>>>> 4b3ce96ac (refactor: update storage client with new query utilities and improved file operations)
         version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+=======
+        version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(happy-dom@15.11.7)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> f318b8801 (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
 
   packages/fs/__bench__/fixtures/a/b: {}
 >>>>>>> b6d1ba6d8 (refactor: update storage client with new query utilities and improved file operations)
@@ -3350,9 +3497,16 @@ importers:
         version: 4.0.13(@opentelemetry/api@1.9.0)(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.13)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.2(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
         specifier: ^4.0.9
+<<<<<<< HEAD
         version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> b6d1ba6d8 (refactor: update storage client with new query utilities and improved file operations)
+<<<<<<< HEAD
 >>>>>>> dbf100174 (refactor: update storage client with new query utilities and improved file operations)
+=======
+=======
+        version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(happy-dom@15.11.7)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> 2c1e1f65c (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
+>>>>>>> f066ac7cb (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
 
   packages/humanizer:
     devDependencies:
@@ -3474,9 +3628,16 @@ importers:
         version: 4.0.13(@opentelemetry/api@1.9.0)(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.13)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.2(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
         specifier: ^4.0.9
+<<<<<<< HEAD
         version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> b6d1ba6d8 (refactor: update storage client with new query utilities and improved file operations)
+<<<<<<< HEAD
 >>>>>>> dbf100174 (refactor: update storage client with new query utilities and improved file operations)
+=======
+=======
+        version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(happy-dom@15.11.7)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> 2c1e1f65c (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
+>>>>>>> f066ac7cb (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
 
   packages/humanizer/__fixtures__/package/cjs:
     dependencies:
@@ -3618,9 +3779,16 @@ importers:
         version: 4.0.13(@opentelemetry/api@1.9.0)(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.13)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.2(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
         specifier: ^4.0.9
+<<<<<<< HEAD
         version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> b6d1ba6d8 (refactor: update storage client with new query utilities and improved file operations)
+<<<<<<< HEAD
 >>>>>>> dbf100174 (refactor: update storage client with new query utilities and improved file operations)
+=======
+=======
+        version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(happy-dom@15.11.7)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> 2c1e1f65c (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
+>>>>>>> f066ac7cb (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
       webdriverio:
         specifier: ^9.20.1
         version: 9.20.1
@@ -3652,9 +3820,16 @@ importers:
         version: 4.0.13(@opentelemetry/api@1.9.0)(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.13)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.2(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
         specifier: ^4.0.9
+<<<<<<< HEAD
         version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> b6d1ba6d8 (refactor: update storage client with new query utilities and improved file operations)
+<<<<<<< HEAD
 >>>>>>> dbf100174 (refactor: update storage client with new query utilities and improved file operations)
+=======
+=======
+        version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(happy-dom@15.11.7)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> 2c1e1f65c (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
+>>>>>>> f066ac7cb (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
 
   packages/is-ansi-color-supported:
     devDependencies:
@@ -3767,9 +3942,16 @@ importers:
         version: 4.0.13(@opentelemetry/api@1.9.0)(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.13)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.2(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
         specifier: ^4.0.9
+<<<<<<< HEAD
         version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> b6d1ba6d8 (refactor: update storage client with new query utilities and improved file operations)
+<<<<<<< HEAD
 >>>>>>> dbf100174 (refactor: update storage client with new query utilities and improved file operations)
+=======
+=======
+        version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(happy-dom@15.11.7)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> 2c1e1f65c (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
+>>>>>>> f066ac7cb (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
 
   packages/jsdoc-open-api:
     dependencies:
@@ -3899,9 +4081,16 @@ importers:
         version: 4.0.13(@opentelemetry/api@1.9.0)(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.13)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.2(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
         specifier: ^4.0.9
+<<<<<<< HEAD
         version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> b6d1ba6d8 (refactor: update storage client with new query utilities and improved file operations)
+<<<<<<< HEAD
 >>>>>>> dbf100174 (refactor: update storage client with new query utilities and improved file operations)
+=======
+=======
+        version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(happy-dom@15.11.7)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> 2c1e1f65c (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
+>>>>>>> f066ac7cb (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
     optionalDependencies:
       cli-progress:
         specifier: ^3.12.0
@@ -4051,9 +4240,16 @@ importers:
         version: 4.0.13(@opentelemetry/api@1.9.0)(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.13)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.2(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
         specifier: ^4.0.9
+<<<<<<< HEAD
         version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> b6d1ba6d8 (refactor: update storage client with new query utilities and improved file operations)
+<<<<<<< HEAD
 >>>>>>> dbf100174 (refactor: update storage client with new query utilities and improved file operations)
+=======
+=======
+        version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(happy-dom@15.11.7)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> 2c1e1f65c (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
+>>>>>>> f066ac7cb (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
 
   packages/ono:
     dependencies:
@@ -4236,9 +4432,16 @@ importers:
         version: 4.0.13(@opentelemetry/api@1.9.0)(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.13)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.2(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
         specifier: ^4.0.9
+<<<<<<< HEAD
         version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> b6d1ba6d8 (refactor: update storage client with new query utilities and improved file operations)
+<<<<<<< HEAD
 >>>>>>> dbf100174 (refactor: update storage client with new query utilities and improved file operations)
+=======
+=======
+        version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(happy-dom@15.11.7)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> 2c1e1f65c (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
+>>>>>>> f066ac7cb (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
 
   packages/ono/examples/bun:
     dependencies:
@@ -4453,9 +4656,16 @@ importers:
         version: 4.0.13(@opentelemetry/api@1.9.0)(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.13)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.2(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
         specifier: ^4.0.9
+<<<<<<< HEAD
         version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> b6d1ba6d8 (refactor: update storage client with new query utilities and improved file operations)
+<<<<<<< HEAD
 >>>>>>> dbf100174 (refactor: update storage client with new query utilities and improved file operations)
+=======
+=======
+        version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(happy-dom@15.11.7)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> 2c1e1f65c (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
+>>>>>>> f066ac7cb (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
       yarn:
         specifier: ^1.22.22
         version: 1.22.22
@@ -4583,9 +4793,16 @@ importers:
         version: 4.0.13(@opentelemetry/api@1.9.0)(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.13)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.2(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
         specifier: ^4.0.9
+<<<<<<< HEAD
         version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> b6d1ba6d8 (refactor: update storage client with new query utilities and improved file operations)
+<<<<<<< HEAD
 >>>>>>> dbf100174 (refactor: update storage client with new query utilities and improved file operations)
+=======
+=======
+        version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(happy-dom@15.11.7)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> 2c1e1f65c (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
+>>>>>>> f066ac7cb (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
 
   packages/pail:
     dependencies:
@@ -4738,9 +4955,16 @@ importers:
         version: 4.0.13(@opentelemetry/api@1.9.0)(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.13)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.2(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
         specifier: ^4.0.9
+<<<<<<< HEAD
         version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> b6d1ba6d8 (refactor: update storage client with new query utilities and improved file operations)
+<<<<<<< HEAD
 >>>>>>> dbf100174 (refactor: update storage client with new query utilities and improved file operations)
+=======
+=======
+        version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(happy-dom@15.11.7)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> 2c1e1f65c (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
+>>>>>>> f066ac7cb (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
 
   packages/pail/__bench__:
     dependencies:
@@ -4790,9 +5014,16 @@ importers:
         version: 4.0.13(@opentelemetry/api@1.9.0)(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.13)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.2(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
         specifier: ^4.0.9
+<<<<<<< HEAD
         version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> b6d1ba6d8 (refactor: update storage client with new query utilities and improved file operations)
+<<<<<<< HEAD
 >>>>>>> dbf100174 (refactor: update storage client with new query utilities and improved file operations)
+=======
+=======
+        version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(happy-dom@15.11.7)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> 2c1e1f65c (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
+>>>>>>> f066ac7cb (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
 
   packages/pail/__fixtures__/package/mjs:
     dependencies:
@@ -4973,9 +5204,16 @@ importers:
         version: 4.0.13(@opentelemetry/api@1.9.0)(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.13)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.2(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
         specifier: ^4.0.9
+<<<<<<< HEAD
         version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> b6d1ba6d8 (refactor: update storage client with new query utilities and improved file operations)
+<<<<<<< HEAD
 >>>>>>> dbf100174 (refactor: update storage client with new query utilities and improved file operations)
+=======
+=======
+        version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(happy-dom@15.11.7)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> 2c1e1f65c (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
+>>>>>>> f066ac7cb (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
       zeptomatch:
         specifier: ^2.1.0
         version: 2.1.0
@@ -5105,8 +5343,17 @@ importers:
         specifier: 5.9.3
         version: 5.9.3
       vitest:
+<<<<<<< HEAD
         specifier: 4.0.13
+<<<<<<< HEAD
         version: 4.0.13(@opentelemetry/api@1.9.0)(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.13)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.3(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1)
+=======
+        version: 4.0.13(@opentelemetry/api@1.9.0)(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.13)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.2(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+=======
+        specifier: 4.0.9
+        version: 4.0.9(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.9)(happy-dom@15.11.7)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> 2c1e1f65c (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
+>>>>>>> f066ac7cb (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
 
   packages/redact:
     dependencies:
@@ -5226,9 +5473,16 @@ importers:
         version: 4.0.13(@opentelemetry/api@1.9.0)(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.13)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.2(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
         specifier: ^4.0.9
+<<<<<<< HEAD
         version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> b6d1ba6d8 (refactor: update storage client with new query utilities and improved file operations)
+<<<<<<< HEAD
 >>>>>>> dbf100174 (refactor: update storage client with new query utilities and improved file operations)
+=======
+=======
+        version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(happy-dom@15.11.7)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> 2c1e1f65c (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
+>>>>>>> f066ac7cb (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
 
   packages/redact/__bench__:
     dependencies:
@@ -5260,9 +5514,16 @@ importers:
         version: 4.0.13(@opentelemetry/api@1.9.0)(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.13)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.2(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
         specifier: ^4.0.9
+<<<<<<< HEAD
         version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> b6d1ba6d8 (refactor: update storage client with new query utilities and improved file operations)
+<<<<<<< HEAD
 >>>>>>> dbf100174 (refactor: update storage client with new query utilities and improved file operations)
+=======
+=======
+        version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(happy-dom@15.11.7)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> 2c1e1f65c (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
+>>>>>>> f066ac7cb (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
 
   packages/redact/__fixtures__/package/mjs:
     dependencies:
@@ -5400,9 +5661,16 @@ importers:
         version: 4.0.13(@opentelemetry/api@1.9.0)(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.13)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.2(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
         specifier: ^4.0.9
+<<<<<<< HEAD
         version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> b6d1ba6d8 (refactor: update storage client with new query utilities and improved file operations)
+<<<<<<< HEAD
 >>>>>>> dbf100174 (refactor: update storage client with new query utilities and improved file operations)
+=======
+=======
+        version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(happy-dom@15.11.7)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> 2c1e1f65c (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
+>>>>>>> f066ac7cb (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
 
   packages/storage:
     dependencies:
@@ -5580,13 +5848,9 @@ importers:
         version: 5.9.3
       vitest:
         specifier: ^4.0.9
-        version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+        version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(happy-dom@15.11.7)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 
   packages/storage-client:
-    dependencies:
-      react:
-        specifier: '>=18.0.0'
-        version: 19.2.0
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^16.4.3
@@ -5606,6 +5870,9 @@ importers:
       '@secretlint/secretlint-rule-preset-recommend':
         specifier: ^11.2.5
         version: 11.2.5
+      '@sveltejs/vite-plugin-svelte':
+        specifier: ^6.2.1
+        version: 6.2.1(svelte@5.43.10)(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
       '@tanstack/react-query':
         specifier: '>=5.90.10'
         version: 5.90.10(react@19.2.0)
@@ -5618,6 +5885,12 @@ importers:
       '@tanstack/vue-query':
         specifier: '>=5.91.2'
         version: 5.91.2(vue@3.5.24(typescript@5.9.3))
+      '@testing-library/react':
+        specifier: ^16.3.0
+        version: 16.3.0(@testing-library/dom@10.4.1)(@types/react-dom@19.2.3(@types/react@19.2.6))(@types/react@19.2.6)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+      '@testing-library/svelte':
+        specifier: 5.2.9
+        version: 5.2.9(svelte@5.43.10)(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.10)
       '@total-typescript/ts-reset':
         specifier: ^0.6.1
         version: 0.6.1
@@ -5666,12 +5939,18 @@ importers:
       eslint-plugin-validate-jsx-nesting:
         specifier: ^0.1.1
         version: 0.1.1(eslint@9.39.1(jiti@2.6.1))
+      happy-dom:
+        specifier: ^15.11.7
+        version: 15.11.7
       prettier:
         specifier: ^3.6.2
         version: 3.6.2
       publint:
         specifier: ^0.3.15
         version: 0.3.15
+      react:
+        specifier: ^19.0.0
+        version: 19.2.0
       rimraf:
         specifier: ^6.1.0
         version: 6.1.0
@@ -5687,12 +5966,15 @@ importers:
       svelte:
         specifier: '>=5.43.10'
         version: 5.43.10
+      svelte-preprocess:
+        specifier: ^6.0.3
+        version: 6.0.3(@babel/core@7.28.5)(less@4.4.2)(postcss-load-config@6.0.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.20.6)(yaml@2.8.1))(postcss@8.5.6)(svelte@5.43.10)(typescript@5.9.3)
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
       vitest:
         specifier: ^4.0.10
-        version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+        version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(happy-dom@15.11.7)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
       vue:
         specifier: '>=3.5.24'
         version: 3.5.24(typescript@5.9.3)
@@ -5891,7 +6173,7 @@ importers:
         version: 7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
       vitest:
         specifier: ^4.0.10
-        version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+        version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(happy-dom@15.11.7)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
       web-vitals:
         specifier: ^5.1.0
         version: 5.1.0
@@ -6516,8 +6798,17 @@ importers:
         specifier: 5.9.3
         version: 5.9.3
       vitest:
+<<<<<<< HEAD
         specifier: 4.0.13
+<<<<<<< HEAD
         version: 4.0.13(@opentelemetry/api@1.9.0)(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.13)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.3(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1)
+=======
+        version: 4.0.13(@opentelemetry/api@1.9.0)(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.13)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.2(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+=======
+        specifier: 4.0.9
+        version: 4.0.9(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.9)(happy-dom@15.11.7)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> 2c1e1f65c (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
+>>>>>>> f066ac7cb (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
 
   packages/string/__bench__:
     dependencies:
@@ -6587,9 +6878,16 @@ importers:
         version: 4.0.13(@opentelemetry/api@1.9.0)(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.13)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.2(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
         specifier: ^4.0.9
+<<<<<<< HEAD
         version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> b6d1ba6d8 (refactor: update storage client with new query utilities and improved file operations)
+<<<<<<< HEAD
 >>>>>>> dbf100174 (refactor: update storage client with new query utilities and improved file operations)
+=======
+=======
+        version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(happy-dom@15.11.7)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> 2c1e1f65c (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
+>>>>>>> f066ac7cb (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
       wrap-ansi:
         specifier: 9.0.2
         version: 9.0.2
@@ -6734,9 +7032,16 @@ importers:
         version: 4.0.13(@opentelemetry/api@1.9.0)(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.13)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.2(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
         specifier: ^4.0.9
+<<<<<<< HEAD
         version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> b6d1ba6d8 (refactor: update storage client with new query utilities and improved file operations)
+<<<<<<< HEAD
 >>>>>>> dbf100174 (refactor: update storage client with new query utilities and improved file operations)
+=======
+=======
+        version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(happy-dom@15.11.7)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> 2c1e1f65c (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
+>>>>>>> f066ac7cb (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
 
   packages/tabular/__bench__:
     devDependencies:
@@ -6764,9 +7069,16 @@ importers:
         version: 4.0.13(@opentelemetry/api@1.9.0)(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.13)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.2(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
         specifier: ^4.0.9
+<<<<<<< HEAD
         version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> b6d1ba6d8 (refactor: update storage client with new query utilities and improved file operations)
+<<<<<<< HEAD
 >>>>>>> dbf100174 (refactor: update storage client with new query utilities and improved file operations)
+=======
+=======
+        version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(happy-dom@15.11.7)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> 2c1e1f65c (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
+>>>>>>> f066ac7cb (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
 
   packages/tsconfig:
     dependencies:
@@ -6913,9 +7225,16 @@ importers:
         version: 4.0.13(@opentelemetry/api@1.9.0)(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.13)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.2(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
         specifier: ^4.0.9
+<<<<<<< HEAD
         version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> b6d1ba6d8 (refactor: update storage client with new query utilities and improved file operations)
+<<<<<<< HEAD
 >>>>>>> dbf100174 (refactor: update storage client with new query utilities and improved file operations)
+=======
+=======
+        version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(happy-dom@15.11.7)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> 2c1e1f65c (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
+>>>>>>> f066ac7cb (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
 
   packages/tsconfig/__fixtures__/package/cjs:
     dependencies:
@@ -7126,9 +7445,16 @@ importers:
         version: 4.0.13(@opentelemetry/api@1.9.0)(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.13)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.2(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
         specifier: ^4.0.9
+<<<<<<< HEAD
         version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> b6d1ba6d8 (refactor: update storage client with new query utilities and improved file operations)
+<<<<<<< HEAD
 >>>>>>> dbf100174 (refactor: update storage client with new query utilities and improved file operations)
+=======
+=======
+        version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(happy-dom@15.11.7)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> 2c1e1f65c (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
+>>>>>>> f066ac7cb (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
 
   packages/vite-overlay/examples/vite-preact:
     dependencies:
@@ -7507,9 +7833,16 @@ importers:
         version: 4.0.13(@opentelemetry/api@1.9.0)(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.13)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.2(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
         specifier: ^4.0.9
+<<<<<<< HEAD
         version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> b6d1ba6d8 (refactor: update storage client with new query utilities and improved file operations)
+<<<<<<< HEAD
 >>>>>>> dbf100174 (refactor: update storage client with new query utilities and improved file operations)
+=======
+=======
+        version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(happy-dom@15.11.7)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> 2c1e1f65c (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
+>>>>>>> f066ac7cb (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
       web-vitals:
         specifier: ^5.1.0
         version: 5.1.0
@@ -14275,6 +14608,19 @@ packages:
       '@types/react-dom':
         optional: true
 
+  '@testing-library/svelte@5.2.9':
+    resolution: {integrity: sha512-p0Lg/vL1iEsEasXKSipvW9nBCtItQGhYvxL8OZ4w7/IDdC+LGoSJw4mMS5bndVFON/gWryitEhMr29AlO4FvBg==}
+    engines: {node: '>= 10'}
+    peerDependencies:
+      svelte: ^3 || ^4 || ^5 || ^5.0.0-next.0
+      vite: '>=7.1.11'
+      vitest: '*'
+    peerDependenciesMeta:
+      vite:
+        optional: true
+      vitest:
+        optional: true
+
   '@testing-library/user-event@14.5.2':
     resolution: {integrity: sha512-YAh82Wh4TIrxYLmfGcixwD18oIjyC1pFQC2Y01F2lzV2HTMiYrI0nze0FD0ocB//CKS/7jIUgae+adPqxK5yCQ==}
     engines: {node: '>=12', npm: '>=6'}
@@ -20181,6 +20527,10 @@ packages:
     resolution: {integrity: sha512-vafaFqs8MZkRrSX7sFVUdo3ap/eNiLnb4IakshzvP56X5Nr1iGKAIqdX6tMlm6HcNRIkr6AxO5jFEoJzzpT8aQ==}
     engines: {node: '>=0.4.7'}
     hasBin: true
+
+  happy-dom@15.11.7:
+    resolution: {integrity: sha512-KyrFvnl+J9US63TEzwoiJOQzZBJY7KgBushJA8X61DMbNsH+2ONkDuLDnCnwUiPTF42tLoEmrPyoqbenVA5zrg==}
+    engines: {node: '>=18.0.0'}
 
   hard-rejection@2.1.0:
     resolution: {integrity: sha512-VIZB+ibDhx7ObhAe7OVtoEbuP4h/MuOTHJ+J8h/eBXotJYl0fBgR72xDFCKgIh22OJZIOVNxBMWuhAr10r8HdA==}
@@ -26143,13 +26493,55 @@ packages:
       typescript: '>=5.0.0'
 
 <<<<<<< HEAD
+<<<<<<< HEAD
   svelte@5.45.2:
     resolution: {integrity: sha512-yyXdW2u3H0H/zxxWoGwJoQlRgaSJLp+Vhktv12iRw2WRDlKqUPT54Fi0K/PkXqrdkcQ98aBazpy0AH4BCBVfoA==}
 =======
+=======
+>>>>>>> f066ac7cb (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
 <<<<<<< HEAD
   svelte@5.43.14:
     resolution: {integrity: sha512-pHeUrp1A5S6RGaXhJB7PtYjL1VVjbVrJ2EfuAoPu9/1LeoMaJa/pcdCsCSb0gS4eUHAHnhCbUDxORZyvGK6kOQ==}
 =======
+=======
+  svelte-preprocess@6.0.3:
+    resolution: {integrity: sha512-PLG2k05qHdhmRG7zR/dyo5qKvakhm8IJ+hD2eFRQmMLHp7X3eJnjeupUtvuRpbNiF31RjVw45W+abDwHEmP5OA==}
+    engines: {node: '>= 18.0.0'}
+    peerDependencies:
+      '@babel/core': ^7.10.2
+      coffeescript: ^2.5.1
+      less: ^3.11.3 || ^4.0.0
+      postcss: ^7 || ^8
+      postcss-load-config: '>=3'
+      pug: ^3.0.0
+      sass: ^1.26.8
+      stylus: '>=0.55'
+      sugarss: ^2.0.0 || ^3.0.0 || ^4.0.0
+      svelte: ^4.0.0 || ^5.0.0-next.100 || ^5.0.0
+      typescript: ^5.0.0
+    peerDependenciesMeta:
+      '@babel/core':
+        optional: true
+      coffeescript:
+        optional: true
+      less:
+        optional: true
+      postcss:
+        optional: true
+      postcss-load-config:
+        optional: true
+      pug:
+        optional: true
+      sass:
+        optional: true
+      stylus:
+        optional: true
+      sugarss:
+        optional: true
+      typescript:
+        optional: true
+
+>>>>>>> 2c1e1f65c (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
   svelte@5.43.10:
     resolution: {integrity: sha512-7mkxF1xU+9VRowZA+6fY6qy2kVnS2U3gDtHV2V+aoqZaIagiXXuUR0WHzblw/GwQVXnTNXSvfh2/s5dNNv4AQw==}
 >>>>>>> b6d1ba6d8 (refactor: update storage client with new query utilities and improved file operations)
@@ -27882,6 +28274,10 @@ packages:
   webidl-conversions@3.0.1:
     resolution: {integrity: sha512-2JAn3z8AR6rjK8Sm8orRC0h/bcl/DqL7tRPdGZ4I1CjdF+EaMLmYxBHyXuKL849eucPFhvBoxMsflfOb8kxaeQ==}
 
+  webidl-conversions@7.0.0:
+    resolution: {integrity: sha512-VwddBukDzu71offAQR975unBIGqfKZpM+8ZX6ySk8nYhVoo5CYaZyzt3YBvYtRtO+aoGlqxPg/B87NGVZ/fu6g==}
+    engines: {node: '>=12'}
+
   webidl-conversions@8.0.0:
     resolution: {integrity: sha512-n4W4YFyz5JzOfQeA8oN7dUYpR+MBP3PIUsn2jLjWXwK5ASUzt0Jc/A5sAUZoCYFJRGF0FBKJ+1JjN43rNdsQzA==}
     engines: {node: '>=20'}
@@ -27909,6 +28305,10 @@ packages:
 
   whatwg-fetch@3.6.20:
     resolution: {integrity: sha512-EqhiFU6daOA8kpjOWTL0olhVOF3i7OrFzSYiGsEMB8GcXS+RrzauAERX65xMeNWVqxA6HXH2m69Z9LaKKdisfg==}
+
+  whatwg-mimetype@3.0.0:
+    resolution: {integrity: sha512-nt+N2dzIutVRxARx1nghPKGv1xHikU7HKdfafKkLNLindmPU/ch3U31NOCGGA/dmPcmb1VlofO0vnKAcsm0o/Q==}
+    engines: {node: '>=12'}
 
   whatwg-mimetype@4.0.0:
     resolution: {integrity: sha512-QaKxh0eNIi2mE9p2vEdzfagOKHCcj1pJ56EEHGQOVxp8r9/iszLUUV7v89x9O1p/T+NlTM5W7jW6+cz4Fq1YVg==}
@@ -29311,14 +29711,23 @@ snapshots:
       prettier: 3.6.2
       secretlint: 11.2.5
 <<<<<<< HEAD
+<<<<<<< HEAD
       vitest: 4.0.14(@opentelemetry/api@1.9.0)(@types/node@24.10.1)(@vitest/ui@4.0.14)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.3(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1)
 =======
+=======
+>>>>>>> f066ac7cb (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
 <<<<<<< HEAD
       vitest: 4.0.13(@opentelemetry/api@1.9.0)(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.13)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.2(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
       vitest: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> b6d1ba6d8 (refactor: update storage client with new query utilities and improved file operations)
+<<<<<<< HEAD
 >>>>>>> dbf100174 (refactor: update storage client with new query utilities and improved file operations)
+=======
+=======
+      vitest: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(happy-dom@15.11.7)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> 2c1e1f65c (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
+>>>>>>> f066ac7cb (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
     transitivePeerDependencies:
       - '@types/node'
       - yaml
@@ -38191,6 +38600,14 @@ snapshots:
       '@types/react': 19.2.6
       '@types/react-dom': 19.2.3(@types/react@19.2.6)
 
+  '@testing-library/svelte@5.2.9(svelte@5.43.10)(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.10)':
+    dependencies:
+      '@testing-library/dom': 10.4.1
+      svelte: 5.43.10
+    optionalDependencies:
+      vite: 7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+      vitest: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(happy-dom@15.11.7)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+
   '@testing-library/user-event@14.5.2(@testing-library/dom@10.4.0)':
     dependencies:
       '@testing-library/dom': 10.4.0
@@ -40495,7 +40912,7 @@ snapshots:
       pngjs: 7.0.0
       sirv: 3.0.2
       tinyrainbow: 3.0.3
-      vitest: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+      vitest: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(happy-dom@15.11.7)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
       ws: 8.18.3
     transitivePeerDependencies:
       - bufferutil
@@ -40514,7 +40931,15 @@ snapshots:
       pngjs: 7.0.0
       sirv: 3.0.2
       tinyrainbow: 3.0.3
+<<<<<<< HEAD
       vitest: 4.0.14(@opentelemetry/api@1.9.0)(@types/node@24.10.1)(@vitest/ui@4.0.14)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.3(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1)
+=======
+<<<<<<< HEAD
+      vitest: 4.0.13(@opentelemetry/api@1.9.0)(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.13)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.2(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+=======
+      vitest: 4.0.9(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.9)(happy-dom@15.11.7)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> 2c1e1f65c (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
+>>>>>>> f066ac7cb (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
       ws: 8.18.3
     transitivePeerDependencies:
       - bufferutil
@@ -40536,7 +40961,7 @@ snapshots:
       magicast: 0.5.1
       std-env: 3.10.0
       tinyrainbow: 3.0.3
-      vitest: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+      vitest: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(happy-dom@15.11.7)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
     optionalDependencies:
       '@vitest/browser': 4.0.9(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.10)
     transitivePeerDependencies:
@@ -40555,7 +40980,34 @@ snapshots:
       magicast: 0.5.1
       std-env: 3.10.0
       tinyrainbow: 3.0.3
+<<<<<<< HEAD
       vitest: 4.0.13(@opentelemetry/api@1.9.0)(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.13)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.3(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1)
+=======
+<<<<<<< HEAD
+      vitest: 4.0.13(@opentelemetry/api@1.9.0)(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.13)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.2(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+=======
+      vitest: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+    transitivePeerDependencies:
+      - supports-color
+
+  '@vitest/coverage-v8@4.0.9(@vitest/browser@4.0.9(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.9))(vitest@4.0.9)':
+    dependencies:
+      '@bcoe/v8-coverage': 1.0.2
+      '@vitest/utils': 4.0.9
+      ast-v8-to-istanbul: 0.3.8
+      debug: 4.4.3(supports-color@8.1.1)
+      istanbul-lib-coverage: 3.2.2
+      istanbul-lib-report: 3.0.1
+      istanbul-lib-source-maps: 5.0.6
+      istanbul-reports: 3.2.0
+      magicast: 0.5.1
+      std-env: 3.10.0
+      tinyrainbow: 3.0.3
+      vitest: 4.0.9(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.9)(happy-dom@15.11.7)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> 2c1e1f65c (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
+    optionalDependencies:
+      '@vitest/browser': 4.0.13(msw@2.12.2(@types/node@24.10.1)(typescript@5.9.3))(vite@7.2.4(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.13)
+>>>>>>> f066ac7cb (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
     transitivePeerDependencies:
       - supports-color
 
@@ -40625,7 +41077,7 @@ snapshots:
       eslint: 9.39.1(jiti@2.6.1)
     optionalDependencies:
       typescript: 5.9.3
-      vitest: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+      vitest: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(happy-dom@15.11.7)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
     transitivePeerDependencies:
       - supports-color
 
@@ -40641,12 +41093,22 @@ snapshots:
     optionalDependencies:
       typescript: 5.9.3
 <<<<<<< HEAD
+<<<<<<< HEAD
       vitest: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 =======
       vitest: 4.0.9(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.9)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 >>>>>>> fb57ade6e (feat: enhance storage functionality with batch operations and retry mechanism)
+<<<<<<< HEAD
 >>>>>>> 9a541f7bf (feat: enhance storage functionality with batch operations and retry mechanism)
+<<<<<<< HEAD
 >>>>>>> c8ea0b8ab (feat: enhance storage functionality with batch operations and retry mechanism)
+=======
+=======
+=======
+      vitest: 4.0.9(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.9)(happy-dom@15.11.7)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> f318b8801 (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
+>>>>>>> 2c1e1f65c (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
+>>>>>>> f066ac7cb (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
     transitivePeerDependencies:
       - supports-color
 
@@ -40790,18 +41252,34 @@ snapshots:
       sirv: 3.0.2
       tinyglobby: 0.2.15
       tinyrainbow: 3.0.3
+<<<<<<< HEAD
       vitest: 4.0.13(@opentelemetry/api@1.9.0)(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.13)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.3(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1)
 
   '@vitest/ui@4.0.14(vitest@4.0.14)':
     dependencies:
       '@vitest/utils': 4.0.14
+=======
+<<<<<<< HEAD
+      vitest: 4.0.13(@opentelemetry/api@1.9.0)(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.13)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.2(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+=======
+      vitest: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(happy-dom@15.11.7)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+
+  '@vitest/ui@4.0.9(vitest@4.0.9)':
+    dependencies:
+      '@vitest/utils': 4.0.9
+>>>>>>> f066ac7cb (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
       fflate: 0.8.2
       flatted: 3.3.3
       pathe: 2.0.3
       sirv: 3.0.2
       tinyglobby: 0.2.15
       tinyrainbow: 3.0.3
+<<<<<<< HEAD
       vitest: 4.0.14(@opentelemetry/api@1.9.0)(@types/node@24.10.1)(@vitest/ui@4.0.14)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.3(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1)
+=======
+      vitest: 4.0.9(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.9)(happy-dom@15.11.7)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> 2c1e1f65c (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
+>>>>>>> f066ac7cb (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
 
   '@vitest/utils@2.0.5':
     dependencies:
@@ -46136,6 +46614,12 @@ snapshots:
       wordwrap: 1.0.0
     optionalDependencies:
       uglify-js: 3.18.0
+
+  happy-dom@15.11.7:
+    dependencies:
+      entities: 4.5.0
+      webidl-conversions: 7.0.0
+      whatwg-mimetype: 3.0.0
 
   hard-rejection@2.1.0: {}
 
@@ -53982,11 +54466,26 @@ snapshots:
       - picomatch
 
 <<<<<<< HEAD
+<<<<<<< HEAD
   svelte@5.45.2:
 =======
+=======
+>>>>>>> f066ac7cb (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
 <<<<<<< HEAD
   svelte@5.43.14:
 =======
+=======
+  svelte-preprocess@6.0.3(@babel/core@7.28.5)(less@4.4.2)(postcss-load-config@6.0.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.20.6)(yaml@2.8.1))(postcss@8.5.6)(svelte@5.43.10)(typescript@5.9.3):
+    dependencies:
+      svelte: 5.43.10
+    optionalDependencies:
+      '@babel/core': 7.28.5
+      less: 4.4.2
+      postcss: 8.5.6
+      postcss-load-config: 6.0.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.20.6)(yaml@2.8.1)
+      typescript: 5.9.3
+
+>>>>>>> 2c1e1f65c (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
   svelte@5.43.10:
 >>>>>>> b6d1ba6d8 (refactor: update storage client with new query utilities and improved file operations)
 >>>>>>> dbf100174 (refactor: update storage client with new query utilities and improved file operations)
@@ -55882,7 +56381,15 @@ snapshots:
     optionalDependencies:
       vite: 7.2.4(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1)
 
+<<<<<<< HEAD
   vitest@4.0.13(@opentelemetry/api@1.9.0)(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.13)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.3(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1):
+=======
+<<<<<<< HEAD
+  vitest@4.0.13(@opentelemetry/api@1.9.0)(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.13)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.2(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1):
+=======
+  vitest@4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(happy-dom@15.11.7)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1):
+>>>>>>> 2c1e1f65c (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
+>>>>>>> f066ac7cb (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
     dependencies:
       '@vitest/expect': 4.0.13
       '@vitest/mocker': 4.0.13(msw@2.12.3(@types/node@24.10.1)(typescript@5.9.3))(vite@7.2.4(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1))
@@ -55908,7 +56415,54 @@ snapshots:
       '@opentelemetry/api': 1.9.0
       '@types/debug': 4.1.12
       '@types/node': 24.10.1
+<<<<<<< HEAD
       '@vitest/ui': 4.0.13(vitest@4.0.13)
+=======
+      '@vitest/ui': 4.0.10(vitest@4.0.10)
+      happy-dom: 15.11.7
+      jsdom: 27.2.0(postcss@8.5.6)
+    transitivePeerDependencies:
+      - jiti
+      - less
+      - lightningcss
+      - msw
+      - sass
+      - sass-embedded
+      - stylus
+      - sugarss
+      - supports-color
+      - terser
+      - tsx
+      - yaml
+
+  vitest@4.0.9(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.9)(happy-dom@15.11.7)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1):
+    dependencies:
+      '@vitest/expect': 4.0.9
+      '@vitest/mocker': 4.0.9(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
+      '@vitest/pretty-format': 4.0.9
+      '@vitest/runner': 4.0.9
+      '@vitest/snapshot': 4.0.9
+      '@vitest/spy': 4.0.9
+      '@vitest/utils': 4.0.9
+      debug: 4.4.3(supports-color@8.1.1)
+      es-module-lexer: 1.7.0
+      expect-type: 1.2.2
+      magic-string: 0.30.21
+      pathe: 2.0.3
+      picomatch: 4.0.3
+      std-env: 3.10.0
+      tinybench: 2.9.0
+      tinyexec: 0.3.2
+      tinyglobby: 0.2.15
+      tinyrainbow: 3.0.3
+      vite: 7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+      why-is-node-running: 2.3.0
+    optionalDependencies:
+      '@types/debug': 4.1.12
+      '@types/node': 24.10.1
+      '@vitest/ui': 4.0.9(vitest@4.0.9)
+      happy-dom: 15.11.7
+>>>>>>> 2c1e1f65c (chore: update pnpm lockfile and workspace configuration, enhance storage client with new features)
       jsdom: 27.2.0(postcss@8.5.6)
     transitivePeerDependencies:
       - jiti
@@ -56140,6 +56694,8 @@ snapshots:
 
   webidl-conversions@3.0.1: {}
 
+  webidl-conversions@7.0.0: {}
+
   webidl-conversions@8.0.0: {}
 
   webpack-sources@3.3.3: {}
@@ -56255,6 +56811,8 @@ snapshots:
       iconv-lite: 0.6.3
 
   whatwg-fetch@3.6.20: {}
+
+  whatwg-mimetype@3.0.0: {}
 
   whatwg-mimetype@4.0.0: {}
 

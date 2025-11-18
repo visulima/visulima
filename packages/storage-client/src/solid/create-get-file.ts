@@ -1,4 +1,4 @@
-import { createQuery } from "@tanstack/solid-query";
+import { QueryClient, createQuery } from "@tanstack/solid-query";
 import type { Accessor } from "solid-js";
 
 import { buildUrl, extractFileMetaFromHeaders, storageQueryKeys } from "../core";
@@ -13,6 +13,8 @@ export interface CreateGetFileOptions {
     transform?: Accessor<Record<string, string | number | boolean> | undefined> | Record<string, string | number | boolean>;
     /** Whether to enable the query */
     enabled?: Accessor<boolean> | boolean;
+    /** Optional QueryClient to use */
+    queryClient?: QueryClient;
 }
 
 export interface CreateGetFileReturn {
@@ -35,52 +37,55 @@ export interface CreateGetFileReturn {
  * @returns File fetching functions and state signals
  */
 export const createGetFile = (options: CreateGetFileOptions): CreateGetFileReturn => {
-    const { endpoint, id, transform, enabled = true } = options;
+    const { endpoint, id, transform, enabled = true, queryClient } = options;
 
     const idValue = typeof id === "function" ? id : () => id;
     const transformValue = typeof transform === "function" ? transform : () => transform;
     const enabledValue = typeof enabled === "function" ? enabled : () => enabled;
 
-    const query = createQuery(() => {
-        const fileId = idValue();
-        const transformParams = transformValue();
+    const query = createQuery(
+        () => {
+            const fileId = idValue();
+            const transformParams = transformValue();
 
-        return {
-            enabled: enabledValue() && !!fileId,
-            queryFn: async () => {
-                const url = buildUrl(endpoint, fileId, transformParams);
-                const response = await fetch(url, {
-                    method: "GET",
-                });
+            return {
+                enabled: enabledValue() && !!fileId,
+                queryFn: async () => {
+                    const url = buildUrl(endpoint, fileId, transformParams);
+                    const response = await fetch(url, {
+                        method: "GET",
+                    });
 
-                if (!response.ok) {
-                    const errorData = await response.json().catch(() => ({
-                        error: {
-                            code: "RequestFailed",
-                            message: response.statusText,
-                        },
-                    }));
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({
+                            error: {
+                                code: "RequestFailed",
+                                message: response.statusText,
+                            },
+                        }));
 
-                    throw new Error(errorData.error?.message || `Failed to get file: ${response.status} ${response.statusText}`);
-                }
+                        throw new Error(errorData.error?.message || `Failed to get file: ${response.status} ${response.statusText}`);
+                    }
 
-                const blob = await response.blob();
-                const meta = extractFileMetaFromHeaders(fileId, response.headers);
+                    const blob = await response.blob();
+                    const meta = extractFileMetaFromHeaders(fileId, response.headers);
 
-                return { blob, meta };
-            },
-            queryKey: storageQueryKeys.files.detail(fileId, transformParams),
-        };
-    });
+                    return { blob, meta };
+                },
+                queryKey: storageQueryKeys.files.detail(fileId, transformParams),
+            };
+        },
+        () => queryClient,
+    );
 
     return {
-        data: () => query.data()?.blob,
+        data: () => query.data?.blob,
         error: () => {
-            const err = query.error();
+            const err = query.error;
             return (err as Error) || null;
         },
-        isLoading: query.isLoading as Accessor<boolean>,
-        meta: () => query.data()?.meta || null,
+        isLoading: () => query.isLoading,
+        meta: () => query.data?.meta || null,
         refetch: () => {
             query.refetch();
         },

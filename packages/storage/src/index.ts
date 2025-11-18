@@ -47,3 +47,9 @@ export type {
     ValidationError,
     ValidatorConfig,
 } from "./utils/types";
+export type { AnyWebReadableByteStreamWithFileType, AnyWebReadableStream, Detector, FileTypeOptions, FileTypeParser, FileTypeResult, StreamOptions, TokenizerPositionError } from "file-type";
+export { fileTypeFromTokenizer,
+	fileTypeFromBuffer,
+	fileTypeFromBlob,
+	supportedMimeTypes,
+	supportedExtensions, } from "file-type";

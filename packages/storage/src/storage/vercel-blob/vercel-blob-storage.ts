@@ -22,6 +22,16 @@ import VercelBlobFile from "./vercel-blob-file";
  *   metaStorageConfig: { directory: '/tmp/upload-metafiles' }
  * });
  * ```
+ * @remarks
+ * ## Supported Operations
+ * - ✅ create, write, delete, get, copy, move
+ * - ✅ Batch operations: deleteBatch, copyBatch, moveBatch (inherited from BaseStorage)
+ * - ❌ exists: Not implemented (use get() and catch FILE_NOT_FOUND error)
+ * - ❌ getStream: Not implemented (use get() for file retrieval)
+ * - ❌ list: Not implemented (Vercel Blob API doesn't support listing)
+ * - ❌ update: Not implemented (Vercel Blob API doesn't support metadata updates)
+ * - ❌ getUrl: Not implemented (Vercel Blob URLs available via Vercel Blob API)
+ * - ❌ getUploadUrl: Not implemented (Vercel Blob upload URLs handled internally)
  */
 class VercelBlobStorage extends BaseStorage<VercelBlobFile, FileReturn> {
     public static override readonly name: string = "vercel-blob";

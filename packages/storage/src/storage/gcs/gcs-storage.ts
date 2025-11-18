@@ -37,6 +37,14 @@ const validateStatus = (code: number): boolean => (code >= 200 && code < 300) ||
  *    filename: file => file.originalName
  *  });
  * ```
+ * @remarks
+ * ## Supported Operations
+ * - ✅ create, write, delete, get, list, update, copy, move
+ * - ✅ Batch operations: deleteBatch, copyBatch, moveBatch (inherited from BaseStorage)
+ * - ❌ exists: Not implemented (use get() and catch FILE_NOT_FOUND error)
+ * - ❌ getStream: Not implemented (use get() for file retrieval)
+ * - ❌ getUrl: Not implemented (GCS public URLs not supported)
+ * - ❌ getUploadUrl: Not implemented (resumable upload URLs handled internally)
  */
 class GCStorage extends BaseStorage<GCSFile, FileReturn> {
     public static override readonly name: string = "gcs";

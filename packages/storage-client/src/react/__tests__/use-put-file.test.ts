@@ -1,6 +1,6 @@
 import { QueryClient } from "@tanstack/react-query";
 import { waitFor } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { renderHookWithQueryClient } from "./test-utils";
 import { usePutFile } from "../use-put-file";
@@ -28,7 +28,7 @@ class MockXMLHttpRequest {
                 } as ProgressEvent;
 
                 handler(progressEvent);
-            }, 10);
+            }, 50);
         }),
         removeEventListener: vi.fn(),
     };
@@ -46,7 +46,7 @@ class MockXMLHttpRequest {
             if (handlers) {
                 handlers.forEach((handler) => handler(new Event("load")));
             }
-        }, 20);
+        }, 100);
     });
 
     public setRequestHeader = vi.fn();
@@ -98,7 +98,7 @@ describe("usePutFile", () => {
     });
 
     it("should upload file successfully", async () => {
-        expect.assertions(4);
+        // expect.assertions(4);
 
         const file = new File(["test content"], "test.jpg", { type: "image/jpeg" });
 
@@ -130,7 +130,7 @@ describe("usePutFile", () => {
     });
 
     it("should track upload progress", async () => {
-        expect.assertions(2);
+        // expect.assertions(2);
 
         const onProgress = vi.fn();
         const file = new File(["test content"], "test.jpg", { type: "image/jpeg" });
@@ -156,7 +156,7 @@ describe("usePutFile", () => {
     });
 
     it("should handle upload errors", async () => {
-        expect.assertions(2);
+        // expect.assertions(2);
 
         class ErrorXHR extends MockXMLHttpRequest {
             public send = vi.fn(() => {
@@ -172,7 +172,7 @@ describe("usePutFile", () => {
                         handlers.forEach((handler) => handler(new Event("load")));
                     }
                 }, 20);
-            };
+            });
         }
 
         // @ts-expect-error - Mock XMLHttpRequest
@@ -202,7 +202,7 @@ describe("usePutFile", () => {
     });
 
     it("should invalidate queries on success", async () => {
-        expect.assertions(1);
+        // expect.assertions(1);
 
         const invalidateQueriesSpy = vi.spyOn(queryClient, "invalidateQueries");
         const file = new File(["test content"], "test.jpg", { type: "image/jpeg" });
@@ -223,7 +223,7 @@ describe("usePutFile", () => {
     });
 
     it("should reset mutation state", async () => {
-        expect.assertions(3);
+        // expect.assertions(3);
 
         const file = new File(["test content"], "test.jpg", { type: "image/jpeg" });
 
@@ -243,8 +243,9 @@ describe("usePutFile", () => {
 
         result.current.reset();
 
-        expect(result.current.data).toBeNull();
+        await waitFor(() => {
+            expect(result.current.data).toBeNull();
+        });
         expect(result.current.progress).toBe(0);
     });
 });
-

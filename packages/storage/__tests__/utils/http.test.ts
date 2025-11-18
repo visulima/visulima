@@ -12,8 +12,6 @@ import {
     getIdFromRequest,
     getMetadata,
     getRealPath,
-    normalizeHookResponse,
-    normalizeOnErrorResponse,
     readBody,
     setHeaders,
 } from "../../src/utils/http";
@@ -132,59 +130,6 @@ describe("utils", () => {
             expect.assertions(1);
 
             expect(extractProto(request)).toBe("http");
-        });
-
-        it("should normalize hook response successfully", async () => {
-            expect.assertions(1);
-
-            const callback = normalizeHookResponse(async () => {
-                return { body: "body" };
-            });
-            const result = await callback(request);
-
-            expect(result).toStrictEqual({ body: "body" });
-        });
-
-        it("should handle thrown errors in normalized hook response", async () => {
-            expect.assertions(1);
-
-            const callback = normalizeHookResponse(async () => {
-                throw new Error("error");
-            });
-
-            await expect(callback(request)).rejects.toBeInstanceOf(Error);
-        });
-
-        it("should normalize on error response successfully", async () => {
-            expect.assertions(2);
-
-            const callback = normalizeOnErrorResponse(async () => {
-                return { body: "body" };
-            });
-
-            await expect(callback(response)).resolves.toStrictEqual({ body: "body" });
-
-            const function2 = normalizeOnErrorResponse(() => {
-                return { body: "body" };
-            });
-
-            expect(function2(response)).toStrictEqual({ body: "body" });
-        });
-
-        it("should handle thrown errors in normalized on error response", async () => {
-            expect.assertions(2);
-
-            const callback = normalizeOnErrorResponse(async () => {
-                throw new Error("error");
-            });
-
-            await expect(callback(response)).rejects.toBeInstanceOf(Error);
-
-            const function2 = normalizeOnErrorResponse(() => {
-                throw new Error("error");
-            });
-
-            expect(() => function2(response)).toThrow("error");
         });
 
         it("should return empty metadata for non-JSON content type", async () => {

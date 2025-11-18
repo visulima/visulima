@@ -23,7 +23,7 @@ describe("useGetFile", () => {
     });
 
     it("should fetch file successfully", async () => {
-        expect.assertions(4);
+        expect.assertions(5);
 
         const mockBlob = new Blob(["test content"], { type: "image/jpeg" });
         const mockHeaders = new Headers({
@@ -62,7 +62,7 @@ describe("useGetFile", () => {
     });
 
     it("should handle fetch errors", async () => {
-        expect.assertions(3);
+        expect.assertions(4);
 
         mockFetch.mockResolvedValueOnce({
             ok: false,
@@ -89,7 +89,7 @@ describe("useGetFile", () => {
     });
 
     it("should support transformation parameters", async () => {
-        expect.assertions(2);
+        expect.assertions(4);
 
         const mockBlob = new Blob(["transformed content"], { type: "image/png" });
 
@@ -121,7 +121,7 @@ describe("useGetFile", () => {
     });
 
     it("should respect enabled option", async () => {
-        expect.assertions(1);
+        expect.assertions(2);
 
         const { result } = renderHookWithQueryClient(
             () =>
@@ -139,7 +139,7 @@ describe("useGetFile", () => {
     });
 
     it("should call onSuccess callback", async () => {
-        expect.assertions(2);
+        expect.assertions(3);
 
         const onSuccess = vi.fn();
         const mockBlob = new Blob(["test"], { type: "image/jpeg" });
@@ -170,7 +170,7 @@ describe("useGetFile", () => {
     });
 
     it("should call onError callback", async () => {
-        expect.assertions(1);
+        expect.assertions(2);
 
         const onError = vi.fn();
 
@@ -197,7 +197,7 @@ describe("useGetFile", () => {
     });
 
     it("should refetch when refetch is called", async () => {
-        expect.assertions(2);
+        expect.assertions(3);
 
         const mockBlob = new Blob(["test"], { type: "image/jpeg" });
 
