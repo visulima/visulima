@@ -7,3 +7,18 @@ export { createTusAdapter } from "./tus-adapter";
 // Export new uploader implementation
 export type { UploaderOptions as CoreUploaderOptions, Uploader, UploaderEventHandler, UploaderEventType, UploadItem } from "./uploader";
 export { createUploader } from "./uploader";
+
+// Query utilities
+export { storageQueryKeys } from "./query-keys";
+export {
+    buildUrl,
+    deleteRequest,
+    extractFileMetaFromHeaders,
+    fetchFile,
+    fetchHead,
+    fetchJson,
+    parseApiError,
+    patchChunk,
+    putFile,
+} from "./query-client";
+export type { ApiError } from "./query-client";
