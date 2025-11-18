@@ -1,5 +1,28 @@
-import extractOriginalName from "./extract-original-name";
 import type File from "./file";
+import type { Metadata } from "./metadata";
+
+/**
+ * Extracts the original filename from metadata object, checking multiple possible keys.
+ */
+const extractOriginalName = (meta: Metadata): string | undefined => {
+    if (typeof meta.name === "string") {
+        return meta.name;
+    }
+
+    if (typeof meta.title === "string") {
+        return meta.title;
+    }
+
+    if (typeof meta.originalName === "string") {
+        return meta.originalName;
+    }
+
+    if (typeof meta.filename === "string") {
+        return meta.filename;
+    }
+
+    return undefined;
+};
 
 /**
  * Simple deep merge function that recursively merges objects.

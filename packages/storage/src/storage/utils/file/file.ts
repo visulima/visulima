@@ -1,14 +1,54 @@
 import fnv1a from "@sindresorhus/fnv1a";
 import { nanoid } from "nanoid";
 
-import extractMimeType from "./extract-mime-type";
-import extractOriginalName from "./extract-original-name";
 import type { Metadata } from "./metadata";
 import type { FileInit, UploadEventType } from "./types";
 
 type DateType = Date | number | string;
 
 const hash = (value: string) => fnv1a(value, { size: 64 }).toString(16);
+
+/**
+ * Extracts the MIME type from metadata object, checking multiple possible keys.
+ */
+const extractMimeType = (meta: Metadata): string | undefined => {
+    if (typeof meta.mimeType === "string") {
+        return meta.mimeType;
+    }
+
+    if (typeof meta.type === "string") {
+        return meta.type;
+    }
+
+    if (typeof meta.filetype === "string") {
+        return meta.filetype;
+    }
+
+    return undefined;
+};
+
+/**
+ * Extracts the original filename from metadata object, checking multiple possible keys.
+ */
+const extractOriginalName = (meta: Metadata): string | undefined => {
+    if (typeof meta.name === "string") {
+        return meta.name;
+    }
+
+    if (typeof meta.title === "string") {
+        return meta.title;
+    }
+
+    if (typeof meta.originalName === "string") {
+        return meta.originalName;
+    }
+
+    if (typeof meta.filename === "string") {
+        return meta.filename;
+    }
+
+    return undefined;
+};
 
 const generateFileId = (file: File): string => {
     const { metadata, originalName, size } = file;
