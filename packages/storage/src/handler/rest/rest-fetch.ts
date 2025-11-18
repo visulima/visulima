@@ -2,6 +2,7 @@ import createHttpError from "http-errors";
 
 import type { FileInit, UploadFile } from "../../storage/utils/file";
 import { ERRORS } from "../../utils/errors";
+import { getRequestStream } from "../../utils/http";
 import { BaseHandlerFetch } from "../base/base-handler-fetch";
 import type { Handlers, ResponseFile, ResponseList, UploadOptions } from "../types";
 import { extractFileInit, parseChunkHeaders, validateContentLength, validateRequestBody } from "../utils/request-parser";
@@ -79,20 +80,21 @@ class RestFetch<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
         // Check if this is a chunked upload initialization
         const isChunkedUpload = request.headers.get("x-chunked-upload") === "true";
 
-        // Validate request body (allow empty for chunked upload initialization)
-        // For Web API Request, we check if body exists
-        const hasBody = request.body !== null;
-
-        if (!hasBody && !isChunkedUpload) {
-            throw createHttpError(400, "Request body is required");
-        }
-
         // Validate content length
         const contentLengthHeader = request.headers.get("content-length");
         const contentLength = contentLengthHeader ? Number.parseInt(contentLengthHeader, 10) : 0;
 
-        if (!isChunkedUpload && contentLength === 0) {
-            throw createHttpError(400, "Content-Length is required and must be greater than 0");
+        // Validate request body (allow empty for chunked upload initialization)
+        // For Web API Request, check Content-Length header instead of body
+        if (!isChunkedUpload) {
+            if (!contentLengthHeader || Number.isNaN(contentLength) || contentLength === 0) {
+                throw createHttpError(400, "Content-Length is required and must be greater than 0");
+            }
+
+            // Also check if body exists (for cases where Content-Length might be set incorrectly)
+            if (request.body === null) {
+                throw createHttpError(400, "Request body is required");
+            }
         }
 
         if (contentLength > this.storage.maxUploadSize) {
@@ -104,7 +106,8 @@ class RestFetch<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
         const config = extractFileInitFromRequest(request, contentLength, contentType);
 
         const requestUrl = request.url;
-        const bodyStream = request.body;
+        // Convert Web API ReadableStream to Node.js Readable stream
+        const bodyStream = request.body ? getRequestStream(request) : null;
 
         return this.restBase.handlePost(config, isChunkedUpload, requestUrl, bodyStream, contentLength);
     }
@@ -119,7 +122,7 @@ class RestFetch<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
         const id = getIdFromRequestUrl(request.url);
 
         if (!id) {
-            throw createHttpError(404, "File not found");
+            throw createHttpError(400, "File ID is required in URL path");
         }
 
         // Check if request has a body
@@ -174,7 +177,8 @@ class RestFetch<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
         };
 
         const requestUrl = request.url;
-        const bodyStream = request.body;
+        // Convert Web API ReadableStream to Node.js Readable stream
+        const bodyStream = getRequestStream(request);
 
         return this.restBase.handlePut(id, config, requestUrl, bodyStream, contentLength, metadata);
     }
@@ -250,7 +254,9 @@ class RestFetch<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
         try {
             return this.restBase.deleteSingle(id);
         } catch (error: unknown) {
-            if ((error as { code?: string }).code === "ENOENT" || (error as { UploadErrorCode?: string }).UploadErrorCode === "FILE_NOT_FOUND") {
+            const errorWithCode = error as { code?: string; UploadErrorCode?: string };
+
+            if (errorWithCode.UploadErrorCode === ERRORS.FILE_NOT_FOUND || errorWithCode.code === "ENOENT") {
                 throw createHttpError(404, "File not found");
             }
 
@@ -294,7 +300,8 @@ class RestFetch<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
 
         const chunkChecksum = request.headers.get("x-chunk-checksum") || undefined;
         const requestUrl = request.url;
-        const bodyStream = request.body;
+        // Convert Web API ReadableStream to Node.js Readable stream
+        const bodyStream = getRequestStream(request);
 
         return this.restBase.handlePatch(id, chunkOffset, contentLength, chunkChecksum, requestUrl, bodyStream);
     }
@@ -315,7 +322,9 @@ class RestFetch<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
         try {
             return this.restBase.handleHead(id);
         } catch (error: unknown) {
-            if ((error as { UploadErrorCode?: string }).UploadErrorCode === "FILE_NOT_FOUND" || (error as { code?: string }).code === "ENOENT") {
+            const errorWithCode = error as { code?: string; UploadErrorCode?: string };
+
+            if (errorWithCode.UploadErrorCode === ERRORS.FILE_NOT_FOUND || errorWithCode.code === "ENOENT") {
                 throw createHttpError(404, "File not found");
             }
 
