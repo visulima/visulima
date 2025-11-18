@@ -34,7 +34,7 @@ describe(createTusAdapter, () => {
     });
 
     it("should create upload with POST request", async () => {
-        expect.assertions(6);
+        expect.assertions(5);
 
         const adapter = createTusAdapter({
             chunkSize: 100, // Use chunk size equal to file size for single chunk
@@ -82,8 +82,7 @@ describe(createTusAdapter, () => {
         expect(result.size).toBe(100);
         expect(result.status).toBe("completed");
 
-        // Verify fetch was called
-        expect(mockFetch).toHaveBeenCalled();
+        // Verify fetch was called with correct arguments
         expect(mockFetch).toHaveBeenNthCalledWith(
             1,
             "http://localhost/api/upload/tus",
