@@ -9,9 +9,9 @@
         "test": "vitest run"
     },
     "dependencies": {
-        "@tanstack/react-router": "^1.136.5",
-        "@tanstack/react-start": "^1.136.5",
-        "@tanstack/router-plugin": "^1.136.5",
+        "@tanstack/react-router": "^1.136.8",
+        "@tanstack/react-start": "^1.136.8",
+        "@tanstack/router-plugin": "^1.136.8",
         "@visulima/storage": "workspace:*",
         "@visulima/storage-client": "workspace:*",
         "nitro": "latest",
@@ -24,13 +24,13 @@
         "@testing-library/dom": "^10.4.1",
         "@testing-library/react": "^16.3.0",
         "@types/node": "^24.10.1",
-        "@types/react": "^19.2.5",
+        "@types/react": "^19.2.6",
         "@types/react-dom": "^19.2.3",
         "@vitejs/plugin-react": "^5.1.1",
         "jsdom": "^27.2.0",
         "typescript": "^5.9.3",
         "vite": "^7.2.2",
-        "vitest": "^4.0.9",
+        "vitest": "^4.0.10",
         "web-vitals": "^5.1.0"
     }
 }

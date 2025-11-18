@@ -41,15 +41,28 @@ packages:
   - packages/tsconfig/__fixtures__/package/cjs
   - packages/tsconfig/__fixtures__/package/mjs
 
-linkWorkspacePackages: true
-injectWorkspacePackages: false
 dedupeInjectedDeps: true
-preferWorkspacePackages: true
-sharedWorkspaceLockfile: true
-saveWorkspaceProtocol: true
-includeWorkspaceRoot: false
-ignoreWorkspaceCycles: false
+
 disallowWorkspaceCycles: true
+
+ignoreWorkspaceCycles: false
+
+ignoredOptionalDependencies:
+  - fsevents
+  - dtrace-provider
+
+includeWorkspaceRoot: false
+
+injectWorkspacePackages: false
+
+linkWorkspacePackages: true
+
+minimumReleaseAgeExclude:
+  - vitest
+  - '@vitest/*'
+  - typescript
+  - '@types/*'
+  - '@tanstack/*'
 
 onlyBuiltDependencies:
   - '@parcel/watcher'
@@ -79,23 +92,8 @@ onlyBuiltDependencies:
   - tree-sitter
   - tree-sitter-json
   - unrs-resolver
+  - vue-demi
   - yarn
-
-# Ignored optional dependencies - skip problematic optional deps
-ignoredOptionalDependencies:
-  - fsevents
-  - dtrace-provider
-
-# Minimum release age - prefer stable packages (3 days = 4,320 minutes)
-# minimumReleaseAge: 4320
-
-# Exclusions from minimum release age - allow fresh versions for dev tools
-minimumReleaseAgeExclude:
-  - vitest
-  - '@vitest/*'
-  - typescript
-  - '@types/*'
-  - '@tanstack/*'
 
 overrides:
   '@eslint/plugin-kit@<0.3.4': '>=0.4.0'
@@ -112,3 +110,9 @@ overrides:
   tmp@<=0.2.3: '>=0.2.5'
   vite@<=5.4.19: '>=7.1.11'
   vite@>=7.1.0 <=7.1.4: '>=7.1.11'
+
+preferWorkspacePackages: true
+
+saveWorkspaceProtocol: true
+
+sharedWorkspaceLockfile: true
