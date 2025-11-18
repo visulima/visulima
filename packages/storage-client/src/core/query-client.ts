@@ -128,44 +128,43 @@ export const putFile = async (
     url: string,
     file: File | Blob,
     onProgress?: (progress: number) => void,
-): Promise<{ location?: string; etag?: string; uploadExpires?: string }> => {
-    return new Promise((resolve, reject) => {
-        const xhr = new XMLHttpRequest();
+): Promise<{ etag?: string; location?: string; uploadExpires?: string }> => new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
 
-        xhr.upload.addEventListener("progress", (event) => {
-            if (event.lengthComputable && onProgress) {
-                const percentComplete = Math.round((event.loaded / event.total) * 100);
-                onProgress(percentComplete);
-            }
-        });
+    xhr.upload.addEventListener("progress", (event) => {
+        if (event.lengthComputable && onProgress) {
+            const percentComplete = Math.round((event.loaded / event.total) * 100);
 
-        xhr.addEventListener("load", () => {
-            if (xhr.status >= 200 && xhr.status < 300) {
-                resolve({
-                    etag: xhr.getResponseHeader("ETag") || undefined,
-                    location: xhr.getResponseHeader("Location") || undefined,
-                    uploadExpires: xhr.getResponseHeader("X-Upload-Expires") || undefined,
-                });
-            } else {
-                parseApiError(new Response(xhr.responseText, { status: xhr.status, statusText: xhr.statusText }))
-                    .then(reject)
-                    .catch(reject);
-            }
-        });
-
-        xhr.addEventListener("error", () => {
-            reject(new Error("Network error occurred"));
-        });
-
-        xhr.addEventListener("abort", () => {
-            reject(new Error("Request aborted"));
-        });
-
-        xhr.open("PUT", url);
-        xhr.setRequestHeader("Content-Type", "application/octet-stream");
-        xhr.send(file);
+            onProgress(percentComplete);
+        }
     });
-};
+
+    xhr.addEventListener("load", () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+            resolve({
+                etag: xhr.getResponseHeader("ETag") || undefined,
+                location: xhr.getResponseHeader("Location") || undefined,
+                uploadExpires: xhr.getResponseHeader("X-Upload-Expires") || undefined,
+            });
+        } else {
+            parseApiError(new Response(xhr.responseText, { status: xhr.status, statusText: xhr.statusText }))
+                .then(reject)
+                .catch(reject);
+        }
+    });
+
+    xhr.addEventListener("error", () => {
+        reject(new Error("Network error occurred"));
+    });
+
+    xhr.addEventListener("abort", () => {
+        reject(new Error("Request aborted"));
+    });
+
+    xhr.open("PUT", url);
+    xhr.setRequestHeader("Content-Type", "application/octet-stream");
+    xhr.send(file);
+});
 
 /**
  * PATCH request for chunk uploads
@@ -175,7 +174,7 @@ export const patchChunk = async (
     chunk: Blob,
     offset: number,
     checksum?: string,
-): Promise<{ location?: string; etag?: string; uploadOffset?: number; uploadComplete?: boolean; uploadExpires?: string }> => {
+): Promise<{ etag?: string; location?: string; uploadComplete?: boolean; uploadExpires?: string; uploadOffset?: number }> => {
     const headers: HeadersInit = {
         "Content-Type": "application/octet-stream",
         "X-Chunk-Offset": String(offset),
@@ -203,5 +202,3 @@ export const patchChunk = async (
         uploadOffset: response.headers.get("X-Upload-Offset") ? Number.parseInt(response.headers.get("X-Upload-Offset")!, 10) : undefined,
     };
 };
-
-

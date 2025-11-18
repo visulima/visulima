@@ -1,29 +1,30 @@
-import { QueryClient, createQuery } from "@tanstack/solid-query";
+import type { QueryClient } from "@tanstack/solid-query";
+import { createQuery } from "@tanstack/solid-query";
 import type { Accessor } from "solid-js";
 
 import { buildUrl, extractFileMetaFromHeaders, storageQueryKeys } from "../core";
 import type { FileMeta } from "../react/types";
 
 export interface CreateGetFileOptions {
+    /** Whether to enable the query */
+    enabled?: Accessor<boolean> | boolean;
     /** Base endpoint URL for file operations */
     endpoint: string;
     /** File ID to fetch */
     id: Accessor<string> | string;
-    /** Transformation parameters for media files */
-    transform?: Accessor<Record<string, string | number | boolean> | undefined> | Record<string, string | number | boolean>;
-    /** Whether to enable the query */
-    enabled?: Accessor<boolean> | boolean;
     /** Optional QueryClient to use */
     queryClient?: QueryClient;
+    /** Transformation parameters for media files */
+    transform?: Accessor<Record<string, string | number | boolean> | undefined> | Record<string, string | number | boolean>;
 }
 
 export interface CreateGetFileReturn {
+    /** File data as Blob */
+    data: Accessor<Blob | undefined>;
     /** Last request error, if any */
     error: Accessor<Error | null>;
     /** Whether a request is currently in progress */
     isLoading: Accessor<boolean>;
-    /** File data as Blob */
-    data: Accessor<Blob | undefined>;
     /** File metadata from response headers */
     meta: Accessor<FileMeta | null>;
     /** Refetch the file */
@@ -37,7 +38,7 @@ export interface CreateGetFileReturn {
  * @returns File fetching functions and state signals
  */
 export const createGetFile = (options: CreateGetFileOptions): CreateGetFileReturn => {
-    const { endpoint, id, transform, enabled = true, queryClient } = options;
+    const { enabled = true, endpoint, id, queryClient, transform } = options;
 
     const idValue = typeof id === "function" ? id : () => id;
     const transformValue = typeof transform === "function" ? transform : () => transform;
@@ -57,12 +58,14 @@ export const createGetFile = (options: CreateGetFileOptions): CreateGetFileRetur
                     });
 
                     if (!response.ok) {
-                        const errorData = await response.json().catch(() => ({
-                            error: {
-                                code: "RequestFailed",
-                                message: response.statusText,
-                            },
-                        }));
+                        const errorData = await response.json().catch(() => {
+                            return {
+                                error: {
+                                    code: "RequestFailed",
+                                    message: response.statusText,
+                                },
+                            };
+                        });
 
                         throw new Error(errorData.error?.message || `Failed to get file: ${response.status} ${response.statusText}`);
                     }
@@ -81,8 +84,9 @@ export const createGetFile = (options: CreateGetFileOptions): CreateGetFileRetur
     return {
         data: () => query.data?.blob,
         error: () => {
-            const err = query.error;
-            return (err as Error) || null;
+            const { error } = query;
+
+            return (error as Error) || null;
         },
         isLoading: () => query.isLoading,
         meta: () => query.data?.meta || null,

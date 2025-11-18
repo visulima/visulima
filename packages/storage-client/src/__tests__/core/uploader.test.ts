@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { createUploader } from "../uploader";
+import { createUploader } from "../../core/uploader";
 
 // Mock XMLHttpRequest
 class MockXMLHttpRequest {

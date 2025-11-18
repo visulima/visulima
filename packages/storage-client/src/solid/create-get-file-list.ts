@@ -20,21 +20,21 @@ export interface FileListResponse {
 }
 
 export interface CreateGetFileListOptions {
+    /** Whether to enable the query */
+    enabled?: Accessor<boolean> | boolean;
     /** Base endpoint URL for file operations */
     endpoint: string;
     /** Maximum number of elements to retrieve */
     limit?: Accessor<number> | number;
     /** Page number for pagination */
     page?: Accessor<number> | number;
-    /** Whether to enable the query */
-    enabled?: Accessor<boolean> | boolean;
 }
 
 export interface CreateGetFileListReturn {
-    /** Last request error, if any */
-    error: Accessor<Error | null>;
     /** File list data */
     data: Accessor<FileListResponse | undefined>;
+    /** Last request error, if any */
+    error: Accessor<Error | null>;
     /** Whether a request is currently in progress */
     isLoading: Accessor<boolean>;
     /** Refetch the file list */
@@ -48,34 +48,37 @@ export interface CreateGetFileListReturn {
  * @returns File list fetching functions and state signals
  */
 export const createGetFileList = (options: CreateGetFileListOptions): CreateGetFileListReturn => {
-    const { endpoint, limit, page, enabled = true } = options;
+    const { enabled = true, endpoint, limit, page } = options;
 
     const limitValue = typeof limit === "function" ? limit : () => limit;
     const pageValue = typeof page === "function" ? page : () => page;
     const enabledValue = typeof enabled === "function" ? enabled : () => enabled;
 
-    const query = createQuery(() => ({
-        enabled: enabledValue(),
-        queryFn: async (): Promise<FileListResponse> => {
-            const url = buildUrl(endpoint, "", { limit: limitValue(), page: pageValue() });
-            const data = await fetchJson<FileListResponse | FileMeta[]>(url);
+    const query = createQuery(() => {
+        return {
+            enabled: enabledValue(),
+            queryFn: async (): Promise<FileListResponse> => {
+                const url = buildUrl(endpoint, "", { limit: limitValue(), page: pageValue() });
+                const data = await fetchJson<FileListResponse | FileMeta[]>(url);
 
-            // Handle both paginated and non-paginated responses
-            return Array.isArray(data)
-                ? { data }
-                : {
-                      data: data.data || (data as unknown as FileMeta[]),
-                      meta: (data as FileListResponse).meta,
-                  };
-        },
-        queryKey: storageQueryKeys.files.list({ limit: limitValue(), page: pageValue() }),
-    }));
+                // Handle both paginated and non-paginated responses
+                return Array.isArray(data)
+                    ? { data }
+                    : {
+                        data: data.data || (data as unknown as FileMeta[]),
+                        meta: (data as FileListResponse).meta,
+                    };
+            },
+            queryKey: storageQueryKeys.files.list({ limit: limitValue(), page: pageValue() }),
+        };
+    });
 
     return {
         data: query.data as unknown as Accessor<FileListResponse | undefined>,
         error: (() => {
-            const err = query.error?.();
-            return (err as Error) || null;
+            const error = query.error?.();
+
+            return (error as Error) || null;
         }) as Accessor<Error | null>,
         isLoading: query.isLoading as unknown as Accessor<boolean>,
         refetch: () => {
@@ -83,5 +86,3 @@ export const createGetFileList = (options: CreateGetFileListOptions): CreateGetF
         },
     };
 };
-
-

@@ -6,23 +6,23 @@ import { buildUrl, extractFileMetaFromHeaders, storageQueryKeys } from "../core"
 import type { FileMeta } from "../react/types";
 
 export interface UseGetFileOptions {
+    /** Whether to enable the query */
+    enabled?: MaybeRefOrGetter<boolean>;
     /** Base endpoint URL for file operations */
     endpoint: string;
     /** File ID to fetch */
     id: MaybeRefOrGetter<string>;
     /** Transformation parameters for media files */
     transform?: MaybeRefOrGetter<Record<string, string | number | boolean> | undefined>;
-    /** Whether to enable the query */
-    enabled?: MaybeRefOrGetter<boolean>;
 }
 
 export interface UseGetFileReturn {
+    /** File data as Blob */
+    data: Readonly<Ref<Blob | undefined>>;
     /** Last request error, if any */
     error: Readonly<Ref<Error | null>>;
     /** Whether a request is currently in progress */
     isLoading: Readonly<Ref<boolean>>;
-    /** File data as Blob */
-    data: Readonly<Ref<Blob | undefined>>;
     /** File metadata from response headers */
     meta: Readonly<Ref<FileMeta | null>>;
     /** Refetch the file */
@@ -36,7 +36,7 @@ export interface UseGetFileReturn {
  * @returns File fetching functions and state
  */
 export const useGetFile = (options: UseGetFileOptions): UseGetFileReturn => {
-    const { endpoint, id, transform, enabled = true } = options;
+    const { enabled = true, endpoint, id, transform } = options;
 
     const query = useQuery({
         enabled: computed(() => toValue(enabled) && !!toValue(id)),
@@ -49,12 +49,14 @@ export const useGetFile = (options: UseGetFileOptions): UseGetFileReturn => {
             });
 
             if (!response.ok) {
-                const errorData = await response.json().catch(() => ({
-                    error: {
-                        code: "RequestFailed",
-                        message: response.statusText,
-                    },
-                }));
+                const errorData = await response.json().catch(() => {
+                    return {
+                        error: {
+                            code: "RequestFailed",
+                            message: response.statusText,
+                        },
+                    };
+                });
 
                 throw new Error(errorData.error?.message || `Failed to get file: ${response.status} ${response.statusText}`);
             }
@@ -77,4 +79,3 @@ export const useGetFile = (options: UseGetFileOptions): UseGetFileReturn => {
         },
     };
 };
-

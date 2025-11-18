@@ -13,6 +13,8 @@ export interface UsePatchChunkOptions {
 }
 
 export interface UsePatchChunkReturn {
+    /** Last upload result, if any */
+    data: UploadResult | null;
     /** Last request error, if any */
     error: Error | null;
     /** Whether a request is currently in progress */
@@ -21,8 +23,6 @@ export interface UsePatchChunkReturn {
     patchChunk: (id: string, chunk: Blob, offset: number, checksum?: string) => Promise<UploadResult>;
     /** Reset mutation state */
     reset: () => void;
-    /** Last upload result, if any */
-    data: UploadResult | null;
 }
 
 /**
@@ -37,7 +37,7 @@ export const usePatchChunk = (options: UsePatchChunkOptions): UsePatchChunkRetur
     const queryClient = useQueryClient();
 
     const mutation = useMutation({
-        mutationFn: async ({ id, chunk, offset, checksum }: { id: string; chunk: Blob; offset: number; checksum?: string }): Promise<UploadResult> => {
+        mutationFn: async ({ checksum, chunk, id, offset }: { checksum?: string; chunk: Blob; id: string; offset: number }): Promise<UploadResult> => {
             const url = buildUrl(endpoint, id);
             const result = await patchChunk(url, chunk, offset, checksum);
 
@@ -71,6 +71,7 @@ export const usePatchChunk = (options: UsePatchChunkOptions): UsePatchChunkRetur
                 // Otherwise, just invalidate the head query to update progress
                 queryClient.invalidateQueries({ queryKey: storageQueryKeys.files.head(variables.id) });
             }
+
             onSuccess?.(result);
         },
     });
@@ -79,7 +80,7 @@ export const usePatchChunk = (options: UsePatchChunkOptions): UsePatchChunkRetur
         data: mutation.data || null,
         error: (mutation.error as Error) || null,
         isLoading: mutation.isPending,
-        patchChunk: (id: string, chunk: Blob, offset: number, checksum?: string) => mutation.mutateAsync({ id, chunk, offset, checksum }),
+        patchChunk: (id: string, chunk: Blob, offset: number, checksum?: string) => mutation.mutateAsync({ checksum, chunk, id, offset }),
         reset: mutation.reset,
     };
 };

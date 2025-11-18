@@ -6,38 +6,38 @@ import { buildUrl, extractFileMetaFromHeaders, storageQueryKeys } from "../core"
 import type { FileMeta } from "../react/types";
 
 export interface TransformOptions {
+    /** Additional transformation parameters */
+    [key: string]: string | number | boolean | undefined;
+    /** Resize fit mode */
+    fit?: "cover" | "contain" | "fill" | "inside" | "outside";
     /** Output format (jpeg, png, webp, etc.) */
     format?: string;
+    /** Desired height in pixels */
+    height?: number;
     /** Quality setting (0-100) */
     quality?: number;
     /** Desired width in pixels */
     width?: number;
-    /** Desired height in pixels */
-    height?: number;
-    /** Resize fit mode */
-    fit?: "cover" | "contain" | "fill" | "inside" | "outside";
-    /** Additional transformation parameters */
-    [key: string]: string | number | boolean | undefined;
 }
 
 export interface UseTransformFileOptions {
+    /** Whether to enable the query */
+    enabled?: MaybeRefOrGetter<boolean>;
     /** Base endpoint URL for transform operations */
     endpoint: string;
     /** File ID to transform */
     id: MaybeRefOrGetter<string>;
     /** Transformation parameters */
     transform: MaybeRefOrGetter<TransformOptions>;
-    /** Whether to enable the query */
-    enabled?: MaybeRefOrGetter<boolean>;
 }
 
 export interface UseTransformFileReturn {
+    /** Transformed file data as Blob */
+    data: Readonly<Ref<Blob | undefined>>;
     /** Last request error, if any */
     error: Readonly<Ref<Error | null>>;
     /** Whether a request is currently in progress */
     isLoading: Readonly<Ref<boolean>>;
-    /** Transformed file data as Blob */
-    data: Readonly<Ref<Blob | undefined>>;
     /** File metadata from response headers */
     meta: Readonly<Ref<FileMeta | null>>;
     /** Refetch the transformed file */
@@ -51,7 +51,7 @@ export interface UseTransformFileReturn {
  * @returns Transform file fetching functions and state
  */
 export const useTransformFile = (options: UseTransformFileOptions): UseTransformFileReturn => {
-    const { endpoint, id, transform, enabled = true } = options;
+    const { enabled = true, endpoint, id, transform } = options;
 
     const query = useQuery({
         enabled: computed(() => toValue(enabled) && !!toValue(id) && !!toValue(transform)),
@@ -64,12 +64,14 @@ export const useTransformFile = (options: UseTransformFileOptions): UseTransform
             });
 
             if (!response.ok) {
-                const errorData = await response.json().catch(() => ({
-                    error: {
-                        code: "RequestFailed",
-                        message: response.statusText,
-                    },
-                }));
+                const errorData = await response.json().catch(() => {
+                    return {
+                        error: {
+                            code: "RequestFailed",
+                            message: response.statusText,
+                        },
+                    };
+                });
 
                 throw new Error(errorData.error?.message || `Failed to get transformed file: ${response.status} ${response.statusText}`);
             }
@@ -92,4 +94,3 @@ export const useTransformFile = (options: UseTransformFileOptions): UseTransform
         },
     };
 };
-

@@ -1,32 +1,31 @@
-import { useEffect } from "react";
-
 import { useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
 
 import { buildUrl, extractFileMetaFromHeaders, storageQueryKeys } from "../core";
 import type { FileMeta } from "./types";
 
 export interface UseGetFileOptions {
+    /** Whether to enable the query */
+    enabled?: boolean;
     /** Base endpoint URL for file operations */
     endpoint: string;
     /** File ID to fetch */
     id: string;
-    /** Transformation parameters for media files */
-    transform?: Record<string, string | number | boolean>;
-    /** Whether to enable the query */
-    enabled?: boolean;
     /** Callback when request fails */
     onError?: (error: Error) => void;
     /** Callback when request succeeds */
     onSuccess?: (data: Blob, meta: FileMeta | null) => void;
+    /** Transformation parameters for media files */
+    transform?: Record<string, string | number | boolean>;
 }
 
 export interface UseGetFileReturn {
+    /** File data as Blob */
+    data: Blob | undefined;
     /** Last request error, if any */
     error: Error | null;
     /** Whether a request is currently in progress */
     isLoading: boolean;
-    /** File data as Blob */
-    data: Blob | undefined;
     /** File metadata from response headers */
     meta: FileMeta | null;
     /** Refetch the file */
@@ -40,7 +39,7 @@ export interface UseGetFileReturn {
  * @returns File fetching functions and state
  */
 export const useGetFile = (options: UseGetFileOptions): UseGetFileReturn => {
-    const { endpoint, id, transform, enabled = true, onError, onSuccess } = options;
+    const { enabled = true, endpoint, id, onError, onSuccess, transform } = options;
 
     const query = useQuery({
         enabled: enabled && !!id,
@@ -51,12 +50,14 @@ export const useGetFile = (options: UseGetFileOptions): UseGetFileReturn => {
             });
 
             if (!response.ok) {
-                const errorData = await response.json().catch(() => ({
-                    error: {
-                        code: "RequestFailed",
-                        message: response.statusText,
-                    },
-                }));
+                const errorData = await response.json().catch(() => {
+                    return {
+                        error: {
+                            code: "RequestFailed",
+                            message: response.statusText,
+                        },
+                    };
+                });
 
                 throw new Error(errorData.error?.message || `Failed to get file: ${response.status} ${response.statusText}`);
             }

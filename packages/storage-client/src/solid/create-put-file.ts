@@ -1,8 +1,6 @@
-import { createSignal } from "solid-js";
-
-import { createMutation } from "@tanstack/solid-query";
-import { useQueryClient } from "@tanstack/solid-query";
+import { createMutation, useQueryClient } from "@tanstack/solid-query";
 import type { Accessor } from "solid-js";
+import { createSignal } from "solid-js";
 
 import { buildUrl, putFile, storageQueryKeys } from "../core";
 import type { UploadResult } from "../react/types";
@@ -15,6 +13,8 @@ export interface CreatePutFileOptions {
 }
 
 export interface CreatePutFileReturn {
+    /** Last upload result, if any */
+    data: Accessor<UploadResult | null>;
     /** Last request error, if any */
     error: Accessor<Error | null>;
     /** Whether a request is currently in progress */
@@ -25,8 +25,6 @@ export interface CreatePutFileReturn {
     putFile: (id: string, file: File | Blob) => Promise<UploadResult>;
     /** Reset mutation state */
     reset: () => void;
-    /** Last upload result, if any */
-    data: Accessor<UploadResult | null>;
 }
 
 /**
@@ -41,44 +39,44 @@ export const createPutFile = (options: CreatePutFileOptions): CreatePutFileRetur
 
     const [progress, setProgress] = createSignal(0);
 
-    const mutation = createMutation(() => ({
-        mutationFn: async ({ id, file }: { id: string; file: File | Blob }): Promise<UploadResult> => {
-            const url = buildUrl(endpoint, id);
-            const result = await putFile(url, file, (progressValue) => {
-                setProgress(progressValue);
-                onProgress?.(progressValue);
-            });
+    const mutation = createMutation(() => {
+        return {
+            mutationFn: async ({ file, id }: { file: File | Blob; id: string }): Promise<UploadResult> => {
+                const url = buildUrl(endpoint, id);
+                const result = await putFile(url, file, (progressValue) => {
+                    setProgress(progressValue);
+                    onProgress?.(progressValue);
+                });
 
-            return {
-                id,
-                url: result.location || url,
-                metadata: result.etag ? { etag: result.etag } : undefined,
-            };
-        },
-        onError: () => {
-            setProgress(0);
-        },
-        onSuccess: (_data, variables) => {
+                return {
+                    id,
+                    metadata: result.etag ? { etag: result.etag } : undefined,
+                    url: result.location || url,
+                };
+            },
+            onError: () => {
+                setProgress(0);
+            },
+            onSuccess: (_data, variables) => {
             // Invalidate file-related queries
-            queryClient.invalidateQueries({ queryKey: storageQueryKeys.files.all });
-            queryClient.removeQueries({ queryKey: storageQueryKeys.files.detail(variables.id) });
-            queryClient.removeQueries({ queryKey: storageQueryKeys.files.meta(variables.id) });
-            queryClient.removeQueries({ queryKey: storageQueryKeys.files.head(variables.id) });
-            setProgress(0);
-        },
-    }));
+                queryClient.invalidateQueries({ queryKey: storageQueryKeys.files.all });
+                queryClient.removeQueries({ queryKey: storageQueryKeys.files.detail(variables.id) });
+                queryClient.removeQueries({ queryKey: storageQueryKeys.files.meta(variables.id) });
+                queryClient.removeQueries({ queryKey: storageQueryKeys.files.head(variables.id) });
+                setProgress(0);
+            },
+        };
+    });
 
     return {
         data: () => mutation.data() || null,
         error: mutation.error as Accessor<Error | null>,
         isLoading: mutation.isPending,
         progress,
-        putFile: (id: string, file: File | Blob) => mutation.mutateAsync({ id, file }),
+        putFile: (id: string, file: File | Blob) => mutation.mutateAsync({ file, id }),
         reset: () => {
             setProgress(0);
             mutation.reset();
         },
     };
 };
-
-

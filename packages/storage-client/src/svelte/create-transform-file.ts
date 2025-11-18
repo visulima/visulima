@@ -1,42 +1,43 @@
 import { createQuery } from "@tanstack/svelte-query";
-import { derived, get, type Readable } from "svelte/store";
+import type { Readable } from "svelte/store";
+import { derived, get } from "svelte/store";
 
 import { buildUrl, extractFileMetaFromHeaders, storageQueryKeys } from "../core";
 import type { FileMeta } from "../react/types";
 
 export interface TransformOptions {
+    /** Additional transformation parameters */
+    [key: string]: string | number | boolean | undefined;
+    /** Resize fit mode */
+    fit?: "cover" | "contain" | "fill" | "inside" | "outside";
     /** Output format (jpeg, png, webp, etc.) */
     format?: string;
+    /** Desired height in pixels */
+    height?: number;
     /** Quality setting (0-100) */
     quality?: number;
     /** Desired width in pixels */
     width?: number;
-    /** Desired height in pixels */
-    height?: number;
-    /** Resize fit mode */
-    fit?: "cover" | "contain" | "fill" | "inside" | "outside";
-    /** Additional transformation parameters */
-    [key: string]: string | number | boolean | undefined;
 }
 
 export interface CreateTransformFileOptions {
+    /** Whether to enable the query */
+    enabled?: Readable<boolean> | boolean;
     /** Base endpoint URL for transform operations */
     endpoint: string;
     /** File ID to transform */
     id: Readable<string> | string;
     /** Transformation parameters */
     transform: Readable<TransformOptions> | TransformOptions;
-    /** Whether to enable the query */
-    enabled?: Readable<boolean> | boolean;
 }
 
 export interface CreateTransformFileReturn {
+    /** Transformed file data as Blob */
+    data: Readable<Blob | undefined>;
     /** Last request error, if any */
     error: Readable<Error | null>;
     /** Whether a request is currently in progress */
     isLoading: Readable<boolean>;
-    /** Transformed file data as Blob */
-    data: Readable<Blob | undefined>;
     /** File metadata from response headers */
     meta: Readable<FileMeta | null>;
     /** Refetch the transformed file */
@@ -50,11 +51,11 @@ export interface CreateTransformFileReturn {
  * @returns Transform file fetching functions and state stores
  */
 export const createTransformFile = (options: CreateTransformFileOptions): CreateTransformFileReturn => {
-    const { endpoint, id, transform, enabled = true } = options;
+    const { enabled = true, endpoint, id, transform } = options;
 
     const idStore: Readable<string> = typeof id === "object" && "subscribe" in id ? id : derived([], () => id as string);
-    const transformStore: Readable<TransformOptions> =
-        typeof transform === "object" && "subscribe" in transform ? transform : derived([], () => transform as TransformOptions);
+    const transformStore: Readable<TransformOptions>
+        = typeof transform === "object" && "subscribe" in transform ? transform : derived([], () => transform as TransformOptions);
     const enabledStore: Readable<boolean> = typeof enabled === "object" && "subscribe" in enabled ? enabled : derived([], () => enabled as boolean);
 
     const query = createQuery(() => {
@@ -71,12 +72,14 @@ export const createTransformFile = (options: CreateTransformFileOptions): Create
                 });
 
                 if (!response.ok) {
-                    const errorData = await response.json().catch(() => ({
-                        error: {
-                            code: "RequestFailed",
-                            message: response.statusText,
-                        },
-                    }));
+                    const errorData = await response.json().catch(() => {
+                        return {
+                            error: {
+                                code: "RequestFailed",
+                                message: response.statusText,
+                            },
+                        };
+                    });
 
                     throw new Error(errorData.error?.message || `Failed to get transformed file: ${response.status} ${response.statusText}`);
                 }
@@ -100,4 +103,3 @@ export const createTransformFile = (options: CreateTransformFileOptions): Create
         },
     };
 };
-

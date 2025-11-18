@@ -3,20 +3,20 @@ import { render, waitFor } from "@testing-library/svelte";
 import { writable } from "svelte/store";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { createGetFile } from "../create-get-file";
+import { createGetFile } from "../../svelte/create-get-file";
 import TestComponent from "./TestComponent.svelte";
 
 // Mock fetch globally
 const mockFetch = vi.fn();
 
-describe("createGetFile", () => {
+describe(createGetFile, () => {
     let queryClient: QueryClient;
 
     beforeEach(() => {
         queryClient = new QueryClient({
             defaultOptions: {
-                queries: { retry: false },
                 mutations: { retry: false },
+                queries: { retry: false },
             },
         });
         globalThis.fetch = mockFetch;
@@ -28,14 +28,14 @@ describe("createGetFile", () => {
 
         const mockBlob = new Blob(["test content"], { type: "image/jpeg" });
         const mockHeaders = new Headers({
-            "Content-Type": "image/jpeg",
             "Content-Length": "12",
+            "Content-Type": "image/jpeg",
         });
 
         mockFetch.mockResolvedValueOnce({
-            ok: true,
             blob: () => Promise.resolve(mockBlob),
             headers: mockHeaders,
+            ok: true,
         });
 
         // Wrap in QueryClientProvider component for Svelte context
@@ -71,14 +71,14 @@ describe("createGetFile", () => {
 
         mockFetch
             .mockResolvedValueOnce({
-                ok: true,
                 blob: () => Promise.resolve(mockBlob1),
                 headers: new Headers({ "Content-Type": "image/jpeg" }),
+                ok: true,
             })
             .mockResolvedValueOnce({
-                ok: true,
                 blob: () => Promise.resolve(mockBlob2),
                 headers: new Headers({ "Content-Type": "image/jpeg" }),
+                ok: true,
             });
 
         const { component } = render(TestComponent, {
@@ -113,9 +113,9 @@ describe("createGetFile", () => {
             props: {
                 client: queryClient,
                 options: {
+                    enabled,
                     endpoint: "https://api.example.com",
                     id: "file-123",
-                    enabled,
                 },
             },
         });

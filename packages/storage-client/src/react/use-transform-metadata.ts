@@ -10,10 +10,10 @@ export interface TransformMetadata {
 }
 
 export interface UseTransformMetadataOptions {
-    /** Base endpoint URL for transform operations */
-    endpoint: string;
     /** Whether to enable the query */
     enabled?: boolean;
+    /** Base endpoint URL for transform operations */
+    endpoint: string;
     /** Callback when request fails */
     onError?: (error: Error) => void;
     /** Callback when request succeeds */
@@ -21,12 +21,12 @@ export interface UseTransformMetadataOptions {
 }
 
 export interface UseTransformMetadataReturn {
+    /** Transform metadata */
+    data: TransformMetadata | undefined;
     /** Last request error, if any */
     error: Error | null;
     /** Whether a request is currently in progress */
     isLoading: boolean;
-    /** Transform metadata */
-    data: TransformMetadata | undefined;
     /** Refetch the transform metadata */
     refetch: () => void;
 }
@@ -38,7 +38,7 @@ export interface UseTransformMetadataReturn {
  * @returns Transform metadata fetching functions and state
  */
 export const useTransformMetadata = (options: UseTransformMetadataOptions): UseTransformMetadataReturn => {
-    const { endpoint, enabled = true, onError, onSuccess } = options;
+    const { enabled = true, endpoint, onError, onSuccess } = options;
 
     const query = useQuery({
         enabled,

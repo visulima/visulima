@@ -1,7 +1,7 @@
 <script lang="ts">
     import type { ComponentProps } from "svelte";
-    import { createGetFile } from "../create-get-file";
-    import type { CreateGetFileOptions, CreateGetFileReturn } from "../create-get-file";
+    import { createGetFile } from "../../svelte/create-get-file";
+    import type { CreateGetFileOptions, CreateGetFileReturn } from "../../svelte/create-get-file";
     import type { QueryClient } from "@tanstack/svelte-query";
 
     export let client: QueryClient;

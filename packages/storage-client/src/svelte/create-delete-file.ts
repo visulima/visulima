@@ -1,6 +1,6 @@
-import { createMutation } from "@tanstack/svelte-query";
-import { useQueryClient } from "@tanstack/svelte-query";
-import { derived, type Readable } from "svelte/store";
+import { createMutation, useQueryClient } from "@tanstack/svelte-query";
+import type { Readable } from "svelte/store";
+import { derived } from "svelte/store";
 
 import { buildUrl, deleteRequest, storageQueryKeys } from "../core";
 
@@ -30,19 +30,22 @@ export const createDeleteFile = (options: CreateDeleteFileOptions): CreateDelete
     const { endpoint } = options;
     const queryClient = useQueryClient();
 
-    const mutation = createMutation(() => ({
-        mutationFn: async (id: string): Promise<void> => {
-            const url = buildUrl(endpoint, id);
-            await deleteRequest(url);
-        },
-        onSuccess: (_data, id) => {
+    const mutation = createMutation(() => {
+        return {
+            mutationFn: async (id: string): Promise<void> => {
+                const url = buildUrl(endpoint, id);
+
+                await deleteRequest(url);
+            },
+            onSuccess: (_data, id) => {
             // Invalidate file-related queries
-            queryClient.invalidateQueries({ queryKey: storageQueryKeys.files.all });
-            queryClient.removeQueries({ queryKey: storageQueryKeys.files.detail(id) });
-            queryClient.removeQueries({ queryKey: storageQueryKeys.files.meta(id) });
-            queryClient.removeQueries({ queryKey: storageQueryKeys.files.head(id) });
-        },
-    }));
+                queryClient.invalidateQueries({ queryKey: storageQueryKeys.files.all });
+                queryClient.removeQueries({ queryKey: storageQueryKeys.files.detail(id) });
+                queryClient.removeQueries({ queryKey: storageQueryKeys.files.meta(id) });
+                queryClient.removeQueries({ queryKey: storageQueryKeys.files.head(id) });
+            },
+        };
+    });
 
     return {
         deleteFile: mutation.mutateAsync,
@@ -51,4 +54,3 @@ export const createDeleteFile = (options: CreateDeleteFileOptions): CreateDelete
         reset: mutation.reset,
     };
 };
-

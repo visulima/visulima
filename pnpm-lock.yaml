@@ -133,10 +133,14 @@ importers:
       '@anolilab/eslint-config':
         specifier: ^16.4.2
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 16.4.2(dbc0a926a165edb45204676cbc0d561a)
 =======
         version: 16.4.3(267749e55d2bd5503d42322ef20c6c6c)
 >>>>>>> 4b3ce96ac (refactor: update storage client with new query utilities and improved file operations)
+=======
+        version: 16.4.3(5c99a0a07e6c2753252f1da7837f3687)
+>>>>>>> 022be0152 (chore: update storage client dependencies and enhance testing framework)
       '@anolilab/prettier-config':
         specifier: ^6.0.7
         version: 6.0.8(prettier@3.6.2)
@@ -379,10 +383,14 @@ importers:
       '@anolilab/eslint-config':
         specifier: 16.4.2
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 16.4.2(ccdb4c2bfbaef344c40f1eef644829e6)
 =======
         version: 16.4.2(1adf94a0d804bb349590dbc7922eb8d5)
 >>>>>>> 4b3ce96ac (refactor: update storage client with new query utilities and improved file operations)
+=======
+        version: 16.4.2(d4db5bf4426959710e38170780ee20bb)
+>>>>>>> 022be0152 (chore: update storage client dependencies and enhance testing framework)
       '@anolilab/prettier-config':
         specifier: ^6.0.7
         version: 6.0.8(prettier@3.6.2)
@@ -522,10 +530,14 @@ importers:
       '@anolilab/eslint-config':
         specifier: ^16.4.2
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 16.4.2(ccdb4c2bfbaef344c40f1eef644829e6)
 =======
         version: 16.4.3(267749e55d2bd5503d42322ef20c6c6c)
 >>>>>>> 4b3ce96ac (refactor: update storage client with new query utilities and improved file operations)
+=======
+        version: 16.4.3(5c99a0a07e6c2753252f1da7837f3687)
+>>>>>>> 022be0152 (chore: update storage client dependencies and enhance testing framework)
       '@anolilab/prettier-config':
         specifier: ^6.0.7
         version: 6.0.8(prettier@3.6.2)
@@ -742,10 +754,14 @@ importers:
       '@anolilab/eslint-config':
         specifier: ^16.4.2
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 16.4.2(ccdb4c2bfbaef344c40f1eef644829e6)
 =======
         version: 16.4.3(267749e55d2bd5503d42322ef20c6c6c)
 >>>>>>> 4b3ce96ac (refactor: update storage client with new query utilities and improved file operations)
+=======
+        version: 16.4.3(5c99a0a07e6c2753252f1da7837f3687)
+>>>>>>> 022be0152 (chore: update storage client dependencies and enhance testing framework)
       '@anolilab/prettier-config':
         specifier: ^6.0.7
         version: 6.0.8(prettier@3.6.2)
@@ -839,10 +855,14 @@ importers:
       '@anolilab/eslint-config':
         specifier: ^16.4.2
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 16.4.2(ccdb4c2bfbaef344c40f1eef644829e6)
 =======
         version: 16.4.3(267749e55d2bd5503d42322ef20c6c6c)
 >>>>>>> 4b3ce96ac (refactor: update storage client with new query utilities and improved file operations)
+=======
+        version: 16.4.3(5c99a0a07e6c2753252f1da7837f3687)
+>>>>>>> 022be0152 (chore: update storage client dependencies and enhance testing framework)
       '@anolilab/prettier-config':
         specifier: ^6.0.7
         version: 6.0.8(prettier@3.6.2)
@@ -922,10 +942,14 @@ importers:
       '@anolilab/eslint-config':
         specifier: ^16.4.2
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 16.4.2(ccdb4c2bfbaef344c40f1eef644829e6)
 =======
         version: 16.4.3(267749e55d2bd5503d42322ef20c6c6c)
 >>>>>>> 4b3ce96ac (refactor: update storage client with new query utilities and improved file operations)
+=======
+        version: 16.4.3(5c99a0a07e6c2753252f1da7837f3687)
+>>>>>>> 022be0152 (chore: update storage client dependencies and enhance testing framework)
       '@anolilab/prettier-config':
         specifier: ^6.0.7
         version: 6.0.8(prettier@3.6.2)
@@ -1116,10 +1140,14 @@ importers:
       '@anolilab/eslint-config':
         specifier: ^16.4.2
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 16.4.2(ccdb4c2bfbaef344c40f1eef644829e6)
 =======
         version: 16.4.3(267749e55d2bd5503d42322ef20c6c6c)
 >>>>>>> 4b3ce96ac (refactor: update storage client with new query utilities and improved file operations)
+=======
+        version: 16.4.3(5c99a0a07e6c2753252f1da7837f3687)
+>>>>>>> 022be0152 (chore: update storage client dependencies and enhance testing framework)
       '@anolilab/prettier-config':
         specifier: ^6.0.7
         version: 6.0.8(prettier@3.6.2)
@@ -1255,10 +1283,14 @@ importers:
       '@anolilab/eslint-config':
         specifier: ^16.4.2
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 16.4.2(ccdb4c2bfbaef344c40f1eef644829e6)
 =======
         version: 16.4.3(267749e55d2bd5503d42322ef20c6c6c)
 >>>>>>> 4b3ce96ac (refactor: update storage client with new query utilities and improved file operations)
+=======
+        version: 16.4.3(5c99a0a07e6c2753252f1da7837f3687)
+>>>>>>> 022be0152 (chore: update storage client dependencies and enhance testing framework)
       '@anolilab/semantic-release-pnpm':
         specifier: 3.0.0-alpha.2
         version: 3.0.0-alpha.2(@types/node@24.10.1)(yaml@2.8.1)
@@ -1387,10 +1419,14 @@ importers:
       '@anolilab/eslint-config':
         specifier: ^16.4.2
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 16.4.2(ccdb4c2bfbaef344c40f1eef644829e6)
 =======
         version: 16.4.3(267749e55d2bd5503d42322ef20c6c6c)
 >>>>>>> 4b3ce96ac (refactor: update storage client with new query utilities and improved file operations)
+=======
+        version: 16.4.3(5c99a0a07e6c2753252f1da7837f3687)
+>>>>>>> 022be0152 (chore: update storage client dependencies and enhance testing framework)
       '@anolilab/prettier-config':
         specifier: ^6.0.7
         version: 6.0.8(prettier@3.6.2)
@@ -1479,10 +1515,14 @@ importers:
       '@anolilab/eslint-config':
         specifier: ^16.4.2
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 16.4.2(ccdb4c2bfbaef344c40f1eef644829e6)
 =======
         version: 16.4.3(267749e55d2bd5503d42322ef20c6c6c)
 >>>>>>> 4b3ce96ac (refactor: update storage client with new query utilities and improved file operations)
+=======
+        version: 16.4.3(5c99a0a07e6c2753252f1da7837f3687)
+>>>>>>> 022be0152 (chore: update storage client dependencies and enhance testing framework)
       '@anolilab/prettier-config':
         specifier: ^6.0.7
         version: 6.0.8(prettier@3.6.2)
@@ -1600,10 +1640,14 @@ importers:
       '@anolilab/eslint-config':
         specifier: ^16.4.2
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 16.4.2(3d0c8742d370d39e2008f6d40fd002a5)
 =======
         version: 16.4.3(71190d46b7cc170af450ab10e160cbb9)
 >>>>>>> 4b3ce96ac (refactor: update storage client with new query utilities and improved file operations)
+=======
+        version: 16.4.3(47acb5c7635f1f055c767aa4a69920df)
+>>>>>>> 022be0152 (chore: update storage client dependencies and enhance testing framework)
       '@anolilab/prettier-config':
         specifier: ^6.0.7
         version: 6.0.8(prettier@3.6.2)
@@ -1719,10 +1763,14 @@ importers:
       '@anolilab/eslint-config':
         specifier: ^16.4.2
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 16.4.2(ccdb4c2bfbaef344c40f1eef644829e6)
 =======
         version: 16.4.3(267749e55d2bd5503d42322ef20c6c6c)
 >>>>>>> 4b3ce96ac (refactor: update storage client with new query utilities and improved file operations)
+=======
+        version: 16.4.3(5c99a0a07e6c2753252f1da7837f3687)
+>>>>>>> 022be0152 (chore: update storage client dependencies and enhance testing framework)
       '@anolilab/prettier-config':
         specifier: ^6.0.7
         version: 6.0.8(prettier@3.6.2)
@@ -1817,10 +1865,14 @@ importers:
       '@anolilab/eslint-config':
         specifier: ^16.4.2
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 16.4.2(ccdb4c2bfbaef344c40f1eef644829e6)
 =======
         version: 16.4.3(267749e55d2bd5503d42322ef20c6c6c)
 >>>>>>> 4b3ce96ac (refactor: update storage client with new query utilities and improved file operations)
+=======
+        version: 16.4.3(5c99a0a07e6c2753252f1da7837f3687)
+>>>>>>> 022be0152 (chore: update storage client dependencies and enhance testing framework)
       '@anolilab/semantic-release-pnpm':
         specifier: 3.0.0-alpha.2
         version: 3.0.0-alpha.2(@types/node@24.10.1)(yaml@2.8.1)
@@ -1917,10 +1969,14 @@ importers:
       '@anolilab/eslint-config':
         specifier: ^16.4.2
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 16.4.2(ccdb4c2bfbaef344c40f1eef644829e6)
 =======
         version: 16.4.3(267749e55d2bd5503d42322ef20c6c6c)
 >>>>>>> 4b3ce96ac (refactor: update storage client with new query utilities and improved file operations)
+=======
+        version: 16.4.3(5c99a0a07e6c2753252f1da7837f3687)
+>>>>>>> 022be0152 (chore: update storage client dependencies and enhance testing framework)
       '@anolilab/prettier-config':
         specifier: ^6.0.7
         version: 6.0.8(prettier@3.6.2)
@@ -1996,10 +2052,14 @@ importers:
       '@anolilab/eslint-config':
         specifier: ^16.4.2
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 16.4.2(ccdb4c2bfbaef344c40f1eef644829e6)
 =======
         version: 16.4.3(267749e55d2bd5503d42322ef20c6c6c)
 >>>>>>> 4b3ce96ac (refactor: update storage client with new query utilities and improved file operations)
+=======
+        version: 16.4.3(5c99a0a07e6c2753252f1da7837f3687)
+>>>>>>> 022be0152 (chore: update storage client dependencies and enhance testing framework)
       '@anolilab/prettier-config':
         specifier: ^6.0.7
         version: 6.0.8(prettier@3.6.2)
@@ -2069,7 +2129,7 @@ importers:
         specifier: ^6.0.8
 =======
         specifier: ^16.4.2
-        version: 16.4.3(267749e55d2bd5503d42322ef20c6c6c)
+        version: 16.4.3(5c99a0a07e6c2753252f1da7837f3687)
       '@anolilab/prettier-config':
         specifier: ^6.0.7
 >>>>>>> 4b3ce96ac (refactor: update storage client with new query utilities and improved file operations)
@@ -2235,10 +2295,14 @@ importers:
       '@anolilab/eslint-config':
         specifier: ^16.4.2
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 16.4.2(ccdb4c2bfbaef344c40f1eef644829e6)
 =======
         version: 16.4.3(267749e55d2bd5503d42322ef20c6c6c)
 >>>>>>> 4b3ce96ac (refactor: update storage client with new query utilities and improved file operations)
+=======
+        version: 16.4.3(5c99a0a07e6c2753252f1da7837f3687)
+>>>>>>> 022be0152 (chore: update storage client dependencies and enhance testing framework)
       '@anolilab/prettier-config':
         specifier: ^6.0.7
         version: 6.0.8(prettier@3.6.2)
@@ -2347,10 +2411,14 @@ importers:
       '@anolilab/eslint-config':
         specifier: ^16.4.2
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 16.4.2(ccdb4c2bfbaef344c40f1eef644829e6)
 =======
         version: 16.4.3(267749e55d2bd5503d42322ef20c6c6c)
 >>>>>>> 4b3ce96ac (refactor: update storage client with new query utilities and improved file operations)
+=======
+        version: 16.4.3(5c99a0a07e6c2753252f1da7837f3687)
+>>>>>>> 022be0152 (chore: update storage client dependencies and enhance testing framework)
       '@anolilab/prettier-config':
         specifier: ^6.0.7
         version: 6.0.8(prettier@3.6.2)
@@ -2435,10 +2503,14 @@ importers:
       '@anolilab/eslint-config':
         specifier: ^16.4.2
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 16.4.2(ccdb4c2bfbaef344c40f1eef644829e6)
 =======
         version: 16.4.3(267749e55d2bd5503d42322ef20c6c6c)
 >>>>>>> 4b3ce96ac (refactor: update storage client with new query utilities and improved file operations)
+=======
+        version: 16.4.3(5c99a0a07e6c2753252f1da7837f3687)
+>>>>>>> 022be0152 (chore: update storage client dependencies and enhance testing framework)
       '@anolilab/semantic-release-pnpm':
         specifier: 3.0.0-alpha.2
         version: 3.0.0-alpha.2(@types/node@24.10.1)(yaml@2.8.1)
@@ -2539,10 +2611,14 @@ importers:
       '@anolilab/eslint-config':
         specifier: ^16.4.2
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 16.4.2(ccdb4c2bfbaef344c40f1eef644829e6)
 =======
         version: 16.4.3(267749e55d2bd5503d42322ef20c6c6c)
 >>>>>>> 4b3ce96ac (refactor: update storage client with new query utilities and improved file operations)
+=======
+        version: 16.4.3(5c99a0a07e6c2753252f1da7837f3687)
+>>>>>>> 022be0152 (chore: update storage client dependencies and enhance testing framework)
       '@anolilab/prettier-config':
         specifier: ^6.0.7
         version: 6.0.8(prettier@3.6.2)
@@ -2625,10 +2701,14 @@ importers:
       '@anolilab/eslint-config':
         specifier: ^16.4.2
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 16.4.2(ccdb4c2bfbaef344c40f1eef644829e6)
 =======
         version: 16.4.3(267749e55d2bd5503d42322ef20c6c6c)
 >>>>>>> 4b3ce96ac (refactor: update storage client with new query utilities and improved file operations)
+=======
+        version: 16.4.3(5c99a0a07e6c2753252f1da7837f3687)
+>>>>>>> 022be0152 (chore: update storage client dependencies and enhance testing framework)
       '@anolilab/prettier-config':
         specifier: ^6.0.7
         version: 6.0.8(prettier@3.6.2)
@@ -2652,7 +2732,7 @@ importers:
         version: 24.10.1
       '@types/webpack':
         specifier: ^5.28.5
-        version: 5.28.5(@swc/core@1.13.5)
+        version: 5.28.5(@swc/core@1.13.5)(esbuild@0.27.0)
       '@visulima/fs':
         specifier: 4.0.6
         version: link:../fs
@@ -2701,17 +2781,21 @@ importers:
         version: 14.0.2
       webpack:
         specifier: ^5.102.1
-        version: 5.102.1(@swc/core@1.13.5)
+        version: 5.102.1(@swc/core@1.13.5)(esbuild@0.27.0)
 
   packages/object:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^16.4.2
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 16.4.2(ccdb4c2bfbaef344c40f1eef644829e6)
 =======
         version: 16.4.3(267749e55d2bd5503d42322ef20c6c6c)
 >>>>>>> 4b3ce96ac (refactor: update storage client with new query utilities and improved file operations)
+=======
+        version: 16.4.3(5c99a0a07e6c2753252f1da7837f3687)
+>>>>>>> 022be0152 (chore: update storage client dependencies and enhance testing framework)
       '@anolilab/prettier-config':
         specifier: ^6.0.7
         version: 6.0.8(prettier@3.6.2)
@@ -2827,10 +2911,14 @@ importers:
       '@anolilab/eslint-config':
         specifier: ^16.4.2
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 16.4.2(b493e8e17990f2138d636d127ef82274)
 =======
         version: 16.4.3(267749e55d2bd5503d42322ef20c6c6c)
 >>>>>>> 4b3ce96ac (refactor: update storage client with new query utilities and improved file operations)
+=======
+        version: 16.4.3(5c99a0a07e6c2753252f1da7837f3687)
+>>>>>>> 022be0152 (chore: update storage client dependencies and enhance testing framework)
       '@anolilab/prettier-config':
         specifier: ^6.0.7
         version: 6.0.8(prettier@3.6.2)
@@ -2995,10 +3083,14 @@ importers:
       '@anolilab/eslint-config':
         specifier: ^16.4.2
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 16.4.2(ccdb4c2bfbaef344c40f1eef644829e6)
 =======
         version: 16.4.3(267749e55d2bd5503d42322ef20c6c6c)
 >>>>>>> 4b3ce96ac (refactor: update storage client with new query utilities and improved file operations)
+=======
+        version: 16.4.3(5c99a0a07e6c2753252f1da7837f3687)
+>>>>>>> 022be0152 (chore: update storage client dependencies and enhance testing framework)
       '@anolilab/prettier-config':
         specifier: ^6.0.7
         version: 6.0.8(prettier@3.6.2)
@@ -3104,10 +3196,14 @@ importers:
       '@anolilab/eslint-config':
         specifier: ^16.4.2
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 16.4.2(ccdb4c2bfbaef344c40f1eef644829e6)
 =======
         version: 16.4.3(267749e55d2bd5503d42322ef20c6c6c)
 >>>>>>> 4b3ce96ac (refactor: update storage client with new query utilities and improved file operations)
+=======
+        version: 16.4.3(5c99a0a07e6c2753252f1da7837f3687)
+>>>>>>> 022be0152 (chore: update storage client dependencies and enhance testing framework)
       '@anolilab/prettier-config':
         specifier: ^6.0.7
         version: 6.0.8(prettier@3.6.2)
@@ -3175,10 +3271,14 @@ importers:
       '@anolilab/eslint-config':
         specifier: ^16.4.2
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 16.4.2(ccdb4c2bfbaef344c40f1eef644829e6)
 =======
         version: 16.4.3(267749e55d2bd5503d42322ef20c6c6c)
 >>>>>>> 4b3ce96ac (refactor: update storage client with new query utilities and improved file operations)
+=======
+        version: 16.4.3(5c99a0a07e6c2753252f1da7837f3687)
+>>>>>>> 022be0152 (chore: update storage client dependencies and enhance testing framework)
       '@anolilab/prettier-config':
         specifier: ^6.0.7
         version: 6.0.8(prettier@3.6.2)
@@ -3382,10 +3482,14 @@ importers:
       '@anolilab/eslint-config':
         specifier: ^16.4.2
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 16.4.2(ccdb4c2bfbaef344c40f1eef644829e6)
 =======
         version: 16.4.3(267749e55d2bd5503d42322ef20c6c6c)
 >>>>>>> 4b3ce96ac (refactor: update storage client with new query utilities and improved file operations)
+=======
+        version: 16.4.3(5c99a0a07e6c2753252f1da7837f3687)
+>>>>>>> 022be0152 (chore: update storage client dependencies and enhance testing framework)
       '@anolilab/prettier-config':
         specifier: ^6.0.7
         version: 6.0.8(prettier@3.6.2)
@@ -3474,10 +3578,14 @@ importers:
       '@anolilab/eslint-config':
         specifier: ^16.4.2
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 16.4.2(ccdb4c2bfbaef344c40f1eef644829e6)
 =======
         version: 16.4.3(dfb5abd42149f8cf48d4d26ce2583301)
 >>>>>>> 4b3ce96ac (refactor: update storage client with new query utilities and improved file operations)
+=======
+        version: 16.4.3(ebddd531b3a6731d339b29e034cf6a6c)
+>>>>>>> 022be0152 (chore: update storage client dependencies and enhance testing framework)
       '@anolilab/prettier-config':
         specifier: ^6.0.7
         version: 6.0.8(prettier@3.6.2)
@@ -3560,10 +3668,14 @@ importers:
       '@anolilab/eslint-config':
         specifier: ^16.4.2
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 16.4.2(ccdb4c2bfbaef344c40f1eef644829e6)
 =======
         version: 16.4.3(267749e55d2bd5503d42322ef20c6c6c)
 >>>>>>> 4b3ce96ac (refactor: update storage client with new query utilities and improved file operations)
+=======
+        version: 16.4.3(5c99a0a07e6c2753252f1da7837f3687)
+>>>>>>> 022be0152 (chore: update storage client dependencies and enhance testing framework)
       '@anolilab/prettier-config':
         specifier: ^6.0.7
         version: 6.0.8(prettier@3.6.2)
@@ -3665,10 +3777,14 @@ importers:
       '@anolilab/eslint-config':
         specifier: ^16.4.2
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 16.4.2(ccdb4c2bfbaef344c40f1eef644829e6)
 =======
         version: 16.4.3(267749e55d2bd5503d42322ef20c6c6c)
 >>>>>>> 4b3ce96ac (refactor: update storage client with new query utilities and improved file operations)
+=======
+        version: 16.4.3(5c99a0a07e6c2753252f1da7837f3687)
+>>>>>>> 022be0152 (chore: update storage client dependencies and enhance testing framework)
       '@anolilab/prettier-config':
         specifier: ^6.0.7
         version: 6.0.8(prettier@3.6.2)
@@ -3765,7 +3881,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^16.4.3
-        version: 16.4.3(267749e55d2bd5503d42322ef20c6c6c)
+        version: 16.4.3(5c99a0a07e6c2753252f1da7837f3687)
       '@anolilab/prettier-config':
         specifier: ^6.0.8
         version: 6.0.8(prettier@3.6.2)
@@ -3915,7 +4031,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^16.4.3
-        version: 16.4.3(267749e55d2bd5503d42322ef20c6c6c)
+        version: 16.4.3(5c99a0a07e6c2753252f1da7837f3687)
       '@anolilab/semantic-release-pnpm':
         specifier: 3.0.0-alpha.2
         version: 3.0.0-alpha.2(@types/node@24.10.1)(yaml@2.8.1)
@@ -3934,6 +4050,9 @@ importers:
       '@sveltejs/vite-plugin-svelte':
         specifier: ^6.2.1
         version: 6.2.1(svelte@5.43.10)(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
+      '@tanstack/eslint-plugin-query':
+        specifier: 5.91.2
+        version: 5.91.2(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3)
       '@tanstack/react-query':
         specifier: '>=5.90.10'
         version: 5.90.10(react@19.2.0)
@@ -3952,6 +4071,9 @@ importers:
       '@testing-library/svelte':
         specifier: 5.2.9
         version: 5.2.9(svelte@5.43.10)(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.10)
+      '@testing-library/vue':
+        specifier: 8.1.0
+        version: 8.1.0(@vue/compiler-sfc@3.5.24)(vue@3.5.24(typescript@5.9.3))
       '@total-typescript/ts-reset':
         specifier: ^0.6.1
         version: 0.6.1
@@ -3997,6 +4119,9 @@ importers:
       eslint-plugin-react-you-might-not-need-an-effect:
         specifier: 0.7.0
         version: 0.7.0(eslint@9.39.1(jiti@2.6.1))
+      eslint-plugin-testing-library:
+        specifier: ^7.13.4
+        version: 7.13.4(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3)
       eslint-plugin-validate-jsx-nesting:
         specifier: ^0.1.1
         version: 0.1.1(eslint@9.39.1(jiti@2.6.1))
@@ -4179,10 +4304,10 @@ importers:
         version: 1.136.8(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@tanstack/react-start':
         specifier: ^1.136.8
-        version: 1.136.8(crossws@0.4.1(srvx@0.9.6))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.8.0)(solid-js@1.9.10)(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(webpack@5.102.1(@swc/core@1.13.5))
+        version: 1.136.8(crossws@0.4.1(srvx@0.9.6))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.8.0)(solid-js@1.9.10)(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(webpack@5.102.1(@swc/core@1.13.5)(esbuild@0.27.0))
       '@tanstack/router-plugin':
         specifier: ^1.136.8
-        version: 1.136.8(@tanstack/react-router@1.136.8(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.8.0)(solid-js@1.9.10)(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(webpack@5.102.1(@swc/core@1.13.5))
+        version: 1.136.8(@tanstack/react-router@1.136.8(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.8.0)(solid-js@1.9.10)(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(webpack@5.102.1(@swc/core@1.13.5)(esbuild@0.27.0))
       '@visulima/storage':
         specifier: workspace:*
         version: link:../../../storage
@@ -4763,10 +4888,14 @@ importers:
       '@anolilab/eslint-config':
         specifier: 16.4.2
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 16.4.2(ccdb4c2bfbaef344c40f1eef644829e6)
 =======
         version: 16.4.2(e66dc88be571435d7802b199fcbd8bcf)
 >>>>>>> 4b3ce96ac (refactor: update storage client with new query utilities and improved file operations)
+=======
+        version: 16.4.2(1578f955a651bd80c0b46e18ae926844)
+>>>>>>> 022be0152 (chore: update storage client dependencies and enhance testing framework)
       '@anolilab/semantic-release-pnpm':
         specifier: 3.0.0-alpha.2
         version: 3.0.0-alpha.2(@types/node@24.10.1)(yaml@2.8.1)
@@ -4908,10 +5037,14 @@ importers:
       '@anolilab/eslint-config':
         specifier: ^16.4.2
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 16.4.2(ccdb4c2bfbaef344c40f1eef644829e6)
 =======
         version: 16.4.3(267749e55d2bd5503d42322ef20c6c6c)
 >>>>>>> 4b3ce96ac (refactor: update storage client with new query utilities and improved file operations)
+=======
+        version: 16.4.3(5c99a0a07e6c2753252f1da7837f3687)
+>>>>>>> 022be0152 (chore: update storage client dependencies and enhance testing framework)
       '@anolilab/prettier-config':
         specifier: 6.0.7
         version: 6.0.7(prettier@3.6.2)
@@ -5036,10 +5169,14 @@ importers:
       '@anolilab/eslint-config':
         specifier: ^16.4.2
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 16.4.2(ccdb4c2bfbaef344c40f1eef644829e6)
 =======
         version: 16.4.3(267749e55d2bd5503d42322ef20c6c6c)
 >>>>>>> 4b3ce96ac (refactor: update storage client with new query utilities and improved file operations)
+=======
+        version: 16.4.3(5c99a0a07e6c2753252f1da7837f3687)
+>>>>>>> 022be0152 (chore: update storage client dependencies and enhance testing framework)
       '@anolilab/prettier-config':
         specifier: ^6.0.7
         version: 6.0.8(prettier@3.6.2)
@@ -5174,10 +5311,14 @@ importers:
       '@anolilab/eslint-config':
         specifier: ^16.4.2
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 16.4.2(b493e8e17990f2138d636d127ef82274)
 =======
         version: 16.4.3(267749e55d2bd5503d42322ef20c6c6c)
 >>>>>>> 4b3ce96ac (refactor: update storage client with new query utilities and improved file operations)
+=======
+        version: 16.4.3(5c99a0a07e6c2753252f1da7837f3687)
+>>>>>>> 022be0152 (chore: update storage client dependencies and enhance testing framework)
       '@anolilab/prettier-config':
         specifier: ^6.0.7
         version: 6.0.8(prettier@3.6.2)
@@ -5543,7 +5684,7 @@ importers:
         version: 1.136.1(@tanstack/react-router@1.136.8(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(@tanstack/router-core@1.136.8)(@types/node@24.10.1)(csstype@3.2.3)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(solid-js@1.9.10)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
       '@tanstack/router-plugin':
         specifier: ^1.136.1
-        version: 1.136.8(@tanstack/react-router@1.136.8(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.8.0)(solid-js@1.9.10)(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(webpack@5.102.1(@swc/core@1.13.5))
+        version: 1.136.8(@tanstack/react-router@1.136.8(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.8.0)(solid-js@1.9.10)(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(webpack@5.102.1(@swc/core@1.13.5)(esbuild@0.27.0))
       react:
         specifier: ^19.2.0
         version: 19.2.0
@@ -5598,7 +5739,7 @@ importers:
         version: 1.133.35(@tanstack/react-router@1.133.35(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(@tanstack/router-core@1.136.8)(@types/node@24.10.1)(csstype@3.2.3)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(solid-js@1.9.10)(terser@5.44.0)(tiny-invariant@1.3.3)(tsx@4.20.6)(yaml@2.8.1)
       '@tanstack/react-start':
         specifier: 1.133.35
-        version: 1.133.35(crossws@0.4.1(srvx@0.9.6))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.8.0)(solid-js@1.9.10)(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(webpack@5.102.1(@swc/core@1.13.5))
+        version: 1.133.35(crossws@0.4.1(srvx@0.9.6))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.8.0)(solid-js@1.9.10)(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(webpack@5.102.1(@swc/core@1.13.5)(esbuild@0.27.0))
       react:
         specifier: ^19.2.0
         version: 19.2.0
@@ -8208,6 +8349,9 @@ packages:
 
   '@ogma/styler@1.1.0':
     resolution: {integrity: sha512-OtwJ8Ump3sKEAv2DIUi+R2G2Y5v3cEzqRO/sH11MTWikAhac31GZR/xzU+3BoPRT0u8oIob7N5dtOKTdPhqq3w==}
+
+  '@one-ini/wasm@0.1.1':
+    resolution: {integrity: sha512-XuySG1E38YScSJoMlqovLru4KTUNSjgVTIjyh7qMX6aNN5HY5Ct5LhRJdxO79JtTzKfzV/bnWpz+zquYrISsvw==}
 
   '@oozcitak/dom@1.15.10':
     resolution: {integrity: sha512-0JT29/LaxVgRcGKvHmSrUTEvZ8BXvZhGl2LASRUgHqDTC1M5g1pLmVv56IYNyt3bG2CUjDkc67wnyZC14pbQrQ==}
@@ -10944,6 +11088,11 @@ packages:
     peerDependencies:
       vite: '>=7.1.11'
 
+  '@tanstack/eslint-plugin-query@5.91.2':
+    resolution: {integrity: sha512-UPeWKl/Acu1IuuHJlsN+eITUHqAaa9/04geHHPedY8siVarSaWprY0SVMKrkpKfk5ehRT7+/MZ5QwWuEtkWrFw==}
+    peerDependencies:
+      eslint: ^8.57.0 || ^9.0.0
+
   '@tanstack/history@1.133.28':
     resolution: {integrity: sha512-B7+x7eP2FFvi3fgd3rNH9o/Eixt+pp0zCIdGhnQbAJjFrlwIKGjGnwyJjhWJ5fMQlGks/E2LdDTqEV4W9Plx7g==}
     engines: {node: '>=12'}
@@ -11295,6 +11444,16 @@ packages:
     engines: {node: '>=12', npm: '>=6'}
     peerDependencies:
       '@testing-library/dom': '>=7.21.4'
+
+  '@testing-library/vue@8.1.0':
+    resolution: {integrity: sha512-ls4RiHO1ta4mxqqajWRh8158uFObVrrtAPoxk7cIp4HrnQUj/ScKzqz53HxYpG3X6Zb7H2v+0eTGLSoy8HQ2nA==}
+    engines: {node: '>=14'}
+    peerDependencies:
+      '@vue/compiler-sfc': '>= 3'
+      vue: '>= 3'
+    peerDependenciesMeta:
+      '@vue/compiler-sfc':
+        optional: true
 
   '@textlint-rule/textlint-report-helper-for-google-preset@0.1.2':
     resolution: {integrity: sha512-FsJXxngIT1PPLj+0aAq/yYFhXQOjDxRtbZVamotTw6K7nvUOeNPcGc5e20FF6gbq1x2fKpLvbMntmL262UXb+g==}
@@ -12882,6 +13041,9 @@ packages:
 
   '@vue/shared@3.5.24':
     resolution: {integrity: sha512-9cwHL2EsJBdi8NY22pngYYWzkTDhld6fAD6jlaeloNGciNSJL6bLpbxVgXl96X00Jtc6YWQv96YA/0sxex/k1A==}
+
+  '@vue/test-utils@2.4.6':
+    resolution: {integrity: sha512-FMxEjOpYNYiFe0GkaHsnJPXFHxQ6m4t8vI/ElPGpMWxZKpmRvQ33OIrvRXemy6yha03RxhOlQuy+gZMC3CQSow==}
 
   '@vue/tsconfig@0.8.1':
     resolution: {integrity: sha512-aK7feIWPXFSUhsCP9PFqPyFOcz4ENkb8hZ2pneL6m2UjCkccvaOhC/5KCKluuBufvp2KzkbdA2W2pk20vLzu3g==}
@@ -15119,6 +15281,11 @@ packages:
   editions@6.22.0:
     resolution: {integrity: sha512-UgGlf8IW75je7HZjNDpJdCv4cGJWIi6yumFdZ0R7A8/CIhQiWUjyGLCxdHpd8bmyD1gnkfUNK0oeOXqUS2cpfQ==}
     engines: {ecmascript: '>= es5', node: '>=4'}
+
+  editorconfig@1.0.4:
+    resolution: {integrity: sha512-L9Qe08KWTlqYMVvMcTIvMAdl1cDUubzRNYL+WfA4bLDMHe4nemKkpmYzkznE1FwLKu0EEmy6obgQKzMJrg4x9Q==}
+    engines: {node: '>=14'}
+    hasBin: true
 
   ee-first@1.1.1:
     resolution: {integrity: sha512-WMwm9LhRUo+WUaRN+vRuETqG89IgZphVSNkdFgeb6sS/E4OrDIN7t48CAewSHXc6C8lefD8KKfr5vY61brQlow==}
@@ -17797,6 +17964,15 @@ packages:
   jpeg-js@0.4.4:
     resolution: {integrity: sha512-WZzeDOEtTOBK4Mdsar0IqEU5sMr3vSV2RqkAIzUEV2BHnUfKGyswWFPFwK5EeDo93K3FohSHbLAjj0s1Wzd+dg==}
 
+  js-beautify@1.15.4:
+    resolution: {integrity: sha512-9/KXeZUKKJwqCXUdBxFJ3vPh467OCckSBmYDwSK/EtV090K+iMJ7zx2S3HLVDIWFQdqMIsZWbnaGiba18aWhaA==}
+    engines: {node: '>=14'}
+    hasBin: true
+
+  js-cookie@3.0.5:
+    resolution: {integrity: sha512-cEiJEAEoIbWfCZYKWhVwFuvPX1gETRYPw6LlaTKoxD3s2AkXzkCjnp6h0V77ozyqj0jakteJ4YqDJT830+lVGw==}
+    engines: {node: '>=14'}
+
   js-file-download@0.4.12:
     resolution: {integrity: sha512-rML+NkoD08p5Dllpjo0ffy4jRHeY6Zsapvr/W86N7E0yuzAO6qa5X9+xog6zQNlH102J7IXljNY2FtS6Lj3ucg==}
 
@@ -19031,6 +19207,10 @@ packages:
   minimatch@7.4.6:
     resolution: {integrity: sha512-sBz8G/YjVniEz6lKPNpKxXwazJe4c19fEfV2GDMX6AjFz+MX9uDWIZW8XreVhkFW3fkIdTv/gxWr/Kks5FFAVw==}
     engines: {node: '>=10'}
+
+  minimatch@9.0.1:
+    resolution: {integrity: sha512-0jWhJpD/MdhPXwPuiRkCbfYfSKp2qnn2eOc279qI7f+osl/l+prKSrvhg157zSYvx/1nmgn2NqdT6k2Z7zSH9w==}
+    engines: {node: '>=16 || 14 >=14.17'}
 
   minimatch@9.0.3:
     resolution: {integrity: sha512-RHiac9mvaRw0x3AYRgDC1CxAP7HTcNrrECeA8YYJeWnpo+2Q5CegtZjaotWTWxDG3UeGA1coE05iH1mPjT/2mg==}
@@ -23868,6 +24048,9 @@ packages:
   vscode-uri@3.1.0:
     resolution: {integrity: sha512-/BpdSx+yCQGnCvecbyXdxHDkuk55/G3xwnC0GqY4gmQ3j+A+g8kzzgB4Nk/SINjqn6+waqw3EgbVF2QKExkRxQ==}
 
+  vue-component-type-helpers@2.2.12:
+    resolution: {integrity: sha512-YbGqHZ5/eW4SnkPNR44mKVc6ZKQoRs/Rux1sxC6rdwXb4qpbOSYfDr9DsTHolOTGmIKgM9j141mZbBeg05R1pw==}
+
   vue-demi@0.14.10:
     resolution: {integrity: sha512-nMZBOwuzabUO0nLgIcc6rycZEebF6eeUfaiQx9+WSk8e29IbLvPU9feI6tqW4kTo3hvoYAJkMh8n8D0fuISphg==}
     engines: {node: '>=12'}
@@ -24437,6 +24620,7 @@ snapshots:
       - typescript
 
 <<<<<<< HEAD
+<<<<<<< HEAD
   '@anolilab/eslint-config@16.4.2(3d0c8742d370d39e2008f6d40fd002a5)':
 =======
   '@anolilab/eslint-config@16.4.2(1adf94a0d804bb349590dbc7922eb8d5)':
@@ -24770,6 +24954,9 @@ snapshots:
 >>>>>>> fb57ade6e (feat: enhance storage functionality with batch operations and retry mechanism)
 =======
   '@anolilab/eslint-config@16.4.2(e66dc88be571435d7802b199fcbd8bcf)':
+=======
+  '@anolilab/eslint-config@16.4.2(1578f955a651bd80c0b46e18ae926844)':
+>>>>>>> 022be0152 (chore: update storage client dependencies and enhance testing framework)
     dependencies:
       '@eslint-community/eslint-plugin-eslint-comments': 4.5.0(eslint@9.39.1(jiti@2.6.1))
       '@eslint/compat': 1.4.0(eslint@9.39.1(jiti@2.6.1))
@@ -24823,6 +25010,7 @@ snapshots:
       yaml-eslint-parser: 1.3.0
     optionalDependencies:
       '@eslint-react/eslint-plugin': 2.3.5(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3)
+      '@tanstack/eslint-plugin-query': 5.91.2(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3)
       eslint-plugin-jsx-a11y: 6.10.2(eslint@9.39.1(jiti@2.6.1))
       eslint-plugin-playwright: 2.3.0(eslint@9.39.1(jiti@2.6.1))
       eslint-plugin-react: 7.37.5(eslint@9.39.1(jiti@2.6.1))
@@ -24846,6 +25034,7 @@ snapshots:
       - vitest
       - yaml
 
+<<<<<<< HEAD
   '@anolilab/eslint-config@16.4.3(267749e55d2bd5503d42322ef20c6c6c)':
 >>>>>>> 4b3ce96ac (refactor: update storage client with new query utilities and improved file operations)
     dependencies:
@@ -24864,11 +25053,22 @@ snapshots:
       '@visulima/tsconfig': 2.1.2(yaml@2.8.1)
       '@vitest/eslint-plugin': 1.4.3(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3)(vitest@4.0.10)
 =======
+=======
+  '@anolilab/eslint-config@16.4.2(d4db5bf4426959710e38170780ee20bb)':
+    dependencies:
+      '@eslint-community/eslint-plugin-eslint-comments': 4.5.0(eslint@9.39.1(jiti@2.6.1))
+      '@eslint/compat': 1.4.0(eslint@9.39.1(jiti@2.6.1))
+      '@eslint/js': 9.39.1
+      '@eslint/markdown': 7.5.1
+      '@html-eslint/eslint-plugin': 0.47.0(eslint@9.39.1(jiti@2.6.1))(jiti@2.6.1)
+      '@html-eslint/parser': 0.47.0(jiti@2.6.1)
+>>>>>>> 022be0152 (chore: update storage client dependencies and enhance testing framework)
       '@stylistic/eslint-plugin': 5.5.0(eslint@9.39.1(jiti@2.6.1))
       '@stylistic/eslint-plugin-ts': 4.4.1(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3)
       '@typescript-eslint/parser': 8.47.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3)
       '@typescript-eslint/types': 8.47.0
       '@visulima/package': 4.1.6(@types/node@24.10.1)
+<<<<<<< HEAD
       '@visulima/tsconfig': 2.1.2(yaml@2.8.1)
 <<<<<<< HEAD
       '@vitest/eslint-plugin': 1.4.3(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3)(vitest@4.0.9)
@@ -24876,6 +25076,10 @@ snapshots:
 =======
       '@vitest/eslint-plugin': 1.4.3(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3)(vitest@4.0.10)
 >>>>>>> 4b3ce96ac (refactor: update storage client with new query utilities and improved file operations)
+=======
+      '@visulima/tsconfig': 1.2.0(yaml@2.8.1)
+      '@vitest/eslint-plugin': 1.4.3(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3)(vitest@4.0.10)
+>>>>>>> 022be0152 (chore: update storage client dependencies and enhance testing framework)
       confusing-browser-globals: 1.0.11
       eslint: 9.39.1(jiti@2.6.1)
       eslint-config-flat-gitignore: 2.1.0(eslint@9.39.1(jiti@2.6.1))
@@ -24883,10 +25087,14 @@ snapshots:
       eslint-import-resolver-node: 0.3.9
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 022be0152 (chore: update storage client dependencies and enhance testing framework)
       eslint-import-resolver-typescript: 4.4.4(eslint-plugin-import-x@4.16.1(@typescript-eslint/utils@8.47.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3))(eslint-import-resolver-node@0.3.9)(eslint@9.39.1(jiti@2.6.1)))(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.47.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3))(eslint@8.57.0))(eslint@9.39.1(jiti@2.6.1))
       eslint-merge-processors: 2.0.0(eslint@9.39.1(jiti@2.6.1))
       eslint-plugin-antfu: 3.1.1(eslint@9.39.1(jiti@2.6.1))
       eslint-plugin-compat: 6.0.2(eslint@9.39.1(jiti@2.6.1))
+<<<<<<< HEAD
       eslint-plugin-erasable-syntax-only: 0.4.0(@typescript-eslint/parser@8.47.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3)
       eslint-plugin-es-x: 9.1.2(eslint@9.39.1(jiti@2.6.1))
       eslint-plugin-html: 8.1.3
@@ -24904,6 +25112,9 @@ snapshots:
       eslint-plugin-antfu: 3.1.1(eslint@9.39.1(jiti@2.6.1))
       eslint-plugin-compat: 6.0.2(eslint@9.39.1(jiti@2.6.1))
       eslint-plugin-erasable-syntax-only: 0.4.0(@typescript-eslint/parser@8.47.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3)
+=======
+      eslint-plugin-erasable-syntax-only: 0.3.1(@typescript-eslint/parser@8.47.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3)
+>>>>>>> 022be0152 (chore: update storage client dependencies and enhance testing framework)
       eslint-plugin-es-x: 9.1.2(eslint@9.39.1(jiti@2.6.1))
       eslint-plugin-html: 8.1.3
       eslint-plugin-import-x: 4.16.1(@typescript-eslint/utils@8.47.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3))(eslint-import-resolver-node@0.3.9)(eslint@9.39.1(jiti@2.6.1))
@@ -24911,7 +25122,10 @@ snapshots:
       eslint-plugin-jsonc: 2.21.0(eslint@9.39.1(jiti@2.6.1))
       eslint-plugin-n: 17.23.1(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3)
       eslint-plugin-no-for-of-array: 0.1.0(eslint@9.39.1(jiti@2.6.1))(typescript-eslint@8.46.4(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3))(typescript@5.9.3)
+<<<<<<< HEAD
 >>>>>>> fb57ade6e (feat: enhance storage functionality with batch operations and retry mechanism)
+=======
+>>>>>>> 022be0152 (chore: update storage client dependencies and enhance testing framework)
       eslint-plugin-no-only-tests: 3.3.0
       eslint-plugin-no-secrets: 2.2.1(eslint@9.39.1(jiti@2.6.1))
       eslint-plugin-no-unsanitized: 4.1.4(eslint@9.39.1(jiti@2.6.1))
@@ -24922,6 +25136,7 @@ snapshots:
       eslint-plugin-simple-import-sort: 12.1.1(eslint@9.39.1(jiti@2.6.1))
       eslint-plugin-sonarjs: 3.0.5(eslint@9.39.1(jiti@2.6.1))
       eslint-plugin-toml: 0.12.0(eslint@9.39.1(jiti@2.6.1))
+<<<<<<< HEAD
       eslint-plugin-unicorn: 62.0.0(eslint@9.39.1(jiti@2.6.1))
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -24932,12 +25147,17 @@ snapshots:
 =======
       eslint-plugin-unused-imports: 4.3.0(@typescript-eslint/eslint-plugin@8.47.0(@typescript-eslint/parser@8.47.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.1(jiti@2.6.1))
 >>>>>>> 4b3ce96ac (refactor: update storage client with new query utilities and improved file operations)
+=======
+      eslint-plugin-unicorn: 61.0.2(eslint@9.39.1(jiti@2.6.1))
+      eslint-plugin-unused-imports: 4.3.0(@typescript-eslint/eslint-plugin@8.47.0(@typescript-eslint/parser@8.47.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.1(jiti@2.6.1))
+>>>>>>> 022be0152 (chore: update storage client dependencies and enhance testing framework)
       eslint-plugin-yml: 1.19.0(eslint@9.39.1(jiti@2.6.1))
       globals: 16.5.0
       jsonc-eslint-parser: 2.4.1
       parse-gitignore: 2.0.0
       semver: 7.7.3
       toml-eslint-parser: 0.10.0
+<<<<<<< HEAD
 <<<<<<< HEAD
       typescript-eslint: 8.47.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3)
 =======
@@ -24947,17 +25167,27 @@ snapshots:
     optionalDependencies:
       '@eslint-react/eslint-plugin': 2.3.5(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3)
       '@eslint/css': 0.14.1
+=======
+      typescript-eslint: 8.46.4(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3)
+      yaml-eslint-parser: 1.3.0
+    optionalDependencies:
+      '@eslint-react/eslint-plugin': 2.3.5(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3)
+      '@tanstack/eslint-plugin-query': 5.91.2(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3)
+>>>>>>> 022be0152 (chore: update storage client dependencies and enhance testing framework)
       eslint-plugin-jsx-a11y: 6.10.2(eslint@9.39.1(jiti@2.6.1))
       eslint-plugin-playwright: 2.3.0(eslint@9.39.1(jiti@2.6.1))
       eslint-plugin-react: 7.37.5(eslint@9.39.1(jiti@2.6.1))
       eslint-plugin-react-hooks: 7.0.1(eslint@9.39.1(jiti@2.6.1))
       eslint-plugin-react-perf: 3.3.3(eslint@9.39.1(jiti@2.6.1))
       eslint-plugin-react-refresh: 0.4.24(eslint@9.39.1(jiti@2.6.1))
+<<<<<<< HEAD
       eslint-plugin-react-you-might-not-need-an-effect: 0.7.0(eslint@9.39.1(jiti@2.6.1))
 <<<<<<< HEAD
 =======
       eslint-plugin-storybook: 10.0.7(eslint@9.39.1(jiti@2.6.1))(storybook@10.0.7(@testing-library/dom@10.4.1)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(prettier@3.6.2)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(typescript@5.9.3)
 >>>>>>> fb57ade6e (feat: enhance storage functionality with batch operations and retry mechanism)
+=======
+>>>>>>> 022be0152 (chore: update storage client dependencies and enhance testing framework)
       eslint-plugin-testing-library: 7.13.4(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3)
       eslint-plugin-validate-jsx-nesting: 0.1.1(eslint@9.39.1(jiti@2.6.1))
       eslint-plugin-you-dont-need-lodash-underscore: 6.14.0
@@ -24975,7 +25205,11 @@ snapshots:
       - vitest
       - yaml
 
+<<<<<<< HEAD
   '@anolilab/eslint-config@16.4.3(71190d46b7cc170af450ab10e160cbb9)':
+=======
+  '@anolilab/eslint-config@16.4.3(47acb5c7635f1f055c767aa4a69920df)':
+>>>>>>> 022be0152 (chore: update storage client dependencies and enhance testing framework)
     dependencies:
       '@eslint-community/eslint-plugin-eslint-comments': 4.5.0(eslint@9.39.1(jiti@2.6.1))
       '@eslint/compat': 2.0.0(eslint@9.39.1(jiti@2.6.1))
@@ -25030,6 +25264,7 @@ snapshots:
     optionalDependencies:
       '@eslint-react/eslint-plugin': 2.3.5(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3)
       '@eslint/css': 0.14.1
+      '@tanstack/eslint-plugin-query': 5.91.2(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3)
       eslint-plugin-jsx-a11y: 6.10.2(eslint@9.39.1(jiti@2.6.1))
       eslint-plugin-playwright: 2.3.0(eslint@9.39.1(jiti@2.6.1))
       eslint-plugin-react: 7.37.5(eslint@8.57.0)
@@ -25055,7 +25290,88 @@ snapshots:
       - vitest
       - yaml
 
-  '@anolilab/eslint-config@16.4.3(dfb5abd42149f8cf48d4d26ce2583301)':
+  '@anolilab/eslint-config@16.4.3(5c99a0a07e6c2753252f1da7837f3687)':
+    dependencies:
+      '@eslint-community/eslint-plugin-eslint-comments': 4.5.0(eslint@9.39.1(jiti@2.6.1))
+      '@eslint/compat': 2.0.0(eslint@9.39.1(jiti@2.6.1))
+      '@eslint/js': 9.39.1
+      '@eslint/markdown': 7.5.1
+      '@html-eslint/eslint-plugin': 0.48.0(eslint@9.39.1(jiti@2.6.1))(jiti@2.6.1)
+      '@html-eslint/parser': 0.48.0(jiti@2.6.1)
+      '@stylistic/eslint-plugin': 5.5.0(eslint@9.39.1(jiti@2.6.1))
+      '@stylistic/eslint-plugin-ts': 4.4.1(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3)
+      '@typescript-eslint/parser': 8.47.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3)
+      '@typescript-eslint/types': 8.47.0
+      '@visulima/package': 4.1.6(@types/node@24.10.1)
+      '@visulima/tsconfig': 2.1.2(yaml@2.8.1)
+      '@vitest/eslint-plugin': 1.4.3(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3)(vitest@4.0.10)
+      confusing-browser-globals: 1.0.11
+      eslint: 9.39.1(jiti@2.6.1)
+      eslint-config-flat-gitignore: 2.1.0(eslint@9.39.1(jiti@2.6.1))
+      eslint-flat-config-utils: 2.1.4
+      eslint-import-resolver-node: 0.3.9
+      eslint-import-resolver-typescript: 4.4.4(eslint-plugin-import-x@4.16.1(@typescript-eslint/utils@8.47.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3))(eslint-import-resolver-node@0.3.9)(eslint@9.39.1(jiti@2.6.1)))(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.47.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3))(eslint@8.57.0))(eslint@9.39.1(jiti@2.6.1))
+      eslint-merge-processors: 2.0.0(eslint@9.39.1(jiti@2.6.1))
+      eslint-plugin-antfu: 3.1.1(eslint@9.39.1(jiti@2.6.1))
+      eslint-plugin-compat: 6.0.2(eslint@9.39.1(jiti@2.6.1))
+      eslint-plugin-erasable-syntax-only: 0.4.0(@typescript-eslint/parser@8.47.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3)
+      eslint-plugin-es-x: 9.1.2(eslint@9.39.1(jiti@2.6.1))
+      eslint-plugin-html: 8.1.3
+      eslint-plugin-import-x: 4.16.1(@typescript-eslint/utils@8.47.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3))(eslint-import-resolver-node@0.3.9)(eslint@9.39.1(jiti@2.6.1))
+      eslint-plugin-jsdoc: 61.2.1(eslint@9.39.1(jiti@2.6.1))
+      eslint-plugin-jsonc: 2.21.0(eslint@9.39.1(jiti@2.6.1))
+      eslint-plugin-n: 17.23.1(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3)
+      eslint-plugin-no-for-of-array: 0.1.0(eslint@9.39.1(jiti@2.6.1))(typescript-eslint@8.46.4(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3))(typescript@5.9.3)
+      eslint-plugin-no-only-tests: 3.3.0
+      eslint-plugin-no-secrets: 2.2.1(eslint@9.39.1(jiti@2.6.1))
+      eslint-plugin-no-unsanitized: 4.1.4(eslint@9.39.1(jiti@2.6.1))
+      eslint-plugin-perfectionist: 4.15.1(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3)
+      eslint-plugin-promise: 7.2.1(eslint@9.39.1(jiti@2.6.1))
+      eslint-plugin-regexp: 2.10.0(eslint@9.39.1(jiti@2.6.1))
+      eslint-plugin-security: 3.0.1
+      eslint-plugin-simple-import-sort: 12.1.1(eslint@9.39.1(jiti@2.6.1))
+      eslint-plugin-sonarjs: 3.0.5(eslint@9.39.1(jiti@2.6.1))
+      eslint-plugin-toml: 0.12.0(eslint@9.39.1(jiti@2.6.1))
+      eslint-plugin-unicorn: 62.0.0(eslint@9.39.1(jiti@2.6.1))
+      eslint-plugin-unused-imports: 4.3.0(@typescript-eslint/eslint-plugin@8.47.0(@typescript-eslint/parser@8.47.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.1(jiti@2.6.1))
+      eslint-plugin-yml: 1.19.0(eslint@9.39.1(jiti@2.6.1))
+      globals: 16.5.0
+      jsonc-eslint-parser: 2.4.1
+      parse-gitignore: 2.0.0
+      semver: 7.7.3
+      toml-eslint-parser: 0.10.0
+      typescript-eslint: 8.46.4(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3)
+      yaml-eslint-parser: 1.3.0
+    optionalDependencies:
+      '@eslint-react/eslint-plugin': 2.3.5(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3)
+      '@eslint/css': 0.14.1
+      '@tanstack/eslint-plugin-query': 5.91.2(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3)
+      eslint-plugin-jsx-a11y: 6.10.2(eslint@9.39.1(jiti@2.6.1))
+      eslint-plugin-playwright: 2.3.0(eslint@9.39.1(jiti@2.6.1))
+      eslint-plugin-react: 7.37.5(eslint@9.39.1(jiti@2.6.1))
+      eslint-plugin-react-hooks: 7.0.1(eslint@9.39.1(jiti@2.6.1))
+      eslint-plugin-react-perf: 3.3.3(eslint@9.39.1(jiti@2.6.1))
+      eslint-plugin-react-refresh: 0.4.24(eslint@9.39.1(jiti@2.6.1))
+      eslint-plugin-react-you-might-not-need-an-effect: 0.7.0(eslint@9.39.1(jiti@2.6.1))
+      eslint-plugin-storybook: 10.0.7(eslint@9.39.1(jiti@2.6.1))(storybook@10.0.7(@testing-library/dom@10.4.1)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(prettier@3.6.2)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(typescript@5.9.3)
+      eslint-plugin-testing-library: 7.13.4(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3)
+      eslint-plugin-validate-jsx-nesting: 0.1.1(eslint@9.39.1(jiti@2.6.1))
+      eslint-plugin-you-dont-need-lodash-underscore: 6.14.0
+      eslint-plugin-zod: 1.4.0(eslint@9.39.1(jiti@2.6.1))
+      tailwind-csstree: 0.1.4
+      typescript: 5.9.3
+    transitivePeerDependencies:
+      - '@eslint/json'
+      - '@types/node'
+      - '@typescript-eslint/eslint-plugin'
+      - '@typescript-eslint/utils'
+      - eslint-plugin-import
+      - jiti
+      - supports-color
+      - vitest
+      - yaml
+
+  '@anolilab/eslint-config@16.4.3(ebddd531b3a6731d339b29e034cf6a6c)':
     dependencies:
       '@eslint-community/eslint-plugin-eslint-comments': 4.5.0(eslint@9.39.1(jiti@2.6.1))
       '@eslint/compat': 2.0.0(eslint@9.39.1(jiti@2.6.1))
@@ -25110,6 +25426,7 @@ snapshots:
     optionalDependencies:
       '@eslint-react/eslint-plugin': 2.3.5(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3)
       '@eslint/css': 0.14.1
+      '@tanstack/eslint-plugin-query': 5.91.2(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3)
       eslint-plugin-jsx-a11y: 6.10.2(eslint@9.39.1(jiti@2.6.1))
       eslint-plugin-playwright: 2.3.0(eslint@9.39.1(jiti@2.6.1))
       eslint-plugin-react: 7.37.5(eslint@9.39.1(jiti@2.6.1))
@@ -28190,6 +28507,8 @@ snapshots:
   '@ogma/styler@1.1.0':
     dependencies:
       '@ogma/common': 1.2.0
+
+  '@one-ini/wasm@0.1.1': {}
 
   '@oozcitak/dom@1.15.10':
     dependencies:
@@ -31487,6 +31806,14 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  '@tanstack/eslint-plugin-query@5.91.2(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3)':
+    dependencies:
+      '@typescript-eslint/utils': 8.47.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3)
+      eslint: 9.39.1(jiti@2.6.1)
+    transitivePeerDependencies:
+      - supports-color
+      - typescript
+
   '@tanstack/history@1.133.28': {}
 
   '@tanstack/match-sorter-utils@8.19.4':
@@ -31614,14 +31941,14 @@ snapshots:
     transitivePeerDependencies:
       - crossws
 
-  '@tanstack/react-start@1.133.35(crossws@0.4.1(srvx@0.9.6))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.8.0)(solid-js@1.9.10)(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(webpack@5.102.1(@swc/core@1.13.5))':
+  '@tanstack/react-start@1.133.35(crossws@0.4.1(srvx@0.9.6))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.8.0)(solid-js@1.9.10)(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(webpack@5.102.1(@swc/core@1.13.5)(esbuild@0.27.0))':
     dependencies:
       '@tanstack/react-router': 1.133.35(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@tanstack/react-start-client': 1.133.35(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@tanstack/react-start-server': 1.133.35(crossws@0.4.1(srvx@0.9.6))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@tanstack/router-utils': 1.133.19
       '@tanstack/start-client-core': 1.133.35
-      '@tanstack/start-plugin-core': 1.133.35(@tanstack/react-router@1.133.35(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(crossws@0.4.1(srvx@0.9.6))(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.8.0)(solid-js@1.9.10)(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(webpack@5.102.1(@swc/core@1.13.5))
+      '@tanstack/start-plugin-core': 1.133.35(@tanstack/react-router@1.133.35(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(crossws@0.4.1(srvx@0.9.6))(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.8.0)(solid-js@1.9.10)(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(webpack@5.102.1(@swc/core@1.13.5)(esbuild@0.27.0))
       '@tanstack/start-server-core': 1.133.35(crossws@0.4.1(srvx@0.9.6))
       pathe: 2.0.3
       react: 19.2.0
@@ -31634,14 +31961,14 @@ snapshots:
       - vite-plugin-solid
       - webpack
 
-  '@tanstack/react-start@1.136.8(crossws@0.4.1(srvx@0.9.6))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.8.0)(solid-js@1.9.10)(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(webpack@5.102.1(@swc/core@1.13.5))':
+  '@tanstack/react-start@1.136.8(crossws@0.4.1(srvx@0.9.6))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.8.0)(solid-js@1.9.10)(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(webpack@5.102.1(@swc/core@1.13.5)(esbuild@0.27.0))':
     dependencies:
       '@tanstack/react-router': 1.136.8(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@tanstack/react-start-client': 1.136.8(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@tanstack/react-start-server': 1.136.8(crossws@0.4.1(srvx@0.9.6))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@tanstack/router-utils': 1.133.19
       '@tanstack/start-client-core': 1.136.8
-      '@tanstack/start-plugin-core': 1.136.8(@tanstack/react-router@1.136.8(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(crossws@0.4.1(srvx@0.9.6))(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.8.0)(solid-js@1.9.10)(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(webpack@5.102.1(@swc/core@1.13.5))
+      '@tanstack/start-plugin-core': 1.136.8(@tanstack/react-router@1.136.8(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(crossws@0.4.1(srvx@0.9.6))(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.8.0)(solid-js@1.9.10)(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(webpack@5.102.1(@swc/core@1.13.5)(esbuild@0.27.0))
       '@tanstack/start-server-core': 1.136.8(crossws@0.4.1(srvx@0.9.6))
       pathe: 2.0.3
       react: 19.2.0
@@ -31760,7 +32087,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@tanstack/router-plugin@1.133.35(@tanstack/react-router@1.133.35(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.8.0)(solid-js@1.9.10)(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(webpack@5.102.1(@swc/core@1.13.5))':
+  '@tanstack/router-plugin@1.133.35(@tanstack/react-router@1.133.35(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.8.0)(solid-js@1.9.10)(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(webpack@5.102.1(@swc/core@1.13.5)(esbuild@0.27.0))':
     dependencies:
       '@babel/core': 7.28.5
       '@babel/plugin-syntax-jsx': 7.27.1(@babel/core@7.28.5)
@@ -31780,11 +32107,11 @@ snapshots:
       '@tanstack/react-router': 1.133.35(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       vite: 7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
       vite-plugin-solid: 2.11.10(@testing-library/jest-dom@6.8.0)(solid-js@1.9.10)(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
-      webpack: 5.102.1(@swc/core@1.13.5)
+      webpack: 5.102.1(@swc/core@1.13.5)(esbuild@0.27.0)
     transitivePeerDependencies:
       - supports-color
 
-  '@tanstack/router-plugin@1.136.8(@tanstack/react-router@1.136.8(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.8.0)(solid-js@1.9.10)(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(webpack@5.102.1(@swc/core@1.13.5))':
+  '@tanstack/router-plugin@1.136.8(@tanstack/react-router@1.136.8(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.8.0)(solid-js@1.9.10)(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(webpack@5.102.1(@swc/core@1.13.5)(esbuild@0.27.0))':
     dependencies:
       '@babel/core': 7.28.5
       '@babel/plugin-syntax-jsx': 7.27.1(@babel/core@7.28.5)
@@ -31804,7 +32131,7 @@ snapshots:
       '@tanstack/react-router': 1.136.8(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       vite: 7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
       vite-plugin-solid: 2.11.10(@testing-library/jest-dom@6.8.0)(solid-js@1.9.10)(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
-      webpack: 5.102.1(@swc/core@1.13.5)
+      webpack: 5.102.1(@swc/core@1.13.5)(esbuild@0.27.0)
     transitivePeerDependencies:
       - supports-color
 
@@ -31890,7 +32217,7 @@ snapshots:
       tiny-invariant: 1.3.3
       tiny-warning: 1.0.3
 
-  '@tanstack/start-plugin-core@1.133.35(@tanstack/react-router@1.133.35(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(crossws@0.4.1(srvx@0.9.6))(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.8.0)(solid-js@1.9.10)(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(webpack@5.102.1(@swc/core@1.13.5))':
+  '@tanstack/start-plugin-core@1.133.35(@tanstack/react-router@1.133.35(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(crossws@0.4.1(srvx@0.9.6))(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.8.0)(solid-js@1.9.10)(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(webpack@5.102.1(@swc/core@1.13.5)(esbuild@0.27.0))':
     dependencies:
       '@babel/code-frame': 7.26.2
       '@babel/core': 7.28.5
@@ -31898,7 +32225,7 @@ snapshots:
       '@rolldown/pluginutils': 1.0.0-beta.40
       '@tanstack/router-core': 1.133.35
       '@tanstack/router-generator': 1.133.35
-      '@tanstack/router-plugin': 1.133.35(@tanstack/react-router@1.133.35(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.8.0)(solid-js@1.9.10)(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(webpack@5.102.1(@swc/core@1.13.5))
+      '@tanstack/router-plugin': 1.133.35(@tanstack/react-router@1.133.35(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.8.0)(solid-js@1.9.10)(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(webpack@5.102.1(@swc/core@1.13.5)(esbuild@0.27.0))
       '@tanstack/router-utils': 1.133.19
       '@tanstack/server-functions-plugin': 1.133.25(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
       '@tanstack/start-client-core': 1.133.35
@@ -31922,7 +32249,7 @@ snapshots:
       - vite-plugin-solid
       - webpack
 
-  '@tanstack/start-plugin-core@1.136.8(@tanstack/react-router@1.136.8(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(crossws@0.4.1(srvx@0.9.6))(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.8.0)(solid-js@1.9.10)(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(webpack@5.102.1(@swc/core@1.13.5))':
+  '@tanstack/start-plugin-core@1.136.8(@tanstack/react-router@1.136.8(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(crossws@0.4.1(srvx@0.9.6))(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.8.0)(solid-js@1.9.10)(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(webpack@5.102.1(@swc/core@1.13.5)(esbuild@0.27.0))':
     dependencies:
       '@babel/code-frame': 7.26.2
       '@babel/core': 7.28.5
@@ -31930,7 +32257,7 @@ snapshots:
       '@rolldown/pluginutils': 1.0.0-beta.40
       '@tanstack/router-core': 1.136.8
       '@tanstack/router-generator': 1.136.8
-      '@tanstack/router-plugin': 1.136.8(@tanstack/react-router@1.136.8(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.8.0)(solid-js@1.9.10)(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(webpack@5.102.1(@swc/core@1.13.5))
+      '@tanstack/router-plugin': 1.136.8(@tanstack/react-router@1.136.8(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.8.0)(solid-js@1.9.10)(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(webpack@5.102.1(@swc/core@1.13.5)(esbuild@0.27.0))
       '@tanstack/router-utils': 1.133.19
       '@tanstack/server-functions-plugin': 1.134.5(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
       '@tanstack/start-client-core': 1.136.8
@@ -32137,6 +32464,15 @@ snapshots:
   '@testing-library/user-event@14.6.1(@testing-library/dom@9.3.4)':
     dependencies:
       '@testing-library/dom': 9.3.4
+
+  '@testing-library/vue@8.1.0(@vue/compiler-sfc@3.5.24)(vue@3.5.24(typescript@5.9.3))':
+    dependencies:
+      '@babel/runtime': 7.26.10
+      '@testing-library/dom': 9.3.4
+      '@vue/test-utils': 2.4.6
+      vue: 3.5.24(typescript@5.9.3)
+    optionalDependencies:
+      '@vue/compiler-sfc': 3.5.24
 
   '@textlint-rule/textlint-report-helper-for-google-preset@0.1.2':
     dependencies:
@@ -32920,17 +33256,6 @@ snapshots:
   '@types/wait-on@5.3.4':
     dependencies:
       '@types/node': 24.10.1
-
-  '@types/webpack@5.28.5(@swc/core@1.13.5)':
-    dependencies:
-      '@types/node': 24.10.1
-      tapable: 2.3.0
-      webpack: 5.102.1(@swc/core@1.13.5)
-    transitivePeerDependencies:
-      - '@swc/core'
-      - esbuild
-      - uglify-js
-      - webpack-cli
 
   '@types/webpack@5.28.5(@swc/core@1.13.5)(esbuild@0.27.0)':
     dependencies:
@@ -34377,6 +34702,11 @@ snapshots:
       vue: 3.5.24(typescript@5.9.3)
 
   '@vue/shared@3.5.24': {}
+
+  '@vue/test-utils@2.4.6':
+    dependencies:
+      js-beautify: 1.15.4
+      vue-component-type-helpers: 2.2.12
 
   '@vue/tsconfig@0.8.1(typescript@5.9.3)(vue@3.5.24(typescript@5.9.3))':
     optionalDependencies:
@@ -36734,6 +37064,13 @@ snapshots:
     dependencies:
       version-range: 4.15.0
 
+  editorconfig@1.0.4:
+    dependencies:
+      '@one-ini/wasm': 0.1.1
+      commander: 10.0.1
+      minimatch: 9.0.1
+      semver: 7.7.3
+
   ee-first@1.1.1: {}
 
   effect@3.18.4:
@@ -37104,7 +37441,7 @@ snapshots:
       eslint: 9.39.1(jiti@2.6.1)
       eslint-import-resolver-node: 0.3.9
       eslint-import-resolver-typescript: 3.6.1(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.32.0(eslint@9.39.1(jiti@2.6.1)))(eslint@9.39.1(jiti@2.6.1))
-      eslint-plugin-import: 2.32.0(eslint-import-resolver-typescript@3.6.1(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.32.0(eslint@9.39.1(jiti@2.6.1)))(eslint@9.39.1(jiti@2.6.1)))(eslint@9.39.1(jiti@2.6.1))
+      eslint-plugin-import: 2.32.0(eslint-import-resolver-typescript@3.6.1)(eslint@9.39.1(jiti@2.6.1))
       eslint-plugin-jsx-a11y: 6.10.2(eslint@9.39.1(jiti@2.6.1))
       eslint-plugin-react: 7.37.5(eslint@9.39.1(jiti@2.6.1))
       eslint-plugin-react-hooks: 7.0.1(eslint@9.39.1(jiti@2.6.1))
@@ -37158,7 +37495,7 @@ snapshots:
       enhanced-resolve: 5.18.3
       eslint: 9.39.1(jiti@2.6.1)
       eslint-module-utils: 2.12.1(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.1(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.32.0(eslint@9.39.1(jiti@2.6.1)))(eslint@9.39.1(jiti@2.6.1)))(eslint@9.39.1(jiti@2.6.1))
-      eslint-plugin-import: 2.32.0(eslint-import-resolver-typescript@3.6.1(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.32.0(eslint@9.39.1(jiti@2.6.1)))(eslint@9.39.1(jiti@2.6.1)))(eslint@9.39.1(jiti@2.6.1))
+      eslint-plugin-import: 2.32.0(eslint-import-resolver-typescript@3.6.1)(eslint@9.39.1(jiti@2.6.1))
       fast-glob: 3.3.3
       get-tsconfig: 4.10.1
       is-core-module: 2.16.1
@@ -37399,7 +37736,7 @@ snapshots:
       - eslint-import-resolver-webpack
       - supports-color
 
-  eslint-plugin-import@2.32.0(eslint-import-resolver-typescript@3.6.1(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.32.0(eslint@9.39.1(jiti@2.6.1)))(eslint@9.39.1(jiti@2.6.1)))(eslint@9.39.1(jiti@2.6.1)):
+  eslint-plugin-import@2.32.0(eslint-import-resolver-typescript@3.6.1)(eslint@9.39.1(jiti@2.6.1)):
     dependencies:
       '@rtsao/scc': 1.1.0
       array-includes: 3.1.9
@@ -40453,6 +40790,16 @@ snapshots:
 
   jpeg-js@0.4.4: {}
 
+  js-beautify@1.15.4:
+    dependencies:
+      config-chain: 1.1.13
+      editorconfig: 1.0.4
+      glob: 10.4.5
+      js-cookie: 3.0.5
+      nopt: 7.2.1
+
+  js-cookie@3.0.5: {}
+
   js-file-download@0.4.12: {}
 
   js-image-generator@1.0.4:
@@ -42192,6 +42539,10 @@ snapshots:
       brace-expansion: 2.0.2
 
   minimatch@7.4.6:
+    dependencies:
+      brace-expansion: 2.0.2
+
+  minimatch@9.0.1:
     dependencies:
       brace-expansion: 2.0.2
 
@@ -46361,17 +46712,6 @@ snapshots:
       '@swc/core': 1.13.5
       esbuild: 0.27.0
 
-  terser-webpack-plugin@5.3.12(@swc/core@1.13.5)(webpack@5.102.1(@swc/core@1.13.5)):
-    dependencies:
-      '@jridgewell/trace-mapping': 0.3.31
-      jest-worker: 27.5.1
-      schema-utils: 4.3.3
-      serialize-javascript: 6.0.2
-      terser: 5.44.0
-      webpack: 5.102.1(@swc/core@1.13.5)
-    optionalDependencies:
-      '@swc/core': 1.13.5
-
   terser@5.44.0:
     dependencies:
       '@jridgewell/source-map': 0.3.6
@@ -47928,6 +48268,8 @@ snapshots:
 
   vscode-uri@3.1.0: {}
 
+  vue-component-type-helpers@2.2.12: {}
+
   vue-demi@0.14.10(vue@3.5.24(typescript@5.9.3)):
     dependencies:
       vue: 3.5.24(typescript@5.9.3)
@@ -48071,38 +48413,6 @@ snapshots:
   webpack-sources@3.3.3: {}
 
   webpack-virtual-modules@0.6.2: {}
-
-  webpack@5.102.1(@swc/core@1.13.5):
-    dependencies:
-      '@types/eslint-scope': 3.7.7
-      '@types/estree': 1.0.8
-      '@types/json-schema': 7.0.15
-      '@webassemblyjs/ast': 1.14.1
-      '@webassemblyjs/wasm-edit': 1.14.1
-      '@webassemblyjs/wasm-parser': 1.14.1
-      acorn: 8.15.0
-      acorn-import-phases: 1.0.4(acorn@8.15.0)
-      browserslist: 4.27.0
-      chrome-trace-event: 1.0.4
-      enhanced-resolve: 5.18.3
-      es-module-lexer: 1.7.0
-      eslint-scope: 5.1.1
-      events: 3.3.0
-      glob-to-regexp: 0.4.1
-      graceful-fs: 4.2.11
-      json-parse-even-better-errors: 2.3.1
-      loader-runner: 4.3.0
-      mime-types: 2.1.35
-      neo-async: 2.6.2
-      schema-utils: 4.3.3
-      tapable: 2.3.0
-      terser-webpack-plugin: 5.3.12(@swc/core@1.13.5)(webpack@5.102.1(@swc/core@1.13.5))
-      watchpack: 2.4.4
-      webpack-sources: 3.3.3
-    transitivePeerDependencies:
-      - '@swc/core'
-      - esbuild
-      - uglify-js
 
   webpack@5.102.1(@swc/core@1.13.5)(esbuild@0.27.0):
     dependencies:

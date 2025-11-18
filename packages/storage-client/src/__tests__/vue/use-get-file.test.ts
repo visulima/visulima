@@ -1,21 +1,21 @@
 import { QueryClient } from "@tanstack/vue-query";
-import { ref } from "vue";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { ref } from "vue";
 
-import { useGetFile } from "../use-get-file";
+import { useGetFile } from "../../vue/use-get-file";
 import { withQueryClient } from "./test-utils";
 
 // Mock fetch globally
 const mockFetch = vi.fn();
 
-describe("useGetFile", () => {
+describe(useGetFile, () => {
     let queryClient: QueryClient;
 
     beforeEach(() => {
         queryClient = new QueryClient({
             defaultOptions: {
-                queries: { retry: false },
                 mutations: { retry: false },
+                queries: { retry: false },
             },
         });
         globalThis.fetch = mockFetch;
@@ -27,14 +27,14 @@ describe("useGetFile", () => {
 
         const mockBlob = new Blob(["test content"], { type: "image/jpeg" });
         const mockHeaders = new Headers({
-            "Content-Type": "image/jpeg",
             "Content-Length": "12",
+            "Content-Type": "image/jpeg",
         });
 
         mockFetch.mockResolvedValueOnce({
-            ok: true,
             blob: () => Promise.resolve(mockBlob),
             headers: mockHeaders,
+            ok: true,
         });
 
         const { result } = withQueryClient(
@@ -43,7 +43,7 @@ describe("useGetFile", () => {
                     endpoint: "https://api.example.com",
                     id: "file-123",
                 }),
-            queryClient
+            queryClient,
         );
 
         await new Promise((resolve) => setTimeout(resolve, 100));
@@ -65,14 +65,14 @@ describe("useGetFile", () => {
 
         mockFetch
             .mockResolvedValueOnce({
-                ok: true,
                 blob: () => Promise.resolve(mockBlob1),
                 headers: new Headers({ "Content-Type": "image/jpeg" }),
+                ok: true,
             })
             .mockResolvedValueOnce({
-                ok: true,
                 blob: () => Promise.resolve(mockBlob2),
                 headers: new Headers({ "Content-Type": "image/jpeg" }),
+                ok: true,
             });
 
         const { result } = withQueryClient(
@@ -81,7 +81,7 @@ describe("useGetFile", () => {
                     endpoint: "https://api.example.com",
                     id,
                 }),
-            queryClient
+            queryClient,
         );
 
         await new Promise((resolve) => setTimeout(resolve, 100));
@@ -106,11 +106,11 @@ describe("useGetFile", () => {
         withQueryClient(
             () =>
                 useGetFile({
+                    enabled,
                     endpoint: "https://api.example.com",
                     id: "file-123",
-                    enabled,
                 }),
-            queryClient
+            queryClient,
         );
 
         await new Promise((resolve) => setTimeout(resolve, 50));
@@ -119,4 +119,3 @@ describe("useGetFile", () => {
         expect(mockFetch).not.toHaveBeenCalled();
     });
 });
-

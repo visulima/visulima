@@ -3,6 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { buildUrl, fetchHead, storageQueryKeys } from "../core";
 
 export interface FileHeadMetadata {
+    /** Whether this is a chunked upload session */
+    chunkedUpload?: boolean;
     /** Content length in bytes */
     contentLength?: number;
     /** Content type */
@@ -11,25 +13,23 @@ export interface FileHeadMetadata {
     etag?: string;
     /** Last modified date */
     lastModified?: string;
+    /** Received chunk offsets (chunked uploads) */
+    receivedChunks?: number[];
+    /** Whether upload is complete (chunked uploads) */
+    uploadComplete?: boolean;
     /** Upload expiration date */
     uploadExpires?: string;
     /** Upload offset for chunked uploads */
     uploadOffset?: number;
-    /** Whether upload is complete (chunked uploads) */
-    uploadComplete?: boolean;
-    /** Whether this is a chunked upload session */
-    chunkedUpload?: boolean;
-    /** Received chunk offsets (chunked uploads) */
-    receivedChunks?: number[];
 }
 
 export interface UseHeadFileOptions {
+    /** Whether to enable the query */
+    enabled?: boolean;
     /** Base endpoint URL for file operations */
     endpoint: string;
     /** File ID to fetch metadata for */
     id: string;
-    /** Whether to enable the query */
-    enabled?: boolean;
     /** Callback when request fails */
     onError?: (error: Error) => void;
     /** Callback when request succeeds */
@@ -37,12 +37,12 @@ export interface UseHeadFileOptions {
 }
 
 export interface UseHeadFileReturn {
+    /** File metadata from HEAD request */
+    data: FileHeadMetadata | undefined;
     /** Last request error, if any */
     error: Error | null;
     /** Whether a request is currently in progress */
     isLoading: boolean;
-    /** File metadata from HEAD request */
-    data: FileHeadMetadata | undefined;
     /** Refetch the file metadata */
     refetch: () => void;
 }
@@ -54,7 +54,7 @@ export interface UseHeadFileReturn {
  * @returns File HEAD request functions and state
  */
 export const useHeadFile = (options: UseHeadFileOptions): UseHeadFileReturn => {
-    const { endpoint, id, enabled = true, onError, onSuccess } = options;
+    const { enabled = true, endpoint, id, onError, onSuccess } = options;
 
     const query = useQuery({
         enabled: enabled && !!id,
