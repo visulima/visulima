@@ -14,8 +14,10 @@ Chunked uploads are ideal for:
 ## Initializing a Chunked Upload
 
 ```typescript
-import { Rest } from "@visulima/storage/provider/aws";
+import { DiskStorage } from "@visulima/storage";
+import { Rest } from "@visulima/storage/handler/http/fetch";
 
+const storage = new DiskStorage({ directory: "./uploads" });
 const rest = new Rest({ storage });
 
 // Initialize chunked upload
@@ -93,8 +95,8 @@ console.log(`Uploaded: ${offset} bytes, Complete: ${complete}`);
 ## Complete Example
 
 ```typescript
-import { Rest } from "@visulima/storage/provider/aws";
 import { DiskStorage } from "@visulima/storage";
+import { Rest } from "@visulima/storage/handler/http/fetch";
 
 const storage = new DiskStorage({ directory: "./uploads" });
 const rest = new Rest({ storage });
