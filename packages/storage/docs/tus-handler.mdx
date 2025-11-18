@@ -22,6 +22,7 @@ TUS handler is included in the main package - no additional installation require
 ```typescript
 import express from "express";
 import { DiskStorage } from "@visulima/storage";
+import { Tus } from "@visulima/storage/handler/http/node";
 
 const app = express();
 const storage = new DiskStorage({ directory: "./uploads" });
@@ -38,6 +39,7 @@ app.delete("/upload/tus/:id", tus.handle);
 
 ```typescript
 import { DiskStorage } from "@visulima/storage";
+import { Tus } from "@visulima/storage/handler/http/fetch";
 
 const storage = new DiskStorage({ directory: "./uploads" });
 const tus = new Tus({ storage });

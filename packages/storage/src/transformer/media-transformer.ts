@@ -2,10 +2,9 @@ import { createHash } from "node:crypto";
 
 import mime from "mime";
 
-import type BaseStorage from "../storage/storage";
+import type { BaseStorage } from "../storage/storage";
 import type { File, FileQuery, FileReturn } from "../storage/utils/file";
 import { NoOpCache } from "../utils/cache";
-import type { Logger } from "../utils/types";
 import type BaseTransformer from "./base-transformer";
 import type {
     AudioTransformerConfig,
@@ -135,7 +134,7 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
         Omit<MediaTransformerConfig<TFile, TFileReturn>, "logger" | "ImageTransformer" | "VideoTransformer" | "AudioTransformer">
     >;
 
-    private readonly logger: Logger | undefined;
+    private readonly logger: Console | undefined;
 
     /**
      * Creates a new MediaTransformer instance.

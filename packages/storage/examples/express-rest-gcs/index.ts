@@ -1,7 +1,7 @@
+import type { UploadFile } from "@visulima/storage";
+import { Rest } from "@visulima/storage/handler/http/node";
 import express from "express";
-import type { UploadFile } from "@visulima/upload";
-import { Rest } from "@visulima/upload";
-import { GCStorage } from "@visulima/upload/provider/gcs";
+import { GCStorage } from "@visulima/storage/provider/gcs";
 import Cors from "cors";
 
 const PORT = process.env.PORT || 3003;
@@ -13,7 +13,6 @@ const storage = new GCStorage({
     onComplete: (file) => {
         const { uri = "unknown", id } = file;
 
-        console.log(`File upload complete, storage path: ${uri}`);
         // send gcs link to client
         return { id, link: uri };
     },
@@ -33,9 +32,7 @@ app.use(cors);
 // Note: rest.handle will parse the raw body stream directly
 app.post("/files", rest.handle, async (request, response, next) => {
     try {
-        const file = request.body as UploadFile;
-
-        console.log("File upload complete:", file.originalName || file.id);
+        const file = (request as express.Request & { body: UploadFile }).body;
 
         return response.status(201).json(file);
     } catch (error) {
@@ -46,9 +43,7 @@ app.post("/files", rest.handle, async (request, response, next) => {
 // PUT endpoint - Create or update file (requires ID in URL)
 app.put("/files/:id", rest.handle, async (request, response, next) => {
     try {
-        const file = request.body as UploadFile;
-
-        console.log("File created/updated:", file.id);
+        const file = (request as express.Request & { body: UploadFile }).body;
 
         return response.json(file);
     } catch (error) {
@@ -60,7 +55,8 @@ app.put("/files/:id", rest.handle, async (request, response, next) => {
 app.get("/files/:id?", rest.handle, async (request, response, next) => {
     try {
         // Handler will stream the file or return list
-        return;
+        // The handler manages the response directly, so we just call next
+        return next();
     } catch (error) {
         return next(error);
     }
@@ -70,7 +66,8 @@ app.get("/files/:id?", rest.handle, async (request, response, next) => {
 app.head("/files/:id", rest.handle, async (request, response, next) => {
     try {
         // Handler will set headers
-        return;
+        // The handler manages the response directly, so we just call next
+        return next();
     } catch (error) {
         return next(error);
     }
@@ -82,24 +79,16 @@ app.delete("/files/:id?", rest.handle, async (request, response, next) => {
         // Single file delete: DELETE /files/:id
         // Batch delete: DELETE /files?ids=id1,id2,id3
         // Or: DELETE /files with JSON body: { "ids": ["id1", "id2"] }
-        const file = request.body as UploadFile | { data: UploadFile[] };
-
-        if (Array.isArray((file as { data?: UploadFile[] }).data)) {
-            console.log(`Batch deleted ${(file as { data: UploadFile[] }).data.length} files`);
-        } else {
-            console.log("File deleted:", (file as UploadFile).id);
-        }
-
-        return response.status(204).send();
+        // The handler manages the response directly, so we just call next
+        return next();
     } catch (error) {
         return next(error);
     }
 });
 
 app.use((error: Error, _request: express.Request, response: express.Response, _next: express.NextFunction) => {
-    console.error("File upload error:", error);
-
-    return response.status(500).json({ error: "File operation failed", message: error.message });
+    console.error("Error:", error);
+    response.status(500).json({ error: error.message || "Internal server error" });
 });
 
 app.listen(PORT, () => {
@@ -116,6 +105,5 @@ app.listen(PORT, () => {
     console.log("  curl -X POST http://localhost:" + PORT + "/files \\");
     console.log('    -H "Content-Type: image/jpeg" \\');
     console.log('    -H "Content-Disposition: attachment; filename=\\"photo.jpg\\"" \\');
-    console.log('    -H "X-File-Metadata: {\\"description\\":\\"My photo\\"}" \\');
     console.log("    --data-binary @/path/to/file.jpg");
 });

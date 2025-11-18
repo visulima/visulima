@@ -1,4 +1,5 @@
-import { Multipart, DiskStorage } from "npm:@visulima/upload";
+import { DiskStorage } from "npm:@visulima/storage";
+import { Multipart } from "npm:@visulima/storage/handler/http/fetch";
 
 const PORT = parseInt(Deno.env.get("PORT") || "3002");
 

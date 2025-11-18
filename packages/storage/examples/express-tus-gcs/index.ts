@@ -1,7 +1,7 @@
+import type { UploadFile } from "@visulima/storage";
+import { Tus } from "@visulima/storage/handler/http/node";
 import express from "express";
-import type { UploadFile } from "@visulima/upload";
-import { Tus } from "@visulima/upload";
-import { GCStorage } from "@visulima/upload/provider/gcs";
+import { GCStorage } from "@visulima/storage/provider/gcs";
 import Cors from "cors";
 
 const PORT = process.env.PORT || 3002;
@@ -11,7 +11,6 @@ const app = express();
 const storage = new GCStorage({
     maxUploadSize: "1GB",
     onComplete: ({ uri = "unknown", id }: { id: string; uri: string }) => {
-        console.log(`File upload complete, storage path: ${uri}`);
         // send gcs link to client
         return { id, link: uri };
     },
@@ -28,12 +27,7 @@ const cors = Cors({
 
 app.use(cors);
 
-app.use("/files", tus.handle, (request, response) => {
-    const file = request.body as UploadFile;
-
-    console.log("File upload complete: ", file.originalName);
-
-    return response.json(file);
-});
+// TUS handler manages the response directly
+app.use("/files", tus.handle);
 
 app.listen(PORT, () => console.log("listening on port:", PORT));

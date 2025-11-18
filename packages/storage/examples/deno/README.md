@@ -100,7 +100,7 @@ curl http://localhost:3002/health
 ## Code Structure
 
 ```ts
-import { Multipart, DiskStorage } from "npm:@visulima/upload";
+import { Multipart, DiskStorage } from "npm:@visulima/storage";
 
 // Single storage and handler instances
 const storage = new DiskStorage({ directory: "./uploads" });

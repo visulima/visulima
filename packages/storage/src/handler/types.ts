@@ -4,7 +4,7 @@ import type { Readable } from "node:stream";
 
 import type { PaginationResult } from "@visulima/pagination";
 
-import type BaseStorage from "../storage/storage";
+import type { BaseStorage } from "../storage/storage";
 import type { UploadEventType, UploadFile } from "../storage/utils/file";
 import type MediaTransformer from "../transformer/media-transformer";
 import type { UploadError } from "../utils/errors";

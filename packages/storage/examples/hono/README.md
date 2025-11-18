@@ -278,7 +278,8 @@ The Swagger UI provides:
 ```ts
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import { swaggerUI } from "@hono/swagger-ui";
-import { Multipart, DiskStorage } from "@visulima/upload";
+import { DiskStorage } from "@visulima/storage";
+import { Multipart } from "@visulima/storage/handler/http/fetch";
 
 const app = new OpenAPIHono();
 

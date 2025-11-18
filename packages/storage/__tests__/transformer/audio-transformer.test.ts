@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, expectTypeOf, it, vi } from "vitest";
 
+import type { BaseStorage } from "../../src/storage/storage";
 import type { AudioTransformerConfig } from "../../src/transformer";
 import AudioTransformer from "../../src/transformer/audio-transformer";
 
@@ -29,14 +30,14 @@ describe(AudioTransformer, () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
-        transformer = new AudioTransformer(mockStorage as import("../../src/storage/storage").BaseStorage, {});
+        transformer = new AudioTransformer(mockStorage as BaseStorage, {});
     });
 
     describe("constructor", () => {
         it("should create transformer with default configuration", () => {
             expect.assertions(1);
 
-            const newTransformer = new AudioTransformer(mockStorage as import("../../src/storage/storage").BaseStorage);
+            const newTransformer = new AudioTransformer(mockStorage as BaseStorage);
 
             expect(newTransformer).toBeInstanceOf(AudioTransformer);
         });
@@ -50,7 +51,7 @@ describe(AudioTransformer, () => {
                 maxAudioSize: 50 * 1024 * 1024,
             };
 
-            const newTransformer = new AudioTransformer(mockStorage as import("../../src/storage/storage").BaseStorage, config);
+            const newTransformer = new AudioTransformer(mockStorage as BaseStorage, config);
 
             expect(newTransformer).toBeInstanceOf(AudioTransformer);
         });

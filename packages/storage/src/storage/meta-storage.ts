@@ -1,7 +1,5 @@
-import type { Logger } from "../utils/types";
 import type { MetaStorageOptions } from "./types";
 import type { File } from "./utils/file";
-import { FileName } from "./utils/file";
 
 /**
  * Stores upload metadata
@@ -11,19 +9,11 @@ class MetaStorage<T extends File = File> {
 
     public suffix = "";
 
-    protected readonly logger?: Logger;
+    protected readonly logger?: Console;
 
     public constructor(config?: MetaStorageOptions) {
         this.prefix = config?.prefix ?? "";
         this.suffix = config?.suffix ?? ".META";
-
-        if (this.prefix) {
-            FileName.INVALID_PREFIXES.push(this.prefix);
-        }
-
-        if (this.suffix) {
-            FileName.INVALID_SUFFIXES.push(this.suffix);
-        }
 
         this.logger = config?.logger;
     }

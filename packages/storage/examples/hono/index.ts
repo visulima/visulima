@@ -3,10 +3,11 @@ import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 import { swaggerUI } from "@hono/swagger-ui";
 import type { Context } from "hono";
-import { Multipart, DiskStorage, Rest, Tus } from "@visulima/upload";
-import { xhrOpenApiSpec, tusOpenApiSpec } from "@visulima/upload/openapi";
-import { MediaTransformer } from "@visulima/upload/transformer";
-import ImageTransformer from "@visulima/upload/transformers/image";
+import { DiskStorage } from "@visulima/storage";
+import { Multipart, Rest, Tus } from "@visulima/storage/handler/http/fetch";
+import { xhrOpenApiSpec, tusOpenApiSpec } from "@visulima/storage/openapi";
+import { MediaTransformer } from "@visulima/storage/transformer";
+import ImageTransformer from "@visulima/storage/transformers/image";
 import { serve } from "@hono/node-server";
 
 const app = new Hono();

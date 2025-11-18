@@ -1,24 +1,35 @@
-import { File as DiskFile, DiskStorage, Multipart } from "@visulima/upload";
-import ImageTransformer from "@visulima/upload/transformers/image";
-import { copyFile } from "copy-file";
+import type { UploadFile } from "@visulima/storage";
+import { DiskStorage } from "@visulima/storage";
+import { Multipart } from "@visulima/storage/handler/http/node";
+import { xhrOpenApiSpec, transformOpenApiSpec } from "@visulima/storage/openapi";
+import ImageTransformer from "@visulima/storage/transformers/image";
 import express from "express";
 import swaggerUi from "swagger-ui-express";
-import swaggerJSDoc from "swagger-jsdoc";
 import fs from "node:fs";
 import path from "node:path";
-import sanitizeFilename from "sanitize-filename";
 
 const PORT = process.env.PORT || 3002;
 
 const app = express();
 
-// Swagger definition
-const swaggerDefinition = {
+// Storage configuration
+const storage = new DiskStorage({
+    directory: "./uploads",
+    maxUploadSize: "100MB",
+});
+
+// Generate OpenAPI spec from storage package
+const xhrSpec = xhrOpenApiSpec(`http://localhost:${PORT}`, "/files", {
+    transformer: "image",
+    supportedTransformerFormat: ["jpeg", "png", "webp", "avif", "tiff", "gif"],
+});
+const transformSpec = transformOpenApiSpec("/files", ["Transform"]);
+
+const swaggerSpec = {
     openapi: "3.0.0",
     info: {
         title: "Visulima Upload Express API",
         version: "1.0.0",
-        description: "File upload and image transformation API built with Express and Visulima Upload",
         contact: {
             name: "Visulima",
             url: "https://github.com/visulima/visulima",
@@ -32,56 +43,27 @@ const swaggerDefinition = {
     ],
     components: {
         schemas: {
-            File: {
-                type: "object",
-                properties: {
-                    id: {
-                        type: "string",
-                        description: "Unique file identifier",
-                    },
-                    name: {
-                        type: "string",
-                        description: "File name",
-                    },
-                    originalName: {
-                        type: "string",
-                        description: "Original file name",
-                    },
-                    size: {
-                        type: "number",
-                        description: "File size in bytes",
-                    },
-                    contentType: {
-                        type: "string",
-                        description: "MIME content type",
-                    },
-                    ETag: {
-                        type: "string",
-                        description: "ETag for caching",
-                    },
-                },
-            },
-            Error: {
-                type: "object",
-                properties: {
-                    error: {
-                        type: "string",
-                        description: "Error message",
-                    },
-                },
-            },
+            ...xhrSpec.components?.schemas,
+            ...transformSpec.components?.schemas,
+        },
+        examples: {
+            ...xhrSpec.components?.examples,
+            ...transformSpec.components?.examples,
+        },
+        responses: {
+            ...xhrSpec.components?.responses,
+            ...transformSpec.components?.responses,
+        },
+        parameters: {
+            ...xhrSpec.components?.parameters,
+            ...transformSpec.components?.parameters,
         },
     },
+    paths: {
+        ...xhrSpec.paths,
+        ...transformSpec.paths,
+    },
 };
-
-// Options for the swagger docs
-const options = {
-    swaggerDefinition,
-    apis: ["./index.ts"], // Path to the API docs
-};
-
-// Initialize swagger-jsdoc
-const swaggerSpec = swaggerJSDoc(options);
 
 // Serve swagger
 app.use(
@@ -102,19 +84,17 @@ const processes = new Map<string, Moving>();
 const uploadDirectory = "upload";
 const moveTo = "files";
 
-const storage = new DiskStorage({ directory: uploadDirectory });
-
 const imageTransformer = new ImageTransformer(storage, {
     maxImageSize: 10 * 1024 * 1024, // 10MB
     cacheTtl: 3600, // 1 hour
 });
 
 const onComplete: express.RequestHandler = (req, res) => {
-    const file = req.body as DiskFile;
+    const file = (req as express.Request & { body: UploadFile }).body;
 
     // Sanitize file.name and file.originalName to prevent path traversal
-    const safeName = sanitizeFilename(file.name);
-    const safeOriginalName = sanitizeFilename(file.originalName);
+    const safeName = path.basename(file.name || file.id);
+    const safeOriginalName = path.basename(file.originalName || file.name || file.id);
 
     if (!safeName || !safeOriginalName) {
         return res.status(400).json({ error: "Invalid filename." });
@@ -132,13 +112,11 @@ const onComplete: express.RequestHandler = (req, res) => {
         const destination = path.resolve(moveTo, safeOriginalName);
         void (async () => {
             try {
-                await copyFile(source, destination, {
-                    onProgress: ({ percent }) => {
-                        moving.percent = percent * 100;
-                    },
-                });
+                // Copy file with progress tracking
+                await fs.promises.copyFile(source, destination);
                 await fs.promises.unlink(source);
                 moving.status = "done";
+                moving.percent = 100;
                 processes.set(safeName, moving);
             } catch (e) {
                 console.error(e);
@@ -160,180 +138,10 @@ const onComplete: express.RequestHandler = (req, res) => {
 
 const multipart = new Multipart({ storage });
 
-/**
- * @swagger
- * /files:
- *   post:
- *     summary: Upload a file
- *     description: Upload a file using multipart/form-data. The file will be processed and moved to the files directory.
- *     tags: [Upload]
- *     requestBody:
- *       required: true
- *       content:
- *         multipart/form-data:
- *           schema:
- *             type: object
- *             properties:
- *               file:
- *                 type: string
- *                 format: binary
- *                 description: File to upload
- *     responses:
- *       200:
- *         description: File uploaded successfully
- *         content:
- *           application/json:
- *             schema:
- *               allOf:
- *                 - $ref: '#/components/schemas/File'
- *                 - type: object
- *                   properties:
- *                     moving:
- *                       type: object
- *                       properties:
- *                         percent:
- *                           type: number
- *                           description: Upload progress percentage
- *                         status:
- *                           type: string
- *                           enum: [moving, error, done]
- *                           description: Current status of file processing
- *       202:
- *         description: File upload in progress
- *         content:
- *           application/json:
- *             schema:
- *               allOf:
- *                 - $ref: '#/components/schemas/File'
- *                 - type: object
- *                   properties:
- *                     moving:
- *                       type: object
- *                       properties:
- *                         percent:
- *                           type: number
- *                           description: Upload progress percentage
- *                         status:
- *                           type: string
- *                           enum: [moving, error, done]
- *                           description: Current status of file processing
- *       422:
- *         description: Upload failed
- *         content:
- *           application/json:
- *             schema:
- *               allOf:
- *                 - $ref: '#/components/schemas/File'
- *                 - type: object
- *                   properties:
- *                     moving:
- *                       type: object
- *                       properties:
- *                         percent:
- *                           type: number
- *                           description: Upload progress percentage
- *                         status:
- *                           type: string
- *                           enum: [moving, error, done]
- *                           description: Current status of file processing
- */
-app.use("/files", multipart.upload, onComplete);
+// Upload endpoint - multipart/form-data file upload with progress tracking
+app.use("/files", multipart.handle, onComplete);
 
-/**
- * @swagger
- * /files/{id}:
- *   get:
- *     summary: Get file or transform image
- *     description: Retrieve a file by ID or apply image transformations using query parameters. If no transformation parameters are provided, returns the original file.
- *     tags: [Files, Images]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *         description: File ID
- *       - in: query
- *         name: width
- *         schema:
- *           type: integer
- *           minimum: 1
- *         description: Desired width in pixels
- *       - in: query
- *         name: height
- *         schema:
- *           type: integer
- *           minimum: 1
- *         description: Desired height in pixels
- *       - in: query
- *         name: fit
- *         schema:
- *           type: string
- *           enum: [cover, contain, fill, inside, outside]
- *         description: Resize fit mode
- *       - in: query
- *         name: position
- *         schema:
- *           type: string
- *           enum: [top, right, bottom, left, center]
- *         description: Position for cover/contain fits
- *       - in: query
- *         name: quality
- *         schema:
- *           type: integer
- *           minimum: 1
- *           maximum: 100
- *         description: Quality setting (0-100)
- *       - in: query
- *         name: lossless
- *         schema:
- *           type: boolean
- *         description: Lossless compression
- *       - in: query
- *         name: effort
- *         schema:
- *           type: integer
- *         description: Compression effort
- *       - in: query
- *         name: alphaQuality
- *         schema:
- *           type: integer
- *         description: Alpha channel quality
- *       - in: query
- *         name: loop
- *         schema:
- *           type: integer
- *         description: Animation loop count
- *       - in: query
- *         name: delay
- *         schema:
- *           type: integer
- *         description: Animation delay
- *     responses:
- *       200:
- *         description: File retrieved successfully
- *         content:
- *           image/*:
- *             schema:
- *               type: string
- *               format: binary
- *           application/octet-stream:
- *             schema:
- *               type: string
- *               format: binary
- *       404:
- *         description: File not found
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
- *       500:
- *         description: Transformation error
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
- */
+// Get file or transform image - supports query parameters for transformations
 app.get("/files/:id", async (req, res) => {
     try {
         const { id } = req.params;
@@ -359,8 +167,6 @@ app.get("/files/:id", async (req, res) => {
                 res.send(file.content);
                 return;
             } catch (error: any) {
-                console.error("File serving error:", error);
-                res.status(404).json({ error: "File not found" });
                 return;
             }
         }
@@ -415,59 +221,7 @@ app.get("/files/:id", async (req, res) => {
     }
 });
 
-/**
- * @swagger
- * /images/{id}/resize:
- *   get:
- *     summary: Resize image (Legacy)
- *     description: Resize an image to specified dimensions. This is a legacy endpoint - use GET /files/{id} instead.
- *     deprecated: true
- *     tags: [Images, Legacy]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *         description: File ID
- *       - in: query
- *         name: width
- *         schema:
- *           type: integer
- *         description: Desired width in pixels
- *       - in: query
- *         name: height
- *         schema:
- *           type: integer
- *         description: Desired height in pixels
- *       - in: query
- *         name: fit
- *         schema:
- *           type: string
- *           enum: [cover, contain, fill, inside, outside]
- *           default: cover
- *         description: Resize fit mode
- *       - in: query
- *         name: quality
- *         schema:
- *           type: integer
- *           default: 80
- *         description: Quality setting (0-100)
- *     responses:
- *       200:
- *         description: Image resized successfully
- *         content:
- *           image/jpeg:
- *             schema:
- *               type: string
- *               format: binary
- *       500:
- *         description: Resize error
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
- */
+// Legacy endpoint: Resize image (deprecated - use GET /files/{id} with query params instead)
 app.get("/images/:id/resize", async (req, res) => {
     try {
         const { id } = req.params;
@@ -495,76 +249,7 @@ app.get("/images/:id/resize", async (req, res) => {
     }
 });
 
-/**
- * @swagger
- * /images/{id}/crop:
- *   get:
- *     summary: Crop image (Legacy)
- *     description: Crop an image to specified dimensions and position. This is a legacy endpoint - use GET /files/{id} instead.
- *     deprecated: true
- *     tags: [Images, Legacy]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *         description: File ID
- *       - in: query
- *         name: left
- *         required: true
- *         schema:
- *           type: integer
- *           minimum: 0
- *         description: Crop area left offset
- *       - in: query
- *         name: top
- *         required: true
- *         schema:
- *           type: integer
- *           minimum: 0
- *         description: Crop area top offset
- *       - in: query
- *         name: width
- *         required: true
- *         schema:
- *           type: integer
- *           minimum: 1
- *         description: Crop area width
- *       - in: query
- *         name: height
- *         required: true
- *         schema:
- *           type: integer
- *           minimum: 1
- *         description: Crop area height
- *       - in: query
- *         name: quality
- *         schema:
- *           type: integer
- *           default: 80
- *         description: Quality setting (0-100)
- *     responses:
- *       200:
- *         description: Image cropped successfully
- *         content:
- *           image/jpeg:
- *             schema:
- *               type: string
- *               format: binary
- *       400:
- *         description: Missing crop parameters
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
- *       500:
- *         description: Crop error
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
- */
+// Legacy endpoint: Crop image (deprecated - use GET /files/{id} with query params instead)
 app.get("/images/:id/crop", async (req, res) => {
     try {
         const { id } = req.params;
@@ -597,49 +282,7 @@ app.get("/images/:id/crop", async (req, res) => {
     }
 });
 
-/**
- * @swagger
- * /images/{id}/rotate:
- *   get:
- *     summary: Rotate image (Legacy)
- *     description: Rotate an image by specified angle. This is a legacy endpoint - use GET /files/{id} instead.
- *     deprecated: true
- *     tags: [Images, Legacy]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *         description: File ID
- *       - in: query
- *         name: angle
- *         schema:
- *           type: integer
- *           enum: [90, 180, 270]
- *           default: 90
- *         description: Rotation angle in degrees
- *       - in: query
- *         name: quality
- *         schema:
- *           type: integer
- *           default: 80
- *         description: Quality setting (0-100)
- *     responses:
- *       200:
- *         description: Image rotated successfully
- *         content:
- *           image/jpeg:
- *             schema:
- *               type: string
- *               format: binary
- *       500:
- *         description: Rotate error
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
- */
+// Legacy endpoint: Rotate image (deprecated - use GET /files/{id} with query params instead)
 app.get("/images/:id/rotate", async (req, res) => {
     try {
         const { id } = req.params;

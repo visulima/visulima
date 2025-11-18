@@ -5,7 +5,7 @@ import { inspect } from "node:util";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { parseBytes } from "@visulima/humanizer";
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { normalize } from "@visulima/path";
+import { isAbsolute, normalize } from "@visulima/path";
 import typeis from "type-is";
 
 import { NoOpMetrics } from "../metrics";
@@ -15,12 +15,12 @@ import type { ErrorResponses } from "../utils/errors";
 import { ErrorMap, ERRORS, throwErrorCode } from "../utils/errors";
 import Locker from "../utils/locker";
 import toMilliseconds from "../utils/primitives/to-milliseconds";
-import type { HttpError, Logger, Metrics, ValidatorConfig } from "../utils/types";
+import type { HttpError, Metrics, ValidatorConfig } from "../utils/types";
 import { Validator } from "../utils/validator";
 import type MetaStorage from "./meta-storage";
 import type { BaseStorageOptions, BatchOperationResponse, PurgeList } from "./types";
 import type { File, FileInit, FilePart, FileQuery } from "./utils/file";
-import { FileName, isExpired, updateMetadata } from "./utils/file";
+import { isExpired, updateMetadata } from "./utils/file";
 import type { FileReturn } from "./utils/file/types";
 
 const defaults: BaseStorageOptions = {
@@ -45,6 +45,37 @@ const defaults: BaseStorageOptions = {
     },
     useRelativeLocation: false,
     validation: {},
+};
+
+/**
+ * Default filename validation for cloud storage platforms.
+ * Permissive validation that only blocks dangerous patterns (path traversal, null bytes).
+ * Cloud storage platforms (S3, Azure, GCS) accept most special characters and handle URL encoding automatically.
+ */
+export const defaultCloudStorageFileNameValidation = (name: string): boolean => {
+    if (!name || name.length < 3 || name.length > 255 || isAbsolute(name)) {
+        return false;
+    }
+
+    const upperCase = name.toUpperCase();
+
+    // Block path traversal and null bytes
+    return !(upperCase.includes("../") || name.includes("\0"));
+};
+
+/**
+ * Default filename validation for local filesystems.
+ * Stricter validation that blocks filesystem-incompatible characters.
+ */
+export const defaultFilesystemFileNameValidation = (name: string): boolean => {
+    if (!name || name.length < 3 || name.length > 255 || isAbsolute(name)) {
+        return false;
+    }
+
+    const upperCase = name.toUpperCase();
+    const filesystemInvalidChars = ["\"", "*", ":", "<", ">", "?", "\\", "|", "../", "\0"];
+
+    return !filesystemInvalidChars.some((char) => upperCase.includes(char));
 };
 
 /**
@@ -88,7 +119,7 @@ const defaults: BaseStorageOptions = {
  * - Cache is invalidated when metadata is deleted
  * - Implementations can override caching behavior if needed
  */
-abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileReturn = FileReturn> {
+export abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileReturn = FileReturn> {
     /**
      * Hook called when a new file is created.
      * @param file The newly created file object.
@@ -138,7 +169,7 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
 
     public cache: Cache<string, TFile>;
 
-    public readonly logger?: Logger;
+    public readonly logger?: Console;
 
     public readonly metrics: Metrics;
 
@@ -207,6 +238,11 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
 
         const size: Required<ValidatorConfig<TFile>> = {
             isValid(file) {
+                // Allow undefined size for creation-defer-length extension
+                if (file.size === undefined) {
+                    return true;
+                }
+
                 return Number(file.size) <= this.value;
             },
             response: ErrorMap.RequestEntityTooLarge as HttpError,
@@ -222,9 +258,12 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
             value: options.allowMIME,
         };
 
+        // Use provided fileNameValidation or default to cloud storage validation
+        const fileNameValidation = options.fileNameValidation ?? defaultCloudStorageFileNameValidation;
+
         const filename: ValidatorConfig<TFile> = {
             isValid(file) {
-                return FileName.isValid(file.name);
+                return fileNameValidation(file.name);
             },
             response: ErrorMap.InvalidFileName,
         };
@@ -234,7 +273,7 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
     }
 
     public get tusExtension(): string[] {
-        const extensions = ["creation", "creation-with-upload", "termination", "checksum", "creation-defer-length"];
+        const extensions = ["creation", "creation-with-upload", "termination", "checksum", "creation-defer-length", "concatenation"];
 
         if (this.expiration) {
             extensions.push("expiration");
@@ -905,5 +944,3 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
         }
     }
 }
-
-export default BaseStorage;

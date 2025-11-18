@@ -214,9 +214,9 @@ const storage = new S3Storage({
 For custom storage implementations, you can use the `instrumentOperation` helper method:
 
 ```typescript
-import { BaseStorage } from "@visulima/storage";
+import { AbstractBaseStorage } from "@visulima/storage";
 
-class MyStorage extends BaseStorage {
+class MyStorage extends AbstractBaseStorage {
     public async create(config: FileInit): Promise<File> {
         return this.instrumentOperation(
             "create",

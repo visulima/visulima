@@ -32,6 +32,7 @@ Store files in a web-accessible location via a simplified API. Can automatically
 - Support for MP3, WAV, OGG, AAC, FLAC audio formats
 - **Batch Operations** - Delete multiple files in a single request
 - **File Validation** - Customizable validation rules for file types, sizes, and metadata
+- **Filename Validation** - Configurable filename validation with adapter-specific defaults (strict for filesystem, permissive for cloud storage)
 - **Expiration Management** - Automatic file expiration and cleanup
 - **Checksum Support** - MD5, SHA1, and other checksum algorithms for file integrity
 - On fire about minimizing file sizes for your resized images? You can plug in `imagemin` and compatible tools using the `postprocessors` option.
@@ -55,7 +56,8 @@ pnpm add @visulima/storage
 ### Node.js/Express
 
 ```ts
-import { DiskStorage, Multipart, Rest } from "@visulima/storage";
+import { DiskStorage } from "@visulima/storage";
+import { Multipart, Rest } from "@visulima/storage/handler/http/node";
 
 const storage = new DiskStorage({ directory: "./uploads" });
 
@@ -73,7 +75,8 @@ app.use("/files", rest.handle);
 ### Modern Frameworks (Hono, Cloudflare Workers)
 
 ```ts
-import { DiskStorage, Multipart, Rest } from "@visulima/storage";
+import { DiskStorage } from "@visulima/storage";
+import { Multipart, Rest } from "@visulima/storage/handler/http/fetch";
 
 const storage = new DiskStorage({ directory: "./uploads" });
 
