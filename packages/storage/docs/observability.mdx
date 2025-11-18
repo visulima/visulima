@@ -40,7 +40,7 @@ pnpm add @opentelemetry/api
 
 ```typescript
 import { metrics } from "@opentelemetry/api";
-import { OpenTelemetryMetrics } from "@visulima/storage/metrics";
+import { OpenTelemetryMetrics } from "@visulima/storage";
 import { S3Storage } from "@visulima/storage/provider/aws";
 
 // Initialize OpenTelemetry (typically done once in your app)
@@ -62,7 +62,7 @@ You can also provide a custom meter instance:
 
 ```typescript
 import { metrics } from "@opentelemetry/api";
-import { OpenTelemetryMetrics } from "@visulima/storage/metrics";
+import { OpenTelemetryMetrics } from "@visulima/storage";
 
 // Create a meter with custom configuration
 const meter = metrics.getMeter("my-app", "1.0.0", {
@@ -157,7 +157,7 @@ const storage = new DiskStorage({
 import { metrics } from "@opentelemetry/api";
 import { MeterProvider, PeriodicExportingMetricReader } from "@opentelemetry/sdk-metrics";
 import { PrometheusExporter } from "@opentelemetry/exporter-prometheus";
-import { OpenTelemetryMetrics } from "@visulima/storage/metrics";
+import { OpenTelemetryMetrics } from "@visulima/storage";
 import { S3Storage } from "@visulima/storage/provider/aws";
 
 // Setup Prometheus exporter
@@ -184,7 +184,7 @@ const storage = new S3Storage({
 import { metrics } from "@opentelemetry/api";
 import { MeterProvider, PeriodicExportingMetricReader } from "@opentelemetry/sdk-metrics";
 import { OTLPMetricExporter } from "@opentelemetry/exporter-metrics-otlp-http";
-import { OpenTelemetryMetrics } from "@visulima/storage/metrics";
+import { OpenTelemetryMetrics } from "@visulima/storage";
 import { S3Storage } from "@visulima/storage/provider/aws";
 
 const exporter = new OTLPMetricExporter({

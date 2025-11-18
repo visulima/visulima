@@ -32,6 +32,12 @@
     "observability": {
         "title": "Observability & Metrics"
     },
+    "openapi": {
+        "title": "OpenAPI Documentation"
+    },
+    "custom-storage": {
+        "title": "Custom Storage Backends"
+    },
     "authenticated-file-uploads": {
         "title": "Authenticated File Uploads"
     }

@@ -29,10 +29,10 @@ const storage = new DiskStorage({
 ## With Checksum Validation
 
 ```typescript
-import { DiskStorage } from "@visulima/storage";
+import { DiskStorageWithChecksum } from "@visulima/storage/provider/local";
 
 const storage = new DiskStorageWithChecksum({
-    checksum: "md5", // Enable MD5 checksum validation
+    checksum: "md5", // Enable MD5 checksum validation (md5 or sha1)
     directory: "/var/uploads",
 });
 ```
