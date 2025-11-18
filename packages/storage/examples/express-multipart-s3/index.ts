@@ -1,8 +1,8 @@
+import type { UploadFile } from "@visulima/storage";
+import { Multipart } from "@visulima/storage/handler/http/node";
 import express from "express";
-import type { UploadFile } from "@visulima/upload";
-import { Multipart } from "@visulima/upload";
 import Cors from "cors";
-import { S3Storage } from "@visulima/upload/provider/aws";
+import { S3Storage } from "@visulima/storage/provider/aws";
 
 const PORT = process.env.PORT || 3002;
 
@@ -14,7 +14,6 @@ const storage = new S3Storage({
     endpoint: process.env.S3_ENDPOINT,
     forcePathStyle: true,
     expiration: { maxAge: "1h", purgeInterval: "15min" },
-    onComplete: (file: UploadFile) => console.log("File upload complete: ", file),
 });
 
 const multipart = new Multipart({ storage });
@@ -29,9 +28,7 @@ const cors = Cors({
 app.use(cors);
 
 app.use("/files", multipart.handle, (request, response) => {
-    const file = request.body as UploadFile;
-
-    console.log("File upload complete: ", file.originalName);
+    const file = (request as express.Request & { body: UploadFile }).body;
 
     return response.json(file);
 });

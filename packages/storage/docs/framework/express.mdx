@@ -22,7 +22,8 @@ pnpm add @visulima/storage express
 
 ````ts
 import express from "express";
-import { DiskStorage, Multipart } from "@visulima/storage";
+import { DiskStorage } from "@visulima/storage";
+import { Multipart } from "@visulima/storage/handler/http/node";
 
 const app = express();
 const PORT = 3000;
@@ -49,7 +50,8 @@ For environments that support Web API Request/Response objects, you can also use
 
 ```ts
 import express from "express";
-import { DiskStorage, Multipart } from "@visulima/storage";
+import { DiskStorage } from "@visulima/storage";
+import { Multipart } from "@visulima/storage/handler/http/node";
 
 const app = express();
 const PORT = 3000;
@@ -91,7 +93,8 @@ app.listen(PORT, () => {
 
 ```ts
 import express from "express";
-import { DiskStorage, Rest } from "@visulima/storage";
+import { DiskStorage } from "@visulima/storage";
+import { Rest } from "@visulima/storage/handler/http/node";
 
 const app = express();
 const PORT = 3000;
@@ -142,7 +145,8 @@ Add on-demand image transformations with URL query parameters:
 ```ts
 import express from "express";
 import { LRUCache } from "lru-cache";
-import { DiskStorage, Multipart } from "@visulima/storage";
+import { DiskStorage } from "@visulima/storage";
+import { Multipart } from "@visulima/storage/handler/http/node";
 import ImageTransformer from "@visulima/storage/transformers/image";
 
 const app = express();

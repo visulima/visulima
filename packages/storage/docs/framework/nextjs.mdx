@@ -22,7 +22,8 @@ Create API routes for file upload and image transformation:
 
 ```ts
 // app/api/upload/route.ts
-import { DiskStorage, Multipart } from "@visulima/storage";
+import { DiskStorage } from "@visulima/storage";
+import { Multipart } from "@visulima/storage/handler/http/node";
 import { NextRequest, NextResponse } from "next/server";
 
 const uploadDirectory = "./uploads";
@@ -68,7 +69,8 @@ Next.js 15+ supports Web API Request/Response objects natively. You can use the 
 
 ```ts
 // app/api/upload/route.ts
-import { DiskStorage, Multipart } from "@visulima/storage";
+import { DiskStorage } from "@visulima/storage";
+import { Multipart } from "@visulima/storage/handler/http/fetch";
 
 const storage = new DiskStorage({ directory: "./uploads" });
 const multipart = new Multipart({ storage });

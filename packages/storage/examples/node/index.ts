@@ -1,6 +1,7 @@
 import { createServer, IncomingMessage, ServerResponse } from "http";
 import { parse } from "url";
-import { Multipart, DiskStorage } from "@visulima/upload";
+import { DiskStorage } from "@visulima/storage";
+import { Multipart } from "@visulima/storage/handler/http/node";
 import path from "path";
 
 const PORT = process.env.PORT || 3002;

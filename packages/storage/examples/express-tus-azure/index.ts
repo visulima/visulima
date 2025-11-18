@@ -1,7 +1,7 @@
+import type { UploadFile } from "@visulima/storage";
+import { Tus } from "@visulima/storage/handler/http/node";
 import express from "express";
-import type { UploadFile } from "@visulima/upload";
-import { Tus } from "@visulima/upload";
-import { AzureStorage } from "@visulima/upload/provider/azure";
+import { AzureStorage } from "@visulima/storage/provider/azure";
 import Cors from "cors";
 
 const PORT = process.env.PORT || 3002;
@@ -13,7 +13,6 @@ const storage = new AzureStorage({
     onComplete: (file) => {
         const { uri = "unknown", id } = file;
 
-        console.log(`File upload complete, storage path: ${uri}`);
         // send azure link to client
         return { id, link: uri };
     },
@@ -30,12 +29,7 @@ const cors = Cors({
 
 app.use(cors);
 
-app.use("/files", tus.handle, (request, response) => {
-    const file = request.body as UploadFile;
-
-    console.log("File upload complete: ", file.originalName);
-
-    return response.json(file);
-});
+// TUS handler manages the response directly
+app.use("/files", tus.handle);
 
 app.listen(PORT, () => console.log("listening on port:", PORT));

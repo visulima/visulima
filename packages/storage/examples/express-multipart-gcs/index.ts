@@ -1,7 +1,7 @@
+import type { UploadFile } from "@visulima/storage";
+import { Multipart } from "@visulima/storage/handler/http/node";
 import express from "express";
-import type { UploadFile } from "@visulima/upload";
-import { Multipart } from "@visulima/upload";
-import { GCStorage } from "@visulima/upload/provider/gcs";
+import { GCStorage } from "@visulima/storage/provider/gcs";
 import Cors from "cors";
 
 const PORT = process.env.PORT || 3002;
@@ -13,7 +13,6 @@ const storage = new GCStorage({
     onComplete: (file) => {
         const { uri = "unknown", id } = file;
 
-        console.log(`File upload complete, storage path: ${uri}`);
         // send gcs link to client
         return { id, link: uri };
     },
@@ -31,9 +30,7 @@ const cors = Cors({
 app.use(cors);
 
 app.use("/files", multipart.handle, (request, response) => {
-    const file = request.body as UploadFile;
-
-    console.log("File upload complete: ", file.originalName);
+    const file = (request as express.Request & { body: UploadFile }).body;
 
     return response.json(file);
 });

@@ -175,7 +175,6 @@ export const getBaseUrl = (request: IncomingMessage): string => {
     return proto ? `${proto}://${host}` : `//${host}`;
 };
 
-
 /**
  * Extracts the real path from a request URL, excluding query parameters.
  * Prefers originalUrl for Express compatibility.

@@ -100,7 +100,8 @@ curl http://localhost:3002/health
 
 ```ts
 import { createServer } from "http";
-import { Multipart, DiskStorage } from "@visulima/upload";
+import { DiskStorage } from "@visulima/storage";
+import { Multipart } from "@visulima/storage/handler/http/node";
 
 // Single storage and handler instances
 const storage = new DiskStorage({ directory: "./uploads" });
@@ -175,7 +176,8 @@ This example can be easily adapted to work with popular Node.js frameworks:
 
 ```ts
 import express from "express";
-import { Multipart, DiskStorage } from "@visulima/upload";
+import { DiskStorage } from "@visulima/storage";
+import { Multipart } from "@visulima/storage/handler/http/node";
 
 const app = express();
 const multipart = new Multipart({ storage: new DiskStorage({ directory: "./uploads" }) });
@@ -194,7 +196,8 @@ app.use("/files", (req, res) => {
 
 ```ts
 import Fastify from "fastify";
-import { Multipart, DiskStorage } from "@visulima/upload";
+import { DiskStorage } from "@visulima/storage";
+import { Multipart } from "@visulima/storage/handler/http/node";
 
 const fastify = Fastify();
 const multipart = new Multipart({ storage: new DiskStorage({ directory: "./uploads" }) });
@@ -216,7 +219,8 @@ fastify.get("/files", async (request, reply) => {
 
 ```ts
 import Koa from "koa";
-import { Multipart, DiskStorage } from "@visulima/upload";
+import { DiskStorage } from "@visulima/storage";
+import { Multipart } from "@visulima/storage/handler/http/node";
 
 const app = new Koa();
 const multipart = new Multipart({ storage: new DiskStorage({ directory: "./uploads" }) });

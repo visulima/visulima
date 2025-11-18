@@ -101,14 +101,6 @@ export interface ValidationError extends HttpError {
     code: string;
 }
 
-/** Minimal logger interface used by the library. */
-export interface Logger {
-    debug: (...data: unknown[]) => void;
-    error: (...data: unknown[]) => void;
-    info: (...data: unknown[]) => void;
-    warn: (...data: unknown[]) => void;
-}
-
 /**
  * Metrics interface for observability.
  * Provides counters, timers, and gauges for tracking storage operations.

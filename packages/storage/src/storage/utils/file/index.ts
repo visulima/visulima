@@ -2,7 +2,6 @@ export { default as extractMimeType } from "./extract-mime-type";
 export { default as extractOriginalName } from "./extract-original-name";
 export type { UploadFile } from "./file";
 export { default as File } from "./file";
-export { default as FileName } from "./file-name";
 export { default as getFileStatus } from "./get-file-status";
 export { default as hasContent } from "./has-content";
 export { default as isExpired } from "./is-expired";

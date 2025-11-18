@@ -40,7 +40,7 @@ import { createRetryWrapper } from "../../utils/retry";
 import type { HttpError } from "../../utils/types";
 import LocalMetaStorage from "../local/local-meta-storage";
 import type MetaStorage from "../meta-storage";
-import BaseStorage from "../storage";
+import { BaseStorage } from "../storage";
 import type { FileInit, FilePart, FileQuery, FileReturn } from "../utils/file";
 import { getFileStatus, hasContent, isExpired, partMatch, updateSize } from "../utils/file";
 import S3File from "./s3-file";

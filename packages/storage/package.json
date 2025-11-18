@@ -118,17 +118,33 @@
             "types": "./dist/openapi/index.d.ts",
             "import": "./dist/openapi/index.js"
         },
-        "./http/multipart": {
-            "types": "./dist/handler/multipart.d.ts",
-            "import": "./dist/handler/multipart.js"
+        "./handler/http/node": {
+            "types": "./dist/handler/http/node/index.d.ts",
+            "import": "./dist/handler/http/node/index.js"
         },
-        "./http/tus": {
-            "types": "./dist/handler/tus.d.ts",
-            "import": "./dist/handler/tus.js"
+        "./handler/http/fetch": {
+            "types": "./dist/handler/http/fetch/index.d.ts",
+            "import": "./dist/handler/http/fetch/index.js"
         },
-        "./http/rest": {
-            "types": "./dist/handler/rest.d.ts",
-            "import": "./dist/handler/rest.js"
+        "./handler/http/hono": {
+            "types": "./dist/handler/http/fetch/index.d.ts",
+            "import": "./dist/handler/http/fetch/index.js"
+        },
+        "./handler/http/bun": {
+            "types": "./dist/handler/http/fetch/index.d.ts",
+            "import": "./dist/handler/http/fetch/index.js"
+        },
+        "./handler/http/cloudflare": {
+            "types": "./dist/handler/http/fetch/index.d.ts",
+            "import": "./dist/handler/http/fetch/index.js"
+        },
+        "./handler/http/deno": {
+            "types": "./dist/handler/http/fetch/index.d.ts",
+            "import": "./dist/handler/http/fetch/index.js"
+        },
+        "./handler/http/edge": {
+            "types": "./dist/handler/http/fetch/index.d.ts",
+            "import": "./dist/handler/http/fetch/index.js"
         },
         "./transformers/audio": {
             "types": "./dist/transformer/audio-transformer.d.ts",

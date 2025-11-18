@@ -10,7 +10,7 @@ import type { RetryConfig } from "../../utils/retry";
 import { createRetryWrapper } from "../../utils/retry";
 import LocalMetaStorage from "../local/local-meta-storage";
 import type MetaStorage from "../meta-storage";
-import BaseStorage from "../storage";
+import { BaseStorage } from "../storage";
 import type { FileInit, FilePart, FileQuery, FileReturn } from "../utils/file";
 import { getFileStatus, hasContent, partMatch } from "../utils/file";
 import AzureFile from "./azure-file";

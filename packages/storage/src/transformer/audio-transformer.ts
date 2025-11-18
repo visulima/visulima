@@ -12,7 +12,7 @@ import {
     WavOutputFormat,
 } from "mediabunny";
 
-import type BaseStorage from "../storage/storage";
+import type { BaseStorage } from "../storage/storage";
 import type { File, FileQuery, FileReturn } from "../storage/utils/file";
 import BaseTransformer from "./base-transformer";
 import type {

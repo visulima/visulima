@@ -1,4 +1,5 @@
-import { Multipart, DiskStorage } from "@visulima/upload";
+import { DiskStorage } from "@visulima/storage";
+import { Multipart } from "@visulima/storage/handler/http/fetch";
 
 const PORT = parseInt(process.env.PORT || "3002");
 

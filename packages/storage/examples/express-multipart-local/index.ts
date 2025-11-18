@@ -1,13 +1,18 @@
+import type { UploadFile } from "@visulima/storage";
+import { DiskStorage } from "@visulima/storage";
+import { Multipart } from "@visulima/storage/handler/http/node";
 import express from "express";
-import type { UploadFile } from "@visulima/upload";
-import { DiskStorage, Multipart } from "@visulima/upload";
 import Cors from "cors";
 
 const PORT = process.env.PORT || 3002;
 
 const app = express();
 
-const storage = new DiskStorage({ directory: "upload" });
+// Storage configuration
+const storage = new DiskStorage({
+    directory: "./uploads",
+    maxUploadSize: "100MB",
+});
 
 const multipart = new Multipart({ storage });
 
@@ -22,9 +27,7 @@ app.use(cors);
 
 app.use("/files", multipart.handle, async (request, response, next) => {
     try {
-        const file = request.body as UploadFile;
-
-        console.log("File upload complete: ", file.originalName);
+        const file = (request as express.Request & { body: UploadFile }).body;
 
         return response.json(file);
     } catch (error) {
@@ -33,9 +36,8 @@ app.use("/files", multipart.handle, async (request, response, next) => {
 });
 
 app.use((error: Error, _request: express.Request, response: express.Response, _next: express.NextFunction) => {
-    console.error("File upload error:", error);
-
-    return response.status(500).json({ error: "File upload failed" });
+    console.error("Error:", error);
+    response.status(500).json({ error: error.message || "Internal server error" });
 });
 
 app.listen(PORT, () => console.log("listening on port:", PORT));

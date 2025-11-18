@@ -1,6 +1,7 @@
 /* eslint-disable vitest/prefer-spy-on */
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import type { BaseStorage } from "../../src/storage/storage";
 import type { MediaTransformerConfig } from "../../src/transformer";
 import MediaTransformer from "../../src/transformer/media-transformer";
 
@@ -78,7 +79,7 @@ describe(MediaTransformer, () => {
         it("should create transformer with default configuration", () => {
             expect.assertions(1);
 
-            const transformer = new MediaTransformer(mockStorage as import("../../src/storage/storage").BaseStorage, {
+            const transformer = new MediaTransformer(mockStorage as BaseStorage, {
                 ImageTransformer: MockImageTransformer,
             });
 
@@ -97,7 +98,7 @@ describe(MediaTransformer, () => {
                 maxVideoSize: 200 * 1024 * 1024,
             };
 
-            const transformer = new MediaTransformer(mockStorage as import("../../src/storage/storage").BaseStorage, config);
+            const transformer = new MediaTransformer(mockStorage as BaseStorage, config);
 
             expect(transformer).toBeInstanceOf(MediaTransformer);
         });
@@ -107,7 +108,7 @@ describe(MediaTransformer, () => {
         let transformer: MediaTransformer;
 
         beforeEach(() => {
-            transformer = new MediaTransformer(mockStorage as import("../../src/storage/storage").BaseStorage, {
+            transformer = new MediaTransformer(mockStorage as BaseStorage, {
                 ImageTransformer: MockImageTransformer,
             });
         });
@@ -330,7 +331,7 @@ describe(MediaTransformer, () => {
         let transformer: MediaTransformer;
 
         beforeEach(() => {
-            transformer = new MediaTransformer(mockStorage as import("../../src/storage/storage").BaseStorage, {
+            transformer = new MediaTransformer(mockStorage as BaseStorage, {
                 ImageTransformer: MockImageTransformer,
             });
         });

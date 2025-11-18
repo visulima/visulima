@@ -1,7 +1,6 @@
-import type BaseStorage from "../storage/storage";
+import type { BaseStorage } from "../storage/storage";
 import type { File, FileReturn } from "../storage/utils/file";
 import type { Cache } from "../utils/cache";
-import type { Logger } from "../utils/types";
 import type BaseTransformer from "./base-transformer";
 
 /**
@@ -630,7 +629,7 @@ export interface MediaTransformerConfig<TFile extends File = File, TFileReturn e
         config: ImageTransformerConfig,
     ) => BaseTransformer<ImageTransformerConfig, TransformResult<TFileReturn>, TFile, TFileReturn>;
     /** Logger instance */
-    logger?: Logger;
+    logger?: Console;
     /** Maximum audio size to process (in bytes) */
     maxAudioSize?: number;
     /** Maximum image size to process (in bytes) */
@@ -802,7 +801,7 @@ export interface BaseTransformerConfig {
     /** Cache TTL in seconds */
     cacheTtl?: number;
     /** Logger instance */
-    logger?: Logger;
+    logger?: Console;
     /** Maximum number of cached items */
     maxCacheSize?: number;
     /** Supported input formats */

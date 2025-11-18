@@ -98,6 +98,62 @@ const storage = new DiskStorage({
 });
 ```
 
+## Filename Validation
+
+DiskStorage automatically applies filesystem-safe filename validation by default, blocking characters that are incompatible with local filesystems (`"`, `*`, `:`, `<`, `>`, `?`, `\`, `|`, `../`, `\0`).
+
+### Default Validation
+
+```typescript
+// DiskStorage uses strict filesystem validation by default
+const storage = new DiskStorage({
+    directory: "/var/uploads",
+    // Automatically validates filenames for filesystem compatibility
+});
+```
+
+### Custom Validation
+
+Override the default validation with your own rules:
+
+```typescript
+import { defaultFilesystemFileNameValidation } from "@visulima/storage";
+
+const storage = new DiskStorage({
+    directory: "/var/uploads",
+    fileNameValidation: (name: string) => {
+        // Custom validation logic
+        // Return true if valid, false otherwise
+        if (name.length < 3 || name.length > 255) {
+            return false;
+        }
+        
+        // Block specific patterns
+        if (name.includes("../") || name.includes("\0")) {
+            return false;
+        }
+        
+        // Your custom rules here
+        return !name.includes("forbidden");
+    },
+});
+```
+
+### Cloud Storage Validation
+
+Cloud storage platforms (S3, Azure, GCS) use more permissive validation by default, only blocking dangerous patterns like path traversal (`../`) and null bytes (`\0`). They accept most special characters since cloud storage handles URL encoding automatically.
+
+```typescript
+import { S3Storage, defaultCloudStorageFileNameValidation } from "@visulima/storage";
+
+const storage = new S3Storage({
+    bucket: "my-bucket",
+    // Uses permissive validation by default
+    // Or explicitly set:
+    fileNameValidation: defaultCloudStorageFileNameValidation,
+});
+```
+
 ## Directory Structure
 
 ```typescript
