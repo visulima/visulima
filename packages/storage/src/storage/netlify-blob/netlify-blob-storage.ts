@@ -24,6 +24,15 @@ import type { NetlifyBlobStorageOptions } from "./types";
  *   metaStorageConfig: { directory: '/tmp/upload-metafiles' }
  * });
  * ```
+ * @remarks
+ * ## Supported Operations
+ * - ✅ create, write, delete, get, list, copy, move
+ * - ✅ Batch operations: deleteBatch, copyBatch, moveBatch (inherited from BaseStorage)
+ * - ❌ exists: Not implemented (use get() and catch FILE_NOT_FOUND error)
+ * - ❌ getStream: Not implemented (use get() for file retrieval)
+ * - ❌ update: Not implemented (Netlify Blob API doesn't support metadata updates)
+ * - ❌ getUrl: Not implemented (Netlify Blob URLs available via Netlify Blob API)
+ * - ❌ getUploadUrl: Not implemented (Netlify Blob upload URLs handled internally)
  */
 class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile, FileReturn> {
     public static override readonly name: string = "netlify-blob";

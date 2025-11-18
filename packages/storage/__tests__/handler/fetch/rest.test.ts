@@ -56,8 +56,22 @@ describe("fetch Rest", () => {
             expect.assertions(2);
 
             const directory = temporaryDirectory();
-            const storage = new DiskStorage({ ...storageOptions, directory });
-            const restHandler = new Rest({ storage });
+            const logger = {
+                debug: (...args: unknown[]) => {
+                    console.log("[DEBUG]", ...args);
+                },
+                error: (...args: unknown[]) => {
+                    console.error("[ERROR]", ...args);
+                },
+                info: (...args: unknown[]) => {
+                    console.log("[INFO]", ...args);
+                },
+                warn: (...args: unknown[]) => {
+                    console.warn("[WARN]", ...args);
+                },
+            };
+            const storage = new DiskStorage({ ...storageOptions, directory, logger });
+            const restHandler = new Rest({ storage, logger });
 
             await waitForStorageReady(storage);
 
@@ -74,7 +88,20 @@ describe("fetch Rest", () => {
             });
 
             const response = await restHandler.fetch(request);
-            const body = await response.json();
+            const responseText = await response.text();
+            console.log("[TEST] Response status:", response.status);
+            console.log("[TEST] Response text:", responseText);
+            console.log("[TEST] Response headers:", Object.fromEntries(response.headers.entries()));
+
+            let body;
+            try {
+                body = JSON.parse(responseText);
+                console.log("[TEST] Parsed body:", body);
+            } catch (error) {
+                console.error("[TEST] JSON parse error:", error);
+                console.error("[TEST] Response text was:", responseText);
+                throw error;
+            }
 
             expect(response.status).toBe(201);
             expect(body.originalName).toBe(testfile.name);
