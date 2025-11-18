@@ -1,9 +1,12 @@
 import { createQuery } from "@tanstack/svelte-query";
-import { derived, get, type Readable } from "svelte/store";
+import type { Readable } from "svelte/store";
+import { derived, get } from "svelte/store";
 
 import { buildUrl, fetchHead, storageQueryKeys } from "../core";
 
 export interface FileHeadMetadata {
+    /** Whether this is a chunked upload session */
+    chunkedUpload?: boolean;
     /** Content length in bytes */
     contentLength?: number;
     /** Content type */
@@ -12,34 +15,32 @@ export interface FileHeadMetadata {
     etag?: string;
     /** Last modified date */
     lastModified?: string;
+    /** Received chunk offsets (chunked uploads) */
+    receivedChunks?: number[];
+    /** Whether upload is complete (chunked uploads) */
+    uploadComplete?: boolean;
     /** Upload expiration date */
     uploadExpires?: string;
     /** Upload offset for chunked uploads */
     uploadOffset?: number;
-    /** Whether upload is complete (chunked uploads) */
-    uploadComplete?: boolean;
-    /** Whether this is a chunked upload session */
-    chunkedUpload?: boolean;
-    /** Received chunk offsets (chunked uploads) */
-    receivedChunks?: number[];
 }
 
 export interface CreateHeadFileOptions {
+    /** Whether to enable the query */
+    enabled?: Readable<boolean> | boolean;
     /** Base endpoint URL for file operations */
     endpoint: string;
     /** File ID to fetch metadata for */
     id: Readable<string> | string;
-    /** Whether to enable the query */
-    enabled?: Readable<boolean> | boolean;
 }
 
 export interface CreateHeadFileReturn {
+    /** File metadata from HEAD request */
+    data: Readable<FileHeadMetadata | undefined>;
     /** Last request error, if any */
     error: Readable<Error | null>;
     /** Whether a request is currently in progress */
     isLoading: Readable<boolean>;
-    /** File metadata from HEAD request */
-    data: Readable<FileHeadMetadata | undefined>;
     /** Refetch the file metadata */
     refetch: () => void;
 }
@@ -51,7 +52,7 @@ export interface CreateHeadFileReturn {
  * @returns File HEAD request functions and state stores
  */
 export const createHeadFile = (options: CreateHeadFileOptions): CreateHeadFileReturn => {
-    const { endpoint, id, enabled = true } = options;
+    const { enabled = true, endpoint, id } = options;
 
     const idStore: Readable<string> = typeof id === "object" && "subscribe" in id ? id : derived([], () => id as string);
     const enabledStore: Readable<boolean> = typeof enabled === "object" && "subscribe" in enabled ? enabled : derived([], () => enabled as boolean);
@@ -134,4 +135,3 @@ export const createHeadFile = (options: CreateHeadFileOptions): CreateHeadFileRe
         },
     };
 };
-

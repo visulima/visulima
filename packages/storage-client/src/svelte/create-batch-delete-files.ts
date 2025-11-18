@@ -1,6 +1,6 @@
-import { createMutation } from "@tanstack/svelte-query";
-import { useQueryClient } from "@tanstack/svelte-query";
-import { derived, type Readable } from "svelte/store";
+import { createMutation, useQueryClient } from "@tanstack/svelte-query";
+import type { Readable } from "svelte/store";
+import { derived } from "svelte/store";
 
 import { buildUrl, storageQueryKeys } from "../core";
 
@@ -38,54 +38,59 @@ export const createBatchDeleteFiles = (options: CreateBatchDeleteFilesOptions): 
     const { endpoint } = options;
     const queryClient = useQueryClient();
 
-    const mutation = createMutation(() => ({
-        mutationFn: async (ids: string[]): Promise<BatchDeleteResult> => {
-            const url = new URL(endpoint.endsWith("/") ? endpoint.slice(0, -1) : endpoint);
-            url.searchParams.append("ids", ids.join(","));
+    const mutation = createMutation(() => {
+        return {
+            mutationFn: async (ids: string[]): Promise<BatchDeleteResult> => {
+                const url = new URL(endpoint.endsWith("/") ? endpoint.slice(0, -1) : endpoint);
 
-            const response = await fetch(url.toString(), {
-                method: "DELETE",
-            });
+                url.searchParams.append("ids", ids.join(","));
 
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({
-                    error: {
-                        code: "RequestFailed",
-                        message: response.statusText,
-                    },
-                }));
+                const response = await fetch(url.toString(), {
+                    method: "DELETE",
+                });
 
-                throw new Error(errorData.error?.message || `Failed to batch delete files: ${response.status} ${response.statusText}`);
-            }
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => {
+                        return {
+                            error: {
+                                code: "RequestFailed",
+                                message: response.statusText,
+                            },
+                        };
+                    });
 
-            // Extract batch delete results from headers (if available)
-            const successfulHeader = response.headers.get("X-Delete-Successful");
-            const failedHeader = response.headers.get("X-Delete-Failed");
+                    throw new Error(errorData.error?.message || `Failed to batch delete files: ${response.status} ${response.statusText}`);
+                }
 
-            const result: BatchDeleteResult = {
-                failed: failedHeader ? Number.parseInt(failedHeader, 10) : undefined,
-                successful: successfulHeader ? Number.parseInt(successfulHeader, 10) : undefined,
-            };
+                // Extract batch delete results from headers (if available)
+                const successfulHeader = response.headers.get("X-Delete-Successful");
+                const failedHeader = response.headers.get("X-Delete-Failed");
 
-            // If no headers, assume all succeeded for 204, or check 207 status
-            if (response.status === 204) {
-                result.successful = ids.length;
-                result.failed = 0;
-            }
+                const result: BatchDeleteResult = {
+                    failed: failedHeader ? Number.parseInt(failedHeader, 10) : undefined,
+                    successful: successfulHeader ? Number.parseInt(successfulHeader, 10) : undefined,
+                };
 
-            return result;
-        },
-        onSuccess: (result, ids) => {
+                // If no headers, assume all succeeded for 204, or check 207 status
+                if (response.status === 204) {
+                    result.successful = ids.length;
+                    result.failed = 0;
+                }
+
+                return result;
+            },
+            onSuccess: (result, ids) => {
             // Invalidate all file-related queries
-            queryClient.invalidateQueries({ queryKey: storageQueryKeys.files.all });
-            // Remove queries for deleted files
-            ids.forEach((id) => {
-                queryClient.removeQueries({ queryKey: storageQueryKeys.files.detail(id) });
-                queryClient.removeQueries({ queryKey: storageQueryKeys.files.meta(id) });
-                queryClient.removeQueries({ queryKey: storageQueryKeys.files.head(id) });
-            });
-        },
-    }));
+                queryClient.invalidateQueries({ queryKey: storageQueryKeys.files.all });
+                // Remove queries for deleted files
+                ids.forEach((id) => {
+                    queryClient.removeQueries({ queryKey: storageQueryKeys.files.detail(id) });
+                    queryClient.removeQueries({ queryKey: storageQueryKeys.files.meta(id) });
+                    queryClient.removeQueries({ queryKey: storageQueryKeys.files.head(id) });
+                });
+            },
+        };
+    });
 
     return {
         batchDeleteFiles: mutation.mutateAsync,
@@ -94,4 +99,3 @@ export const createBatchDeleteFiles = (options: CreateBatchDeleteFilesOptions): 
         reset: mutation.reset,
     };
 };
-

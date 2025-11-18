@@ -1,5 +1,6 @@
 import { createQuery } from "@tanstack/svelte-query";
-import { derived, get, type Readable } from "svelte/store";
+import type { Readable } from "svelte/store";
+import { derived, get } from "svelte/store";
 
 import { buildUrl, fetchJson, storageQueryKeys } from "../core";
 import type { FileMeta } from "../react/types";
@@ -20,21 +21,21 @@ export interface FileListResponse {
 }
 
 export interface CreateGetFileListOptions {
+    /** Whether to enable the query */
+    enabled?: Readable<boolean> | boolean;
     /** Base endpoint URL for file operations */
     endpoint: string;
     /** Maximum number of elements to retrieve */
     limit?: Readable<number> | number;
     /** Page number for pagination */
     page?: Readable<number> | number;
-    /** Whether to enable the query */
-    enabled?: Readable<boolean> | boolean;
 }
 
 export interface CreateGetFileListReturn {
-    /** Last request error, if any */
-    error: Readable<Error | null>;
     /** File list data */
     data: Readable<FileListResponse | undefined>;
+    /** Last request error, if any */
+    error: Readable<Error | null>;
     /** Whether a request is currently in progress */
     isLoading: Readable<boolean>;
     /** Refetch the file list */
@@ -48,7 +49,7 @@ export interface CreateGetFileListReturn {
  * @returns File list fetching functions and state stores
  */
 export const createGetFileList = (options: CreateGetFileListOptions): CreateGetFileListReturn => {
-    const { endpoint, limit, page, enabled = true } = options;
+    const { enabled = true, endpoint, limit, page } = options;
 
     const limitStore: Readable<number | undefined> = typeof limit === "object" && "subscribe" in limit ? limit : derived([], () => limit);
     const pageStore: Readable<number | undefined> = typeof page === "object" && "subscribe" in page ? page : derived([], () => page);
@@ -69,9 +70,9 @@ export const createGetFileList = (options: CreateGetFileListOptions): CreateGetF
                 return Array.isArray(data)
                     ? { data }
                     : {
-                          data: data.data || (data as unknown as FileMeta[]),
-                          meta: (data as FileListResponse).meta,
-                      };
+                        data: data.data || (data as unknown as FileMeta[]),
+                        meta: (data as FileListResponse).meta,
+                    };
             },
             queryKey: storageQueryKeys.files.list({ limit: currentLimit, page: currentPage }),
         };
@@ -86,4 +87,3 @@ export const createGetFileList = (options: CreateGetFileListOptions): CreateGetF
         },
     };
 };
-

@@ -314,12 +314,12 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
          */
         clear: () => {
             uploadState = {
+                abortController: undefined,
                 aborted: false,
                 paused: false,
                 totalSize: 0,
                 uploadedChunks: new Set(),
             };
-            uploadState.abortController = undefined;
         },
 
         /**

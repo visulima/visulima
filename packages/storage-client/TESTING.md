@@ -17,6 +17,7 @@ This guide provides comprehensive testing strategies for all TanStack Query hook
 ### Prerequisites
 
 All frameworks require:
+
 - `vitest` for test runner
 - Framework-specific testing utilities
 - Mock implementations for `fetch` and `XMLHttpRequest`
@@ -37,8 +38,9 @@ Each framework has its own test utilities located in `src/{framework}/__tests__/
 ```typescript
 import { QueryClient } from "@tanstack/react-query";
 import { waitFor } from "@testing-library/react";
-import { renderHookWithQueryClient } from "./test-utils";
+
 import { useGetFile } from "../use-get-file";
+import { renderHookWithQueryClient } from "./test-utils";
 
 describe("useGetFile", () => {
     let queryClient: QueryClient;
@@ -46,8 +48,8 @@ describe("useGetFile", () => {
     beforeEach(() => {
         queryClient = new QueryClient({
             defaultOptions: {
-                queries: { retry: false },
                 mutations: { retry: false },
+                queries: { retry: false },
             },
         });
         globalThis.fetch = vi.fn();
@@ -55,19 +57,20 @@ describe("useGetFile", () => {
 
     it("should fetch file successfully", async () => {
         const mockBlob = new Blob(["test"], { type: "image/jpeg" });
-        
+
         mockFetch.mockResolvedValueOnce({
-            ok: true,
             blob: () => Promise.resolve(mockBlob),
             headers: new Headers({ "Content-Type": "image/jpeg" }),
+            ok: true,
         });
 
         const { result } = renderHookWithQueryClient(
-            () => useGetFile({
-                endpoint: "https://api.example.com",
-                id: "file-123",
-            }),
-            { queryClient }
+            () =>
+                useGetFile({
+                    endpoint: "https://api.example.com",
+                    id: "file-123",
+                }),
+            { queryClient },
         );
 
         await waitFor(() => {
@@ -92,25 +95,24 @@ describe("useGetFile", () => {
 
 ```typescript
 import { createSignal } from "solid-js";
-import { runInQueryClientRoot } from "./test-utils";
+
 import { createGetFile } from "../create-get-file";
+import { runInQueryClientRoot } from "./test-utils";
 
 describe("createGetFile", () => {
     it("should fetch file successfully", async () => {
         const mockBlob = new Blob(["test"], { type: "image/jpeg" });
-        
+
         mockFetch.mockResolvedValueOnce({
-            ok: true,
             blob: () => Promise.resolve(mockBlob),
             headers: new Headers({ "Content-Type": "image/jpeg" }),
+            ok: true,
         });
 
-        const result = runInQueryClientRoot(() => {
-            return createGetFile({
-                endpoint: "https://api.example.com",
-                id: "file-123",
-            });
-        });
+        const result = runInQueryClientRoot(() => createGetFile({
+            endpoint: "https://api.example.com",
+            id: "file-123",
+        }));
 
         await new Promise((resolve) => setTimeout(resolve, 100));
 
@@ -119,13 +121,11 @@ describe("createGetFile", () => {
 
     it("should handle reactive id changes", async () => {
         const [id, setId] = createSignal("file-123");
-        
-        const result = runInQueryClientRoot(() => {
-            return createGetFile({
-                endpoint: "https://api.example.com",
-                id,
-            });
-        });
+
+        const result = runInQueryClientRoot(() => createGetFile({
+            endpoint: "https://api.example.com",
+            id,
+        }));
 
         // Test initial fetch
         await new Promise((resolve) => setTimeout(resolve, 100));
@@ -151,17 +151,18 @@ describe("createGetFile", () => {
 
 ```typescript
 import { writable } from "svelte/store";
+
 import { createGetFile } from "../create-get-file";
 import { getStoreValue, waitForStore } from "./test-utils";
 
 describe("createGetFile", () => {
     it("should fetch file successfully", async () => {
         const mockBlob = new Blob(["test"], { type: "image/jpeg" });
-        
+
         mockFetch.mockResolvedValueOnce({
-            ok: true,
             blob: () => Promise.resolve(mockBlob),
             headers: new Headers({ "Content-Type": "image/jpeg" }),
+            ok: true,
         });
 
         const result = createGetFile({
@@ -176,7 +177,7 @@ describe("createGetFile", () => {
 
     it("should handle reactive store changes", async () => {
         const id = writable("file-123");
-        
+
         const result = createGetFile({
             endpoint: "https://api.example.com",
             id,
@@ -204,24 +205,25 @@ describe("createGetFile", () => {
 
 ```typescript
 import { ref } from "vue";
+
 import { useGetFile } from "../use-get-file";
 import { withQueryClient } from "./test-utils";
 
 describe("useGetFile", () => {
     it("should fetch file successfully", async () => {
         const mockBlob = new Blob(["test"], { type: "image/jpeg" });
-        
+
         mockFetch.mockResolvedValueOnce({
-            ok: true,
             blob: () => Promise.resolve(mockBlob),
             headers: new Headers({ "Content-Type": "image/jpeg" }),
+            ok: true,
         });
 
-        const { result } = withQueryClient(
-            () => useGetFile({
+        const { result } = withQueryClient(() =>
+            useGetFile({
                 endpoint: "https://api.example.com",
                 id: "file-123",
-            })
+            }),
         );
 
         await new Promise((resolve) => setTimeout(resolve, 100));
@@ -232,12 +234,12 @@ describe("useGetFile", () => {
 
     it("should handle reactive ref changes", async () => {
         const id = ref("file-123");
-        
-        const { result } = withQueryClient(
-            () => useGetFile({
+
+        const { result } = withQueryClient(() =>
+            useGetFile({
                 endpoint: "https://api.example.com",
                 id,
-            })
+            }),
         );
 
         await new Promise((resolve) => setTimeout(resolve, 100));
@@ -261,6 +263,7 @@ describe("useGetFile", () => {
 ### 1. Testing Query Hooks
 
 **What to test:**
+
 - ✅ Successful data fetching
 - ✅ Error handling
 - ✅ Loading states
@@ -272,6 +275,7 @@ describe("useGetFile", () => {
 ### 2. Testing Mutation Hooks
 
 **What to test:**
+
 - ✅ Successful mutations
 - ✅ Error handling
 - ✅ Loading/pending states
@@ -285,13 +289,14 @@ describe("useGetFile", () => {
 ```typescript
 // Mock fetch for queries
 const mockFetch = vi.fn();
+
 globalThis.fetch = mockFetch;
 
 mockFetch.mockResolvedValueOnce({
-    ok: true,
-    json: () => Promise.resolve({ data: "test" }),
     blob: () => Promise.resolve(new Blob(["test"])),
     headers: new Headers({ "Content-Type": "application/json" }),
+    json: () => Promise.resolve({ data: "test" }),
+    ok: true,
 });
 
 // Mock XMLHttpRequest for uploads with progress
@@ -313,11 +318,8 @@ class MockXMLHttpRequest {
 ```typescript
 it("should invalidate queries on mutation success", async () => {
     const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");
-    
-    const { result } = renderHookWithQueryClient(
-        () => usePutFile({ endpoint: "https://api.example.com" }),
-        { queryClient }
-    );
+
+    const { result } = renderHookWithQueryClient(() => usePutFile({ endpoint: "https://api.example.com" }), { queryClient });
 
     await result.current.putFile("file-123", file);
 
@@ -352,6 +354,7 @@ it("should invalidate queries on mutation success", async () => {
 ### 4. Coverage Goals
 
 Aim for 100% coverage of:
+
 - ✅ All hook return values
 - ✅ All error paths
 - ✅ All conditional logic
@@ -361,21 +364,25 @@ Aim for 100% coverage of:
 ### 5. Framework-Specific Considerations
 
 **React:**
+
 - Test hooks with `renderHook`
 - Use `waitFor` for async state
 - Test callbacks with `useEffect`
 
 **Solid:**
+
 - Always use `createRoot`
 - Test signal reactivity
 - Use accessor functions to read values
 
 **Svelte:**
+
 - Test store reactivity
 - Use helper functions for store operations
 - Verify derived stores update correctly
 
 **Vue:**
+
 - Mount components for composables
 - Test ref reactivity
 - Use `.value` to access refs
@@ -399,9 +406,9 @@ pnpm test:ui
 ## Example Test Files
 
 See the following example test files:
+
 - `src/react/__tests__/use-get-file.test.ts` - React query hook
 - `src/react/__tests__/use-put-file.test.ts` - React mutation hook
 - `src/solid/__tests__/create-get-file.test.ts` - Solid query hook
 - `src/svelte/__tests__/create-get-file.test.ts` - Svelte query hook
 - `src/vue/__tests__/use-get-file.test.ts` - Vue query hook
-

@@ -32,6 +32,7 @@ export const useDeleteFile = (options: UseDeleteFileOptions): UseDeleteFileRetur
     const mutation = useMutation({
         mutationFn: async (id: string): Promise<void> => {
             const url = buildUrl(endpoint, id);
+
             await deleteRequest(url);
         },
         onSuccess: (_data, id) => {
@@ -50,4 +51,3 @@ export const useDeleteFile = (options: UseDeleteFileOptions): UseDeleteFileRetur
         reset: mutation.reset,
     };
 };
-

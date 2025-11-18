@@ -4,42 +4,42 @@ import { buildUrl, extractFileMetaFromHeaders, fetchFile, storageQueryKeys } fro
 import type { FileMeta } from "./types";
 
 export interface TransformOptions {
+    /** Additional transformation parameters */
+    [key: string]: string | number | boolean | undefined;
+    /** Resize fit mode */
+    fit?: "cover" | "contain" | "fill" | "inside" | "outside";
     /** Output format (jpeg, png, webp, etc.) */
     format?: string;
+    /** Desired height in pixels */
+    height?: number;
     /** Quality setting (0-100) */
     quality?: number;
     /** Desired width in pixels */
     width?: number;
-    /** Desired height in pixels */
-    height?: number;
-    /** Resize fit mode */
-    fit?: "cover" | "contain" | "fill" | "inside" | "outside";
-    /** Additional transformation parameters */
-    [key: string]: string | number | boolean | undefined;
 }
 
 export interface UseTransformFileOptions {
+    /** Whether to enable the query */
+    enabled?: boolean;
     /** Base endpoint URL for transform operations */
     endpoint: string;
     /** File ID to transform */
     id: string;
-    /** Transformation parameters */
-    transform: TransformOptions;
-    /** Whether to enable the query */
-    enabled?: boolean;
     /** Callback when request fails */
     onError?: (error: Error) => void;
     /** Callback when request succeeds */
     onSuccess?: (data: Blob, meta: FileMeta | null) => void;
+    /** Transformation parameters */
+    transform: TransformOptions;
 }
 
 export interface UseTransformFileReturn {
+    /** Transformed file data as Blob */
+    data: Blob | undefined;
     /** Last request error, if any */
     error: Error | null;
     /** Whether a request is currently in progress */
     isLoading: boolean;
-    /** Transformed file data as Blob */
-    data: Blob | undefined;
     /** File metadata from response headers */
     meta: FileMeta | null;
     /** Refetch the transformed file */
@@ -53,7 +53,7 @@ export interface UseTransformFileReturn {
  * @returns Transform file fetching functions and state
  */
 export const useTransformFile = (options: UseTransformFileOptions): UseTransformFileReturn => {
-    const { endpoint, id, transform, enabled = true, onError, onSuccess } = options;
+    const { enabled = true, endpoint, id, onError, onSuccess, transform } = options;
 
     const query = useQuery({
         enabled: enabled && !!id && !!transform,
@@ -64,12 +64,14 @@ export const useTransformFile = (options: UseTransformFileOptions): UseTransform
             });
 
             if (!response.ok) {
-                const errorData = await response.json().catch(() => ({
-                    error: {
-                        code: "RequestFailed",
-                        message: response.statusText,
-                    },
-                }));
+                const errorData = await response.json().catch(() => {
+                    return {
+                        error: {
+                            code: "RequestFailed",
+                            message: response.statusText,
+                        },
+                    };
+                });
 
                 throw new Error(errorData.error?.message || `Failed to get transformed file: ${response.status} ${response.statusText}`);
             }

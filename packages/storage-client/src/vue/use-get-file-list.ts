@@ -21,21 +21,21 @@ export interface FileListResponse {
 }
 
 export interface UseGetFileListOptions {
+    /** Whether to enable the query */
+    enabled?: MaybeRefOrGetter<boolean>;
     /** Base endpoint URL for file operations */
     endpoint: string;
     /** Maximum number of elements to retrieve */
     limit?: MaybeRefOrGetter<number | undefined>;
     /** Page number for pagination */
     page?: MaybeRefOrGetter<number | undefined>;
-    /** Whether to enable the query */
-    enabled?: MaybeRefOrGetter<boolean>;
 }
 
 export interface UseGetFileListReturn {
-    /** Last request error, if any */
-    error: Readonly<Ref<Error | null>>;
     /** File list data */
     data: Readonly<Ref<FileListResponse | undefined>>;
+    /** Last request error, if any */
+    error: Readonly<Ref<Error | null>>;
     /** Whether a request is currently in progress */
     isLoading: Readonly<Ref<boolean>>;
     /** Refetch the file list */
@@ -49,7 +49,7 @@ export interface UseGetFileListReturn {
  * @returns File list fetching functions and state
  */
 export const useGetFileList = (options: UseGetFileListOptions): UseGetFileListReturn => {
-    const { endpoint, limit, page, enabled = true } = options;
+    const { enabled = true, endpoint, limit, page } = options;
 
     const query = useQuery({
         enabled: computed(() => toValue(enabled)),
@@ -61,9 +61,9 @@ export const useGetFileList = (options: UseGetFileListOptions): UseGetFileListRe
             return Array.isArray(data)
                 ? { data }
                 : {
-                      data: data.data || (data as unknown as FileMeta[]),
-                      meta: (data as FileListResponse).meta,
-                  };
+                    data: data.data || (data as unknown as FileMeta[]),
+                    meta: (data as FileListResponse).meta,
+                };
         },
         queryKey: computed(() => storageQueryKeys.files.list({ limit: toValue(limit), page: toValue(page) })),
     });
@@ -77,4 +77,3 @@ export const useGetFileList = (options: UseGetFileListOptions): UseGetFileListRe
         },
     };
 };
-
