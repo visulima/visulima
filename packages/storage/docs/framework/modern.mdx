@@ -20,6 +20,19 @@ pnpm add @visulima/storage
 
 Modern frameworks that use the Web Fetch API can take advantage of the `fetch()` method, which provides native Web API Request/Response support without conversion layers.
 
+## Handler Import Paths
+
+Visulima Storage provides framework-specific import paths for convenience. All of these paths export the same handlers (`Multipart`, `Rest`, `Tus`) - they're aliases that make it clear which framework you're targeting:
+
+- **`@visulima/storage/handler/http/fetch`** - Generic Web API (works everywhere)
+- **`@visulima/storage/handler/http/hono`** - Hono framework (alias for fetch)
+- **`@visulima/storage/handler/http/bun`** - Bun runtime (alias for fetch)
+- **`@visulima/storage/handler/http/cloudflare`** - Cloudflare Workers (alias for fetch)
+- **`@visulima/storage/handler/http/deno`** - Deno runtime (alias for fetch)
+- **`@visulima/storage/handler/http/edge`** - Edge runtimes (Vercel, Netlify) (alias for fetch)
+
+> **Note**: All framework-specific paths are aliases to `./handler/http/fetch`. Use the framework-specific path for clarity, or use the generic `fetch` path - both work identically.
+
 ## Choosing the Right Handler
 
 - **Multipart**: Use for traditional web form uploads (`multipart/form-data`)
@@ -29,6 +42,16 @@ Modern frameworks that use the Web Fetch API can take advantage of the `fetch()`
 ## Hono
 
 Hono is a fast, lightweight web framework for Node runtimes and Web API environments.
+
+### Using Framework-Specific Import
+
+```ts
+import { Hono } from "hono";
+import { DiskStorage } from "@visulima/storage";
+import { Multipart } from "@visulima/storage/handler/http/hono";
+```
+
+### Using Generic Fetch Import
 
 ```ts
 import { Hono } from "hono";
@@ -75,9 +98,45 @@ export default app;
 
 Cloudflare Workers do not provide a writable filesystem. `DiskStorage` is not supported. Use a remote/object storage adapter suitable for Workers (e.g., R2) or proxy uploads to a Node server using supported adapters (S3, GCS, Azure, local disk). When running Hono on Workers, prefer storage backends that operate over HTTP APIs instead of local disk.
 
+### Using Framework-Specific Import
+
+```ts
+import { S3Storage } from "@visulima/storage/provider/aws";
+import { Multipart } from "@visulima/storage/handler/http/cloudflare";
+
+const storage = new S3Storage({
+    bucket: "my-bucket",
+    region: "us-east-1",
+});
+
+const multipart = new Multipart({ storage });
+
+export default {
+    async fetch(request: Request): Promise<Response> {
+        return await multipart.fetch(request);
+    },
+};
+```
+
+### Using Generic Fetch Import
+
+```ts
+import { S3Storage } from "@visulima/storage/provider/aws";
+import { Multipart } from "@visulima/storage/handler/http/fetch";
+```
+
 ## Deno
 
 Deno provides native TypeScript support and Web API compatibility.
+
+### Using Framework-Specific Import
+
+```ts
+import { DiskStorage } from "npm:@visulima/storage";
+import { Multipart } from "npm:@visulima/storage/handler/http/deno";
+```
+
+### Using Generic Fetch Import
 
 ```ts
 import { DiskStorage } from "npm:@visulima/storage";
@@ -116,6 +175,15 @@ Deno.serve(async (request: Request) => {
 ## Bun
 
 Bun is a fast JavaScript runtime with Web API support.
+
+### Using Framework-Specific Import
+
+```ts
+import { DiskStorage } from "@visulima/storage";
+import { Multipart } from "@visulima/storage/handler/http/bun";
+```
+
+### Using Generic Fetch Import
 
 ```ts
 import { DiskStorage } from "@visulima/storage";
@@ -353,15 +421,41 @@ If you expose HTTP endpoints, you can generate OpenAPI specs for both multipart 
 4. **Handle large files**: Configure appropriate limits for your use case
 5. **Monitor errors**: Log and monitor upload errors for debugging
 
+## Edge Functions
+
+For Vercel Edge Functions and Netlify Edge Functions, use the edge-specific import path:
+
+```ts
+import { S3Storage } from "@visulima/storage/provider/aws";
+import { Multipart } from "@visulima/storage/handler/http/edge";
+
+const storage = new S3Storage({
+    bucket: "my-bucket",
+    region: "us-east-1",
+});
+
+const multipart = new Multipart({ storage });
+
+export const config = {
+    runtime: "edge",
+};
+
+export default async function handler(request: Request) {
+    return await multipart.fetch(request);
+}
+```
+
 ## Supported Frameworks
 
 The `fetch` method works with any framework or runtime that supports the Web Fetch API:
 
-- **Hono** - Lightweight web framework
-- **Cloudflare Workers** - Serverless functions
-- **Deno** - Secure runtime
-- **Bun** - Fast JavaScript runtime
-- **Next.js 15+** - With Web API support
-- **Vercel Edge Functions** - Serverless edge functions
-- **Netlify Edge Functions** - Serverless edge functions
-- **Any Web API compatible environment**
+- **Hono** - Lightweight web framework (use `/handler/http/hono`)
+- **Cloudflare Workers** - Serverless functions (use `/handler/http/cloudflare`)
+- **Deno** - Secure runtime (use `/handler/http/deno`)
+- **Bun** - Fast JavaScript runtime (use `/handler/http/bun`)
+- **Next.js 15+** - With Web API support (use `/handler/http/fetch` or `/handler/http/edge`)
+- **Vercel Edge Functions** - Serverless edge functions (use `/handler/http/edge`)
+- **Netlify Edge Functions** - Serverless edge functions (use `/handler/http/edge`)
+- **Any Web API compatible environment** (use `/handler/http/fetch`)
+
+> **Tip**: While all framework-specific paths work identically, using the appropriate path makes your code more self-documenting and helps with IDE autocomplete and type checking.

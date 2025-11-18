@@ -1,0 +1,521 @@
+# Custom Storage Backends
+
+Create custom storage backends by extending `AbstractBaseStorage` (exported as `BaseStorage`) or implementing custom `MetaStorage` for advanced use cases.
+
+## Overview
+
+Visulima Storage provides two base classes for customization:
+
+- **`AbstractBaseStorage`** - Base class for creating custom storage backends
+- **`MetaStorage`** - Base class for custom metadata storage implementations
+
+## Creating a Custom Storage Backend
+
+### Extending AbstractBaseStorage
+
+Create a custom storage backend by extending `AbstractBaseStorage`:
+
+```typescript
+import { AbstractBaseStorage } from "@visulima/storage";
+import type { File, FileInit, FilePart, FileQuery, FileReturn } from "@visulima/storage";
+
+interface MyStorageOptions {
+    apiKey: string;
+    endpoint: string;
+}
+
+class MyCustomStorage extends AbstractBaseStorage<File, FileReturn> {
+    public static override readonly name: string = "my-custom-storage";
+
+    private readonly apiKey: string;
+    private readonly endpoint: string;
+
+    public constructor(config: MyStorageOptions) {
+        super({
+            maxUploadSize: "100MB",
+            allowMIME: ["*/*"],
+            // ... other BaseStorageOptions
+        });
+
+        this.apiKey = config.apiKey;
+        this.endpoint = config.endpoint;
+    }
+
+    // Implement required abstract methods
+    public override async create(config: FileInit): Promise<File> {
+        // Create file in your storage system
+        const file = await this.createFile(config);
+        
+        // Save metadata
+        await this.meta.save(file.id, file);
+        
+        // Call onCreate hook
+        await this.onCreate(file);
+        
+        return file;
+    }
+
+    public override async write(part: FilePart | FileQuery): Promise<File> {
+        // Write file data to your storage system
+        const file = await this.writeFile(part);
+        
+        // Update metadata
+        await this.meta.save(file.id, file);
+        
+        // Call onUpdate hook
+        await this.onUpdate(file);
+        
+        return file;
+    }
+
+    public override async get(query: FileQuery): Promise<FileReturn> {
+        // Retrieve file from your storage system
+        const file = await this.getFile(query.id);
+        
+        return {
+            ...file,
+            stream: await this.getFileStream(query.id),
+        };
+    }
+
+    public override async delete(query: FileQuery): Promise<File> {
+        // Delete file from your storage system
+        await this.deleteFile(query.id);
+        
+        // Delete metadata
+        await this.meta.delete(query.id);
+        
+        // Call onDelete hook
+        const file = await this.meta.get(query.id);
+        await this.onDelete(file);
+        
+        return file;
+    }
+
+    // Implement other required methods...
+    // - list()
+    // - update()
+    // - copy()
+    // - move()
+    // - exists()
+    // - normalizeError()
+}
+```
+
+### Required Methods
+
+When extending `AbstractBaseStorage`, you must implement:
+
+#### Core Operations
+
+- **`create(config: FileInit): Promise<File>`** - Create a new file upload
+- **`write(part: FilePart | FileQuery): Promise<File>`** - Write file data
+- **`get(query: FileQuery): Promise<FileReturn>`** - Retrieve file and metadata
+- **`delete(query: FileQuery): Promise<File>`** - Delete a file
+- **`list(limit?: number): Promise<File[]>`** - List files
+- **`update(query: FileQuery, metadata: Partial<File>): Promise<File>`** - Update file metadata
+
+#### Optional Operations
+
+- **`copy(source: string, destination: string, options?: { storageClass?: string }): Promise<File>`** - Copy a file
+- **`move(source: string, destination: string): Promise<File>`** - Move a file
+- **`exists(query: FileQuery): Promise<boolean>`** - Check if file exists
+- **`getStream(query: FileQuery): Promise<{ stream: Readable; headers?: Record<string, string>; size?: number }>`** - Get file as stream
+- **`getUrl(query: FileQuery, expiresIn?: number): Promise<string>`** - Get public URL
+- **`getUploadUrl(query: FileQuery, expiresIn?: number): Promise<string>`** - Get presigned upload URL
+
+#### Error Handling
+
+- **`normalizeError(error: unknown): HttpError`** - Normalize errors to HttpError format
+
+### Using Instrumentation
+
+The base class provides `instrumentOperation()` for automatic metrics collection:
+
+```typescript
+public override async create(config: FileInit): Promise<File> {
+    return this.instrumentOperation(
+        "create",
+        async () => {
+            // Your implementation
+            const file = await this.createFile(config);
+            await this.meta.save(file.id, file);
+            await this.onCreate(file);
+            return file;
+        },
+        {
+            custom_attribute: "value",
+        },
+    );
+}
+```
+
+### Batch Operations
+
+Batch operations are automatically implemented by the base class, but you can override them:
+
+```typescript
+public override async deleteBatch(ids: string[]): Promise<BatchOperationResponse<File>> {
+    // Custom batch delete implementation
+    const results = await Promise.allSettled(
+        ids.map((id) => this.delete({ id })),
+    );
+
+    const successful: File[] = [];
+    const failed: Array<{ error: string; id: string }> = [];
+
+    results.forEach((result, index) => {
+        if (result.status === "fulfilled") {
+            successful.push(result.value);
+        } else {
+            failed.push({
+                id: ids[index],
+                error: result.reason.message,
+            });
+        }
+    });
+
+    return {
+        successful,
+        failed,
+        successfulCount: successful.length,
+        failedCount: failed.length,
+    };
+}
+```
+
+## Creating Custom MetaStorage
+
+Create custom metadata storage by extending `MetaStorage`:
+
+```typescript
+import { MetaStorage } from "@visulima/storage";
+import type { File } from "@visulima/storage";
+
+interface DatabaseMetaStorageOptions {
+    connectionString: string;
+    tableName?: string;
+}
+
+class DatabaseMetaStorage<T extends File = File> extends MetaStorage<T> {
+    private readonly connectionString: string;
+    private readonly tableName: string;
+
+    public constructor(config: DatabaseMetaStorageOptions) {
+        super({
+            prefix: config.tableName ? `${config.tableName}_` : "",
+            suffix: "",
+        });
+
+        this.connectionString = config.connectionString;
+        this.tableName = config.tableName || "file_metadata";
+    }
+
+    public override async save(id: string, file: T): Promise<T> {
+        // Save metadata to database
+        await this.db.query(
+            `INSERT INTO ${this.tableName} (id, metadata) VALUES ($1, $2) 
+             ON CONFLICT (id) DO UPDATE SET metadata = $2`,
+            [id, JSON.stringify(file)],
+        );
+
+        return file;
+    }
+
+    public override async get(id: string): Promise<T> {
+        // Retrieve metadata from database
+        const result = await this.db.query(
+            `SELECT metadata FROM ${this.tableName} WHERE id = $1`,
+            [id],
+        );
+
+        if (result.rows.length === 0) {
+            throw new Error("File not found");
+        }
+
+        return JSON.parse(result.rows[0].metadata) as T;
+    }
+
+    public override async delete(id: string): Promise<void> {
+        // Delete metadata from database
+        await this.db.query(`DELETE FROM ${this.tableName} WHERE id = $1`, [id]);
+    }
+
+    public override async touch(id: string, file: T): Promise<T> {
+        // Update last accessed timestamp
+        await this.db.query(
+            `UPDATE ${this.tableName} SET last_accessed = NOW() WHERE id = $1`,
+            [id],
+        );
+
+        return file;
+    }
+}
+```
+
+### MetaStorage Methods
+
+Implement these methods in your custom `MetaStorage`:
+
+- **`save(id: string, file: T): Promise<T>`** - Save file metadata
+- **`get(id: string): Promise<T>`** - Retrieve file metadata
+- **`delete(id: string): Promise<void>`** - Delete file metadata
+- **`touch(id: string, file: T): Promise<T>`** - Update last accessed timestamp
+
+### Using Custom MetaStorage
+
+Use your custom `MetaStorage` with any storage backend:
+
+```typescript
+import { DiskStorage } from "@visulima/storage";
+import { DatabaseMetaStorage } from "./database-meta-storage";
+
+const metaStorage = new DatabaseMetaStorage({
+    connectionString: process.env.DATABASE_URL,
+    tableName: "file_metadata",
+});
+
+const storage = new DiskStorage({
+    directory: "./uploads",
+    metaStorage, // Use custom metadata storage
+});
+```
+
+## Complete Example: Redis Storage Backend
+
+Here's a complete example of a Redis-based storage backend:
+
+```typescript
+import { Readable } from "node:stream";
+import { AbstractBaseStorage } from "@visulima/storage";
+import { ERRORS, throwErrorCode } from "@visulima/storage";
+import type { File, FileInit, FilePart, FileQuery, FileReturn } from "@visulima/storage";
+import Redis from "ioredis";
+
+interface RedisStorageOptions {
+    redis: Redis;
+    prefix?: string;
+}
+
+class RedisStorage extends AbstractBaseStorage<File, FileReturn> {
+    public static override readonly name: string = "redis";
+
+    private readonly redis: Redis;
+    private readonly prefix: string;
+
+    public constructor(config: RedisStorageOptions) {
+        super({
+            maxUploadSize: "100MB",
+            allowMIME: ["*/*"],
+        });
+
+        this.redis = config.redis;
+        this.prefix = config.prefix || "visulima:";
+    }
+
+    private getKey(id: string): string {
+        return `${this.prefix}file:${id}`;
+    }
+
+    private getMetaKey(id: string): string {
+        return `${this.prefix}meta:${id}`;
+    }
+
+    public override async create(config: FileInit): Promise<File> {
+        const file: File = {
+            id: config.id || this.generateId(),
+            name: config.name || "",
+            originalName: config.originalName || "",
+            size: config.size || 0,
+            contentType: config.contentType || "application/octet-stream",
+            status: "created",
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            metadata: config.metadata || {},
+        };
+
+        // Save metadata to Redis
+        await this.redis.set(this.getMetaKey(file.id), JSON.stringify(file));
+
+        // Call onCreate hook
+        await this.onCreate(file);
+
+        return file;
+    }
+
+    public override async write(part: FilePart | FileQuery): Promise<File> {
+        const id = "id" in part ? part.id : part.id;
+        const file = await this.get({ id });
+
+        if (!("body" in part) || !part.body) {
+            throw throwErrorCode(ERRORS.BAD_REQUEST, "Body is required");
+        }
+
+        // Convert stream to buffer
+        const chunks: Buffer[] = [];
+        for await (const chunk of part.body) {
+            chunks.push(chunk);
+        }
+        const buffer = Buffer.concat(chunks);
+
+        // Store file data in Redis
+        await this.redis.set(this.getKey(id), buffer);
+
+        // Update file metadata
+        const updatedFile: File = {
+            ...file,
+            size: file.size + buffer.length,
+            status: "completed",
+            updatedAt: new Date(),
+        };
+
+        await this.redis.set(this.getMetaKey(id), JSON.stringify(updatedFile));
+
+        // Call onUpdate hook
+        await this.onUpdate(updatedFile);
+
+        return updatedFile;
+    }
+
+    public override async get(query: FileQuery): Promise<FileReturn> {
+        const metaData = await this.redis.get(this.getMetaKey(query.id));
+
+        if (!metaData) {
+            throw throwErrorCode(ERRORS.FILE_NOT_FOUND);
+        }
+
+        const file = JSON.parse(metaData) as File;
+        const fileData = await this.redis.getBuffer(this.getKey(query.id));
+
+        if (!fileData) {
+            throw throwErrorCode(ERRORS.FILE_NOT_FOUND);
+        }
+
+        // Create readable stream from buffer
+        const stream = Readable.from(fileData);
+
+        return {
+            ...file,
+            stream,
+        };
+    }
+
+    public override async delete(query: FileQuery): Promise<File> {
+        const metaData = await this.redis.get(this.getMetaKey(query.id));
+
+        if (!metaData) {
+            throw throwErrorCode(ERRORS.FILE_NOT_FOUND);
+        }
+
+        const file = JSON.parse(metaData) as File;
+
+        // Delete file data and metadata
+        await Promise.all([
+            this.redis.del(this.getKey(query.id)),
+            this.redis.del(this.getMetaKey(query.id)),
+        ]);
+
+        // Call onDelete hook
+        await this.onDelete(file);
+
+        return file;
+    }
+
+    public override async list(limit = 100): Promise<File[]> {
+        const keys = await this.redis.keys(this.getMetaKey("*"));
+        const files: File[] = [];
+
+        for (const key of keys.slice(0, limit)) {
+            const metaData = await this.redis.get(key);
+
+            if (metaData) {
+                files.push(JSON.parse(metaData) as File);
+            }
+        }
+
+        return files;
+    }
+
+    public override async update(query: FileQuery, metadata: Partial<File>): Promise<File> {
+        const file = await this.get({ id: query.id });
+        const updatedFile: File = {
+            ...file,
+            ...metadata,
+            updatedAt: new Date(),
+        };
+
+        await this.redis.set(this.getMetaKey(query.id), JSON.stringify(updatedFile));
+        await this.onUpdate(updatedFile);
+
+        return updatedFile;
+    }
+
+    public override normalizeError(error: unknown): HttpError {
+        if (error instanceof Error && error.message.includes("not found")) {
+            return {
+                code: ERRORS.FILE_NOT_FOUND,
+                message: "File not found",
+                statusCode: 404,
+            };
+        }
+
+        return {
+            code: ERRORS.STORAGE_ERROR,
+            message: error instanceof Error ? error.message : "Storage error",
+            statusCode: 500,
+        };
+    }
+
+    private generateId(): string {
+        return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    }
+}
+
+// Usage
+const redis = new Redis(process.env.REDIS_URL);
+const storage = new RedisStorage({
+    redis,
+    prefix: "myapp:",
+});
+```
+
+## Best Practices
+
+1. **Implement Error Normalization** - Always implement `normalizeError()` to provide consistent error responses
+2. **Use Instrumentation** - Wrap operations with `instrumentOperation()` for automatic metrics
+3. **Handle Metadata** - Properly save and retrieve metadata using the `meta` property
+4. **Call Hooks** - Call lifecycle hooks (`onCreate`, `onUpdate`, `onDelete`, `onComplete`) at appropriate times
+5. **Handle Streams** - Properly handle Readable streams for file data
+6. **Validate Inputs** - Validate file sizes, MIME types, and other constraints
+7. **Handle Concurrency** - Use file locking for concurrent access (base class provides `locker`)
+8. **Support Batch Operations** - Implement batch operations for better performance
+9. **Test Thoroughly** - Test all operations including error cases
+10. **Document Your Storage** - Document any limitations or special behavior
+
+## Integration with Handlers
+
+Your custom storage backend works seamlessly with all handlers:
+
+```typescript
+import { Multipart } from "@visulima/storage/handler/http/fetch";
+import { RedisStorage } from "./redis-storage";
+
+const storage = new RedisStorage({
+    redis: new Redis(process.env.REDIS_URL),
+});
+
+const multipart = new Multipart({ storage });
+
+// Use with any framework
+app.post("/upload", async (request) => {
+    return await multipart.fetch(request);
+});
+```
+
+## Next Steps
+
+- Review existing storage implementations for reference
+- Test your custom storage with all handler types
+- Add metrics and logging for observability
+- Consider implementing optional operations for better compatibility
+

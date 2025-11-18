@@ -7,7 +7,7 @@ Visulima storage provides consistent error handling across all storage backends 
 ### Upload Errors
 
 ```typescript
-import { ERRORS, isUploadError, throwErrorCode } from "@visulima/storage/provider/aws";
+import { ERRORS, isUploadError, throwErrorCode } from "@visulima/storage";
 
 try {
     await storage.get({ id: "nonexistent" });
