@@ -22,10 +22,13 @@ import { isKnownContentType } from "./utils";
 import ValidationError from "./validation-error";
 
 /**
- * Unified media transformer that automatically detects media type and routes to appropriate transformer
+ * Unified media transformer that automatically detects media type and routes to appropriate transformer.
+ * @template TFile The file type used by this transformer.
+ * @template TFileReturn The return type for file retrieval operations.
  *
  * Supports transformations via query parameters for on-demand media processing across all supported formats.
  * @example
+ * // eslint-disable-next-line jsdoc/match-description
  * ```ts
  * const transformer = new MediaTransformer(storage, {
  *   maxImageSize: 10 * 1024 * 1024, // 10MB
@@ -79,6 +82,7 @@ import ValidationError from "./validation-error";
  * - `blur`: Apply blur effect (boolean)
  * - `sharpen`: Apply sharpening (boolean)
  * - `median`: Apply median filter with size (number)
+ * // eslint-disable-next-line jsdoc/match-description
  * - `clahe`: Apply CLAHE (Contrast Limited Adaptive Histogram Equalization) (boolean)
  * - `threshold`: Apply thresholding with value (0-255)
  * - `gamma`: Apply gamma correction (boolean)
@@ -93,6 +97,7 @@ import ValidationError from "./validation-error";
  * - `brightness`: Brightness multiplier for modulation (number)
  * - `saturation`: Saturation multiplier for modulation (number)
  * - `hue`: Hue rotation in degrees for modulation (number)
+ * // eslint-disable-next-line jsdoc/match-description
  * - `lightness`: Lightness adjustment for modulation (number)
  * - `tint`: Apply tinting (boolean)
  * - `colourspace`: Convert colourspace - srgb/rgb/cmyk/lab/b-w
@@ -134,9 +139,9 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
 
     /**
      * Creates a new MediaTransformer instance.
-     * @param storage The storage backend for retrieving and storing media files
-     * @param config Configuration options for the media transformer including transformer classes and settings
-     * @throws Error if no transformer classes are provided in the configuration
+     * @param storage The storage backend for retrieving and storing media files.
+     * @param config Configuration options for the media transformer including transformer classes and settings.
+     * @throws Error if no transformer classes are provided in the configuration.
      */
     public constructor(
         private readonly storage: BaseStorage<TFile, TFileReturn>,
@@ -220,10 +225,10 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
     }
 
     /**
-     * Handle media transformation based on query parameters
-     * @param fileId File identifier
-     * @param query Query parameters for transformation
-     * @returns Unified transformation result
+     * Handles media transformation based on query parameters.
+     * @param fileId File identifier.
+     * @param query Query parameters for transformation.
+     * @returns Unified transformation result.
      */
     public async handle(fileId: string, query: Record<string, string | undefined> | URLSearchParams | string): Promise<MediaTransformResult> {
         // Parse query parameters
@@ -304,10 +309,10 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
     }
 
     /**
-     * Fetch media transformation with URL query string support
-     * @param fileId File identifier
-     * @param queryString URL query string (e.g., "width=800&amp;height=600&amp;format=webp")
-     * @returns Unified transformation result
+     * Fetches media transformation with URL query string support.
+     * @param fileId File identifier.
+     * @param queryString URL query string (e.g., "width=800&amp;height=600&amp;format=webp").
+     * @returns Unified transformation result.
      */
     public async fetch(fileId: string, queryString: string): Promise<MediaTransformResult> {
         const query = new URLSearchParams(queryString);
@@ -316,7 +321,8 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
     }
 
     /**
-     * Clear cache for a specific file across all transformers
+     * Clears cache for a specific file across all transformers.
+     * @param fileId Optional file identifier to clear cache for. If omitted, clears all cache.
      */
     public clearCache(fileId?: string): void {
         this.imageTransformer?.clearCache(fileId);
@@ -325,8 +331,8 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
     }
 
     /**
-     * Clear all saved transformed files from storage
-     * Note: This is a maintenance operation and may take time for large numbers of files
+     * Clears all saved transformed files from storage.
+     * @remarks This is a maintenance operation and may take time for large numbers of files.
      */
     public async clearSavedTransformedFiles(): Promise<void> {
         if (!this.config.saveTransformedFiles) {
@@ -343,7 +349,8 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
     }
 
     /**
-     * Clear saved transformed files for a specific original file
+     * Clears saved transformed files for a specific original file.
+     * @param originalFileId Original file identifier to clear transformed files for.
      */
     public async clearSavedTransformedFilesForFile(originalFileId: string): Promise<void> {
         if (!this.config.saveTransformedFiles) {
@@ -360,7 +367,8 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
     }
 
     /**
-     * Get cache statistics (combined from all transformers)
+     * Gets cache statistics (combined from all transformers).
+     * @returns Cache statistics for audio, image, and video transformers.
      */
     public getCacheStats(): {
         audio?: { maxSize: number; size: number };
@@ -387,10 +395,10 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
     }
 
     /**
-     * Validate query parameters for the given media type
-     * @param query The query parameters to validate
-     * @param mediaType The media type being validated ('image', 'video', or 'audio')
-     * @throws {ValidationError} When invalid parameters are provided
+     * Validates query parameters for the given media type.
+     * @param query The query parameters to validate.
+     * @param mediaType The media type being validated ('image', 'video', or 'audio').
+     * @throws {ValidationError} When invalid parameters are provided.
      */
     private validateQueryParameters(query: MediaTransformQuery, mediaType: "image" | "video" | "audio"): void {
         switch (mediaType) {
@@ -410,16 +418,9 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
     }
 
     /**
-     * Validate query parameters for image transformations
-     *
-     * Checks for:
-     * - Invalid video/audio-only parameters
-     * - Invalid fit values
-     * - Invalid rotation angles
-     * - Invalid formats
-     * - Incomplete crop parameter sets
-     * @param query Query parameters to validate
-     * @throws {ValidationError} When validation fails
+     * Validates query parameters for image transformations. Checks for invalid video/audio-only parameters, invalid fit values, invalid rotation angles, invalid formats, and incomplete crop parameter sets.
+     * @param query Query parameters to validate.
+     * @throws {ValidationError} When validation fails.
      */
     private validateImageQueryParameters(query: MediaTransformQuery): void {
         const allowedParameters = new Set([
@@ -542,18 +543,9 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
     }
 
     /**
-     * Validate query parameters for video transformations
-     *
-     * Checks for:
-     * - Invalid audio-only parameters
-     * - Invalid fit values
-     * - Invalid rotation angles
-     * - Invalid codecs
-     * - Invalid formats
-     * - Incomplete crop parameter sets
-     * - Invalid numeric values (width, height, bitrate, etc.)
-     * @param query Query parameters to validate
-     * @throws {ValidationError} When validation fails
+     * Validates query parameters for video transformations. Checks for invalid audio-only parameters, invalid fit values, invalid rotation angles, invalid codecs, invalid formats, incomplete crop parameter sets, and invalid numeric values.
+     * @param query Query parameters to validate.
+     * @throws {ValidationError} When validation fails.
      */
     private validateVideoQueryParameters(query: MediaTransformQuery): void {
         const allowedParameters = new Set([
@@ -676,11 +668,11 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
     }
 
     /**
-     * Generate a unique ID for transformed files based on original file and transformations
-     * @param originalFileId The original file identifier
-     * @param query The transformation query parameters
-     * @param mediaType The media type (image, video, audio)
-     * @returns Unique deterministic identifier for the transformed file
+     * Generates a unique ID for transformed files based on original file and transformations.
+     * @param originalFileId The original file identifier.
+     * @param query The transformation query parameters.
+     * @param mediaType The media type (image, video, audio).
+     * @returns Unique deterministic identifier for the transformed file.
      * @private
      */
     private generateTransformedFileId(originalFileId: string, query: MediaTransformQuery, mediaType: string): string {
@@ -698,9 +690,9 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
     }
 
     /**
-     * Check if the query contains any transformations
-     * @param query The transformation query parameters
-     * @returns True if any transformations are requested
+     * Checks if the query contains any transformations.
+     * @param query The transformation query parameters.
+     * @returns True if any transformations are requested.
      * @private
      */
     private hasTransformations(query: MediaTransformQuery): boolean {
@@ -708,11 +700,11 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
     }
 
     /**
-     * Create a MediaTransformResult from a stored transformed file
-     * @param storedFile The stored transformed file
-     * @param mediaType The media type (image, video, audio)
-     * @param originalFile The original file information
-     * @returns Media transformation result with metadata
+     * Creates a MediaTransformResult from a stored transformed file.
+     * @param storedFile The stored transformed file.
+     * @param mediaType The media type (image, video, audio).
+     * @param originalFile The original file information.
+     * @returns Media transformation result with metadata.
      * @private
      */
     private createMediaTransformResult(storedFile: TFileReturn, mediaType: string, originalFile: TFileReturn): MediaTransformResult {
@@ -761,9 +753,9 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
     }
 
     /**
-     * Extract format from content type
-     * @param contentType MIME content type string
-     * @returns Format string extracted from content type
+     * Extracts format from content type.
+     * @param contentType MIME content type string.
+     * @returns Format string extracted from content type.
      * @private
      */
     // eslint-disable-next-line class-methods-use-this
@@ -779,12 +771,12 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
     }
 
     /**
-     * Save transformed file to storage
-     * @param result The transformation result to save
-     * @param originalFileId The original file identifier
-     * @param query The transformation query parameters
-     * @param mediaType The media type (image, video, audio)
-     * @returns Promise that resolves when file is saved
+     * Saves transformed file to storage.
+     * @param result The transformation result to save.
+     * @param originalFileId The original file identifier.
+     * @param query The transformation query parameters.
+     * @param mediaType The media type (image, video, audio).
+     * @returns Promise that resolves when file is saved.
      * @private
      */
     private async saveTransformedFile(result: MediaTransformResult, originalFileId: string, query: MediaTransformQuery, mediaType: string): Promise<void> {
@@ -841,15 +833,9 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
     }
 
     /**
-     * Validate query parameters for audio transformations
-     *
-     * Checks for:
-     * - Invalid video-only parameters
-     * - Invalid codecs
-     * - Invalid formats
-     * - Invalid numeric values (bitrate, channels, sample rate)
-     * @param query Query parameters to validate
-     * @throws {ValidationError} When validation fails
+     * Validates query parameters for audio transformations. Checks for invalid video-only parameters, invalid codecs, invalid formats, and invalid numeric values.
+     * @param query Query parameters to validate.
+     * @throws {ValidationError} When validation fails.
      */
     private validateAudioQueryParameters(query: MediaTransformQuery): void {
         const allowedParameters = new Set(["bitrate", "codec", "format", "numberOfChannels", "quality", "sampleRate"]);
@@ -946,10 +932,10 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
     }
 
     /**
-     * Handle image transformation
-     * @param fileId The file identifier
-     * @param query The transformation query parameters
-     * @returns Promise resolving to media transformation result
+     * Handles image transformation.
+     * @param fileId The file identifier.
+     * @param query The transformation query parameters.
+     * @returns Promise resolving to media transformation result.
      * @private
      */
     private async handleImageTransformation(fileId: string, query: MediaTransformQuery): Promise<MediaTransformResult> {
@@ -1020,10 +1006,10 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
     }
 
     /**
-     * Handle video transformation
-     * @param fileId The file identifier
-     * @param query The transformation query parameters
-     * @returns Promise resolving to media transformation result
+     * Handles video transformation.
+     * @param fileId The file identifier.
+     * @param query The transformation query parameters.
+     * @returns Promise resolving to media transformation result.
      * @private
      */
     private async handleVideoTransformation(fileId: string, query: MediaTransformQuery): Promise<MediaTransformResult> {
@@ -1098,10 +1084,10 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
     }
 
     /**
-     * Handle audio transformation
-     * @param fileId The file identifier
-     * @param query The transformation query parameters
-     * @returns Promise resolving to media transformation result
+     * Handles audio transformation.
+     * @param fileId The file identifier.
+     * @param query The transformation query parameters.
+     * @returns Promise resolving to media transformation result.
      * @private
      */
     private async handleAudioTransformation(fileId: string, query: MediaTransformQuery): Promise<MediaTransformResult> {
@@ -1156,9 +1142,9 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
     }
 
     /**
-     * Parse query parameters from various input formats
-     * @param query Query parameters in various formats
-     * @returns Normalized MediaTransformQuery object
+     * Parses query parameters from various input formats.
+     * @param query Query parameters in various formats.
+     * @returns Normalized MediaTransformQuery object.
      * @private
      */
     private parseQuery(query: Record<string, string | undefined> | URLSearchParams | string): MediaTransformQuery {
@@ -1230,9 +1216,9 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
     }
 
     /**
-     * Parse boolean parameter from string
-     * @param value String value to parse
-     * @returns Boolean value or undefined
+     * Parses boolean parameter from string.
+     * @param value String value to parse.
+     * @returns Boolean value or undefined.
      * @private
      */
     private parseBooleanParameter(value: string | null): boolean | undefined {
@@ -1243,9 +1229,9 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
     }
 
     /**
-     * Parse URLSearchParams into MediaTransformQuery
-     * @param parameters URL search parameters object
-     * @returns MediaTransformQuery object with parsed parameters
+     * Parses URLSearchParams into MediaTransformQuery.
+     * @param parameters URL search parameters object.
+     * @returns MediaTransformQuery object with parsed parameters.
      * @private
      */
     private parseURLSearchParams(parameters: URLSearchParams): MediaTransformQuery {
@@ -1472,10 +1458,10 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
     }
 
     /**
-     * Detect media type from MIME type
-     * @param contentType MIME content type string
-     * @returns Detected media type
-     * @throws Error if content type is missing or unsupported
+     * Detects media type from MIME type.
+     * @param contentType MIME content type string.
+     * @returns Detected media type.
+     * @throws Error if content type is missing or unsupported.
      * @private
      */
     private detectMediaType(contentType: string | undefined): "image" | "video" | "audio" {
@@ -1505,9 +1491,9 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
     }
 
     /**
-     * Check if query has image transformations
-     * @param query The transformation query parameters
-     * @returns True if image transformations are requested
+     * Checks if query has image transformations.
+     * @param query The transformation query parameters.
+     * @returns True if image transformations are requested.
      * @private
      */
     // eslint-disable-next-line class-methods-use-this
@@ -1559,9 +1545,9 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
     }
 
     /**
-     * Check if query has video transformations
-     * @param query The transformation query parameters
-     * @returns True if video transformations are requested
+     * Checks if query has video transformations.
+     * @param query The transformation query parameters.
+     * @returns True if video transformations are requested.
      * @private
      */
     private hasVideoTransformations(query: MediaTransformQuery): boolean {
@@ -1588,9 +1574,9 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
     }
 
     /**
-     * Check if query has audio transformations
-     * @param query The transformation query parameters
-     * @returns True if audio transformations are requested
+     * Checks if query has audio transformations.
+     * @param query The transformation query parameters.
+     * @returns True if audio transformations are requested.
      * @private
      */
     private hasAudioTransformations(query: MediaTransformQuery): boolean {
@@ -1598,9 +1584,9 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
     }
 
     /**
-     * Convert ImageTransformer result to unified format
-     * @param result The image transformation result
-     * @returns Unified media transformation result
+     * Converts ImageTransformer result to unified format.
+     * @param result The image transformation result.
+     * @returns Unified media transformation result.
      * @private
      */
     private convertImageResult(result: TransformResult): MediaTransformResult {
@@ -1616,9 +1602,9 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
     }
 
     /**
-     * Convert VideoTransformer result to unified format
-     * @param result The video transformation result
-     * @returns Unified media transformation result
+     * Converts VideoTransformer result to unified format.
+     * @param result The video transformation result.
+     * @returns Unified media transformation result.
      * @private
      */
     private convertVideoResult(result: VideoTransformResult): MediaTransformResult {
@@ -1636,9 +1622,9 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
     }
 
     /**
-     * Convert AudioTransformer result to unified format
-     * @param result The audio transformation result
-     * @returns Unified media transformation result
+     * Converts AudioTransformer result to unified format.
+     * @param result The audio transformation result.
+     * @returns Unified media transformation result.
      * @private
      */
     private convertAudioResult(result: AudioTransformResult): MediaTransformResult {

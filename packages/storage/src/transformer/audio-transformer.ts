@@ -62,8 +62,8 @@ class AudioTransformer<TFile extends File = File, TFileReturn extends FileReturn
 > {
     /**
      * Creates a new AudioTransformer instance.
-     * @param storage The storage backend for retrieving and storing audio files
-     * @param config Configuration options for audio transformation including cache settings, codec defaults, and size limits
+     * @param storage The storage backend for retrieving and storing audio files.
+     * @param config Configuration options for audio transformation including cache settings, codec defaults, and size limits.
      */
     public constructor(storage: BaseStorage<TFile, TFileReturn>, config: AudioTransformerConfig = {}) {
         const logger = config.logger || storage.logger;
@@ -82,31 +82,42 @@ class AudioTransformer<TFile extends File = File, TFileReturn extends FileReturn
     }
 
     /**
-     * Resample audio to different sample rate.
-     * @param fileId Unique identifier of the audio file to resample
-     * @param options Resample options including target sample rate
-     * @returns Promise resolving to transformed audio result
+     * Resamples audio to different sample rate.
+     * @param fileId Unique identifier of the audio file to resample.
+     * @param options Resample options including target sample rate.
+     * @returns Promise resolving to transformed audio result.
      */
     public async resample(fileId: string, options: AudioResampleOptions): Promise<AudioTransformResult<TFileReturn>> {
         return this.transform(fileId, [{ options, type: "resample" }]);
     }
 
     /**
-     * Change number of channels (up/downmixing)
+     * Changes number of channels (up/downmixing).
+     * @param fileId Unique identifier of the audio file to process.
+     * @param options Channel mix options including target number of channels.
+     * @returns Promise resolving to transformed audio result.
      */
     public async mixChannels(fileId: string, options: AudioChannelMixOptions): Promise<AudioTransformResult<TFileReturn>> {
         return this.transform(fileId, [{ options, type: "channels" }]);
     }
 
     /**
-     * Convert audio format or codec
+     * Converts audio format or codec.
+     * @param fileId Unique identifier of the audio file to convert.
+     * @param format Target audio format (e.g., "mp3", "wav", "ogg").
+     * @param options Additional transform options.
+     * @returns Promise resolving to transformed audio result.
      */
     public async convertFormat(fileId: string, format: string, options: AudioTransformOptions = {}): Promise<AudioTransformResult<TFileReturn>> {
         return this.transform(fileId, [{ options: { ...options, format: format as any }, type: "format" }]);
     }
 
     /**
-     * Transcode audio to different codec
+     * Transcodes audio to different codec.
+     * @param fileId Unique identifier of the audio file to transcode.
+     * @param codec Target audio codec (e.g., "aac", "opus", "mp3").
+     * @param options Additional transform options.
+     * @returns Promise resolving to transformed audio result.
      */
     public async transcode(
         fileId: string,
@@ -117,7 +128,10 @@ class AudioTransformer<TFile extends File = File, TFileReturn extends FileReturn
     }
 
     /**
-     * Apply a custom transformation pipeline
+     * Applies a custom transformation pipeline to an audio file.
+     * @param fileId Unique identifier of the audio file to transform.
+     * @param steps Array of transformation steps to apply in sequence.
+     * @returns Promise resolving to transformed audio result.
      */
     public async transform(fileId: string, steps: AudioTransformationStep[]): Promise<AudioTransformResult<TFileReturn>> {
         const fileQuery: FileQuery = { id: fileId };

@@ -3,6 +3,7 @@ import type { Readable } from "node:stream";
 import { getStore } from "@netlify/blobs";
 
 import { detectFileTypeFromBuffer } from "../../utils/detect-file-type";
+import { UploadError } from "../../utils/errors";
 import toMilliseconds from "../../utils/primitives/to-milliseconds";
 import type { RetryConfig } from "../../utils/retry";
 import { createRetryWrapper } from "../../utils/retry";
@@ -128,6 +129,8 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile, FileReturn> {
 
             await this.saveMeta(file);
 
+            await this.onCreate(file);
+
             return file;
         });
     }
@@ -228,10 +231,11 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile, FileReturn> {
     }
 
     /**
-     * Deletes an upload and its metadata
-     * @param query - File query containing the file ID to delete
-     * @returns Promise resolving to the deleted file object with status: "deleted"
-     * @throws {Error} If the file metadata cannot be found
+     * Deletes an upload and its metadata.
+     * @param query File query containing the file ID to delete.
+     * @param query.id File ID to delete.
+     * @returns Promise resolving to the deleted file object with status: "deleted".
+     * @throws {UploadError} If the file metadata cannot be found.
      */
     public async delete({ id }: FileQuery): Promise<NetlifyBlobFile> {
         return this.instrumentOperation("delete", async () => {
@@ -251,7 +255,11 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile, FileReturn> {
 
             await this.deleteMeta(file.id);
 
-            return { ...file };
+            const deletedFile = { ...file };
+
+            await this.onDelete(deletedFile);
+
+            return deletedFile;
         });
     }
 
@@ -310,11 +318,11 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile, FileReturn> {
     }
 
     /**
-     * Copy an upload file to a new location
-     * @param name - Source file name/ID
-     * @param destination - Destination file name/ID
-     * @returns Promise resolving to the copied file object
-     * @throws {Error} If the source file cannot be found
+     * Copies an upload file to a new location.
+     * @param name Source file name/ID.
+     * @param destination Destination file name/ID.
+     * @returns Promise resolving to the copied file object.
+     * @throws {UploadError} If the source file cannot be found.
      */
     public async copy(name: string, destination: string): Promise<NetlifyBlobFile> {
         return this.instrumentOperation("copy", async () => {
@@ -376,11 +384,11 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile, FileReturn> {
     }
 
     /**
-     * Move an upload file to a new location
-     * @param name - Source file name/ID
-     * @param destination - Destination file name/ID
-     * @returns Promise resolving to the moved file object
-     * @throws {Error} If the source file cannot be found
+     * Moves an upload file to a new location.
+     * @param name Source file name/ID.
+     * @param destination Destination file name/ID.
+     * @returns Promise resolving to the moved file object.
+     * @throws {UploadError} If the source file cannot be found.
      */
     public async move(name: string, destination: string): Promise<NetlifyBlobFile> {
         return this.instrumentOperation("move", async () => {

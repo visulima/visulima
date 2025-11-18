@@ -84,9 +84,9 @@ class Multipart<
     }
 
     /**
-     * Handle multipart/form-data POST requests for file uploads.
-     * @param request Node.js IncomingMessage containing multipart data
-     * @returns Promise resolving to ResponseFile with upload result
+     * Handles multipart/form-data POST requests for file uploads.
+     * @param request Node.js IncomingMessage containing multipart data.
+     * @returns Promise resolving to ResponseFile with upload result.
      */
     // eslint-disable-next-line sonarjs/cognitive-complexity
     public async post(request: NodeRequest): Promise<ResponseFile<TFile>> {
