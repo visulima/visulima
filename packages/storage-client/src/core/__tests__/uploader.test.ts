@@ -87,7 +87,7 @@ describe(createUploader, () => {
     });
 
     it("should add file and emit ITEM_START event", () => {
-        expect.assertions(3);
+        expect.assertions(2);
 
         const uploader = createUploader({
             endpoint: "/api/upload",
@@ -101,7 +101,6 @@ describe(createUploader, () => {
 
         expect(itemId).toBeDefined();
         // ITEM_START is emitted when add is called
-        expect(onItemStart).toHaveBeenCalled();
         expect(onItemStart).toHaveBeenCalledWith(
             expect.objectContaining({
                 file: expect.any(File),
