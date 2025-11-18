@@ -162,7 +162,7 @@ describe("useMultipartUpload", () => {
     });
 
     it("should clear timeout on successful upload", async () => {
-        expect.assertions(2);
+        expect.assertions(1);
 
         const adapter = createMultipartAdapter({
             endpoint: "/api/upload",
@@ -178,7 +178,6 @@ describe("useMultipartUpload", () => {
         await new Promise((resolve) => setTimeout(resolve, 50));
 
         // Timeout should have been cleared
-        expect(clearTimeoutSpy).toHaveBeenCalled();
         // In Node.js, setTimeout returns a Timeout object.
         expect(clearTimeoutSpy).toHaveBeenCalledWith(expect.anything());
     });
