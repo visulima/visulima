@@ -157,11 +157,12 @@ export const withTimeout = <T extends Readable>(stream: T, timeoutMs: number, er
 };
 
 /**
- * Monitor stream performance and log metrics including throughput and chunk count.
- * @param stream Readable stream to monitor
- * @param label Label for identifying this stream in logs
- * @param logger Optional logger instance with debug method
- * @returns The same stream instance with monitoring attached
+ * Monitors stream performance and logs metrics including throughput and chunk count.
+ * @param stream Readable stream to monitor.
+ * @param label Label for identifying this stream in logs.
+ * @param logger Optional logger instance with debug method.
+ * @param logger.debug Debug logging method for performance metrics.
+ * @returns The same stream instance with monitoring attached.
  */
 export const monitorStreamPerformance = (
     stream: Readable,

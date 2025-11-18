@@ -25,6 +25,9 @@ const CONTENT_TYPE = "Content-Type";
 
 /**
  * Abstract base class implementing shared request handling for uploads.
+ * @template TFile The file type used by this handler.
+ * @template NodeRequest The Node.js request type.
+ * @template NodeResponse The Node.js response type.
  */
 abstract class BaseHandler<
     TFile extends UploadFile,
@@ -35,7 +38,7 @@ abstract class BaseHandler<
     extends EventEmitter
     implements MethodHandler<NodeRequest, NodeResponse> {
     /**
-     * Limiting enabled http method handler
+     * Limiting enabled HTTP method handler.
      * @example
      * ```ts
      * Upload.methods = ['post', 'put', 'delete'];
@@ -45,56 +48,59 @@ abstract class BaseHandler<
     public static readonly methods: Handlers[] = ["delete", "get", "head", "options", "patch", "post", "put"];
 
     /**
-     * Response body type for the handler
+     * Response body type for the handler.
      */
     public responseType: ResponseBodyType = "json";
 
     /**
-     * Storage instance for file operations
+     * Storage instance for file operations.
      */
     public storage: BaseStorage<TFile>;
 
     /**
-     * Optional media transformer for image/video processing
+     * Optional media transformer for image/video processing.
      */
     public mediaTransformer?: MediaTransformer;
 
     /**
-     * Whether to disable termination for finished uploads
+     * Whether to disable termination for finished uploads.
      */
     public disableTerminationForFinishedUploads?: boolean;
 
     /**
-     * Map of registered HTTP method handlers
+     * Map of registered HTTP method handlers.
      */
     protected registeredHandlers: Map<string, AsyncHandler<NodeRequest, NodeResponse>> = new Map<string, AsyncHandler<NodeRequest, NodeResponse>>();
 
     /**
-     * Logger instance for debugging and error reporting
+     * Logger instance for debugging and error reporting.
      */
     protected logger?: Logger;
 
     /**
-     * Get the registered handlers map
+     * Gets the registered handlers map.
+     * @returns Map of registered handlers.
      */
     public get handlers(): Map<string, AsyncHandler<NodeRequest, NodeResponse>> {
         return this.registeredHandlers;
     }
 
     /**
-     * Get the logger instance
+     * Gets the logger instance.
+     * @returns Logger instance or undefined.
      */
     public get loggerInstance(): Logger | undefined {
         return this.logger;
     }
 
     /**
-     * Internal error responses configuration
+     * Internal error responses configuration.
      */
     protected internalErrorResponses = {} as ErrorResponses;
 
     /**
-     * Get the error responses configuration
+     * Gets the error responses configuration.
+     * @returns Error responses configuration.
      */
     public get errorResponses(): ErrorResponses {
         return this.internalErrorResponses;
@@ -113,8 +119,8 @@ abstract class BaseHandler<
     }
 
     /**
-     * Set custom error responses
-     * @param value Partial error responses to override defaults
+     * Sets custom error responses.
+     * @param value Partial error responses to override defaults.
      * @example
      * ```ts
      * const Upload = new Upload({ storage });
@@ -128,25 +134,25 @@ abstract class BaseHandler<
     }
 
     /**
-     * Handle HTTP request (alias for upload method)
-     * @param request Node.js IncomingMessage
-     * @param response Node.js ServerResponse
+     * Handles HTTP request (alias for upload method).
+     * @param request Node.js IncomingMessage.
+     * @param response Node.js ServerResponse.
      */
     public handle = async (request: NodeRequest, response: NodeResponse): Promise<void> => this.upload(request, response);
 
     /**
-     * Handle Web API Fetch requests (for Hono, Cloudflare Workers, etc.)
-     * @param request Web API Request object
-     * @returns Promise resolving to Web API Response
+     * Handles Web API Fetch requests (for Hono, Cloudflare Workers, etc.).
+     * @param request Web API Request object.
+     * @returns Promise resolving to Web API Response.
      */
     public abstract fetch(request: Request): Promise<globalThis.Response>;
 
     /**
-     * Main upload handler that processes HTTP requests and routes them to appropriate method handlers
-     * @param request Node.js IncomingMessage
-     * @param response Node.js ServerResponse
-     * @param next Optional Express-style next function for middleware compatibility
-     * @throws {UploadError} When storage is not ready or method is not allowed
+     * Main upload handler that processes HTTP requests and routes them to appropriate method handlers.
+     * @param request Node.js IncomingMessage.
+     * @param response Node.js ServerResponse.
+     * @param next Optional Express-style next function for middleware compatibility.
+     * @throws {UploadError} When storage is not ready or method is not allowed.
      */
     public upload = async (request: NodeRequest, response: NodeResponse, next?: () => void): Promise<void> => {
         request.on("error", (error) => this.logger?.error("[request error]: %O", error));
@@ -156,13 +162,13 @@ abstract class BaseHandler<
         const handler = this.registeredHandlers.get(request.method as string);
 
         if (!handler) {
-            this.sendError(response, { UploadErrorCode: ERRORS.METHOD_NOT_ALLOWED } as UploadError);
+            await this.sendError(response, { UploadErrorCode: ERRORS.METHOD_NOT_ALLOWED } as UploadError);
 
             return;
         }
 
         if (!this.storage.isReady) {
-            this.sendError(response, { UploadErrorCode: ERRORS.STORAGE_ERROR } as UploadError);
+            await this.sendError(response, { UploadErrorCode: ERRORS.STORAGE_ERROR } as UploadError);
 
             return;
         }
@@ -236,83 +242,26 @@ abstract class BaseHandler<
 
                         next();
                     } else {
-                        // Preserve original headers before calling onComplete (onComplete might modify them)
-                        const originalHeaders = { ...headers };
-                        const fileWithHeaders = file as ResponseFile<TFile>;
-                        const originalFileHeaders = fileWithHeaders.headers ? { ...fileWithHeaders.headers } : {};
+                        // onComplete modifies the response object directly
+                        const responseFile = file as ResponseFile<TFile>;
 
-                        // Check if this is a chunked upload by looking at metadata or request headers
-                        const metadata = basicFile.metadata as Record<string, unknown>;
-                        const isChunkedUpload
-                            = metadata?._chunkedUpload === true
-                                || metadata?._chunkedUpload === "true"
-                                || request.headers["x-chunked-upload"] === "true"
-                                || request.headers["X-Chunked-Upload"] === "true";
-
-                        const completed = await this.storage.onComplete(file as TFile);
-
-                        if (completed.headers === undefined) {
-                            throw new TypeError("onComplete must return the key headers");
+                        // Ensure headers and statusCode exist before calling onComplete
+                        if (responseFile.headers === undefined) {
+                            responseFile.headers = {};
                         }
 
-                        if (completed.statusCode === undefined) {
-                            throw new TypeError("onComplete must return the key statusCode");
+                        if (responseFile.statusCode === undefined) {
+                            responseFile.statusCode = 200;
                         }
 
-                        // Merge headers from original response with onComplete response
-                        // This preserves chunked upload headers (x-upload-offset, x-upload-complete, etc.)
-                        // Convert Headers to Record<string, string> by converting Header values to strings
-                        const convertHeadersToString = (h: Record<string, Header>): Record<string, string> => {
-                            const result: Record<string, string> = {};
-
-                            for (const [key, value] of Object.entries(h)) {
-                                result[key] = Array.isArray(value) ? value.join(", ") : String(value);
-                            }
-
-                            return result;
-                        };
-                        const mergedHeaders: Record<string, string> = {
-                            ...convertHeadersToString(completed.headers as Record<string, Header>),
-                            ...convertHeadersToString(originalHeaders as Record<string, Header>),
-                            ...convertHeadersToString(originalFileHeaders as Record<string, Header>),
-                        };
-
-                        // Ensure chunked upload headers are preserved (check all possible case variations)
-                        let uploadOffset
-                            = originalHeaders["x-upload-offset"]
-                                || originalHeaders["X-Upload-Offset"]
-                                || originalFileHeaders["x-upload-offset"]
-                                || originalFileHeaders["X-Upload-Offset"];
-                        let uploadComplete
-                            = originalHeaders["x-upload-complete"]
-                                || originalHeaders["X-Upload-Complete"]
-                                || originalFileHeaders["x-upload-complete"]
-                                || originalFileHeaders["X-Upload-Complete"];
-
-                        // For chunked uploads, if headers are missing, try to get them from the file's bytesWritten
-                        if (isChunkedUpload && !uploadOffset && basicFile.bytesWritten !== undefined) {
-                            uploadOffset = String(basicFile.bytesWritten);
+                        try {
+                            await this.storage.onComplete(basicFile, responseFile, request);
+                        } catch (error) {
+                            this.logger?.error("[onComplete error]: %O", error);
+                            throw error;
                         }
 
-                        if (isChunkedUpload && !uploadComplete && basicFile.status === "completed") {
-                            uploadComplete = "true";
-                        }
-
-                        // Always preserve chunked upload headers if they exist or if this is a chunked upload
-                        if (uploadOffset) {
-                            mergedHeaders["x-upload-offset"] = String(uploadOffset);
-                            mergedHeaders["X-Upload-Offset"] = String(uploadOffset);
-                        }
-
-                        if (uploadComplete) {
-                            mergedHeaders["x-upload-complete"] = String(uploadComplete);
-                            mergedHeaders["X-Upload-Complete"] = String(uploadComplete);
-                        }
-
-                        this.finish(request, response, {
-                            ...completed,
-                            headers: mergedHeaders,
-                        });
+                        this.finish(request, response, responseFile);
                     }
                 } else {
                     // Check if this is a chunked upload initialization (has X-Chunked-Upload header)
@@ -330,8 +279,10 @@ abstract class BaseHandler<
 
                         return result;
                     };
+                    // Merge fileHeaders (from ResponseFile) with request headers, prioritizing fileHeaders
                     const responseHeaders: Record<string, string> = {
                         ...convertHeadersToString(headers as Record<string, Header>),
+                        ...fileHeaders ? convertHeadersToString(fileHeaders as Record<string, Header>) : {},
                         ...(file as TFile).hash === undefined
                             ? {}
                             : { [`X-Range-${(file as TFile).hash?.algorithm.toUpperCase()}`]: String((file as TFile).hash?.value) },
@@ -355,7 +306,7 @@ abstract class BaseHandler<
                     this.send(response, {
                         body,
                         headers: responseHeaders,
-                        statusCode,
+                        statusCode: statusCode || 200,
                     });
                 }
             }
@@ -370,7 +321,7 @@ abstract class BaseHandler<
 
             this.logger?.error("[error]: %O", errorEvent);
 
-            this.sendError(response, error);
+            await this.sendError(response, error);
         }
     };
 
@@ -386,11 +337,11 @@ abstract class BaseHandler<
     }
 
     /**
-     * Retrieve a file or list of files based on the request path.
-     * @param request Node.js IncomingMessage with optional originalUrl
-     * @param response Node.js ServerResponse
-     * @throws {UploadError} When file is not found or storage error occurs
-     * @returns Promise resolving to a single file, paginated list, or array of files
+     * Retrieves a file or list of files based on the request path.
+     * @param request Node.js IncomingMessage with optional originalUrl.
+     * @param response Node.js ServerResponse.
+     * @returns Promise resolving to a single file, paginated list, or array of files.
+     * @throws {UploadError} When file is not found or storage error occurs.
      */
     public async get(request: NodeRequest, response: NodeResponse): Promise<ResponseFile<TFile> | ResponseList<TFile>>;
 
@@ -553,9 +504,9 @@ abstract class BaseHandler<
 
     /**
      * Returns a list of uploaded files with optional pagination support.
-     * @param request Node.js IncomingMessage containing query parameters for pagination
-     * @param _response Node.js ServerResponse (unused)
-     * @returns Promise resolving to a paginated or complete list of uploaded files
+     * @param request Node.js IncomingMessage containing query parameters for pagination.
+     * @param _response Node.js ServerResponse (unused).
+     * @returns Promise resolving to a paginated or complete list of uploaded files.
      */
     public async list(request: NodeRequest, _response: NodeResponse): Promise<ResponseList<TFile>> {
         const url = new URL(request.url || "", "http://localhost");
@@ -588,10 +539,10 @@ abstract class BaseHandler<
     }
 
     /**
-     * Stream download a file with resumable support using HTTP range requests.
-     * @param request Node.js IncomingMessage with optional originalUrl and range header
-     * @param response Node.js ServerResponse to stream the file to
-     * @throws {HttpError} When file is not found or streaming is not supported
+     * Streams download of a file with resumable support using HTTP range requests.
+     * @param request Node.js IncomingMessage with optional originalUrl and range header.
+     * @param response Node.js ServerResponse to stream the file to.
+     * @throws {HttpError} When file is not found or streaming is not supported.
      */
     public async download(request: NodeRequest & { originalUrl?: string }, response: NodeResponse): Promise<void> {
         const pathMatch = filePathUrlMatcher(getRealPath(request));
@@ -608,7 +559,7 @@ abstract class BaseHandler<
 
             // Check if streaming is available
             if (!this.storage.getStream) {
-                this.sendError(response, createHttpError(501, "Streaming download not supported"));
+                await this.sendError(response, createHttpError(501, "Streaming download not supported"));
 
                 return;
             }
@@ -645,15 +596,23 @@ abstract class BaseHandler<
             const errorWithCode = error as { UploadErrorCode?: string };
 
             if (errorWithCode.UploadErrorCode === ERRORS.FILE_NOT_FOUND || errorWithCode.UploadErrorCode === ERRORS.GONE) {
-                this.sendError(response, createHttpError(404, "File not found"));
+                await this.sendError(response, createHttpError(404, "File not found"));
 
                 return;
             }
 
-            this.sendError(response, error);
+            await this.sendError(response, error);
         }
     }
 
+    /**
+     * Sends an HTTP response with the provided body, headers, and status code.
+     * @param response Node.js ServerResponse to send data to.
+     * @param body Response body, headers, and status code.
+     * @param body.body Response body content.
+     * @param body.headers HTTP headers to include in the response.
+     * @param body.statusCode HTTP status code.
+     */
     // eslint-disable-next-line class-methods-use-this
     public send(response: NodeResponse, { body = "", headers = {}, statusCode = 200 }: UploadResponse): void {
         let data: Buffer | string;
@@ -695,11 +654,11 @@ abstract class BaseHandler<
     }
 
     /**
-     * Send an error response to the client with appropriate status code and message.
-     * @param response Node.js ServerResponse to send error to
-     * @param error Error object to convert to HTTP error response
+     * Sends an error response to the client with appropriate status code and message.
+     * @param response Node.js ServerResponse to send error to.
+     * @param error Error object to convert to HTTP error response.
      */
-    public sendError(response: NodeResponse, error: Error): void {
+    public async sendError(response: NodeResponse, error: Error): Promise<void> {
         let httpError: HttpError;
 
         if (isUploadError(error)) {
@@ -707,28 +666,50 @@ abstract class BaseHandler<
         } else if (!isValidationError(error) && !isHttpError(error)) {
             httpError = this.storage.normalizeError(error);
         } else {
-            // For http-errors, create a proper HttpError with body
+            // For http-errors, pass through without body - onError will format it
             httpError = {
                 ...error,
-                body: {
-                    code: "HTTP_ERROR",
-                    message: error.message,
-                    name: error.name,
-                },
+                code: (error as HttpError).code || error.name,
                 headers: (error as HttpError).headers || {},
+                message: error.message,
+                name: error.name,
                 statusCode: (error as HttpError).statusCode || 500,
             } as HttpError;
         }
 
-        this.send(response, this.storage.onError(httpError));
+        // Call onError hook - user can modify the error object in place
+        await this.storage.onError(httpError);
+
+        // Format error response - if body is not set, format it into body.error structure
+        let errorResponse: UploadResponse;
+
+        if (httpError.body) {
+            errorResponse = { body: httpError.body, headers: httpError.headers, statusCode: httpError.statusCode };
+        } else {
+            // Format the error properties into a body.error structure
+            errorResponse = {
+                body: {
+                    error: {
+                        code: httpError.code || httpError.name || "Error",
+                        message: httpError.message || "Unknown error",
+                        name: httpError.name || "Error",
+                    },
+                },
+                headers: httpError.headers,
+                statusCode: httpError.statusCode || 500,
+            };
+        }
+
+        this.send(response, errorResponse);
     }
 
     /**
-     * Negotiate content type based on Accept header and supported formats.
-     * @param request HTTP request object containing Accept header
-     * @param supportedTypes Array of supported MIME types to match against
-     * @returns Best matching content type or undefined if no match found
+     * Negotiates content type based on Accept header and supported formats.
+     * @param request HTTP request object containing Accept header.
+     * @param supportedTypes Array of supported MIME types to match against.
+     * @returns Best matching content type or undefined if no match found.
      */
+    // eslint-disable-next-line class-methods-use-this
     public negotiateContentType(request: NodeRequest, supportedTypes: string[]): string | undefined {
         const acceptHeader = request.headers.accept;
 
@@ -740,11 +721,12 @@ abstract class BaseHandler<
     }
 
     /**
-     * Parse HTTP Range header and return start/end byte positions for partial content requests.
-     * @param rangeHeader HTTP Range header value (e.g., "bytes=0-1023")
-     * @param fileSize Total size of the file in bytes
-     * @returns Object with start and end positions, or undefined if range is invalid
+     * Parses HTTP Range header and returns start/end byte positions for partial content requests.
+     * @param rangeHeader HTTP Range header value (e.g., "bytes=0-1023").
+     * @param fileSize Total size of the file in bytes.
+     * @returns Object with start and end positions, or undefined if range is invalid.
      */
+    // eslint-disable-next-line class-methods-use-this
     public parseRangeHeader(rangeHeader: string | undefined, fileSize: number): { end: number; start: number } | undefined {
         if (!rangeHeader || !rangeHeader.startsWith("bytes=")) {
             return undefined;
@@ -800,16 +782,16 @@ abstract class BaseHandler<
     }
 
     /**
-     * Send streaming response to client with proper backpressure handling and range request support.
-     * @param response Node.js ServerResponse to stream data to
-     * @param stream Readable stream containing the file data
-     * @param options Streaming options including headers, range, size, and status code
-     * @param options.headers HTTP headers to include in the response
-     * @param options.range Optional byte range for partial content requests
-     * @param options.range.start Start byte position (inclusive)
-     * @param options.range.end End byte position (inclusive)
-     * @param options.size Total file size in bytes
-     * @param options.statusCode HTTP status code (default: 200)
+     * Sends streaming response to client with proper backpressure handling and range request support.
+     * @param response Node.js ServerResponse to stream data to.
+     * @param stream Readable stream containing the file data.
+     * @param options Streaming options including headers, range, size, and status code.
+     * @param options.headers HTTP headers to include in the response.
+     * @param options.range Optional byte range for partial content requests.
+     * @param options.range.start Start byte position (inclusive).
+     * @param options.range.end End byte position (inclusive).
+     * @param options.size Total file size in bytes.
+     * @param options.statusCode HTTP status code (default: 200).
      */
     public sendStream(
         response: NodeResponse,
@@ -887,12 +869,22 @@ abstract class BaseHandler<
      * @param response HTTP response object to send final response to
      * @param uploadResponse Final upload response data containing body, headers, and status code
      */
-    protected finish(_request: NodeRequest, response: NodeResponse, uploadResponse: UploadResponse): void {
+    protected finish(_request: NodeRequest, response: NodeResponse, uploadResponse: UploadResponse | ResponseFile<TFile>): void {
         const { statusCode } = uploadResponse;
 
-        let { body, headers } = uploadResponse;
+        let { body, headers } = uploadResponse as UploadResponse;
 
-        if ((body as TFile).content !== undefined) {
+        // If body is not set, this might be a ResponseFile where the file data is spread directly
+        // In that case, use the file object itself as the body
+        if (body === undefined && "id" in uploadResponse) {
+            // This is a ResponseFile - extract file properties for body
+            const { headers: fileHeaders, statusCode: fileStatusCode, ...fileData } = uploadResponse as ResponseFile<TFile>;
+
+            body = fileData;
+            headers = fileHeaders || headers || {};
+        }
+
+        if (body && typeof body === "object" && (body as TFile).content !== undefined) {
             const { content, contentType } = body as TFile;
 
             body = content;
@@ -903,7 +895,7 @@ abstract class BaseHandler<
         }
 
         this.send(response, {
-            body,
+            body: body || uploadResponse,
             headers,
             statusCode,
         });
@@ -1045,22 +1037,36 @@ abstract class BaseHandler<
         }
 
         if (basicFile.status === "completed") {
-            const completed = await this.storage.onComplete(file as TFile);
+            // onComplete modifies the response object directly
+            const responseFile = file as ResponseFile<TFile>;
 
-            if (completed.headers === undefined) {
-                throw new TypeError("onComplete must return the key headers");
+            // Ensure headers and statusCode exist before calling onComplete
+            if (responseFile.headers === undefined) {
+                responseFile.headers = {};
             }
 
-            if (completed.statusCode === undefined) {
-                throw new TypeError("onComplete must return the key statusCode");
+            if (responseFile.statusCode === undefined) {
+                responseFile.statusCode = 200;
             }
 
-            return this.createResponse(completed);
+            try {
+                await this.storage.onComplete(basicFile, responseFile, request);
+            } catch (error) {
+                this.logger?.error("[onComplete error]: %O", error);
+                throw error;
+            }
+
+            return this.createResponse(responseFile);
         }
 
         // Ensure Location header is present and properly exposed for TUS protocol
-        const convertedHeaders = this.convertHeaders({
+        // Merge fileHeaders (from ResponseFile) with request headers, prioritizing fileHeaders
+        const allHeaders = {
             ...headers,
+            ...(file as ResponseFile<TFile>).headers,
+        };
+        const convertedHeaders = this.convertHeaders({
+            ...allHeaders,
             "Access-Control-Expose-Headers":
                 "location,upload-expires,upload-offset,upload-length,upload-metadata,upload-defer-length,tus-resumable,tus-extension,tus-max-size,tus-version,tus-checksum-algorithm,cache-control",
             ...basicFile.hash === undefined ? {} : { [`X-Range-${basicFile.hash?.algorithm.toUpperCase()}`]: basicFile.hash?.value },
@@ -1068,15 +1074,43 @@ abstract class BaseHandler<
 
         // Ensure Location header is present (TUS protocol requirement)
         // Fetch API normalizes header names to lowercase, so we check both cases
-        if (headers.Location && !convertedHeaders.location && !convertedHeaders.Location) {
+        const responseFileHeaders = (file as ResponseFile<TFile>).headers || {};
+
+        if (responseFileHeaders.Location && !convertedHeaders.location && !convertedHeaders.Location) {
+            convertedHeaders.location = String(responseFileHeaders.Location);
+        } else if (responseFileHeaders.location && !convertedHeaders.location && !convertedHeaders.Location) {
+            convertedHeaders.location = String(responseFileHeaders.location);
+        } else if (headers.Location && !convertedHeaders.location && !convertedHeaders.Location) {
             convertedHeaders.location = String(headers.Location);
         } else if (headers.location && !convertedHeaders.location && !convertedHeaders.Location) {
             convertedHeaders.location = String(headers.location);
         }
 
-        return new Response(undefined, {
+        // For successful responses (201, 200), include the file data in the body
+        // Extract file data from basicFile, removing non-serializable properties
+        // basicFile already contains all file properties except headers/statusCode
+        // Always include body for successful responses (tests expect this)
+        let responseBody: Record<string, unknown> | undefined;
+
+        if (statusCode >= 200 && statusCode < 300) {
+            // Create a clean copy of basicFile and remove non-serializable properties
+            responseBody = { ...basicFile };
+
+            // Remove content property (Buffer) as it shouldn't be in JSON response
+            if ("content" in responseBody) {
+                delete responseBody.content;
+            }
+
+            // Remove stream property if present (not serializable)
+            if ("stream" in responseBody) {
+                delete responseBody.stream;
+            }
+        }
+
+        return this.createResponse({
+            body: responseBody,
             headers: convertedHeaders,
-            status: statusCode,
+            statusCode: statusCode || 200,
         });
     }
 
@@ -1119,6 +1153,7 @@ abstract class BaseHandler<
      * @param headers Headers object with potentially array values
      * @returns Headers object with all values as strings
      */
+    // eslint-disable-next-line class-methods-use-this
     protected convertHeaders(headers: Record<string, number | string | string[]>): Record<string, string> {
         const result: Record<string, string> = {};
 
@@ -1137,7 +1172,7 @@ abstract class BaseHandler<
     protected createResponse(uploadResponse: UploadResponse): globalThis.Response {
         const { body, headers = {}, statusCode } = uploadResponse;
 
-        let responseBody: BodyInit = "";
+        let responseBody: BodyInit | undefined;
 
         if (typeof body === "string") {
             responseBody = body;
@@ -1165,7 +1200,7 @@ abstract class BaseHandler<
      * @param error Error object to convert to HTTP error response
      * @returns Web API Response object with error details
      */
-    protected createErrorResponse(error: Error): globalThis.Response {
+    protected async createErrorResponse(error: Error): Promise<globalThis.Response> {
         let httpError: HttpError;
 
         if (isUploadError(error)) {
@@ -1173,10 +1208,39 @@ abstract class BaseHandler<
         } else if (!isValidationError(error) && !isHttpError(error)) {
             httpError = this.storage.normalizeError(error);
         } else {
-            httpError = error;
+            // For http-errors, pass through without body - onError will format it
+            httpError = {
+                ...error,
+                code: (error as HttpError).code || error.name,
+                headers: (error as HttpError).headers || {},
+                message: error.message,
+                name: error.name,
+                statusCode: (error as HttpError).statusCode || 500,
+            } as HttpError;
         }
 
-        const errorResponse = this.storage.onError(httpError);
+        // Call onError hook - user can modify the error object in place
+        await this.storage.onError(httpError);
+
+        // Format error response - if body is not set, format it into body.error structure
+        let errorResponse: UploadResponse;
+
+        if (httpError.body) {
+            errorResponse = { body: httpError.body, headers: httpError.headers, statusCode: httpError.statusCode };
+        } else {
+            // Format the error properties into a body.error structure
+            errorResponse = {
+                body: {
+                    error: {
+                        code: httpError.code || httpError.name || "Error",
+                        message: httpError.message || "Unknown error",
+                        name: httpError.name || "Error",
+                    },
+                },
+                headers: httpError.headers,
+                statusCode: httpError.statusCode || 500,
+            };
+        }
 
         return this.createResponse(errorResponse);
     }
@@ -1279,9 +1343,9 @@ abstract class BaseHandler<
             destination.end();
         });
 
-        source.on("error", (error) => {
+        source.on("error", async (error) => {
             if (!isDestroyed) {
-                this.sendError(destination as NodeResponse, error);
+                await this.sendError(destination as NodeResponse, error);
                 cleanup();
             }
         });

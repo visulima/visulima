@@ -13,15 +13,19 @@ export interface MetaStorageOptions {
     suffix?: string;
 }
 
-export type OnCreate<TFile extends File = File, TBody = UploadResponse> = (file: TFile) => Promise<TBody> | TBody;
+export type OnCreate<TFile extends File = File> = (file: TFile) => Promise<void> | void;
 
-export type OnUpdate<TFile extends File = File, TBody = UploadResponse> = (file: TFile) => Promise<TBody> | TBody;
+export type OnUpdate<TFile extends File = File> = (file: TFile) => Promise<void> | void;
 
-export type OnComplete<TFile extends File = File, TBody = UploadResponse> = (file: TFile) => Promise<TBody> | TBody;
+export type OnComplete<TFile extends File = File, TResponse = unknown, TRequest = unknown> = (
+    file: TFile,
+    response: TResponse,
+    request?: TRequest,
+) => Promise<void> | void;
 
-export type OnDelete<TFile extends File = File, TBody = UploadResponse> = (file: TFile) => Promise<TBody> | TBody;
+export type OnDelete<TFile extends File = File> = (file: TFile) => Promise<void> | void;
 
-export type OnError<TBody = HttpErrorBody> = (error: HttpError<TBody>) => UploadResponse<TBody>;
+export type OnError<TBody = HttpErrorBody> = (error: HttpError<TBody>) => Promise<void> | void;
 
 export interface PurgeList {
     items: UploadFile[];

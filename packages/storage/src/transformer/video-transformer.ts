@@ -26,7 +26,9 @@ import type {
 import { getFormatFromContentType, isValidMediaType } from "./utils";
 
 /**
- * Video transformer that uses storage backends and Mediabunny to retrieve and transform videos
+ * Video transformer that uses storage backends and Mediabunny library to retrieve and transform videos.
+ * @template TFile The file type used by this transformer.
+ * @template TFileReturn The return type for file retrieval operations.
  *
  * Supports video transformations with query parameters for on-demand video processing.
  * @example
@@ -66,8 +68,8 @@ class VideoTransformer<TFile extends File = File, TFileReturn extends FileReturn
 > {
     /**
      * Creates a new VideoTransformer instance.
-     * @param storage The storage backend for retrieving and storing video files
-     * @param config Configuration options for video transformation including cache settings, codec defaults, and size limits
+     * @param storage The storage backend for retrieving and storing video files.
+     * @param config Configuration options for video transformation including cache settings, codec defaults, and size limits.
      */
     public constructor(storage: BaseStorage<TFile, TFileReturn>, config: VideoTransformerConfig = {}) {
         const logger = config.logger || storage.logger;
@@ -87,38 +89,52 @@ class VideoTransformer<TFile extends File = File, TFileReturn extends FileReturn
     }
 
     /**
-     * Resize a video to specified dimensions with optional fit mode.
-     * @param fileId Unique identifier of the video file to resize
-     * @param options Resize options including width, height, and fit mode
-     * @returns Promise resolving to transformed video result
+     * Resizes a video to specified dimensions with optional fit mode.
+     * @param fileId Unique identifier of the video file to resize.
+     * @param options Resize options including width, height, and fit mode.
+     * @returns Promise resolving to transformed video result.
      */
     public async resize(fileId: string, options: VideoResizeOptions): Promise<VideoTransformResult<TFileReturn>> {
         return this.transform(fileId, [{ options, type: "resize" }]);
     }
 
     /**
-     * Crop a video
+     * Crops a video to the specified region.
+     * @param fileId Unique identifier of the video file to crop.
+     * @param options Crop options including region coordinates.
+     * @returns Promise resolving to transformed video result.
      */
     public async crop(fileId: string, options: VideoCropOptions): Promise<VideoTransformResult<TFileReturn>> {
         return this.transform(fileId, [{ options, type: "crop" }]);
     }
 
     /**
-     * Rotate a video
+     * Rotates a video by the specified angle.
+     * @param fileId Unique identifier of the video file to rotate.
+     * @param options Rotation configuration with angle in degrees and optional background color.
+     * @returns Promise resolving to transformed video result.
      */
     public async rotate(fileId: string, options: VideoRotateOptions): Promise<VideoTransformResult<TFileReturn>> {
         return this.transform(fileId, [{ options, type: "rotate" }]);
     }
 
     /**
-     * Convert video format or codec
+     * Converts video format or codec.
+     * @param fileId Unique identifier of the video file to convert.
+     * @param format Target video format (e.g., "mp4", "webm", "mkv").
+     * @param options Video transformation options including quality, bitrate, and codec settings.
+     * @returns Promise resolving to transformed video result with updated format metadata.
      */
     public async convertFormat(fileId: string, format: string, options: VideoTransformOptions = {}): Promise<VideoTransformResult<TFileReturn>> {
         return this.transform(fileId, [{ options: { ...options, format: format as any }, type: "format" }]);
     }
 
     /**
-     * Transcode video to different codec
+     * Transcodes video to different codec.
+     * @param fileId Unique identifier of the video file to transcode.
+     * @param codec Target video codec (e.g., "avc", "hevc", "vp9").
+     * @param options Additional transform options.
+     * @returns Promise resolving to transformed video result.
      */
     public async transcode(
         fileId: string,
@@ -129,7 +145,10 @@ class VideoTransformer<TFile extends File = File, TFileReturn extends FileReturn
     }
 
     /**
-     * Apply a custom transformation pipeline
+     * Applies a custom transformation pipeline to a video.
+     * @param fileId Unique identifier of the video file to transform.
+     * @param steps Array of transformation steps to apply in sequence.
+     * @returns Promise resolving to transformed video result.
      */
     public async transform(fileId: string, steps: VideoTransformationStep[]): Promise<VideoTransformResult<TFileReturn>> {
         const fileQuery: FileQuery = { id: fileId };
@@ -166,10 +185,10 @@ class VideoTransformer<TFile extends File = File, TFileReturn extends FileReturn
     }
 
     /**
-     * Apply multiple transformations in sequence using Mediabunny
-     * @param buffer The original video buffer
-     * @param steps Array of video transformation steps to apply
-     * @returns Promise resolving to transformed video buffer
+     * Applies multiple transformations in sequence using Mediabunny.
+     * @param buffer The original video buffer.
+     * @param steps Array of video transformation steps to apply.
+     * @returns Promise resolving to transformed video buffer.
      * @private
      */
     private async applyTransformations(buffer: Buffer, steps: VideoTransformationStep[]): Promise<Buffer> {
@@ -208,9 +227,9 @@ class VideoTransformer<TFile extends File = File, TFileReturn extends FileReturn
     }
 
     /**
-     * Convert transformation steps to Mediabunny video options
-     * @param steps Array of video transformation steps to convert
-     * @returns Mediabunny video options object for conversion
+     * Converts transformation steps to Mediabunny video options.
+     * @param steps Array of video transformation steps to convert.
+     * @returns Mediabunny video options object for conversion.
      * @private
      */
     private stepsToVideoOptions(steps: VideoTransformationStep[]): any {
@@ -291,9 +310,9 @@ class VideoTransformer<TFile extends File = File, TFileReturn extends FileReturn
     }
 
     /**
-     * Determine output format based on transformation steps
-     * @param steps Array of video transformation steps
-     * @returns Mediabunny output format instance (defaults to MP4)
+     * Determines output format based on transformation steps.
+     * @param steps Array of video transformation steps.
+     * @returns Mediabunny output format instance (defaults to MP4).
      * @private
      */
     private determineOutputFormat(steps: VideoTransformationStep[]): any {
@@ -309,9 +328,9 @@ class VideoTransformer<TFile extends File = File, TFileReturn extends FileReturn
     }
 
     /**
-     * Convert format string to Mediabunny output format
-     * @param format Video format string (mp4, webm, mkv, ogg)
-     * @returns Mediabunny output format instance
+     * Converts format string to Mediabunny output format.
+     * @param format Video format string (mp4, webm, mkv, ogg).
+     * @returns Mediabunny output format instance.
      * @private
      */
     private formatStringToOutputFormat(format: string): any {
@@ -335,10 +354,10 @@ class VideoTransformer<TFile extends File = File, TFileReturn extends FileReturn
     }
 
     /**
-     * Validate that the file is a supported video
-     * @param file The file to validate
-     * @returns Promise that resolves if validation passes
-     * @throws Error if file size exceeds limits, wrong content type, unsupported format, or invalid video
+     * Validates that the file is a supported video.
+     * @param file The file to validate.
+     * @returns Promise that resolves if validation passes.
+     * @throws Error if file size exceeds limits, wrong content type, unsupported format, or invalid video.
      * @private
      */
     private async validateVideo(file: TFileReturn): Promise<void> {
@@ -379,10 +398,10 @@ class VideoTransformer<TFile extends File = File, TFileReturn extends FileReturn
     }
 
     /**
-     * Create transformation result with metadata
-     * @param buffer The transformed video buffer
-     * @param originalFile The original file information
-     * @returns Video transformation result with metadata
+     * Creates transformation result with metadata.
+     * @param buffer The transformed video buffer.
+     * @param originalFile The original file information.
+     * @returns Video transformation result with metadata.
      * @private
      */
     private async createTransformResult(buffer: Buffer, originalFile: TFileReturn): Promise<VideoTransformResult<TFileReturn>> {
@@ -409,10 +428,10 @@ class VideoTransformer<TFile extends File = File, TFileReturn extends FileReturn
     }
 
     /**
-     * Generate cache key for transformation
-     * @param fileId The file identifier
-     * @param steps Array of transformation steps
-     * @returns Unique cache key string
+     * Generates cache key for transformation.
+     * @param fileId The file identifier.
+     * @param steps Array of transformation steps.
+     * @returns Unique cache key string.
      * @private
      */
     private generateCacheKey(fileId: string, steps: VideoTransformationStep[]): string {

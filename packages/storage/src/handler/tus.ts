@@ -3,7 +3,6 @@ import { format } from "node:url";
 
 // eslint-disable-next-line import/no-extraneous-dependencies
 import createHttpError from "http-errors";
-// eslint-disable-next-line import/no-extraneous-dependencies
 import typeis from "type-is";
 
 import type { Checksum, FileInit, UploadFile } from "../storage/utils/file";
@@ -81,9 +80,9 @@ export class Tus<
     }
 
     /**
-     * Create a new TUS upload and optionally start uploading data.
-     * @param request Node.js IncomingMessage with TUS headers
-     * @returns Promise resolving to ResponseFile with upload location and offset
+     * Creates a new TUS upload and optionally starts uploading data.
+     * @param request Node.js IncomingMessage with TUS headers.
+     * @returns Promise resolving to ResponseFile with upload location and offset.
      */
     public async post(request: NodeRequest): Promise<ResponseFile<TFile>> {
         this.validateTusResumableHeader(request);

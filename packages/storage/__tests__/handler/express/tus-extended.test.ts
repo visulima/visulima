@@ -114,9 +114,10 @@ describe("tUS Extended Tests (matching tus-node-server e2e)", () => {
         let expiredServer: Tus;
         let expiredListener: ReturnType<typeof createServer>;
         let expiredAgent: supertest.SuperAgentTest;
+        let expiredDirectory: string;
 
         beforeAll(async () => {
-            const expiredDirectory = temporaryDirectory();
+            expiredDirectory = temporaryDirectory();
             const expiredStorage = new DiskStorage({
                 ...storageOptions,
                 directory: expiredDirectory,
@@ -125,6 +126,15 @@ describe("tUS Extended Tests (matching tus-node-server e2e)", () => {
                     purgeInterval: "100ms",
                 },
             });
+
+            // Wait for storage to be ready
+            while (!expiredStorage.isReady) {
+                await new Promise<void>((resolve) => {
+                    setTimeout(() => {
+                        resolve();
+                    }, 10);
+                });
+            }
 
             expiredServer = new Tus<File>({ storage: expiredStorage });
             app.use(`${STORE_PATH}-expired`, expiredServer.handle);

@@ -1,7 +1,6 @@
 import type { IncomingMessage, OutgoingHttpHeader, ServerResponse } from "node:http";
 import { Readable } from "node:stream";
 
-// eslint-disable-next-line import/no-extraneous-dependencies
 import typeis, { hasBody } from "type-is";
 
 import getLastOne from "./primitives/get-last-one";
@@ -177,9 +176,9 @@ export const getBaseUrl = (request: IncomingMessage): string => {
 };
 
 export const normalizeHookResponse
-    = <T>(callback: (file: T) => Promise<UploadResponse>) =>
+    = <T>(callback: (file: T) => Promise<UploadResponse> | UploadResponse) =>
         async (file: T): Promise<UploadResponse> => {
-            const response = await callback(file);
+            const response = await Promise.resolve(callback(file));
 
             if (isRecord(response)) {
                 const { body, headers, statusCode, ...rest } = response;

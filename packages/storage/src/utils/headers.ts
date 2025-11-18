@@ -2,7 +2,7 @@
  * Enhanced HTTP header utilities using remix-run/headers for type-safe header manipulation.
  * This module provides internal utilities for the storage package to handle complex headers.
  */
-
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { Accept, ContentDisposition, ContentType, SuperHeaders } from "@remix-run/headers";
 
 import type { Headers as UploadHeaders } from "./types";
@@ -26,7 +26,7 @@ export interface CacheControlOptions {
 }
 
 /**
- * Utility functions for working with HTTP headers using @remix-run/headers
+ * Utility functions for working with HTTP headers using \@remix-run/headers.
  */
 export const HeaderUtilities = {
     /**
@@ -50,42 +50,54 @@ export const HeaderUtilities = {
         const directives: string[] = [];
 
         // Boolean directives
-        if (options.public)
+        if (options.public) {
             directives.push("public");
+        }
 
-        if (options.private)
+        if (options.private) {
             directives.push("private");
+        }
 
-        if (options.noCache)
+        if (options.noCache) {
             directives.push("no-cache");
+        }
 
-        if (options.noStore)
+        if (options.noStore) {
             directives.push("no-store");
+        }
 
-        if (options.immutable)
+        if (options.immutable) {
             directives.push("immutable");
+        }
 
-        if (options.mustRevalidate)
+        if (options.mustRevalidate) {
             directives.push("must-revalidate");
+        }
 
-        if (options.proxyRevalidate)
+        if (options.proxyRevalidate) {
             directives.push("proxy-revalidate");
+        }
 
         // Time-based directives
-        if (options.maxAge !== undefined)
+        if (options.maxAge !== undefined) {
             directives.push(`max-age=${options.maxAge}`);
+        }
 
-        if (options.sMaxAge !== undefined)
+        if (options.sMaxAge !== undefined) {
             directives.push(`s-maxage=${options.sMaxAge}`);
+        }
 
-        if (options.minFresh !== undefined)
+        if (options.minFresh !== undefined) {
             directives.push(`min-fresh=${options.minFresh}`);
+        }
 
-        if (options.staleWhileRevalidate !== undefined)
+        if (options.staleWhileRevalidate !== undefined) {
             directives.push(`stale-while-revalidate=${options.staleWhileRevalidate}`);
+        }
 
-        if (options.staleIfError !== undefined)
+        if (options.staleIfError !== undefined) {
             directives.push(`stale-if-error=${options.staleIfError}`);
+        }
 
         return directives.join(", ");
     },
@@ -109,7 +121,7 @@ export const HeaderUtilities = {
 
     /**
      * Create Content-Disposition header for file downloads with optional filename.
-     * @param options Content disposition options
+     * @param options
      * @param options.filename Filename for the download
      * @param options.filenameSplat Alternative filename format
      * @param options.type Disposition type ('inline' or 'attachment')
@@ -127,7 +139,7 @@ export const HeaderUtilities = {
 
     /**
      * Create Content-Type header value from structured data with optional charset and boundary.
-     * @param options Content type options
+     * @param options
      * @param options.boundary Multipart boundary string
      * @param options.charset Character encoding (e.g., 'utf8')
      * @param options.mediaType MIME media type (e.g., 'application/json')
@@ -152,8 +164,9 @@ export const HeaderUtilities = {
     ensureCharset(contentType: string, defaultCharset = "utf8"): string {
         const ct = this.parseContentType(contentType);
 
-        if (!ct)
+        if (!ct) {
             return contentType;
+        }
 
         if (!ct.charset) {
             ct.charset = defaultCharset;
@@ -192,8 +205,9 @@ export const HeaderUtilities = {
     getPreferredMediaType(acceptHeader: string | undefined, supportedTypes: string[]): string | undefined {
         const accept = this.parseAccept(acceptHeader);
 
-        if (!accept)
+        if (!accept) {
             return undefined;
+        }
 
         for (const type of supportedTypes) {
             if (accept.accepts(type)) {

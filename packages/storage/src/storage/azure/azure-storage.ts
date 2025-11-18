@@ -4,7 +4,7 @@ import { BlobServiceClient, StorageSharedKeyCredential } from "@azure/storage-bl
 import { normalize } from "@visulima/path";
 
 import { detectFileTypeFromStream } from "../../utils/detect-file-type";
-import { ERRORS, throwErrorCode } from "../../utils/errors";
+import { ERRORS, throwErrorCode, UploadError } from "../../utils/errors";
 import toMilliseconds from "../../utils/primitives/to-milliseconds";
 import type { RetryConfig } from "../../utils/retry";
 import { createRetryWrapper } from "../../utils/retry";
@@ -192,15 +192,18 @@ class AzureStorage extends BaseStorage<AzureFile, FileReturn> {
 
             file.status = "created";
 
+            await this.onCreate(file);
+
             return file;
         });
     }
 
     /**
-     * Deletes an upload and its metadata
-     * @param query - File query containing the file ID to delete
-     * @returns Promise resolving to the deleted file object with status: "deleted"
-     * @throws {Error} If the file metadata cannot be found
+     * Deletes an upload and its metadata.
+     * @param query File query containing the file ID to delete.
+     * @param query.id File ID to delete.
+     * @returns Promise resolving to the deleted file object with status: "deleted".
+     * @throws {UploadError} If the file metadata cannot be found.
      */
     public async delete({ id }: FileQuery): Promise<AzureFile> {
         return this.instrumentOperation("delete", async () => {
@@ -213,16 +216,20 @@ class AzureStorage extends BaseStorage<AzureFile, FileReturn> {
                 this.retry(() => this.containerClient.getBlockBlobClient(this.getFullPath(file.name)).deleteIfExists()),
             ]);
 
-            return { ...file };
+            const deletedFile = { ...file };
+
+            await this.onDelete(deletedFile);
+
+            return deletedFile;
         });
     }
 
     /**
-     * Move an upload file to a new location
-     * @param name - Source file name/ID
-     * @param destination - Destination file name/ID
-     * @returns Promise resolving to the moved file object
-     * @throws {Error} If the source file cannot be found
+     * Moves an upload file to a new location.
+     * @param name Source file name/ID.
+     * @param destination Destination file name/ID.
+     * @returns Promise resolving to the moved file object.
+     * @throws {UploadError} If the source file cannot be found.
      */
     public async move(name: string, destination: string): Promise<AzureFile> {
         return this.instrumentOperation("move", async () => {
@@ -360,11 +367,11 @@ class AzureStorage extends BaseStorage<AzureFile, FileReturn> {
     }
 
     /**
-     * Copy an upload file to a new location
-     * @param name - Source file name/ID
-     * @param destination - Destination file name/ID
-     * @returns Promise resolving to the copied file object
-     * @throws {Error} If the source file cannot be found
+     * Copies an upload file to a new location.
+     * @param name Source file name/ID.
+     * @param destination Destination file name/ID.
+     * @returns Promise resolving to the copied file object.
+     * @throws {UploadError} If the source file cannot be found.
      */
     public async copy(name: string, destination: string): Promise<AzureFile> {
         return this.instrumentOperation("copy", async () => {
@@ -392,7 +399,7 @@ class AzureStorage extends BaseStorage<AzureFile, FileReturn> {
             // Get source file metadata and return with destination name
             const sourceFile = await this.getMeta(name);
 
-            return { ...sourceFile, name: destination, id: destination } as AzureFile;
+            return { ...sourceFile, id: destination, name: destination } as AzureFile;
         });
     }
 
@@ -451,8 +458,8 @@ class AzureStorage extends BaseStorage<AzureFile, FileReturn> {
 
     /**
      * Prefixes the given filePath with the storage root location (assetFolder if configured).
-     * @param filePath Relative file path to prefix
-     * @returns Full path with asset folder prefix if configured, otherwise returns original path
+     * @param filePath Relative file path to prefix.
+     * @returns Full path with asset folder prefix if configured, otherwise returns original path.
      */
     private getFullPath(filePath: string): string {
         if (this.assetFolder !== undefined) {

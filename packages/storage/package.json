@@ -180,6 +180,7 @@
         "@visulima/pagination": "workspace:*",
         "lru-cache": "^11.2.2",
         "mime": "^4.1.0",
+        "type-is": "^2.0.1",
         "file-type": "21.1.0",
         "nanoid": "5.1.6",
         "path-to-regexp": "8.3.0"
@@ -232,7 +233,6 @@
         "sharp": "^0.34.5",
         "supertest": "^7.1.4",
         "tempy": "^3.1.0",
-        "type-is": "^2.0.1",
         "typescript": "^5.9.3",
         "vitest": "^4.0.9"
     },
