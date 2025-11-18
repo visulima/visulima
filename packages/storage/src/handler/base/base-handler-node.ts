@@ -204,7 +204,24 @@ export abstract class BaseHandlerNode<
         let errorResponse: UploadResponse;
 
         if (httpError.body) {
-            errorResponse = { body: httpError.body, headers: httpError.headers, statusCode: httpError.statusCode };
+            // If body is already an object, use it directly
+            // If body is a string, wrap it in error structure for consistency
+            if (typeof httpError.body === "object" && httpError.body !== null) {
+                errorResponse = { body: httpError.body, headers: httpError.headers, statusCode: httpError.statusCode };
+            } else {
+                // Body is a string, wrap it in error structure
+                errorResponse = {
+                    body: {
+                        error: {
+                            code: httpError.code || httpError.name || "Error",
+                            message: httpError.body || httpError.message || "Unknown error",
+                            name: httpError.name || "Error",
+                        },
+                    },
+                    headers: httpError.headers,
+                    statusCode: httpError.statusCode || 500,
+                };
+            }
         } else {
             // Format the error properties into a body.error structure
             errorResponse = {

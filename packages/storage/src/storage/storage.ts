@@ -243,7 +243,14 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
                     return true;
                 }
 
-                return Number(file.size) <= this.value;
+                const fileSize = Number(file.size);
+
+                // Reject negative sizes
+                if (fileSize < 0) {
+                    return false;
+                }
+
+                return fileSize <= this.value;
             },
             response: ErrorMap.RequestEntityTooLarge as HttpError,
             value: this.maxUploadSize,

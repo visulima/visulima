@@ -104,8 +104,16 @@ export const validateRequestBody = (request: IncomingMessage, allowEmptyForChunk
         return; // Chunked uploads can have empty body for initialization
     }
 
+    // Check if request has a body using type-is
     if (!hasBody(request)) {
         throw createHttpError(400, "Request body is required");
+    }
+
+    // Also check Content-Length header to ensure body is not empty
+    const contentLength = Number.parseInt(getHeader(request, "content-length") || "0", 10);
+
+    if (contentLength === 0 && !isChunkedUpload) {
+        throw createHttpError(400, "Content-Length is required and must be greater than 0");
     }
 };
 

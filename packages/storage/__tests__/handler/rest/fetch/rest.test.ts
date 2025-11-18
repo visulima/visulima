@@ -216,13 +216,13 @@ describe("fetch RestFetch", () => {
 
             // Then update it with PUT
             const updatedContent = Buffer.from("updated content");
-            const updateBlob = new Blob([updatedContent], { type: "text/plain" });
+            const updateBlob = new Blob([updatedContent], { type: testfile.contentType });
 
             const updateRequest = new Request(`${basePath}${fileId}`, {
                 body: updateBlob,
                 headers: {
                     "content-length": String(updatedContent.length),
-                    "content-type": "text/plain",
+                    "content-type": testfile.contentType,
                 },
                 method: "PUT",
             });
