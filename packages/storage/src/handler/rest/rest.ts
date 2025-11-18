@@ -222,7 +222,7 @@ class Rest<
                         throw createHttpError(400, "No file IDs provided");
                     }
 
-                    return this.deleteBatch(parsed as string[]);
+                    return this.restBase.deleteBatch(parsed as string[]);
                 }
 
                 if (typeof parsed === "object" && parsed !== null && "ids" in parsed && Array.isArray((parsed as { ids: unknown }).ids)) {
@@ -233,7 +233,7 @@ class Rest<
                         throw createHttpError(400, "No file IDs provided");
                     }
 
-                    return this.deleteBatch(idsArray);
+                    return this.restBase.deleteBatch(idsArray);
                 }
             } catch (error: unknown) {
                 if ((error as { statusCode?: number }).statusCode === 400) {

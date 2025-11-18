@@ -2,8 +2,16 @@ import createHttpError from "http-errors";
 
 import type { FileInit, UploadFile } from "../../storage/utils/file";
 import { ERRORS } from "../../utils/errors";
-import type { ChunkInfo } from "../services/chunked-upload-service";
-import { ChunkedUploadService } from "../services/chunked-upload-service";
+import {
+    calculateUploadProgress,
+    getBytesWritten,
+    getTotalSize,
+    isChunkedUpload,
+    isUploadComplete,
+    trackChunk,
+    type ChunkInfo,
+    validateChunk,
+} from "../../utils/chunked-upload";
 import type { ResponseFile, ResponseList } from "../types";
 import { buildChunkedUploadHeaders, buildFileHeaders, buildFileMetadataHeaders, buildResponseFile } from "../utils/response-builder";
 
@@ -191,16 +199,21 @@ export abstract class RestBase<TFile extends UploadFile> {
             const errorWithCode = error as { code?: string; UploadErrorCode?: string };
 
             if (errorWithCode.UploadErrorCode === ERRORS.FILE_NOT_FOUND || errorWithCode.code === "ENOENT") {
-                // Create new file (storage will generate ID, but we use the one from URL)
-                const newFile = await this.storage.create(config);
+                try {
+                    // Create new file (storage will generate ID, but we use the one from URL)
+                    const newFile = await this.storage.create(config);
 
-                // Write file data
-                file = await this.storage.write({
-                    body: bodyStream,
-                    contentLength,
-                    id: newFile.id,
-                    start: 0,
-                });
+                    // Write file data
+                    file = await this.storage.write({
+                        body: bodyStream,
+                        contentLength,
+                        id: newFile.id,
+                        start: 0,
+                    });
+                } catch (createError: unknown) {
+                    // If file creation or write fails, re-throw the error
+                    throw createError;
+                }
             } else {
                 throw error;
             }
@@ -232,11 +245,11 @@ export abstract class RestBase<TFile extends UploadFile> {
         // Get file metadata
         let file = await this.storage.getMeta(id);
         const metadata = file.metadata || {};
-        const isChunkedUpload = ChunkedUploadService.isChunkedUpload(file);
+        const isChunkedUploadFile = isChunkedUpload(file);
 
         // For chunked uploads, ensure file.size is set to total size
-        if (isChunkedUpload) {
-            const totalSize = ChunkedUploadService.getTotalSize(file);
+        if (isChunkedUploadFile) {
+            const totalSize = getTotalSize(file);
 
             if (totalSize && file.size !== totalSize) {
                 file = { ...file, size: totalSize };
@@ -245,7 +258,7 @@ export abstract class RestBase<TFile extends UploadFile> {
 
         const totalSize = typeof metadata._totalSize === "number" ? metadata._totalSize : file.size || 0;
 
-        if (!isChunkedUpload) {
+        if (!isChunkedUploadFile) {
             throw createHttpError(400, "File is not a chunked upload. Use POST or PUT for full file uploads.");
         }
 
@@ -253,7 +266,7 @@ export abstract class RestBase<TFile extends UploadFile> {
         const MAX_CHUNK_SIZE = 100 * 1024 * 1024;
 
         try {
-            ChunkedUploadService.validateChunk(chunkOffset, contentLength, totalSize, MAX_CHUNK_SIZE);
+            validateChunk(chunkOffset, contentLength, totalSize, MAX_CHUNK_SIZE);
         } catch (error) {
             if (error instanceof Error && error.message.includes("exceeds maximum")) {
                 throw createHttpError(413, error.message);
@@ -283,7 +296,7 @@ export abstract class RestBase<TFile extends UploadFile> {
             length: contentLength,
             offset: chunkOffset,
         };
-        const chunks = ChunkedUploadService.trackChunk(existingChunks, chunkInfo);
+        const chunks = trackChunk(existingChunks, chunkInfo);
 
         // Update metadata with chunk info
         const updatedMetadata = {
@@ -301,11 +314,11 @@ export abstract class RestBase<TFile extends UploadFile> {
             start: chunkOffset,
         });
 
-        // Check if upload is complete using ChunkedUploadService
+        // Check if upload is complete using chunked upload utilities
         let isComplete = updatedFile.bytesWritten >= totalSize;
 
-        if (isChunkedUpload) {
-            const isChunksComplete = ChunkedUploadService.isUploadComplete(chunks, totalSize);
+        if (isChunkedUploadFile) {
+            const isChunksComplete = isUploadComplete(chunks, totalSize);
 
             isComplete = isChunksComplete;
 
@@ -338,11 +351,11 @@ export abstract class RestBase<TFile extends UploadFile> {
      */
     protected async handleHead(id: string): Promise<ResponseFile<TFile>> {
         let file = await this.storage.getMeta(id);
-        const isChunkedUpload = ChunkedUploadService.isChunkedUpload(file);
+        const isChunkedUploadFile = isChunkedUpload(file);
 
         // For chunked uploads, ensure file.size is set to total size
-        if (isChunkedUpload) {
-            const totalSize = ChunkedUploadService.getTotalSize(file);
+        if (isChunkedUploadFile) {
+            const totalSize = getTotalSize(file);
 
             if (totalSize && file.size !== totalSize) {
                 file = { ...file, size: totalSize };
@@ -354,11 +367,11 @@ export abstract class RestBase<TFile extends UploadFile> {
         };
 
         // Add chunked upload progress headers
-        if (isChunkedUpload) {
+        if (isChunkedUploadFile) {
             const metadata = file.metadata || {};
-            const totalSize = ChunkedUploadService.getTotalSize(file) || file.size || 0;
+            const totalSize = getTotalSize(file) || file.size || 0;
             const chunks = Array.isArray(metadata._chunks) ? (metadata._chunks as ChunkInfo[]) : [];
-            const isComplete = ChunkedUploadService.isUploadComplete(chunks, totalSize);
+            const isComplete = isUploadComplete(chunks, totalSize);
 
             Object.assign(headers, buildChunkedUploadHeaders(file, isComplete));
         }

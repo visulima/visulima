@@ -113,6 +113,11 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
                 }
             }
 
+            // Validate size before constructing File (File constructor normalizes negative sizes to undefined)
+            if (processedConfig.size !== undefined && Number(processedConfig.size) < 0) {
+                throwErrorCode(ERRORS.REQUEST_ENTITY_TOO_LARGE, "Request entity too large");
+            }
+
             const file = new File(processedConfig);
 
             try {
