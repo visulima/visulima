@@ -2,20 +2,20 @@ import { QueryClient } from "@tanstack/solid-query";
 import { createSignal } from "solid-js";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { createGetFile } from "../create-get-file";
+import { createGetFile } from "../../solid/create-get-file";
 import { runInRoot } from "./test-utils";
 
 // Mock fetch globally
 const mockFetch = vi.fn();
 
-describe("createGetFile", () => {
+describe(createGetFile, () => {
     let queryClient: QueryClient;
 
     beforeEach(() => {
         queryClient = new QueryClient({
             defaultOptions: {
-                queries: { retry: false },
                 mutations: { retry: false },
+                queries: { retry: false },
             },
         });
         globalThis.fetch = mockFetch;
@@ -27,31 +27,31 @@ describe("createGetFile", () => {
 
         const mockBlob = new Blob(["test content"], { type: "image/jpeg" });
         const mockHeaders = new Headers({
-            "Content-Type": "image/jpeg",
             "Content-Length": "12",
+            "Content-Type": "image/jpeg",
         });
 
         mockFetch.mockResolvedValueOnce({
-            ok: true,
             blob: () => Promise.resolve(mockBlob),
             headers: mockHeaders,
+            ok: true,
         });
 
-        const result = runInRoot(() => {
-            return createGetFile({
-                endpoint: "https://api.example.com",
-                id: "file-123",
-                queryClient,
-            });
-        });
+        const result = runInRoot(() => createGetFile({
+            endpoint: "https://api.example.com",
+            id: "file-123",
+            queryClient,
+        }));
 
         // Wait for query to complete
         await new Promise((resolve) => setTimeout(resolve, 100));
 
-        expect(mockFetch).toHaveBeenCalled();
+        expect(mockFetch).toHaveBeenCalledWith();
+
         if (result.error()) {
             console.error("Query Error:", result.error());
         }
+
         expect(result.data()).toBeDefined();
         expect(result.data()?.size).toBe(mockBlob.size);
         expect(result.error()).toBeNull();
@@ -66,23 +66,21 @@ describe("createGetFile", () => {
 
         mockFetch
             .mockResolvedValueOnce({
-                ok: true,
                 blob: () => Promise.resolve(mockBlob1),
                 headers: new Headers({ "Content-Type": "image/jpeg" }),
+                ok: true,
             })
             .mockResolvedValueOnce({
-                ok: true,
                 blob: () => Promise.resolve(mockBlob2),
                 headers: new Headers({ "Content-Type": "image/jpeg" }),
+                ok: true,
             });
 
-        const result = runInRoot(() => {
-            return createGetFile({
-                endpoint: "https://api.example.com",
-                id,
-                queryClient,
-            });
-        });
+        const result = runInRoot(() => createGetFile({
+            endpoint: "https://api.example.com",
+            id,
+            queryClient,
+        }));
 
         await new Promise((resolve) => setTimeout(resolve, 100));
 
@@ -102,14 +100,12 @@ describe("createGetFile", () => {
 
         const [enabled, setEnabled] = createSignal(false);
 
-        const result = runInRoot(() => {
-            return createGetFile({
-                endpoint: "https://api.example.com",
-                id: "file-123",
-                enabled,
-                queryClient,
-            });
-        });
+        const result = runInRoot(() => createGetFile({
+            enabled,
+            endpoint: "https://api.example.com",
+            id: "file-123",
+            queryClient,
+        }));
 
         await new Promise((resolve) => setTimeout(resolve, 50));
 
@@ -123,25 +119,20 @@ describe("createGetFile", () => {
         const mockBlob = new Blob(["transformed"], { type: "image/png" });
 
         mockFetch.mockResolvedValueOnce({
-            ok: true,
             blob: () => Promise.resolve(mockBlob),
             headers: new Headers({ "Content-Type": "image/png" }),
+            ok: true,
         });
 
-        const result = runInRoot(() => {
-            return createGetFile({
-                endpoint: "https://api.example.com",
-                id: "file-123",
-                transform: { format: "png", width: 200 },
-                queryClient,
-            });
-        });
+        const result = runInRoot(() => createGetFile({
+            endpoint: "https://api.example.com",
+            id: "file-123",
+            queryClient,
+            transform: { format: "png", width: 200 },
+        }));
 
         await new Promise((resolve) => setTimeout(resolve, 100));
 
-        expect(mockFetch).toHaveBeenCalledWith(
-            expect.stringContaining("format=png"),
-            expect.any(Object)
-        );
+        expect(mockFetch).toHaveBeenCalledWith(expect.stringContaining("format=png"), expect.any(Object));
     });
 });

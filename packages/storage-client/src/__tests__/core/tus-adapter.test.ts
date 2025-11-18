@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { createTusAdapter } from "../tus-adapter";
+import { createTusAdapter } from "../../core/tus-adapter";
 
 // Mock fetch
 const mockFetch = vi.fn();

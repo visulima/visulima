@@ -40,6 +40,7 @@ export const useBatchDeleteFiles = (options: UseBatchDeleteFilesOptions): UseBat
     const mutation = useMutation({
         mutationFn: async (ids: string[]): Promise<BatchDeleteResult> => {
             const url = new URL(endpoint.endsWith("/") ? endpoint.slice(0, -1) : endpoint);
+
             url.searchParams.append("ids", ids.join(","));
 
             const response = await fetch(url.toString(), {
@@ -47,12 +48,14 @@ export const useBatchDeleteFiles = (options: UseBatchDeleteFilesOptions): UseBat
             });
 
             if (!response.ok) {
-                const errorData = await response.json().catch(() => ({
-                    error: {
-                        code: "RequestFailed",
-                        message: response.statusText,
-                    },
-                }));
+                const errorData = await response.json().catch(() => {
+                    return {
+                        error: {
+                            code: "RequestFailed",
+                            message: response.statusText,
+                        },
+                    };
+                });
 
                 throw new Error(errorData.error?.message || `Failed to batch delete files: ${response.status} ${response.statusText}`);
             }
@@ -93,4 +96,3 @@ export const useBatchDeleteFiles = (options: UseBatchDeleteFilesOptions): UseBat
         reset: mutation.reset,
     };
 };
-

@@ -19,25 +19,25 @@ export interface FileListResponse {
 }
 
 export interface UseGetFileListOptions {
+    /** Whether to enable the query */
+    enabled?: boolean;
     /** Base endpoint URL for file operations */
     endpoint: string;
     /** Maximum number of elements to retrieve */
     limit?: number;
-    /** Page number for pagination */
-    page?: number;
-    /** Whether to enable the query */
-    enabled?: boolean;
     /** Callback when request fails */
     onError?: (error: Error) => void;
     /** Callback when request succeeds */
     onSuccess?: (data: FileListResponse) => void;
+    /** Page number for pagination */
+    page?: number;
 }
 
 export interface UseGetFileListReturn {
-    /** Last request error, if any */
-    error: Error | null;
     /** File list data */
     data: FileListResponse | undefined;
+    /** Last request error, if any */
+    error: Error | null;
     /** Whether a request is currently in progress */
     isLoading: boolean;
     /** Refetch the file list */
@@ -51,7 +51,7 @@ export interface UseGetFileListReturn {
  * @returns File list fetching functions and state
  */
 export const useGetFileList = (options: UseGetFileListOptions): UseGetFileListReturn => {
-    const { endpoint, limit, page, enabled = true, onError, onSuccess } = options;
+    const { enabled = true, endpoint, limit, onError, onSuccess, page } = options;
 
     const query = useQuery({
         enabled,
@@ -63,9 +63,9 @@ export const useGetFileList = (options: UseGetFileListOptions): UseGetFileListRe
             return Array.isArray(data)
                 ? { data }
                 : {
-                      data: data.data || (data as unknown as FileMeta[]),
-                      meta: (data as FileListResponse).meta,
-                  };
+                    data: data.data || (data as unknown as FileMeta[]),
+                    meta: (data as FileListResponse).meta,
+                };
         },
         queryKey: storageQueryKeys.files.list({ limit, page }),
     });

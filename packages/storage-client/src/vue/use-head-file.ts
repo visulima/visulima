@@ -5,6 +5,8 @@ import { computed, toValue } from "vue";
 import { buildUrl, fetchHead, storageQueryKeys } from "../core";
 
 export interface FileHeadMetadata {
+    /** Whether this is a chunked upload session */
+    chunkedUpload?: boolean;
     /** Content length in bytes */
     contentLength?: number;
     /** Content type */
@@ -13,34 +15,32 @@ export interface FileHeadMetadata {
     etag?: string;
     /** Last modified date */
     lastModified?: string;
+    /** Received chunk offsets (chunked uploads) */
+    receivedChunks?: number[];
+    /** Whether upload is complete (chunked uploads) */
+    uploadComplete?: boolean;
     /** Upload expiration date */
     uploadExpires?: string;
     /** Upload offset for chunked uploads */
     uploadOffset?: number;
-    /** Whether upload is complete (chunked uploads) */
-    uploadComplete?: boolean;
-    /** Whether this is a chunked upload session */
-    chunkedUpload?: boolean;
-    /** Received chunk offsets (chunked uploads) */
-    receivedChunks?: number[];
 }
 
 export interface UseHeadFileOptions {
+    /** Whether to enable the query */
+    enabled?: MaybeRefOrGetter<boolean>;
     /** Base endpoint URL for file operations */
     endpoint: string;
     /** File ID to fetch metadata for */
     id: MaybeRefOrGetter<string>;
-    /** Whether to enable the query */
-    enabled?: MaybeRefOrGetter<boolean>;
 }
 
 export interface UseHeadFileReturn {
+    /** File metadata from HEAD request */
+    data: Readonly<Ref<FileHeadMetadata | undefined>>;
     /** Last request error, if any */
     error: Readonly<Ref<Error | null>>;
     /** Whether a request is currently in progress */
     isLoading: Readonly<Ref<boolean>>;
-    /** File metadata from HEAD request */
-    data: Readonly<Ref<FileHeadMetadata | undefined>>;
     /** Refetch the file metadata */
     refetch: () => void;
 }
@@ -52,7 +52,7 @@ export interface UseHeadFileReturn {
  * @returns File HEAD request functions and state
  */
 export const useHeadFile = (options: UseHeadFileOptions): UseHeadFileReturn => {
-    const { endpoint, id, enabled = true } = options;
+    const { enabled = true, endpoint, id } = options;
 
     const query = useQuery({
         enabled: computed(() => toValue(enabled) && !!toValue(id)),
@@ -128,4 +128,3 @@ export const useHeadFile = (options: UseHeadFileOptions): UseHeadFileReturn => {
         },
     };
 };
-

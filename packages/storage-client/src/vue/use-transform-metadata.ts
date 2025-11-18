@@ -12,19 +12,19 @@ export interface TransformMetadata {
 }
 
 export interface UseTransformMetadataOptions {
-    /** Base endpoint URL for transform operations */
-    endpoint: string;
     /** Whether to enable the query */
     enabled?: MaybeRefOrGetter<boolean>;
+    /** Base endpoint URL for transform operations */
+    endpoint: string;
 }
 
 export interface UseTransformMetadataReturn {
+    /** Transform metadata */
+    data: Readonly<Ref<TransformMetadata | undefined>>;
     /** Last request error, if any */
     error: Readonly<Ref<Error | null>>;
     /** Whether a request is currently in progress */
     isLoading: Readonly<Ref<boolean>>;
-    /** Transform metadata */
-    data: Readonly<Ref<TransformMetadata | undefined>>;
     /** Refetch the transform metadata */
     refetch: () => void;
 }
@@ -36,7 +36,7 @@ export interface UseTransformMetadataReturn {
  * @returns Transform metadata fetching functions and state
  */
 export const useTransformMetadata = (options: UseTransformMetadataOptions): UseTransformMetadataReturn => {
-    const { endpoint, enabled = true } = options;
+    const { enabled = true, endpoint } = options;
 
     const query = useQuery({
         enabled: computed(() => toValue(enabled)),
@@ -61,4 +61,3 @@ export const useTransformMetadata = (options: UseTransformMetadataOptions): UseT
         },
     };
 };
-

@@ -2,20 +2,20 @@ import { QueryClient } from "@tanstack/react-query";
 import { waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { useGetFile } from "../../react/use-get-file";
 import { renderHookWithQueryClient } from "./test-utils";
-import { useGetFile } from "../use-get-file";
 
 // Mock fetch globally
 const mockFetch = vi.fn();
 
-describe("useGetFile", () => {
+describe(useGetFile, () => {
     let queryClient: QueryClient;
 
     beforeEach(() => {
         queryClient = new QueryClient({
             defaultOptions: {
-                queries: { retry: false },
                 mutations: { retry: false },
+                queries: { retry: false },
             },
         });
         globalThis.fetch = mockFetch;
@@ -27,16 +27,16 @@ describe("useGetFile", () => {
 
         const mockBlob = new Blob(["test content"], { type: "image/jpeg" });
         const mockHeaders = new Headers({
-            "Content-Type": "image/jpeg",
             "Content-Length": "12",
-            "ETag": '"test-etag"',
+            "Content-Type": "image/jpeg",
+            ETag: "\"test-etag\"",
             "Last-Modified": "Wed, 21 Oct 2015 07:28:00 GMT",
         });
 
         mockFetch.mockResolvedValueOnce({
-            ok: true,
             blob: () => Promise.resolve(mockBlob),
             headers: mockHeaders,
+            ok: true,
         });
 
         const { result } = renderHookWithQueryClient(
@@ -45,7 +45,7 @@ describe("useGetFile", () => {
                     endpoint: "https://api.example.com",
                     id: "file-123",
                 }),
-            { queryClient }
+            { queryClient },
         );
 
         await waitFor(() => {
@@ -65,10 +65,10 @@ describe("useGetFile", () => {
         expect.assertions(4);
 
         mockFetch.mockResolvedValueOnce({
+            json: () => Promise.resolve({ error: { message: "File not found" } }),
             ok: false,
             status: 404,
             statusText: "Not Found",
-            json: () => Promise.resolve({ error: { message: "File not found" } }),
         });
 
         const { result } = renderHookWithQueryClient(
@@ -77,7 +77,7 @@ describe("useGetFile", () => {
                     endpoint: "https://api.example.com",
                     id: "non-existent",
                 }),
-            { queryClient }
+            { queryClient },
         );
 
         await waitFor(() => {
@@ -94,9 +94,9 @@ describe("useGetFile", () => {
         const mockBlob = new Blob(["transformed content"], { type: "image/png" });
 
         mockFetch.mockResolvedValueOnce({
-            ok: true,
             blob: () => Promise.resolve(mockBlob),
             headers: new Headers({ "Content-Type": "image/png" }),
+            ok: true,
         });
 
         const { result } = renderHookWithQueryClient(
@@ -104,19 +104,16 @@ describe("useGetFile", () => {
                 useGetFile({
                     endpoint: "https://api.example.com",
                     id: "file-123",
-                    transform: { format: "png", width: 200, quality: 90 },
+                    transform: { format: "png", quality: 90, width: 200 },
                 }),
-            { queryClient }
+            { queryClient },
         );
 
         await waitFor(() => {
             expect(result.current.isLoading).toBe(false);
         });
 
-        expect(mockFetch).toHaveBeenCalledWith(
-            expect.stringContaining("format=png"),
-            expect.any(Object)
-        );
+        expect(mockFetch).toHaveBeenCalledWith(expect.stringContaining("format=png"), expect.any(Object));
         expect(result.current.data).toBe(mockBlob);
     });
 
@@ -126,11 +123,11 @@ describe("useGetFile", () => {
         const { result } = renderHookWithQueryClient(
             () =>
                 useGetFile({
+                    enabled: false,
                     endpoint: "https://api.example.com",
                     id: "file-123",
-                    enabled: false,
                 }),
-            { queryClient }
+            { queryClient },
         );
 
         // Query should not run when disabled
@@ -145,9 +142,9 @@ describe("useGetFile", () => {
         const mockBlob = new Blob(["test"], { type: "image/jpeg" });
 
         mockFetch.mockResolvedValueOnce({
-            ok: true,
             blob: () => Promise.resolve(mockBlob),
             headers: new Headers({ "Content-Type": "image/jpeg" }),
+            ok: true,
         });
 
         const { result } = renderHookWithQueryClient(
@@ -157,7 +154,7 @@ describe("useGetFile", () => {
                     id: "file-123",
                     onSuccess,
                 }),
-            { queryClient }
+            { queryClient },
         );
 
         await waitFor(() => {
@@ -175,10 +172,10 @@ describe("useGetFile", () => {
         const onError = vi.fn();
 
         mockFetch.mockResolvedValueOnce({
+            json: () => Promise.resolve({ error: { message: "Server error" } }),
             ok: false,
             status: 500,
             statusText: "Internal Server Error",
-            json: () => Promise.resolve({ error: { message: "Server error" } }),
         });
 
         renderHookWithQueryClient(
@@ -188,7 +185,7 @@ describe("useGetFile", () => {
                     id: "file-123",
                     onError,
                 }),
-            { queryClient }
+            { queryClient },
         );
 
         await waitFor(() => {
@@ -202,9 +199,9 @@ describe("useGetFile", () => {
         const mockBlob = new Blob(["test"], { type: "image/jpeg" });
 
         mockFetch.mockResolvedValue({
-            ok: true,
             blob: () => Promise.resolve(mockBlob),
             headers: new Headers({ "Content-Type": "image/jpeg" }),
+            ok: true,
         });
 
         const { result } = renderHookWithQueryClient(
@@ -213,7 +210,7 @@ describe("useGetFile", () => {
                     endpoint: "https://api.example.com",
                     id: "file-123",
                 }),
-            { queryClient }
+            { queryClient },
         );
 
         await waitFor(() => {
@@ -229,4 +226,3 @@ describe("useGetFile", () => {
         });
     });
 });
-

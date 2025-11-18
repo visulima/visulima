@@ -1,7 +1,5 @@
-import { ref } from "vue";
-
 import { useMutation, useQueryClient } from "@tanstack/vue-query";
-import { computed } from "vue";
+import { computed, ref } from "vue";
 
 import { buildUrl, putFile, storageQueryKeys } from "../core";
 import type { UploadResult } from "../react/types";
@@ -14,6 +12,8 @@ export interface UsePutFileOptions {
 }
 
 export interface UsePutFileReturn {
+    /** Last upload result, if any */
+    data: Readonly<Ref<UploadResult | null>>;
     /** Last request error, if any */
     error: Readonly<Ref<Error | null>>;
     /** Whether a request is currently in progress */
@@ -24,8 +24,6 @@ export interface UsePutFileReturn {
     putFile: (id: string, file: File | Blob) => Promise<UploadResult>;
     /** Reset mutation state */
     reset: () => void;
-    /** Last upload result, if any */
-    data: Readonly<Ref<UploadResult | null>>;
 }
 
 /**
@@ -41,7 +39,7 @@ export const usePutFile = (options: UsePutFileOptions): UsePutFileReturn => {
     const progress = ref(0);
 
     const mutation = useMutation({
-        mutationFn: async ({ id, file }: { id: string; file: File | Blob }): Promise<UploadResult> => {
+        mutationFn: async ({ file, id }: { file: File | Blob; id: string }): Promise<UploadResult> => {
             const url = buildUrl(endpoint, id);
             const result = await putFile(url, file, (progressValue) => {
                 progress.value = progressValue;
@@ -50,8 +48,8 @@ export const usePutFile = (options: UsePutFileOptions): UsePutFileReturn => {
 
             return {
                 id,
-                url: result.location || url,
                 metadata: result.etag ? { etag: result.etag } : undefined,
+                url: result.location || url,
             };
         },
         onError: () => {
@@ -72,11 +70,10 @@ export const usePutFile = (options: UsePutFileOptions): UsePutFileReturn => {
         error: computed(() => (mutation.error.value as Error) || null),
         isLoading: computed(() => mutation.isPending.value),
         progress,
-        putFile: (id: string, file: File | Blob) => mutation.mutateAsync({ id, file }),
+        putFile: (id: string, file: File | Blob) => mutation.mutateAsync({ file, id }),
         reset: () => {
             progress.value = 0;
             mutation.reset();
         },
     };
 };
-

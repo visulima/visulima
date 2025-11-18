@@ -2,8 +2,8 @@ import { QueryClient } from "@tanstack/react-query";
 import { waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { usePutFile } from "../../react/use-put-file";
 import { renderHookWithQueryClient } from "./test-utils";
-import { usePutFile } from "../use-put-file";
 
 // Mock XMLHttpRequest for progress tracking
 class MockXMLHttpRequest {
@@ -57,7 +57,7 @@ class MockXMLHttpRequest {
         }
 
         if (header === "ETag") {
-            return '"test-etag"';
+            return "\"test-etag\"";
         }
 
         return null;
@@ -76,15 +76,15 @@ class MockXMLHttpRequest {
     public abort = vi.fn();
 }
 
-describe("usePutFile", () => {
+describe(usePutFile, () => {
     let queryClient: QueryClient;
     let originalXHR: typeof XMLHttpRequest;
 
     beforeEach(() => {
         queryClient = new QueryClient({
             defaultOptions: {
-                queries: { retry: false },
                 mutations: { retry: false },
+                queries: { retry: false },
             },
         });
         originalXHR = globalThis.XMLHttpRequest;
@@ -107,7 +107,7 @@ describe("usePutFile", () => {
                 usePutFile({
                     endpoint: "https://api.example.com",
                 }),
-            { queryClient }
+            { queryClient },
         );
 
         const uploadPromise = result.current.putFile("file-123", file);
@@ -141,18 +141,21 @@ describe("usePutFile", () => {
                     endpoint: "https://api.example.com",
                     onProgress,
                 }),
-            { queryClient }
+            { queryClient },
         );
 
         const uploadPromise = result.current.putFile("file-123", file);
 
-        await waitFor(() => {
-            expect(result.current.progress).toBeGreaterThan(0);
-        }, { timeout: 100 });
+        await waitFor(
+            () => {
+                expect(result.current.progress).toBeGreaterThan(0);
+            },
+            { timeout: 100 },
+        );
 
         await uploadPromise;
 
-        expect(onProgress).toHaveBeenCalled();
+        expect(onProgress).toHaveBeenCalledWith();
     });
 
     it("should handle upload errors", async () => {
@@ -185,7 +188,7 @@ describe("usePutFile", () => {
                 usePutFile({
                     endpoint: "https://api.example.com",
                 }),
-            { queryClient }
+            { queryClient },
         );
 
         try {
@@ -212,13 +215,13 @@ describe("usePutFile", () => {
                 usePutFile({
                     endpoint: "https://api.example.com",
                 }),
-            { queryClient }
+            { queryClient },
         );
 
         await result.current.putFile("file-123", file);
 
         await waitFor(() => {
-            expect(invalidateQueriesSpy).toHaveBeenCalled();
+            expect(invalidateQueriesSpy).toHaveBeenCalledWith();
         });
     });
 
@@ -232,7 +235,7 @@ describe("usePutFile", () => {
                 usePutFile({
                     endpoint: "https://api.example.com",
                 }),
-            { queryClient }
+            { queryClient },
         );
 
         await result.current.putFile("file-123", file);
@@ -246,6 +249,7 @@ describe("usePutFile", () => {
         await waitFor(() => {
             expect(result.current.data).toBeNull();
         });
+
         expect(result.current.progress).toBe(0);
     });
 });
