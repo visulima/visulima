@@ -1,7 +1,7 @@
+import type { File as UploadFile } from "@visulima/storage";
+import { Multipart } from "@visulima/storage/handler/http/node";
 import express from "express";
-import type { File as UploadFile } from "@visulima/upload";
-import { Multipart } from "@visulima/upload";
-import { AzureStorage } from "@visulima/upload/provider/azure";
+import { AzureStorage } from "@visulima/storage/provider/azure";
 import Cors from "cors";
 
 const PORT = process.env.PORT || 3002;
@@ -16,7 +16,6 @@ const storage = new AzureStorage({
     onComplete: (file) => {
         const { uri = "unknown", id } = file;
 
-        console.log(`File upload complete, storage path: ${uri}`);
         // send gcs link to client
         return { id, link: uri };
     },
@@ -34,9 +33,7 @@ const cors = Cors({
 app.use(cors);
 
 app.use("/files", multipart.handle, (request, response) => {
-    const file = request.body as UploadFile;
-
-    console.log("File upload complete: ", file.originalName);
+    const file = (request as express.Request & { body: UploadFile }).body;
 
     return response.json(file);
 });

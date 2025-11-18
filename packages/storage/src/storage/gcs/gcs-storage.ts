@@ -11,7 +11,7 @@ import toMilliseconds from "../../utils/primitives/to-milliseconds";
 import type { HttpError } from "../../utils/types";
 import LocalMetaStorage from "../local/local-meta-storage";
 import type MetaStorage from "../meta-storage";
-import BaseStorage from "../storage";
+import { BaseStorage } from "../storage";
 import type { FileInit, FilePart, FileQuery, FileReturn } from "../utils/file";
 import { getFileStatus, hasContent, partMatch } from "../utils/file";
 import FetchError from "./fetch-error";

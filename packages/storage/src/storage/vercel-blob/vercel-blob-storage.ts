@@ -7,7 +7,7 @@ import { UploadError } from "../../utils/errors";
 import toMilliseconds from "../../utils/primitives/to-milliseconds";
 import LocalMetaStorage from "../local/local-meta-storage";
 import type MetaStorage from "../meta-storage";
-import BaseStorage from "../storage";
+import { BaseStorage } from "../storage";
 import type { FileInit, FilePart, FileQuery, FileReturn } from "../utils/file";
 import { getFileStatus, hasContent, partMatch, updateSize } from "../utils/file";
 import type { VercelBlobStorageOptions } from "./types";

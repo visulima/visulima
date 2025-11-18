@@ -2,11 +2,10 @@ import { Readable } from "node:stream";
 
 import mime from "mime";
 
-import type BaseStorage from "../storage/storage";
+import type { BaseStorage } from "../storage/storage";
 import type { File, FileReturn } from "../storage/utils/file";
 import type { Cache } from "../utils/cache";
 import { NoOpCache } from "../utils/cache";
-import type { Logger } from "../utils/types";
 import type { BaseTransformerConfig } from "./types";
 
 /**
@@ -23,7 +22,7 @@ abstract class BaseTransformer<
 > {
     protected config: Config;
 
-    protected logger?: Logger;
+    protected logger?: Console;
 
     protected cache?: Cache<string, CacheValue>;
 
@@ -37,7 +36,7 @@ abstract class BaseTransformer<
     protected constructor(
         protected readonly storage: BaseStorage<TFile, TFileReturn>,
         config: Config,
-        logger?: Logger,
+        logger?: Console,
     ) {
         this.config = config;
         this.logger = logger;

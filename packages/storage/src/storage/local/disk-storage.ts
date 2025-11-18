@@ -17,7 +17,7 @@ import StreamLength from "../../utils/pipes/stream-length";
 import toMilliseconds from "../../utils/primitives/to-milliseconds";
 import type { HttpError } from "../../utils/types";
 import type MetaStorage from "../meta-storage";
-import BaseStorage from "../storage";
+import { BaseStorage, defaultFilesystemFileNameValidation } from "../storage";
 import type { DiskStorageOptions } from "../types";
 import type { FileInit, FilePart, FileQuery } from "../utils/file";
 import { File, getFileStatus, hasContent, partMatch, updateSize } from "../utils/file";
@@ -62,6 +62,13 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
             const metaConfig = { ...config, ...config.metaStorageConfig, logger: this.logger };
 
             this.meta = new LocalMetaStorage(metaConfig);
+        }
+
+        // Override filename validation with filesystem-specific validation
+        // Local filesystems have stricter character restrictions than cloud storage platforms
+        if (!config.fileNameValidation) {
+            // eslint-disable-next-line no-param-reassign
+            config.fileNameValidation = defaultFilesystemFileNameValidation;
         }
 
         this.isReady = false;
@@ -119,7 +126,16 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
             }
 
             file.name = this.namingFunction(file as TFile);
-            file.size = Number.isNaN(file.size) ? this.maxUploadSize : file.size;
+            // Only set default size if size is NaN (not if it's undefined for defer-length)
+            if (file.size === undefined || Number.isNaN(file.size)) {
+                // For defer-length, keep size as undefined
+                // For other cases, set to maxUploadSize if NaN
+                if (file.size === undefined) {
+                    // Keep undefined for creation-defer-length extension
+                } else {
+                    file.size = this.maxUploadSize;
+                }
+            }
 
             await this.validate(file as TFile);
 

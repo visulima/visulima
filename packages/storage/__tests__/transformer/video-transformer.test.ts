@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, expectTypeOf, it, vi } from "vitest";
 
+import type { BaseStorage } from "../../src/storage/storage";
 import type { VideoTransformerConfig } from "../../src/transformer";
 import VideoTransformer from "../../src/transformer/video-transformer";
 
@@ -29,14 +30,14 @@ describe(VideoTransformer, () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
-        transformer = new VideoTransformer(mockStorage as import("../../src/storage/storage").BaseStorage, {});
+        transformer = new VideoTransformer(mockStorage as BaseStorage, {});
     });
 
     describe("constructor", () => {
         it("should create transformer with default configuration", () => {
             expect.assertions(1);
 
-            const newTransformer = new VideoTransformer(mockStorage as import("../../src/storage/storage").BaseStorage);
+            const newTransformer = new VideoTransformer(mockStorage as BaseStorage);
 
             expect(newTransformer).toBeInstanceOf(VideoTransformer);
         });
@@ -50,7 +51,7 @@ describe(VideoTransformer, () => {
                 maxVideoSize: 100 * 1024 * 1024,
             };
 
-            const newTransformer = new VideoTransformer(mockStorage as import("../../src/storage/storage").BaseStorage, config);
+            const newTransformer = new VideoTransformer(mockStorage as BaseStorage, config);
 
             expect(newTransformer).toBeInstanceOf(VideoTransformer);
         });

@@ -2,13 +2,13 @@ import type { Readable } from "node:stream";
 
 import type { Cache } from "../utils/cache";
 import type { RetryConfig } from "../utils/retry";
-import type { HttpError, HttpErrorBody, Logger, Metrics, UploadResponse, Validation } from "../utils/types";
+import type { HttpError, HttpErrorBody, Metrics, UploadResponse, Validation } from "../utils/types";
 import type { LocalMetaStorageOptions } from "./local/local-meta-storage";
 import type MetaStorage from "./meta-storage";
 import type { File, FileInit, FilePart, FileQuery, FileReturn, UploadFile } from "./utils/file";
 
 export interface MetaStorageOptions {
-    logger?: Logger;
+    logger?: Console;
     prefix?: string;
     suffix?: string;
 }
@@ -75,8 +75,23 @@ export interface BaseStorageOptions<T extends File = File> extends GenericStorag
     expiration?: ExpirationOptions;
     /** File naming function */
     filename?: (file: T) => string;
+
+    /**
+     * File name validation function.
+     * Returns true if the filename is valid, false otherwise.
+     * @default Cloud storage platforms: permissive (only blocks path traversal and null bytes)
+     * @default DiskStorage: strict (blocks filesystem-incompatible characters)
+     * @example
+     * ```ts
+     * fileNameValidation: (name: string) => {
+     *   // Custom validation logic
+     *   return name.length > 0 && !name.includes('../');
+     * }
+     * ```
+     */
+    fileNameValidation?: (name: string) => boolean;
     /** Logger injection */
-    logger?: Logger;
+    logger?: Console;
     /** Limiting the size of custom metadata */
     maxMetadataSize?: number | string;
     /** File size limit */
@@ -143,7 +158,7 @@ export interface GenericStorageConfig {
     /** Supported checksum algorithms */
     checksumTypes?: string[];
     /** Logger instance */
-    logger?: Logger;
+    logger?: Console;
     /** Maximum file size */
     maxFileSize?: number | string;
     /** Metrics instance for observability */
