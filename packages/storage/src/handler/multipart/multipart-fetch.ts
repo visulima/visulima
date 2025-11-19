@@ -91,7 +91,7 @@ class Multipart<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
                 // For Fetch API, convert to Node.js Readable stream for storage.write
                 // storage.write expects a Node.js Readable stream, not Uint8Array
                 const { Readable } = require("node:stream");
-                
+
                 if (bytes instanceof Uint8Array) {
                     return Readable.from(Buffer.from(bytes));
                 }
@@ -107,6 +107,7 @@ class Multipart<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
             protected createEmptyStream(): unknown {
                 // Return Node.js Readable stream, not Uint8Array
                 const { Readable } = require("node:stream");
+
                 return Readable.from(new Uint8Array(0));
             }
         }();

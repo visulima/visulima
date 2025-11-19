@@ -506,14 +506,23 @@ importers:
       '@visulima/packem':
         specifier: 2.0.0-alpha.37
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 2.0.0-alpha.37(b8d3e600f9a9f748ef42ddd128bb62bc)
 =======
+=======
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
 <<<<<<< HEAD
         version: 2.0.0-alpha.37(46e9d823fb7da27182a859d71d4bad4a)
 =======
         version: 2.0.0-alpha.37(507d922911cbb1137253fca0757a1c4e)
 >>>>>>> 53756d0e7 (feat: add storage-client package with initial implementation)
+<<<<<<< HEAD
 >>>>>>> cfd49ebf5 (feat: add storage-client package with initial implementation)
+=======
+=======
+        version: 2.0.0-alpha.37(ae32b6bab825e75fda1f518f4847465f)
+>>>>>>> 4b5aeb8c9 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
       '@visulima/path':
         specifier: 2.0.5
         version: link:../path
@@ -977,14 +986,23 @@ importers:
       '@visulima/packem':
         specifier: 2.0.0-alpha.37
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 2.0.0-alpha.37(b8d3e600f9a9f748ef42ddd128bb62bc)
 =======
+=======
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
 <<<<<<< HEAD
         version: 2.0.0-alpha.37(46e9d823fb7da27182a859d71d4bad4a)
 =======
         version: 2.0.0-alpha.37(507d922911cbb1137253fca0757a1c4e)
 >>>>>>> 53756d0e7 (feat: add storage-client package with initial implementation)
+<<<<<<< HEAD
 >>>>>>> cfd49ebf5 (feat: add storage-client package with initial implementation)
+=======
+=======
+        version: 2.0.0-alpha.37(ae32b6bab825e75fda1f518f4847465f)
+>>>>>>> 4b5aeb8c9 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
       '@visulima/path':
         specifier: 2.0.5
         version: link:../path
@@ -1155,14 +1173,23 @@ importers:
       '@visulima/packem':
         specifier: 2.0.0-alpha.37
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 2.0.0-alpha.37(b8d3e600f9a9f748ef42ddd128bb62bc)
 =======
+=======
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
 <<<<<<< HEAD
         version: 2.0.0-alpha.37(46e9d823fb7da27182a859d71d4bad4a)
 =======
         version: 2.0.0-alpha.37(507d922911cbb1137253fca0757a1c4e)
 >>>>>>> 53756d0e7 (feat: add storage-client package with initial implementation)
+<<<<<<< HEAD
 >>>>>>> cfd49ebf5 (feat: add storage-client package with initial implementation)
+=======
+=======
+        version: 2.0.0-alpha.37(ae32b6bab825e75fda1f518f4847465f)
+>>>>>>> 4b5aeb8c9 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
       '@vitest/coverage-v8':
 <<<<<<< HEAD
         specifier: ^4.0.13
@@ -1306,14 +1333,23 @@ importers:
       '@visulima/packem':
         specifier: 2.0.0-alpha.37
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 2.0.0-alpha.37(b8d3e600f9a9f748ef42ddd128bb62bc)
 =======
+=======
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
 <<<<<<< HEAD
         version: 2.0.0-alpha.37(46e9d823fb7da27182a859d71d4bad4a)
 =======
         version: 2.0.0-alpha.37(507d922911cbb1137253fca0757a1c4e)
 >>>>>>> 53756d0e7 (feat: add storage-client package with initial implementation)
+<<<<<<< HEAD
 >>>>>>> cfd49ebf5 (feat: add storage-client package with initial implementation)
+=======
+=======
+        version: 2.0.0-alpha.37(ae32b6bab825e75fda1f518f4847465f)
+>>>>>>> 4b5aeb8c9 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
       '@visulima/pail':
         specifier: 3.2.2
         version: link:../pail
@@ -1560,14 +1596,23 @@ importers:
       '@visulima/packem':
         specifier: 2.0.0-alpha.37
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 2.0.0-alpha.37(b8d3e600f9a9f748ef42ddd128bb62bc)
 =======
+=======
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
 <<<<<<< HEAD
         version: 2.0.0-alpha.37(46e9d823fb7da27182a859d71d4bad4a)
 =======
         version: 2.0.0-alpha.37(507d922911cbb1137253fca0757a1c4e)
 >>>>>>> 53756d0e7 (feat: add storage-client package with initial implementation)
+<<<<<<< HEAD
 >>>>>>> cfd49ebf5 (feat: add storage-client package with initial implementation)
+=======
+=======
+        version: 2.0.0-alpha.37(ae32b6bab825e75fda1f518f4847465f)
+>>>>>>> 4b5aeb8c9 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
       '@vitest/coverage-v8':
 <<<<<<< HEAD
         specifier: ^4.0.13
@@ -1766,14 +1811,23 @@ importers:
       '@visulima/packem':
         specifier: 2.0.0-alpha.37
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 2.0.0-alpha.37(b8d3e600f9a9f748ef42ddd128bb62bc)
 =======
+=======
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
 <<<<<<< HEAD
         version: 2.0.0-alpha.37(46e9d823fb7da27182a859d71d4bad4a)
 =======
         version: 2.0.0-alpha.37(507d922911cbb1137253fca0757a1c4e)
 >>>>>>> 53756d0e7 (feat: add storage-client package with initial implementation)
+<<<<<<< HEAD
 >>>>>>> cfd49ebf5 (feat: add storage-client package with initial implementation)
+=======
+=======
+        version: 2.0.0-alpha.37(ae32b6bab825e75fda1f518f4847465f)
+>>>>>>> 4b5aeb8c9 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
       '@vitest/coverage-v8':
 <<<<<<< HEAD
         specifier: ^4.0.13
@@ -1970,14 +2024,23 @@ importers:
       '@visulima/packem':
         specifier: 2.0.0-alpha.37
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 2.0.0-alpha.37(b8d3e600f9a9f748ef42ddd128bb62bc)
 =======
+=======
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
 <<<<<<< HEAD
         version: 2.0.0-alpha.37(46e9d823fb7da27182a859d71d4bad4a)
 =======
         version: 2.0.0-alpha.37(507d922911cbb1137253fca0757a1c4e)
 >>>>>>> 53756d0e7 (feat: add storage-client package with initial implementation)
+<<<<<<< HEAD
 >>>>>>> cfd49ebf5 (feat: add storage-client package with initial implementation)
+=======
+=======
+        version: 2.0.0-alpha.37(ae32b6bab825e75fda1f518f4847465f)
+>>>>>>> 4b5aeb8c9 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
       '@vitest/coverage-v8':
 <<<<<<< HEAD
         specifier: ^4.0.13
@@ -2301,14 +2364,23 @@ importers:
       '@visulima/packem':
         specifier: 2.0.0-alpha.37
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 2.0.0-alpha.37(b8d3e600f9a9f748ef42ddd128bb62bc)
 =======
+=======
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
 <<<<<<< HEAD
         version: 2.0.0-alpha.37(46e9d823fb7da27182a859d71d4bad4a)
 =======
         version: 2.0.0-alpha.37(507d922911cbb1137253fca0757a1c4e)
 >>>>>>> 53756d0e7 (feat: add storage-client package with initial implementation)
+<<<<<<< HEAD
 >>>>>>> cfd49ebf5 (feat: add storage-client package with initial implementation)
+=======
+=======
+        version: 2.0.0-alpha.37(ae32b6bab825e75fda1f518f4847465f)
+>>>>>>> 4b5aeb8c9 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
       '@vitest/coverage-v8':
 <<<<<<< HEAD
         specifier: ^4.0.13
@@ -2638,14 +2710,23 @@ importers:
       '@visulima/packem':
         specifier: 2.0.0-alpha.37
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 2.0.0-alpha.37(b8d3e600f9a9f748ef42ddd128bb62bc)
 =======
+=======
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
 <<<<<<< HEAD
         version: 2.0.0-alpha.37(46e9d823fb7da27182a859d71d4bad4a)
 =======
         version: 2.0.0-alpha.37(507d922911cbb1137253fca0757a1c4e)
 >>>>>>> 53756d0e7 (feat: add storage-client package with initial implementation)
+<<<<<<< HEAD
 >>>>>>> cfd49ebf5 (feat: add storage-client package with initial implementation)
+=======
+=======
+        version: 2.0.0-alpha.37(ae32b6bab825e75fda1f518f4847465f)
+>>>>>>> 4b5aeb8c9 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
       '@visulima/path':
         specifier: 2.0.5
         version: link:../path
@@ -2803,14 +2884,23 @@ importers:
       '@visulima/packem':
         specifier: 2.0.0-alpha.37
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 2.0.0-alpha.37(b8d3e600f9a9f748ef42ddd128bb62bc)
 =======
+=======
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
 <<<<<<< HEAD
         version: 2.0.0-alpha.37(46e9d823fb7da27182a859d71d4bad4a)
 =======
         version: 2.0.0-alpha.37(507d922911cbb1137253fca0757a1c4e)
 >>>>>>> 53756d0e7 (feat: add storage-client package with initial implementation)
+<<<<<<< HEAD
 >>>>>>> cfd49ebf5 (feat: add storage-client package with initial implementation)
+=======
+=======
+        version: 2.0.0-alpha.37(ae32b6bab825e75fda1f518f4847465f)
+>>>>>>> 4b5aeb8c9 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
       '@vitest/coverage-v8':
 <<<<<<< HEAD
         specifier: ^4.0.13
@@ -2973,14 +3063,23 @@ importers:
       '@visulima/packem':
         specifier: 2.0.0-alpha.37
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 2.0.0-alpha.37(b8d3e600f9a9f748ef42ddd128bb62bc)
 =======
+=======
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
 <<<<<<< HEAD
         version: 2.0.0-alpha.37(46e9d823fb7da27182a859d71d4bad4a)
 =======
         version: 2.0.0-alpha.37(507d922911cbb1137253fca0757a1c4e)
 >>>>>>> 53756d0e7 (feat: add storage-client package with initial implementation)
+<<<<<<< HEAD
 >>>>>>> cfd49ebf5 (feat: add storage-client package with initial implementation)
+=======
+=======
+        version: 2.0.0-alpha.37(ae32b6bab825e75fda1f518f4847465f)
+>>>>>>> 4b5aeb8c9 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
       '@visulima/path':
         specifier: 2.0.5
         version: link:../path
@@ -3102,14 +3201,23 @@ importers:
       '@visulima/packem':
         specifier: 2.0.0-alpha.37
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 2.0.0-alpha.37(b8d3e600f9a9f748ef42ddd128bb62bc)
 =======
+=======
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
 <<<<<<< HEAD
         version: 2.0.0-alpha.37(46e9d823fb7da27182a859d71d4bad4a)
 =======
         version: 2.0.0-alpha.37(507d922911cbb1137253fca0757a1c4e)
 >>>>>>> 53756d0e7 (feat: add storage-client package with initial implementation)
+<<<<<<< HEAD
 >>>>>>> cfd49ebf5 (feat: add storage-client package with initial implementation)
+=======
+=======
+        version: 2.0.0-alpha.37(ae32b6bab825e75fda1f518f4847465f)
+>>>>>>> 4b5aeb8c9 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
       '@vitest/coverage-v8':
 <<<<<<< HEAD
         specifier: ^4.0.13
@@ -3227,14 +3335,23 @@ importers:
       '@visulima/packem':
         specifier: 2.0.0-alpha.37
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 2.0.0-alpha.37(b8d3e600f9a9f748ef42ddd128bb62bc)
 =======
+=======
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
 <<<<<<< HEAD
         version: 2.0.0-alpha.37(46e9d823fb7da27182a859d71d4bad4a)
 =======
         version: 2.0.0-alpha.37(507d922911cbb1137253fca0757a1c4e)
 >>>>>>> 53756d0e7 (feat: add storage-client package with initial implementation)
+<<<<<<< HEAD
 >>>>>>> cfd49ebf5 (feat: add storage-client package with initial implementation)
+=======
+=======
+        version: 2.0.0-alpha.37(ae32b6bab825e75fda1f518f4847465f)
+>>>>>>> 4b5aeb8c9 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
       '@vitest/coverage-v8':
 <<<<<<< HEAD
         specifier: ^4.0.13
@@ -3475,14 +3592,23 @@ importers:
       '@visulima/packem':
         specifier: 2.0.0-alpha.37
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 2.0.0-alpha.37(b8d3e600f9a9f748ef42ddd128bb62bc)
 =======
+=======
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
 <<<<<<< HEAD
         version: 2.0.0-alpha.37(46e9d823fb7da27182a859d71d4bad4a)
 =======
         version: 2.0.0-alpha.37(507d922911cbb1137253fca0757a1c4e)
 >>>>>>> 53756d0e7 (feat: add storage-client package with initial implementation)
+<<<<<<< HEAD
 >>>>>>> cfd49ebf5 (feat: add storage-client package with initial implementation)
+=======
+=======
+        version: 2.0.0-alpha.37(ae32b6bab825e75fda1f518f4847465f)
+>>>>>>> 4b5aeb8c9 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
       '@vitest/coverage-v8':
 <<<<<<< HEAD
         specifier: ^4.0.13
@@ -3643,14 +3769,23 @@ importers:
       '@visulima/packem':
         specifier: 2.0.0-alpha.37
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 2.0.0-alpha.37(b8d3e600f9a9f748ef42ddd128bb62bc)
 =======
+=======
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
 <<<<<<< HEAD
         version: 2.0.0-alpha.37(46e9d823fb7da27182a859d71d4bad4a)
 =======
         version: 2.0.0-alpha.37(507d922911cbb1137253fca0757a1c4e)
 >>>>>>> 53756d0e7 (feat: add storage-client package with initial implementation)
+<<<<<<< HEAD
 >>>>>>> cfd49ebf5 (feat: add storage-client package with initial implementation)
+=======
+=======
+        version: 2.0.0-alpha.37(ae32b6bab825e75fda1f518f4847465f)
+>>>>>>> 4b5aeb8c9 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
       '@vitest/coverage-v8':
 <<<<<<< HEAD
         specifier: ^4.0.13
@@ -3798,14 +3933,23 @@ importers:
       '@visulima/packem':
         specifier: 2.0.0-alpha.37
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 2.0.0-alpha.37(b8d3e600f9a9f748ef42ddd128bb62bc)
 =======
+=======
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
 <<<<<<< HEAD
         version: 2.0.0-alpha.37(46e9d823fb7da27182a859d71d4bad4a)
 =======
         version: 2.0.0-alpha.37(507d922911cbb1137253fca0757a1c4e)
 >>>>>>> 53756d0e7 (feat: add storage-client package with initial implementation)
+<<<<<<< HEAD
 >>>>>>> cfd49ebf5 (feat: add storage-client package with initial implementation)
+=======
+=======
+        version: 2.0.0-alpha.37(ae32b6bab825e75fda1f518f4847465f)
+>>>>>>> 4b5aeb8c9 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
       '@vitest/browser':
 <<<<<<< HEAD
         specifier: ^4.0.13
@@ -3977,14 +4121,23 @@ importers:
       '@visulima/packem':
         specifier: 2.0.0-alpha.37
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 2.0.0-alpha.37(b8d3e600f9a9f748ef42ddd128bb62bc)
 =======
+=======
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
 <<<<<<< HEAD
         version: 2.0.0-alpha.37(46e9d823fb7da27182a859d71d4bad4a)
 =======
         version: 2.0.0-alpha.37(507d922911cbb1137253fca0757a1c4e)
 >>>>>>> 53756d0e7 (feat: add storage-client package with initial implementation)
+<<<<<<< HEAD
 >>>>>>> cfd49ebf5 (feat: add storage-client package with initial implementation)
+=======
+=======
+        version: 2.0.0-alpha.37(ae32b6bab825e75fda1f518f4847465f)
+>>>>>>> 4b5aeb8c9 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
       '@vitest/coverage-v8':
 <<<<<<< HEAD
         specifier: ^4.0.13
@@ -4124,7 +4277,7 @@ importers:
         version: 24.10.1
       '@types/webpack':
         specifier: ^5.28.5
-        version: 5.28.5(@swc/core@1.13.5)(esbuild@0.27.0)
+        version: 5.28.5(@swc/core@1.13.5)
       '@visulima/fs':
         specifier: 4.1.0
         version: link:../fs
@@ -4210,6 +4363,7 @@ importers:
         specifier: ^5.102.1
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 5.102.1(@swc/core@1.13.5)(esbuild@0.27.0)
 >>>>>>> 53756d0e7 (feat: add storage-client package with initial implementation)
 <<<<<<< HEAD
@@ -4224,7 +4378,13 @@ importers:
 =======
         version: 5.102.1(@swc/core@1.13.5)(esbuild@0.27.0)
 >>>>>>> 250ac9c73 (chore: update storage client dependencies and enhance testing framework)
+<<<<<<< HEAD
 >>>>>>> c6fb76abf (chore: update storage client dependencies and enhance testing framework)
+=======
+=======
+        version: 5.102.1(@swc/core@1.13.5)
+>>>>>>> 4b5aeb8c9 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
+>>>>>>> 4db91813a (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
 
   packages/object:
     devDependencies:
@@ -4282,14 +4442,23 @@ importers:
       '@visulima/packem':
         specifier: 2.0.0-alpha.37
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 2.0.0-alpha.37(b8d3e600f9a9f748ef42ddd128bb62bc)
 =======
+=======
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
 <<<<<<< HEAD
         version: 2.0.0-alpha.37(46e9d823fb7da27182a859d71d4bad4a)
 =======
         version: 2.0.0-alpha.37(507d922911cbb1137253fca0757a1c4e)
 >>>>>>> 53756d0e7 (feat: add storage-client package with initial implementation)
+<<<<<<< HEAD
 >>>>>>> cfd49ebf5 (feat: add storage-client package with initial implementation)
+=======
+=======
+        version: 2.0.0-alpha.37(ae32b6bab825e75fda1f518f4847465f)
+>>>>>>> 4b5aeb8c9 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
       '@vitest/coverage-v8':
 <<<<<<< HEAD
         specifier: ^4.0.13
@@ -4469,14 +4638,23 @@ importers:
       '@visulima/packem':
         specifier: 2.0.0-alpha.37
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 2.0.0-alpha.37(b8d3e600f9a9f748ef42ddd128bb62bc)
 =======
+=======
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
 <<<<<<< HEAD
         version: 2.0.0-alpha.37(46e9d823fb7da27182a859d71d4bad4a)
 =======
         version: 2.0.0-alpha.37(507d922911cbb1137253fca0757a1c4e)
 >>>>>>> 53756d0e7 (feat: add storage-client package with initial implementation)
+<<<<<<< HEAD
 >>>>>>> cfd49ebf5 (feat: add storage-client package with initial implementation)
+=======
+=======
+        version: 2.0.0-alpha.37(ae32b6bab825e75fda1f518f4847465f)
+>>>>>>> 4b5aeb8c9 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
       '@visulima/path':
         specifier: 2.0.5
         version: link:../path
@@ -4706,14 +4884,23 @@ importers:
       '@visulima/packem':
         specifier: 2.0.0-alpha.37
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 2.0.0-alpha.37(b8d3e600f9a9f748ef42ddd128bb62bc)
 =======
+=======
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
 <<<<<<< HEAD
         version: 2.0.0-alpha.37(46e9d823fb7da27182a859d71d4bad4a)
 =======
         version: 2.0.0-alpha.37(507d922911cbb1137253fca0757a1c4e)
 >>>>>>> 53756d0e7 (feat: add storage-client package with initial implementation)
+<<<<<<< HEAD
 >>>>>>> cfd49ebf5 (feat: add storage-client package with initial implementation)
+=======
+=======
+        version: 2.0.0-alpha.37(ae32b6bab825e75fda1f518f4847465f)
+>>>>>>> 4b5aeb8c9 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
       '@vitest/coverage-v8':
 <<<<<<< HEAD
         specifier: ^4.0.13
@@ -4859,14 +5046,23 @@ importers:
       '@visulima/packem':
         specifier: 2.0.0-alpha.37
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 2.0.0-alpha.37(b8d3e600f9a9f748ef42ddd128bb62bc)
 =======
+=======
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
 <<<<<<< HEAD
         version: 2.0.0-alpha.37(46e9d823fb7da27182a859d71d4bad4a)
 =======
         version: 2.0.0-alpha.37(507d922911cbb1137253fca0757a1c4e)
 >>>>>>> 53756d0e7 (feat: add storage-client package with initial implementation)
+<<<<<<< HEAD
 >>>>>>> cfd49ebf5 (feat: add storage-client package with initial implementation)
+=======
+=======
+        version: 2.0.0-alpha.37(ae32b6bab825e75fda1f518f4847465f)
+>>>>>>> 4b5aeb8c9 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
       '@vitest/coverage-v8':
 <<<<<<< HEAD
         specifier: ^4.0.13
@@ -5007,14 +5203,23 @@ importers:
       '@visulima/packem':
         specifier: 2.0.0-alpha.37
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 2.0.0-alpha.37(7a6293a8e18ed886ce94cde29eb6ae84)
 =======
+=======
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
 <<<<<<< HEAD
         version: 2.0.0-alpha.37(b67370a5535637ee815eba8793a4e0ab)
 =======
         version: 2.0.0-alpha.37(2b2d9d0726190e1d90bc6e9e4b602ecf)
 >>>>>>> 53756d0e7 (feat: add storage-client package with initial implementation)
+<<<<<<< HEAD
 >>>>>>> cfd49ebf5 (feat: add storage-client package with initial implementation)
+=======
+=======
+        version: 2.0.0-alpha.37(9e57f05bc4441fc503eda1f6b8ee658b)
+>>>>>>> 4b5aeb8c9 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
       '@visulima/redact':
         specifier: 2.0.5
         version: link:../redact
@@ -5278,14 +5483,23 @@ importers:
       '@visulima/packem':
         specifier: 2.0.0-alpha.37
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 2.0.0-alpha.37(b8d3e600f9a9f748ef42ddd128bb62bc)
 =======
+=======
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
 <<<<<<< HEAD
         version: 2.0.0-alpha.37(46e9d823fb7da27182a859d71d4bad4a)
 =======
         version: 2.0.0-alpha.37(507d922911cbb1137253fca0757a1c4e)
 >>>>>>> 53756d0e7 (feat: add storage-client package with initial implementation)
+<<<<<<< HEAD
 >>>>>>> cfd49ebf5 (feat: add storage-client package with initial implementation)
+=======
+=======
+        version: 2.0.0-alpha.37(ae32b6bab825e75fda1f518f4847465f)
+>>>>>>> 4b5aeb8c9 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
       '@vitest/coverage-v8':
 <<<<<<< HEAD
         specifier: ^4.0.13
@@ -5438,14 +5652,23 @@ importers:
       '@visulima/packem':
         specifier: 2.0.0-alpha.37
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 2.0.0-alpha.37(b8d3e600f9a9f748ef42ddd128bb62bc)
 =======
+=======
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
 <<<<<<< HEAD
         version: 2.0.0-alpha.37(46e9d823fb7da27182a859d71d4bad4a)
 =======
         version: 2.0.0-alpha.37(507d922911cbb1137253fca0757a1c4e)
 >>>>>>> 53756d0e7 (feat: add storage-client package with initial implementation)
+<<<<<<< HEAD
 >>>>>>> cfd49ebf5 (feat: add storage-client package with initial implementation)
+=======
+=======
+        version: 2.0.0-alpha.37(ae32b6bab825e75fda1f518f4847465f)
+>>>>>>> 4b5aeb8c9 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
       '@vitest/coverage-v8':
         specifier: 4.0.13
         version: 4.0.13(vitest@4.0.13)
@@ -5555,14 +5778,23 @@ importers:
       '@visulima/packem':
         specifier: 2.0.0-alpha.37
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 2.0.0-alpha.37(b8d3e600f9a9f748ef42ddd128bb62bc)
 =======
+=======
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
 <<<<<<< HEAD
         version: 2.0.0-alpha.37(46e9d823fb7da27182a859d71d4bad4a)
 =======
         version: 2.0.0-alpha.37(507d922911cbb1137253fca0757a1c4e)
 >>>>>>> 53756d0e7 (feat: add storage-client package with initial implementation)
+<<<<<<< HEAD
 >>>>>>> cfd49ebf5 (feat: add storage-client package with initial implementation)
+=======
+=======
+        version: 2.0.0-alpha.37(ae32b6bab825e75fda1f518f4847465f)
+>>>>>>> 4b5aeb8c9 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
       '@vitest/coverage-v8':
 <<<<<<< HEAD
         specifier: ^4.0.13
@@ -5738,14 +5970,23 @@ importers:
       '@visulima/packem':
         specifier: 2.0.0-alpha.37
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 2.0.0-alpha.37(b8d3e600f9a9f748ef42ddd128bb62bc)
 =======
+=======
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
 <<<<<<< HEAD
         version: 2.0.0-alpha.37(46e9d823fb7da27182a859d71d4bad4a)
 =======
         version: 2.0.0-alpha.37(507d922911cbb1137253fca0757a1c4e)
 >>>>>>> 53756d0e7 (feat: add storage-client package with initial implementation)
+<<<<<<< HEAD
 >>>>>>> cfd49ebf5 (feat: add storage-client package with initial implementation)
+=======
+=======
+        version: 2.0.0-alpha.37(ae32b6bab825e75fda1f518f4847465f)
+>>>>>>> 4b5aeb8c9 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
       '@visulima/path':
         specifier: 2.0.5
         version: link:../path
@@ -5871,17 +6112,17 @@ importers:
         specifier: ^0.18.2
         version: 0.18.2
       '@aws-sdk/client-s3':
-        specifier: ^3.932.0
-        version: 3.932.0(aws-crt@1.27.5)
+        specifier: ^3.934.0
+        version: 3.934.0(aws-crt@1.27.5)
       '@aws-sdk/credential-providers':
-        specifier: ^3.932.0
-        version: 3.932.0(aws-crt@1.27.5)
+        specifier: ^3.934.0
+        version: 3.934.0(aws-crt@1.27.5)
       '@aws-sdk/s3-request-presigner':
-        specifier: ^3.932.0
-        version: 3.932.0
+        specifier: ^3.934.0
+        version: 3.934.0
       '@aws-sdk/signature-v4-crt':
-        specifier: ^3.932.0
-        version: 3.932.0
+        specifier: ^3.934.0
+        version: 3.934.0
       '@aws-sdk/types':
         specifier: ^3.930.0
         version: 3.930.0
@@ -5889,14 +6130,14 @@ importers:
         specifier: ^12.29.1
         version: 12.29.1
       '@netlify/blobs':
-        specifier: ^10.3.3
-        version: 10.3.3
+        specifier: ^10.4.1
+        version: 10.4.1
       '@opentelemetry/api':
         specifier: ^1.9.0
         version: 1.9.0
       '@remix-run/headers':
-        specifier: 0.16.0
-        version: 0.16.0
+        specifier: 0.17.0
+        version: 0.17.0
       '@types/etag':
         specifier: ^1.8.4
         version: 1.8.4
@@ -5926,15 +6167,15 @@ importers:
         version: link:../humanizer
       '@visulima/packem':
         specifier: 2.0.0-alpha.36
-        version: 2.0.0-alpha.36(bb7a099506583c927ea313c634456375)
+        version: 2.0.0-alpha.36(836a2f4e7aad24edba3692727dedbb7f)
       '@visulima/path':
         specifier: workspace:*
         version: link:../path
       '@vitest/coverage-v8':
-        specifier: ^4.0.9
+        specifier: ^4.0.10
         version: 4.0.10(@vitest/browser@4.0.9(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.10))(vitest@4.0.10)
       '@vitest/ui':
-        specifier: ^4.0.9
+        specifier: ^4.0.10
         version: 4.0.10(vitest@4.0.10)
       aws-crt:
         specifier: ^1.27.5
@@ -5942,6 +6183,9 @@ importers:
       aws-sdk-client-mock:
         specifier: ^4.1.0
         version: 4.1.0
+      aws4fetch:
+        specifier: ^1.0.20
+        version: 1.0.20
       cross-fetch:
         specifier: ^4.1.0
         version: 4.1.0
@@ -6000,7 +6244,7 @@ importers:
         specifier: ^5.9.3
         version: 5.9.3
       vitest:
-        specifier: ^4.0.9
+        specifier: ^4.0.10
         version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(happy-dom@15.11.7)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 
   packages/storage-client:
@@ -6061,7 +6305,7 @@ importers:
         version: 19.2.6
       '@visulima/packem':
         specifier: 2.0.0-alpha.36
-        version: 2.0.0-alpha.36(bb7a099506583c927ea313c634456375)
+        version: 2.0.0-alpha.36(836a2f4e7aad24edba3692727dedbb7f)
       '@vitest/coverage-v8':
         specifier: ^4.0.10
         version: 4.0.10(@vitest/browser@4.0.9(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vitest@4.0.10))(vitest@4.0.10)
@@ -6232,7 +6476,7 @@ importers:
         version: 0.15.4(solid-js@1.9.10)
       '@solidjs/start':
         specifier: 1.2.0
-        version: 1.2.0(@testing-library/jest-dom@6.8.0)(solid-js@1.9.10)(vinxi@0.5.8(@azure/storage-blob@12.29.1)(@netlify/blobs@10.3.3)(@types/node@24.10.1)(@vercel/blob@2.0.0)(db0@0.3.4)(ioredis@5.8.2)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(rolldown@1.0.0-beta.50)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
+        version: 1.2.0(@testing-library/jest-dom@6.8.0)(solid-js@1.9.10)(vinxi@0.5.8(@azure/storage-blob@12.29.1)(@netlify/blobs@10.4.1)(@types/node@24.10.1)(@vercel/blob@2.0.0)(aws4fetch@1.0.20)(db0@0.3.4)(ioredis@5.8.2)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(rolldown@1.0.0-beta.51)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
       '@types/node':
         specifier: 24.10.1
         version: 24.10.1
@@ -6280,10 +6524,10 @@ importers:
         version: 1.136.8(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@tanstack/react-start':
         specifier: ^1.136.8
-        version: 1.136.8(crossws@0.4.1(srvx@0.9.6))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.8.0)(solid-js@1.9.10)(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(webpack@5.102.1(@swc/core@1.13.5)(esbuild@0.27.0))
+        version: 1.136.8(crossws@0.4.1(srvx@0.9.6))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.8.0)(solid-js@1.9.10)(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(webpack@5.102.1(@swc/core@1.13.5))
       '@tanstack/router-plugin':
         specifier: ^1.136.8
-        version: 1.136.8(@tanstack/react-router@1.136.8(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.8.0)(solid-js@1.9.10)(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(webpack@5.102.1(@swc/core@1.13.5)(esbuild@0.27.0))
+        version: 1.136.8(@tanstack/react-router@1.136.8(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.8.0)(solid-js@1.9.10)(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(webpack@5.102.1(@swc/core@1.13.5))
       '@visulima/storage':
         specifier: workspace:*
         version: link:../../../storage
@@ -6292,7 +6536,7 @@ importers:
         version: link:../..
       nitro:
         specifier: latest
-        version: 3.0.1-alpha.1(@azure/storage-blob@12.29.1)(@netlify/blobs@10.3.3)(@vercel/blob@2.0.0)(chokidar@4.0.3)(ioredis@5.8.2)(lru-cache@11.2.2)(rollup@4.53.2)(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
+        version: 3.0.1-alpha.1(@azure/storage-blob@12.29.1)(@netlify/blobs@10.4.1)(@vercel/blob@2.0.0)(aws4fetch@1.0.20)(chokidar@4.0.3)(ioredis@5.8.2)(lru-cache@11.2.2)(rollup@4.53.2)(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
       react:
         specifier: ^19.2.0
         version: 19.2.0
@@ -6495,13 +6739,13 @@ importers:
         version: 3.374.0
       '@aws-sdk/client-s3':
         specifier: ^3.932.0
-        version: 3.932.0(aws-crt@1.27.5)
+        version: 3.934.0(aws-crt@1.27.5)
       '@aws-sdk/credential-providers':
         specifier: ^3.932.0
-        version: 3.932.0(aws-crt@1.27.5)
+        version: 3.934.0(aws-crt@1.27.5)
       '@aws-sdk/s3-request-presigner':
         specifier: ^3.932.0
-        version: 3.932.0
+        version: 3.934.0
       '@aws-sdk/types':
         specifier: ^3.930.0
         version: 3.930.0
@@ -6634,13 +6878,13 @@ importers:
         version: 3.374.0
       '@aws-sdk/client-s3':
         specifier: ^3.932.0
-        version: 3.932.0(aws-crt@1.27.5)
+        version: 3.934.0(aws-crt@1.27.5)
       '@aws-sdk/credential-providers':
         specifier: ^3.932.0
-        version: 3.932.0(aws-crt@1.27.5)
+        version: 3.934.0(aws-crt@1.27.5)
       '@aws-sdk/s3-request-presigner':
         specifier: ^3.932.0
-        version: 3.932.0
+        version: 3.934.0
       '@aws-sdk/types':
         specifier: ^3.930.0
         version: 3.930.0
@@ -6779,13 +7023,13 @@ importers:
         version: 3.374.0
       '@aws-sdk/client-s3':
         specifier: ^3.932.0
-        version: 3.932.0(aws-crt@1.27.5)
+        version: 3.934.0(aws-crt@1.27.5)
       '@aws-sdk/credential-providers':
         specifier: ^3.932.0
-        version: 3.932.0(aws-crt@1.27.5)
+        version: 3.934.0(aws-crt@1.27.5)
       '@aws-sdk/s3-request-presigner':
         specifier: ^3.932.0
-        version: 3.932.0
+        version: 3.934.0
       '@aws-sdk/types':
         specifier: ^3.930.0
         version: 3.930.0
@@ -6920,14 +7164,23 @@ importers:
       '@visulima/packem':
         specifier: 2.0.0-alpha.37
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 2.0.0-alpha.37(b8d3e600f9a9f748ef42ddd128bb62bc)
 =======
+=======
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
 <<<<<<< HEAD
         version: 2.0.0-alpha.37(46e9d823fb7da27182a859d71d4bad4a)
 =======
         version: 2.0.0-alpha.37(507d922911cbb1137253fca0757a1c4e)
 >>>>>>> 53756d0e7 (feat: add storage-client package with initial implementation)
+<<<<<<< HEAD
 >>>>>>> cfd49ebf5 (feat: add storage-client package with initial implementation)
+=======
+=======
+        version: 2.0.0-alpha.37(ae32b6bab825e75fda1f518f4847465f)
+>>>>>>> 4b5aeb8c9 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
       '@vitest/coverage-v8':
         specifier: 4.0.13
         version: 4.0.13(vitest@4.0.13)
@@ -7132,14 +7385,23 @@ importers:
       '@visulima/packem':
         specifier: 2.0.0-alpha.37
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 2.0.0-alpha.37(b8d3e600f9a9f748ef42ddd128bb62bc)
 =======
+=======
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
 <<<<<<< HEAD
         version: 2.0.0-alpha.37(46e9d823fb7da27182a859d71d4bad4a)
 =======
         version: 2.0.0-alpha.37(507d922911cbb1137253fca0757a1c4e)
 >>>>>>> 53756d0e7 (feat: add storage-client package with initial implementation)
+<<<<<<< HEAD
 >>>>>>> cfd49ebf5 (feat: add storage-client package with initial implementation)
+=======
+=======
+        version: 2.0.0-alpha.37(ae32b6bab825e75fda1f518f4847465f)
+>>>>>>> 4b5aeb8c9 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
       '@visulima/string':
         specifier: 2.0.6
         version: link:../string
@@ -7332,14 +7594,23 @@ importers:
       '@visulima/packem':
         specifier: 2.0.0-alpha.37
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 2.0.0-alpha.37(b8d3e600f9a9f748ef42ddd128bb62bc)
 =======
+=======
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
 <<<<<<< HEAD
         version: 2.0.0-alpha.37(46e9d823fb7da27182a859d71d4bad4a)
 =======
         version: 2.0.0-alpha.37(507d922911cbb1137253fca0757a1c4e)
 >>>>>>> 53756d0e7 (feat: add storage-client package with initial implementation)
+<<<<<<< HEAD
 >>>>>>> cfd49ebf5 (feat: add storage-client package with initial implementation)
+=======
+=======
+        version: 2.0.0-alpha.37(ae32b6bab825e75fda1f518f4847465f)
+>>>>>>> 4b5aeb8c9 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
       '@vitest/coverage-v8':
 <<<<<<< HEAD
         specifier: ^4.0.13
@@ -7550,14 +7821,23 @@ importers:
       '@visulima/packem':
         specifier: 2.0.0-alpha.37
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 2.0.0-alpha.37(b8d3e600f9a9f748ef42ddd128bb62bc)
 =======
+=======
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
 <<<<<<< HEAD
         version: 2.0.0-alpha.37(46e9d823fb7da27182a859d71d4bad4a)
 =======
         version: 2.0.0-alpha.37(507d922911cbb1137253fca0757a1c4e)
 >>>>>>> 53756d0e7 (feat: add storage-client package with initial implementation)
+<<<<<<< HEAD
 >>>>>>> cfd49ebf5 (feat: add storage-client package with initial implementation)
+=======
+=======
+        version: 2.0.0-alpha.37(ae32b6bab825e75fda1f518f4847465f)
+>>>>>>> 4b5aeb8c9 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
       '@visulima/path':
         specifier: 2.0.5
         version: link:../path
@@ -7743,7 +8023,15 @@ importers:
         version: link:../..
       '@vitejs/plugin-react':
         specifier: ^5.1.1
+<<<<<<< HEAD
         version: 5.1.1(rolldown-vite@7.2.8(@types/node@24.10.1)(esbuild@0.25.12)(jiti@2.6.1)(less@4.4.2)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1))
+=======
+<<<<<<< HEAD
+        version: 5.1.1(rolldown-vite@7.2.7(@types/node@24.10.1)(esbuild@0.25.12)(jiti@2.6.1)(less@4.4.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
+=======
+        version: 5.1.1(rolldown-vite@7.2.6(@types/node@24.10.1)(esbuild@0.25.12)(jiti@2.6.1)(less@4.4.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
+>>>>>>> 4b5aeb8c9 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
       eslint:
         specifier: ^9.39.1
         version: 9.39.1(jiti@2.6.1)
@@ -7764,7 +8052,15 @@ importers:
         version: 8.48.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3)
       vite:
         specifier: npm:rolldown-vite@latest
+<<<<<<< HEAD
         version: rolldown-vite@7.2.8(@types/node@24.10.1)(esbuild@0.25.12)(jiti@2.6.1)(less@4.4.2)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1)
+=======
+<<<<<<< HEAD
+        version: rolldown-vite@7.2.7(@types/node@24.10.1)(esbuild@0.25.12)(jiti@2.6.1)(less@4.4.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+=======
+        version: rolldown-vite@7.2.6(@types/node@24.10.1)(esbuild@0.25.12)(jiti@2.6.1)(less@4.4.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> 4b5aeb8c9 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
 
   packages/vite-overlay/examples/vite-react-swc:
     dependencies:
@@ -7963,6 +8259,7 @@ importers:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 1.136.1(@tanstack/react-router@1.136.1(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.8.0)(solid-js@1.9.10)(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(webpack@5.102.1(@swc/core@1.13.5)(esbuild@0.27.0))
 >>>>>>> 53756d0e7 (feat: add storage-client package with initial implementation)
 <<<<<<< HEAD
@@ -7992,8 +8289,17 @@ importers:
 =======
         version: 1.136.8(@tanstack/react-router@1.136.8(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.8.0)(solid-js@1.9.10)(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(webpack@5.102.1(@swc/core@1.13.5)(esbuild@0.27.0))
 >>>>>>> 250ac9c73 (chore: update storage client dependencies and enhance testing framework)
+<<<<<<< HEAD
 >>>>>>> 13ae1add8 (chore: update storage client dependencies and enhance testing framework)
+<<<<<<< HEAD
 >>>>>>> c6fb76abf (chore: update storage client dependencies and enhance testing framework)
+=======
+=======
+=======
+        version: 1.136.8(@tanstack/react-router@1.136.8(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.8.0)(solid-js@1.9.10)(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(webpack@5.102.1(@swc/core@1.13.5))
+>>>>>>> 4b5aeb8c9 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
+>>>>>>> 4db91813a (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
       react:
         specifier: ^19.2.0
         version: 19.2.0
@@ -8083,6 +8389,7 @@ importers:
         specifier: 1.133.35
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 1.133.35(crossws@0.4.1(srvx@0.9.6))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.8.0)(solid-js@1.9.10)(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(webpack@5.102.1(@swc/core@1.13.5)(esbuild@0.27.0))
 >>>>>>> 53756d0e7 (feat: add storage-client package with initial implementation)
 <<<<<<< HEAD
@@ -8103,8 +8410,17 @@ importers:
 =======
         version: 1.133.35(crossws@0.4.1(srvx@0.9.6))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.8.0)(solid-js@1.9.10)(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(webpack@5.102.1(@swc/core@1.13.5)(esbuild@0.27.0))
 >>>>>>> 250ac9c73 (chore: update storage client dependencies and enhance testing framework)
+<<<<<<< HEAD
 >>>>>>> 13ae1add8 (chore: update storage client dependencies and enhance testing framework)
+<<<<<<< HEAD
 >>>>>>> c6fb76abf (chore: update storage client dependencies and enhance testing framework)
+=======
+=======
+=======
+        version: 1.133.35(crossws@0.4.1(srvx@0.9.6))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.8.0)(solid-js@1.9.10)(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(webpack@5.102.1(@swc/core@1.13.5))
+>>>>>>> 4b5aeb8c9 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
+>>>>>>> 4db91813a (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
       react:
         specifier: ^19.2.0
         version: 19.2.0
@@ -8740,60 +9056,60 @@ packages:
     engines: {node: '>=14.0.0'}
     deprecated: This package has moved to @smithy/abort-controller
 
-  '@aws-sdk/client-cognito-identity@3.932.0':
-    resolution: {integrity: sha512-YFAS4fR+edhRZanR1zKjH4Sf+VFKJtEaeWxKaR7OKkleAosFMbizH6yx1aAMfYXRsWrz+uCNE7QrxqHZNnT0TA==}
+  '@aws-sdk/client-cognito-identity@3.934.0':
+    resolution: {integrity: sha512-kEuo8vPwZ4f1RmUlMs86yNkz35SAQlVtso+z6KBjJKGH+p6KkZ6dWvYno18fb0IdVbo4KGeCCXfnV5LoNLkLxQ==}
     engines: {node: '>=18.0.0'}
 
-  '@aws-sdk/client-s3@3.932.0':
-    resolution: {integrity: sha512-qrlbJ3W5QR3Gzz2S+yaItH8ZhX7vaeA4j4fDAi8+0FmsVhXOfBbomWr+JO1wk/YojZMdyLfmfYRHrJvAQsLFVw==}
+  '@aws-sdk/client-s3@3.934.0':
+    resolution: {integrity: sha512-dtg77FGTgt8WlqgrRriCOie/SUl0x0cx2itPgK6fkf3pRK0t1betQ0EUZM6VYQcj+hqVMzh/XRcr1TDm5n5eVw==}
     engines: {node: '>=18.0.0'}
 
-  '@aws-sdk/client-sso@3.932.0':
-    resolution: {integrity: sha512-XHqHa5iv2OQsKoM2tUQXs7EAyryploC00Wg0XSFra/KAKqyGizUb5XxXsGlyqhebB29Wqur+zwiRwNmejmN0+Q==}
+  '@aws-sdk/client-sso@3.934.0':
+    resolution: {integrity: sha512-gsgJevqhY0j3x014ejhXtHLCA6o83FYm3rJoZG7tqoy3DnWerLv/FHaAnHI/+Q+csadqjoFkWGQTOedPoOunzA==}
     engines: {node: '>=18.0.0'}
 
-  '@aws-sdk/core@3.932.0':
-    resolution: {integrity: sha512-AS8gypYQCbNojwgjvZGkJocC2CoEICDx9ZJ15ILsv+MlcCVLtUJSRSx3VzJOUY2EEIaGLRrPNlIqyn/9/fySvA==}
+  '@aws-sdk/core@3.934.0':
+    resolution: {integrity: sha512-b6k916ZxSrBwQPzeirncTIQXGnhps0HFOUakFt0ZEzjksePYUiEoU/SQ7VeY1j9JeAdJ24ejqddCiyLt99/3lg==}
     engines: {node: '>=18.0.0'}
 
-  '@aws-sdk/credential-provider-cognito-identity@3.932.0':
-    resolution: {integrity: sha512-PWHX32VVYYy/Jbk8TdIwK/ydcC72xjN2OMFIhiOFcpCDF8Cq6yBb0DC90g1dENlJE57VTAs4bwpN290lSfZ1zw==}
+  '@aws-sdk/credential-provider-cognito-identity@3.934.0':
+    resolution: {integrity: sha512-Q6/FmXs2d9t6obcvvJtrUhKserODn8l9Lp9yRjL5+L2b8BdSxm94x0BN3dpLDqwz+XgTmMn8VaS+2rnaVc0wSA==}
     engines: {node: '>=18.0.0'}
 
-  '@aws-sdk/credential-provider-env@3.932.0':
-    resolution: {integrity: sha512-ozge/c7NdHUDyHqro6+P5oHt8wfKSUBN+olttiVfBe9Mw3wBMpPa3gQ0pZnG+gwBkKskBuip2bMR16tqYvUSEA==}
+  '@aws-sdk/credential-provider-env@3.934.0':
+    resolution: {integrity: sha512-bnpIGYm7Jy46dxZa1cxMQ1sF0n2iBIT+TpOPHK51sz1N2dYOicUVWUHMDgU2xIFOVcKaqV+GV4VyicMmvDBcBQ==}
     engines: {node: '>=18.0.0'}
 
-  '@aws-sdk/credential-provider-http@3.932.0':
-    resolution: {integrity: sha512-b6N9Nnlg8JInQwzBkUq5spNaXssM3h3zLxGzpPrnw0nHSIWPJPTbZzA5Ca285fcDUFuKP+qf3qkuqlAjGOdWhg==}
+  '@aws-sdk/credential-provider-http@3.934.0':
+    resolution: {integrity: sha512-WJcfFik7MPIgjE8lmuDcCqddHKRMpifzoBzTZWqUJJWYXIy0rDfNzt6pn3/TMLwVgnCGjnXlw6dChTxLzO60RQ==}
     engines: {node: '>=18.0.0'}
 
-  '@aws-sdk/credential-provider-ini@3.932.0':
-    resolution: {integrity: sha512-ZBjSAXVGy7danZRHCRMJQ7sBkG1Dz39thYlvTiUaf9BKZ+8ymeiFhuTeV1OkWUBBnY0ki2dVZJvboTqfINhNxA==}
+  '@aws-sdk/credential-provider-ini@3.934.0':
+    resolution: {integrity: sha512-3vVKGe1F2S09G9kC0ZcpWh09opyrGOgQETllqWbuxlTVd7zBgrZWloItLIvneSDP+dWvdLFUbkD7WDWNCeGiig==}
     engines: {node: '>=18.0.0'}
 
-  '@aws-sdk/credential-provider-node@3.932.0':
-    resolution: {integrity: sha512-SEG9t2taBT86qe3gTunfrK8BxT710GVLGepvHr+X5Pw+qW225iNRaGN0zJH+ZE/j91tcW9wOaIoWnURkhR5wIg==}
+  '@aws-sdk/credential-provider-node@3.934.0':
+    resolution: {integrity: sha512-nguy36xi8nbH346dJjCmwWtOgfS4VfL7yHP+EEGmma+yg+J7mxgs8kA1NGQdJ8B46GdjlJPpI1P9pm7Pmz7nOw==}
     engines: {node: '>=18.0.0'}
 
-  '@aws-sdk/credential-provider-process@3.932.0':
-    resolution: {integrity: sha512-BodZYKvT4p/Dkm28Ql/FhDdS1+p51bcZeMMu2TRtU8PoMDHnVDhHz27zASEKSZwmhvquxHrZHB0IGuVqjZUtSQ==}
+  '@aws-sdk/credential-provider-process@3.934.0':
+    resolution: {integrity: sha512-PhvpAgoJ88IOuqlUws9nvHuPex2jK+WS+0s00BQcRTwqPP0jtLT7eql6UfCRduwv2sIy3m1wnWDUubvbpejp/Q==}
     engines: {node: '>=18.0.0'}
 
-  '@aws-sdk/credential-provider-sso@3.932.0':
-    resolution: {integrity: sha512-XYmkv+ltBjjmPZ6AmR1ZQZkQfD0uzG61M18/Lif3HAGxyg3dmod0aWx9aL6lj9SvxAGqzscrx5j4PkgLqjZruw==}
+  '@aws-sdk/credential-provider-sso@3.934.0':
+    resolution: {integrity: sha512-7wO86w95V9MZSYo2dunBKruKHdAUmgg9ccOSJSYGnPip1PPBK/rgSgQ8mDlYtFAW3/82bdeM/668QcgLT4+ofA==}
     engines: {node: '>=18.0.0'}
 
-  '@aws-sdk/credential-provider-web-identity@3.932.0':
-    resolution: {integrity: sha512-Yw/hYNnC1KHuVIQF9PkLXbuKN7ljx70OSbJYDRufllQvej3kRwNcqQSnzI1M4KaObccqKaE6srg22DqpPy9p8w==}
+  '@aws-sdk/credential-provider-web-identity@3.934.0':
+    resolution: {integrity: sha512-hb+lvFxiAPcAvUorB0hrUd1kDjDRXhZgCi5426I8KUpGzZ+ALh8/ep0KXAiYe2yg9ZkyMUbMaMvYYhMFcbXRFA==}
     engines: {node: '>=18.0.0'}
 
-  '@aws-sdk/credential-providers@3.932.0':
-    resolution: {integrity: sha512-MM63Fg4zPnLrt8rOEJZ2neJIVp9BGNlsW49BAvIvcH0TiK5idB8bl8xskbb65+ELnxa2HPAe2i7GQKzaBjTVGw==}
+  '@aws-sdk/credential-providers@3.934.0':
+    resolution: {integrity: sha512-HWAy+bghnA4rCOJgW80BwZRUc231QZaXKkAhFF259lVjkzoCTWyvrFHL/dLaR0g6lq0Pu+ujMkn7FI7qrEm3eQ==}
     engines: {node: '>=18.0.0'}
 
-  '@aws-sdk/crt-loader@3.932.0':
-    resolution: {integrity: sha512-b4ip9cfI75ULT829Ju4ULVY6iIMfbJQ3yLIDDrI12Klse++G6ZtXCXcVhbppTyIvfxzUZQ529PDV1X7m7NVBbA==}
+  '@aws-sdk/crt-loader@3.934.0':
+    resolution: {integrity: sha512-6PAJ3RGqUVeO1Ol3QuN0UVBUx+oGcRWLaqEpBW6/KjqKmjWPj/GuQr9YseKdeZRjVLb6o2IJj1kNop0DL4uQRA==}
     engines: {node: '>=18.0.0'}
 
   '@aws-sdk/middleware-bucket-endpoint@3.930.0':
@@ -8804,8 +9120,8 @@ packages:
     resolution: {integrity: sha512-5HEQ+JU4DrLNWeY27wKg/jeVa8Suy62ivJHOSUf6e6hZdVIMx0h/kXS1fHEQNNiLu2IzSEP/bFXsKBaW7x7s0g==}
     engines: {node: '>=18.0.0'}
 
-  '@aws-sdk/middleware-flexible-checksums@3.932.0':
-    resolution: {integrity: sha512-hyvRz/XS/0HTHp9/Ld1mKwpOi7bZu5olI42+T112rkCTbt1bewkygzEl4oflY4H7cKMamQusYoL0yBUD/QSEvA==}
+  '@aws-sdk/middleware-flexible-checksums@3.934.0':
+    resolution: {integrity: sha512-kAV0fhwUhh/CV8hR5iip+du5QSXvIsONERVY/iJPbiBItqsmFaWcwiZE9E+ORJPNyoT/3X17632W33pCweKGDQ==}
     engines: {node: '>=18.0.0'}
 
   '@aws-sdk/middleware-host-header@3.930.0':
@@ -8820,44 +9136,44 @@ packages:
     resolution: {integrity: sha512-vh4JBWzMCBW8wREvAwoSqB2geKsZwSHTa0nSt0OMOLp2PdTYIZDi0ZiVMmpfnjcx9XbS6aSluLv9sKx4RrG46A==}
     engines: {node: '>=18.0.0'}
 
-  '@aws-sdk/middleware-recursion-detection@3.930.0':
-    resolution: {integrity: sha512-gv0sekNpa2MBsIhm2cjP3nmYSfI4nscx/+K9u9ybrWZBWUIC4kL2sV++bFjjUz4QxUIlvKByow3/a9ARQyCu7Q==}
+  '@aws-sdk/middleware-recursion-detection@3.933.0':
+    resolution: {integrity: sha512-qgrMlkVKzTCAdNw2A05DC2sPBo0KRQ7wk+lbYSRJnWVzcrceJhnmhoZVV5PFv7JtchK7sHVcfm9lcpiyd+XaCA==}
     engines: {node: '>=18.0.0'}
 
-  '@aws-sdk/middleware-sdk-s3@3.932.0':
-    resolution: {integrity: sha512-bYMHxqQzseaAP9Z5qLI918z5AtbAnZRRtFi3POb4FLZyreBMgCgBNaPkIhdgywnkqaydTWvbMBX4s9f4gUwlTw==}
+  '@aws-sdk/middleware-sdk-s3@3.934.0':
+    resolution: {integrity: sha512-eU2R7pVOhCxnkDzq9mW+xh4WvCA3mdXVUHezIcJNFyKCKKv/c9I4WFcnMnUy+wnCWO2mzN/gwSgQxADkvxfLNQ==}
     engines: {node: '>=18.0.0'}
 
   '@aws-sdk/middleware-ssec@3.930.0':
     resolution: {integrity: sha512-N2/SvodmaDS6h7CWfuapt3oJyn1T2CBz0CsDIiTDv9cSagXAVFjPdm2g4PFJqrNBeqdDIoYBnnta336HmamWHg==}
     engines: {node: '>=18.0.0'}
 
-  '@aws-sdk/middleware-user-agent@3.932.0':
-    resolution: {integrity: sha512-9BGTbJyA/4PTdwQWE9hAFIJGpsYkyEW20WON3i15aDqo5oRZwZmqaVageOD57YYqG8JDJjvcwKyDdR4cc38dvg==}
+  '@aws-sdk/middleware-user-agent@3.934.0':
+    resolution: {integrity: sha512-68giGM2Zm9K6Qas14ws3Qo5wafpn0I8/L64fS9E6Rc6Tu0k+So73hupysw+9ZOzHwQS5FEBUqLOMtbUibAcjNA==}
     engines: {node: '>=18.0.0'}
 
-  '@aws-sdk/nested-clients@3.932.0':
-    resolution: {integrity: sha512-E2ucBfiXSpxZflHTf3UFbVwao4+7v7ctAeg8SWuglc1UMqMlpwMFFgWiSONtsf0SR3+ZDoWGATyCXOfDWerJuw==}
+  '@aws-sdk/nested-clients@3.934.0':
+    resolution: {integrity: sha512-kRO61EMrDR4UuPlKAkziG6urcYXlhrFW/Ce5PjWFdjkm0ZOge75OFV1vhf/vE4Pmoop9jaAONX4E5BaIYrIQfg==}
     engines: {node: '>=18.0.0'}
 
   '@aws-sdk/region-config-resolver@3.930.0':
     resolution: {integrity: sha512-KL2JZqH6aYeQssu1g1KuWsReupdfOoxD6f1as2VC+rdwYFUu4LfzMsFfXnBvvQWWqQ7rZHWOw1T+o5gJmg7Dzw==}
     engines: {node: '>=18.0.0'}
 
-  '@aws-sdk/s3-request-presigner@3.932.0':
-    resolution: {integrity: sha512-1cKnsenYzcRBA05GHho/+YnLLEmlyoGw+KAI5S5yfiul9HQDZU6KQ1+vblynyAS4LXwIgrutOUM3NxgSw3jFBQ==}
+  '@aws-sdk/s3-request-presigner@3.934.0':
+    resolution: {integrity: sha512-3VyOm6wa00QqP+0N9s6VOco+4H0PPufZf16uMVfzvmpjaKjXyjBIMYrAhmmxXxNA/xmZiYcmSjQFGwszrn9UHw==}
     engines: {node: '>=18.0.0'}
 
-  '@aws-sdk/signature-v4-crt@3.932.0':
-    resolution: {integrity: sha512-xwFB4mqkESZ8oxCn+HT/CKES+WrXU/uiArFC9wCxHbGEK4nn29h/NeQQUbt7+PBBPMx4+ZGiqkia8renCAIYhw==}
+  '@aws-sdk/signature-v4-crt@3.934.0':
+    resolution: {integrity: sha512-pUIdD3UHSMdTr740/5RhXN3mAJTkvxSAH3FhonxVsOVpFsUU9SF661oEPKb2oiNtbMyGKtFOVhJsz10dsfkQOw==}
     engines: {node: '>=18.0.0'}
 
-  '@aws-sdk/signature-v4-multi-region@3.932.0':
-    resolution: {integrity: sha512-NCIRJvoRc9246RZHIusY1+n/neeG2yGhBGdKhghmrNdM+mLLN6Ii7CKFZjx3DhxtpHMpl1HWLTMhdVrGwP2upw==}
+  '@aws-sdk/signature-v4-multi-region@3.934.0':
+    resolution: {integrity: sha512-cLphxVoHapSdouAdLSDEwR2Bktjg5dc11EpSpaLo8jcFpAXhFaDllKBfDfws0EqGY6N2CMqEjqPqxDFzmmQOQA==}
     engines: {node: '>=18.0.0'}
 
-  '@aws-sdk/token-providers@3.932.0':
-    resolution: {integrity: sha512-43u82ulVuHK4zWhcSPyuPS18l0LNHi3QJQ1YtP2MfP8bPf5a6hMYp5e3lUr9oTDEWcpwBYtOW0m1DVmoU/3veA==}
+  '@aws-sdk/token-providers@3.934.0':
+    resolution: {integrity: sha512-M0WEmgXDdUxapSfjplqJoVCBMcn0vQ5Jou0X/XiQwyVDbfvIyNSHUHyMXEIBAew9kVx9sfMMEYz3LXewvQxdCA==}
     engines: {node: '>=18.0.0'}
 
   '@aws-sdk/types@3.930.0':
@@ -8897,6 +9213,7 @@ packages:
     resolution: {integrity: sha512-q6lCRm6UAe+e1LguM5E4EqM9brQlDem4XDcQ87NzEvlTW6GzmNCO0w1jS0XgCFXQHjDxjdlNFX+5sRbHijwklg==}
 
 <<<<<<< HEAD
+<<<<<<< HEAD
   '@aws-sdk/util-user-agent-node@3.931.0':
     resolution: {integrity: sha512-j5if01rt7JCGYDVXck39V7IUyKAN73vKUPzmu+jp1apU3Q0lLSTZA/HCfL2HkMUKVLE67ibjKb+NCoEg0QhujA==}
 >>>>>>> efb87dc29 (feat: new storage package (#527))
@@ -8904,6 +9221,10 @@ packages:
   '@aws-sdk/util-user-agent-node@3.932.0':
     resolution: {integrity: sha512-/kC6cscHrZL74TrZtgiIL5jJNbVsw9duGGPurmaVgoCbP7NnxyaSWEurbNV3VPNPhNE3bV3g4Ci+odq+AlsYQg==}
 >>>>>>> cfd49ebf5 (feat: add storage-client package with initial implementation)
+=======
+  '@aws-sdk/util-user-agent-node@3.934.0':
+    resolution: {integrity: sha512-vPRR4PaqNmuOQJSzq4EAVwFHUaSpPtgDgCEc7AYbArIy+59fckb6JNddlrjx4w4iWbqO0d+7OC5PtRcIk0AcZA==}
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
     engines: {node: '>=18.0.0'}
     peerDependencies:
       aws-crt: '>=1.0.0'
@@ -8923,8 +9244,8 @@ packages:
 >>>>>>> efb87dc29 (feat: new storage package (#527))
     engines: {node: '>=18.0.0'}
 
-  '@aws/lambda-invoke-store@0.1.1':
-    resolution: {integrity: sha512-RcLam17LdlbSOSp9VxmUu1eI6Mwxp+OwhD2QhiSNmNCzoDb0EeUXTD2n/WbcnrAYMGlmf05th6QYq23VqvJqpA==}
+  '@aws/lambda-invoke-store@0.2.0':
+    resolution: {integrity: sha512-D1jAmAZQYMoPiacfgNf7AWhg3DFN3Wq/vQv3WINt9znwjzHp2x+WzdJFxxj7xZL7V1U79As6G8f7PorMYWBKsQ==}
     engines: {node: '>=18.0.0'}
 
   '@azu/format-text@1.0.2':
@@ -10556,16 +10877,16 @@ packages:
   '@napi-rs/wasm-runtime@1.0.7':
     resolution: {integrity: sha512-SeDnOO0Tk7Okiq6DbXmmBODgOAb9dp9gjlphokTUxmt8U3liIP1ZsozBahH69j/RJv+Rfs6IwUKHTgQYJ/HBAw==}
 
-  '@netlify/blobs@10.3.3':
-    resolution: {integrity: sha512-yhw0AxB/Felk0KlWtCAqxWcV4xchPumxdlpmdJWlxkVQPoOR7dTPwXsQ6Y4W46oA83QaDD6Rgroi3OKbvg5OBQ==}
+  '@netlify/blobs@10.4.1':
+    resolution: {integrity: sha512-43wntITwgocQxJThPxtgZ9XCPk2wAXrqD61uqgcIG2EhT/cXpvfEGEo6nLXXtb9irW6nQVXusJeLHEhKJFC4Vg==}
     engines: {node: ^14.16.0 || >=16.0.0}
 
-  '@netlify/dev-utils@4.3.1':
-    resolution: {integrity: sha512-ErQgiGOxGlHLuu29+pOPhBNJ+ak9thbhZ9/9zI/hbr732S8CNVDGAU2N0DC59Mrl9/HjLetFoXxsCBDeQzaeqg==}
+  '@netlify/dev-utils@4.3.2':
+    resolution: {integrity: sha512-Nl6c5UVLbpOwvzVaT6fJycdkc3EswqFoI9c2hZ3WUUX+kQ2ojdrkFMuKcPERaGXYxrhy/uGk1CURAflG8YC2RA==}
     engines: {node: ^18.14.0 || >=20}
 
-  '@netlify/otel@4.3.2':
-    resolution: {integrity: sha512-979piAUQd2UINkfy951JFUFWvscXl+t+a57uYX6ViDBlNOhV/UTZGF5THAv1es3qtng8SHFDmOiftO8D/rFEPA==}
+  '@netlify/otel@5.0.0':
+    resolution: {integrity: sha512-7EWbS+puDub800IQ9MUVcLrWwCNPyK/u1Rs08f0Y+O4dBGVkuTm/RyaLoU58PPLuNCfPHXebfIYFZxN+/CtZeA==}
     engines: {node: ^18.14.0 || >=20.6.1}
 
   '@netlify/runtime-utils@2.2.1':
@@ -10896,10 +11217,6 @@ packages:
     resolution: {integrity: sha512-9B9RU0H7Ya1Dx/Rkyc4stuBZSGVQF27WigitInx2QQoj6KUpEFYPKoWjdFTunJYxmXmh17HeBvbMa1EhGyPmqQ==}
     engines: {node: '>=8.0.0'}
 
-  '@opentelemetry/api-logs@0.57.2':
-    resolution: {integrity: sha512-uIX52NnTM0iBh84MShlpouI7UKqkZ7MrUszTmaypHBu4r7NofznSnQRfJ+uUeDtQDj6w8eFGg5KBLDAwAPz1+A==}
-    engines: {node: '>=14'}
-
   '@opentelemetry/api@1.9.0':
     resolution: {integrity: sha512-3giAOQvZiH5F9bMlMiv8+GSPMeqg0dbaeo58/0SlA9sxSqZhnUtxzX9/2FzyhS9sWQf5S0GJE0AKBrFqjpeYcg==}
     engines: {node: '>=8.0.0'}
@@ -11014,12 +11331,6 @@ packages:
     peerDependencies:
       '@opentelemetry/api': ^1.3.0
 
-  '@opentelemetry/otlp-transformer@0.57.2':
-    resolution: {integrity: sha512-48IIRj49gbQVK52jYsw70+Jv+JbahT8BqT2Th7C4H7RCM9d0gZ5sgNPoMpWldmfjvIsSgiGJtjfk9MeZvjhoig==}
-    engines: {node: '>=14'}
-    peerDependencies:
-      '@opentelemetry/api': ^1.3.0
-
   '@opentelemetry/propagator-b3@1.30.1':
     resolution: {integrity: sha512-oATwWWDIJzybAZ4pO76ATN5N6FFbOA1otibAVlS8v90B4S1wClnhRUk7K+2CHAwN1JKYuj4jh/lpCEG5BAqFuQ==}
     engines: {node: '>=14'}
@@ -11037,18 +11348,6 @@ packages:
     engines: {node: '>=14'}
     peerDependencies:
       '@opentelemetry/api': '>=1.0.0 <1.10.0'
-
-  '@opentelemetry/sdk-logs@0.57.2':
-    resolution: {integrity: sha512-TXFHJ5c+BKggWbdEQ/inpgIzEmS2BGQowLE9UhsMd7YYlUfBQJ4uax0VF/B5NYigdM/75OoJGhAV3upEhK+3gg==}
-    engines: {node: '>=14'}
-    peerDependencies:
-      '@opentelemetry/api': '>=1.4.0 <1.10.0'
-
-  '@opentelemetry/sdk-metrics@1.30.1':
-    resolution: {integrity: sha512-q9zcZ0Okl8jRgmy7eNW3Ku1XSgg3sDLa5evHZpCwjspw7E8Is4K/haRPDJrBcX3YSn/Y7gUvFnByNYEKQNbNog==}
-    engines: {node: '>=14'}
-    peerDependencies:
-      '@opentelemetry/api': '>=1.3.0 <1.10.0'
 
   '@opentelemetry/sdk-trace-base@1.30.1':
     resolution: {integrity: sha512-jVPgBbH1gCy2Lb7X0AVQ8XAfgg0pJ4nvl8/IiQA6nxOsPvS+0zMJaFSs2ltXe0J6C8dqjcnpyqINDJmU30+uOg==}
@@ -11995,36 +12294,6 @@ packages:
   '@promptbook/utils@0.58.0':
     resolution: {integrity: sha512-TglWndmjikWN+OGg9eNOUaMTM7RHr8uFCtgxfWULT1BUjcohywdijf54vS1U4mZ1tBLdHD4/fIrIHtmHzPUIZQ==}
 
-  '@protobufjs/aspromise@1.1.2':
-    resolution: {integrity: sha512-j+gKExEuLmKwvz3OgROXtrJ2UG2x8Ch2YZUxahh+s1F2HZ+wAceUNLkvy6zKCPVRkU++ZWQrdxsUeQXmcg4uoQ==}
-
-  '@protobufjs/base64@1.1.2':
-    resolution: {integrity: sha512-AZkcAA5vnN/v4PDqKyMR5lx7hZttPDgClv83E//FMNhR2TMcLUhfRUBHCmSl0oi9zMgDDqRUJkSxO3wm85+XLg==}
-
-  '@protobufjs/codegen@2.0.4':
-    resolution: {integrity: sha512-YyFaikqM5sH0ziFZCN3xDC7zeGaB/d0IUb9CATugHWbd1FRFwWwt4ld4OYMPWu5a3Xe01mGAULCdqhMlPl29Jg==}
-
-  '@protobufjs/eventemitter@1.1.0':
-    resolution: {integrity: sha512-j9ednRT81vYJ9OfVuXG6ERSTdEL1xVsNgqpkxMsbIabzSo3goCjDIveeGv5d03om39ML71RdmrGNjG5SReBP/Q==}
-
-  '@protobufjs/fetch@1.1.0':
-    resolution: {integrity: sha512-lljVXpqXebpsijW71PZaCYeIcE5on1w5DlQy5WH6GLbFryLUrBD4932W/E2BSpfRJWseIL4v/KPgBFxDOIdKpQ==}
-
-  '@protobufjs/float@1.0.2':
-    resolution: {integrity: sha512-Ddb+kVXlXst9d+R9PfTIxh1EdNkgoRe5tOX6t01f1lYWOvJnSPDBlG241QLzcyPdoNTsblLUdujGSE4RzrTZGQ==}
-
-  '@protobufjs/inquire@1.1.0':
-    resolution: {integrity: sha512-kdSefcPdruJiFMVSbn801t4vFK7KB/5gd2fYvrxhuJYg8ILrmn9SKSX2tZdV6V+ksulWqS7aXjBcRXl3wHoD9Q==}
-
-  '@protobufjs/path@1.1.2':
-    resolution: {integrity: sha512-6JOcJ5Tm08dOHAbdR3GrvP+yUUfkjG5ePsHYczMFLq3ZmMkAD98cDgcT2iA1lJ9NVwFd4tH/iSSoe44YWkltEA==}
-
-  '@protobufjs/pool@1.1.0':
-    resolution: {integrity: sha512-0kELaGSIDBKvcgS4zkjz1PeddatrjYcmMWOlAuAPwAeccUrPHdUqo/J6LiymHHEiJT5NrF1UVwxY14f+fy4WQw==}
-
-  '@protobufjs/utf8@1.1.0':
-    resolution: {integrity: sha512-Vvn3zZrhQZkkBE8LSuW3em98c0FwgO4nxzv6OdSxPKJIEKY2bGbHn+mhGIPerzI4twdxaP8/0+06HBpwf345Lw==}
-
   '@publint/pack@0.1.2':
     resolution: {integrity: sha512-S+9ANAvUmjutrshV4jZjaiG8XQyuJIZ8a4utWmN/vW1sgQ9IfBnPndwkmQYw53QmouOIytT874u65HEmu6H5jw==}
     engines: {node: '>=18'}
@@ -12525,16 +12794,24 @@ packages:
   '@remix-run/headers@0.15.0':
     resolution: {integrity: sha512-wGXHv9nAt8z8KQqc1bdtclduJwTO+zlQEjcNqYyifE8WqKToYu6/PJCDh5PGn0o4DHj8K71rEyP3MwZsIRRccg==}
 
-  '@remix-run/headers@0.16.0':
-    resolution: {integrity: sha512-nK5ryu69T37liSnHYdxki+0Lv1zRMdVeZzAgp1YGPe+20DciNbYdGhfjW+KI5SZgCpHRo3Bi5CsH4jNTnosqRg==}
+  '@remix-run/headers@0.17.0':
+    resolution: {integrity: sha512-YxHy357YpvdKvpOAsaDd/LQRD7qenTUdlvgoNb0dCpzxmX2xo+FbtBDMFBDZn4+L0aq9W78FkcvV45g5hPGllA==}
 
   '@remix-run/multipart-parser@0.13.0':
     resolution: {integrity: sha512-EMEnc4YOzOnw62BmdTqvlmvzUCYDsQ1fpca6Xtvn8oV5GHXMYJoB3ocQyA+KNAa3j8QzKyNomifUXJ9OVrGEXA==}
 
+<<<<<<< HEAD
   '@rolldown/binding-android-arm64@1.0.0-beta.50':
     resolution: {integrity: sha512-XlEkrOIHLyGT3avOgzfTFSjG+f+dZMw+/qd+Y3HLN86wlndrB/gSimrJCk4gOhr1XtRtEKfszpadI3Md4Z4/Ag==}
 >>>>>>> d99502360 (feat: new storage package (#527))
+<<<<<<< HEAD
 >>>>>>> efb87dc29 (feat: new storage package (#527))
+=======
+=======
+  '@rolldown/binding-android-arm64@1.0.0-beta.51':
+    resolution: {integrity: sha512-Ctn8FUXKWWQI9pWC61P1yumS9WjQtelNS9riHwV7oCkknPGaAry4o7eFx2KgoLMnI2BgFJYpW7Im8/zX3BuONg==}
+>>>>>>> 4b5aeb8c9 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
     engines: {node: ^20.19.0 || >=22.12.0}
     cpu: [arm64]
     os: [android]
@@ -12622,8 +12899,8 @@ packages:
   '@rolldown/pluginutils@1.0.0-beta.47':
     resolution: {integrity: sha512-8QagwMH3kNCuzD8EWL8R2YPW5e4OrHNSAHRFDdmFqEwEaD/KcNKjVoumo+gP2vW5eKB2UPbM6vTYiGZX0ixLnw==}
 
-  '@rolldown/pluginutils@1.0.0-beta.50':
-    resolution: {integrity: sha512-5e76wQiQVeL1ICOZVUg4LSOVYg9jyhGCin+icYozhsUzM+fHE7kddi1bdiE0jwVqTfkjba3jUFbEkoC9WkdvyA==}
+  '@rolldown/pluginutils@1.0.0-beta.51':
+    resolution: {integrity: sha512-51/8cNXMrqWqX3o8DZidhwz1uYq0BhHDDSfVygAND1Skx5s1TDw3APSSxCMcFFedwgqGcx34gRouwY+m404BBQ==}
 
   '@rolldown/pluginutils@1.0.0-beta.52':
     resolution: {integrity: sha512-/L0htLJZbaZFL1g9OHOblTxbCYIGefErJjtYOwgl9ZqNx27P3L0SDfjhhHIss32gu5NWgnxuT2a2Hnnv6QGHKA==}
@@ -17215,7 +17492,13 @@ packages:
     resolution: {integrity: sha512-h/tOYTkXEsAcV3//6C1/7U4ifSpKyJvb6auveAepqqNJl6TdZaPFEtKjBQNf8UxQdDP850knB2i/whq4zlsxJw==}
 >>>>>>> d99502360 (feat: new storage package (#527))
 
+<<<<<<< HEAD
 >>>>>>> efb87dc29 (feat: new storage package (#527))
+=======
+  aws4fetch@1.0.20:
+    resolution: {integrity: sha512-/djoAN709iY65ETD6LKCtyyEI04XIBP5xVvfmNxsEP0uJB5tyaGBztSryRr4HqMStr9R06PisQE7m9zDTXKu6g==}
+
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
   axe-core@4.10.2:
     resolution: {integrity: sha512-RE3mdQ7P3FRSe7eqCWoeQ/Z9QXrtniSjp1wUjt5nRC3WIpz5rSCve6o3fsZ2aCpJtrZjSZgjwXAoTO5k4tEI0w==}
     engines: {node: '>=4'}
@@ -24652,7 +24935,10 @@ packages:
     resolution: {integrity: sha512-vtK/94akxsTMhe0/cbfpR+syPuszcuwhqVjJq26CuNDgFGj682oRBXOP5MJpv2r7JtE8MsiepGIqvvOTBwn2vA==}
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> 4db91813a (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
 <<<<<<< HEAD
   protocols@2.0.2:
     resolution: {integrity: sha512-hHVTzba3wboROl0/aWRRG9dMytgH6ow//STBZh43l/wQgmMhYhOFi0EHWAPtoCz9IAUymsyP0TSBHkhgMEGNnQ==}
@@ -24662,7 +24948,12 @@ packages:
     engines: {node: '>=12.0.0'}
 >>>>>>> efb87dc29 (feat: new storage package (#527))
 
+<<<<<<< HEAD
 >>>>>>> 87bcd9251 (feat: new storage package (#527))
+=======
+=======
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
+>>>>>>> 4db91813a (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
   proxy-addr@2.0.7:
     resolution: {integrity: sha512-llQsMLSUDUPT44jdrU/O37qlnifitDP+ZwrmmZcoSKyLKvtZxpyV0n2/bD/N4tBAAZ/gJEdZU7KMraoK1+XYAg==}
     engines: {node: '>= 0.10'}
@@ -25366,8 +25657,18 @@ packages:
     resolution: {integrity: sha512-RyXI+aNxwVyfF71a9cqz/jhXWbycnVh7GXnnJUniIBXKTOJQF3rmpNexStXt8TUcKyiXCwyfYzboZLMYUllPDA==}
     engines: {node: '>=18.0'}
 
+<<<<<<< HEAD
   rolldown-vite@7.2.8:
     resolution: {integrity: sha512-8wKihlF6EDF8grimwd7GPOhLkQkSIgj6Hlcp0CXhtO3HAXeUUqhgZmJmn07OF8e4PbTusMX6Yxmy1BptVRZsdw==}
+=======
+<<<<<<< HEAD
+  rolldown-vite@7.2.7:
+    resolution: {integrity: sha512-N6a9KgNZ0xgCJ6/Ej2FQ7W8D3fOzDwFw7CLWZ2ubZknVrs9NdNkx25AFEuNbSwQO76VEHp4N7YatsZwp/ST1Gg==}
+=======
+  rolldown-vite@7.2.6:
+    resolution: {integrity: sha512-u+0VLWLPJgwINLTQI18fSQlqfwgu8biRP4SY6HH4HLcEWZUOnDu5ARpwPYPyDahXPuhdSRHmWfS5G2/7CmqpJw==}
+>>>>>>> 4b5aeb8c9 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
     engines: {node: ^20.19.0 || >=22.12.0}
     hasBin: true
     peerDependencies:
@@ -27678,8 +27979,8 @@ packages:
     resolution: {integrity: sha512-pMZTvIkT1d+TFGvDOqodOclx0QWkkgi6Tdoa8gC8ffGAAqz9pzPTZWAybbsHHoED/ztMtkv/VoYTYyShUn81hA==}
     engines: {node: '>= 0.4.0'}
 
-  uuid@11.1.0:
-    resolution: {integrity: sha512-0/A9rDy9P7cJ+8w1c9WD9V//9Wj15Ce2MPz8Ri6032usz+NfePxx5AcN3bN+r6ZL6jEo066/yNYB3tn4pQEx+A==}
+  uuid@13.0.0:
+    resolution: {integrity: sha512-XQegIaBTVUjSHliKqcnFqYypAd4S+WCYt5NIeRs6w/UAry7z8Y9j5ZwRRL4kzq9U3sD6v+85er9FvkEaBpji2w==}
     hasBin: true
 
   uuid@8.3.2:
@@ -30207,21 +30508,21 @@ snapshots:
       '@smithy/abort-controller': 1.1.0
       tslib: 2.8.1
 
-  '@aws-sdk/client-cognito-identity@3.932.0(aws-crt@1.27.5)':
+  '@aws-sdk/client-cognito-identity@3.934.0(aws-crt@1.27.5)':
     dependencies:
       '@aws-crypto/sha256-browser': 5.2.0
       '@aws-crypto/sha256-js': 5.2.0
-      '@aws-sdk/core': 3.932.0
-      '@aws-sdk/credential-provider-node': 3.932.0(aws-crt@1.27.5)
+      '@aws-sdk/core': 3.934.0
+      '@aws-sdk/credential-provider-node': 3.934.0(aws-crt@1.27.5)
       '@aws-sdk/middleware-host-header': 3.930.0
       '@aws-sdk/middleware-logger': 3.930.0
-      '@aws-sdk/middleware-recursion-detection': 3.930.0
-      '@aws-sdk/middleware-user-agent': 3.932.0
+      '@aws-sdk/middleware-recursion-detection': 3.933.0
+      '@aws-sdk/middleware-user-agent': 3.934.0
       '@aws-sdk/region-config-resolver': 3.930.0
       '@aws-sdk/types': 3.930.0
       '@aws-sdk/util-endpoints': 3.930.0
       '@aws-sdk/util-user-agent-browser': 3.930.0
-      '@aws-sdk/util-user-agent-node': 3.932.0(aws-crt@1.27.5)
+      '@aws-sdk/util-user-agent-node': 3.934.0(aws-crt@1.27.5)
       '@smithy/config-resolver': 4.4.3
       '@smithy/core': 3.18.3
       '@smithy/fetch-http-handler': 5.3.6
@@ -30252,6 +30553,7 @@ snapshots:
     transitivePeerDependencies:
       - aws-crt
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
   '@aws-sdk/client-sso@3.927.0':
@@ -30297,28 +30599,31 @@ snapshots:
 =======
   '@aws-sdk/client-s3@3.932.0(aws-crt@1.27.5)':
 >>>>>>> cfd49ebf5 (feat: add storage-client package with initial implementation)
+=======
+  '@aws-sdk/client-s3@3.934.0(aws-crt@1.27.5)':
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
     dependencies:
       '@aws-crypto/sha1-browser': 5.2.0
       '@aws-crypto/sha256-browser': 5.2.0
       '@aws-crypto/sha256-js': 5.2.0
-      '@aws-sdk/core': 3.932.0
-      '@aws-sdk/credential-provider-node': 3.932.0(aws-crt@1.27.5)
+      '@aws-sdk/core': 3.934.0
+      '@aws-sdk/credential-provider-node': 3.934.0(aws-crt@1.27.5)
       '@aws-sdk/middleware-bucket-endpoint': 3.930.0
       '@aws-sdk/middleware-expect-continue': 3.930.0
-      '@aws-sdk/middleware-flexible-checksums': 3.932.0
+      '@aws-sdk/middleware-flexible-checksums': 3.934.0
       '@aws-sdk/middleware-host-header': 3.930.0
       '@aws-sdk/middleware-location-constraint': 3.930.0
       '@aws-sdk/middleware-logger': 3.930.0
-      '@aws-sdk/middleware-recursion-detection': 3.930.0
-      '@aws-sdk/middleware-sdk-s3': 3.932.0
+      '@aws-sdk/middleware-recursion-detection': 3.933.0
+      '@aws-sdk/middleware-sdk-s3': 3.934.0
       '@aws-sdk/middleware-ssec': 3.930.0
-      '@aws-sdk/middleware-user-agent': 3.932.0
+      '@aws-sdk/middleware-user-agent': 3.934.0
       '@aws-sdk/region-config-resolver': 3.930.0
-      '@aws-sdk/signature-v4-multi-region': 3.932.0
+      '@aws-sdk/signature-v4-multi-region': 3.934.0
       '@aws-sdk/types': 3.930.0
       '@aws-sdk/util-endpoints': 3.930.0
       '@aws-sdk/util-user-agent-browser': 3.930.0
-      '@aws-sdk/util-user-agent-node': 3.932.0(aws-crt@1.27.5)
+      '@aws-sdk/util-user-agent-node': 3.934.0(aws-crt@1.27.5)
       '@smithy/config-resolver': 4.4.3
       '@smithy/core': 3.18.3
       '@smithy/eventstream-serde-browser': 4.2.5
@@ -30356,20 +30661,20 @@ snapshots:
     transitivePeerDependencies:
       - aws-crt
 
-  '@aws-sdk/client-sso@3.932.0(aws-crt@1.27.5)':
+  '@aws-sdk/client-sso@3.934.0(aws-crt@1.27.5)':
     dependencies:
       '@aws-crypto/sha256-browser': 5.2.0
       '@aws-crypto/sha256-js': 5.2.0
-      '@aws-sdk/core': 3.932.0
+      '@aws-sdk/core': 3.934.0
       '@aws-sdk/middleware-host-header': 3.930.0
       '@aws-sdk/middleware-logger': 3.930.0
-      '@aws-sdk/middleware-recursion-detection': 3.930.0
-      '@aws-sdk/middleware-user-agent': 3.932.0
+      '@aws-sdk/middleware-recursion-detection': 3.933.0
+      '@aws-sdk/middleware-user-agent': 3.934.0
       '@aws-sdk/region-config-resolver': 3.930.0
       '@aws-sdk/types': 3.930.0
       '@aws-sdk/util-endpoints': 3.930.0
       '@aws-sdk/util-user-agent-browser': 3.930.0
-      '@aws-sdk/util-user-agent-node': 3.932.0(aws-crt@1.27.5)
+      '@aws-sdk/util-user-agent-node': 3.934.0(aws-crt@1.27.5)
       '@smithy/config-resolver': 4.4.3
       '@smithy/core': 3.18.3
       '@smithy/fetch-http-handler': 5.3.6
@@ -30400,6 +30705,7 @@ snapshots:
     transitivePeerDependencies:
       - aws-crt
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
   '@aws-sdk/core@3.927.0':
@@ -30458,6 +30764,9 @@ snapshots:
 =======
   '@aws-sdk/core@3.932.0':
 >>>>>>> cfd49ebf5 (feat: add storage-client package with initial implementation)
+=======
+  '@aws-sdk/core@3.934.0':
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
     dependencies:
       '@aws-sdk/types': 3.930.0
       '@aws-sdk/xml-builder': 3.930.0
@@ -30473,9 +30782,9 @@ snapshots:
       '@smithy/util-utf8': 4.2.0
       tslib: 2.8.1
 
-  '@aws-sdk/credential-provider-cognito-identity@3.932.0(aws-crt@1.27.5)':
+  '@aws-sdk/credential-provider-cognito-identity@3.934.0(aws-crt@1.27.5)':
     dependencies:
-      '@aws-sdk/client-cognito-identity': 3.932.0(aws-crt@1.27.5)
+      '@aws-sdk/client-cognito-identity': 3.934.0(aws-crt@1.27.5)
       '@aws-sdk/types': 3.930.0
       '@smithy/property-provider': 4.2.5
       '@smithy/types': 4.9.0
@@ -30484,6 +30793,7 @@ snapshots:
     transitivePeerDependencies:
       - aws-crt
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
   '@aws-sdk/credential-provider-node@3.927.0':
@@ -30504,16 +30814,19 @@ snapshots:
 =======
   '@aws-sdk/credential-provider-env@3.932.0':
 >>>>>>> cfd49ebf5 (feat: add storage-client package with initial implementation)
+=======
+  '@aws-sdk/credential-provider-env@3.934.0':
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
     dependencies:
-      '@aws-sdk/core': 3.932.0
+      '@aws-sdk/core': 3.934.0
       '@aws-sdk/types': 3.930.0
       '@smithy/property-provider': 4.2.5
       '@smithy/types': 4.9.0
       tslib: 2.8.1
 
-  '@aws-sdk/credential-provider-http@3.932.0':
+  '@aws-sdk/credential-provider-http@3.934.0':
     dependencies:
-      '@aws-sdk/core': 3.932.0
+      '@aws-sdk/core': 3.934.0
       '@aws-sdk/types': 3.930.0
       '@smithy/fetch-http-handler': 5.3.6
       '@smithy/node-http-handler': 4.4.5
@@ -30524,15 +30837,15 @@ snapshots:
       '@smithy/util-stream': 4.5.6
       tslib: 2.8.1
 
-  '@aws-sdk/credential-provider-ini@3.932.0(aws-crt@1.27.5)':
+  '@aws-sdk/credential-provider-ini@3.934.0(aws-crt@1.27.5)':
     dependencies:
-      '@aws-sdk/core': 3.932.0
-      '@aws-sdk/credential-provider-env': 3.932.0
-      '@aws-sdk/credential-provider-http': 3.932.0
-      '@aws-sdk/credential-provider-process': 3.932.0
-      '@aws-sdk/credential-provider-sso': 3.932.0(aws-crt@1.27.5)
-      '@aws-sdk/credential-provider-web-identity': 3.932.0(aws-crt@1.27.5)
-      '@aws-sdk/nested-clients': 3.932.0(aws-crt@1.27.5)
+      '@aws-sdk/core': 3.934.0
+      '@aws-sdk/credential-provider-env': 3.934.0
+      '@aws-sdk/credential-provider-http': 3.934.0
+      '@aws-sdk/credential-provider-process': 3.934.0
+      '@aws-sdk/credential-provider-sso': 3.934.0(aws-crt@1.27.5)
+      '@aws-sdk/credential-provider-web-identity': 3.934.0(aws-crt@1.27.5)
+      '@aws-sdk/nested-clients': 3.934.0(aws-crt@1.27.5)
       '@aws-sdk/types': 3.930.0
       '@smithy/credential-provider-imds': 4.2.5
       '@smithy/property-provider': 4.2.5
@@ -30543,6 +30856,7 @@ snapshots:
     transitivePeerDependencies:
       - aws-crt
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
   '@aws-sdk/credential-provider-process@3.927.0':
@@ -30568,13 +30882,16 @@ snapshots:
 =======
   '@aws-sdk/credential-provider-node@3.932.0(aws-crt@1.27.5)':
 >>>>>>> cfd49ebf5 (feat: add storage-client package with initial implementation)
+=======
+  '@aws-sdk/credential-provider-node@3.934.0(aws-crt@1.27.5)':
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
     dependencies:
-      '@aws-sdk/credential-provider-env': 3.932.0
-      '@aws-sdk/credential-provider-http': 3.932.0
-      '@aws-sdk/credential-provider-ini': 3.932.0(aws-crt@1.27.5)
-      '@aws-sdk/credential-provider-process': 3.932.0
-      '@aws-sdk/credential-provider-sso': 3.932.0(aws-crt@1.27.5)
-      '@aws-sdk/credential-provider-web-identity': 3.932.0(aws-crt@1.27.5)
+      '@aws-sdk/credential-provider-env': 3.934.0
+      '@aws-sdk/credential-provider-http': 3.934.0
+      '@aws-sdk/credential-provider-ini': 3.934.0(aws-crt@1.27.5)
+      '@aws-sdk/credential-provider-process': 3.934.0
+      '@aws-sdk/credential-provider-sso': 3.934.0(aws-crt@1.27.5)
+      '@aws-sdk/credential-provider-web-identity': 3.934.0(aws-crt@1.27.5)
       '@aws-sdk/types': 3.930.0
       '@smithy/credential-provider-imds': 4.2.5
       '@smithy/property-provider': 4.2.5
@@ -30585,6 +30902,7 @@ snapshots:
     transitivePeerDependencies:
       - aws-crt
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
   '@aws-sdk/credential-provider-web-identity@3.927.0':
@@ -30600,19 +30918,22 @@ snapshots:
 =======
   '@aws-sdk/credential-provider-process@3.932.0':
 >>>>>>> cfd49ebf5 (feat: add storage-client package with initial implementation)
+=======
+  '@aws-sdk/credential-provider-process@3.934.0':
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
     dependencies:
-      '@aws-sdk/core': 3.932.0
+      '@aws-sdk/core': 3.934.0
       '@aws-sdk/types': 3.930.0
       '@smithy/property-provider': 4.2.5
       '@smithy/shared-ini-file-loader': 4.4.0
       '@smithy/types': 4.9.0
       tslib: 2.8.1
 
-  '@aws-sdk/credential-provider-sso@3.932.0(aws-crt@1.27.5)':
+  '@aws-sdk/credential-provider-sso@3.934.0(aws-crt@1.27.5)':
     dependencies:
-      '@aws-sdk/client-sso': 3.932.0(aws-crt@1.27.5)
-      '@aws-sdk/core': 3.932.0
-      '@aws-sdk/token-providers': 3.932.0(aws-crt@1.27.5)
+      '@aws-sdk/client-sso': 3.934.0(aws-crt@1.27.5)
+      '@aws-sdk/core': 3.934.0
+      '@aws-sdk/token-providers': 3.934.0(aws-crt@1.27.5)
       '@aws-sdk/types': 3.930.0
       '@smithy/property-provider': 4.2.5
       '@smithy/shared-ini-file-loader': 4.4.0
@@ -30622,6 +30943,7 @@ snapshots:
     transitivePeerDependencies:
       - aws-crt
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
   '@aws-sdk/middleware-host-header@3.922.0':
@@ -30715,9 +31037,12 @@ snapshots:
 =======
   '@aws-sdk/credential-provider-web-identity@3.932.0(aws-crt@1.27.5)':
 >>>>>>> cfd49ebf5 (feat: add storage-client package with initial implementation)
+=======
+  '@aws-sdk/credential-provider-web-identity@3.934.0(aws-crt@1.27.5)':
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
     dependencies:
-      '@aws-sdk/core': 3.932.0
-      '@aws-sdk/nested-clients': 3.932.0(aws-crt@1.27.5)
+      '@aws-sdk/core': 3.934.0
+      '@aws-sdk/nested-clients': 3.934.0(aws-crt@1.27.5)
       '@aws-sdk/types': 3.930.0
       '@smithy/property-provider': 4.2.5
       '@smithy/shared-ini-file-loader': 4.4.0
@@ -30726,19 +31051,19 @@ snapshots:
     transitivePeerDependencies:
       - aws-crt
 
-  '@aws-sdk/credential-providers@3.932.0(aws-crt@1.27.5)':
+  '@aws-sdk/credential-providers@3.934.0(aws-crt@1.27.5)':
     dependencies:
-      '@aws-sdk/client-cognito-identity': 3.932.0(aws-crt@1.27.5)
-      '@aws-sdk/core': 3.932.0
-      '@aws-sdk/credential-provider-cognito-identity': 3.932.0(aws-crt@1.27.5)
-      '@aws-sdk/credential-provider-env': 3.932.0
-      '@aws-sdk/credential-provider-http': 3.932.0
-      '@aws-sdk/credential-provider-ini': 3.932.0(aws-crt@1.27.5)
-      '@aws-sdk/credential-provider-node': 3.932.0(aws-crt@1.27.5)
-      '@aws-sdk/credential-provider-process': 3.932.0
-      '@aws-sdk/credential-provider-sso': 3.932.0(aws-crt@1.27.5)
-      '@aws-sdk/credential-provider-web-identity': 3.932.0(aws-crt@1.27.5)
-      '@aws-sdk/nested-clients': 3.932.0(aws-crt@1.27.5)
+      '@aws-sdk/client-cognito-identity': 3.934.0(aws-crt@1.27.5)
+      '@aws-sdk/core': 3.934.0
+      '@aws-sdk/credential-provider-cognito-identity': 3.934.0(aws-crt@1.27.5)
+      '@aws-sdk/credential-provider-env': 3.934.0
+      '@aws-sdk/credential-provider-http': 3.934.0
+      '@aws-sdk/credential-provider-ini': 3.934.0(aws-crt@1.27.5)
+      '@aws-sdk/credential-provider-node': 3.934.0(aws-crt@1.27.5)
+      '@aws-sdk/credential-provider-process': 3.934.0
+      '@aws-sdk/credential-provider-sso': 3.934.0(aws-crt@1.27.5)
+      '@aws-sdk/credential-provider-web-identity': 3.934.0(aws-crt@1.27.5)
+      '@aws-sdk/nested-clients': 3.934.0(aws-crt@1.27.5)
       '@aws-sdk/types': 3.930.0
       '@smithy/config-resolver': 4.4.3
       '@smithy/core': 3.18.3
@@ -30750,9 +31075,9 @@ snapshots:
     transitivePeerDependencies:
       - aws-crt
 
-  '@aws-sdk/crt-loader@3.932.0':
+  '@aws-sdk/crt-loader@3.934.0':
     dependencies:
-      '@aws-sdk/util-user-agent-node': 3.932.0(aws-crt@1.27.5)
+      '@aws-sdk/util-user-agent-node': 3.934.0(aws-crt@1.27.5)
       aws-crt: 1.27.5
       tslib: 2.8.1
     transitivePeerDependencies:
@@ -30778,12 +31103,12 @@ snapshots:
       '@smithy/types': 4.9.0
       tslib: 2.8.1
 
-  '@aws-sdk/middleware-flexible-checksums@3.932.0':
+  '@aws-sdk/middleware-flexible-checksums@3.934.0':
     dependencies:
       '@aws-crypto/crc32': 5.2.0
       '@aws-crypto/crc32c': 5.2.0
       '@aws-crypto/util': 5.2.0
-      '@aws-sdk/core': 3.932.0
+      '@aws-sdk/core': 3.934.0
       '@aws-sdk/types': 3.930.0
       '@smithy/is-array-buffer': 4.2.0
       '@smithy/node-config-provider': 4.3.5
@@ -30813,17 +31138,17 @@ snapshots:
       '@smithy/types': 4.9.0
       tslib: 2.8.1
 
-  '@aws-sdk/middleware-recursion-detection@3.930.0':
+  '@aws-sdk/middleware-recursion-detection@3.933.0':
     dependencies:
       '@aws-sdk/types': 3.930.0
-      '@aws/lambda-invoke-store': 0.1.1
+      '@aws/lambda-invoke-store': 0.2.0
       '@smithy/protocol-http': 5.3.5
       '@smithy/types': 4.9.0
       tslib: 2.8.1
 
-  '@aws-sdk/middleware-sdk-s3@3.932.0':
+  '@aws-sdk/middleware-sdk-s3@3.934.0':
     dependencies:
-      '@aws-sdk/core': 3.932.0
+      '@aws-sdk/core': 3.934.0
       '@aws-sdk/types': 3.930.0
       '@aws-sdk/util-arn-parser': 3.893.0
       '@smithy/core': 3.18.3
@@ -30844,9 +31169,9 @@ snapshots:
       '@smithy/types': 4.9.0
       tslib: 2.8.1
 
-  '@aws-sdk/middleware-user-agent@3.932.0':
+  '@aws-sdk/middleware-user-agent@3.934.0':
     dependencies:
-      '@aws-sdk/core': 3.932.0
+      '@aws-sdk/core': 3.934.0
       '@aws-sdk/types': 3.930.0
       '@aws-sdk/util-endpoints': 3.930.0
       '@smithy/core': 3.18.3
@@ -30854,20 +31179,20 @@ snapshots:
       '@smithy/types': 4.9.0
       tslib: 2.8.1
 
-  '@aws-sdk/nested-clients@3.932.0(aws-crt@1.27.5)':
+  '@aws-sdk/nested-clients@3.934.0(aws-crt@1.27.5)':
     dependencies:
       '@aws-crypto/sha256-browser': 5.2.0
       '@aws-crypto/sha256-js': 5.2.0
-      '@aws-sdk/core': 3.932.0
+      '@aws-sdk/core': 3.934.0
       '@aws-sdk/middleware-host-header': 3.930.0
       '@aws-sdk/middleware-logger': 3.930.0
-      '@aws-sdk/middleware-recursion-detection': 3.930.0
-      '@aws-sdk/middleware-user-agent': 3.932.0
+      '@aws-sdk/middleware-recursion-detection': 3.933.0
+      '@aws-sdk/middleware-user-agent': 3.934.0
       '@aws-sdk/region-config-resolver': 3.930.0
       '@aws-sdk/types': 3.930.0
       '@aws-sdk/util-endpoints': 3.930.0
       '@aws-sdk/util-user-agent-browser': 3.930.0
-      '@aws-sdk/util-user-agent-node': 3.932.0(aws-crt@1.27.5)
+      '@aws-sdk/util-user-agent-node': 3.934.0(aws-crt@1.27.5)
       '@smithy/config-resolver': 4.4.3
       '@smithy/core': 3.18.3
       '@smithy/fetch-http-handler': 5.3.6
@@ -30933,9 +31258,9 @@ snapshots:
       '@smithy/types': 4.9.0
       tslib: 2.8.1
 
-  '@aws-sdk/s3-request-presigner@3.932.0':
+  '@aws-sdk/s3-request-presigner@3.934.0':
     dependencies:
-      '@aws-sdk/signature-v4-multi-region': 3.932.0
+      '@aws-sdk/signature-v4-multi-region': 3.934.0
       '@aws-sdk/types': 3.930.0
       '@aws-sdk/util-format-url': 3.930.0
       '@smithy/middleware-endpoint': 4.3.10
@@ -30944,10 +31269,10 @@ snapshots:
       '@smithy/types': 4.9.0
       tslib: 2.8.1
 
-  '@aws-sdk/signature-v4-crt@3.932.0':
+  '@aws-sdk/signature-v4-crt@3.934.0':
     dependencies:
-      '@aws-sdk/crt-loader': 3.932.0
-      '@aws-sdk/signature-v4-multi-region': 3.932.0
+      '@aws-sdk/crt-loader': 3.934.0
+      '@aws-sdk/signature-v4-multi-region': 3.934.0
       '@aws-sdk/types': 3.930.0
       '@smithy/querystring-parser': 4.2.5
       '@smithy/signature-v4': 5.3.5
@@ -30960,19 +31285,19 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  '@aws-sdk/signature-v4-multi-region@3.932.0':
+  '@aws-sdk/signature-v4-multi-region@3.934.0':
     dependencies:
-      '@aws-sdk/middleware-sdk-s3': 3.932.0
+      '@aws-sdk/middleware-sdk-s3': 3.934.0
       '@aws-sdk/types': 3.930.0
       '@smithy/protocol-http': 5.3.5
       '@smithy/signature-v4': 5.3.5
       '@smithy/types': 4.9.0
       tslib: 2.8.1
 
-  '@aws-sdk/token-providers@3.932.0(aws-crt@1.27.5)':
+  '@aws-sdk/token-providers@3.934.0(aws-crt@1.27.5)':
     dependencies:
-      '@aws-sdk/core': 3.932.0
-      '@aws-sdk/nested-clients': 3.932.0(aws-crt@1.27.5)
+      '@aws-sdk/core': 3.934.0
+      '@aws-sdk/nested-clients': 3.934.0(aws-crt@1.27.5)
       '@aws-sdk/types': 3.930.0
       '@smithy/property-provider': 4.2.5
       '@smithy/shared-ini-file-loader': 4.4.0
@@ -31052,9 +31377,9 @@ snapshots:
       bowser: 2.12.1
       tslib: 2.8.1
 
-  '@aws-sdk/util-user-agent-node@3.932.0(aws-crt@1.27.5)':
+  '@aws-sdk/util-user-agent-node@3.934.0(aws-crt@1.27.5)':
     dependencies:
-      '@aws-sdk/middleware-user-agent': 3.932.0
+      '@aws-sdk/middleware-user-agent': 3.934.0
       '@aws-sdk/types': 3.930.0
       '@smithy/node-config-provider': 4.3.5
       '@smithy/types': 4.9.0
@@ -31073,7 +31398,7 @@ snapshots:
       fast-xml-parser: 5.2.5
       tslib: 2.8.1
 
-  '@aws/lambda-invoke-store@0.1.1': {}
+  '@aws/lambda-invoke-store@0.2.0': {}
 
   '@azu/format-text@1.0.2': {}
 
@@ -33047,15 +33372,15 @@ snapshots:
       '@tybys/wasm-util': 0.10.1
     optional: true
 
-  '@netlify/blobs@10.3.3':
+  '@netlify/blobs@10.4.1':
     dependencies:
-      '@netlify/dev-utils': 4.3.1
-      '@netlify/otel': 4.3.2
+      '@netlify/dev-utils': 4.3.2
+      '@netlify/otel': 5.0.0
       '@netlify/runtime-utils': 2.2.1
     transitivePeerDependencies:
       - supports-color
 
-  '@netlify/dev-utils@4.3.1':
+  '@netlify/dev-utils@4.3.2':
     dependencies:
       '@whatwg-node/server': 0.10.13
       ansis: 4.2.0
@@ -33070,15 +33395,14 @@ snapshots:
       parse-gitignore: 2.0.0
       semver: 7.7.3
       tmp-promise: 3.0.3
-      uuid: 11.1.0
+      uuid: 13.0.0
       write-file-atomic: 5.0.1
 
-  '@netlify/otel@4.3.2':
+  '@netlify/otel@5.0.0':
     dependencies:
       '@opentelemetry/api': 1.9.0
       '@opentelemetry/core': 1.30.1(@opentelemetry/api@1.9.0)
       '@opentelemetry/instrumentation': 0.203.0(@opentelemetry/api@1.9.0)
-      '@opentelemetry/otlp-transformer': 0.57.2(@opentelemetry/api@1.9.0)
       '@opentelemetry/resources': 1.30.1(@opentelemetry/api@1.9.0)
       '@opentelemetry/sdk-trace-node': 1.30.1(@opentelemetry/api@1.9.0)
     transitivePeerDependencies:
@@ -33418,10 +33742,6 @@ snapshots:
     dependencies:
       '@opentelemetry/api': 1.9.0
 
-  '@opentelemetry/api-logs@0.57.2':
-    dependencies:
-      '@opentelemetry/api': 1.9.0
-
   '@opentelemetry/api@1.9.0': {}
 
 <<<<<<< HEAD
@@ -33492,17 +33812,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@opentelemetry/otlp-transformer@0.57.2(@opentelemetry/api@1.9.0)':
-    dependencies:
-      '@opentelemetry/api': 1.9.0
-      '@opentelemetry/api-logs': 0.57.2
-      '@opentelemetry/core': 1.30.1(@opentelemetry/api@1.9.0)
-      '@opentelemetry/resources': 1.30.1(@opentelemetry/api@1.9.0)
-      '@opentelemetry/sdk-logs': 0.57.2(@opentelemetry/api@1.9.0)
-      '@opentelemetry/sdk-metrics': 1.30.1(@opentelemetry/api@1.9.0)
-      '@opentelemetry/sdk-trace-base': 1.30.1(@opentelemetry/api@1.9.0)
-      protobufjs: 7.5.4
-
   '@opentelemetry/propagator-b3@1.30.1(@opentelemetry/api@1.9.0)':
     dependencies:
       '@opentelemetry/api': 1.9.0
@@ -33518,19 +33827,6 @@ snapshots:
       '@opentelemetry/api': 1.9.0
       '@opentelemetry/core': 1.30.1(@opentelemetry/api@1.9.0)
       '@opentelemetry/semantic-conventions': 1.28.0
-
-  '@opentelemetry/sdk-logs@0.57.2(@opentelemetry/api@1.9.0)':
-    dependencies:
-      '@opentelemetry/api': 1.9.0
-      '@opentelemetry/api-logs': 0.57.2
-      '@opentelemetry/core': 1.30.1(@opentelemetry/api@1.9.0)
-      '@opentelemetry/resources': 1.30.1(@opentelemetry/api@1.9.0)
-
-  '@opentelemetry/sdk-metrics@1.30.1(@opentelemetry/api@1.9.0)':
-    dependencies:
-      '@opentelemetry/api': 1.9.0
-      '@opentelemetry/core': 1.30.1(@opentelemetry/api@1.9.0)
-      '@opentelemetry/resources': 1.30.1(@opentelemetry/api@1.9.0)
 
   '@opentelemetry/sdk-trace-base@1.30.1(@opentelemetry/api@1.9.0)':
     dependencies:
@@ -34226,29 +34522,6 @@ snapshots:
     dependencies:
       spacetrim: 0.11.36
 
-  '@protobufjs/aspromise@1.1.2': {}
-
-  '@protobufjs/base64@1.1.2': {}
-
-  '@protobufjs/codegen@2.0.4': {}
-
-  '@protobufjs/eventemitter@1.1.0': {}
-
-  '@protobufjs/fetch@1.1.0':
-    dependencies:
-      '@protobufjs/aspromise': 1.1.2
-      '@protobufjs/inquire': 1.1.0
-
-  '@protobufjs/float@1.0.2': {}
-
-  '@protobufjs/inquire@1.1.0': {}
-
-  '@protobufjs/path@1.1.2': {}
-
-  '@protobufjs/pool@1.1.0': {}
-
-  '@protobufjs/utf8@1.1.0': {}
-
   '@publint/pack@0.1.2': {}
 
   '@puppeteer/browsers@2.3.1':
@@ -34819,15 +35092,22 @@ snapshots:
 =======
   '@remix-run/headers@0.15.0': {}
 
-  '@remix-run/headers@0.16.0': {}
+  '@remix-run/headers@0.17.0': {}
 
   '@remix-run/multipart-parser@0.13.0':
     dependencies:
       '@remix-run/headers': 0.15.0
 
+<<<<<<< HEAD
   '@rolldown/binding-android-arm64@1.0.0-beta.50':
 >>>>>>> d99502360 (feat: new storage package (#527))
+<<<<<<< HEAD
 >>>>>>> efb87dc29 (feat: new storage package (#527))
+=======
+=======
+  '@rolldown/binding-android-arm64@1.0.0-beta.51':
+>>>>>>> 4b5aeb8c9 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
     optional: true
 
   '@rolldown/binding-darwin-arm64@1.0.0-beta.52':
@@ -34875,7 +35155,7 @@ snapshots:
 
   '@rolldown/pluginutils@1.0.0-beta.47': {}
 
-  '@rolldown/pluginutils@1.0.0-beta.50': {}
+  '@rolldown/pluginutils@1.0.0-beta.51': {}
 
   '@rolldown/pluginutils@1.0.0-beta.52': {}
 
@@ -36025,11 +36305,11 @@ snapshots:
     dependencies:
       solid-js: 1.9.10
 
-  '@solidjs/start@1.2.0(@testing-library/jest-dom@6.8.0)(solid-js@1.9.10)(vinxi@0.5.8(@azure/storage-blob@12.29.1)(@netlify/blobs@10.3.3)(@types/node@24.10.1)(@vercel/blob@2.0.0)(db0@0.3.4)(ioredis@5.8.2)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(rolldown@1.0.0-beta.50)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))':
+  '@solidjs/start@1.2.0(@testing-library/jest-dom@6.8.0)(solid-js@1.9.10)(vinxi@0.5.8(@azure/storage-blob@12.29.1)(@netlify/blobs@10.4.1)(@types/node@24.10.1)(@vercel/blob@2.0.0)(aws4fetch@1.0.20)(db0@0.3.4)(ioredis@5.8.2)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(rolldown@1.0.0-beta.51)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))':
     dependencies:
       '@tanstack/server-functions-plugin': 1.121.21(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
-      '@vinxi/plugin-directives': 0.5.1(vinxi@0.5.8(@azure/storage-blob@12.29.1)(@netlify/blobs@10.3.3)(@types/node@24.10.1)(@vercel/blob@2.0.0)(db0@0.3.4)(ioredis@5.8.2)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(rolldown@1.0.0-beta.50)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
-      '@vinxi/server-components': 0.5.1(vinxi@0.5.8(@azure/storage-blob@12.29.1)(@netlify/blobs@10.3.3)(@types/node@24.10.1)(@vercel/blob@2.0.0)(db0@0.3.4)(ioredis@5.8.2)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(rolldown@1.0.0-beta.50)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
+      '@vinxi/plugin-directives': 0.5.1(vinxi@0.5.8(@azure/storage-blob@12.29.1)(@netlify/blobs@10.4.1)(@types/node@24.10.1)(@vercel/blob@2.0.0)(aws4fetch@1.0.20)(db0@0.3.4)(ioredis@5.8.2)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(rolldown@1.0.0-beta.51)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
+      '@vinxi/server-components': 0.5.1(vinxi@0.5.8(@azure/storage-blob@12.29.1)(@netlify/blobs@10.4.1)(@types/node@24.10.1)(@vercel/blob@2.0.0)(aws4fetch@1.0.20)(db0@0.3.4)(ioredis@5.8.2)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(rolldown@1.0.0-beta.51)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
       cookie-es: 2.0.0
       defu: 6.1.4
       error-stack-parser: 2.1.4
@@ -36041,7 +36321,7 @@ snapshots:
       source-map-js: 1.2.1
       terracotta: 1.0.6(solid-js@1.9.10)
       tinyglobby: 0.2.15
-      vinxi: 0.5.8(@azure/storage-blob@12.29.1)(@netlify/blobs@10.3.3)(@types/node@24.10.1)(@vercel/blob@2.0.0)(db0@0.3.4)(ioredis@5.8.2)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(rolldown@1.0.0-beta.50)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+      vinxi: 0.5.8(@azure/storage-blob@12.29.1)(@netlify/blobs@10.4.1)(@types/node@24.10.1)(@vercel/blob@2.0.0)(aws4fetch@1.0.20)(db0@0.3.4)(ioredis@5.8.2)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(rolldown@1.0.0-beta.51)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
       vite-plugin-solid: 2.11.10(@testing-library/jest-dom@6.8.0)(solid-js@1.9.10)(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
     transitivePeerDependencies:
       - '@testing-library/jest-dom'
@@ -37580,14 +37860,14 @@ snapshots:
     transitivePeerDependencies:
       - crossws
 
-  '@tanstack/react-start@1.133.35(crossws@0.4.1(srvx@0.9.6))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.8.0)(solid-js@1.9.10)(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(webpack@5.102.1(@swc/core@1.13.5)(esbuild@0.27.0))':
+  '@tanstack/react-start@1.133.35(crossws@0.4.1(srvx@0.9.6))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.8.0)(solid-js@1.9.10)(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(webpack@5.102.1(@swc/core@1.13.5))':
     dependencies:
       '@tanstack/react-router': 1.133.35(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@tanstack/react-start-client': 1.133.35(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@tanstack/react-start-server': 1.133.35(crossws@0.4.1(srvx@0.9.6))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@tanstack/router-utils': 1.133.19
       '@tanstack/start-client-core': 1.133.35
-      '@tanstack/start-plugin-core': 1.133.35(@tanstack/react-router@1.133.35(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(crossws@0.4.1(srvx@0.9.6))(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.8.0)(solid-js@1.9.10)(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(webpack@5.102.1(@swc/core@1.13.5)(esbuild@0.27.0))
+      '@tanstack/start-plugin-core': 1.133.35(@tanstack/react-router@1.133.35(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(crossws@0.4.1(srvx@0.9.6))(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.8.0)(solid-js@1.9.10)(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(webpack@5.102.1(@swc/core@1.13.5))
       '@tanstack/start-server-core': 1.133.35(crossws@0.4.1(srvx@0.9.6))
       pathe: 2.0.3
       react: 19.2.0
@@ -37600,7 +37880,7 @@ snapshots:
       - vite-plugin-solid
       - webpack
 
-  '@tanstack/react-start@1.136.8(crossws@0.4.1(srvx@0.9.6))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.8.0)(solid-js@1.9.10)(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(webpack@5.102.1(@swc/core@1.13.5)(esbuild@0.27.0))':
+  '@tanstack/react-start@1.136.8(crossws@0.4.1(srvx@0.9.6))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.8.0)(solid-js@1.9.10)(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(webpack@5.102.1(@swc/core@1.13.5))':
     dependencies:
       '@tanstack/react-router': 1.136.8(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@tanstack/react-start-client': 1.136.8(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
@@ -37613,7 +37893,7 @@ snapshots:
 >>>>>>> 53756d0e7 (feat: add storage-client package with initial implementation)
 =======
       '@tanstack/start-client-core': 1.136.8
-      '@tanstack/start-plugin-core': 1.136.8(@tanstack/react-router@1.136.8(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(crossws@0.4.1(srvx@0.9.6))(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.8.0)(solid-js@1.9.10)(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(webpack@5.102.1(@swc/core@1.13.5)(esbuild@0.27.0))
+      '@tanstack/start-plugin-core': 1.136.8(@tanstack/react-router@1.136.8(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(crossws@0.4.1(srvx@0.9.6))(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.8.0)(solid-js@1.9.10)(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(webpack@5.102.1(@swc/core@1.13.5))
       '@tanstack/start-server-core': 1.136.8(crossws@0.4.1(srvx@0.9.6))
 >>>>>>> b6d1ba6d8 (refactor: update storage client with new query utilities and improved file operations)
       pathe: 2.0.3
@@ -37827,6 +38107,7 @@ snapshots:
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   '@tanstack/router-plugin@1.133.35(@tanstack/react-router@1.133.35(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.8.0)(solid-js@1.9.10)(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(webpack@5.102.1(@swc/core@1.13.5)(esbuild@0.27.0))':
 >>>>>>> 53756d0e7 (feat: add storage-client package with initial implementation)
 <<<<<<< HEAD
@@ -37847,8 +38128,17 @@ snapshots:
 =======
   '@tanstack/router-plugin@1.133.35(@tanstack/react-router@1.133.35(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.8.0)(solid-js@1.9.10)(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(webpack@5.102.1(@swc/core@1.13.5)(esbuild@0.27.0))':
 >>>>>>> 250ac9c73 (chore: update storage client dependencies and enhance testing framework)
+<<<<<<< HEAD
 >>>>>>> 13ae1add8 (chore: update storage client dependencies and enhance testing framework)
+<<<<<<< HEAD
 >>>>>>> c6fb76abf (chore: update storage client dependencies and enhance testing framework)
+=======
+=======
+=======
+  '@tanstack/router-plugin@1.133.35(@tanstack/react-router@1.133.35(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.8.0)(solid-js@1.9.10)(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(webpack@5.102.1(@swc/core@1.13.5))':
+>>>>>>> 4b5aeb8c9 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
+>>>>>>> 4db91813a (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
     dependencies:
       '@babel/core': 7.28.5
       '@babel/plugin-syntax-jsx': 7.27.1(@babel/core@7.28.5)
@@ -37902,11 +38192,11 @@ snapshots:
       '@tanstack/react-router': 1.133.35(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       vite: 7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
       vite-plugin-solid: 2.11.10(@testing-library/jest-dom@6.8.0)(solid-js@1.9.10)(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
-      webpack: 5.102.1(@swc/core@1.13.5)(esbuild@0.27.0)
+      webpack: 5.102.1(@swc/core@1.13.5)
     transitivePeerDependencies:
       - supports-color
 
-  '@tanstack/router-plugin@1.136.8(@tanstack/react-router@1.136.8(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.8.0)(solid-js@1.9.10)(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(webpack@5.102.1(@swc/core@1.13.5)(esbuild@0.27.0))':
+  '@tanstack/router-plugin@1.136.8(@tanstack/react-router@1.136.8(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.8.0)(solid-js@1.9.10)(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(webpack@5.102.1(@swc/core@1.13.5))':
     dependencies:
       '@babel/core': 7.28.5
       '@babel/plugin-syntax-jsx': 7.27.1(@babel/core@7.28.5)
@@ -37926,7 +38216,7 @@ snapshots:
       '@tanstack/react-router': 1.136.8(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       vite: 7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
       vite-plugin-solid: 2.11.10(@testing-library/jest-dom@6.8.0)(solid-js@1.9.10)(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
-      webpack: 5.102.1(@swc/core@1.13.5)(esbuild@0.27.0)
+      webpack: 5.102.1(@swc/core@1.13.5)
     transitivePeerDependencies:
       - supports-color
 
@@ -38044,6 +38334,7 @@ snapshots:
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   '@tanstack/start-plugin-core@1.133.35(@tanstack/react-router@1.133.35(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(crossws@0.4.1(srvx@0.9.6))(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.8.0)(solid-js@1.9.10)(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(webpack@5.102.1(@swc/core@1.13.5)(esbuild@0.27.0))':
 >>>>>>> 53756d0e7 (feat: add storage-client package with initial implementation)
 <<<<<<< HEAD
@@ -38064,8 +38355,17 @@ snapshots:
 =======
   '@tanstack/start-plugin-core@1.133.35(@tanstack/react-router@1.133.35(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(crossws@0.4.1(srvx@0.9.6))(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.8.0)(solid-js@1.9.10)(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(webpack@5.102.1(@swc/core@1.13.5)(esbuild@0.27.0))':
 >>>>>>> 250ac9c73 (chore: update storage client dependencies and enhance testing framework)
+<<<<<<< HEAD
 >>>>>>> 13ae1add8 (chore: update storage client dependencies and enhance testing framework)
+<<<<<<< HEAD
 >>>>>>> c6fb76abf (chore: update storage client dependencies and enhance testing framework)
+=======
+=======
+=======
+  '@tanstack/start-plugin-core@1.133.35(@tanstack/react-router@1.133.35(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(crossws@0.4.1(srvx@0.9.6))(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.8.0)(solid-js@1.9.10)(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(webpack@5.102.1(@swc/core@1.13.5))':
+>>>>>>> 4b5aeb8c9 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
+>>>>>>> 4db91813a (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
     dependencies:
       '@babel/code-frame': 7.26.2
       '@babel/core': 7.28.5
@@ -38082,7 +38382,7 @@ snapshots:
 =======
       '@tanstack/router-core': 1.133.35
       '@tanstack/router-generator': 1.133.35
-      '@tanstack/router-plugin': 1.133.35(@tanstack/react-router@1.133.35(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.8.0)(solid-js@1.9.10)(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(webpack@5.102.1(@swc/core@1.13.5)(esbuild@0.27.0))
+      '@tanstack/router-plugin': 1.133.35(@tanstack/react-router@1.133.35(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.8.0)(solid-js@1.9.10)(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(webpack@5.102.1(@swc/core@1.13.5))
       '@tanstack/router-utils': 1.133.19
       '@tanstack/server-functions-plugin': 1.133.25(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
       '@tanstack/start-client-core': 1.133.35
@@ -38111,6 +38411,7 @@ snapshots:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   '@tanstack/start-server-core@1.139.0':
     dependencies:
       '@tanstack/history': 1.139.0
@@ -38130,6 +38431,9 @@ snapshots:
 =======
   '@tanstack/start-plugin-core@1.136.8(@tanstack/react-router@1.136.8(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(crossws@0.4.1(srvx@0.9.6))(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.8.0)(solid-js@1.9.10)(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(webpack@5.102.1(@swc/core@1.13.5)(esbuild@0.27.0))':
 >>>>>>> 250ac9c73 (chore: update storage client dependencies and enhance testing framework)
+=======
+  '@tanstack/start-plugin-core@1.136.8(@tanstack/react-router@1.136.8(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(crossws@0.4.1(srvx@0.9.6))(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.8.0)(solid-js@1.9.10)(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(webpack@5.102.1(@swc/core@1.13.5))':
+>>>>>>> 4b5aeb8c9 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
     dependencies:
       '@babel/code-frame': 7.26.2
       '@babel/core': 7.28.5
@@ -38137,7 +38441,7 @@ snapshots:
       '@rolldown/pluginutils': 1.0.0-beta.40
       '@tanstack/router-core': 1.136.8
       '@tanstack/router-generator': 1.136.8
-      '@tanstack/router-plugin': 1.136.8(@tanstack/react-router@1.136.8(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.8.0)(solid-js@1.9.10)(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(webpack@5.102.1(@swc/core@1.13.5)(esbuild@0.27.0))
+      '@tanstack/router-plugin': 1.136.8(@tanstack/react-router@1.136.8(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.8.0)(solid-js@1.9.10)(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(webpack@5.102.1(@swc/core@1.13.5))
       '@tanstack/router-utils': 1.133.19
       '@tanstack/server-functions-plugin': 1.134.5(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
       '@tanstack/start-client-core': 1.136.8
@@ -39189,28 +39493,39 @@ snapshots:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 =======
 >>>>>>> 9a541f7bf (feat: enhance storage functionality with batch operations and retry mechanism)
+<<<<<<< HEAD
 >>>>>>> 1f9a283a8 (feat: enhance storage functionality with batch operations and retry mechanism)
+=======
+=======
+>>>>>>> 4b5aeb8c9 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
+>>>>>>> 4db91813a (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
   '@types/webpack@5.28.5(@swc/core@1.13.5)':
     dependencies:
       '@types/node': 24.10.1
       tapable: 2.3.0
 <<<<<<< HEAD
+<<<<<<< HEAD
       webpack: 5.103.0(@swc/core@1.13.5)
 =======
       webpack: 5.102.1(@swc/core@1.13.5)
 >>>>>>> 9a541f7bf (feat: enhance storage functionality with batch operations and retry mechanism)
+=======
+      webpack: 5.102.1(@swc/core@1.13.5)
+>>>>>>> 4b5aeb8c9 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
     transitivePeerDependencies:
       - '@swc/core'
       - esbuild
       - uglify-js
       - webpack-cli
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 =======
 >>>>>>> 53756d0e7 (feat: add storage-client package with initial implementation)
@@ -39224,7 +39539,12 @@ snapshots:
 =======
 =======
 >>>>>>> 250ac9c73 (chore: update storage client dependencies and enhance testing framework)
+<<<<<<< HEAD
 >>>>>>> c6fb76abf (chore: update storage client dependencies and enhance testing framework)
+=======
+=======
+>>>>>>> 4b5aeb8c9 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
+>>>>>>> 4db91813a (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
   '@types/webpack@5.28.5(@swc/core@1.13.5)(esbuild@0.27.0)':
     dependencies:
       '@types/node': 24.10.1
@@ -39626,7 +39946,7 @@ snapshots:
       untun: 0.1.3
       uqr: 0.1.2
 
-  '@vinxi/plugin-directives@0.5.1(vinxi@0.5.8(@azure/storage-blob@12.29.1)(@netlify/blobs@10.3.3)(@types/node@24.10.1)(@vercel/blob@2.0.0)(db0@0.3.4)(ioredis@5.8.2)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(rolldown@1.0.0-beta.50)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))':
+  '@vinxi/plugin-directives@0.5.1(vinxi@0.5.8(@azure/storage-blob@12.29.1)(@netlify/blobs@10.4.1)(@types/node@24.10.1)(@vercel/blob@2.0.0)(aws4fetch@1.0.20)(db0@0.3.4)(ioredis@5.8.2)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(rolldown@1.0.0-beta.51)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))':
     dependencies:
       '@babel/parser': 7.28.5
       acorn: 8.15.0
@@ -39637,18 +39957,18 @@ snapshots:
       magicast: 0.2.11
       recast: 0.23.11
       tslib: 2.8.1
-      vinxi: 0.5.8(@azure/storage-blob@12.29.1)(@netlify/blobs@10.3.3)(@types/node@24.10.1)(@vercel/blob@2.0.0)(db0@0.3.4)(ioredis@5.8.2)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(rolldown@1.0.0-beta.50)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+      vinxi: 0.5.8(@azure/storage-blob@12.29.1)(@netlify/blobs@10.4.1)(@types/node@24.10.1)(@vercel/blob@2.0.0)(aws4fetch@1.0.20)(db0@0.3.4)(ioredis@5.8.2)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(rolldown@1.0.0-beta.51)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 
-  '@vinxi/server-components@0.5.1(vinxi@0.5.8(@azure/storage-blob@12.29.1)(@netlify/blobs@10.3.3)(@types/node@24.10.1)(@vercel/blob@2.0.0)(db0@0.3.4)(ioredis@5.8.2)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(rolldown@1.0.0-beta.50)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))':
+  '@vinxi/server-components@0.5.1(vinxi@0.5.8(@azure/storage-blob@12.29.1)(@netlify/blobs@10.4.1)(@types/node@24.10.1)(@vercel/blob@2.0.0)(aws4fetch@1.0.20)(db0@0.3.4)(ioredis@5.8.2)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(rolldown@1.0.0-beta.51)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))':
     dependencies:
-      '@vinxi/plugin-directives': 0.5.1(vinxi@0.5.8(@azure/storage-blob@12.29.1)(@netlify/blobs@10.3.3)(@types/node@24.10.1)(@vercel/blob@2.0.0)(db0@0.3.4)(ioredis@5.8.2)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(rolldown@1.0.0-beta.50)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
+      '@vinxi/plugin-directives': 0.5.1(vinxi@0.5.8(@azure/storage-blob@12.29.1)(@netlify/blobs@10.4.1)(@types/node@24.10.1)(@vercel/blob@2.0.0)(aws4fetch@1.0.20)(db0@0.3.4)(ioredis@5.8.2)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(rolldown@1.0.0-beta.51)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
       acorn: 8.15.0
       acorn-loose: 8.5.2
       acorn-typescript: 1.4.13(acorn@8.15.0)
       astring: 1.8.6
       magicast: 0.2.11
       recast: 0.23.11
-      vinxi: 0.5.8(@azure/storage-blob@12.29.1)(@netlify/blobs@10.3.3)(@types/node@24.10.1)(@vercel/blob@2.0.0)(db0@0.3.4)(ioredis@5.8.2)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(rolldown@1.0.0-beta.50)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+      vinxi: 0.5.8(@azure/storage-blob@12.29.1)(@netlify/blobs@10.4.1)(@types/node@24.10.1)(@vercel/blob@2.0.0)(aws4fetch@1.0.20)(db0@0.3.4)(ioredis@5.8.2)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(rolldown@1.0.0-beta.51)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 
   '@visulima/cerebro@2.1.0(@visulima/find-cache-dir@2.0.4)(@visulima/pail@3.2.0(@opentelemetry/api@1.9.0)(rotating-file-stream@3.2.7))(github-slugger@2.0.0)':
     dependencies:
@@ -39800,15 +40120,20 @@ snapshots:
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   '@visulima/packem-rollup@1.0.0-alpha.27(@swc/core@1.13.5)(@types/node@24.10.1)(esbuild@0.27.0)(oxc-transform@0.96.0)(picomatch@4.0.3)(rolldown@1.0.0-beta.52)(rollup@4.53.3)(sucrase@3.35.0)(typescript@5.9.3)(yaml@2.8.1)':
 =======
 =======
 >>>>>>> c8ea0b8ab (feat: enhance storage functionality with batch operations and retry mechanism)
+=======
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
 <<<<<<< HEAD
   '@visulima/packem-rollup@1.0.0-alpha.27(@swc/core@1.13.5)(@types/node@24.10.1)(esbuild@0.27.0)(picomatch@4.0.3)(rolldown@1.0.0-beta.51)(rollup@4.53.3)(sucrase@3.35.0)(typescript@5.9.3)(yaml@2.8.1)':
 =======
 =======
 >>>>>>> 9a541f7bf (feat: enhance storage functionality with batch operations and retry mechanism)
+=======
+>>>>>>> 4b5aeb8c9 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
 =======
 <<<<<<< HEAD
 >>>>>>> 1850e829f (feat: new storage package (#527))
@@ -39883,8 +40208,17 @@ snapshots:
 >>>>>>> fb57ade6e (feat: enhance storage functionality with batch operations and retry mechanism)
   '@visulima/packem-rollup@1.0.0-alpha.27(@swc/core@1.13.5)(@types/node@24.10.1)(esbuild@0.27.0)(oxc-transform@0.96.0)(picomatch@4.0.3)(rolldown@1.0.0-beta.50)(rollup@4.53.2)(sucrase@3.35.0)(typescript@5.9.3)(yaml@2.8.1)':
 >>>>>>> 4a681c8b7 (feat: add storage-client package with initial implementation)
+<<<<<<< HEAD
 >>>>>>> 53756d0e7 (feat: add storage-client package with initial implementation)
+<<<<<<< HEAD
 >>>>>>> cfd49ebf5 (feat: add storage-client package with initial implementation)
+=======
+=======
+=======
+  '@visulima/packem-rollup@1.0.0-alpha.27(@swc/core@1.13.5)(@types/node@24.10.1)(esbuild@0.27.0)(oxc-transform@0.96.0)(picomatch@4.0.3)(rolldown@1.0.0-beta.51)(rollup@4.53.2)(sucrase@3.35.0)(typescript@5.9.3)(yaml@2.8.1)':
+>>>>>>> 86abb13ed (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
+>>>>>>> 4b5aeb8c9 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
     dependencies:
       '@babel/parser': 7.28.4
       '@rollup/plugin-alias': 5.1.1(rollup@4.53.3)
@@ -39910,12 +40244,25 @@ snapshots:
       mlly: 1.8.0
       oxc-parser: 0.93.0
       oxc-resolver: 11.8.2
+<<<<<<< HEAD
       rollup: 4.53.3
       rollup-plugin-dts: 6.2.3(rollup@4.53.3)(typescript@5.9.3)
       rollup-plugin-license: 3.6.0(picomatch@4.0.3)(rollup@4.53.3)
       rollup-plugin-polyfill-node: 0.13.0(rollup@4.53.3)
       rollup-plugin-pure: 0.4.0(rollup@4.53.3)
+<<<<<<< HEAD
       rollup-plugin-visualizer: 6.0.3(rolldown@1.0.0-beta.52)(rollup@4.53.3)
+=======
+      rollup-plugin-visualizer: 6.0.3(rolldown@1.0.0-beta.51)(rollup@4.53.3)
+=======
+      rollup: 4.53.2
+      rollup-plugin-dts: 6.2.3(rollup@4.53.2)(typescript@5.9.3)
+      rollup-plugin-license: 3.6.0(picomatch@4.0.3)(rollup@4.53.2)
+      rollup-plugin-polyfill-node: 0.13.0(rollup@4.53.2)
+      rollup-plugin-pure: 0.4.0(rollup@4.53.2)
+      rollup-plugin-visualizer: 6.0.3(rolldown@1.0.0-beta.51)(rollup@4.53.2)
+>>>>>>> 4b5aeb8c9 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
       rs-module-lexer: 2.6.0
       semver: 7.7.2
       tinyglobby: 0.2.15
@@ -39995,6 +40342,7 @@ snapshots:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   '@visulima/packem-share@1.0.0-alpha.14(@types/node@24.10.1)(rollup@4.53.3)(yaml@2.8.1)':
     dependencies:
       '@visulima/colorize': 1.4.27
@@ -40012,6 +40360,8 @@ snapshots:
 >>>>>>> d0b82ad5f (chore: resolve merge conflicts and update package versions in pnpm-lock.yaml)
 =======
 >>>>>>> cfd49ebf5 (feat: add storage-client package with initial implementation)
+=======
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
 <<<<<<< HEAD
   '@visulima/packem@2.0.0-alpha.37(46e9d823fb7da27182a859d71d4bad4a)':
 =======
@@ -40025,6 +40375,9 @@ snapshots:
 =======
   '@visulima/packem@2.0.0-alpha.36(bb7a099506583c927ea313c634456375)':
 >>>>>>> 53756d0e7 (feat: add storage-client package with initial implementation)
+=======
+  '@visulima/packem@2.0.0-alpha.36(836a2f4e7aad24edba3692727dedbb7f)':
+>>>>>>> 4b5aeb8c9 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
     dependencies:
       '@antfu/install-pkg': 1.1.0
       '@clack/prompts': 0.11.0
@@ -40035,7 +40388,7 @@ snapshots:
       '@visulima/fs': 4.0.4(yaml@2.8.1)
       '@visulima/humanizer': 2.0.3
       '@visulima/package': 4.1.4(@types/node@24.10.1)
-      '@visulima/packem-rollup': 1.0.0-alpha.27(@swc/core@1.13.5)(@types/node@24.10.1)(esbuild@0.27.0)(oxc-transform@0.96.0)(picomatch@4.0.3)(rolldown@1.0.0-beta.50)(rollup@4.53.2)(sucrase@3.35.0)(typescript@5.9.3)(yaml@2.8.1)
+      '@visulima/packem-rollup': 1.0.0-alpha.27(@swc/core@1.13.5)(@types/node@24.10.1)(esbuild@0.27.0)(oxc-transform@0.96.0)(picomatch@4.0.3)(rolldown@1.0.0-beta.51)(rollup@4.53.2)(sucrase@3.35.0)(typescript@5.9.3)(yaml@2.8.1)
       '@visulima/packem-share': 1.0.0-alpha.13(@types/node@24.10.1)(rollup@4.53.2)(yaml@2.8.1)
       '@visulima/pail': 3.2.0(@opentelemetry/api@1.9.0)(@visulima/redact@packages+redact)(rotating-file-stream@3.2.7)
       '@visulima/path': 1.4.0
@@ -40108,7 +40461,95 @@ snapshots:
 =======
   '@visulima/packem@2.0.0-alpha.37(a8b2e1e18ab4dfba609511b5bcacc9ca)':
 >>>>>>> c8abe5160 (chore: resolve merge conflicts and update package versions in pnpm-lock.yaml)
+<<<<<<< HEAD
 >>>>>>> d0b82ad5f (chore: resolve merge conflicts and update package versions in pnpm-lock.yaml)
+=======
+    dependencies:
+      '@antfu/install-pkg': 1.1.0
+      '@clack/prompts': 0.11.0
+      '@rollup/pluginutils': 5.3.0(rollup@4.53.3)
+      '@visulima/cerebro': 2.1.3(@bomb.sh/tab@0.0.9(cac@6.7.14)(citty@0.1.6)(commander@14.0.2))(@visulima/boxen@packages+boxen)(@visulima/find-cache-dir@2.0.4)(@visulima/pail@3.2.0(@opentelemetry/api@1.9.0)(rotating-file-stream@3.2.7))(github-slugger@2.0.0)
+      '@visulima/colorize': 1.4.27
+      '@visulima/find-cache-dir': 2.0.4
+      '@visulima/fs': 4.0.4(yaml@2.8.1)
+      '@visulima/humanizer': 2.0.3
+      '@visulima/package': 4.1.4(@types/node@24.10.1)
+      '@visulima/packem-rollup': 1.0.0-alpha.27(@swc/core@1.13.5)(@types/node@24.10.1)(esbuild@0.27.0)(picomatch@4.0.3)(rolldown@1.0.0-beta.51)(rollup@4.53.3)(sucrase@3.35.0)(typescript@5.9.3)(yaml@2.8.1)
+      '@visulima/packem-share': 1.0.0-alpha.13(@types/node@24.10.1)(rollup@4.53.3)(yaml@2.8.1)
+      '@visulima/pail': 3.2.0(@opentelemetry/api@1.9.0)(@visulima/redact@packages+redact)(rotating-file-stream@3.2.7)
+      '@visulima/path': 1.4.0
+      '@visulima/rollup-plugin-css': 1.0.0-alpha.7(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@csstools/postcss-slow-plugins@2.0.0(postcss@8.5.6))(@swc/core@1.13.5)(@tailwindcss/node@4.1.17)(@tailwindcss/oxide@4.1.17)(@types/node@24.10.1)(@visulima/css-style-inject@1.0.0-alpha.9)(cssnano@7.1.2(postcss@8.5.6))(esbuild@0.27.0)(icss-utils@5.1.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(postcss-load-config@6.0.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.20.6)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rollup@4.53.3)(sucrase@3.35.0)(typedoc-plugin-markdown@4.9.0(typedoc@0.28.14(typescript@5.9.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.14(typescript@5.9.3)))(typedoc@0.28.14(typescript@5.9.3))(typescript@5.9.3)(yaml@2.8.1)
+=======
+      '@visulima/rollup-plugin-css': 1.0.0-alpha.7(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@csstools/postcss-slow-plugins@2.0.0(postcss@8.5.6))(@swc/core@1.13.5)(@tailwindcss/node@4.1.17)(@tailwindcss/oxide@4.1.17)(@types/node@24.10.1)(@visulima/css-style-inject@1.0.0-alpha.9)(cssnano@7.1.2(postcss@8.5.6))(esbuild@0.27.0)(icss-utils@5.1.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(oxc-transform@0.96.0)(postcss-load-config@6.0.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.20.6)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rollup@4.53.2)(sucrase@3.35.0)(typedoc-plugin-markdown@4.9.0(typedoc@0.28.14(typescript@5.9.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.14(typescript@5.9.3)))(typedoc@0.28.14(typescript@5.9.3))(typescript@5.9.3)(yaml@2.8.1)
+>>>>>>> 53756d0e7 (feat: add storage-client package with initial implementation)
+      '@visulima/source-map': 2.0.3
+      '@visulima/tabular': 3.1.3
+      '@visulima/tsconfig': 2.1.0(yaml@2.8.1)
+      browserslist: 4.26.2
+      cjs-module-lexer: 2.1.1
+      clean-css: 5.3.3
+      defu: 6.1.4
+      fastest-levenshtein: 1.0.16
+      hookable: 5.5.3
+      html-minifier-next: 4.1.1
+      jiti: 2.6.0
+      magic-string: 0.30.19
+      mlly: 1.8.0
+      package-manager-detector: 1.5.0
+      picomatch: 4.0.3
+      rollup: 4.53.3
+      semver: 7.7.2
+      tinyexec: 1.0.1
+      tinyglobby: 0.2.15
+    optionalDependencies:
+      '@arethetypeswrong/core': 0.18.2
+      '@swc/core': 1.13.5
+      '@tailwindcss/node': 4.1.17
+      '@tailwindcss/oxide': 4.1.17
+      cssnano: 7.1.2(postcss@8.5.6)
+      esbuild: 0.27.0
+      icss-utils: 5.1.0(postcss@8.5.6)
+      less: 4.4.2
+      lightningcss: 1.30.2
+      oxc-transform: 0.96.0
+      postcss: 8.5.6
+      postcss-load-config: 6.0.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.20.6)(yaml@2.8.1)
+      postcss-modules-extract-imports: 3.1.0(postcss@8.5.6)
+      postcss-modules-local-by-default: 4.2.0(postcss@8.5.6)
+      postcss-modules-scope: 3.2.1(postcss@8.5.6)
+      postcss-modules-values: 4.0.0(postcss@8.5.6)
+      postcss-value-parser: 4.2.0
+      sucrase: 3.35.0
+      typedoc: 0.28.14(typescript@5.9.3)
+      typedoc-plugin-markdown: 4.9.0(typedoc@0.28.14(typescript@5.9.3))
+      typedoc-plugin-rename-defaults: 0.7.3(typedoc@0.28.14(typescript@5.9.3))
+      typescript: 5.9.3
+    transitivePeerDependencies:
+      - '@bomb.sh/tab'
+      - '@csstools/css-parser-algorithms'
+      - '@csstools/css-tokenizer'
+      - '@csstools/postcss-slow-plugins'
+      - '@opentelemetry/api'
+      - '@types/node'
+      - '@visulima/boxen'
+      - '@visulima/css-style-inject'
+      - '@visulima/redact'
+      - github-slugger
+      - p-queue
+      - rolldown
+      - rotating-file-stream
+      - yaml
+
+<<<<<<< HEAD
+<<<<<<< HEAD
+  '@visulima/packem@2.0.0-alpha.37(b67370a5535637ee815eba8793a4e0ab)':
+=======
+  '@visulima/packem@2.0.0-alpha.37(2b2d9d0726190e1d90bc6e9e4b602ecf)':
+>>>>>>> 53756d0e7 (feat: add storage-client package with initial implementation)
+=======
+  '@visulima/packem@2.0.0-alpha.37(9e57f05bc4441fc503eda1f6b8ee658b)':
+>>>>>>> 4b5aeb8c9 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
     dependencies:
       '@antfu/install-pkg': 1.1.0
       '@clack/prompts': 0.11.0
@@ -40119,7 +40560,13 @@ snapshots:
       '@visulima/fs': 4.0.4(yaml@2.8.1)
       '@visulima/humanizer': 2.0.3
       '@visulima/package': 4.1.4(@types/node@24.10.1)
+<<<<<<< HEAD
       '@visulima/packem-rollup': 1.0.0-alpha.27(@swc/core@1.13.5)(@types/node@24.10.1)(esbuild@0.27.0)(oxc-transform@0.96.0)(picomatch@4.0.3)(rolldown@1.0.0-beta.52)(rollup@4.53.3)(sucrase@3.35.0)(typescript@5.9.3)(yaml@2.8.1)
+=======
+<<<<<<< HEAD
+<<<<<<< HEAD
+      '@visulima/packem-rollup': 1.0.0-alpha.27(@swc/core@1.13.5)(@types/node@24.10.1)(esbuild@0.27.0)(picomatch@4.0.3)(rolldown@1.0.0-beta.51)(rollup@4.53.3)(sucrase@3.35.0)(typescript@5.9.3)(yaml@2.8.1)
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
       '@visulima/packem-share': 1.0.0-alpha.13(@types/node@24.10.1)(rollup@4.53.3)(yaml@2.8.1)
       '@visulima/pail': 3.2.0(@opentelemetry/api@1.9.0)(@visulima/redact@packages+redact)(rotating-file-stream@3.2.7)
       '@visulima/path': 1.4.0
@@ -40128,6 +40575,16 @@ snapshots:
 =======
       '@visulima/rollup-plugin-css': 1.0.0-alpha.7(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@csstools/postcss-slow-plugins@2.0.0(postcss@8.5.6))(@swc/core@1.13.5)(@tailwindcss/node@4.1.17)(@tailwindcss/oxide@4.1.17)(@types/node@24.10.1)(@visulima/css-style-inject@1.0.0-alpha.9)(cssnano@7.1.2(postcss@8.5.6))(esbuild@0.27.0)(icss-utils@5.1.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(postcss-load-config@6.0.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.20.6)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rollup@4.53.3)(sucrase@3.35.0)(typedoc-plugin-markdown@4.9.0(typedoc@0.28.14(typescript@5.9.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.14(typescript@5.9.3)))(typedoc@0.28.14(typescript@5.9.3))(typescript@5.9.3)(yaml@2.8.1)
 =======
+<<<<<<< HEAD
+=======
+      '@visulima/packem-rollup': 1.0.0-alpha.27(@swc/core@1.13.5)(@types/node@24.10.1)(esbuild@0.27.0)(oxc-transform@0.96.0)(picomatch@4.0.3)(rolldown@1.0.0-beta.50)(rollup@4.53.2)(sucrase@3.35.0)(typescript@5.9.3)(yaml@2.8.1)
+=======
+      '@visulima/packem-rollup': 1.0.0-alpha.27(@swc/core@1.13.5)(@types/node@24.10.1)(esbuild@0.27.0)(oxc-transform@0.96.0)(picomatch@4.0.3)(rolldown@1.0.0-beta.51)(rollup@4.53.2)(sucrase@3.35.0)(typescript@5.9.3)(yaml@2.8.1)
+>>>>>>> 4b5aeb8c9 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
+      '@visulima/packem-share': 1.0.0-alpha.13(@types/node@24.10.1)(rollup@4.53.2)(yaml@2.8.1)
+      '@visulima/pail': 3.2.0(@opentelemetry/api@1.9.0)(@visulima/redact@packages+redact)(rotating-file-stream@3.2.7)
+      '@visulima/path': 1.4.0
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
       '@visulima/rollup-plugin-css': 1.0.0-alpha.7(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@csstools/postcss-slow-plugins@2.0.0(postcss@8.5.6))(@swc/core@1.13.5)(@tailwindcss/node@4.1.17)(@tailwindcss/oxide@4.1.17)(@types/node@24.10.1)(@visulima/css-style-inject@1.0.0-alpha.9)(cssnano@7.1.2(postcss@8.5.6))(esbuild@0.27.0)(icss-utils@5.1.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(oxc-transform@0.96.0)(postcss-load-config@6.0.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.20.6)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rollup@4.53.2)(sucrase@3.35.0)(typedoc-plugin-markdown@4.9.0(typedoc@0.28.14(typescript@5.9.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.14(typescript@5.9.3)))(typedoc@0.28.14(typescript@5.9.3))(typescript@5.9.3)(yaml@2.8.1)
 >>>>>>> 53756d0e7 (feat: add storage-client package with initial implementation)
 >>>>>>> cfd49ebf5 (feat: add storage-client package with initial implementation)
@@ -40190,6 +40647,7 @@ snapshots:
       - yaml
 
 <<<<<<< HEAD
+<<<<<<< HEAD
   '@visulima/packem@2.0.0-alpha.37(b8d3e600f9a9f748ef42ddd128bb62bc)':
 =======
 <<<<<<< HEAD
@@ -40198,6 +40656,9 @@ snapshots:
   '@visulima/packem@2.0.0-alpha.37(2b2d9d0726190e1d90bc6e9e4b602ecf)':
 >>>>>>> 53756d0e7 (feat: add storage-client package with initial implementation)
 >>>>>>> cfd49ebf5 (feat: add storage-client package with initial implementation)
+=======
+  '@visulima/packem@2.0.0-alpha.37(ae32b6bab825e75fda1f518f4847465f)':
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
     dependencies:
       '@antfu/install-pkg': 1.1.0
       '@clack/prompts': 0.11.0
@@ -40208,6 +40669,7 @@ snapshots:
       '@visulima/fs': 4.0.4(yaml@2.8.1)
       '@visulima/humanizer': 2.0.3
       '@visulima/package': 4.1.4(@types/node@24.10.1)
+<<<<<<< HEAD
 <<<<<<< HEAD
       '@visulima/packem-rollup': 1.0.0-alpha.27(@swc/core@1.13.5)(@types/node@24.10.1)(esbuild@0.27.0)(oxc-transform@0.96.0)(picomatch@4.0.3)(rolldown@1.0.0-beta.52)(rollup@4.53.3)(sucrase@3.35.0)(typescript@5.9.3)(yaml@2.8.1)
       '@visulima/packem-share': 1.0.0-alpha.13(@types/node@24.10.1)(rollup@4.53.3)(yaml@2.8.1)
@@ -40223,6 +40685,9 @@ snapshots:
       '@visulima/rollup-plugin-css': 1.0.0-alpha.7(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@csstools/postcss-slow-plugins@2.0.0(postcss@8.5.6))(@swc/core@1.13.5)(@tailwindcss/node@4.1.17)(@tailwindcss/oxide@4.1.17)(@types/node@24.10.1)(@visulima/css-style-inject@1.0.0-alpha.9)(cssnano@7.1.2(postcss@8.5.6))(esbuild@0.27.0)(icss-utils@5.1.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(postcss-load-config@6.0.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.20.6)(yaml@2.8.1))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rollup@4.53.3)(sucrase@3.35.0)(typedoc-plugin-markdown@4.9.0(typedoc@0.28.14(typescript@5.9.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.14(typescript@5.9.3)))(typedoc@0.28.14(typescript@5.9.3))(typescript@5.9.3)(yaml@2.8.1)
 =======
       '@visulima/packem-rollup': 1.0.0-alpha.27(@swc/core@1.13.5)(@types/node@24.10.1)(esbuild@0.27.0)(oxc-transform@0.96.0)(picomatch@4.0.3)(rolldown@1.0.0-beta.50)(rollup@4.53.2)(sucrase@3.35.0)(typescript@5.9.3)(yaml@2.8.1)
+=======
+      '@visulima/packem-rollup': 1.0.0-alpha.27(@swc/core@1.13.5)(@types/node@24.10.1)(esbuild@0.27.0)(oxc-transform@0.96.0)(picomatch@4.0.3)(rolldown@1.0.0-beta.51)(rollup@4.53.2)(sucrase@3.35.0)(typescript@5.9.3)(yaml@2.8.1)
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
       '@visulima/packem-share': 1.0.0-alpha.13(@types/node@24.10.1)(rollup@4.53.2)(yaml@2.8.1)
       '@visulima/pail': 3.2.0(@opentelemetry/api@1.9.0)(@visulima/redact@packages+redact)(rotating-file-stream@3.2.7)
       '@visulima/path': 1.4.0
@@ -40606,7 +41071,15 @@ snapshots:
     transitivePeerDependencies:
       - '@swc/helpers'
 
+<<<<<<< HEAD
   '@vitejs/plugin-react@5.1.1(rolldown-vite@7.2.8(@types/node@24.10.1)(esbuild@0.25.12)(jiti@2.6.1)(less@4.4.2)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1))':
+=======
+<<<<<<< HEAD
+  '@vitejs/plugin-react@5.1.1(rolldown-vite@7.2.7(@types/node@24.10.1)(esbuild@0.25.12)(jiti@2.6.1)(less@4.4.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))':
+=======
+  '@vitejs/plugin-react@5.1.1(rolldown-vite@7.2.6(@types/node@24.10.1)(esbuild@0.25.12)(jiti@2.6.1)(less@4.4.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))':
+>>>>>>> 4b5aeb8c9 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
     dependencies:
       '@babel/core': 7.28.5
       '@babel/plugin-transform-react-jsx-self': 7.27.1(@babel/core@7.28.5)
@@ -40614,7 +41087,15 @@ snapshots:
       '@rolldown/pluginutils': 1.0.0-beta.47
       '@types/babel__core': 7.20.5
       react-refresh: 0.18.0
+<<<<<<< HEAD
       vite: rolldown-vite@7.2.8(@types/node@24.10.1)(esbuild@0.25.12)(jiti@2.6.1)(less@4.4.2)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1)
+=======
+<<<<<<< HEAD
+      vite: rolldown-vite@7.2.7(@types/node@24.10.1)(esbuild@0.25.12)(jiti@2.6.1)(less@4.4.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+=======
+      vite: rolldown-vite@7.2.6(@types/node@24.10.1)(esbuild@0.25.12)(jiti@2.6.1)(less@4.4.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+>>>>>>> 4b5aeb8c9 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
     transitivePeerDependencies:
       - supports-color
 
@@ -41923,7 +42404,12 @@ snapshots:
       tslib: 2.8.1
 >>>>>>> d99502360 (feat: new storage package (#527))
 
+<<<<<<< HEAD
 >>>>>>> efb87dc29 (feat: new storage package (#527))
+=======
+  aws4fetch@1.0.20: {}
+
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
   axe-core@4.10.2: {}
 
   axios@1.12.2(debug@4.4.3):
@@ -44085,7 +44571,7 @@ snapshots:
       eslint: 9.39.1(jiti@2.6.1)
       eslint-import-resolver-node: 0.3.9
       eslint-import-resolver-typescript: 3.6.1(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.32.0(eslint@9.39.1(jiti@2.6.1)))(eslint@9.39.1(jiti@2.6.1))
-      eslint-plugin-import: 2.32.0(eslint-import-resolver-typescript@3.6.1)(eslint@9.39.1(jiti@2.6.1))
+      eslint-plugin-import: 2.32.0(eslint-import-resolver-typescript@3.6.1(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.32.0(eslint@9.39.1(jiti@2.6.1)))(eslint@9.39.1(jiti@2.6.1)))(eslint@9.39.1(jiti@2.6.1))
       eslint-plugin-jsx-a11y: 6.10.2(eslint@9.39.1(jiti@2.6.1))
       eslint-plugin-react: 7.37.5(eslint@9.39.1(jiti@2.6.1))
       eslint-plugin-react-hooks: 7.0.1(eslint@9.39.1(jiti@2.6.1))
@@ -44147,7 +44633,7 @@ snapshots:
       enhanced-resolve: 5.18.3
       eslint: 9.39.1(jiti@2.6.1)
       eslint-module-utils: 2.12.1(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.1(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.32.0(eslint@9.39.1(jiti@2.6.1)))(eslint@9.39.1(jiti@2.6.1)))(eslint@9.39.1(jiti@2.6.1))
-      eslint-plugin-import: 2.32.0(eslint-import-resolver-typescript@3.6.1)(eslint@9.39.1(jiti@2.6.1))
+      eslint-plugin-import: 2.32.0(eslint-import-resolver-typescript@3.6.1(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.32.0(eslint@9.39.1(jiti@2.6.1)))(eslint@9.39.1(jiti@2.6.1)))(eslint@9.39.1(jiti@2.6.1))
       fast-glob: 3.3.3
       get-tsconfig: 4.10.1
       is-core-module: 2.16.1
@@ -44440,7 +44926,7 @@ snapshots:
       - eslint-import-resolver-webpack
       - supports-color
 
-  eslint-plugin-import@2.32.0(eslint-import-resolver-typescript@3.6.1)(eslint@9.39.1(jiti@2.6.1)):
+  eslint-plugin-import@2.32.0(eslint-import-resolver-typescript@3.6.1(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.32.0(eslint@9.39.1(jiti@2.6.1)))(eslint@9.39.1(jiti@2.6.1)))(eslint@9.39.1(jiti@2.6.1)):
     dependencies:
       '@rtsao/scc': 1.1.0
       array-includes: 3.1.9
@@ -48203,7 +48689,10 @@ snapshots:
   loglevel@1.9.1: {}
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
 <<<<<<< HEAD
   long@5.3.2:
     optional: true
@@ -48211,7 +48700,12 @@ snapshots:
   long@5.3.2: {}
 >>>>>>> d99502360 (feat: new storage package (#527))
 
+<<<<<<< HEAD
 >>>>>>> efb87dc29 (feat: new storage package (#527))
+=======
+=======
+>>>>>>> 4b5aeb8c9 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
   longest-streak@2.0.4: {}
 
   longest-streak@3.1.0: {}
@@ -50064,9 +50558,13 @@ snapshots:
 >>>>>>> efb87dc29 (feat: new storage package (#527))
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> 87bcd9251 (feat: new storage package (#527))
 =======
   nitro@3.0.1-alpha.1(@azure/storage-blob@12.29.1)(@netlify/blobs@10.3.3)(@vercel/blob@2.0.0)(chokidar@4.0.3)(ioredis@5.8.2)(lru-cache@11.2.2)(rollup@4.53.2)(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)):
+=======
+  nitro@3.0.1-alpha.1(@azure/storage-blob@12.29.1)(@netlify/blobs@10.4.1)(@vercel/blob@2.0.0)(aws4fetch@1.0.20)(chokidar@4.0.3)(ioredis@5.8.2)(lru-cache@11.2.2)(rollup@4.53.2)(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)):
+>>>>>>> 4db91813a (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
     dependencies:
       consola: 3.4.2
       crossws: 0.4.1(srvx@0.9.6)
@@ -50081,7 +50579,7 @@ snapshots:
       srvx: 0.9.6
       undici: 7.16.0
       unenv: 2.0.0-rc.24
-      unstorage: 2.0.0-alpha.4(@azure/storage-blob@12.29.1)(@netlify/blobs@10.3.3)(@vercel/blob@2.0.0)(chokidar@4.0.3)(db0@0.3.4)(ioredis@5.8.2)(lru-cache@11.2.2)(ofetch@2.0.0-alpha.3)
+      unstorage: 2.0.0-alpha.4(@azure/storage-blob@12.29.1)(@netlify/blobs@10.4.1)(@vercel/blob@2.0.0)(aws4fetch@1.0.20)(chokidar@4.0.3)(db0@0.3.4)(ioredis@5.8.2)(lru-cache@11.2.2)(ofetch@2.0.0-alpha.3)
     optionalDependencies:
       rollup: 4.53.2
       vite: 7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
@@ -50114,7 +50612,7 @@ snapshots:
       - sqlite3
       - uploadthing
 
-  nitropack@2.12.9(@azure/storage-blob@12.29.1)(@netlify/blobs@10.3.3)(@vercel/blob@2.0.0)(rolldown@1.0.0-beta.50):
+  nitropack@2.12.9(@azure/storage-blob@12.29.1)(@netlify/blobs@10.4.1)(@vercel/blob@2.0.0)(aws4fetch@1.0.20)(rolldown@1.0.0-beta.51):
     dependencies:
       '@cloudflare/kv-asset-handler': 0.4.0
       '@rollup/plugin-alias': 5.1.1(rollup@4.53.2)
@@ -50167,7 +50665,7 @@ snapshots:
       pretty-bytes: 7.1.0
       radix3: 1.1.2
       rollup: 4.53.2
-      rollup-plugin-visualizer: 6.0.5(rolldown@1.0.0-beta.50)(rollup@4.53.2)
+      rollup-plugin-visualizer: 6.0.5(rolldown@1.0.0-beta.51)(rollup@4.53.2)
       scule: 1.3.0
       semver: 7.7.3
       serve-placeholder: 2.0.2
@@ -50181,7 +50679,7 @@ snapshots:
       unenv: 2.0.0-rc.24
       unimport: 5.5.0
       unplugin-utils: 0.3.1
-      unstorage: 1.17.2(@azure/storage-blob@12.29.1)(@netlify/blobs@10.3.3)(@vercel/blob@2.0.0)(db0@0.3.4)(ioredis@5.8.2)
+      unstorage: 1.17.2(@azure/storage-blob@12.29.1)(@netlify/blobs@10.4.1)(@vercel/blob@2.0.0)(aws4fetch@1.0.20)(db0@0.3.4)(ioredis@5.8.2)
       untyped: 2.0.0
       unwasm: 0.3.11
       youch: 4.1.0-beta.12
@@ -51819,7 +52317,10 @@ snapshots:
   proto-list@1.2.4: {}
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> 4db91813a (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
 <<<<<<< HEAD
   protocols@2.0.2: {}
 =======
@@ -51839,7 +52340,12 @@ snapshots:
       long: 5.3.2
 >>>>>>> efb87dc29 (feat: new storage package (#527))
 
+<<<<<<< HEAD
 >>>>>>> 87bcd9251 (feat: new storage package (#527))
+=======
+=======
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
+>>>>>>> 4db91813a (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
   proxy-addr@2.0.7:
     dependencies:
       forwarded: 0.2.0
@@ -52715,7 +53221,15 @@ snapshots:
       safe-stable-stringify: 2.5.0
       semver-compare: 1.0.0
 
+<<<<<<< HEAD
   rolldown-vite@7.2.8(@types/node@24.10.1)(esbuild@0.25.12)(jiti@2.6.1)(less@4.4.2)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1):
+=======
+<<<<<<< HEAD
+  rolldown-vite@7.2.7(@types/node@24.10.1)(esbuild@0.25.12)(jiti@2.6.1)(less@4.4.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1):
+=======
+  rolldown-vite@7.2.6(@types/node@24.10.1)(esbuild@0.25.12)(jiti@2.6.1)(less@4.4.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1):
+>>>>>>> 4b5aeb8c9 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
     dependencies:
       '@oxc-project/runtime': 0.99.0
       fdir: 6.5.0(picomatch@4.0.3)
@@ -52787,13 +53301,22 @@ snapshots:
       rollup: 4.53.3
       unplugin-utils: 0.2.5
 
+<<<<<<< HEAD
   rollup-plugin-visualizer@6.0.3(rolldown@1.0.0-beta.52)(rollup@4.53.3):
+=======
+<<<<<<< HEAD
+  rollup-plugin-visualizer@6.0.3(rolldown@1.0.0-beta.51)(rollup@4.53.3):
+=======
+  rollup-plugin-visualizer@6.0.3(rolldown@1.0.0-beta.51)(rollup@4.53.2):
+>>>>>>> 4b5aeb8c9 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
     dependencies:
       open: 8.4.2
       picomatch: 4.0.3
       source-map: 0.7.6
       yargs: 17.7.2
     optionalDependencies:
+<<<<<<< HEAD
       rolldown: 1.0.0-beta.52
       rollup: 4.53.3
 
@@ -52807,6 +53330,10 @@ snapshots:
       yargs: 17.7.2
     optionalDependencies:
       rolldown: 1.0.0-beta.52
+=======
+      rolldown: 1.0.0-beta.51
+<<<<<<< HEAD
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
       rollup: 4.53.3
 
 <<<<<<< HEAD
@@ -52814,13 +53341,18 @@ snapshots:
   rollup@4.53.3:
 =======
   rollup-plugin-visualizer@6.0.5(rolldown@1.0.0-beta.50)(rollup@4.53.2):
+=======
+      rollup: 4.53.2
+
+  rollup-plugin-visualizer@6.0.5(rolldown@1.0.0-beta.51)(rollup@4.53.2):
+>>>>>>> 4b5aeb8c9 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
     dependencies:
       open: 8.4.2
       picomatch: 4.0.3
       source-map: 0.7.6
       yargs: 17.7.2
     optionalDependencies:
-      rolldown: 1.0.0-beta.50
+      rolldown: 1.0.0-beta.51
       rollup: 4.53.2
 
   rollup@4.53.2:
@@ -54344,16 +54876,22 @@ snapshots:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 =======
 >>>>>>> 1f9a283a8 (feat: enhance storage functionality with batch operations and retry mechanism)
 =======
 >>>>>>> c6fb76abf (chore: update storage client dependencies and enhance testing framework)
+=======
+>>>>>>> 4db91813a (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
 <<<<<<< HEAD
   terser-webpack-plugin@5.3.12(@swc/core@1.13.5)(webpack@5.103.0(@swc/core@1.13.5)):
 =======
   terser-webpack-plugin@5.3.12(@swc/core@1.13.5)(webpack@5.102.1(@swc/core@1.13.5)):
 >>>>>>> 9a541f7bf (feat: enhance storage functionality with batch operations and retry mechanism)
+=======
+  terser-webpack-plugin@5.3.12(@swc/core@1.13.5)(webpack@5.102.1(@swc/core@1.13.5)):
+>>>>>>> 4b5aeb8c9 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
     dependencies:
       '@jridgewell/trace-mapping': 0.3.31
       jest-worker: 27.5.1
@@ -54364,7 +54902,11 @@ snapshots:
 =======
       terser: 5.44.0
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> c8ea0b8ab (feat: enhance storage functionality with batch operations and retry mechanism)
+=======
+<<<<<<< HEAD
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
       webpack: 5.103.0(@swc/core@1.13.5)
     optionalDependencies:
       '@swc/core': 1.13.5
@@ -54376,13 +54918,18 @@ snapshots:
 =======
 >>>>>>> 53756d0e7 (feat: add storage-client package with initial implementation)
 =======
+=======
+>>>>>>> 4b5aeb8c9 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
       webpack: 5.102.1(@swc/core@1.13.5)
     optionalDependencies:
       '@swc/core': 1.13.5
 
+<<<<<<< HEAD
 >>>>>>> 9a541f7bf (feat: enhance storage functionality with batch operations and retry mechanism)
 =======
 >>>>>>> 250ac9c73 (chore: update storage client dependencies and enhance testing framework)
+=======
+>>>>>>> 4b5aeb8c9 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
   terser@5.44.0:
 >>>>>>> cfd49ebf5 (feat: add storage-client package with initial implementation)
     dependencies:
@@ -55377,12 +55924,18 @@ snapshots:
       isobject: 4.0.0
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> 4db91813a (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
 <<<<<<< HEAD
   unstorage@1.17.3(db0@0.3.4)(ioredis@5.8.2):
 =======
   unstorage@1.17.2(@azure/storage-blob@12.29.1)(@netlify/blobs@10.3.3)(@vercel/blob@2.0.0)(db0@0.3.4)(ioredis@5.8.2):
 >>>>>>> cfd49ebf5 (feat: add storage-client package with initial implementation)
+=======
+  unstorage@1.17.2(@azure/storage-blob@12.29.1)(@netlify/blobs@10.4.1)(@vercel/blob@2.0.0)(aws4fetch@1.0.20)(db0@0.3.4)(ioredis@5.8.2):
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
     dependencies:
       anymatch: 3.1.3
       chokidar: 4.0.3
@@ -55399,16 +55952,18 @@ snapshots:
 
 =======
       '@azure/storage-blob': 12.29.1
-      '@netlify/blobs': 10.3.3
+      '@netlify/blobs': 10.4.1
       '@vercel/blob': 2.0.0
+      aws4fetch: 1.0.20
       db0: 0.3.4
       ioredis: 5.8.2
 
-  unstorage@2.0.0-alpha.4(@azure/storage-blob@12.29.1)(@netlify/blobs@10.3.3)(@vercel/blob@2.0.0)(chokidar@4.0.3)(db0@0.3.4)(ioredis@5.8.2)(lru-cache@11.2.2)(ofetch@2.0.0-alpha.3):
+  unstorage@2.0.0-alpha.4(@azure/storage-blob@12.29.1)(@netlify/blobs@10.4.1)(@vercel/blob@2.0.0)(aws4fetch@1.0.20)(chokidar@4.0.3)(db0@0.3.4)(ioredis@5.8.2)(lru-cache@11.2.2)(ofetch@2.0.0-alpha.3):
     optionalDependencies:
       '@azure/storage-blob': 12.29.1
-      '@netlify/blobs': 10.3.3
+      '@netlify/blobs': 10.4.1
       '@vercel/blob': 2.0.0
+      aws4fetch: 1.0.20
       chokidar: 4.0.3
       db0: 0.3.4
       ioredis: 5.8.2
@@ -55511,7 +56066,7 @@ snapshots:
 
   utils-merge@1.0.1: {}
 
-  uuid@11.1.0: {}
+  uuid@13.0.0: {}
 
   uuid@8.3.2: {}
 
@@ -55619,12 +56174,18 @@ snapshots:
       vfile-message: 4.0.2
 
 <<<<<<< HEAD
+<<<<<<< HEAD
   vite-dev-rpc@1.1.0(vite@7.2.4(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1)):
 =======
+=======
+>>>>>>> 6971de384 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
 <<<<<<< HEAD
   vite-dev-rpc@1.1.0(vite@7.2.4(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)):
 =======
   vinxi@0.5.8(@azure/storage-blob@12.29.1)(@netlify/blobs@10.3.3)(@types/node@24.10.1)(@vercel/blob@2.0.0)(db0@0.3.4)(ioredis@5.8.2)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(rolldown@1.0.0-beta.50)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1):
+=======
+  vinxi@0.5.8(@azure/storage-blob@12.29.1)(@netlify/blobs@10.4.1)(@types/node@24.10.1)(@vercel/blob@2.0.0)(aws4fetch@1.0.20)(db0@0.3.4)(ioredis@5.8.2)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(rolldown@1.0.0-beta.51)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1):
+>>>>>>> 4b5aeb8c9 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
     dependencies:
       '@babel/core': 7.28.5
       '@babel/plugin-syntax-jsx': 7.27.1(@babel/core@7.28.5)
@@ -55645,7 +56206,7 @@ snapshots:
       hookable: 5.5.3
       http-proxy: 1.18.1
       micromatch: 4.0.8
-      nitropack: 2.12.9(@azure/storage-blob@12.29.1)(@netlify/blobs@10.3.3)(@vercel/blob@2.0.0)(rolldown@1.0.0-beta.50)
+      nitropack: 2.12.9(@azure/storage-blob@12.29.1)(@netlify/blobs@10.4.1)(@vercel/blob@2.0.0)(aws4fetch@1.0.20)(rolldown@1.0.0-beta.51)
       node-fetch-native: 1.6.7
       path-to-regexp: 6.3.0
       pathe: 1.1.2
@@ -55657,7 +56218,7 @@ snapshots:
       ufo: 1.6.1
       unctx: 2.4.1
       unenv: 1.10.0
-      unstorage: 1.17.2(@azure/storage-blob@12.29.1)(@netlify/blobs@10.3.3)(@vercel/blob@2.0.0)(db0@0.3.4)(ioredis@5.8.2)
+      unstorage: 1.17.2(@azure/storage-blob@12.29.1)(@netlify/blobs@10.4.1)(@vercel/blob@2.0.0)(aws4fetch@1.0.20)(db0@0.3.4)(ioredis@5.8.2)
       vite: 6.4.1(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
       zod: 3.25.76
     transitivePeerDependencies:
@@ -56177,15 +56738,53 @@ snapshots:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 =======
 >>>>>>> 1f9a283a8 (feat: enhance storage functionality with batch operations and retry mechanism)
 =======
 >>>>>>> c6fb76abf (chore: update storage client dependencies and enhance testing framework)
+=======
+>>>>>>> 4db91813a (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
 <<<<<<< HEAD
   webpack@5.103.0(@swc/core@1.13.5):
 =======
   webpack@5.102.1(@swc/core@1.13.5):
+=======
+  webpack@5.102.1(@swc/core@1.13.5):
+    dependencies:
+      '@types/eslint-scope': 3.7.7
+      '@types/estree': 1.0.8
+      '@types/json-schema': 7.0.15
+      '@webassemblyjs/ast': 1.14.1
+      '@webassemblyjs/wasm-edit': 1.14.1
+      '@webassemblyjs/wasm-parser': 1.14.1
+      acorn: 8.15.0
+      acorn-import-phases: 1.0.4(acorn@8.15.0)
+      browserslist: 4.27.0
+      chrome-trace-event: 1.0.4
+      enhanced-resolve: 5.18.3
+      es-module-lexer: 1.7.0
+      eslint-scope: 5.1.1
+      events: 3.3.0
+      glob-to-regexp: 0.4.1
+      graceful-fs: 4.2.11
+      json-parse-even-better-errors: 2.3.1
+      loader-runner: 4.3.0
+      mime-types: 2.1.35
+      neo-async: 2.6.2
+      schema-utils: 4.3.3
+      tapable: 2.3.0
+      terser-webpack-plugin: 5.3.12(@swc/core@1.13.5)(webpack@5.102.1(@swc/core@1.13.5))
+      watchpack: 2.4.4
+      webpack-sources: 3.3.3
+    transitivePeerDependencies:
+      - '@swc/core'
+      - esbuild
+      - uglify-js
+
+  webpack@5.102.1(@swc/core@1.13.5)(esbuild@0.27.0):
+>>>>>>> 4b5aeb8c9 (feat: introduce AWS Light Storage implementation and enhance storage capabilities)
     dependencies:
       '@types/eslint-scope': 3.7.7
       '@types/estree': 1.0.8

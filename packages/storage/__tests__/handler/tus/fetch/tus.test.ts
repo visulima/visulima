@@ -150,7 +150,9 @@ describe("fetch Tus", () => {
 
             expect(response.status).toBe(204);
             expect(response.headers.get("tus-version")).toBe("1.0.0");
-            expect(response.headers.get("tus-extension")).toBe("creation,creation-with-upload,termination,checksum,creation-defer-length,concatenation,expiration");
+            expect(response.headers.get("tus-extension")).toBe(
+                "creation,creation-with-upload,termination,checksum,creation-defer-length,concatenation,expiration",
+            );
             expect(response.headers.get("tus-max-size")).toBe("6442450944");
             expect(response.headers.get("tus-checksum-algorithm")).toBe("md5,sha1");
         });

@@ -159,11 +159,7 @@ export abstract class TusBase<TFile extends UploadFile> {
                 let headers: Headers = {};
 
                 // The Upload-Expires response header indicates the time after which the unfinished upload expires.
-                if (
-                    this.storage.tusExtension.includes("expiration")
-                    && typeof file.expiredAt === "number"
-                    && file.size === undefined
-                ) {
+                if (this.storage.tusExtension.includes("expiration") && typeof file.expiredAt === "number" && file.size === undefined) {
                     headers = { "Upload-Expires": new Date(file.expiredAt).toUTCString() };
                 }
 
@@ -221,15 +217,12 @@ export abstract class TusBase<TFile extends UploadFile> {
 
                 let headers: Headers = {};
 
-                if (
-                    this.storage.tusExtension.includes("expiration")
-                    && typeof file.expiredAt === "number"
-                    && file.bytesWritten !== (file.size ?? 0)
-                ) {
+                if (this.storage.tusExtension.includes("expiration") && typeof file.expiredAt === "number" && file.bytesWritten !== (file.size ?? 0)) {
                     headers = { "Upload-Expires": new Date(file.expiredAt).toUTCString() };
                 }
 
                 const locationUrl = this.buildFileUrl(requestUrl, file);
+
                 headers = { ...headers, ...this.buildHeaders(file, { Location: locationUrl }) };
 
                 if (!headers.Location) {
@@ -245,7 +238,9 @@ export abstract class TusBase<TFile extends UploadFile> {
                 const statusCode = file.bytesWritten > 0 ? 200 : 201;
 
                 return { ...file, headers: headers as Record<string, string | number>, statusCode };
-            } else if (uploadConcat.startsWith("final;")) {
+            }
+
+            if (uploadConcat.startsWith("final;")) {
                 // Create a final upload that concatenates partial uploads
                 const partialIds = uploadConcat.slice(6).trim().split(/\s+/).filter(Boolean);
 
@@ -260,6 +255,7 @@ export abstract class TusBase<TFile extends UploadFile> {
                 for (const partialId of partialIds) {
                     try {
                         const partialFile = await this.storage.getMeta(partialId);
+
                         await this.storage.checkIfExpired(partialFile);
 
                         // Verify it's a partial upload
@@ -289,8 +285,8 @@ export abstract class TusBase<TFile extends UploadFile> {
                 const config: FileInit = {
                     metadata: {
                         ...parsedMetadata,
-                        uploadConcat: `final;${partialIds.join(" ")}`,
                         partialIds,
+                        uploadConcat: `final;${partialIds.join(" ")}`,
                     },
                     size: totalSize,
                 };
@@ -307,9 +303,9 @@ export abstract class TusBase<TFile extends UploadFile> {
                 };
 
                 return { ...file, headers: headers as Record<string, string | number>, statusCode: 201 };
-            } else {
-                throw createHttpError(400, "Invalid Upload-Concat header format");
             }
+
+            throw createHttpError(400, "Invalid Upload-Concat header format");
         }
 
         // Validate that either upload-length or upload-defer-length is specified

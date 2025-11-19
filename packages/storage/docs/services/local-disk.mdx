@@ -127,12 +127,12 @@ const storage = new DiskStorage({
         if (name.length < 3 || name.length > 255) {
             return false;
         }
-        
+
         // Block specific patterns
         if (name.includes("../") || name.includes("\0")) {
             return false;
         }
-        
+
         // Your custom rules here
         return !name.includes("forbidden");
     },

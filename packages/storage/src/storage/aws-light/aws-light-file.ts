@@ -1,7 +1,7 @@
+import type { Part } from "../aws/s3-base-storage";
 import { File } from "../utils/file";
-import type { Part } from "./s3-base-storage";
 
-class S3File extends File {
+class AwsLightFile extends File {
     public Parts?: Part[];
 
     public UploadId?: string;
@@ -13,4 +13,4 @@ class S3File extends File {
     public partSize?: number;
 }
 
-export default S3File;
+export default AwsLightFile;
