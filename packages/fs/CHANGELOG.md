@@ -1,3 +1,13 @@
+## @visulima/fs [4.1.0](https://github.com/visulima/visulima/compare/@visulima/fs@4.0.6...@visulima/fs@4.1.0) (2025-11-19)
+
+### Features
+
+* **fs:** Added new `sanitize.ts` utility for string file name sanitization ([78ee034](https://github.com/visulima/visulima/commit/78ee0349fe8b35145cfa6eebe3d72e1907da2990))
+
+### Miscellaneous Chores
+
+* **release:** update dependencies and versions across multiple packages ([39ad777](https://github.com/visulima/visulima/commit/39ad777e15aeb77d1ec4182763ab7473740ccbc4))
+
 ## @visulima/fs [4.0.6](https://github.com/visulima/visulima/compare/@visulima/fs@4.0.5...@visulima/fs@4.0.6) (2025-11-13)
 
 ### Bug Fixes
