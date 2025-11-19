@@ -193,4 +193,3 @@ export const getTotalSize = <TFile extends UploadFile>(file: TFile): number | un
 
     return undefined;
 };
-

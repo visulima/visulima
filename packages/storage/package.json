@@ -98,6 +98,10 @@
             "types": "./dist/storage/aws/clients/index.d.ts",
             "import": "./dist/storage/aws/clients/index.js"
         },
+        "./provider/aws-light": {
+            "types": "./dist/storage/aws-light/index.d.ts",
+            "import": "./dist/storage/aws-light/index.js"
+        },
         "./provider/gcs": {
             "types": "./dist/storage/gcs/index.d.ts",
             "import": "./dist/storage/gcs/index.js"
@@ -207,14 +211,14 @@
         "@anolilab/semantic-release-pnpm": "3.0.0-alpha.2",
         "@anolilab/semantic-release-preset": "12.0.0-alpha.2",
         "@arethetypeswrong/cli": "^0.18.2",
-        "@aws-sdk/client-s3": "^3.932.0",
-        "@aws-sdk/credential-providers": "^3.932.0",
-        "@aws-sdk/s3-request-presigner": "^3.932.0",
-        "@aws-sdk/signature-v4-crt": "^3.932.0",
+        "@aws-sdk/client-s3": "^3.934.0",
+        "@aws-sdk/credential-providers": "^3.934.0",
+        "@aws-sdk/s3-request-presigner": "^3.934.0",
+        "@aws-sdk/signature-v4-crt": "^3.934.0",
         "@aws-sdk/types": "^3.930.0",
         "@azure/storage-blob": "^12.29.1",
-        "@netlify/blobs": "^10.3.3",
-        "@remix-run/headers": "0.16.0",
+        "@netlify/blobs": "^10.4.1",
+        "@remix-run/headers": "0.17.0",
         "@types/etag": "^1.8.4",
         "@types/express": "^5.0.5",
         "@types/http-errors": "^2.0.5",
@@ -226,8 +230,8 @@
         "@visulima/humanizer": "workspace:*",
         "@visulima/packem": "2.0.0-alpha.36",
         "@visulima/path": "workspace:*",
-        "@vitest/coverage-v8": "^4.0.9",
-        "@vitest/ui": "^4.0.9",
+        "@vitest/coverage-v8": "^4.0.10",
+        "@vitest/ui": "^4.0.10",
         "aws-crt": "^1.27.5",
         "aws-sdk-client-mock": "^4.1.0",
         "cross-fetch": "^4.1.0",
@@ -246,11 +250,12 @@
         "rimraf": "^6.1.0",
         "semantic-release": "^25.0.2",
         "@opentelemetry/api": "^1.9.0",
+        "aws4fetch": "^1.0.20",
         "sharp": "^0.34.5",
         "supertest": "^7.1.4",
         "tempy": "^3.1.0",
         "typescript": "^5.9.3",
-        "vitest": "^4.0.9"
+        "vitest": "^4.0.10"
     },
     "peerDependencies": {
         "@aws-sdk/client-s3": "^3.901.0",
@@ -263,6 +268,7 @@
         "@vercel/blob": "^2.0.0",
         "@opentelemetry/api": "^1.9.0",
         "aws-crt": "^1.27.3",
+        "aws4fetch": "^1.0.0",
         "gaxios": "^7.1.2",
         "google-auth-library": "^10.4.0",
         "mediabunny": "^1.23.0",
@@ -297,6 +303,9 @@
             "optional": true
         },
         "aws-crt": {
+            "optional": true
+        },
+        "aws4fetch": {
             "optional": true
         },
         "gaxios": {

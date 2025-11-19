@@ -45,33 +45,33 @@ class MyCustomStorage extends AbstractBaseStorage<File, FileReturn> {
     public override async create(config: FileInit): Promise<File> {
         // Create file in your storage system
         const file = await this.createFile(config);
-        
+
         // Save metadata
         await this.meta.save(file.id, file);
-        
+
         // Call onCreate hook
         await this.onCreate(file);
-        
+
         return file;
     }
 
     public override async write(part: FilePart | FileQuery): Promise<File> {
         // Write file data to your storage system
         const file = await this.writeFile(part);
-        
+
         // Update metadata
         await this.meta.save(file.id, file);
-        
+
         // Call onUpdate hook
         await this.onUpdate(file);
-        
+
         return file;
     }
 
     public override async get(query: FileQuery): Promise<FileReturn> {
         // Retrieve file from your storage system
         const file = await this.getFile(query.id);
-        
+
         return {
             ...file,
             stream: await this.getFileStream(query.id),
@@ -81,14 +81,14 @@ class MyCustomStorage extends AbstractBaseStorage<File, FileReturn> {
     public override async delete(query: FileQuery): Promise<File> {
         // Delete file from your storage system
         await this.deleteFile(query.id);
-        
+
         // Delete metadata
         await this.meta.delete(query.id);
-        
+
         // Call onDelete hook
         const file = await this.meta.get(query.id);
         await this.onDelete(file);
-        
+
         return file;
     }
 
@@ -224,10 +224,7 @@ class DatabaseMetaStorage<T extends File = File> extends MetaStorage<T> {
 
     public override async get(id: string): Promise<T> {
         // Retrieve metadata from database
-        const result = await this.db.query(
-            `SELECT metadata FROM ${this.tableName} WHERE id = $1`,
-            [id],
-        );
+        const result = await this.db.query(`SELECT metadata FROM ${this.tableName} WHERE id = $1`, [id]);
 
         if (result.rows.length === 0) {
             throw new Error("File not found");
@@ -243,10 +240,7 @@ class DatabaseMetaStorage<T extends File = File> extends MetaStorage<T> {
 
     public override async touch(id: string, file: T): Promise<T> {
         // Update last accessed timestamp
-        await this.db.query(
-            `UPDATE ${this.tableName} SET last_accessed = NOW() WHERE id = $1`,
-            [id],
-        );
+        await this.db.query(`UPDATE ${this.tableName} SET last_accessed = NOW() WHERE id = $1`, [id]);
 
         return file;
     }
@@ -410,10 +404,7 @@ class RedisStorage extends AbstractBaseStorage<File, FileReturn> {
         const file = JSON.parse(metaData) as File;
 
         // Delete file data and metadata
-        await Promise.all([
-            this.redis.del(this.getKey(query.id)),
-            this.redis.del(this.getMetaKey(query.id)),
-        ]);
+        await Promise.all([this.redis.del(this.getKey(query.id)), this.redis.del(this.getMetaKey(query.id))]);
 
         // Call onDelete hook
         await this.onDelete(file);
@@ -518,4 +509,3 @@ app.post("/upload", async (request) => {
 - Test your custom storage with all handler types
 - Add metrics and logging for observability
 - Consider implementing optional operations for better compatibility
-

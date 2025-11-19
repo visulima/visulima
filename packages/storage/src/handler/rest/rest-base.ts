@@ -1,7 +1,7 @@
 import createHttpError from "http-errors";
 
 import type { FileInit, UploadFile } from "../../storage/utils/file";
-import { ERRORS } from "../../utils/errors";
+import type { ChunkInfo } from "../../utils/chunked-upload";
 import {
     calculateUploadProgress,
     getBytesWritten,
@@ -9,9 +9,9 @@ import {
     isChunkedUpload,
     isUploadComplete,
     trackChunk,
-    type ChunkInfo,
     validateChunk,
 } from "../../utils/chunked-upload";
+import { ERRORS } from "../../utils/errors";
 import type { ResponseFile, ResponseList } from "../types";
 import { buildChunkedUploadHeaders, buildFileHeaders, buildFileMetadataHeaders, buildResponseFile } from "../utils/response-builder";
 
