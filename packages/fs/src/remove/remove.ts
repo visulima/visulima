@@ -36,7 +36,6 @@ const remove = async (path: URL | string, options: RetryOptions = {}): Promise<v
     assertValidFileOrDirectoryPath(path);
 
     try {
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         await unlink(path);
     } catch {
         /* empty */

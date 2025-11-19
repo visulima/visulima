@@ -37,7 +37,6 @@ const collectSync = (directory: string, options: WalkOptions = {}): string[] => 
 
     const entries: string[] = [];
 
-    // eslint-disable-next-line no-loops/no-loops
     for (const entry of walkSync(directory, options)) {
         entries.push(entry.path);
     }

@@ -8,7 +8,6 @@ import assertValidFileOrDirectoryPath from "../utils/assert-valid-file-or-direct
  * If the path does not exist, it does nothing.
  * @param path The path to the file or directory to remove.
  * @param options Optional configuration for the operation. See {@link RetryOptions}.
- * @returns void
  * @example
  * ```javascript
  * import { removeSync } from "@visulima/fs";
@@ -32,7 +31,6 @@ const removeSync = (path: URL | string, options: RetryOptions = {}): void => {
     assertValidFileOrDirectoryPath(path);
 
     try {
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         unlinkSync(path);
     } catch {
         /* empty */

@@ -78,7 +78,6 @@ describe.each([
     it("should handle path as URL or string", async () => {
         expect.assertions(1);
 
-        // eslint-disable-next-line compat/compat
         const path = new URL(`file:///${file as string}`);
 
         let result = function_(path, F_OK);

@@ -23,7 +23,6 @@ describe.each([
             function_(path, { foo: true }, { indent: 2 });
         }
 
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         expect(readFileSync(path, "utf8")).toBe("{\n  \"foo\": true\n}\n");
     });
 
@@ -41,7 +40,6 @@ describe.each([
             function_(path, { bar: true, foo: true, foobar: true }, { detectIndent: true });
         }
 
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         expect(readFileSync(path, "utf8")).toBe("{\n  \"bar\": true,\n  \"foo\": true,\n  \"foobar\": true\n}\n");
     });
 
@@ -57,7 +55,6 @@ describe.each([
             function_(path, { bar: true, foo: true, foobar: true }, { detectIndent: true });
         }
 
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         expect(readFileSync(path, "utf8")).toBe("{\n\t\"bar\": true,\n\t\"foo\": true,\n\t\"foobar\": true\n}\n");
     });
 
@@ -73,7 +70,6 @@ describe.each([
             function_(path, { bar: true, foo: true }, { replacer: ["foo"] });
         }
 
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         expect(readFileSync(path, "utf8")).toBe("{\n\t\"foo\": true\n}\n");
     });
 
@@ -82,7 +78,6 @@ describe.each([
 
         const path = temporaryFile({ extension: "json" });
 
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         writeFileSync(path, JSON.stringify({ foo: true }));
 
         // eslint-disable-next-line vitest/no-conditional-in-test
@@ -92,7 +87,6 @@ describe.each([
             function_(path, { bar: true });
         }
 
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         expect(readFileSync(path, "utf8")).toBe("{\n\t\"bar\": true\n}");
     });
 
@@ -108,7 +102,6 @@ describe.each([
             function_(path, { foo: true }, { indent: undefined });
         }
 
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         expect(readFileSync(path, "utf8")).toBe("{\"foo\":true}\n");
     });
 
@@ -124,7 +117,6 @@ describe.each([
             function_(path, { foo: true }, { stringify: fastStringify });
         }
 
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         expect(readFileSync(path, "utf8")).toBe("{\n\t\"foo\": true\n}\n");
     });
 });

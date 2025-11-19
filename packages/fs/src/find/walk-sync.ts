@@ -12,7 +12,7 @@ import { toPath } from "@visulima/path/utils";
 import WalkError from "../error/walk-error";
 import type { WalkEntry, WalkOptions } from "../types";
 import assertValidFileOrDirectoryPath from "../utils/assert-valid-file-or-directory-path";
-import globToRegExp from "./utils/glob-to-regex";
+import globToRegExp from "./utils/glob-to-regexp";
 import walkInclude from "./utils/walk-include";
 
 /** Create {@linkcode WalkEntry} for the `path` synchronously. */
@@ -20,7 +20,6 @@ import walkInclude from "./utils/walk-include";
 const _createWalkEntry = (path: string): WalkEntry => {
     const normalizePath: string = normalize(path as string);
 
-    // eslint-disable-next-line security/detect-non-literal-fs-filename
     const info: Stats = statSync(normalizePath);
 
     return {
@@ -36,9 +35,17 @@ const _createWalkEntry = (path: string): WalkEntry => {
 
 /**
  * Synchronously walks the file tree rooted at `directory`, yielding each file or directory that matches the criteria specified in `options`.
- * This is the synchronous version of the {@link walk} function.
+ * This is the synchronous version of the {@linkcode walk} function.
  * @param directory The root directory to start walking from.
  * @param options Optional configuration to control the walking process. See {@link WalkOptions}.
+ * @param options.extensions List of file extensions used to filter entries.
+ * @param options.followSymlinks Indicates whether symlinks should be resolved or not.
+ * @param options.includeDirs Indicates whether directory entries should be included or not.
+ * @param options.includeFiles Indicates whether file entries should be included or not.
+ * @param options.includeSymlinks Indicates whether symlink entries should be included or not.
+ * @param options.match List of regular expression or glob patterns used to filter entries.
+ * @param options.maxDepth Maximum depth to walk. Defaults to infinity.
+ * @param options.skip List of regular expression or glob patterns used to skip entries.
  * @returns An iterable iterator yielding {@link WalkEntry} objects for each matching file or directory.
  * @example
  * ```javascript
@@ -93,7 +100,6 @@ export default function* walkSync(
     }
 
     try {
-        // eslint-disable-next-line no-loops/no-loops,security/detect-non-literal-fs-filename
         for (const entry of readdirSync(directory, {
             withFileTypes: true,
         })) {
@@ -101,7 +107,6 @@ export default function* walkSync(
 
             if (entry.isSymbolicLink()) {
                 if (followSymlinks) {
-                    // eslint-disable-next-line security/detect-non-literal-fs-filename
                     path = realpathSync(path);
                 } else if (includeSymlinks && walkInclude(path, extensions, mappedMatch, mappedSkip)) {
                     yield {

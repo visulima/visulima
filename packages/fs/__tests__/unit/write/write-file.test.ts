@@ -21,7 +21,7 @@ const assertWriteFile = async (path: URL | string, content: string, options?: Wr
     expect(fileExists).toBe(true);
 
     // Assert that the file content matches the expected content
-    // eslint-disable-next-line security/detect-non-literal-fs-filename
+
     const fileContent = await readFile(path, "utf8");
 
     expect(fileContent).toBe(content);
@@ -36,7 +36,7 @@ const assertWriteFileSync = (path: URL | string, content: string, options?: Writ
     expect(fileExists).toBe(true);
 
     // Assert that the file content matches the expected content
-    // eslint-disable-next-line security/detect-non-literal-fs-filename
+
     const fileContent = readFileSync(path, "utf8");
 
     expect(fileContent).toBe(content);
@@ -131,7 +131,6 @@ describe.each(["writeFile", "writeFileSync"])("%s", (name) => {
     it("should handle path as URL or string", async () => {
         expect.assertions(2);
 
-        // eslint-disable-next-line compat/compat
         const path = new URL(`file:///${join(distribution, "file.txt")}`);
         const content = "Hello, World!";
 

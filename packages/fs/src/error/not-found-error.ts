@@ -33,7 +33,7 @@
 class NotFoundError extends Error {
     /**
      * Creates a new instance.
-     * @param message The error message.
+     * @param message
      */
     public constructor(message: string) {
         super(`ENOENT: ${message}`);

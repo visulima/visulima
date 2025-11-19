@@ -1,10 +1,10 @@
 import { parse } from "yaml";
 
-import type { ReadYamlOptions, YamlReviver } from "../types";
+import type { CompressionType, ReadYamlOptions, YamlReviver } from "../types";
 import readFileSync from "./read-file-sync";
 
-function readYamlSync<R = Record<string, unknown>>(path: URL | string, options?: ReadYamlOptions<"brotli" | "gzip" | "none">): R;
-function readYamlSync<R = Record<string, unknown>>(path: URL | string, reviver?: YamlReviver, options?: ReadYamlOptions<"brotli" | "gzip" | "none">): R;
+function readYamlSync<R = Record<string, unknown>>(path: URL | string, options?: ReadYamlOptions<CompressionType>): R;
+function readYamlSync<R = Record<string, unknown>>(path: URL | string, reviver?: YamlReviver, options?: ReadYamlOptions<CompressionType>): R;
 
 /**
  * Synchronously reads a YAML file and then parses it into an object.
@@ -43,8 +43,8 @@ function readYamlSync<R = Record<string, unknown>>(path: URL | string, reviver?:
 function readYamlSync<R = Record<string, unknown>>(
     path: URL | string,
 
-    reviver?: ReadYamlOptions<"brotli" | "gzip" | "none"> | YamlReviver,
-    options?: ReadYamlOptions<"brotli" | "gzip" | "none">,
+    reviver?: ReadYamlOptions<CompressionType> | YamlReviver,
+    options?: ReadYamlOptions<CompressionType>,
 ): R {
     const { buffer, compression, encoding = "utf8", flag, ...parseOptions } = options ?? {};
 

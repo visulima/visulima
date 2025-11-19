@@ -19,12 +19,10 @@ describe.each([
     beforeEach(async () => {
         writeFileSync("./sym-foo.txt", "foo\n");
 
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         writeFileSync(resolve(join(distribution, "./sym-foo.txt")), "sym-foo\n");
 
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         mkdirSync(resolve(join(distribution, "./sym-dir-foo")), { recursive: true });
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
+
         writeFileSync(resolve(join(distribution, "./sym-dir-foo/foo.txt")), "sym-foo\n");
 
         mkdirSync("./sym-empty-dir", { recursive: true });
@@ -42,7 +40,6 @@ describe.each([
     });
 
     afterEach(async () => {
-        // eslint-disable-next-line no-loops/no-loops
         for await (const directory of [
             "./sym-foo.txt",
             "./sym-link-foo.txt",
@@ -83,7 +80,6 @@ describe.each([
     ])("should create symlink file using source %s and destination %s", async (sourcePath, destinationPath) => {
         expect.assertions(4);
 
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         expect(existsSync(sourcePath)).toBe(true);
 
         // eslint-disable-next-line vitest/no-conditional-in-test
@@ -93,18 +89,14 @@ describe.each([
             function_(sourcePath, destinationPath);
         }
 
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         const sourceContent = readFileSync(sourcePath, "utf8");
         const destinationDirectory = dirname(destinationPath);
         const destinationBasename = basename(destinationPath);
 
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         expect(lstatSync(destinationPath).isSymbolicLink()).toBe(true);
 
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         expect(sourceContent).toStrictEqual(readFileSync(destinationPath, "utf8"));
 
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         expect(readdirSync(destinationDirectory)).contains(destinationBasename);
     });
 
@@ -123,7 +115,6 @@ describe.each([
     ])("should return error when creating symlink file using src %s and dst %s", async (sourcePath, destinationPath) => {
         expect.assertions(2);
 
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         const destinationDirectoryExistsBefore = existsSync(dirname(destinationPath));
 
         // eslint-disable-next-line vitest/no-conditional-in-test
@@ -135,7 +126,6 @@ describe.each([
             expect(() => function_(sourcePath, destinationPath)).toThrow(Error);
         }
 
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         const destinationDirectoryExistsAfter = existsSync(dirname(destinationPath));
 
         expect(destinationDirectoryExistsBefore).toStrictEqual(destinationDirectoryExistsAfter);
@@ -162,16 +152,14 @@ describe.each([
             function_(sourcePath, destinationPath);
         }
 
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         const sourceContents = readdirSync(sourcePath);
         const destinationDirectory = dirname(destinationPath);
         const destinationBasename = basename(destinationPath);
 
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         expect(lstatSync(destinationPath).isSymbolicLink()).toBe(true);
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
+
         expect(sourceContents).toStrictEqual(readdirSync(destinationPath));
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
+
         expect(readdirSync(destinationDirectory)).include(destinationBasename);
     });
 
@@ -201,7 +189,6 @@ describe.each([
     ])("should return error when creating symlink dir using source %s and destination %s", async (sourcePath, destinationPath) => {
         expect.assertions(2);
 
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         const destinationDirectoryExistsBefore = existsSync(dirname(destinationPath));
 
         // eslint-disable-next-line vitest/no-conditional-in-test
@@ -213,7 +200,6 @@ describe.each([
             expect(() => function_(sourcePath, destinationPath)).toThrow(Error);
         }
 
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         const destinationDirectoryExistsAfter = existsSync(dirname(destinationPath));
 
         expect(destinationDirectoryExistsBefore).toStrictEqual(destinationDirectoryExistsAfter);
@@ -234,7 +220,6 @@ describe.each([
         const targetFileViaSymbolicLink = join(symbolicLinkPath, targetFileName);
         const relativeSymbolicLinkReference = relative(dirname(symbolicLinkPath), targetDirectory);
 
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         expect(existsSync(targetDirectoryFile)).toBe(true);
 
         // first time, setting up with a relative reference
@@ -245,9 +230,8 @@ describe.each([
             function_(relativeSymbolicLinkReference, symbolicLinkPath);
         }
 
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         expect(existsSync(symbolicLinkPath)).toBe(true);
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
+
         expect(existsSync(targetFileViaSymbolicLink)).toBe(true);
 
         // second time, setting up with an absolute reference
@@ -258,9 +242,8 @@ describe.each([
             function_(targetDirectory, symbolicLinkPath);
         }
 
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         expect(existsSync(symbolicLinkPath)).toBe(true);
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
+
         expect(existsSync(targetFileViaSymbolicLink)).toBe(true);
     });
 
@@ -279,7 +262,6 @@ describe.each([
         const targetFileViaSymbolicLink = join(symbolicLinkPath, targetFileName);
         const relativeSymbolicLinkReference = relative(dirname(symbolicLinkPath), targetDirectory);
 
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         expect(existsSync(targetDirectoryFile)).toBe(true);
 
         // first time, setting up with a relative reference
@@ -290,9 +272,8 @@ describe.each([
             function_(relativeSymbolicLinkReference, symbolicLinkPath);
         }
 
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         expect(existsSync(symbolicLinkPath)).toBe(true);
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
+
         expect(existsSync(targetFileViaSymbolicLink)).toBe(true);
 
         // second time, setting up with an absolute reference
@@ -303,9 +284,8 @@ describe.each([
             function_(relativeSymbolicLinkReference, symbolicLinkPath);
         }
 
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         expect(existsSync(symbolicLinkPath)).toBe(true);
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
+
         expect(existsSync(targetFileViaSymbolicLink)).toBe(true);
     });
 });

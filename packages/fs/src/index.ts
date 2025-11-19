@@ -26,6 +26,8 @@ export { default as emptyDir } from "./remove/empty-dir";
 export { default as emptyDirSync } from "./remove/empty-dir-sync";
 export { default as remove } from "./remove/remove";
 export { default as removeSync } from "./remove/remove-sync";
+export type { SanitizeOptions } from "./sanitize";
+export { sanitize } from "./sanitize";
 export type {
     CodeFrameLocation,
     CodeFrameOptions,
@@ -49,4 +51,5 @@ export { default as writeFile } from "./write/write-file";
 export { default as writeFileSync } from "./write/write-file-sync";
 export { default as writeJson } from "./write/write-json";
 export { default as writeJsonSync } from "./write/write-json-sync";
+// eslint-disable-next-line import/no-extraneous-dependencies
 export { isFsCaseSensitive } from "is-fs-case-sensitive";

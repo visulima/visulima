@@ -34,7 +34,6 @@ const ensureLinkSync = (source: URL | string, destination: URL | string): void =
     let destinationStat;
 
     try {
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         destinationStat = lstatSync(destination);
     } catch {
         // ignore error
@@ -43,7 +42,6 @@ const ensureLinkSync = (source: URL | string, destination: URL | string): void =
     let sourceStat;
 
     try {
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         sourceStat = lstatSync(source);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
@@ -58,7 +56,6 @@ const ensureLinkSync = (source: URL | string, destination: URL | string): void =
 
     ensureDirSync(dirname(destination));
 
-    // eslint-disable-next-line security/detect-non-literal-fs-filename
     linkSync(source, destination);
 };
 

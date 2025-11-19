@@ -7,7 +7,6 @@ describe(resolveSymlinkTarget, () => {
     it("should return the target if it is a URL", () => {
         expect.assertions(1);
 
-        // eslint-disable-next-line compat/compat
         const target = new URL("https://example.com");
         const linkName = "link";
 
@@ -42,12 +41,11 @@ describe(resolveSymlinkTarget, () => {
         expect.assertions(1);
 
         const target = "file";
-        // eslint-disable-next-line compat/compat
+
         const linkName = new URL("https://example.com");
 
         const result = resolveSymlinkTarget(target, linkName);
 
-        // eslint-disable-next-line compat/compat
         expect(result).toStrictEqual(new URL(target, linkName));
     });
 });
