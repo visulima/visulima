@@ -1,3 +1,14 @@
+## @visulima/cerebro [2.1.5](https://github.com/visulima/visulima/compare/@visulima/cerebro@2.1.4...@visulima/cerebro@2.1.5) (2025-11-19)
+
+### Miscellaneous Chores
+
+* **release:** update dependencies and versions across multiple packages ([39ad777](https://github.com/visulima/visulima/commit/39ad777e15aeb77d1ec4182763ab7473740ccbc4))
+
+
+### Dependencies
+
+* **@visulima/find-cache-dir:** upgraded to 2.0.7
+
 ## @visulima/cerebro [2.1.4](https://github.com/visulima/visulima/compare/@visulima/cerebro@2.1.3...@visulima/cerebro@2.1.4) (2025-11-13)
 
 ### Bug Fixes
