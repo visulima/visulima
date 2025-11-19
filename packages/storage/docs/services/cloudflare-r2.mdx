@@ -1,0 +1,99 @@
+# Cloudflare R2
+
+## Overview
+
+Cloudflare R2 is an S3-compatible object storage service with zero egress fees. It's optimized for edge deployments and works seamlessly with Cloudflare Workers.
+
+## Installation
+
+```sh
+npm install @aws-sdk/client-s3 @aws-sdk/credential-providers @aws-sdk/s3-request-presigner @aws-sdk/signature-v4-crt aws-crt @aws-sdk/types
+```
+
+## Usage
+
+Cloudflare R2 is S3-compatible, so use the S3Storage with R2 endpoint:
+
+```typescript
+import { S3Storage } from "@visulima/storage/provider/aws";
+import { cloudflare } from "@visulima/storage/provider/aws/s3/clients";
+
+const clientConfig = cloudflare({
+    accountId: process.env.CLOUDFLARE_ACCOUNT_ID!,
+    accessKeyId: process.env.CLOUDFLARE_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.CLOUDFLARE_SECRET_ACCESS_KEY!,
+    jurisdiction: process.env.CLOUDFLARE_JURISDICTION, // Optional
+});
+
+const storage = new S3Storage({
+    bucket: "my-bucket",
+    ...clientConfig,
+});
+```
+
+## Configuration
+
+### Environment Variables
+
+```typescript
+process.env.CLOUDFLARE_ACCOUNT_ID = "your-account-id";
+process.env.CLOUDFLARE_ACCESS_KEY_ID = "your-access-key";
+process.env.CLOUDFLARE_SECRET_ACCESS_KEY = "your-secret-key";
+process.env.CLOUDFLARE_JURISDICTION = "eu"; // Optional
+
+const clientConfig = cloudflare(); // Uses environment variables
+const storage = new S3Storage({
+    bucket: "my-bucket",
+    ...clientConfig,
+});
+```
+
+### With Explicit Parameters
+
+```typescript
+const clientConfig = cloudflare({
+    accountId: "your-account-id",
+    accessKeyId: "your-access-key",
+    secretAccessKey: "your-secret-key",
+    jurisdiction: "eu", // Optional: eu, us, etc.
+});
+```
+
+## Cloudflare Workers
+
+R2 works seamlessly with Cloudflare Workers:
+
+```typescript
+export default {
+    async fetch(request: Request, env: any): Promise<Response> {
+        const clientConfig = cloudflare({
+            accountId: env.CLOUDFLARE_ACCOUNT_ID,
+            accessKeyId: env.CLOUDFLARE_ACCESS_KEY_ID,
+            secretAccessKey: env.CLOUDFLARE_SECRET_ACCESS_KEY,
+        });
+
+        const storage = new S3Storage({
+            bucket: "my-bucket",
+            ...clientConfig,
+        });
+
+        // Use storage...
+        return new Response("OK");
+    },
+};
+```
+
+## Features
+
+- **Zero Egress Fees**: No charges for data transfer out
+- **S3-Compatible**: Full S3 API compatibility
+- **Edge Integration**: Works with Cloudflare Workers
+- **Global Distribution**: Automatic global CDN
+
+## Best Practices
+
+1. **Use environment variables** - Store credentials securely
+2. **Leverage Workers** - Use R2 with Cloudflare Workers for edge computing
+3. **Configure CORS** - Set up CORS for web applications
+4. **Monitor usage** - Track storage usage in Cloudflare dashboard
+5. **Use custom domains** - Configure custom domains for R2 buckets

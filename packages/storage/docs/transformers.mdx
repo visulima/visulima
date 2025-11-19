@@ -1,0 +1,302 @@
+# Media Transformers
+
+Visulima storage provides transformers for images, videos, and audio files. Transformers support both URL-based query parameters and programmatic APIs.
+
+## Overview
+
+Three transformer types are available:
+
+- **ImageTransformer**: Image processing with Sharp
+- **VideoTransformer**: Video processing with Mediabunny
+- **AudioTransformer**: Audio processing with Mediabunny
+- **MediaTransformer**: Unified transformer that automatically detects media type
+
+## Image Transformer
+
+Transform images with resizing, cropping, format conversion, and more.
+
+### Basic Usage
+
+```typescript
+import { LRUCache } from "lru-cache";
+import { DiskStorage } from "@visulima/storage";
+import ImageTransformer from "@visulima/storage/transformers/image";
+
+const storage = new DiskStorage({ directory: "./uploads" });
+const cache = new LRUCache({ max: 1000, ttl: 3600000 });
+
+const transformer = new ImageTransformer(storage, {
+    cache,
+    maxImageSize: 10 * 1024 * 1024, // 10MB
+    cacheTtl: 3600, // 1 hour
+});
+```
+
+### Resize Images
+
+```typescript
+// Resize with fit mode
+const result = await transformer.resize("image-id", {
+    width: 800,
+    height: 600,
+    fit: "cover", // cover, contain, fill, inside, outside
+    quality: 85,
+    format: "jpeg",
+});
+
+// URL-based: GET /files/image-id?width=800&height=600&fit=cover&quality=85
+```
+
+### Crop Images
+
+```typescript
+const cropped = await transformer.crop("image-id", {
+    width: 400,
+    height: 300,
+    left: 100,
+    top: 50,
+});
+```
+
+### Convert Formats
+
+```typescript
+// Convert to WebP
+const webp = await transformer.convertFormat("image-id", "webp", {
+    quality: 85,
+    lossless: false,
+});
+
+// Convert to AVIF
+const avif = await transformer.convertFormat("image-id", "avif", {
+    quality: 80,
+    effort: 4,
+});
+```
+
+### Advanced Transformations
+
+```typescript
+// Rotate
+const rotated = await transformer.rotate("image-id", {
+    angle: 90,
+    background: { r: 255, g: 255, b: 255 },
+});
+
+// Apply effects
+const processed = await transformer.transform("image-id", {
+    blur: true,
+    sharpen: true,
+    greyscale: true,
+    gamma: 2.2,
+});
+```
+
+## Video Transformer
+
+Transform videos with resizing, format conversion, and codec changes.
+
+### Basic Usage
+
+```typescript
+import { DiskStorage } from "@visulima/storage";
+import VideoTransformer from "@visulima/storage/transformers/video";
+
+const storage = new DiskStorage({ directory: "./uploads" });
+
+const transformer = new VideoTransformer(storage, {
+    maxVideoSize: 100 * 1024 * 1024, // 100MB
+    defaultCodec: "avc",
+    defaultBitrate: 2_000_000, // 2 Mbps
+});
+```
+
+### Resize Videos
+
+```typescript
+const result = await transformer.resize("video-id", {
+    width: 1920,
+    height: 1080,
+    fit: "contain",
+    codec: "avc",
+    bitrate: 2_000_000,
+});
+
+// URL-based: GET /files/video-id?width=1920&height=1080&codec=avc&bitrate=2000000
+```
+
+### Convert Formats
+
+```typescript
+const webm = await transformer.transform("video-id", {
+    format: "webm",
+    codec: "vp9",
+    bitrate: 1_500_000,
+});
+```
+
+### Video Codecs
+
+Supported codecs:
+
+- `avc` - H.264/AVC
+- `hevc` - H.265/HEVC
+- `vp8` - VP8
+- `vp9` - VP9
+- `av1` - AV1
+
+## Audio Transformer
+
+Transform audio with resampling, format conversion, and codec changes.
+
+### Basic Usage
+
+```typescript
+import { DiskStorage } from "@visulima/storage";
+import AudioTransformer from "@visulima/storage/transformers/audio";
+
+const storage = new DiskStorage({ directory: "./uploads" });
+
+const transformer = new AudioTransformer(storage, {
+    maxAudioSize: 50 * 1024 * 1024, // 50MB
+    defaultCodec: "aac",
+    defaultBitrate: 128_000, // 128 kbps
+});
+```
+
+### Resample Audio
+
+```typescript
+const result = await transformer.resample("audio-id", {
+    sampleRate: 44100,
+    numberOfChannels: 2,
+});
+
+// URL-based: GET /files/audio-id?sampleRate=44100&numberOfChannels=2
+```
+
+### Convert Formats
+
+```typescript
+const mp3 = await transformer.transform("audio-id", {
+    format: "mp3",
+    codec: "mp3",
+    bitrate: 192_000,
+});
+```
+
+### Audio Codecs
+
+Supported codecs:
+
+- `aac` - AAC
+- `opus` - Opus
+- `mp3` - MP3
+- `vorbis` - Vorbis
+- `flac` - FLAC
+
+## Media Transformer
+
+Unified transformer that automatically detects and processes any media type.
+
+### Basic Usage
+
+```typescript
+import { DiskStorage } from "@visulima/storage";
+import { MediaTransformer } from "@visulima/storage/transformer";
+import ImageTransformer from "@visulima/storage/transformers/image";
+import VideoTransformer from "@visulima/storage/transformers/video";
+import AudioTransformer from "@visulima/storage/transformers/audio";
+
+const storage = new DiskStorage({ directory: "./uploads" });
+
+const transformer = new MediaTransformer(storage, {
+    ImageTransformer: ImageTransformer,
+    VideoTransformer: VideoTransformer,
+    AudioTransformer: AudioTransformer,
+    cache: new LRUCache({ max: 1000, ttl: 3600000 }),
+    saveTransformedFiles: true, // Persist transformed files
+});
+```
+
+### Automatic Detection
+
+```typescript
+// Automatically detects media type and routes to appropriate transformer
+const result = await transformer.handle("file-id", {
+    width: 800,
+    height: 600,
+    format: "webp",
+    quality: 85,
+});
+
+// Or use URL query string
+const result = await transformer.fetch("file-id", "width=800&height=600&format=webp&quality=85");
+```
+
+### URL-Based Transformations
+
+```typescript
+// Image: GET /files/image-id?width=800&height=600&fit=cover&quality=85
+// Video: GET /files/video-id?width=1920&height=1080&codec=avc&bitrate=2000000
+// Audio: GET /files/audio-id?sampleRate=44100&codec=aac&bitrate=128000
+```
+
+## Query Parameters
+
+### Common Parameters
+
+| Parameter | Type   | Description     | Example                                |
+| --------- | ------ | --------------- | -------------------------------------- |
+| `format`  | string | Output format   | `jpeg`, `webp`, `mp4`, `mp3`           |
+| `quality` | number | Quality/bitrate | `80` (images), `2000000` (video/audio) |
+
+### Image Parameters
+
+| Parameter  | Type    | Description                 | Values                                          |
+| ---------- | ------- | --------------------------- | ----------------------------------------------- |
+| `width`    | number  | Width in pixels             | 1-10000                                         |
+| `height`   | number  | Height in pixels            | 1-10000                                         |
+| `fit`      | string  | Resize fit mode             | `cover`, `contain`, `fill`, `inside`, `outside` |
+| `position` | string  | Position for cover/contain  | `centre`, `top`, `right`, `bottom`, `left`      |
+| `lossless` | boolean | Lossless compression (WebP) | `true`, `false`                                 |
+| `effort`   | number  | CPU effort (AVIF)           | 0-10                                            |
+
+### Video Parameters
+
+| Parameter   | Type   | Description      | Values                             |
+| ----------- | ------ | ---------------- | ---------------------------------- |
+| `width`     | number | Width in pixels  | 1-10000                            |
+| `height`    | number | Height in pixels | 1-10000                            |
+| `codec`     | string | Video codec      | `avc`, `hevc`, `vp8`, `vp9`, `av1` |
+| `bitrate`   | number | Bitrate in bps   | 1000000+                           |
+| `frameRate` | number | Frame rate in Hz | 24, 30, 60                         |
+
+### Audio Parameters
+
+| Parameter          | Type   | Description        | Values                                 |
+| ------------------ | ------ | ------------------ | -------------------------------------- |
+| `sampleRate`       | number | Sample rate in Hz  | 8000, 16000, 44100, 48000              |
+| `numberOfChannels` | number | Number of channels | 1, 2                                   |
+| `codec`            | string | Audio codec        | `aac`, `opus`, `mp3`, `vorbis`, `flac` |
+| `bitrate`          | number | Bitrate in bps     | 64000+                                 |
+
+## Caching Transformed Files
+
+Enable persistent caching of transformed files:
+
+```typescript
+const transformer = new MediaTransformer(storage, {
+    ImageTransformer: ImageTransformer,
+    saveTransformedFiles: true, // Save to storage
+    cache: new LRUCache({ max: 1000, ttl: 3600000 }), // In-memory cache
+});
+```
+
+## Best Practices
+
+1. **Use caching** - Cache transformed files to avoid reprocessing
+2. **Choose appropriate formats** - WebP/AVIF for images, VP9/AV1 for videos
+3. **Set quality/bitrate** - Balance file size and quality
+4. **Monitor processing time** - Large files take longer to process
+5. **Handle errors** - Transformations can fail for invalid files

@@ -1,0 +1,277 @@
+import { Readable } from "node:stream";
+
+import type {
+    CompleteMultipartUploadOutput,
+    CopyObjectCommandInput,
+    DeleteObjectCommandInput,
+    GetObjectCommandOutput,
+    HeadObjectCommandOutput,
+    ListObjectsV2CommandOutput,
+    ListPartsCommandOutput,
+    ObjectCannedACL,
+    S3Client,
+} from "@aws-sdk/client-s3";
+import {
+    AbortMultipartUploadCommand,
+    CompleteMultipartUploadCommand,
+    CopyObjectCommand,
+    CreateMultipartUploadCommand,
+    DeleteObjectCommand,
+    GetObjectCommand,
+    HeadObjectCommand,
+    ListObjectsV2Command,
+    ListPartsCommand,
+    UploadPartCommand,
+    waitUntilBucketExists,
+} from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import type { SdkStream } from "@aws-sdk/types";
+
+import type { Part, S3ApiOperations } from "./s3-base-storage";
+
+/**
+ * Adapter that wraps AWS SDK S3Client to implement S3ApiOperations interface.
+ */
+export class S3ClientAdapter implements S3ApiOperations {
+    public constructor(
+        private readonly client: S3Client,
+        private readonly bucket: string,
+    ) {}
+
+    public async createMultipartUpload(params: {
+        ACL?: string;
+        Bucket: string;
+        ContentType?: string;
+        Key: string;
+        Metadata?: Record<string, string>;
+    }): Promise<{ UploadId: string }> {
+        const command = new CreateMultipartUploadCommand({
+            ACL: params.ACL as ObjectCannedACL | undefined,
+            Bucket: params.Bucket,
+            ContentType: params.ContentType,
+            Key: params.Key,
+            Metadata: params.Metadata,
+        });
+
+        const response = await this.client.send(command);
+
+        if (!response.UploadId) {
+            throw new Error("Failed to create multipart upload");
+        }
+
+        return { UploadId: response.UploadId };
+    }
+
+    public async uploadPart(params: {
+        Body: Readable | ReadableStream | Uint8Array;
+        Bucket: string;
+        ContentLength?: number;
+        ContentMD5?: string;
+        Key: string;
+        PartNumber: number;
+        UploadId: string;
+    }): Promise<{ ETag: string }> {
+        // Convert ReadableStream to Readable if needed
+        let body: Readable | Uint8Array = params.Body as Readable | Uint8Array;
+
+        if (params.Body instanceof ReadableStream) {
+            body = Readable.fromWeb(params.Body);
+        }
+
+        const command = new UploadPartCommand({
+            Body: body,
+            Bucket: params.Bucket,
+            ContentLength: params.ContentLength,
+            ContentMD5: params.ContentMD5,
+            Key: params.Key,
+            PartNumber: params.PartNumber,
+            UploadId: params.UploadId,
+        });
+
+        const response = await this.client.send(command);
+
+        if (!response.ETag) {
+            throw new Error("Failed to upload part");
+        }
+
+        return { ETag: response.ETag };
+    }
+
+    public async completeMultipartUpload(params: {
+        Bucket: string;
+        Key: string;
+        Parts: { ETag: string; PartNumber: number }[];
+        UploadId: string;
+    }): Promise<{ ETag?: string; Location: string }> {
+        const command = new CompleteMultipartUploadCommand({
+            Bucket: params.Bucket,
+            Key: params.Key,
+            MultipartUpload: {
+                Parts: params.Parts.map(({ ETag, PartNumber }) => { return { ETag, PartNumber }; }),
+            },
+            UploadId: params.UploadId,
+        });
+
+        const response: CompleteMultipartUploadOutput = await this.client.send(command);
+
+        if (!response.Location) {
+            throw new Error("Failed to complete multipart upload");
+        }
+
+        return {
+            ETag: response.ETag,
+            Location: response.Location,
+        };
+    }
+
+    public async abortMultipartUpload(params: { Bucket: string; Key: string; UploadId: string }): Promise<void> {
+        const command = new AbortMultipartUploadCommand({
+            Bucket: params.Bucket,
+            Key: params.Key,
+            UploadId: params.UploadId,
+        });
+
+        await this.client.send(command);
+    }
+
+    public async listParts(params: { Bucket: string; Key: string; UploadId: string }): Promise<{ Parts?: Part[] }> {
+        const command = new ListPartsCommand({
+            Bucket: params.Bucket,
+            Key: params.Key,
+            UploadId: params.UploadId,
+        });
+
+        const response: ListPartsCommandOutput = await this.client.send(command);
+
+        return {
+            Parts: response.Parts?.map((part) => {
+                return {
+                    ETag: part.ETag,
+                    PartNumber: part.PartNumber,
+                    Size: part.Size,
+                };
+            }),
+        };
+    }
+
+    public async getObject(params: { Bucket: string; Key: string }): Promise<{
+        Body?: ReadableStream | Readable;
+        ContentLength?: number;
+        ContentType?: string;
+        ETag?: string;
+        Expires?: Date;
+        LastModified?: Date;
+        Metadata?: Record<string, string>;
+    }> {
+        const command = new GetObjectCommand({
+            Bucket: params.Bucket,
+            Key: params.Key,
+        });
+
+        const response: GetObjectCommandOutput = await this.client.send(command);
+
+        // Convert SdkStream to Readable
+        let body: Readable | undefined;
+
+        if (response.Body) {
+            const sdkStream = response.Body as SdkStream<Uint8Array>;
+
+            body = Readable.fromWeb(sdkStream as ReadableStream<Uint8Array>);
+        }
+
+        return {
+            Body: body,
+            ContentLength: response.ContentLength,
+            ContentType: response.ContentType,
+            ETag: response.ETag,
+            Expires: response.Expires,
+            LastModified: response.LastModified,
+            Metadata: response.Metadata,
+        };
+    }
+
+    public async headObject(params: { Bucket: string; Key: string }): Promise<{
+        ContentLength?: number;
+        ContentType?: string;
+        ETag?: string;
+        Expires?: Date;
+        LastModified?: Date;
+    }> {
+        const command = new HeadObjectCommand({
+            Bucket: params.Bucket,
+            Key: params.Key,
+        });
+
+        const response: HeadObjectCommandOutput = await this.client.send(command);
+
+        return {
+            ContentLength: response.ContentLength,
+            ContentType: response.ContentType,
+            ETag: response.ETag,
+            Expires: response.Expires,
+            LastModified: response.LastModified,
+        };
+    }
+
+    public async deleteObject(params: { Bucket: string; Key: string }): Promise<void> {
+        const command = new DeleteObjectCommand({
+            Bucket: params.Bucket,
+            Key: params.Key,
+        });
+
+        await this.client.send(command);
+    }
+
+    public async copyObject(params: { Bucket: string; CopySource: string; Key: string; StorageClass?: string }): Promise<void> {
+        const commandInput: CopyObjectCommandInput = {
+            Bucket: params.Bucket,
+            CopySource: params.CopySource,
+            Key: params.Key,
+            ...params.StorageClass && { StorageClass: params.StorageClass },
+        };
+
+        const command = new CopyObjectCommand(commandInput);
+
+        await this.client.send(command);
+    }
+
+    public async listObjectsV2(params: { Bucket: string; ContinuationToken?: string; MaxKeys?: number }): Promise<{
+        Contents?: { Key?: string; LastModified?: Date }[];
+        IsTruncated?: boolean;
+        NextContinuationToken?: string;
+    }> {
+        const command = new ListObjectsV2Command({
+            Bucket: params.Bucket,
+            ContinuationToken: params.ContinuationToken,
+            MaxKeys: params.MaxKeys,
+        });
+
+        const response: ListObjectsV2CommandOutput = await this.client.send(command);
+
+        return {
+            Contents: response.Contents?.map((item) => {
+                return {
+                    Key: item.Key,
+                    LastModified: item.LastModified,
+                };
+            }),
+            IsTruncated: response.IsTruncated,
+            NextContinuationToken: response.NextContinuationToken,
+        };
+    }
+
+    public async getPresignedUrl(params: { Bucket: string; expiresIn: number; Key: string; PartNumber: number; UploadId: string }): Promise<string> {
+        const command = new UploadPartCommand({
+            Bucket: params.Bucket,
+            Key: params.Key,
+            PartNumber: params.PartNumber,
+            UploadId: params.UploadId,
+        });
+
+        return getSignedUrl(this.client, command, { expiresIn: params.expiresIn });
+    }
+
+    public async checkBucketAccess(params: { Bucket: string }): Promise<void> {
+        await waitUntilBucketExists({ client: this.client, maxWaitTime: 30 }, { Bucket: params.Bucket });
+    }
+}

@@ -1,0 +1,13 @@
+{
+    "name": "upload_example_bun",
+    "version": "1.0.0",
+    "description": "Bun example showcasing Visulima Upload with fetch() method",
+    "private": true,
+    "scripts": {
+        "dev": "bun run index.ts",
+        "start": "bun run index.ts"
+    },
+    "dependencies": {
+        "@visulima/storage": "workspace:*"
+    }
+}

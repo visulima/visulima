@@ -1,0 +1,266 @@
+# Batch Operations
+
+Perform multiple file operations in a single request for improved efficiency and reduced API calls.
+
+## Batch Delete
+
+Delete multiple files in a single request using the REST handler.
+
+### Query Parameter Method
+
+```typescript
+// DELETE /files?ids=id1,id2,id3
+const response = await fetch("/files?ids=id1,id2,id3", {
+    method: "DELETE",
+});
+
+// Response includes:
+// - X-Delete-Successful: Number of successful deletions
+// - X-Delete-Failed: Number of failed deletions
+// - X-Delete-Errors: JSON array of errors (if any)
+```
+
+### JSON Body Method
+
+```typescript
+// DELETE /files
+// Body: { "ids": ["id1", "id2", "id3"] }
+const response = await fetch("/files", {
+    method: "DELETE",
+    headers: {
+        "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+        ids: ["id1", "id2", "id3"],
+    }),
+});
+```
+
+### Array Body Method
+
+```typescript
+// DELETE /files
+// Body: ["id1", "id2", "id3"]
+const response = await fetch("/files", {
+    method: "DELETE",
+    headers: {
+        "Content-Type": "application/json",
+    },
+    body: JSON.stringify(["id1", "id2", "id3"]),
+});
+```
+
+## Response Format
+
+Batch delete returns a multi-status response:
+
+```typescript
+// Status: 204 (No Content) - All deletions successful
+// Status: 207 (Multi-Status) - Partial success
+
+// Headers:
+// X-Delete-Successful: 2
+// X-Delete-Failed: 1
+// X-Delete-Errors: [{"error":"File not found","id":"id3"}]
+
+// Body: Array of successfully deleted files
+[
+    { id: "id1", status: "deleted", ... },
+    { id: "id2", status: "deleted", ... },
+]
+```
+
+## Error Handling
+
+```typescript
+const response = await fetch("/files?ids=id1,id2,id3", {
+    method: "DELETE",
+});
+
+const successful = parseInt(response.headers.get("X-Delete-Successful") || "0");
+const failed = parseInt(response.headers.get("X-Delete-Failed") || "0");
+
+if (failed > 0) {
+    const errors = JSON.parse(response.headers.get("X-Delete-Errors") || "[]");
+    console.error("Failed deletions:", errors);
+}
+
+if (successful > 0) {
+    const deletedFiles = await response.json();
+    console.log("Successfully deleted:", deletedFiles.length);
+}
+```
+
+## Express Example
+
+```typescript
+import express from "express";
+import { DiskStorage } from "@visulima/storage";
+
+const app = express();
+const storage = new DiskStorage({ directory: "./uploads" });
+const rest = new Rest({ storage });
+
+// Batch delete endpoint
+app.delete("/files", rest.handle, (req, res) => {
+    // Response is automatically handled by the handler
+    // Check headers for deletion status
+    const successful = res.getHeader("X-Delete-Successful");
+    const failed = res.getHeader("X-Delete-Failed");
+
+    console.log(`Deleted: ${successful}, Failed: ${failed}`);
+});
+```
+
+## Storage-Level Batch Operations
+
+All storage backends support batch operations at the storage level. These methods are available directly on storage instances:
+
+### Batch Delete
+
+```typescript
+import { DiskStorage } from "@visulima/storage";
+
+const storage = new DiskStorage({ directory: "./uploads" });
+
+// Delete multiple files
+const result = await storage.deleteBatch(["id1", "id2", "id3"]);
+
+console.log(`Successful: ${result.successfulCount}, Failed: ${result.failedCount}`);
+console.log("Successful files:", result.successful);
+console.log("Failed operations:", result.failed);
+```
+
+### Batch Copy
+
+```typescript
+// Copy multiple files
+const result = await storage.copyBatch([
+    { source: "file1.jpg", destination: "backup/file1.jpg" },
+    { source: "file2.jpg", destination: "backup/file2.jpg", options: { storageClass: "STANDARD_IA" } },
+    { source: "file3.jpg", destination: "backup/file3.jpg" },
+]);
+
+console.log(`Copied: ${result.successfulCount}, Failed: ${result.failedCount}`);
+```
+
+### Batch Move
+
+```typescript
+// Move multiple files
+const result = await storage.moveBatch([
+    { source: "temp/file1.jpg", destination: "permanent/file1.jpg" },
+    { source: "temp/file2.jpg", destination: "permanent/file2.jpg" },
+]);
+
+console.log(`Moved: ${result.successfulCount}, Failed: ${result.failedCount}`);
+```
+
+## Batch Operation Response
+
+All batch operations return a consistent response format:
+
+```typescript
+interface BatchOperationResponse<T extends File> {
+    /** Successfully processed files */
+    successful: T[];
+    /** Failed operations with error details */
+    failed: Array<{ error: string; id: string }>;
+    /** Total number of successful operations */
+    successfulCount: number;
+    /** Total number of failed operations */
+    failedCount: number;
+}
+```
+
+## Error Handling
+
+```typescript
+try {
+    const result = await storage.deleteBatch(["id1", "id2", "id3"]);
+
+    if (result.failedCount > 0) {
+        console.warn(`${result.failedCount} operations failed:`, result.failed);
+    }
+
+    if (result.successfulCount > 0) {
+        console.log(`Successfully processed ${result.successfulCount} files`);
+    }
+} catch (error) {
+    console.error("Batch operation error:", error);
+}
+```
+
+## Programmatic Batch Operations
+
+For operations not yet available as batch methods, you can implement them programmatically:
+
+```typescript
+// Batch update metadata
+async function batchUpdateMetadata(files: Array<{ id: string; metadata: Record<string, any> }>) {
+    const results = await Promise.allSettled(files.map(({ id, metadata }) => storage.update({ id }, metadata)));
+
+    return results;
+}
+```
+
+## Provider-Specific Batch Limits
+
+Different storage providers have varying limits and considerations for batch operations:
+
+### Azure Blob Storage
+
+Azure Blob Storage has a native batch API with specific limits:
+
+- **Maximum subrequests per batch**: 256 operations
+- **Maximum batch request size**: 4 MB
+- **Supported operations**: Delete Blob and Set Blob Tier
+
+> **Note**: Our implementation processes operations in parallel rather than using Azure's native batch API. For optimal performance with Azure, consider limiting batches to 256 operations or less to align with Azure's native batch limits.
+
+### AWS S3 and S3-Compatible Services
+
+AWS S3 and S3-compatible services (DigitalOcean Spaces, Cloudflare R2, MinIO, Backblaze B2, Wasabi, Tigris):
+
+- **No hard limit** on parallel operations in our implementation
+- **Rate limiting**: Subject to provider-specific rate limits and quotas
+    - AWS S3: Rate limits vary by operation type and are subject to account-level and bucket-level quotas
+    - S3-compatible services: Each provider has their own rate limits (check provider documentation)
+- **Recommendation**: Keep batches under 100-200 operations to avoid rate limit throttling
+- **Note**: For very large batch operations, consider using AWS S3 Batch Operations (a managed service) for processing billions of objects
+
+### Google Cloud Storage (GCS)
+
+- **No hard limit** on parallel operations in our implementation
+- **Rate limiting**: Subject to GCS quotas and rate limits
+    - Quotas vary by operation type (read, write, list)
+    - Default quotas can be increased by requesting quota increases
+    - Rate limits are enforced per bucket and per project
+- **Recommendation**: Keep batches under 100 operations to avoid quota limits
+
+### Vercel Blob
+
+- **No specific batch limits** documented
+- **Rate limiting**: Subject to Vercel's API rate limits
+- **Recommendation**: Keep batches under 100 operations to avoid timeouts and rate limits
+
+### Netlify Blob
+
+- **No specific batch limits** documented
+- **Rate limiting**: Subject to Netlify's API rate limits
+- **Recommendation**: Keep batches under 100 operations to avoid timeouts and rate limits
+
+### Local Disk Storage
+
+- **No hard limits** - Limited only by system resources
+- **Recommendation**: Can handle larger batches (500+ files), but consider memory usage for very large batches
+
+## Best Practices
+
+1. **Limit batch size** - Don't exceed 100 files per batch to avoid timeouts (Azure: 256 max for optimal performance)
+2. **Handle partial failures** - Always check `X-Delete-Failed` header or `failedCount` in response
+3. **Use appropriate status codes** - 204 for full success, 207 for partial success
+4. **Log errors** - Track failed operations for debugging
+5. **Consider rate limits** - Batch operations may be rate-limited by storage providers
+6. **Monitor provider quotas** - Be aware of your provider's rate limits and quotas
+7. **Implement retry logic** - Use the built-in retry mechanism for transient failures

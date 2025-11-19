@@ -1,0 +1,71 @@
+# Tigris
+
+## Overview
+
+Tigris is an S3-compatible object storage service with a focus on developer experience and simplicity.
+
+## Installation
+
+```sh
+npm install @aws-sdk/client-s3 @aws-sdk/credential-providers @aws-sdk/s3-request-presigner @aws-sdk/signature-v4-crt aws-crt @aws-sdk/types
+```
+
+## Usage
+
+Tigris is S3-compatible, so use the S3Storage with Tigris endpoint:
+
+```typescript
+import { S3Storage } from "@visulima/storage/provider/aws";
+import { tigris } from "@visulima/storage/provider/aws/s3/clients";
+
+const clientConfig = tigris({
+    accessKeyId: process.env.TIGRIS_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.TIGRIS_SECRET_ACCESS_KEY!,
+    endpoint: process.env.TIGRIS_ENDPOINT || "https://t3.storage.dev",
+});
+
+const storage = new S3Storage({
+    bucket: "my-bucket",
+    ...clientConfig,
+});
+```
+
+## Configuration
+
+### Environment Variables
+
+```typescript
+process.env.TIGRIS_ACCESS_KEY_ID = "your-access-key";
+process.env.TIGRIS_SECRET_ACCESS_KEY = "your-secret-key";
+process.env.TIGRIS_ENDPOINT = "https://t3.storage.dev";
+
+const clientConfig = tigris(); // Uses environment variables
+const storage = new S3Storage({
+    bucket: "my-bucket",
+    ...clientConfig,
+});
+```
+
+### With Explicit Parameters
+
+```typescript
+const clientConfig = tigris({
+    accessKeyId: "your-access-key",
+    secretAccessKey: "your-secret-key",
+    endpoint: "https://t3.storage.dev",
+});
+```
+
+## Features
+
+- **S3-Compatible**: Full S3 API compatibility
+- **Developer-Friendly**: Simple setup and configuration
+- **Reliable**: High availability and durability
+
+## Best Practices
+
+1. **Use environment variables** - Store credentials securely
+2. **Configure endpoint** - Use appropriate Tigris endpoint
+3. **Monitor usage** - Track storage usage
+4. **Handle errors** - Implement proper error handling
+5. **Use retry mechanism** - Configure retry for transient failures
