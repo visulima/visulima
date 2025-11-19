@@ -18,7 +18,6 @@ describe("size functions", () => {
         distribution = temporaryDirectory();
         distributionFile = join(distribution, "file.txt");
 
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         await writeFile(distributionFile, fixtureFileContent, "utf8");
     });
 

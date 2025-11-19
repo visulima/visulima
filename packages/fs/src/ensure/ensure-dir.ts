@@ -21,7 +21,6 @@ const ensureDir = async (directory: URL | string): Promise<void> => {
     assertValidFileOrDirectoryPath(directory);
 
     try {
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         const fileInfo = await lstat(directory);
 
         if (!fileInfo.isDirectory()) {
@@ -39,7 +38,6 @@ const ensureDir = async (directory: URL | string): Promise<void> => {
     // The dir doesn't exist. Create it.
     // This can be racy. So we catch AlreadyExists and check lstat again.
     try {
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         await mkdir(directory, { recursive: true });
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
@@ -47,7 +45,6 @@ const ensureDir = async (directory: URL | string): Promise<void> => {
             throw error;
         }
 
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         const fileInfo = await lstat(directory);
 
         if (!fileInfo.isDirectory()) {

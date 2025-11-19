@@ -18,12 +18,10 @@ describe.each([
     beforeEach(async () => {
         writeFileSync("./foo.txt", "foo\n");
 
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         writeFileSync(resolve(join(distribution, "./foo.txt")), "foo\n");
 
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         mkdirSync(resolve(join(distribution, "./dir-foo")), { recursive: true });
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
+
         writeFileSync(resolve(join(distribution, "./dir-foo/foo.txt")), "foo\n");
 
         mkdirSync("empty-dir", { recursive: true });
@@ -40,7 +38,6 @@ describe.each([
     });
 
     afterEach(async () => {
-        // eslint-disable-next-line no-loops/no-loops
         for await (const directory of [
             "./foo.txt",
             "./real-symlink.txt",
@@ -92,16 +89,14 @@ describe.each([
             function_(sourcePath, destinationPath);
         }
 
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         const sourceContent = readFileSync(sourcePath, "utf8");
         const destinationDirectory = dirname(destinationPath);
         const destinationBasename = basename(destinationPath);
 
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         expect(lstatSync(destinationPath).isFile()).toBe(true);
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
+
         expect(sourceContent).toStrictEqual(readFileSync(destinationPath, "utf8"));
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
+
         expect(readdirSync(destinationDirectory)).contains(destinationBasename);
     });
 
@@ -122,11 +117,9 @@ describe.each([
 
         // eslint-disable-next-line vitest/no-conditional-in-test
         if (destinationPath === "./link-foo.txt") {
-            // eslint-disable-next-line security/detect-non-literal-fs-filename
             writeFileSync(destinationPath, "foo\n");
         }
 
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         const destinationDirectoryExistsBefore = existsSync(dirname(destinationPath));
 
         // eslint-disable-next-line vitest/no-conditional-in-test
@@ -138,7 +131,6 @@ describe.each([
             expect(() => function_(sourcePath, destinationPath)).toThrow(Error);
         }
 
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         const destinationDirectoryExistsAfter = existsSync(dirname(destinationPath));
 
         expect(destinationDirectoryExistsBefore).toStrictEqual(destinationDirectoryExistsAfter);

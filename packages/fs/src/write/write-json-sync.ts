@@ -14,7 +14,6 @@ import writeFileSync from "./write-file-sync";
  * @param path The path to the JSON file to write. Can be a file URL or a string path.
  * @param data The data to serialize and write. Can be any JavaScript value that can be stringified by `JSON.stringify` or a custom stringifier.
  * @param options Optional configuration for writing the JSON file. See {@link WriteJsonOptions}.
- * @returns void
  * @example
  * ```javascript
  * import { writeJsonSync } from "@visulima/fs";
@@ -43,7 +42,6 @@ const writeJsonSync = (path: URL | string, data: unknown, options: WriteJsonOpti
 
     if (isAccessibleSync(path, R_OK)) {
         try {
-            // eslint-disable-next-line security/detect-non-literal-fs-filename
             const file = readFileSync(path, "utf8");
 
             if (detectIndent) {

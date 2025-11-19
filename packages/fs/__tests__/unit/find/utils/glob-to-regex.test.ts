@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import globToRegExp from "../../../../src/find/utils/glob-to-regex";
+import globToRegExp from "../../../../src/find/utils/glob-to-regexp";
 
 describe(globToRegExp, () => {
     // https://en.wikipedia.org/wiki/Glob_(programming)
@@ -202,7 +202,7 @@ describe(globToRegExp, () => {
 
         const globPattern = "dir/**";
         const regexPattern = globToRegExp(globPattern);
-        // eslint-disable-next-line @rushstack/security/no-unsafe-regexp,security/detect-non-literal-regexp
+
         const regex = new RegExp(regexPattern);
 
         expect(regex.test("dir/fileA.txt")).toBe(true);

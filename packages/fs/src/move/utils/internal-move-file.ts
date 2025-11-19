@@ -26,20 +26,18 @@ const internalMoveFile = async (
         throw new Error(`The destination file exists: ${destinationPath}`);
     }
 
-    // eslint-disable-next-line security/detect-non-literal-fs-filename
     await mkdir(dirname(destinationPath), {
         mode: directoryMode,
         recursive: true,
     });
 
     try {
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         await rename(sourcePath, destinationPath);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
         if (error.code === "EXDEV") {
             await copyFile(sourcePath, destinationPath);
-            // eslint-disable-next-line security/detect-non-literal-fs-filename
+
             await unlink(sourcePath);
         } else {
             throw error;

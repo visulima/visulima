@@ -9,6 +9,18 @@ import { brotliCompressSync, createBrotliCompress, createGzip, gzipSync } from "
 import { toPath } from "@visulima/path/utils";
 
 /**
+ * Input type for size calculation functions.
+ * Can be a Buffer, Readable stream, URL object, or string (file path or content).
+ */
+type SizeInput = Buffer | Readable | URL | string;
+
+/**
+ * Input type for synchronous size calculation functions.
+ * Can be a Buffer, URL object, or string (file path or content).
+ */
+type SizeInputSync = Buffer | URL | string;
+
+/**
  * Checks if a file exists at the given path.
  * Note: This function checks for actual file existence, not just path syntax validity.
  * It correctly handles both absolute and relative paths.
@@ -28,12 +40,10 @@ import { toPath } from "@visulima/path/utils";
  */
 const fileExists = (input: string): boolean => {
     if (isAbsolute(input)) {
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         return existsSync(input);
     }
 
     try {
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         return existsSync(resolve(input));
     } catch {
         return false;
@@ -49,7 +59,6 @@ const fileExists = (input: string): boolean => {
 const getStreamSizeEfficient = async (stream: Readable): Promise<number> => {
     let totalSize = 0;
 
-    // eslint-disable-next-line no-loops/no-loops
     for await (const chunk of stream) {
         totalSize += Buffer.from(chunk).length;
     }
@@ -69,7 +78,7 @@ const getCompressedStreamSizeEfficient = async (stream: Readable, createCompress
     let totalSize = 0;
     const compressor = createCompressor();
 
-    // eslint-disable-next-line @typescript-eslint/no-shadow,compat/compat
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     return await new Promise((resolve, reject) => {
         compressor.on("data", (chunk) => {
             totalSize += chunk.length;
@@ -93,7 +102,7 @@ const getCompressedStreamSizeEfficient = async (stream: Readable, createCompress
  * @returns A promise that resolves with the size calculated by the applied processor.
  */
 const processInputEfficiently = async (
-    input: Buffer | Readable | URL | string,
+    input: SizeInput,
     processor: (data: Buffer) => number,
     streamProcessor: (stream: Readable) => Promise<number>,
 ): Promise<number> => {
@@ -102,7 +111,7 @@ const processInputEfficiently = async (
 
         if (fileExists(path)) {
             // For files, we create a readable stream to process them in chunks
-            // eslint-disable-next-line security/detect-non-literal-fs-filename
+
             const fileStream = Readable.from(await readFile(path));
 
             return await streamProcessor(fileStream);
@@ -163,7 +172,7 @@ const processInputEfficiently = async (
  * main().catch(console.error);
  * ```
  */
-export const gzipSize = async (input: Buffer | Readable | URL | string, options?: ZlibOptions): Promise<number> => {
+export const gzipSize = async (input: SizeInput, options?: ZlibOptions): Promise<number> => {
     const streamProcessor = async (stream: Readable): Promise<number> => await getCompressedStreamSizeEfficient(stream, () => createGzip(options));
     const bufferProcessor = (data: Buffer): number => gzipSync(data, options).length;
 
@@ -213,7 +222,7 @@ export const gzipSize = async (input: Buffer | Readable | URL | string, options?
  * main().catch(console.error);
  * ```
  */
-export const brotliSize = async (input: Buffer | Readable | URL | string, options?: BrotliOptions): Promise<number> => {
+export const brotliSize = async (input: SizeInput, options?: BrotliOptions): Promise<number> => {
     const streamProcessor = async (stream: Readable): Promise<number> => await getCompressedStreamSizeEfficient(stream, () => createBrotliCompress(options));
     const bufferProcessor = (data: Buffer): number => brotliCompressSync(data, options).length;
 
@@ -262,7 +271,7 @@ export const brotliSize = async (input: Buffer | Readable | URL | string, option
  * main().catch(console.error);
  * ```
  */
-export const rawSize = async (input: Buffer | Readable | URL | string): Promise<number> => {
+export const rawSize = async (input: SizeInput): Promise<number> => {
     const streamProcessor = async (stream: Readable): Promise<number> => await getStreamSizeEfficient(stream);
     const bufferProcessor = (data: Buffer): number => data.length;
 
@@ -305,12 +314,11 @@ export const rawSize = async (input: Buffer | Readable | URL | string): Promise<
  * }
  * ```
  */
-export const gzipSizeSync = (input: Buffer | URL | string, options?: ZlibOptions): number => {
+export const gzipSizeSync = (input: SizeInputSync, options?: ZlibOptions): number => {
     if (input instanceof URL || typeof input === "string") {
         const path = toPath(input);
 
         if (fileExists(path)) {
-            // eslint-disable-next-line security/detect-non-literal-fs-filename
             return gzipSync(readFileSync(path), options).length;
         }
 
@@ -358,12 +366,11 @@ export const gzipSizeSync = (input: Buffer | URL | string, options?: ZlibOptions
  * }
  * ```
  */
-export const brotliSizeSync = (input: Buffer | URL | string, options?: BrotliOptions): number => {
+export const brotliSizeSync = (input: SizeInputSync, options?: BrotliOptions): number => {
     if (input instanceof URL || typeof input === "string") {
         const path = toPath(input);
 
         if (fileExists(path)) {
-            // eslint-disable-next-line security/detect-non-literal-fs-filename
             return brotliCompressSync(readFileSync(path), options).length;
         }
 
@@ -411,12 +418,11 @@ export const brotliSizeSync = (input: Buffer | URL | string, options?: BrotliOpt
  * }
  * ```
  */
-export const rawSizeSync = (input: Buffer | URL | string): number => {
+export const rawSizeSync = (input: SizeInputSync): number => {
     if (input instanceof URL || typeof input === "string") {
         const path = toPath(input);
 
         if (fileExists(path)) {
-            // eslint-disable-next-line security/detect-non-literal-fs-filename
             return statSync(path).size;
         }
 

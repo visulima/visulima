@@ -34,7 +34,6 @@ const ensureLink = async (source: URL | string, destination: URL | string): Prom
     let destinationStat;
 
     try {
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         destinationStat = await lstat(destination);
     } catch {
         // ignore error
@@ -43,7 +42,6 @@ const ensureLink = async (source: URL | string, destination: URL | string): Prom
     let sourceStat;
 
     try {
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         sourceStat = await lstat(source);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
@@ -58,7 +56,6 @@ const ensureLink = async (source: URL | string, destination: URL | string): Prom
 
     await ensureDir(dirname(destination));
 
-    // eslint-disable-next-line security/detect-non-literal-fs-filename
     await link(source, destination);
 };
 

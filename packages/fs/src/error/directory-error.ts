@@ -36,7 +36,7 @@
 class DirectoryError extends Error {
     /**
      * Creates a new instance.
-     * @param message The error message.
+     * @param message
      */
     public constructor(message: string) {
         super(`EISDIR: Illegal operation on a directory, ${message}`);

@@ -91,9 +91,7 @@ const findUpSync = (
 
     const statFunction = options.allowSymlinks ? statSync : lstatSync;
 
-    // eslint-disable-next-line no-loops/no-loops
     while (directory && directory !== stopAt && directory !== root) {
-        // eslint-disable-next-line no-loops/no-loops
         for (let fileName of getMatchers(directory)) {
             if (fileName === FIND_UP_STOP) {
                 return undefined;
@@ -104,8 +102,10 @@ const findUpSync = (
             }
 
             if (Buffer.isBuffer(fileName)) {
+                // eslint-disable-next-line sonarjs/updated-loop-counter
                 fileName = fileName.toString();
             } else if (fileName instanceof URL) {
+                // eslint-disable-next-line sonarjs/updated-loop-counter
                 fileName = fileURLToPath(fileName as URL | string);
             }
 

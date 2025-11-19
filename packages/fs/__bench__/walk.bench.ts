@@ -1,85 +1,91 @@
 import { dirname, isAbsolute, resolve, sep } from "node:path";
 
 import { up } from "empathic/walk";
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { bench, describe } from "vitest";
 
 import visulimaWalk from "../src/find/walk";
 import visulimaWalkSync from "../src/find/walk-sync";
 
-// let start = ".";
-// let start = resolve('fixtures/a/b/c/d/e/f/g/h/i/j/start.txt');
 const start = "fixtures/a/b/c/d/e/f/g/h/i/j/start.txt";
 
 const absolute = (input: string, root?: string): string => (isAbsolute(input) ? input : resolve(root || ".", input));
 
-function alt1(base: string) {
+const alt1 = (base: string): string[] => {
     let previous = absolute(base);
     let temporary = dirname(previous);
     const array: string[] = [];
 
     while (true) {
         array.push(temporary);
-        temporary = dirname(previous = temporary);
+        previous = temporary;
+        temporary = dirname(previous);
 
-        if (temporary === previous)
+        if (temporary === previous) {
             return array;
+        }
     }
-}
+};
 
-function split1(input: string) {
+const split1 = (input: string): string[] => {
     const array = (isAbsolute(input) ? input : resolve(input)).split(sep);
     let index = 0;
-    const length_ = array.length;
-    const output = new Array<string>(length_);
+    const { length } = array;
+    const output = Array.from<string>({ length });
 
-    for (; index < length_; index++) {
-        output[index] = array.slice(0, length_ - index).join(sep);
+    for (; index < length; index += 1) {
+        output[index] = array.slice(0, length - index).join(sep);
     }
 
     return output;
-}
+};
 
-function split2(input: string) {
+const split2 = (input: string): string[] => {
     const output: string[] = [];
     const base = isAbsolute(input) ? input : resolve(input);
 
-    let match: RegExpExecArray | null;
     const rgx = new RegExp(`[${sep}]+`, "g");
+    let match: RegExpExecArray | null = rgx.exec(base);
 
-    while (match = rgx.exec(base)) {
+    while (match !== null) {
         output.push(base.slice(0, match.index) || "/");
+        match = rgx.exec(base);
     }
 
-    return output.reverse();
-}
+    return output.toReversed();
+};
 
-function split3(input: string) {
+const split3 = (input: string): string[] => {
     const base = isAbsolute(input) ? input : resolve(input);
-    let length_ = base.length;
+    let { length } = base;
     const output: string[] = [];
 
-    while (length_-- > 0) {
-        if (base.charCodeAt(length_) === 47) {
-            output.push(base.slice(0, length_) || "/");
+    while (length > 0) {
+        length -= 1;
+
+        if (base.codePointAt(length) === 47) {
+            output.push(base.slice(0, length) || "/");
         }
     }
 
     return output;
-}
+};
 
-function split4(input: string) {
+const split4 = (input: string): string[] => {
     const base = isAbsolute(input) ? input : resolve(input);
-    let length_ = base.length;
+    let { length } = base;
     const output: string[] = [];
 
-    while (length_-- > 0) {
-        if (base.charAt(length_) === sep) {
-            output.push(base.slice(0, length_) || sep);
+    while (length > 0) {
+        length -= 1;
+
+        if (base.charAt(length) === sep) {
+            output.push(base.slice(0, length) || sep);
         }
     }
 
     return output;
-}
+};
 
 describe("walk.up and split variants", () => {
     bench("empathic/walk.up (no options)", () => {

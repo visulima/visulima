@@ -36,7 +36,6 @@ describe.each([
             function_(path);
         }
 
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         expect(existsSync(path)).toBe(true);
     });
 
@@ -52,7 +51,6 @@ describe.each([
             function_(path);
         }
 
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         expect(existsSync(path)).toBe(true);
     });
 
@@ -65,13 +63,12 @@ describe.each([
         const file2 = `${path2}/file.txt`;
         const file3 = `${path2}/file.txt`;
 
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         mkdirSync(path2, { recursive: true });
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
+
         writeFileSync(file, "content");
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
+
         writeFileSync(file2, "content2");
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
+
         writeFileSync(file3, "content3");
 
         // eslint-disable-next-line vitest/no-conditional-in-test
@@ -81,15 +78,14 @@ describe.each([
             function_(path);
         }
 
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         expect(existsSync(path)).toBe(true);
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
+
         expect(existsSync(path2)).toBe(false);
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
+
         expect(existsSync(file)).toBe(false);
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
+
         expect(existsSync(file2)).toBe(false);
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
+
         expect(existsSync(file3)).toBe(false);
     });
 });

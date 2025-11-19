@@ -1,14 +1,10 @@
 import { parse } from "yaml";
 
-import type { ReadYamlOptions, YamlReviver } from "../types";
+import type { CompressionType, ReadYamlOptions, YamlReviver } from "../types";
 import readFile from "./read-file";
 
-async function readYaml<R = Record<string, unknown>>(path: URL | string, options?: ReadYamlOptions<"brotli" | "gzip" | "none">): Promise<R>;
-async function readYaml<R = Record<string, unknown>>(
-    path: URL | string,
-    reviver?: YamlReviver,
-    options?: ReadYamlOptions<"brotli" | "gzip" | "none">,
-): Promise<R>;
+async function readYaml<R = Record<string, unknown>>(path: URL | string, options?: ReadYamlOptions<CompressionType>): Promise<R>;
+async function readYaml<R = Record<string, unknown>>(path: URL | string, reviver?: YamlReviver, options?: ReadYamlOptions<CompressionType>): Promise<R>;
 
 /**
  * Asynchronously reads a YAML file and then parses it into an object.
@@ -51,8 +47,8 @@ async function readYaml<R = Record<string, unknown>>(
 async function readYaml<R = Record<string, unknown>>(
     path: URL | string,
 
-    reviver?: ReadYamlOptions<"brotli" | "gzip" | "none"> | YamlReviver,
-    options?: ReadYamlOptions<"brotli" | "gzip" | "none">,
+    reviver?: ReadYamlOptions<CompressionType> | YamlReviver,
+    options?: ReadYamlOptions<CompressionType>,
 ): Promise<R> {
     const { buffer, compression, encoding = "utf8", flag, ...parseOptions } = options ?? {};
 

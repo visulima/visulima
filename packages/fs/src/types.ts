@@ -72,6 +72,11 @@ export interface WalkEntry extends Pick<Dirent, "isDirectory" | "isFile" | "isSy
 }
 
 /**
+ * Supported compression types for file operations.
+ */
+export type CompressionType = "brotli" | "gzip" | "none";
+
+/**
  * Supported file encodings for reading files.
  */
 // eslint-disable-next-line unicorn/text-encoding-identifier-case
@@ -205,7 +210,9 @@ export type JsonReplacer = (number | string)[] | ((this: unknown, key: string, v
 
 /**
  * Type for the `replacer` parameter used in YAML serialization, similar to `JSON.stringify`'s replacer.
+ * @deprecated Use {@link JsonReplacer} directly instead.
  */
+// eslint-disable-next-line sonarjs/redundant-type-aliases
 export type YamlReplacer = JsonReplacer;
 
 /**

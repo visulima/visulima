@@ -14,7 +14,6 @@ const resolveSymlinkTarget = (target: URL | string, linkName: URL | string): URL
         return resolve(dirname(linkName), target);
     }
 
-    // eslint-disable-next-line compat/compat
     return new URL(target, linkName);
 };
 

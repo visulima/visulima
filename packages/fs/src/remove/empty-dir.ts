@@ -37,16 +37,14 @@ import assertValidFileOrDirectoryPath from "../utils/assert-valid-file-or-direct
 const emptyDir = async (dir: URL | string, options?: RetryOptions): Promise<void> => {
     assertValidFileOrDirectoryPath(dir);
 
-    // eslint-disable-next-line security/detect-non-literal-fs-filename
     if (!existsSync(dir)) {
         // if not exist. then create it
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
+
         await mkdir(dir, { recursive: true });
 
         return;
     }
 
-    // eslint-disable-next-line no-loops/no-loops,security/detect-non-literal-fs-filename
     for await (const item of await readdir(dir)) {
         await rm(join(toPath(dir), item), { ...options, force: true, recursive: true });
     }

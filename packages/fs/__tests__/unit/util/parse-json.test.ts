@@ -22,8 +22,8 @@ const errorMessageRegex = (() => {
 
     return /Expected double-quoted property name in JSON at position 20 \(line 3 column 3\)/;
 })();
-// eslint-disable-next-line @rushstack/security/no-unsafe-regexp,security/detect-non-literal-regexp
-const errorMessageRegexWithFileName = new RegExp(`${errorMessageRegex.source}.*in foo\\.json`);
+
+const errorMessageRegexWithFileName = new RegExp(String.raw`${errorMessageRegex.source}.*in foo\.json`);
 
 describe("parse-json", () => {
     // Can parse a valid JSON string without a reviver function

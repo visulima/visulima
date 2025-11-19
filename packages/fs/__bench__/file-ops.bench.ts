@@ -2,6 +2,7 @@ import { existsSync, readFileSync as nodeReadFileSync, renameSync as nodeRenameS
 import { readFile as nodeReadFile, rename as nodeRename, rm as nodeRm, writeFile as nodeWriteFile } from "node:fs/promises";
 
 import { ensureFile, ensureFileSync, move, moveSync, readFile, readFileSync, remove, removeSync, writeFile, writeFileSync } from "fs-extra";
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { afterEach, beforeEach, bench, describe } from "vitest";
 
 import {
@@ -21,7 +22,7 @@ const testFile = "./bench-test.txt";
 const testFile2 = "./bench-test2.txt";
 const testData = "Hello, world!";
 
-async function cleanup() {
+const cleanup = async (): Promise<void> => {
     if (existsSync(testFile)) {
         await nodeRm(testFile, { force: true });
     }
@@ -29,7 +30,7 @@ async function cleanup() {
     if (existsSync(testFile2)) {
         await nodeRm(testFile2, { force: true });
     }
-}
+};
 
 describe("ensureFile (async)", () => {
     beforeEach(async () => {

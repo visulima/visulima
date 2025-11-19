@@ -17,6 +17,8 @@ export default createConfig(
             "package.json",
             "README.md",
             ".prettierrc.cjs",
+            "__bench__/fixtures",
+            "__bench__/scripts",
         ],
     },
     {
@@ -26,6 +28,14 @@ export default createConfig(
             "no-secrets/no-secrets": "off",
             "sonarjs/no-nested-functions": "off",
             "unicorn/no-null": "off",
+        },
+    },
+    {
+        files: ["__bench__/**/*.ts"],
+        rules: {
+            "@typescript-eslint/naming-convention": "off",
+            "sonarjs/no-unused-vars": "off",
+            "unused-imports/no-unused-vars": "off",
         },
     },
 );

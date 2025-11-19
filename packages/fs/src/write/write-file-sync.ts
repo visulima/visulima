@@ -64,18 +64,15 @@ const writeFileSync = (path: URL | string, content: ArrayBuffer | ArrayBufferVie
             const directory = dirname(path);
 
             if (!isAccessibleSync(directory, F_OK)) {
-                // eslint-disable-next-line security/detect-non-literal-fs-filename
                 mkdirSync(directory, { recursive: true });
             }
         }
 
         let stat: Stats | undefined;
 
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         nodeWriteFileSync(temporaryPath, toUint8Array(content), { encoding: options.encoding, flag: options.flag });
 
         if (pathExists && !options.overwrite) {
-            // eslint-disable-next-line security/detect-non-literal-fs-filename
             stat = statSync(path);
 
             if (options.chown === undefined) {
@@ -83,13 +80,11 @@ const writeFileSync = (path: URL | string, content: ArrayBuffer | ArrayBufferVie
                 options.chown = { gid: stat.gid, uid: stat.uid };
             }
 
-            // eslint-disable-next-line security/detect-non-literal-fs-filename
             renameSync(path, `${path}.bak`);
         }
 
         if (options.chown) {
             try {
-                // eslint-disable-next-line security/detect-non-literal-fs-filename
                 chownSync(temporaryPath, options.chown.uid, options.chown.gid);
             } catch {
                 // On linux permissionless filesystems like exfat and fat32 the entire filesystem is normally owned by root,
@@ -97,17 +92,14 @@ const writeFileSync = (path: URL | string, content: ArrayBuffer | ArrayBufferVie
             }
         }
 
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         chmodSync(temporaryPath, stat && !options.mode ? stat.mode : options.mode ?? 0o666);
 
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         renameSync(temporaryPath, path);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
         throw new Error(`Failed to write file at: ${path} - ${error.message}`, { cause: error });
     } finally {
         if (isAccessibleSync(temporaryPath)) {
-            // eslint-disable-next-line security/detect-non-literal-fs-filename
             unlinkSync(`${path}.tmp`);
         }
     }

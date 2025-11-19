@@ -38,7 +38,7 @@ const ensureFile = async (filePath: URL | string): Promise<void> => {
 
     try {
         // if file exists
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
+
         const stat = await lstat(filePath);
 
         if (!stat.isFile()) {
@@ -52,7 +52,7 @@ const ensureFile = async (filePath: URL | string): Promise<void> => {
             // ensure dir exists
             await ensureDir(dirname(toPath(filePath)));
             // create file
-            // eslint-disable-next-line security/detect-non-literal-fs-filename
+
             await writeFile(filePath, new Uint8Array());
 
             return;

@@ -9,6 +9,7 @@ node_modules
 .eslintcache
 
 __fixtures__
+__bench__/fixtures/
 
 **/tsconfig.json
 **/jsconfig.json

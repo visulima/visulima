@@ -45,17 +45,11 @@ const ensureSymlinkSync = (target: URL | string, linkName: URL | string, type?: 
     linkName = toNamespacedPath(toPath(linkName));
 
     try {
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         const linkStatInfo = lstatSync(linkName);
 
-        if (
-            linkStatInfo.isSymbolicLink()
-            // eslint-disable-next-line security/detect-non-literal-fs-filename
-            && isStatsIdentical(statSync(targetRealPath), statSync(linkName))
-        ) {
-            // eslint-disable-next-line security/detect-non-literal-fs-filename
+        if (linkStatInfo.isSymbolicLink() && isStatsIdentical(statSync(targetRealPath), statSync(linkName))) {
             const sourceStat = statSync(targetRealPath);
-            // eslint-disable-next-line security/detect-non-literal-fs-filename
+
             const destinationStat = statSync(linkName);
 
             if (isStatsIdentical(sourceStat, destinationStat)) {
@@ -66,7 +60,6 @@ const ensureSymlinkSync = (target: URL | string, linkName: URL | string, type?: 
         /* empty */
     }
 
-    // eslint-disable-next-line security/detect-non-literal-fs-filename
     const sourceStatInfo = lstatSync(targetRealPath);
     const sourceFilePathType = getFileInfoType(sourceStatInfo);
 
@@ -77,7 +70,6 @@ const ensureSymlinkSync = (target: URL | string, linkName: URL | string, type?: 
     const symlinkType: symlink.Type | null = type ?? (isWindows ? "junction" : sourceFilePathType === "dir" ? "dir" : "file");
 
     try {
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         symlinkSync(toNamespacedPath(toPath(targetRealPath)), linkName, symlinkType);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
@@ -85,14 +77,12 @@ const ensureSymlinkSync = (target: URL | string, linkName: URL | string, type?: 
             throw error;
         }
 
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         const linkStatInfo = lstatSync(linkName);
 
         if (!linkStatInfo.isSymbolicLink()) {
             throw new AlreadyExistsError(`A ${getFileInfoType(linkStatInfo)} already exists at the path: ${linkName as string}`);
         }
 
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         const linkPath = readlinkSync(linkName);
         const linkRealPath = toNamespacedPath(resolve(linkPath));
 
