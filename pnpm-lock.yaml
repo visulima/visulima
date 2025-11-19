@@ -476,10 +476,10 @@ importers:
         specifier: 3.0.27
         version: link:../connect
       '@visulima/fs':
-        specifier: 4.0.6
+        specifier: 4.1.0
         version: link:../fs
       '@visulima/jsdoc-open-api':
-        specifier: 2.0.94
+        specifier: 2.0.95
         version: link:../jsdoc-open-api
       '@visulima/path':
         specifier: 2.0.5
@@ -937,7 +937,7 @@ importers:
         specifier: 5.0.6
         version: link:../error
       '@visulima/find-cache-dir':
-        specifier: 2.0.6
+        specifier: 2.0.7
         version: link:../find-cache-dir
       '@visulima/packem':
         specifier: 2.0.0-alpha.37
@@ -1891,7 +1891,7 @@ importers:
         specifier: 24.10.1
         version: 24.10.1
       '@visulima/fs':
-        specifier: 4.0.6
+        specifier: 4.1.0
         version: link:../fs
       '@visulima/packem':
         specifier: 2.0.0-alpha.37
@@ -2117,8 +2117,6 @@ importers:
       vitest:
         specifier: ^4.0.10
         version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
-
-  packages/fs/__bench__/fixtures/a/b: {}
 
   packages/fs/__fixtures__/find-up: {}
 
@@ -2548,7 +2546,7 @@ importers:
         specifier: ^5.28.5
         version: 5.28.5(@swc/core@1.13.5)
       '@visulima/fs':
-        specifier: 4.0.6
+        specifier: 4.1.0
         version: link:../fs
       '@vitest/coverage-v8':
         specifier: ^4.0.9
@@ -2863,7 +2861,7 @@ importers:
         specifier: ^5.1.21
         version: 5.1.21(@types/node@24.10.1)
       '@visulima/fs':
-        specifier: 4.0.6
+        specifier: 4.1.0
         version: link:../fs
       '@visulima/path':
         specifier: 2.0.5
@@ -3846,7 +3844,7 @@ importers:
   packages/tsconfig:
     dependencies:
       '@visulima/fs':
-        specifier: 4.0.6
+        specifier: 4.1.0
         version: link:../fs
       '@visulima/path':
         specifier: 2.0.5
@@ -9678,6 +9676,16 @@ packages:
 
   '@visulima/fs@4.0.6':
     resolution: {integrity: sha512-jabaGZ3m78ROqhe9tJN6zT1V2JX1oM9pJrAQA9SagkPImgW/FjLYul1zcXqu4CvcS3B6pelM1eui/oWRrOYPkw==}
+    engines: {node: '>=20.19 <=25.x'}
+    os: [darwin, linux, win32]
+    peerDependencies:
+      yaml: ^2.7.1
+    peerDependenciesMeta:
+      yaml:
+        optional: true
+
+  '@visulima/fs@4.1.0':
+    resolution: {integrity: sha512-9bb7oupbXXXc++m8Ypj+VUBF+P1j/Y3gadoT2HQHPHqDMrpMt8pcZyXjofitw/DaYSB3EeQOvGqHdgvsY646sw==}
     engines: {node: '>=20.19 <=25.x'}
     os: [darwin, linux, win32]
     peerDependencies:
@@ -21188,7 +21196,7 @@ snapshots:
 
   '@anolilab/rc@2.0.5(yaml@2.8.1)':
     dependencies:
-      '@visulima/fs': 4.0.6(yaml@2.8.1)
+      '@visulima/fs': 4.1.0(yaml@2.8.1)
       '@visulima/path': 2.0.5
       ini: 6.0.0
       ts-deepmerge: 7.0.3
@@ -21198,7 +21206,7 @@ snapshots:
   '@anolilab/semantic-release-clean-package-json@3.0.5(yaml@2.8.1)':
     dependencies:
       '@semantic-release/error': 4.0.0
-      '@visulima/fs': 4.0.6(yaml@2.8.1)
+      '@visulima/fs': 4.1.0(yaml@2.8.1)
       '@visulima/path': 2.0.5
     transitivePeerDependencies:
       - yaml
@@ -21207,7 +21215,7 @@ snapshots:
     dependencies:
       '@anolilab/rc': 2.0.5(yaml@2.8.1)
       '@semantic-release/error': 4.0.0
-      '@visulima/fs': 4.0.6(yaml@2.8.1)
+      '@visulima/fs': 4.1.0(yaml@2.8.1)
       '@visulima/package': 4.1.6(@types/node@24.10.1)
       '@visulima/path': 2.0.5
       execa: 9.6.0
@@ -27246,6 +27254,13 @@ snapshots:
   '@visulima/fs@4.0.6(yaml@2.8.1)':
     dependencies:
       '@visulima/path': 2.0.5
+    optionalDependencies:
+      yaml: 2.8.1
+
+  '@visulima/fs@4.1.0(yaml@2.8.1)':
+    dependencies:
+      '@visulima/path': 2.0.5
+      type-fest: 5.2.0
     optionalDependencies:
       yaml: 2.8.1
 
