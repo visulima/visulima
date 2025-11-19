@@ -131,6 +131,7 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
             }
 
             file.name = this.namingFunction(file as TFile);
+
             // Only set default size if size is NaN (not if it's undefined for defer-length)
             if (file.size === undefined || Number.isNaN(file.size)) {
                 // For defer-length, keep size as undefined

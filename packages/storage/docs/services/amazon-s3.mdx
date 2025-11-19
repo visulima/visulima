@@ -4,6 +4,25 @@
 
 Amazon S3 is a web service interface that you can use to store and retrieve any amount of data, at any time, from anywhere on the web. You can accomplish these tasks using the simple web services interface that Amazon S3 provides. Amazon S3 is designed to make web-scale computing easier for developers and works seamlessly with Visulima upload's image transformation features.
 
+## When to Use AWS S3 vs AWS Light Storage
+
+### Use AWS S3 Storage When:
+
+- ✅ **Node.js Environment**: Running in traditional Node.js servers or applications
+- ✅ **Full AWS SDK Features**: Need advanced AWS SDK features and integrations
+- ✅ **Better Presigned URL Support**: Require robust presigned URL generation
+- ✅ **AWS Ecosystem Integration**: Need to integrate with other AWS services
+- ✅ **Production Node.js Apps**: Standard Node.js backend applications
+
+### Use AWS Light Storage When:
+
+- ✅ **Worker Environments**: Cloudflare Workers, Web Workers, or edge runtimes
+- ✅ **Bundle Size Matters**: Need a lightweight solution (~6.4 KB vs ~2MB)
+- ✅ **No Node.js Available**: Running in browser or edge environments without Node.js
+- ✅ **Simple S3 Operations**: Basic upload, download, delete operations are sufficient
+
+> **Note**: If you're unsure, start with AWS Light Storage for worker/edge environments, or AWS S3 Storage for Node.js environments. Both provide the same core S3 functionality.
+
 ## Installation
 
 ```sh

@@ -24,12 +24,7 @@ npm install @visulima/storage
 ### Import OpenAPI Specs
 
 ```typescript
-import {
-    xhrOpenApiSpec,
-    tusOpenApiSpec,
-    restOpenApiSpec,
-    transformOpenApiSpec,
-} from "@visulima/storage/openapi";
+import { xhrOpenApiSpec, tusOpenApiSpec, restOpenApiSpec, transformOpenApiSpec } from "@visulima/storage/openapi";
 ```
 
 ## XHR OpenAPI Spec (Multipart Uploads)
@@ -279,13 +274,7 @@ export default app;
 The OpenAPI specs include shared components that can be reused:
 
 ```typescript
-import {
-    sharedErrorSchemaObject,
-    sharedFileMetaExampleObject,
-    sharedFileMetaSchemaObject,
-    sharedGet,
-    sharedGetList,
-} from "@visulima/storage/openapi";
+import { sharedErrorSchemaObject, sharedFileMetaExampleObject, sharedFileMetaSchemaObject, sharedGet, sharedGetList } from "@visulima/storage/openapi";
 ```
 
 ### Available Shared Components
@@ -398,12 +387,7 @@ await fastify.register(fastifySwagger, {
 ```typescript
 import express from "express";
 import swaggerUi from "swagger-ui-express";
-import {
-    xhrOpenApiSpec,
-    tusOpenApiSpec,
-    restOpenApiSpec,
-    transformOpenApiSpec,
-} from "@visulima/storage/openapi";
+import { xhrOpenApiSpec, tusOpenApiSpec, restOpenApiSpec, transformOpenApiSpec } from "@visulima/storage/openapi";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -498,4 +482,3 @@ app.listen(PORT, () => {
 - Export OpenAPI spec for API clients
 - Integrate with API testing tools
 - Generate client SDKs from OpenAPI spec
-

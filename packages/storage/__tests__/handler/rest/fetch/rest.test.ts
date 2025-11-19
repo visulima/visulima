@@ -4,9 +4,9 @@ import { temporaryDirectory } from "tempy";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import RestFetch from "../../../../src/handler/rest/rest-fetch";
+import DiskStorage from "../../../../src/storage/local/disk-storage";
 import { storageOptions, testfile } from "../../../__helpers__/config";
 import { waitForStorageReady } from "../../../__helpers__/utils";
-import DiskStorage from "../../../../src/storage/local/disk-storage";
 
 describe("fetch RestFetch", () => {
     const basePath = "http://localhost/rest/";

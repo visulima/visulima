@@ -5,10 +5,10 @@ import { temporaryDirectory } from "tempy";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import Rest from "../../../../src/handler/rest/rest";
+import DiskStorage from "../../../../src/storage/local/disk-storage";
 import { storageOptions, testfile } from "../../../__helpers__/config";
 import app from "../../../__helpers__/express-app";
 import { waitForStorageReady } from "../../../__helpers__/utils";
-import DiskStorage from "../../../../src/storage/local/disk-storage";
 
 describe("express Rest", () => {
     let response: supertest.Response;
