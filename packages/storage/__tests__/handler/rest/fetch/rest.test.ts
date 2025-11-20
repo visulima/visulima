@@ -1,7 +1,7 @@
 import { rm } from "node:fs/promises";
 
 import { temporaryDirectory } from "tempy";
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import RestFetch from "../../../../src/handler/rest/rest-fetch";
 import DiskStorage from "../../../../src/storage/local/disk-storage";

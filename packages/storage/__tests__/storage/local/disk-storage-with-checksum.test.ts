@@ -3,7 +3,7 @@ import { Readable } from "node:stream";
 
 import { createRequest } from "node-mocks-http";
 import { temporaryDirectory } from "tempy";
-import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 
 import DiskStorageWithChecksum from "../../../src/storage/local/disk-storage-with-checksum";
 import { metafile, storageOptions } from "../../__helpers__/config";

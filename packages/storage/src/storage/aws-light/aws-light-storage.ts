@@ -154,9 +154,7 @@ class AwsLightStorage extends S3BaseStorage<AwsLightFile> {
             await this.checkIfExpired({ expiredAt: Expires } as AwsLightFile);
 
             // Body from adapter is ReadableStream, convert to Readable
-            let stream: Readable;
-
-            stream = Body instanceof ReadableStream ? Readable.fromWeb(Body) : Body as Readable;
+            const stream: Readable = Body instanceof ReadableStream ? Readable.fromWeb(Body as ReadableStream<Uint8Array>) : (Body as Readable);
 
             const readableStream = new Readable({
                 read() {
@@ -191,10 +189,12 @@ class AwsLightStorage extends S3BaseStorage<AwsLightFile> {
         return this.s3Api;
     }
 
+    // eslint-disable-next-line class-methods-use-this
     protected getFileClass(): new (config: FileInit) => AwsLightFile {
         return AwsLightFile;
     }
 
+    // eslint-disable-next-line class-methods-use-this
     protected getAcl(): string | undefined {
         // aws-light doesn't support ACL in the same way, return undefined
         return undefined;

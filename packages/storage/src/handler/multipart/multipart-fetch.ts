@@ -3,7 +3,6 @@ import { MaxFileSizeExceededError, MultipartParseError, parseMultipartRequest } 
 import createHttpError from "http-errors";
 
 import type { UploadFile } from "../../storage/utils/file";
-import { ERRORS } from "../../utils/errors";
 import ValidationError from "../../utils/validation-error";
 import { BaseHandlerFetch } from "../base/base-handler-fetch";
 import type { Handlers, ResponseFile, UploadOptions } from "../types";

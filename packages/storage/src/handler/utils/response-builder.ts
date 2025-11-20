@@ -2,8 +2,7 @@ import mime from "mime";
 
 import type { UploadFile } from "../../storage/utils/file";
 import { HeaderUtilities } from "../../utils/headers";
-import { getBaseUrl } from "../../utils/http";
-import type { Header, UploadResponse } from "../../utils/types";
+import type { Header } from "../../utils/types";
 import type { ResponseFile } from "../types";
 
 const CONTENT_TYPE = "Content-Type";

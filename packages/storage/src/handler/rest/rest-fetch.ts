@@ -5,7 +5,6 @@ import { ERRORS } from "../../utils/errors";
 import { getRequestStream } from "../../utils/http";
 import { BaseHandlerFetch } from "../base/base-handler-fetch";
 import type { Handlers, ResponseFile, ResponseList, UploadOptions } from "../types";
-import { extractFileInit, parseChunkHeaders, validateContentLength, validateRequestBody } from "../utils/request-parser";
 import { RestBase } from "./rest-base";
 
 /**
