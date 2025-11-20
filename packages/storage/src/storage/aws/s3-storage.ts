@@ -87,6 +87,7 @@ class S3Storage extends S3BaseStorage<S3File> {
             bucket,
             clientDirectUpload: config.clientDirectUpload,
             expiration: config.expiration?.maxAge ? { maxAge: String(config.expiration.maxAge) } : undefined,
+            filename: config.filename,
             logger: config.logger,
             metaStorage: config.metaStorage,
             metaStorageConfig: config.metaStorageConfig ? { ...config.metaStorageConfig, ...config } : { ...config },

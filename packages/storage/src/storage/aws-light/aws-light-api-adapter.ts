@@ -144,7 +144,9 @@ export class AwsLightApiAdapter implements S3ApiOperations {
         const uploadId = (xml.UploadId as string) || ((xml.InitiateMultipartUploadResult as Record<string, unknown>)?.UploadId as string);
 
         if (!uploadId) {
-            throw new Error("Failed to parse UploadId from response");
+            const error = new Error("Failed to parse UploadId from response");
+            (error as { retryable?: boolean }).retryable = false;
+            throw error;
         }
 
         return { UploadId: uploadId };
@@ -278,18 +280,16 @@ ${partsXml}
 
         const xml = parseXml(xmlText);
         const listPartsResult = (xml.ListPartsResult as Record<string, unknown>) || xml;
-        const parts = listPartsResult.Part || (Array.isArray(listPartsResult.Part) ? listPartsResult.Part : []);
+        const parts = listPartsResult.Part ? (Array.isArray(listPartsResult.Part) ? listPartsResult.Part : [listPartsResult.Part]) : [];
 
         return {
-            Parts: Array.isArray(parts)
-                ? parts.map((part: Record<string, unknown>) => {
-                    return {
-                        ETag: (part.ETag as string)?.replaceAll(/^"|"$/g, ""),
-                        PartNumber: Number(part.PartNumber) || 0,
-                        Size: part.Size ? Number(part.Size) : undefined,
-                    };
-                })
-                : [],
+            Parts: parts.map((part: Record<string, unknown>) => {
+                return {
+                    ETag: (part.ETag as string)?.replaceAll(/^"|"$/g, ""),
+                    PartNumber: Number(part.PartNumber) || 0,
+                    Size: part.Size ? Number(part.Size) : undefined,
+                };
+            }),
         };
     }
 
@@ -350,6 +350,7 @@ ${partsXml}
         ETag?: string;
         Expires?: Date;
         LastModified?: Date;
+        Metadata?: Record<string, string>;
     }> {
         const url = this.buildUrl(params.Key);
         const response = await this.aws.fetch(url, {
@@ -368,12 +369,23 @@ ${partsXml}
         const expires = response.headers.get("Expires");
         const lastModified = response.headers.get("Last-Modified");
 
+        const metadata: Record<string, string> = {};
+
+        for (const [key, value] of response.headers.entries()) {
+            if (key.toLowerCase().startsWith("x-amz-meta-")) {
+                const metaKey = key.toLowerCase().replace("x-amz-meta-", "");
+
+                metadata[metaKey] = value;
+            }
+        }
+
         return {
             ContentLength: contentLength ? Number(contentLength) : undefined,
             ContentType: contentType || undefined,
             ETag: etag?.replaceAll(/^"|"$/g, "") || undefined,
             Expires: expires ? new Date(expires) : undefined,
             LastModified: lastModified ? new Date(lastModified) : undefined,
+            Metadata: Object.keys(metadata).length > 0 ? metadata : undefined,
         };
     }
 
@@ -399,7 +411,12 @@ ${partsXml}
             headers["x-amz-storage-class"] = params.StorageClass;
         }
 
-        const url = this.buildUrl(params.Key);
+        let url = this.buildUrl(params.Key);
+
+        if (params.Bucket !== this.bucket) {
+            url = url.replace(this.bucket, params.Bucket);
+        }
+
         const response = await this.aws.fetch(url, {
             headers,
             method: "PUT",
@@ -475,6 +492,44 @@ ${partsXml}
         // For now, return the URL - actual signing will happen when the request is made
         // This means presigned URLs won't work for clientDirectUpload without additional work
         return url;
+    }
+
+    public async putObject(params: {
+        Bucket: string;
+        Key: string;
+        Body?: Uint8Array | ReadableStream;
+        ContentLength?: number;
+        ContentType?: string;
+        Metadata?: Record<string, string>;
+    }): Promise<void> {
+        const url = this.buildUrl(params.Key);
+        const headers: Record<string, string> = {};
+
+        if (params.ContentType) {
+            headers["Content-Type"] = params.ContentType;
+        }
+
+        if (params.ContentLength !== undefined) {
+            headers["Content-Length"] = String(params.ContentLength);
+        }
+
+        if (params.Metadata) {
+            for (const [key, value] of Object.entries(params.Metadata)) {
+                headers[`x-amz-meta-${key}`] = value;
+            }
+        }
+
+        const response = await this.aws.fetch(url, {
+            body: params.Body,
+            headers,
+            method: "PUT",
+        });
+
+        if (!response.ok) {
+            const text = await response.text();
+
+            throw new Error(`Failed to put object: ${response.status} ${text}`);
+        }
     }
 
     public async checkBucketAccess(params: { Bucket: string }): Promise<void> {

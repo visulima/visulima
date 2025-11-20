@@ -31,8 +31,6 @@ describe(S3Storage, () => {
 
     const options = { ...(storageOptions as S3StorageOptions), bucket: "bucket", region: "us-east-1" };
 
-    const request = createRequest();
-
     let storage: S3Storage;
 
     const metafileResponse = {

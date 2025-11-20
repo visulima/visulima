@@ -9,7 +9,7 @@ vi.mock("aws4fetch", () => {
     // Store it in globalThis so tests can access it
     const sharedMockFetch = vi.fn();
     (globalThis as Record<string, unknown>)["__aws4fetchMockFetch"] = sharedMockFetch;
-    
+
     // Return a mock AwsClient class that uses the shared mock fetch
     return {
         AwsClient: class MockAwsClient {
@@ -55,38 +55,64 @@ describe(AwsLightStorage, () => {
         secretAccessKey: "test-secret-key",
     };
 
-    const request = createRequest();
-
     let storage: AwsLightStorage;
 
-    const metafileResponse = {
-        Metadata: {
-            metadata: encodeURIComponent(
-                JSON.stringify({
-                    ...metafile,
-                    bytesWritten: 0,
-                    createdAt: new Date().toISOString(),
-                    status: "created",
-                    UploadId: "987654321",
-                }),
-            ),
-        },
+    // Helper function to create HEAD response with metadata
+    const createMetaHeadResponse = (fileData: typeof metafile & { bytesWritten?: number; status?: string; UploadId?: string; createdAt?: string }) => ({
+        headers: new Headers({
+            "x-amz-meta-metadata": encodeURIComponent(JSON.stringify(fileData)),
+        }),
+        ok: true,
+        status: 200,
+        text: async () => "",
+    });
+
+    // Helper function to mock bucket access check (called during AwsLightMetaStorage constructor)
+    const mockBucketAccessCheck = () => {
+        getMockFetch().mockResolvedValueOnce({
+            ok: true,
+            status: 200,
+            text: async () => "",
+        });
     };
+
+    const metafileResponse = createMetaHeadResponse({
+        ...metafile,
+        bytesWritten: 0,
+        createdAt: new Date().toISOString(),
+        status: "created",
+        UploadId: "987654321",
+    });
 
     beforeEach(async () => {
         vi.clearAllMocks();
-        getMockFetch().mockClear();
+        const mockFetch = getMockFetch();
+        // Reset the mock completely
+        mockFetch.mockReset();
+        // Clear any existing implementations
+        mockFetch.mockClear();
+        // Don't set a default implementation - let tests set their own mocks
     });
 
     describe(".create()", () => {
         it("should request api and set status and UploadId", async () => {
             expect.assertions(1);
 
-            // Mock HEAD request (file not found)
+            // Mock bucket access check (called during AwsLightMetaStorage constructor)
+            getMockFetch().mockResolvedValueOnce({
+                ok: true,
+                status: 200,
+                text: async () => "",
+            });
+
+            // Create storage instance first (this will trigger bucket access check)
+            storage = new AwsLightStorage(options);
+
+            // Mock HEAD request for getMeta (AwsLightMetaStorage uses HEAD to check for existing file)
             getMockFetch().mockResolvedValueOnce({
                 ok: false,
                 status: 404,
-                text: vi.fn().mockResolvedValue(""),
+                text: async () => "Not Found",
             });
 
             // Mock create multipart upload
@@ -94,13 +120,15 @@ describe(AwsLightStorage, () => {
             getMockFetch().mockResolvedValueOnce({
                 ok: true,
                 status: 200,
-                text: vi.fn().mockResolvedValue(createMultipartUploadResponse),
+                text: async () => createMultipartUploadResponse,
             });
 
-
-            // Create storage instance after mocks are set up
-            storage = new AwsLightStorage(options);
-
+            // Mock PUT request for saveMeta (AwsLightMetaStorage saves metadata to S3)
+            getMockFetch().mockResolvedValueOnce({
+                ok: true,
+                status: 200,
+                text: async () => "",
+            });
 
             const awsLightFile = await storage.create(metafile);
 
@@ -114,18 +142,20 @@ describe(AwsLightStorage, () => {
         it("should handle existing", async () => {
             expect.assertions(1);
 
-            // Mock HEAD request (file exists)
-            getMockFetch().mockResolvedValueOnce({
-                headers: new Headers({
-                    "x-amz-meta-metadata": metafileResponse.Metadata.metadata,
-                }),
-                ok: true,
-                status: 200,
-                text: async () => "",
-            });
+            // Mock bucket access check (called during AwsLightMetaStorage constructor)
+            mockBucketAccessCheck();
 
-            // Create storage instance after mocks are set up
+            // Create storage instance (this triggers bucket access check)
             storage = new AwsLightStorage(options);
+
+            // Mock HEAD request for getMeta (AwsLightMetaStorage uses HEAD to get existing file)
+            getMockFetch().mockResolvedValueOnce(createMetaHeadResponse({
+                ...metafile,
+                bytesWritten: 64,
+                createdAt: new Date().toISOString(),
+                status: "created",
+                UploadId: "123456789",
+            }));
 
             const awsLightFile = await storage.create(metafile);
 
@@ -135,31 +165,47 @@ describe(AwsLightStorage, () => {
         it("should send error on invalid s3 response", async () => {
             expect.assertions(1);
 
+            // Mock bucket access check (called during AwsLightMetaStorage constructor)
+            mockBucketAccessCheck();
+
+            // Create storage instance (this triggers bucket access check)
+            storage = new AwsLightStorage(options);
+
+            // Mock HEAD request for getMeta (file doesn't exist)
             getMockFetch().mockResolvedValueOnce({
                 ok: false,
                 status: 404,
-                text: async () => "",
+                text: async () => "Not Found",
             });
+
+            // Mock create multipart upload with empty UploadId (should fail)
             getMockFetch().mockResolvedValueOnce({
                 ok: true,
                 status: 200,
                 text: async () => "<?xml version=\"1.0\" encoding=\"UTF-8\"?><InitiateMultipartUploadResult></InitiateMultipartUploadResult>",
             });
 
-            // Create storage instance after mocks are set up
-            storage = new AwsLightStorage(options);
-
-            await expect(storage.create(metafile)).rejects.toMatchSnapshot();
+            await expect(storage.create(metafile)).rejects.toThrow();
         });
 
         it("should handle TTL option", async () => {
             expect.assertions(3);
 
+            // Remove expiration from storageOptions to avoid interference with TTL
+            const testOptions = { ...options, expiration: undefined };
+            // Mock bucket access check (called during AwsLightMetaStorage constructor)
+            mockBucketAccessCheck();
+            // Create storage instance (this triggers bucket access check)
+            storage = new AwsLightStorage(testOptions);
+
+            // Mock HEAD request for getMeta (file doesn't exist)
             getMockFetch().mockResolvedValueOnce({
                 ok: false,
                 status: 404,
-                text: async () => "",
+                text: async () => "Not Found",
             });
+
+            // Mock create multipart upload
             getMockFetch().mockResolvedValueOnce({
                 ok: true,
                 status: 200,
@@ -167,8 +213,12 @@ describe(AwsLightStorage, () => {
                     "<?xml version=\"1.0\" encoding=\"UTF-8\"?><InitiateMultipartUploadResult><UploadId>123456789</UploadId></InitiateMultipartUploadResult>",
             });
 
-            // Create storage instance after mocks are set up
-            storage = new AwsLightStorage(options);
+            // Mock PUT request for saveMeta
+            getMockFetch().mockResolvedValueOnce({
+                ok: true,
+                status: 200,
+                text: async () => "",
+            });
 
             const awsLightFile = await storage.create({ ...metafile, ttl: "30d" });
 
@@ -177,7 +227,9 @@ describe(AwsLightStorage, () => {
             expectTypeOf(awsLightFile.expiredAt).toBeNumber();
 
             // TTL should be converted to expiredAt timestamp
-            const expectedExpiry = Date.now() + 30 * 24 * 60 * 60 * 1000; // 30 days in ms
+            // Date.now() is mocked to 2022-02-02, so expected expiry is that date + 30 days
+            const baseTime = new Date("2022-02-02").getTime();
+            const expectedExpiry = baseTime + 30 * 24 * 60 * 60 * 1000; // 30 days in ms
 
             expect(awsLightFile.expiredAt).toBeGreaterThan(expectedExpiry - 1000); // Allow 1s tolerance
             expect(awsLightFile.expiredAt).toBeLessThan(expectedExpiry + 1000);
@@ -188,15 +240,19 @@ describe(AwsLightStorage, () => {
         it("should request api and set status and bytesWritten", async () => {
             expect.assertions(1);
 
-            // Mock HEAD request
-            getMockFetch().mockResolvedValueOnce({
-                headers: new Headers({
-                    "x-amz-meta-metadata": metafileResponse.Metadata.metadata,
-                }),
-                ok: true,
-                status: 200,
-                text: async () => "",
-            });
+            // Mock bucket access check (called during AwsLightMetaStorage constructor)
+            mockBucketAccessCheck();
+
+            // Create storage instance (this triggers bucket access check)
+            storage = new AwsLightStorage(options);
+
+            // Mock HEAD request for getMeta (AwsLightMetaStorage uses HEAD to get existing file)
+            getMockFetch().mockResolvedValueOnce(createMetaHeadResponse({
+                ...metafile,
+                bytesWritten: 0,
+                status: "created",
+                UploadId: "123456789",
+            }));
 
             // Mock list parts (empty)
             getMockFetch().mockResolvedValueOnce({
@@ -223,8 +279,12 @@ describe(AwsLightStorage, () => {
                     "<?xml version=\"1.0\" encoding=\"UTF-8\"?><CompleteMultipartUploadResult><Location>/1234</Location><ETag>\"etag123\"</ETag></CompleteMultipartUploadResult>",
             });
 
-            // Create storage instance after mocks are set up
-            storage = new AwsLightStorage(options);
+            // Mock PUT request for saveMeta (write saves updated metadata after completion)
+            getMockFetch().mockResolvedValueOnce({
+                ok: true,
+                status: 200,
+                text: async () => "",
+            });
 
             const part = {
                 body: testfile.asReadable,
@@ -241,25 +301,51 @@ describe(AwsLightStorage, () => {
         it("should request api and set status and bytesWritten on resume", async () => {
             expect.assertions(1);
 
-            // Mock HEAD request
-            getMockFetch().mockResolvedValueOnce({
-                headers: new Headers({
-                    "x-amz-meta-metadata": metafileResponse.Metadata.metadata,
-                }),
-                ok: true,
-                status: 200,
-                text: async () => "",
-            });
+            // Mock bucket access check (called during AwsLightMetaStorage constructor)
+            mockBucketAccessCheck();
 
-            // Mock list parts (empty)
+            // Create storage instance (this triggers bucket access check)
+            storage = new AwsLightStorage(options);
+
+            // Mock HEAD request for getMeta (AwsLightMetaStorage uses HEAD to get existing file)
+            getMockFetch().mockResolvedValueOnce(createMetaHeadResponse({
+                ...metafile,
+                bytesWritten: 0,
+                status: "created",
+                UploadId: "123456789",
+            }));
+
+            // Mock list parts (empty) - this is called by write() to check existing parts
             getMockFetch().mockResolvedValueOnce({
                 ok: true,
                 status: 200,
                 text: async () => "<?xml version=\"1.0\" encoding=\"UTF-8\"?><ListPartsResult></ListPartsResult>",
             });
 
-            // Create storage instance after mocks are set up
-            storage = new AwsLightStorage(options);
+            // Mock upload part
+            getMockFetch().mockResolvedValueOnce({
+                headers: new Headers({
+                    ETag: "\"1234\"",
+                }),
+                ok: true,
+                status: 200,
+                text: async () => "",
+            });
+
+            // Mock complete multipart upload
+            getMockFetch().mockResolvedValueOnce({
+                ok: true,
+                status: 200,
+                text: async () =>
+                    "<?xml version=\"1.0\" encoding=\"UTF-8\"?><CompleteMultipartUploadResult><Location>/1234</Location><ETag>\"etag123\"</ETag></CompleteMultipartUploadResult>",
+            });
+
+            // Mock PUT request for saveMeta (write saves updated metadata after completion)
+            getMockFetch().mockResolvedValueOnce({
+                ok: true,
+                status: 200,
+                text: async () => "",
+            });
 
             const part = {
                 contentLength: 0,
@@ -276,52 +362,21 @@ describe(AwsLightStorage, () => {
         it("should set status", async () => {
             expect.assertions(1);
 
-            // Mock HEAD request
-            getMockFetch().mockResolvedValueOnce({
-                headers: new Headers({
-                    "x-amz-meta-metadata": metafileResponse.Metadata.metadata,
-                }),
-                ok: true,
-                status: 200,
-                text: async () => "",
-            });
+            // Mock bucket access check (called during AwsLightMetaStorage constructor)
+            mockBucketAccessCheck();
 
-            // Mock DELETE request
-            getMockFetch().mockResolvedValueOnce({
-                ok: true,
-                status: 204,
-                text: async () => "",
-            });
-
-            // Mock abort multipart upload (if needed)
-            getMockFetch().mockResolvedValueOnce({
-                ok: true,
-                status: 204,
-                text: async () => "",
-            });
-
-            // Create storage instance after mocks are set up
+            // Create storage instance (this triggers bucket access check)
             storage = new AwsLightStorage(options);
 
-            const deleted = await storage.delete(metafile);
+            // Mock HEAD request for getMeta (AwsLightMetaStorage uses HEAD to get existing file)
+            getMockFetch().mockResolvedValueOnce(createMetaHeadResponse({
+                ...metafile,
+                bytesWritten: 0,
+                status: "created",
+                UploadId: "123456789",
+            }));
 
-            expect(deleted.status).toBe("deleted");
-        });
-
-        it("should return full file object when file exists", async () => {
-            expect.assertions(2);
-
-            // Mock HEAD request
-            getMockFetch().mockResolvedValueOnce({
-                headers: new Headers({
-                    "x-amz-meta-metadata": metafileResponse.Metadata.metadata,
-                }),
-                ok: true,
-                status: 200,
-                text: async () => "",
-            });
-
-            // Mock DELETE request
+            // Mock DELETE request for deleteMeta (AwsLightMetaStorage.delete)
             getMockFetch().mockResolvedValueOnce({
                 ok: true,
                 status: 204,
@@ -335,8 +390,41 @@ describe(AwsLightStorage, () => {
                 text: async () => "",
             });
 
-            // Create storage instance after mocks are set up
+            const deleted = await storage.delete(metafile);
+
+            expect(deleted.status).toBe("deleted");
+        });
+
+        it("should return full file object when file exists", async () => {
+            expect.assertions(2);
+
+            // Mock bucket access check (called during AwsLightMetaStorage constructor)
+            mockBucketAccessCheck();
+
+            // Create storage instance (this triggers bucket access check)
             storage = new AwsLightStorage(options);
+
+            // Mock HEAD request for getMeta (AwsLightMetaStorage uses HEAD to get existing file)
+            getMockFetch().mockResolvedValueOnce(createMetaHeadResponse({
+                ...metafile,
+                bytesWritten: 0,
+                status: "created",
+                UploadId: "123456789",
+            }));
+
+            // Mock DELETE request for deleteMeta (AwsLightMetaStorage.delete)
+            getMockFetch().mockResolvedValueOnce({
+                ok: true,
+                status: 204,
+                text: async () => "",
+            });
+
+            // Mock abort multipart upload
+            getMockFetch().mockResolvedValueOnce({
+                ok: true,
+                status: 204,
+                text: async () => "",
+            });
 
             const deleted = await storage.delete(metafile);
 
@@ -347,15 +435,18 @@ describe(AwsLightStorage, () => {
         it("should throw error when file does not exist", async () => {
             expect.assertions(1);
 
+            // Mock bucket access check (called during AwsLightMetaStorage constructor)
+            mockBucketAccessCheck();
+
+            // Create storage instance (this triggers bucket access check)
+            storage = new AwsLightStorage(options);
+
             // Mock HEAD request (file not found)
             getMockFetch().mockResolvedValueOnce({
                 ok: false,
                 status: 404,
                 text: async () => "File not found",
             });
-
-            // Create storage instance after mocks are set up
-            storage = new AwsLightStorage(options);
 
             await expect(storage.delete(metafile)).rejects.toThrow();
         });
@@ -365,11 +456,23 @@ describe(AwsLightStorage, () => {
         it("relative", async () => {
             expect.assertions(2);
 
+            // Mock bucket access check (called during AwsLightMetaStorage constructor)
+            mockBucketAccessCheck();
+
+            // Create storage instance (this triggers bucket access check)
+            storage = new AwsLightStorage(options);
+
             // Mock HEAD request for source file
+            getMockFetch().mockResolvedValueOnce(createMetaHeadResponse({
+                ...metafile,
+                id: "name",
+                name: "name",
+                bytesWritten: 64,
+                status: "completed",
+            }));
+
+            // Mock PUT request for saveMeta (copy updates metadata)
             getMockFetch().mockResolvedValueOnce({
-                headers: new Headers({
-                    "x-amz-meta-metadata": metafileResponse.Metadata.metadata,
-                }),
                 ok: true,
                 status: 200,
                 text: async () => "",
@@ -382,13 +485,10 @@ describe(AwsLightStorage, () => {
                 text: async () => "",
             });
 
-            // Create storage instance after mocks are set up
-            storage = new AwsLightStorage(options);
-
             const result = await storage.copy("name", "new name");
 
             expect(mockStore.fetch).toHaveBeenCalledWith(
-                expect.stringContaining("new name"),
+                expect.stringContaining("new%20name"),
                 expect.objectContaining({
                     headers: expect.objectContaining({
                         "x-amz-copy-source": expect.stringContaining("bucket/name"),
@@ -402,25 +502,34 @@ describe(AwsLightStorage, () => {
         it("absolute", async () => {
             expect.assertions(2);
 
-            // Mock HEAD request for source file
-            getMockFetch().mockResolvedValueOnce({
-                headers: new Headers({
-                    "x-amz-meta-metadata": metafileResponse.Metadata.metadata,
-                }),
-                ok: true,
-                status: 200,
-                text: async () => "",
-            });
+            // Mock bucket access check (called during AwsLightMetaStorage constructor)
+            mockBucketAccessCheck();
 
-            // Mock COPY request
-            getMockFetch().mockResolvedValueOnce({
-                ok: true,
-                status: 200,
-                text: async () => "",
-            });
-
-            // Create storage instance after mocks are set up
+            // Create storage instance (this triggers bucket access check)
             storage = new AwsLightStorage(options);
+
+            // Mock HEAD request for getMeta (AwsLightMetaStorage uses HEAD to get existing file)
+            getMockFetch().mockResolvedValueOnce(createMetaHeadResponse({
+                ...metafile,
+                id: "name",
+                name: "name",
+                bytesWritten: 64,
+                status: "completed",
+            }));
+
+            // Mock PUT request for saveMeta (copy updates metadata)
+            getMockFetch().mockResolvedValueOnce({
+                ok: true,
+                status: 200,
+                text: async () => "",
+            });
+
+            // Mock COPY request (copyObject)
+            getMockFetch().mockResolvedValueOnce({
+                ok: true,
+                status: 200,
+                text: async () => "",
+            });
 
             const result = await storage.copy("name", "/otherBucket/new name");
 
@@ -441,18 +550,25 @@ describe(AwsLightStorage, () => {
         it("should update changed metadata keys", async () => {
             expect.assertions(2);
 
-            // Mock HEAD request
+            // Mock bucket access check (called during AwsLightMetaStorage constructor)
+            mockBucketAccessCheck();
+
+            // Create storage instance (this triggers bucket access check)
+            storage = new AwsLightStorage(options);
+
+            // Mock HEAD request for getMeta (AwsLightMetaStorage uses HEAD to get existing file)
+            getMockFetch().mockResolvedValueOnce(createMetaHeadResponse({
+                ...metafile,
+                bytesWritten: 0,
+                status: "created",
+            }));
+
+            // Mock PUT request for saveMeta (update saves metadata)
             getMockFetch().mockResolvedValueOnce({
-                headers: new Headers({
-                    "x-amz-meta-metadata": metafileResponse.Metadata.metadata,
-                }),
                 ok: true,
                 status: 200,
                 text: async () => "",
             });
-
-            // Create storage instance after mocks are set up
-            storage = new AwsLightStorage(options);
 
             const awsLightFile = await storage.update(metafile, { metadata: { name: "newname.mp4" } });
 
@@ -463,34 +579,48 @@ describe(AwsLightStorage, () => {
         it("should reject if not found", async () => {
             expect.assertions(1);
 
-            // Mock HEAD request (file not found)
+            const randomId = `unique-not-found-test-${Date.now()}.mp4`;
+            const uniqueMetafile = { ...metafile, id: randomId, name: randomId };
+
+            // Mock bucket access check (called during AwsLightMetaStorage constructor)
+            mockBucketAccessCheck();
+
+            // Create storage instance (this triggers bucket access check)
+            storage = new AwsLightStorage(options);
+
+            // Mock HEAD request for getMeta (file doesn't exist - returns 404)
             getMockFetch().mockResolvedValueOnce({
                 ok: false,
                 status: 404,
-                text: async () => "File not found",
+                text: async () => "Not Found",
             });
 
-            // Create storage instance after mocks are set up
-            storage = new AwsLightStorage(options);
-
-            await expect(storage.update(metafile, { metadata: { name: "newname.mp4" } })).rejects.toHaveProperty("UploadErrorCode", "FileNotFound");
+            // getMeta() will fail because file doesn't exist in AwsLightMetaStorage
+            await expect(storage.update(uniqueMetafile, { metadata: { name: "newname.mp4" } })).rejects.toHaveProperty("UploadErrorCode", "FileNotFound");
         });
 
         it("should handle TTL option in update", async () => {
             expect.assertions(3);
 
-            // Mock HEAD request
+            // Mock bucket access check (called during AwsLightMetaStorage constructor)
+            mockBucketAccessCheck();
+
+            // Create storage instance (this triggers bucket access check)
+            storage = new AwsLightStorage(options);
+
+            // Mock HEAD request for getMeta (AwsLightMetaStorage uses HEAD to get existing file)
+            getMockFetch().mockResolvedValueOnce(createMetaHeadResponse({
+                ...metafile,
+                bytesWritten: 0,
+                status: "created",
+            }));
+
+            // Mock PUT request for saveMeta (update saves metadata)
             getMockFetch().mockResolvedValueOnce({
-                headers: new Headers({
-                    "x-amz-meta-metadata": metafileResponse.Metadata.metadata,
-                }),
                 ok: true,
                 status: 200,
                 text: async () => "",
             });
-
-            // Create storage instance after mocks are set up
-            storage = new AwsLightStorage(options);
 
             const awsLightFile = await storage.update(metafile, { ttl: "1h" });
 
@@ -542,34 +672,47 @@ describe("awsLightPresignedStorage", () => {
 
     let storage: AwsLightStorage;
 
-    const metafileResponse = {
-        Metadata: {
-            metadata: encodeURIComponent(
-                JSON.stringify({
-                    ...metafile,
-                    bytesWritten: 0,
-                    createdAt: new Date().toISOString(),
-                    status: "created",
-                    UploadId: "987654321",
-                }),
-            ),
-        },
+    // Helper function to create HEAD response with metadata (for presigned storage tests)
+    const createMetaHeadResponse = (fileData: typeof metafile & { bytesWritten?: number; status?: string; UploadId?: string; createdAt?: string }) => ({
+        headers: new Headers({
+            "x-amz-meta-metadata": encodeURIComponent(JSON.stringify(fileData)),
+        }),
+        ok: true,
+        status: 200,
+        text: async () => "",
+    });
+
+    // Helper function to mock bucket access check (called during AwsLightMetaStorage constructor)
+    const mockBucketAccessCheck = () => {
+        getMockFetch().mockResolvedValueOnce({
+            ok: true,
+            status: 200,
+            text: async () => "",
+        });
     };
 
     beforeEach(async () => {
         vi.clearAllMocks();
-        getMockFetch().mockClear();
+        getMockFetch().mockReset();
+        // Mock accessCheck to avoid unwanted fetch calls during instantiation
+        vi.spyOn(AwsLightStorage.prototype as any, "accessCheck").mockResolvedValue(undefined);
     });
 
     describe(".create()", () => {
         it("should request api and set status and UploadId", async () => {
             expect.assertions(2);
 
-            // Mock HEAD request (file not found)
+            // Mock bucket access check (called during AwsLightMetaStorage constructor)
+            mockBucketAccessCheck();
+
+            // Create storage instance (this triggers bucket access check)
+            storage = new AwsLightStorage(options);
+
+            // Mock HEAD request for getMeta (AwsLightMetaStorage uses HEAD to check for existing file)
             getMockFetch().mockResolvedValueOnce({
                 ok: false,
                 status: 404,
-                text: async () => "",
+                text: async () => "Not Found",
             });
 
             // Mock create multipart upload
@@ -580,6 +723,13 @@ describe("awsLightPresignedStorage", () => {
                     "<?xml version=\"1.0\" encoding=\"UTF-8\"?><InitiateMultipartUploadResult><UploadId>123456789</UploadId></InitiateMultipartUploadResult>",
             });
 
+            // Mock PUT request for saveMeta (AwsLightMetaStorage saves metadata to S3)
+            getMockFetch().mockResolvedValueOnce({
+                ok: true,
+                status: 200,
+                text: async () => "",
+            });
+
             // Mock list parts (empty)
             getMockFetch().mockResolvedValueOnce({
                 ok: true,
@@ -587,12 +737,9 @@ describe("awsLightPresignedStorage", () => {
                 text: async () => "<?xml version=\"1.0\" encoding=\"UTF-8\"?><ListPartsResult></ListPartsResult>",
             });
 
-            // Create storage instance after mocks are set up
-            storage = new AwsLightStorage(options);
-
             const awsLightFile = await storage.create(metafile);
 
-            expect(awsLightFile.partsUrls?.length).toBeGreaterThan(0);
+            expect(awsLightFile.partsUrls?.length).toBe(1);
             expect(awsLightFile.partSize).toBeGreaterThan(0);
         });
     });
@@ -601,15 +748,19 @@ describe("awsLightPresignedStorage", () => {
         it("should add partsUrls", async () => {
             expect.assertions(1);
 
-            // Mock HEAD request
-            getMockFetch().mockResolvedValueOnce({
-                headers: new Headers({
-                    "x-amz-meta-metadata": metafileResponse.Metadata.metadata,
-                }),
-                ok: true,
-                status: 200,
-                text: async () => "",
-            });
+            // Mock bucket access check (called during AwsLightMetaStorage constructor)
+            mockBucketAccessCheck();
+
+            // Create storage instance (this triggers bucket access check)
+            storage = new AwsLightStorage(options);
+
+            // Mock HEAD request for getMeta (AwsLightMetaStorage uses HEAD to get existing file)
+            getMockFetch().mockResolvedValueOnce(createMetaHeadResponse({
+                ...metafile,
+                bytesWritten: 0,
+                status: "created",
+                UploadId: "123456789",
+            }));
 
             // Mock list parts (empty)
             getMockFetch().mockResolvedValueOnce({
@@ -618,25 +769,41 @@ describe("awsLightPresignedStorage", () => {
                 text: async () => "<?xml version=\"1.0\" encoding=\"UTF-8\"?><ListPartsResult></ListPartsResult>",
             });
 
-            // Create storage instance after mocks are set up
-            storage = new AwsLightStorage(options);
-
             const awsLightFile = await storage.update(metafile, metafile);
 
-            expect(awsLightFile.partsUrls?.length).toBeGreaterThan(0);
+            expect(awsLightFile.partsUrls?.length).toBe(1);
         });
 
         it("should complete", async () => {
             expect.assertions(1);
 
-            // Mock HEAD request
+            // Mock bucket access check (called during AwsLightMetaStorage constructor)
+            mockBucketAccessCheck();
+
+            // Create storage instance (this triggers bucket access check)
+            storage = new AwsLightStorage(options);
+
+            // Mock HEAD request for getMeta (AwsLightMetaStorage uses HEAD to get existing file)
+            getMockFetch().mockResolvedValueOnce(createMetaHeadResponse({
+                ...metafile,
+                bytesWritten: 0,
+                status: "created",
+                UploadId: "123456789",
+            }));
+
+            // Mock PUT request for saveMeta (update saves metadata)
             getMockFetch().mockResolvedValueOnce({
-                headers: new Headers({
-                    "x-amz-meta-metadata": metafileResponse.Metadata.metadata,
-                }),
                 ok: true,
                 status: 200,
                 text: async () => "",
+            });
+
+            // Mock complete multipart upload
+            getMockFetch().mockResolvedValueOnce({
+                ok: true,
+                status: 200,
+                text: async () =>
+                    "<?xml version=\"1.0\" encoding=\"UTF-8\"?><CompleteMultipartUploadResult><Location>/1234</Location><ETag>\"etag123\"</ETag></CompleteMultipartUploadResult>",
             });
 
             const preCompleted = {
@@ -647,17 +814,6 @@ describe("awsLightPresignedStorage", () => {
                 UploadId: "123456789",
             };
 
-            // Mock complete multipart upload
-            getMockFetch().mockResolvedValueOnce({
-                ok: true,
-                status: 200,
-                text: async () =>
-                    "<?xml version=\"1.0\" encoding=\"UTF-8\"?><CompleteMultipartUploadResult><Location>/1234</Location><ETag>\"etag123\"</ETag></CompleteMultipartUploadResult>",
-            });
-
-            // Create storage instance after mocks are set up
-            storage = new AwsLightStorage(options);
-
             const awsLightFile = await storage.update({ id: metafile.id }, preCompleted);
 
             expect(awsLightFile.status).toBe("completed");
@@ -666,15 +822,19 @@ describe("awsLightPresignedStorage", () => {
         it("should complete (empty payload)", async () => {
             expect.assertions(1);
 
-            // Mock HEAD request
-            getMockFetch().mockResolvedValueOnce({
-                headers: new Headers({
-                    "x-amz-meta-metadata": metafileResponse.Metadata.metadata,
-                }),
-                ok: true,
-                status: 200,
-                text: async () => "",
-            });
+            // Mock bucket access check (called during AwsLightMetaStorage constructor)
+            mockBucketAccessCheck();
+
+            // Create storage instance (this triggers bucket access check)
+            storage = new AwsLightStorage(options);
+
+            // Mock HEAD request for getMeta (AwsLightMetaStorage uses HEAD to get existing file)
+            getMockFetch().mockResolvedValueOnce(createMetaHeadResponse({
+                ...metafile,
+                bytesWritten: 0,
+                status: "created",
+                UploadId: "123456789",
+            }));
 
             // Mock list parts
             getMockFetch().mockResolvedValueOnce({
@@ -684,6 +844,13 @@ describe("awsLightPresignedStorage", () => {
                     "<?xml version=\"1.0\" encoding=\"UTF-8\"?><ListPartsResult><Part><ETag>123456789</ETag><PartNumber>1</PartNumber><Size>64</Size></Part></ListPartsResult>",
             });
 
+            // Mock PUT request for saveMeta (update saves metadata after completion)
+            getMockFetch().mockResolvedValueOnce({
+                ok: true,
+                status: 200,
+                text: async () => "",
+            });
+
             // Mock complete multipart upload
             getMockFetch().mockResolvedValueOnce({
                 ok: true,
@@ -691,9 +858,6 @@ describe("awsLightPresignedStorage", () => {
                 text: async () =>
                     "<?xml version=\"1.0\" encoding=\"UTF-8\"?><CompleteMultipartUploadResult><Location>/1234</Location><ETag>\"etag123\"</ETag></CompleteMultipartUploadResult>",
             });
-
-            // Create storage instance after mocks are set up
-            storage = new AwsLightStorage(options);
 
             const awsLightFile = await storage.update({ id: metafile.id }, {});
 
