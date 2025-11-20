@@ -4,6 +4,7 @@ import { S3BaseStorage } from "../aws/s3-base-storage";
 import type { FileInit, FileQuery } from "../utils/file";
 import { AwsLightApiAdapter } from "./aws-light-api-adapter";
 import AwsLightFile from "./aws-light-file";
+import AwsLightMetaStorage from "./aws-light-meta-storage";
 import type { AwsLightError, AwsLightStorageOptions } from "./types";
 
 /**
@@ -73,6 +74,7 @@ class AwsLightStorage extends S3BaseStorage<AwsLightFile> {
             bucket,
             clientDirectUpload: config.clientDirectUpload,
             expiration: config.expiration?.maxAge ? { maxAge: String(config.expiration.maxAge) } : undefined,
+            filename: config.filename,
             logger: config.logger,
             metaStorage: config.metaStorage,
             metaStorageConfig: config.metaStorageConfig ? { ...config.metaStorageConfig, ...config } : { ...config },
@@ -100,6 +102,15 @@ class AwsLightStorage extends S3BaseStorage<AwsLightFile> {
             service: config.service,
             sessionToken: config.sessionToken,
         });
+
+        // Override meta storage to use AwsLightMetaStorage
+        const { metaStorage, metaStorageConfig } = config;
+
+        if (!metaStorage) {
+            const metaConfig = { ...config, ...metaStorageConfig, logger: this.logger };
+
+            this.meta = new AwsLightMetaStorage<AwsLightFile>(metaConfig);
+        }
     }
 
     /**
@@ -118,6 +129,16 @@ class AwsLightStorage extends S3BaseStorage<AwsLightFile> {
         }
 
         return super.normalizeError(error);
+    }
+
+    public override async update({ id }: FileQuery, metadata: Partial<AwsLightFile>): Promise<AwsLightFile> {
+        if (this.config.clientDirectUpload) {
+            const file = await this.getMeta(id);
+
+            return this.buildPresigned({ ...file, ...metadata });
+        }
+
+        return super.update({ id }, metadata);
     }
 
     public override async getStream({ id }: FileQuery): Promise<{ headers?: Record<string, string>; size?: number; stream: Readable }> {

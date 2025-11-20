@@ -84,6 +84,7 @@ export interface S3ApiOperations {
         ETag?: string;
         Expires?: Date;
         LastModified?: Date;
+        Metadata?: Record<string, string>;
     }>;
 
     listObjectsV2: (params: { Bucket: string; ContinuationToken?: string; MaxKeys?: number }) => Promise<{
@@ -595,8 +596,9 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
             fileWithParts.Parts = await this.getParts(file);
         }
 
-        fileWithParts.bytesWritten = Math.min(fileWithParts.Parts.length * this.partSize, file.size as number);
-        file.status = getFileStatus(file);
+        // Calculate bytesWritten as sum of actual part sizes (same as write method)
+        fileWithParts.bytesWritten = fileWithParts.Parts.map((item) => item.Size || 0).reduce((p, c) => p + c, 0);
+        file.status = getFileStatus(fileWithParts);
 
         if (!fileWithParts.partsUrls?.length) {
             fileWithParts.partsUrls = await this.getPartsPresignedUrls(file);
