@@ -6,7 +6,6 @@ import { MaxFileSizeExceededError, MultipartParseError, parseMultipartRequest } 
 import createHttpError from "http-errors";
 
 import type { UploadFile } from "../../storage/utils/file";
-import { ERRORS } from "../../utils/errors";
 import { getIdFromRequest } from "../../utils/http";
 import ValidationError from "../../utils/validation-error";
 import { BaseHandlerNode } from "../base/base-handler-node";

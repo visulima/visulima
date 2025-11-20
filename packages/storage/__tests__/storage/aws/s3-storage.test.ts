@@ -10,7 +10,6 @@ import {
     UploadPartCommand,
 } from "@aws-sdk/client-s3";
 import { mockClient } from "aws-sdk-client-mock";
-import { createRequest } from "node-mocks-http";
 import { beforeEach, describe, expect, expectTypeOf, it, vi } from "vitest";
 
 import S3Storage from "../../../src/storage/aws/s3-storage";
@@ -301,8 +300,6 @@ describe("s3PresignedStorage", () => {
         clientDirectUpload: true,
         region: "us-east-1",
     };
-
-    const request = createRequest();
 
     let storage: S3Storage;
 

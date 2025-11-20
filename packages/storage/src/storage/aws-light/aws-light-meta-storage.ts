@@ -101,4 +101,3 @@ class AwsLightMetaStorage<T extends File = File> extends MetaStorage<T> {
 }
 
 export default AwsLightMetaStorage;
-

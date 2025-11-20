@@ -89,8 +89,8 @@ export class AwsLightApiAdapter implements S3ApiOperations {
         const url = new URL(key, this.endpoint);
 
         if (queryParams) {
-            for (const [key, value] of Object.entries(queryParams)) {
-                url.searchParams.set(key, value);
+            for (const [parameterKey, value] of Object.entries(queryParams)) {
+                url.searchParams.set(parameterKey, value);
             }
         }
 
@@ -145,6 +145,7 @@ export class AwsLightApiAdapter implements S3ApiOperations {
 
         if (!uploadId) {
             const error = new Error("Failed to parse UploadId from response");
+
             (error as { retryable?: boolean }).retryable = false;
             throw error;
         }
@@ -280,7 +281,7 @@ ${partsXml}
 
         const xml = parseXml(xmlText);
         const listPartsResult = (xml.ListPartsResult as Record<string, unknown>) || xml;
-        const parts = listPartsResult.Part ? (Array.isArray(listPartsResult.Part) ? listPartsResult.Part : [listPartsResult.Part]) : [];
+        const parts = listPartsResult.Part ? Array.isArray(listPartsResult.Part) ? listPartsResult.Part : [listPartsResult.Part] : [];
 
         return {
             Parts: parts.map((part: Record<string, unknown>) => {
@@ -495,11 +496,11 @@ ${partsXml}
     }
 
     public async putObject(params: {
-        Bucket: string;
-        Key: string;
         Body?: Uint8Array | ReadableStream;
+        Bucket: string;
         ContentLength?: number;
         ContentType?: string;
+        Key: string;
         Metadata?: Record<string, string>;
     }): Promise<void> {
         const url = this.buildUrl(params.Key);

@@ -4,7 +4,6 @@ import createHttpError from "http-errors";
 import { hasBody } from "type-is";
 
 import type { FileInit, UploadFile } from "../../storage/utils/file";
-import { ERRORS } from "../../utils/errors";
 import { getHeader, getIdFromRequest, getRequestStream, readBody } from "../../utils/http";
 import { BaseHandlerNode } from "../base/base-handler-node";
 import type { Handlers, ResponseFile, ResponseList, UploadOptions } from "../types";

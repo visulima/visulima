@@ -1,8 +1,8 @@
-import createHttpError, { isHttpError } from "http-errors";
+import { isHttpError } from "http-errors";
 
 import type { BaseStorage } from "../../storage/storage";
 import type { UploadFile } from "../../storage/utils/file";
-import type { ErrorResponses, UploadError } from "../../utils/errors";
+import type { ErrorResponses } from "../../utils/errors";
 import { isUploadError } from "../../utils/errors";
 import type { HttpError, UploadResponse } from "../../utils/types";
 import { isValidationError } from "../../utils/validator";

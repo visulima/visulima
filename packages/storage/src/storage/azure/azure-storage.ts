@@ -1,4 +1,4 @@
-import type { BlobBeginCopyFromURLResponse, BlobDeleteIfExistsResponse, BlobItem, ContainerClient } from "@azure/storage-blob";
+import type { BlobItem, ContainerClient } from "@azure/storage-blob";
 import { BlobServiceClient, StorageSharedKeyCredential } from "@azure/storage-blob";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { normalize } from "@visulima/path";
