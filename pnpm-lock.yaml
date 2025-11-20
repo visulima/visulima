@@ -45506,17 +45506,20 @@ snapshots:
       - eslint-import-resolver-webpack
       - supports-color
 
-  eslint-config-standard-jsx@11.0.0(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint@8.57.0):
+  eslint-config-standard-jsx@11.0.0(eslint-plugin-react@7.37.5(eslint@9.39.1(jiti@2.6.1)))(eslint@8.57.0):
     dependencies:
       eslint: 8.57.0
       eslint-plugin-react: 7.37.5(eslint@8.57.0)
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   eslint-config-standard@17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.48.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3))(eslint@8.57.0))(eslint-plugin-n@15.7.0(eslint@8.57.0))(eslint-plugin-promise@6.4.0(eslint@8.57.0))(eslint@8.57.0):
 =======
 =======
 >>>>>>> e41ec2015 (fix: resolve merge conflicts in pnpm-lock.yaml and update dependency versions)
+=======
+>>>>>>> d2200850f (feat: implement AwsLightMetaStorage for enhanced metadata handling)
 <<<<<<< HEAD
   eslint-config-standard@17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.47.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3))(eslint@8.57.0))(eslint-plugin-n@15.7.0(eslint@8.57.0))(eslint-plugin-promise@6.4.0(eslint@8.57.0))(eslint@8.57.0):
 =======
@@ -45532,7 +45535,13 @@ snapshots:
 =======
   eslint-config-standard@17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.47.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3))(eslint@8.57.0))(eslint-plugin-n@15.7.0(eslint@8.57.0))(eslint-plugin-promise@6.4.0(eslint@8.57.0))(eslint@8.57.0):
 >>>>>>> 33b2ccb64 (fix: resolve merge conflicts in pnpm-lock.yaml and update dependency versions)
+<<<<<<< HEAD
 >>>>>>> e41ec2015 (fix: resolve merge conflicts in pnpm-lock.yaml and update dependency versions)
+=======
+=======
+  eslint-config-standard@17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.47.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3))(eslint@8.57.0))(eslint-plugin-n@15.7.0(eslint@9.39.1(jiti@2.6.1)))(eslint-plugin-promise@6.4.0(eslint@9.39.1(jiti@2.6.1)))(eslint@8.57.0):
+>>>>>>> 011ef6f1b (feat: implement AwsLightMetaStorage for enhanced metadata handling)
+>>>>>>> d2200850f (feat: implement AwsLightMetaStorage for enhanced metadata handling)
     dependencies:
       eslint: 8.57.0
       eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.48.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.1(jiti@2.6.1))
@@ -55265,6 +55274,7 @@ snapshots:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       eslint-config-standard: 17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.48.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3))(eslint@8.57.0))(eslint-plugin-n@15.7.0(eslint@8.57.0))(eslint-plugin-promise@6.4.0(eslint@8.57.0))(eslint@8.57.0)
       eslint-config-standard-jsx: 11.0.0(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint@8.57.0)
       eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.48.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.1(jiti@2.6.1))
@@ -55273,6 +55283,8 @@ snapshots:
 >>>>>>> dbf100174 (refactor: update storage client with new query utilities and improved file operations)
 =======
 >>>>>>> e41ec2015 (fix: resolve merge conflicts in pnpm-lock.yaml and update dependency versions)
+=======
+>>>>>>> d2200850f (feat: implement AwsLightMetaStorage for enhanced metadata handling)
 <<<<<<< HEAD
       eslint-config-standard: 17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.47.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3))(eslint@8.57.0))(eslint-plugin-n@15.7.0(eslint@8.57.0))(eslint-plugin-promise@6.4.0(eslint@8.57.0))(eslint@8.57.0)
       eslint-config-standard-jsx: 11.0.0(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint@8.57.0)
@@ -55297,6 +55309,10 @@ snapshots:
 >>>>>>> 33b2ccb64 (fix: resolve merge conflicts in pnpm-lock.yaml and update dependency versions)
       eslint-config-standard: 17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.47.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3))(eslint@8.57.0))(eslint-plugin-n@15.7.0(eslint@8.57.0))(eslint-plugin-promise@6.4.0(eslint@8.57.0))(eslint@8.57.0)
       eslint-config-standard-jsx: 11.0.0(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint@8.57.0)
+=======
+      eslint-config-standard: 17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.47.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3))(eslint@8.57.0))(eslint-plugin-n@15.7.0(eslint@9.39.1(jiti@2.6.1)))(eslint-plugin-promise@6.4.0(eslint@9.39.1(jiti@2.6.1)))(eslint@8.57.0)
+      eslint-config-standard-jsx: 11.0.0(eslint-plugin-react@7.37.5(eslint@9.39.1(jiti@2.6.1)))(eslint@8.57.0)
+>>>>>>> 011ef6f1b (feat: implement AwsLightMetaStorage for enhanced metadata handling)
       eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.47.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.1(jiti@2.6.1))
 <<<<<<< HEAD
 >>>>>>> 4b3ce96ac (refactor: update storage client with new query utilities and improved file operations)

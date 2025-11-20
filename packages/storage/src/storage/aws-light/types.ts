@@ -1,4 +1,3 @@
-import type { LocalMetaStorageOptions } from "../local/local-meta-storage";
 import type { BaseStorageOptions, MetaStorageOptions } from "../types";
 import type AwsLightFile from "./aws-light-file";
 
@@ -31,7 +30,7 @@ export type AwsLightStorageOptions = AwsLightClientConfig
         /**
          * Configure metafiles storage
          */
-        metaStorageConfig?: LocalMetaStorageOptions | AwsLightMetaStorageOptions;
+        metaStorageConfig?: AwsLightMetaStorageOptions;
 
         /**
          * The parts size that the client should use for presigned multipart unloading.
