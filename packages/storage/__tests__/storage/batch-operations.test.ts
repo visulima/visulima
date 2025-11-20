@@ -1,9 +1,8 @@
 import { rm } from "node:fs/promises";
 import { join } from "node:path";
 
-import { createRequest } from "node-mocks-http";
 import { temporaryDirectory } from "tempy";
-import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 
 import DiskStorage from "../../src/storage/local/disk-storage";
 import type { BatchOperationResponse } from "../../src/storage/types";

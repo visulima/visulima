@@ -151,6 +151,7 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
         bucket: string;
         clientDirectUpload?: boolean;
         expiration?: { maxAge?: string };
+        filename?: (file: TFile) => string;
         logger?: BaseStorage<TFile>["logger"];
         metaStorage?: MetaStorage<TFile>;
         metaStorageConfig?: unknown;

@@ -4,8 +4,7 @@ import { Readable } from "node:stream";
 import typeis, { hasBody } from "type-is";
 
 import getLastOne from "./primitives/get-last-one";
-import isRecord from "./primitives/is-record";
-import type { Header, Headers, HttpError, HttpErrorBody, IncomingMessageWithBody, UploadResponse } from "./types";
+import type { Header, Headers, IncomingMessageWithBody } from "./types";
 
 const extractForwarded = (request: IncomingMessage): { host: string; proto: string } => {
     // Forwarded: by=<identifier>;for=<identifier>;host=<host>;proto=<http|https>

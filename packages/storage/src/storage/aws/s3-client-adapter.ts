@@ -3,7 +3,6 @@ import { Readable } from "node:stream";
 import type {
     CompleteMultipartUploadOutput,
     CopyObjectCommandInput,
-    DeleteObjectCommandInput,
     GetObjectCommandOutput,
     HeadObjectCommandOutput,
     ListObjectsV2CommandOutput,
@@ -107,7 +106,9 @@ export class S3ClientAdapter implements S3ApiOperations {
             Bucket: params.Bucket,
             Key: params.Key,
             MultipartUpload: {
-                Parts: params.Parts.map(({ ETag, PartNumber }) => { return { ETag, PartNumber }; }),
+                Parts: params.Parts.map(({ ETag, PartNumber }) => {
+                    return { ETag, PartNumber };
+                }),
             },
             UploadId: params.UploadId,
         });

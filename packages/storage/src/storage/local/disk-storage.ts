@@ -179,6 +179,7 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
      * Updates file status to "completed" when all bytes are written.
      */
     public async write(part: FilePart | FileQuery | TFile): Promise<TFile> {
+        // eslint-disable-next-line sonarjs/cognitive-complexity
         return this.instrumentOperation("write", async () => {
             let file: TFile;
 

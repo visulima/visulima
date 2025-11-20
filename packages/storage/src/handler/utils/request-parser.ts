@@ -3,7 +3,7 @@ import type { IncomingMessage } from "node:http";
 import createHttpError from "http-errors";
 import { hasBody } from "type-is";
 
-import type { FileInit, UploadFile } from "../../storage/utils/file";
+import type { FileInit } from "../../storage/utils/file";
 import { getHeader } from "../../utils/http";
 
 /**

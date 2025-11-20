@@ -25,4 +25,10 @@ export default createConfig(
             "vitest/require-mock-type-parameters": "off",
         },
     },
+    {
+        files: ["src/**"],
+        rules: {
+            "n/no-unsupported-features/node-builtins": "off",
+        },
+    },
 );

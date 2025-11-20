@@ -2,15 +2,7 @@ import createHttpError from "http-errors";
 
 import type { FileInit, UploadFile } from "../../storage/utils/file";
 import type { ChunkInfo } from "../../utils/chunked-upload";
-import {
-    calculateUploadProgress,
-    getBytesWritten,
-    getTotalSize,
-    isChunkedUpload,
-    isUploadComplete,
-    trackChunk,
-    validateChunk,
-} from "../../utils/chunked-upload";
+import { getTotalSize, isChunkedUpload, isUploadComplete, trackChunk, validateChunk } from "../../utils/chunked-upload";
 import { ERRORS } from "../../utils/errors";
 import type { ResponseFile, ResponseList } from "../types";
 import { buildChunkedUploadHeaders, buildFileHeaders, buildFileMetadataHeaders, buildResponseFile } from "../utils/response-builder";

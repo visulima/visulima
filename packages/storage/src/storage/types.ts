@@ -2,7 +2,7 @@ import type { Readable } from "node:stream";
 
 import type { Cache } from "../utils/cache";
 import type { RetryConfig } from "../utils/retry";
-import type { HttpError, HttpErrorBody, Metrics, UploadResponse, Validation } from "../utils/types";
+import type { HttpError, HttpErrorBody, Metrics, Validation } from "../utils/types";
 import type { LocalMetaStorageOptions } from "./local/local-meta-storage";
 import type MetaStorage from "./meta-storage";
 import type { File, FileInit, FilePart, FileQuery, FileReturn, UploadFile } from "./utils/file";
