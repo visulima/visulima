@@ -19,7 +19,7 @@ const runtimeMock = {
 };
 
 describe("command/help", () => {
-    const commandsMap = new Map<string, ICommand>([]);
+    const commandsMap = new Map<string, ICommand>();
 
     beforeEach(() => {
         vi.clearAllMocks();

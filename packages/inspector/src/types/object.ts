@@ -31,7 +31,7 @@ const inspectObject: InspectType<object> = (object: object, options: Options, in
     const isPlainObject = gPO(object) === Object.prototype || object.constructor === Object;
 
     const protoTag = object instanceof Object ? "" : "null prototype";
-    const stringTag = !isPlainObject && typeof Symbol !== "undefined" && Symbol.toStringTag in object ? object[Symbol.toStringTag] : (protoTag ? "Object" : "");
+    const stringTag = !isPlainObject && typeof Symbol !== "undefined" && Symbol.toStringTag in object ? object[Symbol.toStringTag] : protoTag ? "Object" : "";
     const tag = stringTag || protoTag ? `[${[stringTag, protoTag].filter(Boolean).join(": ")}] ` : "";
 
     if (properties.length === 0 && symbols.length === 0) {

@@ -10,7 +10,7 @@ import getCallerFilename from "./get-caller-filename";
 declare global {
     // eslint-disable-next-line @typescript-eslint/no-namespace
     namespace VisulimaPail {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        // eslint-disable-next-line unused-imports/no-unused-vars
         interface CustomMeta<L> {
             /** File information where the log was called from */
             file:

@@ -331,14 +331,14 @@ export const findPackageJsonSync = (cwd?: URL | string, options: ReadOptions = {
 
 export const writePackageJson = async <T = PackageJson>(data: T, options: WriteJsonOptions & { cwd?: URL | string } = {}): Promise<void> => {
     const { cwd, ...writeOptions } = options;
-    const directory = toPath(options.cwd ?? process.cwd());
+    const directory = toPath(cwd ?? process.cwd());
 
     await writeJson(join(directory, "package.json"), data, writeOptions);
 };
 
 export const writePackageJsonSync = <T = PackageJson>(data: T, options: WriteJsonOptions & { cwd?: URL | string } = {}): void => {
     const { cwd, ...writeOptions } = options;
-    const directory = toPath(options.cwd ?? process.cwd());
+    const directory = toPath(cwd ?? process.cwd());
 
     writeJsonSync(join(directory, "package.json"), data, writeOptions);
 };

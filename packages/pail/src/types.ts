@@ -25,7 +25,7 @@ import type InteractiveManager from "./interactive/interactive-manager";
 declare global {
     // eslint-disable-next-line @typescript-eslint/no-namespace
     namespace VisulimaPail {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-empty-object-type
+        // eslint-disable-next-line @typescript-eslint/no-empty-object-type, unused-imports/no-unused-vars
         interface CustomMeta<L> {}
     }
 }
@@ -197,7 +197,8 @@ export interface LoggerTypesAwareReporter<T extends string, L extends string> ex
  */
 export interface StringifyAwareReporter<L extends string> extends Reporter<L> {
     /** Set the stringify function for object serialization */
-    setStringify: (stringify: typeof JSON.stringify) => void;
+    // eslint-disable-next-line , @typescript-eslint/no-explicit-any
+    setStringify: (stringify: any) => void;
 }
 
 /**

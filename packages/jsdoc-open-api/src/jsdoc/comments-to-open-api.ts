@@ -110,7 +110,7 @@ const parseDescription = (tag: Spec): { description: string | undefined; name: s
 };
 
 // @ts-expect-error
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+
 const tagsToObjects = (tags: Spec[], verbose?: boolean) =>
     tags.map((tag) => {
         const parsedResponse = parseDescription(tag);

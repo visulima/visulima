@@ -7,7 +7,7 @@ const handler = async <T, R extends Request, Context, Q extends ParsedQueryParam
 ): Promise<ExecuteHandler<R, Context>> =>
     await baseHandler<R, Context, T, Q, M>(
         async (_, responseConfig) =>
-            new Response(JSON.stringify(responseConfig.data), {
+            Response.json(responseConfig.data, {
                 headers: {
                     "content-type": "application/json; charset=utf-8",
                 },

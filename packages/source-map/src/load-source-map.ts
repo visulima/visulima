@@ -14,11 +14,11 @@ const isInlineMap = (url: string): boolean => INLINE_SOURCEMAP_REGEX.test(url);
 const resolveSourceMapUrl = (sourceFile: string, sourcePath: string): string | undefined => {
     const lines = sourceFile.split(/\r?\n/);
 
-    let sourceMapUrl: RegExpExecArray | null = null;
+    let sourceMapUrl: RegExpExecArray | undefined;
 
     // eslint-disable-next-line no-plusplus
     for (let index = lines.length - 1; index >= 0 && !sourceMapUrl; index--) {
-        sourceMapUrl = SOURCEMAP_REGEX.exec(lines[index] as string);
+        sourceMapUrl = SOURCEMAP_REGEX.exec(lines[index] as string) ?? undefined;
     }
 
     if (!sourceMapUrl) {

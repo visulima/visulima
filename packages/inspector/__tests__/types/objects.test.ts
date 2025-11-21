@@ -53,7 +53,7 @@ describe.each([
     it("quotes a key if it contains a single quote", () => {
         expect.assertions(1);
 
-        expect(function_({ "'": 1 })).toBe(`${tag}{ '\\'': 1 }`);
+        expect(function_({ "'": 1 })).toBe(String.raw`${tag}{ '\'': 1 }`);
     });
 
     it("quotes a key if it contains a double quote", () => {

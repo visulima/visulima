@@ -44,7 +44,7 @@ declare global {
     }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-namespace,@typescript-eslint/no-unused-vars
+// eslint-disable-next-line @typescript-eslint/no-namespace, unused-imports/no-unused-vars
 declare namespace NodeJS {
     interface ProcessEnvironment {
         CEREBRO_MIN_NODE_VERSION?: string;

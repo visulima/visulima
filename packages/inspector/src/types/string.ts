@@ -22,7 +22,7 @@ const unicodeLength = 4;
 
 const escape = (char: string): string =>
 
-    escapeCharacters[char as keyof typeof escapeCharacters] || `\\u${`0000${(char.codePointAt(0) as number).toString(hex)}`.slice(-unicodeLength)}`;
+    escapeCharacters[char as keyof typeof escapeCharacters] || String.raw`\u${`0000${(char.codePointAt(0) as number).toString(hex)}`.slice(-unicodeLength)}`;
 
 const inspectString: InspectType<string> = (string_: string, options: Options): string => {
     if (stringEscapeChars.test(string_)) {

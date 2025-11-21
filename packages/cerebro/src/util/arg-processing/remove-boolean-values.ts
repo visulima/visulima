@@ -40,9 +40,7 @@ const removeBooleanValues = <OD extends OptionDefinition<any>>(
             return { args: argumentsAndLastValue.args };
         }
 
-        const newArgs = [...argumentsAndLastValue.args];
-
-        newArgs.push(argument);
+        const newArgs = [...argumentsAndLastValue.args, argument];
 
         return { args: newArgs, lastOption: option as PossibleOptionDefinition<OD> };
     };

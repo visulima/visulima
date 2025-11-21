@@ -1,4 +1,3 @@
-import httpErrors from "http-errors";
 import { describe, expect, it } from "vitest";
 
 import { extractStatusCode } from "../../../src/error-handler/utils/extract-status-code";

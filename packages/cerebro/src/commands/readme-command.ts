@@ -292,7 +292,7 @@ const replaceTag = (readme: string, tag: string, body: string): string => {
     if (normalizedReadme.includes(tagStart) && normalizedReadme.includes(tagStop)) {
         const escapedStart = escapeRegex(tagStart);
         const escapedStop = escapeRegex(tagStop);
-        const tagPattern = new RegExp(`${escapedStart}(.|\\n)*${escapedStop}`, "m");
+        const tagPattern = new RegExp(String.raw`${escapedStart}(.|\n)*${escapedStop}`, "m");
 
         return normalizedReadme.replace(tagPattern, `${tagStart}\n${body}\n${tagStop}`);
     }

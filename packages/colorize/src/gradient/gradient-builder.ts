@@ -116,9 +116,7 @@ export class GradientBuilder {
         // eslint-disable-next-line no-loops/no-loops
         for (const stop of this.stops) {
             // eslint-disable-next-line @typescript-eslint/naming-convention
-            const stop_ = { ...stop };
-
-            stop_.position = 1 - stop.position;
+            const stop_ = { ...stop, position: 1 - stop.position };
 
             stops.push(stop_ as StopInput);
         }

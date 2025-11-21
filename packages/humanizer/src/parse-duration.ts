@@ -47,7 +47,7 @@ const parseDuration = (value: string, options?: ParseDurationOptions): number | 
 
     const currentUnitMap = (language.unitMap ?? englishUnitMap) as Record<string, keyof DurationUnitMeasures>; // Fallback needed if englishUnitMap is not guaranteed
 
-    let processedValue = value.replaceAll(new RegExp(`(\\d)[${escapedPlaceholder}${escapedGroup}](\\d)`, "g"), "$1$2");
+    let processedValue = value.replaceAll(new RegExp(String.raw`(\d)[${escapedPlaceholder}${escapedGroup}](\d)`, "g"), "$1$2");
 
     if (decimalSeparator !== ".") {
         processedValue = processedValue.replace(escapedDecimal, ".");
@@ -106,7 +106,7 @@ const parseDuration = (value: string, options?: ParseDurationOptions): number | 
         .map((k) => k.replaceAll(ESCAPE_REGEX, String.raw`\$&`)) // escape meta chars
         .join("|");
 
-    const durationRegex = new RegExp(`(-?\\d*\\.?\\d+)\\s*(${regexKeys})`, "gi");
+    const durationRegex = new RegExp(String.raw`(-?\d*\.?\d+)\s*(${regexKeys})`, "gi");
 
     let totalMs = 0;
     let match;
