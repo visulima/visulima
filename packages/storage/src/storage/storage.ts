@@ -8,7 +8,7 @@ import { parseBytes } from "@visulima/humanizer";
 import { isAbsolute, normalize } from "@visulima/path";
 import typeis from "type-is";
 
-import { NoOpMetrics } from "../metrics";
+import NoOpMetrics from "../metrics/no-op-metrics";
 import type { Cache } from "../utils/cache";
 import { NoOpCache } from "../utils/cache";
 import type { ErrorResponses } from "../utils/errors";

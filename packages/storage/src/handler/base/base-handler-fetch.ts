@@ -8,14 +8,14 @@ import pick from "../../utils/primitives/pick";
 import type { HttpError, UploadResponse } from "../../utils/types";
 import { isValidationError } from "../../utils/validator";
 import type { Handlers, ResponseFile, ResponseList, UploadOptions } from "../types";
-import { BaseHandlerCore } from "./base-handler-core";
+import BaseHandlerCore from "./base-handler-core";
 
 /**
  * Base handler for Web API Fetch platform (Request/Response).
  * Extends BaseHandlerCore with Fetch-specific request/response handling.
  * @template TFile The file type used by this handler.
  */
-export abstract class BaseHandlerFetch<TFile extends UploadFile> extends BaseHandlerCore<TFile> {
+abstract class BaseHandlerFetch<TFile extends UploadFile> extends BaseHandlerCore<TFile> {
     /**
      * Limiting enabled HTTP method handler.
      */
@@ -390,3 +390,5 @@ export abstract class BaseHandlerFetch<TFile extends UploadFile> extends BaseHan
         return super.negotiateContentType(request.headers.get("accept") || undefined, supportedTypes);
     }
 }
+
+export default BaseHandlerFetch;

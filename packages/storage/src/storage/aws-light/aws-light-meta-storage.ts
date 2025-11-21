@@ -2,7 +2,7 @@ import MetaStorage from "../meta-storage";
 import type { File } from "../utils/file";
 import { isExpired } from "../utils/file";
 import { parseMetadata, stringifyMetadata } from "../utils/file/metadata";
-import { AwsLightApiAdapter } from "./aws-light-api-adapter";
+import AwsLightApiAdapter from "./aws-light-api-adapter";
 import type { AwsLightMetaStorageOptions } from "./types";
 
 /**

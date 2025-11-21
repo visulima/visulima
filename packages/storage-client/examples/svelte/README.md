@@ -25,6 +25,6 @@ Visit [http://localhost:5173](http://localhost:5173)
 
 ## Notes
 
-- Update the `endpoint` in your components to point to your upload API
+- Update the `endpointMultipart` and `endpointTus` in your components to point to your upload APIs
 - The example uses Svelte stores for reactive state management
 - Check the SvelteKit documentation for routing and API setup

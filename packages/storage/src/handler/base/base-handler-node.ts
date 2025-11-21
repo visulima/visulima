@@ -17,7 +17,7 @@ import { isValidationError } from "../../utils/validator";
 import type { AsyncHandler, Handlers, MethodHandler, ResponseFile, ResponseList, UploadOptions } from "../types";
 import { createRangeLimitedStream, pipeWithBackpressure } from "../utils/stream-utils";
 import { handleCompletedUpload, handleGetRequest, handleHeadOptionsRequest, handlePartialUpload, handleUploadError } from "../utils/upload-handlers";
-import { BaseHandlerCore } from "./base-handler-core";
+import BaseHandlerCore from "./base-handler-core";
 
 const CONTENT_TYPE = "Content-Type";
 
@@ -28,7 +28,7 @@ const CONTENT_TYPE = "Content-Type";
  * @template NodeRequest The Node.js request type.
  * @template NodeResponse The Node.js response type.
  */
-export abstract class BaseHandlerNode<
+abstract class BaseHandlerNode<
     TFile extends UploadFile,
     NodeRequest extends IncomingMessage = IncomingMessage,
     NodeResponse extends ServerResponse = ServerResponse,
@@ -656,3 +656,5 @@ export abstract class BaseHandlerNode<
         }
     }
 }
+
+export default BaseHandlerNode;

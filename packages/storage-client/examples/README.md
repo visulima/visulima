@@ -46,6 +46,13 @@ This directory contains example projects demonstrating how to use `@visulima/sto
 - **Features**: Svelte stores (`createUpload`, `createMultipartUpload`, `createTusUpload`)
 - **Run**: `cd svelte && pnpm install && pnpm dev`
 
+### Nuxt
+
+- **Location**: [`nuxt/`](./nuxt/)
+- **Framework**: Nuxt 3
+- **Features**: Vue composables (`useUpload`, `useMultipartUpload`, `useTusUpload`) with SSR support
+- **Run**: `cd nuxt && pnpm install && pnpm dev`
+
 ## Quick Start
 
 Each example demonstrates:
@@ -60,18 +67,18 @@ Each example demonstrates:
 Each example is self-contained. Navigate to the example directory and install dependencies:
 
 ```bash
-cd react  # or nextjs, vue, svelte, etc.
+cd react  # or nextjs, vue, svelte, nuxt, etc.
 pnpm install
 ```
 
 ## Configuration
 
-All examples use a mock upload endpoint. Update the `endpoint` in each example to point to your actual upload server:
+All examples use mock upload endpoints. Update the `endpointMultipart` and `endpointTus` in each example to point to your actual upload server:
 
 ```typescript
 const uploader = useUpload({
-    endpoint: "/api/upload", // Update this to your endpoint
-    method: "auto",
+    endpointMultipart: "/api/upload/multipart", // Update this to your multipart endpoint
+    endpointTus: "/api/upload/tus", // Update this to your TUS endpoint
 });
 ```
 
@@ -84,7 +91,8 @@ import { useUpload } from "@visulima/storage-client/react";
 
 const UploadComponent = () => {
     const { isUploading, progress, upload } = useUpload({
-        endpoint: "/api/upload",
+        endpointMultipart: "/api/upload/multipart",
+        endpointTus: "/api/upload/tus",
     });
 
     const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -117,7 +125,8 @@ const UploadComponent = () => {
 import { useUpload } from "@visulima/storage-client/vue";
 
 const { upload, progress, isUploading } = useUpload({
-    endpoint: "/api/upload",
+    endpointMultipart: "/api/upload/multipart",
+    endpointTus: "/api/upload/tus",
 });
 </script>
 
@@ -136,7 +145,8 @@ import { createUpload } from "@visulima/storage-client/solid";
 
 const UploadComponent = () => {
     const { isUploading, progress, upload } = createUpload({
-        endpoint: "/api/upload",
+        endpointMultipart: "/api/upload/multipart",
+        endpointTus: "/api/upload/tus",
     });
 
     const handleFileSelect = async (e: Event) => {
@@ -169,7 +179,8 @@ const UploadComponent = () => {
   import { createUpload } from '@visulima/storage-client/svelte';
 
   const { upload, progress, isUploading } = createUpload({
-    endpoint: '/api/upload',
+    endpointMultipart: '/api/upload/multipart',
+    endpointTus: '/api/upload/tus',
   });
 </script>
 
@@ -177,6 +188,26 @@ const UploadComponent = () => {
 {#if $isUploading}
   <div>Progress: {$progress}%</div>
 {/if}
+```
+
+### Nuxt
+
+```vue
+<script setup lang="ts">
+import { useUpload } from "@visulima/storage-client/vue";
+
+const { upload, progress, isUploading } = useUpload({
+    endpointMultipart: "/api/upload/multipart",
+    endpointTus: "/api/upload/tus",
+});
+</script>
+
+<template>
+    <div>
+        <input type="file" @change="(e) => upload((e.target as HTMLInputElement).files?.[0])" />
+        <div v-if="isUploading">Progress: {{ progress }}%</div>
+    </div>
+</template>
 ```
 
 ## Contributing

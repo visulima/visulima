@@ -175,7 +175,7 @@ export const monitorStreamPerformance = (
 
     stream.on("data", (chunk: Buffer) => {
         totalBytes += chunk.length;
-        chunkCount++;
+        chunkCount += 1;
     });
 
     stream.on("end", () => {

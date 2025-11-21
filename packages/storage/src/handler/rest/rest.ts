@@ -1,14 +1,16 @@
+/* eslint-disable max-classes-per-file, sonarjs/file-name-differ-from-class */
 import type { IncomingMessage, ServerResponse } from "node:http";
 
+// eslint-disable-next-line import/no-extraneous-dependencies
 import createHttpError from "http-errors";
 import { hasBody } from "type-is";
 
 import type { FileInit, UploadFile } from "../../storage/utils/file";
 import { getHeader, getIdFromRequest, getRequestStream, readBody } from "../../utils/http";
-import { BaseHandlerNode } from "../base/base-handler-node";
+import BaseHandlerNode from "../base/base-handler-node";
 import type { Handlers, ResponseFile, ResponseList, UploadOptions } from "../types";
 import { extractFileInit, parseChunkHeaders, validateContentLength, validateRequestBody } from "../utils/request-parser";
-import { RestBase } from "./rest-base";
+import RestBase from "./rest-base";
 
 /**
  * REST API handler for direct binary file uploads (Node.js version).

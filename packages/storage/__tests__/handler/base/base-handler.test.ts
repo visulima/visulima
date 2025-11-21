@@ -23,12 +23,12 @@ describe("baseHandler", () => {
         // Wait for storage to be ready with timeout
         await new Promise<void>((resolve, reject) => {
             const timeoutMs = 10_000; // 10 second timeout
-            let checkReadyTimeout: NodeJS.Timeout | null = null;
+            let checkReadyTimeout: NodeJS.Timeout | undefined;
             const timeoutTimer = setTimeout(() => {
                 // Clear any scheduled checkReady timeouts to avoid leaks
                 if (checkReadyTimeout) {
                     clearTimeout(checkReadyTimeout);
-                    checkReadyTimeout = null;
+                    checkReadyTimeout = undefined;
                 }
 
                 reject(new Error(`Storage failed to become ready within ${timeoutMs}ms`));
@@ -41,7 +41,7 @@ describe("baseHandler", () => {
 
                     if (checkReadyTimeout) {
                         clearTimeout(checkReadyTimeout);
-                        checkReadyTimeout = null;
+                        checkReadyTimeout = undefined;
                     }
 
                     resolve();

@@ -11,7 +11,7 @@ import { buildErrorResponseBody } from "../utils/response-builder";
 /**
  * Service for handling and formatting errors consistently across handlers.
  */
-export class ErrorHandlerService<TFile extends UploadFile> {
+class ErrorHandlerService<TFile extends UploadFile> {
     private readonly storage: BaseStorage<TFile>;
 
     private readonly errorResponses: ErrorResponses;
@@ -85,3 +85,5 @@ export class ErrorHandlerService<TFile extends UploadFile> {
         return this.normalizeError(errorObject);
     }
 }
+
+export default ErrorHandlerService;

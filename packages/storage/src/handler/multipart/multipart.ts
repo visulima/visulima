@@ -1,16 +1,18 @@
+/* eslint-disable max-classes-per-file */
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { Readable } from "node:stream";
 
 import type { MultipartPart } from "@remix-run/multipart-parser";
 import { MaxFileSizeExceededError, MultipartParseError, parseMultipartRequest } from "@remix-run/multipart-parser/node";
+// eslint-disable-next-line import/no-extraneous-dependencies
 import createHttpError from "http-errors";
 
 import type { UploadFile } from "../../storage/utils/file";
 import { getIdFromRequest } from "../../utils/http";
 import ValidationError from "../../utils/validation-error";
-import { BaseHandlerNode } from "../base/base-handler-node";
+import BaseHandlerNode from "../base/base-handler-node";
 import type { Handlers, ResponseFile, UploadOptions } from "../types";
-import { MultipartBase } from "./multipart-base";
+import MultipartBase from "./multipart-base";
 
 // eslint-disable-next-line sonarjs/anchor-precedence
 const RE_MIME = /^multipart\/.+|application\/x-www-form-urlencoded$/i;

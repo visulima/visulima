@@ -1,11 +1,13 @@
+/* eslint-disable max-classes-per-file, sonarjs/file-name-differ-from-class */
+// eslint-disable-next-line import/no-extraneous-dependencies
 import createHttpError from "http-errors";
 
 import type { FileInit, UploadFile } from "../../storage/utils/file";
 import { ERRORS } from "../../utils/errors";
 import { getRequestStream } from "../../utils/http";
-import { BaseHandlerFetch } from "../base/base-handler-fetch";
+import BaseHandlerFetch from "../base/base-handler-fetch";
 import type { Handlers, ResponseFile, ResponseList, UploadOptions } from "../types";
-import { RestBase } from "./rest-base";
+import RestBase from "./rest-base";
 
 /**
  * REST API handler for direct binary file uploads (Web API Fetch version).
@@ -106,7 +108,7 @@ class RestFetch<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
 
         const requestUrl = request.url;
         // Convert Web API ReadableStream to Node.js Readable stream
-        const bodyStream = request.body ? getRequestStream(request) : null;
+        const bodyStream = request.body ? getRequestStream(request) : undefined;
 
         return this.restBase.handlePost(config, isChunkedUpload, requestUrl, bodyStream, contentLength);
     }
@@ -402,14 +404,14 @@ const getIdFromRequestUrl = (url: string): string | null => {
         const lastPart = pathParts[pathParts.length - 1];
 
         if (!lastPart) {
-            return null;
+            return undefined;
         }
 
         // Remove extension if present
         const id = lastPart.replace(/\.[^.]+$/, "");
 
-        return id || null;
+        return id || undefined;
     } catch {
-        return null;
+        return undefined;
     }
 };

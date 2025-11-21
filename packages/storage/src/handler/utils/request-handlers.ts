@@ -47,7 +47,7 @@ export const handleTransformationRequest = async <TFile extends UploadFile>(
     mediaTransformer: MediaTransformer,
     uuid: string,
     queryParameters: Record<string, string>,
-): Promise<ResponseFile<TFile> | null> => {
+): Promise<ResponseFile<TFile> | undefined> => {
     try {
         const transformedResult = await mediaTransformer.handle(uuid, queryParameters);
 
@@ -71,8 +71,8 @@ export const handleTransformationRequest = async <TFile extends UploadFile>(
             throw createHttpError(400, (transformError as Error).message);
         }
 
-        // Return null to indicate fallback to original file
-        return null;
+        // Return undefined to indicate fallback to original file
+        return undefined;
     }
 };
 
@@ -82,16 +82,16 @@ export const handleTransformationRequest = async <TFile extends UploadFile>(
  * @param uuid File UUID
  * @param ext File extension (optional)
  * @param fileMeta File metadata
- * @returns ResponseFile with stream, or null if streaming not available
+ * @returns ResponseFile with stream, or undefined if streaming not available
  */
 export const handleStreamingRequest = async <TFile extends UploadFile>(
     storage: BaseStorage<TFile>,
     uuid: string,
     extension: string | undefined,
     fileMeta: TFile,
-): Promise<ResponseFile<TFile> | null> => {
+): Promise<ResponseFile<TFile> | undefined> => {
     if (!storage.getStream) {
-        return null;
+        return undefined;
     }
 
     try {
@@ -116,7 +116,7 @@ export const handleStreamingRequest = async <TFile extends UploadFile>(
         } as ResponseFile<TFile>;
     } catch {
         // Fall back to regular file serving if streaming fails
-        return null;
+        return undefined;
     }
 };
 

@@ -27,4 +27,4 @@ Visit [http://localhost:3000](http://localhost:3000)
 
 - This example uses the App Router (Next.js 13+)
 - Upload components are marked with `"use client"` directive
-- Update the `endpoint` in `app/page.tsx` to point to your upload API
+- Update the `endpointMultipart` and `endpointTus` in `app/page.tsx` to point to your upload APIs
