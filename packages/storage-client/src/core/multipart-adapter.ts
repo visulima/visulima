@@ -25,9 +25,9 @@ export interface MultipartAdapter {
 }
 
 /**
- * Create a multipart upload adapter
+ * Creates a multipart upload adapter.
  * This adapter provides a clean interface for multipart file uploads
- * with proper progress tracking and event handling
+ * with proper progress tracking and event handling.
  */
 export const createMultipartAdapter = (options: MultipartAdapterOptions): MultipartAdapter => {
     const uploader = createUploader({
@@ -39,21 +39,21 @@ export const createMultipartAdapter = (options: MultipartAdapterOptions): Multip
 
     return {
         /**
-         * Abort all uploads
+         * Aborts all uploads.
          */
         abort: () => {
             uploader.abort();
         },
 
         /**
-         * Clear all uploads
+         * Clears all uploads.
          */
         clear: () => {
             uploader.clear();
         },
 
         /**
-         * Upload a file and return visulima-compatible result
+         * Uploads a file and returns visulima-compatible result.
          */
         upload: async (file: File): Promise<UploadResult> =>
             new Promise((resolve, reject) => {

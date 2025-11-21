@@ -1,12 +1,16 @@
+/* eslint-disable max-classes-per-file, sonarjs/file-name-differ-from-class */
+import { Readable } from "node:stream";
+
 import type { MultipartPart } from "@remix-run/multipart-parser";
 import { MaxFileSizeExceededError, MultipartParseError, parseMultipartRequest } from "@remix-run/multipart-parser";
+// eslint-disable-next-line import/no-extraneous-dependencies
 import createHttpError from "http-errors";
 
 import type { UploadFile } from "../../storage/utils/file";
 import ValidationError from "../../utils/validation-error";
-import { BaseHandlerFetch } from "../base/base-handler-fetch";
+import BaseHandlerFetch from "../base/base-handler-fetch";
 import type { Handlers, ResponseFile, UploadOptions } from "../types";
-import { MultipartBase } from "./multipart-base";
+import MultipartBase from "./multipart-base";
 
 // eslint-disable-next-line sonarjs/anchor-precedence
 const RE_MIME = /^multipart\/.+|application\/x-www-form-urlencoded$/i;
@@ -14,15 +18,14 @@ const RE_MIME = /^multipart\/.+|application\/x-www-form-urlencoded$/i;
 /**
  * Extract file ID from request URL.
  */
-const getIdFromRequestUrl = (url: string): string | null => {
+const getIdFromRequestUrl = (url: string): string | undefined => {
     try {
         const urlObject = new URL(url);
         const pathParts = urlObject.pathname.split("/").filter(Boolean);
-        const lastPart = pathParts[pathParts.length - 1];
 
-        return lastPart || null;
+        return pathParts[pathParts.length - 1] || undefined;
     } catch {
-        return null;
+        return undefined;
     }
 };
 
@@ -89,8 +92,6 @@ class Multipart<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
             protected createStreamFromBytes(bytes: unknown): unknown {
                 // For Fetch API, convert to Node.js Readable stream for storage.write
                 // storage.write expects a Node.js Readable stream, not Uint8Array
-                const { Readable } = require("node:stream");
-
                 if (bytes instanceof Uint8Array) {
                     return Readable.from(Buffer.from(bytes));
                 }
@@ -105,8 +106,6 @@ class Multipart<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
 
             protected createEmptyStream(): unknown {
                 // Return Node.js Readable stream, not Uint8Array
-                const { Readable } = require("node:stream");
-
                 return Readable.from(new Uint8Array(0));
             }
         }();

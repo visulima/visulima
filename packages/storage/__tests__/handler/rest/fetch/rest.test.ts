@@ -11,7 +11,7 @@ import { waitForStorageReady } from "../../../__helpers__/utils";
 describe("fetch RestFetch", () => {
     const basePath = "http://localhost/rest/";
 
-    const create = (storage: DiskStorage): Request => {
+    const create = (_storage: DiskStorage): Request => {
         // Create a Blob from the buffer for proper Web API Request body handling
         const blob = new Blob([testfile.asBuffer], { type: testfile.contentType });
 

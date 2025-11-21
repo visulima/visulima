@@ -74,6 +74,23 @@ app.use("/files", rest.handle);
 
 ### Modern Frameworks (Hono, Cloudflare Workers)
 
+#### Hono (Recommended)
+
+```ts
+import { Hono } from "hono";
+import { DiskStorage } from "@visulima/storage";
+import { createStorageHandler } from "@visulima/storage/handler/http/hono";
+
+const app = new Hono();
+const storage = new DiskStorage({ directory: "./uploads" });
+
+// Register handlers - routes are automatically registered!
+createStorageHandler(app, { path: "/files", storage, type: "multipart" });
+createStorageHandler(app, { path: "/files-rest", storage, type: "rest" });
+```
+
+#### Manual Route Registration
+
 ```ts
 import { DiskStorage } from "@visulima/storage";
 import { Multipart, Rest } from "@visulima/storage/handler/http/fetch";

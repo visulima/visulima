@@ -18,12 +18,9 @@ vi.mock(import("aws4fetch"), () => {
     // Return a mock AwsClient class that uses the shared mock fetch
     return {
         AwsClient: class MockAwsClient {
+            // eslint-disable-next-line class-methods-use-this
             public get fetch() {
                 return sharedMockFetch;
-            }
-
-            public constructor(_config: unknown) {
-                // Constructor does nothing, fetch is accessed via getter
             }
         },
     };

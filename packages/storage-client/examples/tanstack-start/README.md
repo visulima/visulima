@@ -30,7 +30,8 @@ Visit [http://localhost:3000](http://localhost:3000)
 The API route uses `@visulima/storage`'s `Multipart` handler to process file uploads:
 
 ```typescript
-import { DiskStorage, Multipart } from "@visulima/storage";
+import { DiskStorage } from "@visulima/storage";
+import { Multipart } from "@visulima/storage/handler/http/fetch";
 
 const storage = new DiskStorage({ directory: "./uploads" });
 const multipart = new Multipart({ storage });
@@ -53,7 +54,8 @@ The frontend uses `useUpload` hook from `@visulima/storage-client/react`:
 import { useUpload } from "@visulima/storage-client/react";
 
 const { error, isUploading, progress, reset, result, upload } = useUpload({
-    endpoint: "/api/upload",
+    endpointMultipart: "/api/upload/multipart",
+    endpointTus: "/api/upload/tus",
     onError: (error_) => console.error("Upload error:", error_),
     onSuccess: (res) => console.log("Upload successful:", res),
 });

@@ -18,7 +18,7 @@ import type { UploadOptions } from "../types";
  * This class is platform-agnostic and contains no Node.js or Web API specific code.
  * @template TFile The file type used by this handler.
  */
-export abstract class BaseHandlerCore<TFile extends UploadFile> extends EventEmitter {
+abstract class BaseHandlerCore<TFile extends UploadFile> extends EventEmitter {
     /**
      * Response body type for the handler.
      */
@@ -201,3 +201,5 @@ export abstract class BaseHandlerCore<TFile extends UploadFile> extends EventEmi
         }
     }
 }
+
+export default BaseHandlerCore;

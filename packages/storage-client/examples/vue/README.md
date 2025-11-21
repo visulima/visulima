@@ -25,5 +25,5 @@ Visit [http://localhost:5173](http://localhost:5173)
 
 ## Notes
 
-- Update the `endpoint` in `src/App.vue` to point to your upload API
-- The example uses `method: "auto"` which automatically selects between multipart and TUS based on file size
+- Update the `endpointMultipart` and `endpointTus` in `src/App.vue` to point to your upload APIs
+- The example automatically selects between multipart and TUS based on file size when both endpoints are provided

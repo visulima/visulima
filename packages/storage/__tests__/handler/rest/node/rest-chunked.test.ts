@@ -19,7 +19,6 @@ describe("http Rest - Chunked Uploads", () => {
 
     // Test file: 100 bytes split into 3 chunks (40, 40, 20)
     const testFileSize = 100;
-    const chunkSize = 40;
     const testFileBuffer = Buffer.from("x".repeat(testFileSize));
     const chunk1 = testFileBuffer.slice(0, 40);
     const chunk2 = testFileBuffer.slice(40, 80);

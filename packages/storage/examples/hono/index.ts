@@ -4,7 +4,7 @@ import { logger } from "hono/logger";
 import { swaggerUI } from "@hono/swagger-ui";
 import type { Context } from "hono";
 import { DiskStorage } from "@visulima/storage";
-import { Multipart, Rest, Tus } from "@visulima/storage/handler/http/fetch";
+import { createStorageHandler } from "@visulima/storage/handler/http/hono";
 import { xhrOpenApiSpec, tusOpenApiSpec } from "@visulima/storage/openapi";
 import { MediaTransformer } from "@visulima/storage/transformer";
 import ImageTransformer from "@visulima/storage/transformers/image";
@@ -35,140 +35,29 @@ const mediaTransformer = new MediaTransformer(storage, {
     maxImageSize: 10 * 1024 * 1024, // 10MB for images
 });
 
-// Multipart handler
-const multipart = new Multipart({
-    storage,
-    mediaTransformer,
-});
-
-// REST handler for direct binary uploads
-const rest = new Rest({
-    storage,
-    mediaTransformer,
-});
-
-// TUS handler for resumable uploads
-const tus = new Tus({
-    storage,
-    mediaTransformer,
-});
-
 // Health check route (custom - not using OpenAPI utilities)
 app.get("/health", (c: Context) => c.json({ status: "OK", runtime: "hono", method: "fetch" }));
 
-// File upload route - uses multipart.fetch directly
-app.post("/files", async (c: Context) => {
-    const request = c.req.raw; // Get the Web API Request
-
-    try {
-        return await multipart.fetch(request);
-    } catch (error: any) {
-        console.error("Upload error:", error);
-        return c.json({ error: error.message || "Upload failed" }, 500);
-    }
+// Register storage handlers - routes are automatically registered!
+createStorageHandler(app, {
+    path: "/files",
+    storage,
+    mediaTransformer,
+    type: "multipart",
 });
 
-// File listing route - uses multipart.fetch directly
-app.get("/files/:id?/:metadata?", async (c: Context) => {
-    const request = c.req.raw;
-
-    try {
-        return await multipart.fetch(request);
-    } catch (error: any) {
-        console.error("List files error:", error);
-        return c.json({ error: error.message || "Failed to list files" }, 500);
-    }
+createStorageHandler(app, {
+    path: "/files-rest",
+    storage,
+    mediaTransformer,
+    type: "rest",
 });
 
-// File delete route - uses multipart.fetch directly
-app.delete("/files/:id", async (c: Context) => {
-    const request = c.req.raw;
-
-    try {
-        return await multipart.fetch(request);
-    } catch (error: any) {
-        console.error("Delete file(s) error:", error);
-        return c.json({ error: error.message || "Failed to delete file(s)" }, 500);
-    }
-});
-
-// REST API routes for direct binary uploads
-app.post("/files-rest", async (c: Context) => {
-    const request = c.req.raw;
-
-    try {
-        return await rest.fetch(request);
-    } catch (error: any) {
-        console.error("REST upload error:", error);
-        return c.json({ error: error.message || "REST upload failed" }, 500);
-    }
-});
-
-app.put("/files-rest/:id", async (c: Context) => {
-    const request = c.req.raw;
-
-    try {
-        return await rest.fetch(request);
-    } catch (error: any) {
-        console.error("REST update error:", error);
-        return c.json({ error: error.message || "REST update failed" }, 500);
-    }
-});
-
-app.get("/files-rest/:id?", async (c: Context) => {
-    const request = c.req.raw;
-
-    try {
-        return await rest.fetch(request);
-    } catch (error: any) {
-        console.error("REST get error:", error);
-        return c.json({ error: error.message || "Failed to get file(s)" }, 500);
-    }
-});
-
-app.head("/files-rest/:id", async (c: Context) => {
-    const request = c.req.raw;
-
-    try {
-        return await rest.fetch(request);
-    } catch (error: any) {
-        console.error("REST head error:", error);
-        return c.json({ error: error.message || "Failed to get file metadata" }, 500);
-    }
-});
-
-app.delete("/files-rest/:id?", async (c: Context) => {
-    const request = c.req.raw;
-
-    try {
-        return await rest.fetch(request);
-    } catch (error: any) {
-        console.error("REST delete error:", error);
-        return c.json({ error: error.message || "Failed to delete file(s)" }, 500);
-    }
-});
-
-// TUS resumable upload routes
-app.all("/files-tus", async (c: Context) => {
-    const request = c.req.raw;
-
-    try {
-        return await tus.fetch(request);
-    } catch (error: any) {
-        console.error("TUS upload error:", error);
-        return c.json({ error: error.message || "TUS upload failed" }, 500);
-    }
-});
-
-app.all("/files-tus/:id", async (c: Context) => {
-    const request = c.req.raw;
-
-    try {
-        return await tus.fetch(request);
-    } catch (error: any) {
-        console.error("TUS upload error:", error);
-        return c.json({ error: error.message || "TUS upload failed" }, 500);
-    }
+createStorageHandler(app, {
+    path: "/files-tus",
+    storage,
+    mediaTransformer,
+    type: "tus",
 });
 
 // Swagger UI route

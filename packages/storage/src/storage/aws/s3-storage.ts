@@ -6,7 +6,7 @@ import { fromIni } from "@aws-sdk/credential-providers";
 import type { HttpError } from "../../utils/types";
 import type { FileInit, FileQuery } from "../utils/file";
 import { S3BaseStorage } from "./s3-base-storage";
-import { S3ClientAdapter } from "./s3-client-adapter";
+import S3ClientAdapter from "./s3-client-adapter";
 import S3File from "./s3-file";
 import S3MetaStorage from "./s3-meta-storage";
 import type { AwsError, S3StorageOptions } from "./types";

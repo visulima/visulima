@@ -34,7 +34,7 @@ import type { Metrics } from "../utils/types";
 /**
  * OpenTelemetry-based metrics implementation.
  */
-export class OpenTelemetryMetrics implements Metrics {
+class OpenTelemetryMetrics implements Metrics {
     private readonly meter: Meter;
 
     private readonly counters = new Map<string, ReturnType<Meter["createCounter"]>>();
@@ -109,3 +109,5 @@ export class OpenTelemetryMetrics implements Metrics {
         gauge.add(value, attributes);
     }
 }
+
+export default OpenTelemetryMetrics;

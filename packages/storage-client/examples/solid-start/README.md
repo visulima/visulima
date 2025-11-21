@@ -26,4 +26,4 @@ Visit [http://localhost:3000](http://localhost:3000)
 ## Notes
 
 - This example uses Solid Start's file-based routing
-- Update the `endpoint` in `app/routes/index.tsx` to point to your upload API
+- Update the `endpointMultipart` and `endpointTus` in `app/routes/index.tsx` to point to your upload APIs

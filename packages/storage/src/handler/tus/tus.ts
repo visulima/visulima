@@ -1,11 +1,13 @@
+/* eslint-disable max-classes-per-file, sonarjs/file-name-differ-from-class */
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { format } from "node:url";
 
+// eslint-disable-next-line import/no-extraneous-dependencies
 import createHttpError from "http-errors";
 
 import type { UploadFile } from "../../storage/utils/file";
 import { getBaseUrl, getHeader, getIdFromRequest, getRequestStream } from "../../utils/http";
-import { BaseHandlerNode } from "../base/base-handler-node";
+import BaseHandlerNode from "../base/base-handler-node";
 import type { Handlers, ResponseFile, UploadOptions } from "../types";
 import { TusBase } from "./tus-base";
 
@@ -27,14 +29,15 @@ export class Tus<
     NodeRequest extends IncomingMessage = IncomingMessage,
     NodeResponse extends ServerResponse = ServerResponse,
 > extends BaseHandlerNode<TFile, NodeRequest, NodeResponse> {
+
     /**
      * Limiting enabled http method handler
      */
     public static override readonly methods: Handlers[] = ["delete", "download", "get", "head", "options", "patch", "post"];
 
-    private readonly tusBase: TusBase<TFile>;
-
     public disableTerminationForFinishedUploads = false;
+
+    private readonly tusBase: TusBase<TFile>;
 
     public constructor(options: UploadOptions<TFile>) {
         super(options);
@@ -55,35 +58,6 @@ export class Tus<
                 return tusInstance.buildFileUrlForTus(requestUrl, file);
             }
         }();
-    }
-
-    /**
-     * Compose and register HTTP method handlers.
-     */
-    protected compose(): void {
-        this.registeredHandlers.set("POST", this.post.bind(this));
-        this.registeredHandlers.set("PATCH", this.patch.bind(this));
-        this.registeredHandlers.set("HEAD", this.head.bind(this));
-        this.registeredHandlers.set("GET", this.get.bind(this));
-        this.registeredHandlers.set("DELETE", this.delete.bind(this));
-        this.registeredHandlers.set("OPTIONS", this.options.bind(this));
-
-        this.logger?.debug("Registered handler: %s", [...this.registeredHandlers.keys()].join(", "));
-    }
-
-    /**
-     * Build file URL for TUS uploads (without file extension).
-     * @param requestUrl Request URL string
-     * @param file File object containing ID
-     * @returns Constructed file URL for TUS protocol
-     */
-    protected buildFileUrlForTus(requestUrl: string, file: TFile): string {
-        const url = new URL(requestUrl, "http://localhost");
-        const { pathname } = url;
-        const query = Object.fromEntries(url.searchParams.entries());
-        const relative = format({ pathname: `${pathname}/${file.id}`, query });
-
-        return `${this.storage.config.useRelativeLocation ? relative : getBaseUrl({ url: requestUrl } as NodeRequest) + relative}`;
     }
 
     /**
@@ -256,6 +230,33 @@ export class Tus<
             statusCode,
         });
     }
-}
 
-export default Tus;
+    /**
+     * Compose and register HTTP method handlers.
+     */
+    protected compose(): void {
+        this.registeredHandlers.set("POST", this.post.bind(this));
+        this.registeredHandlers.set("PATCH", this.patch.bind(this));
+        this.registeredHandlers.set("HEAD", this.head.bind(this));
+        this.registeredHandlers.set("GET", this.get.bind(this));
+        this.registeredHandlers.set("DELETE", this.delete.bind(this));
+        this.registeredHandlers.set("OPTIONS", this.options.bind(this));
+
+        this.logger?.debug("Registered handler: %s", [...this.registeredHandlers.keys()].join(", "));
+    }
+
+    /**
+     * Build file URL for TUS uploads (without file extension).
+     * @param requestUrl Request URL string
+     * @param file File object containing ID
+     * @returns Constructed file URL for TUS protocol
+     */
+    protected buildFileUrlForTus(requestUrl: string, file: TFile): string {
+        const url = new URL(requestUrl, "http://localhost");
+        const { pathname } = url;
+        const query = Object.fromEntries(url.searchParams.entries());
+        const relative = format({ pathname: `${pathname}/${file.id}`, query });
+
+        return `${this.storage.config.useRelativeLocation ? relative : getBaseUrl({ url: requestUrl } as NodeRequest) + relative}`;
+    }
+}

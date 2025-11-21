@@ -31,7 +31,7 @@ import type { Part, S3ApiOperations } from "./s3-base-storage";
 /**
  * Adapter that wraps AWS SDK S3Client to implement S3ApiOperations interface.
  */
-export class S3ClientAdapter implements S3ApiOperations {
+class S3ClientAdapter implements S3ApiOperations {
     public constructor(
         private readonly client: S3Client,
         private readonly bucket: string,
@@ -276,3 +276,5 @@ export class S3ClientAdapter implements S3ApiOperations {
         await waitUntilBucketExists({ client: this.client, maxWaitTime: 30 }, { Bucket: params.Bucket });
     }
 }
+
+export default S3ClientAdapter;
