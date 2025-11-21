@@ -1,0 +1,577 @@
+---
+title: Examples
+description: Real-world examples and use cases for the Vite error overlay plugin.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
+
+# Examples
+
+This page provides practical, real-world examples of using `@visulima/vite-overlay` in various scenarios.
+
+## Basic React Application
+
+A minimal React application with error overlay:
+
+```typescript title="vite.config.ts"
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import errorOverlay from "@visulima/vite-overlay";
+
+export default defineConfig({
+    plugins: [
+        react(),
+        errorOverlay(),
+    ],
+});
+```
+
+```tsx title="src/App.tsx"
+import { useState } from "react";
+
+function App() {
+    const [count, setCount] = useState(0);
+    
+    // This will trigger an error overlay
+    const handleClick = () => {
+        throw new Error("Intentional error for demonstration");
+    };
+    
+    return (
+        <div>
+            <h1>Count: {count}</h1>
+            <button onClick={() => setCount(count + 1)}>Increment</button>
+            <button onClick={handleClick}>Trigger Error</button>
+        </div>
+    );
+}
+
+export default App;
+```
+
+## Vue 3 Application
+
+Using the overlay with Vue 3:
+
+```typescript title="vite.config.ts"
+import { defineConfig } from "vite";
+import vue from "@vitejs/plugin-vue";
+import errorOverlay from "@visulima/vite-overlay";
+
+export default defineConfig({
+    plugins: [
+        vue(),
+        errorOverlay(),
+    ],
+});
+```
+
+```vue title="src/App.vue"
+<script setup lang="ts">
+import { ref } from 'vue';
+
+const count = ref(0);
+
+const triggerError = () => {
+    // Error will be caught and displayed
+    throw new Error('Vue component error');
+};
+</script>
+
+<template>
+    <div>
+        <h1>Count: {{ count }}</h1>
+        <button @click="count++">Increment</button>
+        <button @click="triggerError">Trigger Error</button>
+    </div>
+</template>
+```
+
+## Custom Solution Finders
+
+### API Error Handler
+
+Detect and provide solutions for API errors:
+
+```typescript title="vite.config.ts"
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import errorOverlay from "@visulima/vite-overlay";
+import type { SolutionFinder } from "@visulima/error/solution";
+
+const apiErrorFinder: SolutionFinder = {
+    name: "api-error-finder",
+    priority: 50,
+    async handle(error, context) {
+        // Handle fetch errors
+        if (error.message.includes("fetch failed") || error.message.includes("Failed to fetch")) {
+            return {
+                header: "API Request Failed",
+                body: `
+The API request failed. Here are some common solutions:
+
+## Checklist
+
+1. **Server Running**: Ensure your API server is running
+   \`\`\`bash
+   npm run server
+   \`\`\`
+
+2. **Correct URL**: Verify the API endpoint URL
+   \`\`\`typescript
+   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+   \`\`\`
+
+3. **CORS Configuration**: Check CORS settings on your server
+   \`\`\`typescript
+   // Express.js example
+   app.use(cors({
+       origin: 'http://localhost:5173'
+   }));
+   \`\`\`
+
+4. **Network Tab**: Check the browser's Network tab for more details
+                `.trim(),
+            };
+        }
+        
+        // Handle timeout errors
+        if (error.message.includes("timeout")) {
+            return {
+                header: "Request Timeout",
+                body: "The request took too long. Try increasing the timeout or check your network connection.",
+            };
+        }
+        
+        return undefined;
+    },
+};
+
+export default defineConfig({
+    plugins: [
+        react(),
+        errorOverlay({
+            solutionFinders: [apiErrorFinder],
+        }),
+    ],
+});
+```
+
+### Environment Variable Checker
+
+Detect missing environment variables:
+
+```typescript title="vite.config.ts"
+import { defineConfig } from "vite";
+import errorOverlay from "@visulima/vite-overlay";
+import type { SolutionFinder } from "@visulima/error/solution";
+
+const envVarFinder: SolutionFinder = {
+    name: "env-var-checker",
+    priority: 60,
+    async handle(error, context) {
+        const envMatch = error.message.match(/import\.meta\.env\.(\w+)/);
+        
+        if (envMatch) {
+            const varName = envMatch[1];
+            return {
+                header: `Missing Environment Variable: ${varName}`,
+                body: `
+The environment variable \`${varName}\` is not defined.
+
+## Solution
+
+1. Create or update your \`.env\` file:
+   \`\`\`bash
+   ${varName}=your_value_here
+   \`\`\`
+
+2. If using \`.env.local\`, make sure it's not in \`.gitignore\`
+
+3. Restart your development server after adding environment variables
+
+## Vite Environment Variables
+
+- Must be prefixed with \`VITE_\` to be exposed to client
+- Access via \`import.meta.env.VITE_YOUR_VAR\`
+- Server-side only vars don't need the prefix
+
+[Learn more about Vite env variables](https://vitejs.dev/guide/env-and-mode.html)
+                `.trim(),
+            };
+        }
+        
+        return undefined;
+    },
+};
+
+export default defineConfig({
+    plugins: [
+        errorOverlay({
+            solutionFinders: [envVarFinder],
+        }),
+    ],
+});
+```
+
+### TypeScript Type Error Helper
+
+Provide context-aware solutions for TypeScript errors:
+
+```typescript title="vite.config.ts"
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import errorOverlay from "@visulima/vite-overlay";
+import type { SolutionFinder } from "@visulima/error/solution";
+
+const typeScriptFinder: SolutionFinder = {
+    name: "typescript-helper",
+    priority: 40,
+    async handle(error, context) {
+        if (context.language !== "typescript" && context.language !== "tsx") {
+            return undefined;
+        }
+        
+        // Handle common TypeScript errors
+        if (error.message.includes("Property") && error.message.includes("does not exist")) {
+            const propertyMatch = error.message.match(/Property '(\w+)' does not exist/);
+            const property = propertyMatch?.[1];
+            
+            return {
+                header: "TypeScript Property Error",
+                body: `
+Property \`${property}\` doesn't exist on the type.
+
+## Common Solutions
+
+1. **Optional Chaining**: Use optional chaining if the property might be undefined
+   \`\`\`typescript
+   obj?.${property}
+   \`\`\`
+
+2. **Type Assertion**: If you're sure the property exists
+   \`\`\`typescript
+   (obj as any).${property}
+   // or
+   (obj as YourType).${property}
+   \`\`\`
+
+3. **Type Definition**: Add the property to your type
+   \`\`\`typescript
+   interface YourType {
+       ${property}: string; // or appropriate type
+   }
+   \`\`\`
+
+4. **Check Type**: Verify the object has the correct type
+                `.trim(),
+            };
+        }
+        
+        return undefined;
+    },
+};
+
+export default defineConfig({
+    plugins: [
+        react(),
+        errorOverlay({
+            solutionFinders: [typeScriptFinder],
+        }),
+    ],
+});
+```
+
+## Server-Side Rendering (SSR)
+
+Example with SSR support:
+
+```typescript title="vite.config.ts"
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import errorOverlay from "@visulima/vite-overlay";
+
+export default defineConfig({
+    plugins: [
+        react(),
+        errorOverlay({
+            logClientRuntimeError: true,
+        }),
+    ],
+    ssr: {
+        noExternal: ["@visulima/vite-overlay"],
+    },
+});
+```
+
+```tsx title="entry-server.tsx"
+import { renderToString } from "react-dom/server";
+import App from "./App";
+
+export function render() {
+    try {
+        return renderToString(<App />);
+    } catch (error) {
+        // Error will be caught and displayed with full context
+        throw error;
+    }
+}
+```
+
+## Monorepo Setup
+
+Example configuration for a monorepo:
+
+```typescript title="packages/web/vite.config.ts"
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import errorOverlay from "@visulima/vite-overlay";
+import { sharedSolutionFinders } from "../../config/error-finders";
+
+export default defineConfig({
+    plugins: [
+        react(),
+        errorOverlay({
+            solutionFinders: sharedSolutionFinders,
+        }),
+    ],
+    resolve: {
+        alias: {
+            "@shared": "../../packages/shared/src",
+        },
+    },
+});
+```
+
+```typescript title="config/error-finders.ts"
+import type { SolutionFinder } from "@visulima/error/solution";
+
+export const sharedSolutionFinders: SolutionFinder[] = [
+    {
+        name: "monorepo-import-helper",
+        priority: 70,
+        async handle(error, context) {
+            if (error.message.includes("Cannot find module '@shared")) {
+                return {
+                    header: "Monorepo Import Error",
+                    body: `
+Check your workspace setup:
+
+1. Verify the package is in your workspace
+2. Check \`package.json\` workspace configuration
+3. Run \`npm install\` or \`pnpm install\` from root
+4. Verify path aliases in \`vite.config.ts\`
+                    `.trim(),
+                };
+            }
+            return undefined;
+        },
+    },
+];
+```
+
+## Testing Integration
+
+Using with testing frameworks:
+
+```typescript title="vite.config.ts"
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import errorOverlay from "@visulima/vite-overlay";
+
+export default defineConfig(({ mode }) => ({
+    plugins: [
+        react(),
+        // Only enable in development, not during tests
+        mode === "development" && errorOverlay(),
+    ].filter(Boolean),
+    test: {
+        environment: "jsdom",
+    },
+}));
+```
+
+## Progressive Web App (PWA)
+
+Example with PWA plugin:
+
+```typescript title="vite.config.ts"
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import { VitePWA } from "vite-plugin-pwa";
+import errorOverlay from "@visulima/vite-overlay";
+
+export default defineConfig({
+    plugins: [
+        react(),
+        errorOverlay(), // Should be before PWA plugin
+        VitePWA({
+            registerType: "autoUpdate",
+        }),
+    ],
+});
+```
+
+## Multiple Frameworks
+
+Example using multiple frameworks:
+
+```typescript title="vite.config.ts"
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import vue from "@vitejs/plugin-vue";
+import errorOverlay from "@visulima/vite-overlay";
+
+export default defineConfig({
+    plugins: [
+        react({
+            include: "**/*.{jsx,tsx}",
+        }),
+        vue({
+            include: "**/*.vue",
+        }),
+        errorOverlay(), // Automatically detects both frameworks
+    ],
+});
+```
+
+## Custom Error Boundary
+
+Integrating with React Error Boundary:
+
+```tsx title="src/ErrorBoundary.tsx"
+import React, { Component, ReactNode } from "react";
+
+interface Props {
+    children: ReactNode;
+}
+
+interface State {
+    hasError: boolean;
+    error?: Error;
+}
+
+class ErrorBoundary extends Component<Props, State> {
+    constructor(props: Props) {
+        super(props);
+        this.state = { hasError: false };
+    }
+
+    static getDerivedStateFromError(error: Error): State {
+        return { hasError: true, error };
+    }
+
+    componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+        // Error will be automatically caught by vite-overlay
+        console.error("Error boundary caught:", error, errorInfo);
+        
+        // You can also manually send to overlay
+        if (window.__flameSendError) {
+            window.__flameSendError(error);
+        }
+    }
+
+    render() {
+        if (this.state.hasError) {
+            return <h1>Something went wrong.</h1>;
+        }
+
+        return this.props.children;
+    }
+}
+
+export default ErrorBoundary;
+```
+
+```tsx title="src/main.tsx"
+import React from "react";
+import ReactDOM from "react-dom/client";
+import App from "./App";
+import ErrorBoundary from "./ErrorBoundary";
+
+ReactDOM.createRoot(document.getElementById("root")!).render(
+    <React.StrictMode>
+        <ErrorBoundary>
+            <App />
+        </ErrorBoundary>
+    </React.StrictMode>
+);
+```
+
+## Async Error Handling
+
+Handling errors in async operations:
+
+```typescript title="src/api.ts"
+// Errors in async functions are automatically caught
+export async function fetchUserData(userId: string) {
+    try {
+        const response = await fetch(`/api/users/${userId}`);
+        
+        if (!response.ok) {
+            throw new Error(`Failed to fetch user: ${response.statusText}`);
+        }
+        
+        return await response.json();
+    } catch (error) {
+        // This error will be caught and displayed in the overlay
+        throw new Error(`User fetch failed: ${error.message}`, {
+            cause: error,
+        });
+    }
+}
+```
+
+```tsx title="src/UserProfile.tsx"
+import { useEffect, useState } from "react";
+import { fetchUserData } from "./api";
+
+function UserProfile({ userId }: { userId: string }) {
+    const [user, setUser] = useState(null);
+    
+    useEffect(() => {
+        // Unhandled promise rejections are caught
+        fetchUserData(userId).then(setUser);
+    }, [userId]);
+    
+    return <div>{user?.name}</div>;
+}
+```
+
+## Production Build Check
+
+Ensure the overlay is development-only:
+
+```typescript title="vite.config.ts"
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import errorOverlay from "@visulima/vite-overlay";
+
+export default defineConfig({
+    plugins: [
+        react(),
+        errorOverlay(), // Automatically only runs in serve mode
+    ],
+    build: {
+        sourcemap: true, // Keep source maps for debugging
+        rollupOptions: {
+            output: {
+                manualChunks: {
+                    vendor: ["react", "react-dom"],
+                },
+            },
+        },
+    },
+});
+```
+
+<Callout type="info">
+The error overlay plugin automatically only applies to development mode (`apply: "serve"`), so it won't be included in production builds.
+</Callout>
+
+## Next Steps
+
+- [Configuration](/docs/configuration) - Explore all configuration options
+- [API Reference](/docs/api-reference) - Detailed API documentation
+- [Troubleshooting](/docs/troubleshooting) - Common issues and solutions
