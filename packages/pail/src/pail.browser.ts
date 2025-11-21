@@ -1095,7 +1095,7 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
 }
 
 export type PailBrowserType<T extends string = string, L extends string = string> = Console
-    & (new<TC extends string = string, LC extends string = string>(options?: ConstructorOptions<TC, LC>) => PailBrowserType<TC, LC>)
+    & (new <TC extends string = string, LC extends string = string>(options?: ConstructorOptions<TC, LC>) => PailBrowserType<TC, LC>)
     & PailBrowserImpl<T, L>
     & Record<DefaultLogTypes, LoggerFunction>
     & Record<T, LoggerFunction> & {

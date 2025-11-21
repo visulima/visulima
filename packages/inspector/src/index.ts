@@ -116,8 +116,7 @@ const internalInspect = (value: unknown, options: Options, depth: number, seen: 
     const inspect: InternalInspect = (object: unknown, from: unknown, options: Options): string => {
         if (from) {
             // eslint-disable-next-line no-param-reassign
-            seen = [...seen];
-            seen.push(from);
+            seen = [...seen, from];
         }
 
         return internalInspect(object, options, depth + 1, seen);

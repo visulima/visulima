@@ -202,6 +202,7 @@ export class Table {
                     let cellOptions: Omit<GridItem, "content"> = {};
 
                     if (typeof cellInput === "object" && cellInput !== null && !Array.isArray(cellInput)) {
+                        // eslint-disable-next-line unused-imports/no-unused-vars
                         const { content, href, ...rest } = cellInput as TableItem;
 
                         cellOptions = rest;

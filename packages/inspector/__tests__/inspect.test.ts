@@ -113,10 +113,9 @@ describe("objects", () => {
             inspect: function stringInspect() {
                 return "string";
             },
-        };
-
-        object[utilityInspect.custom] = function custom() {
-            return "symbol";
+            [utilityInspect.custom]: function custom() {
+                return "symbol";
+            },
         };
 
         const symbolResult = "[ symbol, [] ]";

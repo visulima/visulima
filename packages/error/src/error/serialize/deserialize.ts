@@ -154,12 +154,9 @@ const restoreErrorProperties = (
  */
 const makePropertiesEnumerable = (error: Error, serialized: Record<string, unknown>): void => {
     // Get all properties from the error (including inherited ones)
-    const errorProperties = new Set<string>();
+    const errorProperties = new Set<string>(["message", "name", "stack"]);
 
     // Add standard Error properties
-    errorProperties.add("name");
-    errorProperties.add("message");
-    errorProperties.add("stack");
 
     // Add any additional properties that were in the serialized object
     for (const key of Object.keys(serialized)) {

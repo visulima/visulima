@@ -216,8 +216,9 @@ describe("Table Rendering with word wrap", () => {
 
     bench("table", () => {
         const data = [wrapHeaders];
-
+        // eslint-disable-next-line unicorn/no-immediate-mutation
         data.push(...wrapRows.map((row) => row.map((cell) => cell.content)));
+
         table(data, {
             columns: [
                 { width: 40, wrapWord: true },

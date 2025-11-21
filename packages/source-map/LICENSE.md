@@ -23,11 +23,14 @@ SOFTWARE.
 <!-- DEPENDENCIES -->
 
 # Licenses of bundled dependencies
+
 The published @visulima/source-map artifact additionally contains code with the following licenses:
 MIT
 
 # Bundled dependencies:
+
 ## @visulima/path
+
 License: MIT
 By: Daniel Bannert
 Repository: git+https://github.com/visulima/visulima.git
@@ -127,14 +130,15 @@ Repository: git+https://github.com/visulima/visulima.git
 > FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 > DEALINGS IN THE SOFTWARE.
 >
->
->
 > # Licenses of bundled dependencies
+>
 > The published @visulima/path artifact additionally contains code with the following licenses:
 > MIT
 >
 > # Bundled dependencies:
+>
 > ## binary-extensions
+>
 > License: MIT
 > By: Sindre Sorhus
 > Repository: sindresorhus/binary-extensions

@@ -23,11 +23,14 @@ SOFTWARE.
 <!-- DEPENDENCIES -->
 
 # Licenses of bundled dependencies
+
 The published @visulima/tabular artifact additionally contains code with the following licenses:
 MIT
 
 # Bundled dependencies:
+
 ## @visulima/string
+
 License: MIT
 By: Daniel Bannert
 Repository: git+https://github.com/visulima/visulima.git
@@ -54,14 +57,15 @@ Repository: git+https://github.com/visulima/visulima.git
 > OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 > SOFTWARE.
 >
->
->
 > # Licenses of bundled dependencies
+>
 > The published @visulima/string artifact additionally contains code with the following licenses:
 > MIT
 >
 > # Bundled dependencies:
+>
 > ## emoji-regex-xs
+>
 > License: MIT
 > By: Steven Levithan
 > Repository: git+https://github.com/slevithan/emoji-regex-xs.git
@@ -88,9 +92,10 @@ Repository: git+https://github.com/visulima/visulima.git
 > > OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 > > SOFTWARE.
 >
-> ---------------------------------------
+> ---
 >
 > ## fastest-levenshtein
+>
 > License: MIT
 > By: Kasper U. Weihe
 > Repository: git+https://github.com/ka-weihe/fastest-levenshtein.git
@@ -117,9 +122,10 @@ Repository: git+https://github.com/visulima/visulima.git
 > > OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 > > SOFTWARE.
 >
-> ---------------------------------------
+> ---
 >
 > ## get-east-asian-width
+>
 > License: MIT
 > By: Sindre Sorhus
 > Repository: sindresorhus/get-east-asian-width
@@ -134,16 +140,15 @@ Repository: git+https://github.com/visulima/visulima.git
 > >
 > > THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 >
->
->
->
->
 > # Licenses of bundled types
+>
 > The published @visulima/string artifact additionally contains code with the following licenses:
 > MIT
 >
 > # Bundled types:
+>
 > ## fastest-levenshtein
+>
 > License: MIT
 > By: Kasper U. Weihe
 > Repository: git+https://github.com/ka-weihe/fastest-levenshtein.git
@@ -170,9 +175,10 @@ Repository: git+https://github.com/visulima/visulima.git
 > > OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 > > SOFTWARE.
 
----------------------------------------
+---
 
 ## terminal-size
+
 License: MIT
 By: Sindre Sorhus
 Repository: sindresorhus/terminal-size
@@ -229,11 +235,14 @@ Repository: git+https://github.com/visulima/visulima.git
 > <!-- DEPENDENCIES -->
 
 # Licenses of bundled dependencies
+
 The published @visulima/tabular artifact additionally contains code with the following licenses:
 MIT
 
 # Bundled dependencies:
+
 ## @visulima/string
+
 License: MIT
 By: Daniel Bannert
 Repository: git+https://github.com/visulima/visulima.git
@@ -260,14 +269,15 @@ Repository: git+https://github.com/visulima/visulima.git
 > OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 > SOFTWARE.
 >
->
->
 > # Licenses of bundled dependencies
+>
 > The published @visulima/string artifact additionally contains code with the following licenses:
 > MIT
 >
 > # Bundled dependencies:
+>
 > ## emoji-regex-xs
+>
 > License: MIT
 > By: Steven Levithan
 > Repository: git+https://github.com/slevithan/emoji-regex-xs.git
@@ -294,9 +304,10 @@ Repository: git+https://github.com/visulima/visulima.git
 > > OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 > > SOFTWARE.
 >
-> ---------------------------------------
+> ---
 >
 > ## fastest-levenshtein
+>
 > License: MIT
 > By: Kasper U. Weihe
 > Repository: git+https://github.com/ka-weihe/fastest-levenshtein.git
@@ -323,9 +334,10 @@ Repository: git+https://github.com/visulima/visulima.git
 > > OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 > > SOFTWARE.
 >
-> ---------------------------------------
+> ---
 >
 > ## get-east-asian-width
+>
 > License: MIT
 > By: Sindre Sorhus
 > Repository: sindresorhus/get-east-asian-width
@@ -340,16 +352,15 @@ Repository: git+https://github.com/visulima/visulima.git
 > >
 > > THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 >
->
->
->
->
 > # Licenses of bundled types
+>
 > The published @visulima/string artifact additionally contains code with the following licenses:
 > MIT
 >
 > # Bundled types:
+>
 > ## fastest-levenshtein
+>
 > License: MIT
 > By: Kasper U. Weihe
 > Repository: git+https://github.com/ka-weihe/fastest-levenshtein.git
@@ -376,9 +387,10 @@ Repository: git+https://github.com/visulima/visulima.git
 > > OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 > > SOFTWARE.
 
----------------------------------------
+---
 
 ## terminal-size
+
 License: MIT
 By: Sindre Sorhus
 Repository: sindresorhus/terminal-size

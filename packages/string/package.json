@@ -234,7 +234,7 @@
                 "dev": "pnpm run build --watch",
                 "generate:charmap": "node ./scripts/generate-charmap.mjs",
                 "lint:attw": "attw --pack",
-                "lint:eslint": "eslint . --cache --concurrency auto/",
+                "lint:eslint": "eslint . --cache --concurrency auto",
                 "lint:eslint:fix": "eslint . --cache --concurrency auto --fix",
                 "lint:package-json": "publint --strict",
                 "lint:types": "tsc --noEmit",

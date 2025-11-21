@@ -587,9 +587,9 @@ describe("table Cell Content Handling", () => {
             // Check that the full sequence is present
             expect(expectedOutput).toContain(`${osc8Start}${linkText}${osc8End}`);
 
-            expect(expectedOutput).toMatchInlineSnapshot(`
+            expect(expectedOutput).toMatchInlineSnapshot(String.raw`
                 "┌─────────┐
-                │ ]8;;https://example.com\\Example]8;;\\ │
+                │ ]8;;https://example.com\Example]8;;\ │
                 └─────────┘"
             `); // Snapshot will contain the escape codes
         });

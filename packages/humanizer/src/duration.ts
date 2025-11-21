@@ -23,7 +23,7 @@ const toFixed = (number_: number, fixed: number): number => {
     // eslint-disable-next-line no-param-reassign
     fixed = fixed || -1;
 
-    const matches = new RegExp(`^-?\\d+(?:.\\d{0,${String(fixed)}})?`).exec(number_.toString());
+    const matches = new RegExp(String.raw`^-?\d+(?:.\d{0,${String(fixed)}})?`).exec(number_.toString());
 
     if (matches === null) {
         return number_; // can be undefined when num is Number.POSITIVE_INFINITY

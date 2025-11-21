@@ -344,7 +344,7 @@ describe("server middleware", () => {
                     // Make a request
 
                     const request = httpGet(`http://localhost:${port}/?file=/test.js&line=10`, (response: any) => {
-                        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                        // eslint-disable-next-line unused-imports/no-unused-vars
                         let data = "";
 
                         response.on("data", (chunk: any) => {
