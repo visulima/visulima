@@ -1,0 +1,351 @@
+---
+title: Getting Started
+description: Installation and setup guide for @visulima/fs
+---
+
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Steps, Step } from 'fumadocs-ui/components/steps';
+
+# Getting Started
+
+This guide will help you get started with @visulima/fs, a human-friendly file system utility library for Node.js.
+
+## Installation
+
+<Tabs items={['npm', 'pnpm', 'yarn']}>
+  <Tab value="npm">
+    ```bash
+    npm install @visulima/fs
+    ```
+  </Tab>
+  <Tab value="pnpm">
+    ```bash
+    pnpm add @visulima/fs
+    ```
+  </Tab>
+  <Tab value="yarn">
+    ```bash
+    yarn add @visulima/fs
+    ```
+  </Tab>
+</Tabs>
+
+## Requirements
+
+<Callout type="info">
+Make sure your environment meets these minimum requirements:
+</Callout>
+
+- **Node.js**: Version 18.0.0 or higher (supports up to 23.x)
+- **Operating Systems**: Linux, macOS, Windows
+- **TypeScript**: Version 5.0 or higher (for TypeScript projects)
+
+## Optional Dependencies
+
+<Callout type="warn">
+If you plan to work with YAML files, install the optional peer dependency.
+</Callout>
+
+<Tabs items={['npm', 'pnpm', 'yarn']}>
+  <Tab value="npm">
+    ```bash
+    npm install yaml
+    ```
+  </Tab>
+  <Tab value="pnpm">
+    ```bash
+    pnpm add yaml
+    ```
+  </Tab>
+  <Tab value="yarn">
+    ```bash
+    yarn add yaml
+    ```
+  </Tab>
+</Tabs>
+
+## Basic Usage
+
+<Tabs items={['ESM', 'CommonJS']}>
+  <Tab value="ESM">
+    @visulima/fs is an ESM-first package. Import functions using modern ES module syntax:
+
+    ```ts title="example.ts"
+    import { readFile, writeFile, ensureDir } from "@visulima/fs";
+
+    // Read a file
+    const content = await readFile("./example.txt");
+
+    // Write a file
+    await writeFile("./output.txt", "Hello, World!");
+
+    // Ensure a directory exists
+    await ensureDir("./my-directory");
+    ```
+  </Tab>
+  <Tab value="CommonJS">
+    The package also provides CommonJS builds:
+
+    ```js title="example.js"
+    const { readFile, writeFile, ensureDir } = require("@visulima/fs");
+
+    (async () => {
+        const content = await readFile("./example.txt");
+        await writeFile("./output.txt", "Hello, World!");
+        await ensureDir("./my-directory");
+    })();
+    ```
+  </Tab>
+</Tabs>
+
+## Importing Submodules
+
+<Callout type="info">
+The package provides several submodules for specific functionality, improving tree-shaking.
+</Callout>
+
+<Tabs items={['Utils', 'Error', 'YAML', 'Size', 'EOL']}>
+  <Tab value="Utils">
+    ```ts title="utils-example.ts"
+    import { parseJson, stripJsonComments, toPath } from "@visulima/fs/utils";
+
+    const data = parseJson('{"name": "example"}');
+    ```
+  </Tab>
+  <Tab value="Error">
+    ```ts title="error-example.ts"
+    import { JSONError, DirectoryError } from "@visulima/fs/error";
+
+    try {
+        // ... your code
+    } catch (error) {
+        if (error instanceof JSONError) {
+            console.error("JSON parsing failed:", error.message);
+        }
+    }
+    ```
+  </Tab>
+  <Tab value="YAML">
+    ```ts title="yaml-example.ts"
+    import { readYaml, writeYaml } from "@visulima/fs/yaml";
+
+    // Read YAML file
+    const config = await readYaml("./config.yml");
+
+    // Write YAML file
+    await writeYaml("./output.yml", { key: "value" });
+    ```
+  </Tab>
+  <Tab value="Size">
+    ```ts title="size-example.ts"
+    import { gzipSize, brotliSize, rawSize } from "@visulima/fs/size";
+
+    // Calculate gzipped size
+    const size = await gzipSize("./large-file.txt");
+    console.log(`Gzipped size: ${size} bytes`);
+    ```
+  </Tab>
+  <Tab value="EOL">
+    ```ts title="eol-example.ts"
+    import { detect, format, LF, CRLF, EOL } from "@visulima/fs/eol";
+
+    // Detect line endings
+    const eol = detect("Hello\r\nWorld");
+    console.log(eol); // "\r\n"
+
+    // Format line endings
+    const formatted = format("Hello\r\nWorld\nMixed", LF);
+    ```
+  </Tab>
+</Tabs>
+
+## TypeScript Support
+
+<Callout>
+@visulima/fs is written in TypeScript and provides comprehensive type definitions. All functions are fully typed.
+</Callout>
+
+```ts title="typescript-example.ts"
+import { readFile, writeFile, type ReadFileOptions, type WriteFileOptions } from "@visulima/fs";
+
+// Type-safe options
+const options: ReadFileOptions<"gzip"> = {
+    encoding: "utf8",
+    compression: "gzip",
+};
+
+const content = await readFile("./file.txt.gz", options);
+```
+
+## Synchronous vs Asynchronous
+
+<Callout type="warn">
+Most functions in @visulima/fs come in both asynchronous and synchronous versions.
+</Callout>
+
+<Tabs items={['Async (Recommended)', 'Sync']}>
+  <Tab value="Async (Recommended)">
+    Asynchronous functions use promises and should be used with `async`/`await`:
+
+    ```ts title="async-example.ts"
+    import { readFile, writeFile } from "@visulima/fs";
+
+    async function processFile() {
+        const content = await readFile("./input.txt");
+        await writeFile("./output.txt", content.toUpperCase());
+    }
+    ```
+  </Tab>
+  <Tab value="Sync">
+    Synchronous functions block the event loop and should be used sparingly:
+
+    ```ts title="sync-example.ts"
+    import { readFileSync, writeFileSync } from "@visulima/fs";
+
+    const content = readFileSync("./input.txt");
+    writeFileSync("./output.txt", content.toUpperCase());
+    ```
+  </Tab>
+</Tabs>
+
+## Error Handling
+
+<Callout type="info">
+@visulima/fs provides custom error types for better error handling with detailed context.
+</Callout>
+
+```ts title="error-handling.ts"
+import { readJson } from "@visulima/fs";
+import { JSONError, NotFoundError } from "@visulima/fs/error";
+
+try {
+    const data = await readJson("./config.json");
+} catch (error) {
+    if (error instanceof JSONError) {
+        console.error("Invalid JSON:", error.message);
+    } else if (error instanceof NotFoundError) {
+        console.error("File not found:", error.path);
+    } else {
+        console.error("Unknown error:", error);
+    }
+}
+```
+
+## Common Patterns
+
+### Reading and Writing Files
+
+```typescript
+import { readFile, writeFile } from "@visulima/fs";
+
+// Read as string (default)
+const text = await readFile("./file.txt");
+
+// Read as buffer
+const buffer = await readFile("./image.png", { buffer: true });
+
+// Write with automatic directory creation
+await writeFile("./path/to/file.txt", "content", { recursive: true });
+```
+
+### Working with JSON
+
+```typescript
+import { readJson, writeJson } from "@visulima/fs";
+
+// Read JSON file
+const config = await readJson("./config.json");
+
+// Write JSON file with formatting
+await writeJson("./config.json", { key: "value" }, { indent: 2 });
+```
+
+### Directory Operations
+
+```typescript
+import { ensureDir, emptyDir, remove } from "@visulima/fs";
+
+// Ensure directory exists
+await ensureDir("./my-directory");
+
+// Empty a directory (remove contents, keep directory)
+await emptyDir("./temp");
+
+// Remove directory and contents
+await remove("./temp");
+```
+
+### Finding Files
+
+```typescript
+import { findUp, walk } from "@visulima/fs";
+
+// Find a file by walking up the directory tree
+const packageJsonPath = await findUp("package.json");
+
+// Walk a directory tree
+for await (const entry of walk("./src")) {
+    if (entry.isFile && entry.name.endsWith(".ts")) {
+        console.log(entry.path);
+    }
+}
+```
+
+## Next Steps
+
+import { Cards, Card } from 'fumadocs-ui/components/card';
+
+<Cards>
+  <Card
+    title="API Reference"
+    description="Explore the complete API documentation"
+    href="/docs/package/fs/api-reference"
+  />
+  <Card
+    title="Examples"
+    description="Check out practical usage examples"
+    href="/docs/package/fs/examples"
+  />
+  <Card
+    title="Advanced Guides"
+    description="Learn best practices and patterns"
+    href="/docs/package/fs/advanced"
+  />
+</Cards>
+
+## Migration from Other Libraries
+
+<Tabs items={['From fs-extra', 'From fs/promises']}>
+  <Tab value="From fs-extra">
+    @visulima/fs provides similar functionality with modern async/await API:
+
+    ```ts
+    // fs-extra
+    import fse from "fs-extra";
+    await fse.ensureDir("./dir");
+    await fse.readJson("./file.json");
+
+    // @visulima/fs
+    import { ensureDir, readJson } from "@visulima/fs";
+    await ensureDir("./dir");
+    await readJson("./file.json");
+    ```
+  </Tab>
+  <Tab value="From fs/promises">
+    @visulima/fs extends native functionality with convenience features:
+
+    ```ts
+    // fs/promises
+    import { readFile, mkdir, writeFile } from "fs/promises";
+    await mkdir("./path/to", { recursive: true });
+    await writeFile("./path/to/file.txt", "content");
+    const content = await readFile("./file.txt", "utf8");
+
+    // @visulima/fs
+    import { writeFile, readFile } from "@visulima/fs";
+    await writeFile("./path/to/file.txt", "content"); // auto-creates directories
+    const content = await readFile("./file.txt"); // utf8 by default
+    ```
+  </Tab>
+</Tabs>
