@@ -2,7 +2,6 @@ import { readdir, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
 import { metrics as otelMetrics } from "@opentelemetry/api";
-import { createRequest } from "node-mocks-http";
 import { temporaryDirectory } from "tempy";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -53,7 +52,6 @@ describe("metrics Instrumentation", () => {
     let directory: string;
     let mockMetrics: MockMetrics;
     let storage: DiskStorage;
-    const request = createRequest();
 
     beforeAll(async () => {
         directory = temporaryDirectory();

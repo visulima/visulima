@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 1, "column": 0}, "map": {"version":3,"sources":["file:///home/prisis/WebstormProjects/visulima/visulima/packages/storage-client/examples/nextjs/app/globals.css"],"sourcesContent":["* {\n    box-sizing: border-box;\n    padding: 0;\n    margin: 0;\n}\n\nhtml,\nbody {\n    max-width: 100vw;\n    overflow-x: hidden;\n}\n\nbody {\n    font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif;\n    padding: 2rem;\n}\n"],"names":[],"mappings":"AAAA;;;;;;AAMA;;;;;AAMA"}}]
+}

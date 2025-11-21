@@ -8,7 +8,7 @@ import type { ResponseFile } from "../types";
  * Platform-agnostic - contains no Node.js or Web API specific code.
  * @template TFile The file type used by this handler.
  */
-export abstract class MultipartBase<TFile extends UploadFile> {
+abstract class MultipartBase<TFile extends UploadFile> {
     /**
      * Storage instance for file operations.
      */
@@ -160,3 +160,5 @@ export abstract class MultipartBase<TFile extends UploadFile> {
      */
     protected abstract createEmptyStream(): unknown;
 }
+
+export default MultipartBase;

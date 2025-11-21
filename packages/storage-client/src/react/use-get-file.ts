@@ -14,7 +14,7 @@ export interface UseGetFileOptions {
     /** Callback when request fails */
     onError?: (error: Error) => void;
     /** Callback when request succeeds */
-    onSuccess?: (data: Blob, meta: FileMeta | null) => void;
+    onSuccess?: (data: Blob, meta: FileMeta | undefined) => void;
     /** Transformation parameters for media files */
     transform?: Record<string, string | number | boolean>;
 }
@@ -23,20 +23,20 @@ export interface UseGetFileReturn {
     /** File data as Blob */
     data: Blob | undefined;
     /** Last request error, if any */
-    error: Error | null;
+    error: Error | undefined;
     /** Whether a request is currently in progress */
     isLoading: boolean;
     /** File metadata from response headers */
-    meta: FileMeta | null;
+    meta: FileMeta | undefined;
     /** Refetch the file */
     refetch: () => void;
 }
 
 /**
- * React hook for fetching/downloading files using TanStack Query
- * Supports optional transformation parameters for media files
- * @param options Hook configuration options
- * @returns File fetching functions and state
+ * React hook for fetching/downloading files using TanStack Query.
+ * Supports optional transformation parameters for media files.
+ * @param options Hook configuration options.
+ * @returns File fetching functions and state.
  */
 export const useGetFile = (options: UseGetFileOptions): UseGetFileReturn => {
     const { enabled = true, endpoint, id, onError, onSuccess, transform } = options;
@@ -71,7 +71,7 @@ export const useGetFile = (options: UseGetFileOptions): UseGetFileReturn => {
     });
 
     // Extract metadata from response if available
-    const meta: FileMeta | null = query.data?.meta || null;
+    const meta: FileMeta | undefined = query.data?.meta || undefined;
 
     // Call callbacks in useEffect to avoid calling during render
     useEffect(() => {
@@ -88,7 +88,7 @@ export const useGetFile = (options: UseGetFileOptions): UseGetFileReturn => {
 
     return {
         data: query.data?.blob,
-        error: (query.error as Error) || null,
+        error: (query.error as Error) || undefined,
         isLoading: query.isLoading,
         meta,
         refetch: () => {

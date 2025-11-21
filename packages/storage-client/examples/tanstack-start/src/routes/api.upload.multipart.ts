@@ -2,7 +2,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import { createFileRoute } from "@tanstack/react-router";
-import { DiskStorage, Multipart } from "@visulima/storage";
+import { DiskStorage } from "@visulima/storage";
+import { Multipart } from "@visulima/storage/handler/http/fetch";
 
 // Initialize storage and multipart handler
 const uploadDirectory = join(tmpdir(), "visulima-uploads");

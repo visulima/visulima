@@ -1,3 +1,5 @@
+
+// eslint-disable-next-line import/no-extraneous-dependencies
 import createHttpError from "http-errors";
 
 import type { FileInit, UploadFile } from "../../storage/utils/file";
@@ -12,7 +14,7 @@ import { buildChunkedUploadHeaders, buildFileHeaders, buildFileMetadataHeaders, 
  * Platform-agnostic - contains no Node.js or Web API specific code.
  * @template TFile The file type used by this handler.
  */
-export abstract class RestBase<TFile extends UploadFile> {
+abstract class RestBase<TFile extends UploadFile> {
     /**
      * Storage instance for file operations.
      */
@@ -392,3 +394,5 @@ export abstract class RestBase<TFile extends UploadFile> {
         } as ResponseFile<TFile>;
     }
 }
+
+export default RestBase;

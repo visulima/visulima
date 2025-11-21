@@ -22,16 +22,16 @@ Modern frameworks that use the Web Fetch API can take advantage of the `fetch()`
 
 ## Handler Import Paths
 
-Visulima Storage provides framework-specific import paths for convenience. All of these paths export the same handlers (`Multipart`, `Rest`, `Tus`) - they're aliases that make it clear which framework you're targeting:
+Visulima Storage provides framework-specific import paths for convenience:
 
 - **`@visulima/storage/handler/http/fetch`** - Generic Web API (works everywhere)
-- **`@visulima/storage/handler/http/hono`** - Hono framework (alias for fetch)
+- **`@visulima/storage/handler/http/hono`** - Hono framework (includes `createStorageHandler` helper)
 - **`@visulima/storage/handler/http/bun`** - Bun runtime (alias for fetch)
 - **`@visulima/storage/handler/http/cloudflare`** - Cloudflare Workers (alias for fetch)
 - **`@visulima/storage/handler/http/deno`** - Deno runtime (alias for fetch)
 - **`@visulima/storage/handler/http/edge`** - Edge runtimes (Vercel, Netlify) (alias for fetch)
 
-> **Note**: All framework-specific paths are aliases to `./handler/http/fetch`. Use the framework-specific path for clarity, or use the generic `fetch` path - both work identically.
+> **Note**: Most framework-specific paths are aliases to `./handler/http/fetch`. The Hono path (`/handler/http/hono`) provides an additional `createStorageHandler` function that automatically registers routes. Use the framework-specific path for clarity, or use the generic `fetch` path - both work identically.
 
 ## Choosing the Right Handler
 
@@ -43,15 +43,73 @@ Visulima Storage provides framework-specific import paths for convenience. All o
 
 Hono is a fast, lightweight web framework for Node runtimes and Web API environments.
 
-### Using Framework-Specific Import
+### Recommended: Using `createStorageHandler` (Automatic Route Registration)
+
+The easiest way to use Visulima Storage with Hono is to use the `createStorageHandler` function, which automatically registers all required routes for you:
 
 ```ts
 import { Hono } from "hono";
 import { DiskStorage } from "@visulima/storage";
-import { Multipart } from "@visulima/storage/handler/http/hono";
+import { createStorageHandler } from "@visulima/storage/handler/http/hono";
+
+const app = new Hono();
+const storage = new DiskStorage({ directory: "./uploads" });
+
+// Register handlers - routes are automatically registered!
+createStorageHandler(app, {
+    path: "/files",
+    storage,
+    type: "multipart",
+});
+
+createStorageHandler(app, {
+    path: "/files-rest",
+    storage,
+    type: "rest",
+});
+
+createStorageHandler(app, {
+    path: "/files-tus",
+    storage,
+    type: "tus",
+});
 ```
 
-### Using Generic Fetch Import
+This automatically registers:
+- **Multipart**: `POST /files`, `GET /files/:id?/:metadata?`, `DELETE /files/:id`, `OPTIONS /files`
+- **REST**: `POST /files-rest`, `PUT /files-rest/:id`, `PATCH /files-rest/:id`, `GET /files-rest/:id?`, `HEAD /files-rest/:id`, `DELETE /files-rest/:id?`, `OPTIONS /files-rest`
+- **TUS**: All methods on `/files-tus` and `/files-tus/:id` (POST, PATCH, HEAD, GET, DELETE, OPTIONS)
+
+### With Media Transformers
+
+You can also pass media transformers to enable image/video/audio transformations:
+
+```ts
+import { Hono } from "hono";
+import { DiskStorage } from "@visulima/storage";
+import { createStorageHandler } from "@visulima/storage/handler/http/hono";
+import { MediaTransformer } from "@visulima/storage/transformer";
+import ImageTransformer from "@visulima/storage/transformers/image";
+
+const app = new Hono();
+const storage = new DiskStorage({ directory: "./uploads" });
+
+const mediaTransformer = new MediaTransformer(storage, {
+    ImageTransformer,
+    maxImageSize: 10 * 1024 * 1024, // 10MB
+});
+
+createStorageHandler(app, {
+    path: "/files",
+    storage,
+    mediaTransformer,
+    type: "multipart",
+});
+```
+
+### Manual Route Registration (Advanced)
+
+If you need more control over route registration, you can manually register routes:
 
 ```ts
 import { Hono } from "hono";
@@ -59,8 +117,6 @@ import { DiskStorage } from "@visulima/storage";
 import { Multipart } from "@visulima/storage/handler/http/fetch";
 
 const app = new Hono();
-
-// Initialize storage and handler
 const storage = new DiskStorage({ directory: "./uploads" });
 const multipart = new Multipart({ storage });
 

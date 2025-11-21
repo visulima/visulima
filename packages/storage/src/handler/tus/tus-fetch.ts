@@ -1,9 +1,25 @@
+/* eslint-disable max-classes-per-file, sonarjs/file-name-differ-from-class */
+// eslint-disable-next-line import/no-extraneous-dependencies
 import createHttpError from "http-errors";
 
 import type { UploadFile } from "../../storage/utils/file";
-import { BaseHandlerFetch } from "../base/base-handler-fetch";
+import BaseHandlerFetch from "../base/base-handler-fetch";
 import type { Handlers, ResponseFile, UploadOptions } from "../types";
 import { TusBase } from "./tus-base";
+
+/**
+ * Extract file ID from request URL.
+ */
+const getIdFromRequestUrl = (url: string): string | undefined => {
+    try {
+        const urlObject = new URL(url);
+        const pathParts = urlObject.pathname.split("/").filter(Boolean);
+
+        return pathParts[pathParts.length - 1] || undefined;
+    } catch {
+        return undefined;
+    }
+};
 
 export { TUS_RESUMABLE, TUS_VERSION } from "./tus-base";
 
@@ -27,9 +43,9 @@ export class Tus<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
      */
     public static override readonly methods: Handlers[] = ["delete", "download", "get", "head", "options", "patch", "post"];
 
-    private readonly tusBase: TusBase<TFile>;
-
     public disableTerminationForFinishedUploads = false;
+
+    private readonly tusBase: TusBase<TFile>;
 
     public constructor(options: UploadOptions<TFile>) {
         super(options);
@@ -248,27 +264,9 @@ export class Tus<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
      */
     protected buildFileUrlForTus(requestUrl: string, file: TFile): string {
         const url = new URL(requestUrl);
-        const { pathname } = url;
-        const query = Object.fromEntries(url.searchParams.entries());
-        const relative = `${pathname}/${file.id}${url.search}`;
+        const { pathname, search } = url;
+        const relative = `${pathname}/${file.id}${search}`;
 
-        return `${this.storage.config.useRelativeLocation ? relative : url.origin + relative}`;
+        return this.storage.config.useRelativeLocation ? relative : url.origin + relative;
     }
 }
-
-/**
- * Extract file ID from request URL.
- */
-const getIdFromRequestUrl = (url: string): string | null => {
-    try {
-        const urlObject = new URL(url);
-        const pathParts = urlObject.pathname.split("/").filter(Boolean);
-        const lastPart = pathParts[pathParts.length - 1];
-
-        return lastPart || undefined;
-    } catch {
-        return undefined;
-    }
-};
-
-export default Tus;

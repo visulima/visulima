@@ -2,7 +2,7 @@ import { Readable } from "node:stream";
 
 import { S3BaseStorage } from "../aws/s3-base-storage";
 import type { FileInit, FileQuery } from "../utils/file";
-import { AwsLightApiAdapter } from "./aws-light-api-adapter";
+import AwsLightApiAdapter from "./aws-light-api-adapter";
 import AwsLightFile from "./aws-light-file";
 import AwsLightMetaStorage from "./aws-light-meta-storage";
 import type { AwsLightError, AwsLightStorageOptions } from "./types";

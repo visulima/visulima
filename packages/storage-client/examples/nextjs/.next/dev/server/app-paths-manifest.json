@@ -1,0 +1,4 @@
+{
+  "/api/upload/multipart/route": "app/api/upload/multipart/route.js",
+  "/page": "app/page.js"
+}

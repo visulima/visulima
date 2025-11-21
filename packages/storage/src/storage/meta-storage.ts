@@ -2,7 +2,7 @@ import type { MetaStorageOptions } from "./types";
 import type { File } from "./utils/file";
 
 /**
- * Stores upload metadata
+ * Stores upload metadata.
  */
 class MetaStorage<T extends File = File> {
     public prefix = "";
@@ -19,7 +19,7 @@ class MetaStorage<T extends File = File> {
     }
 
     /**
-     * Saves upload metadata
+     * Saves upload metadata.
      */
     // eslint-disable-next-line class-methods-use-this
     public async save(_id: string, file: T): Promise<T> {
@@ -27,7 +27,7 @@ class MetaStorage<T extends File = File> {
     }
 
     /**
-     * Deletes an upload metadata
+     * Deletes an upload metadata.
      */
     // eslint-disable-next-line class-methods-use-this
     public async delete(_id: string): Promise<void> {
@@ -35,7 +35,7 @@ class MetaStorage<T extends File = File> {
     }
 
     /**
-     * Retrieves upload metadata
+     * Retrieves upload metadata.
      */
     // eslint-disable-next-line class-methods-use-this
     public async get(_id: string): Promise<T> {
@@ -43,7 +43,7 @@ class MetaStorage<T extends File = File> {
     }
 
     /**
-     * Mark upload active
+     * Marks upload active.
      */
     // eslint-disable-next-line class-methods-use-this
     public async touch(_id: string, _file: T): Promise<T> {

@@ -1,4 +1,4 @@
-import { BaseHandlerNode } from "../../../src/handler/base/base-handler-node";
+import BaseHandlerNode from "../../../src/handler/base/base-handler-node";
 import type { File } from "../../../src/storage/utils/file";
 
 /**
@@ -8,6 +8,15 @@ import type { File } from "../../../src/storage/utils/file";
  */
 class TestUploader extends BaseHandlerNode<File> {
     /**
+     * Returns an empty list of files.
+     * @returns Promise resolving to an empty array of files
+     */
+    // eslint-disable-next-line class-methods-use-this
+    public override async list(): Promise<File[]> {
+        return [];
+    }
+
+    /**
      * Compose and register HTTP method handlers.
      */
     protected compose(): void {
@@ -16,15 +25,6 @@ class TestUploader extends BaseHandlerNode<File> {
         this.registeredHandlers.set("DOWNLOAD", this.download.bind(this));
 
         this.logger?.debug("Registered handler: %s", [...this.registeredHandlers.keys()].join(", "));
-    }
-
-    /**
-     * Returns an empty list of files.
-     * @returns Promise resolving to an empty array of files
-     */
-    // eslint-disable-next-line class-methods-use-this
-    public override async list(): Promise<File[]> {
-        return [];
     }
 }
 

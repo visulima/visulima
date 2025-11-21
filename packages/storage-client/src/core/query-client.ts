@@ -12,7 +12,7 @@ export interface ApiError {
 }
 
 /**
- * Parse error response from API
+ * Parses error response from API.
  */
 export const parseApiError = async (response: Response): Promise<Error> => {
     try {
@@ -25,13 +25,13 @@ export const parseApiError = async (response: Response): Promise<Error> => {
 };
 
 /**
- * Extract file metadata from response headers
+ * Extracts file metadata from response headers.
  */
 export const extractFileMetaFromHeaders = (id: string, headers: Headers): FileMeta => {
     const contentType = headers.get("Content-Type");
     const contentLength = headers.get("Content-Length");
     const lastModified = headers.get("Last-Modified");
-    const etag = headers.get("ETag");
+    const _etag = headers.get("ETag");
 
     const fileMeta: FileMeta = {
         contentType: contentType || undefined,
@@ -47,7 +47,7 @@ export const extractFileMetaFromHeaders = (id: string, headers: Headers): FileMe
 };
 
 /**
- * Build URL with query parameters
+ * Builds URL with query parameters.
  */
 export const buildUrl = (baseUrl: string, path: string, params?: Record<string, string | number | boolean | undefined>): string => {
     const url = new URL(path, baseUrl.endsWith("/") ? baseUrl : `${baseUrl}/`);
@@ -64,7 +64,7 @@ export const buildUrl = (baseUrl: string, path: string, params?: Record<string, 
 };
 
 /**
- * Fetch file with error handling
+ * Fetches file with error handling.
  */
 export const fetchFile = async (url: string): Promise<Blob> => {
     const response = await fetch(url, {
@@ -79,7 +79,7 @@ export const fetchFile = async (url: string): Promise<Blob> => {
 };
 
 /**
- * Fetch JSON with error handling
+ * Fetches JSON with error handling.
  */
 export const fetchJson = async <T = unknown>(url: string): Promise<T> => {
     const response = await fetch(url, {
@@ -94,7 +94,7 @@ export const fetchJson = async <T = unknown>(url: string): Promise<T> => {
 };
 
 /**
- * Fetch with HEAD method for metadata
+ * Fetches with HEAD method for metadata.
  */
 export const fetchHead = async (url: string): Promise<Headers> => {
     const response = await fetch(url, {
@@ -109,7 +109,7 @@ export const fetchHead = async (url: string): Promise<Headers> => {
 };
 
 /**
- * Delete with error handling
+ * Deletes with error handling.
  */
 export const deleteRequest = async (url: string): Promise<void> => {
     const response = await fetch(url, {
@@ -122,7 +122,7 @@ export const deleteRequest = async (url: string): Promise<void> => {
 };
 
 /**
- * PUT request with file upload and progress tracking
+ * PUT request with file upload and progress tracking.
  */
 export const putFile = async (
     url: string,
@@ -167,7 +167,7 @@ export const putFile = async (
 });
 
 /**
- * PATCH request for chunk uploads
+ * PATCH request for chunk uploads.
  */
 export const patchChunk = async (
     url: string,

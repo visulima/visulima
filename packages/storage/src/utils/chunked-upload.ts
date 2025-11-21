@@ -36,7 +36,7 @@ export const isUploadComplete = (chunks: ChunkInfo[], totalSize: number): boolea
 
     let currentEnd = firstChunk.length;
 
-    for (let i = 1; i < sorted.length; i++) {
+    for (let i = 1; i < sorted.length; i += 1) {
         const chunk = sorted[i];
 
         if (!chunk) {
