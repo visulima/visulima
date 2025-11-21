@@ -1,6 +1,6 @@
 {
     "name": "@visulima/cerebro",
-    "version": "2.1.4",
+    "version": "2.1.5",
     "exports": {
         ".": "./src/index.ts",
         "./command/help": "./src/commands/help-command.ts",
