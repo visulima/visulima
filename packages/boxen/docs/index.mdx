@@ -1,0 +1,76 @@
+---
+title: Introduction
+description: Create beautiful boxes in the terminal with Boxen
+---
+
+import { Card, Cards } from 'fumadocs-ui/components/card';
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Boxen is a powerful yet simple utility that creates customizable boxes in the terminal. Built on top of industry-standard libraries, it provides a robust foundation for all your terminal boxing needs.
+
+## Features
+
+- Easy to use with sensible defaults
+- Highly customizable borders, colors, padding, and margins
+- Terminal-aware with automatic width handling
+- Headers and footers with alignment options
+- Full TypeScript support with type definitions
+- Works on macOS, Linux, and Windows
+
+## Quick Start
+
+Get started with a simple example:
+
+```typescript
+import { boxen } from "@visulima/boxen";
+
+console.log(boxen("Hello, World!"));
+```
+
+This produces:
+
+```
+┌─────────────┐
+│Hello, World!│
+└─────────────┘
+```
+
+## Next Steps
+
+<Cards>
+  <Card
+    title="Installation"
+    description="Install Boxen with your favorite package manager"
+    href="/installation"
+  />
+  <Card
+    title="Basic Usage"
+    description="Learn the fundamentals of creating boxes"
+    href="/basic-usage"
+  />
+  <Card
+    title="Examples"
+    description="See real-world examples and use cases"
+    href="/examples"
+  />
+  <Card
+    title="API Reference"
+    description="Complete API documentation"
+    href="/api-reference"
+  />
+</Cards>
+
+## Why Use Boxen?
+
+Boxen is perfect for:
+
+- CLI application interfaces
+- Highlighting important messages (errors, warnings, success)
+- Creating menus and interactive prompts
+- Displaying formatted data and reports
+- Adding visual structure to terminal output
+
+## Requirements
+
+- Node.js 20.18 or higher (up to 24.x)
+- Works on macOS, Linux, and Windows

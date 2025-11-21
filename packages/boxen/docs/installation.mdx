@@ -1,0 +1,144 @@
+---
+title: Installation
+description: Install Boxen with your favorite package manager
+---
+
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Package Managers
+
+<Tabs items={['npm', 'yarn', 'pnpm', 'bun']}>
+  <Tab value="npm">
+    ```bash
+    npm install @visulima/boxen
+    ```
+  </Tab>
+  <Tab value="yarn">
+    ```bash
+    yarn add @visulima/boxen
+    ```
+  </Tab>
+  <Tab value="pnpm">
+    ```bash
+    pnpm add @visulima/boxen
+    ```
+  </Tab>
+  <Tab value="bun">
+    ```bash
+    bun add @visulima/boxen
+    ```
+  </Tab>
+</Tabs>
+
+## System Requirements
+
+<Callout type="info">
+Before installing, ensure your environment meets these requirements:
+
+- **Node.js**: Version 20.18 or higher (up to 24.x)
+- **Operating System**: macOS, Linux, or Windows
+</Callout>
+
+## Verify Installation
+
+After installation, verify that Boxen is working correctly:
+
+```typescript
+import { boxen } from "@visulima/boxen";
+
+console.log(boxen("Installation successful!"));
+```
+
+If you see a nicely boxed message, you're all set!
+
+## TypeScript Support
+
+Boxen is written in TypeScript and includes type definitions out of the box. No need to install separate `@types` packages.
+
+```typescript
+import { boxen, type Options } from "@visulima/boxen";
+
+const options: Options = {
+    padding: 1,
+    borderStyle: "double"
+};
+
+console.log(boxen("TypeScript ready!", options));
+```
+
+## Module Systems
+
+Boxen supports both CommonJS and ES Modules:
+
+<Tabs items={['ESM', 'CommonJS']}>
+  <Tab value="ESM">
+    ```typescript
+    import { boxen } from "@visulima/boxen";
+    ```
+  </Tab>
+  <Tab value="CommonJS">
+    ```javascript
+    const { boxen } = require("@visulima/boxen");
+    ```
+  </Tab>
+</Tabs>
+
+## Optional Dependencies
+
+For color support, we recommend installing `@visulima/colorize`:
+
+<Tabs items={['npm', 'yarn', 'pnpm', 'bun']}>
+  <Tab value="npm">
+    ```bash
+    npm install @visulima/colorize
+    ```
+  </Tab>
+  <Tab value="yarn">
+    ```bash
+    yarn add @visulima/colorize
+    ```
+  </Tab>
+  <Tab value="pnpm">
+    ```bash
+    pnpm add @visulima/colorize
+    ```
+  </Tab>
+  <Tab value="bun">
+    ```bash
+    bun add @visulima/colorize
+    ```
+  </Tab>
+</Tabs>
+
+This provides excellent color and styling utilities that work seamlessly with Boxen.
+
+## Troubleshooting
+
+### Permission Errors
+
+If you encounter permission errors on Unix-based systems:
+
+```bash
+sudo npm install -g @visulima/boxen
+```
+
+Or better yet, [fix your npm permissions](https://docs.npmjs.com/resolving-eacces-permissions-errors-when-installing-packages-globally).
+
+### Version Conflicts
+
+To install a specific version:
+
+```bash
+npm install @visulima/boxen@2.0.3
+```
+
+To check your installed version:
+
+```bash
+npm list @visulima/boxen
+```
+
+<Callout type="warn">
+If you're behind a proxy, you may need to configure npm with your proxy settings.
+</Callout>
