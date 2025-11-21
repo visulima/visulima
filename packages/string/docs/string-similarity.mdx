@@ -1,0 +1,428 @@
+---
+title: String Similarity
+description: Compare and find similar strings using Levenshtein distance and similarity algorithms.
+---
+
+# String Similarity
+
+Compare strings and find the closest matches using Levenshtein distance and similarity algorithms.
+
+## Levenshtein Distance
+
+The Levenshtein distance measures the minimum number of single-character edits required to change one string into another.
+
+### Basic Distance Calculation
+
+```typescript
+import { distance } from '@visulima/string';
+
+// Identical strings
+distance('hello', 'hello');         // 0
+
+// One character difference
+distance('hello', 'hallo');         // 1
+distance('hello', 'hullo');         // 1
+
+// Multiple differences
+distance('hello', 'world');         // 4
+distance('kitten', 'sitting');      // 3
+
+// Different lengths
+distance('hello', 'hello world');   // 6
+distance('', 'hello');              // 5
+```
+
+### Find Closest String
+
+Find the closest matching string from a list:
+
+```typescript
+import { closest } from '@visulima/string';
+
+const options = ['apple', 'apricot', 'banana', 'orange'];
+
+closest('aple', options);           // 'apple'
+closest('banan', options);          // 'banana'
+closest('ornge', options);          // 'orange'
+```
+
+### Find Multiple Closest Matches
+
+Get the N closest matches:
+
+```typescript
+import { closestN } from '@visulima/string';
+
+const options = ['apple', 'apricot', 'application', 'apply'];
+
+// Get 2 closest matches
+closestN('app', options, 2);
+// ['apple', 'apply']
+
+// Get 3 closest matches
+closestN('appl', options, 3);
+// ['apple', 'apply', 'application']
+```
+
+## Closest String with Options
+
+The `closestString` function provides more control over finding similar strings.
+
+### Basic Usage
+
+```typescript
+import { closestString } from '@visulima/string';
+
+const options = ['react', 'redux', 'angular', 'vue'];
+
+closestString('reakt', options);
+// { value: 'react', distance: 1, similarity: 0.8 }
+
+closestString('anglar', options);
+// { value: 'angular', distance: 1, similarity: 0.857 }
+```
+
+### Case-Insensitive Matching
+
+```typescript
+closestString('REACT', options, {
+  caseSensitive: false
+});
+// { value: 'react', distance: 0, similarity: 1.0 }
+
+// Case-sensitive (default)
+closestString('REACT', options, {
+  caseSensitive: true
+});
+// Higher distance due to case differences
+```
+
+### Threshold Filtering
+
+```typescript
+// Only return matches within threshold
+closestString('xyz', options, {
+  threshold: 0.5  // Minimum 50% similarity
+});
+// null (no match meets threshold)
+
+closestString('reactt', options, {
+  threshold: 0.7  // Minimum 70% similarity
+});
+// { value: 'react', distance: 1, similarity: 0.833 }
+```
+
+### Complete Options
+
+```typescript
+import type { ClosestStringOptions } from '@visulima/string';
+
+interface ClosestStringOptions {
+  // Case-sensitive comparison (default: true)
+  caseSensitive?: boolean;
+  
+  // Minimum similarity threshold (0-1, default: 0)
+  threshold?: number;
+}
+```
+
+## Compare Similarity
+
+Compare two strings and get detailed similarity metrics.
+
+### Basic Comparison
+
+```typescript
+import { compareSimilarity } from '@visulima/string';
+
+compareSimilarity('hello', 'hello');
+// { distance: 0, similarity: 1.0, equal: true }
+
+compareSimilarity('hello', 'hallo');
+// { distance: 1, similarity: 0.8, equal: false }
+
+compareSimilarity('kitten', 'sitting');
+// { distance: 3, similarity: 0.571, equal: false }
+```
+
+### With Options
+
+```typescript
+// Case-insensitive comparison
+compareSimilarity('Hello', 'hello', {
+  caseSensitive: false
+});
+// { distance: 0, similarity: 1.0, equal: true }
+
+// Case-sensitive (default)
+compareSimilarity('Hello', 'hello', {
+  caseSensitive: true
+});
+// { distance: 1, similarity: 0.8, equal: false }
+```
+
+### Similarity Score
+
+The similarity score is calculated as:
+
+```
+similarity = 1 - (distance / maxLength)
+```
+
+Where `maxLength` is the length of the longer string.
+
+```typescript
+compareSimilarity('cat', 'cats');
+// distance: 1
+// maxLength: 4
+// similarity: 1 - (1/4) = 0.75
+
+compareSimilarity('hello', 'world');
+// distance: 4
+// maxLength: 5
+// similarity: 1 - (4/5) = 0.2
+```
+
+## Word Similarity Sort
+
+Sort an array of strings by their similarity to a target string.
+
+### Basic Sorting
+
+```typescript
+import { wordSimilaritySort } from '@visulima/string';
+
+const words = ['apple', 'apricot', 'banana', 'application'];
+
+wordSimilaritySort('app', words);
+// ['apple', 'application', 'apricot', 'banana']
+
+wordSimilaritySort('ban', words);
+// ['banana', 'apple', 'apricot', 'application']
+```
+
+### Case-Insensitive Sorting
+
+```typescript
+const words = ['Apple', 'APRICOT', 'Banana', 'APPLICATION'];
+
+wordSimilaritySort('app', words, {
+  caseSensitive: false
+});
+// ['Apple', 'APPLICATION', 'APRICOT', 'Banana']
+```
+
+### With Threshold
+
+```typescript
+const words = ['apple', 'apricot', 'banana', 'application'];
+
+// Only include words with 60% or higher similarity
+wordSimilaritySort('app', words, {
+  threshold: 0.6
+});
+// ['apple', 'application']
+// 'apricot' and 'banana' excluded due to low similarity
+```
+
+### Complete Options
+
+```typescript
+import type { WordSimilaritySortOptions } from '@visulima/string';
+
+interface WordSimilaritySortOptions {
+  // Case-sensitive comparison (default: true)
+  caseSensitive?: boolean;
+  
+  // Minimum similarity threshold (0-1, default: 0)
+  threshold?: number;
+}
+```
+
+## Use Cases
+
+### Command Suggestion
+
+```typescript
+const commands = ['start', 'stop', 'restart', 'status', 'install'];
+const userInput = 'strt';
+
+const suggestion = closest(userInput, commands);
+console.log(`Did you mean: ${suggestion}?`);
+// "Did you mean: start?"
+```
+
+### Typo Correction
+
+```typescript
+const dictionary = ['hello', 'world', 'javascript', 'typescript'];
+
+function correctTypo(word: string): string {
+  const match = closestString(word, dictionary, {
+    caseSensitive: false,
+    threshold: 0.6  // At least 60% similar
+  });
+  
+  return match ? match.value : word;
+}
+
+correctTypo('javascrip');   // 'javascript'
+correctTypo('typscript');   // 'typescript'
+correctTypo('xyz');         // 'xyz' (no match)
+```
+
+### Search with Fuzzy Matching
+
+```typescript
+const products = [
+  'iPhone 15 Pro',
+  'Samsung Galaxy S24',
+  'Google Pixel 8',
+  'OnePlus 12'
+];
+
+function searchProducts(query: string) {
+  return wordSimilaritySort(query, products, {
+    caseSensitive: false,
+    threshold: 0.3
+  });
+}
+
+searchProducts('iphone');
+// ['iPhone 15 Pro', ...]
+
+searchProducts('galaxy');
+// ['Samsung Galaxy S24', ...]
+```
+
+### Duplicate Detection
+
+```typescript
+const names = ['John Doe', 'Jane Smith', 'Jon Doe', 'John Do'];
+
+function findDuplicates(threshold: number = 0.8) {
+  const duplicates: Array<[string, string, number]> = [];
+  
+  for (let i = 0; i < names.length; i++) {
+    for (let j = i + 1; j < names.length; j++) {
+      const result = compareSimilarity(names[i], names[j], {
+        caseSensitive: false
+      });
+      
+      if (result.similarity >= threshold) {
+        duplicates.push([names[i], names[j], result.similarity]);
+      }
+    }
+  }
+  
+  return duplicates;
+}
+
+findDuplicates();
+// [['John Doe', 'Jon Doe', 0.875], ['John Doe', 'John Do', 0.875]]
+```
+
+### Autocomplete Suggestions
+
+```typescript
+const suggestions = [
+  'javascript',
+  'typescript',
+  'java',
+  'python',
+  'ruby',
+  'rust'
+];
+
+function autocomplete(partial: string, maxResults: number = 5) {
+  const sorted = wordSimilaritySort(partial, suggestions, {
+    caseSensitive: false
+  });
+  
+  return sorted.slice(0, maxResults);
+}
+
+autocomplete('java');
+// ['java', 'javascript']
+
+autocomplete('type');
+// ['typescript', ...]
+```
+
+### Spell Checker
+
+```typescript
+const dictionary = new Set([
+  'hello', 'world', 'computer', 'program', 'algorithm'
+]);
+
+function spellCheck(word: string) {
+  // Check if word exists
+  if (dictionary.has(word.toLowerCase())) {
+    return { correct: true, suggestions: [] };
+  }
+  
+  // Find suggestions
+  const suggestions = closestN(word, Array.from(dictionary), 3);
+  
+  return {
+    correct: false,
+    suggestions
+  };
+}
+
+spellCheck('algorythm');
+// { correct: false, suggestions: ['algorithm', ...] }
+```
+
+### Git-like Command Suggestions
+
+```typescript
+const gitCommands = [
+  'add', 'commit', 'push', 'pull', 'clone',
+  'checkout', 'branch', 'merge', 'rebase', 'status'
+];
+
+function suggestCommand(input: string) {
+  const match = closestString(input, gitCommands, {
+    threshold: 0.5
+  });
+  
+  if (!match) {
+    return `Unknown command: ${input}`;
+  }
+  
+  if (match.distance === 0) {
+    return `Executing: git ${input}`;
+  }
+  
+  return `Did you mean: git ${match.value}?`;
+}
+
+suggestCommand('comit');
+// "Did you mean: git commit?"
+
+suggestCommand('pul');
+// "Did you mean: git pull?"
+```
+
+## Performance Considerations
+
+1. Levenshtein distance calculation is O(m × n) where m and n are string lengths
+2. For large datasets, consider pre-filtering by string length
+3. Use threshold to limit comparisons
+4. Cache results for frequently compared strings
+
+## Best Practices
+
+1. Use case-insensitive comparison for user input
+2. Set appropriate threshold values (0.6-0.8 typically works well)
+3. Limit the number of suggestions returned
+4. Consider normalizing strings (trim, lowercase) before comparison
+5. For very large datasets, consider indexing or alternative algorithms
+
+## Next Steps
+
+- [Testing](/docs/testing) - Test utilities for string comparisons
+- [API Reference](/docs/api/similarity) - Complete similarity API
+- [Case Conversion](/docs/case-conversion) - Normalize string case
