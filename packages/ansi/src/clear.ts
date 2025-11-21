@@ -83,6 +83,7 @@ export const clearScreenAndHomeCursor: string = `${CSI}H${eraseDisplay(EraseDisp
  * @see {@link https://vt100.net/docs/vt510-rm/RIS.html} RIS documentation.
  */
 export const resetTerminal: string = isWindows
+// prettier-ignore-start
     ? `${eraseDisplay(EraseDisplayMode.EntireScreen) + CSI}0f` // `0f` for cursor to (0,0) might be specific or non-standard
     // eslint-disable-next-line @stylistic/operator-linebreak
     :
@@ -91,3 +92,4 @@ export const resetTerminal: string = isWindows
     // 3. Moves cursor to the top-left position
     // 4. RIS - Hard Reset (most comprehensive reset)
     `${eraseDisplay(EraseDisplayMode.EntireScreen) + eraseDisplay(EraseDisplayMode.EntireScreenAndScrollback) + CSI}H${ESC}c`;
+// prettier-ignore-end
