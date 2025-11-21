@@ -113,9 +113,10 @@ describe("objects", () => {
             inspect: function stringInspect() {
                 return "string";
             },
-            [utilityInspect.custom]: function custom() {
-                return "symbol";
-            },
+        };
+
+        object[utilityInspect.custom as unknown as keyof typeof object] = function custom() {
+            return "symbol";
         };
 
         const symbolResult = "[ symbol, [] ]";

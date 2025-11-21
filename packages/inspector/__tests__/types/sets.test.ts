@@ -12,7 +12,11 @@ describe("sets", () => {
     it("should return `Set` with indent", () => {
         expect.assertions(6);
 
-        const set = new Set([["b"], { a: 1 }]);
+        const set = new Set();
+
+        // eslint-disable-next-line unicorn/no-immediate-mutation
+        set.add({ a: 1 });
+        set.add(["b"]);
 
         const expectedStringSpaces = ["Set (2) {", "  {", "    a: 1", "  },", "  [ 'b' ]", "}"].join("\n");
         const expectedStringTabs = ["Set (2) {", "	{", "		a: 1", "	},", "	[ 'b' ]", "}"].join("\n");

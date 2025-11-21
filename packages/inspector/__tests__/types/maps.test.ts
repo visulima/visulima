@@ -60,7 +60,11 @@ describe("maps", () => {
     it("should render a Map with indent", () => {
         expect.assertions(7);
 
-        const map = new Map([[3, Number.NaN], [{ a: 1 }, ["b"]]]);
+        const map = new Map();
+
+        // eslint-disable-next-line unicorn/no-immediate-mutation
+        map.set({ a: 1 }, ["b"]);
+        map.set(3, Number.NaN);
 
         const expectedStringSpaces = ["Map (2) {", "  {\n    a: 1\n  } => [ 'b' ],", "  3 => NaN", "}"].join("\n");
         const expectedStringTabs = ["Map (2) {", "	{\n		a: 1\n	} => [ 'b' ],", "	3 => NaN", "}"].join("\n");
