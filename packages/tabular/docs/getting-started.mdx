@@ -1,0 +1,288 @@
+---
+title: Getting Started
+description: Create your first table with @visulima/tabular
+---
+
+# Getting Started
+
+This guide will help you create your first table with `@visulima/tabular` and introduce you to the core concepts.
+
+## Your First Table
+
+<Callout type="info">
+This guide will walk you through creating your first table. Make sure you have [installed the package](./installation) first.
+</Callout>
+
+Let's create a simple table:
+
+```typescript title="your-first-table.ts"
+import { createTable } from "@visulima/tabular";
+
+// Create a table instance
+const table = createTable();
+
+// Add headers
+table.setHeaders(["Name", "Age", "City"]);
+
+// Add rows
+table.addRow(["Alice", "28", "Boston"]);
+table.addRow(["Bob", "35", "Seattle"]);
+table.addRow(["Charlie", "42", "Portland"]);
+
+// Render the table
+console.log(table.toString());
+```
+
+Output:
+
+```
+┌─────────┬─────┬──────────┐
+│ Name    │ Age │ City     │
+├─────────┼─────┼──────────┤
+│ Alice   │ 28  │ Boston   │
+├─────────┼─────┼──────────┤
+│ Bob     │ 35  │ Seattle  │
+├─────────┼─────┼──────────┤
+│ Charlie │ 42  │ Portland │
+└─────────┴─────┴──────────┘
+```
+
+## Core Concepts
+
+### 1. Creating Tables
+
+You can create tables with optional configuration:
+
+```typescript
+import { createTable } from "@visulima/tabular";
+
+const table = createTable({
+  maxWidth: 100,        // Maximum table width
+  showHeader: true,     // Show/hide headers (default: true)
+  wordWrap: true,       // Enable word wrapping
+  style: {
+    paddingLeft: 1,     // Left padding for cells
+    paddingRight: 1,    // Right padding for cells
+  }
+});
+```
+
+### 2. Adding Headers
+
+Headers can be simple strings or objects with alignment options:
+
+```typescript
+// Simple headers
+table.setHeaders(["Name", "Age", "City"]);
+
+// Headers with alignment
+table.setHeaders([
+  "Name",
+  { content: "Age", hAlign: "center" },
+  { content: "City", hAlign: "right" }
+]);
+```
+
+### 3. Adding Rows
+
+Rows work similarly to headers:
+
+```typescript
+// Simple row
+table.addRow(["Alice", "28", "Boston"]);
+
+// Row with cell options
+table.addRow([
+  { content: "Bob", hAlign: "left" },
+  { content: "35", hAlign: "center" },
+  { content: "Seattle", hAlign: "right" }
+]);
+
+// Add multiple rows at once
+table.addRows(
+  ["Charlie", "42", "Portland"],
+  ["Diana", "31", "Austin"]
+);
+```
+
+## Cell Alignment
+
+Control how content is aligned within cells:
+
+### Horizontal Alignment
+
+```typescript
+table.addRow([
+  { content: "Left", hAlign: "left" },
+  { content: "Center", hAlign: "center" },
+  { content: "Right", hAlign: "right" }
+]);
+```
+
+### Vertical Alignment
+
+For multi-line content:
+
+```typescript
+table.addRow([
+  { content: "Top\nAligned", vAlign: "top" },
+  { content: "Middle\nAligned", vAlign: "middle" },
+  { content: "Bottom\nAligned", vAlign: "bottom" }
+]);
+```
+
+## Cell Spanning
+
+Merge cells across columns or rows:
+
+```typescript
+// Column spanning
+table.addRow([
+  { colSpan: 2, content: "Spans 2 columns" },
+  "Normal cell"
+]);
+
+// Row spanning (more common with Grid)
+table.addRow([
+  { rowSpan: 2, content: "Spans 2 rows" },
+  "Cell 1",
+  "Cell 2"
+]);
+```
+
+## Border Styles
+
+<Callout type="info">
+Learn more about all available border styles in the [Styling guide](./styling).
+</Callout>
+
+Choose from multiple pre-defined border styles:
+
+```typescript
+import { createTable } from "@visulima/tabular";
+import { ROUNDED_BORDER, DOUBLE_BORDER } from "@visulima/tabular/style";
+
+// Rounded corners
+const rounded = createTable({
+  style: { border: ROUNDED_BORDER }
+});
+
+// Double lines
+const double = createTable({
+  style: { border: DOUBLE_BORDER }
+});
+```
+
+Available border styles:
+- `DEFAULT_BORDER` - Standard box-drawing characters
+- `ROUNDED_BORDER` - Rounded corners
+- `DOUBLE_BORDER` - Double-line borders
+- `MINIMAL_BORDER` - Only horizontal lines
+- `ASCII_BORDER` - ASCII characters only
+- `MARKDOWN_BORDER` - Markdown table syntax
+- `DOTS_BORDER` - Dotted borders
+- `NO_BORDER` - No borders
+
+## Working with Colors
+
+Add colors using ANSI escape codes or color libraries:
+
+```typescript
+import { red, green, blue } from "@visulima/colorize";
+import { createTable } from "@visulima/tabular";
+
+const table = createTable();
+
+table.setHeaders(["Status", "Message"]);
+table.addRow([green("Success"), "Operation completed"]);
+table.addRow([red("Error"), "Operation failed"]);
+table.addRow([blue("Info"), "Processing..."]);
+
+console.log(table.toString());
+```
+
+## Word Wrapping
+
+Enable automatic word wrapping for long content:
+
+```typescript
+const table = createTable({
+  wordWrap: true,
+  maxWidth: 80
+});
+
+table.addRow([
+  { content: "This is a very long text that will be automatically wrapped to fit within the cell width" }
+]);
+```
+
+## Content Truncation
+
+Truncate content that exceeds a maximum width:
+
+```typescript
+table.addRow([
+  {
+    content: "This is a very long text that will be truncated",
+    maxWidth: 20,
+    truncate: true
+  }
+]);
+```
+
+## Practical Example
+
+Here's a complete example combining multiple features:
+
+```typescript
+import { createTable } from "@visulima/tabular";
+import { ROUNDED_BORDER } from "@visulima/tabular/style";
+import { green, red, yellow } from "@visulima/colorize";
+
+const table = createTable({
+  style: {
+    border: ROUNDED_BORDER,
+    paddingLeft: 2,
+    paddingRight: 2
+  }
+});
+
+// Add headers with alignment
+table.setHeaders([
+  { content: "Server", hAlign: "left" },
+  { content: "Status", hAlign: "center" },
+  { content: "Uptime", hAlign: "right" }
+]);
+
+// Add rows with colors and formatting
+table.addRows(
+  ["Web Server", green("Online"), "99.9%"],
+  ["Database", yellow("Warning"), "98.5%"],
+  ["Cache", red("Down"), "0%"]
+);
+
+console.log(table.toString());
+```
+
+Output:
+
+```
+╭────────────┬──────────┬─────────╮
+│  Server    │  Status  │  Uptime │
+├────────────┼──────────┼─────────┤
+│  Web Server│  Online  │   99.9% │
+├────────────┼──────────┼─────────┤
+│  Database  │ Warning  │   98.5% │
+├────────────┼──────────┼─────────┤
+│  Cache     │   Down   │      0% │
+╰────────────┴──────────┴─────────╯
+```
+
+## Next Steps
+
+Now that you understand the basics:
+
+- Learn about the [Grid API](./api/grid) for advanced layouts
+- Explore [styling options](./styling) in depth
+- Check out more [examples](./examples)
+- Read the [Table API reference](./api/table)

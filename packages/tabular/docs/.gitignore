@@ -1,0 +1,8 @@
+# Ignore build artifacts
+.next/
+out/
+build/
+dist/
+
+# Ignore fumadocs cache
+.fumadocs/
