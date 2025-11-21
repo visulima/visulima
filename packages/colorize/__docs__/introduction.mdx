@@ -1,0 +1,82 @@
+import { Play, Zap, Palette } from "lucide-react";
+import { Card, CardGroup } from "@visulima/nextra-theme-docs/components";
+
+Visulima Colorize is a sleek, lightning-fast library for adding colors and styles to terminal and console output. It's a modern alternative to Chalk with additional features and better performance.
+
+## Why Colorize?
+
+- **Full ESM and CommonJS Support** - Works with both module systems
+- **TypeScript First** - Complete type definitions out of the box
+- **Multi-Runtime Support** - Node.js, Deno, Next.js, and Browser
+- **Chalk-Compatible API** - Drop-in replacement with zero code changes
+- **Template Literals** - Modern tagged template syntax
+- **Nested Styles** - Compose styles infinitely deep
+- **256 Colors & TrueColor** - Full color spectrum support
+- **Smart Fallbacks** - Automatic color space detection
+- **Fast Performance** - Up to 3x faster than alternatives
+- **Zero Dependencies** - Minimal footprint
+
+## Quick Example
+
+```typescript
+import { red, green, blue, bold, hex } from '@visulima/colorize';
+
+// Simple colors
+console.log(red('Error!'));
+console.log(green('Success!'));
+
+// Template literals
+console.log(blue`Info message`);
+
+// Chained styles
+console.log(red.bold.underline('Critical Warning!'));
+
+// Nested styles
+console.log(red`Alert: ${blue.underline('file.js')} not found!`);
+
+// TrueColor support
+console.log(hex('#FF69B4')('Hot Pink!'));
+```
+
+## Get Started
+
+Choose between the cards below to get started with Colorize.
+
+<Card title="Quick Start" href="/docs/package/colorize/quickstart" icon={<Play size={20} />}>
+    Get up and running with Colorize in under 2 minutes
+</Card>
+
+<CardGroup cols={3}>
+    <Card title="Installation" href="/docs/package/colorize/installation" icon={<Zap size={20} />}>
+        Learn how to install Colorize in your project
+    </Card>
+    <Card title="API Reference" href="/docs/package/colorize/api-reference" icon={<Palette size={20} />}>
+        Explore all colors, styles, and functions
+    </Card>
+    <Card title="Examples" href="/docs/package/colorize/examples" icon={<Play size={20} />}>
+        See practical examples and use cases
+    </Card>
+</CardGroup>
+
+## Browser Support
+
+Colorize works in all modern browsers with console styling support:
+- Chrome 69+ (and all Chromium-based browsers)
+- Firefox (via `%c` syntax)
+- Safari
+- Edge
+
+## Node.js Support
+
+Compatible with Node.js 18.x and above.
+
+## Comparison with Alternatives
+
+Colorize stands out with better performance and more features:
+
+- **Performance**: Up to 3x faster than Chalk
+- **API Compatibility**: Drop-in Chalk replacement
+- **Named Imports**: Tree-shakeable imports
+- **Nested Templates**: Full template string nesting support
+- **Gradients**: Built-in gradient support
+- **Browser Support**: First-class browser compatibility

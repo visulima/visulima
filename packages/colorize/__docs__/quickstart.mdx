@@ -1,0 +1,261 @@
+import { Tab, Tabs, Steps, Callout } from "@visulima/nextra-theme-docs/components";
+import { PartyPopper } from "lucide-react";
+
+Get started with Colorize in under 2 minutes.
+
+<Steps>
+### Install
+
+In your project directory, run the following command to install the dependency:
+
+<Tabs>
+    <Tab title="pnpm">```bash
+pnpm add @visulima/colorize
+```</Tab>
+    <Tab title="npm">```bash
+npm install @visulima/colorize
+```</Tab>
+    <Tab title="yarn">```bash
+yarn add @visulima/colorize
+```</Tab>
+</Tabs>
+
+### Create Your First Styled Output
+
+Create a new file and add the following code:
+
+```typescript filename="app.ts"
+import { red, green, blue, bold } from '@visulima/colorize';
+
+// Simple colors
+console.log(red('Error: Something went wrong!'));
+console.log(green('Success: Operation completed!'));
+console.log(blue('Info: Processing data...'));
+
+// Chained styles
+console.log(red.bold('Critical Error!'));
+console.log(green.bold('All Tests Passed!'));
+
+// Nested styles
+console.log(red`Error: ${blue.underline('file.js')} not found!`);
+```
+
+### Run Your Code
+
+```bash
+node app.ts
+```
+
+You should see beautifully colored output in your terminal!
+
+<span className="flex gap-4">
+    You're all set! <PartyPopper size={24} className="inline mt-0.5" />
+</span>
+
+</Steps>
+
+## Basic Concepts
+
+### Named Import vs Default Import
+
+Colorize supports two import styles:
+
+```typescript
+// Named imports (recommended for tree-shaking)
+import { red, green, bold } from '@visulima/colorize';
+
+red('text');
+bold('text');
+
+// Default import
+import colorize from '@visulima/colorize';
+
+colorize.red('text');
+colorize.bold('text');
+```
+
+### Function Syntax vs Template Literals
+
+You can style text using either function calls or template literals:
+
+```typescript
+import { red, blue } from '@visulima/colorize';
+
+// Function syntax
+console.log(red('Error message'));
+
+// Template literal syntax
+console.log(red`Error message`);
+
+// Both produce the same result
+```
+
+<Callout type="info">
+Template literals are especially useful for complex strings with variables:
+
+```typescript
+const fileName = 'config.json';
+const lineNumber = 42;
+
+console.log(red`Error in ${blue(fileName)} at line ${lineNumber}`);
+```
+</Callout>
+
+## Common Use Cases
+
+### Logging Levels
+
+Create distinct visual styles for different log levels:
+
+```typescript
+import { red, yellow, blue, green, gray } from '@visulima/colorize';
+
+function log(level: string, message: string) {
+  switch (level) {
+    case 'error':
+      console.log(red(`[ERROR] ${message}`));
+      break;
+    case 'warn':
+      console.log(yellow(`[WARN] ${message}`));
+      break;
+    case 'info':
+      console.log(blue(`[INFO] ${message}`));
+      break;
+    case 'success':
+      console.log(green(`[SUCCESS] ${message}`));
+      break;
+    case 'debug':
+      console.log(gray(`[DEBUG] ${message}`));
+      break;
+  }
+}
+
+log('error', 'Connection failed');
+log('warn', 'Deprecated API usage');
+log('info', 'Server started on port 3000');
+log('success', 'Build completed');
+log('debug', 'Variable state: { x: 1, y: 2 }');
+```
+
+### Command-Line Interface (CLI)
+
+Enhance your CLI output:
+
+```typescript
+import { bold, green, yellow, cyan } from '@visulima/colorize';
+
+console.log(bold(cyan('My Awesome CLI v1.0.0')));
+console.log();
+
+console.log(bold('Usage:'));
+console.log('  my-cli [command] [options]');
+console.log();
+
+console.log(bold('Commands:'));
+console.log(`  ${green('start')}     Start the application`);
+console.log(`  ${green('build')}     Build for production`);
+console.log(`  ${green('test')}      Run tests`);
+console.log();
+
+console.log(bold('Options:'));
+console.log(`  ${yellow('--help')}     Show help information`);
+console.log(`  ${yellow('--version')}  Display version`);
+```
+
+### Error Messages
+
+Make errors stand out:
+
+```typescript
+import { red, bold, yellow, dim } from '@visulima/colorize';
+
+function showError(error: Error) {
+  console.log(red(bold('Error:')), error.message);
+  console.log();
+  console.log(yellow('Stack trace:'));
+  console.log(dim(error.stack));
+}
+
+try {
+  throw new Error('Something went wrong');
+} catch (error) {
+  showError(error as Error);
+}
+```
+
+## Combining Colors and Styles
+
+### Chaining
+
+Chain multiple styles together:
+
+```typescript
+import { red, bold, underline } from '@visulima/colorize';
+
+// Multiple styles
+console.log(red.bold('Bold and red'));
+console.log(red.bold.underline('Bold, red, and underlined'));
+```
+
+### Background Colors
+
+Add background colors to text:
+
+```typescript
+import { white, bgRed, bgGreen, bgYellow } from '@visulima/colorize';
+
+console.log(white.bgRed(' ERROR '));
+console.log(white.bgGreen(' SUCCESS '));
+console.log(white.bgYellow(' WARNING '));
+```
+
+### Nested Styles
+
+Nest different styles within each other:
+
+```typescript
+import { red, blue, green, bold } from '@visulima/colorize';
+
+console.log(red`Error: The file ${blue.bold('config.json')} was not found`);
+console.log(green`Status: ${bold('OK')} - ${blue('3 tests passed')}`);
+```
+
+## TrueColor Support
+
+### Hex Colors
+
+Use hex color codes:
+
+```typescript
+import { hex } from '@visulima/colorize';
+
+console.log(hex('#FF0000')('Red using hex'));
+console.log(hex('#00FF00')('Green using hex'));
+console.log(hex('#0000FF')('Blue using hex'));
+
+// Short form
+console.log(hex('#F00')('Red (short form)'));
+```
+
+### RGB Colors
+
+Use RGB values:
+
+```typescript
+import { rgb } from '@visulima/colorize';
+
+console.log(rgb(255, 0, 0)('Red using RGB'));
+console.log(rgb(0, 255, 0)('Green using RGB'));
+console.log(rgb(0, 0, 255)('Blue using RGB'));
+```
+
+## Next Steps
+
+<Callout type="success">
+Now that you understand the basics, explore:
+
+- [API Reference](/docs/package/colorize/api-reference) - Complete function and color reference
+- [Examples](/docs/package/colorize/examples) - More real-world examples
+- [Advanced Features](/docs/package/colorize/advanced) - Gradients, templates, and advanced usage
+- [Browser Usage](/docs/package/colorize/browser) - Using Colorize in web browsers
+</Callout>

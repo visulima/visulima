@@ -1,0 +1,300 @@
+import { Callout, Tab, Tabs } from "@visulima/nextra-theme-docs/components";
+
+Guide for migrating from other terminal styling libraries to Colorize.
+
+## From Chalk
+
+Colorize is designed to be compatible with Chalk's API. In most cases, you can simply replace the import.
+
+### Basic Replacement
+
+<Tabs>
+<Tab title="Before (Chalk)">
+```typescript
+import chalk from 'chalk';
+
+chalk.red('Error message');
+chalk.green.bold('Success!');
+```
+</Tab>
+<Tab title="After (Colorize)">
+```typescript
+import chalk from '@visulima/colorize';
+
+chalk.red('Error message');
+chalk.green.bold('Success!');
+```
+</Tab>
+</Tabs>
+
+Or use named imports (recommended):
+
+```typescript
+import { red, green, bold } from '@visulima/colorize';
+
+red('Error message');
+green.bold('Success!');
+```
+
+### API Compatibility
+
+Colorize supports all standard Chalk APIs:
+
+```typescript
+// All of these work the same
+import colorize, { red, green } from '@visulima/colorize';
+
+// Function calls
+colorize.red('text');
+red('text');
+
+// Template literals
+colorize.red`text`;
+red`text`;
+
+// Chaining
+colorize.red.bold('text');
+red.bold('text');
+
+// Nesting
+red`Error: ${blue('details')}`;
+
+// TrueColor
+hex('#FF0000')('text');
+rgb(255, 0, 0)('text');
+
+// ANSI 256
+ansi256(196)('text');
+```
+
+<Callout type="success">
+**Breaking Changes:** None for standard usage. Colorize is designed to be a drop-in replacement.
+</Callout>
+
+### Features Available in Colorize
+
+Additional features not in Chalk:
+
+```typescript
+import { gradient, multilineGradient } from '@visulima/colorize/gradient';
+import template from '@visulima/colorize/template';
+
+// Gradients (not in Chalk)
+console.log(gradient('red', 'blue')('Gradient text'));
+
+// Enhanced template literals
+console.log(template`{red Error:} {blue Details}`);
+```
+
+### Migration Steps
+
+1. Install Colorize:
+   ```bash
+   npm uninstall chalk
+   npm install @visulima/colorize
+   ```
+
+2. Update imports:
+   ```diff
+   - import chalk from 'chalk';
+   + import chalk from '@visulima/colorize';
+   ```
+
+3. Or use named imports:
+   ```diff
+   - import chalk from 'chalk';
+   + import { red, green, blue, bold } from '@visulima/colorize';
+   
+   - chalk.red('text')
+   + red('text')
+   ```
+
+## From Kleur
+
+Kleur uses a similar chaining API. Migration is straightforward.
+
+### API Differences
+
+<Tabs>
+<Tab title="Kleur">
+```typescript
+import { red } from 'kleur';
+
+red().bold('text'); // Note the parentheses
+red('text');
+```
+</Tab>
+<Tab title="Colorize">
+```typescript
+import { red } from '@visulima/colorize';
+
+red.bold('text'); // No parentheses needed
+red('text');
+red`text`; // Template literals also work
+```
+</Tab>
+</Tabs>
+
+### Migration Steps
+
+1. Install Colorize:
+   ```bash
+   npm uninstall kleur
+   npm install @visulima/colorize
+   ```
+
+2. Update imports and remove parentheses:
+   ```diff
+   - import { red, green } from 'kleur';
+   + import { red, green } from '@visulima/colorize';
+   
+   - red().bold('text')
+   + red.bold('text')
+   ```
+
+## From Colorette
+
+Colorette has a minimal API. Colorize provides the same functions plus more.
+
+### API Differences
+
+<Tabs>
+<Tab title="Colorette">
+```typescript
+import { red, bold } from 'colorette';
+
+// Only function calls
+red('text');
+bold(red('text')); // Nested with function calls
+```
+</Tab>
+<Tab title="Colorize">
+```typescript
+import { red, bold } from '@visulima/colorize';
+
+// Function calls
+red('text');
+
+// Template literals
+red`text`;
+
+// Chaining
+red.bold('text');
+
+// Nested templates
+red`Error ${bold('details')}`;
+```
+</Tab>
+</Tabs>
+
+### Migration Steps
+
+1. Install Colorize:
+   ```bash
+   npm uninstall colorette
+   npm install @visulima/colorize
+   ```
+
+2. Update imports (same names):
+   ```diff
+   - import { red, green } from 'colorette';
+   + import { red, green } from '@visulima/colorize';
+   ```
+
+3. Optionally improve with chaining:
+   ```diff
+   - bold(red('text'))
+   + red.bold('text')
+   ```
+
+## From Colors.js
+
+Colors.js has a unique API that extends String.prototype. Colorize uses a different approach.
+
+### API Differences
+
+<Tabs>
+<Tab title="Colors.js">
+```javascript
+require('colors');
+
+console.log('text'.red);
+console.log('text'.red.bold);
+```
+</Tab>
+<Tab title="Colorize">
+```typescript
+import { red, bold } from '@visulima/colorize';
+
+console.log(red('text'));
+console.log(red.bold('text'));
+```
+</Tab>
+</Tabs>
+
+<Callout type="warning">
+**Migration Required:** Colors.js extends String.prototype, which Colorize explicitly avoids. You'll need to update your code.
+</Callout>
+
+### Migration Steps
+
+1. Install Colorize:
+   ```bash
+   npm uninstall colors
+   npm install @visulima/colorize
+   ```
+
+2. Remove Colors.js require and add Colorize imports:
+   ```diff
+   - require('colors');
+   + import { red, green, bold } from '@visulima/colorize';
+   ```
+
+3. Update all styled strings:
+   ```diff
+   - 'text'.red
+   + red('text')
+   
+   - 'text'.red.bold
+   + red.bold('text')
+   ```
+
+## Migration Checklist
+
+Use this checklist to ensure a smooth migration:
+
+### Pre-Migration
+
+- [ ] Identify all color/style usage in codebase
+- [ ] Check for custom colors or themes
+- [ ] Review environment variable usage
+- [ ] Backup your code
+- [ ] Create a test branch
+
+### During Migration
+
+- [ ] Install @visulima/colorize
+- [ ] Update all imports
+- [ ] Convert API calls
+- [ ] Update custom wrappers/helpers
+- [ ] Run tests
+- [ ] Check console output manually
+
+### Post-Migration
+
+- [ ] Verify all colors render correctly
+- [ ] Test on different terminals
+- [ ] Check CI/CD output
+- [ ] Update documentation
+- [ ] Remove old dependency
+- [ ] Deploy to staging
+
+## Benefits After Migration
+
+<Callout type="success">
+- **Better Performance**: Up to 3x faster
+- **More Features**: Gradients, better templates
+- **Better TypeScript Support**: Full type safety
+- **Active Maintenance**: Regular updates
+- **Modern Codebase**: Clean, well-maintained
+</Callout>

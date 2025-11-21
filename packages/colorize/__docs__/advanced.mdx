@@ -1,0 +1,381 @@
+import { Callout } from "@visulima/nextra-theme-docs/components";
+
+Advanced features and techniques for Colorize.
+
+## Gradients
+
+Colorize includes powerful gradient functionality for creating beautiful color transitions.
+
+### Basic Gradients
+
+Create simple color gradients:
+
+```typescript
+import { gradient } from '@visulima/colorize/gradient';
+
+// Two-color gradient
+console.log(gradient('red', 'blue')('Hello World!'));
+
+// Three-color gradient
+console.log(gradient('red', 'yellow', 'green')('Rainbow text'));
+
+// Using hex colors
+console.log(gradient('#FF0000', '#00FF00', '#0000FF')('RGB gradient'));
+```
+
+### Gradient with Options
+
+Customize gradient behavior:
+
+```typescript
+import { gradient } from '@visulima/colorize/gradient';
+
+// HSV interpolation
+console.log(
+  gradient(['red', 'blue'], { interpolation: 'hsv' })('Smooth transition')
+);
+
+// Long HSV spin
+console.log(
+  gradient(['red', 'blue'], { interpolation: 'hsv', hsvSpin: 'long' })('Long spin')
+);
+```
+
+<Callout type="info">
+**Available Options:**
+- `interpolation`: `'rgb'` or `'hsv'` (default: `'rgb'`)
+- `hsvSpin`: `'short'` or `'long'` (default: `'short'`)
+</Callout>
+
+### Multiline Gradients
+
+Apply consistent gradients across multiple lines:
+
+```typescript
+import { multilineGradient } from '@visulima/colorize/gradient';
+
+const asciiArt = [
+  '     __     ',
+  '   <(o )___ ',
+  '    ( ._> / ',
+  "     `---'  "
+].join('\n');
+
+console.log(multilineGradient(['orange', 'yellow'])(asciiArt));
+```
+
+### Predefined Gradient Themes
+
+Create reusable gradient themes:
+
+```typescript
+import { gradient } from '@visulima/colorize/gradient';
+
+const themes = {
+  fire: gradient(['#ff0000', '#ff7f00', '#ffff00']),
+  ocean: gradient(['#006994', '#0099cc', '#66ccff']),
+  forest: gradient(['#0f5132', '#198754', '#20c997']),
+  sunset: gradient(['#ff6b6b', '#ffa07a', '#ffd700']),
+  cyberpunk: gradient(['#ff00ff', '#00ffff', '#ffff00'], { interpolation: 'hsv' }),
+};
+
+console.log(themes.fire('Fire effect!'));
+console.log(themes.ocean('Ocean wave'));
+console.log(themes.cyberpunk('Cyberpunk 2077'));
+```
+
+## Tagged Template Literals
+
+Use template strings with dynamic styling.
+
+### Basic Template Usage
+
+```typescript
+import template from '@visulima/colorize/template';
+
+const cpu = { totalPercent: 45 };
+const ram = { used: 8, total: 16 };
+
+console.log(template`
+CPU:  {red ${cpu.totalPercent}%}
+RAM:  {green ${(ram.used / ram.total) * 100}%}
+`);
+```
+
+### Chained Styles
+
+Chain multiple styles in templates:
+
+```typescript
+import template from '@visulima/colorize/template';
+
+console.log(template`
+{bold.red Error:} Connection failed
+{bold.green Success:} Operation completed
+{bold.yellow Warning:} Deprecated API
+{bold.blue.underline https://example.com}
+`);
+```
+
+### Color Functions in Templates
+
+Use color functions within templates:
+
+```typescript
+import template from '@visulima/colorize/template';
+
+console.log(template`
+{rgb(255,0,0) Red using RGB}
+{hex(#00FF00) Green using hex}
+{ansi256(51) Cyan using ANSI 256}
+`);
+```
+
+### Shorthand Hex Notation
+
+Use shorthand hex colors in templates:
+
+```typescript
+import template from '@visulima/colorize/template';
+
+console.log(template`
+{#FF0000 Foreground red}
+{#:00FF00 Background green}
+{#FFFF00:#0000FF Yellow on blue}
+`);
+```
+
+### Dynamic Templates
+
+Create reusable template functions:
+
+```typescript
+import template from '@visulima/colorize/template';
+
+function createStatusMessage(service: string, status: 'up' | 'down', uptime: number) {
+  const statusColor = status === 'up' ? 'green' : 'red';
+  const statusText = status === 'up' ? '✓ Online' : '✗ Offline';
+  
+  return template`
+Service: {bold.cyan ${service}}
+Status:  {bold.${statusColor} ${statusText}}
+Uptime:  {gray ${uptime}s}
+  `;
+}
+
+console.log(createStatusMessage('API Server', 'up', 86400));
+```
+
+## Custom Color Palettes
+
+Create consistent color schemes for your application.
+
+### Defining a Palette
+
+```typescript
+import { hex, bold, italic } from '@visulima/colorize';
+
+const palette = {
+  // Brand colors
+  primary: hex('#007bff'),
+  secondary: hex('#6c757d'),
+  success: hex('#28a745'),
+  danger: hex('#dc3545'),
+  warning: hex('#ffc107'),
+  
+  // Text styles
+  title: (text: string) => bold(palette.primary(text)),
+  subtitle: (text: string) => italic(palette.secondary(text)),
+};
+
+// Usage
+console.log(palette.title('Application Title'));
+console.log(palette.subtitle('A brief description'));
+console.log(palette.success('✓ Operation successful'));
+```
+
+### Theme System
+
+Implement a complete theming system:
+
+```typescript
+import { hex, bold } from '@visulima/colorize';
+
+interface Theme {
+  primary: (text: string) => string;
+  secondary: (text: string) => string;
+  success: (text: string) => string;
+  error: (text: string) => string;
+}
+
+const darkTheme: Theme = {
+  primary: hex('#60a5fa'),
+  secondary: hex('#a78bfa'),
+  success: hex('#34d399'),
+  error: hex('#f87171'),
+};
+
+const lightTheme: Theme = {
+  primary: hex('#2563eb'),
+  secondary: hex('#7c3aed'),
+  success: hex('#059669'),
+  error: hex('#dc2626'),
+};
+
+// Theme selector
+let currentTheme: Theme = darkTheme;
+
+function setTheme(theme: 'dark' | 'light') {
+  currentTheme = theme === 'dark' ? darkTheme : lightTheme;
+}
+
+// Usage with current theme
+console.log(currentTheme.primary('Primary text'));
+console.log(currentTheme.success('Success message'));
+```
+
+## Performance Optimization
+
+### Caching Styled Strings
+
+Cache frequently used styled strings:
+
+```typescript
+import { red, green, bold } from '@visulima/colorize';
+
+class StyledCache {
+  private cache = new Map<string, string>();
+
+  get(key: string, generator: () => string): string {
+    if (!this.cache.has(key)) {
+      this.cache.set(key, generator());
+    }
+    return this.cache.get(key)!;
+  }
+}
+
+const cache = new StyledCache();
+
+// Cache styled strings
+const errorPrefix = cache.get('error', () => red(bold('[ERROR]')));
+const successPrefix = cache.get('success', () => green(bold('[SUCCESS]')));
+
+// Reuse cached values
+console.log(errorPrefix, 'Something went wrong');
+console.log(successPrefix, 'Operation completed');
+```
+
+## Dynamic Styling
+
+### Style Factory
+
+Create styles dynamically based on conditions:
+
+```typescript
+import { red, yellow, green, blue } from '@visulima/colorize';
+
+function getStatusColor(percentage: number) {
+  if (percentage >= 90) return green;
+  if (percentage >= 70) return blue;
+  if (percentage >= 50) return yellow;
+  return red;
+}
+
+function displayMetric(name: string, value: number, max: number) {
+  const percentage = (value / max) * 100;
+  const color = getStatusColor(percentage);
+  
+  console.log(`${name}: ${color(`${percentage.toFixed(1)}%`)}`);
+}
+
+displayMetric('CPU', 45, 100);
+displayMetric('Memory', 75, 100);
+displayMetric('Disk', 95, 100);
+```
+
+### Rule-Based Styling
+
+Apply styles based on rules:
+
+```typescript
+import { red, green, yellow, bold } from '@visulima/colorize';
+
+interface StyleRule {
+  condition: (value: any) => boolean;
+  style: (text: string) => string;
+}
+
+class RuleBasedStyler {
+  private rules: StyleRule[] = [];
+
+  addRule(condition: (value: any) => boolean, style: (text: string) => string) {
+    this.rules.push({ condition, style });
+    return this;
+  }
+
+  apply(value: any, text: string): string {
+    for (const rule of this.rules) {
+      if (rule.condition(value)) {
+        return rule.style(text);
+      }
+    }
+    return text;
+  }
+}
+
+const styler = new RuleBasedStyler()
+  .addRule((v) => v < 0, red.bold)
+  .addRule((v) => v === 0, yellow)
+  .addRule((v) => v > 0, green);
+
+console.log(styler.apply(-5, 'Negative'));
+console.log(styler.apply(0, 'Zero'));
+console.log(styler.apply(50, 'Positive'));
+```
+
+## ANSI Code Manipulation
+
+### Direct ANSI Access
+
+Access raw ANSI codes for advanced use cases:
+
+```typescript
+import { red, bold } from '@visulima/colorize';
+
+// Access opening and closing codes
+console.log(`Text ${red.open}in red${red.close} back to normal`);
+
+// Combine codes manually
+console.log(`${red.open}${bold.open}Bold red${bold.close}${red.close}`);
+
+// Build custom style
+const customStyle = red.bold.underline;
+console.log(`${customStyle.open}Custom${customStyle.close}`);
+```
+
+### Creating Custom Wrappers
+
+Build custom wrapper functions:
+
+```typescript
+import { red, yellow, bold } from '@visulima/colorize';
+
+function wrapInBox(text: string, color: (text: string) => string) {
+  const width = text.length + 4;
+  const top = color('┌' + '─'.repeat(width - 2) + '┐');
+  const middle = color('│ ') + bold(text) + color(' │');
+  const bottom = color('└' + '─'.repeat(width - 2) + '┘');
+  
+  return `${top}\n${middle}\n${bottom}`;
+}
+
+console.log(wrapInBox('Important Message', red));
+console.log(wrapInBox('Warning Notice', yellow));
+```
+
+<Callout type="success">
+**Best Practices:**
+- Build complex styles from simple ones
+- Maintain consistent styling across your application
+- Make styled output testable using `strip()`
+</Callout>
