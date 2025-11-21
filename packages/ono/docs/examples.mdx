@@ -1,0 +1,721 @@
+---
+title: Examples
+description: Practical examples for using Ono in different scenarios
+---
+
+# Examples
+
+Real-world examples demonstrating how to use Ono in various scenarios.
+
+## Node.js HTTP Server
+
+Complete example with error handling and context:
+
+```typescript
+import { createServer } from "node:http";
+import { Ono } from "@visulima/ono";
+import createRequestContextPage from "@visulima/ono/page/context";
+import { createNodeHttpHandler } from "@visulima/ono/server/open-in-editor";
+
+const ono = new Ono();
+const openInEditorHandler = createNodeHttpHandler();
+
+const server = createServer(async (request, response) => {
+  const url = new URL(request.url || "/", `http://localhost:3000`);
+
+  // Editor integration endpoint
+  if (url.pathname === "/__open-in-editor") {
+    return openInEditorHandler(request, response);
+  }
+
+  try {
+    // Your application logic
+    if (url.pathname === "/api/users") {
+      // Simulate an error
+      throw new Error("Database connection failed");
+    }
+
+    response.writeHead(200, { "Content-Type": "text/plain" });
+    response.end("Hello World");
+  } catch (error) {
+    // Create rich context page
+    const contextPage = await createRequestContextPage(request, {
+      context: {
+        request: {
+          method: request.method,
+          url: request.url,
+          headers: request.headers,
+        },
+        user: {
+          client: {
+            ip: request.socket?.remoteAddress,
+            userAgent: request.headers["user-agent"],
+          },
+        },
+        app: {
+          routing: {
+            route: url.pathname,
+            params: {},
+            query: Object.fromEntries(url.searchParams.entries()),
+          },
+        },
+      },
+    });
+
+    const html = await ono.toHTML(error, {
+      content: [contextPage],
+      openInEditorUrl: "/__open-in-editor",
+      cspNonce: "nonce-" + Date.now(),
+      theme: "auto",
+    });
+
+    response.writeHead(500, {
+      "Content-Type": "text/html",
+      "Content-Length": Buffer.byteLength(html, "utf8"),
+    });
+    response.end(html);
+  }
+});
+
+server.listen(3000, () => {
+  console.log("Server running at http://localhost:3000");
+});
+```
+
+## Express.js Middleware
+
+Error handling middleware for Express:
+
+```typescript
+import express from "express";
+import { Ono } from "@visulima/ono";
+import createRequestContextPage from "@visulima/ono/page/context";
+import { createNodeHttpHandler } from "@visulima/ono/server/open-in-editor";
+
+const app = express();
+const ono = new Ono();
+
+// Body parser
+app.use(express.json());
+
+// Editor integration
+app.post("/__open-in-editor", createNodeHttpHandler());
+
+// Your routes
+app.get("/api/users/:id", (req, res) => {
+  throw new Error("User not found");
+});
+
+// Error handling middleware
+app.use(async (error, req, res, next) => {
+  if (res.headersSent) {
+    return next(error);
+  }
+
+  const contextPage = await createRequestContextPage(req, {
+    context: {
+      request: {
+        method: req.method,
+        url: req.originalUrl,
+        headers: req.headers,
+      },
+      app: {
+        routing: {
+          route: req.route?.path || req.path,
+          params: req.params,
+          query: req.query,
+        },
+      },
+    },
+  });
+
+  const html = await ono.toHTML(error, {
+    content: [contextPage],
+    openInEditorUrl: "/__open-in-editor",
+    theme: "auto",
+  });
+
+  res.status(500).send(html);
+});
+
+app.listen(3000);
+```
+
+## Hono Framework
+
+Integration with Hono:
+
+```typescript
+import { serve } from "@hono/node-server";
+import { Hono } from "hono";
+import { Ono } from "@visulima/ono";
+import createRequestContextPage from "@visulima/ono/page/context";
+
+const app = new Hono();
+const ono = new Ono();
+
+// Routes
+app.get("/", (c) => c.text("Hello Hono!"));
+
+app.get("/api/error", () => {
+  throw new Error("Something went wrong!");
+});
+
+// Error handler
+app.onError(async (err, c) => {
+  const contextPage = await createRequestContextPage(c.req.raw, {
+    context: {
+      request: {
+        method: c.req.method,
+        url: c.req.url,
+        headers: Object.fromEntries(c.req.raw.headers.entries()),
+      },
+      app: {
+        routing: {
+          route: c.req.routePath,
+          params: c.req.param(),
+          query: c.req.query(),
+        },
+      },
+    },
+  });
+
+  const html = await ono.toHTML(err, {
+    content: [contextPage],
+    theme: "dark",
+    cspNonce: "hono-nonce-" + Date.now(),
+  });
+
+  return c.html(html, 500);
+});
+
+serve({ fetch: app.fetch, port: 3000 });
+```
+
+## CLI Application
+
+Error handling for command-line tools:
+
+```typescript
+import { Ono } from "@visulima/ono";
+
+const ono = new Ono();
+
+async function runCommand() {
+  try {
+    // Your CLI logic
+    throw new Error("Configuration file not found");
+  } catch (error) {
+    const { errorAnsi, solutionBox } = await ono.toANSI(error);
+
+    console.error(errorAnsi);
+
+    if (solutionBox) {
+      console.error("\n" + solutionBox);
+    }
+
+    process.exit(1);
+  }
+}
+
+runCommand();
+```
+
+## Custom Solution Finder
+
+Application-specific error solutions:
+
+```typescript
+import { Ono } from "@visulima/ono";
+import type { SolutionFinder } from "@visulima/error/solution";
+
+// Database error finder
+const databaseErrorFinder: SolutionFinder = {
+  name: "database-error-finder",
+  priority: 100,
+  handle: async (error, context) => {
+    const message = error.message.toLowerCase();
+
+    if (message.includes("econnrefused")) {
+      return {
+        header: "Database Connection Refused",
+        body: `
+## Problem
+Unable to connect to the database server.
+
+## Solutions
+1. **Check if the database is running**
+   \`\`\`bash
+   docker ps | grep postgres
+   \`\`\`
+
+2. **Verify connection string**
+   \`\`\`env
+   DATABASE_URL=postgresql://user:password@localhost:5432/dbname
+   \`\`\`
+
+3. **Check port availability**
+   \`\`\`bash
+   netstat -an | grep 5432
+   \`\`\`
+
+4. **Review firewall settings**
+        `,
+      };
+    }
+
+    if (message.includes("authentication failed")) {
+      return {
+        header: "Database Authentication Failed",
+        body: `
+## Problem
+Invalid database credentials.
+
+## Solutions
+1. Check username and password in .env file
+2. Verify database user exists
+3. Reset database password if needed
+4. Check for special characters in password (may need escaping)
+        `,
+      };
+    }
+
+    return undefined;
+  },
+};
+
+// API error finder
+const apiErrorFinder: SolutionFinder = {
+  name: "api-error-finder",
+  priority: 90,
+  handle: async (error, context) => {
+    if (error.message.includes("401") || error.message.includes("Unauthorized")) {
+      return {
+        header: "API Authentication Required",
+        body: `
+## Problem
+The API request requires authentication.
+
+## Solutions
+1. **Add API key to request**
+   \`\`\`typescript
+   headers: {
+     'Authorization': \`Bearer \${process.env.API_KEY}\`
+   }
+   \`\`\`
+
+2. **Check API key expiration**
+3. **Verify API key permissions**
+4. **Regenerate API key if needed**
+        `,
+      };
+    }
+
+    if (error.message.includes("429") || error.message.includes("rate limit")) {
+      return {
+        header: "API Rate Limit Exceeded",
+        body: `
+## Problem
+Too many requests to the API.
+
+## Solutions
+1. Implement request throttling
+2. Add exponential backoff
+3. Cache API responses
+4. Upgrade API plan if needed
+        `,
+      };
+    }
+
+    return undefined;
+  },
+};
+
+const ono = new Ono();
+
+// Use in your error handler
+const html = await ono.toHTML(error, {
+  solutionFinders: [databaseErrorFinder, apiErrorFinder],
+});
+```
+
+## Error Cause Chain
+
+Handling nested errors:
+
+```typescript
+import { Ono } from "@visulima/ono";
+
+const ono = new Ono();
+
+async function databaseQuery() {
+  throw new Error("Connection timeout after 5000ms");
+}
+
+async function loadUser(userId: string) {
+  try {
+    await databaseQuery();
+  } catch (cause) {
+    throw new Error(`Failed to load user ${userId}`, { cause });
+  }
+}
+
+async function handleRequest() {
+  try {
+    await loadUser("user-123");
+  } catch (cause) {
+    throw new Error("Request handler failed", { cause });
+  }
+}
+
+try {
+  await handleRequest();
+} catch (error) {
+  // Shows complete error chain with all causes
+  const html = await ono.toHTML(error);
+}
+```
+
+## Custom Context Pages
+
+Add custom debugging information:
+
+```typescript
+import { Ono } from "@visulima/ono";
+import createRequestContextPage from "@visulima/ono/page/context";
+
+const ono = new Ono();
+
+// Create context page with extensive debugging info
+const contextPage = await createRequestContextPage(request, {
+  context: {
+    request: {
+      method: request.method,
+      url: request.url,
+    },
+    database: {
+      connection: "postgresql://...",
+      queries: {
+        total: 1250,
+        slow: 23,
+        failed: 2,
+      },
+      pool: {
+        active: 5,
+        idle: 3,
+        max: 10,
+        waiting: 0,
+      },
+      recentQueries: [
+        "SELECT * FROM users WHERE id = $1",
+        "INSERT INTO audit_log (user_id, action) VALUES ($1, $2)",
+      ],
+    },
+    cache: {
+      redis: {
+        status: "connected",
+        host: "localhost:6379",
+        db: 0,
+      },
+      stats: {
+        hits: 15230,
+        misses: 1342,
+        hitRate: 0.919,
+      },
+      keys: {
+        total: 1250,
+        expired: 45,
+      },
+    },
+    performance: {
+      responseTime: "235ms",
+      memoryUsage: {
+        heapUsed: "45.2 MB",
+        heapTotal: "60.1 MB",
+        external: "2.3 MB",
+      },
+      uptime: process.uptime(),
+    },
+    environment: {
+      NODE_ENV: process.env.NODE_ENV,
+      version: process.version,
+      platform: process.platform,
+    },
+  },
+});
+
+// Add custom HTML page
+const customPage = {
+  id: "metrics",
+  name: "Metrics",
+  code: {
+    html: `
+      <div class="p-4">
+        <h2 class="text-2xl font-bold mb-4">Application Metrics</h2>
+        <div class="space-y-4">
+          <div>
+            <h3 class="font-semibold">Request Rate</h3>
+            <p>125 req/min</p>
+          </div>
+          <div>
+            <h3 class="font-semibold">Error Rate</h3>
+            <p>0.05%</p>
+          </div>
+        </div>
+      </div>
+    `,
+  },
+};
+
+const html = await ono.toHTML(error, {
+  content: [contextPage, customPage],
+});
+```
+
+## TypeScript Error Classes
+
+Custom error types with Ono:
+
+```typescript
+import { VisulimaError } from "@visulima/error";
+import { Ono } from "@visulima/ono";
+
+// Base application error
+class ApplicationError extends VisulimaError {
+  constructor(message: string, cause?: Error) {
+    super({
+      name: "ApplicationError",
+      message,
+      cause,
+    });
+  }
+}
+
+// Database error with hint
+class DatabaseError extends ApplicationError {
+  constructor(message: string, cause?: Error) {
+    super(message, cause);
+    this.name = "DatabaseError";
+    this.hint = "Check database connection and credentials";
+  }
+}
+
+// Validation error
+class ValidationError extends ApplicationError {
+  constructor(message: string, public fields: Record<string, string>) {
+    super(message);
+    this.name = "ValidationError";
+    this.hint = "Please correct the validation errors";
+  }
+}
+
+// Usage
+const ono = new Ono();
+
+try {
+  throw new DatabaseError("Query timeout", new Error("Connection lost"));
+} catch (error) {
+  const html = await ono.toHTML(error, {
+    theme: "auto",
+  });
+}
+```
+
+## Bun Integration
+
+Using Ono with Bun:
+
+```typescript
+import { Ono } from "@visulima/ono";
+import createRequestContextPage from "@visulima/ono/page/context";
+
+const ono = new Ono();
+
+Bun.serve({
+  port: 3000,
+  async fetch(request) {
+    try {
+      if (new URL(request.url).pathname === "/error") {
+        throw new Error("Test error");
+      }
+
+      return new Response("Hello from Bun!");
+    } catch (error) {
+      const contextPage = await createRequestContextPage(request, {
+        context: {
+          request: {
+            method: request.method,
+            url: request.url,
+          },
+          runtime: {
+            name: "Bun",
+            version: Bun.version,
+          },
+        },
+      });
+
+      const html = await ono.toHTML(error, {
+        content: [contextPage],
+        theme: "dark",
+      });
+
+      return new Response(html, {
+        status: 500,
+        headers: { "Content-Type": "text/html" },
+      });
+    }
+  },
+});
+```
+
+## Deno Integration
+
+Using Ono with Deno:
+
+```typescript
+import { Ono } from "npm:@visulima/ono";
+import createRequestContextPage from "npm:@visulima/ono/page/context";
+
+const ono = new Ono();
+
+Deno.serve(async (request) => {
+  try {
+    if (new URL(request.url).pathname === "/error") {
+      throw new Error("Test error");
+    }
+
+    return new Response("Hello from Deno!");
+  } catch (error) {
+    const contextPage = await createRequestContextPage(request, {
+      context: {
+        request: {
+          method: request.method,
+          url: request.url,
+        },
+        runtime: {
+          name: "Deno",
+          version: Deno.version.deno,
+        },
+      },
+    });
+
+    const html = await ono.toHTML(error, {
+      content: [contextPage],
+      theme: "auto",
+    });
+
+    return new Response(html, {
+      status: 500,
+      headers: { "Content-Type": "text/html" },
+    });
+  }
+});
+```
+
+## Testing Error Pages
+
+Generate error pages for testing:
+
+```typescript
+import { writeFile } from "node:fs/promises";
+import { Ono } from "@visulima/ono";
+
+const ono = new Ono();
+
+// Create test error
+const testError = new Error("Test error for debugging");
+testError.cause = new Error("Root cause error");
+
+// Generate HTML
+const html = await ono.toHTML(testError, {
+  theme: "dark",
+  cspNonce: "test-nonce",
+});
+
+// Save to file for inspection
+await writeFile("test-error.html", html);
+
+console.log("Error page saved to test-error.html");
+```
+
+## Production Error Handler
+
+Complete production-ready error handler:
+
+```typescript
+import { createServer } from "node:http";
+import { Ono } from "@visulima/ono";
+import createRequestContextPage from "@visulima/ono/page/context";
+import { createNodeHttpHandler } from "@visulima/ono/server/open-in-editor";
+
+const ono = new Ono();
+const isDevelopment = process.env.NODE_ENV === "development";
+
+// Only enable editor integration in development
+const openInEditorHandler = isDevelopment
+  ? createNodeHttpHandler()
+  : null;
+
+async function handleError(error: unknown, request: Request) {
+  // Log error (use your logging service)
+  console.error("Application error:", error);
+
+  // In production, you might want to:
+  // - Send to error tracking service (Sentry, etc.)
+  // - Log to monitoring service
+  // - Alert team if critical
+
+  if (!isDevelopment) {
+    // Generic error page for production
+    return `
+      <!DOCTYPE html>
+      <html>
+        <body>
+          <h1>Something went wrong</h1>
+          <p>Please try again later.</p>
+        </body>
+      </html>
+    `;
+  }
+
+  // Development: Show full error details
+  const contextPage = await createRequestContextPage(request, {
+    context: {
+      request: {
+        method: request.method,
+        url: request.url,
+      },
+      environment: {
+        NODE_ENV: process.env.NODE_ENV,
+        version: process.version,
+      },
+    },
+  });
+
+  return await ono.toHTML(error, {
+    content: [contextPage],
+    openInEditorUrl: "/__open-in-editor",
+    theme: "auto",
+  });
+}
+
+const server = createServer(async (request, response) => {
+  const url = new URL(request.url || "/", "http://localhost:3000");
+
+  if (isDevelopment && url.pathname === "/__open-in-editor") {
+    return openInEditorHandler?.(request, response);
+  }
+
+  try {
+    // Your application logic
+    response.writeHead(200);
+    response.end("OK");
+  } catch (error) {
+    const html = await handleError(error, request);
+    response.writeHead(500, { "Content-Type": "text/html" });
+    response.end(html);
+  }
+});
+
+server.listen(3000);
+```
