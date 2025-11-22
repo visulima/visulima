@@ -3,10 +3,10 @@
  * Demonstrates how a module can add database functionality
  */
 
-import { defineStartModule } from './module.js'
-import type { ModuleOptions, ModuleContext } from './types.js'
+import { defineStartModule } from '../module.js'
+import type { ModuleContext } from '../types.js'
 
-interface DatabaseModuleOptions extends ModuleOptions {
+interface DatabaseModuleOptions {
   provider?: 'postgresql' | 'mysql' | 'sqlite'
   url?: string
   migrations?: boolean
@@ -23,7 +23,8 @@ export default defineStartModule({
     configKey: 'database',
   },
 
-  async setup(options: DatabaseModuleOptions, context: ModuleContext) {
+  async setup(context: ModuleContext) {
+    const options = context.options as DatabaseModuleOptions
     const {
       provider = 'postgresql',
       url = process.env.DATABASE_URL || '',

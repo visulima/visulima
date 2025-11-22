@@ -3,82 +3,40 @@
  * Shows how modules would be configured in a TanStack Start app
  */
 
-import type { StartConfig } from './types.js'
-import authModule from './examples/auth-module.js'
-import i18nModule from './examples/i18n-module.js'
-import databaseModule from './examples/database-module.js'
+import type { ModuleEntry } from '../types.js'
+import authModule from './auth-module.js'
+import i18nModule from './i18n-module.js'
+import databaseModule from './database-module.js'
 
 /**
  * TanStack Start application configuration with modules
+ * This would be used in vite.config.ts
  */
-export const startConfig: StartConfig = {
-  // Register modules
-  modules: [
-    // String format - module will be imported from node_modules
-    '@tanstack/start-router',
+export const modules: ModuleEntry[] = [
+  // String format - module will be imported from node_modules
+  '@tanstack/start-router',
 
-    // Array format - module with options
-    [
-      '@tanstack/start-auth',
-      {
-        providers: ['github', 'google'],
-        sessionSecret: process.env.SESSION_SECRET,
-        redirectTo: '/dashboard',
-      },
-    ],
-
-    // Direct module object
-    i18nModule,
+  // Array format - module with options
+  [
+    '@tanstack/start-auth',
     {
-      ...i18nModule,
-      meta: {
-        ...i18nModule.meta!,
-        name: 'custom-i18n',
-      },
+      providers: ['github', 'google'],
+      sessionSecret: process.env.SESSION_SECRET,
+      redirectTo: '/dashboard',
     },
-
-    // Database module
-    [
-      databaseModule,
-      {
-        provider: 'postgresql',
-        url: process.env.DATABASE_URL,
-        migrations: true,
-        seed: process.env.NODE_ENV === 'development',
-      },
-    ],
   ],
 
-  // Module-specific configuration (using configKey)
-  auth: {
-    providers: ['github', 'google'],
-    sessionSecret: process.env.SESSION_SECRET,
-  },
+  // Direct module object
+  i18nModule,
 
-  i18n: {
-    locales: ['en', 'fr', 'de', 'es'],
-    defaultLocale: 'en',
-    strategy: 'prefix_except_default',
-    detectBrowserLanguage: true,
-  },
-
-  database: {
-    provider: 'postgresql',
-    url: process.env.DATABASE_URL,
-    migrations: true,
-  },
-
-  // Standard TanStack Start configuration
-  vite: {
-    plugins: [],
-  },
-
-  router: {
-    // Router configuration
-  },
-
-  server: {
-    port: 3000,
-    host: 'localhost',
-  },
-}
+  // Database module with options
+  [
+    databaseModule,
+    {
+      provider: 'postgresql',
+      url: process.env.DATABASE_URL,
+      migrations: true,
+      seed: process.env.NODE_ENV === 'development',
+    },
+  ],
+]

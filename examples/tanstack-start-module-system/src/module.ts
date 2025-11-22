@@ -4,17 +4,15 @@
 
 import type {
   StartModule,
-  ModuleOptions,
   ModuleContext,
-  ModuleMeta,
-  StartConfig,
 } from './types.js'
 
 /**
  * Define a Start module
+ * Provides type-safe module definition with better DX
  */
 export function defineStartModule(
-  module: StartModule | ((options: ModuleOptions, context: ModuleContext) => void | Promise<void>)
+  module: StartModule | ((context: ModuleContext) => void | Promise<void>)
 ): StartModule {
   if (typeof module === 'function') {
     return {

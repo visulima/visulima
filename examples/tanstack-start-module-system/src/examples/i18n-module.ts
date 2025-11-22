@@ -3,10 +3,10 @@
  * Demonstrates how a module can add i18n functionality
  */
 
-import { defineStartModule } from './module.js'
-import type { ModuleOptions, ModuleContext } from './types.js'
+import { defineStartModule } from '../module.js'
+import type { ModuleContext } from '../types.js'
 
-interface I18nModuleOptions extends ModuleOptions {
+interface I18nModuleOptions {
   locales?: string[]
   defaultLocale?: string
   strategy?: 'prefix' | 'prefix_except_default' | 'prefix_and_default'
@@ -23,7 +23,8 @@ export default defineStartModule({
     configKey: 'i18n',
   },
 
-  async setup(options: I18nModuleOptions, context: ModuleContext) {
+  async setup(context: ModuleContext) {
+    const options = context.options as I18nModuleOptions
     const {
       locales = ['en', 'fr', 'de'],
       defaultLocale = 'en',

@@ -3,10 +3,10 @@
  * Demonstrates how a module can add authentication functionality
  */
 
-import { defineStartModule } from './module.js'
-import type { ModuleOptions, ModuleContext } from './types.js'
+import { defineStartModule } from '../module.js'
+import type { ModuleContext } from '../types.js'
 
-interface AuthModuleOptions extends ModuleOptions {
+interface AuthModuleOptions {
   providers?: string[]
   sessionSecret?: string
   redirectTo?: string
@@ -22,7 +22,8 @@ export default defineStartModule({
     configKey: 'auth',
   },
 
-  async setup(options: AuthModuleOptions, context: ModuleContext) {
+  async setup(context: ModuleContext) {
+    const options = context.options as AuthModuleOptions
     const {
       providers = ['github', 'google'],
       sessionSecret = process.env.SESSION_SECRET || 'default-secret',
