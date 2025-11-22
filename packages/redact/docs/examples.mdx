@@ -1,0 +1,528 @@
+---
+title: Examples
+description: Practical examples and common use cases for Visulima Redact
+---
+
+# Examples
+
+This page provides practical examples demonstrating common use cases for Visulima Redact.
+
+## Logging Sanitization
+
+One of the most common use cases is sanitizing log output before sending it to log management systems.
+
+### Basic Logging Example
+
+```typescript
+import { redact, standardRules } from '@visulima/redact';
+
+function logUserAction(user: any, action: string) {
+  const sanitized = redact(user, standardRules);
+  
+  console.log({
+    timestamp: new Date().toISOString(),
+    action,
+    user: sanitized
+  });
+}
+
+logUserAction({
+  id: '123',
+  email: 'john@example.com',
+  password: 'secret123',
+  apiKey: 'sk_live_abc123'
+}, 'login');
+
+// Output:
+// {
+//   timestamp: '2024-10-12T10:30:00.000Z',
+//   action: 'login',
+//   user: {
+//     id: '123',
+//     email: '<EMAIL>',
+//     password: '<PASSWORD>',
+//     apiKey: '<APIKEY>'
+//   }
+// }
+```
+
+### Express.js Middleware
+
+Create middleware to sanitize request/response data:
+
+```typescript
+import { redact } from '@visulima/redact';
+import type { Request, Response, NextFunction } from 'express';
+
+const sensitiveFields = [
+  'password',
+  'token',
+  'apiKey',
+  'creditCard',
+  'ssn',
+  'authorization'
+];
+
+function sanitizeMiddleware(req: Request, res: Response, next: NextFunction) {
+  // Store original json method
+  const originalJson = res.json.bind(res);
+  
+  // Override json method
+  res.json = (body: any) => {
+    const sanitized = redact(body, sensitiveFields);
+    return originalJson(sanitized);
+  };
+  
+  next();
+}
+
+app.use(sanitizeMiddleware);
+```
+
+## API Response Filtering
+
+Filter sensitive data before sending API responses.
+
+### REST API Example
+
+```typescript
+import { redact } from '@visulima/redact';
+
+class UserController {
+  async getUser(userId: string) {
+    const user = await database.users.findById(userId);
+    
+    // Remove sensitive fields before sending
+    const publicUser = redact(user, [
+      'password',
+      'passwordHash',
+      'salt',
+      'internalNotes',
+      'ssn',
+      'taxId'
+    ]);
+    
+    return publicUser;
+  }
+}
+```
+
+### GraphQL Resolver
+
+```typescript
+import { redact } from '@visulima/redact';
+
+const resolvers = {
+  Query: {
+    user: async (_, { id }, context) => {
+      const user = await context.db.user.findUnique({ where: { id } });
+      
+      // Redact based on user permissions
+      const rules = context.user.isAdmin 
+        ? ['passwordHash'] 
+        : ['passwordHash', 'email', 'phone', 'address'];
+      
+      return redact(user, rules);
+    }
+  }
+};
+```
+
+## Error Handling
+
+Sanitize error objects before logging or displaying them.
+
+### Custom Error Handler
+
+```typescript
+import { redact } from '@visulima/redact';
+
+class ErrorHandler {
+  private sensitivePatterns = [
+    'password',
+    'token',
+    'secret',
+    'key',
+    'auth*',
+    'credential*'
+  ];
+  
+  logError(error: Error) {
+    const sanitized = redact(error, this.sensitivePatterns);
+    
+    console.error({
+      message: sanitized.message,
+      stack: sanitized.stack,
+      ...sanitized
+    });
+  }
+  
+  sendToMonitoring(error: Error) {
+    const sanitized = redact(error, this.sensitivePatterns);
+    
+    // Send to Sentry, DataDog, etc.
+    monitoring.captureException(sanitized);
+  }
+}
+```
+
+## Database Query Sanitization
+
+Redact sensitive data from database queries in logs.
+
+### Query Logger
+
+```typescript
+import { redact } from '@visulima/redact';
+
+class DatabaseLogger {
+  logQuery(query: string, params: any[]) {
+    const sanitizedParams = redact(params, [
+      'password',
+      'email',
+      'creditCard',
+      'ssn'
+    ]);
+    
+    console.log('SQL Query:', query);
+    console.log('Parameters:', sanitizedParams);
+  }
+}
+
+// Usage with your ORM
+db.on('query', (query, params) => {
+  logger.logQuery(query, params);
+});
+```
+
+## Configuration Management
+
+Redact sensitive values from configuration objects.
+
+### Config Loader
+
+```typescript
+import { redact } from '@visulima/redact';
+
+interface AppConfig {
+  database: {
+    host: string;
+    port: number;
+    username: string;
+    password: string;
+  };
+  api: {
+    endpoint: string;
+    key: string;
+    secret: string;
+  };
+}
+
+function loadConfig(): AppConfig {
+  const config = loadFromEnv();
+  
+  // Log sanitized config for debugging
+  console.log('Loaded config:', redact(config, [
+    'database.password',
+    'api.key',
+    'api.secret'
+  ]));
+  
+  return config;
+}
+```
+
+## Data Export
+
+Sanitize data before exporting for external use.
+
+### CSV Export
+
+```typescript
+import { redact } from '@visulima/redact';
+import { stringify } from 'csv-stringify';
+
+async function exportUsers(users: any[]) {
+  // Redact sensitive fields from all users
+  const sanitized = redact(users, [
+    'password',
+    'passwordHash',
+    'ssn',
+    'creditCard',
+    'internalNotes'
+  ]);
+  
+  return stringify(sanitized);
+}
+```
+
+## Text Anonymization
+
+Anonymize natural language text for data privacy.
+
+### Customer Support Tickets
+
+```typescript
+import { stringAnonymize, standardRules } from '@visulima/redact';
+
+function sanitizeSupportTicket(ticket: any) {
+  return {
+    ...ticket,
+    subject: stringAnonymize(ticket.subject, standardRules),
+    description: stringAnonymize(ticket.description, standardRules),
+    comments: ticket.comments.map((comment: any) => ({
+      ...comment,
+      text: stringAnonymize(comment.text, standardRules)
+    }))
+  };
+}
+
+const ticket = {
+  subject: 'Issue with payment',
+  description: 'My credit card 4532-1234-5678-9010 was charged twice. Please contact me at john@example.com.',
+  comments: []
+};
+
+const sanitized = sanitizeSupportTicket(ticket);
+// {
+//   subject: 'Issue with payment',
+//   description: 'My credit card <CREDITCARD> was charged twice. Please contact me at <EMAIL>.',
+//   comments: []
+// }
+```
+
+### Chat Application
+
+```typescript
+import { stringAnonymize } from '@visulima/redact';
+
+const piiRules = [
+  { key: 'email', pattern: /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g },
+  { key: 'phone', pattern: /\b\d{3}[-.]?\d{3}[-.]?\d{4}\b/g },
+  { key: 'ssn', pattern: /\b\d{3}-\d{2}-\d{4}\b/g }
+];
+
+function sanitizeChatMessage(message: string) {
+  return stringAnonymize(message, piiRules);
+}
+
+const message = 'Call me at 555-123-4567 or email john@example.com';
+const sanitized = sanitizeChatMessage(message);
+// 'Call me at <PHONE> or email <EMAIL>'
+```
+
+## Multi-tenant Applications
+
+Redact data based on tenant permissions.
+
+### Tenant-aware Redaction
+
+```typescript
+import { redact } from '@visulima/redact';
+
+interface TenantConfig {
+  id: string;
+  allowedFields: string[];
+}
+
+function redactForTenant(data: any, tenant: TenantConfig) {
+  const allFields = Object.keys(data);
+  const restrictedFields = allFields.filter(
+    field => !tenant.allowedFields.includes(field)
+  );
+  
+  return redact(data, restrictedFields);
+}
+
+// Usage
+const userData = {
+  id: '123',
+  name: 'John Doe',
+  email: 'john@example.com',
+  ssn: '123-45-6789',
+  salary: 100000
+};
+
+const basicTenant = {
+  id: 'tenant1',
+  allowedFields: ['id', 'name']
+};
+
+const result = redactForTenant(userData, basicTenant);
+// { id: '123', name: 'John Doe', email: '<EMAIL>', ssn: '<SSN>', salary: '<SALARY>' }
+```
+
+## URL Parameter Sanitization
+
+Automatically redact sensitive URL parameters.
+
+### Request Logger
+
+```typescript
+import { redact } from '@visulima/redact';
+
+function logRequest(url: string) {
+  const sanitized = redact(url, [
+    'token',
+    'apiKey',
+    'password',
+    'secret'
+  ]);
+  
+  console.log('Request URL:', sanitized);
+}
+
+logRequest('https://api.example.com/users?token=abc123&id=456');
+// Request URL: https://api.example.com/users?token=<TOKEN>&id=456
+```
+
+## Complex Nested Structures
+
+Handle deeply nested objects with multiple sensitive fields.
+
+### Nested Data Example
+
+```typescript
+import { redact } from '@visulima/redact';
+
+const complexData = {
+  user: {
+    profile: {
+      personal: {
+        ssn: '123-45-6789',
+        email: 'user@example.com'
+      },
+      payment: {
+        creditCard: '4532-1234-5678-9010',
+        bankAccount: '1234567890'
+      }
+    },
+    auth: {
+      password: 'secret',
+      tokens: ['token1', 'token2']
+    }
+  },
+  metadata: {
+    apiKey: 'key123'
+  }
+};
+
+const sanitized = redact(complexData, [
+  'user.profile.personal.ssn',
+  'user.profile.personal.email',
+  'user.profile.payment.creditCard',
+  'user.profile.payment.bankAccount',
+  'user.auth.password',
+  'user.auth.tokens',
+  'metadata.apiKey'
+]);
+```
+
+## Custom Replacement Values
+
+Use custom replacement values for different sensitivity levels.
+
+### Tiered Redaction
+
+```typescript
+import { redact } from '@visulima/redact';
+
+function redactWithLevels(data: any) {
+  return redact(data, [
+    { key: 'password', replacement: '[CLASSIFIED]' },
+    { key: 'email', replacement: '[PII]' },
+    { key: 'apiKey', replacement: '[SECRET]' },
+    { key: 'phone', replacement: '[PII]' }
+  ]);
+}
+
+const data = {
+  password: 'secret',
+  email: 'user@example.com',
+  apiKey: 'key123',
+  phone: '555-1234'
+};
+
+const result = redactWithLevels(data);
+// {
+//   password: '[CLASSIFIED]',
+//   email: '[PII]',
+//   apiKey: '[SECRET]',
+//   phone: '[PII]'
+// }
+```
+
+## Testing with Redaction
+
+Sanitize test data and snapshots.
+
+### Test Helper
+
+```typescript
+import { redact } from '@visulima/redact';
+
+function sanitizeForSnapshot(data: any) {
+  return redact(data, [
+    'id',
+    'createdAt',
+    'updatedAt',
+    'password',
+    'token'
+  ]);
+}
+
+// In your test
+test('creates user', async () => {
+  const user = await createUser(userData);
+  const sanitized = sanitizeForSnapshot(user);
+  
+  expect(sanitized).toMatchSnapshot();
+});
+```
+
+## Webhook Payload Sanitization
+
+Sanitize webhook payloads before logging.
+
+### Webhook Handler
+
+```typescript
+import { redact } from '@visulima/redact';
+
+async function handleWebhook(payload: any, signature: string) {
+  // Log sanitized payload
+  console.log('Received webhook:', redact(payload, [
+    'token',
+    'apiKey',
+    'secret',
+    'password',
+    'creditCard'
+  ]));
+  
+  // Process webhook...
+}
+```
+
+## Environment Variable Sanitization
+
+Redact sensitive environment variables when logging configuration.
+
+### Environment Logger
+
+```typescript
+import { redact } from '@visulima/redact';
+
+function logEnvironment() {
+  const sanitized = redact(process.env, [
+    '*key*',
+    '*secret*',
+    '*password*',
+    '*token*',
+    '*credential*'
+  ]);
+  
+  console.log('Environment:', sanitized);
+}
+```
+
+These examples demonstrate the versatility of Visulima Redact across different scenarios. Adapt them to your specific needs and security requirements.
