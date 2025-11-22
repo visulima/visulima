@@ -1,4 +1,4 @@
-/* eslint-disable class-methods-use-this, import/prefer-default-export */
+/* eslint-disable class-methods-use-this */
 
 /**
  * No-op metrics implementation.

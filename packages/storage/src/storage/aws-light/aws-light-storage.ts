@@ -175,9 +175,9 @@ class AwsLightStorage extends S3BaseStorage<AwsLightFile> {
                 headers: {
                     "Content-Length": ContentLength?.toString() ?? "0",
                     "Content-Type": ContentType as string,
-                    ...ETag && { ETag },
-                    ...Expires && { "X-Upload-Expires": Expires.toString() },
-                    ...LastModified && { "Last-Modified": LastModified.toString() },
+                    ...(ETag && { ETag }),
+                    ...(Expires && { "X-Upload-Expires": Expires.toString() }),
+                    ...(LastModified && { "Last-Modified": LastModified.toString() }),
                 },
                 size: Number(ContentLength),
                 stream: readableStream,

@@ -146,7 +146,7 @@ class GCSMetaStorage<T extends File = File> extends MetaStorage<T> {
                 "x-goog-api-client": `gl-node/${process.versions.node} gccl/${package_.version} gccl-invocation-id/${randomUUID()}`,
             },
             params: {
-                ...this.userProject === undefined ? {} : { userProject: this.userProject },
+                ...(this.userProject === undefined ? {} : { userProject: this.userProject }),
             },
             retry: true,
             retryConfig: this.retryOptions,

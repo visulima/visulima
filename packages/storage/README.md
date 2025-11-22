@@ -203,8 +203,8 @@ const storage = new DiskStorage({
 
 ```typescript
 import { MediaTransformer } from "@visulima/upload/transformer";
-import ImageTransformer from "@visulima/upload/transformers/image";
-import VideoTransformer from "@visulima/upload/transformers/video";
+import ImageTransformer from "@visulima/upload/transformer/image";
+import VideoTransformer from "@visulima/upload/transformer/video";
 import { LRUCache } from "lru-cache";
 
 const transformer = new MediaTransformer(storage, {

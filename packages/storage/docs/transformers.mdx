@@ -20,7 +20,7 @@ Transform images with resizing, cropping, format conversion, and more.
 ```typescript
 import { LRUCache } from "lru-cache";
 import { DiskStorage } from "@visulima/storage";
-import ImageTransformer from "@visulima/storage/transformers/image";
+import ImageTransformer from "@visulima/storage/transformer/image";
 
 const storage = new DiskStorage({ directory: "./uploads" });
 const cache = new LRUCache({ max: 1000, ttl: 3600000 });
@@ -100,7 +100,7 @@ Transform videos with resizing, format conversion, and codec changes.
 
 ```typescript
 import { DiskStorage } from "@visulima/storage";
-import VideoTransformer from "@visulima/storage/transformers/video";
+import VideoTransformer from "@visulima/storage/transformer/video";
 
 const storage = new DiskStorage({ directory: "./uploads" });
 
@@ -153,7 +153,7 @@ Transform audio with resampling, format conversion, and codec changes.
 
 ```typescript
 import { DiskStorage } from "@visulima/storage";
-import AudioTransformer from "@visulima/storage/transformers/audio";
+import AudioTransformer from "@visulima/storage/transformer/audio";
 
 const storage = new DiskStorage({ directory: "./uploads" });
 
@@ -204,9 +204,9 @@ Unified transformer that automatically detects and processes any media type.
 ```typescript
 import { DiskStorage } from "@visulima/storage";
 import { MediaTransformer } from "@visulima/storage/transformer";
-import ImageTransformer from "@visulima/storage/transformers/image";
-import VideoTransformer from "@visulima/storage/transformers/video";
-import AudioTransformer from "@visulima/storage/transformers/audio";
+import ImageTransformer from "@visulima/storage/transformer/image";
+import VideoTransformer from "@visulima/storage/transformer/video";
+import AudioTransformer from "@visulima/storage/transformer/audio";
 
 const storage = new DiskStorage({ directory: "./uploads" });
 

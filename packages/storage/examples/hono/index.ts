@@ -7,7 +7,7 @@ import { DiskStorage } from "@visulima/storage";
 import { createStorageHandler } from "@visulima/storage/handler/http/hono";
 import { xhrOpenApiSpec, tusOpenApiSpec } from "@visulima/storage/openapi";
 import { MediaTransformer } from "@visulima/storage/transformer";
-import ImageTransformer from "@visulima/storage/transformers/image";
+import ImageTransformer from "@visulima/storage/transformer/image";
 import { serve } from "@hono/node-server";
 
 const app = new Hono();

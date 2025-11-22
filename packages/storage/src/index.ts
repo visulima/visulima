@@ -1,3 +1,4 @@
+export { waitForStorage } from "./handler/utils/storage-utils";
 export { NoOpMetrics, OpenTelemetryMetrics } from "./metrics";
 export { default as DiskStorage } from "./storage/local/disk-storage";
 export { default as DiskStorageWithChecksum } from "./storage/local/disk-storage-with-checksum";

@@ -1,4 +1,4 @@
-/* eslint-disable max-classes-per-file, sonarjs/file-name-differ-from-class */
+/* eslint-disable max-classes-per-file */
 import { Readable } from "node:stream";
 
 import type { MultipartPart } from "@remix-run/multipart-parser";
@@ -72,7 +72,7 @@ class Multipart<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
         // Create MultipartBase instance with access to this MultipartFetch instance
         const multipartInstance = this;
 
-        this.multipartBase = new class extends MultipartBase<TFile> {
+        this.multipartBase = new (class extends MultipartBase<TFile> {
             protected get storage() {
                 return multipartInstance.storage;
             }
@@ -108,7 +108,7 @@ class Multipart<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
                 // Return Node.js Readable stream, not Uint8Array
                 return Readable.from(new Uint8Array(0));
             }
-        }();
+        })();
     }
 
     /**
