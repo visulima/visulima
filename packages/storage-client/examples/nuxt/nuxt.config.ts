@@ -2,7 +2,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import { DiskStorage } from "@visulima/storage";
-import storageModule from "@visulima/storage/nuxt";
+import storageModule from "@visulima/storage/adapter/nuxt";
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
@@ -11,18 +11,14 @@ export default defineNuxtConfig({
     typescript: {
         strict: true,
     },
-    modules: [
-        [
-            storageModule,
-            {
-                storage: new DiskStorage({
-                    directory: join(tmpdir(), "visulima-uploads"),
-                }),
-                basePath: "/api/upload",
-                multipart: true,
-                rest: true,
-                tus: true,
-            },
-        ],
-    ],
+    modules: [storageModule],
+    storage: {
+        storage: new DiskStorage({
+            directory: join(tmpdir(), "visulima-uploads"),
+        }),
+        basePath: "/api/upload",
+        multipart: true,
+        rest: true,
+        tus: true,
+    },
 });

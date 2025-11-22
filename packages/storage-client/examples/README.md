@@ -8,7 +8,7 @@ This directory contains example projects demonstrating how to use `@visulima/sto
 
 - **Location**: [`react/`](./react/)
 - **Framework**: React 18+ with Vite
-- **Features**: React hooks (`useUpload`, `useMultipartUpload`, `useTusUpload`)
+- **Features**: React hooks (`useUpload`, `useMultipartUpload`, `useChunkedRestUpload`, `useTusUpload`)
 - **Run**: `cd react && pnpm install && pnpm dev`
 
 ### Next.js
@@ -29,28 +29,28 @@ This directory contains example projects demonstrating how to use `@visulima/sto
 
 - **Location**: [`solid-start/`](./solid-start/)
 - **Framework**: Solid Start (SolidJS full-stack framework)
-- **Features**: Solid primitives (`createUpload`, `createMultipartUpload`, `createTusUpload`)
+- **Features**: Solid primitives (`createUpload`, `createMultipartUpload`, `createChunkedRestUpload`, `createTusUpload`)
 - **Run**: `cd solid-start && pnpm install && pnpm dev`
 
 ### Vue (Vite)
 
 - **Location**: [`vue/`](./vue/)
 - **Framework**: Vue 3 with Vite
-- **Features**: Vue composables (`useUpload`, `useMultipartUpload`, `useTusUpload`)
+- **Features**: Vue composables (`useUpload`, `useMultipartUpload`, `useChunkedRestUpload`, `useTusUpload`)
 - **Run**: `cd vue && pnpm install && pnpm dev`
 
 ### SvelteKit
 
-- **Location**: [`svelte/`](./svelte/)
+- **Location**: [`svelte-kit/`](./svelte-kit/)
 - **Framework**: SvelteKit
-- **Features**: Svelte stores (`createUpload`, `createMultipartUpload`, `createTusUpload`)
+- **Features**: Svelte stores (`createUpload`, `createMultipartUpload`, `createChunkedRestUpload`, `createTusUpload`)
 - **Run**: `cd svelte && pnpm install && pnpm dev`
 
 ### Nuxt
 
 - **Location**: [`nuxt/`](./nuxt/)
 - **Framework**: Nuxt 3
-- **Features**: Vue composables (`useUpload`, `useMultipartUpload`, `useTusUpload`) with SSR support
+- **Features**: Vue composables (`useUpload`, `useMultipartUpload`, `useChunkedRestUpload`, `useTusUpload`) with SSR support
 - **Run**: `cd nuxt && pnpm install && pnpm dev`
 
 ## Quick Start
@@ -59,8 +59,9 @@ Each example demonstrates:
 
 1. **Basic file upload** - Simple file upload with progress tracking
 2. **Multipart upload** - Traditional multipart/form-data uploads
-3. **TUS resumable upload** - Large file uploads with pause/resume capability
-4. **Automatic method selection** - Smart switching between multipart and TUS based on file size
+3. **Chunked REST upload** - Client-side chunked uploads for large files with pause/resume capability
+4. **TUS resumable upload** - Large file uploads with pause/resume capability
+5. **Automatic method selection** - Smart switching between multipart, chunked REST, and TUS based on file size and available endpoints
 
 ## Installation
 
@@ -73,14 +74,17 @@ pnpm install
 
 ## Configuration
 
-All examples use mock upload endpoints. Update the `endpointMultipart` and `endpointTus` in each example to point to your actual upload server:
+All examples use mock upload endpoints. Update the endpoints in each example to point to your actual upload server. You can provide one or more endpoints:
 
 ```typescript
 const uploader = useUpload({
-    endpointMultipart: "/api/upload/multipart", // Update this to your multipart endpoint
-    endpointTus: "/api/upload/tus", // Update this to your TUS endpoint
+    endpointChunkedRest: "/api/upload/chunked-rest", // Optional: Chunked REST upload endpoint
+    endpointMultipart: "/api/upload/multipart", // Optional: Multipart upload endpoint
+    endpointTus: "/api/upload/tus", // Optional: TUS upload endpoint
 });
 ```
+
+**Note**: At least one endpoint (`endpointChunkedRest`, `endpointMultipart`, or `endpointTus`) must be provided. If multiple endpoints are provided, the upload method will be automatically selected based on file size and availability.
 
 ## Framework-Specific Usage
 
@@ -91,6 +95,7 @@ import { useUpload } from "@visulima/storage-client/react";
 
 const UploadComponent = () => {
     const { isUploading, progress, upload } = useUpload({
+        endpointChunkedRest: "/api/upload/chunked-rest",
         endpointMultipart: "/api/upload/multipart",
         endpointTus: "/api/upload/tus",
     });
@@ -125,6 +130,7 @@ const UploadComponent = () => {
 import { useUpload } from "@visulima/storage-client/vue";
 
 const { upload, progress, isUploading } = useUpload({
+    endpointChunkedRest: "/api/upload/chunked-rest",
     endpointMultipart: "/api/upload/multipart",
     endpointTus: "/api/upload/tus",
 });
@@ -145,6 +151,7 @@ import { createUpload } from "@visulima/storage-client/solid";
 
 const UploadComponent = () => {
     const { isUploading, progress, upload } = createUpload({
+        endpointChunkedRest: "/api/upload/chunked-rest",
         endpointMultipart: "/api/upload/multipart",
         endpointTus: "/api/upload/tus",
     });
@@ -179,6 +186,7 @@ const UploadComponent = () => {
   import { createUpload } from '@visulima/storage-client/svelte';
 
   const { upload, progress, isUploading } = createUpload({
+    endpointChunkedRest: '/api/upload/chunked-rest',
     endpointMultipart: '/api/upload/multipart',
     endpointTus: '/api/upload/tus',
   });
@@ -190,13 +198,14 @@ const UploadComponent = () => {
 {/if}
 ```
 
-### Nuxt
+### Nuxt Usage
 
 ```vue
 <script setup lang="ts">
 import { useUpload } from "@visulima/storage-client/vue";
 
 const { upload, progress, isUploading } = useUpload({
+    endpointChunkedRest: "/api/upload/chunked-rest",
     endpointMultipart: "/api/upload/multipart",
     endpointTus: "/api/upload/tus",
 });
@@ -225,5 +234,5 @@ To add a new framework example:
 
 For issues or questions:
 
-- Check the [main documentation](../../packages/storage-client/README.md)
+- Check the [main documentation](../README.md)
 - Open an issue on [GitHub](https://github.com/visulima/visulima/issues)

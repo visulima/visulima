@@ -1,4 +1,3 @@
-
 // eslint-disable-next-line import/no-extraneous-dependencies
 import createHttpError from "http-errors";
 
@@ -70,13 +69,13 @@ abstract class RestBase<TFile extends UploadFile> {
             headers:
                 result.failedCount > 0
                     ? {
-                        "X-Delete-Errors": JSON.stringify(result.failed),
-                        "X-Delete-Failed": String(result.failedCount),
-                        "X-Delete-Successful": String(result.successfulCount),
-                    }
+                          "X-Delete-Errors": JSON.stringify(result.failed),
+                          "X-Delete-Failed": String(result.failedCount),
+                          "X-Delete-Successful": String(result.successfulCount),
+                      }
                     : {
-                        "X-Delete-Successful": String(result.successfulCount),
-                    },
+                          "X-Delete-Successful": String(result.successfulCount),
+                      },
             statusCode: result.successfulCount === ids.length ? 204 : 207, // 207 Multi-Status for partial success
         };
     }

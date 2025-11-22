@@ -1,4 +1,4 @@
-/* eslint-disable max-classes-per-file, sonarjs/file-name-differ-from-class */
+/* eslint-disable max-classes-per-file */
 // eslint-disable-next-line import/no-extraneous-dependencies
 import createHttpError from "http-errors";
 
@@ -45,7 +45,7 @@ class RestFetch<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
         // Create RestBase instance with access to this RestFetch instance
         const restInstance = this;
 
-        this.restBase = new class extends RestBase<TFile> {
+        this.restBase = new (class extends RestBase<TFile> {
             protected get storage() {
                 return restInstance.storage;
             }
@@ -53,7 +53,7 @@ class RestFetch<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
             protected buildFileUrl(requestUrl: string, file: TFile): string {
                 return restInstance.buildFileUrl({ url: requestUrl } as Request, file);
             }
-        }();
+        })();
     }
 
     /**

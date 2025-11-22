@@ -76,6 +76,7 @@ createStorageHandler(app, {
 ```
 
 This automatically registers:
+
 - **Multipart**: `POST /files`, `GET /files/:id?/:metadata?`, `DELETE /files/:id`, `OPTIONS /files`
 - **REST**: `POST /files-rest`, `PUT /files-rest/:id`, `PATCH /files-rest/:id`, `GET /files-rest/:id?`, `HEAD /files-rest/:id`, `DELETE /files-rest/:id?`, `OPTIONS /files-rest`
 - **TUS**: All methods on `/files-tus` and `/files-tus/:id` (POST, PATCH, HEAD, GET, DELETE, OPTIONS)
@@ -89,7 +90,7 @@ import { Hono } from "hono";
 import { DiskStorage } from "@visulima/storage";
 import { createStorageHandler } from "@visulima/storage/handler/http/hono";
 import { MediaTransformer } from "@visulima/storage/transformer";
-import ImageTransformer from "@visulima/storage/transformers/image";
+import ImageTransformer from "@visulima/storage/transformer/image";
 
 const app = new Hono();
 const storage = new DiskStorage({ directory: "./uploads" });
@@ -360,7 +361,7 @@ Combine with image transformations for on-demand processing:
 import { LRUCache } from "lru-cache";
 import { DiskStorage } from "@visulima/storage";
 import { Multipart } from "@visulima/storage/handler/http/fetch";
-import ImageTransformer from "@visulima/storage/transformers/image";
+import ImageTransformer from "@visulima/storage/transformer/image";
 
 const storage = new DiskStorage({ directory: "./uploads" });
 const multipart = new Multipart({ storage });

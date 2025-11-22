@@ -1,4 +1,4 @@
-/* eslint-disable max-classes-per-file, sonarjs/file-name-differ-from-class */
+/* eslint-disable max-classes-per-file */
 // eslint-disable-next-line import/no-extraneous-dependencies
 import createHttpError from "http-errors";
 
@@ -53,7 +53,7 @@ export class Tus<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
         // Create TusBase instance with access to this TusFetch instance
         const tusInstance = this;
 
-        this.tusBase = new class extends TusBase<TFile> {
+        this.tusBase = new (class extends TusBase<TFile> {
             protected get storage() {
                 return tusInstance.storage;
             }
@@ -65,7 +65,7 @@ export class Tus<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
             protected buildFileUrl(requestUrl: string, file: TFile): string {
                 return tusInstance.buildFileUrlForTus(requestUrl, file);
             }
-        }();
+        })();
     }
 
     /**

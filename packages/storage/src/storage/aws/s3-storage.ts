@@ -193,9 +193,9 @@ class S3Storage extends S3BaseStorage<S3File> {
                 headers: {
                     "Content-Length": ContentLength?.toString() ?? "0",
                     "Content-Type": ContentType as string,
-                    ...ETag && { ETag },
-                    ...Expires && { "X-Upload-Expires": Expires.toString() },
-                    ...LastModified && { "Last-Modified": LastModified.toString() },
+                    ...(ETag && { ETag }),
+                    ...(Expires && { "X-Upload-Expires": Expires.toString() }),
+                    ...(LastModified && { "Last-Modified": LastModified.toString() }),
                 },
                 size: Number(ContentLength),
                 stream: readableStream,

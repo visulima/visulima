@@ -108,8 +108,8 @@ Cache transformed media files to avoid reprocessing:
 
 ```typescript
 import { MediaTransformer } from "@visulima/storage/transformer";
-import ImageTransformer from "@visulima/storage/transformers/image";
-import VideoTransformer from "@visulima/storage/transformers/video";
+import ImageTransformer from "@visulima/storage/transformer/image";
+import VideoTransformer from "@visulima/storage/transformer/video";
 import { LRUCache } from "lru-cache";
 
 const transformer = new MediaTransformer(storage, {

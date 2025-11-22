@@ -228,7 +228,7 @@ class S3ClientAdapter implements S3ApiOperations {
             Bucket: params.Bucket,
             CopySource: params.CopySource,
             Key: params.Key,
-            ...params.StorageClass && { StorageClass: params.StorageClass },
+            ...(params.StorageClass && { StorageClass: params.StorageClass }),
         };
 
         const command = new CopyObjectCommand(commandInput);

@@ -96,9 +96,9 @@ class DiskStorageWithChecksum<TFile extends File = File> extends DiskStorage<TFi
                 const isFirstChunk = (part as FilePart).start === 0 || (part as FilePart).start === undefined;
 
                 if (
-                    isFirstChunk
-                    && (file.bytesWritten === 0 || Number.isNaN(file.bytesWritten))
-                    && (!file.contentType || file.contentType === "application/octet-stream")
+                    isFirstChunk &&
+                    (file.bytesWritten === 0 || Number.isNaN(file.bytesWritten)) &&
+                    (!file.contentType || file.contentType === "application/octet-stream")
                 ) {
                     try {
                         const { fileType, stream: detectedStream } = await detectFileTypeFromStream(part.body);

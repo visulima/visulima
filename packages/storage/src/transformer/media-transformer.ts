@@ -381,14 +381,11 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
         };
 
         // Remove undefined values to clean up the response
-        if (stats.image === undefined)
-            delete stats.image;
+        if (stats.image === undefined) delete stats.image;
 
-        if (stats.video === undefined)
-            delete stats.video;
+        if (stats.video === undefined) delete stats.video;
 
-        if (stats.audio === undefined)
-            delete stats.audio;
+        if (stats.audio === undefined) delete stats.audio;
 
         return stats;
     }
@@ -495,9 +492,9 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
             const sortedInvalidParameters = [...invalidParameters].toSorted();
 
             throw new ValidationError(
-                `Invalid query parameters for image transformation: ${sortedInvalidParameters.join(", ")}. `
-                + `Images support: ${[...allowedParameters].toSorted().join(", ")}. `
-                + `Video/audio parameters (${sortedInvalidParameters.join(", ")}) are not supported for images.`,
+                `Invalid query parameters for image transformation: ${sortedInvalidParameters.join(", ")}. ` +
+                    `Images support: ${[...allowedParameters].toSorted().join(", ")}. ` +
+                    `Video/audio parameters (${sortedInvalidParameters.join(", ")}) are not supported for images.`,
                 "INVALID_PARAMS_FOR_IMAGE",
                 "image",
                 sortedInvalidParameters,
@@ -583,9 +580,9 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
             const sortedInvalidParameters = [...invalidParameters].toSorted();
 
             throw new ValidationError(
-                `Invalid query parameters for video transformation: ${sortedInvalidParameters.join(", ")}. `
-                + `Videos support: ${[...allowedParameters].toSorted().join(", ")}. `
-                + `Audio-only parameters (${sortedInvalidParameters.join(", ")}) are not supported for videos.`,
+                `Invalid query parameters for video transformation: ${sortedInvalidParameters.join(", ")}. ` +
+                    `Videos support: ${[...allowedParameters].toSorted().join(", ")}. ` +
+                    `Audio-only parameters (${sortedInvalidParameters.join(", ")}) are not supported for videos.`,
                 "INVALID_PARAMS_FOR_VIDEO",
                 "video",
                 sortedInvalidParameters,
@@ -869,9 +866,9 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
             const sortedInvalidParameters = [...invalidParameters].toSorted();
 
             throw new ValidationError(
-                `Invalid query parameters for audio transformation: ${sortedInvalidParameters.join(", ")}. `
-                + `Audio supports: ${[...allowedParameters].toSorted().join(", ")}. `
-                + `Video-only parameters (${sortedInvalidParameters.join(", ")}) are not supported for audio.`,
+                `Invalid query parameters for audio transformation: ${sortedInvalidParameters.join(", ")}. ` +
+                    `Audio supports: ${[...allowedParameters].toSorted().join(", ")}. ` +
+                    `Video-only parameters (${sortedInvalidParameters.join(", ")}) are not supported for audio.`,
                 "INVALID_PARAMS_FOR_AUDIO",
                 "audio",
                 sortedInvalidParameters,
@@ -1221,8 +1218,7 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
      * @private
      */
     private parseBooleanParameter(value: string | null): boolean | undefined {
-        if (value === null)
-            return undefined;
+        if (value === null) return undefined;
 
         return value === "true" || value === "1";
     }
@@ -1498,48 +1494,48 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
     // eslint-disable-next-line class-methods-use-this
     private hasImageTransformations(query: MediaTransformQuery): boolean {
         return !!(
-            query.width
-            || query.height
-            || query.fit
-            || query.position
-            || query.withoutEnlargement
-            || query.withoutReduction
-            || query.left !== undefined
-            || query.top !== undefined
-            || query.cropWidth
-            || query.cropHeight
-            || query.angle !== undefined
-            || query.background
-            || query.blur
-            || query.sharpen
-            || query.median
-            || query.clahe
-            || query.threshold !== undefined
-            || query.gamma
-            || query.negate
-            || query.normalise
-            || query.flatten
-            || query.unflatten
-            || query.flip
-            || query.flop
-            || query.greyscale
-            || query.modulate
-            || query.tint
-            || query.brightness !== undefined
-            || query.saturation !== undefined
-            || query.hue !== undefined
-            || query.lightness !== undefined
-            || query.kernel
-            || query.fastShrinkOnLoad
-            || query.affine
-            || query.dilate
-            || query.erode
-            || query.pipelineColourspace
-            || query.toColourspace
-            || query.removeAlpha
-            || query.ensureAlpha
-            || query.format
-            || query.quality
+            query.width ||
+            query.height ||
+            query.fit ||
+            query.position ||
+            query.withoutEnlargement ||
+            query.withoutReduction ||
+            query.left !== undefined ||
+            query.top !== undefined ||
+            query.cropWidth ||
+            query.cropHeight ||
+            query.angle !== undefined ||
+            query.background ||
+            query.blur ||
+            query.sharpen ||
+            query.median ||
+            query.clahe ||
+            query.threshold !== undefined ||
+            query.gamma ||
+            query.negate ||
+            query.normalise ||
+            query.flatten ||
+            query.unflatten ||
+            query.flip ||
+            query.flop ||
+            query.greyscale ||
+            query.modulate ||
+            query.tint ||
+            query.brightness !== undefined ||
+            query.saturation !== undefined ||
+            query.hue !== undefined ||
+            query.lightness !== undefined ||
+            query.kernel ||
+            query.fastShrinkOnLoad ||
+            query.affine ||
+            query.dilate ||
+            query.erode ||
+            query.pipelineColourspace ||
+            query.toColourspace ||
+            query.removeAlpha ||
+            query.ensureAlpha ||
+            query.format ||
+            query.quality
         );
     }
 
@@ -1551,24 +1547,24 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
      */
     private hasVideoTransformations(query: MediaTransformQuery): boolean {
         return !!(
-            query.width
-            || query.height
-            || query.fit
-            || query.position
-            || query.withoutEnlargement
-            || query.withoutReduction
-            || query.left !== undefined
-            || query.top !== undefined
-            || query.cropWidth
-            || query.cropHeight
-            || query.angle
-            || query.background
-            || query.codec
-            || query.bitrate
-            || query.frameRate
-            || query.keyFrameInterval
-            || query.format
-            || query.quality
+            query.width ||
+            query.height ||
+            query.fit ||
+            query.position ||
+            query.withoutEnlargement ||
+            query.withoutReduction ||
+            query.left !== undefined ||
+            query.top !== undefined ||
+            query.cropWidth ||
+            query.cropHeight ||
+            query.angle ||
+            query.background ||
+            query.codec ||
+            query.bitrate ||
+            query.frameRate ||
+            query.keyFrameInterval ||
+            query.format ||
+            query.quality
         );
     }
 
