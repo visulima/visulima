@@ -9,6 +9,7 @@ packages:
   - '!packages/package/__fixtures__/which-package-manager/**'
   - '!packages/package/__fixtures__/workspaces/**'
   - '!packages/readdir/__fixtures__/**'
+  - '!packages/storage/src/adapter/nuxt'
   - apps/**
   - examples/**
   - examples/uploads/**

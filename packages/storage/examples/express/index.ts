@@ -2,7 +2,7 @@ import type { UploadFile } from "@visulima/storage";
 import { DiskStorage } from "@visulima/storage";
 import { Multipart } from "@visulima/storage/handler/http/node";
 import { xhrOpenApiSpec, transformOpenApiSpec } from "@visulima/storage/openapi";
-import ImageTransformer from "@visulima/storage/transformers/image";
+import ImageTransformer from "@visulima/storage/transformer/image";
 import express from "express";
 import swaggerUi from "swagger-ui-express";
 import fs from "node:fs";

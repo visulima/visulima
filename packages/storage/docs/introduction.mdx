@@ -167,6 +167,204 @@ app.use("/upload", multipart.upload, (req, res) => {
 });
 ```
 
+## Organizing Files into Folder Paths
+
+You can organize uploaded files into folder structures by using a custom `filename` function that reads the folder path from request metadata. This works with all HTTP handlers (Multipart, REST, TUS) and all storage backends.
+
+### Server-side Configuration
+
+Configure your storage with a `filename` function that reads the folder path from metadata:
+
+```ts
+import { DiskStorage } from "@visulima/storage";
+import { Multipart } from "@visulima/storage/handler/http/fetch";
+
+const storage = new DiskStorage({
+    directory: "./uploads",
+    filename: (file) => {
+        // Read folder path from metadata
+        const folderPath = file.metadata?.folderPath as string | undefined;
+
+        if (folderPath) {
+            // Return path with folder structure
+            return `${folderPath}/${file.id}`;
+        }
+
+        // Default: just use file ID
+        return file.id;
+    },
+});
+
+const multipart = new Multipart({ storage });
+```
+
+### Client-side Usage
+
+You can send the folder path either as a form field (Multipart handler) or in the `x-file-metadata` header (REST handler):
+
+#### Multipart Handler - Using Form Fields
+
+Send the folder path directly in the form data:
+
+```ts
+const formData = new FormData();
+formData.append("file", fileBlob);
+formData.append("folderPath", "user-123/documents"); // Direct form field
+
+const response = await fetch("/api/upload", {
+    method: "POST",
+    body: formData,
+});
+```
+
+Or send it as JSON in a `metadata` field:
+
+```ts
+const formData = new FormData();
+formData.append("file", fileBlob);
+formData.append(
+    "metadata",
+    JSON.stringify({
+        folderPath: "user-123/documents",
+    }),
+);
+
+const response = await fetch("/api/upload", {
+    method: "POST",
+    body: formData,
+});
+```
+
+#### Multipart Handler - Using Header (Alternative)
+
+You can also use the `x-file-metadata` header:
+
+```ts
+const formData = new FormData();
+formData.append("file", fileBlob);
+
+const response = await fetch("/api/upload", {
+    method: "POST",
+    headers: {
+        "x-file-metadata": JSON.stringify({
+            folderPath: "user-123/documents",
+        }),
+    },
+    body: formData,
+});
+```
+
+#### REST Handler
+
+For REST handler, use the `x-file-metadata` header:
+
+```ts
+const response = await fetch("/api/upload/rest", {
+    method: "POST",
+    headers: {
+        "Content-Type": file.type,
+        "Content-Length": file.size.toString(),
+        "x-file-metadata": JSON.stringify({
+            folderPath: "user-123/documents",
+        }),
+    },
+    body: file,
+});
+```
+
+#### TUS Handler
+
+TUS handler uses the `Upload-Metadata` header following the TUS protocol specification. The metadata must be base64-encoded:
+
+```ts
+// Encode folder path as base64
+const folderPath = "user-123/documents";
+const encodedPath = btoa(folderPath); // Base64 encode
+
+const response = await fetch("/api/upload/tus", {
+    method: "POST",
+    headers: {
+        "Upload-Length": file.size.toString(),
+        "Upload-Metadata": `folderPath ${encodedPath}`, // TUS format: key base64value
+    },
+});
+
+// For subsequent PATCH requests (uploading chunks)
+const uploadUrl = response.headers.get("Location");
+await fetch(uploadUrl, {
+    method: "PATCH",
+    headers: {
+        "Upload-Offset": "0",
+        "Content-Type": "application/offset+octet-stream",
+    },
+    body: fileChunk,
+});
+```
+
+Or using a TUS client library:
+
+```ts
+import * as tus from "tus-js-client";
+
+const upload = new tus.Upload(file, {
+    endpoint: "/api/upload/tus",
+    metadata: {
+        folderPath: "user-123/documents", // Client library handles encoding
+    },
+    onSuccess: () => {
+        console.log("Upload finished:", upload.url);
+    },
+});
+
+upload.start();
+```
+
+The file will be stored at: `./uploads/user-123/documents/{file.id}`
+
+### Example: Express
+
+```ts
+import { DiskStorage } from "@visulima/storage";
+import { Multipart } from "@visulima/storage/handler/http/node";
+
+const storage = new DiskStorage({
+    directory: "./uploads",
+    filename: (file) => {
+        const folderPath = file.metadata?.folderPath as string | undefined;
+        return folderPath ? `${folderPath}/${file.id}` : file.id;
+    },
+});
+
+const multipart = new Multipart({ storage });
+
+app.use("/upload", multipart.handle, (req, res) => {
+    res.json({ id: req.file?.id });
+});
+```
+
+### Example: Next.js
+
+```ts
+// app/api/upload/route.ts
+import { DiskStorage } from "@visulima/storage";
+import { createHandler } from "@visulima/storage/handler/http/nextjs";
+
+const storage = new DiskStorage({
+    directory: "./uploads",
+    filename: (file) => {
+        const folderPath = file.metadata?.folderPath as string | undefined;
+        return folderPath ? `${folderPath}/${file.id}` : file.id;
+    },
+});
+
+const handler = createHandler({ storage, type: "multipart" });
+
+export const POST = handler;
+export const GET = handler;
+export const DELETE = handler;
+export const OPTIONS = handler;
+```
+
 ## Image Transformations
 
 Transform images on-demand using URL query parameters or programmatically with the ImageTransformer class.
@@ -203,7 +401,7 @@ Use the ImageTransformer class for programmatic image processing:
 ```ts
 import { LRUCache } from "lru-cache";
 import { DiskStorage } from "@visulima/storage";
-import ImageTransformer from "@visulima/storage/transformers/image";
+import ImageTransformer from "@visulima/storage/transformer/image";
 
 const storage = new DiskStorage({ directory: "./uploads" });
 

@@ -1,4 +1,4 @@
-/* eslint-disable max-classes-per-file, sonarjs/file-name-differ-from-class */
+/* eslint-disable max-classes-per-file */
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { format } from "node:url";
 
@@ -29,7 +29,6 @@ export class Tus<
     NodeRequest extends IncomingMessage = IncomingMessage,
     NodeResponse extends ServerResponse = ServerResponse,
 > extends BaseHandlerNode<TFile, NodeRequest, NodeResponse> {
-
     /**
      * Limiting enabled http method handler
      */
@@ -45,7 +44,7 @@ export class Tus<
         // Create TusBase instance with access to this Tus instance
         const tusInstance = this;
 
-        this.tusBase = new class extends TusBase<TFile> {
+        this.tusBase = new (class extends TusBase<TFile> {
             protected get storage() {
                 return tusInstance.storage;
             }
@@ -57,7 +56,7 @@ export class Tus<
             protected buildFileUrl(requestUrl: string, file: TFile): string {
                 return tusInstance.buildFileUrlForTus(requestUrl, file);
             }
-        }();
+        })();
     }
 
     /**

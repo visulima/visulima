@@ -42,7 +42,7 @@ pnpm add @aws-sdk/client-s3 @aws-sdk/credential-providers @aws-sdk/s3-request-pr
 ```ts
 import { LRUCache } from "lru-cache";
 import { S3Storage } from "@visulima/storage/provider/aws";
-import ImageTransformer from "@visulima/storage/transformers/image";
+import ImageTransformer from "@visulima/storage/transformer/image";
 
 const storage = new S3Storage({
     bucket: "upload",

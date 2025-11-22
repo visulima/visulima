@@ -183,10 +183,10 @@ export const handlePartialUpload = <TFile extends UploadFile, NodeResponse exten
     // Merge fileHeaders (from ResponseFile) with request headers, prioritizing fileHeaders
     const responseHeaders: Record<string, string> = {
         ...convertHeadersToString(headers as Record<string, Header>),
-        ...fileHeaders ? convertHeadersToString(fileHeaders as Record<string, Header>) : {},
-        ...(basicFile as TFile).hash === undefined
+        ...(fileHeaders ? convertHeadersToString(fileHeaders as Record<string, Header>) : {}),
+        ...((basicFile as TFile).hash === undefined
             ? {}
-            : { [`X-Range-${(basicFile as TFile).hash?.algorithm.toUpperCase()}`]: String((basicFile as TFile).hash?.value) },
+            : { [`X-Range-${(basicFile as TFile).hash?.algorithm.toUpperCase()}`]: String((basicFile as TFile).hash?.value) }),
     };
 
     if (isChunkedUploadInit) {

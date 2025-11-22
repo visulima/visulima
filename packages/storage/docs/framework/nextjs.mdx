@@ -1,6 +1,6 @@
 # Next.js Integration
 
-Use Visulima upload with Next.js for file uploads and on-demand image transformations. Next.js 15+ supports the Web API, so you can also use the [fetch method](#fetch-method) for simpler integration.
+Use Visulima Storage with Next.js for file uploads and on-demand image transformations. The `createHandler` function provides the easiest way to set up upload endpoints with automatic route handling.
 
 ## Installation
 
@@ -16,56 +16,96 @@ yarn add @visulima/storage next
 pnpm add @visulima/storage next
 ```
 
-## API Routes Setup
+## Recommended: Using `createHandler`
 
-Create API routes for file upload and image transformation:
+The easiest way to use Visulima Storage with Next.js is to use the `createHandler` function, which automatically handles all HTTP methods for each handler type:
+
+### Multipart Handler
 
 ```ts
-// app/api/upload/route.ts
+// app/api/upload/multipart/route.ts
 import { DiskStorage } from "@visulima/storage";
-import { Multipart } from "@visulima/storage/handler/http/node";
-import { NextRequest, NextResponse } from "next/server";
+import { createHandler } from "@visulima/storage/handler/http/nextjs";
 
-const uploadDirectory = "./uploads";
+const storage = new DiskStorage({ directory: "./uploads" });
+const handler = createHandler({ storage, type: "multipart" });
 
-// Initialize storage and multipart handler
-const storage = new DiskStorage({ directory: uploadDirectory });
-const multipart = new Multipart({ storage });
-
-export async function POST(request: NextRequest) {
-    try {
-        // Create a mock response object for multipart parsing
-        const mockRes = {
-            statusCode: 200,
-            setHeader: () => {},
-            end: () => {},
-        };
-
-        // Parse multipart form data
-        const result = await multipart.parseRequest(request as any, mockRes as any);
-
-        if (result.files && result.files.length > 0) {
-            const file = result.files[0];
-
-            return NextResponse.json({
-                id: file.id,
-                filename: file.filename,
-                size: file.size,
-                url: `/api/files/${file.id}`,
-            });
-        }
-
-        return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
-    } catch (error) {
-        console.error("Upload error:", error);
-        return NextResponse.json({ error: "Upload failed" }, { status: 500 });
-    }
-}
+export const POST = handler;
+export const GET = handler;
+export const DELETE = handler;
+export const OPTIONS = handler;
 ```
 
-## Fetch Method (Next.js 15+)
+### REST Handler
 
-Next.js 15+ supports Web API Request/Response objects natively. You can use the `fetch` method for simpler integration:
+```ts
+// app/api/upload/rest/route.ts
+import { DiskStorage } from "@visulima/storage";
+import { createHandler } from "@visulima/storage/handler/http/nextjs";
+
+const storage = new DiskStorage({ directory: "./uploads" });
+const handler = createHandler({ storage, type: "rest" });
+
+export const POST = handler;
+export const PUT = handler;
+export const PATCH = handler;
+export const GET = handler;
+export const HEAD = handler;
+export const DELETE = handler;
+export const OPTIONS = handler;
+```
+
+### TUS Handler
+
+```ts
+// app/api/upload/tus/route.ts
+import { DiskStorage } from "@visulima/storage";
+import { createHandler } from "@visulima/storage/handler/http/nextjs";
+
+const storage = new DiskStorage({ directory: "./uploads" });
+const handler = createHandler({ storage, type: "tus" });
+
+export const POST = handler;
+export const PATCH = handler;
+export const HEAD = handler;
+export const GET = handler;
+export const DELETE = handler;
+export const OPTIONS = handler;
+```
+
+### With Media Transformers
+
+You can also pass media transformers to enable image/video/audio transformations:
+
+```ts
+// app/api/upload/multipart/route.ts
+import { DiskStorage } from "@visulima/storage";
+import { createHandler } from "@visulima/storage/handler/http/nextjs";
+import { MediaTransformer } from "@visulima/storage/transformer";
+import ImageTransformer from "@visulima/storage/transformer/image";
+
+const storage = new DiskStorage({ directory: "./uploads" });
+
+const mediaTransformer = new MediaTransformer(storage, {
+    ImageTransformer,
+    maxImageSize: 10 * 1024 * 1024, // 10MB
+});
+
+const handler = createHandler({
+    storage,
+    mediaTransformer,
+    type: "multipart",
+});
+
+export const POST = handler;
+export const GET = handler;
+export const DELETE = handler;
+export const OPTIONS = handler;
+```
+
+## Manual Route Registration (Advanced)
+
+If you need more control, you can manually register routes using the fetch method:
 
 ```ts
 // app/api/upload/route.ts
@@ -85,15 +125,13 @@ export async function POST(request: Request) {
 }
 ```
 
-This approach eliminates the need for manual parsing and response creation, making your code much simpler.
-
 ## Image Transformation API Route
 
 ```ts
 // app/api/files/[id]/route.ts
 import { LRUCache } from "lru-cache";
 import { DiskStorage } from "@visulima/storage";
-import ImageTransformer from "@visulima/storage/transformers/image";
+import ImageTransformer from "@visulima/storage/transformer/image";
 import { NextRequest, NextResponse } from "next/server";
 
 const uploadDirectory = "./uploads";
@@ -316,7 +354,7 @@ Create server-side transformations for pre-processing:
 // app/api/transform/route.ts
 import { LRUCache } from "lru-cache";
 import { DiskStorage } from "@visulima/storage";
-import ImageTransformer from "@visulima/storage/transformers/image";
+import ImageTransformer from "@visulima/storage/transformer/image";
 import { NextRequest, NextResponse } from "next/server";
 
 const storage = new DiskStorage({ directory: "./uploads" });
@@ -370,7 +408,7 @@ CACHE_TTL=3600          # 1 hour
 ```ts
 // lib/upload-config.ts
 import { DiskStorage } from "@visulima/storage";
-import ImageTransformer from "@visulima/storage/transformers/image";
+import ImageTransformer from "@visulima/storage/transformer/image";
 
 export const storage = new DiskStorage({
     directory: process.env.UPLOAD_DIR || "./uploads",

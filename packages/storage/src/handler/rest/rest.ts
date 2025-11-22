@@ -1,4 +1,4 @@
-/* eslint-disable max-classes-per-file, sonarjs/file-name-differ-from-class */
+/* eslint-disable max-classes-per-file */
 import type { IncomingMessage, ServerResponse } from "node:http";
 
 // eslint-disable-next-line import/no-extraneous-dependencies
@@ -49,7 +49,7 @@ class Rest<
         // Create RestBase instance with access to this Rest instance
         const restInstance = this;
 
-        this.restBase = new class extends RestBase<TFile> {
+        this.restBase = new (class extends RestBase<TFile> {
             protected get storage() {
                 return restInstance.storage;
             }
@@ -57,7 +57,7 @@ class Rest<
             protected buildFileUrl(requestUrl: string, file: TFile): string {
                 return restInstance.buildFileUrlForRest(requestUrl, file);
             }
-        }();
+        })();
     }
 
     /**

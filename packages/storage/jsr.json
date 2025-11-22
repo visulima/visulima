@@ -19,11 +19,12 @@
         "./handler/http/cloudflare": "./src/handler/http/fetch/index.ts",
         "./handler/http/deno": "./src/handler/http/fetch/index.ts",
         "./handler/http/nextjs": "./src/handler/http/nextjs/index.ts",
+        "./handler/http/solid-start": "./src/handler/http/solid-start/index.ts",
         "./handler/http/edge": "./src/handler/http/fetch/index.ts",
-        "./transformers/audio": "./src/transformer/audio-transformer.ts",
-        "./transformers/video": "./src/transformer/video-transformer.ts",
-        "./transformers/image": "./src/transformer/image-transformer.ts",
+        "./transformer/audio": "./src/transformer/audio-transformer.ts",
+        "./transformer/video": "./src/transformer/video-transformer.ts",
+        "./transformer/image": "./src/transformer/image-transformer.ts",
         "./transformer": "./src/transformer/index.ts",
-        "./nuxt": "./src/nuxt/module.ts"
+        "./adapter/nuxt": "./src/adapter/nuxt/module.ts"
     }
 }

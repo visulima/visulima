@@ -7,58 +7,24 @@ import { Tus } from "../../tus/tus-fetch";
 import type { UploadOptions } from "../../types";
 
 /**
- * Wait for storage to be ready before handling requests.
- */
-const waitForStorage = async (storage: { isReady: boolean }): Promise<void> => {
-    if (storage.isReady) {
-        return;
-    }
-
-    // Wait up to 5 seconds for storage to be ready
-    const maxWait = 5000;
-    const startTime = Date.now();
-
-    while (!storage.isReady && Date.now() - startTime < maxWait) {
-        // eslint-disable-next-line no-await-in-loop
-        await new Promise<void>((resolve) => {
-            setTimeout(() => {
-                resolve();
-            }, 100);
-        });
-    }
-
-    if (!storage.isReady) {
-        throw new Error("Storage initialization timeout");
-    }
-};
-
-/**
  * Creates a Hono-compatible handler function.
  */
-const createHandlerFunction = <TFile extends UploadFile>(
-    handler: Multipart<TFile> | Rest<TFile> | Tus<TFile>,
-): (c: Context) => Promise<Response> => async (c: Context): Promise<Response> => {
-    try {
-        await waitForStorage(handler.storage);
+const createHandlerFunction =
+    <TFile extends UploadFile>(handler: Multipart<TFile> | Rest<TFile> | Tus<TFile>): ((c: Context) => Promise<Response>) =>
+    async (c: Context): Promise<Response> => {
+        try {
+            // Get the raw Request from Hono's Context
+            const request = c.req.raw;
 
-        // Get the raw Request from Hono's Context
-        const request = c.req.raw;
+            return await handler.fetch(request);
+        } catch (error: unknown) {
+            const errorObject = error as { message?: string; status?: string; statusCode?: number };
+            const statusCode = errorObject.statusCode || (errorObject.status ? Number.parseInt(errorObject.status, 10) : undefined) || 500;
 
-        return await handler.fetch(request);
-    } catch (error: unknown) {
-        const errorObject = error as { message?: string; status?: string; statusCode?: number };
-        const statusCode
-            = errorObject.statusCode
-                || (errorObject.status ? Number.parseInt(errorObject.status, 10) : undefined)
-                || 500;
-
-        // Return a Response object (Hono accepts Response objects)
-        return Response.json(
-            { error: errorObject.message || "Request failed" },
-            { status: statusCode },
-        );
-    }
-};
+            // Return a Response object (Hono accepts Response objects)
+            return Response.json({ error: errorObject.message || "Request failed" }, { status: statusCode });
+        }
+    };
 
 /**
  * Registers upload handler routes on a Hono app instance.
@@ -114,10 +80,7 @@ const createHandlerFunction = <TFile extends UploadFile>(
  * });
  * ```
  */
-export const createStorageHandler = <TFile extends UploadFile>(
-    app: Hono,
-    config: HonoHandlerConfig<TFile>,
-): void => {
+export const createStorageHandler = <TFile extends UploadFile>(app: Hono, config: HonoHandlerConfig<TFile>): void => {
     const { path, type, ...handlerConfig } = config;
     let handler: Multipart<TFile> | Rest<TFile> | Tus<TFile>;
 

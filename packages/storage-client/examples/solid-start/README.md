@@ -22,8 +22,19 @@ Visit [http://localhost:3000](http://localhost:3000)
 - Client-side upload component
 - Progress tracking
 - Error handling
+- API routes for multipart and TUS uploads
+
+## API Routes
+
+This example includes API routes for handling file uploads:
+
+- `/api/upload/multipart` - Multipart form upload handler
+- `/api/upload/tus` - TUS resumable upload handler
+
+The API routes are implemented using SolidStart's API route support and use `@visulima/storage` handlers.
 
 ## Notes
 
 - This example uses Solid Start's file-based routing
-- Update the `endpointMultipart` and `endpointTus` in `app/routes/index.tsx` to point to your upload APIs
+- API routes are located in `app/routes/api/upload/`
+- Storage configuration is in `lib/storage.ts`

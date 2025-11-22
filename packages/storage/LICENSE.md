@@ -545,6 +545,10 @@ Repository: git+https://github.com/visulima/visulima.git
 
 ---------------------------------------
 
+## @visulima/storage-nuxt
+
+---------------------------------------
+
 ## depd
 License: MIT
 By: Douglas Christopher Wilson

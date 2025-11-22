@@ -57,7 +57,7 @@ export const ErrorMap: ErrorResponses<ERRORS> = (() => {
         InvalidFileName: [400, "Invalid file name or it cannot be retrieved"],
         InvalidFileSize: [400, "File size cannot be retrieved"],
         InvalidRange: [400, "Invalid or missing content-range header"],
-        Invalidtype: [400, "Invalid or missing \"content-type\" header"],
+        Invalidtype: [400, 'Invalid or missing "content-type" header'],
         MethodNotAllowed: [405, "Method not allowed"],
         RequestAborted: [499, "Request aborted"],
         RequestEntityTooLarge: [413, "Request entity too large"],

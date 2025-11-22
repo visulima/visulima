@@ -1,34 +1,11 @@
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
+
 import type { UploadFile } from "../../../storage/utils/file";
 import Multipart from "../../multipart/multipart-fetch";
 import Rest from "../../rest/rest-fetch";
 import { Tus } from "../../tus/tus-fetch";
 import type { UploadOptions } from "../../types";
-
-/**
- * Wait for storage to be ready before handling requests.
- */
-const waitForStorage = async (storage: { isReady: boolean }): Promise<void> => {
-    if (storage.isReady) {
-        return;
-    }
-
-    // Wait up to 5 seconds for storage to be ready
-    const maxWait = 5000;
-    const startTime = Date.now();
-
-    while (!storage.isReady && Date.now() - startTime < maxWait) {
-        // eslint-disable-next-line no-await-in-loop
-        await new Promise<void>((resolve) => {
-            setTimeout(() => {
-                resolve();
-            }, 100);
-        });
-    }
-
-    if (!storage.isReady) {
-        throw new Error("Storage initialization timeout");
-    }
-};
 
 /**
  * Configuration for Next.js handler.
@@ -44,10 +21,10 @@ export interface NextjsHandlerConfig<TFile extends UploadFile> extends UploadOpt
  * ```ts
  * // app/api/upload/multipart/route.ts
  * import { DiskStorage } from "@visulima/storage";
- * import { createNextjsHandler } from "@visulima/storage/handler/http/nextjs";
+ * import { createHandler } from "@visulima/storage/handler/http/nextjs";
  *
  * const storage = new DiskStorage({ directory: "./uploads" });
- * const handler = createNextjsHandler({ storage, type: "multipart" });
+ * const handler = createHandler({ storage, type: "multipart" });
  *
  * export const POST = handler;
  * export const DELETE = handler;
@@ -58,10 +35,10 @@ export interface NextjsHandlerConfig<TFile extends UploadFile> extends UploadOpt
  * ```ts
  * // app/api/upload/rest/route.ts
  * import { DiskStorage } from "@visulima/storage";
- * import { createNextjsHandler } from "@visulima/storage/handler/http/nextjs";
+ * import { createHandler } from "@visulima/storage/handler/http/nextjs";
  *
  * const storage = new DiskStorage({ directory: "./uploads" });
- * const handler = createNextjsHandler({ storage, type: "rest" });
+ * const handler = createHandler({ storage, type: "rest" });
  *
  * export const POST = handler;
  * export const PUT = handler;
@@ -75,10 +52,10 @@ export interface NextjsHandlerConfig<TFile extends UploadFile> extends UploadOpt
  * ```ts
  * // app/api/upload/tus/route.ts
  * import { DiskStorage } from "@visulima/storage";
- * import { createNextjsHandler } from "@visulima/storage/handler/http/nextjs";
+ * import { createHandler } from "@visulima/storage/handler/http/nextjs";
  *
  * const storage = new DiskStorage({ directory: "./uploads" });
- * const handler = createNextjsHandler({ storage, type: "tus" });
+ * const handler = createHandler({ storage, type: "tus" });
  *
  * export const POST = handler;
  * export const PATCH = handler;
@@ -87,9 +64,7 @@ export interface NextjsHandlerConfig<TFile extends UploadFile> extends UploadOpt
  * export const OPTIONS = handler;
  * ```
  */
-export const createNextjsHandler = <TFile extends UploadFile>(
-    config: NextjsHandlerConfig<TFile>,
-): (request: Request) => Promise<Response> => {
+export const createHandler = <TFile extends UploadFile>(config: NextjsHandlerConfig<TFile>): ((request: NextRequest) => Promise<NextResponse>) => {
     let handler: Multipart<TFile> | Rest<TFile> | Tus<TFile>;
 
     // Create the appropriate handler based on type
@@ -111,23 +86,14 @@ export const createNextjsHandler = <TFile extends UploadFile>(
         }
     }
 
-    // Create the Next.js route handler
-    const nextjsHandler = async (request: Request): Promise<Response> => {
+    const nextjsHandler = async (request: NextRequest): Promise<NextResponse> => {
         try {
-            await waitForStorage(handler.storage);
-
-            return await handler.fetch(request);
+            return (await handler.fetch(request)) as NextResponse;
         } catch (error: unknown) {
             const errorObject = error as { message?: string; status?: string; statusCode?: number };
-            const statusCode
-                = errorObject.statusCode
-                    || (errorObject.status ? Number.parseInt(errorObject.status, 10) : undefined)
-                    || 500;
+            const statusCode = errorObject.statusCode || (errorObject.status ? Number.parseInt(errorObject.status, 10) : undefined) || 500;
 
-            return Response.json(
-                { error: errorObject.message || "Request failed" },
-                { status: statusCode },
-            );
+            return NextResponse.json({ error: errorObject.message || "Request failed" }, { status: statusCode });
         }
     };
 
