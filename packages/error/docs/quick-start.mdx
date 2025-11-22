@@ -1,0 +1,337 @@
+---
+title: Quick Start
+description: Get started with @visulima/error in minutes
+---
+
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Get started with `@visulima/error` in minutes. This guide covers the most common use cases and basic features.
+
+## Basic Usage
+
+### Creating a Simple Error
+
+```typescript
+import { VisulimaError } from "@visulima/error";
+
+const error = new VisulimaError({
+    name: "ValidationError",
+    message: "Invalid user input"
+});
+
+throw error;
+```
+
+### Extending VisulimaError
+
+The recommended approach is to create custom error classes:
+
+```typescript
+import { VisulimaError } from "@visulima/error";
+
+class DatabaseError extends VisulimaError {
+    constructor(message: string) {
+        super({
+            name: "DatabaseError",
+            message
+        });
+    }
+}
+
+throw new DatabaseError("Connection failed");
+```
+
+## Adding Hints
+
+Provide helpful hints to guide users toward solutions:
+
+```typescript
+import { VisulimaError } from "@visulima/error";
+
+const error = new VisulimaError({
+    name: "ConfigurationError",
+    message: "Database connection string is invalid"
+});
+
+error.hint = "Check your .env file and ensure DATABASE_URL is set correctly";
+
+throw error;
+```
+
+<Callout>
+Multiple hints can be provided as an array for more detailed guidance.
+</Callout>
+
+```typescript
+error.hint = [
+    "Verify the database host is reachable",
+    "Ensure the database credentials are correct",
+    "Check if the database server is running"
+];
+```
+
+## Error Causes
+
+Chain errors together to preserve context:
+
+```typescript
+try {
+    // Some database operation
+    await db.query("SELECT * FROM users");
+} catch (originalError) {
+    throw new VisulimaError({
+        name: "DatabaseQueryError",
+        message: "Failed to fetch users",
+        cause: originalError
+    });
+}
+```
+
+## Rendering Errors
+
+Display errors with pretty formatting:
+
+```typescript
+import { renderError } from "@visulima/error";
+
+try {
+    throw new Error("Something went wrong");
+} catch (error) {
+    console.log(renderError(error));
+}
+```
+
+**Output:**
+```
+Error: Something went wrong
+
+at myFunction file:///path/to/file.js:10
+  8 | function myFunction() {
+  9 |     const data = null;
+❯ 10|     throw new Error("Something went wrong");
+    |           ^
+  11| }
+```
+
+### Colorized Output
+
+Add colors using `@visulima/colorize` or similar libraries:
+
+```typescript
+import { renderError } from "@visulima/error";
+import { red, cyan, green } from "@visulima/colorize";
+
+const coloredOutput = renderError(error, {
+    color: {
+        title: red,
+        message: red,
+        hint: cyan,
+        marker: red,
+        method: green,
+        fileLine: green
+    }
+});
+
+console.log(coloredOutput);
+```
+
+## Stack Trace Parsing
+
+Parse error stack traces into structured data:
+
+```typescript
+import { parseStacktrace } from "@visulima/error";
+
+const error = new Error("Example error");
+const frames = parseStacktrace(error);
+
+console.log(frames);
+// [
+//   {
+//     methodName: "myFunction",
+//     file: "file:///path/to/file.js",
+//     line: 10,
+//     column: 5,
+//     raw: "    at myFunction (/path/to/file.js:10:5)"
+//   },
+//   ...
+// ]
+```
+
+## Code Frames
+
+Display code snippets highlighting error locations:
+
+```typescript
+import { codeFrame } from "@visulima/error";
+
+const sourceCode = `const x = 10;
+const error = x.y;
+console.log(error);`;
+
+const frame = codeFrame(sourceCode, {
+    start: { line: 2, column: 16 }
+});
+
+console.log(frame);
+```
+
+**Output:**
+```
+  1 | const x = 10;
+> 2 | const error = x.y;
+    |                ^
+  3 | console.log(error);
+```
+
+### Highlighting Ranges
+
+Highlight multiple lines or a range:
+
+```typescript
+const frame = codeFrame(sourceCode, {
+    start: { line: 2, column: 1 },
+    end: { line: 2, column: 18 }
+});
+
+console.log(frame);
+//   1 | const x = 10;
+// > 2 | const error = x.y;
+//     | ^^^^^^^^^^^^^^^^^
+//   3 | console.log(error);
+```
+
+## Error Serialization
+
+Serialize errors for logging or transmission:
+
+```typescript
+import { serializeError, deserializeError } from "@visulima/error";
+
+// Serialize
+const error = new TypeError("Invalid type");
+const serialized = serializeError(error);
+const json = JSON.stringify(serialized);
+
+// Deserialize
+const parsed = JSON.parse(json);
+const restoredError = deserializeError(parsed);
+
+console.log(restoredError instanceof TypeError); // true
+console.log(restoredError.message); // "Invalid type"
+```
+
+## Getting Error Causes
+
+Extract all causes from an error chain:
+
+```typescript
+import { getErrorCauses } from "@visulima/error";
+
+const rootCause = new Error("Database unreachable");
+const middleError = new Error("Connection failed", { cause: rootCause });
+const topError = new Error("Query failed", { cause: middleError });
+
+const causes = getErrorCauses(topError);
+
+console.log(causes);
+// [
+//   { name: "Error", message: "Query failed", stack: "..." },
+//   { name: "Error", message: "Connection failed", stack: "..." },
+//   { name: "Error", message: "Database unreachable", stack: "..." }
+// ]
+```
+
+## Solution Finders
+
+Get helpful suggestions for fixing errors:
+
+```typescript
+import { ruleBasedFinder, errorHintFinder } from "@visulima/error";
+
+const error = new Error("Cannot find module 'express'");
+
+const fileContext = {
+    file: "/path/to/file.js",
+    line: 1,
+    language: "js",
+    snippet: "const express = require('express');"
+};
+
+// Rule-based suggestions
+const solution = await ruleBasedFinder.handle(error, fileContext);
+
+if (solution) {
+    console.log(solution.header); // "Module Not Found"
+    console.log(solution.body);   // "Run: npm install express"
+}
+```
+
+## Common Patterns
+
+### API Error Handling
+
+```typescript
+import { VisulimaError } from "@visulima/error";
+
+class ApiError extends VisulimaError {
+    public statusCode: number;
+
+    constructor(message: string, statusCode: number) {
+        super({ name: "ApiError", message });
+        this.statusCode = statusCode;
+    }
+}
+
+// Usage
+throw new ApiError("Resource not found", 404);
+```
+
+### Validation Errors
+
+```typescript
+class ValidationError extends VisulimaError {
+    public fields: Record<string, string[]>;
+
+    constructor(message: string, fields: Record<string, string[]>) {
+        super({ name: "ValidationError", message });
+        this.fields = fields;
+    }
+}
+
+// Usage
+throw new ValidationError("Validation failed", {
+    email: ["Email is required", "Email must be valid"],
+    password: ["Password must be at least 8 characters"]
+});
+```
+
+### Async Error Handling
+
+```typescript
+import { VisulimaError, renderError } from "@visulima/error";
+
+async function fetchData() {
+    try {
+        const response = await fetch("https://api.example.com/data");
+        if (!response.ok) {
+            throw new VisulimaError({
+                name: "HttpError",
+                message: `HTTP ${response.status}: ${response.statusText}`
+            });
+        }
+        return await response.json();
+    } catch (error) {
+        console.error(renderError(error));
+        throw error;
+    }
+}
+```
+
+## Next Steps
+
+- [VisulimaError Class Documentation](/docs/error/visulima-error)
+- [Complete API Reference](/docs/error/api-reference)
+- [Advanced Usage Examples](/docs/error/examples)
+- [Solution Finders Guide](/docs/error/solution-finders)
