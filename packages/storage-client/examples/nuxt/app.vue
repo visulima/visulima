@@ -6,18 +6,14 @@
             <button @click="handleUpload" :disabled="!file || isUploading">
                 {{ isUploading ? "Uploading..." : "Upload" }}
             </button>
-            <button @click="handleReset" :disabled="isUploading">
-                Reset
-            </button>
+            <button @click="handleReset" :disabled="isUploading">Reset</button>
         </div>
         <div v-if="isUploading" class="progress-section">
             <div>Progress: {{ progress }}%</div>
             <progress :value="progress" max="100" />
         </div>
         <div v-if="error" class="error">Error: {{ error.message }}</div>
-        <div v-if="result" class="success">
-            Upload complete! File: {{ result.filename }}
-        </div>
+        <div v-if="result" class="success">Upload complete! File: {{ result.filename }}</div>
     </div>
 </template>
 
@@ -129,4 +125,3 @@ const handleReset = () => {
     border-radius: 4px;
 }
 </style>
-

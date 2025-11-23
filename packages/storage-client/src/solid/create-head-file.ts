@@ -113,7 +113,7 @@ export const createHeadFile = (options: CreateHeadFileOptions): CreateHeadFileRe
                     try {
                         fileMeta.receivedChunks = JSON.parse(receivedChunks) as number[];
                     } catch {
-                    // Ignore parse errors
+                        // Ignore parse errors
                     }
                 }
 

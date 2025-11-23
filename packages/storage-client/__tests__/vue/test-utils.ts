@@ -4,18 +4,19 @@ import { render } from "@testing-library/vue";
 /**
  * Creates a new QueryClient for each test to ensure isolation
  */
-export const createTestQueryClient = (): QueryClient => new QueryClient({
-    defaultOptions: {
-        mutations: {
-            retry: false,
+export const createTestQueryClient = (): QueryClient =>
+    new QueryClient({
+        defaultOptions: {
+            mutations: {
+                retry: false,
+            },
+            queries: {
+                refetchOnReconnect: false,
+                refetchOnWindowFocus: false,
+                retry: false,
+            },
         },
-        queries: {
-            refetchOnReconnect: false,
-            refetchOnWindowFocus: false,
-            retry: false,
-        },
-    },
-});
+    });
 
 /**
  * Helper to test Vue composables with VueQueryPlugin

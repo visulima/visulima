@@ -1,4 +1,4 @@
-import type { FileMeta, UploadResult } from "../react/types";
+import type { FileMeta } from "../react/types";
 
 /**
  * Upload item state

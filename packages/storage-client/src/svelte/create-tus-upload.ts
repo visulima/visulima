@@ -1,6 +1,6 @@
 import { onDestroy, onMount } from "svelte";
 import type { Readable } from "svelte/store";
-import { get, writable } from "svelte/store";
+import { writable } from "svelte/store";
 
 import { createTusAdapter } from "../core/tus-adapter";
 import type { UploadResult } from "../react/types";

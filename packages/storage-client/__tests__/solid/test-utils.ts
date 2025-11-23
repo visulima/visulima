@@ -1,22 +1,22 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/solid-query";
-import type { JSX } from "solid-js";
+import { QueryClient } from "@tanstack/solid-query";
 import { createRoot } from "solid-js";
 
 /**
  * Creates a new QueryClient for each test to ensure isolation
  */
-export const createTestQueryClient = (): QueryClient => new QueryClient({
-    defaultOptions: {
-        mutations: {
-            retry: false,
+export const createTestQueryClient = (): QueryClient =>
+    new QueryClient({
+        defaultOptions: {
+            mutations: {
+                retry: false,
+            },
+            queries: {
+                refetchOnReconnect: false,
+                refetchOnWindowFocus: false,
+                retry: false,
+            },
         },
-        queries: {
-            refetchOnReconnect: false,
-            refetchOnWindowFocus: false,
-            retry: false,
-        },
-    },
-});
+    });
 
 /**
  * Helper to run a test in a reactive root

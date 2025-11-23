@@ -37,7 +37,7 @@ export const createDeleteFile = (options: CreateDeleteFileOptions): CreateDelete
                 await deleteRequest(url);
             },
             onSuccess: (_data, id) => {
-            // Invalidate file-related queries
+                // Invalidate file-related queries
                 queryClient.invalidateQueries({ queryKey: storageQueryKeys.files.all });
                 queryClient.removeQueries({ queryKey: storageQueryKeys.files.detail(id) });
                 queryClient.removeQueries({ queryKey: storageQueryKeys.files.meta(id) });

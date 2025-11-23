@@ -15,6 +15,7 @@ export default function Home() {
         onSuccess: (result) => {
             console.log("Upload successful:", result);
             setFile(null);
+
             if (fileInputRef.current) {
                 fileInputRef.current.value = "";
             }

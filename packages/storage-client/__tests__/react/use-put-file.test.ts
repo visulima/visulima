@@ -2,7 +2,7 @@ import { QueryClient } from "@tanstack/react-query";
 import { waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { usePutFile } from "../../react/use-put-file";
+import { usePutFile } from "../../src/react/use-put-file";
 import { renderHookWithQueryClient } from "./test-utils";
 
 // Mock XMLHttpRequest for progress tracking
@@ -155,7 +155,7 @@ describe(usePutFile, () => {
 
         await uploadPromise;
 
-        expect(onProgress).toHaveBeenCalledWith();
+        expect(onProgress).toHaveBeenCalledWith(50);
     });
 
     it("should handle upload errors", async () => {
@@ -221,7 +221,9 @@ describe(usePutFile, () => {
         await result.current.putFile("file-123", file);
 
         await waitFor(() => {
-            expect(invalidateQueriesSpy).toHaveBeenCalledWith();
+            expect(invalidateQueriesSpy).toHaveBeenCalledWith({
+                queryKey: ["storage", "files"],
+            });
         });
     });
 

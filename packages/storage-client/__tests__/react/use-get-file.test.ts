@@ -2,7 +2,7 @@ import { QueryClient } from "@tanstack/react-query";
 import { waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { useGetFile } from "../../react/use-get-file";
+import { useGetFile } from "../../src/react/use-get-file";
 import { renderHookWithQueryClient } from "./test-utils";
 
 // Mock fetch globally
@@ -53,7 +53,7 @@ describe(useGetFile, () => {
         });
 
         expect(result.current.data).toBe(mockBlob);
-        expect(result.current.error).toBeNull();
+        expect(result.current.error).toBeUndefined();
         expect(result.current.meta).toMatchObject({
             contentType: "image/jpeg",
             id: "file-123",
@@ -62,7 +62,7 @@ describe(useGetFile, () => {
     });
 
     it("should handle fetch errors", async () => {
-        expect.assertions(4);
+        expect.assertions(5);
 
         mockFetch.mockResolvedValueOnce({
             json: () => Promise.resolve({ error: { message: "File not found" } }),
@@ -81,9 +81,10 @@ describe(useGetFile, () => {
         );
 
         await waitFor(() => {
-            expect(result.current.error).not.toBeNull();
+            expect(result.current.error).toBeDefined();
         });
 
+        expect(result.current.error).toBeDefined();
         expect(result.current.error?.message).toContain("File not found");
         expect(result.current.data).toBeUndefined();
     });

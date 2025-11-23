@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { createMultipartAdapter } from "../../core/multipart-adapter";
-import type { UploadItem } from "../../core/uploader";
+import { createMultipartAdapter } from "../../src/core/multipart-adapter";
+import type { UploadItem } from "../../src/core/uploader";
 
 // Mock XMLHttpRequest
 class MockXMLHttpRequest {
