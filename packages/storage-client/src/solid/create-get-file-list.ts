@@ -69,7 +69,7 @@ export const createGetFileList = (options: CreateGetFileListOptions): CreateGetF
                         meta: (data as FileListResponse).meta,
                     };
             },
-            queryKey: storageQueryKeys.files.list({ limit: limitValue(), page: pageValue() }),
+            queryKey: storageQueryKeys.files.list(endpoint, { limit: limitValue(), page: pageValue() }),
         };
     });
 

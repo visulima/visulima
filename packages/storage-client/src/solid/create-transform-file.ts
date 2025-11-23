@@ -85,7 +85,7 @@ export const createTransformFile = (options: CreateTransformFileOptions): Create
 
                 return { blob, meta };
             },
-            queryKey: () => storageQueryKeys.transform.file(idValue(), transformValue()),
+            queryKey: () => storageQueryKeys.transform.file(endpoint, idValue(), transformValue()),
         };
     });
 

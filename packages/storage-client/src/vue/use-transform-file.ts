@@ -81,7 +81,7 @@ export const useTransformFile = (options: UseTransformFileOptions): UseTransform
 
             return { blob, meta };
         },
-        queryKey: computed(() => storageQueryKeys.transform.file(toValue(id), toValue(transform))),
+        queryKey: computed(() => storageQueryKeys.transform.file(endpoint, toValue(id), toValue(transform))),
     });
 
     return {

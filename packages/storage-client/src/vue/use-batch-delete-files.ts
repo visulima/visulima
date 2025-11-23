@@ -79,12 +79,12 @@ export const useBatchDeleteFiles = (options: UseBatchDeleteFilesOptions): UseBat
         },
         onSuccess: (result, ids) => {
             // Invalidate all file-related queries
-            queryClient.invalidateQueries({ queryKey: storageQueryKeys.files.all });
+            queryClient.invalidateQueries({ queryKey: storageQueryKeys.files.all(endpoint) });
             // Remove queries for deleted files
             ids.forEach((id) => {
-                queryClient.removeQueries({ queryKey: storageQueryKeys.files.detail(id) });
-                queryClient.removeQueries({ queryKey: storageQueryKeys.files.meta(id) });
-                queryClient.removeQueries({ queryKey: storageQueryKeys.files.head(id) });
+                queryClient.removeQueries({ queryKey: storageQueryKeys.files.detail(endpoint, id) });
+                queryClient.removeQueries({ queryKey: storageQueryKeys.files.meta(endpoint, id) });
+                queryClient.removeQueries({ queryKey: storageQueryKeys.files.head(endpoint, id) });
             });
         },
     });

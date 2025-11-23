@@ -51,7 +51,7 @@ export const useTransformMetadata = (options: UseTransformMetadataOptions): UseT
                 parameters: data.parameters,
             };
         },
-        queryKey: storageQueryKeys.transform.metadata(),
+        queryKey: storageQueryKeys.transform.metadata(endpoint),
     });
 
     // Call callbacks

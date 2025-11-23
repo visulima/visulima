@@ -75,7 +75,7 @@ export const createGetFile = (options: CreateGetFileOptions): CreateGetFileRetur
 
                     return { blob, meta };
                 },
-                queryKey: storageQueryKeys.files.detail(fileId, transformParams),
+                queryKey: storageQueryKeys.files.detail(endpoint, fileId, transformParams),
             };
         },
         () => queryClient,

@@ -48,7 +48,7 @@ export const createGetFileMeta = (options: CreateGetFileMetaOptions): CreateGetF
                     id: data.id || fileId,
                 };
             },
-            queryKey: () => storageQueryKeys.files.meta(idValue()),
+            queryKey: () => storageQueryKeys.files.meta(endpoint, idValue()),
         };
     });
 

@@ -13,23 +13,24 @@ export const storageQueryKeys = {
      * File-related query keys
      */
     files: {
-        all: ["storage", "files"] as const,
-        detail: (id: string, transformParams?: Record<string, string | number | boolean>): ReadonlyArray<unknown> =>
-            [...storageQueryKeys.files.details(), id, transformParams] as const,
-        details: (): ReadonlyArray<unknown> => [...storageQueryKeys.files.all, "detail"] as const,
-        head: (id: string): ReadonlyArray<unknown> => [...storageQueryKeys.files.all, id, "head"] as const,
-        list: (filters?: { limit?: number; page?: number }): ReadonlyArray<unknown> => [...storageQueryKeys.files.lists(), filters] as const,
-        lists: (): ReadonlyArray<unknown> => [...storageQueryKeys.files.all, "list"] as const,
-        meta: (id: string): ReadonlyArray<unknown> => [...storageQueryKeys.files.all, id, "meta"] as const,
+        all: (endpoint: string): ReadonlyArray<unknown> => ["storage", "files", endpoint] as const,
+        detail: (endpoint: string, id: string, transformParams?: Record<string, string | number | boolean>): ReadonlyArray<unknown> =>
+            [...storageQueryKeys.files.details(endpoint), id, transformParams] as const,
+        details: (endpoint: string): ReadonlyArray<unknown> => [...storageQueryKeys.files.all(endpoint), "detail"] as const,
+        head: (endpoint: string, id: string): ReadonlyArray<unknown> => [...storageQueryKeys.files.all(endpoint), id, "head"] as const,
+        list: (endpoint: string, filters?: { limit?: number; page?: number }): ReadonlyArray<unknown> =>
+            [...storageQueryKeys.files.lists(endpoint), filters] as const,
+        lists: (endpoint: string): ReadonlyArray<unknown> => [...storageQueryKeys.files.all(endpoint), "list"] as const,
+        meta: (endpoint: string, id: string): ReadonlyArray<unknown> => [...storageQueryKeys.files.all(endpoint), id, "meta"] as const,
     },
 
     /**
      * Transform-related query keys
      */
     transform: {
-        all: ["storage", "transform"] as const,
-        file: (id: string, transformParams: Record<string, string | number | boolean>): ReadonlyArray<unknown> =>
-            [...storageQueryKeys.transform.all, id, transformParams] as const,
-        metadata: (): ReadonlyArray<unknown> => [...storageQueryKeys.transform.all, "metadata"] as const,
+        all: (endpoint: string): ReadonlyArray<unknown> => ["storage", "transform", endpoint] as const,
+        file: (endpoint: string, id: string, transformParams: Record<string, string | number | boolean>): ReadonlyArray<unknown> =>
+            [...storageQueryKeys.transform.all(endpoint), id, transformParams] as const,
+        metadata: (endpoint: string): ReadonlyArray<unknown> => [...storageQueryKeys.transform.all(endpoint), "metadata"] as const,
     },
 } as const;

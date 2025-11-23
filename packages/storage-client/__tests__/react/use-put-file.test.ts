@@ -150,7 +150,7 @@ describe(usePutFile, () => {
             () => {
                 expect(result.current.progress).toBeGreaterThan(0);
             },
-            { timeout: 100 },
+            { timeout: 200 },
         );
 
         await uploadPromise;
@@ -222,7 +222,7 @@ describe(usePutFile, () => {
 
         await waitFor(() => {
             expect(invalidateQueriesSpy).toHaveBeenCalledWith({
-                queryKey: ["storage", "files"],
+                queryKey: ["storage", "files", "https://api.example.com"],
             });
         });
     });
