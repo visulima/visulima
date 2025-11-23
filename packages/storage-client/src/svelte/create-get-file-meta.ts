@@ -18,7 +18,7 @@ export interface CreateGetFileMetaReturn {
     /** File metadata */
     data: Readable<FileMeta | undefined>;
     /** Last request error, if any */
-    error: Readable<Error | null>;
+    error: Readable<Error | undefined>;
     /** Whether a request is currently in progress */
     isLoading: Readable<boolean>;
     /** Refetch the file metadata */
@@ -26,7 +26,7 @@ export interface CreateGetFileMetaReturn {
 }
 
 /**
- * Svelte store-based utility for fetching file metadata using TanStack Query
+ * Svelte store-based utility for fetching file metadata using TanStack Query.
  * @param options Hook configuration options
  * @returns File metadata fetching functions and state stores
  */
@@ -57,7 +57,7 @@ export const createGetFileMeta = (options: CreateGetFileMetaOptions): CreateGetF
 
     return {
         data: query.data,
-        error: derived(query.error, ($error) => ($error as Error) || null),
+        error: derived(query.error, ($error) => ($error as Error) || undefined),
         isLoading: query.isLoading,
         refetch: () => {
             query.refetch();

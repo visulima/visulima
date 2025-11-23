@@ -35,18 +35,18 @@ export interface UseTransformFileReturn {
     /** Transformed file data as Blob */
     data: Readonly<Ref<Blob | undefined>>;
     /** Last request error, if any */
-    error: Readonly<Ref<Error | null>>;
+    error: Readonly<Ref<Error | undefined>>;
     /** Whether a request is currently in progress */
     isLoading: Readonly<Ref<boolean>>;
     /** File metadata from response headers */
-    meta: Readonly<Ref<FileMeta | null>>;
+    meta: Readonly<Ref<FileMeta | undefined>>;
     /** Refetch the transformed file */
     refetch: () => void;
 }
 
 /**
- * Vue composable for fetching transformed files using TanStack Query
- * Supports image, video, and audio transformation parameters
+ * Vue composable for fetching transformed files using TanStack Query.
+ * Supports image, video, and audio transformation parameters.
  * @param options Hook configuration options
  * @returns Transform file fetching functions and state
  */
@@ -86,9 +86,9 @@ export const useTransformFile = (options: UseTransformFileOptions): UseTransform
 
     return {
         data: computed(() => query.data.value?.blob),
-        error: computed(() => (query.error.value as Error) || null),
+        error: computed(() => (query.error.value as Error) || undefined),
         isLoading: computed(() => query.isLoading.value),
-        meta: computed(() => query.data.value?.meta || null),
+        meta: computed(() => query.data.value?.meta || undefined),
         refetch: () => {
             query.refetch();
         },

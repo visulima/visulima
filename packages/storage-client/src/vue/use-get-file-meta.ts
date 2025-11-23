@@ -18,7 +18,7 @@ export interface UseGetFileMetaReturn {
     /** File metadata */
     data: Readonly<Ref<FileMeta | undefined>>;
     /** Last request error, if any */
-    error: Readonly<Ref<Error | null>>;
+    error: Readonly<Ref<Error | undefined>>;
     /** Whether a request is currently in progress */
     isLoading: Readonly<Ref<boolean>>;
     /** Refetch the file metadata */
@@ -26,7 +26,7 @@ export interface UseGetFileMetaReturn {
 }
 
 /**
- * Vue composable for fetching file metadata using TanStack Query
+ * Vue composable for fetching file metadata using TanStack Query.
  * @param options Hook configuration options
  * @returns File metadata fetching functions and state
  */
@@ -50,7 +50,7 @@ export const useGetFileMeta = (options: UseGetFileMetaOptions): UseGetFileMetaRe
 
     return {
         data: query.data,
-        error: computed(() => (query.error.value as Error) || null),
+        error: computed(() => (query.error.value as Error) || undefined),
         isLoading: computed(() => query.isLoading.value),
         refetch: () => {
             query.refetch();

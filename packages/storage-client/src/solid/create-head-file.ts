@@ -37,7 +37,7 @@ export interface CreateHeadFileReturn {
     /** File metadata from HEAD request */
     data: Accessor<FileHeadMetadata | undefined>;
     /** Last request error, if any */
-    error: Accessor<Error | null>;
+    error: Accessor<Error | undefined>;
     /** Whether a request is currently in progress */
     isLoading: Accessor<boolean>;
     /** Refetch the file metadata */
@@ -45,8 +45,8 @@ export interface CreateHeadFileReturn {
 }
 
 /**
- * Solid.js primitive for fetching file metadata via HEAD request using TanStack Query
- * Useful for checking upload progress and file status without downloading
+ * Solid.js primitive for fetching file metadata via HEAD request using TanStack Query.
+ * Useful for checking upload progress and file status without downloading.
  * @param options Hook configuration options
  * @returns File HEAD request functions and state signals
  */
@@ -128,7 +128,7 @@ export const createHeadFile = (options: CreateHeadFileOptions): CreateHeadFileRe
         error: () => {
             const error = query.error();
 
-            return (error as Error) || null;
+            return (error as Error) || undefined;
         },
         isLoading: query.isLoading,
         refetch: () => {

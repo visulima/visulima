@@ -38,7 +38,7 @@ export interface CreateHeadFileReturn {
     /** File metadata from HEAD request */
     data: Readable<FileHeadMetadata | undefined>;
     /** Last request error, if any */
-    error: Readable<Error | null>;
+    error: Readable<Error | undefined>;
     /** Whether a request is currently in progress */
     isLoading: Readable<boolean>;
     /** Refetch the file metadata */
@@ -46,8 +46,8 @@ export interface CreateHeadFileReturn {
 }
 
 /**
- * Svelte store-based utility for fetching file metadata via HEAD request using TanStack Query
- * Useful for checking upload progress and file status without downloading
+ * Svelte store-based utility for fetching file metadata via HEAD request using TanStack Query.
+ * Useful for checking upload progress and file status without downloading.
  * @param options Hook configuration options
  * @returns File HEAD request functions and state stores
  */
@@ -128,7 +128,7 @@ export const createHeadFile = (options: CreateHeadFileOptions): CreateHeadFileRe
 
     return {
         data: query.data,
-        error: derived(query.error, ($error) => ($error as Error) || null),
+        error: derived(query.error, ($error) => ($error as Error) || undefined),
         isLoading: query.isLoading,
         refetch: () => {
             query.refetch();

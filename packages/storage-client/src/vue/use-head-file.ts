@@ -38,7 +38,7 @@ export interface UseHeadFileReturn {
     /** File metadata from HEAD request */
     data: Readonly<Ref<FileHeadMetadata | undefined>>;
     /** Last request error, if any */
-    error: Readonly<Ref<Error | null>>;
+    error: Readonly<Ref<Error | undefined>>;
     /** Whether a request is currently in progress */
     isLoading: Readonly<Ref<boolean>>;
     /** Refetch the file metadata */
@@ -46,8 +46,8 @@ export interface UseHeadFileReturn {
 }
 
 /**
- * Vue composable for fetching file metadata via HEAD request using TanStack Query
- * Useful for checking upload progress and file status without downloading
+ * Vue composable for fetching file metadata via HEAD request using TanStack Query.
+ * Useful for checking upload progress and file status without downloading.
  * @param options Hook configuration options
  * @returns File HEAD request functions and state
  */
@@ -121,7 +121,7 @@ export const useHeadFile = (options: UseHeadFileOptions): UseHeadFileReturn => {
 
     return {
         data: query.data,
-        error: computed(() => (query.error.value as Error) || null),
+        error: computed(() => (query.error.value as Error) || undefined),
         isLoading: computed(() => query.isLoading.value),
         refetch: () => {
             query.refetch();

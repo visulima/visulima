@@ -36,7 +36,7 @@ export interface CreateMultipartUploadReturn {
 }
 
 /**
- * Svelte store-based utility for multipart/form-data file uploads using rpldy uploader core
+ * Svelte store-based utility for multipart/form-data file uploads using rpldy uploader core.
  * @param options Upload configuration options
  * @returns Upload functions and state stores
  */

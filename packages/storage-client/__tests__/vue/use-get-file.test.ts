@@ -52,7 +52,7 @@ describe(useGetFile, () => {
         expect(result.data.value).toBeDefined();
         expect(result.data.value?.type).toBe(mockBlob.type);
         expect(result.data.value?.size).toBe(mockBlob.size);
-        expect(result.error.value).toBeNull();
+        expect(result.error.value).toBeUndefined();
         expect(result.isLoading.value).toBe(false);
     });
 

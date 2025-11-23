@@ -23,18 +23,18 @@ export interface CreateGetFileReturn {
     /** File data as Blob */
     data: Readable<Blob | undefined>;
     /** Last request error, if any */
-    error: Readable<Error | null>;
+    error: Readable<Error | undefined>;
     /** Whether a request is currently in progress */
     isLoading: Readable<boolean>;
     /** File metadata from response headers */
-    meta: Readable<FileMeta | null>;
+    meta: Readable<FileMeta | undefined>;
     /** Refetch the file */
     refetch: () => void;
 }
 
 /**
- * Svelte store-based utility for fetching/downloading files using TanStack Query
- * Supports optional transformation parameters for media files
+ * Svelte store-based utility for fetching/downloading files using TanStack Query.
+ * Supports optional transformation parameters for media files.
  * @param options Hook configuration options
  * @returns File fetching functions and state stores
  */
@@ -93,13 +93,13 @@ export const createGetFile = (options: CreateGetFileOptions): CreateGetFileRetur
             return query.data?.blob;
         },
         get error() {
-            return (query.error as Error) || null;
+            return (query.error as Error) || undefined;
         },
         get isLoading() {
             return query.isLoading;
         },
         get meta() {
-            return query.data?.meta || null;
+            return query.data?.meta || undefined;
         },
         refetch: () => {
             query.refetch();

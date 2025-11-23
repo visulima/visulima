@@ -15,7 +15,7 @@ export interface UseDeleteFileReturn {
     /** Delete a file by ID */
     deleteFile: (id: string) => Promise<void>;
     /** Last request error, if any */
-    error: Error | null;
+    error: Error | undefined;
     /** Whether a request is currently in progress */
     isLoading: boolean;
     /** Reset mutation state */
@@ -23,8 +23,8 @@ export interface UseDeleteFileReturn {
 }
 
 /**
- * React hook for deleting a single file using TanStack Query
- * Automatically invalidates related queries
+ * React hook for deleting a single file using TanStack Query.
+ * Automatically invalidates related queries.
  * @param options Hook configuration options
  * @returns File deletion functions and state
  */
@@ -53,7 +53,7 @@ export const useDeleteFile = (options: UseDeleteFileOptions): UseDeleteFileRetur
 
     return {
         deleteFile: mutation.mutateAsync,
-        error: (mutation.error as Error) || null,
+        error: (mutation.error as Error) || undefined,
         isLoading: mutation.isPending,
         reset: mutation.reset,
     };

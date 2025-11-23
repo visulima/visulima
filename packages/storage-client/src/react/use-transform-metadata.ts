@@ -24,7 +24,7 @@ export interface UseTransformMetadataReturn {
     /** Transform metadata */
     data: TransformMetadata | undefined;
     /** Last request error, if any */
-    error: Error | null;
+    error: Error | undefined;
     /** Whether a request is currently in progress */
     isLoading: boolean;
     /** Refetch the transform metadata */
@@ -32,8 +32,8 @@ export interface UseTransformMetadataReturn {
 }
 
 /**
- * React hook for fetching transformation metadata using TanStack Query
- * Returns available formats and transformation parameters
+ * React hook for fetching transformation metadata using TanStack Query.
+ * Returns available formats and transformation parameters.
  * @param options Hook configuration options
  * @returns Transform metadata fetching functions and state
  */
@@ -65,7 +65,7 @@ export const useTransformMetadata = (options: UseTransformMetadataOptions): UseT
 
     return {
         data: query.data,
-        error: (query.error as Error) || null,
+        error: (query.error as Error) || undefined,
         isLoading: query.isLoading,
         refetch: () => {
             query.refetch();

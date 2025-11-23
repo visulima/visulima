@@ -48,7 +48,7 @@ export interface CreateUploadReturn {
     /** Current upload method being used */
     currentMethod: Readable<UploadMethod>;
     /** Last upload error, if any */
-    error: Readable<Error | null>;
+    error: Readable<Error | undefined>;
     /** Whether the upload is paused (TUS and chunked REST only) */
     isPaused: Readable<boolean | undefined>;
     /** Whether an upload is currently in progress */
@@ -62,7 +62,7 @@ export interface CreateUploadReturn {
     /** Reset upload state */
     reset: () => void;
     /** Last upload result, if any */
-    result: Readable<UploadResult | null>;
+    result: Readable<UploadResult | undefined>;
     /** Resume a paused upload (TUS and chunked REST only) */
     resume: Readable<(() => Promise<void>) | undefined>;
     /** Upload a file using the configured method */
@@ -72,9 +72,9 @@ export interface CreateUploadReturn {
 const DEFAULT_TUS_THRESHOLD = 10 * 1024 * 1024; // 10MB
 
 /**
- * Svelte store-based utility for file uploads with automatic method selection
- * Uses custom uploader implementations for multipart, TUS, and chunked REST
- * Automatically chooses between methods based on file size and method preference
+ * Svelte store-based utility for file uploads with automatic method selection.
+ * Uses custom uploader implementations for multipart, TUS, and chunked REST.
+ * Automatically chooses between methods based on file size and method preference.
  * @param options Upload configuration options
  * @returns Upload functions and state stores
  */
@@ -166,9 +166,9 @@ export const createUpload = (options: CreateUploadOptions): CreateUploadReturn =
         }
         : undefined;
 
-    const chunkedRestUpload = chunkedRestOptions ? createChunkedRestUpload(chunkedRestOptions) : null;
-    const multipartUpload = multipartOptions ? createMultipartUpload(multipartOptions) : null;
-    const tusUpload = tusOptions ? createTusUpload(tusOptions) : null;
+    const chunkedRestUpload = chunkedRestOptions ? createChunkedRestUpload(chunkedRestOptions) : undefined;
+    const multipartUpload = multipartOptions ? createMultipartUpload(multipartOptions) : undefined;
+    const tusUpload = tusOptions ? createTusUpload(tusOptions) : undefined;
 
     const determineMethod = (file: File): UploadMethod => {
         if (detectedMethod !== "auto") {
@@ -289,7 +289,7 @@ export const createUpload = (options: CreateUploadOptions): CreateUploadReturn =
             multipartUpload?.error ?? { subscribe: () => () => {} },
         ],
         ([current, tusError, chunkedRestError, multipartError]) =>
-            (current === "tus" ? tusError : current === "chunked-rest" ? chunkedRestError : (multipartError ?? null)),
+            (current === "tus" ? tusError : current === "chunked-rest" ? chunkedRestError : (multipartError ?? undefined)),
     );
     const isPaused = derived(
         [currentMethod, tusUpload?.isPaused ?? { subscribe: () => () => {} }, chunkedRestUpload?.isPaused ?? { subscribe: () => () => {} }],
@@ -327,7 +327,7 @@ export const createUpload = (options: CreateUploadOptions): CreateUploadReturn =
             multipartUpload?.result ?? { subscribe: () => () => {} },
         ],
         ([current, tusRes, chunkedRestRes, multipartRes]) =>
-            (current === "tus" ? (tusRes ?? null) : current === "chunked-rest" ? (chunkedRestRes ?? null) : (multipartRes ?? null)),
+            (current === "tus" ? (tusRes ?? undefined) : current === "chunked-rest" ? (chunkedRestRes ?? undefined) : (multipartRes ?? undefined)),
     );
 
     // Create derived stores for functions (they return functions based on current method)

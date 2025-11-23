@@ -22,7 +22,7 @@ export interface UseBatchDeleteFilesReturn {
     /** Delete multiple files by IDs */
     batchDeleteFiles: (ids: string[]) => Promise<BatchDeleteResult>;
     /** Last request error, if any */
-    error: Error | null;
+    error: Error | undefined;
     /** Whether a request is currently in progress */
     isLoading: boolean;
     /** Reset mutation state */
@@ -30,9 +30,9 @@ export interface UseBatchDeleteFilesReturn {
 }
 
 /**
- * React hook for batch deleting files using TanStack Query
- * Supports both query parameter and JSON body methods
- * Automatically invalidates related queries
+ * React hook for batch deleting files using TanStack Query.
+ * Supports both query parameter and JSON body methods.
+ * Automatically invalidates related queries.
  * @param options Hook configuration options
  * @returns Batch file deletion functions and state
  */
@@ -98,7 +98,7 @@ export const useBatchDeleteFiles = (options: UseBatchDeleteFilesOptions): UseBat
 
     return {
         batchDeleteFiles: mutation.mutateAsync,
-        error: (mutation.error as Error) || null,
+        error: (mutation.error as Error) || undefined,
         isLoading: mutation.isPending,
         reset: mutation.reset,
     };

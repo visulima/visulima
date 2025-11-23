@@ -126,7 +126,7 @@ describe(usePutFile, () => {
             id: "file-123",
             url: expect.stringContaining("file-123"),
         });
-        expect(result.current.error).toBeNull();
+        expect(result.current.error).toBeUndefined();
     });
 
     it("should track upload progress", async () => {
@@ -198,7 +198,7 @@ describe(usePutFile, () => {
         }
 
         await waitFor(() => {
-            expect(result.current.error).not.toBeNull();
+            expect(result.current.error).toBeDefined();
         });
 
         expect(result.current.isLoading).toBe(false);
@@ -249,7 +249,7 @@ describe(usePutFile, () => {
         result.current.reset();
 
         await waitFor(() => {
-            expect(result.current.data).toBeNull();
+            expect(result.current.data).toBeUndefined();
         });
 
         expect(result.current.progress).toBe(0);

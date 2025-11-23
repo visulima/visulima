@@ -47,7 +47,7 @@ export interface UseUploadReturn {
     /** Current upload method being used */
     currentMethod: UploadMethod;
     /** Last upload error, if any */
-    error: Error | null;
+    error: Error | undefined;
     /** Whether the upload is paused (TUS and chunked REST only) */
     isPaused?: boolean;
     /** Whether an upload is currently in progress */
@@ -61,7 +61,7 @@ export interface UseUploadReturn {
     /** Reset upload state */
     reset: () => void;
     /** Last upload result, if any */
-    result: UploadResult | null;
+    result: UploadResult | undefined;
     /** Resume a paused upload (TUS and chunked REST only) */
     resume?: () => Promise<void>;
     /** Upload a file using the configured method */
@@ -71,9 +71,9 @@ export interface UseUploadReturn {
 const DEFAULT_TUS_THRESHOLD = 10 * 1024 * 1024; // 10MB
 
 /**
- * React hook for file uploads with automatic method selection
- * Uses custom uploader implementations for multipart, TUS, and chunked REST
- * Automatically chooses between methods based on file size and method preference
+ * React hook for file uploads with automatic method selection.
+ * Uses custom uploader implementations for multipart, TUS, and chunked REST.
+ * Automatically chooses between methods based on file size and method preference.
  * @param options Upload configuration options
  * @returns Upload functions and state
  */
@@ -181,9 +181,9 @@ export const useUpload = (options: UseUploadOptions): UseUploadReturn => {
         };
     }, [endpointTus, chunkSize, metadata, onStart, onSuccess, onError, onProgress, onPause, onResume, retry, maxRetries]);
 
-    const chunkedRestUpload = chunkedRestOptions ? useChunkedRestUpload(chunkedRestOptions) : null;
-    const multipartUpload = multipartOptions ? useMultipartUpload(multipartOptions) : null;
-    const tusUpload = tusOptions ? useTusUpload(tusOptions) : null;
+    const chunkedRestUpload = chunkedRestOptions ? useChunkedRestUpload(chunkedRestOptions) : undefined;
+    const multipartUpload = multipartOptions ? useMultipartUpload(multipartOptions) : undefined;
+    const tusUpload = tusOptions ? useTusUpload(tusOptions) : undefined;
 
     const determineMethod = useCallback(
         (file: File): UploadMethod => {
@@ -296,10 +296,10 @@ export const useUpload = (options: UseUploadOptions): UseUploadReturn => {
         currentMethod,
         error:
             currentMethod === "tus"
-                ? tusUpload?.error ?? null
+                ? tusUpload?.error ?? undefined
                 : currentMethod === "chunked-rest"
-                    ? chunkedRestUpload?.error ?? null
-                    : multipartUpload?.error ?? null,
+                    ? chunkedRestUpload?.error ?? undefined
+                    : multipartUpload?.error ?? undefined,
         isPaused: currentMethod === "tus" ? tusUpload?.isPaused : currentMethod === "chunked-rest" ? chunkedRestUpload?.isPaused : undefined,
         isUploading:
             currentMethod === "tus"
@@ -318,10 +318,10 @@ export const useUpload = (options: UseUploadOptions): UseUploadReturn => {
         reset,
         result:
             currentMethod === "tus"
-                ? tusUpload?.result ?? null
+                ? tusUpload?.result ?? undefined
                 : currentMethod === "chunked-rest"
-                    ? chunkedRestUpload?.result ?? null
-                    : multipartUpload?.result ?? null,
+                    ? chunkedRestUpload?.result ?? undefined
+                    : multipartUpload?.result ?? undefined,
         resume: currentMethod === "tus" ? tusUpload?.resume : currentMethod === "chunked-rest" ? chunkedRestUpload?.resume : undefined,
         upload,
     };

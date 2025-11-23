@@ -20,7 +20,7 @@ export interface UseGetFileMetaReturn {
     /** File metadata */
     data: FileMeta | undefined;
     /** Last request error, if any */
-    error: Error | null;
+    error: Error | undefined;
     /** Whether a request is currently in progress */
     isLoading: boolean;
     /** Refetch the file metadata */
@@ -28,7 +28,7 @@ export interface UseGetFileMetaReturn {
 }
 
 /**
- * React hook for fetching file metadata using TanStack Query
+ * React hook for fetching file metadata using TanStack Query.
  * @param options Hook configuration options
  * @returns File metadata fetching functions and state
  */
@@ -60,7 +60,7 @@ export const useGetFileMeta = (options: UseGetFileMetaOptions): UseGetFileMetaRe
 
     return {
         data: query.data,
-        error: (query.error as Error) || null,
+        error: (query.error as Error) || undefined,
         isLoading: query.isLoading,
         refetch: () => {
             query.refetch();

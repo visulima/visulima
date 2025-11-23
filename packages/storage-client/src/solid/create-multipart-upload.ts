@@ -35,7 +35,7 @@ export interface CreateMultipartUploadReturn {
 }
 
 /**
- * Solid.js primitive for multipart/form-data file uploads using rpldy uploader core
+ * Solid.js primitive for multipart/form-data file uploads using rpldy uploader core.
  * @param options Upload configuration options
  * @returns Upload functions and state signals
  */

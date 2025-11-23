@@ -22,7 +22,7 @@ export interface CreateTransformMetadataReturn {
     /** Transform metadata */
     data: Readable<TransformMetadata | undefined>;
     /** Last request error, if any */
-    error: Readable<Error | null>;
+    error: Readable<Error | undefined>;
     /** Whether a request is currently in progress */
     isLoading: Readable<boolean>;
     /** Refetch the transform metadata */
@@ -30,8 +30,8 @@ export interface CreateTransformMetadataReturn {
 }
 
 /**
- * Svelte store-based utility for fetching transformation metadata using TanStack Query
- * Returns available formats and transformation parameters
+ * Svelte store-based utility for fetching transformation metadata using TanStack Query.
+ * Returns available formats and transformation parameters.
  * @param options Hook configuration options
  * @returns Transform metadata fetching functions and state stores
  */
@@ -60,7 +60,7 @@ export const createTransformMetadata = (options: CreateTransformMetadataOptions)
 
     return {
         data: query.data,
-        error: derived(query.error, ($error) => ($error as Error) || null),
+        error: derived(query.error, ($error) => ($error as Error) || undefined),
         isLoading: query.isLoading,
         refetch: () => {
             query.refetch();

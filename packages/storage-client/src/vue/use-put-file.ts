@@ -13,9 +13,9 @@ export interface UsePutFileOptions {
 
 export interface UsePutFileReturn {
     /** Last upload result, if any */
-    data: Readonly<Ref<UploadResult | null>>;
+    data: Readonly<Ref<UploadResult | undefined>>;
     /** Last request error, if any */
-    error: Readonly<Ref<Error | null>>;
+    error: Readonly<Ref<Error | undefined>>;
     /** Whether a request is currently in progress */
     isLoading: Readonly<Ref<boolean>>;
     /** Current upload progress (0-100) */
@@ -27,8 +27,8 @@ export interface UsePutFileReturn {
 }
 
 /**
- * Vue composable for creating or updating files via PUT request using TanStack Query
- * Automatically invalidates related queries
+ * Vue composable for creating or updating files via PUT request using TanStack Query.
+ * Automatically invalidates related queries.
  * @param options Hook configuration options
  * @returns File PUT functions and state
  */
@@ -66,8 +66,8 @@ export const usePutFile = (options: UsePutFileOptions): UsePutFileReturn => {
     });
 
     return {
-        data: computed(() => mutation.data.value || null),
-        error: computed(() => (mutation.error.value as Error) || null),
+        data: computed(() => mutation.data.value || undefined),
+        error: computed(() => (mutation.error.value as Error) || undefined),
         isLoading: computed(() => mutation.isPending.value),
         progress,
         putFile: (id: string, file: File | Blob) => mutation.mutateAsync({ file, id }),

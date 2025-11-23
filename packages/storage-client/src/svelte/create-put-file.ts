@@ -14,9 +14,9 @@ export interface CreatePutFileOptions {
 
 export interface CreatePutFileReturn {
     /** Last upload result, if any */
-    data: Readable<UploadResult | null>;
+    data: Readable<UploadResult | undefined>;
     /** Last request error, if any */
-    error: Readable<Error | null>;
+    error: Readable<Error | undefined>;
     /** Whether a request is currently in progress */
     isLoading: Readable<boolean>;
     /** Current upload progress (0-100) */
@@ -28,8 +28,8 @@ export interface CreatePutFileReturn {
 }
 
 /**
- * Svelte store-based utility for creating or updating files via PUT request using TanStack Query
- * Automatically invalidates related queries
+ * Svelte store-based utility for creating or updating files via PUT request using TanStack Query.
+ * Automatically invalidates related queries.
  * @param options Hook configuration options
  * @returns File PUT functions and state stores
  */
@@ -69,8 +69,8 @@ export const createPutFile = (options: CreatePutFileOptions): CreatePutFileRetur
     });
 
     return {
-        data: derived(mutation.data, ($data) => $data || null),
-        error: derived(mutation.error, ($error) => ($error as Error) || null),
+        data: derived(mutation.data, ($data) => $data || undefined),
+        error: derived(mutation.error, ($error) => ($error as Error) || undefined),
         isLoading: mutation.isPending,
         progress,
         putFile: (id: string, file: File | Blob) => mutation.mutateAsync({ file, id }),

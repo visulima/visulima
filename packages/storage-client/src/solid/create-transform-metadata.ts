@@ -21,7 +21,7 @@ export interface CreateTransformMetadataReturn {
     /** Transform metadata */
     data: Accessor<TransformMetadata | undefined>;
     /** Last request error, if any */
-    error: Accessor<Error | null>;
+    error: Accessor<Error | undefined>;
     /** Whether a request is currently in progress */
     isLoading: Accessor<boolean>;
     /** Refetch the transform metadata */
@@ -29,8 +29,8 @@ export interface CreateTransformMetadataReturn {
 }
 
 /**
- * Solid.js primitive for fetching transformation metadata using TanStack Query
- * Returns available formats and transformation parameters
+ * Solid.js primitive for fetching transformation metadata using TanStack Query.
+ * Returns available formats and transformation parameters.
  * @param options Hook configuration options
  * @returns Transform metadata fetching functions and state signals
  */
@@ -60,7 +60,7 @@ export const createTransformMetadata = (options: CreateTransformMetadataOptions)
         error: () => {
             const error = query.error();
 
-            return (error as Error) || null;
+            return (error as Error) || undefined;
         },
         isLoading: query.isLoading,
         refetch: () => {

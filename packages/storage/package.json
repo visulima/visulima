@@ -270,25 +270,25 @@
         "vitest": "^4.0.13"
     },
     "peerDependencies": {
-        "@aws-sdk/client-s3": "^3.901.0",
-        "@aws-sdk/credential-providers": "^3.901.0",
-        "@aws-sdk/s3-request-presigner": "^3.901.0",
-        "@aws-sdk/signature-v4-crt": "^3.901.0",
-        "@aws-sdk/types": "^3.930.0",
-        "@azure/storage-blob": "^12.28.0",
-        "@netlify/blobs": "^10.3.1",
-        "@nuxt/kit": "4.2.1",
-        "@opentelemetry/api": "^1.9.0",
-        "@solidjs/start": "^1.1.0",
-        "@vercel/blob": "^2.0.0",
-        "aws-crt": "^1.27.3",
-        "aws4fetch": "^1.0.0",
-        "gaxios": "^7.1.2",
-        "google-auth-library": "^10.4.0",
-        "hono": "^4.0.0",
-        "mediabunny": "^1.23.0",
+        "@aws-sdk/client-s3": ">=3.901.0",
+        "@aws-sdk/credential-providers": ">=3.901.0",
+        "@aws-sdk/s3-request-presigner": ">=3.901.0",
+        "@aws-sdk/signature-v4-crt": ">=3.901.0",
+        "@aws-sdk/types": ">=3.930.0",
+        "@azure/storage-blob": ">=12.28.0",
+        "@netlify/blobs": ">=10.3.1",
+        "@nuxt/kit": ">=4.2.1",
+        "@opentelemetry/api": ">=1.9.0",
+        "@solidjs/start": ">=1.1.0",
+        "@vercel/blob": ">=2.0.0",
+        "aws-crt": ">=1.27.3",
+        "aws4fetch": ">=1.0.0",
+        "gaxios": ">=7.1.2",
+        "google-auth-library": ">=10.4.0",
+        "hono": ">=4.0.0",
+        "mediabunny": ">=1.23.0",
         "next": ">=15",
-        "sharp": "^0.33.5"
+        "sharp": ">=0.33.5"
     },
     "peerDependenciesMeta": {
         "@aws-sdk/client-s3": {
@@ -350,7 +350,7 @@
         }
     },
     "engines": {
-        "node": ">=20.19 <=25.x"
+        "node": ">=22.21 <=25.x"
     },
     "publishConfig": {
         "access": "public",

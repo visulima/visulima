@@ -19,7 +19,7 @@ export interface UseBatchDeleteFilesReturn {
     /** Delete multiple files by IDs */
     batchDeleteFiles: (ids: string[]) => Promise<BatchDeleteResult>;
     /** Last request error, if any */
-    error: Readonly<Ref<Error | null>>;
+    error: Readonly<Ref<Error | undefined>>;
     /** Whether a request is currently in progress */
     isLoading: Readonly<Ref<boolean>>;
     /** Reset mutation state */
@@ -27,9 +27,9 @@ export interface UseBatchDeleteFilesReturn {
 }
 
 /**
- * Vue composable for batch deleting files using TanStack Query
- * Supports both query parameter and JSON body methods
- * Automatically invalidates related queries
+ * Vue composable for batch deleting files using TanStack Query.
+ * Supports both query parameter and JSON body methods.
+ * Automatically invalidates related queries.
  * @param options Hook configuration options
  * @returns Batch file deletion functions and state
  */
@@ -91,7 +91,7 @@ export const useBatchDeleteFiles = (options: UseBatchDeleteFilesOptions): UseBat
 
     return {
         batchDeleteFiles: mutation.mutateAsync,
-        error: computed(() => (mutation.error.value as Error) || null),
+        error: computed(() => (mutation.error.value as Error) || undefined),
         isLoading: computed(() => mutation.isPending.value),
         reset: mutation.reset,
     };

@@ -11,9 +11,9 @@ export interface UsePatchChunkOptions {
 
 export interface UsePatchChunkReturn {
     /** Last upload result, if any */
-    data: Readonly<Ref<UploadResult | null>>;
+    data: Readonly<Ref<UploadResult | undefined>>;
     /** Last request error, if any */
-    error: Readonly<Ref<Error | null>>;
+    error: Readonly<Ref<Error | undefined>>;
     /** Whether a request is currently in progress */
     isLoading: Readonly<Ref<boolean>>;
     /** Upload a chunk for chunked uploads */
@@ -23,9 +23,9 @@ export interface UsePatchChunkReturn {
 }
 
 /**
- * Vue composable for uploading chunks in chunked uploads using TanStack Query
- * Requires X-Chunk-Offset header and chunk data
- * Automatically invalidates related queries when upload is complete
+ * Vue composable for uploading chunks in chunked uploads using TanStack Query.
+ * Requires X-Chunk-Offset header and chunk data.
+ * Automatically invalidates related queries when upload is complete.
  * @param options Hook configuration options
  * @returns Chunk upload functions and state
  */
@@ -69,8 +69,8 @@ export const usePatchChunk = (options: UsePatchChunkOptions): UsePatchChunkRetur
     });
 
     return {
-        data: computed(() => mutation.data.value || null),
-        error: computed(() => (mutation.error.value as Error) || null),
+        data: computed(() => mutation.data.value || undefined),
+        error: computed(() => (mutation.error.value as Error) || undefined),
         isLoading: computed(() => mutation.isPending.value),
         patchChunk: (id: string, chunk: Blob, offset: number, checksum?: string) => mutation.mutateAsync({ checksum, chunk, id, offset }),
         reset: mutation.reset,

@@ -10,10 +10,10 @@ export interface FileListResponse {
         firstPageUrl?: string;
         lastPage?: number;
         lastPageUrl?: string;
-        nextPageUrl?: string | null;
+        nextPageUrl?: string | undefined;
         page?: number;
         perPage?: number;
-        previousPageUrl?: string | null;
+        previousPageUrl?: string | undefined;
         total?: number;
     };
 }
@@ -37,7 +37,7 @@ export interface UseGetFileListReturn {
     /** File list data */
     data: FileListResponse | undefined;
     /** Last request error, if any */
-    error: Error | null;
+    error: Error | undefined;
     /** Whether a request is currently in progress */
     isLoading: boolean;
     /** Refetch the file list */
@@ -45,8 +45,8 @@ export interface UseGetFileListReturn {
 }
 
 /**
- * React hook for fetching a list of files using TanStack Query
- * Supports pagination via query parameters
+ * React hook for fetching a list of files using TanStack Query.
+ * Supports pagination via query parameters.
  * @param options Hook configuration options
  * @returns File list fetching functions and state
  */
@@ -81,7 +81,7 @@ export const useGetFileList = (options: UseGetFileListOptions): UseGetFileListRe
 
     return {
         data: query.data,
-        error: (query.error as Error) || null,
+        error: (query.error as Error) || undefined,
         isLoading: query.isLoading,
         refetch: () => {
             query.refetch();

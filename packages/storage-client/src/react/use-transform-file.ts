@@ -28,7 +28,7 @@ export interface UseTransformFileOptions {
     /** Callback when request fails */
     onError?: (error: Error) => void;
     /** Callback when request succeeds */
-    onSuccess?: (data: Blob, meta: FileMeta | null) => void;
+    onSuccess?: (data: Blob, meta: FileMeta | undefined) => void;
     /** Transformation parameters */
     transform: TransformOptions;
 }
@@ -37,18 +37,18 @@ export interface UseTransformFileReturn {
     /** Transformed file data as Blob */
     data: Blob | undefined;
     /** Last request error, if any */
-    error: Error | null;
+    error: Error | undefined;
     /** Whether a request is currently in progress */
     isLoading: boolean;
     /** File metadata from response headers */
-    meta: FileMeta | null;
+    meta: FileMeta | undefined;
     /** Refetch the transformed file */
     refetch: () => void;
 }
 
 /**
- * React hook for fetching transformed files using TanStack Query
- * Supports image, video, and audio transformation parameters
+ * React hook for fetching transformed files using TanStack Query.
+ * Supports image, video, and audio transformation parameters.
  * @param options Hook configuration options
  * @returns Transform file fetching functions and state
  */
@@ -85,7 +85,7 @@ export const useTransformFile = (options: UseTransformFileOptions): UseTransform
     });
 
     // Extract metadata from response if available
-    const meta: FileMeta | null = query.data?.meta || null;
+    const meta: FileMeta | undefined = query.data?.meta || undefined;
 
     // Call callbacks
     if (query.data && onSuccess) {
@@ -98,7 +98,7 @@ export const useTransformFile = (options: UseTransformFileOptions): UseTransform
 
     return {
         data: query.data?.blob,
-        error: (query.error as Error) || null,
+        error: (query.error as Error) || undefined,
         isLoading: query.isLoading,
         meta,
         refetch: () => {

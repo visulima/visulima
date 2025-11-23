@@ -12,7 +12,7 @@ export interface CreateDeleteFileReturn {
     /** Delete a file by ID */
     deleteFile: (id: string) => Promise<void>;
     /** Last request error, if any */
-    error: Accessor<Error | null>;
+    error: Accessor<Error | undefined>;
     /** Whether a request is currently in progress */
     isLoading: Accessor<boolean>;
     /** Reset mutation state */
@@ -20,8 +20,8 @@ export interface CreateDeleteFileReturn {
 }
 
 /**
- * Solid.js primitive for deleting a single file using TanStack Query
- * Automatically invalidates related queries
+ * Solid.js primitive for deleting a single file using TanStack Query.
+ * Automatically invalidates related queries.
  * @param options Hook configuration options
  * @returns File deletion functions and state signals
  */
@@ -48,7 +48,7 @@ export const createDeleteFile = (options: CreateDeleteFileOptions): CreateDelete
 
     return {
         deleteFile: mutation.mutateAsync,
-        error: mutation.error as Accessor<Error | null>,
+        error: mutation.error as Accessor<Error | undefined>,
         isLoading: mutation.isPending,
         reset: mutation.reset,
     };

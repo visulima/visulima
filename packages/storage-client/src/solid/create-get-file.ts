@@ -22,18 +22,18 @@ export interface CreateGetFileReturn {
     /** File data as Blob */
     data: Accessor<Blob | undefined>;
     /** Last request error, if any */
-    error: Accessor<Error | null>;
+    error: Accessor<Error | undefined>;
     /** Whether a request is currently in progress */
     isLoading: Accessor<boolean>;
     /** File metadata from response headers */
-    meta: Accessor<FileMeta | null>;
+    meta: Accessor<FileMeta | undefined>;
     /** Refetch the file */
     refetch: () => void;
 }
 
 /**
- * Solid.js primitive for fetching/downloading files using TanStack Query
- * Supports optional transformation parameters for media files
+ * Solid.js primitive for fetching/downloading files using TanStack Query.
+ * Supports optional transformation parameters for media files.
  * @param options Hook configuration options
  * @returns File fetching functions and state signals
  */
@@ -86,10 +86,10 @@ export const createGetFile = (options: CreateGetFileOptions): CreateGetFileRetur
         error: () => {
             const { error } = query;
 
-            return (error as Error) || null;
+            return (error as Error) || undefined;
         },
         isLoading: () => query.isLoading,
-        meta: () => query.data?.meta || null,
+        meta: () => query.data?.meta || undefined,
         refetch: () => {
             query.refetch();
         },

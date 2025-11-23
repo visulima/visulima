@@ -9,6 +9,8 @@ import { useMultipartUpload } from "./use-multipart-upload";
 import type { UseTusUploadOptions } from "./use-tus-upload";
 import { useTusUpload } from "./use-tus-upload";
 
+const DEFAULT_TUS_THRESHOLD = 10 * 1024 * 1024; // 10MB
+
 export interface UseUploadOptions {
     /** Chunk size for TUS and chunked REST uploads (default: 1MB for TUS, 5MB for chunked REST) */
     chunkSize?: number;
@@ -48,7 +50,7 @@ export interface UseUploadReturn {
     /** Current upload method being used */
     currentMethod: ComputedRef<UploadMethod>;
     /** Last upload error, if any */
-    error: ComputedRef<Error | null>;
+    error: ComputedRef<Error | undefined>;
     /** Whether the upload is paused (TUS and chunked REST only) */
     isPaused: ComputedRef<boolean | undefined>;
     /** Whether an upload is currently in progress */
@@ -62,19 +64,17 @@ export interface UseUploadReturn {
     /** Reset upload state */
     reset: () => void;
     /** Last upload result, if any */
-    result: ComputedRef<UploadResult | null>;
+    result: ComputedRef<UploadResult | undefined>;
     /** Resume a paused upload (TUS and chunked REST only) */
     resume: ComputedRef<(() => Promise<void>) | undefined>;
     /** Upload a file using the configured method */
     upload: (file: File) => Promise<UploadResult>;
 }
 
-const DEFAULT_TUS_THRESHOLD = 10 * 1024 * 1024; // 10MB
-
 /**
- * Vue composable for file uploads with automatic method selection
- * Uses custom uploader implementations for multipart, TUS, and chunked REST
- * Automatically chooses between methods based on file size and method preference
+ * Vue composable for file uploads with automatic method selection.
+ * Uses custom uploader implementations for multipart, TUS, and chunked REST.
+ * Automatically chooses between methods based on file size and method preference.
  * @param options Upload configuration options
  * @returns Upload functions and state
  */
@@ -170,9 +170,9 @@ export const useUpload = (options: UseUploadOptions): UseUploadReturn => {
         }
         : undefined;
 
-    const chunkedRestUpload = chunkedRestOptions ? useChunkedRestUpload(chunkedRestOptions) : null;
-    const multipartUpload = multipartOptions ? useMultipartUpload(multipartOptions) : null;
-    const tusUpload = tusOptions ? useTusUpload(tusOptions) : null;
+    const chunkedRestUpload = chunkedRestOptions ? useChunkedRestUpload(chunkedRestOptions) : undefined;
+    const multipartUpload = multipartOptions ? useMultipartUpload(multipartOptions) : undefined;
+    const tusUpload = tusOptions ? useTusUpload(tusOptions) : undefined;
 
     const determineMethod = (file: File): UploadMethod => {
         if (detectedMethod.value !== "auto") {
@@ -274,50 +274,86 @@ export const useUpload = (options: UseUploadOptions): UseUploadReturn => {
         return "multipart";
     });
 
+    const isTus = currentMethod.value === "tus";
+    const isChunkedRest = currentMethod.value === "chunked-rest";
+
+    if (isTus) {
+        return {
+            abort,
+            currentMethod,
+            error: computed(() => tusUpload?.error.value ?? undefined),
+            isPaused: computed(() => tusUpload?.isPaused.value),
+            isUploading: computed(() => tusUpload?.isUploading.value ?? false),
+            offset: computed(() => tusUpload?.offset.value),
+            pause: computed(() => tusUpload?.pause),
+            progress: computed(() => tusUpload?.progress.value ?? 0),
+            reset,
+            result: computed(() => tusUpload?.result.value ?? undefined),
+            resume: computed(() => tusUpload?.resume),
+            upload,
+        };
+    }
+
     return {
         abort,
         currentMethod,
-        error: computed(() =>
-            (currentMethod.value === "tus"
-                ? (tusUpload?.error.value ?? null)
-                : currentMethod.value === "chunked-rest"
-                  ? (chunkedRestUpload?.error.value ?? null)
-                  : (multipartUpload?.error.value ?? null)),
-        ),
-        isPaused: computed(() =>
-            (currentMethod.value === "tus" ? tusUpload?.isPaused.value : currentMethod.value === "chunked-rest" ? chunkedRestUpload?.isPaused.value : undefined),
-        ),
-        isUploading: computed(() =>
-            (currentMethod.value === "tus"
-                ? (tusUpload?.isUploading.value ?? false)
-                : currentMethod.value === "chunked-rest"
-                  ? (chunkedRestUpload?.isUploading.value ?? false)
-                  : (multipartUpload?.isUploading.value ?? false)),
-        ),
-        offset: computed(() =>
-            (currentMethod.value === "tus" ? tusUpload?.offset.value : currentMethod.value === "chunked-rest" ? chunkedRestUpload?.offset.value : undefined),
-        ),
-        pause: computed(() =>
-            (currentMethod.value === "tus" ? tusUpload?.pause : currentMethod.value === "chunked-rest" ? chunkedRestUpload?.pause : undefined),
-        ),
-        progress: computed(() =>
-            (currentMethod.value === "tus"
-                ? (tusUpload?.progress.value ?? 0)
-                : currentMethod.value === "chunked-rest"
-                  ? (chunkedRestUpload?.progress.value ?? 0)
-                  : (multipartUpload?.progress.value ?? 0)),
-        ),
+        error: computed(() => {
+            if (isChunkedRest) {
+                return chunkedRestUpload?.error.value ?? undefined;
+            }
+
+            return multipartUpload?.error.value ?? undefined;
+        }),
+        isPaused: computed(() => {
+            if (isChunkedRest) {
+                return chunkedRestUpload?.isPaused.value;
+            }
+
+            return undefined;
+        }),
+        isUploading: computed(() => {
+            if (isChunkedRest) {
+                return chunkedRestUpload?.isUploading.value ?? false;
+            }
+
+            return multipartUpload?.isUploading.value ?? false;
+        }),
+        offset: computed(() => {
+            if (isChunkedRest) {
+                return chunkedRestUpload?.offset.value;
+            }
+
+            return undefined;
+        }),
+        pause: computed(() => {
+            if (isChunkedRest) {
+                return chunkedRestUpload?.pause;
+            }
+
+            return undefined;
+        }),
+        progress: computed(() => {
+            if (isChunkedRest) {
+                return chunkedRestUpload?.progress.value ?? 0;
+            }
+
+            return multipartUpload?.progress.value ?? 0;
+        }),
         reset,
-        result: computed(() =>
-            (currentMethod.value === "tus"
-                ? (tusUpload?.result.value ?? null)
-                : currentMethod.value === "chunked-rest"
-                  ? (chunkedRestUpload?.result.value ?? null)
-                  : (multipartUpload?.result.value ?? null)),
-        ),
-        resume: computed(() =>
-            (currentMethod.value === "tus" ? tusUpload?.resume : currentMethod.value === "chunked-rest" ? chunkedRestUpload?.resume : undefined),
-        ),
+        result: computed(() => {
+            if (isChunkedRest) {
+                return chunkedRestUpload?.result.value ?? undefined;
+            }
+
+            return multipartUpload?.result.value ?? undefined;
+        }),
+        resume: computed(() => {
+            if (isChunkedRest) {
+                return chunkedRestUpload?.resume;
+            }
+
+            return undefined;
+        }),
         upload,
     };
 };

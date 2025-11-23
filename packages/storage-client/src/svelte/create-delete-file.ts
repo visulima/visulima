@@ -13,7 +13,7 @@ export interface CreateDeleteFileReturn {
     /** Delete a file by ID */
     deleteFile: (id: string) => Promise<void>;
     /** Last request error, if any */
-    error: Readable<Error | null>;
+    error: Readable<Error | undefined>;
     /** Whether a request is currently in progress */
     isLoading: Readable<boolean>;
     /** Reset mutation state */
@@ -21,8 +21,8 @@ export interface CreateDeleteFileReturn {
 }
 
 /**
- * Svelte store-based utility for deleting a single file using TanStack Query
- * Automatically invalidates related queries
+ * Svelte store-based utility for deleting a single file using TanStack Query.
+ * Automatically invalidates related queries.
  * @param options Hook configuration options
  * @returns File deletion functions and state stores
  */
@@ -49,7 +49,7 @@ export const createDeleteFile = (options: CreateDeleteFileOptions): CreateDelete
 
     return {
         deleteFile: mutation.mutateAsync,
-        error: derived(mutation.error, ($error) => ($error as Error) || null),
+        error: derived(mutation.error, ($error) => ($error as Error) || undefined),
         isLoading: mutation.isPending,
         reset: mutation.reset,
     };

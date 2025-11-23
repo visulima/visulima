@@ -48,7 +48,7 @@ export interface CreateUploadReturn {
     /** Current upload method being used */
     currentMethod: Accessor<UploadMethod>;
     /** Last upload error, if any */
-    error: Accessor<Error | null>;
+    error: Accessor<Error | undefined>;
     /** Whether the upload is paused (TUS and chunked REST only) */
     isPaused: Accessor<boolean | undefined>;
     /** Whether an upload is currently in progress */
@@ -62,7 +62,7 @@ export interface CreateUploadReturn {
     /** Reset upload state */
     reset: () => void;
     /** Last upload result, if any */
-    result: Accessor<UploadResult | null>;
+    result: Accessor<UploadResult | undefined>;
     /** Resume a paused upload (TUS and chunked REST only) */
     resume: Accessor<(() => Promise<void>) | undefined>;
     /** Upload a file using the configured method */
@@ -72,9 +72,9 @@ export interface CreateUploadReturn {
 const DEFAULT_TUS_THRESHOLD = 10 * 1024 * 1024; // 10MB
 
 /**
- * Solid.js primitive for file uploads with automatic method selection
- * Uses custom uploader implementations for multipart, TUS, and chunked REST
- * Automatically chooses between methods based on file size and method preference
+ * Solid.js primitive for file uploads with automatic method selection.
+ * Uses custom uploader implementations for multipart, TUS, and chunked REST.
+ * Automatically chooses between methods based on file size and method preference.
  * @param options Upload configuration options
  * @returns Upload functions and state signals
  */
@@ -170,9 +170,9 @@ export const createUpload = (options: CreateUploadOptions): CreateUploadReturn =
         }
         : undefined;
 
-    const chunkedRestUpload = chunkedRestOptions ? createChunkedRestUpload(chunkedRestOptions) : null;
-    const multipartUpload = multipartOptions ? createMultipartUpload(multipartOptions) : null;
-    const tusUpload = tusOptions ? createTusUpload(tusOptions) : null;
+    const chunkedRestUpload = chunkedRestOptions ? createChunkedRestUpload(chunkedRestOptions) : undefined;
+    const multipartUpload = multipartOptions ? createMultipartUpload(multipartOptions) : undefined;
+    const tusUpload = tusOptions ? createTusUpload(tusOptions) : undefined;
 
     const determineMethod = (file: File): UploadMethod => {
         if (detectedMethod() !== "auto") {
@@ -279,10 +279,10 @@ export const createUpload = (options: CreateUploadOptions): CreateUploadReturn =
         currentMethod,
         error: createMemo(() =>
             (currentMethod() === "tus"
-                ? (tusUpload?.error() ?? null)
+                ? (tusUpload?.error() ?? undefined)
                 : currentMethod() === "chunked-rest"
-                  ? (chunkedRestUpload?.error() ?? null)
-                  : (multipartUpload?.error() ?? null)),
+                  ? (chunkedRestUpload?.error() ?? undefined)
+                  : (multipartUpload?.error() ?? undefined)),
         ),
         isPaused: createMemo(() =>
             (currentMethod() === "tus" ? tusUpload?.isPaused() : currentMethod() === "chunked-rest" ? chunkedRestUpload?.isPaused() : undefined),
@@ -308,10 +308,10 @@ export const createUpload = (options: CreateUploadOptions): CreateUploadReturn =
         reset,
         result: createMemo(() =>
             (currentMethod() === "tus"
-                ? (tusUpload?.result() ?? null)
+                ? (tusUpload?.result() ?? undefined)
                 : currentMethod() === "chunked-rest"
-                  ? (chunkedRestUpload?.result() ?? null)
-                  : (multipartUpload?.result() ?? null)),
+                  ? (chunkedRestUpload?.result() ?? undefined)
+                  : (multipartUpload?.result() ?? undefined)),
         ),
         resume: createMemo(() => currentMethod() === "tus" ? tusUpload?.resume : currentMethod() === "chunked-rest" ? chunkedRestUpload?.resume : undefined),
         upload,

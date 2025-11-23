@@ -17,9 +17,9 @@ export interface UsePutFileOptions {
 
 export interface UsePutFileReturn {
     /** Last upload result, if any */
-    data: UploadResult | null;
+    data: UploadResult | undefined;
     /** Last request error, if any */
-    error: Error | null;
+    error: Error | undefined;
     /** Whether a request is currently in progress */
     isLoading: boolean;
     /** Current upload progress (0-100) */
@@ -31,8 +31,8 @@ export interface UsePutFileReturn {
 }
 
 /**
- * React hook for creating or updating files via PUT request using TanStack Query
- * Automatically invalidates related queries
+ * React hook for creating or updating files via PUT request using TanStack Query.
+ * Automatically invalidates related queries.
  * @param options Hook configuration options
  * @returns File PUT functions and state
  */
@@ -72,8 +72,8 @@ export const usePutFile = (options: UsePutFileOptions): UsePutFileReturn => {
     });
 
     return {
-        data: mutation.data || null,
-        error: (mutation.error as Error) || null,
+        data: mutation.data || undefined,
+        error: (mutation.error as Error) || undefined,
         isLoading: mutation.isPending,
         progress,
         putFile: (id: string, file: File | Blob) => mutation.mutateAsync({ file, id }),

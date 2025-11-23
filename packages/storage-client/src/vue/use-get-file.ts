@@ -20,18 +20,18 @@ export interface UseGetFileReturn {
     /** File data as Blob */
     data: Readonly<Ref<Blob | undefined>>;
     /** Last request error, if any */
-    error: Readonly<Ref<Error | null>>;
+    error: Readonly<Ref<Error | undefined>>;
     /** Whether a request is currently in progress */
     isLoading: Readonly<Ref<boolean>>;
     /** File metadata from response headers */
-    meta: Readonly<Ref<FileMeta | null>>;
+    meta: Readonly<Ref<FileMeta | undefined>>;
     /** Refetch the file */
     refetch: () => void;
 }
 
 /**
- * Vue composable for fetching/downloading files using TanStack Query
- * Supports optional transformation parameters for media files
+ * Vue composable for fetching/downloading files using TanStack Query.
+ * Supports optional transformation parameters for media files.
  * @param options Hook configuration options
  * @returns File fetching functions and state
  */
@@ -71,9 +71,9 @@ export const useGetFile = (options: UseGetFileOptions): UseGetFileReturn => {
 
     return {
         data: computed(() => query.data.value?.blob),
-        error: computed(() => (query.error.value as Error) || null),
+        error: computed(() => (query.error.value as Error) || undefined),
         isLoading: computed(() => query.isLoading.value),
-        meta: computed(() => query.data.value?.meta || null),
+        meta: computed(() => query.data.value?.meta || undefined),
         refetch: () => {
             query.refetch();
         },

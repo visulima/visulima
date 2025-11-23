@@ -34,18 +34,18 @@ export interface CreateTransformFileReturn {
     /** Transformed file data as Blob */
     data: Accessor<Blob | undefined>;
     /** Last request error, if any */
-    error: Accessor<Error | null>;
+    error: Accessor<Error | undefined>;
     /** Whether a request is currently in progress */
     isLoading: Accessor<boolean>;
     /** File metadata from response headers */
-    meta: Accessor<FileMeta | null>;
+    meta: Accessor<FileMeta | undefined>;
     /** Refetch the transformed file */
     refetch: () => void;
 }
 
 /**
- * Solid.js primitive for fetching transformed files using TanStack Query
- * Supports image, video, and audio transformation parameters
+ * Solid.js primitive for fetching transformed files using TanStack Query.
+ * Supports image, video, and audio transformation parameters.
  * @param options Hook configuration options
  * @returns Transform file fetching functions and state signals
  */
@@ -94,10 +94,10 @@ export const createTransformFile = (options: CreateTransformFileOptions): Create
         error: () => {
             const error = query.error();
 
-            return (error as Error) || null;
+            return (error as Error) || undefined;
         },
         isLoading: query.isLoading as Accessor<boolean>,
-        meta: () => query.data()?.meta || null,
+        meta: () => query.data()?.meta || undefined,
         refetch: () => {
             query.refetch();
         },

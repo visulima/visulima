@@ -38,7 +38,7 @@ export type UploaderEventType = "ITEM_START" | "ITEM_PROGRESS" | "ITEM_FINISH" |
 export type UploaderEventHandler<T = UploadItem> = (item: T) => void;
 
 /**
- * Uploader options
+ * Configuration options for the uploader.
  */
 export interface UploaderOptions {
     /** Upload endpoint URL */
@@ -66,7 +66,7 @@ export class Uploader {
     constructor(private options: UploaderOptions) {}
 
     /**
-     * Generate unique item ID
+     * Generates a unique item ID.
      */
     private generateItemId(): string {
         this.itemIdCounter += 1;
@@ -75,7 +75,7 @@ export class Uploader {
     }
 
     /**
-     * Subscribe to uploader events
+     * Subscribes to uploader events.
      */
     public on(event: UploaderEventType, handler: UploaderEventHandler): void {
         if (!this.eventHandlers.has(event)) {
@@ -86,14 +86,14 @@ export class Uploader {
     }
 
     /**
-     * Unsubscribe from uploader events
+     * Unsubscribes from uploader events.
      */
     public off(event: UploaderEventType, handler: UploaderEventHandler): void {
         this.eventHandlers.get(event)?.delete(handler);
     }
 
     /**
-     * Emit event to all registered handlers
+     * Emits an event to all registered handlers.
      */
     private emit(event: UploaderEventType, item: UploadItem): void {
         const handlers = this.eventHandlers.get(event);
@@ -110,7 +110,7 @@ export class Uploader {
     }
 
     /**
-     * Create FormData for visulima multipart handler
+     * Creates FormData for visulima multipart handler.
      */
     private createFormData(file: File, metadata?: Record<string, string>): FormData {
         const formData = new FormData();
@@ -125,7 +125,7 @@ export class Uploader {
     }
 
     /**
-     * Parse response as FileMeta
+     * Parses response as FileMeta.
      */
     private parseResponse(responseText: string, response: Response | XMLHttpRequest): Partial<FileMeta> {
         try {
@@ -151,7 +151,7 @@ export class Uploader {
     }
 
     /**
-     * Upload a single file
+     * Uploads a single file.
      */
     private async uploadFile(item: UploadItem): Promise<void> {
         return new Promise((resolve, reject) => {
@@ -261,7 +261,7 @@ export class Uploader {
     }
 
     /**
-     * Add file to upload queue
+     * Adds a file to the upload queue.
      */
     public add(file: File): string {
         const id = this.generateItemId();
@@ -285,14 +285,14 @@ export class Uploader {
     }
 
     /**
-     * Get item by ID
+     * Gets an item by ID.
      */
     public getItem(id: string): UploadItem | undefined {
         return this.items.get(id);
     }
 
     /**
-     * Abort specific upload
+     * Aborts a specific upload.
      */
     public abortItem(id: string): void {
         const xhr = this.activeUploads.get(id);
@@ -311,7 +311,7 @@ export class Uploader {
     }
 
     /**
-     * Abort all uploads
+     * Aborts all uploads.
      */
     public abort(): void {
         this.activeUploads.forEach((xhr, id) => {
@@ -323,7 +323,7 @@ export class Uploader {
     }
 
     /**
-     * Clear all items and abort active uploads
+     * Clears all items and aborts active uploads.
      */
     public clear(): void {
         this.abort();
@@ -331,7 +331,7 @@ export class Uploader {
     }
 
     /**
-     * Get all items
+     * Gets all items.
      */
     public getItems(): UploadItem[] {
         return [...this.items.values()];
@@ -339,6 +339,6 @@ export class Uploader {
 }
 
 /**
- * Create a new uploader instance
+ * Creates a new uploader instance.
  */
 export const createUploader = (options: UploaderOptions): Uploader => new Uploader(options);

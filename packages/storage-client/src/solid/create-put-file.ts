@@ -14,9 +14,9 @@ export interface CreatePutFileOptions {
 
 export interface CreatePutFileReturn {
     /** Last upload result, if any */
-    data: Accessor<UploadResult | null>;
+    data: Accessor<UploadResult | undefined>;
     /** Last request error, if any */
-    error: Accessor<Error | null>;
+    error: Accessor<Error | undefined>;
     /** Whether a request is currently in progress */
     isLoading: Accessor<boolean>;
     /** Current upload progress (0-100) */
@@ -28,8 +28,8 @@ export interface CreatePutFileReturn {
 }
 
 /**
- * Solid.js primitive for creating or updating files via PUT request using TanStack Query
- * Automatically invalidates related queries
+ * Solid.js primitive for creating or updating files via PUT request using TanStack Query.
+ * Automatically invalidates related queries.
  * @param options Hook configuration options
  * @returns File PUT functions and state signals
  */
@@ -69,8 +69,8 @@ export const createPutFile = (options: CreatePutFileOptions): CreatePutFileRetur
     });
 
     return {
-        data: () => mutation.data() || null,
-        error: mutation.error as Accessor<Error | null>,
+        data: () => mutation.data() || undefined,
+        error: mutation.error as Accessor<Error | undefined>,
         isLoading: mutation.isPending,
         progress,
         putFile: (id: string, file: File | Blob) => mutation.mutateAsync({ file, id }),
