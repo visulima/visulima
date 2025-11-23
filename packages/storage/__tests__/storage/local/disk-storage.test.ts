@@ -1179,52 +1179,86 @@ describe(DiskStorage, () => {
     });
 
     describe("security checks", () => {
-        it("should pass validation when security handler approves", async () => {
+        it("should pass validation when security scanner approves", async () => {
             expect.assertions(2);
 
-            const securityHandler = {
-                name: "TestHandler",
-                validate: vi.fn().mockResolvedValue(undefined),
+            const securityScanner = {
+                name: "TestScanner",
+                scan: vi.fn().mockResolvedValue({ detected: false }),
             };
 
             storage = new DiskStorage({
                 ...options,
                 security: {
-                    rules: [{ handler: securityHandler }],
+                    scanners: [securityScanner],
                 },
             });
 
             const file = await storage.create(metafile);
             await storage.write({ ...file, body: Readable.from("safe content"), start: 0 });
 
-            expect(securityHandler.validate).toHaveBeenCalledTimes(1);
+            expect(securityScanner.scan).toHaveBeenCalledTimes(1);
             expect((await storage.get({ id: file.id })).status).toBe("completed");
         });
 
-        it("should fail validation and delete file when security handler throws", async () => {
+        it("should fail validation and delete file when security scanner detects threat", async () => {
             expect.assertions(3);
 
-            const securityHandler = {
-                name: "RejectHandler",
-                validate: vi.fn().mockRejectedValue(new Error("Virus detected")),
+            const securityScanner = {
+                name: "VirusScanner",
+                scan: vi.fn().mockResolvedValue({
+                    detected: true,
+                    reason: "Virus detected",
+                }),
             };
 
             storage = new DiskStorage({
                 ...options,
                 security: {
-                    rules: [{ handler: securityHandler }],
+                    scanners: [securityScanner],
                 },
             });
 
             const file = await storage.create(metafile);
 
             await expect(storage.write({ ...file, body: Readable.from("malicious content"), start: 0 }))
-                .rejects.toThrow(/Security check failed: RejectHandler - Virus detected/);
+                .rejects.toThrow(/Security check failed: VirusScanner: Virus detected/);
 
-            expect(securityHandler.validate).toHaveBeenCalledTimes(1);
+            expect(securityScanner.scan).toHaveBeenCalledTimes(1);
 
             // File should be deleted
             await expect(storage.get({ id: file.id })).rejects.toThrow("Not found");
+        });
+
+        it("should handle complex security rules configuration", async () => {
+            expect.assertions(2);
+
+            const imageScanner = {
+                name: "ImageScanner",
+                scan: vi.fn().mockResolvedValue({ detected: false }),
+            };
+
+            storage = new DiskStorage({
+                ...options,
+                security: {
+                    scanners: [
+                        {
+                            scanner: imageScanner,
+                            mimeTypes: ["image/*"],
+                        },
+                    ],
+                },
+            });
+
+            // Text file - should be skipped
+            const textFile = await storage.create({ ...metafile, contentType: "text/plain" });
+            await storage.write({ ...textFile, body: Readable.from("text"), start: 0 });
+            expect(imageScanner.scan).not.toHaveBeenCalled();
+
+            // Image file - should be scanned
+            const imageFile = await storage.create({ ...metafile, contentType: "image/png" });
+            await storage.write({ ...imageFile, body: Readable.from("image"), start: 0 });
+            expect(imageScanner.scan).toHaveBeenCalledTimes(1);
         });
     });
 });

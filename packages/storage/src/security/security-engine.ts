@@ -1,27 +1,58 @@
 import type { Readable } from "node:stream";
 
 import type { File } from "../utils/file";
-import type { SecurityConfig } from "./types";
+import type { ScanResult, SecurityConfig, SecurityRule } from "./types";
 
 export class SecurityEngine {
-    private config: SecurityConfig;
+    private rules: SecurityRule[];
 
     public constructor(config: SecurityConfig) {
-        this.config = config;
+        this.rules = config.scanners.map((item) => {
+            if ("scan" in item) {
+                return { scanner: item };
+            }
+            return item;
+        });
     }
 
     public async verify(file: File, content: Readable | Buffer | string): Promise<void> {
-        const rules = this.config.rules.filter((rule) => this.matchesMimeType(file.contentType, rule.mimeTypes));
+        const matchingRules = this.rules.filter((rule) => {
+            // Check MIME type
+            if (!this.matchesMimeType(file.contentType, rule.mimeTypes)) {
+                return false;
+            }
 
-        await Promise.all(
-            rules.map(async (rule) => {
+            // Check file size
+            if (rule.maxSize !== undefined && file.size !== undefined && Number(file.size) > rule.maxSize) {
+                return false;
+            }
+
+            return true;
+        });
+
+        if (matchingRules.length === 0) {
+            return;
+        }
+
+        const results = await Promise.all(
+            matchingRules.map(async (rule) => {
                 try {
-                    await rule.handler.validate(file, content);
+                    const result = await rule.scanner.scan(file, content);
+                    return { name: rule.scanner.name, result };
                 } catch (error) {
-                    throw new Error(`Security check failed: ${rule.handler.name} - ${error instanceof Error ? error.message : String(error)}`);
+                    throw new Error(
+                        `Security scanner failed: ${rule.scanner.name} - ${error instanceof Error ? error.message : String(error)}`,
+                    );
                 }
             }),
         );
+
+        const detections = results.filter((item) => item.result.detected);
+
+        if (detections.length > 0) {
+            const reasons = detections.map((d) => `${d.name}: ${d.result.reason || "Threat detected"}`).join("; ");
+            throw new Error(`Security check failed: ${reasons}`);
+        }
     }
 
     private matchesMimeType(contentType: string, mimeTypes?: string[]): boolean {
