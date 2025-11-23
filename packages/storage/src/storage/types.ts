@@ -1,5 +1,6 @@
 import type { Readable } from "node:stream";
 
+import type { SecurityConfig } from "../security/types";
 import type { Cache } from "../utils/cache";
 import type { RetryConfig } from "../utils/retry";
 import type { HttpError, HttpErrorBody, Metrics, Validation } from "../utils/types";
@@ -114,6 +115,9 @@ export interface BaseStorageOptions<T extends File = File> extends GenericStorag
 
     /** Force relative URI in Location header */
     useRelativeLocation?: boolean;
+
+    /** Security configuration */
+    security?: SecurityConfig;
 
     /** Upload validation options */
     validation?: Validation<T>;

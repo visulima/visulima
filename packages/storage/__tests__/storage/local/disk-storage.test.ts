@@ -1177,4 +1177,54 @@ describe(DiskStorage, () => {
             await expect(storage.create(negativeSizeFile)).rejects.toThrow("Request entity too large");
         });
     });
+
+    describe("security checks", () => {
+        it("should pass validation when security handler approves", async () => {
+            expect.assertions(2);
+
+            const securityHandler = {
+                name: "TestHandler",
+                validate: vi.fn().mockResolvedValue(undefined),
+            };
+
+            storage = new DiskStorage({
+                ...options,
+                security: {
+                    rules: [{ handler: securityHandler }],
+                },
+            });
+
+            const file = await storage.create(metafile);
+            await storage.write({ ...file, body: Readable.from("safe content"), start: 0 });
+
+            expect(securityHandler.validate).toHaveBeenCalledTimes(1);
+            expect((await storage.get({ id: file.id })).status).toBe("completed");
+        });
+
+        it("should fail validation and delete file when security handler throws", async () => {
+            expect.assertions(3);
+
+            const securityHandler = {
+                name: "RejectHandler",
+                validate: vi.fn().mockRejectedValue(new Error("Virus detected")),
+            };
+
+            storage = new DiskStorage({
+                ...options,
+                security: {
+                    rules: [{ handler: securityHandler }],
+                },
+            });
+
+            const file = await storage.create(metafile);
+
+            await expect(storage.write({ ...file, body: Readable.from("malicious content"), start: 0 }))
+                .rejects.toThrow(/Security check failed: RejectHandler - Virus detected/);
+
+            expect(securityHandler.validate).toHaveBeenCalledTimes(1);
+
+            // File should be deleted
+            await expect(storage.get({ id: file.id })).rejects.toThrow("Not found");
+        });
+    });
 });

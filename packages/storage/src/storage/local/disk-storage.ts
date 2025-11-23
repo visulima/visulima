@@ -287,6 +287,14 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
                     // Note: onComplete in storage layer doesn't have request/response context
                     // It's only called from handlers with full context
                     if (file.status === "completed" && previousStatus !== "completed") {
+                        try {
+                            await this.runSecurityChecks(file, path);
+                        } catch (error) {
+                            await remove(path);
+                            await this.deleteMeta(file.id);
+                            throw error;
+                        }
+
                         // Storage-level onComplete is a no-op since it doesn't have response context
                         // The actual onComplete is called from handlers with response object
                     }
