@@ -55,7 +55,6 @@
         "multipart-upload",
         "chunked-upload",
         "upload-library",
-        "better-upload",
         "uploadthing"
     ],
     "homepage": "https://visulima.com/packages/uploads",
@@ -207,12 +206,12 @@
         "@remix-run/multipart-parser": "^0.13.0",
         "@sindresorhus/fnv1a": "3.1.0",
         "@visulima/pagination": "workspace:*",
+        "file-type": "21.1.1",
         "lru-cache": "^11.2.2",
         "mime": "^4.1.0",
-        "type-is": "^2.0.1",
-        "file-type": "21.1.1",
         "nanoid": "5.1.6",
-        "path-to-regexp": "8.3.0"
+        "path-to-regexp": "8.3.0",
+        "type-is": "^2.0.1"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "^16.4.4",
@@ -227,7 +226,10 @@
         "@aws-sdk/types": "^3.936.0",
         "@azure/storage-blob": "^12.29.1",
         "@netlify/blobs": "^10.4.1",
+        "@nuxt/kit": "4.2.1",
+        "@opentelemetry/api": "^1.9.0",
         "@remix-run/headers": "0.17.0",
+        "@solidjs/start": "^1.1.0",
         "@types/etag": "^1.8.4",
         "@types/express": "^5.0.5",
         "@types/http-errors": "^2.0.5",
@@ -243,6 +245,7 @@
         "@vitest/ui": "^4.0.13",
         "aws-crt": "^1.27.5",
         "aws-sdk-client-mock": "^4.1.0",
+        "aws4fetch": "^1.0.20",
         "cross-fetch": "^4.1.0",
         "esbuild": "0.27.0",
         "eslint": "^9.39.1",
@@ -260,8 +263,6 @@
         "prettier": "^3.6.2",
         "rimraf": "^6.1.2",
         "semantic-release": "^25.0.2",
-        "@opentelemetry/api": "^1.9.0",
-        "aws4fetch": "^1.0.20",
         "sharp": "^0.34.5",
         "supertest": "^7.1.4",
         "tempy": "^3.1.0",
@@ -270,14 +271,16 @@
     },
     "peerDependencies": {
         "@aws-sdk/client-s3": "^3.901.0",
-        "@aws-sdk/types": "^3.930.0",
         "@aws-sdk/credential-providers": "^3.901.0",
         "@aws-sdk/s3-request-presigner": "^3.901.0",
         "@aws-sdk/signature-v4-crt": "^3.901.0",
+        "@aws-sdk/types": "^3.930.0",
         "@azure/storage-blob": "^12.28.0",
         "@netlify/blobs": "^10.3.1",
-        "@vercel/blob": "^2.0.0",
+        "@nuxt/kit": "4.2.1",
         "@opentelemetry/api": "^1.9.0",
+        "@solidjs/start": "^1.1.0",
+        "@vercel/blob": "^2.0.0",
         "aws-crt": "^1.27.3",
         "aws4fetch": "^1.0.0",
         "gaxios": "^7.1.2",
@@ -288,12 +291,6 @@
         "sharp": "^0.33.5"
     },
     "peerDependenciesMeta": {
-        "@opentelemetry/api": {
-            "optional": true
-        },
-        "@aws-sdk/types": {
-            "optional": true
-        },
         "@aws-sdk/client-s3": {
             "optional": true
         },
@@ -306,10 +303,22 @@
         "@aws-sdk/signature-v4-crt": {
             "optional": true
         },
+        "@aws-sdk/types": {
+            "optional": true
+        },
         "@azure/storage-blob": {
             "optional": true
         },
         "@netlify/blobs": {
+            "optional": true
+        },
+        "@nuxt/kit": {
+            "optional": true
+        },
+        "@opentelemetry/api": {
+            "optional": true
+        },
+        "@solidjs/start": {
             "optional": true
         },
         "@vercel/blob": {
