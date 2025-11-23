@@ -7,6 +7,11 @@
         endpointTus: "/api/upload/tus",
         onSuccess: (result) => {
             console.log("Upload successful:", result);
+            file = null;
+            const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+            if (fileInput) {
+                fileInput.value = "";
+            }
         },
         onError: (error_) => {
             console.error("Upload error:", error_);

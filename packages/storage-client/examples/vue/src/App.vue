@@ -4,11 +4,16 @@ import { ref } from "vue";
 import { useUpload } from "@visulima/storage-client/vue";
 
 const file = ref<File | null>(null);
+const fileInputRef = ref<HTMLInputElement | null>(null);
 const { upload, progress, isUploading, error, result } = useUpload({
     endpointMultipart: "/api/upload/multipart",
     endpointTus: "/api/upload/tus",
     onSuccess: (result) => {
         console.log("Upload successful:", result);
+        file.value = null;
+        if (fileInputRef.value) {
+            fileInputRef.value.value = "";
+        }
     },
     onError: (error_) => {
         console.error("Upload error:", error_);
@@ -36,7 +41,7 @@ const handleUpload = async () => {
     <div class="app">
         <h1>Storage Client - Vue Example</h1>
         <div class="upload-section">
-            <input type="file" @change="handleFileChange" :disabled="isUploading" />
+            <input type="file" @change="handleFileChange" :disabled="isUploading" ref="fileInputRef" />
             <button @click="handleUpload" :disabled="!file || isUploading">
                 {{ isUploading ? "Uploading..." : "Upload" }}
             </button>

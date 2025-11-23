@@ -1,6 +1,6 @@
 # Next.js Integration
 
-Use Visulima Storage with Next.js for file uploads and on-demand image transformations. The `createHandler` function provides the easiest way to set up upload endpoints with automatic route handling.
+Use Visulima Storage with Next.js for file uploads and on-demand image transformations. The `createNextjsHandler` function provides the easiest way to set up upload endpoints with automatic route handling.
 
 ## Installation
 
@@ -16,19 +16,19 @@ yarn add @visulima/storage next
 pnpm add @visulima/storage next
 ```
 
-## Recommended: Using `createHandler`
+## Recommended: Using `createNextjsHandler`
 
-The easiest way to use Visulima Storage with Next.js is to use the `createHandler` function, which automatically handles all HTTP methods for each handler type:
+The easiest way to use Visulima Storage with Next.js is to use the `createNextjsHandler` function, which automatically handles all HTTP methods for each handler type:
 
 ### Multipart Handler
 
 ```ts
 // app/api/upload/multipart/route.ts
 import { DiskStorage } from "@visulima/storage";
-import { createHandler } from "@visulima/storage/handler/http/nextjs";
+import { createNextjsHandler } from "@visulima/storage/handler/http/nextjs";
 
 const storage = new DiskStorage({ directory: "./uploads" });
-const handler = createHandler({ storage, type: "multipart" });
+const handler = createNextjsHandler({ storage, type: "multipart" });
 
 export const POST = handler;
 export const GET = handler;
@@ -41,10 +41,10 @@ export const OPTIONS = handler;
 ```ts
 // app/api/upload/rest/route.ts
 import { DiskStorage } from "@visulima/storage";
-import { createHandler } from "@visulima/storage/handler/http/nextjs";
+import { createNextjsHandler } from "@visulima/storage/handler/http/nextjs";
 
 const storage = new DiskStorage({ directory: "./uploads" });
-const handler = createHandler({ storage, type: "rest" });
+const handler = createNextjsHandler({ storage, type: "rest" });
 
 export const POST = handler;
 export const PUT = handler;
@@ -60,10 +60,10 @@ export const OPTIONS = handler;
 ```ts
 // app/api/upload/tus/route.ts
 import { DiskStorage } from "@visulima/storage";
-import { createHandler } from "@visulima/storage/handler/http/nextjs";
+import { createNextjsHandler } from "@visulima/storage/handler/http/nextjs";
 
 const storage = new DiskStorage({ directory: "./uploads" });
-const handler = createHandler({ storage, type: "tus" });
+const handler = createNextjsHandler({ storage, type: "tus" });
 
 export const POST = handler;
 export const PATCH = handler;
@@ -80,7 +80,7 @@ You can also pass media transformers to enable image/video/audio transformations
 ```ts
 // app/api/upload/multipart/route.ts
 import { DiskStorage } from "@visulima/storage";
-import { createHandler } from "@visulima/storage/handler/http/nextjs";
+import { createNextjsHandler } from "@visulima/storage/handler/http/nextjs";
 import { MediaTransformer } from "@visulima/storage/transformer";
 import ImageTransformer from "@visulima/storage/transformer/image";
 
@@ -91,7 +91,7 @@ const mediaTransformer = new MediaTransformer(storage, {
     maxImageSize: 10 * 1024 * 1024, // 10MB
 });
 
-const handler = createHandler({
+const handler = createNextjsHandler({
     storage,
     mediaTransformer,
     type: "multipart",
