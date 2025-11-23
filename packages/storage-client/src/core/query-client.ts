@@ -54,7 +54,7 @@ export const buildUrl = (baseUrl: string, path: string, params?: Record<string, 
 
     if (params) {
         Object.entries(params).forEach(([key, value]) => {
-            if (value !== undefined && value !== null) {
+            if (value !== undefined && value !== undefined) {
                 url.searchParams.append(key, String(value));
             }
         });

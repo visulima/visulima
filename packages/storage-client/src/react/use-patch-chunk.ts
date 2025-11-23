@@ -14,9 +14,9 @@ export interface UsePatchChunkOptions {
 
 export interface UsePatchChunkReturn {
     /** Last upload result, if any */
-    data: UploadResult | null;
+    data: UploadResult | undefined;
     /** Last request error, if any */
-    error: Error | null;
+    error: Error | undefined;
     /** Whether a request is currently in progress */
     isLoading: boolean;
     /** Upload a chunk for chunked uploads */
@@ -26,9 +26,9 @@ export interface UsePatchChunkReturn {
 }
 
 /**
- * React hook for uploading chunks in chunked uploads using TanStack Query
- * Requires X-Chunk-Offset header and chunk data
- * Automatically invalidates related queries when upload is complete
+ * React hook for uploading chunks in chunked uploads using TanStack Query.
+ * Requires X-Chunk-Offset header and chunk data.
+ * Automatically invalidates related queries when upload is complete.
  * @param options Hook configuration options
  * @returns Chunk upload functions and state
  */
@@ -77,8 +77,8 @@ export const usePatchChunk = (options: UsePatchChunkOptions): UsePatchChunkRetur
     });
 
     return {
-        data: mutation.data || null,
-        error: (mutation.error as Error) || null,
+        data: mutation.data || undefined,
+        error: (mutation.error as Error) || undefined,
         isLoading: mutation.isPending,
         patchChunk: (id: string, chunk: Blob, offset: number, checksum?: string) => mutation.mutateAsync({ checksum, chunk, id, offset }),
         reset: mutation.reset,

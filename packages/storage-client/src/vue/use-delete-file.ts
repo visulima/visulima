@@ -12,7 +12,7 @@ export interface UseDeleteFileReturn {
     /** Delete a file by ID */
     deleteFile: (id: string) => Promise<void>;
     /** Last request error, if any */
-    error: Readonly<Ref<Error | null>>;
+    error: Readonly<Ref<Error | undefined>>;
     /** Whether a request is currently in progress */
     isLoading: Readonly<Ref<boolean>>;
     /** Reset mutation state */
@@ -20,8 +20,8 @@ export interface UseDeleteFileReturn {
 }
 
 /**
- * Vue composable for deleting a single file using TanStack Query
- * Automatically invalidates related queries
+ * Vue composable for deleting a single file using TanStack Query.
+ * Automatically invalidates related queries.
  * @param options Hook configuration options
  * @returns File deletion functions and state
  */
@@ -46,7 +46,7 @@ export const useDeleteFile = (options: UseDeleteFileOptions): UseDeleteFileRetur
 
     return {
         deleteFile: mutation.mutateAsync,
-        error: computed(() => (mutation.error.value as Error) || null),
+        error: computed(() => (mutation.error.value as Error) || undefined),
         isLoading: computed(() => mutation.isPending.value),
         reset: mutation.reset,
     };

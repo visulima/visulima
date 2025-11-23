@@ -4,7 +4,7 @@ const TUS_RESUMABLE_VERSION = "1.0.0";
 const DEFAULT_CHUNK_SIZE = 1024 * 1024; // 1MB
 
 /**
- * Encode metadata for TUS Upload-Metadata header
+ * Encodes metadata for TUS Upload-Metadata header.
  */
 const encodeMetadata = (metadata: Record<string, string>): string =>
     Object.entries(metadata)
@@ -16,9 +16,9 @@ const encodeMetadata = (metadata: Record<string, string>): string =>
         .join(",");
 
 /**
- * Decode metadata from TUS Upload-Metadata header
+ * Decodes metadata from TUS Upload-Metadata header.
  */
-const decodeMetadata = (header: string | null): Record<string, string> => {
+const decodeMetadata = (header: string | undefined): Record<string, string> => {
     if (!header) {
         return {};
     }
@@ -80,7 +80,7 @@ export interface TusAdapter {
 }
 
 /**
- * TUS upload state
+ * Represents the state of a TUS upload.
  */
 interface TusUploadState {
     /** Abort controller for canceling requests */
@@ -94,27 +94,27 @@ interface TusUploadState {
     /** Retry count */
     retryCount: number;
     /** Upload URL from server */
-    uploadUrl: string | null;
+    uploadUrl: string | undefined;
 }
 
 /**
- * Create a TUS upload adapter
+ * Creates a TUS upload adapter.
  * This adapter provides a clean interface for TUS resumable file uploads
- * with proper progress tracking, pause/resume, and event handling
+ * with proper progress tracking, pause/resume, and event handling.
  */
 export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
     const { chunkSize = DEFAULT_CHUNK_SIZE, endpoint, maxRetries = 3, metadata = {}, retry = true } = options;
 
-    let uploadState: TusUploadState | null = null;
+    let uploadState: TusUploadState | undefined;
     let progressCallback: ((progress: number, offset: number) => void) | undefined;
     let startCallback: (() => void) | undefined;
     let finishCallback: ((result: UploadResult) => void) | undefined;
     let errorCallback: ((error: Error) => void) | undefined;
 
     /**
-     * Create a new TUS upload
-     * According to TUS protocol: POST returns 201 Created (or 200 if Creation With Upload extension is used)
-     * Headers: Location (required), Tus-Resumable (required), Upload-Offset (optional, if data was uploaded)
+     * Creates a new TUS upload.
+     * According to TUS protocol: POST returns 201 Created (or 200 if Creation With Upload extension is used).
+     * Headers: Location (required), Tus-Resumable (required), Upload-Offset (optional, if data was uploaded).
      */
     const createUpload = async (file: File): Promise<{ initialOffset: number; uploadUrl: string }> => {
         const fileMetadata = {
@@ -169,10 +169,10 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
     };
 
     /**
-     * Get current upload offset from server
-     * According to TUS protocol: HEAD returns 200 OK
-     * Headers: Tus-Resumable (required), Upload-Length (required), Upload-Offset (required), Cache-Control: no-store
-     * Can return 404, 410, or 403 if upload doesn't exist
+     * Gets current upload offset from server.
+     * According to TUS protocol: HEAD returns 200 OK.
+     * Headers: Tus-Resumable (required), Upload-Length (required), Upload-Offset (required), Cache-Control: no-store.
+     * Can return 404, 410, or 403 if upload doesn't exist.
      */
     const getUploadOffset = async (uploadUrl: string): Promise<number> => {
         const response = await fetch(uploadUrl, {
@@ -197,10 +197,10 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
     };
 
     /**
-     * Upload a single chunk
-     * According to TUS protocol: PATCH returns 204 No Content
-     * Headers: Tus-Resumable (required), Upload-Offset (required), Upload-Expires (optional)
-     * Can return 409 Conflict if Upload-Offset doesn't match server's offset
+     * Uploads a single chunk.
+     * According to TUS protocol: PATCH returns 204 No Content.
+     * Headers: Tus-Resumable (required), Upload-Offset (required), Upload-Expires (optional).
+     * Can return 409 Conflict if Upload-Offset doesn't match server's offset.
      */
     const uploadChunk = async (file: File, uploadUrl: string, startOffset: number, signal: AbortSignal): Promise<number> => {
         const endOffset = Math.min(startOffset + chunkSize, file.size);
@@ -251,7 +251,7 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
     };
 
     /**
-     * Perform the actual upload
+     * Performs the actual upload.
      */
     const performUpload = async (file: File, uploadUrl: string, startOffset: number = 0): Promise<UploadResult> => {
         if (!uploadState) {
@@ -353,37 +353,37 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
 
     return {
         /**
-         * Abort the current upload
+         * Aborts the current upload.
          */
         abort: () => {
             if (uploadState) {
                 uploadState.abortController.abort();
-                uploadState = null;
+                uploadState = undefined;
             }
         },
 
         /**
-         * Clear all uploads
+         * Clears all uploads.
          */
         clear: () => {
             if (uploadState) {
                 uploadState.abortController.abort();
-                uploadState = null;
+                uploadState = undefined;
             }
         },
 
         /**
-         * Get current upload offset
+         * Gets the current upload offset.
          */
         getOffset: () => uploadState?.offset ?? 0,
 
         /**
-         * Whether upload is paused
+         * Checks whether the upload is paused.
          */
         isPaused: () => uploadState?.isPaused ?? false,
 
         /**
-         * Pause the current upload
+         * Pauses the current upload.
          */
         pause: () => {
             if (uploadState) {
@@ -392,7 +392,7 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
         },
 
         /**
-         * Resume a paused upload
+         * Resumes a paused upload.
          */
         resume: async (): Promise<void> => {
             if (!uploadState || !uploadState.uploadUrl) {
@@ -419,35 +419,35 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
         },
 
         /**
-         * Set error callback
+         * Sets the error callback.
          */
         setOnError: (callback: ((error: Error) => void) | undefined) => {
             errorCallback = callback;
         },
 
         /**
-         * Set finish callback
+         * Sets the finish callback.
          */
         setOnFinish: (callback: ((result: UploadResult) => void) | undefined) => {
             finishCallback = callback;
         },
 
         /**
-         * Set progress callback
+         * Sets the progress callback.
          */
         setOnProgress: (callback: ((progress: number, offset: number) => void) | undefined) => {
             progressCallback = callback;
         },
 
         /**
-         * Set start callback
+         * Sets the start callback.
          */
         setOnStart: (callback: (() => void) | undefined) => {
             startCallback = callback;
         },
 
         /**
-         * Upload a file and return visulima-compatible result
+         * Uploads a file and returns a visulima-compatible result.
          */
         upload: async (file: File): Promise<UploadResult> =>
             new Promise((resolve, reject) => {
@@ -479,7 +479,7 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
                         cleanupTimeout();
                         // Call original callback if set
                         originalFinishCallback?.(result);
-                        uploadState = null;
+                        uploadState = undefined;
                         resolve(result);
                     }
                 };
@@ -493,7 +493,7 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
 
                         // Don't clear upload state on error if we want to resume
                         if (!retry || (uploadState && uploadState.retryCount >= maxRetries)) {
-                            uploadState = null;
+                            uploadState = undefined;
                         }
 
                         reject(error);
@@ -511,7 +511,7 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
                     isPaused: false,
                     offset: 0,
                     retryCount: 0,
-                    uploadUrl: null,
+                    uploadUrl: undefined,
                 };
 
                 // Start upload process
@@ -563,7 +563,7 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
                     if (!resolved) {
                         resolved = true;
                         cleanupTimeout();
-                        uploadState = null;
+                        uploadState = undefined;
                         reject(new Error("Upload timeout"));
                     }
                 }, 300_000); // 5 minutes

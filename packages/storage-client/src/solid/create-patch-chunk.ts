@@ -11,9 +11,9 @@ export interface CreatePatchChunkOptions {
 
 export interface CreatePatchChunkReturn {
     /** Last upload result, if any */
-    data: Accessor<UploadResult | null>;
+    data: Accessor<UploadResult | undefined>;
     /** Last request error, if any */
-    error: Accessor<Error | null>;
+    error: Accessor<Error | undefined>;
     /** Whether a request is currently in progress */
     isLoading: Accessor<boolean>;
     /** Upload a chunk for chunked uploads */
@@ -23,9 +23,9 @@ export interface CreatePatchChunkReturn {
 }
 
 /**
- * Solid.js primitive for uploading chunks in chunked uploads using TanStack Query
- * Requires X-Chunk-Offset header and chunk data
- * Automatically invalidates related queries when upload is complete
+ * Solid.js primitive for uploading chunks in chunked uploads using TanStack Query.
+ * Requires X-Chunk-Offset header and chunk data.
+ * Automatically invalidates related queries when upload is complete.
  * @param options Hook configuration options
  * @returns Chunk upload functions and state signals
  */
@@ -71,8 +71,8 @@ export const createPatchChunk = (options: CreatePatchChunkOptions): CreatePatchC
     });
 
     return {
-        data: () => mutation.data() || null,
-        error: mutation.error as Accessor<Error | null>,
+        data: () => mutation.data() || undefined,
+        error: mutation.error as Accessor<Error | undefined>,
         isLoading: mutation.isPending,
         patchChunk: (id: string, chunk: Blob, offset: number, checksum?: string) => mutation.mutateAsync({ checksum, chunk, id, offset }),
         reset: mutation.reset,

@@ -32,7 +32,7 @@ export interface UseTusUploadReturn {
     /** Abort the current upload */
     abort: () => void;
     /** Last upload error, if any */
-    error: Error | null;
+    error: Error | undefined;
     /** Whether the upload is paused */
     isPaused: boolean;
     /** Whether an upload is currently in progress */
@@ -46,7 +46,7 @@ export interface UseTusUploadReturn {
     /** Reset upload state */
     reset: () => void;
     /** Last upload result, if any */
-    result: UploadResult | null;
+    result: UploadResult | undefined;
     /** Resume a paused upload */
     resume: () => Promise<void>;
     /** Upload a file using TUS protocol */
@@ -54,7 +54,7 @@ export interface UseTusUploadReturn {
 }
 
 /**
- * React hook for TUS resumable file uploads
+ * React hook for TUS resumable file uploads.
  * @param options Upload configuration options
  * @returns Upload functions and state
  */
@@ -64,8 +64,8 @@ export const useTusUpload = (options: UseTusUploadOptions): UseTusUploadReturn =
     const [progress, setProgress] = useState(0);
     const [isUploading, setIsUploading] = useState(false);
     const [isPaused, setIsPaused] = useState(false);
-    const [error, setError] = useState<Error | null>(null);
-    const [result, setResult] = useState<UploadResult | null>(null);
+    const [error, setError] = useState<Error | undefined>(undefined);
+    const [result, setResult] = useState<UploadResult | undefined>(undefined);
     const [offset, setOffset] = useState(0);
 
     // Create adapter instance (memoized)
@@ -95,7 +95,7 @@ export const useTusUpload = (options: UseTusUploadOptions): UseTusUploadReturn =
             setIsUploading(true);
             setIsPaused(false);
             setProgress(0);
-            setError(null);
+            setError(undefined);
             setOffset(0);
             callbacksRef.current.onStart?.();
         });
@@ -185,8 +185,8 @@ export const useTusUpload = (options: UseTusUploadOptions): UseTusUploadReturn =
         setProgress(0);
         setIsUploading(false);
         setIsPaused(false);
-        setError(null);
-        setResult(null);
+        setError(undefined);
+        setResult(undefined);
         setOffset(0);
     }, [adapterInstance]);
 

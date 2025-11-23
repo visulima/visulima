@@ -33,7 +33,7 @@ export interface CreateTusUploadReturn {
     /** Abort the current upload */
     abort: () => void;
     /** Last upload error, if any */
-    error: Accessor<Error | null>;
+    error: Accessor<Error | undefined>;
     /** Whether the upload is paused */
     isPaused: Accessor<boolean>;
     /** Whether an upload is currently in progress */
@@ -47,7 +47,7 @@ export interface CreateTusUploadReturn {
     /** Reset upload state */
     reset: () => void;
     /** Last upload result, if any */
-    result: Accessor<UploadResult | null>;
+    result: Accessor<UploadResult | undefined>;
     /** Resume a paused upload */
     resume: () => Promise<void>;
     /** Upload a file using TUS protocol */
@@ -55,7 +55,7 @@ export interface CreateTusUploadReturn {
 }
 
 /**
- * Solid.js primitive for TUS resumable file uploads
+ * Solid.js primitive for TUS resumable file uploads.
  * @param options Upload configuration options
  * @returns Upload functions and state signals
  */
@@ -65,8 +65,8 @@ export const createTusUpload = (options: CreateTusUploadOptions): CreateTusUploa
     const [progress, setProgress] = createSignal(0);
     const [isUploading, setIsUploading] = createSignal(false);
     const [isPaused, setIsPaused] = createSignal(false);
-    const [error, setError] = createSignal<Error | null>(null);
-    const [result, setResult] = createSignal<UploadResult | null>(null);
+    const [error, setError] = createSignal<Error | undefined>(undefined);
+    const [result, setResult] = createSignal<UploadResult | undefined>(undefined);
     const [offset, setOffset] = createSignal(0);
 
     // Create adapter instance
@@ -84,7 +84,7 @@ export const createTusUpload = (options: CreateTusUploadOptions): CreateTusUploa
             setIsUploading(true);
             setIsPaused(false);
             setProgress(0);
-            setError(null);
+            setError(undefined);
             setOffset(0);
             onStart?.();
         });
@@ -171,8 +171,8 @@ export const createTusUpload = (options: CreateTusUploadOptions): CreateTusUploa
         setProgress(0);
         setIsUploading(false);
         setIsPaused(false);
-        setError(null);
-        setResult(null);
+        setError(undefined);
+        setResult(undefined);
         setOffset(0);
     };
 

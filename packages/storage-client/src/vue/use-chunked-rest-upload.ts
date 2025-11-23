@@ -33,7 +33,7 @@ export interface UseChunkedRestUploadReturn {
     /** Abort the current upload */
     abort: () => void;
     /** Last upload error, if any */
-    error: Ref<Error | null>;
+    error: Ref<Error | undefined>;
     /** Whether the upload is paused */
     isPaused: Ref<boolean>;
     /** Whether an upload is currently in progress */
@@ -47,7 +47,7 @@ export interface UseChunkedRestUploadReturn {
     /** Reset upload state */
     reset: () => void;
     /** Last upload result, if any */
-    result: Ref<UploadResult | null>;
+    result: Ref<UploadResult | undefined>;
     /** Resume a paused upload */
     resume: () => Promise<void>;
     /** Upload a file using chunked REST protocol */
@@ -55,7 +55,7 @@ export interface UseChunkedRestUploadReturn {
 }
 
 /**
- * Vue composable for chunked REST file uploads
+ * Vue composable for chunked REST file uploads.
  * @param options Upload configuration options
  * @returns Upload functions and state
  */
@@ -65,8 +65,8 @@ export const useChunkedRestUpload = (options: UseChunkedRestUploadOptions): UseC
     const progress = ref(0);
     const isUploading = ref(false);
     const isPaused = ref(false);
-    const error = ref<Error | null>(null);
-    const result = ref<UploadResult | null>(null);
+    const error = ref<Error | undefined>(undefined);
+    const result = ref<UploadResult | undefined>(undefined);
     const offset = ref(0);
 
     // Create adapter instance (create once, reuse)
@@ -84,7 +84,7 @@ export const useChunkedRestUpload = (options: UseChunkedRestUploadOptions): UseC
             isUploading.value = true;
             isPaused.value = false;
             progress.value = 0;
-            error.value = null;
+            error.value = undefined;
             offset.value = 0;
             onStart?.();
         });
@@ -171,8 +171,8 @@ export const useChunkedRestUpload = (options: UseChunkedRestUploadOptions): UseC
         progress.value = 0;
         isUploading.value = false;
         isPaused.value = false;
-        error.value = null;
-        result.value = null;
+        error.value = undefined;
+        result.value = undefined;
         offset.value = 0;
     };
 

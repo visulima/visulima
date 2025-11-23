@@ -35,7 +35,7 @@ export interface UseMultipartUploadReturn {
 }
 
 /**
- * Vue composable for multipart/form-data file uploads using rpldy uploader core
+ * Vue composable for multipart/form-data file uploads using rpldy uploader core.
  * @param options Upload configuration options
  * @returns Upload functions and state
  */

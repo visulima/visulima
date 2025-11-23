@@ -61,7 +61,7 @@ describe(createGetFile, () => {
 
         expect(result.data()).toBeDefined();
         expect(result.data()?.size).toBe(mockBlob.size);
-        expect(result.error()).toBeNull();
+        expect(result.error()).toBeUndefined();
     });
 
     it("should handle reactive id changes", async () => {

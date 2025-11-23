@@ -22,7 +22,7 @@ export interface UseTransformMetadataReturn {
     /** Transform metadata */
     data: Readonly<Ref<TransformMetadata | undefined>>;
     /** Last request error, if any */
-    error: Readonly<Ref<Error | null>>;
+    error: Readonly<Ref<Error | undefined>>;
     /** Whether a request is currently in progress */
     isLoading: Readonly<Ref<boolean>>;
     /** Refetch the transform metadata */
@@ -30,8 +30,8 @@ export interface UseTransformMetadataReturn {
 }
 
 /**
- * Vue composable for fetching transformation metadata using TanStack Query
- * Returns available formats and transformation parameters
+ * Vue composable for fetching transformation metadata using TanStack Query.
+ * Returns available formats and transformation parameters.
  * @param options Hook configuration options
  * @returns Transform metadata fetching functions and state
  */
@@ -54,7 +54,7 @@ export const useTransformMetadata = (options: UseTransformMetadataOptions): UseT
 
     return {
         data: query.data,
-        error: computed(() => (query.error.value as Error) || null),
+        error: computed(() => (query.error.value as Error) || undefined),
         isLoading: computed(() => query.isLoading.value),
         refetch: () => {
             query.refetch();

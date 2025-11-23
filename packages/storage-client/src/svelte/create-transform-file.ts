@@ -35,18 +35,18 @@ export interface CreateTransformFileReturn {
     /** Transformed file data as Blob */
     data: Readable<Blob | undefined>;
     /** Last request error, if any */
-    error: Readable<Error | null>;
+    error: Readable<Error | undefined>;
     /** Whether a request is currently in progress */
     isLoading: Readable<boolean>;
     /** File metadata from response headers */
-    meta: Readable<FileMeta | null>;
+    meta: Readable<FileMeta | undefined>;
     /** Refetch the transformed file */
     refetch: () => void;
 }
 
 /**
- * Svelte store-based utility for fetching transformed files using TanStack Query
- * Supports image, video, and audio transformation parameters
+ * Svelte store-based utility for fetching transformed files using TanStack Query.
+ * Supports image, video, and audio transformation parameters.
  * @param options Hook configuration options
  * @returns Transform file fetching functions and state stores
  */
@@ -95,9 +95,9 @@ export const createTransformFile = (options: CreateTransformFileOptions): Create
 
     return {
         data: derived(query.data, ($data) => $data?.blob),
-        error: derived(query.error, ($error) => ($error as Error) || null),
+        error: derived(query.error, ($error) => ($error as Error) || undefined),
         isLoading: query.isLoading,
-        meta: derived(query.data, ($data) => $data?.meta || null),
+        meta: derived(query.data, ($data) => $data?.meta || undefined),
         refetch: () => {
             query.refetch();
         },

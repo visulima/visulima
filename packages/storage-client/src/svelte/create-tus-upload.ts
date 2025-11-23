@@ -34,7 +34,7 @@ export interface CreateTusUploadReturn {
     /** Abort the current upload */
     abort: () => void;
     /** Last upload error, if any */
-    error: Readable<Error | null>;
+    error: Readable<Error | undefined>;
     /** Whether the upload is paused */
     isPaused: Readable<boolean>;
     /** Whether an upload is currently in progress */
@@ -48,7 +48,7 @@ export interface CreateTusUploadReturn {
     /** Reset upload state */
     reset: () => void;
     /** Last upload result, if any */
-    result: Readable<UploadResult | null>;
+    result: Readable<UploadResult | undefined>;
     /** Resume a paused upload */
     resume: () => Promise<void>;
     /** Upload a file using TUS protocol */
@@ -56,7 +56,7 @@ export interface CreateTusUploadReturn {
 }
 
 /**
- * Svelte store-based utility for TUS resumable file uploads
+ * Svelte store-based utility for TUS resumable file uploads.
  * @param options Upload configuration options
  * @returns Upload functions and state stores
  */
@@ -66,8 +66,8 @@ export const createTusUpload = (options: CreateTusUploadOptions): CreateTusUploa
     const progress = writable(0);
     const isUploading = writable(false);
     const isPaused = writable(false);
-    const error = writable<Error | null>(null);
-    const result = writable<UploadResult | null>(null);
+    const error = writable<Error | undefined>(undefined);
+    const result = writable<UploadResult | undefined>(undefined);
     const offset = writable(0);
 
     // Create adapter instance (create once, reuse)
@@ -85,7 +85,7 @@ export const createTusUpload = (options: CreateTusUploadOptions): CreateTusUploa
             isUploading.set(true);
             isPaused.set(false);
             progress.set(0);
-            error.set(null);
+            error.set(undefined);
             offset.set(0);
             onStart?.();
         });
@@ -172,8 +172,8 @@ export const createTusUpload = (options: CreateTusUploadOptions): CreateTusUploa
         progress.set(0);
         isUploading.set(false);
         isPaused.set(false);
-        error.set(null);
-        result.set(null);
+        error.set(undefined);
+        result.set(undefined);
         offset.set(0);
     };
 

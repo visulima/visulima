@@ -12,10 +12,10 @@ export interface FileListResponse {
         firstPageUrl?: string;
         lastPage?: number;
         lastPageUrl?: string;
-        nextPageUrl?: string | null;
+        nextPageUrl?: string | undefined;
         page?: number;
         perPage?: number;
-        previousPageUrl?: string | null;
+        previousPageUrl?: string | undefined;
         total?: number;
     };
 }
@@ -35,7 +35,7 @@ export interface UseGetFileListReturn {
     /** File list data */
     data: Readonly<Ref<FileListResponse | undefined>>;
     /** Last request error, if any */
-    error: Readonly<Ref<Error | null>>;
+    error: Readonly<Ref<Error | undefined>>;
     /** Whether a request is currently in progress */
     isLoading: Readonly<Ref<boolean>>;
     /** Refetch the file list */
@@ -43,8 +43,8 @@ export interface UseGetFileListReturn {
 }
 
 /**
- * Vue composable for fetching a list of files using TanStack Query
- * Supports pagination via query parameters
+ * Vue composable for fetching a list of files using TanStack Query.
+ * Supports pagination via query parameters.
  * @param options Hook configuration options
  * @returns File list fetching functions and state
  */
@@ -70,7 +70,7 @@ export const useGetFileList = (options: UseGetFileListOptions): UseGetFileListRe
 
     return {
         data: query.data,
-        error: computed(() => (query.error.value as Error) || null),
+        error: computed(() => (query.error.value as Error) || undefined),
         isLoading: computed(() => query.isLoading.value),
         refetch: () => {
             query.refetch();

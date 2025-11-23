@@ -51,9 +51,9 @@ interface UploadState {
 }
 
 /**
- * Create a chunked REST upload adapter
- * This adapter uploads files in chunks using PATCH requests
- * Supports pause/resume and handles out-of-order chunks
+ * Creates a chunked REST upload adapter.
+ * This adapter uploads files in chunks using PATCH requests.
+ * Supports pause/resume and handles out-of-order chunks.
  */
 export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): ChunkedRestAdapter => {
     const { chunkSize = DEFAULT_CHUNK_SIZE, endpoint, maxRetries = 3, metadata = {}, retry = true } = options;
@@ -71,7 +71,7 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
     let errorCallback: ((error: Error) => void) | undefined;
 
     /**
-     * Retry a fetch request with exponential backoff
+     * Retries a fetch request with exponential backoff.
      */
     const fetchWithRetry = async (url: string, init: RequestInit, retriesLeft = maxRetries): Promise<Response> => {
         try {
@@ -101,7 +101,7 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
     };
 
     /**
-     * Initialize upload session
+     * Initializes an upload session.
      */
     const createUpload = async (file: File): Promise<string> => {
         const headers: Record<string, string> = {
@@ -138,7 +138,7 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
     };
 
     /**
-     * Get upload status from server
+     * Gets upload status from server.
      */
     const getUploadStatus = async (fileId: string): Promise<{ chunks: { length: number; offset: number }[]; offset: number }> => {
         const url = endpoint.endsWith("/") ? `${endpoint}${fileId}` : `${endpoint}/${fileId}`;
@@ -172,7 +172,7 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
     };
 
     /**
-     * Upload a single chunk
+     * Uploads a single chunk.
      */
     const uploadChunk = async (file: File, fileId: string, startOffset: number, endOffset: number, signal: AbortSignal): Promise<void> => {
         const chunk = file.slice(startOffset, endOffset);
@@ -211,7 +211,7 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
     };
 
     /**
-     * Perform the actual chunked upload
+     * Performs the actual chunked upload.
      */
     const performUpload = async (file: File, fileId: string, signal: AbortSignal): Promise<UploadResult> => {
         const totalChunks = Math.ceil(file.size / chunkSize);
@@ -301,7 +301,7 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
 
     return {
         /**
-         * Abort current upload
+         * Aborts the current upload.
          */
         abort: () => {
             uploadState.aborted = true;
@@ -310,7 +310,7 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
         },
 
         /**
-         * Clear upload state
+         * Clears upload state.
          */
         clear: () => {
             uploadState = {
@@ -323,7 +323,7 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
         },
 
         /**
-         * Get current upload offset
+         * Gets the current upload offset.
          */
         getOffset: async () => {
             if (!uploadState.fileId) {
@@ -344,19 +344,19 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
         },
 
         /**
-         * Check if upload is paused
+         * Checks if upload is paused.
          */
         isPaused: () => uploadState.paused,
 
         /**
-         * Pause upload
+         * Pauses the upload.
          */
         pause: () => {
             uploadState.paused = true;
         },
 
         /**
-         * Resume upload
+         * Resumes a paused upload.
          */
         resume: async () => {
             if (!uploadState.fileId || !uploadState.file) {
@@ -383,35 +383,35 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
         },
 
         /**
-         * Set error callback
+         * Sets the error callback.
          */
         setOnError: (callback?: (error: Error) => void) => {
             errorCallback = callback;
         },
 
         /**
-         * Set finish callback
+         * Sets the finish callback.
          */
         setOnFinish: (callback?: (result: UploadResult) => void) => {
             finishCallback = callback;
         },
 
         /**
-         * Set progress callback
+         * Sets the progress callback.
          */
         setOnProgress: (callback?: (progress: number, offset: number) => void) => {
             progressCallback = callback;
         },
 
         /**
-         * Set start callback
+         * Sets the start callback.
          */
         setOnStart: (callback?: () => void) => {
             startCallback = callback;
         },
 
         /**
-         * Upload a file in chunks
+         * Uploads a file in chunks.
          */
         upload: async (file: File): Promise<UploadResult> =>
             new Promise((resolve, reject) => {

@@ -20,7 +20,7 @@ export interface CreateBatchDeleteFilesReturn {
     /** Delete multiple files by IDs */
     batchDeleteFiles: (ids: string[]) => Promise<BatchDeleteResult>;
     /** Last request error, if any */
-    error: Readable<Error | null>;
+    error: Readable<Error | undefined>;
     /** Whether a request is currently in progress */
     isLoading: Readable<boolean>;
     /** Reset mutation state */
@@ -28,9 +28,9 @@ export interface CreateBatchDeleteFilesReturn {
 }
 
 /**
- * Svelte store-based utility for batch deleting files using TanStack Query
- * Supports both query parameter and JSON body methods
- * Automatically invalidates related queries
+ * Svelte store-based utility for batch deleting files using TanStack Query.
+ * Supports both query parameter and JSON body methods.
+ * Automatically invalidates related queries.
  * @param options Hook configuration options
  * @returns Batch file deletion functions and state stores
  */
@@ -94,7 +94,7 @@ export const createBatchDeleteFiles = (options: CreateBatchDeleteFilesOptions): 
 
     return {
         batchDeleteFiles: mutation.mutateAsync,
-        error: derived(mutation.error, ($error) => ($error as Error) || null),
+        error: derived(mutation.error, ($error) => ($error as Error) || undefined),
         isLoading: mutation.isPending,
         reset: mutation.reset,
     };

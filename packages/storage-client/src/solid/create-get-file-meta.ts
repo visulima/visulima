@@ -17,7 +17,7 @@ export interface CreateGetFileMetaReturn {
     /** File metadata */
     data: Accessor<FileMeta | undefined>;
     /** Last request error, if any */
-    error: Accessor<Error | null>;
+    error: Accessor<Error | undefined>;
     /** Whether a request is currently in progress */
     isLoading: Accessor<boolean>;
     /** Refetch the file metadata */
@@ -25,7 +25,7 @@ export interface CreateGetFileMetaReturn {
 }
 
 /**
- * Solid.js primitive for fetching file metadata using TanStack Query
+ * Solid.js primitive for fetching file metadata using TanStack Query.
  * @param options Hook configuration options
  * @returns File metadata fetching functions and state signals
  */
@@ -57,7 +57,7 @@ export const createGetFileMeta = (options: CreateGetFileMetaOptions): CreateGetF
         error: () => {
             const error = query.error();
 
-            return (error as Error) || null;
+            return (error as Error) || undefined;
         },
         isLoading: query.isLoading,
         refetch: () => {

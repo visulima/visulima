@@ -40,7 +40,7 @@ export interface UseHeadFileReturn {
     /** File metadata from HEAD request */
     data: FileHeadMetadata | undefined;
     /** Last request error, if any */
-    error: Error | null;
+    error: Error | undefined;
     /** Whether a request is currently in progress */
     isLoading: boolean;
     /** Refetch the file metadata */
@@ -48,8 +48,8 @@ export interface UseHeadFileReturn {
 }
 
 /**
- * React hook for fetching file metadata via HEAD request using TanStack Query
- * Useful for checking upload progress and file status without downloading
+ * React hook for fetching file metadata via HEAD request using TanStack Query.
+ * Useful for checking upload progress and file status without downloading.
  * @param options Hook configuration options
  * @returns File HEAD request functions and state
  */
@@ -131,7 +131,7 @@ export const useHeadFile = (options: UseHeadFileOptions): UseHeadFileReturn => {
 
     return {
         data: query.data,
-        error: (query.error as Error) || null,
+        error: (query.error as Error) || undefined,
         isLoading: query.isLoading,
         refetch: () => {
             query.refetch();

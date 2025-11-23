@@ -12,10 +12,10 @@ export interface FileListResponse {
         firstPageUrl?: string;
         lastPage?: number;
         lastPageUrl?: string;
-        nextPageUrl?: string | null;
+        nextPageUrl?: string | undefined;
         page?: number;
         perPage?: number;
-        previousPageUrl?: string | null;
+        previousPageUrl?: string | undefined;
         total?: number;
     };
 }
@@ -35,7 +35,7 @@ export interface CreateGetFileListReturn {
     /** File list data */
     data: Readable<FileListResponse | undefined>;
     /** Last request error, if any */
-    error: Readable<Error | null>;
+    error: Readable<Error | undefined>;
     /** Whether a request is currently in progress */
     isLoading: Readable<boolean>;
     /** Refetch the file list */
@@ -43,8 +43,8 @@ export interface CreateGetFileListReturn {
 }
 
 /**
- * Svelte store-based utility for fetching a list of files using TanStack Query
- * Supports pagination via query parameters
+ * Svelte store-based utility for fetching a list of files using TanStack Query.
+ * Supports pagination via query parameters.
  * @param options Hook configuration options
  * @returns File list fetching functions and state stores
  */
@@ -80,7 +80,7 @@ export const createGetFileList = (options: CreateGetFileListOptions): CreateGetF
 
     return {
         data: query.data,
-        error: derived(query.error, ($error) => ($error as Error) || null),
+        error: derived(query.error, ($error) => ($error as Error) || undefined),
         isLoading: query.isLoading,
         refetch: () => {
             query.refetch();

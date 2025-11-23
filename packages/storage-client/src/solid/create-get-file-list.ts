@@ -11,10 +11,10 @@ export interface FileListResponse {
         firstPageUrl?: string;
         lastPage?: number;
         lastPageUrl?: string;
-        nextPageUrl?: string | null;
+        nextPageUrl?: string | undefined;
         page?: number;
         perPage?: number;
-        previousPageUrl?: string | null;
+        previousPageUrl?: string | undefined;
         total?: number;
     };
 }
@@ -34,7 +34,7 @@ export interface CreateGetFileListReturn {
     /** File list data */
     data: Accessor<FileListResponse | undefined>;
     /** Last request error, if any */
-    error: Accessor<Error | null>;
+    error: Accessor<Error | undefined>;
     /** Whether a request is currently in progress */
     isLoading: Accessor<boolean>;
     /** Refetch the file list */
@@ -42,8 +42,8 @@ export interface CreateGetFileListReturn {
 }
 
 /**
- * Solid.js primitive for fetching a list of files using TanStack Query
- * Supports pagination via query parameters
+ * Solid.js primitive for fetching a list of files using TanStack Query.
+ * Supports pagination via query parameters.
  * @param options Hook configuration options
  * @returns File list fetching functions and state signals
  */
@@ -78,8 +78,8 @@ export const createGetFileList = (options: CreateGetFileListOptions): CreateGetF
         error: (() => {
             const error = query.error?.();
 
-            return (error as Error) || null;
-        }) as Accessor<Error | null>,
+            return (error as Error) || undefined;
+        }) as Accessor<Error | undefined>,
         isLoading: query.isLoading as unknown as Accessor<boolean>,
         refetch: () => {
             query.refetch();
