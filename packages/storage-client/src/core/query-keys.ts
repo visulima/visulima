@@ -28,7 +28,8 @@ export const storageQueryKeys = {
      */
     transform: {
         all: ["storage", "transform"] as const,
-        file: (id: string, transformParams: Record<string, string | number | boolean>): ReadonlyArray<unknown> => [...storageQueryKeys.transform.all, id, transformParams] as const,
+        file: (id: string, transformParams: Record<string, string | number | boolean>): ReadonlyArray<unknown> =>
+            [...storageQueryKeys.transform.all, id, transformParams] as const,
         metadata: (): ReadonlyArray<unknown> => [...storageQueryKeys.transform.all, "metadata"] as const,
     },
 } as const;

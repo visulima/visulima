@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 
-import { buildUrl, extractFileMetaFromHeaders, fetchFile, storageQueryKeys } from "../core";
+import { buildUrl, extractFileMetaFromHeaders, storageQueryKeys } from "../core";
 import type { FileMeta } from "./types";
 
 export interface TransformOptions {

@@ -7,21 +7,22 @@ import React from "react";
 /**
  * Creates a new QueryClient for each test to ensure isolation
  */
-export const createTestQueryClient = (): QueryClient => new QueryClient({
-    defaultOptions: {
-        mutations: {
-            retry: false,
+export const createTestQueryClient = (): QueryClient =>
+    new QueryClient({
+        defaultOptions: {
+            mutations: {
+                retry: false,
+            },
+            queries: {
+                // Turn off refetch on reconnect for tests
+                refetchOnReconnect: false,
+                // Turn off refetch on window focus for tests
+                refetchOnWindowFocus: false,
+                // Turn off retries for faster tests
+                retry: false,
+            },
         },
-        queries: {
-            // Turn off refetch on reconnect for tests
-            refetchOnReconnect: false,
-            // Turn off refetch on window focus for tests
-            refetchOnWindowFocus: false,
-            // Turn off retries for faster tests
-            retry: false,
-        },
-    },
-});
+    });
 
 /**
  * Wrapper component for React Query Provider

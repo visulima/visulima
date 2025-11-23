@@ -2,7 +2,7 @@ import { QueryClient } from "@tanstack/solid-query";
 import { createSignal } from "solid-js";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { createGetFile } from "../../solid/create-get-file";
+import { createGetFile } from "../../src/solid/create-get-file";
 import { runInRoot } from "./test-utils";
 
 // Mock fetch globally
@@ -37,16 +37,23 @@ describe(createGetFile, () => {
             ok: true,
         });
 
-        const result = runInRoot(() => createGetFile({
-            endpoint: "https://api.example.com",
-            id: "file-123",
-            queryClient,
-        }));
+        const result = runInRoot(() =>
+            createGetFile({
+                endpoint: "https://api.example.com",
+                id: "file-123",
+                queryClient,
+            }),
+        );
 
         // Wait for query to complete
         await new Promise((resolve) => setTimeout(resolve, 100));
 
-        expect(mockFetch).toHaveBeenCalledWith();
+        expect(mockFetch).toHaveBeenCalledWith(
+            "https://api.example.com/file-123",
+            expect.objectContaining({
+                method: "GET",
+            }),
+        );
 
         if (result.error()) {
             console.error("Query Error:", result.error());
@@ -76,11 +83,13 @@ describe(createGetFile, () => {
                 ok: true,
             });
 
-        const result = runInRoot(() => createGetFile({
-            endpoint: "https://api.example.com",
-            id,
-            queryClient,
-        }));
+        const result = runInRoot(() =>
+            createGetFile({
+                endpoint: "https://api.example.com",
+                id,
+                queryClient,
+            }),
+        );
 
         await new Promise((resolve) => setTimeout(resolve, 100));
 
@@ -100,12 +109,14 @@ describe(createGetFile, () => {
 
         const [enabled, setEnabled] = createSignal(false);
 
-        const result = runInRoot(() => createGetFile({
-            enabled,
-            endpoint: "https://api.example.com",
-            id: "file-123",
-            queryClient,
-        }));
+        const result = runInRoot(() =>
+            createGetFile({
+                enabled,
+                endpoint: "https://api.example.com",
+                id: "file-123",
+                queryClient,
+            }),
+        );
 
         await new Promise((resolve) => setTimeout(resolve, 50));
 
@@ -124,12 +135,14 @@ describe(createGetFile, () => {
             ok: true,
         });
 
-        const result = runInRoot(() => createGetFile({
-            endpoint: "https://api.example.com",
-            id: "file-123",
-            queryClient,
-            transform: { format: "png", width: 200 },
-        }));
+        const result = runInRoot(() =>
+            createGetFile({
+                endpoint: "https://api.example.com",
+                id: "file-123",
+                queryClient,
+                transform: { format: "png", width: 200 },
+            }),
+        );
 
         await new Promise((resolve) => setTimeout(resolve, 100));
 

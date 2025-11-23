@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/vue-query";
 import { computed } from "vue";
 
-import { buildUrl, storageQueryKeys } from "../core";
+import { storageQueryKeys } from "../core";
 
 export interface BatchDeleteResult {
     /** Number of files that failed to delete */

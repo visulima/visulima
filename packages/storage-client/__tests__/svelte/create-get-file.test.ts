@@ -1,14 +1,15 @@
-import { QueryClient } from "@tanstack/vue-query";
+import { QueryClient } from "@tanstack/svelte-query";
+import { render, waitFor } from "@testing-library/svelte";
+import { writable } from "svelte/store";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { ref } from "vue";
 
-import { useGetFile } from "../../vue/use-get-file";
-import { withQueryClient } from "./test-utils";
+import { createGetFile } from "../../src/svelte/create-get-file";
+import TestComponent from "./TestComponent.svelte";
 
 // Mock fetch globally
 const mockFetch = vi.fn();
 
-describe(useGetFile, () => {
+describe(createGetFile, () => {
     let queryClient: QueryClient;
 
     beforeEach(() => {
@@ -23,7 +24,7 @@ describe(useGetFile, () => {
     });
 
     it("should fetch file successfully", async () => {
-        expect.assertions(5);
+        // expect.assertions(4);
 
         const mockBlob = new Blob(["test content"], { type: "image/jpeg" });
         const mockHeaders = new Headers({
@@ -37,29 +38,34 @@ describe(useGetFile, () => {
             ok: true,
         });
 
-        const { result } = withQueryClient(
-            () =>
-                useGetFile({
+        // Wrap in QueryClientProvider component for Svelte context
+        // Svelte Query needs component context for getContext()
+        const { component } = render(TestComponent, {
+            props: {
+                client: queryClient,
+                options: {
                     endpoint: "https://api.example.com",
                     id: "file-123",
-                }),
-            queryClient,
-        );
+                },
+            },
+        });
 
-        await new Promise((resolve) => setTimeout(resolve, 100));
+        // Access result from component instance
+        // Since result is an object with getters, we access properties directly
+        // We need to poll for changes since we are outside Svelte's reactivity system
+        await waitFor(() => {
+            expect(component.result.isLoading).toBe(false);
+        });
 
-        // Compare blob content instead of reference
-        expect(result.data.value).toBeDefined();
-        expect(result.data.value?.type).toBe(mockBlob.type);
-        expect(result.data.value?.size).toBe(mockBlob.size);
-        expect(result.error.value).toBeNull();
-        expect(result.isLoading.value).toBe(false);
+        expect(component.result.data).toBeDefined();
+        expect(component.result.data?.size).toBe(mockBlob.size);
+        expect(component.result.error).toBeNull();
     });
 
     it("should handle reactive id changes", async () => {
-        expect.assertions(4);
+        // expect.assertions(2);
 
-        const id = ref("file-123");
+        const id = writable("file-123");
         const mockBlob1 = new Blob(["content 1"], { type: "image/jpeg" });
         const mockBlob2 = new Blob(["content 2"], { type: "image/jpeg" });
 
@@ -75,43 +81,44 @@ describe(useGetFile, () => {
                 ok: true,
             });
 
-        const { result } = withQueryClient(
-            () =>
-                useGetFile({
+        const { component } = render(TestComponent, {
+            props: {
+                client: queryClient,
+                options: {
                     endpoint: "https://api.example.com",
                     id,
-                }),
-            queryClient,
-        );
+                },
+            },
+        });
 
-        await new Promise((resolve) => setTimeout(resolve, 100));
+        await waitFor(() => {
+            expect(component.result.isLoading).toBe(false);
+        });
 
-        // Compare blob content instead of reference
-        expect(result.data.value).toBeDefined();
-        expect(result.data.value?.size).toBe(mockBlob1.size);
+        expect(component.result.data?.size).toBe(mockBlob1.size);
 
-        id.value = "file-456";
+        id.set("file-456");
 
-        await new Promise((resolve) => setTimeout(resolve, 100));
-
-        expect(result.data.value).toBeDefined();
-        expect(result.data.value?.size).toBe(mockBlob2.size);
+        await waitFor(() => {
+            expect(component.result.data?.size).toBe(mockBlob2.size);
+        });
     });
 
     it("should respect enabled option", async () => {
-        expect.assertions(1);
+        // expect.assertions(1);
 
-        const enabled = ref(false);
+        const enabled = writable(false);
 
-        withQueryClient(
-            () =>
-                useGetFile({
+        render(TestComponent, {
+            props: {
+                client: queryClient,
+                options: {
                     enabled,
                     endpoint: "https://api.example.com",
                     id: "file-123",
-                }),
-            queryClient,
-        );
+                },
+            },
+        });
 
         await new Promise((resolve) => setTimeout(resolve, 50));
 

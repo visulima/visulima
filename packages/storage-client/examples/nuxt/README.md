@@ -24,9 +24,9 @@ Visit [http://localhost:3000](http://localhost:3000)
 - Automatic method selection (multipart vs TUS)
 - SSR compatible
 - Server-side API routes for file uploads:
-  - `/api/upload/multipart` - Multipart/form-data uploads
-  - `/api/upload/rest` - REST API for direct binary uploads (supports chunked uploads)
-  - `/api/upload/tus` - TUS resumable uploads
+    - `/api/upload/multipart` - Multipart/form-data uploads
+    - `/api/upload/rest` - REST API for direct binary uploads (supports chunked uploads)
+    - `/api/upload/tus` - TUS resumable uploads
 
 ## Configuration
 
@@ -44,12 +44,12 @@ export default defineNuxtConfig({
         [
             storageModule,
             {
-                storage: new DiskStorage({
-                    directory: "./uploads",
-                }),
                 basePath: "/api/upload",
                 multipart: true,
                 rest: true,
+                storage: new DiskStorage({
+                    directory: "./uploads",
+                }),
                 tus: true,
             },
         ],
@@ -84,4 +84,3 @@ export default defineEventHandler(async (event) => {
 - The example automatically selects between multipart and TUS based on file size when both endpoints are provided
 - Nuxt composables work seamlessly with Vue composables from `@visulima/storage-client/vue`
 - Update the `endpointMultipart` and `endpointTus` in `app.vue` if you want to use different endpoints
-

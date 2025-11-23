@@ -1,7 +1,8 @@
-import { DiskStorage } from "@visulima/storage";
 import { mkdir } from "node:fs/promises";
-import { join } from "node:path";
 import { tmpdir } from "node:os";
+import { join } from "node:path";
+
+import { DiskStorage } from "@visulima/storage";
 
 /**
  * Shared storage instance for file uploads.
@@ -16,7 +17,6 @@ mkdir(uploadDirectory, { recursive: true }).catch((error) => {
 
 export const storage = new DiskStorage({
     directory: uploadDirectory,
-    maxUploadSize: "100MB",
     logger: console,
+    maxUploadSize: "100MB",
 });
-

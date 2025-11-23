@@ -57,14 +57,14 @@ export const createPatchChunk = (options: CreatePatchChunkOptions): CreatePatchC
                 return uploadResult;
             },
             onSuccess: (result, variables) => {
-            // If upload is complete, invalidate file queries
+                // If upload is complete, invalidate file queries
                 if (result.status === "completed") {
                     queryClient.invalidateQueries({ queryKey: storageQueryKeys.files.all });
                     queryClient.removeQueries({ queryKey: storageQueryKeys.files.detail(variables.id) });
                     queryClient.removeQueries({ queryKey: storageQueryKeys.files.meta(variables.id) });
                     queryClient.removeQueries({ queryKey: storageQueryKeys.files.head(variables.id) });
                 } else {
-                // Otherwise, just invalidate the head query to update progress
+                    // Otherwise, just invalidate the head query to update progress
                     queryClient.invalidateQueries({ queryKey: storageQueryKeys.files.head(variables.id) });
                 }
             },

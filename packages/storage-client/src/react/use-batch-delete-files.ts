@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { buildUrl, deleteRequest, storageQueryKeys } from "../core";
+import { storageQueryKeys } from "../core";
 
 export interface BatchDeleteResult {
     /** Number of files that failed to delete */

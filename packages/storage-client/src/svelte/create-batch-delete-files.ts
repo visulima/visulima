@@ -2,7 +2,7 @@ import { createMutation, useQueryClient } from "@tanstack/svelte-query";
 import type { Readable } from "svelte/store";
 import { derived } from "svelte/store";
 
-import { buildUrl, storageQueryKeys } from "../core";
+import { storageQueryKeys } from "../core";
 
 export interface BatchDeleteResult {
     /** Number of files that failed to delete */
@@ -80,7 +80,7 @@ export const createBatchDeleteFiles = (options: CreateBatchDeleteFilesOptions): 
                 return result;
             },
             onSuccess: (result, ids) => {
-            // Invalidate all file-related queries
+                // Invalidate all file-related queries
                 queryClient.invalidateQueries({ queryKey: storageQueryKeys.files.all });
                 // Remove queries for deleted files
                 ids.forEach((id) => {

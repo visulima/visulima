@@ -8,17 +8,17 @@ import storageModule from "@visulima/storage/adapter/nuxt";
 export default defineNuxtConfig({
     compatibilityDate: "2024-04-03",
     devtools: { enabled: true },
-    typescript: {
-        strict: true,
-    },
     modules: [storageModule],
     storage: {
-        storage: new DiskStorage({
-            directory: join(tmpdir(), "visulima-uploads"),
-        }),
         basePath: "/api/upload",
         multipart: true,
         rest: true,
+        storage: new DiskStorage({
+            directory: join(tmpdir(), "visulima-uploads"),
+        }),
         tus: true,
+    },
+    typescript: {
+        strict: true,
     },
 });

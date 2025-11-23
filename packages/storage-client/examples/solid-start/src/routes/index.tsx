@@ -13,6 +13,7 @@ export default function Home() {
         onSuccess: (result) => {
             console.log("Upload successful:", result);
             setFile(null);
+
             if (fileInputRef) {
                 fileInputRef.value = "";
             }
@@ -72,4 +73,3 @@ export default function Home() {
         </main>
     );
 }
-

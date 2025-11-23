@@ -18,6 +18,7 @@ const Home = () => {
         onSuccess: (res: UploadResult) => {
             console.log("Upload successful:", res);
             setFile(null);
+
             if (fileInputRef.current) {
                 fileInputRef.current.value = "";
             }
