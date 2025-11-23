@@ -2114,8 +2114,6 @@ importers:
         specifier: ^4.0.10
         version: 4.0.10(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.10)(happy-dom@20.0.10)(jiti@2.6.1)(jsdom@27.2.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.1(@types/node@24.10.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 
-  packages/fs/__bench__/fixtures/a/b: {}
-
   packages/fs/__fixtures__/find-up: {}
 
   packages/fs/__fixtures__/package/cjs:
@@ -38738,7 +38736,7 @@ snapshots:
       eslint: 8.57.0
       eslint-plugin-react: 7.37.5(eslint@8.57.0)
 
-  eslint-config-standard@17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.47.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3))(eslint@8.57.0))(eslint-plugin-n@15.7.0(eslint@8.57.0))(eslint-plugin-promise@6.4.0(eslint@8.57.0))(eslint@8.57.0):
+  eslint-config-standard@17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.47.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3))(eslint@8.57.0))(eslint-plugin-n@15.7.0(eslint@9.39.1(jiti@2.6.1)))(eslint-plugin-promise@6.4.0(eslint@9.39.1(jiti@2.6.1)))(eslint@8.57.0):
     dependencies:
       eslint: 8.57.0
       eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.47.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.1(jiti@2.6.1))
@@ -47599,7 +47597,7 @@ snapshots:
   standard@17.1.2(@typescript-eslint/parser@8.47.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3)):
     dependencies:
       eslint: 8.57.0
-      eslint-config-standard: 17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.47.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3))(eslint@8.57.0))(eslint-plugin-n@15.7.0(eslint@8.57.0))(eslint-plugin-promise@6.4.0(eslint@8.57.0))(eslint@8.57.0)
+      eslint-config-standard: 17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.47.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3))(eslint@8.57.0))(eslint-plugin-n@15.7.0(eslint@9.39.1(jiti@2.6.1)))(eslint-plugin-promise@6.4.0(eslint@9.39.1(jiti@2.6.1)))(eslint@8.57.0)
       eslint-config-standard-jsx: 11.0.0(eslint-plugin-react@7.37.5(eslint@9.39.1(jiti@2.6.1)))(eslint@8.57.0)
       eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.47.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.1(jiti@2.6.1))
       eslint-plugin-n: 15.7.0(eslint@8.57.0)

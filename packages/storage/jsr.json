@@ -25,6 +25,7 @@
         "./transformer/video": "./src/transformer/video-transformer.ts",
         "./transformer/image": "./src/transformer/image-transformer.ts",
         "./transformer": "./src/transformer/index.ts",
-        "./adapter/nuxt": "./src/adapter/nuxt/module.ts"
+        "./adapter/nuxt": "./src/adapter/nuxt/module.ts",
+        "./security": "./src/security/index.ts"
     }
 }
