@@ -141,11 +141,12 @@ const templateCache = new WeakMap<TemplateStringsArray, string[]>();
 
 const createInstance = (options: Options): Outdent => {
     const enableCache = options.cache !== false;
-    const cache = enableCache ? options.cacheStore ?? templateCache : undefined;
+    const cache = enableCache ? options.cacheStore ?? templateCache : null;
     const hasNewlineOption = options.newline !== undefined;
 
     // Define the actual outdent function returned by the factory
     // It handles both template literal calls and option-setting calls.
+
     function outdent(stringsOrOptions: TemplateStringsArray, ...values: any[]): string;
     function outdent(stringsOrOptions: Options): Outdent;
 
@@ -245,6 +246,7 @@ export interface Outdent {
      * @param values The interpolated values.
      * @returns The processed string with indentation removed.
      */
+
     (strings: TemplateStringsArray, ...values: any[]): string;
 
     /**
