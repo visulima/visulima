@@ -8,6 +8,7 @@ import { parseBytes } from "@visulima/humanizer";
 import { isAbsolute, normalize } from "@visulima/path";
 import typeis from "type-is";
 
+import { SecurityEngine } from "../security";
 import NoOpMetrics from "../metrics/no-op-metrics";
 import type { Cache } from "../utils/cache";
 import { NoOpCache } from "../utils/cache";
@@ -189,6 +190,8 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
 
     protected validation: Validator<TFile> = new Validator<TFile>();
 
+    protected securityEngine?: SecurityEngine;
+
     protected abstract meta: MetaStorage<TFile>;
 
     protected assetFolder: string | undefined = undefined;
@@ -277,6 +280,10 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
 
         this.validation.add({ filename, mime, size });
         this.validation.add({ ...options.validation });
+
+        if (options.security) {
+            this.securityEngine = new SecurityEngine(options.security);
+        }
     }
 
     public get tusExtension(): string[] {
@@ -891,6 +898,14 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
         }
 
         return file;
+    }
+
+    protected async runSecurityChecks(file: TFile, content: Readable | Buffer | string): Promise<void> {
+        if (this.securityEngine) {
+            await this.instrumentOperation("security_check", async () => {
+                await this.securityEngine!.verify(file, content);
+            });
+        }
     }
 
     /**

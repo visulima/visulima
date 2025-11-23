@@ -178,6 +178,10 @@
             "types": "./dist/adapter/nuxt/module.d.ts",
             "import": "./dist/adapter/nuxt/module.js"
         },
+        "./security": {
+            "types": "./dist/security/index.d.ts",
+            "import": "./dist/security/index.js"
+        },
         "./package.json": "./package.json"
     },
     "files": [
