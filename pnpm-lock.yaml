@@ -391,7 +391,7 @@ importers:
         version: link:../../../packages/colorize
       next:
         specifier: 16.0.3
-        version: 16.0.3(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(@playwright/test@1.56.1)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+        version: 16.0.3(@opentelemetry/api@1.9.0)(@playwright/test@1.56.1)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       react:
         specifier: ^19.2.0
         version: 19.2.0
@@ -842,7 +842,7 @@ importers:
         version: 6.15.0
       next:
         specifier: ^16.0.3
-        version: 16.0.3(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(@playwright/test@1.56.1)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+        version: 16.0.3(@opentelemetry/api@1.9.0)(@playwright/test@1.56.1)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       next-test-api-route-handler:
         specifier: ^5.0.3
         version: 5.0.3(next@16.0.3(@opentelemetry/api@1.9.0)(@playwright/test@1.56.1)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))
@@ -2290,7 +2290,7 @@ importers:
         version: 0.1.1(eslint@9.39.1(jiti@2.6.1))
       next:
         specifier: ^16.0.3
-        version: 16.0.3(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(@playwright/test@1.56.1)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+        version: 16.0.3(@opentelemetry/api@1.9.0)(@playwright/test@1.56.1)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       next-test-api-route-handler:
         specifier: ^5.0.3
         version: 5.0.3(next@16.0.3(@opentelemetry/api@1.9.0)(@playwright/test@1.56.1)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))
@@ -3753,7 +3753,7 @@ importers:
         version: 2.12.3(@types/node@24.10.1)(typescript@5.9.3)
       next:
         specifier: ^16.0.3
-        version: 16.0.3(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(@playwright/test@1.56.1)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+        version: 16.0.3(@opentelemetry/api@1.9.0)(@playwright/test@1.56.1)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       node-mocks-http:
         specifier: ^1.17.2
         version: 1.17.2(@types/express@5.0.5)(@types/node@24.10.1)
@@ -5510,7 +5510,7 @@ importers:
         version: link:../..
       next:
         specifier: 16.0.3
-        version: 16.0.3(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(@playwright/test@1.56.1)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+        version: 16.0.3(@opentelemetry/api@1.9.0)(@playwright/test@1.56.1)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       react:
         specifier: 19.2.0
         version: 19.2.0
@@ -6261,21 +6261,12 @@ importers:
       '@netlify/blobs':
         specifier: ^10.4.1
         version: 10.4.1
-      '@nuxt/kit':
-        specifier: 4.2.1
-        version: 4.2.1(magicast@0.5.1)
-      '@nuxt/schema':
-        specifier: 4.2.1
-        version: 4.2.1
       '@opentelemetry/api':
         specifier: ^1.9.0
         version: 1.9.0
       '@remix-run/headers':
         specifier: 0.17.0
         version: 0.17.0
-      '@solidjs/start':
-        specifier: 1.2.0
-        version: 1.2.0(@testing-library/jest-dom@6.8.0)(solid-js@1.9.10)(vinxi@0.5.8(@azure/storage-blob@12.29.1)(@netlify/blobs@10.4.1)(@types/node@24.10.1)(@vercel/blob@2.0.0)(aws4fetch@1.0.20)(db0@0.3.4)(ioredis@5.8.2)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(rolldown@1.0.0-beta.51)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vite@7.2.4(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
       '@types/etag':
         specifier: ^1.8.4
         version: 1.8.4
@@ -6356,7 +6347,7 @@ importers:
         version: 1.25.1
       next:
         specifier: ^16.0.3
-        version: 16.0.3(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(@playwright/test@1.56.1)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+        version: 16.0.3(@opentelemetry/api@1.9.0)(@playwright/test@1.56.1)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       node-fetch:
         specifier: ^3.3.2
         version: 3.3.2
@@ -6539,7 +6530,7 @@ importers:
         version: link:../..
       next:
         specifier: ^16.0.3
-        version: 16.0.3(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(@playwright/test@1.56.1)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+        version: 16.0.3(@opentelemetry/api@1.9.0)(@playwright/test@1.56.1)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       react:
         specifier: ^19.2.0
         version: 19.2.0
@@ -6633,37 +6624,27 @@ importers:
 
   packages/storage-client/examples/solid-start:
     dependencies:
+      '@solidjs/meta':
+        specifier: ^0.29.4
+        version: 0.29.4(solid-js@1.9.10)
+      '@solidjs/router':
+        specifier: ^0.15.0
+        version: 0.15.4(solid-js@1.9.10)
+      '@solidjs/start':
+        specifier: ^1.1.0
+        version: 1.2.0(@testing-library/jest-dom@6.8.0)(solid-js@1.9.10)(vinxi@0.5.8(@azure/storage-blob@12.29.1)(@netlify/blobs@10.4.1)(@types/node@24.10.1)(@vercel/blob@2.0.0)(aws4fetch@1.0.20)(db0@0.3.4)(ioredis@5.8.2)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(rolldown@1.0.0-beta.51)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vite@7.2.4(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
       '@visulima/storage':
         specifier: workspace:*
         version: link:../../../storage
       '@visulima/storage-client':
         specifier: workspace:*
         version: link:../..
-    devDependencies:
-      '@solidjs/meta':
-        specifier: ^0.29.4
-        version: 0.29.4(solid-js@1.9.10)
-      '@solidjs/router':
-        specifier: ^0.15.4
-        version: 0.15.4(solid-js@1.9.10)
-      '@solidjs/start':
-        specifier: 1.2.0
-        version: 1.2.0(@testing-library/jest-dom@6.8.0)(solid-js@1.9.10)(vinxi@0.5.8(@azure/storage-blob@12.29.1)(@netlify/blobs@10.4.1)(@types/node@24.10.1)(@vercel/blob@2.0.0)(aws4fetch@1.0.20)(db0@0.3.4)(ioredis@5.8.2)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(rolldown@1.0.0-beta.51)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vite@7.2.4(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
-      '@types/node':
-        specifier: 24.10.1
-        version: 24.10.1
       solid-js:
-        specifier: ^1.9.10
+        specifier: ^1.9.5
         version: 1.9.10
-      typescript:
-        specifier: 5.9.3
-        version: 5.9.3
       vinxi:
-        specifier: ^0.5.8
+        specifier: ^0.5.7
         version: 0.5.8(@azure/storage-blob@12.29.1)(@netlify/blobs@10.4.1)(@types/node@24.10.1)(@vercel/blob@2.0.0)(aws4fetch@1.0.20)(db0@0.3.4)(ioredis@5.8.2)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(rolldown@1.0.0-beta.51)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
-      vite:
-        specifier: 7.2.4
-        version: 7.2.4(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 
   packages/storage-client/examples/svelte-kit:
     dependencies:
@@ -6781,6 +6762,15 @@ importers:
       vue-tsc:
         specifier: ^3.1.4
         version: 3.1.4(typescript@5.9.3)
+
+  packages/storage/dist/adapter/nuxt:
+    dependencies:
+      '@nuxt/kit':
+        specifier: '>=4.0.0'
+        version: 4.2.1(magicast@0.5.1)
+      nuxt:
+        specifier: '>=4.0.0'
+        version: 4.2.1(@azure/storage-blob@12.29.1)(@netlify/blobs@10.4.1)(@parcel/watcher@2.5.1)(@types/node@24.10.1)(@vercel/blob@2.0.0)(@vue/compiler-sfc@3.5.24)(aws4fetch@1.0.20)(db0@0.3.4)(eslint@9.39.1(jiti@2.6.1))(ioredis@5.8.2)(less@4.4.2)(lightningcss@1.30.2)(magicast@0.5.1)(meow@13.2.0)(optionator@0.9.4)(rolldown@1.0.0-beta.51)(rollup@4.53.2)(terser@5.44.0)(tsx@4.20.6)(typescript@5.9.3)(vite@7.2.4(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))(vue-tsc@3.1.4(typescript@5.9.3))(yaml@2.8.1)
 
   packages/storage/examples/bun:
     dependencies:
@@ -36417,7 +36407,7 @@ snapshots:
       pkg-types: 2.3.0
       postcss: 8.5.6
       rollup-plugin-visualizer: 6.0.5(rolldown@1.0.0-beta.51)(rollup@4.53.2)
-      seroval: 1.3.2
+      seroval: 1.4.0
       std-env: 3.10.0
       ufo: 1.6.1
       unenv: 2.0.0-rc.24
@@ -41264,8 +41254,8 @@ snapshots:
       '@tanstack/history': 1.133.28
       '@tanstack/store': 0.7.7
       cookie-es: 2.0.0
-      seroval: 1.3.2
-      seroval-plugins: 1.3.3(seroval@1.3.2)
+      seroval: 1.4.0
+      seroval-plugins: 1.4.0(seroval@1.4.0)
       tiny-invariant: 1.3.3
       tiny-warning: 1.0.3
 
@@ -41308,8 +41298,8 @@ snapshots:
       '@tanstack/history': 1.133.28
       '@tanstack/store': 0.8.0
       cookie-es: 2.0.0
-      seroval: 1.3.2
-      seroval-plugins: 1.3.3(seroval@1.3.2)
+      seroval: 1.4.0
+      seroval-plugins: 1.4.0(seroval@1.4.0)
       tiny-invariant: 1.3.3
       tiny-warning: 1.0.3
 
@@ -41750,7 +41740,18 @@ snapshots:
       solid-js: 1.9.10
 
   '@tanstack/start-client-core@1.133.35':
+<<<<<<< HEAD
 >>>>>>> 53756d0e7 (feat: add storage-client package with initial implementation)
+=======
+    dependencies:
+      '@tanstack/router-core': 1.133.35
+      '@tanstack/start-storage-context': 1.133.35
+      seroval: 1.4.0
+      tiny-invariant: 1.3.3
+      tiny-warning: 1.0.3
+
+  '@tanstack/start-client-core@1.139.0':
+>>>>>>> b168d5613 (refactor: update storage client examples and remove deprecated code)
     dependencies:
       '@tanstack/router-core': 1.139.0
       '@tanstack/start-storage-context': 1.139.0
@@ -41947,7 +41948,7 @@ snapshots:
       '@tanstack/start-client-core': 1.133.35
       '@tanstack/start-storage-context': 1.133.35
       h3-v2: h3@2.0.0-beta.4(crossws@0.4.1(srvx@0.9.6))
-      seroval: 1.3.2
+      seroval: 1.4.0
       tiny-invariant: 1.3.3
     transitivePeerDependencies:
       - crossws
@@ -48711,6 +48712,7 @@ snapshots:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   eslint-config-standard@17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.48.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3))(eslint@8.57.0))(eslint-plugin-n@15.7.0(eslint@8.57.0))(eslint-plugin-promise@6.4.0(eslint@8.57.0))(eslint@8.57.0):
 =======
 =======
@@ -48719,6 +48721,8 @@ snapshots:
 >>>>>>> d2200850f (feat: implement AwsLightMetaStorage for enhanced metadata handling)
 =======
 >>>>>>> 5a4c47b48 (refactor: enhance storage client examples and update dependencies)
+=======
+>>>>>>> f9b4b23ec (refactor: update storage client examples and remove deprecated code)
 <<<<<<< HEAD
   eslint-config-standard@17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.47.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3))(eslint@8.57.0))(eslint-plugin-n@15.7.0(eslint@8.57.0))(eslint-plugin-promise@6.4.0(eslint@8.57.0))(eslint@8.57.0):
 =======
@@ -48746,7 +48750,13 @@ snapshots:
 =======
   eslint-config-standard@17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.47.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3))(eslint@8.57.0))(eslint-plugin-n@15.7.0(eslint@8.57.0))(eslint-plugin-promise@6.4.0(eslint@8.57.0))(eslint@8.57.0):
 >>>>>>> d3f346f2a (refactor: enhance storage client examples and update dependencies)
+<<<<<<< HEAD
 >>>>>>> 5a4c47b48 (refactor: enhance storage client examples and update dependencies)
+=======
+=======
+  eslint-config-standard@17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.47.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3))(eslint@8.57.0))(eslint-plugin-n@15.7.0(eslint@9.39.1(jiti@2.6.1)))(eslint-plugin-promise@6.4.0(eslint@9.39.1(jiti@2.6.1)))(eslint@8.57.0):
+>>>>>>> b168d5613 (refactor: update storage client examples and remove deprecated code)
+>>>>>>> f9b4b23ec (refactor: update storage client examples and remove deprecated code)
     dependencies:
       eslint: 8.57.0
       eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.48.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.1(jiti@2.6.1))
@@ -54753,12 +54763,16 @@ snapshots:
       next: 16.0.3(@opentelemetry/api@1.9.0)(@playwright/test@1.56.1)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
 =======
       core-js: 3.46.0
+<<<<<<< HEAD
       next: 16.0.3(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(@playwright/test@1.56.1)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
 >>>>>>> 827dca765 (refactor: update storage client structure and enhance example applications)
+=======
+      next: 16.0.3(@opentelemetry/api@1.9.0)(@playwright/test@1.56.1)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+>>>>>>> b168d5613 (refactor: update storage client examples and remove deprecated code)
 
   next-tick@1.1.0: {}
 
-  next@16.0.3(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(@playwright/test@1.56.1)(react-dom@19.2.0(react@19.2.0))(react@19.2.0):
+  next@16.0.3(@opentelemetry/api@1.9.0)(@playwright/test@1.56.1)(react-dom@19.2.0(react@19.2.0))(react@19.2.0):
     dependencies:
       '@next/env': 16.0.3
       '@swc/helpers': 0.5.15
@@ -54766,7 +54780,7 @@ snapshots:
       postcss: 8.4.31
       react: 19.2.0
       react-dom: 19.2.0(react@19.2.0)
-      styled-jsx: 5.1.6(@babel/core@7.28.5)(react@19.2.0)
+      styled-jsx: 5.1.6(react@19.2.0)
     optionalDependencies:
       '@next/swc-darwin-arm64': 16.0.3
       '@next/swc-darwin-x64': 16.0.3
@@ -58708,6 +58722,7 @@ snapshots:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       eslint-config-standard: 17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.48.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3))(eslint@8.57.0))(eslint-plugin-n@15.7.0(eslint@8.57.0))(eslint-plugin-promise@6.4.0(eslint@8.57.0))(eslint@8.57.0)
       eslint-config-standard-jsx: 11.0.0(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint@8.57.0)
       eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.48.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.1(jiti@2.6.1))
@@ -58720,6 +58735,8 @@ snapshots:
 >>>>>>> d2200850f (feat: implement AwsLightMetaStorage for enhanced metadata handling)
 =======
 >>>>>>> 5a4c47b48 (refactor: enhance storage client examples and update dependencies)
+=======
+>>>>>>> f9b4b23ec (refactor: update storage client examples and remove deprecated code)
 <<<<<<< HEAD
       eslint-config-standard: 17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.47.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3))(eslint@8.57.0))(eslint-plugin-n@15.7.0(eslint@8.57.0))(eslint-plugin-promise@6.4.0(eslint@8.57.0))(eslint@8.57.0)
       eslint-config-standard-jsx: 11.0.0(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint@8.57.0)
@@ -58731,6 +58748,9 @@ snapshots:
 =======
       eslint-config-standard: 17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.47.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3))(eslint@8.57.0))(eslint-plugin-n@15.7.0(eslint@8.57.0))(eslint-plugin-promise@6.4.0(eslint@8.57.0))(eslint@8.57.0)
 >>>>>>> d3f346f2a (refactor: enhance storage client examples and update dependencies)
+=======
+      eslint-config-standard: 17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.47.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3))(eslint@8.57.0))(eslint-plugin-n@15.7.0(eslint@9.39.1(jiti@2.6.1)))(eslint-plugin-promise@6.4.0(eslint@9.39.1(jiti@2.6.1)))(eslint@8.57.0)
+>>>>>>> b168d5613 (refactor: update storage client examples and remove deprecated code)
       eslint-config-standard-jsx: 11.0.0(eslint-plugin-react@7.37.5(eslint@9.39.1(jiti@2.6.1)))(eslint@8.57.0)
 >>>>>>> c8abe5160 (chore: resolve merge conflicts and update package versions in pnpm-lock.yaml)
       eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.47.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.1(jiti@2.6.1))
@@ -59016,12 +59036,10 @@ snapshots:
       stylis: 4.3.2
       tslib: 2.6.2
 
-  styled-jsx@5.1.6(@babel/core@7.28.5)(react@19.2.0):
+  styled-jsx@5.1.6(react@19.2.0):
     dependencies:
       client-only: 0.0.1
       react: 19.2.0
-    optionalDependencies:
-      '@babel/core': 7.28.5
 
   stylehacks@7.0.6(postcss@8.5.6):
     dependencies:

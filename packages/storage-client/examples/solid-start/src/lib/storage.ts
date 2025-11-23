@@ -20,4 +20,3 @@ export const storage = new DiskStorage({
     logger: console,
 });
 
-
