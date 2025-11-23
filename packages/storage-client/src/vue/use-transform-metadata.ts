@@ -49,7 +49,7 @@ export const useTransformMetadata = (options: UseTransformMetadataOptions): UseT
                 parameters: data.parameters,
             };
         },
-        queryKey: computed(() => storageQueryKeys.transform.metadata()),
+        queryKey: computed(() => storageQueryKeys.transform.metadata(endpoint)),
     });
 
     return {

@@ -117,7 +117,7 @@ export const useHeadFile = (options: UseHeadFileOptions): UseHeadFileReturn => {
 
             return fileMeta;
         },
-        queryKey: storageQueryKeys.files.head(id),
+        queryKey: storageQueryKeys.files.head(endpoint, id),
     });
 
     // Call callbacks

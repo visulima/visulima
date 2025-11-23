@@ -74,7 +74,7 @@ export const createGetFileList = (options: CreateGetFileListOptions): CreateGetF
                         meta: (data as FileListResponse).meta,
                     };
             },
-            queryKey: storageQueryKeys.files.list({ limit: currentLimit, page: currentPage }),
+            queryKey: storageQueryKeys.files.list(endpoint, { limit: currentLimit, page: currentPage }),
         };
     });
 

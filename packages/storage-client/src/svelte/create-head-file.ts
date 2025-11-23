@@ -122,7 +122,7 @@ export const createHeadFile = (options: CreateHeadFileOptions): CreateHeadFileRe
 
                 return fileMeta;
             },
-            queryKey: storageQueryKeys.files.head(currentId),
+            queryKey: storageQueryKeys.files.head(endpoint, currentId),
         };
     });
 

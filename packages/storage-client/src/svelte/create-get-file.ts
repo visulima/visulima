@@ -49,7 +49,6 @@ export const createGetFile = (options: CreateGetFileOptions): CreateGetFileRetur
 
     // Create derived stores for reactive query options
     const enabledDerived = derived([enabledStore, idStore], ([$enabled, $id]) => $enabled && !!$id);
-    const queryKeyDerived = derived([idStore, transformStore], ([$id, $transform]) => storageQueryKeys.files.detail($id, $transform));
 
     const query = createQuery(
         () => {
@@ -82,7 +81,7 @@ export const createGetFile = (options: CreateGetFileOptions): CreateGetFileRetur
 
                     return { blob, meta };
                 },
-                queryKey: get(queryKeyDerived),
+                queryKey: storageQueryKeys.files.detail(endpoint, currentId, currentTransform),
             };
         },
         () => queryClient,

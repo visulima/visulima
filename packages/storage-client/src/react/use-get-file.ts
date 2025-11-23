@@ -67,7 +67,7 @@ export const useGetFile = (options: UseGetFileOptions): UseGetFileReturn => {
 
             return { blob, meta };
         },
-        queryKey: storageQueryKeys.files.detail(id, transform),
+        queryKey: storageQueryKeys.files.detail(endpoint, id, transform),
     });
 
     // Extract metadata from response if available

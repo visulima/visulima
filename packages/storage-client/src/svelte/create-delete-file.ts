@@ -39,10 +39,10 @@ export const createDeleteFile = (options: CreateDeleteFileOptions): CreateDelete
             },
             onSuccess: (_data, id) => {
                 // Invalidate file-related queries
-                queryClient.invalidateQueries({ queryKey: storageQueryKeys.files.all });
-                queryClient.removeQueries({ queryKey: storageQueryKeys.files.detail(id) });
-                queryClient.removeQueries({ queryKey: storageQueryKeys.files.meta(id) });
-                queryClient.removeQueries({ queryKey: storageQueryKeys.files.head(id) });
+                queryClient.invalidateQueries({ queryKey: storageQueryKeys.files.all(endpoint) });
+                queryClient.removeQueries({ queryKey: storageQueryKeys.files.detail(endpoint, id) });
+                queryClient.removeQueries({ queryKey: storageQueryKeys.files.meta(endpoint, id) });
+                queryClient.removeQueries({ queryKey: storageQueryKeys.files.head(endpoint, id) });
             },
         };
     });

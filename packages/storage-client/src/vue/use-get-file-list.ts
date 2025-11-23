@@ -65,7 +65,7 @@ export const useGetFileList = (options: UseGetFileListOptions): UseGetFileListRe
                     meta: (data as FileListResponse).meta,
                 };
         },
-        queryKey: computed(() => storageQueryKeys.files.list({ limit: toValue(limit), page: toValue(page) })),
+        queryKey: computed(() => storageQueryKeys.files.list(endpoint, { limit: toValue(limit), page: toValue(page) })),
     });
 
     return {

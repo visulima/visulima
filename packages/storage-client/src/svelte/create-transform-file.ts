@@ -89,7 +89,7 @@ export const createTransformFile = (options: CreateTransformFileOptions): Create
 
                 return { blob, meta };
             },
-            queryKey: storageQueryKeys.transform.file(currentId, currentTransform),
+            queryKey: storageQueryKeys.transform.file(endpoint, currentId, currentTransform),
         };
     });
 

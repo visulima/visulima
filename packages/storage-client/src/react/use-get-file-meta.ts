@@ -46,7 +46,7 @@ export const useGetFileMeta = (options: UseGetFileMetaOptions): UseGetFileMetaRe
                 id: data.id || id,
             };
         },
-        queryKey: storageQueryKeys.files.meta(id),
+        queryKey: storageQueryKeys.files.meta(endpoint, id),
     });
 
     // Call callbacks

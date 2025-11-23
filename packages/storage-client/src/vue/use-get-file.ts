@@ -66,7 +66,7 @@ export const useGetFile = (options: UseGetFileOptions): UseGetFileReturn => {
 
             return { blob, meta };
         },
-        queryKey: computed(() => storageQueryKeys.files.detail(toValue(id), toValue(transform))),
+        queryKey: computed(() => storageQueryKeys.files.detail(endpoint, toValue(id), toValue(transform))),
     });
 
     return {

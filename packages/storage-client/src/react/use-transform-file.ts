@@ -81,7 +81,7 @@ export const useTransformFile = (options: UseTransformFileOptions): UseTransform
 
             return { blob, meta };
         },
-        queryKey: storageQueryKeys.transform.file(id, transform),
+        queryKey: storageQueryKeys.transform.file(endpoint, id, transform),
     });
 
     // Extract metadata from response if available
