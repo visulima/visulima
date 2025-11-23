@@ -1,10 +1,11 @@
 "use client";
 
 import { useUpload } from "@visulima/storage-client/react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 export default function Home() {
     const [file, setFile] = useState<File | null>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
     const { error, isUploading, progress, result, upload } = useUpload({
         endpointMultipart: "/api/upload/multipart",
         endpointTus: "/api/upload/tus",
@@ -13,6 +14,10 @@ export default function Home() {
         },
         onSuccess: (result) => {
             console.log("Upload successful:", result);
+            setFile(null);
+            if (fileInputRef.current) {
+                fileInputRef.current.value = "";
+            }
         },
     });
 
@@ -36,7 +41,7 @@ export default function Home() {
         <main>
             <h1>Storage Client - Next.js Example</h1>
             <div style={{ marginTop: "2rem" }}>
-                <input disabled={isUploading} onChange={handleFileChange} type="file" />
+                <input disabled={isUploading} onChange={handleFileChange} ref={fileInputRef} type="file" />
                 <button disabled={!file || isUploading} onClick={handleUpload} style={{ marginLeft: "1rem" }}>
                     {isUploading ? "Uploading..." : "Upload"}
                 </button>

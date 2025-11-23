@@ -3,6 +3,7 @@ import { createSignal } from "solid-js";
 
 export default function Home() {
     const [file, setFile] = createSignal<File | null>(null);
+    let fileInputRef: HTMLInputElement | undefined;
     const { error, isUploading, progress, result, upload } = createUpload({
         endpointMultipart: "/api/upload/multipart",
         endpointTus: "/api/upload/tus",
@@ -11,6 +12,10 @@ export default function Home() {
         },
         onSuccess: (result) => {
             console.log("Upload successful:", result);
+            setFile(null);
+            if (fileInputRef) {
+                fileInputRef.value = "";
+            }
         },
     });
 
@@ -37,7 +42,7 @@ export default function Home() {
         <main>
             <h1>Storage Client - Solid Start Example</h1>
             <div style={{ "margin-top": "2rem" }}>
-                <input disabled={isUploading()} onChange={handleFileChange} type="file" />
+                <input disabled={isUploading()} onChange={handleFileChange} ref={fileInputRef} type="file" />
                 <button disabled={!file() || isUploading()} onClick={handleUpload} style={{ "margin-left": "1rem" }}>
                     {isUploading() ? "Uploading..." : "Upload"}
                 </button>
@@ -67,3 +72,4 @@ export default function Home() {
         </main>
     );
 }
+

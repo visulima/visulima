@@ -1,25 +1,24 @@
 {
-    "name": "storage-client-solid-start-example",
-    "version": "0.1.0",
-    "private": true,
-    "type": "module",
-    "scripts": {
-        "build": "vinxi build",
-        "dev": "vinxi dev",
-        "start": "vinxi start"
-    },
-    "dependencies": {
-        "@visulima/storage": "workspace:*",
-        "@visulima/storage-client": "workspace:*"
-    },
-    "devDependencies": {
-        "@solidjs/meta": "^0.29.4",
-        "@solidjs/router": "^0.15.4",
-        "@solidjs/start": "1.2.0",
-        "@types/node": "24.10.1",
-        "solid-js": "^1.9.10",
-        "typescript": "5.9.3",
-        "vinxi": "^0.5.8",
-        "vite": "7.2.4"
-    }
+  "name": "storage-client-solid-start-example",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vinxi dev",
+    "build": "vinxi build",
+    "start": "vinxi start",
+    "version": "vinxi version"
+  },
+  "dependencies": {
+    "@solidjs/meta": "^0.29.4",
+    "@solidjs/router": "^0.15.0",
+    "@solidjs/start": "^1.1.0",
+    "@visulima/storage": "workspace:*",
+    "@visulima/storage-client": "workspace:*",
+    "solid-js": "^1.9.5",
+    "vinxi": "^0.5.7"
+  },
+  "engines": {
+    "node": ">=22"
+  }
 }

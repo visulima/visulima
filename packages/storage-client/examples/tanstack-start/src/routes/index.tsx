@@ -15,7 +15,13 @@ const Home = () => {
         endpointTus: "/api/upload/tus",
         onError: (error_: Error) => console.error("Upload error:", error_),
         onProgress: (p: number) => console.log("Upload progress:", p),
-        onSuccess: (res: UploadResult) => console.log("Upload successful:", res),
+        onSuccess: (res: UploadResult) => {
+            console.log("Upload successful:", res);
+            setFile(null);
+            if (fileInputRef.current) {
+                fileInputRef.current.value = "";
+            }
+        },
     });
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const selectedFile = e.target.files?.[0];
