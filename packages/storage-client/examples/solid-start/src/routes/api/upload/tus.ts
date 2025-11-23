@@ -1,5 +1,5 @@
 import { createSolidStartHandler } from "@visulima/storage/handler/http/solid-start";
-import { storage } from "~/lib/storage";
+import { storage } from "../../../lib/storage";
 
 const handler = createSolidStartHandler({ storage, type: "tus" });
 

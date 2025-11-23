@@ -150,6 +150,10 @@
             "types": "./dist/handler/http/nextjs/index.d.ts",
             "import": "./dist/handler/http/nextjs/index.js"
         },
+        "./handler/http/solid-start": {
+            "types": "./dist/handler/http/solid-start/index.d.ts",
+            "import": "./dist/handler/http/solid-start/index.js"
+        },
         "./handler/http/edge": {
             "types": "./dist/handler/http/fetch/index.d.ts",
             "import": "./dist/handler/http/fetch/index.js"
