@@ -1,0 +1,777 @@
+---
+title: Solid
+description: Use the storage client with SolidJS and Solid Start
+---
+
+# Solid
+
+Use `@visulima/storage-client` with SolidJS and Solid Start for reactive file uploads with primitives and TanStack Solid Query integration.
+
+## Installation
+
+### SolidJS
+
+```bash
+npm install @visulima/storage-client @tanstack/solid-query solid-js
+```
+
+### Solid Start
+
+```bash
+npm install @visulima/storage-client @tanstack/solid-query solid-start
+```
+
+## Setup QueryClient
+
+```tsx
+import { QueryClient, QueryClientProvider } from "@tanstack/solid-query";
+
+const queryClient = new QueryClient();
+
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      {/* Your app */}
+    </QueryClientProvider>
+  );
+}
+```
+
+## Basic Upload
+
+Use the `createUpload` primitive for automatic method selection:
+
+```tsx
+import { createUpload } from "@visulima/storage-client/solid";
+import { createSignal } from "solid-js";
+
+function UploadComponent() {
+  const [file, setFile] = createSignal<File | null>(null);
+  let fileInputRef: HTMLInputElement | undefined;
+  const { error, isUploading, progress, result, upload } = createUpload({
+    endpointMultipart: "/api/upload/multipart",
+    endpointTus: "/api/upload/tus",
+    onError: (error_) => {
+      console.error("Upload error:", error_);
+    },
+    onSuccess: (result) => {
+      console.log("Upload successful:", result);
+      setFile(null);
+      if (fileInputRef) {
+        fileInputRef.value = "";
+      }
+    },
+  });
+
+  const handleFileChange = (e: Event) => {
+    const target = e.target as HTMLInputElement;
+    const selectedFile = target.files?.[0];
+    setFile(selectedFile || null);
+  };
+
+  const handleUpload = async () => {
+    const currentFile = file();
+    if (currentFile) {
+      try {
+        await upload(currentFile);
+      } catch (error_) {
+        console.error("Upload failed:", error_);
+      }
+    }
+  };
+
+  return (
+    <main>
+      <h1>Storage Client - Solid Example</h1>
+      <div style={{ "margin-top": "2rem" }}>
+        <input
+          disabled={isUploading()}
+          onChange={handleFileChange}
+          ref={fileInputRef}
+          type="file"
+        />
+        <button
+          disabled={!file() || isUploading()}
+          onClick={handleUpload}
+          style={{ "margin-left": "1rem" }}
+        >
+          {isUploading() ? "Uploading..." : "Upload"}
+        </button>
+      </div>
+      {isUploading() && (
+        <div style={{ "margin-top": "1rem" }}>
+          <div>
+            Progress:
+            {progress()}
+            %
+          </div>
+          <progress max={100} value={progress()} />
+        </div>
+      )}
+      {error() && (
+        <div style={{ color: "red", "margin-top": "1rem" }}>
+          Error:
+          {error()?.message}
+        </div>
+      )}
+      {result() && (
+        <div style={{ color: "green", "margin-top": "1rem" }}>
+          Upload complete! File:
+          {result()?.filename}
+        </div>
+      )}
+    </main>
+  );
+}
+```
+
+## Multipart Upload
+
+For traditional form-based uploads:
+
+```tsx
+import { createMultipartUpload } from "@visulima/storage-client/solid";
+
+function MultipartUpload() {
+  const { upload, progress, isUploading } = createMultipartUpload({
+    endpoint: "/api/upload/multipart",
+  });
+
+  const handleFileChange = async (e: Event) => {
+    const target = e.target as HTMLInputElement;
+    const file = target.files?.[0];
+    if (file) {
+      await upload(file);
+    }
+  };
+
+  return (
+    <div>
+      <input type="file" onChange={handleFileChange} />
+      {isUploading() && <progress value={progress()} max={100} />}
+    </div>
+  );
+}
+```
+
+## TUS Resumable Upload
+
+For large files with pause/resume support:
+
+```tsx
+import { createTusUpload } from "@visulima/storage-client/solid";
+
+function TusUpload() {
+  const { upload, pause, resume, progress, isUploading, isPaused } = createTusUpload({
+    endpoint: "/api/upload/tus",
+  });
+
+  const handleFileChange = async (e: Event) => {
+    const target = e.target as HTMLInputElement;
+    const file = target.files?.[0];
+    if (file) {
+      await upload(file);
+    }
+  };
+
+  return (
+    <div>
+      <input type="file" onChange={handleFileChange} />
+      {isUploading() && (
+        <div>
+          <progress value={progress()} max={100} />
+          {isPaused() ? (
+            <button onClick={resume}>Resume</button>
+          ) : (
+            <button onClick={pause}>Pause</button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+## Chunked REST Upload
+
+For client-side chunked uploads:
+
+```tsx
+import { createChunkedRestUpload } from "@visulima/storage-client/solid";
+
+function ChunkedUpload() {
+  const { upload, progress, isUploading } = createChunkedRestUpload({
+    endpoint: "/api/upload/chunked-rest",
+    chunkSize: 5 * 1024 * 1024, // 5MB chunks
+  });
+
+  const handleFileChange = async (e: Event) => {
+    const target = e.target as HTMLInputElement;
+    const file = target.files?.[0];
+    if (file) {
+      await upload(file);
+    }
+  };
+
+  return (
+    <div>
+      <input type="file" onChange={handleFileChange} />
+      {isUploading() && <progress value={progress()} max={100} />}
+    </div>
+  );
+}
+```
+
+## Batch Upload
+
+Upload multiple files simultaneously:
+
+```tsx
+import { createBatchUpload } from "@visulima/storage-client/solid";
+
+function BatchUpload() {
+  const { uploadBatch, progress, isUploading, items, completedCount, errorCount } = createBatchUpload({
+    endpoint: "/api/upload/multipart",
+    onSuccess: (results) => {
+      console.log("Batch upload complete:", results);
+    },
+  });
+
+  const handleFilesChange = (e: Event) => {
+    const target = e.target as HTMLInputElement;
+    const files = Array.from(target.files || []);
+    if (files.length > 0) {
+      uploadBatch(files);
+    }
+  };
+
+  return (
+    <div>
+      <input type="file" multiple onChange={handleFilesChange} />
+      {isUploading() && (
+        <div>
+          <div>
+            Progress:
+            {progress()}
+            %
+          </div>
+          <div>
+            Completed:
+            {completedCount()}
+            {" "}
+            /
+            {" "}
+            {items().length}
+          </div>
+          <div>
+            Errors:
+            {errorCount()}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+## File Input Primitive
+
+Use the `createFileInput` primitive for drag & drop support:
+
+```tsx
+import { createFileInput } from "@visulima/storage-client/solid";
+import { createBatchUpload } from "@visulima/storage-client/solid";
+
+function DragDropUpload() {
+  const { files, inputRef, handleFileChange, handleDrop, handleDragOver, openFileDialog } = createFileInput({
+    multiple: true,
+  });
+
+  const { uploadBatch } = createBatchUpload({
+    endpoint: "/api/upload/multipart",
+  });
+
+  const handleUpload = () => {
+    const currentFiles = files();
+    if (currentFiles.length > 0) {
+      uploadBatch(currentFiles);
+    }
+  };
+
+  return (
+    <div
+      onDrop={handleDrop}
+      onDragOver={handleDragOver}
+      style={{ border: "2px dashed #ccc", padding: "2rem", "text-align": "center" }}
+    >
+      <input
+        ref={inputRef}
+        type="file"
+        multiple
+        onChange={handleFileChange}
+        style={{ display: "none" }}
+      />
+      <p>Drag and drop files here or</p>
+      <button onClick={openFileDialog}>Select Files</button>
+      {files().length > 0 && (
+        <div>
+          <p>
+            Selected:
+            {files().length}
+            {" "}
+            files
+          </p>
+          <button onClick={handleUpload}>Upload</button>
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+## File Operations
+
+### Get File
+
+```tsx
+import { createSignal, onCleanup } from "solid-js";
+import { createGetFile } from "@visulima/storage-client/solid";
+
+function FileViewer({ fileId }: { fileId: string }) {
+  const { data, isLoading, error, meta } = createGetFile({
+    endpoint: "/api/files",
+    id: () => fileId,
+  });
+
+  const [url, setUrl] = createSignal<string | null>(null);
+
+  // Create object URL from blob
+  const updateUrl = () => {
+    const blob = data();
+    if (blob) {
+      const objectUrl = URL.createObjectURL(blob);
+      setUrl(objectUrl);
+      onCleanup(() => URL.revokeObjectURL(objectUrl));
+    }
+  };
+
+  updateUrl();
+
+  return (
+    <>
+      {isLoading() && <div>Loading...</div>}
+      {error() && <div>Error: {error()?.message}</div>}
+      {data() && url() && (
+        <div>
+          <img src={url()!} alt={meta()?.filename || "File"} />
+          {meta() && <p>Filename: {meta()?.filename}</p>}
+        </div>
+      )}
+    </>
+  );
+}
+```
+
+### Delete File
+
+```tsx
+import { createDeleteFile } from "@visulima/storage-client/solid";
+
+function DeleteButton({ fileId }: { fileId: string }) {
+  const { deleteFile, isLoading } = createDeleteFile({
+    endpoint: "/api/files",
+  });
+
+  return (
+    <button onClick={() => deleteFile(fileId)} disabled={isLoading()}>
+      {isLoading() ? "Deleting..." : "Delete"}
+    </button>
+  );
+}
+```
+
+## Solid Start Integration
+
+### Server Routes
+
+Set up upload endpoints in Solid Start:
+
+```tsx
+// src/routes/api/upload/multipart.ts
+import { createHandler } from "@visulima/storage/handler/http/fetch";
+import { storage } from "@/lib/storage";
+
+const multipart = createHandler({ storage, type: "multipart" });
+
+export async function POST({ request }: { request: Request }) {
+  return multipart.fetch(request);
+}
+```
+
+### Storage Configuration
+
+```tsx
+// src/lib/storage.ts
+import { DiskStorage } from "@visulima/storage";
+
+export const storage = new DiskStorage({
+  directory: "./uploads",
+});
+```
+
+## File Operations
+
+### Get File Metadata
+
+```tsx
+import { createGetFileMeta } from "@visulima/storage-client/solid";
+
+function FileMetadata({ fileId }: { fileId: string }) {
+  const { data: meta, isLoading, error } = createGetFileMeta({
+    endpoint: "/api/files",
+    id: () => fileId,
+  });
+
+  return (
+    <>
+      {isLoading() && <div>Loading...</div>}
+      {error() && <div>Error: {error()?.message}</div>}
+      {meta() && (
+        <div>
+          <p>Filename: {meta()?.filename}</p>
+          <p>Size: {meta()?.size} bytes</p>
+          <p>Content Type: {meta()?.contentType}</p>
+          {meta()?.url && <p>URL: {meta()?.url}</p>}
+        </div>
+      )}
+    </>
+  );
+}
+```
+
+### Head File (Check Upload Status)
+
+```tsx
+import { createHeadFile } from "@visulima/storage-client/solid";
+
+function UploadStatus({ fileId }: { fileId: string }) {
+  const { data, isLoading } = createHeadFile({
+    endpoint: "/api/files",
+    id: () => fileId,
+  });
+
+  return (
+    <>
+      {isLoading() && <div>Checking status...</div>}
+      {data() && (
+        <div>
+          {data()?.uploadComplete ? (
+            <p>Upload complete</p>
+          ) : (
+            <p>
+              Upload in progress: {data()?.uploadOffset} / {data()?.contentLength} bytes
+            </p>
+          )}
+          {data()?.receivedChunks && (
+            <p>Received chunks: {data()?.receivedChunks.length}</p>
+          )}
+        </div>
+      )}
+    </>
+  );
+}
+```
+
+### Put File (Create/Update)
+
+```tsx
+import { createSignal } from "solid-js";
+import { createPutFile } from "@visulima/storage-client/solid";
+
+function PutFileComponent({ fileId }: { fileId: string }) {
+  const [file, setFile] = createSignal<File | null>(null);
+  const { putFile, progress, isLoading, error, data } = createPutFile({
+    endpoint: "/api/files",
+    onSuccess: (result) => {
+      console.log("File uploaded:", result);
+    },
+  });
+
+  const handleFileChange = (e: Event) => {
+    const target = e.target as HTMLInputElement;
+    setFile(target.files?.[0] || null);
+  };
+
+  const handleUpload = async () => {
+    const currentFile = file();
+    if (currentFile) {
+      await putFile(fileId, currentFile);
+    }
+  };
+
+  return (
+    <div>
+      <input type="file" onChange={handleFileChange} />
+      <button onClick={handleUpload} disabled={!file() || isLoading()}>
+        {isLoading() ? `Uploading... ${progress()}%` : "Upload"}
+      </button>
+      {error() && <div>Error: {error()?.message}</div>}
+      {data() && <div>Upload complete! ID: {data()?.id}</div>}
+    </div>
+  );
+}
+```
+
+### Batch Delete Files
+
+```tsx
+import { createBatchDeleteFiles } from "@visulima/storage-client/solid";
+
+function BatchDeleteComponent() {
+  const { batchDeleteFiles, isLoading } = createBatchDeleteFiles({
+    endpoint: "/api/files",
+    onSuccess: (result) => {
+      console.log(`Deleted ${result.successful} files`);
+      if (result.failed) {
+        console.log(`${result.failed} files failed to delete`);
+      }
+    },
+  });
+
+  const handleDelete = async () => {
+    const fileIds = ["file1", "file2", "file3"];
+    await batchDeleteFiles(fileIds);
+  };
+
+  return (
+    <button onClick={handleDelete} disabled={isLoading()}>
+      {isLoading() ? "Deleting..." : "Delete Selected Files"}
+    </button>
+  );
+}
+```
+
+## Transform Operations
+
+### Transform File
+
+```tsx
+import { createSignal } from "solid-js";
+import { createTransformFile } from "@visulima/storage-client/solid";
+
+function TransformImage({ fileId }: { fileId: string }) {
+  const [transform, setTransform] = createSignal({ width: 800, height: 600, quality: 85 });
+  const { data, isLoading, error, meta } = createTransformFile({
+    endpoint: "/api/files",
+    id: () => fileId,
+    transform: () => transform(),
+  });
+
+  const [url, setUrl] = createSignal<string | null>(null);
+
+  // Create object URL from blob
+  if (data() && !url()) {
+    setUrl(URL.createObjectURL(data()!));
+  }
+
+  return (
+    <>
+      {isLoading() && <div>Transforming...</div>}
+      {error() && <div>Error: {error()?.message}</div>}
+      {data() && url() && (
+        <div>
+          <img src={url()!} alt="Transformed" />
+          <div>
+            <label>
+              Width:
+              <input
+                type="number"
+                value={transform().width}
+                onInput={(e) => setTransform({ ...transform(), width: Number(e.currentTarget.value) })}
+              />
+            </label>
+            <label>
+              Height:
+              <input
+                type="number"
+                value={transform().height}
+                onInput={(e) => setTransform({ ...transform(), height: Number(e.currentTarget.value) })}
+              />
+            </label>
+            <label>
+              Quality:
+              <input
+                type="number"
+                min="1"
+                max="100"
+                value={transform().quality}
+                onInput={(e) => setTransform({ ...transform(), quality: Number(e.currentTarget.value) })}
+              />
+            </label>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+```
+
+### Get Transform Metadata
+
+```tsx
+import { createTransformMetadata } from "@visulima/storage-client/solid";
+
+function TransformOptions() {
+  const { data, isLoading, error } = createTransformMetadata({
+    endpoint: "/api/files",
+  });
+
+  return (
+    <>
+      {isLoading() && <div>Loading...</div>}
+      {error() && <div>Error: {error()?.message}</div>}
+      {data() && (
+        <div>
+          <h3>Available Formats</h3>
+          <ul>
+            {data()?.formats?.map((format) => (
+              <li key={format}>{format}</li>
+            ))}
+          </ul>
+          <h3>Available Parameters</h3>
+          <ul>
+            {data()?.parameters?.map((param) => (
+              <li key={param}>{param}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </>
+  );
+}
+```
+
+## Abort Operations
+
+### Abort All Uploads
+
+```tsx
+import { createAbortAll } from "@visulima/storage-client/solid";
+
+function AbortAllButton() {
+  const { abortAll } = createAbortAll({
+    endpoint: "/api/upload/multipart",
+  });
+
+  return <button onClick={abortAll}>Abort All Uploads</button>;
+}
+```
+
+### Abort Batch
+
+```tsx
+import { createAbortBatch } from "@visulima/storage-client/solid";
+
+function AbortBatchButton({ batchId }: { batchId: string }) {
+  const { abortBatch } = createAbortBatch({
+    endpoint: "/api/upload/multipart",
+  });
+
+  return <button onClick={() => abortBatch(batchId)}>Abort Batch</button>;
+}
+```
+
+### Abort Item
+
+```tsx
+import { createAbortItem } from "@visulima/storage-client/solid";
+
+function AbortItemButton({ itemId }: { itemId: string }) {
+  const { abortItem } = createAbortItem({
+    endpoint: "/api/upload/multipart",
+  });
+
+  return <button onClick={() => abortItem(itemId)}>Abort Upload</button>;
+}
+```
+
+## Retry Operations
+
+### Retry Failed Upload
+
+```tsx
+import { createRetry } from "@visulima/storage-client/solid";
+
+function RetryButton({ itemId }: { itemId: string }) {
+  const { retryItem } = createRetry({
+    endpoint: "/api/upload/multipart",
+  });
+
+  return <button onClick={() => retryItem(itemId)}>Retry Upload</button>;
+}
+```
+
+### Batch Retry
+
+```tsx
+import { createBatchRetry } from "@visulima/storage-client/solid";
+
+function BatchRetryButton({ batchId }: { batchId: string }) {
+  const { retryBatch } = createBatchRetry({
+    endpoint: "/api/upload/multipart",
+  });
+
+  return <button onClick={() => retryBatch(batchId)}>Retry Failed Items in Batch</button>;
+}
+```
+
+## Event Listeners
+
+### Batch Event Listeners
+
+```tsx
+import {
+  createBatchStartListener,
+  createBatchProgressListener,
+  createBatchFinishListener,
+  createBatchErrorListener,
+} from "@visulima/storage-client/solid";
+
+function BatchUploadWithListeners() {
+  createBatchStartListener({
+    endpoint: "/api/upload/multipart",
+    onBatchStart: (batchId) => {
+      console.log("Batch started:", batchId);
+    },
+  });
+
+  createBatchProgressListener({
+    endpoint: "/api/upload/multipart",
+    onBatchProgress: (progress, batchId) => {
+      console.log(`Batch ${batchId} progress: ${progress}%`);
+    },
+  });
+
+  createBatchFinishListener({
+    endpoint: "/api/upload/multipart",
+    onBatchFinish: (results, batchId) => {
+      console.log(`Batch ${batchId} finished:`, results);
+    },
+  });
+
+  createBatchErrorListener({
+    endpoint: "/api/upload/multipart",
+    onBatchError: (error, batchId) => {
+      console.error(`Batch ${batchId} error:`, error);
+    },
+  });
+
+  return <div>Upload component with listeners</div>;
+}
+```
+
+## Next Steps
+
+- [Solid Start Guide](/docs/package/storage-client/solid-start) - Learn Solid Start-specific features
+- [API Reference](/docs/package/storage-client/api) - Complete API documentation
+

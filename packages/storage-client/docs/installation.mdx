@@ -1,0 +1,178 @@
+---
+title: Installation
+description: Install and set up the storage client for your framework
+---
+
+# Installation
+
+Install the storage client package and the required framework dependencies.
+
+## Prerequisites
+
+The storage client requires TanStack Query (formerly React Query) for state management. You'll need to install the appropriate version for your framework:
+
+- **React**: `@tanstack/react-query` >= 5.90.10
+- **Vue**: `@tanstack/vue-query` >= 5.91.2
+- **Solid**: `@tanstack/solid-query` >= 5.90.13
+- **Svelte**: `@tanstack/svelte-query` >= 6.0.8
+
+## React
+
+```bash
+npm install @visulima/storage-client @tanstack/react-query react
+```
+
+```bash
+yarn add @visulima/storage-client @tanstack/react-query react
+```
+
+```bash
+pnpm add @visulima/storage-client @tanstack/react-query react
+```
+
+### Setup QueryClient
+
+Wrap your app with `QueryClientProvider`:
+
+```tsx
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ReactNode } from "react";
+
+const queryClient = new QueryClient();
+
+function App({ children }: { children: ReactNode }) {
+  return (
+    <QueryClientProvider client={queryClient}>
+      {children}
+    </QueryClientProvider>
+  );
+}
+```
+
+## Vue / Nuxt
+
+```bash
+npm install @visulima/storage-client @tanstack/vue-query vue
+```
+
+```bash
+yarn add @visulima/storage-client @tanstack/vue-query vue
+```
+
+```bash
+pnpm add @visulima/storage-client @tanstack/vue-query vue
+```
+
+### Setup QueryClient
+
+For Vue 3:
+
+```ts
+import { createApp } from "vue";
+import { VueQueryPlugin } from "@tanstack/vue-query";
+
+const app = createApp(App);
+app.use(VueQueryPlugin);
+app.mount("#app");
+```
+
+### Nuxt 3 Setup
+
+Create a plugin file:
+
+```ts
+// plugins/vue-query.client.ts
+import { VueQueryPlugin } from "@tanstack/vue-query";
+
+export default defineNuxtPlugin((nuxtApp) => {
+  nuxtApp.vueApp.use(VueQueryPlugin);
+});
+```
+
+## Solid
+
+```bash
+npm install @visulima/storage-client @tanstack/solid-query solid-js
+```
+
+```bash
+yarn add @visulima/storage-client @tanstack/solid-query solid-js
+```
+
+```bash
+pnpm add @visulima/storage-client @tanstack/solid-query solid-js
+```
+
+### Setup QueryClient
+
+```tsx
+import { QueryClient, QueryClientProvider } from "@tanstack/solid-query";
+
+const queryClient = new QueryClient();
+
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      {/* Your app */}
+    </QueryClientProvider>
+  );
+}
+```
+
+## Svelte
+
+```bash
+npm install @visulima/storage-client @tanstack/svelte-query svelte
+```
+
+```bash
+yarn add @visulima/storage-client @tanstack/svelte-query svelte
+```
+
+```bash
+pnpm add @visulima/storage-client @tanstack/svelte-query svelte
+```
+
+### Setup QueryClient
+
+```svelte
+<script lang="ts">
+  import { QueryClient, QueryClientProvider } from "@tanstack/svelte-query";
+
+  const queryClient = new QueryClient();
+</script>
+
+<QueryClientProvider client={queryClient}>
+  <!-- Your app -->
+</QueryClientProvider>
+```
+
+## Import Paths
+
+Import hooks/composables from framework-specific paths:
+
+```ts
+// React
+import { useUpload } from "@visulima/storage-client/react";
+
+// Vue
+import { useUpload } from "@visulima/storage-client/vue";
+
+// Solid
+import { createUpload } from "@visulima/storage-client/solid";
+
+// Svelte
+import { createUpload } from "@visulima/storage-client/svelte";
+```
+
+## TypeScript Support
+
+The package includes full TypeScript definitions. No additional `@types` packages are required.
+
+## Next Steps
+
+- [React Guide](/docs/package/storage-client/react) - Learn how to use the storage client with React
+- [Vue / Nuxt Guide](/docs/package/storage-client/vue) - Learn how to use the storage client with Vue and Nuxt
+- [Solid Guide](/docs/package/storage-client/solid) - Learn how to use the storage client with Solid
+- [Svelte Guide](/docs/package/storage-client/svelte) - Learn how to use the storage client with Svelte
+

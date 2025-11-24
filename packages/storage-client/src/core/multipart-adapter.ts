@@ -16,8 +16,14 @@ export interface MultipartAdapterOptions {
 export interface MultipartAdapter {
     /** Abort all uploads */
     abort: () => void;
+    /** Abort a batch of uploads */
+    abortBatch: (batchId: string) => void;
+    /** Abort a specific upload item */
+    abortItem: (id: string) => void;
     /** Clear all uploads */
     clear: () => void;
+    /** Upload multiple files as a batch and return item IDs */
+    uploadBatch: (files: File[]) => string[];
     /** Upload a file and return visulima-compatible result */
     upload: (file: File) => Promise<UploadResult>;
     /** The underlying uploader instance */
@@ -43,6 +49,20 @@ export const createMultipartAdapter = (options: MultipartAdapterOptions): Multip
          */
         abort: () => {
             uploader.abort();
+        },
+
+        /**
+         * Aborts a batch of uploads.
+         */
+        abortBatch: (batchId: string) => {
+            uploader.abortBatch(batchId);
+        },
+
+        /**
+         * Aborts a specific upload item.
+         */
+        abortItem: (id: string) => {
+            uploader.abortItem(id);
         },
 
         /**
@@ -161,6 +181,13 @@ export const createMultipartAdapter = (options: MultipartAdapterOptions): Multip
                     cleanupWithTimeout();
                 });
             }),
+
+        /**
+         * Uploads multiple files as a batch and returns item IDs.
+         */
+        uploadBatch: (files: File[]): string[] => {
+            return uploader.addBatch(files);
+        },
         uploader,
     };
 };
