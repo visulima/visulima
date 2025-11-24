@@ -1,4 +1,4 @@
-import { act } from "@testing-library/react";
+import { act, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { useBatchUpload } from "../../src/react/use-batch-upload";
@@ -86,7 +86,7 @@ class MockXMLHttpRequest {
     public abort = vi.fn();
 }
 
-describe("useBatchUpload", () => {
+describe(useBatchUpload, () => {
     let originalXHR: typeof XMLHttpRequest;
 
     beforeEach(() => {
@@ -160,14 +160,14 @@ describe("useBatchUpload", () => {
 
         result.current.uploadBatch([file1]);
 
-        expect(onStart).toHaveBeenCalled();
+        expect(onStart).toHaveBeenCalledWith();
 
         // Clean up
         unmount();
     });
 
     it("should update progress during upload", async () => {
-        expect.assertions(2);
+        expect.assertions(4);
 
         const { result, unmount } = renderHookWithQueryClient(() =>
             useBatchUpload({
@@ -177,13 +177,29 @@ describe("useBatchUpload", () => {
 
         const file1 = new File(["test1"], "test1.jpg", { type: "image/jpeg" });
 
-        result.current.uploadBatch([file1]);
+        // Call uploadBatch - this should trigger batch start event synchronously
+        act(() => {
+            result.current.uploadBatch([file1]);
+        });
 
-        // Wait for progress update
-        await new Promise((resolve) => setTimeout(resolve, 15));
+        // Wait for batch start event to be processed and isUploading to be set
+        await waitFor(
+            () => {
+                expect(result.current.isUploading).toBe(true);
+            },
+            { timeout: 1000 },
+        );
 
+        // Then wait for progress to update (happens after 10ms in mock)
+        await waitFor(
+            () => {
+                expect(result.current.progress).toBeGreaterThan(0);
+            },
+            { timeout: 1000 },
+        );
+
+        // Verify progress value is set correctly
         expect(result.current.progress).toBeGreaterThan(0);
-        expect(result.current.isUploading).toBe(true);
 
         // Clean up
         unmount();
@@ -240,4 +256,3 @@ describe("useBatchUpload", () => {
         unmount();
     });
 });
-

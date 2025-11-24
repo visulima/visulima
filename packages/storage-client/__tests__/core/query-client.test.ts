@@ -61,7 +61,7 @@ class MockXMLHttpRequest {
 
     public getResponseHeader = vi.fn((name: string) => {
         if (name === "ETag") {
-            return '"test-etag"';
+            return "\"test-etag\"";
         }
 
         if (name === "Location") {
@@ -89,15 +89,15 @@ describe("query-client", () => {
         vi.clearAllMocks();
     });
 
-    describe("parseApiError", () => {
+    describe(parseApiError, () => {
         it("should parse API error response", async () => {
-            const response = new Response(
-                JSON.stringify({
+            const response = Response.json(
+                {
                     error: {
                         code: "VALIDATION_ERROR",
                         message: "Invalid input",
                     },
-                }),
+                },
                 { status: 400, statusText: "Bad Request" },
             );
 
@@ -115,13 +115,13 @@ describe("query-client", () => {
         });
     });
 
-    describe("extractFileMetaFromHeaders", () => {
+    describe(extractFileMetaFromHeaders, () => {
         it("should extract file metadata from headers", () => {
             const headers = new Headers({
-                "Content-Type": "image/jpeg",
                 "Content-Length": "1024",
+                "Content-Type": "image/jpeg",
+                ETag: "\"test-etag\"",
                 "Last-Modified": "Wed, 21 Oct 2015 07:28:00 GMT",
-                ETag: '"test-etag"',
             });
 
             const fileMeta = extractFileMetaFromHeaders("file-123", headers);
@@ -143,9 +143,9 @@ describe("query-client", () => {
         });
     });
 
-    describe("buildUrl", () => {
+    describe(buildUrl, () => {
         it("should build URL with query parameters", () => {
-            const url = buildUrl("https://api.example.com", "/files", { page: 1, limit: 10, active: true });
+            const url = buildUrl("https://api.example.com", "/files", { active: true, limit: 10, page: 1 });
 
             expect(url).toContain("page=1");
             expect(url).toContain("limit=10");
@@ -165,14 +165,14 @@ describe("query-client", () => {
         });
 
         it("should skip undefined parameters", () => {
-            const url = buildUrl("https://api.example.com", "/files", { page: 1, limit: undefined });
+            const url = buildUrl("https://api.example.com", "/files", { limit: undefined, page: 1 });
 
             expect(url).toContain("page=1");
             expect(url).not.toContain("limit");
         });
     });
 
-    describe("fetchFile", () => {
+    describe(fetchFile, () => {
         it("should fetch file successfully", async () => {
             const mockBlob = new Blob(["test content"], { type: "image/jpeg" });
 
@@ -188,12 +188,14 @@ describe("query-client", () => {
 
         it("should throw error on failed request", async () => {
             mockFetch.mockResolvedValueOnce({
-                json: async () => ({
-                    error: {
-                        code: "NOT_FOUND",
-                        message: "File not found",
-                    },
-                }),
+                json: async () => {
+                    return {
+                        error: {
+                            code: "NOT_FOUND",
+                            message: "File not found",
+                        },
+                    };
+                },
                 ok: false,
                 status: 404,
                 statusText: "Not Found",
@@ -203,7 +205,7 @@ describe("query-client", () => {
         });
     });
 
-    describe("fetchJson", () => {
+    describe(fetchJson, () => {
         it("should fetch JSON successfully", async () => {
             const mockData = { id: "123", name: "test" };
 
@@ -219,12 +221,14 @@ describe("query-client", () => {
 
         it("should throw error on failed request", async () => {
             mockFetch.mockResolvedValueOnce({
-                json: async () => ({
-                    error: {
-                        code: "ERROR",
-                        message: "Request failed",
-                    },
-                }),
+                json: async () => {
+                    return {
+                        error: {
+                            code: "ERROR",
+                            message: "Request failed",
+                        },
+                    };
+                },
                 ok: false,
                 status: 500,
                 statusText: "Internal Server Error",
@@ -234,11 +238,11 @@ describe("query-client", () => {
         });
     });
 
-    describe("fetchHead", () => {
+    describe(fetchHead, () => {
         it("should fetch headers successfully", async () => {
             const mockHeaders = new Headers({
-                "Content-Type": "image/jpeg",
                 "Content-Length": "1024",
+                "Content-Type": "image/jpeg",
             });
 
             mockFetch.mockResolvedValueOnce({
@@ -253,12 +257,14 @@ describe("query-client", () => {
 
         it("should throw error on failed request", async () => {
             mockFetch.mockResolvedValueOnce({
-                json: async () => ({
-                    error: {
-                        code: "ERROR",
-                        message: "Request failed",
-                    },
-                }),
+                json: async () => {
+                    return {
+                        error: {
+                            code: "ERROR",
+                            message: "Request failed",
+                        },
+                    };
+                },
                 ok: false,
                 status: 404,
                 statusText: "Not Found",
@@ -268,7 +274,7 @@ describe("query-client", () => {
         });
     });
 
-    describe("deleteRequest", () => {
+    describe(deleteRequest, () => {
         it("should delete successfully", async () => {
             mockFetch.mockResolvedValueOnce({
                 ok: true,
@@ -279,12 +285,14 @@ describe("query-client", () => {
 
         it("should throw error on failed request", async () => {
             mockFetch.mockResolvedValueOnce({
-                json: async () => ({
-                    error: {
-                        code: "ERROR",
-                        message: "Delete failed",
-                    },
-                }),
+                json: async () => {
+                    return {
+                        error: {
+                            code: "ERROR",
+                            message: "Delete failed",
+                        },
+                    };
+                },
                 ok: false,
                 status: 500,
                 statusText: "Internal Server Error",
@@ -294,16 +302,16 @@ describe("query-client", () => {
         });
     });
 
-    describe("putFile", () => {
+    describe(putFile, () => {
         it("should upload file successfully", async () => {
             const file = new File(["test content"], "test.txt", { type: "text/plain" });
             const onProgress = vi.fn();
 
             const result = await putFile("https://api.example.com/file/123", file, onProgress);
 
-            expect(result.etag).toBe('"test-etag"');
+            expect(result.etag).toBe("\"test-etag\"");
             expect(result.location).toBe("https://api.example.com/file/123");
-            expect(onProgress).toHaveBeenCalled();
+            expect(onProgress).toHaveBeenCalledWith();
         });
 
         it("should handle upload without progress callback", async () => {
@@ -311,19 +319,19 @@ describe("query-client", () => {
 
             const result = await putFile("https://api.example.com/file/123", file);
 
-            expect(result.etag).toBe('"test-etag"');
+            expect(result.etag).toBe("\"test-etag\"");
         });
     });
 
-    describe("patchChunk", () => {
+    describe(patchChunk, () => {
         it("should upload chunk successfully", async () => {
             const chunk = new Blob(["chunk data"], { type: "application/octet-stream" });
 
             mockFetch.mockResolvedValueOnce({
                 headers: new Headers({
-                    "X-Upload-Offset": "100",
+                    ETag: "\"chunk-etag\"",
                     "X-Upload-Complete": "false",
-                    ETag: '"chunk-etag"',
+                    "X-Upload-Offset": "100",
                 }),
                 ok: true,
             });
@@ -332,7 +340,7 @@ describe("query-client", () => {
 
             expect(result.uploadOffset).toBe(100);
             expect(result.uploadComplete).toBe(false);
-            expect(result.etag).toBe('"chunk-etag"');
+            expect(result.etag).toBe("\"chunk-etag\"");
         });
 
         it("should include checksum in headers when provided", async () => {
@@ -359,12 +367,14 @@ describe("query-client", () => {
 
         it("should throw error on failed request", async () => {
             mockFetch.mockResolvedValueOnce({
-                json: async () => ({
-                    error: {
-                        code: "ERROR",
-                        message: "Upload failed",
-                    },
-                }),
+                json: async () => {
+                    return {
+                        error: {
+                            code: "ERROR",
+                            message: "Upload failed",
+                        },
+                    };
+                },
                 ok: false,
                 status: 500,
                 statusText: "Internal Server Error",
@@ -376,4 +386,3 @@ describe("query-client", () => {
         });
     });
 });
-

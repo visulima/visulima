@@ -1,14 +1,21 @@
 <script lang="ts">
-    import type { ComponentProps } from "svelte";
+    import { QueryClientProvider } from "@tanstack/svelte-query";
+    import type { QueryClient } from "@tanstack/svelte-query";
     import { createGetFile } from "../../src/svelte/create-get-file";
     import type { CreateGetFileOptions, CreateGetFileReturn } from "../../src/svelte/create-get-file";
-    import type { QueryClient } from "@tanstack/svelte-query";
 
     export let client: QueryClient;
     export let options: CreateGetFileOptions;
     
-    // Pass client to options to bypass context
-    export const result: CreateGetFileReturn = createGetFile({ ...options, queryClient: client });
+    // Initialize result - pass queryClient directly since createGetFile accepts it
+    // Use reactive statement to ensure it updates when options change
+    let result: CreateGetFileReturn | undefined = undefined;
+    $: result = createGetFile({ ...options, queryClient: client });
+    
+    // Expose result for testing
+    export const getResult = () => result;
 </script>
 
-<!-- No need for QueryClientProvider if we pass client directly -->
+<QueryClientProvider {client}>
+    <!-- Component content -->
+</QueryClientProvider>

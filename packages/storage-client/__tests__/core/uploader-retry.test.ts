@@ -130,7 +130,7 @@ class RetrySuccessMockXMLHttpRequest {
     public abort = vi.fn();
 }
 
-describe("Uploader Retry Operations", () => {
+describe("uploader Retry Operations", () => {
     let originalXHR: typeof XMLHttpRequest;
 
     beforeEach(() => {
@@ -266,4 +266,3 @@ describe("Uploader Retry Operations", () => {
         }
     });
 });
-

@@ -23,7 +23,6 @@ describe(useGetFileList, () => {
     });
 
     it("should fetch file list successfully", async () => {
-
         const mockData = {
             data: [
                 {
@@ -60,7 +59,6 @@ describe(useGetFileList, () => {
     });
 
     it("should handle paginated response", async () => {
-
         const mockData = {
             data: [
                 {
@@ -97,7 +95,6 @@ describe(useGetFileList, () => {
     });
 
     it("should handle array response", async () => {
-
         const mockData = [
             {
                 id: "file-1",
@@ -124,7 +121,6 @@ describe(useGetFileList, () => {
     });
 
     it("should call onSuccess callback", async () => {
-
         const onSuccess = vi.fn();
         const mockData = {
             data: [
@@ -150,21 +146,22 @@ describe(useGetFileList, () => {
         );
 
         await waitFor(() => {
-            expect(onSuccess).toHaveBeenCalled();
+            expect(onSuccess).toHaveBeenCalledWith();
         });
     });
 
     it("should handle error and call onError callback", async () => {
-
         const onError = vi.fn();
 
         mockFetch.mockResolvedValueOnce({
-            json: async () => ({
-                error: {
-                    code: "ERROR",
-                    message: "Request failed",
-                },
-            }),
+            json: async () => {
+                return {
+                    error: {
+                        code: "ERROR",
+                        message: "Request failed",
+                    },
+                };
+            },
             ok: false,
             status: 500,
             statusText: "Internal Server Error",
@@ -180,7 +177,7 @@ describe(useGetFileList, () => {
         );
 
         await waitFor(() => {
-            expect(onError).toHaveBeenCalled();
+            expect(onError).toHaveBeenCalledWith();
         });
     });
 
@@ -232,4 +229,3 @@ describe(useGetFileList, () => {
         });
     });
 });
-

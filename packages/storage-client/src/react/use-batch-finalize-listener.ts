@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 
-import type { BatchState } from "../core/uploader";
 import { createMultipartAdapter } from "../core/multipart-adapter";
+import type { BatchState } from "../core/uploader";
 
 export interface UseBatchFinalizeListenerOptions {
     /** Upload endpoint URL (used to create uploader instance) */
@@ -43,4 +43,3 @@ export const useBatchFinalizeListener = (options: UseBatchFinalizeListenerOption
         };
     }, [endpoint, metadata]);
 };
-

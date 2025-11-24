@@ -1,7 +1,7 @@
 import { onDestroy, onMount } from "svelte";
 
-import type { UploadItem } from "../core/uploader";
 import { createMultipartAdapter } from "../core/multipart-adapter";
+import type { UploadItem } from "../core/uploader";
 
 export interface CreateRetryListenerOptions {
     endpoint: string;
@@ -28,4 +28,3 @@ export const createRetryListener = (options: CreateRetryListenerOptions): void =
         });
     });
 };
-

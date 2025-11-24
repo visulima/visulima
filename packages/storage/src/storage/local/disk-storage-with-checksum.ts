@@ -37,9 +37,17 @@ class DiskStorageWithChecksum<TFile extends File = File> extends DiskStorage<TFi
             await remove(path);
             await this.deleteMeta(id);
 
-            return { ...file, status: "deleted" };
+            const deletedFile = { ...file, status: "deleted" } as TFile;
+
+            await this.onDelete(deletedFile);
+
+            return deletedFile;
         } catch (error) {
             this.logger?.error("[error]: Could not delete file: %O", error);
+
+            const httpError = this.normalizeError(error instanceof Error ? error : new Error(String(error)));
+
+            await this.onError(httpError);
         }
 
         return { id } as TFile;
@@ -146,9 +154,10 @@ class DiskStorageWithChecksum<TFile extends File = File> extends DiskStorage<TFi
             return file;
         } catch (error: unknown) {
             await this.hashes.updateFromFs(path, file.bytesWritten);
-            const message = error instanceof Error ? error.message : String(error);
+            const httpError = this.normalizeError(error instanceof Error ? error : new Error(String(error)));
 
-            return throwErrorCode(ERRORS.FILE_ERROR, message);
+            await this.onError(httpError);
+            return throwErrorCode(ERRORS.FILE_ERROR, httpError.message);
         }
     }
 

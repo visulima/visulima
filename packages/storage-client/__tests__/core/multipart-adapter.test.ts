@@ -14,9 +14,9 @@ class MockXMLHttpRequest {
 
     public response = "";
 
-    private eventListeners = new Map<string, Set<(event: Event) => void>>();
+    protected eventListeners = new Map<string, Set<(event: Event) => void>>();
 
-    private uploadEventListeners = new Map<string, Set<(event: ProgressEvent) => void>>();
+    protected uploadEventListeners = new Map<string, Set<(event: ProgressEvent) => void>>();
 
     public upload = {
         addEventListener: vi.fn((event: string, handler: (event: ProgressEvent) => void) => {

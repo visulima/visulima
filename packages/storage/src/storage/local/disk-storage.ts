@@ -151,9 +151,10 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
                 await ensureFile(path);
                 file.bytesWritten = 0;
             } catch (error: unknown) {
-                const message = error instanceof Error ? error.message : String(error);
+                const httpError = this.normalizeError(error instanceof Error ? error : new Error(String(error)));
 
-                throwErrorCode(ERRORS.FILE_ERROR, message);
+                await this.onError(httpError);
+                throwErrorCode(ERRORS.FILE_ERROR, httpError.message);
             }
 
             file.status = getFileStatus(file);
@@ -297,9 +298,10 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
 
                 return file;
             } catch (error: unknown) {
-                const message = error instanceof Error ? error.message : String(error);
+                const httpError = this.normalizeError(error instanceof Error ? error : new Error(String(error)));
 
-                return throwErrorCode(ERRORS.FILE_ERROR, message);
+                await this.onError(httpError);
+                return throwErrorCode(ERRORS.FILE_ERROR, httpError.message);
             } finally {
                 await this.unlock(path);
             }
@@ -330,11 +332,15 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
                 const errorWithCode = error as { code?: string; message?: string };
 
                 if (errorWithCode.code === "ENOENT" || errorWithCode.code === "EPERM") {
-                    const message = error instanceof Error ? error.message : errorWithCode.message || String(error);
+                    const httpError = this.normalizeError(error instanceof Error ? error : new Error(errorWithCode.message || String(error)));
 
-                    return throwErrorCode(ERRORS.FILE_NOT_FOUND, message);
+                    await this.onError(httpError);
+                    return throwErrorCode(ERRORS.FILE_NOT_FOUND, httpError.message);
                 }
 
+                const httpError = this.normalizeError(error instanceof Error ? error : new Error(String(error)));
+
+                await this.onError(httpError);
                 throw error;
             }
 
@@ -384,9 +390,10 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
                 };
             } catch (error: unknown) {
                 // Convert any filesystem error when reading metadata to FILE_NOT_FOUND
-                const message = error instanceof Error ? error.message : String(error);
+                const httpError = this.normalizeError(error instanceof Error ? error : new Error(String(error)));
 
-                throw throwErrorCode(ERRORS.FILE_NOT_FOUND, message);
+                await this.onError(httpError);
+                throw throwErrorCode(ERRORS.FILE_NOT_FOUND, httpError.message);
             }
         });
     }
@@ -454,6 +461,9 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
                     await copyFile(source, destinationPath);
                     await remove(source);
                 } else {
+                    const httpError = this.normalizeError(error instanceof Error ? error : new Error(String(error)));
+
+                    await this.onError(httpError);
                     throw error;
                 }
             }

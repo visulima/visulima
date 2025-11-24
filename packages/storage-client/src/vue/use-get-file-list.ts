@@ -69,7 +69,7 @@ export const useGetFileList = (options: UseGetFileListOptions): UseGetFileListRe
     });
 
     return {
-        data: query.data,
+        data: computed(() => query.data.value),
         error: computed(() => (query.error.value as Error) || undefined),
         isLoading: computed(() => query.isLoading.value),
         refetch: () => {

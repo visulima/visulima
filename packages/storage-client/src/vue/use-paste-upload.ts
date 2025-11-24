@@ -2,10 +2,10 @@ import type { Ref } from "vue";
 import { onBeforeUnmount, onMounted, ref } from "vue";
 
 export interface UsePasteUploadOptions {
-    /** Callback when files are pasted */
-    onFilesPasted?: (files: File[]) => void;
     /** Filter function to determine which files to accept */
     filter?: (file: File) => boolean;
+    /** Callback when files are pasted */
+    onFilesPasted?: (files: File[]) => void;
 }
 
 export interface UsePasteUploadReturn {
@@ -23,7 +23,7 @@ export interface UsePasteUploadReturn {
  * @returns Paste upload functions and state
  */
 export const usePasteUpload = (options: UsePasteUploadOptions = {}): UsePasteUploadReturn => {
-    const { onFilesPasted, filter } = options;
+    const { filter, onFilesPasted } = options;
 
     const pastedFiles = ref<File[]>([]);
 
@@ -36,9 +36,7 @@ export const usePasteUpload = (options: UsePasteUploadOptions = {}): UsePasteUpl
 
         const files: File[] = [];
 
-        for (let i = 0; i < items.length; i++) {
-            const item = items[i];
-
+        for (const item of items) {
             // Check if item is a file
             if (item.kind === "file") {
                 const file = item.getAsFile();
@@ -75,9 +73,7 @@ export const usePasteUpload = (options: UsePasteUploadOptions = {}): UsePasteUpl
 
             const files: File[] = [];
 
-            for (let i = 0; i < items.length; i++) {
-                const item = items[i];
-
+            for (const item of items) {
                 if (item.kind === "file") {
                     const file = item.getAsFile();
 
@@ -112,4 +108,3 @@ export const usePasteUpload = (options: UsePasteUploadOptions = {}): UsePasteUpl
         reset,
     };
 };
-

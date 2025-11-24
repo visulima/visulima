@@ -1,12 +1,14 @@
 import { QueryClient } from "@tanstack/react-query";
 import { waitFor } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { useChunkedRestUpload } from "../../src/react/use-chunked-rest-upload";
 import { renderHookWithQueryClient } from "./test-utils";
 
 // Mock fetch globally
 const mockFetch = vi.fn();
+// Capture original fetch once before the suite
+const originalFetch = globalThis.fetch;
 
 describe(useChunkedRestUpload, () => {
     let queryClient: QueryClient;
@@ -18,8 +20,16 @@ describe(useChunkedRestUpload, () => {
                 queries: { retry: false },
             },
         });
-        globalThis.fetch = mockFetch;
-        vi.clearAllMocks();
+        globalThis.fetch = mockFetch as unknown as typeof globalThis.fetch;
+        mockFetch.mockReset();
+    });
+
+    afterAll(() => {
+        if (originalFetch) {
+            globalThis.fetch = originalFetch;
+        } else {
+            delete (globalThis as any).fetch;
+        }
     });
 
     it("should initialize with default state", () => {
@@ -77,14 +87,16 @@ describe(useChunkedRestUpload, () => {
 
         // Mock get upload result (GET)
         mockFetch.mockResolvedValueOnce({
-            json: async () => ({
-                id: fileId,
-                name: "test.txt",
-                originalName: "test.txt",
-                size: file.size,
-                contentType: "text/plain",
-                status: "completed",
-            }),
+            json: async () => {
+                return {
+                    contentType: "text/plain",
+                    id: fileId,
+                    name: "test.txt",
+                    originalName: "test.txt",
+                    size: file.size,
+                    status: "completed",
+                };
+            },
             ok: true,
         });
 
@@ -121,6 +133,7 @@ describe(useChunkedRestUpload, () => {
         mockFetch.mockImplementation((url: string, options?: RequestInit) => {
             if (options?.method === "HEAD") {
                 headCallCount++;
+
                 if (headCallCount === 1) {
                     // Initial status check
                     return Promise.resolve({
@@ -130,6 +143,7 @@ describe(useChunkedRestUpload, () => {
                         ok: true,
                     });
                 }
+
                 // Status check when resuming or final check
                 return Promise.resolve({
                     headers: new Headers({
@@ -138,8 +152,10 @@ describe(useChunkedRestUpload, () => {
                     ok: true,
                 });
             }
+
             if (options?.method === "PATCH") {
                 patchCallCount++;
+
                 // Delay first PATCH so we can pause
                 if (patchCallCount === 1) {
                     return new Promise((resolve) => {
@@ -153,6 +169,7 @@ describe(useChunkedRestUpload, () => {
                         }, 200);
                     });
                 }
+
                 // Subsequent PATCH calls (when resuming)
                 return Promise.resolve({
                     headers: new Headers({
@@ -161,17 +178,22 @@ describe(useChunkedRestUpload, () => {
                     ok: true,
                 });
             }
+
             if (options?.method === "GET") {
                 getCallCount++;
+
                 return Promise.resolve({
-                    json: async () => ({
-                        id: "file-123",
-                        size: file.size,
-                        status: "completed",
-                    }),
+                    json: async () => {
+                        return {
+                            id: "file-123",
+                            size: file.size,
+                            status: "completed",
+                        };
+                    },
                     ok: true,
                 });
             }
+
             return Promise.reject(new Error(`Unexpected method: ${options?.method}`));
         });
 
@@ -208,7 +230,6 @@ describe(useChunkedRestUpload, () => {
     });
 
     it("should call callbacks correctly", async () => {
-
         const file = new File(["test content"], "test.txt", { type: "text/plain" });
         const onStart = vi.fn();
         const onProgress = vi.fn();
@@ -245,11 +266,13 @@ describe(useChunkedRestUpload, () => {
         });
 
         mockFetch.mockResolvedValueOnce({
-            json: async () => ({
-                id: "file-123",
-                size: file.size,
-                status: "completed",
-            }),
+            json: async () => {
+                return {
+                    id: "file-123",
+                    size: file.size,
+                    status: "completed",
+                };
+            },
             ok: true,
         });
 
@@ -257,10 +280,10 @@ describe(useChunkedRestUpload, () => {
             () =>
                 useChunkedRestUpload({
                     endpoint: "https://api.example.com/upload",
-                    onStart,
-                    onProgress,
-                    onSuccess,
                     onError,
+                    onProgress,
+                    onStart,
+                    onSuccess,
                 }),
             { queryClient },
         );
@@ -268,9 +291,9 @@ describe(useChunkedRestUpload, () => {
         await result.current.upload(file);
 
         await waitFor(() => {
-            expect(onStart).toHaveBeenCalled();
-            expect(onProgress).toHaveBeenCalled();
-            expect(onSuccess).toHaveBeenCalled();
+            expect(onStart).toHaveBeenCalledWith();
+            expect(onProgress).toHaveBeenCalledWith();
+            expect(onSuccess).toHaveBeenCalledWith();
             expect(onError).not.toHaveBeenCalled();
         });
     });
@@ -281,9 +304,11 @@ describe(useChunkedRestUpload, () => {
         // Use mockImplementation to handle all requests, especially PATCH with abort signal
         let headCallCount = 0;
         let getCallCount = 0;
+
         mockFetch.mockImplementation((url: string, options?: RequestInit) => {
             if (options?.method === "HEAD") {
                 headCallCount++;
+
                 return Promise.resolve({
                     headers: new Headers({
                         "X-Upload-Offset": headCallCount === 1 ? "0" : String(file.size),
@@ -291,6 +316,7 @@ describe(useChunkedRestUpload, () => {
                     ok: true,
                 });
             }
+
             if (options?.method === "PATCH") {
                 return new Promise((resolve, reject) => {
                     const timeoutId = setTimeout(() => {
@@ -316,17 +342,22 @@ describe(useChunkedRestUpload, () => {
                     }
                 });
             }
+
             if (options?.method === "GET") {
                 getCallCount++;
+
                 return Promise.resolve({
-                    json: async () => ({
-                        id: "file-123",
-                        size: file.size,
-                        status: "completed",
-                    }),
+                    json: async () => {
+                        return {
+                            id: "file-123",
+                            size: file.size,
+                            status: "completed",
+                        };
+                    },
                     ok: true,
                 });
             }
+
             // For POST (create upload)
             return Promise.resolve({
                 headers: new Headers({
@@ -354,7 +385,7 @@ describe(useChunkedRestUpload, () => {
         result.current.abort();
 
         await expect(uploadPromise).rejects.toThrow();
-    }, 10000);
+    }, 10_000);
 
     it("should reset state", async () => {
         const { result } = renderHookWithQueryClient(
@@ -373,4 +404,3 @@ describe(useChunkedRestUpload, () => {
         expect(result.current.error).toBeUndefined();
     });
 });
-

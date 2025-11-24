@@ -12,16 +12,16 @@ export interface UseFileInputOptions {
 export interface UseFileInputReturn {
     /** Currently selected files */
     files: File[];
-    /** File input element ref */
-    inputRef: React.RefObject<HTMLInputElement>;
-    /** Handle file input change event */
-    handleFileChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-    /** Handle drag and drop events */
-    handleDragOver: (event: React.DragEvent<HTMLElement>) => void;
     /** Handle drag leave event */
     handleDragLeave: (event: React.DragEvent<HTMLElement>) => void;
+    /** Handle drag and drop events */
+    handleDragOver: (event: React.DragEvent<HTMLElement>) => void;
     /** Handle drop event */
     handleDrop: (event: React.DragEvent<HTMLElement>) => void;
+    /** Handle file input change event */
+    handleFileChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+    /** File input element ref */
+    inputRef: React.RefObject<HTMLInputElement>;
     /** Open file dialog programmatically */
     openFileDialog: () => void;
     /** Reset selected files */
@@ -46,7 +46,7 @@ export const useFileInput = (options: UseFileInputOptions = {}): UseFileInputRet
                 return;
             }
 
-            const fileArray = Array.from(fileList);
+            const fileArray = [...fileList];
 
             setFiles(fileArray);
             onFilesSelected?.(fileArray);
@@ -97,7 +97,7 @@ export const useFileInput = (options: UseFileInputOptions = {}): UseFileInputRet
                 if (inputRef.current) {
                     const dataTransfer = new DataTransfer();
 
-                    for (const file of Array.from(droppedFiles)) {
+                    for (const file of droppedFiles) {
                         dataTransfer.items.add(file);
                     }
 
@@ -142,4 +142,3 @@ export const useFileInput = (options: UseFileInputOptions = {}): UseFileInputRet
         reset,
     };
 };
-

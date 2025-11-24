@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, expectTypeOf, it, vi } from "vitest";
 
 import { useAbortBatch } from "../../src/react/use-abort-batch";
 import { renderHookWithQueryClient } from "./test-utils";
@@ -37,7 +37,7 @@ class MockXMLHttpRequest {
     public abort = vi.fn();
 }
 
-describe("useAbortBatch", () => {
+describe(useAbortBatch, () => {
     let originalXHR: typeof XMLHttpRequest;
 
     beforeEach(() => {
@@ -61,7 +61,7 @@ describe("useAbortBatch", () => {
             }),
         );
 
-        expect(typeof result.current.abortBatch).toBe("function");
+        expectTypeOf(result.current.abortBatch).toBeFunction();
     });
 
     it("should abort batch without throwing", () => {
@@ -78,4 +78,3 @@ describe("useAbortBatch", () => {
         }).not.toThrow();
     });
 });
-

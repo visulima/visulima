@@ -14,20 +14,6 @@ import { ERRORS } from "../../../src/utils/errors";
 import { metafile, storageOptions } from "../../__helpers__/config";
 import RequestReadStream from "../../__helpers__/streams/request-read-stream";
 
-// Mock fs.createWriteStream to return our mock stream
-// vi.mock("node:fs", async () => {
-//     const actual = await vi.importActual("node:fs");
-//     return {
-//         ...actual,
-//         createWriteStream: vi.fn((...args: any[]) => {
-//             console.log('createWriteStream called with:', args);
-//             return new FileWriteStream();
-//         }),
-//         createReadStream: actual.createReadStream,
-//         promises: actual.promises,
-//     };
-// });
-
 // Test helpers
 const createTestFile = async (storage: DiskStorage, createDummyFile = true): Promise<void> => {
     const filePath = join(storage.directory, "testfile.mp4");
@@ -139,6 +125,27 @@ describe(DiskStorage, () => {
             expect.assertions(1);
 
             await expect(storage.create({ ...metafile, size: 6e10 })).rejects.toThrow(/Request entity too large|ValidationError/);
+        });
+
+        it("should call onError hook when create operation fails", async () => {
+            expect.assertions(2);
+
+            const onErrorHook = vi.fn().mockResolvedValue(undefined);
+            storage.onError = onErrorHook;
+
+            try {
+                await storage.create({ ...metafile, size: 6e10 });
+            } catch {
+                // Expected to throw
+            }
+
+            expect(onErrorHook).toHaveBeenCalledTimes(1);
+            expect(onErrorHook).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    statusCode: expect.any(Number),
+                    message: expect.any(String),
+                })
+            );
         });
     });
 
@@ -289,6 +296,28 @@ describe(DiskStorage, () => {
 
             await expect(Promise.all([write, write2])).rejects.toHaveProperty("UploadErrorCode", "FileLocked");
         });
+
+        it("should call onError hook when write operation fails", async () => {
+            expect.assertions(2);
+
+            const onErrorHook = vi.fn().mockResolvedValue(undefined);
+            storage.onError = onErrorHook;
+
+            // Try to write to a non-existent file (should fail)
+            try {
+                await storage.write({ ...metafile, id: "nonexistent", body: Readable.from("test"), start: 0 });
+            } catch {
+                // Expected to throw
+            }
+
+            expect(onErrorHook).toHaveBeenCalledTimes(1);
+            expect(onErrorHook).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    statusCode: expect.any(Number),
+                    message: expect.any(String),
+                })
+            );
+        });
     });
 
     describe(".list()", () => {
@@ -330,6 +359,27 @@ describe(DiskStorage, () => {
             expect.assertions(1);
 
             await expect(storage.delete({ id: "notfound" })).rejects.toThrow();
+        });
+
+        it("should call onError hook when deleting non-existent files", async () => {
+            expect.assertions(2);
+
+            const onErrorHook = vi.fn().mockResolvedValue(undefined);
+            storage.onError = onErrorHook;
+
+            try {
+                await storage.delete({ id: "notfound" });
+            } catch {
+                // Expected to throw
+            }
+
+            expect(onErrorHook).toHaveBeenCalledTimes(1);
+            expect(onErrorHook).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    statusCode: expect.any(Number),
+                    message: expect.any(String),
+                })
+            );
         });
 
         it("should delete file and metadata successfully", async () => {
@@ -475,6 +525,27 @@ describe(DiskStorage, () => {
                 expect.assertions(1);
 
                 await expect(storage.getStream({ id: "nonexistent" })).rejects.toHaveProperty("UploadErrorCode", "FileNotFound");
+            });
+
+            it("should call onError hook when getStream fails for non-existent files", async () => {
+                expect.assertions(2);
+
+                const onErrorHook = vi.fn().mockResolvedValue(undefined);
+                storage.onError = onErrorHook;
+
+                try {
+                    await storage.getStream({ id: "nonexistent" });
+                } catch {
+                    // Expected to throw
+                }
+
+                expect(onErrorHook).toHaveBeenCalledTimes(1);
+                expect(onErrorHook).toHaveBeenCalledWith(
+                    expect.objectContaining({
+                        statusCode: expect.any(Number),
+                        message: expect.any(String),
+                    })
+                );
             });
 
             it("should stream large files efficiently", async () => {
@@ -1175,6 +1246,60 @@ describe(DiskStorage, () => {
             };
 
             await expect(storage.create(negativeSizeFile)).rejects.toThrow("Request entity too large");
+        });
+    });
+
+    describe("onError hook", () => {
+        beforeEach(() => {
+            storage = new DiskStorage(options);
+        });
+
+        it("should call onError hook when getMeta fails", async () => {
+            expect.assertions(2);
+
+            const onErrorHook = vi.fn().mockResolvedValue(undefined);
+            storage.onError = onErrorHook;
+
+            try {
+                await storage.getMeta("nonexistent");
+            } catch {
+                // Expected to throw
+            }
+
+            expect(onErrorHook).toHaveBeenCalledTimes(1);
+            expect(onErrorHook).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    statusCode: expect.any(Number),
+                    message: expect.any(String),
+                })
+            );
+        });
+
+        it("should allow onError hook to modify error object", async () => {
+            expect.assertions(2);
+
+            const onErrorHook = vi.fn().mockImplementation((error) => {
+                // Modify error in place
+                // eslint-disable-next-line no-param-reassign
+                error.statusCode = 418;
+                // eslint-disable-next-line no-param-reassign
+                error.message = "Custom error message";
+            });
+            storage.onError = onErrorHook;
+
+            try {
+                await storage.getMeta("nonexistent");
+            } catch {
+                // Expected to throw
+            }
+
+            expect(onErrorHook).toHaveBeenCalledTimes(1);
+            expect(onErrorHook).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    statusCode: 418,
+                    message: "Custom error message",
+                })
+            );
         });
     });
 });

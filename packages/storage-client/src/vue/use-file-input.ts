@@ -13,16 +13,16 @@ export interface UseFileInputOptions {
 export interface UseFileInputReturn {
     /** Currently selected files */
     files: Ref<File[]>;
-    /** File input element ref */
-    inputRef: Ref<HTMLInputElement | undefined>;
-    /** Handle file input change event */
-    handleFileChange: (event: Event) => void;
-    /** Handle drag and drop events */
-    handleDragOver: (event: DragEvent) => void;
     /** Handle drag leave event */
     handleDragLeave: (event: DragEvent) => void;
+    /** Handle drag and drop events */
+    handleDragOver: (event: DragEvent) => void;
     /** Handle drop event */
     handleDrop: (event: DragEvent) => void;
+    /** Handle file input change event */
+    handleFileChange: (event: Event) => void;
+    /** File input element ref */
+    inputRef: Ref<HTMLInputElement | undefined>;
     /** Open file dialog programmatically */
     openFileDialog: () => void;
     /** Reset selected files */
@@ -46,7 +46,7 @@ export const useFileInput = (options: UseFileInputOptions = {}): UseFileInputRet
             return;
         }
 
-        const fileArray = Array.from(fileList);
+        const fileArray = [...fileList];
 
         files.value = fileArray;
         onFilesSelected?.(fileArray);
@@ -93,7 +93,7 @@ export const useFileInput = (options: UseFileInputOptions = {}): UseFileInputRet
             if (inputRef.value) {
                 const dataTransfer = new DataTransfer();
 
-                for (const file of Array.from(droppedFiles)) {
+                for (const file of droppedFiles) {
                     dataTransfer.items.add(file);
                 }
 
@@ -136,4 +136,3 @@ export const useFileInput = (options: UseFileInputOptions = {}): UseFileInputRet
         reset,
     };
 };
-

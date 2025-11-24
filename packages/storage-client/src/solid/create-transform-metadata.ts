@@ -51,18 +51,24 @@ export const createTransformMetadata = (options: CreateTransformMetadataOptions)
                     parameters: data.parameters,
                 };
             },
-            queryKey: () => storageQueryKeys.transform.metadata(endpoint),
+            queryKey: storageQueryKeys.transform.metadata(endpoint),
         };
     });
 
     return {
-        data: query.data,
+        data: () => {
+            if (typeof query.data === "function") {
+                return query.data() as TransformMetadata | undefined;
+            }
+
+            return query.data as TransformMetadata | undefined;
+        },
         error: () => {
-            const error = query.error();
+            const error = typeof query.error === "function" ? query.error() : query.error;
 
             return (error as Error) || undefined;
         },
-        isLoading: query.isLoading,
+        isLoading: () => (typeof query.isLoading === "function" ? query.isLoading() : query.isLoading) as boolean,
         refetch: () => {
             query.refetch();
         },

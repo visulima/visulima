@@ -1,12 +1,12 @@
 import { createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
 
-const RootDocument = ({ children }: { children: React.ReactNode }) => (
+const RootDocument = (props: { children: React.ReactNode }) => (
     <html lang="en">
         <head>
             <HeadContent />
         </head>
         <body>
-            {children}
+            {props.children}
             <Scripts />
         </body>
     </html>

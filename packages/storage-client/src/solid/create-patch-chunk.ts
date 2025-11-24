@@ -72,8 +72,12 @@ export const createPatchChunk = (options: CreatePatchChunkOptions): CreatePatchC
 
     return {
         data: () => mutation.data() || undefined,
-        error: mutation.error as Accessor<Error | undefined>,
-        isLoading: mutation.isPending,
+        error: () => {
+            const error = typeof mutation.error === "function" ? mutation.error() : mutation.error;
+
+            return (error as Error) || undefined;
+        },
+        isLoading: () => (typeof mutation.isPending === "function" ? mutation.isPending() : mutation.isPending) as boolean,
         patchChunk: (id: string, chunk: Blob, offset: number, checksum?: string) => mutation.mutateAsync({ checksum, chunk, id, offset }),
         reset: mutation.reset,
     };

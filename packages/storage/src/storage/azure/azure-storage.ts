@@ -457,6 +457,9 @@ class AzureStorage extends BaseStorage<AzureFile, FileReturn> {
                     } catch (error) {
                         truncated = false;
 
+                        const httpError = this.normalizeError(error instanceof Error ? error : new Error(String(error)));
+
+                        await this.onError(httpError);
                         throw error;
                     }
                 }

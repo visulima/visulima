@@ -185,7 +185,6 @@ describe(useUpload, () => {
     });
 
     it("should call callbacks correctly", async () => {
-
         const file = new File(["test content"], "test.txt", { type: "text/plain" });
         const onStart = vi.fn();
         const onProgress = vi.fn();
@@ -197,10 +196,10 @@ describe(useUpload, () => {
                 useUpload({
                     endpointMultipart: "https://api.example.com/upload",
                     method: "multipart",
-                    onStart,
-                    onProgress,
-                    onSuccess,
                     onError,
+                    onProgress,
+                    onStart,
+                    onSuccess,
                 }),
             { queryClient },
         );
@@ -208,9 +207,9 @@ describe(useUpload, () => {
         await result.current.upload(file);
 
         await waitFor(() => {
-            expect(onStart).toHaveBeenCalled();
-            expect(onProgress).toHaveBeenCalled();
-            expect(onSuccess).toHaveBeenCalled();
+            expect(onStart).toHaveBeenCalledWith();
+            expect(onProgress).toHaveBeenCalledWith();
+            expect(onSuccess).toHaveBeenCalledWith();
             expect(onError).not.toHaveBeenCalled();
         });
     });
@@ -231,4 +230,3 @@ describe(useUpload, () => {
         expect(result.current.result).toBeUndefined();
     });
 });
-

@@ -215,6 +215,10 @@ class VercelBlobStorage extends BaseStorage<VercelBlobFile, FileReturn> {
                 await del(file.url, { token: this.token });
             } catch (error) {
                 this.logger?.error("Failed to delete blob from Vercel Blob:", error);
+
+                const httpError = this.normalizeError(error instanceof Error ? error : new Error(String(error)));
+
+                await this.onError(httpError);
             }
 
             await this.deleteMeta(file.id);

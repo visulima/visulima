@@ -274,66 +274,82 @@ export const useUpload = (options: UseUploadOptions): UseUploadReturn => {
         return "multipart";
     });
 
-    const isTus = currentMethod.value === "tus";
-    const isChunkedRest = currentMethod.value === "chunked-rest";
-
-    if (isTus) {
-        return {
-            abort,
-            currentMethod,
-            error: computed(() => tusUpload?.error.value ?? undefined),
-            isPaused: computed(() => tusUpload?.isPaused.value),
-            isUploading: computed(() => tusUpload?.isUploading.value ?? false),
-            offset: computed(() => tusUpload?.offset.value),
-            pause: computed(() => tusUpload?.pause),
-            progress: computed(() => tusUpload?.progress.value ?? 0),
-            reset,
-            result: computed(() => tusUpload?.result.value ?? undefined),
-            resume: computed(() => tusUpload?.resume),
-            upload,
-        };
-    }
-
     return {
         abort,
         currentMethod,
         error: computed(() => {
-            if (isChunkedRest) {
+            const method = currentMethod.value;
+
+            if (method === "tus") {
+                return tusUpload?.error.value ?? undefined;
+            }
+
+            if (method === "chunked-rest") {
                 return chunkedRestUpload?.error.value ?? undefined;
             }
 
             return multipartUpload?.error.value ?? undefined;
         }),
         isPaused: computed(() => {
-            if (isChunkedRest) {
+            const method = currentMethod.value;
+
+            if (method === "tus") {
+                return tusUpload?.isPaused.value;
+            }
+
+            if (method === "chunked-rest") {
                 return chunkedRestUpload?.isPaused.value;
             }
 
             return undefined;
         }),
         isUploading: computed(() => {
-            if (isChunkedRest) {
+            const method = currentMethod.value;
+
+            if (method === "tus") {
+                return tusUpload?.isUploading.value ?? false;
+            }
+
+            if (method === "chunked-rest") {
                 return chunkedRestUpload?.isUploading.value ?? false;
             }
 
             return multipartUpload?.isUploading.value ?? false;
         }),
         offset: computed(() => {
-            if (isChunkedRest) {
+            const method = currentMethod.value;
+
+            if (method === "tus") {
+                return tusUpload?.offset.value;
+            }
+
+            if (method === "chunked-rest") {
                 return chunkedRestUpload?.offset.value;
             }
 
             return undefined;
         }),
         pause: computed(() => {
-            if (isChunkedRest) {
+            const method = currentMethod.value;
+
+            if (method === "tus") {
+                return tusUpload?.pause;
+            }
+
+            if (method === "chunked-rest") {
                 return chunkedRestUpload?.pause;
             }
 
             return undefined;
         }),
         progress: computed(() => {
-            if (isChunkedRest) {
+            const method = currentMethod.value;
+
+            if (method === "tus") {
+                return tusUpload?.progress.value ?? 0;
+            }
+
+            if (method === "chunked-rest") {
                 return chunkedRestUpload?.progress.value ?? 0;
             }
 
@@ -341,14 +357,26 @@ export const useUpload = (options: UseUploadOptions): UseUploadReturn => {
         }),
         reset,
         result: computed(() => {
-            if (isChunkedRest) {
+            const method = currentMethod.value;
+
+            if (method === "tus") {
+                return tusUpload?.result.value ?? undefined;
+            }
+
+            if (method === "chunked-rest") {
                 return chunkedRestUpload?.result.value ?? undefined;
             }
 
             return multipartUpload?.result.value ?? undefined;
         }),
         resume: computed(() => {
-            if (isChunkedRest) {
+            const method = currentMethod.value;
+
+            if (method === "tus") {
+                return tusUpload?.resume;
+            }
+
+            if (method === "chunked-rest") {
                 return chunkedRestUpload?.resume;
             }
 

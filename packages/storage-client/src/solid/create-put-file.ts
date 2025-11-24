@@ -70,8 +70,12 @@ export const createPutFile = (options: CreatePutFileOptions): CreatePutFileRetur
 
     return {
         data: () => mutation.data() || undefined,
-        error: mutation.error as Accessor<Error | undefined>,
-        isLoading: mutation.isPending,
+        error: () => {
+            const error = typeof mutation.error === "function" ? mutation.error() : mutation.error;
+
+            return (error as Error) || undefined;
+        },
+        isLoading: () => (typeof mutation.isPending === "function" ? mutation.isPending() : mutation.isPending) as boolean,
         progress,
         putFile: (id: string, file: File | Blob) => mutation.mutateAsync({ file, id }),
         reset: () => {

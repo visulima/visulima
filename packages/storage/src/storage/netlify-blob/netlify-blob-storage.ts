@@ -260,6 +260,10 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile, FileReturn> {
                 await this.retry(() => this.store.delete(file.pathname));
             } catch (error) {
                 this.logger?.error("Failed to delete blob from Netlify Blob:", error);
+
+                const httpError = this.normalizeError(error instanceof Error ? error : new Error(String(error)));
+
+                await this.onError(httpError);
             }
 
             await this.deleteMeta(file.id);

@@ -66,8 +66,8 @@ describe(useTusUpload, () => {
         mockFetch.mockResolvedValueOnce({
             headers: new Headers({
                 Location: uploadUrl,
-                "Upload-Offset": String(file.size),
                 "Upload-Metadata": "filename dGVzdC50eHQ=", // base64 encoded "test.txt"
+                "Upload-Offset": String(file.size),
             }),
             ok: true,
             status: 200,
@@ -103,9 +103,11 @@ describe(useTusUpload, () => {
         // Mock PATCH and HEAD requests
         let patchCallCount = 0;
         let headCallCount = 0;
+
         mockFetch.mockImplementation((url: string, options?: RequestInit) => {
             if (options?.method === "PATCH") {
                 patchCallCount++;
+
                 if (patchCallCount === 1) {
                     // First PATCH - delay it so we can pause
                     return new Promise((resolve) => {
@@ -120,6 +122,7 @@ describe(useTusUpload, () => {
                         }, 200);
                     });
                 }
+
                 // Subsequent PATCH calls (when resuming)
                 return Promise.resolve({
                     headers: new Headers({
@@ -129,19 +132,22 @@ describe(useTusUpload, () => {
                     status: 204,
                 });
             }
+
             if (options?.method === "HEAD") {
                 headCallCount++;
+
                 // HEAD request to get upload offset (when resuming) or final file info
                 return Promise.resolve({
                     headers: new Headers({
-                        "Upload-Offset": headCallCount === 1 ? "0" : String(file.size),
                         Location: "https://api.example.com/upload/file-123",
                         "Upload-Metadata": "filename dGVzdC50eHQ=",
+                        "Upload-Offset": headCallCount === 1 ? "0" : String(file.size),
                     }),
                     ok: true,
                     status: 200,
                 });
             }
+
             return Promise.reject(new Error(`Unexpected method: ${options?.method}`));
         });
 
@@ -174,7 +180,6 @@ describe(useTusUpload, () => {
     });
 
     it("should call callbacks correctly", async () => {
-
         const file = new File(["test content"], "test.txt", { type: "text/plain" });
         const onStart = vi.fn();
         const onProgress = vi.fn();
@@ -204,8 +209,8 @@ describe(useTusUpload, () => {
         mockFetch.mockResolvedValueOnce({
             headers: new Headers({
                 Location: "https://api.example.com/upload/file-123",
-                "Upload-Offset": String(file.size),
                 "Upload-Metadata": "filename dGVzdC50eHQ=",
+                "Upload-Offset": String(file.size),
             }),
             ok: true,
             status: 200,
@@ -215,10 +220,10 @@ describe(useTusUpload, () => {
             () =>
                 useTusUpload({
                     endpoint: "https://api.example.com/upload",
-                    onStart,
-                    onProgress,
-                    onSuccess,
                     onError,
+                    onProgress,
+                    onStart,
+                    onSuccess,
                 }),
             { queryClient },
         );
@@ -226,9 +231,9 @@ describe(useTusUpload, () => {
         await result.current.upload(file);
 
         await waitFor(() => {
-            expect(onStart).toHaveBeenCalled();
-            expect(onProgress).toHaveBeenCalled();
-            expect(onSuccess).toHaveBeenCalled();
+            expect(onStart).toHaveBeenCalledWith();
+            expect(onProgress).toHaveBeenCalledWith();
+            expect(onSuccess).toHaveBeenCalledWith();
             expect(onError).not.toHaveBeenCalled();
         });
     });
@@ -287,4 +292,3 @@ describe(useTusUpload, () => {
         expect(result.current.error).toBeUndefined();
     });
 });
-

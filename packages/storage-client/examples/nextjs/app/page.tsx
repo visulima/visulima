@@ -41,14 +41,14 @@ export default function Home() {
     return (
         <main>
             <h1>Storage Client - Next.js Example</h1>
-            <div style={{ marginTop: "2rem" }}>
+            <div style={{ "margin-top": "2rem" }}>
                 <input disabled={isUploading} onChange={handleFileChange} ref={fileInputRef} type="file" />
-                <button disabled={!file || isUploading} onClick={handleUpload} style={{ marginLeft: "1rem" }}>
+                <button disabled={!file || isUploading} onClick={handleUpload} style={{ "margin-left": "1rem" }}>
                     {isUploading ? "Uploading..." : "Upload"}
                 </button>
             </div>
             {isUploading && (
-                <div style={{ marginTop: "1rem" }}>
+                <div style={{ "margin-top": "1rem" }}>
                     <div>
                         Progress:
                         {progress}
@@ -58,13 +58,13 @@ export default function Home() {
                 </div>
             )}
             {error && (
-                <div style={{ color: "red", marginTop: "1rem" }}>
+                <div style={{ color: "red", "margin-top": "1rem" }}>
                     Error:
                     {error.message}
                 </div>
             )}
             {result && (
-                <div style={{ color: "green", marginTop: "1rem" }}>
+                <div style={{ color: "green", "margin-top": "1rem" }}>
                     Upload complete! File:
                     {result.filename}
                 </div>

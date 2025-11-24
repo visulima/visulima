@@ -1,3 +1,4 @@
+import type { QueryClient } from "@tanstack/solid-query";
 import { createQuery } from "@tanstack/solid-query";
 import type { Accessor } from "solid-js";
 
@@ -11,6 +12,8 @@ export interface CreateGetFileMetaOptions {
     endpoint: string;
     /** File ID to fetch metadata for */
     id: Accessor<string> | string;
+    /** Optional QueryClient to use */
+    queryClient?: QueryClient;
 }
 
 export interface CreateGetFileMetaReturn {
@@ -30,16 +33,20 @@ export interface CreateGetFileMetaReturn {
  * @returns File metadata fetching functions and state signals
  */
 export const createGetFileMeta = (options: CreateGetFileMetaOptions): CreateGetFileMetaReturn => {
-    const { enabled = true, endpoint, id } = options;
+    const { enabled = true, endpoint, id, queryClient } = options;
 
     const idValue = typeof id === "function" ? id : () => id;
     const enabledValue = typeof enabled === "function" ? enabled : () => enabled;
 
     const query = createQuery(() => {
+        const fileId = idValue();
+        const enabled = enabledValue() && !!fileId;
+
+        const queryKey = storageQueryKeys.files.meta(endpoint, fileId);
+
         return {
-            enabled: enabledValue() && !!idValue(),
+            enabled,
             queryFn: async (): Promise<FileMeta> => {
-                const fileId = idValue();
                 const url = buildUrl(endpoint, `${fileId}/metadata`);
                 const data = await fetchJson<FileMeta>(url);
 
@@ -48,18 +55,24 @@ export const createGetFileMeta = (options: CreateGetFileMetaOptions): CreateGetF
                     id: data.id || fileId,
                 };
             },
-            queryKey: () => storageQueryKeys.files.meta(endpoint, idValue()),
+            queryKey,
         };
-    });
+    }, queryClient ? () => queryClient : undefined);
 
     return {
-        data: query.data,
+        data: () => {
+            if (typeof query.data === "function") {
+                return query.data() as FileMeta | undefined;
+            }
+
+            return query.data as FileMeta | undefined;
+        },
         error: () => {
-            const error = query.error();
+            const error = typeof query.error === "function" ? query.error() : query.error;
 
             return (error as Error) || undefined;
         },
-        isLoading: query.isLoading,
+        isLoading: () => (typeof query.isLoading === "function" ? query.isLoading() : query.isLoading) as boolean,
         refetch: () => {
             query.refetch();
         },

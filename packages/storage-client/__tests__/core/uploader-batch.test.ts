@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { createUploader } from "../../src/core/uploader";
 import type { BatchState } from "../../src/core/uploader";
+import { createUploader } from "../../src/core/uploader";
 
 // Mock XMLHttpRequest
 class MockXMLHttpRequest {
@@ -93,7 +93,7 @@ class MockXMLHttpRequest {
     });
 }
 
-describe("Uploader Batch Operations", () => {
+describe("uploader Batch Operations", () => {
     let originalXHR: typeof XMLHttpRequest;
 
     beforeEach(() => {
@@ -145,9 +145,9 @@ describe("Uploader Batch Operations", () => {
             expect.objectContaining({
                 id: expect.any(String),
                 itemIds: expect.arrayContaining([expect.any(String), expect.any(String)]),
-                totalCount: 2,
                 progress: 0,
                 status: "uploading",
+                totalCount: 2,
             }),
         );
     });
@@ -191,7 +191,7 @@ describe("Uploader Batch Operations", () => {
         // Wait for progress event
         await new Promise((resolve) => setTimeout(resolve, 15));
 
-        expect(onBatchProgress).toHaveBeenCalled();
+        expect(onBatchProgress).toHaveBeenCalledWith();
         expect(onBatchProgress).toHaveBeenCalledWith(
             expect.objectContaining({
                 progress: expect.any(Number),
@@ -216,11 +216,11 @@ describe("Uploader Batch Operations", () => {
         // Wait for completion
         await new Promise((resolve) => setTimeout(resolve, 25));
 
-        expect(onBatchFinish).toHaveBeenCalled();
+        expect(onBatchFinish).toHaveBeenCalledWith();
         expect(onBatchFinish).toHaveBeenCalledWith(
             expect.objectContaining({
-                status: "completed",
                 completedCount: 1,
+                status: "completed",
             }),
         );
     });
@@ -256,4 +256,3 @@ describe("Uploader Batch Operations", () => {
         expect(itemIds).toEqual([]);
     });
 });
-

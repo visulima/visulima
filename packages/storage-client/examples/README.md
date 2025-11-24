@@ -137,10 +137,15 @@ const { upload, progress, isUploading } = useUpload({
 </script>
 
 <template>
-    <div>
-        <input type="file" @change="(e) => upload((e.target as HTMLInputElement).files?.[0])" />
-        <div v-if="isUploading">Progress: {{ progress }}%</div>
+  <div>
+    <input
+      type="file"
+      @change="(e) => upload((e.target as HTMLInputElement).files?.[0])"
+    >
+    <div v-if="isUploading">
+      Progress: {{ progress }}%
     </div>
+  </div>
 </template>
 ```
 
@@ -183,12 +188,12 @@ const UploadComponent = () => {
 
 ```svelte
 <script lang="ts">
-  import { createUpload } from '@visulima/storage-client/svelte';
+  import { createUpload } from "@visulima/storage-client/svelte";
 
   const { upload, progress, isUploading } = createUpload({
-    endpointChunkedRest: '/api/upload/chunked-rest',
-    endpointMultipart: '/api/upload/multipart',
-    endpointTus: '/api/upload/tus',
+      endpointChunkedRest: "/api/upload/chunked-rest",
+      endpointMultipart: "/api/upload/multipart",
+      endpointTus: "/api/upload/tus",
   });
 </script>
 
@@ -212,10 +217,15 @@ const { upload, progress, isUploading } = useUpload({
 </script>
 
 <template>
-    <div>
-        <input type="file" @change="(e) => upload((e.target as HTMLInputElement).files?.[0])" />
-        <div v-if="isUploading">Progress: {{ progress }}%</div>
+  <div>
+    <input
+      type="file"
+      @change="(e) => upload((e.target as HTMLInputElement).files?.[0])"
+    >
+    <div v-if="isUploading">
+      Progress: {{ progress }}%
     </div>
+  </div>
 </template>
 ```
 

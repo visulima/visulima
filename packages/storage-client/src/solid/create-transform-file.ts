@@ -57,11 +57,12 @@ export const createTransformFile = (options: CreateTransformFileOptions): Create
     const enabledValue = typeof enabled === "function" ? enabled : () => enabled;
 
     const query = createQuery(() => {
+        const fileId = idValue();
+        const transformParams = transformValue();
+
         return {
-            enabled: enabledValue() && !!idValue() && !!transformValue(),
+            enabled: enabledValue() && !!fileId && !!transformParams,
             queryFn: async () => {
-                const fileId = idValue();
-                const transformParams = transformValue();
                 const url = buildUrl(endpoint, fileId, transformParams);
                 const response = await fetch(url, {
                     method: "GET",
@@ -85,19 +86,27 @@ export const createTransformFile = (options: CreateTransformFileOptions): Create
 
                 return { blob, meta };
             },
-            queryKey: () => storageQueryKeys.transform.file(endpoint, idValue(), transformValue()),
+            queryKey: storageQueryKeys.transform.file(endpoint, fileId, transformParams),
         };
     });
 
     return {
-        data: () => query.data()?.blob,
+        data: () => {
+            const data = typeof query.data === "function" ? query.data() : query.data;
+
+            return data?.blob;
+        },
         error: () => {
-            const error = query.error();
+            const error = typeof query.error === "function" ? query.error() : query.error;
 
             return (error as Error) || undefined;
         },
-        isLoading: query.isLoading as Accessor<boolean>,
-        meta: () => query.data()?.meta || undefined,
+        isLoading: () => (typeof query.isLoading === "function" ? query.isLoading() : query.isLoading) as boolean,
+        meta: () => {
+            const data = typeof query.data === "function" ? query.data() : query.data;
+
+            return data?.meta || undefined;
+        },
         refetch: () => {
             query.refetch();
         },

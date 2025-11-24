@@ -85,7 +85,7 @@ class MockXMLHttpRequest {
     public abort = vi.fn();
 }
 
-describe("useBatchUpload", () => {
+describe(useBatchUpload, () => {
     let originalXHR: typeof XMLHttpRequest;
 
     beforeEach(() => {
@@ -149,7 +149,7 @@ describe("useBatchUpload", () => {
 
         result.uploadBatch([file1]);
 
-        expect(onStart).toHaveBeenCalled();
+        expect(onStart).toHaveBeenCalledWith();
     });
 
     it("should reset batch state", () => {
@@ -173,4 +173,3 @@ describe("useBatchUpload", () => {
         expect(result.errorCount.value).toBe(0);
     });
 });
-

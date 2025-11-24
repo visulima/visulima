@@ -1,7 +1,7 @@
 import { onBeforeUnmount, onMounted } from "vue";
 
-import type { UploadItem } from "../core/uploader";
 import { createMultipartAdapter } from "../core/multipart-adapter";
+import type { UploadItem } from "../core/uploader";
 
 export interface UseRetryListenerOptions {
     /** Upload endpoint URL (used to create uploader instance) */
@@ -40,4 +40,3 @@ export const useRetryListener = (options: UseRetryListenerOptions): void => {
         });
     });
 };
-

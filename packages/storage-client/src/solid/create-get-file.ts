@@ -1,6 +1,7 @@
 import type { QueryClient } from "@tanstack/solid-query";
 import { createQuery } from "@tanstack/solid-query";
 import type { Accessor } from "solid-js";
+import { createEffect, createMemo } from "solid-js";
 
 import { buildUrl, extractFileMetaFromHeaders, storageQueryKeys } from "../core";
 import type { FileMeta } from "../react/types";
@@ -12,6 +13,10 @@ export interface CreateGetFileOptions {
     endpoint: string;
     /** File ID to fetch */
     id: Accessor<string> | string;
+    /** Callback when request fails */
+    onError?: (error: Error) => void;
+    /** Callback when request succeeds */
+    onSuccess?: (data: Blob, meta: FileMeta | undefined) => void;
     /** Optional QueryClient to use */
     queryClient?: QueryClient;
     /** Transformation parameters for media files */
@@ -38,7 +43,7 @@ export interface CreateGetFileReturn {
  * @returns File fetching functions and state signals
  */
 export const createGetFile = (options: CreateGetFileOptions): CreateGetFileReturn => {
-    const { enabled = true, endpoint, id, queryClient, transform } = options;
+    const { enabled = true, endpoint, id, onError, onSuccess, queryClient, transform } = options;
 
     const idValue = typeof id === "function" ? id : () => id;
     const transformValue = typeof transform === "function" ? transform : () => transform;
@@ -81,15 +86,36 @@ export const createGetFile = (options: CreateGetFileOptions): CreateGetFileRetur
         () => queryClient,
     );
 
+    // Extract metadata from response if available
+    const meta = createMemo(() => {
+        const data = query.data;
+        return data?.meta || undefined;
+    });
+
+    // Call callbacks when data or error changes
+    if (onSuccess) {
+        createEffect(() => {
+            const data = query.data;
+            if (data) {
+                onSuccess(data.blob, meta());
+            }
+        });
+    }
+
+    if (onError) {
+        createEffect(() => {
+            const error = query.error;
+            if (error) {
+                onError(error as Error);
+            }
+        });
+    }
+
     return {
         data: () => query.data?.blob,
-        error: () => {
-            const { error } = query;
-
-            return (error as Error) || undefined;
-        },
+        error: () => (query.error as Error) || undefined,
         isLoading: () => query.isLoading,
-        meta: () => query.data?.meta || undefined,
+        meta,
         refetch: () => {
             query.refetch();
         },
