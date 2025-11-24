@@ -18,8 +18,7 @@ export const storageQueryKeys = {
             [...storageQueryKeys.files.details(endpoint), id, transformParams] as const,
         details: (endpoint: string): ReadonlyArray<unknown> => [...storageQueryKeys.files.all(endpoint), "detail"] as const,
         head: (endpoint: string, id: string): ReadonlyArray<unknown> => [...storageQueryKeys.files.all(endpoint), id, "head"] as const,
-        list: (endpoint: string, filters?: { limit?: number; page?: number }): ReadonlyArray<unknown> =>
-            [...storageQueryKeys.files.lists(endpoint), filters] as const,
+        list: (endpoint: string, filters?: { limit?: number; page?: number }): ReadonlyArray<unknown> => [...storageQueryKeys.files.lists(endpoint), filters] as const,
         lists: (endpoint: string): ReadonlyArray<unknown> => [...storageQueryKeys.files.all(endpoint), "list"] as const,
         meta: (endpoint: string, id: string): ReadonlyArray<unknown> => [...storageQueryKeys.files.all(endpoint), id, "meta"] as const,
     },

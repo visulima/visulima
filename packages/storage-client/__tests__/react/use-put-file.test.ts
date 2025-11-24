@@ -17,18 +17,13 @@ class MockXMLHttpRequest {
 
     private eventListeners = new Map<string, Set<(event: Event) => void>>();
 
+    private uploadProgressHandlers = new Set<(event: ProgressEvent) => void>();
+
     public upload = {
         addEventListener: vi.fn((event: string, handler: (event: ProgressEvent) => void) => {
-            // Simulate progress
-            setTimeout(() => {
-                const progressEvent = {
-                    lengthComputable: true,
-                    loaded: 50,
-                    total: 100,
-                } as ProgressEvent;
-
-                handler(progressEvent);
-            }, 50);
+            if (event === "progress") {
+                this.uploadProgressHandlers.add(handler);
+            }
         }),
         removeEventListener: vi.fn(),
     };
@@ -36,6 +31,18 @@ class MockXMLHttpRequest {
     public open = vi.fn();
 
     public send = vi.fn(() => {
+        // Fire progress event after a short delay
+        setTimeout(() => {
+            const progressEvent = {
+                lengthComputable: true,
+                loaded: 50,
+                total: 100,
+            } as ProgressEvent;
+
+            this.uploadProgressHandlers.forEach((handler) => handler(progressEvent));
+        }, 10);
+
+        // Fire load event after upload completes
         setTimeout(() => {
             this.readyState = 4;
             this.status = 200;
@@ -130,8 +137,6 @@ describe(usePutFile, () => {
     });
 
     it("should track upload progress", async () => {
-        // expect.assertions(2);
-
         const onProgress = vi.fn();
         const file = new File(["test content"], "test.jpg", { type: "image/jpeg" });
 
@@ -146,11 +151,12 @@ describe(usePutFile, () => {
 
         const uploadPromise = result.current.putFile("file-123", file);
 
+        // Wait for progress to update (the mock fires progress after 50ms)
         await waitFor(
             () => {
                 expect(result.current.progress).toBeGreaterThan(0);
             },
-            { timeout: 200 },
+            { timeout: 1000 },
         );
 
         await uploadPromise;

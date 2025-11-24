@@ -1,0 +1,205 @@
+import { QueryClient } from "@tanstack/react-query";
+import { waitFor } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+import { usePatchChunk } from "../../src/react/use-patch-chunk";
+import { renderHookWithQueryClient } from "./test-utils";
+
+// Mock fetch globally
+const mockFetch = vi.fn();
+
+describe(usePatchChunk, () => {
+    let queryClient: QueryClient;
+
+    beforeEach(() => {
+        queryClient = new QueryClient({
+            defaultOptions: {
+                mutations: { retry: false },
+                queries: { retry: false },
+            },
+        });
+        globalThis.fetch = mockFetch;
+        vi.clearAllMocks();
+    });
+
+    it("should upload chunk successfully", async () => {
+
+        const chunk = new Blob(["chunk data"], { type: "application/octet-stream" });
+
+        mockFetch.mockResolvedValueOnce({
+            headers: new Headers({
+                "X-Upload-Offset": "100",
+                "X-Upload-Complete": "false",
+                ETag: '"chunk-etag"',
+            }),
+            ok: true,
+        });
+
+        const { result } = renderHookWithQueryClient(
+            () =>
+                usePatchChunk({
+                    endpoint: "https://api.example.com",
+                }),
+            { queryClient },
+        );
+
+        await result.current.patchChunk("file-123", chunk, 0);
+
+        await waitFor(() => {
+            expect(result.current.isLoading).toBe(false);
+        });
+
+        expect(result.current.data?.id).toBe("file-123");
+    });
+
+    it("should handle completed upload", async () => {
+
+        const chunk = new Blob(["chunk data"], { type: "application/octet-stream" });
+
+        mockFetch.mockResolvedValueOnce({
+            headers: new Headers({
+                "X-Upload-Offset": "100",
+                "X-Upload-Complete": "true",
+            }),
+            ok: true,
+        });
+
+        const { result } = renderHookWithQueryClient(
+            () =>
+                usePatchChunk({
+                    endpoint: "https://api.example.com",
+                }),
+            { queryClient },
+        );
+
+        await result.current.patchChunk("file-123", chunk, 0);
+
+        await waitFor(() => {
+            expect(result.current.data?.status).toBe("completed");
+        });
+    });
+
+    it("should include checksum when provided", async () => {
+
+        const chunk = new Blob(["chunk data"], { type: "application/octet-stream" });
+
+        mockFetch.mockResolvedValueOnce({
+            headers: new Headers({
+                "X-Upload-Offset": "100",
+            }),
+            ok: true,
+        });
+
+        const { result } = renderHookWithQueryClient(
+            () =>
+                usePatchChunk({
+                    endpoint: "https://api.example.com",
+                }),
+            { queryClient },
+        );
+
+        await result.current.patchChunk("file-123", chunk, 0, "abc123");
+
+        await waitFor(() => {
+            expect(mockFetch).toHaveBeenCalledWith(
+                expect.any(String),
+                expect.objectContaining({
+                    headers: expect.objectContaining({
+                        "X-Chunk-Checksum": "abc123",
+                    }),
+                }),
+            );
+        });
+    });
+
+    it("should call onSuccess callback", async () => {
+
+        const onSuccess = vi.fn();
+        const chunk = new Blob(["chunk data"], { type: "application/octet-stream" });
+
+        mockFetch.mockResolvedValueOnce({
+            headers: new Headers({
+                "X-Upload-Offset": "100",
+            }),
+            ok: true,
+        });
+
+        const { result } = renderHookWithQueryClient(
+            () =>
+                usePatchChunk({
+                    endpoint: "https://api.example.com",
+                    onSuccess,
+                }),
+            { queryClient },
+        );
+
+        await result.current.patchChunk("file-123", chunk, 0);
+
+        await waitFor(() => {
+            expect(onSuccess).toHaveBeenCalled();
+        });
+    });
+
+    it("should handle error and call onError callback", async () => {
+
+        const onError = vi.fn();
+        const chunk = new Blob(["chunk data"], { type: "application/octet-stream" });
+
+        mockFetch.mockResolvedValueOnce({
+            json: async () => ({
+                error: {
+                    code: "ERROR",
+                    message: "Upload failed",
+                },
+            }),
+            ok: false,
+            status: 500,
+            statusText: "Internal Server Error",
+        });
+
+        const { result } = renderHookWithQueryClient(
+            () =>
+                usePatchChunk({
+                    endpoint: "https://api.example.com",
+                    onError,
+                }),
+            { queryClient },
+        );
+
+        await expect(result.current.patchChunk("file-123", chunk, 0)).rejects.toThrow();
+
+        await waitFor(() => {
+            expect(onError).toHaveBeenCalled();
+        });
+    });
+
+    it("should reset mutation state", async () => {
+        const chunk = new Blob(["chunk data"], { type: "application/octet-stream" });
+
+        mockFetch.mockResolvedValueOnce({
+            headers: new Headers({
+                "X-Upload-Offset": "100",
+            }),
+            ok: true,
+        });
+
+        const { result } = renderHookWithQueryClient(
+            () =>
+                usePatchChunk({
+                    endpoint: "https://api.example.com",
+                }),
+            { queryClient },
+        );
+
+        await result.current.patchChunk("file-123", chunk, 0);
+
+        await waitFor(() => {
+            expect(result.current.isLoading).toBe(false);
+        });
+
+        result.current.reset();
+
+        expect(result.current.error).toBeUndefined();
+    });
+});
+

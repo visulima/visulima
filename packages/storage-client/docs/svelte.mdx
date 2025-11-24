@@ -1,0 +1,804 @@
+---
+title: Svelte
+description: Use the storage client with Svelte and SvelteKit
+---
+
+# Svelte
+
+Use `@visulima/storage-client` with Svelte and SvelteKit for reactive file uploads with stores and TanStack Svelte Query integration.
+
+## Installation
+
+### Svelte
+
+```bash
+npm install @visulima/storage-client @tanstack/svelte-query svelte
+```
+
+### SvelteKit
+
+```bash
+npm install @visulima/storage-client @tanstack/svelte-query sveltekit
+```
+
+## Setup QueryClient
+
+```svelte
+<script lang="ts">
+  import { QueryClient, QueryClientProvider } from "@tanstack/svelte-query";
+
+  const queryClient = new QueryClient();
+</script>
+
+<QueryClientProvider client={queryClient}>
+  <!-- Your app -->
+</QueryClientProvider>
+```
+
+## Basic Upload
+
+Use the `createUpload` store for automatic method selection:
+
+```svelte
+<script lang="ts">
+  import { createUpload } from "@visulima/storage-client/svelte";
+
+  let file: File | null = null;
+  const { upload, progress, isUploading, error, result, reset } = createUpload({
+    endpointMultipart: "/api/upload/multipart",
+    endpointTus: "/api/upload/tus",
+    onSuccess: (result) => {
+      console.log("Upload successful:", result);
+      file = null;
+      const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+      if (fileInput) {
+        fileInput.value = "";
+      }
+    },
+    onError: (error_) => {
+      console.error("Upload error:", error_);
+    },
+  });
+
+  const handleFileChange = (e: Event) => {
+    const target = e.target as HTMLInputElement;
+    const selectedFile = target.files?.[0];
+    file = selectedFile || null;
+  };
+
+  const handleUpload = async () => {
+    if (file) {
+      try {
+        await upload(file);
+      } catch (error_) {
+        console.error("Upload failed:", error_);
+      }
+    }
+  };
+
+  const handleReset = () => {
+    reset();
+    file = null;
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.value = "";
+    }
+  };
+</script>
+
+<div class="app">
+  <h1>Storage Client - Svelte Example</h1>
+  <div class="upload-section">
+    <input type="file" on:change={handleFileChange} disabled={$isUploading} />
+    <button on:click={handleUpload} disabled={!file || $isUploading}>
+      {$isUploading ? "Uploading..." : "Upload"}
+    </button>
+    <button on:click={handleReset} disabled={$isUploading}>
+      Reset
+    </button>
+  </div>
+  {#if $isUploading}
+    <div class="progress-section">
+      <div>Progress: {$progress}%</div>
+      <progress value={$progress} max={100} />
+    </div>
+  {/if}
+  {#if $error}
+    <div class="error">Error: {$error.message}</div>
+  {/if}
+  {#if $result}
+    <div class="success">
+      Upload complete! File: {$result.filename}
+    </div>
+  {/if}
+</div>
+
+<style>
+  .app {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem;
+    text-align: center;
+  }
+
+  .upload-section {
+    margin: 2rem 0;
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .upload-section input[type="file"] {
+    padding: 0.5rem;
+  }
+
+  .upload-section button {
+    padding: 0.5rem 1rem;
+    background-color: #ff3e00;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  .upload-section button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+  }
+
+  .progress-section {
+    margin: 2rem 0;
+  }
+
+  .progress-section progress {
+    width: 100%;
+    max-width: 400px;
+    height: 20px;
+  }
+
+  .error {
+    margin: 1rem 0;
+    padding: 1rem;
+    background-color: #fee;
+    color: #c33;
+    border-radius: 4px;
+  }
+
+  .success {
+    margin: 1rem 0;
+    padding: 1rem;
+    background-color: #efe;
+    color: #3c3;
+    border-radius: 4px;
+  }
+</style>
+```
+
+## Multipart Upload
+
+For traditional form-based uploads:
+
+```svelte
+<script lang="ts">
+  import { createMultipartUpload } from "@visulima/storage-client/svelte";
+
+  const { upload, progress, isUploading } = createMultipartUpload({
+    endpoint: "/api/upload/multipart",
+  });
+
+  const handleFileChange = async (e: Event) => {
+    const target = e.target as HTMLInputElement;
+    const file = target.files?.[0];
+    if (file) {
+      await upload(file);
+    }
+  };
+</script>
+
+<div>
+  <input type="file" on:change={handleFileChange} />
+  {#if $isUploading}
+    <progress value={$progress} max={100} />
+  {/if}
+</div>
+```
+
+## TUS Resumable Upload
+
+For large files with pause/resume support:
+
+```svelte
+<script lang="ts">
+  import { createTusUpload } from "@visulima/storage-client/svelte";
+
+  const { upload, pause, resume, progress, isUploading, isPaused } = createTusUpload({
+    endpoint: "/api/upload/tus",
+  });
+
+  const handleFileChange = async (e: Event) => {
+    const target = e.target as HTMLInputElement;
+    const file = target.files?.[0];
+    if (file) {
+      await upload(file);
+    }
+  };
+</script>
+
+<div>
+  <input type="file" on:change={handleFileChange} />
+  {#if $isUploading}
+    <progress value={$progress} max={100} />
+    {#if $isPaused}
+      <button on:click={resume}>Resume</button>
+    {:else}
+      <button on:click={pause}>Pause</button>
+    {/if}
+  {/if}
+</div>
+```
+
+## Chunked REST Upload
+
+For client-side chunked uploads:
+
+```svelte
+<script lang="ts">
+  import { createChunkedRestUpload } from "@visulima/storage-client/svelte";
+
+  const { upload, progress, isUploading } = createChunkedRestUpload({
+    endpoint: "/api/upload/chunked-rest",
+    chunkSize: 5 * 1024 * 1024, // 5MB chunks
+  });
+
+  const handleFileChange = async (e: Event) => {
+    const target = e.target as HTMLInputElement;
+    const file = target.files?.[0];
+    if (file) {
+      await upload(file);
+    }
+  };
+</script>
+
+<div>
+  <input type="file" on:change={handleFileChange} />
+  {#if $isUploading}
+    <progress value={$progress} max={100} />
+  {/if}
+</div>
+```
+
+## Batch Upload
+
+Upload multiple files simultaneously:
+
+```svelte
+<script lang="ts">
+  import { createBatchUpload } from "@visulima/storage-client/svelte";
+
+  const { uploadBatch, progress, isUploading, items, completedCount, errorCount } = createBatchUpload({
+    endpoint: "/api/upload/multipart",
+    onSuccess: (results) => {
+      console.log("Batch upload complete:", results);
+    },
+  });
+
+  const handleFilesChange = (e: Event) => {
+    const target = e.target as HTMLInputElement;
+    const files = Array.from(target.files || []);
+    if (files.length > 0) {
+      uploadBatch(files);
+    }
+  };
+</script>
+
+<div>
+  <input type="file" multiple on:change={handleFilesChange} />
+  {#if $isUploading}
+    <div>
+      <div>Progress: {$progress}%</div>
+      <div>Completed: {$completedCount} / {$items.length}</div>
+      <div>Errors: {$errorCount}</div>
+    </div>
+  {/if}
+</div>
+```
+
+## File Input Store
+
+Use the `createFileInput` store for drag & drop support:
+
+```svelte
+<script lang="ts">
+  import { createFileInput } from "@visulima/storage-client/svelte";
+  import { createBatchUpload } from "@visulima/storage-client/svelte";
+
+  const { files, inputRef, handleFileChange, handleDrop, handleDragOver, openFileDialog } = createFileInput({
+    multiple: true,
+  });
+
+  const { uploadBatch } = createBatchUpload({
+    endpoint: "/api/upload/multipart",
+  });
+
+  const handleUpload = () => {
+    if ($files.length > 0) {
+      uploadBatch($files);
+    }
+  };
+</script>
+
+<div
+  on:drop={handleDrop}
+  on:dragover={handleDragOver}
+  style="border: 2px dashed #ccc; padding: 2rem; text-align: center"
+>
+  <input
+    bind:this={inputRef}
+    type="file"
+    multiple
+    on:change={handleFileChange}
+    style="display: none"
+  />
+  <p>Drag and drop files here or</p>
+  <button on:click={openFileDialog}>Select Files</button>
+  {#if $files.length > 0}
+    <div>
+      <p>Selected: {$files.length} files</p>
+      <button on:click={handleUpload}>Upload</button>
+    </div>
+  {/if}
+</div>
+```
+
+## File Operations
+
+### Get File
+
+```svelte
+<script lang="ts">
+  import { onMount, onDestroy } from "svelte";
+  import { createGetFile } from "@visulima/storage-client/svelte";
+
+  export let fileId: string;
+
+  const { data, isLoading, error, meta } = createGetFile({
+    endpoint: "/api/files",
+    id: () => fileId,
+  });
+
+  let url: string | null = null;
+
+  $: {
+    if ($data) {
+      url = URL.createObjectURL($data);
+    }
+  }
+
+  onDestroy(() => {
+    if (url) {
+      URL.revokeObjectURL(url);
+    }
+  });
+</script>
+
+{#if $isLoading}
+  <div>Loading...</div>
+{:else if $error}
+  <div>Error: {$error.message}</div>
+{:else if $data && url}
+  <div>
+    <img src={url} alt={$meta?.filename || "File"} />
+    {#if $meta}
+      <p>Filename: {$meta.filename}</p>
+    {/if}
+  </div>
+{/if}
+```
+
+### Delete File
+
+```svelte
+<script lang="ts">
+  import { createDeleteFile } from "@visulima/storage-client/svelte";
+
+  export let fileId: string;
+
+  const { deleteFile, isLoading } = createDeleteFile({
+    endpoint: "/api/files",
+  });
+</script>
+
+<button on:click={() => deleteFile(fileId)} disabled={$isLoading}>
+  {$isLoading ? "Deleting..." : "Delete"}
+</button>
+```
+
+## SvelteKit Integration
+
+### Server Routes
+
+Set up upload endpoints in SvelteKit:
+
+```ts
+// src/routes/api/upload/multipart/+server.ts
+import { createHandler } from "@visulima/storage/handler/http/fetch";
+import { storage } from "$lib/storage";
+import type { RequestHandler } from "./$types";
+
+const multipart = createHandler({ storage, type: "multipart" });
+
+export const POST: RequestHandler = async ({ request }) => {
+  return multipart.fetch(request);
+};
+```
+
+### Storage Configuration
+
+```ts
+// src/lib/storage.ts
+import { DiskStorage } from "@visulima/storage";
+
+export const storage = new DiskStorage({
+  directory: "./uploads",
+});
+```
+
+## File Operations
+
+### Get File Metadata
+
+```svelte
+<script lang="ts">
+  import { createGetFileMeta } from "@visulima/storage-client/svelte";
+
+  export let fileId: string;
+
+  const { data: meta, isLoading, error } = createGetFileMeta({
+    endpoint: "/api/files",
+    id: () => fileId,
+  });
+</script>
+
+{#if $isLoading}
+  <div>Loading...</div>
+{:else if $error}
+  <div>Error: {$error.message}</div>
+{:else if $meta}
+  <div>
+    <p>Filename: {$meta.filename}</p>
+    <p>Size: {$meta.size} bytes</p>
+    <p>Content Type: {$meta.contentType}</p>
+    {#if $meta.url}
+      <p>URL: {$meta.url}</p>
+    {/if}
+  </div>
+{/if}
+```
+
+### Head File (Check Upload Status)
+
+```svelte
+<script lang="ts">
+  import { createHeadFile } from "@visulima/storage-client/svelte";
+
+  export let fileId: string;
+
+  const { data, isLoading } = createHeadFile({
+    endpoint: "/api/files",
+    id: () => fileId,
+  });
+</script>
+
+{#if $isLoading}
+  <div>Checking status...</div>
+{:else if $data}
+  <div>
+    {#if $data.uploadComplete}
+      <p>Upload complete</p>
+    {:else}
+      <p>Upload in progress: {$data.uploadOffset} / {$data.contentLength} bytes</p>
+    {/if}
+    {#if $data.receivedChunks}
+      <p>Received chunks: {$data.receivedChunks.length}</p>
+    {/if}
+  </div>
+{/if}
+```
+
+### Put File (Create/Update)
+
+```svelte
+<script lang="ts">
+  import { createPutFile } from "@visulima/storage-client/svelte";
+
+  export let fileId: string;
+
+  let file: File | null = null;
+  const { putFile, progress, isLoading, error, data } = createPutFile({
+    endpoint: "/api/files",
+    onSuccess: (result) => {
+      console.log("File uploaded:", result);
+    },
+  });
+
+  const handleFileChange = (e: Event) => {
+    const target = e.target as HTMLInputElement;
+    file = target.files?.[0] || null;
+  };
+
+  const handleUpload = async () => {
+    if (file) {
+      await putFile(fileId, file);
+    }
+  };
+</script>
+
+<div>
+  <input type="file" on:change={handleFileChange} />
+  <button on:click={handleUpload} disabled={!file || $isLoading}>
+    {$isLoading ? `Uploading... ${$progress}%` : "Upload"}
+  </button>
+  {#if $error}
+    <div>Error: {$error.message}</div>
+  {/if}
+  {#if $data}
+    <div>Upload complete! ID: {$data.id}</div>
+  {/if}
+</div>
+```
+
+### Batch Delete Files
+
+```svelte
+<script lang="ts">
+  import { createBatchDeleteFiles } from "@visulima/storage-client/svelte";
+
+  const { batchDeleteFiles, isLoading } = createBatchDeleteFiles({
+    endpoint: "/api/files",
+    onSuccess: (result) => {
+      console.log(`Deleted ${result.successful} files`);
+      if (result.failed) {
+        console.log(`${result.failed} files failed to delete`);
+      }
+    },
+  });
+
+  const handleDelete = async () => {
+    const fileIds = ["file1", "file2", "file3"];
+    await batchDeleteFiles(fileIds);
+  };
+</script>
+
+<button on:click={handleDelete} disabled={$isLoading}>
+  {$isLoading ? "Deleting..." : "Delete Selected Files"}
+</button>
+```
+
+## Transform Operations
+
+### Transform File
+
+```svelte
+<script lang="ts">
+  import { createTransformFile } from "@visulima/storage-client/svelte";
+
+  export let fileId: string;
+
+  let transform = { width: 800, height: 600, quality: 85 };
+  const { data, isLoading, error, meta } = createTransformFile({
+    endpoint: "/api/files",
+    id: () => fileId,
+    transform: () => transform,
+  });
+
+  let url: string | null = null;
+
+  $: {
+    if ($data) {
+      url = URL.createObjectURL($data);
+    }
+  }
+</script>
+
+{#if $isLoading}
+  <div>Transforming...</div>
+{:else if $error}
+  <div>Error: {$error.message}</div>
+{:else if $data && url}
+  <div>
+    <img src={url} alt="Transformed" />
+    <div>
+      <label>
+        Width:
+        <input
+          type="number"
+          bind:value={transform.width}
+        />
+      </label>
+      <label>
+        Height:
+        <input
+          type="number"
+          bind:value={transform.height}
+        />
+      </label>
+      <label>
+        Quality:
+        <input
+          type="number"
+          min="1"
+          max="100"
+          bind:value={transform.quality}
+        />
+      </label>
+    </div>
+  </div>
+{/if}
+```
+
+### Get Transform Metadata
+
+```svelte
+<script lang="ts">
+  import { createTransformMetadata } from "@visulima/storage-client/svelte";
+
+  const { data, isLoading, error } = createTransformMetadata({
+    endpoint: "/api/files",
+  });
+</script>
+
+{#if $isLoading}
+  <div>Loading...</div>
+{:else if $error}
+  <div>Error: {$error.message}</div>
+{:else if $data}
+  <div>
+    <h3>Available Formats</h3>
+    <ul>
+      {#each $data.formats || [] as format}
+        <li>{format}</li>
+      {/each}
+    </ul>
+    <h3>Available Parameters</h3>
+    <ul>
+      {#each $data.parameters || [] as param}
+        <li>{param}</li>
+      {/each}
+    </ul>
+  </div>
+{/if}
+```
+
+## Abort Operations
+
+### Abort All Uploads
+
+```svelte
+<script lang="ts">
+  import { createAbortAll } from "@visulima/storage-client/svelte";
+
+  const { abortAll } = createAbortAll({
+    endpoint: "/api/upload/multipart",
+  });
+</script>
+
+<button on:click={abortAll}>Abort All Uploads</button>
+```
+
+### Abort Batch
+
+```svelte
+<script lang="ts">
+  import { createAbortBatch } from "@visulima/storage-client/svelte";
+
+  export let batchId: string;
+
+  const { abortBatch } = createAbortBatch({
+    endpoint: "/api/upload/multipart",
+  });
+</script>
+
+<button on:click={() => abortBatch(batchId)}>Abort Batch</button>
+```
+
+### Abort Item
+
+```svelte
+<script lang="ts">
+  import { createAbortItem } from "@visulima/storage-client/svelte";
+
+  export let itemId: string;
+
+  const { abortItem } = createAbortItem({
+    endpoint: "/api/upload/multipart",
+  });
+</script>
+
+<button on:click={() => abortItem(itemId)}>Abort Upload</button>
+```
+
+## Retry Operations
+
+### Retry Failed Upload
+
+```svelte
+<script lang="ts">
+  import { createRetry } from "@visulima/storage-client/svelte";
+
+  export let itemId: string;
+
+  const { retryItem } = createRetry({
+    endpoint: "/api/upload/multipart",
+  });
+</script>
+
+<button on:click={() => retryItem(itemId)}>Retry Upload</button>
+```
+
+### Batch Retry
+
+```svelte
+<script lang="ts">
+  import { createBatchRetry } from "@visulima/storage-client/svelte";
+
+  export let batchId: string;
+
+  const { retryBatch } = createBatchRetry({
+    endpoint: "/api/upload/multipart",
+  });
+</script>
+
+<button on:click={() => retryBatch(batchId)}>Retry Failed Items in Batch</button>
+```
+
+## Event Listeners
+
+### Batch Event Listeners
+
+```svelte
+<script lang="ts">
+  import {
+    createBatchStartListener,
+    createBatchProgressListener,
+    createBatchFinishListener,
+    createBatchErrorListener,
+  } from "@visulima/storage-client/svelte";
+
+  createBatchStartListener({
+    endpoint: "/api/upload/multipart",
+    onBatchStart: (batchId) => {
+      console.log("Batch started:", batchId);
+    },
+  });
+
+  createBatchProgressListener({
+    endpoint: "/api/upload/multipart",
+    onBatchProgress: (progress, batchId) => {
+      console.log(`Batch ${batchId} progress: ${progress}%`);
+    },
+  });
+
+  createBatchFinishListener({
+    endpoint: "/api/upload/multipart",
+    onBatchFinish: (results, batchId) => {
+      console.log(`Batch ${batchId} finished:`, results);
+    },
+  });
+
+  createBatchErrorListener({
+    endpoint: "/api/upload/multipart",
+    onBatchError: (error, batchId) => {
+      console.error(`Batch ${batchId} error:`, error);
+    },
+  });
+</script>
+
+<div>Upload component with listeners</div>
+```
+
+## Next Steps
+
+- [API Reference](/docs/package/storage-client/api) - Complete API documentation
+- [Examples](/examples) - See working examples in the examples folder
+

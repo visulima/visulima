@@ -47,7 +47,6 @@ export const createMultipartUpload = (options: CreateMultipartUploadOptions): Cr
     const [error, setError] = createSignal<Error | undefined>(undefined);
     const [result, setResult] = createSignal<UploadResult | undefined>(undefined);
     const [currentItemId, setCurrentItemId] = createSignal<string | undefined>(undefined);
-    const [currentFile, setCurrentFile] = createSignal<File | undefined>(undefined);
 
     // Create uploader instance
     const uploaderInstance = createMultipartAdapter({
@@ -73,7 +72,6 @@ export const createMultipartUpload = (options: CreateMultipartUploadOptions): Cr
         // Track when upload starts
         const onItemStart = (item: UploadItem): void => {
             setCurrentItemId(item.id);
-            setCurrentFile(item.file);
             setIsUploading(true);
             setProgress(0);
             setError(undefined);
@@ -117,7 +115,6 @@ export const createMultipartUpload = (options: CreateMultipartUploadOptions): Cr
                 setIsUploading(false);
                 onSuccess?.(uploadResult);
                 setCurrentItemId(undefined);
-                setCurrentFile(undefined);
             }
         };
 

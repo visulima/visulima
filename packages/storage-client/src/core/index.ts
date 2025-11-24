@@ -9,5 +9,5 @@ export { storageQueryKeys } from "./query-keys";
 export type { TusAdapter, TusAdapterOptions } from "./tus-adapter";
 export { createTusAdapter } from "./tus-adapter";
 // Export new uploader implementation
-export type { UploaderOptions as CoreUploaderOptions, Uploader, UploaderEventHandler, UploaderEventType, UploadItem } from "./uploader";
+export type { BatchState, UploaderOptions as CoreUploaderOptions, Uploader, UploaderEventHandler, UploaderEventType, UploadItem } from "./uploader";
 export { createUploader } from "./uploader";

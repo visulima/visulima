@@ -1,0 +1,206 @@
+---
+title: Introduction
+description: Simple and easy file uploads for React, Vue, Solid, and Svelte
+---
+
+# Storage Client
+
+**Simple and easy file uploads for React | Vue | Solid | Svelte**
+
+The Visulima Storage Client is a powerful, framework-agnostic library for handling file uploads in modern web applications. It provides a unified API across React, Vue, Nuxt, Solid, and Svelte with support for multiple upload methods, progress tracking, retry mechanisms, and batch operations.
+
+## Features
+
+- **Framework Support** - First-class support for React, Vue/Nuxt, Solid, and Svelte
+- **Multiple Upload Methods** - Multipart (form-based), TUS (resumable), and chunked REST uploads
+- **Auto-detection** - Automatically selects the best upload method based on file size and available endpoints
+- **Progress Tracking** - Real-time upload progress with percentage and byte-level tracking
+- **Batch Operations** - Upload multiple files simultaneously with batch progress tracking
+- **Retry Mechanism** - Built-in retry with exponential backoff for failed uploads
+- **File Management** - Get, list, delete files with full metadata support
+- **TypeScript Ready** - Full TypeScript support with comprehensive type definitions
+- **TanStack Query Integration** - Built on TanStack Query for powerful caching and state management
+- **Drag & Drop Support** - Built-in file input hooks with drag & drop functionality
+- **Paste Upload** - Support for pasting images from clipboard
+- **Transform Support** - Transform files and metadata on upload
+- **Abort Control** - Cancel uploads at any time with abort functionality
+
+## Upload Methods
+
+### Multipart Upload
+
+Traditional `multipart/form-data` uploads, perfect for small to medium files and web forms.
+
+```tsx
+import { useUpload } from "@visulima/storage-client/react";
+
+const { upload, progress, isUploading } = useUpload({
+  endpointMultipart: "/api/upload/multipart",
+});
+
+await upload(file);
+```
+
+### TUS Upload
+
+Resumable uploads using the TUS protocol, ideal for large files and unreliable networks.
+
+```tsx
+import { useTusUpload } from "@visulima/storage-client/react";
+
+const { upload, pause, resume, progress } = useTusUpload({
+  endpointTus: "/api/upload/tus",
+});
+
+await upload(file);
+// Can pause and resume later
+pause();
+resume();
+```
+
+### Chunked REST Upload
+
+Client-side chunked uploads for large files without requiring TUS server support.
+
+```tsx
+import { useChunkedRestUpload } from "@visulima/storage-client/react";
+
+const { upload, progress } = useChunkedRestUpload({
+  endpointChunkedRest: "/api/upload/chunked-rest",
+  chunkSize: 5 * 1024 * 1024, // 5MB chunks
+});
+
+await upload(file);
+```
+
+## Quick Start
+
+### React
+
+```tsx
+import { useUpload } from "@visulima/storage-client/react";
+
+function UploadComponent() {
+  const { upload, progress, isUploading, error, result } = useUpload({
+    endpointMultipart: "/api/upload/multipart",
+    onProgress: (progress) => console.log(`Upload: ${progress}%`),
+    onSuccess: (file) => console.log("Upload complete:", file.id),
+  });
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      await upload(file);
+    }
+  };
+
+  return (
+    <div>
+      <input type="file" onChange={handleFileChange} />
+      {isUploading && <div>Progress: {progress}%</div>}
+      {error && <div>Error: {error.message}</div>}
+      {result && <div>File ID: {result.id}</div>}
+    </div>
+  );
+}
+```
+
+### Vue / Nuxt
+
+```vue
+<template>
+  <div>
+    <input type="file" @change="handleFileChange" />
+    <div v-if="isUploading">Progress: {{ progress }}%</div>
+    <div v-if="error">Error: {{ error.message }}</div>
+    <div v-if="result">File ID: {{ result.id }}</div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { useUpload } from "@visulima/storage-client/vue";
+
+const { upload, progress, isUploading, error, result } = useUpload({
+  endpointMultipart: "/api/upload/multipart",
+});
+
+const handleFileChange = async (e: Event) => {
+  const target = e.target as HTMLInputElement;
+  const file = target.files?.[0];
+  if (file) {
+    await upload(file);
+  }
+};
+</script>
+```
+
+### Solid
+
+```tsx
+import { createUpload } from "@visulima/storage-client/solid";
+
+function UploadComponent() {
+  const { upload, progress, isUploading, error, result } = createUpload({
+    endpointMultipart: "/api/upload/multipart",
+  });
+
+  const handleFileChange = async (e: Event) => {
+    const target = e.target as HTMLInputElement;
+    const file = target.files?.[0];
+    if (file) {
+      await upload(file);
+    }
+  };
+
+  return (
+    <div>
+      <input type="file" onChange={handleFileChange} />
+      {isUploading() && <div>Progress: {progress()}%</div>}
+      {error() && <div>Error: {error()?.message}</div>}
+      {result() && <div>File ID: {result()?.id}</div>}
+    </div>
+  );
+}
+```
+
+### Svelte
+
+```svelte
+<script lang="ts">
+  import { createUpload } from "@visulima/storage-client/svelte";
+
+  const { upload, progress, isUploading, error, result } = createUpload({
+    endpointMultipart: "/api/upload/multipart",
+  });
+
+  async function handleFileChange(e: Event) {
+    const target = e.target as HTMLInputElement;
+    const file = target.files?.[0];
+    if (file) {
+      await upload(file);
+    }
+  }
+</script>
+
+<div>
+  <input type="file" on:change={handleFileChange} />
+  {#if $isUploading}
+    <div>Progress: {$progress}%</div>
+  {/if}
+  {#if $error}
+    <div>Error: {$error.message}</div>
+  {/if}
+  {#if $result}
+    <div>File ID: {$result.id}</div>
+  {/if}
+</div>
+```
+
+## What's Next?
+
+- [Installation Guide](/docs/package/storage-client/installation) - Learn how to install and set up the storage client
+- [React Guide](/docs/package/storage-client/react) - Complete React usage guide
+- [Vue / Nuxt Guide](/docs/package/storage-client/vue) - Complete Vue and Nuxt usage guide
+- [Solid Guide](/docs/package/storage-client/solid) - Complete Solid usage guide
+- [Svelte Guide](/docs/package/storage-client/svelte) - Complete Svelte usage guide
+
