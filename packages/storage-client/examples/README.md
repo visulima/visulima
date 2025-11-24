@@ -44,7 +44,7 @@ This directory contains example projects demonstrating how to use `@visulima/sto
 - **Location**: [`svelte-kit/`](./svelte-kit/)
 - **Framework**: SvelteKit
 - **Features**: Svelte stores (`createUpload`, `createMultipartUpload`, `createChunkedRestUpload`, `createTusUpload`)
-- **Run**: `cd svelte && pnpm install && pnpm dev`
+- **Run**: `cd svelte-kit && pnpm install && pnpm dev`
 
 ### Nuxt
 

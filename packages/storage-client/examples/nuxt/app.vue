@@ -58,9 +58,8 @@ const handleUpload = async () => {
 const handleReset = () => {
     reset();
     file.value = null;
-    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
-    if (fileInput) {
-        fileInput.value = "";
+    if (fileInputRef.value) {
+        fileInputRef.value.value = "";
     }
 };
 </script>

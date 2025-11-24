@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { storageQueryKeys } from "../core";
+import { buildUrl, storageQueryKeys } from "../core";
 
 export interface BatchDeleteResult {
     /** Number of files that failed to delete */
@@ -42,11 +42,9 @@ export const useBatchDeleteFiles = (options: UseBatchDeleteFilesOptions): UseBat
 
     const mutation = useMutation({
         mutationFn: async (ids: string[]): Promise<BatchDeleteResult> => {
-            const url = new URL(endpoint.endsWith("/") ? endpoint.slice(0, -1) : endpoint);
+            const url = buildUrl(endpoint, "", { ids: ids.join(",") });
 
-            url.searchParams.append("ids", ids.join(","));
-
-            const response = await fetch(url.toString(), {
+            const response = await fetch(url, {
                 method: "DELETE",
             });
 

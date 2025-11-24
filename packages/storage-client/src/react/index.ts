@@ -1,4 +1,4 @@
-// Upload hooks (unchanged - complex state management)
+// Common types for upload operations
 export type { UploadMethod, UploadResult } from "./types";
 // Abort hooks
 export type { UseAbortAllOptions, UseAbortAllReturn } from "./use-abort-all";

@@ -40,7 +40,11 @@ export const extractFileMetaFromHeaders = (id: string, headers: Headers): FileMe
     };
 
     if (lastModified) {
-        fileMeta.createdAt = new Date(lastModified).toISOString();
+        const date = new Date(lastModified);
+
+        if (!Number.isNaN(date.getTime())) {
+            fileMeta.createdAt = date.toISOString();
+        }
     }
 
     return fileMeta;
@@ -54,7 +58,7 @@ export const buildUrl = (baseUrl: string, path: string, params?: Record<string, 
 
     if (params) {
         Object.entries(params).forEach(([key, value]) => {
-            if (value !== undefined && value !== undefined) {
+            if (value !== undefined) {
                 url.searchParams.append(key, String(value));
             }
         });

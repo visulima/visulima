@@ -85,7 +85,7 @@ class GCStorage extends BaseStorage<GCSFile, FileReturn> {
         this.bucket = bucketName;
         this.storageBaseURI = `${config.storageAPI || GCSConfig.storageAPI}/${this.bucket}/o`;
         this.uploadBaseURI = `${config.uploadAPI || GCSConfig.uploadAPI}/${this.bucket}/o`;
-        this.isCustomEndpoint = !this.storageBaseURI.includes("storage.googleapis.com");
+        this.isCustomEndpoint = new URL(this.storageBaseURI).hostname !== "storage.googleapis.com";
 
         const { retryOptions, useAuthWithCustomEndpoint, userProject } = config;
 

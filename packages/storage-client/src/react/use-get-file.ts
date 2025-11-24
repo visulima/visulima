@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 import { buildUrl, extractFileMetaFromHeaders, storageQueryKeys } from "../core";
 import type { FileMeta } from "./types";
@@ -73,18 +73,30 @@ export const useGetFile = (options: UseGetFileOptions): UseGetFileReturn => {
     // Extract metadata from response if available
     const meta: FileMeta | undefined = query.data?.meta || undefined;
 
-    // Call callbacks in useEffect to avoid calling during render
-    useEffect(() => {
-        if (query.data && onSuccess) {
-            onSuccess(query.data.blob, meta);
-        }
-    }, [query.data, onSuccess, meta]);
+    // Store callbacks in refs to avoid re-running effects when callbacks change
+    const onSuccessRef = useRef(onSuccess);
+    const onErrorRef = useRef(onError);
 
     useEffect(() => {
-        if (query.error && onError) {
-            onError(query.error as Error);
+        onSuccessRef.current = onSuccess;
+    }, [onSuccess]);
+
+    useEffect(() => {
+        onErrorRef.current = onError;
+    }, [onError]);
+
+    // Call callbacks in useEffect to avoid calling during render
+    useEffect(() => {
+        if (query.data && onSuccessRef.current) {
+            onSuccessRef.current(query.data.blob, meta);
         }
-    }, [query.error, onError]);
+    }, [query.data, meta]);
+
+    useEffect(() => {
+        if (query.error && onErrorRef.current) {
+            onErrorRef.current(query.error as Error);
+        }
+    }, [query.error]);
 
     return {
         data: query.data?.blob,

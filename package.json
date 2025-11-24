@@ -193,7 +193,7 @@
         "test:coverage:pail": "pnpm --filter \"pail\" run test:coverage",
         "test:coverage:prisma-dmmf-transformer": "pnpm --filter \"prisma-dmmf-transformer\" run test:coverage",
         "test:coverage:redact": "pnpm --filter \"redact\" run test:coverage",
-        "test:coverage:storage": "pnpm --filter \"storage\" run coverage",
+        "test:coverage:storage": "pnpm --filter \"storage\" run test:coverage",
         "test:coverage:storage-client": "pnpm --filter \"storage-client\" run test:coverage",
         "test:coverage:string": "pnpm --filter \"string\" run test:coverage",
         "test:coverage:tabular": "pnpm --filter \"tabular\" run test:coverage",

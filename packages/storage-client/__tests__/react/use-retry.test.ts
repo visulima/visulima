@@ -1,41 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { useRetry } from "../../src/react/use-retry";
-import { renderHookWithQueryClient } from "./test-utils";
-
-// Mock XMLHttpRequest
-class MockXMLHttpRequest {
-    public readyState = 0;
-
-    public status = 200;
-
-    public statusText = "OK";
-
-    public responseText = "";
-
-    public response = "";
-
-    private eventListeners = new Map<string, Set<(event: Event) => void>>();
-
-    public upload = {
-        addEventListener: vi.fn(),
-        removeEventListener: vi.fn(),
-    };
-
-    public open = vi.fn();
-
-    public send = vi.fn();
-
-    public setRequestHeader = vi.fn();
-
-    public getResponseHeader = vi.fn(() => null);
-
-    public addEventListener = vi.fn();
-
-    public removeEventListener = vi.fn();
-
-    public abort = vi.fn();
-}
+import { MockXMLHttpRequest, renderHookWithQueryClient } from "./test-utils";
 
 describe("useRetry", () => {
     let originalXHR: typeof XMLHttpRequest;

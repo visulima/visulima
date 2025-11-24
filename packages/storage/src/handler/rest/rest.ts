@@ -9,7 +9,7 @@ import type { FileInit, UploadFile } from "../../storage/utils/file";
 import { getHeader, getIdFromRequest, getRequestStream, readBody } from "../../utils/http";
 import BaseHandlerNode from "../base/base-handler-node";
 import type { Handlers, ResponseFile, ResponseList, UploadOptions } from "../types";
-import { extractFileInit, parseChunkHeaders, validateContentLength, validateRequestBody } from "../utils/request-parser";
+import { extractFileInit, parseChunkHeaders, parseContentDisposition, validateContentLength, validateRequestBody } from "../utils/request-parser";
 import RestBase from "./rest-base";
 
 /**
@@ -160,16 +160,7 @@ class Rest<
         }
 
         // Extract original filename from Content-Disposition header if present
-        let originalName: string | undefined;
-        const contentDisposition = getHeader(request, "content-disposition", true);
-
-        if (contentDisposition) {
-            const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
-
-            if (filenameMatch && filenameMatch[1]) {
-                originalName = filenameMatch[1].replaceAll(/['"]/g, "");
-            }
-        }
+        const originalName = parseContentDisposition(request);
 
         const config: FileInit = {
             contentType,

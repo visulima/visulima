@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { useEffect, useRef } from "react";
 
 import { buildUrl, fetchJson, storageQueryKeys } from "../core";
 import type { FileMeta } from "./types";
@@ -70,14 +71,30 @@ export const useGetFileList = (options: UseGetFileListOptions): UseGetFileListRe
         queryKey: storageQueryKeys.files.list(endpoint, { limit, page }),
     });
 
-    // Call callbacks
-    if (query.data && onSuccess) {
-        onSuccess(query.data);
-    }
+    // Store callbacks in refs to avoid re-running effects when callbacks change
+    const onSuccessRef = useRef(onSuccess);
+    const onErrorRef = useRef(onError);
 
-    if (query.error && onError) {
-        onError(query.error as Error);
-    }
+    useEffect(() => {
+        onSuccessRef.current = onSuccess;
+    }, [onSuccess]);
+
+    useEffect(() => {
+        onErrorRef.current = onError;
+    }, [onError]);
+
+    // Call callbacks when query state changes
+    useEffect(() => {
+        if (query.data && onSuccessRef.current) {
+            onSuccessRef.current(query.data);
+        }
+    }, [query.data]);
+
+    useEffect(() => {
+        if (query.error && onErrorRef.current) {
+            onErrorRef.current(query.error as Error);
+        }
+    }, [query.error]);
 
     return {
         data: query.data,

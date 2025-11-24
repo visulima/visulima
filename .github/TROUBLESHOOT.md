@@ -58,4 +58,4 @@ You should see the following screen:
 
 ![azure-storage-explorer-screen.png](.github%2Fassets%2Fazure-storage-explorer-screen.png)
 
-Go to the "(Emulator - Default Ports) (Key)" -> "Blob Containers" and create with right-click a new up"upload" container.
+Go to the "(Emulator - Default Ports) (Key)" -> "Blob Containers" and create with right-click a new "upload" container.

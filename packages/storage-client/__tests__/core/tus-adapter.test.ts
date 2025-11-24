@@ -4,14 +4,23 @@ import { createTusAdapter } from "../../src/core/tus-adapter";
 
 // Mock fetch
 const mockFetch = vi.fn();
+let originalFetch: typeof globalThis.fetch | undefined;
 
 describe(createTusAdapter, () => {
     beforeEach(() => {
-        globalThis.fetch = mockFetch;
+        originalFetch = globalThis.fetch;
+        // Cast is to satisfy TS; at runtime this is just a function replacement.
+        globalThis.fetch = mockFetch as unknown as typeof globalThis.fetch;
         vi.clearAllMocks();
     });
 
     afterEach(() => {
+        if (originalFetch) {
+            globalThis.fetch = originalFetch;
+        } else {
+            // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+            delete (globalThis as any).fetch;
+        }
         vi.restoreAllMocks();
     });
 

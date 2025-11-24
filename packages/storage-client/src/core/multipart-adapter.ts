@@ -79,12 +79,7 @@ export const createMultipartAdapter = (options: MultipartAdapterOptions): Multip
             new Promise((resolve, reject) => {
                 let uploadResult: UploadResult | undefined;
                 let resolved = false;
-
-                // Cleanup function
-                const cleanup = (): void => {
-                    uploader.off("ITEM_FINISH", onItemFinish);
-                    uploader.off("ITEM_ERROR", onError);
-                };
+                let timeoutId: ReturnType<typeof setTimeout> | undefined;
 
                 // Handle upload completion
                 const onItemFinish = (item: UploadItem): void => {
@@ -134,52 +129,29 @@ export const createMultipartAdapter = (options: MultipartAdapterOptions): Multip
                     }
                 };
 
-                // Set up event listeners
+                // Cleanup function
+                const cleanup = (): void => {
+                    if (timeoutId) {
+                        clearTimeout(timeoutId);
+                        timeoutId = undefined;
+                    }
+                    uploader.off("ITEM_FINISH", onItemFinish);
+                    uploader.off("ITEM_ERROR", onError);
+                };
+
                 uploader.on("ITEM_FINISH", onItemFinish);
                 uploader.on("ITEM_ERROR", onError);
 
                 // Start upload
                 uploader.add(file);
 
-                // Safety timeout - store timeout ID so we can clear it
-                let timeoutId: NodeJS.Timeout | undefined;
-
-                // Update cleanup to also clear timeout
-                const originalCleanup = cleanup;
-                const cleanupWithTimeout = (): void => {
-                    if (timeoutId) {
-                        clearTimeout(timeoutId);
-                        timeoutId = undefined;
-                    }
-
-                    originalCleanup();
-                };
-
-                // Set timeout
                 timeoutId = setTimeout(() => {
                     if (!resolved) {
                         resolved = true;
-                        cleanupWithTimeout();
+                        cleanup();
                         reject(new Error("Upload timeout"));
                     }
                 }, 300_000); // 5 minutes
-
-                // Update callbacks to use cleanup with timeout
-                const originalOnItemFinish = onItemFinish;
-                const originalOnError = onError;
-
-                uploader.off("ITEM_FINISH", onItemFinish);
-                uploader.off("ITEM_ERROR", onError);
-
-                uploader.on("ITEM_FINISH", (item: UploadItem) => {
-                    originalOnItemFinish(item);
-                    cleanupWithTimeout();
-                });
-
-                uploader.on("ITEM_ERROR", (item: UploadItem) => {
-                    originalOnError(item);
-                    cleanupWithTimeout();
-                });
             }),
 
         /**
