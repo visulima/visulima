@@ -57,10 +57,11 @@ export const createHeadFile = (options: CreateHeadFileOptions): CreateHeadFileRe
     const enabledValue = typeof enabled === "function" ? enabled : () => enabled;
 
     const query = createQuery(() => {
+        const fileId = idValue();
+
         return {
-            enabled: enabledValue() && !!idValue(),
+            enabled: enabledValue() && !!fileId,
             queryFn: async (): Promise<FileHeadMetadata> => {
-                const fileId = idValue();
                 const url = buildUrl(endpoint, fileId);
                 const headers = await fetchHead(url);
 
@@ -119,18 +120,24 @@ export const createHeadFile = (options: CreateHeadFileOptions): CreateHeadFileRe
 
                 return fileMeta;
             },
-            queryKey: () => storageQueryKeys.files.head(endpoint, idValue()),
+            queryKey: storageQueryKeys.files.head(endpoint, fileId),
         };
     });
 
     return {
-        data: query.data,
+        data: () => {
+            if (typeof query.data === "function") {
+                return query.data() as FileHeadMetadata | undefined;
+            }
+
+            return query.data as FileHeadMetadata | undefined;
+        },
         error: () => {
-            const error = query.error();
+            const error = typeof query.error === "function" ? query.error() : query.error;
 
             return (error as Error) || undefined;
         },
-        isLoading: query.isLoading,
+        isLoading: () => (typeof query.isLoading === "function" ? query.isLoading() : query.isLoading) as boolean,
         refetch: () => {
             query.refetch();
         },

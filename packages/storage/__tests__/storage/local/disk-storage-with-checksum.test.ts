@@ -88,6 +88,27 @@ describe(DiskStorageWithChecksum, () => {
         await expect(() => storage.getMeta(diskFile.id)).rejects.toThrow("Not found");
     });
 
+    it("should call onDelete hook when deleting a file", async () => {
+        expect.assertions(2);
+
+        const storage = new DiskStorageWithChecksum(options);
+        const onDeleteHook = vi.fn().mockResolvedValue(undefined);
+        storage.onDelete = onDeleteHook;
+
+        const diskFile = await storage.create({ ...metafile });
+        await storage.write({ ...diskFile, body: Readable.from("01234"), start: 0 });
+
+        const deletedFile = await storage.delete({ id: diskFile.id });
+
+        expect(onDeleteHook).toHaveBeenCalledTimes(1);
+        expect(onDeleteHook).toHaveBeenCalledWith(
+            expect.objectContaining({
+                id: diskFile.id,
+                status: "deleted",
+            })
+        );
+    });
+
     describe("file type detection", () => {
         it("should detect file type when contentType is undefined", async () => {
             expect.assertions(1);

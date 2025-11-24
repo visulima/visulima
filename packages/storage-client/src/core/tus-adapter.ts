@@ -174,12 +174,13 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
      * Headers: Tus-Resumable (required), Upload-Length (required), Upload-Offset (required), Cache-Control: no-store.
      * Can return 404, 410, or 403 if upload doesn't exist.
      */
-    const getUploadOffset = async (uploadUrl: string): Promise<number> => {
+    const getUploadOffset = async (uploadUrl: string, signal?: AbortSignal): Promise<number> => {
         const response = await fetch(uploadUrl, {
             headers: {
                 "Tus-Resumable": TUS_RESUMABLE_VERSION,
             },
             method: "HEAD",
+            signal,
         });
 
         // TUS protocol: HEAD returns 200 OK, or 404/410/403 if upload doesn't exist
@@ -254,101 +255,136 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
      * Performs the actual upload.
      */
     const performUpload = async (file: File, uploadUrl: string, startOffset: number = 0): Promise<UploadResult> => {
-        if (!uploadState) {
+        // Capture local reference to uploadState at start
+        const state = uploadState;
+
+        if (!state) {
             throw new Error("Upload state not initialized");
         }
 
+        const { abortController } = state;
         let currentOffset = startOffset;
 
-        while (currentOffset < file.size) {
-            // Check if paused
-            if (uploadState.isPaused) {
-                await new Promise<void>((resolve) => {
-                    const checkPause = (): void => {
-                        if (uploadState?.isPaused) {
-                            setTimeout(checkPause, 100);
-                        } else {
-                            resolve();
-                        }
-                    };
+        try {
+            while (currentOffset < file.size) {
+                // Check if aborted before proceeding
+                if (abortController.signal.aborted) {
+                    throw new Error("Upload aborted");
+                }
 
-                    checkPause();
-                });
+                // Check if paused
+                if (state.isPaused) {
+                    await new Promise<void>((resolve) => {
+                        const checkPause = (): void => {
+                            if (abortController.signal.aborted) {
+                                resolve();
+                            } else if (state.isPaused) {
+                                setTimeout(checkPause, 100);
+                            } else {
+                                resolve();
+                            }
+                        };
+
+                        checkPause();
+                    });
+                }
+
+                // Check if aborted after pause check
+                if (abortController.signal.aborted) {
+                    throw new Error("Upload aborted");
+                }
+
+                try {
+                    currentOffset = await uploadChunk(file, uploadUrl, currentOffset, abortController.signal);
+                    state.offset = currentOffset;
+
+                    const progressPercent = Math.round((currentOffset / file.size) * 100);
+
+                    progressCallback?.(progressPercent, currentOffset);
+                } catch (error_) {
+                    // Short-circuit retries if aborted
+                    if (abortController.signal.aborted) {
+                        throw new Error("Upload aborted");
+                    }
+
+                    if (retry && state.retryCount < maxRetries) {
+                        state.retryCount += 1;
+                        // Wait before retry (exponential backoff)
+                        await new Promise<void>((resolve) => setTimeout(resolve, 1000 * state.retryCount));
+
+                        // Check if aborted before retry
+                        if (abortController.signal.aborted) {
+                            throw new Error("Upload aborted");
+                        }
+
+                        // Get current offset and retry
+                        currentOffset = await getUploadOffset(uploadUrl, abortController.signal);
+
+                        continue;
+                    }
+
+                    throw error_;
+                }
+
+                state.retryCount = 0; // Reset retry count on successful chunk
             }
 
-            // Check if aborted
-            if (uploadState.abortController.signal.aborted) {
+            // Check if aborted before final HEAD request
+            if (abortController.signal.aborted) {
                 throw new Error("Upload aborted");
             }
 
+            // Upload complete, get final file info
+            const headResponse = await fetch(uploadUrl, {
+                headers: {
+                    "Tus-Resumable": TUS_RESUMABLE_VERSION,
+                },
+                method: "HEAD",
+                signal: abortController.signal,
+            });
+
+            const location = headResponse.headers.get("Location") || uploadUrl;
+            const uploadMetadata = decodeMetadata(headResponse.headers.get("Upload-Metadata"));
+
+            // Try to parse response as FileMeta if available
+            let fileMeta: Partial<FileMeta> = {};
+
             try {
-                currentOffset = await uploadChunk(file, uploadUrl, currentOffset, uploadState.abortController.signal);
-                uploadState.offset = currentOffset;
+            // Some TUS servers return file info in headers or we can construct it
+                const contentType = headResponse.headers.get("Content-Type") || uploadMetadata.filetype || file.type;
 
-                const progressPercent = Math.round((currentOffset / file.size) * 100);
-
-                progressCallback?.(progressPercent, currentOffset);
-            } catch (error_) {
-                if (retry && uploadState.retryCount < maxRetries) {
-                    uploadState.retryCount += 1;
-                    // Wait before retry (exponential backoff)
-                    await new Promise<void>((resolve) => setTimeout(resolve, 1000 * uploadState.retryCount));
-                    // Get current offset and retry
-                    currentOffset = await getUploadOffset(uploadUrl);
-
-                    continue;
-                }
-
-                throw error_;
+                fileMeta = {
+                    contentType,
+                    id: uploadUrl.split("/").pop() || "",
+                    metadata: uploadMetadata,
+                    originalName: uploadMetadata.filename || file.name,
+                    size: file.size,
+                    status: "completed",
+                };
+            } catch {
+            // Use fallback values if parsing fails
             }
 
-            uploadState.retryCount = 0; // Reset retry count on successful chunk
-        }
-
-        // Upload complete, get final file info
-        const headResponse = await fetch(uploadUrl, {
-            headers: {
-                "Tus-Resumable": TUS_RESUMABLE_VERSION,
-            },
-            method: "HEAD",
-        });
-
-        const location = headResponse.headers.get("Location") || uploadUrl;
-        const uploadMetadata = decodeMetadata(headResponse.headers.get("Upload-Metadata"));
-
-        // Try to parse response as FileMeta if available
-        let fileMeta: Partial<FileMeta> = {};
-
-        try {
-            // Some TUS servers return file info in headers or we can construct it
-            const contentType = headResponse.headers.get("Content-Type") || uploadMetadata.filetype || file.type;
-
-            fileMeta = {
-                contentType,
-                id: uploadUrl.split("/").pop() || "",
-                metadata: uploadMetadata,
-                originalName: uploadMetadata.filename || file.name,
-                size: file.size,
-                status: "completed",
+            return {
+                bytesWritten: currentOffset,
+                contentType: fileMeta.contentType ?? file.type,
+                createdAt: fileMeta.createdAt,
+                filename: fileMeta.originalName ?? file.name,
+                id: fileMeta.id ?? uploadUrl.split("/").pop() ?? "",
+                metadata: fileMeta.metadata ?? uploadMetadata,
+                name: fileMeta.name,
+                offset: currentOffset,
+                originalName: fileMeta.originalName ?? file.name,
+                size: fileMeta.size ?? file.size,
+                status: (fileMeta.status as UploadResult["status"]) ?? "completed",
+                url: location,
             };
-        } catch {
-            // Use fallback values if parsing fails
+        } finally {
+            // Clear uploadState in the natural completion/finally path
+            if (uploadState === state) {
+                uploadState = undefined;
+            }
         }
-
-        return {
-            bytesWritten: currentOffset,
-            contentType: fileMeta.contentType ?? file.type,
-            createdAt: fileMeta.createdAt,
-            filename: fileMeta.originalName ?? file.name,
-            id: fileMeta.id ?? uploadUrl.split("/").pop() ?? "",
-            metadata: fileMeta.metadata ?? uploadMetadata,
-            name: fileMeta.name,
-            offset: currentOffset,
-            originalName: fileMeta.originalName ?? file.name,
-            size: fileMeta.size ?? file.size,
-            status: (fileMeta.status as UploadResult["status"]) ?? "completed",
-            url: location,
-        };
     };
 
     return {
@@ -358,7 +394,7 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
         abort: () => {
             if (uploadState) {
                 uploadState.abortController.abort();
-                uploadState = undefined;
+                // Don't clear uploadState here - let performUpload handle it in finally
             }
         },
 
@@ -368,7 +404,7 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
         clear: () => {
             if (uploadState) {
                 uploadState.abortController.abort();
-                uploadState = undefined;
+                // Don't clear uploadState here - let performUpload handle it in finally
             }
         },
 
@@ -402,7 +438,7 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
             uploadState.isPaused = false;
 
             try {
-                const currentOffset = await getUploadOffset(uploadState.uploadUrl);
+                const currentOffset = await getUploadOffset(uploadState.uploadUrl, uploadState.abortController.signal);
 
                 uploadState.offset = currentOffset;
                 progressCallback?.(Math.round((currentOffset / uploadState.file.size) * 100), currentOffset);
@@ -479,7 +515,7 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
                         cleanupTimeout();
                         // Call original callback if set
                         originalFinishCallback?.(result);
-                        uploadState = undefined;
+                        // Don't clear uploadState here - performUpload's finally will handle it
                         resolve(result);
                     }
                 };
@@ -491,8 +527,9 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
                         // Call original callback if set
                         originalErrorCallback?.(error);
 
-                        // Don't clear upload state on error if we want to resume
-                        if (!retry || (uploadState && uploadState.retryCount >= maxRetries)) {
+                        // Don't clear uploadState here - let performUpload handle it in finally
+                        // Only clear if performUpload never started (e.g., createUpload failed)
+                        if (!uploadState?.uploadUrl) {
                             uploadState = undefined;
                         }
 
@@ -524,7 +561,7 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
 
                         if (uploadUrl) {
                             // Check current offset for resuming
-                            const currentOffset = await getUploadOffset(uploadUrl);
+                            const currentOffset = await getUploadOffset(uploadUrl, uploadState?.abortController.signal);
 
                             if (currentOffset > 0 && uploadState) {
                                 uploadState.offset = currentOffset;
@@ -563,7 +600,17 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
                     if (!resolved) {
                         resolved = true;
                         cleanupTimeout();
-                        uploadState = undefined;
+
+                        // Abort the upload - performUpload's finally will clear uploadState
+                        if (uploadState) {
+                            uploadState.abortController.abort();
+                        }
+
+                        // Only clear if performUpload never started
+                        if (uploadState && !uploadState.uploadUrl) {
+                            uploadState = undefined;
+                        }
+
                         reject(new Error("Upload timeout"));
                     }
                 }, 300_000); // 5 minutes

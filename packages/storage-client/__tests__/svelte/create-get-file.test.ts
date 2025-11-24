@@ -1,6 +1,6 @@
 import { QueryClient } from "@tanstack/svelte-query";
 import { render, waitFor } from "@testing-library/svelte";
-import { writable } from "svelte/store";
+import { get, writable } from "svelte/store";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createGetFile } from "../../src/svelte/create-get-file";
@@ -51,15 +51,27 @@ describe(createGetFile, () => {
         });
 
         // Access result from component instance
-        // Since result is an object with getters, we access properties directly
-        // We need to poll for changes since we are outside Svelte's reactivity system
-        await waitFor(() => {
-            expect(component.result.isLoading).toBe(false);
-        });
+        // Wait for result to be initialized
+        let result: ReturnType<typeof component.getResult>;
 
-        expect(component.result.data).toBeDefined();
-        expect(component.result.data?.size).toBe(mockBlob.size);
-        expect(component.result.error).toBeUndefined();
+        await waitFor(() => {
+            const r = component.getResult();
+
+            expect(r).toBeDefined();
+            expect(r?.isLoading).toBeDefined();
+            expect(r?.data).toBeDefined();
+
+            result = r!;
+        }, { timeout: 2000 });
+
+        // Wait for query to complete and data to be available
+        await waitFor(() => {
+            expect(get(result.isLoading)).toBe(false);
+            expect(get(result.data)).toBeDefined();
+        }, { timeout: 2000 });
+
+        expect(get(result.data)?.size).toBe(mockBlob.size);
+        expect(get(result.error)).toBeUndefined();
     });
 
     it("should handle reactive id changes", async () => {
@@ -91,17 +103,31 @@ describe(createGetFile, () => {
             },
         });
 
-        await waitFor(() => {
-            expect(component.result.isLoading).toBe(false);
-        });
+        // Wait for result to be initialized
+        let result: ReturnType<typeof component.getResult>;
 
-        expect(component.result.data?.size).toBe(mockBlob1.size);
+        await waitFor(() => {
+            const r = component.getResult();
+
+            expect(r).toBeDefined();
+
+            result = r!;
+        }, { timeout: 2000 });
+
+        await waitFor(() => {
+            expect(get(result.isLoading)).toBe(false);
+            expect(get(result.data)).toBeDefined();
+        }, { timeout: 2000 });
+
+        expect(get(result.data)?.size).toBe(mockBlob1.size);
 
         id.set("file-456");
 
+        // Wait for the query to refetch with the new id
         await waitFor(() => {
-            expect(component.result.data?.size).toBe(mockBlob2.size);
-        });
+            expect(get(result.isLoading)).toBe(false);
+            expect(get(result.data)?.size).toBe(mockBlob2.size);
+        }, { timeout: 2000 });
     });
 
     it("should respect enabled option", async () => {

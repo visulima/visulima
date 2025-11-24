@@ -64,7 +64,7 @@ export class Validator<T> {
      * @throws ValidationError if validation fails
      */
     public async verify(t: T): Promise<never | void> {
-        for await (const [code, validator] of Object.entries(this.validators)) {
+        for (const [code, validator] of Object.entries(this.validators)) {
             const isValid = await validator.isValid(t);
 
             if (!isValid) {

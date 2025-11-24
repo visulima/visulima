@@ -453,6 +453,9 @@ class GCStorage extends BaseStorage<GCSFile, FileReturn> {
                     } catch (error) {
                         truncated = false;
 
+                        const httpError = this.normalizeError(error instanceof Error ? error : new Error(String(error)));
+
+                        await this.onError(httpError);
                         throw error;
                     }
                 }
@@ -502,6 +505,9 @@ class GCStorage extends BaseStorage<GCSFile, FileReturn> {
         } catch (error) {
             this.logger?.error(uri, error);
 
+            const httpError = this.normalizeError(error instanceof Error ? error : new Error(String(error)));
+
+            await this.onError(httpError);
             throw error;
         }
     }

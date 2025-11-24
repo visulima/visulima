@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/vue-query";
 import type { MaybeRefOrGetter } from "vue";
-import { computed, toValue } from "vue";
+import { computed, toValue, watch } from "vue";
 
 import { buildUrl, extractFileMetaFromHeaders, storageQueryKeys } from "../core";
 import type { FileMeta } from "../react/types";
@@ -12,6 +12,10 @@ export interface UseGetFileOptions {
     endpoint: string;
     /** File ID to fetch */
     id: MaybeRefOrGetter<string>;
+    /** Callback when request fails */
+    onError?: (error: Error) => void;
+    /** Callback when request succeeds */
+    onSuccess?: (data: Blob, meta: FileMeta | undefined) => void;
     /** Transformation parameters for media files */
     transform?: MaybeRefOrGetter<Record<string, string | number | boolean> | undefined>;
 }
@@ -36,7 +40,7 @@ export interface UseGetFileReturn {
  * @returns File fetching functions and state
  */
 export const useGetFile = (options: UseGetFileOptions): UseGetFileReturn => {
-    const { enabled = true, endpoint, id, transform } = options;
+    const { enabled = true, endpoint, id, onError, onSuccess, transform } = options;
 
     const query = useQuery({
         enabled: computed(() => toValue(enabled) && !!toValue(id)),
@@ -69,11 +73,33 @@ export const useGetFile = (options: UseGetFileOptions): UseGetFileReturn => {
         queryKey: computed(() => storageQueryKeys.files.detail(endpoint, toValue(id), toValue(transform))),
     });
 
+    // Extract metadata from response if available
+    const meta = computed(() => query.data.value?.meta || undefined);
+
+    // Call callbacks when data or error changes
+    watch(
+        () => query.data.value,
+        (data) => {
+            if (data && onSuccess) {
+                onSuccess(data.blob, meta.value);
+            }
+        },
+    );
+
+    watch(
+        () => query.error.value,
+        (error) => {
+            if (error && onError) {
+                onError(error as Error);
+            }
+        },
+    );
+
     return {
         data: computed(() => query.data.value?.blob),
         error: computed(() => (query.error.value as Error) || undefined),
         isLoading: computed(() => query.isLoading.value),
-        meta: computed(() => query.data.value?.meta || undefined),
+        meta,
         refetch: () => {
             query.refetch();
         },

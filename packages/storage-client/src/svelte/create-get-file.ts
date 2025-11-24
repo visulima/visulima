@@ -1,7 +1,8 @@
 import type { QueryClient } from "@tanstack/svelte-query";
 import { createQuery } from "@tanstack/svelte-query";
+import { onDestroy } from "svelte";
 import type { Readable } from "svelte/store";
-import { derived, get } from "svelte/store";
+import { derived, get, readable } from "svelte/store";
 
 import { buildUrl, extractFileMetaFromHeaders, storageQueryKeys } from "../core";
 import type { FileMeta } from "../react/types";
@@ -13,6 +14,10 @@ export interface CreateGetFileOptions {
     endpoint: string;
     /** File ID to fetch */
     id: Readable<string> | string;
+    /** Callback when request fails */
+    onError?: (error: Error) => void;
+    /** Callback when request succeeds */
+    onSuccess?: (data: Blob, meta: FileMeta | undefined) => void;
     /** Optional QueryClient to use */
     queryClient?: QueryClient;
     /** Transformation parameters for media files */
@@ -39,7 +44,7 @@ export interface CreateGetFileReturn {
  * @returns File fetching functions and state stores
  */
 export const createGetFile = (options: CreateGetFileOptions): CreateGetFileReturn => {
-    const { enabled = true, endpoint, id, queryClient, transform } = options;
+    const { enabled = true, endpoint, id, onError, onSuccess, queryClient, transform } = options;
 
     // Convert to stores if needed
     const idStore: Readable<string> = typeof id === "object" && "subscribe" in id ? id : derived([], () => id as string);
@@ -84,24 +89,49 @@ export const createGetFile = (options: CreateGetFileOptions): CreateGetFileRetur
                 queryKey: storageQueryKeys.files.detail(endpoint, currentId, currentTransform),
             };
         },
-        () => queryClient,
+        queryClient ? () => queryClient : undefined,
     );
 
+    // Ensure stores are always defined
+    const dataStore = query?.data ?? readable(undefined);
+    const errorStore = query?.error ?? readable(undefined);
+    const isLoadingStore = query?.isLoading ?? readable(false);
+
+    // Extract metadata from response if available
+    const meta = derived(dataStore, ($data) => $data?.meta || undefined);
+
+    // Subscribe to data and error changes to call callbacks
+    let unsubscribeData: (() => void) | undefined;
+    let unsubscribeError: (() => void) | undefined;
+
+    if (onSuccess || onError) {
+        unsubscribeData = dataStore.subscribe(($data) => {
+            if ($data && onSuccess) {
+                const currentMeta = get(meta);
+
+                onSuccess($data.blob, currentMeta);
+            }
+        });
+
+        unsubscribeError = errorStore.subscribe(($error) => {
+            if ($error && onError) {
+                onError($error as Error);
+            }
+        });
+
+        onDestroy(() => {
+            unsubscribeData?.();
+            unsubscribeError?.();
+        });
+    }
+
     return {
-        get data() {
-            return query.data?.blob;
-        },
-        get error() {
-            return (query.error as Error) || undefined;
-        },
-        get isLoading() {
-            return query.isLoading;
-        },
-        get meta() {
-            return query.data?.meta || undefined;
-        },
+        data: derived(dataStore, ($data) => $data?.blob),
+        error: derived(errorStore, ($error) => ($error as Error) || undefined),
+        isLoading: isLoadingStore,
+        meta,
         refetch: () => {
-            query.refetch();
+            query?.refetch();
         },
     };
 };

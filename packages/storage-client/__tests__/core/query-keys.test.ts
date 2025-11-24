@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { storageQueryKeys } from "../../src/core/query-keys";
 
-describe("storageQueryKeys", () => {
+describe(storageQueryKeys, () => {
     it("should have correct base key", () => {
         expect(storageQueryKeys.all).toEqual(["storage"]);
     });
@@ -27,7 +27,7 @@ describe("storageQueryKeys", () => {
         });
 
         it("should generate file detail key with transform params", () => {
-            const transformParams = { width: 100, height: 200 };
+            const transformParams = { height: 200, width: 100 };
             const key = storageQueryKeys.files.detail("https://api.example.com", "file-123", transformParams);
 
             expect(key).toEqual(["storage", "files", "https://api.example.com", "detail", "file-123", transformParams]);
@@ -54,7 +54,7 @@ describe("storageQueryKeys", () => {
         });
 
         it("should generate transform file key", () => {
-            const transformParams = { width: 100, height: 200 };
+            const transformParams = { height: 200, width: 100 };
             const key = storageQueryKeys.transform.file("https://api.example.com", "file-123", transformParams);
 
             expect(key).toEqual(["storage", "transform", "https://api.example.com", "file-123", transformParams]);
@@ -67,4 +67,3 @@ describe("storageQueryKeys", () => {
         });
     });
 });
-

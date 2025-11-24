@@ -18,9 +18,9 @@ describe(createTusAdapter, () => {
         if (originalFetch) {
             globalThis.fetch = originalFetch;
         } else {
-            // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
             delete (globalThis as any).fetch;
         }
+
         vi.restoreAllMocks();
     });
 

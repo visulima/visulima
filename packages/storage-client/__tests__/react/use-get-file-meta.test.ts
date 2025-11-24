@@ -23,12 +23,11 @@ describe(useGetFileMeta, () => {
     });
 
     it("should fetch file metadata successfully", async () => {
-
         const mockData = {
+            contentType: "text/plain",
             id: "file-123",
             name: "test.txt",
             size: 1024,
-            contentType: "text/plain",
         };
 
         mockFetch.mockResolvedValueOnce({
@@ -53,7 +52,6 @@ describe(useGetFileMeta, () => {
     });
 
     it("should use provided id if not in response", async () => {
-
         const mockData = {
             name: "test.txt",
             size: 1024,
@@ -79,7 +77,6 @@ describe(useGetFileMeta, () => {
     });
 
     it("should call onSuccess callback", async () => {
-
         const onSuccess = vi.fn();
         const mockData = {
             id: "file-123",
@@ -102,21 +99,22 @@ describe(useGetFileMeta, () => {
         );
 
         await waitFor(() => {
-            expect(onSuccess).toHaveBeenCalled();
+            expect(onSuccess).toHaveBeenCalledWith();
         });
     });
 
     it("should handle error and call onError callback", async () => {
-
         const onError = vi.fn();
 
         mockFetch.mockResolvedValueOnce({
-            json: async () => ({
-                error: {
-                    code: "NOT_FOUND",
-                    message: "File not found",
-                },
-            }),
+            json: async () => {
+                return {
+                    error: {
+                        code: "NOT_FOUND",
+                        message: "File not found",
+                    },
+                };
+            },
             ok: false,
             status: 404,
             statusText: "Not Found",
@@ -133,7 +131,7 @@ describe(useGetFileMeta, () => {
         );
 
         await waitFor(() => {
-            expect(onError).toHaveBeenCalled();
+            expect(onError).toHaveBeenCalledWith();
         });
     });
 
@@ -197,4 +195,3 @@ describe(useGetFileMeta, () => {
         });
     });
 });
-

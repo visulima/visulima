@@ -1,6 +1,6 @@
 import { createMutation, useQueryClient } from "@tanstack/svelte-query";
 import type { Readable } from "svelte/store";
-import { derived } from "svelte/store";
+import { derived, readable } from "svelte/store";
 
 import { storageQueryKeys } from "../core";
 
@@ -92,10 +92,14 @@ export const createBatchDeleteFiles = (options: CreateBatchDeleteFilesOptions): 
         };
     });
 
+    // Ensure stores are always defined (mutation stores might be undefined initially in test environments)
+    const errorStore = mutation.error || readable(undefined);
+    const isLoadingStore = mutation.isPending || readable(false);
+
     return {
         batchDeleteFiles: mutation.mutateAsync,
-        error: derived(mutation.error, ($error) => ($error as Error) || undefined),
-        isLoading: mutation.isPending,
+        error: derived(errorStore, ($error) => ($error as Error) || undefined),
+        isLoading: isLoadingStore,
         reset: mutation.reset,
     };
 };

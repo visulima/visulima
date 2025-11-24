@@ -388,7 +388,10 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
             this.cache.set(file.id, file);
 
             return { ...file };
-        } catch {
+        } catch (error: unknown) {
+            const httpError = this.normalizeError(error instanceof Error ? error : new Error(String(error)));
+
+            await this.onError(httpError);
             return throwErrorCode(ERRORS.FILE_NOT_FOUND);
         }
     }

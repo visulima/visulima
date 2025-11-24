@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, expectTypeOf, it, vi } from "vitest";
 
 import { useAbortItem } from "../../src/react/use-abort-item";
 import { renderHookWithQueryClient } from "./test-utils";
@@ -43,7 +43,7 @@ class MockXMLHttpRequest {
     });
 }
 
-describe("useAbortItem", () => {
+describe(useAbortItem, () => {
     let originalXHR: typeof XMLHttpRequest;
 
     beforeEach(() => {
@@ -67,7 +67,7 @@ describe("useAbortItem", () => {
             }),
         );
 
-        expect(typeof result.current.abortItem).toBe("function");
+        expectTypeOf(result.current.abortItem).toBeFunction();
     });
 
     it("should abort item without throwing", () => {
@@ -84,4 +84,3 @@ describe("useAbortItem", () => {
         }).not.toThrow();
     });
 });
-

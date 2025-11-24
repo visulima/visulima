@@ -1,11 +1,9 @@
-import { describe, expect, it, vi } from "vitest";
-import { waitFor } from "@testing-library/react";
-
-import { renderHook } from "@testing-library/react";
+import { renderHook, waitFor } from "@testing-library/react";
+import { describe, expect, expectTypeOf, it, vi } from "vitest";
 
 import { useFileInput } from "../../src/react/use-file-input";
 
-describe("useFileInput", () => {
+describe(useFileInput, () => {
     it("should initialize with empty files", () => {
         expect.assertions(1);
 
@@ -27,11 +25,11 @@ describe("useFileInput", () => {
 
         const { result } = renderHook(() => useFileInput());
 
-        expect(typeof result.current.handleFileChange).toBe("function");
-        expect(typeof result.current.handleDragOver).toBe("function");
-        expect(typeof result.current.handleDragLeave).toBe("function");
-        expect(typeof result.current.handleDrop).toBe("function");
-        expect(typeof result.current.openFileDialog).toBe("function");
+        expectTypeOf(result.current.handleFileChange).toBeFunction();
+        expectTypeOf(result.current.handleDragOver).toBeFunction();
+        expectTypeOf(result.current.handleDragLeave).toBeFunction();
+        expectTypeOf(result.current.handleDrop).toBeFunction();
+        expectTypeOf(result.current.openFileDialog).toBeFunction();
     });
 
     it("should handle file selection", async () => {
@@ -48,9 +46,9 @@ describe("useFileInput", () => {
         // Create a mock FileList
         const fileList = {
             0: file,
+            item: (index: number) => index === 0 ? file : null,
             length: 1,
-            item: (index: number) => (index === 0 ? file : null),
-            [Symbol.iterator]: function* () {
+            * [Symbol.iterator]() {
                 yield file;
             },
         } as unknown as FileList;
@@ -93,9 +91,9 @@ describe("useFileInput", () => {
         // Create a mock FileList for dataTransfer
         const fileList = {
             0: file,
+            item: (index: number) => index === 0 ? file : null,
             length: 1,
-            item: (index: number) => (index === 0 ? file : null),
-            [Symbol.iterator]: function* () {
+            * [Symbol.iterator]() {
                 yield file;
             },
         } as unknown as FileList;
@@ -131,9 +129,9 @@ describe("useFileInput", () => {
         // Create a mock FileList
         const fileList = {
             0: file,
+            item: (index: number) => index === 0 ? file : null,
             length: 1,
-            item: (index: number) => (index === 0 ? file : null),
-            [Symbol.iterator]: function* () {
+            * [Symbol.iterator]() {
                 yield file;
             },
         } as unknown as FileList;
@@ -180,7 +178,6 @@ describe("useFileInput", () => {
 
         result.current.handleDragOver(dragEvent as unknown as React.DragEvent<HTMLElement>);
 
-        expect(preventDefaultSpy).toHaveBeenCalled();
+        expect(preventDefaultSpy).toHaveBeenCalledWith();
     });
 });
-

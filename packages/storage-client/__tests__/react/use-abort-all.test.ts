@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, expectTypeOf, it, vi } from "vitest";
 
 import { useAbortAll } from "../../src/react/use-abort-all";
 import { renderHookWithQueryClient } from "./test-utils";
@@ -37,7 +37,7 @@ class MockXMLHttpRequest {
     public abort = vi.fn();
 }
 
-describe("useAbortAll", () => {
+describe(useAbortAll, () => {
     let originalXHR: typeof XMLHttpRequest;
 
     beforeEach(() => {
@@ -61,7 +61,7 @@ describe("useAbortAll", () => {
             }),
         );
 
-        expect(typeof result.current.abortAll).toBe("function");
+        expectTypeOf(result.current.abortAll).toBeFunction();
     });
 
     it("should abort all uploads without throwing", () => {
@@ -78,4 +78,3 @@ describe("useAbortAll", () => {
         }).not.toThrow();
     });
 });
-

@@ -1,7 +1,7 @@
 import { onBeforeUnmount, onMounted } from "vue";
 
-import type { UploadItem } from "../core/uploader";
 import { createMultipartAdapter } from "../core/multipart-adapter";
+import type { UploadItem } from "../core/uploader";
 
 export interface UseAllAbortListenerOptions {
     /** Upload endpoint URL (used to create uploader instance) */
@@ -36,4 +36,3 @@ export const useAllAbortListener = (options: UseAllAbortListenerOptions): void =
         });
     });
 };
-

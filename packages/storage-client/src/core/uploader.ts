@@ -35,38 +35,38 @@ export interface UploadItem {
  * Batch state information
  */
 export interface BatchState {
-    /** Batch ID */
-    id: string;
-    /** Item IDs in this batch */
-    itemIds: string[];
     /** Number of completed items */
     completedCount: number;
     /** Number of failed items */
     errorCount: number;
-    /** Total number of items */
-    totalCount: number;
+    /** Batch ID */
+    id: string;
+    /** Item IDs in this batch */
+    itemIds: string[];
     /** Aggregate progress (0-100) */
     progress: number;
     /** Batch status */
     status: "pending" | "uploading" | "completed" | "error" | "cancelled";
+    /** Total number of items */
+    totalCount: number;
 }
 
 /**
  * Uploader event types
  */
-export type UploaderEventType =
-    | "ITEM_START"
-    | "ITEM_PROGRESS"
-    | "ITEM_FINISH"
-    | "ITEM_ERROR"
-    | "ITEM_ABORT"
-    | "BATCH_START"
-    | "BATCH_PROGRESS"
-    | "BATCH_FINISH"
-    | "BATCH_ERROR"
-    | "BATCH_CANCELLED"
-    | "BATCH_FINALIZE"
-    | "BATCH_COMPLETE";
+export type UploaderEventType
+    = | "ITEM_START"
+        | "ITEM_PROGRESS"
+        | "ITEM_FINISH"
+        | "ITEM_ERROR"
+        | "ITEM_ABORT"
+        | "BATCH_START"
+        | "BATCH_PROGRESS"
+        | "BATCH_FINISH"
+        | "BATCH_ERROR"
+        | "BATCH_CANCELLED"
+        | "BATCH_FINALIZE"
+        | "BATCH_COMPLETE";
 
 /**
  * Event handler function type

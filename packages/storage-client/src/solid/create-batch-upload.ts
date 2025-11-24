@@ -25,14 +25,14 @@ export interface CreateBatchUploadReturn {
     abortBatch: (batchId: string) => void;
     /** Number of completed items in current batch */
     completedCount: Accessor<number>;
-    /** Number of failed items in current batch */
-    errorCount: Accessor<number>;
     /** Last batch error, if any */
     error: Accessor<Error | undefined>;
-    /** All upload items in current batch */
-    items: Accessor<UploadItem[]>;
+    /** Number of failed items in current batch */
+    errorCount: Accessor<number>;
     /** Whether a batch is currently uploading */
     isUploading: Accessor<boolean>;
+    /** All upload items in current batch */
+    items: Accessor<UploadItem[]>;
     /** Current batch progress (0-100) */
     progress: Accessor<number>;
     /** Reset batch state */
@@ -201,4 +201,3 @@ export const createBatchUpload = (options: CreateBatchUploadOptions): CreateBatc
         uploadBatch,
     };
 };
-

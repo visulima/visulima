@@ -50,7 +50,7 @@ class MockXMLHttpRequest {
     });
 }
 
-describe("Uploader Abort Operations", () => {
+describe("uploader Abort Operations", () => {
     let originalXHR: typeof XMLHttpRequest;
 
     beforeEach(() => {
@@ -80,7 +80,7 @@ describe("Uploader Abort Operations", () => {
 
         uploader.abortItem(itemId);
 
-        expect(onItemAbort).toHaveBeenCalled();
+        expect(onItemAbort).toHaveBeenCalledWith();
         expect(onItemAbort).toHaveBeenCalledWith(
             expect.objectContaining({
                 id: itemId,
@@ -112,7 +112,7 @@ describe("Uploader Abort Operations", () => {
         if (batchId) {
             uploader.abortBatch(batchId);
 
-            expect(onBatchCancelled).toHaveBeenCalled();
+            expect(onBatchCancelled).toHaveBeenCalledWith();
         }
     });
 
@@ -152,4 +152,3 @@ describe("Uploader Abort Operations", () => {
         expect(() => uploader.abortBatch("non-existent-batch-id")).not.toThrow();
     });
 });
-

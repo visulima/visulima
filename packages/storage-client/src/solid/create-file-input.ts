@@ -9,11 +9,11 @@ export interface CreateFileInputOptions {
 
 export interface CreateFileInputReturn {
     files: Accessor<File[]>;
-    inputRef: { current: HTMLInputElement | undefined };
-    handleFileChange: (event: Event) => void;
-    handleDragOver: (event: DragEvent) => void;
     handleDragLeave: (event: DragEvent) => void;
+    handleDragOver: (event: DragEvent) => void;
     handleDrop: (event: DragEvent) => void;
+    handleFileChange: (event: Event) => void;
+    inputRef: { current: HTMLInputElement | undefined };
     openFileDialog: () => void;
     reset: () => void;
 }
@@ -30,7 +30,7 @@ export const createFileInput = (options: CreateFileInputOptions = {}): CreateFil
             return;
         }
 
-        const fileArray = Array.from(fileList);
+        const fileArray = [...fileList];
 
         setFiles(fileArray);
         onFilesSelected?.(fileArray);
@@ -55,7 +55,7 @@ export const createFileInput = (options: CreateFileInputOptions = {}): CreateFil
         event.preventDefault();
         event.stopPropagation();
 
-        setDragCounter((prev) => prev - 1);
+        setDragCounter((previous) => previous - 1);
     };
 
     const handleDrop = (event: DragEvent): void => {
@@ -72,7 +72,7 @@ export const createFileInput = (options: CreateFileInputOptions = {}): CreateFil
             if (inputRef.current) {
                 const dataTransfer = new DataTransfer();
 
-                for (const file of Array.from(droppedFiles)) {
+                for (const file of droppedFiles) {
                     dataTransfer.items.add(file);
                 }
 
@@ -93,7 +93,7 @@ export const createFileInput = (options: CreateFileInputOptions = {}): CreateFil
         const handleDragEnter = (event: DragEvent): void => {
             event.preventDefault();
             event.stopPropagation();
-            setDragCounter((prev) => prev + 1);
+            setDragCounter((previous) => previous + 1);
         };
 
         document.addEventListener("dragenter", handleDragEnter);
@@ -114,4 +114,3 @@ export const createFileInput = (options: CreateFileInputOptions = {}): CreateFil
         reset,
     };
 };
-

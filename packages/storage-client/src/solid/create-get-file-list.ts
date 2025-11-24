@@ -1,3 +1,4 @@
+import type { QueryClient } from "@tanstack/solid-query";
 import { createQuery } from "@tanstack/solid-query";
 import type { Accessor } from "solid-js";
 
@@ -28,6 +29,8 @@ export interface CreateGetFileListOptions {
     limit?: Accessor<number> | number;
     /** Page number for pagination */
     page?: Accessor<number> | number;
+    /** Optional QueryClient to use */
+    queryClient?: QueryClient;
 }
 
 export interface CreateGetFileListReturn {
@@ -48,17 +51,33 @@ export interface CreateGetFileListReturn {
  * @returns File list fetching functions and state signals
  */
 export const createGetFileList = (options: CreateGetFileListOptions): CreateGetFileListReturn => {
-    const { enabled = true, endpoint, limit, page } = options;
+    const { enabled = true, endpoint, limit, page, queryClient } = options;
 
     const limitValue = typeof limit === "function" ? limit : () => limit;
     const pageValue = typeof page === "function" ? page : () => page;
     const enabledValue = typeof enabled === "function" ? enabled : () => enabled;
 
     const query = createQuery(() => {
+        const limit = limitValue();
+        const page = pageValue();
+        const enabled = enabledValue();
+
+        // Build filters with stable structure - use undefined for missing values
+        // This ensures TanStack Query can properly compare queryKeys using deep equality
+        const filters: { limit?: number; page?: number } | undefined
+            = limit !== undefined || page !== undefined
+                ? {
+                    ...limit !== undefined && { limit },
+                    ...page !== undefined && { page },
+                }
+                : undefined;
+
+        const queryKey = storageQueryKeys.files.list(endpoint, filters);
+
         return {
-            enabled: enabledValue(),
+            enabled,
             queryFn: async (): Promise<FileListResponse> => {
-                const url = buildUrl(endpoint, "", { limit: limitValue(), page: pageValue() });
+                const url = buildUrl(endpoint, "", { limit, page });
                 const data = await fetchJson<FileListResponse | FileMeta[]>(url);
 
                 // Handle both paginated and non-paginated responses
@@ -69,18 +88,24 @@ export const createGetFileList = (options: CreateGetFileListOptions): CreateGetF
                         meta: (data as FileListResponse).meta,
                     };
             },
-            queryKey: storageQueryKeys.files.list(endpoint, { limit: limitValue(), page: pageValue() }),
+            queryKey,
         };
-    });
+    }, queryClient ? () => queryClient : undefined);
 
     return {
-        data: query.data as unknown as Accessor<FileListResponse | undefined>,
-        error: (() => {
-            const error = query.error?.();
+        data: () => {
+            if (typeof query.data === "function") {
+                return query.data() as FileListResponse | undefined;
+            }
+
+            return query.data as FileListResponse | undefined;
+        },
+        error: () => {
+            const error = typeof query.error === "function" ? query.error() : query.error;
 
             return (error as Error) || undefined;
-        }) as Accessor<Error | undefined>,
-        isLoading: query.isLoading as unknown as Accessor<boolean>,
+        },
+        isLoading: () => (typeof query.isLoading === "function" ? query.isLoading() : query.isLoading) as boolean,
         refetch: () => {
             query.refetch();
         },

@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, expectTypeOf, it, vi } from "vitest";
 
 import { useBatchRetry } from "../../src/react/use-batch-retry";
 import { renderHookWithQueryClient } from "./test-utils";
@@ -37,7 +37,7 @@ class MockXMLHttpRequest {
     public abort = vi.fn();
 }
 
-describe("useBatchRetry", () => {
+describe(useBatchRetry, () => {
     let originalXHR: typeof XMLHttpRequest;
 
     beforeEach(() => {
@@ -61,7 +61,7 @@ describe("useBatchRetry", () => {
             }),
         );
 
-        expect(typeof result.current.retryBatch).toBe("function");
+        expectTypeOf(result.current.retryBatch).toBeFunction();
     });
 
     it("should retry batch without throwing", () => {
@@ -78,4 +78,3 @@ describe("useBatchRetry", () => {
         }).not.toThrow();
     });
 });
-

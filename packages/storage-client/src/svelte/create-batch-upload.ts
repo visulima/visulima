@@ -20,8 +20,8 @@ export interface CreateBatchUploadReturn {
     completedCount: Readable<number>;
     error: Readable<Error | undefined>;
     errorCount: Readable<number>;
-    items: Readable<UploadItem[]>;
     isUploading: Readable<boolean>;
+    items: Readable<UploadItem[]>;
     progress: Readable<number>;
     reset: () => void;
     uploadBatch: (files: File[]) => string[];
@@ -172,4 +172,3 @@ export const createBatchUpload = (options: CreateBatchUploadOptions): CreateBatc
         uploadBatch,
     };
 };
-

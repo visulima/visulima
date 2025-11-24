@@ -23,14 +23,13 @@ describe(usePatchChunk, () => {
     });
 
     it("should upload chunk successfully", async () => {
-
         const chunk = new Blob(["chunk data"], { type: "application/octet-stream" });
 
         mockFetch.mockResolvedValueOnce({
             headers: new Headers({
-                "X-Upload-Offset": "100",
+                ETag: "\"chunk-etag\"",
                 "X-Upload-Complete": "false",
-                ETag: '"chunk-etag"',
+                "X-Upload-Offset": "100",
             }),
             ok: true,
         });
@@ -53,13 +52,12 @@ describe(usePatchChunk, () => {
     });
 
     it("should handle completed upload", async () => {
-
         const chunk = new Blob(["chunk data"], { type: "application/octet-stream" });
 
         mockFetch.mockResolvedValueOnce({
             headers: new Headers({
-                "X-Upload-Offset": "100",
                 "X-Upload-Complete": "true",
+                "X-Upload-Offset": "100",
             }),
             ok: true,
         });
@@ -80,7 +78,6 @@ describe(usePatchChunk, () => {
     });
 
     it("should include checksum when provided", async () => {
-
         const chunk = new Blob(["chunk data"], { type: "application/octet-stream" });
 
         mockFetch.mockResolvedValueOnce({
@@ -113,7 +110,6 @@ describe(usePatchChunk, () => {
     });
 
     it("should call onSuccess callback", async () => {
-
         const onSuccess = vi.fn();
         const chunk = new Blob(["chunk data"], { type: "application/octet-stream" });
 
@@ -136,22 +132,23 @@ describe(usePatchChunk, () => {
         await result.current.patchChunk("file-123", chunk, 0);
 
         await waitFor(() => {
-            expect(onSuccess).toHaveBeenCalled();
+            expect(onSuccess).toHaveBeenCalledWith();
         });
     });
 
     it("should handle error and call onError callback", async () => {
-
         const onError = vi.fn();
         const chunk = new Blob(["chunk data"], { type: "application/octet-stream" });
 
         mockFetch.mockResolvedValueOnce({
-            json: async () => ({
-                error: {
-                    code: "ERROR",
-                    message: "Upload failed",
-                },
-            }),
+            json: async () => {
+                return {
+                    error: {
+                        code: "ERROR",
+                        message: "Upload failed",
+                    },
+                };
+            },
             ok: false,
             status: 500,
             statusText: "Internal Server Error",
@@ -169,7 +166,7 @@ describe(usePatchChunk, () => {
         await expect(result.current.patchChunk("file-123", chunk, 0)).rejects.toThrow();
 
         await waitFor(() => {
-            expect(onError).toHaveBeenCalled();
+            expect(onError).toHaveBeenCalledWith();
         });
     });
 
@@ -202,4 +199,3 @@ describe(usePatchChunk, () => {
         expect(result.current.error).toBeUndefined();
     });
 });
-

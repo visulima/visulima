@@ -1,7 +1,7 @@
 import { onCleanup, onMount } from "solid-js";
 
-import type { BatchState } from "../core/uploader";
 import { createMultipartAdapter } from "../core/multipart-adapter";
+import type { BatchState } from "../core/uploader";
 
 export interface CreateBatchStartListenerOptions {
     endpoint: string;
@@ -23,4 +23,3 @@ export const createBatchStartListener = (options: CreateBatchStartListenerOption
         });
     });
 };
-

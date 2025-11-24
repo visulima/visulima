@@ -3,10 +3,6 @@ import type { UploadResult } from "@visulima/storage-client/react";
 import { useUpload } from "@visulima/storage-client/react";
 import { useRef, useState } from "react";
 
-export const Route = createFileRoute("/")({
-    component: Home,
-});
-
 const Home = () => {
     const [file, setFile] = useState<File | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -50,40 +46,40 @@ const Home = () => {
     };
 
     return (
-        <div style={{ margin: "0 auto", maxWidth: "800px", padding: "2rem" }}>
+        <div style={{ margin: "0 auto", "max-width": "800px", padding: "2rem" }}>
             <h1>File Upload Example</h1>
             <p>Upload files using @visulima/storage-client with TanStack Start</p>
 
-            <div style={{ marginTop: "2rem" }}>
+            <div style={{ "margin-top": "2rem" }}>
                 <input disabled={isUploading} onChange={handleFileChange} ref={fileInputRef} type="file" />
-                <button disabled={!file || isUploading} onClick={handleUpload} style={{ marginLeft: "1rem", padding: "0.5rem 1rem" }}>
+                <button disabled={!file || isUploading} onClick={handleUpload} style={{ "margin-left": "1rem", padding: "0.5rem 1rem" }}>
                     {isUploading ? `Uploading... ${progress}%` : "Upload"}
                 </button>
-                <button disabled={isUploading} onClick={handleReset} style={{ marginLeft: "0.5rem", padding: "0.5rem 1rem" }}>
+                <button disabled={isUploading} onClick={handleReset} style={{ "margin-left": "0.5rem", padding: "0.5rem 1rem" }}>
                     Reset
                 </button>
             </div>
 
             {isUploading && (
-                <div style={{ marginTop: "1rem" }}>
+                <div style={{ "margin-top": "1rem" }}>
                     <div>
                         Progress:
                         {progress}
                         %
                     </div>
-                    <progress max={100} style={{ maxWidth: "400px", width: "100%" }} value={progress} />
+                    <progress max={100} style={{ "max-width": "400px", width: "100%" }} value={progress} />
                 </div>
             )}
 
             {error && (
-                <div style={{ backgroundColor: "#fee", borderRadius: "4px", color: "#c33", marginTop: "1rem", padding: "1rem" }}>
+                <div style={{ "background-color": "#fee", "border-radius": "4px", color: "#c33", "margin-top": "1rem", padding: "1rem" }}>
                     Error:
                     {error.message}
                 </div>
             )}
 
             {result && (
-                <div style={{ backgroundColor: "#efe", borderRadius: "4px", color: "#3c3", marginTop: "1rem", padding: "1rem" }}>
+                <div style={{ "background-color": "#efe", "border-radius": "4px", color: "#3c3", "margin-top": "1rem", padding: "1rem" }}>
                     <div>Upload complete!</div>
                     <div>
                         File ID:
@@ -109,3 +105,7 @@ const Home = () => {
         </div>
     );
 };
+
+export const Route = createFileRoute("/")({
+    component: Home,
+});

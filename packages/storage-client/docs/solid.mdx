@@ -350,9 +350,9 @@ function FileViewer({ fileId }: { fileId: string }) {
     const blob = data();
     if (!blob) return;
 
-    const objectUrl = URL.createObjectURL(blob);
-    setUrl(objectUrl);
-    onCleanup(() => URL.revokeObjectURL(objectUrl));
+      const objectUrl = URL.createObjectURL(blob);
+      setUrl(objectUrl);
+      onCleanup(() => URL.revokeObjectURL(objectUrl));
   });
 
   return (

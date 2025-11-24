@@ -1,7 +1,7 @@
 import { onBeforeUnmount, onMounted } from "vue";
 
-import type { BatchState } from "../core/uploader";
 import { createMultipartAdapter } from "../core/multipart-adapter";
+import type { BatchState } from "../core/uploader";
 
 export interface UseBatchFinishListenerOptions {
     /** Upload endpoint URL (used to create uploader instance) */
@@ -36,4 +36,3 @@ export const useBatchFinishListener = (options: UseBatchFinishListenerOptions): 
         });
     });
 };
-

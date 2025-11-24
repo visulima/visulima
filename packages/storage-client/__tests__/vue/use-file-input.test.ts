@@ -1,9 +1,9 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, expectTypeOf, it, vi } from "vitest";
 
 import { useFileInput } from "../../src/vue/use-file-input";
 import { withQueryClient } from "./test-utils";
 
-describe("useFileInput", () => {
+describe(useFileInput, () => {
     it("should initialize with empty files", () => {
         expect.assertions(1);
 
@@ -17,11 +17,11 @@ describe("useFileInput", () => {
 
         const { result } = withQueryClient(() => useFileInput());
 
-        expect(typeof result.handleFileChange).toBe("function");
-        expect(typeof result.handleDragOver).toBe("function");
-        expect(typeof result.handleDragLeave).toBe("function");
-        expect(typeof result.handleDrop).toBe("function");
-        expect(typeof result.openFileDialog).toBe("function");
+        expectTypeOf(result.handleFileChange).toBeFunction();
+        expectTypeOf(result.handleDragOver).toBeFunction();
+        expectTypeOf(result.handleDragLeave).toBeFunction();
+        expectTypeOf(result.handleDrop).toBeFunction();
+        expectTypeOf(result.openFileDialog).toBeFunction();
     });
 
     it("should handle file selection", () => {
@@ -58,4 +58,3 @@ describe("useFileInput", () => {
         expect(onFilesSelected).toHaveBeenCalledWith([file]);
     });
 });
-

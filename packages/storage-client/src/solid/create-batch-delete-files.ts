@@ -1,4 +1,5 @@
 import { createMutation, useQueryClient } from "@tanstack/solid-query";
+import type { Accessor } from "solid-js";
 
 import { storageQueryKeys } from "../core";
 
@@ -18,9 +19,9 @@ export interface CreateBatchDeleteFilesReturn {
     /** Delete multiple files by IDs */
     batchDeleteFiles: (ids: string[]) => Promise<BatchDeleteResult>;
     /** Last request error, if any */
-    error: () => Error | undefined;
+    error: Accessor<Error | undefined>;
     /** Whether a request is currently in progress */
-    isLoading: () => boolean;
+    isLoading: Accessor<boolean>;
     /** Reset mutation state */
     reset: () => void;
 }
@@ -92,8 +93,12 @@ export const createBatchDeleteFiles = (options: CreateBatchDeleteFilesOptions): 
 
     return {
         batchDeleteFiles: mutation.mutateAsync,
-        error: mutation.error as Accessor<Error | undefined>,
-        isLoading: mutation.isPending,
+        error: () => {
+            const error = typeof mutation.error === "function" ? mutation.error() : mutation.error;
+
+            return (error as Error) || undefined;
+        },
+        isLoading: () => (typeof mutation.isPending === "function" ? mutation.isPending() : mutation.isPending) as boolean,
         reset: mutation.reset,
     };
 };

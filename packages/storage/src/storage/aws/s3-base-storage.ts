@@ -515,6 +515,9 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
                     } catch (error) {
                         truncated = false;
 
+                        const httpError = this.normalizeError(error instanceof Error ? error : new Error(String(error)));
+
+                        await this.onError(httpError);
                         throw error;
                     }
                 }
@@ -722,6 +725,10 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
             );
         } catch (error) {
             this.logger?.error("abortMultipartUploadError: ", error);
+
+            const httpError = this.normalizeError(error instanceof Error ? error : new Error(String(error)));
+
+            await this.onError(httpError);
         }
     }
 

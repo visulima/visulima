@@ -3,8 +3,8 @@ import type { Readable, Writable } from "svelte/store";
 import { writable } from "svelte/store";
 
 export interface CreatePasteUploadOptions {
-    onFilesPasted?: (files: File[]) => void;
     filter?: (file: File) => boolean;
+    onFilesPasted?: (files: File[]) => void;
 }
 
 export interface CreatePasteUploadReturn {
@@ -14,7 +14,7 @@ export interface CreatePasteUploadReturn {
 }
 
 export const createPasteUpload = (options: CreatePasteUploadOptions = {}): CreatePasteUploadReturn => {
-    const { onFilesPasted, filter } = options;
+    const { filter, onFilesPasted } = options;
 
     const pastedFiles: Writable<File[]> = writable([]);
 
@@ -27,9 +27,7 @@ export const createPasteUpload = (options: CreatePasteUploadOptions = {}): Creat
 
         const files: File[] = [];
 
-        for (let i = 0; i < items.length; i++) {
-            const item = items[i];
-
+        for (const item of items) {
             if (item.kind === "file") {
                 const file = item.getAsFile();
 
@@ -63,9 +61,7 @@ export const createPasteUpload = (options: CreatePasteUploadOptions = {}): Creat
 
             const files: File[] = [];
 
-            for (let i = 0; i < items.length; i++) {
-                const item = items[i];
-
+            for (const item of items) {
                 if (item.kind === "file") {
                     const file = item.getAsFile();
 
@@ -98,4 +94,3 @@ export const createPasteUpload = (options: CreatePasteUploadOptions = {}): Creat
         reset,
     };
 };
-

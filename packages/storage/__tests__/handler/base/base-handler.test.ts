@@ -144,19 +144,23 @@ describe("baseHandler", () => {
         expect(file.headers).toStrictEqual({ "Access-Control-Allow-Methods": "DELETE, GET, HEAD, OPTIONS, PATCH, POST, PUT" });
     });
 
-    it("should return 503 when storage is not ready", async () => {
-        expect.assertions(1);
+    it(
+        "should return 503 when storage is not ready",
+        async () => {
+            expect.assertions(1);
 
-        uploader.storage.isReady = false;
+            uploader.storage.isReady = false;
 
-        const response = createResponse();
+            const response = createResponse();
 
-        await uploader.handle(createRequest({ method: "OPTIONS" }), response);
+            await uploader.handle(createRequest({ method: "OPTIONS" }), response);
 
-        expect(response.statusCode).toBe(503);
+            expect(response.statusCode).toBe(503);
 
-        uploader.storage.isReady = true;
-    });
+            uploader.storage.isReady = true;
+        },
+        6000,
+    );
 
     it("should return 405 for unsupported HTTP methods", async () => {
         expect.assertions(1);

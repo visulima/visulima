@@ -1,9 +1,9 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, expectTypeOf, it, vi } from "vitest";
 
 import { useRetry } from "../../src/react/use-retry";
 import { MockXMLHttpRequest, renderHookWithQueryClient } from "./test-utils";
 
-describe("useRetry", () => {
+describe(useRetry, () => {
     let originalXHR: typeof XMLHttpRequest;
 
     beforeEach(() => {
@@ -27,7 +27,7 @@ describe("useRetry", () => {
             }),
         );
 
-        expect(typeof result.current.retryItem).toBe("function");
+        expectTypeOf(result.current.retryItem).toBeFunction();
     });
 
     it("should retry item without throwing", () => {
@@ -44,4 +44,3 @@ describe("useRetry", () => {
         }).not.toThrow();
     });
 });
-

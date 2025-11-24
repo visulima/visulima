@@ -44,10 +44,6 @@ import type { UploadResult } from "@visulima/storage-client/react";
 import { useUpload } from "@visulima/storage-client/react";
 import { useRef, useState } from "react";
 
-export const Route = createFileRoute("/")({
-  component: Home,
-});
-
 const Home = () => {
   const [file, setFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -177,6 +173,10 @@ const Home = () => {
     </div>
   );
 };
+
+export const Route = createFileRoute("/")({
+  component: Home,
+});
 ```
 
 ## API Routes

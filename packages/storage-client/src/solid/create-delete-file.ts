@@ -48,8 +48,12 @@ export const createDeleteFile = (options: CreateDeleteFileOptions): CreateDelete
 
     return {
         deleteFile: mutation.mutateAsync,
-        error: mutation.error as Accessor<Error | undefined>,
-        isLoading: mutation.isPending,
+        error: () => {
+            const error = typeof mutation.error === "function" ? mutation.error() : mutation.error;
+
+            return (error as Error) || undefined;
+        },
+        isLoading: () => (typeof mutation.isPending === "function" ? mutation.isPending() : mutation.isPending) as boolean,
         reset: mutation.reset,
     };
 };

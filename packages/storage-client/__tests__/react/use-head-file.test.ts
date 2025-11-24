@@ -23,11 +23,10 @@ describe(useHeadFile, () => {
     });
 
     it("should fetch file metadata via HEAD request", async () => {
-
         const mockHeaders = new Headers({
             "Content-Length": "1024",
             "Content-Type": "image/jpeg",
-            ETag: '"test-etag"',
+            ETag: "\"test-etag\"",
             "Last-Modified": "Wed, 21 Oct 2015 07:28:00 GMT",
         });
 
@@ -53,12 +52,11 @@ describe(useHeadFile, () => {
     });
 
     it("should extract upload metadata", async () => {
-
         const mockHeaders = new Headers({
-            "X-Upload-Offset": "500",
+            "X-Chunked-Upload": "true",
             "X-Upload-Complete": "false",
             "X-Upload-Expires": "2025-12-31T23:59:59Z",
-            "X-Chunked-Upload": "true",
+            "X-Upload-Offset": "500",
         });
 
         mockFetch.mockResolvedValueOnce({
@@ -84,7 +82,6 @@ describe(useHeadFile, () => {
     });
 
     it("should parse received chunks", async () => {
-
         const mockHeaders = new Headers({
             "X-Received-Chunks": JSON.stringify([0, 1024, 2048]),
         });
@@ -109,7 +106,6 @@ describe(useHeadFile, () => {
     });
 
     it("should call onSuccess callback", async () => {
-
         const onSuccess = vi.fn();
         const mockHeaders = new Headers({
             "Content-Length": "1024",
@@ -131,21 +127,22 @@ describe(useHeadFile, () => {
         );
 
         await waitFor(() => {
-            expect(onSuccess).toHaveBeenCalled();
+            expect(onSuccess).toHaveBeenCalledWith();
         });
     });
 
     it("should handle error and call onError callback", async () => {
-
         const onError = vi.fn();
 
         mockFetch.mockResolvedValueOnce({
-            json: async () => ({
-                error: {
-                    code: "NOT_FOUND",
-                    message: "File not found",
-                },
-            }),
+            json: async () => {
+                return {
+                    error: {
+                        code: "NOT_FOUND",
+                        message: "File not found",
+                    },
+                };
+            },
             ok: false,
             status: 404,
             statusText: "Not Found",
@@ -162,7 +159,7 @@ describe(useHeadFile, () => {
         );
 
         await waitFor(() => {
-            expect(onError).toHaveBeenCalled();
+            expect(onError).toHaveBeenCalledWith();
         });
     });
 
@@ -225,4 +222,3 @@ describe(useHeadFile, () => {
         });
     });
 });
-

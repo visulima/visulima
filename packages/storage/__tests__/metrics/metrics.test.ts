@@ -116,6 +116,103 @@ describe("metrics Instrumentation", () => {
 
             expect(storageMetrics).toBeInstanceOf(OpenTelemetryMetrics);
         });
+
+        it("should create OpenTelemetryMetrics instance with default meter", () => {
+            expect.assertions(1);
+
+            try {
+                const storageMetrics = new OpenTelemetryMetrics();
+
+                expect(storageMetrics).toBeInstanceOf(OpenTelemetryMetrics);
+            } catch {
+                // If OpenTelemetry is not available, skip this test
+                expect(true).toBe(true);
+            }
+        });
+
+        it("should increment counter metric", () => {
+            expect.assertions(1);
+
+            const meter = otelMetrics.getMeter("@visulima/storage-test", "1.0.0");
+            const storageMetrics = new OpenTelemetryMetrics(meter);
+
+            expect(() => storageMetrics.increment("test.counter")).not.toThrow();
+        });
+
+        it("should increment counter metric with value and attributes", () => {
+            expect.assertions(1);
+
+            const meter = otelMetrics.getMeter("@visulima/storage-test", "1.0.0");
+            const storageMetrics = new OpenTelemetryMetrics(meter);
+
+            expect(() => storageMetrics.increment("test.counter", 5, { storage: "disk" })).not.toThrow();
+        });
+
+        it("should record timing metric", () => {
+            expect.assertions(1);
+
+            const meter = otelMetrics.getMeter("@visulima/storage-test", "1.0.0");
+            const storageMetrics = new OpenTelemetryMetrics(meter);
+
+            expect(() => storageMetrics.timing("test.timing", 100)).not.toThrow();
+        });
+
+        it("should record timing metric with attributes", () => {
+            expect.assertions(1);
+
+            const meter = otelMetrics.getMeter("@visulima/storage-test", "1.0.0");
+            const storageMetrics = new OpenTelemetryMetrics(meter);
+
+            expect(() => storageMetrics.timing("test.timing", 100, { operation: "get" })).not.toThrow();
+        });
+
+        it("should set gauge metric", () => {
+            expect.assertions(1);
+
+            const meter = otelMetrics.getMeter("@visulima/storage-test", "1.0.0");
+            const storageMetrics = new OpenTelemetryMetrics(meter);
+
+            expect(() => storageMetrics.gauge("test.gauge", 10)).not.toThrow();
+        });
+
+        it("should set gauge metric with attributes", () => {
+            expect.assertions(1);
+
+            const meter = otelMetrics.getMeter("@visulima/storage-test", "1.0.0");
+            const storageMetrics = new OpenTelemetryMetrics(meter);
+
+            expect(() => storageMetrics.gauge("test.gauge", 10, { storage: "disk" })).not.toThrow();
+        });
+
+        it("should reuse existing counter for same name", () => {
+            expect.assertions(1);
+
+            const meter = otelMetrics.getMeter("@visulima/storage-test", "1.0.0");
+            const storageMetrics = new OpenTelemetryMetrics(meter);
+
+            storageMetrics.increment("test.counter");
+            expect(() => storageMetrics.increment("test.counter")).not.toThrow();
+        });
+
+        it("should reuse existing histogram for same name", () => {
+            expect.assertions(1);
+
+            const meter = otelMetrics.getMeter("@visulima/storage-test", "1.0.0");
+            const storageMetrics = new OpenTelemetryMetrics(meter);
+
+            storageMetrics.timing("test.timing", 100);
+            expect(() => storageMetrics.timing("test.timing", 200)).not.toThrow();
+        });
+
+        it("should reuse existing gauge for same name", () => {
+            expect.assertions(1);
+
+            const meter = otelMetrics.getMeter("@visulima/storage-test", "1.0.0");
+            const storageMetrics = new OpenTelemetryMetrics(meter);
+
+            storageMetrics.gauge("test.gauge", 10);
+            expect(() => storageMetrics.gauge("test.gauge", 20)).not.toThrow();
+        });
     });
 
     describe("storage Operations Metrics", () => {

@@ -7,14 +7,12 @@ export const metadata: Metadata = {
     title: "Storage Client - Next.js Example",
 };
 
-export default function RootLayout({
-    children,
-}: Readonly<{
+export default function RootLayout(props: Readonly<{
     children: React.ReactNode;
 }>) {
     return (
         <html lang="en">
-            <body>{children}</body>
+            <body>{props.children}</body>
         </html>
     );
 }

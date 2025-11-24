@@ -74,14 +74,16 @@ describe(createChunkedRestAdapter, () => {
 
         // Mock get upload result (GET)
         mockFetch.mockResolvedValueOnce({
-            json: async () => ({
-                id: fileId,
-                name: "test.txt",
-                originalName: "test.txt",
-                size: file.size,
-                contentType: "text/plain",
-                status: "completed",
-            }),
+            json: async () => {
+                return {
+                    contentType: "text/plain",
+                    id: fileId,
+                    name: "test.txt",
+                    originalName: "test.txt",
+                    size: file.size,
+                    status: "completed",
+                };
+            },
             ok: true,
         });
 
@@ -130,13 +132,11 @@ describe(createChunkedRestAdapter, () => {
         });
 
         // Mock chunk upload - this will be aborted
-        mockFetch.mockImplementationOnce(() => {
-            return new Promise((resolve, reject) => {
-                setTimeout(() => {
-                    reject(new Error("Upload aborted"));
-                }, 50);
-            });
-        });
+        mockFetch.mockImplementationOnce(() => new Promise((resolve, reject) => {
+            setTimeout(() => {
+                reject(new Error("Upload aborted"));
+            }, 50);
+        }));
 
         const adapter = createChunkedRestAdapter({
             endpoint: "https://api.example.com/upload",
@@ -149,7 +149,7 @@ describe(createChunkedRestAdapter, () => {
         adapter.abort();
 
         await expect(uploadPromise).rejects.toThrow();
-    }, 10000);
+    }, 10_000);
 
     it("should call callbacks correctly", async () => {
         expect.assertions(4);
@@ -190,11 +190,13 @@ describe(createChunkedRestAdapter, () => {
         });
 
         mockFetch.mockResolvedValueOnce({
-            json: async () => ({
-                id: "file-123",
-                size: file.size,
-                status: "completed",
-            }),
+            json: async () => {
+                return {
+                    id: "file-123",
+                    size: file.size,
+                    status: "completed",
+                };
+            },
             ok: true,
         });
 
@@ -209,9 +211,9 @@ describe(createChunkedRestAdapter, () => {
 
         await adapter.upload(file);
 
-        expect(onStart).toHaveBeenCalled();
-        expect(onProgress).toHaveBeenCalled();
-        expect(onFinish).toHaveBeenCalled();
+        expect(onStart).toHaveBeenCalledWith();
+        expect(onProgress).toHaveBeenCalledWith();
+        expect(onFinish).toHaveBeenCalledWith();
         expect(onError).not.toHaveBeenCalled();
     });
 
@@ -236,9 +238,9 @@ describe(createChunkedRestAdapter, () => {
         });
 
         // Multiple chunk uploads - need to mock each chunk separately
-        const numChunks = Math.ceil(file.size / customChunkSize);
+        const numberChunks = Math.ceil(file.size / customChunkSize);
 
-        for (let i = 0; i < numChunks; i++) {
+        for (let i = 0; i < numberChunks; i++) {
             mockFetch.mockResolvedValueOnce({
                 headers: new Headers({
                     "X-Upload-Offset": String(Math.min((i + 1) * customChunkSize, file.size)),
@@ -255,11 +257,13 @@ describe(createChunkedRestAdapter, () => {
         });
 
         mockFetch.mockResolvedValueOnce({
-            json: async () => ({
-                id: "file-123",
-                size: file.size,
-                status: "completed",
-            }),
+            json: async () => {
+                return {
+                    id: "file-123",
+                    size: file.size,
+                    status: "completed",
+                };
+            },
             ok: true,
         });
 
@@ -294,4 +298,3 @@ describe(createChunkedRestAdapter, () => {
         expect(offset).toBe(0);
     });
 });
-

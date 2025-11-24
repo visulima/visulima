@@ -28,9 +28,9 @@ describe(useDeleteFile, () => {
         if (originalFetch) {
             globalThis.fetch = originalFetch;
         } else {
-            // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
             delete (globalThis as any).fetch;
         }
+
         vi.restoreAllMocks();
     });
 
@@ -84,7 +84,7 @@ describe(useDeleteFile, () => {
         await result.current.deleteFile("file-123");
 
         await waitFor(() => {
-            expect(onSuccess).toHaveBeenCalled();
+            expect(onSuccess).toHaveBeenCalledWith();
         });
     });
 
@@ -94,12 +94,14 @@ describe(useDeleteFile, () => {
         const onError = vi.fn();
 
         mockFetch.mockResolvedValueOnce({
-            json: async () => ({
-                error: {
-                    code: "NOT_FOUND",
-                    message: "File not found",
-                },
-            }),
+            json: async () => {
+                return {
+                    error: {
+                        code: "NOT_FOUND",
+                        message: "File not found",
+                    },
+                };
+            },
             ok: false,
             status: 404,
             statusText: "Not Found",
@@ -117,7 +119,7 @@ describe(useDeleteFile, () => {
         await expect(result.current.deleteFile("file-123")).rejects.toThrow();
 
         await waitFor(() => {
-            expect(onError).toHaveBeenCalled();
+            expect(onError).toHaveBeenCalledWith();
         });
     });
 
@@ -145,4 +147,3 @@ describe(useDeleteFile, () => {
         expect(result.current.error).toBeUndefined();
     });
 });
-

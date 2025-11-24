@@ -1,11 +1,9 @@
-import { describe, expect, it, vi } from "vitest";
-import { waitFor } from "@testing-library/react";
-
-import { renderHook } from "@testing-library/react";
+import { renderHook, waitFor } from "@testing-library/react";
+import { describe, expect, expectTypeOf, it, vi } from "vitest";
 
 import { usePasteUpload } from "../../src/react/use-paste-upload";
 
-describe("usePasteUpload", () => {
+describe(usePasteUpload, () => {
     it("should initialize with empty pasted files", () => {
         expect.assertions(1);
 
@@ -19,7 +17,7 @@ describe("usePasteUpload", () => {
 
         const { result } = renderHook(() => usePasteUpload());
 
-        expect(typeof result.current.handlePaste).toBe("function");
+        expectTypeOf(result.current.handlePaste).toBeFunction();
     });
 
     it("should handle paste event with files", async () => {
@@ -35,8 +33,8 @@ describe("usePasteUpload", () => {
         const clipboardData = {
             items: [
                 {
-                    kind: "file",
                     getAsFile: () => file,
+                    kind: "file",
                 },
             ],
         };
@@ -77,12 +75,12 @@ describe("usePasteUpload", () => {
         const clipboardData = {
             items: [
                 {
-                    kind: "file",
                     getAsFile: () => file1,
+                    kind: "file",
                 },
                 {
-                    kind: "file",
                     getAsFile: () => file2,
+                    kind: "file",
                 },
             ],
         };
@@ -113,8 +111,8 @@ describe("usePasteUpload", () => {
         const clipboardData = {
             items: [
                 {
-                    kind: "file",
                     getAsFile: () => file,
+                    kind: "file",
                 },
             ],
         };
@@ -142,4 +140,3 @@ describe("usePasteUpload", () => {
         });
     });
 });
-
