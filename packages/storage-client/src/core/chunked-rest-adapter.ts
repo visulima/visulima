@@ -316,6 +316,8 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
             uploadState = {
                 abortController: undefined,
                 aborted: false,
+                file: undefined,
+                fileId: undefined,
                 paused: false,
                 totalSize: 0,
                 uploadedChunks: new Set(),

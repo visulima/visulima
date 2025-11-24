@@ -141,11 +141,8 @@ export const useChunkedRestUpload = (options: UseChunkedRestUploadOptions): UseC
             try {
                 return await adapterInstance.upload(file);
             } catch (error_) {
-                const uploadError = error_ instanceof Error ? error_ : new Error(String(error_));
-
-                setError(uploadError);
-                callbacksRef.current.onError?.(uploadError);
-                throw uploadError;
+                // Adapter's onError already updated state and invoked callbacks
+                throw error_ instanceof Error ? error_ : new Error(String(error_));
             }
         },
         [adapterInstance],
@@ -165,12 +162,9 @@ export const useChunkedRestUpload = (options: UseChunkedRestUploadOptions): UseC
         try {
             await adapterInstance.resume();
         } catch (error_) {
-            const uploadError = error_ instanceof Error ? error_ : new Error(String(error_));
-
-            setError(uploadError);
+            // Adapter's onError already updated state and invoked callbacks
             setIsUploading(false);
-            callbacksRef.current.onError?.(uploadError);
-            throw uploadError;
+            throw error_ instanceof Error ? error_ : new Error(String(error_));
         }
     }, [adapterInstance]);
 

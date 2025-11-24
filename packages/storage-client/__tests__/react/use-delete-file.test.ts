@@ -1,12 +1,13 @@
 import { QueryClient } from "@tanstack/react-query";
 import { waitFor } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { useDeleteFile } from "../../src/react/use-delete-file";
 import { renderHookWithQueryClient } from "./test-utils";
 
 // Mock fetch globally
 const mockFetch = vi.fn();
+let originalFetch: typeof globalThis.fetch | undefined;
 
 describe(useDeleteFile, () => {
     let queryClient: QueryClient;
@@ -18,8 +19,19 @@ describe(useDeleteFile, () => {
                 queries: { retry: false },
             },
         });
-        globalThis.fetch = mockFetch;
+        originalFetch = globalThis.fetch;
+        globalThis.fetch = mockFetch as unknown as typeof globalThis.fetch;
         vi.clearAllMocks();
+    });
+
+    afterEach(() => {
+        if (originalFetch) {
+            globalThis.fetch = originalFetch;
+        } else {
+            // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+            delete (globalThis as any).fetch;
+        }
+        vi.restoreAllMocks();
     });
 
     it("should delete file successfully", async () => {

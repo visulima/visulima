@@ -7,6 +7,7 @@ import { ERRORS } from "../../utils/errors";
 import { getRequestStream } from "../../utils/http";
 import BaseHandlerFetch from "../base/base-handler-fetch";
 import type { Handlers, ResponseFile, ResponseList, UploadOptions } from "../types";
+import { parseContentDispositionValue } from "../utils/request-parser";
 import RestBase from "./rest-base";
 
 /**
@@ -159,16 +160,7 @@ class RestFetch<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
         }
 
         // Extract original filename from Content-Disposition header if present
-        let originalName: string | undefined;
-        const contentDisposition = request.headers.get("content-disposition");
-
-        if (contentDisposition) {
-            const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
-
-            if (filenameMatch && filenameMatch[1]) {
-                originalName = filenameMatch[1].replaceAll(/['"]/g, "");
-            }
-        }
+        const originalName = parseContentDispositionValue(request.headers.get("content-disposition"));
 
         const config: FileInit = {
             contentType,
@@ -375,16 +367,7 @@ const extractFileInitFromRequest = (request: Request, contentLength: number, con
     }
 
     // Extract original filename from Content-Disposition header if present
-    let originalName: string | undefined;
-    const contentDisposition = request.headers.get("content-disposition");
-
-    if (contentDisposition) {
-        const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
-
-        if (filenameMatch && filenameMatch[1]) {
-            originalName = filenameMatch[1].replaceAll(/['"]/g, "");
-        }
-    }
+    const originalName = parseContentDispositionValue(request.headers.get("content-disposition"));
 
     return {
         contentType,

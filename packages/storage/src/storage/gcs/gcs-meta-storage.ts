@@ -51,7 +51,9 @@ class GCSMetaStorage<T extends File = File> extends MetaStorage<T> {
 
         this.storageBaseURI = `${metaConfig.storageAPI || GCSConfig.storageAPI}/${bucketName}/o`;
         this.uploadBaseURI = `${metaConfig.uploadAPI || GCSConfig.uploadAPI}/${bucketName}/o`;
-        this.isCustomEndpoint = !this.storageBaseURI.includes("storage.googleapis.com");
+        const allowedHosts = ["storage.googleapis.com"];
+        const storageBaseHost = new URL(this.storageBaseURI).hostname;
+        this.isCustomEndpoint = !allowedHosts.includes(storageBaseHost);
 
         const { retryOptions, useAuthWithCustomEndpoint, userProject } = config;
 

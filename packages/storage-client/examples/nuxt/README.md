@@ -24,9 +24,9 @@ Visit [http://localhost:3000](http://localhost:3000)
 - Automatic method selection (multipart vs TUS)
 - SSR compatible
 - Server-side API routes for file uploads:
-    - `/api/upload/multipart` - Multipart/form-data uploads
-    - `/api/upload/rest` - REST API for direct binary uploads (supports chunked uploads)
-    - `/api/upload/tus` - TUS resumable uploads
+  - `/api/upload/multipart` - Multipart/form-data uploads
+  - `/api/upload/rest` - REST API for direct binary uploads (supports chunked uploads)
+  - `/api/upload/tus` - TUS resumable uploads
 
 ## Configuration
 

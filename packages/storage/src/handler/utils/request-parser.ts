@@ -28,24 +28,95 @@ export const parseMetadata = (request: IncomingMessage, existingMetadata: Record
 };
 
 /**
+ * Parses filename from Content-Disposition header value string.
+ * Uses a safer parsing approach to avoid ReDoS vulnerabilities.
+ * @param contentDisposition The Content-Disposition header value
+ * @returns Filename if found, undefined otherwise
+ */
+export const parseContentDispositionValue = (contentDisposition: string | null | undefined): string | undefined => {
+    if (!contentDisposition) {
+        return undefined;
+    }
+
+    // Safer parsing to avoid ReDoS: find "filename" or "filename*" and extract value
+    // Limit search to prevent excessive backtracking
+    const maxSearchLength = 2000; // Reasonable limit for header values
+    const searchString = contentDisposition.length > maxSearchLength ? contentDisposition.substring(0, maxSearchLength) : contentDisposition;
+
+    // Find "filename" or "filename*" (case-insensitive)
+    const filenameIndex = searchString.toLowerCase().indexOf("filename");
+
+    if (filenameIndex === -1) {
+        return undefined;
+    }
+
+    // Find the "=" sign after "filename" (skip optional whitespace and asterisk)
+    let equalsIndex = filenameIndex + 8; // "filename" is 8 chars
+
+    // Skip optional asterisk and whitespace
+    while (equalsIndex < searchString.length && (searchString[equalsIndex] === "*" || searchString[equalsIndex] === " " || searchString[equalsIndex] === "\t")) {
+        equalsIndex++;
+    }
+
+    if (equalsIndex >= searchString.length || searchString[equalsIndex] !== "=") {
+        return undefined;
+    }
+
+    equalsIndex++; // Skip the "="
+
+    // Skip whitespace after "="
+    while (equalsIndex < searchString.length && (searchString[equalsIndex] === " " || searchString[equalsIndex] === "\t")) {
+        equalsIndex++;
+    }
+
+    if (equalsIndex >= searchString.length) {
+        return undefined;
+    }
+
+    // Extract the value (quoted or unquoted)
+    let valueStart = equalsIndex;
+    let valueEnd: number;
+    const firstChar = searchString[equalsIndex];
+
+    if (firstChar === '"' || firstChar === "'") {
+        // Quoted value: find matching quote
+        valueStart = equalsIndex + 1;
+        valueEnd = searchString.indexOf(firstChar, valueStart);
+
+        if (valueEnd === -1) {
+            // Unclosed quote, use rest of string up to semicolon or end
+            valueEnd = searchString.indexOf(";", valueStart);
+            if (valueEnd === -1) {
+                valueEnd = searchString.length;
+            }
+        }
+    } else {
+        // Unquoted value: find semicolon or end of string
+        valueEnd = searchString.indexOf(";", valueStart);
+        if (valueEnd === -1) {
+            valueEnd = searchString.length;
+        }
+    }
+
+    if (valueStart >= valueEnd) {
+        return undefined;
+    }
+
+    const filename = searchString.substring(valueStart, valueEnd).trim();
+
+    return filename || undefined;
+};
+
+/**
  * Parses filename from Content-Disposition header.
+ * Uses a safer parsing approach to avoid ReDoS vulnerabilities.
  * @param request The HTTP request
  * @returns Filename if found, undefined otherwise
  */
 export const parseContentDisposition = (request: IncomingMessage): string | undefined => {
     const contentDisposition = getHeader(request, "content-disposition", true);
 
-    if (!contentDisposition) {
-        return undefined;
-    }
-
-    const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
-
-    if (filenameMatch && filenameMatch[1]) {
-        return filenameMatch[1].replaceAll(/['"]/g, "");
-    }
-
-    return undefined;
+    return parseContentDispositionValue(contentDisposition);
 };
 
 /**

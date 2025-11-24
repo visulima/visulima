@@ -448,7 +448,7 @@ const handleDelete = async () => {
 
 ```vue
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, watch } from "vue";
 import { useTransformFile } from "@visulima/storage-client/vue";
 
 const props = defineProps<{ fileId: string }>();

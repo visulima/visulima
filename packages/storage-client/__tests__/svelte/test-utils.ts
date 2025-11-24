@@ -27,16 +27,18 @@ export const waitForStore = async <T>(
     timeout = 1000,
 ): Promise<T> =>
     new Promise((resolve, reject) => {
-        const startTime = Date.now();
         const unsubscribe = store.subscribe((value) => {
             if (predicate(value)) {
+                clearTimeout(timeoutId);
                 unsubscribe();
                 resolve(value);
-            } else if (Date.now() - startTime > timeout) {
-                unsubscribe();
-                reject(new Error(`Timeout waiting for store predicate after ${timeout}ms`));
             }
         });
+
+        const timeoutId = setTimeout(() => {
+            unsubscribe();
+            reject(new Error(`Timeout waiting for store predicate after ${timeout}ms`));
+        }, timeout);
     });
 
 /**
