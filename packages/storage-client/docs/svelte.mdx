@@ -429,7 +429,7 @@ import type { RequestHandler } from "./$types";
 const multipart = createHandler({ storage, type: "multipart" });
 
 export const POST: RequestHandler = async ({ request }) => {
-  return multipart.fetch(request);
+    return multipart.fetch(request);
 };
 ```
 
@@ -440,7 +440,7 @@ export const POST: RequestHandler = async ({ request }) => {
 import { DiskStorage } from "@visulima/storage";
 
 export const storage = new DiskStorage({
-  directory: "./uploads",
+    directory: "./uploads",
 });
 ```
 
@@ -801,4 +801,3 @@ export const storage = new DiskStorage({
 
 - [API Reference](/docs/package/storage-client/api) - Complete API documentation
 - [Examples](/examples) - See working examples in the examples folder
-

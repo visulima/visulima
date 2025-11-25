@@ -38,26 +38,29 @@ export const createGetFileMeta = (options: CreateGetFileMetaOptions): CreateGetF
     const idValue = typeof id === "function" ? id : () => id;
     const enabledValue = typeof enabled === "function" ? enabled : () => enabled;
 
-    const query = createQuery(() => {
-        const fileId = idValue();
-        const enabled = enabledValue() && !!fileId;
+    const query = createQuery(
+        () => {
+            const fileId = idValue();
+            const enabled = enabledValue() && !!fileId;
 
-        const queryKey = storageQueryKeys.files.meta(endpoint, fileId);
+            const queryKey = storageQueryKeys.files.meta(endpoint, fileId);
 
-        return {
-            enabled,
-            queryFn: async (): Promise<FileMeta> => {
-                const url = buildUrl(endpoint, `${fileId}/metadata`);
-                const data = await fetchJson<FileMeta>(url);
+            return {
+                enabled,
+                queryFn: async (): Promise<FileMeta> => {
+                    const url = buildUrl(endpoint, `${fileId}/metadata`);
+                    const data = await fetchJson<FileMeta>(url);
 
-                return {
-                    ...data,
-                    id: data.id || fileId,
-                };
-            },
-            queryKey,
-        };
-    }, queryClient ? () => queryClient : undefined);
+                    return {
+                        ...data,
+                        id: data.id || fileId,
+                    };
+                },
+                queryKey,
+            };
+        },
+        queryClient ? () => queryClient : undefined,
+    );
 
     return {
         data: () => {

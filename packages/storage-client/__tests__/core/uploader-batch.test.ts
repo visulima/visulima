@@ -1,6 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { BatchState } from "../../src/core/uploader";
 import { createUploader } from "../../src/core/uploader";
 
 // Mock XMLHttpRequest
@@ -32,7 +31,7 @@ class MockXMLHttpRequest {
 
     public open = vi.fn();
 
-    public send = vi.fn((data?: FormData) => {
+    public send = vi.fn((_data?: FormData) => {
         // Simulate upload progress
         setTimeout(() => {
             const handlers = this.uploadEventListeners.get("progress");
@@ -162,7 +161,7 @@ describe("uploader Batch Operations", () => {
         const file1 = new File(["test1"], "test1.jpg", { type: "image/jpeg" });
         const file2 = new File(["test2"], "test2.jpg", { type: "image/jpeg" });
 
-        const itemIds = uploader.addBatch([file1, file2]);
+        const _itemIds = uploader.addBatch([file1, file2]);
         const batchId = uploader.getBatches()[0]?.id;
 
         expect(batchId).toBeDefined();
@@ -175,7 +174,7 @@ describe("uploader Batch Operations", () => {
     });
 
     it("should emit BATCH_PROGRESS events", async () => {
-        expect.assertions(2);
+        expect.assertions(1);
 
         const uploader = createUploader({
             endpoint: "/api/upload",
@@ -191,7 +190,6 @@ describe("uploader Batch Operations", () => {
         // Wait for progress event
         await new Promise((resolve) => setTimeout(resolve, 15));
 
-        expect(onBatchProgress).toHaveBeenCalled();
         expect(onBatchProgress).toHaveBeenCalledWith(
             expect.objectContaining({
                 progress: expect.any(Number),
@@ -200,7 +198,7 @@ describe("uploader Batch Operations", () => {
     });
 
     it("should emit BATCH_FINISH when all items complete", async () => {
-        expect.assertions(2);
+        expect.assertions(1);
 
         const uploader = createUploader({
             endpoint: "/api/upload",
@@ -216,7 +214,6 @@ describe("uploader Batch Operations", () => {
         // Wait for completion
         await new Promise((resolve) => setTimeout(resolve, 25));
 
-        expect(onBatchFinish).toHaveBeenCalled();
         expect(onBatchFinish).toHaveBeenCalledWith(
             expect.objectContaining({
                 completedCount: 1,

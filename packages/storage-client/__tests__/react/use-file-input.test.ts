@@ -21,20 +21,29 @@ describe(useFileInput, () => {
     });
 
     it("should provide file handling functions", () => {
-        expect.assertions(10);
+        expect.assertions(5);
 
         const { result } = renderHook(() => useFileInput());
 
         expect(result.current.handleFileChange).toBeDefined();
-        expect(typeof result.current.handleFileChange).toBe("function");
+
+        expectTypeOf(result.current.handleFileChange).toBeFunction();
+
         expect(result.current.handleDragOver).toBeDefined();
-        expect(typeof result.current.handleDragOver).toBe("function");
+
+        expectTypeOf(result.current.handleDragOver).toBeFunction();
+
         expect(result.current.handleDragLeave).toBeDefined();
-        expect(typeof result.current.handleDragLeave).toBe("function");
+
+        expectTypeOf(result.current.handleDragLeave).toBeFunction();
+
         expect(result.current.handleDrop).toBeDefined();
-        expect(typeof result.current.handleDrop).toBe("function");
+
+        expectTypeOf(result.current.handleDrop).toBeFunction();
+
         expect(result.current.openFileDialog).toBeDefined();
-        expect(typeof result.current.openFileDialog).toBe("function");
+
+        expectTypeOf(result.current.openFileDialog).toBeFunction();
     });
 
     it("should handle file selection", async () => {
@@ -51,7 +60,7 @@ describe(useFileInput, () => {
         // Create a mock FileList
         const fileList = {
             0: file,
-            item: (index: number) => index === 0 ? file : null,
+            item: (index: number) => (index === 0 ? file : null),
             length: 1,
             * [Symbol.iterator]() {
                 yield file;
@@ -96,7 +105,7 @@ describe(useFileInput, () => {
         // Create a mock FileList for dataTransfer
         const fileList = {
             0: file,
-            item: (index: number) => index === 0 ? file : null,
+            item: (index: number) => (index === 0 ? file : null),
             length: 1,
             * [Symbol.iterator]() {
                 yield file;
@@ -134,7 +143,7 @@ describe(useFileInput, () => {
         // Create a mock FileList
         const fileList = {
             0: file,
-            item: (index: number) => index === 0 ? file : null,
+            item: (index: number) => (index === 0 ? file : null),
             length: 1,
             * [Symbol.iterator]() {
                 yield file;

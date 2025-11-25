@@ -27,7 +27,7 @@ export const createTestQueryClient = (): QueryClient =>
  * Helper to run a test in a reactive root with QueryClientProvider context.
  * For functions that use useQueryClient(), we need to provide the context via QueryClientProvider.
  */
-export const runInRoot = <T,>(callback: () => T, queryClient?: QueryClient): T => {
+export const runInRoot = <T>(callback: () => T, queryClient?: QueryClient): T => {
     let result: T;
     let executed = false;
 
@@ -45,20 +45,21 @@ export const runInRoot = <T,>(callback: () => T, queryClient?: QueryClient): T =
 
             // Render the provider to establish context using createComponent to avoid JSX transform issues
             render(
-                () => createComponent(QueryClientProvider, {
-                    get children() {
-                        // Execute callback only once, inside the provider context
-                        if (!executed) {
-                            result = callback();
-                            executed = true;
-                        }
+                () =>
+                    createComponent(QueryClientProvider, {
+                        get children() {
+                            // Execute callback only once, inside the provider context
+                            if (!executed) {
+                                result = callback();
+                                executed = true;
+                            }
 
-                        // Return null - we don't need to render anything, just establish context
-                        // eslint-disable-next-line unicorn/no-null
-                        return null;
-                    },
-                    client: queryClient,
-                }),
+                            // Return null - we don't need to render anything, just establish context
+                            // eslint-disable-next-line unicorn/no-null
+                            return null;
+                        },
+                        client: queryClient,
+                    }),
                 container,
             );
         } else {

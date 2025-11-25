@@ -22,12 +22,11 @@ export interface UseBatchRetryReturn {
 export const useBatchRetry = (options: UseBatchRetryOptions): UseBatchRetryReturn => {
     const { endpoint, metadata } = options;
 
-    const adapter = computed(
-        () =>
-            createMultipartAdapter({
-                endpoint,
-                metadata,
-            }),
+    const adapter = computed(() =>
+        createMultipartAdapter({
+            endpoint,
+            metadata,
+        }),
     );
 
     const retryBatch = (batchId: string): void => {
@@ -38,4 +37,3 @@ export const useBatchRetry = (options: UseBatchRetryOptions): UseBatchRetryRetur
         retryBatch,
     };
 };
-

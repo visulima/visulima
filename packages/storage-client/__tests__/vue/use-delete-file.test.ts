@@ -51,9 +51,9 @@ describe(useDeleteFile, () => {
 
         await result.deleteFile("file-123");
 
-        expect(mockFetch).toHaveBeenCalledWith("https://api.example.com/file-123", {
+        expect(mockFetch).toHaveBeenCalledWith("https://api.example.com/file-123", expect.objectContaining({
             method: "DELETE",
-        });
+        }));
         expect(result.error.value).toBeUndefined();
 
         unmount();

@@ -33,7 +33,7 @@ class MockXMLHttpRequest {
 
     public open = vi.fn();
 
-    public send = vi.fn((data?: FormData) => {
+    public send = vi.fn((_data?: FormData) => {
         setTimeout(() => {
             const handlers = this.uploadEventListeners.get("progress");
 
@@ -242,7 +242,7 @@ describe(useBatchUpload, () => {
 
         const file1 = new File(["test1"], "test1.jpg", { type: "image/jpeg" });
 
-        const itemIds = result.current.uploadBatch([file1]);
+        const _itemIds = result.current.uploadBatch([file1]);
 
         // Get batch ID from uploader (would need to access internal state in real scenario)
         // For now, just verify abortBatch doesn't throw

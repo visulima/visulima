@@ -1,4 +1,4 @@
-import { createQuery, useQueryClient } from "@tanstack/svelte-query";
+import { createQuery } from "@tanstack/svelte-query";
 import { onDestroy } from "svelte";
 import type { Readable } from "svelte/store";
 import { derived, get } from "svelte/store";
@@ -41,7 +41,6 @@ export interface CreateGetFileReturn {
  * IMPORTANT: Due to TanStack Query Svelte requirements, createQuery must be called
  * at the component's top level, not inside utility functions. For proper usage, call
  * createQuery directly in your component and use the returned stores.
- *
  * @param options Hook configuration options
  * @returns File fetching functions and state stores
  */

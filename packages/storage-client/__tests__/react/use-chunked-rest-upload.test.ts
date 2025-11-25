@@ -130,7 +130,7 @@ describe(useChunkedRestUpload, () => {
         let patchCallCount = 0;
         let getCallCount = 0;
 
-        mockFetch.mockImplementation((url: string, options?: RequestInit) => {
+        mockFetch.mockImplementation((_url: string, options?: RequestInit) => {
             if (options?.method === "HEAD") {
                 headCallCount++;
 
@@ -208,9 +208,12 @@ describe(useChunkedRestUpload, () => {
         const uploadPromise = result.current.upload(file);
 
         // Wait for upload to start
-        await waitFor(() => {
-            expect(result.current.isUploading).toBe(true);
-        }, { timeout: 2000 });
+        await waitFor(
+            () => {
+                expect(result.current.isUploading).toBe(true);
+            },
+            { timeout: 2000 },
+        );
 
         // Pause the upload
         result.current.pause();
@@ -222,9 +225,12 @@ describe(useChunkedRestUpload, () => {
         // Resume the upload
         await result.current.resume();
 
-        await waitFor(() => {
-            expect(result.current.isPaused).toBe(false);
-        }, { timeout: 3000 });
+        await waitFor(
+            () => {
+                expect(result.current.isPaused).toBe(false);
+            },
+            { timeout: 3000 },
+        );
 
         await uploadPromise;
     });
@@ -291,7 +297,7 @@ describe(useChunkedRestUpload, () => {
         await result.current.upload(file);
 
         await waitFor(() => {
-            expect(onStart).toHaveBeenCalled();
+            expect(onStart).toHaveBeenCalledWith();
             expect(onProgress).toHaveBeenCalledWith(expect.any(Number), expect.any(Number));
             expect(onSuccess).toHaveBeenCalledWith(expect.any(Object));
             expect(onError).not.toHaveBeenCalled();
@@ -305,7 +311,7 @@ describe(useChunkedRestUpload, () => {
         let headCallCount = 0;
         let getCallCount = 0;
 
-        mockFetch.mockImplementation((url: string, options?: RequestInit) => {
+        mockFetch.mockImplementation((_url: string, options?: RequestInit) => {
             if (options?.method === "HEAD") {
                 headCallCount++;
 
@@ -378,9 +384,12 @@ describe(useChunkedRestUpload, () => {
         const uploadPromise = result.current.upload(file);
 
         // Wait for upload to start, then abort
-        await waitFor(() => {
-            expect(result.current.isUploading).toBe(true);
-        }, { timeout: 2000 });
+        await waitFor(
+            () => {
+                expect(result.current.isUploading).toBe(true);
+            },
+            { timeout: 2000 },
+        );
 
         result.current.abort();
 

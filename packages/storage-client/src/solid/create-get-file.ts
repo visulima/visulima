@@ -88,14 +88,16 @@ export const createGetFile = (options: CreateGetFileOptions): CreateGetFileRetur
 
     // Extract metadata from response if available
     const meta = createMemo(() => {
-        const data = query.data;
+        const { data } = query;
+
         return data?.meta || undefined;
     });
 
     // Call callbacks when data or error changes
     if (onSuccess) {
         createEffect(() => {
-            const data = query.data;
+            const { data } = query;
+
             if (data) {
                 onSuccess(data.blob, meta());
             }
@@ -104,7 +106,8 @@ export const createGetFile = (options: CreateGetFileOptions): CreateGetFileRetur
 
     if (onError) {
         createEffect(() => {
-            const error = query.error;
+            const { error } = query;
+
             if (error) {
                 onError(error as Error);
             }

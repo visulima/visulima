@@ -132,11 +132,14 @@ describe(createChunkedRestAdapter, () => {
         });
 
         // Mock chunk upload - this will be aborted
-        mockFetch.mockImplementationOnce(() => new Promise((resolve, reject) => {
-            setTimeout(() => {
-                reject(new Error("Upload aborted"));
-            }, 50);
-        }));
+        mockFetch.mockImplementationOnce(
+            () =>
+                new Promise((resolve, reject) => {
+                    setTimeout(() => {
+                        reject(new Error("Upload aborted"));
+                    }, 50);
+                }),
+        );
 
         const adapter = createChunkedRestAdapter({
             endpoint: "https://api.example.com/upload",
@@ -211,9 +214,12 @@ describe(createChunkedRestAdapter, () => {
 
         await adapter.upload(file);
 
-        expect(onStart).toHaveBeenCalled();
+        expect(onStart).toHaveBeenCalledWith();
         expect(onProgress).toHaveBeenCalledWith(expect.any(Number), expect.any(Number));
-        expect(onFinish).toHaveBeenCalled();
+        expect(onFinish).toHaveBeenCalledWith(expect.objectContaining({
+            id: expect.any(String),
+            bytesWritten: expect.any(Number),
+        }));
         expect(onError).not.toHaveBeenCalled();
     });
 

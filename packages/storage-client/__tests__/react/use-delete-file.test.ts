@@ -84,7 +84,7 @@ describe(useDeleteFile, () => {
         await result.current.deleteFile("file-123");
 
         await waitFor(() => {
-            expect(onSuccess).toHaveBeenCalled();
+            expect(onSuccess).toHaveBeenCalledWith();
         });
     });
 

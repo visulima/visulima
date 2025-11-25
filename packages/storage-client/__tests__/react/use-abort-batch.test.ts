@@ -15,7 +15,7 @@ class MockXMLHttpRequest {
 
     public response = "";
 
-    private eventListeners = new Map<string, Set<(event: Event) => void>>();
+    private _eventListeners = new Map<string, Set<(event: Event) => void>>();
 
     public upload = {
         addEventListener: vi.fn(),
@@ -53,8 +53,6 @@ describe(useAbortBatch, () => {
     });
 
     it("should provide abortBatch function", () => {
-        expect.assertions(2);
-
         const { result } = renderHookWithQueryClient(() =>
             useAbortBatch({
                 endpoint: "/api/upload",
@@ -62,7 +60,8 @@ describe(useAbortBatch, () => {
         );
 
         expect(result.current.abortBatch).toBeDefined();
-        expect(typeof result.current.abortBatch).toBe("function");
+
+        expectTypeOf(result.current.abortBatch).toBeFunction();
     });
 
     it("should abort batch without throwing", () => {

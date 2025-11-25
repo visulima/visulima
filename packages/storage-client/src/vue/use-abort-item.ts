@@ -22,12 +22,11 @@ export interface UseAbortItemReturn {
 export const useAbortItem = (options: UseAbortItemOptions): UseAbortItemReturn => {
     const { endpoint, metadata } = options;
 
-    const adapter = computed(
-        () =>
-            createMultipartAdapter({
-                endpoint,
-                metadata,
-            }),
+    const adapter = computed(() =>
+        createMultipartAdapter({
+            endpoint,
+            metadata,
+        }),
     );
 
     const abortItem = (id: string): void => {
@@ -38,4 +37,3 @@ export const useAbortItem = (options: UseAbortItemOptions): UseAbortItemReturn =
         abortItem,
     };
 };
-

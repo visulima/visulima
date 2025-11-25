@@ -32,7 +32,7 @@ class MockXMLHttpRequest {
 
     public open = vi.fn();
 
-    public send = vi.fn((data?: FormData) => {
+    public send = vi.fn((_data?: FormData) => {
         setTimeout(() => {
             const handlers = this.uploadEventListeners.get("progress");
 

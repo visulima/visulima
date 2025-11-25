@@ -22,12 +22,11 @@ export interface UseAbortAllReturn {
 export const useAbortAll = (options: UseAbortAllOptions): UseAbortAllReturn => {
     const { endpoint, metadata } = options;
 
-    const adapter = computed(
-        () =>
-            createMultipartAdapter({
-                endpoint,
-                metadata,
-            }),
+    const adapter = computed(() =>
+        createMultipartAdapter({
+            endpoint,
+            metadata,
+        }),
     );
 
     const abortAll = (): void => {
@@ -38,4 +37,3 @@ export const useAbortAll = (options: UseAbortAllOptions): UseAbortAllReturn => {
         abortAll,
     };
 };
-

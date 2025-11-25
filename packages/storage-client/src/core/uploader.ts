@@ -647,9 +647,7 @@ export class Uploader {
             return;
         }
 
-        const failedItems = batch.itemIds
-            .map((id) => this.items.get(id))
-            .filter((item): item is UploadItem => item !== undefined && item.status === "error");
+        const failedItems = batch.itemIds.map((id) => this.items.get(id)).filter((item): item is UploadItem => item !== undefined && item.status === "error");
 
         for (const item of failedItems) {
             this.retryItem(item.id);

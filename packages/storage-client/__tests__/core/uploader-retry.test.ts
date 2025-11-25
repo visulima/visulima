@@ -16,7 +16,7 @@ class ErrorMockXMLHttpRequest {
 
     private eventListeners = new Map<string, Set<(event: Event) => void>>();
 
-    private uploadEventListeners = new Map<string, Set<(event: ProgressEvent) => void>>();
+    private _uploadEventListeners = new Map<string, Set<(event: ProgressEvent) => void>>();
 
     public upload = {
         addEventListener: vi.fn(),
@@ -25,7 +25,7 @@ class ErrorMockXMLHttpRequest {
 
     public open = vi.fn();
 
-    public send = vi.fn((data?: FormData) => {
+    public send = vi.fn((_data?: FormData) => {
         // Simulate error
         setTimeout(() => {
             const handlers = this.eventListeners.get("error");
@@ -67,7 +67,7 @@ class RetrySuccessMockXMLHttpRequest {
 
     private eventListeners = new Map<string, Set<(event: Event) => void>>();
 
-    private uploadEventListeners = new Map<string, Set<(event: ProgressEvent) => void>>();
+    private _uploadEventListeners = new Map<string, Set<(event: ProgressEvent) => void>>();
 
     private attemptCount = 0;
 
@@ -78,7 +78,7 @@ class RetrySuccessMockXMLHttpRequest {
 
     public open = vi.fn();
 
-    public send = vi.fn((data?: FormData) => {
+    public send = vi.fn((_data?: FormData) => {
         this.attemptCount += 1;
 
         // First attempt fails, second succeeds

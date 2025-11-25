@@ -41,11 +41,7 @@ import { ReactNode } from "react";
 const queryClient = new QueryClient();
 
 function App({ children }: { children: ReactNode }) {
-  return (
-    <QueryClientProvider client={queryClient}>
-      {children}
-    </QueryClientProvider>
-  );
+    return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
 }
 ```
 
@@ -85,7 +81,7 @@ Create a plugin file:
 import { VueQueryPlugin } from "@tanstack/vue-query";
 
 export default defineNuxtPlugin((nuxtApp) => {
-  nuxtApp.vueApp.use(VueQueryPlugin);
+    nuxtApp.vueApp.use(VueQueryPlugin);
 });
 ```
 
@@ -111,11 +107,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/solid-query";
 const queryClient = new QueryClient();
 
 function App() {
-  return (
-    <QueryClientProvider client={queryClient}>
-      {/* Your app */}
-    </QueryClientProvider>
-  );
+    return <QueryClientProvider client={queryClient}>{/* Your app */}</QueryClientProvider>;
 }
 ```
 
@@ -175,4 +167,3 @@ The package includes full TypeScript definitions. No additional `@types` package
 - [Vue / Nuxt Guide](/docs/package/storage-client/vue) - Learn how to use the storage client with Vue and Nuxt
 - [Solid Guide](/docs/package/storage-client/solid) - Learn how to use the storage client with Solid
 - [Svelte Guide](/docs/package/storage-client/svelte) - Learn how to use the storage client with Svelte
-

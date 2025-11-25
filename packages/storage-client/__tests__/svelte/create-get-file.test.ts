@@ -1,7 +1,7 @@
 import { QueryClient } from "@tanstack/svelte-query";
 import { render, waitFor } from "@testing-library/svelte";
 import { get, writable } from "svelte/store";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, expectTypeOf, it, vi } from "vitest";
 
 import { createGetFile } from "../../src/svelte/create-get-file";
 import TestComponent from "./TestComponent.svelte";
@@ -54,23 +54,32 @@ describe(createGetFile, () => {
         // Wait for result to be initialized and stores to be available
         let result: ReturnType<typeof component.getResult>;
 
-        await waitFor(() => {
-            const r = component.getResult();
+        await waitFor(
+            () => {
+                const r = component.getResult();
 
-            expect(r).toBeDefined();
-            expect(r?.isLoading).toBeDefined();
-            expect(typeof r?.isLoading?.subscribe).toBe("function");
-            expect(r?.data).toBeDefined();
-            expect(typeof r?.data?.subscribe).toBe("function");
+                expect(r).toBeDefined();
+                expect(r?.isLoading).toBeDefined();
 
-            result = r!;
-        }, { timeout: 2000 });
+                expectTypeOf(r?.isLoading?.subscribe).toBeFunction();
+
+                expect(r?.data).toBeDefined();
+
+                expectTypeOf(r?.data?.subscribe).toBeFunction();
+
+                result = r!;
+            },
+            { timeout: 2000 },
+        );
 
         // Wait for query to complete and data to be available
-        await waitFor(() => {
-            expect(get(result.isLoading)).toBe(false);
-            expect(get(result.data)).toBeDefined();
-        }, { timeout: 2000 });
+        await waitFor(
+            () => {
+                expect(get(result.isLoading)).toBe(false);
+                expect(get(result.data)).toBeDefined();
+            },
+            { timeout: 2000 },
+        );
 
         expect(get(result.data)?.size).toBe(mockBlob.size);
         expect(get(result.error)).toBeUndefined();
@@ -108,32 +117,44 @@ describe(createGetFile, () => {
         // Wait for result to be initialized and stores to be available
         let result: ReturnType<typeof component.getResult>;
 
-        await waitFor(() => {
-            const r = component.getResult();
+        await waitFor(
+            () => {
+                const r = component.getResult();
 
-            expect(r).toBeDefined();
-            expect(r?.isLoading).toBeDefined();
-            expect(typeof r?.isLoading?.subscribe).toBe("function");
-            expect(r?.data).toBeDefined();
-            expect(typeof r?.data?.subscribe).toBe("function");
+                expect(r).toBeDefined();
+                expect(r?.isLoading).toBeDefined();
 
-            result = r!;
-        }, { timeout: 2000 });
+                expectTypeOf(r?.isLoading?.subscribe).toBeFunction();
 
-        await waitFor(() => {
-            expect(get(result.isLoading)).toBe(false);
-            expect(get(result.data)).toBeDefined();
-        }, { timeout: 2000 });
+                expect(r?.data).toBeDefined();
+
+                expectTypeOf(r?.data?.subscribe).toBeFunction();
+
+                result = r!;
+            },
+            { timeout: 2000 },
+        );
+
+        await waitFor(
+            () => {
+                expect(get(result.isLoading)).toBe(false);
+                expect(get(result.data)).toBeDefined();
+            },
+            { timeout: 2000 },
+        );
 
         expect(get(result.data)?.size).toBe(mockBlob1.size);
 
         id.set("file-456");
 
         // Wait for the query to refetch with the new id
-        await waitFor(() => {
-            expect(get(result.isLoading)).toBe(false);
-            expect(get(result.data)?.size).toBe(mockBlob2.size);
-        }, { timeout: 2000 });
+        await waitFor(
+            () => {
+                expect(get(result.isLoading)).toBe(false);
+                expect(get(result.data)?.size).toBe(mockBlob2.size);
+            },
+            { timeout: 2000 },
+        );
     });
 
     it("should respect enabled option", async () => {

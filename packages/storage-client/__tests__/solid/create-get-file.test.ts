@@ -109,7 +109,7 @@ describe(createGetFile, () => {
 
         const [enabled, setEnabled] = createSignal(false);
 
-        const result = runInRoot(() =>
+        runInRoot(() =>
             createGetFile({
                 enabled,
                 endpoint: "https://api.example.com",
@@ -135,7 +135,7 @@ describe(createGetFile, () => {
             ok: true,
         });
 
-        const result = runInRoot(() =>
+        runInRoot(() =>
             createGetFile({
                 endpoint: "https://api.example.com",
                 id: "file-123",

@@ -1,4 +1,5 @@
 import { createConfig } from "@anolilab/eslint-config";
+import tanstackQuery from "@tanstack/eslint-plugin-query";
 import solid from "eslint-plugin-solid";
 import svelte from "eslint-plugin-svelte";
 import vue from "eslint-plugin-vue";
@@ -67,6 +68,15 @@ export default createConfig(
         },
         plugins: {
             svelte,
+        },
+    },
+    // TanStack Query configuration
+    {
+        plugins: {
+            "@tanstack/query": tanstackQuery,
+        },
+        rules: {
+            ...tanstackQuery.configs.recommended.rules,
         },
     },
 );

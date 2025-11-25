@@ -15,7 +15,7 @@ class MockXMLHttpRequest {
 
     public response = "";
 
-    private eventListeners = new Map<string, Set<(event: Event) => void>>();
+    private _eventListeners = new Map<string, Set<(event: Event) => void>>();
 
     public upload = {
         addEventListener: vi.fn(),
@@ -53,8 +53,6 @@ describe(useBatchRetry, () => {
     });
 
     it("should provide retryBatch function", () => {
-        expect.assertions(2);
-
         const { result } = renderHookWithQueryClient(() =>
             useBatchRetry({
                 endpoint: "/api/upload",
@@ -62,7 +60,8 @@ describe(useBatchRetry, () => {
         );
 
         expect(result.current.retryBatch).toBeDefined();
-        expect(typeof result.current.retryBatch).toBe("function");
+
+        expectTypeOf(result.current.retryBatch).toBeFunction();
     });
 
     it("should retry batch without throwing", () => {

@@ -1,4 +1,4 @@
-import { onBeforeUnmount, onMounted, ref } from "vue";
+import { onBeforeUnmount, onMounted } from "vue";
 
 import { createMultipartAdapter } from "../core/multipart-adapter";
 import type { BatchState } from "../core/uploader";
@@ -36,4 +36,3 @@ export const useBatchStartListener = (options: UseBatchStartListenerOptions): vo
         });
     });
 };
-
