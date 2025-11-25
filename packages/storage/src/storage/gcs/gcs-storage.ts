@@ -261,9 +261,9 @@ class GCStorage extends BaseStorage<GCSFile, FileReturn> {
                 // Detect file type from stream if contentType is not set or is default
                 // Only detect on first write (when bytesWritten is 0 or NaN)
                 if (
-                    hasContent(part) &&
-                    (file.bytesWritten === 0 || Number.isNaN(file.bytesWritten)) &&
-                    (!file.contentType || file.contentType === "application/octet-stream")
+                    hasContent(part)
+                    && (file.bytesWritten === 0 || Number.isNaN(file.bytesWritten))
+                    && (!file.contentType || file.contentType === "application/octet-stream")
                 ) {
                     try {
                         const { fileType, stream: detectedStream } = await detectFileTypeFromStream(part.body);
@@ -483,7 +483,7 @@ class GCStorage extends BaseStorage<GCSFile, FileReturn> {
         options.headers = {
             Accept: "application/json",
             "Content-Range": contentRange,
-            ...(size === bytesWritten ? { "X-Goog-Upload-Command": "upload, finalize" } : {}),
+            ...size === bytesWritten ? { "X-Goog-Upload-Command": "upload, finalize" } : {},
         };
 
         try {
@@ -532,7 +532,7 @@ class GCStorage extends BaseStorage<GCSFile, FileReturn> {
                 "x-goog-api-client": `gl-node/${process.versions.node} gccl/${package_.version} gccl-invocation-id/${randomUUID()}`,
             },
             params: {
-                ...(this.userProject === undefined ? {} : { userProject: this.userProject }),
+                ...this.userProject === undefined ? {} : { userProject: this.userProject },
             },
             retry: true,
             retryConfig: this.retryOptions,

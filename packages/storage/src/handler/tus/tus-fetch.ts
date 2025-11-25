@@ -51,7 +51,7 @@ export class Tus<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
         // Create TusBase instance with access to this TusFetch instance
         const tusInstance = this;
 
-        this.tusBase = new (class extends TusBase<TFile> {
+        this.tusBase = new class extends TusBase<TFile> {
             protected override get storage() {
                 return tusInstance.storage as unknown as {
                     checkIfExpired: (file: TFile) => Promise<void>;
@@ -74,7 +74,7 @@ export class Tus<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
             protected override buildFileUrl(requestUrl: string, file: TFile): string {
                 return tusInstance.buildFileUrlForTus(requestUrl, file);
             }
-        })();
+        }();
     }
 
     /**

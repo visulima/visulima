@@ -1,5 +1,5 @@
-import type { IncomingMessage } from "node:http";
 import { EventEmitter } from "node:events";
+import type { IncomingMessage } from "node:http";
 import { format } from "node:url";
 
 import mime from "mime";
@@ -173,6 +173,7 @@ abstract class BaseHandlerCore<TFile extends UploadFile> extends EventEmitter {
         const relative = format({ pathname: `${pathname}/${file.id}`, query });
 
         const baseUrl = this.storage.config.useRelativeLocation ? "" : getBaseUrl({ url: requestUrl } as IncomingMessage);
+
         return `${baseUrl}${relative}.${mime.getExtension(file.contentType)}`;
     }
 

@@ -48,6 +48,7 @@ abstract class RestBase<TFile extends UploadFile> {
         // Validate total size for chunked uploads
         if (isChunkedUpload && config.size !== undefined) {
             const size = typeof config.size === "number" ? config.size : Number.parseInt(String(config.size), 10);
+
             if (size > 0 && size > this.storage.maxUploadSize) {
                 throw createHttpError(413, `File size exceeds maximum allowed size of ${this.storage.maxUploadSize} bytes`);
             }
@@ -352,13 +353,13 @@ abstract class RestBase<TFile extends UploadFile> {
             headers:
                 result.failedCount > 0
                     ? {
-                          "X-Delete-Errors": JSON.stringify(result.failed),
-                          "X-Delete-Failed": String(result.failedCount),
-                          "X-Delete-Successful": String(result.successfulCount),
-                      }
+                        "X-Delete-Errors": JSON.stringify(result.failed),
+                        "X-Delete-Failed": String(result.failedCount),
+                        "X-Delete-Successful": String(result.successfulCount),
+                    }
                     : {
-                          "X-Delete-Successful": String(result.successfulCount),
-                      },
+                        "X-Delete-Successful": String(result.successfulCount),
+                    },
             statusCode: result.successfulCount === ids.length ? 204 : 207, // 207 Multi-Status for partial success
         };
     }

@@ -83,7 +83,8 @@ export const pipeWithBackpressure = (
     let isDestroyed = false;
 
     const cleanup = () => {
-        if (isDestroyed) return;
+        if (isDestroyed)
+            return;
 
         isDestroyed = true;
         source.destroy();

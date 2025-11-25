@@ -295,8 +295,8 @@ describe("headers", () => {
                 expect.assertions(2);
 
                 const headers = {
-                    "Content-Type": "application/json",
                     Authorization: "Bearer token",
+                    "Content-Type": "application/json",
                 };
 
                 const result = HeaderUtilities.fromHeaders(headers);
@@ -369,7 +369,7 @@ describe("headers", () => {
             it("should parse valid content disposition header", () => {
                 expect.assertions(1);
 
-                const result = HeaderUtilities.parseContentDisposition('attachment; filename="test.txt"');
+                const result = HeaderUtilities.parseContentDisposition("attachment; filename=\"test.txt\"");
 
                 expect(result).toBeDefined();
             });
@@ -402,4 +402,3 @@ describe("headers", () => {
         });
     });
 });
-

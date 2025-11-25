@@ -93,9 +93,11 @@ describe(DiskStorageWithChecksum, () => {
 
         const storage = new DiskStorageWithChecksum(options);
         const onDeleteHook = vi.fn().mockResolvedValue(undefined);
+
         storage.onDelete = onDeleteHook;
 
         const diskFile = await storage.create({ ...metafile });
+
         await storage.write({ ...diskFile, body: Readable.from("01234"), start: 0 });
 
         const deletedFile = await storage.delete({ id: diskFile.id });
@@ -105,7 +107,7 @@ describe(DiskStorageWithChecksum, () => {
             expect.objectContaining({
                 id: diskFile.id,
                 status: "deleted",
-            })
+            }),
         );
     });
 

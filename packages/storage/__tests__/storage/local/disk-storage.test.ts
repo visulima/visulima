@@ -131,6 +131,7 @@ describe(DiskStorage, () => {
             expect.assertions(2);
 
             const onErrorHook = vi.fn().mockResolvedValue(undefined);
+
             storage.onError = onErrorHook;
 
             try {
@@ -142,9 +143,9 @@ describe(DiskStorage, () => {
             expect(onErrorHook).toHaveBeenCalledTimes(1);
             expect(onErrorHook).toHaveBeenCalledWith(
                 expect.objectContaining({
-                    statusCode: expect.any(Number),
                     message: expect.any(String),
-                })
+                    statusCode: expect.any(Number),
+                }),
             );
         });
     });
@@ -301,11 +302,12 @@ describe(DiskStorage, () => {
             expect.assertions(2);
 
             const onErrorHook = vi.fn().mockResolvedValue(undefined);
+
             storage.onError = onErrorHook;
 
             // Try to write to a non-existent file (should fail)
             try {
-                await storage.write({ ...metafile, id: "nonexistent", body: Readable.from("test"), start: 0 });
+                await storage.write({ ...metafile, body: Readable.from("test"), id: "nonexistent", start: 0 });
             } catch {
                 // Expected to throw
             }
@@ -313,9 +315,9 @@ describe(DiskStorage, () => {
             expect(onErrorHook).toHaveBeenCalledTimes(1);
             expect(onErrorHook).toHaveBeenCalledWith(
                 expect.objectContaining({
-                    statusCode: expect.any(Number),
                     message: expect.any(String),
-                })
+                    statusCode: expect.any(Number),
+                }),
             );
         });
     });
@@ -365,6 +367,7 @@ describe(DiskStorage, () => {
             expect.assertions(2);
 
             const onErrorHook = vi.fn().mockResolvedValue(undefined);
+
             storage.onError = onErrorHook;
 
             try {
@@ -376,9 +379,9 @@ describe(DiskStorage, () => {
             expect(onErrorHook).toHaveBeenCalledTimes(1);
             expect(onErrorHook).toHaveBeenCalledWith(
                 expect.objectContaining({
-                    statusCode: expect.any(Number),
                     message: expect.any(String),
-                })
+                    statusCode: expect.any(Number),
+                }),
             );
         });
 
@@ -531,6 +534,7 @@ describe(DiskStorage, () => {
                 expect.assertions(2);
 
                 const onErrorHook = vi.fn().mockResolvedValue(undefined);
+
                 storage.onError = onErrorHook;
 
                 try {
@@ -542,9 +546,9 @@ describe(DiskStorage, () => {
                 expect(onErrorHook).toHaveBeenCalledTimes(1);
                 expect(onErrorHook).toHaveBeenCalledWith(
                     expect.objectContaining({
-                        statusCode: expect.any(Number),
                         message: expect.any(String),
-                    })
+                        statusCode: expect.any(Number),
+                    }),
                 );
             });
 
@@ -1258,6 +1262,7 @@ describe(DiskStorage, () => {
             expect.assertions(2);
 
             const onErrorHook = vi.fn().mockResolvedValue(undefined);
+
             storage.onError = onErrorHook;
 
             try {
@@ -1269,9 +1274,9 @@ describe(DiskStorage, () => {
             expect(onErrorHook).toHaveBeenCalledTimes(1);
             expect(onErrorHook).toHaveBeenCalledWith(
                 expect.objectContaining({
-                    statusCode: expect.any(Number),
                     message: expect.any(String),
-                })
+                    statusCode: expect.any(Number),
+                }),
             );
         });
 
@@ -1285,6 +1290,7 @@ describe(DiskStorage, () => {
                 // eslint-disable-next-line no-param-reassign
                 error.message = "Custom error message";
             });
+
             storage.onError = onErrorHook;
 
             try {
@@ -1296,9 +1302,9 @@ describe(DiskStorage, () => {
             expect(onErrorHook).toHaveBeenCalledTimes(1);
             expect(onErrorHook).toHaveBeenCalledWith(
                 expect.objectContaining({
-                    statusCode: 418,
                     message: "Custom error message",
-                })
+                    statusCode: 418,
+                }),
             );
         });
     });

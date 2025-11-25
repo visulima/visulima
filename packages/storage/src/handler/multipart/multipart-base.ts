@@ -10,7 +10,6 @@ import type { ResponseFile } from "../types";
  * @template TFile The file type used by this handler.
  */
 abstract class MultipartBase<TFile extends UploadFile> {
-
     /**
      * Handle multipart POST (upload file).
      * @param filePart File part from multipart parser
@@ -93,8 +92,8 @@ abstract class MultipartBase<TFile extends UploadFile> {
             ...finalFile,
             headers: {
                 Location: locationUrl,
-                ...(finalFile.expiredAt === undefined ? {} : { "X-Upload-Expires": finalFile.expiredAt.toString() }),
-                ...(finalFile.ETag === undefined ? {} : { ETag: finalFile.ETag }),
+                ...finalFile.expiredAt === undefined ? {} : { "X-Upload-Expires": finalFile.expiredAt.toString() },
+                ...finalFile.ETag === undefined ? {} : { ETag: finalFile.ETag },
             },
             statusCode: 200,
         };

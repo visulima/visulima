@@ -370,9 +370,9 @@ describe(MediaTransformer, () => {
                         transformer as unknown as { validateImageQueryParameters: (query: import("../../src/transformer/types").MediaTransformQuery) => void }
                     ).validateImageQueryParameters(query);
                 }).toThrow(
-                    "Invalid query parameters for image transformation: codec, sampleRate. " +
-                        "Images support: alphaQuality, angle, background, bandbool, blur, boolean, brightness, channel, clahe, colourspace, compressionLevel, convolve, cropHeight, cropWidth, delay, dilate, effort, erode, extractChannel, fastShrinkOnLoad, fit, flatten, flip, flop, format, frameRate, gamma, grayscale, greyscale, height, hue, joinChannel, kernel, left, lightness, linear, loop, maxSlope, median, modulate, negate, normalise, normalize, position, quality, recombine, saturation, sharpen, threshold, tint, top, unflatten, width, withoutEnlargement, withoutReduction. " +
-                        "Video/audio parameters (codec, sampleRate) are not supported for images.",
+                    "Invalid query parameters for image transformation: codec, sampleRate. "
+                    + "Images support: alphaQuality, angle, background, bandbool, blur, boolean, brightness, channel, clahe, colourspace, compressionLevel, convolve, cropHeight, cropWidth, delay, dilate, effort, erode, extractChannel, fastShrinkOnLoad, fit, flatten, flip, flop, format, frameRate, gamma, grayscale, greyscale, height, hue, joinChannel, kernel, left, lightness, linear, loop, maxSlope, median, modulate, negate, normalise, normalize, position, quality, recombine, saturation, sharpen, threshold, tint, top, unflatten, width, withoutEnlargement, withoutReduction. "
+                    + "Video/audio parameters (codec, sampleRate) are not supported for images.",
                 );
             });
 
@@ -387,7 +387,7 @@ describe(MediaTransformer, () => {
                     (
                         transformer as unknown as { validateImageQueryParameters: (query: import("../../src/transformer/types").MediaTransformQuery) => void }
                     ).validateImageQueryParameters(query);
-                }).toThrow('Invalid fit value: "invalid". Supported values: "cover", "contain", "fill", "inside", "outside"');
+                }).toThrow("Invalid fit value: \"invalid\". Supported values: \"cover\", \"contain\", \"fill\", \"inside\", \"outside\"");
             });
 
             it("should accept angle parameter values", () => {
@@ -456,9 +456,9 @@ describe(MediaTransformer, () => {
                         transformer as unknown as { validateVideoQueryParameters: (query: import("../../src/transformer/types").MediaTransformQuery) => void }
                     ).validateVideoQueryParameters(query);
                 }).toThrow(
-                    "Invalid query parameters for video transformation: numberOfChannels, sampleRate. " +
-                        "Videos support: angle, background, bitrate, codec, cropHeight, cropWidth, fit, format, frameRate, height, keyFrameInterval, left, position, quality, top, width, withoutEnlargement, withoutReduction. " +
-                        "Audio-only parameters (numberOfChannels, sampleRate) are not supported for videos.",
+                    "Invalid query parameters for video transformation: numberOfChannels, sampleRate. "
+                    + "Videos support: angle, background, bitrate, codec, cropHeight, cropWidth, fit, format, frameRate, height, keyFrameInterval, left, position, quality, top, width, withoutEnlargement, withoutReduction. "
+                    + "Audio-only parameters (numberOfChannels, sampleRate) are not supported for videos.",
                 );
             });
 
@@ -473,7 +473,7 @@ describe(MediaTransformer, () => {
                     (
                         transformer as unknown as { validateVideoQueryParameters: (query: import("../../src/transformer/types").MediaTransformQuery) => void }
                     ).validateVideoQueryParameters(query);
-                }).toThrow('Invalid codec for video: "invalid". Supported codecs: avc, hevc, vp8, vp9, av1');
+                }).toThrow("Invalid codec for video: \"invalid\". Supported codecs: avc, hevc, vp8, vp9, av1");
             });
 
             it("should reject invalid format parameter values for video", () => {
@@ -487,7 +487,7 @@ describe(MediaTransformer, () => {
                     (
                         transformer as unknown as { validateVideoQueryParameters: (query: import("../../src/transformer/types").MediaTransformQuery) => void }
                     ).validateVideoQueryParameters(query);
-                }).toThrow('Invalid format for video: "jpg". Supported formats: mp4, webm, mkv, ogg');
+                }).toThrow("Invalid format for video: \"jpg\". Supported formats: mp4, webm, mkv, ogg");
             });
 
             it("should reject negative width parameter values", () => {
@@ -554,9 +554,9 @@ describe(MediaTransformer, () => {
                         transformer as unknown as { validateAudioQueryParameters: (query: import("../../src/transformer/types").MediaTransformQuery) => void }
                     ).validateAudioQueryParameters(query);
                 }).toThrow(
-                    "Invalid query parameters for audio transformation: angle, height, width. " +
-                        "Audio supports: bitrate, codec, format, numberOfChannels, quality, sampleRate. " +
-                        "Video-only parameters (angle, height, width) are not supported for audio.",
+                    "Invalid query parameters for audio transformation: angle, height, width. "
+                    + "Audio supports: bitrate, codec, format, numberOfChannels, quality, sampleRate. "
+                    + "Video-only parameters (angle, height, width) are not supported for audio.",
                 );
             });
 
@@ -571,7 +571,7 @@ describe(MediaTransformer, () => {
                     (
                         transformer as unknown as { validateAudioQueryParameters: (query: import("../../src/transformer/types").MediaTransformQuery) => void }
                     ).validateAudioQueryParameters(query);
-                }).toThrow('Invalid codec for audio: "invalid". Supported codecs: aac, opus, mp3, vorbis, flac');
+                }).toThrow("Invalid codec for audio: \"invalid\". Supported codecs: aac, opus, mp3, vorbis, flac");
             });
 
             it("should reject invalid format parameter values for audio", () => {
@@ -585,7 +585,7 @@ describe(MediaTransformer, () => {
                     (
                         transformer as unknown as { validateAudioQueryParameters: (query: import("../../src/transformer/types").MediaTransformQuery) => void }
                     ).validateAudioQueryParameters(query);
-                }).toThrow('Invalid format for audio: "mp4". Supported formats: mp3, wav, ogg, aac, flac');
+                }).toThrow("Invalid format for audio: \"mp4\". Supported formats: mp3, wav, ogg, aac, flac");
             });
 
             it("should reject invalid sample rate parameter values", () => {

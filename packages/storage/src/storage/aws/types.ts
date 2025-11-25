@@ -5,8 +5,8 @@ import type { LocalMetaStorageOptions } from "../local/local-meta-storage";
 import type { BaseStorageOptions, MetaStorageOptions } from "../types";
 import type S3File from "./s3-file";
 
-export type S3MetaStorageOptions = MetaStorageOptions &
-    S3ClientConfig & {
+export type S3MetaStorageOptions = MetaStorageOptions
+    & S3ClientConfig & {
         bucket?: string;
 
         /**
@@ -17,8 +17,8 @@ export type S3MetaStorageOptions = MetaStorageOptions &
         keyFile?: string;
     };
 
-export type S3StorageOptions = BaseStorageOptions<S3File> &
-    S3ClientConfig & {
+export type S3StorageOptions = BaseStorageOptions<S3File>
+    & S3ClientConfig & {
         /**
          * Specifying access rules for uploaded files.
          */

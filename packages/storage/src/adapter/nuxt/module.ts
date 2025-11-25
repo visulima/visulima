@@ -1,7 +1,6 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 
-import type { Nuxt } from "@nuxt/kit";
-import type { NuxtModule } from "@nuxt/kit";
+import type { Nuxt, NuxtModule } from "@nuxt/kit";
 import { defineNuxtModule } from "@nuxt/kit";
 
 import type { UploadOptions } from "../../handler/types";
@@ -127,9 +126,11 @@ export default defineNuxtModule<ModuleOptions>({
         if (multipartHandler) {
             handlerStorage.set(`${basePath}/multipart`, { handler: multipartHandler, setCorsHeaders });
         }
+
         if (restHandler) {
             handlerStorage.set(`${basePath}/rest`, { handler: restHandler, setCorsHeaders });
         }
+
         if (tusHandler) {
             handlerStorage.set(`${basePath}/tus`, { handler: tusHandler, setCorsHeaders });
         }
@@ -137,15 +138,19 @@ export default defineNuxtModule<ModuleOptions>({
         // Set up route rules for CORS
         nuxt.hook("nitro:config", (nitroConfig) => {
             const routeRules = nitroConfig.routeRules || {};
+
             if (multipartHandler) {
                 routeRules[`${basePath}/multipart/**`] = { cors: true };
             }
+
             if (restHandler) {
                 routeRules[`${basePath}/rest/**`] = { cors: true };
             }
+
             if (tusHandler) {
                 routeRules[`${basePath}/tus/**`] = { cors: true };
             }
+
             nitroConfig.routeRules = routeRules;
         });
 
@@ -159,6 +164,7 @@ export default defineNuxtModule<ModuleOptions>({
                     if (url.startsWith(route)) {
                         setHeaders(event as NitroEvent);
                         await handler.handle((event as NitroEvent).node.req, (event as NitroEvent).node.res);
+
                         return; // Handled, stop processing
                     }
                 }

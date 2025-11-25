@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createRetryWrapper, isRetryableError, retry } from "../../src/utils/retry";
 
-describe("retry", () => {
+describe(retry, () => {
     beforeEach(() => {
         vi.useFakeTimers();
     });
@@ -16,6 +16,7 @@ describe("retry", () => {
             expect.assertions(1);
 
             const error = new Error("Connection reset");
+
             (error as { code?: string }).code = "ECONNRESET";
 
             expect(isRetryableError(error)).toBe(true);
@@ -25,6 +26,7 @@ describe("retry", () => {
             expect.assertions(1);
 
             const error = new Error("Timeout");
+
             (error as { code?: string }).code = "ETIMEDOUT";
 
             expect(isRetryableError(error)).toBe(true);
@@ -34,6 +36,7 @@ describe("retry", () => {
             expect.assertions(1);
 
             const error = new Error("Not found");
+
             (error as { code?: string }).code = "ENOTFOUND";
 
             expect(isRetryableError(error)).toBe(true);
@@ -43,6 +46,7 @@ describe("retry", () => {
             expect.assertions(1);
 
             const error = new Error("Connection refused");
+
             (error as { code?: string }).code = "ECONNREFUSED";
 
             expect(isRetryableError(error)).toBe(true);
@@ -52,6 +56,7 @@ describe("retry", () => {
             expect.assertions(1);
 
             const error = new Error("Network error");
+
             error.name = "NetworkError";
 
             expect(isRetryableError(error)).toBe(true);
@@ -61,6 +66,7 @@ describe("retry", () => {
             expect.assertions(1);
 
             const error = new Error("Timeout");
+
             error.name = "TimeoutError";
 
             expect(isRetryableError(error)).toBe(true);
@@ -70,6 +76,7 @@ describe("retry", () => {
             expect.assertions(1);
 
             const error = new Error("AWS error");
+
             (error as { $metadata?: { httpStatusCode?: number } }).$metadata = { httpStatusCode: 500 };
 
             expect(isRetryableError(error)).toBe(true);
@@ -79,6 +86,7 @@ describe("retry", () => {
             expect.assertions(1);
 
             const error = new Error("AWS error");
+
             (error as { $fault?: string; $metadata?: { httpStatusCode?: number } }).$fault = "server";
             (error as { $fault?: string; $metadata?: { httpStatusCode?: number } }).$metadata = {};
 
@@ -89,6 +97,7 @@ describe("retry", () => {
             expect.assertions(1);
 
             const error = new Error("AWS error");
+
             (error as { retryable?: boolean }).retryable = true;
 
             expect(isRetryableError(error)).toBe(true);
@@ -98,6 +107,7 @@ describe("retry", () => {
             expect.assertions(1);
 
             const error = new Error("Azure error");
+
             (error as { statusCode?: number }).statusCode = 503;
 
             expect(isRetryableError(error)).toBe(true);
@@ -121,6 +131,7 @@ describe("retry", () => {
             expect.assertions(2);
 
             const error = new Error("AWS error");
+
             (error as { $metadata?: { httpStatusCode?: number } }).$metadata = { httpStatusCode: 400 };
 
             expect(isRetryableError(error, [400, 500])).toBe(true);
@@ -132,9 +143,9 @@ describe("retry", () => {
         it("should return result on successful first attempt", async () => {
             expect.assertions(1);
 
-            const fn = vi.fn().mockResolvedValue("success");
+            const function_ = vi.fn().mockResolvedValue("success");
 
-            const result = await retry(fn);
+            const result = await retry(function_);
 
             expect(result).toBe("success");
         });
@@ -146,16 +157,16 @@ describe("retry", () => {
 
             (error as { code?: string }).code = "ECONNRESET";
 
-            const fn = vi.fn().mockRejectedValueOnce(error).mockResolvedValueOnce("success");
+            const function_ = vi.fn().mockRejectedValueOnce(error).mockResolvedValueOnce("success");
 
-            const resultPromise = retry(fn, { initialDelay: 100, maxRetries: 1 });
+            const resultPromise = retry(function_, { initialDelay: 100, maxRetries: 1 });
 
             await vi.advanceTimersByTimeAsync(200);
             await vi.runAllTimersAsync();
             const result = await resultPromise;
 
             expect(result).toBe("success");
-            expect(fn).toHaveBeenCalledTimes(2);
+            expect(function_).toHaveBeenCalledTimes(2);
         });
 
         it("should throw after max retries exhausted", async () => {
@@ -165,9 +176,9 @@ describe("retry", () => {
 
             (error as { code?: string }).code = "ECONNRESET";
 
-            const fn = vi.fn().mockRejectedValue(error);
+            const function_ = vi.fn().mockRejectedValue(error);
 
-            const resultPromise = retry(fn, { initialDelay: 100, maxRetries: 2 });
+            const resultPromise = retry(function_, { initialDelay: 100, maxRetries: 2 });
 
             // Catch the promise rejection to prevent unhandled rejection
             resultPromise.catch(() => {
@@ -180,42 +191,44 @@ describe("retry", () => {
 
             try {
                 await resultPromise;
+
                 expect.fail("Should have thrown");
-            } catch (e) {
-                expect(e).toBe(error);
+            } catch (error_) {
+                expect(error_).toBe(error);
             }
 
-            expect(fn).toHaveBeenCalledTimes(3);
+            expect(function_).toHaveBeenCalledTimes(3);
         });
 
         it("should not retry non-retryable errors", async () => {
             expect.assertions(2);
 
             const error = new Error("not retryable");
-            const fn = vi.fn().mockRejectedValue(error);
+            const function_ = vi.fn().mockRejectedValue(error);
 
-            const resultPromise = retry(fn, { shouldRetry: () => false });
+            const resultPromise = retry(function_, { shouldRetry: () => false });
 
             try {
                 await resultPromise;
+
                 expect.fail("Should have thrown");
-            } catch (e) {
-                expect(e).toBe(error);
+            } catch (error_) {
+                expect(error_).toBe(error);
             }
 
-            expect(fn).toHaveBeenCalledTimes(1);
+            expect(function_).toHaveBeenCalledTimes(1);
         });
 
         it("should use custom shouldRetry function", async () => {
             expect.assertions(2);
 
             const error = new Error("custom");
-            const fn = vi.fn().mockRejectedValueOnce(error).mockResolvedValueOnce("success");
+            const function_ = vi.fn().mockRejectedValueOnce(error).mockResolvedValueOnce("success");
 
-            const resultPromise = retry(fn, {
+            const resultPromise = retry(function_, {
                 initialDelay: 100,
                 maxRetries: 1,
-                shouldRetry: (err) => err === error,
+                shouldRetry: (error_) => error_ === error,
             });
 
             await vi.advanceTimersByTimeAsync(100);
@@ -223,7 +236,7 @@ describe("retry", () => {
             const result = await resultPromise;
 
             expect(result).toBe("success");
-            expect(fn).toHaveBeenCalledTimes(2);
+            expect(function_).toHaveBeenCalledTimes(2);
         });
 
         it("should use custom calculateDelay function", async () => {
@@ -233,9 +246,9 @@ describe("retry", () => {
 
             (error as { code?: string }).code = "ECONNRESET";
 
-            const fn = vi.fn().mockRejectedValueOnce(error).mockResolvedValueOnce("success");
+            const function_ = vi.fn().mockRejectedValueOnce(error).mockResolvedValueOnce("success");
 
-            const resultPromise = retry(fn, {
+            const resultPromise = retry(function_, {
                 calculateDelay: () => 50,
                 initialDelay: 100,
                 maxRetries: 1,
@@ -246,7 +259,7 @@ describe("retry", () => {
             const result = await resultPromise;
 
             expect(result).toBe("success");
-            expect(fn).toHaveBeenCalledTimes(2);
+            expect(function_).toHaveBeenCalledTimes(2);
         });
 
         it("should respect maxDelay", async () => {
@@ -256,9 +269,9 @@ describe("retry", () => {
 
             (error as { code?: string }).code = "ECONNRESET";
 
-            const fn = vi.fn().mockRejectedValue(error);
+            const function_ = vi.fn().mockRejectedValue(error);
 
-            const resultPromise = retry(fn, {
+            const resultPromise = retry(function_, {
                 backoffMultiplier: 10,
                 initialDelay: 1000,
                 maxDelay: 2000,
@@ -276,13 +289,14 @@ describe("retry", () => {
 
             try {
                 await resultPromise;
+
                 expect.fail("Should have thrown");
-            } catch (e) {
-                expect(e).toBe(error);
+            } catch (error_) {
+                expect(error_).toBe(error);
             }
 
             // Verify delay was capped at maxDelay
-            expect(fn).toHaveBeenCalledTimes(3);
+            expect(function_).toHaveBeenCalledTimes(3);
         });
 
         it("should handle zero delay", async () => {
@@ -292,9 +306,9 @@ describe("retry", () => {
 
             (error as { code?: string }).code = "ECONNRESET";
 
-            const fn = vi.fn().mockRejectedValueOnce(error).mockResolvedValueOnce("success");
+            const function_ = vi.fn().mockRejectedValueOnce(error).mockResolvedValueOnce("success");
 
-            const resultPromise = retry(fn, {
+            const resultPromise = retry(function_, {
                 calculateDelay: () => 0,
                 initialDelay: 100,
                 maxRetries: 1,
@@ -304,7 +318,7 @@ describe("retry", () => {
             const result = await resultPromise;
 
             expect(result).toBe("success");
-            expect(fn).toHaveBeenCalledTimes(2);
+            expect(function_).toHaveBeenCalledTimes(2);
         });
     });
 
@@ -312,13 +326,13 @@ describe("retry", () => {
         it("should create retry wrapper with config", async () => {
             expect.assertions(2);
 
-            const fn = vi.fn().mockResolvedValue("success");
+            const function_ = vi.fn().mockResolvedValue("success");
             const wrapper = createRetryWrapper({ maxRetries: 2 });
 
-            const result = await wrapper(fn);
+            const result = await wrapper(function_);
 
             expect(result).toBe("success");
-            expect(fn).toHaveBeenCalledTimes(1);
+            expect(function_).toHaveBeenCalledTimes(1);
         });
 
         it("should use wrapper config for retries", async () => {
@@ -328,18 +342,17 @@ describe("retry", () => {
 
             (error as { code?: string }).code = "ECONNRESET";
 
-            const fn = vi.fn().mockRejectedValueOnce(error).mockResolvedValueOnce("success");
+            const function_ = vi.fn().mockRejectedValueOnce(error).mockResolvedValueOnce("success");
             const wrapper = createRetryWrapper({ initialDelay: 100, maxRetries: 1 });
 
-            const resultPromise = wrapper(fn);
+            const resultPromise = wrapper(function_);
 
             await vi.advanceTimersByTimeAsync(100);
             await vi.runAllTimersAsync();
             const result = await resultPromise;
 
             expect(result).toBe("success");
-            expect(fn).toHaveBeenCalledTimes(2);
+            expect(function_).toHaveBeenCalledTimes(2);
         });
     });
 });
-

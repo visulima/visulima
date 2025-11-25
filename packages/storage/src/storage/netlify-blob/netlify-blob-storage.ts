@@ -60,8 +60,8 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile, FileReturn> {
         // Initialize Netlify Blob store
         this.store = getStore({
             name: this.storeName,
-            ...(this.siteID && { siteID: this.siteID }),
-            ...(this.token && { token: this.token }),
+            ...this.siteID && { siteID: this.siteID },
+            ...this.token && { token: this.token },
         });
 
         // Initialize retry wrapper with config or defaults
@@ -190,8 +190,8 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile, FileReturn> {
                     // Detect file type from buffer if contentType is not set or is default
                     // Only detect on first write (when bytesWritten is 0 or NaN)
                     if (
-                        (file.bytesWritten === 0 || Number.isNaN(file.bytesWritten)) &&
-                        (!file.contentType || file.contentType === "application/octet-stream")
+                        (file.bytesWritten === 0 || Number.isNaN(file.bytesWritten))
+                        && (!file.contentType || file.contentType === "application/octet-stream")
                     ) {
                         try {
                             const fileType = await detectFileTypeFromBuffer(buffer);
@@ -303,10 +303,10 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile, FileReturn> {
                 // Try to get metadata if the API supports it
                 // If not supported, we'll fall back to file metadata
 
-                blobMetadata =
-                    (await (
+                blobMetadata
+                    = await (
                         this.store as { getMetadata?: (key: string) => Promise<{ contentType?: string; metadata?: Record<string, unknown> } | null> }
-                    ).getMetadata?.(file.pathname)) || null;
+                    ).getMetadata?.(file.pathname) || null;
             } catch {
                 // Metadata retrieval not supported or failed, use file metadata
             }
@@ -356,10 +356,10 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile, FileReturn> {
             let sourceMetadata: { contentType?: string; metadata?: Record<string, unknown> } | null = null;
 
             try {
-                sourceMetadata =
-                    (await (
+                sourceMetadata
+                    = await (
                         this.store as { getMetadata?: (key: string) => Promise<{ contentType?: string; metadata?: Record<string, unknown> } | null> }
-                    ).getMetadata?.(sourceFile.pathname)) || null;
+                    ).getMetadata?.(sourceFile.pathname) || null;
             } catch {
                 // Metadata retrieval not supported, use file metadata
             }
@@ -428,10 +428,10 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile, FileReturn> {
                     let metadata: { contentType?: string; metadata?: Record<string, unknown> } | null = null;
 
                     try {
-                        metadata =
-                            (await (
+                        metadata
+                            = await (
                                 this.store as { getMetadata?: (key: string) => Promise<{ contentType?: string; metadata?: Record<string, unknown> } | null> }
-                            ).getMetadata?.(blob.key)) || null;
+                            ).getMetadata?.(blob.key) || null;
                     } catch {
                         // Metadata retrieval not supported
                     }
