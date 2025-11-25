@@ -22,12 +22,11 @@ export interface UseRetryReturn {
 export const useRetry = (options: UseRetryOptions): UseRetryReturn => {
     const { endpoint, metadata } = options;
 
-    const adapter = computed(
-        () =>
-            createMultipartAdapter({
-                endpoint,
-                metadata,
-            }),
+    const adapter = computed(() =>
+        createMultipartAdapter({
+            endpoint,
+            metadata,
+        }),
     );
 
     const retryItem = (id: string): void => {
@@ -38,4 +37,3 @@ export const useRetry = (options: UseRetryOptions): UseRetryReturn => {
         retryItem,
     };
 };
-

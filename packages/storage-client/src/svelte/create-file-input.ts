@@ -1,6 +1,6 @@
 import { onDestroy, onMount } from "svelte";
 import type { Readable, Writable } from "svelte/store";
-import { get, writable } from "svelte/store";
+import { writable } from "svelte/store";
 
 export interface CreateFileInputOptions {
     accept?: string;
@@ -115,4 +115,3 @@ export const createFileInput = (options: CreateFileInputOptions = {}): CreateFil
         reset,
     };
 };
-

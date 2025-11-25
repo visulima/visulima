@@ -28,7 +28,7 @@ class MockXMLHttpRequest {
     private eventListeners = new Map<string, Set<(event: Event) => void>>();
 
     public upload = {
-        addEventListener: vi.fn((event: string, handler: (event: ProgressEvent) => void) => {
+        addEventListener: vi.fn((_event: string, handler: (event: ProgressEvent) => void) => {
             // Simulate progress
             setTimeout(() => {
                 const progressEvent = {

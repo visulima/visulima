@@ -59,8 +59,6 @@ describe(useAbortItem, () => {
     });
 
     it("should provide abortItem function", () => {
-        expect.assertions(2);
-
         const { result } = renderHookWithQueryClient(() =>
             useAbortItem({
                 endpoint: "/api/upload",
@@ -68,7 +66,8 @@ describe(useAbortItem, () => {
         );
 
         expect(result.current.abortItem).toBeDefined();
-        expect(typeof result.current.abortItem).toBe("function");
+
+        expectTypeOf(result.current.abortItem).toBeFunction();
     });
 
     it("should abort item without throwing", () => {

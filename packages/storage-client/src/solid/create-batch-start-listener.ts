@@ -23,4 +23,3 @@ export const createBatchStartListener = (options: CreateBatchStartListenerOption
         });
     });
 };
-

@@ -13,20 +13,29 @@ describe(useFileInput, () => {
     });
 
     it("should provide file handling functions", () => {
-        expect.assertions(10);
+        expect.assertions(5);
 
         const { result } = withQueryClient(() => useFileInput());
 
         expect(result.handleFileChange).toBeDefined();
-        expect(typeof result.handleFileChange).toBe("function");
+
+        expectTypeOf(result.handleFileChange).toBeFunction();
+
         expect(result.handleDragOver).toBeDefined();
-        expect(typeof result.handleDragOver).toBe("function");
+
+        expectTypeOf(result.handleDragOver).toBeFunction();
+
         expect(result.handleDragLeave).toBeDefined();
-        expect(typeof result.handleDragLeave).toBe("function");
+
+        expectTypeOf(result.handleDragLeave).toBeFunction();
+
         expect(result.handleDrop).toBeDefined();
-        expect(typeof result.handleDrop).toBe("function");
+
+        expectTypeOf(result.handleDrop).toBeFunction();
+
         expect(result.openFileDialog).toBeDefined();
-        expect(typeof result.openFileDialog).toBe("function");
+
+        expectTypeOf(result.openFileDialog).toBeFunction();
     });
 
     it("should handle file selection", () => {

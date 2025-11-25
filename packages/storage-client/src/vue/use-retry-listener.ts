@@ -40,4 +40,3 @@ export const useRetryListener = (options: UseRetryListenerOptions): void => {
         });
     });
 };
-

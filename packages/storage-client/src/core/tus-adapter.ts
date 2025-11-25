@@ -350,7 +350,7 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
             let fileMeta: Partial<FileMeta> = {};
 
             try {
-            // Some TUS servers return file info in headers or we can construct it
+                // Some TUS servers return file info in headers or we can construct it
                 const contentType = headResponse.headers.get("Content-Type") || uploadMetadata.filetype || file.type;
 
                 fileMeta = {
@@ -362,7 +362,7 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
                     status: "completed",
                 };
             } catch {
-            // Use fallback values if parsing fails
+                // Use fallback values if parsing fails
             }
 
             return {

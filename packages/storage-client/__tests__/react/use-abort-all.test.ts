@@ -15,7 +15,7 @@ class MockXMLHttpRequest {
 
     public response = "";
 
-    private eventListeners = new Map<string, Set<(event: Event) => void>>();
+    private _eventListeners = new Map<string, Set<(event: Event) => void>>();
 
     public upload = {
         addEventListener: vi.fn(),
@@ -53,8 +53,6 @@ describe(useAbortAll, () => {
     });
 
     it("should provide abortAll function", () => {
-        expect.assertions(2);
-
         const { result } = renderHookWithQueryClient(() =>
             useAbortAll({
                 endpoint: "/api/upload",
@@ -62,7 +60,8 @@ describe(useAbortAll, () => {
         );
 
         expect(result.current.abortAll).toBeDefined();
-        expect(typeof result.current.abortAll).toBe("function");
+
+        expectTypeOf(result.current.abortAll).toBeFunction();
     });
 
     it("should abort all uploads without throwing", () => {

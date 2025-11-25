@@ -27,7 +27,6 @@ export interface CreateDeleteFileReturn {
  * IMPORTANT: Due to TanStack Query Svelte requirements, createMutation must be called
  * at the component's top level, not inside utility functions. For proper usage, call
  * createMutation directly in your component and use the returned stores.
- *
  * @param options Hook configuration options
  * @returns File deletion functions and state stores
  */

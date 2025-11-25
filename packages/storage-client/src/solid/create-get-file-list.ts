@@ -57,40 +57,43 @@ export const createGetFileList = (options: CreateGetFileListOptions): CreateGetF
     const pageValue = typeof page === "function" ? page : () => page;
     const enabledValue = typeof enabled === "function" ? enabled : () => enabled;
 
-    const query = createQuery(() => {
-        const limit = limitValue();
-        const page = pageValue();
-        const enabled = enabledValue();
+    const query = createQuery(
+        () => {
+            const limit = limitValue();
+            const page = pageValue();
+            const enabled = enabledValue();
 
-        // Build filters with stable structure - use undefined for missing values
-        // This ensures TanStack Query can properly compare queryKeys using deep equality
-        const filters: { limit?: number; page?: number } | undefined
-            = limit !== undefined || page !== undefined
-                ? {
-                    ...limit !== undefined && { limit },
-                    ...page !== undefined && { page },
-                }
-                : undefined;
+            // Build filters with stable structure - use undefined for missing values
+            // This ensures TanStack Query can properly compare queryKeys using deep equality
+            const filters: { limit?: number; page?: number } | undefined
+                = limit !== undefined || page !== undefined
+                    ? {
+                        ...limit !== undefined && { limit },
+                        ...page !== undefined && { page },
+                    }
+                    : undefined;
 
-        const queryKey = storageQueryKeys.files.list(endpoint, filters);
+            const queryKey = storageQueryKeys.files.list(endpoint, filters);
 
-        return {
-            enabled,
-            queryFn: async (): Promise<FileListResponse> => {
-                const url = buildUrl(endpoint, "", { limit, page });
-                const data = await fetchJson<FileListResponse | FileMeta[]>(url);
+            return {
+                enabled,
+                queryFn: async (): Promise<FileListResponse> => {
+                    const url = buildUrl(endpoint, "", { limit, page });
+                    const data = await fetchJson<FileListResponse | FileMeta[]>(url);
 
-                // Handle both paginated and non-paginated responses
-                return Array.isArray(data)
-                    ? { data }
-                    : {
-                        data: data.data || (data as unknown as FileMeta[]),
-                        meta: (data as FileListResponse).meta,
-                    };
-            },
-            queryKey,
-        };
-    }, queryClient ? () => queryClient : undefined);
+                    // Handle both paginated and non-paginated responses
+                    return Array.isArray(data)
+                        ? { data }
+                        : {
+                            data: data.data || (data as unknown as FileMeta[]),
+                            meta: (data as FileListResponse).meta,
+                        };
+                },
+                queryKey,
+            };
+        },
+        queryClient ? () => queryClient : undefined,
+    );
 
     return {
         data: () => {

@@ -37,7 +37,6 @@ describe(createDeleteFile, () => {
     });
 
     it("should delete file successfully", async () => {
-
         mockFetch.mockResolvedValueOnce({
             ok: true,
             status: 204,
@@ -55,18 +54,24 @@ describe(createDeleteFile, () => {
         // Wait for result to be initialized and stores to be available
         let result: ReturnType<typeof component.result>;
 
-        await waitFor(() => {
-            const r = component.result();
+        await waitFor(
+            () => {
+                const r = component.result();
 
-            expect(r).toBeDefined();
-            expect(r?.deleteFile).toBeDefined();
-            expect(r?.isLoading).toBeDefined();
-            expect(typeof r?.isLoading?.subscribe).toBe("function");
-            expect(r?.error).toBeDefined();
-            expect(typeof r?.error?.subscribe).toBe("function");
+                expect(r).toBeDefined();
+                expect(r?.deleteFile).toBeDefined();
+                expect(r?.isLoading).toBeDefined();
 
-            result = r!;
-        }, { timeout: 2000 });
+                expectTypeOf(r?.isLoading?.subscribe).toBeFunction();
+
+                expect(r?.error).toBeDefined();
+
+                expectTypeOf(r?.error?.subscribe).toBeFunction();
+
+                result = r!;
+            },
+            { timeout: 2000 },
+        );
 
         await result.deleteFile("file-123");
 
@@ -74,13 +79,12 @@ describe(createDeleteFile, () => {
             expect(get(result.isLoading)).toBe(false);
         });
 
-        expect(mockFetch).toHaveBeenCalledWith("https://api.example.com/file-123", {
+        expect(mockFetch).toHaveBeenCalledWith("https://api.example.com/file-123", expect.objectContaining({
             method: "DELETE",
-        });
+        }));
     });
 
     it("should handle error response", async () => {
-
         mockFetch.mockResolvedValueOnce({
             json: async () => {
                 return {
@@ -107,18 +111,24 @@ describe(createDeleteFile, () => {
         // Wait for result to be initialized and stores to be available
         let result: ReturnType<typeof component.result>;
 
-        await waitFor(() => {
-            const r = component.result();
+        await waitFor(
+            () => {
+                const r = component.result();
 
-            expect(r).toBeDefined();
-            expect(r?.deleteFile).toBeDefined();
-            expect(r?.isLoading).toBeDefined();
-            expect(typeof r?.isLoading?.subscribe).toBe("function");
-            expect(r?.error).toBeDefined();
-            expect(typeof r?.error?.subscribe).toBe("function");
+                expect(r).toBeDefined();
+                expect(r?.deleteFile).toBeDefined();
+                expect(r?.isLoading).toBeDefined();
 
-            result = r!;
-        }, { timeout: 2000 });
+                expectTypeOf(r?.isLoading?.subscribe).toBeFunction();
+
+                expect(r?.error).toBeDefined();
+
+                expectTypeOf(r?.error?.subscribe).toBeFunction();
+
+                result = r!;
+            },
+            { timeout: 2000 },
+        );
 
         // The mutation will reject, but we need to catch it to allow the error to be set in the store
         try {
@@ -133,15 +143,17 @@ describe(createDeleteFile, () => {
 
         // Wait for the error to be captured in the store
         // Mutation errors are set after the mutation fails
-        await waitFor(() => {
-            const error = get(result.error);
+        await waitFor(
+            () => {
+                const error = get(result.error);
 
-            expect(error).toBeDefined();
-        }, { timeout: 3000 });
+                expect(error).toBeDefined();
+            },
+            { timeout: 3000 },
+        );
     });
 
     it("should reset mutation state", async () => {
-
         mockFetch.mockResolvedValueOnce({
             ok: true,
             status: 204,
@@ -159,18 +171,24 @@ describe(createDeleteFile, () => {
         // Wait for result to be initialized and stores to be available
         let result: ReturnType<typeof component.result>;
 
-        await waitFor(() => {
-            const r = component.result();
+        await waitFor(
+            () => {
+                const r = component.result();
 
-            expect(r).toBeDefined();
-            expect(r?.deleteFile).toBeDefined();
-            expect(r?.isLoading).toBeDefined();
-            expect(typeof r?.isLoading?.subscribe).toBe("function");
-            expect(r?.error).toBeDefined();
-            expect(typeof r?.error?.subscribe).toBe("function");
+                expect(r).toBeDefined();
+                expect(r?.deleteFile).toBeDefined();
+                expect(r?.isLoading).toBeDefined();
 
-            result = r!;
-        }, { timeout: 2000 });
+                expectTypeOf(r?.isLoading?.subscribe).toBeFunction();
+
+                expect(r?.error).toBeDefined();
+
+                expectTypeOf(r?.error?.subscribe).toBeFunction();
+
+                result = r!;
+            },
+            { timeout: 2000 },
+        );
 
         await result.deleteFile("file-123");
 

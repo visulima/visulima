@@ -21,7 +21,7 @@ class MockXMLHttpRequest {
     private eventListeners = new Map<string, Set<(event: Event) => void>>();
 
     public upload = {
-        addEventListener: vi.fn((event: string, handler: (event: ProgressEvent) => void) => {
+        addEventListener: vi.fn((_event: string, handler: (event: ProgressEvent) => void) => {
             setTimeout(() => {
                 const progressEvent = {
                     lengthComputable: true,
@@ -207,7 +207,7 @@ describe(useUpload, () => {
         await result.current.upload(file);
 
         await waitFor(() => {
-            expect(onStart).toHaveBeenCalled();
+            expect(onStart).toHaveBeenCalledWith();
             expect(onProgress).toHaveBeenCalledWith(expect.any(Number));
             expect(onSuccess).toHaveBeenCalledWith(expect.any(Object));
             expect(onError).not.toHaveBeenCalled();

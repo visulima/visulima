@@ -44,7 +44,7 @@ Create a plugin file:
 import { VueQueryPlugin } from "@tanstack/vue-query";
 
 export default defineNuxtPlugin((nuxtApp) => {
-  nuxtApp.vueApp.use(VueQueryPlugin);
+    nuxtApp.vueApp.use(VueQueryPlugin);
 });
 ```
 
@@ -54,26 +54,21 @@ Use the `useUpload` composable for automatic method selection:
 
 ```vue
 <template>
-  <div class="app">
-    <h1>Storage Client - Vue Example</h1>
-    <div class="upload-section">
-      <input
-        type="file"
-        @change="handleFileChange"
-        :disabled="isUploading"
-        ref="fileInputRef"
-      />
-      <button @click="handleUpload" :disabled="!file || isUploading">
-        {{ isUploading ? "Uploading..." : "Upload" }}
-      </button>
+    <div class="app">
+        <h1>Storage Client - Vue Example</h1>
+        <div class="upload-section">
+            <input type="file" @change="handleFileChange" :disabled="isUploading" ref="fileInputRef" />
+            <button @click="handleUpload" :disabled="!file || isUploading">
+                {{ isUploading ? "Uploading..." : "Upload" }}
+            </button>
+        </div>
+        <div v-if="isUploading" class="progress-section">
+            <div>Progress: {{ progress }}%</div>
+            <progress :value="progress" max="100" />
+        </div>
+        <div v-if="error" class="error">Error: {{ error.message }}</div>
+        <div v-if="result" class="success">Upload complete! File: {{ result.filename }}</div>
     </div>
-    <div v-if="isUploading" class="progress-section">
-      <div>Progress: {{ progress }}%</div>
-      <progress :value="progress" max="100" />
-    </div>
-    <div v-if="error" class="error">Error: {{ error.message }}</div>
-    <div v-if="result" class="success">Upload complete! File: {{ result.filename }}</div>
-  </div>
 </template>
 
 <script setup lang="ts">
@@ -83,34 +78,34 @@ import { useUpload } from "@visulima/storage-client/vue";
 const file = ref<File | null>(null);
 const fileInputRef = ref<HTMLInputElement | null>(null);
 const { upload, progress, isUploading, error, result } = useUpload({
-  endpointMultipart: "/api/upload/multipart",
-  endpointTus: "/api/upload/tus",
-  onSuccess: (result) => {
-    console.log("Upload successful:", result);
-    file.value = null;
-    if (fileInputRef.value) {
-      fileInputRef.value.value = "";
-    }
-  },
-  onError: (error_) => {
-    console.error("Upload error:", error_);
-  },
+    endpointMultipart: "/api/upload/multipart",
+    endpointTus: "/api/upload/tus",
+    onSuccess: (result) => {
+        console.log("Upload successful:", result);
+        file.value = null;
+        if (fileInputRef.value) {
+            fileInputRef.value.value = "";
+        }
+    },
+    onError: (error_) => {
+        console.error("Upload error:", error_);
+    },
 });
 
 const handleFileChange = (e: Event) => {
-  const target = e.target as HTMLInputElement;
-  const selectedFile = target.files?.[0];
-  file.value = selectedFile || null;
+    const target = e.target as HTMLInputElement;
+    const selectedFile = target.files?.[0];
+    file.value = selectedFile || null;
 };
 
 const handleUpload = async () => {
-  if (file.value) {
-    try {
-      await upload(file.value);
-    } catch (error_) {
-      console.error("Upload failed:", error_);
+    if (file.value) {
+        try {
+            await upload(file.value);
+        } catch (error_) {
+            console.error("Upload failed:", error_);
+        }
     }
-  }
 };
 </script>
 ```
@@ -124,25 +119,25 @@ For traditional form-based uploads:
 import { useMultipartUpload } from "@visulima/storage-client/vue";
 
 const { upload, progress, isUploading } = useMultipartUpload({
-  endpoint: "/api/upload/multipart",
+    endpoint: "/api/upload/multipart",
 });
 
 const handleFileChange = async (e: Event) => {
-  const target = e.target as HTMLInputElement;
-  const file = target.files?.[0];
-  if (file) {
-    await upload(file);
-  }
+    const target = e.target as HTMLInputElement;
+    const file = target.files?.[0];
+    if (file) {
+        await upload(file);
+    }
 };
 </script>
 
 <template>
-  <div>
-    <input type="file" @change="handleFileChange" />
-    <div v-if="isUploading">
-      <progress :value="progress" max="100" />
+    <div>
+        <input type="file" @change="handleFileChange" />
+        <div v-if="isUploading">
+            <progress :value="progress" max="100" />
+        </div>
     </div>
-  </div>
 </template>
 ```
 
@@ -155,27 +150,27 @@ For large files with pause/resume support:
 import { useTusUpload } from "@visulima/storage-client/vue";
 
 const { upload, pause, resume, progress, isUploading, isPaused } = useTusUpload({
-  endpoint: "/api/upload/tus",
+    endpoint: "/api/upload/tus",
 });
 
 const handleFileChange = async (e: Event) => {
-  const target = e.target as HTMLInputElement;
-  const file = target.files?.[0];
-  if (file) {
-    await upload(file);
-  }
+    const target = e.target as HTMLInputElement;
+    const file = target.files?.[0];
+    if (file) {
+        await upload(file);
+    }
 };
 </script>
 
 <template>
-  <div>
-    <input type="file" @change="handleFileChange" />
-    <div v-if="isUploading">
-      <progress :value="progress" max="100" />
-      <button v-if="isPaused" @click="resume">Resume</button>
-      <button v-else @click="pause">Pause</button>
+    <div>
+        <input type="file" @change="handleFileChange" />
+        <div v-if="isUploading">
+            <progress :value="progress" max="100" />
+            <button v-if="isPaused" @click="resume">Resume</button>
+            <button v-else @click="pause">Pause</button>
+        </div>
     </div>
-  </div>
 </template>
 ```
 
@@ -188,30 +183,30 @@ Upload multiple files simultaneously:
 import { useBatchUpload } from "@visulima/storage-client/vue";
 
 const { uploadBatch, progress, isUploading, items, completedCount, errorCount } = useBatchUpload({
-  endpoint: "/api/upload/multipart",
-  onSuccess: (results) => {
-    console.log("Batch upload complete:", results);
-  },
+    endpoint: "/api/upload/multipart",
+    onSuccess: (results) => {
+        console.log("Batch upload complete:", results);
+    },
 });
 
 const handleFilesChange = (e: Event) => {
-  const target = e.target as HTMLInputElement;
-  const files = Array.from(target.files || []);
-  if (files.length > 0) {
-    uploadBatch(files);
-  }
+    const target = e.target as HTMLInputElement;
+    const files = Array.from(target.files || []);
+    if (files.length > 0) {
+        uploadBatch(files);
+    }
 };
 </script>
 
 <template>
-  <div>
-    <input type="file" multiple @change="handleFilesChange" />
-    <div v-if="isUploading">
-      <div>Progress: {{ progress }}%</div>
-      <div>Completed: {{ completedCount }} / {{ items.length }}</div>
-      <div>Errors: {{ errorCount }}</div>
+    <div>
+        <input type="file" multiple @change="handleFilesChange" />
+        <div v-if="isUploading">
+            <div>Progress: {{ progress }}%</div>
+            <div>Completed: {{ completedCount }} / {{ items.length }}</div>
+            <div>Errors: {{ errorCount }}</div>
+        </div>
     </div>
-  </div>
 </template>
 ```
 
@@ -226,40 +221,30 @@ import { useFileInput } from "@visulima/storage-client/vue";
 import { useBatchUpload } from "@visulima/storage-client/vue";
 
 const { files, inputRef, handleFileChange, handleDrop, handleDragOver, openFileDialog } = useFileInput({
-  multiple: true,
+    multiple: true,
 });
 
 const { uploadBatch } = useBatchUpload({
-  endpoint: "/api/upload/multipart",
+    endpoint: "/api/upload/multipart",
 });
 
 const handleUpload = () => {
-  if (files.value.length > 0) {
-    uploadBatch(files.value);
-  }
+    if (files.value.length > 0) {
+        uploadBatch(files.value);
+    }
 };
 </script>
 
 <template>
-  <div
-    @drop="handleDrop"
-    @dragover="handleDragOver"
-    style="border: 2px dashed #ccc; padding: 2rem; text-align: center"
-  >
-    <input
-      ref="inputRef"
-      type="file"
-      multiple
-      @change="handleFileChange"
-      style="display: none"
-    />
-    <p>Drag and drop files here or</p>
-    <button @click="openFileDialog">Select Files</button>
-    <div v-if="files.length > 0">
-      <p>Selected: {{ files.length }} files</p>
-      <button @click="handleUpload">Upload</button>
+    <div @drop="handleDrop" @dragover="handleDragOver" style="border: 2px dashed #ccc; padding: 2rem; text-align: center">
+        <input ref="inputRef" type="file" multiple @change="handleFileChange" style="display: none" />
+        <p>Drag and drop files here or</p>
+        <button @click="openFileDialog">Select Files</button>
+        <div v-if="files.length > 0">
+            <p>Selected: {{ files.length }} files</p>
+            <button @click="handleUpload">Upload</button>
+        </div>
     </div>
-  </div>
 </template>
 ```
 
@@ -275,26 +260,26 @@ import { useGetFile } from "@visulima/storage-client/vue";
 const props = defineProps<{ fileId: string }>();
 
 const { data, isLoading, error, meta } = useGetFile({
-  endpoint: "/api/files",
-  id: () => props.fileId,
+    endpoint: "/api/files",
+    id: () => props.fileId,
 });
 
 const url = ref<string | null>(null);
 
 watch(data, (blob) => {
-  if (blob) {
-    url.value = URL.createObjectURL(blob);
-  }
+    if (blob) {
+        url.value = URL.createObjectURL(blob);
+    }
 });
 </script>
 
 <template>
-  <div v-if="isLoading">Loading...</div>
-  <div v-else-if="error">Error: {{ error.message }}</div>
-  <div v-else-if="data && url">
-    <img :src="url" :alt="meta?.filename || 'File'" />
-    <p v-if="meta">Filename: {{ meta.filename }}</p>
-  </div>
+    <div v-if="isLoading">Loading...</div>
+    <div v-else-if="error">Error: {{ error.message }}</div>
+    <div v-else-if="data && url">
+        <img :src="url" :alt="meta?.filename || 'File'" />
+        <p v-if="meta">Filename: {{ meta.filename }}</p>
+    </div>
 </template>
 ```
 
@@ -307,14 +292,14 @@ import { useDeleteFile } from "@visulima/storage-client/vue";
 const props = defineProps<{ fileId: string }>();
 
 const { deleteFile, isLoading } = useDeleteFile({
-  endpoint: "/api/files",
+    endpoint: "/api/files",
 });
 </script>
 
 <template>
-  <button @click="() => deleteFile(props.fileId)" :disabled="isLoading">
-    {{ isLoading ? "Deleting..." : "Delete" }}
-  </button>
+    <button @click="() => deleteFile(props.fileId)" :disabled="isLoading">
+        {{ isLoading ? "Deleting..." : "Delete" }}
+    </button>
 </template>
 ```
 
@@ -326,21 +311,25 @@ import { useGetFileMeta } from "@visulima/storage-client/vue";
 
 const props = defineProps<{ fileId: string }>();
 
-const { data: meta, isLoading, error } = useGetFileMeta({
-  endpoint: "/api/files",
-  id: () => props.fileId,
+const {
+    data: meta,
+    isLoading,
+    error,
+} = useGetFileMeta({
+    endpoint: "/api/files",
+    id: () => props.fileId,
 });
 </script>
 
 <template>
-  <div v-if="isLoading">Loading...</div>
-  <div v-else-if="error">Error: {{ error.message }}</div>
-  <div v-else-if="meta">
-    <p>Filename: {{ meta.filename }}</p>
-    <p>Size: {{ meta.size }} bytes</p>
-    <p>Content Type: {{ meta.contentType }}</p>
-    <p v-if="meta.url">URL: {{ meta.url }}</p>
-  </div>
+    <div v-if="isLoading">Loading...</div>
+    <div v-else-if="error">Error: {{ error.message }}</div>
+    <div v-else-if="meta">
+        <p>Filename: {{ meta.filename }}</p>
+        <p>Size: {{ meta.size }} bytes</p>
+        <p>Content Type: {{ meta.contentType }}</p>
+        <p v-if="meta.url">URL: {{ meta.url }}</p>
+    </div>
 </template>
 ```
 
@@ -353,22 +342,18 @@ import { useHeadFile } from "@visulima/storage-client/vue";
 const props = defineProps<{ fileId: string }>();
 
 const { data, isLoading } = useHeadFile({
-  endpoint: "/api/files",
-  id: () => props.fileId,
+    endpoint: "/api/files",
+    id: () => props.fileId,
 });
 </script>
 
 <template>
-  <div v-if="isLoading">Checking status...</div>
-  <div v-else-if="data">
-    <p v-if="data.uploadComplete">Upload complete</p>
-    <p v-else>
-      Upload in progress: {{ data.uploadOffset }} / {{ data.contentLength }} bytes
-    </p>
-    <p v-if="data.receivedChunks">
-      Received chunks: {{ data.receivedChunks.length }}
-    </p>
-  </div>
+    <div v-if="isLoading">Checking status...</div>
+    <div v-else-if="data">
+        <p v-if="data.uploadComplete">Upload complete</p>
+        <p v-else>Upload in progress: {{ data.uploadOffset }} / {{ data.contentLength }} bytes</p>
+        <p v-if="data.receivedChunks">Received chunks: {{ data.receivedChunks.length }}</p>
+    </div>
 </template>
 ```
 
@@ -383,33 +368,33 @@ const props = defineProps<{ fileId: string }>();
 
 const file = ref<File | null>(null);
 const { putFile, progress, isLoading, error, data } = usePutFile({
-  endpoint: "/api/files",
-  onSuccess: (result) => {
-    console.log("File uploaded:", result);
-  },
+    endpoint: "/api/files",
+    onSuccess: (result) => {
+        console.log("File uploaded:", result);
+    },
 });
 
 const handleFileChange = (e: Event) => {
-  const target = e.target as HTMLInputElement;
-  file.value = target.files?.[0] || null;
+    const target = e.target as HTMLInputElement;
+    file.value = target.files?.[0] || null;
 };
 
 const handleUpload = async () => {
-  if (file.value) {
-    await putFile(props.fileId, file.value);
-  }
+    if (file.value) {
+        await putFile(props.fileId, file.value);
+    }
 };
 </script>
 
 <template>
-  <div>
-    <input type="file" @change="handleFileChange" />
-    <button @click="handleUpload" :disabled="!file || isLoading">
-      {{ isLoading ? `Uploading... ${progress}%` : "Upload" }}
-    </button>
-    <div v-if="error">Error: {{ error.message }}</div>
-    <div v-if="data">Upload complete! ID: {{ data.id }}</div>
-  </div>
+    <div>
+        <input type="file" @change="handleFileChange" />
+        <button @click="handleUpload" :disabled="!file || isLoading">
+            {{ isLoading ? `Uploading... ${progress}%` : "Upload" }}
+        </button>
+        <div v-if="error">Error: {{ error.message }}</div>
+        <div v-if="data">Upload complete! ID: {{ data.id }}</div>
+    </div>
 </template>
 ```
 
@@ -420,25 +405,25 @@ const handleUpload = async () => {
 import { useBatchDeleteFiles } from "@visulima/storage-client/vue";
 
 const { batchDeleteFiles, isLoading } = useBatchDeleteFiles({
-  endpoint: "/api/files",
-  onSuccess: (result) => {
-    console.log(`Deleted ${result.successful} files`);
-    if (result.failed) {
-      console.log(`${result.failed} files failed to delete`);
-    }
-  },
+    endpoint: "/api/files",
+    onSuccess: (result) => {
+        console.log(`Deleted ${result.successful} files`);
+        if (result.failed) {
+            console.log(`${result.failed} files failed to delete`);
+        }
+    },
 });
 
 const handleDelete = async () => {
-  const fileIds = ["file1", "file2", "file3"];
-  await batchDeleteFiles(fileIds);
+    const fileIds = ["file1", "file2", "file3"];
+    await batchDeleteFiles(fileIds);
 };
 </script>
 
 <template>
-  <button @click="handleDelete" :disabled="isLoading">
-    {{ isLoading ? "Deleting..." : "Delete Selected Files" }}
-  </button>
+    <button @click="handleDelete" :disabled="isLoading">
+        {{ isLoading ? "Deleting..." : "Delete Selected Files" }}
+    </button>
 </template>
 ```
 
@@ -455,54 +440,46 @@ const props = defineProps<{ fileId: string }>();
 
 const transform = ref({ width: 800, height: 600, quality: 85 });
 const { data, isLoading, error, meta } = useTransformFile({
-  endpoint: "/api/files",
-  id: () => props.fileId,
-  transform: () => transform.value,
+    endpoint: "/api/files",
+    id: () => props.fileId,
+    transform: () => transform.value,
 });
 
 const url = ref<string | null>(null);
 
 watch(data, (blob) => {
-  if (blob) {
-    url.value = URL.createObjectURL(blob);
-  }
+    if (blob) {
+        url.value = URL.createObjectURL(blob);
+    }
 });
 </script>
 
 <template>
-  <div v-if="isLoading">Transforming...</div>
-  <div v-else-if="error">Error: {{ error.message }}</div>
-  <div v-else-if="data && url">
-    <img :src="url" alt="Transformed" />
-    <div>
-      <label>
-        Width:
-        <input
-          type="number"
-          :value="transform.width"
-          @input="transform.width = Number(($event.target as HTMLInputElement).value)"
-        />
-      </label>
-      <label>
-        Height:
-        <input
-          type="number"
-          :value="transform.height"
-          @input="transform.height = Number(($event.target as HTMLInputElement).value)"
-        />
-      </label>
-      <label>
-        Quality:
-        <input
-          type="number"
-          min="1"
-          max="100"
-          :value="transform.quality"
-          @input="transform.quality = Number(($event.target as HTMLInputElement).value)"
-        />
-      </label>
+    <div v-if="isLoading">Transforming...</div>
+    <div v-else-if="error">Error: {{ error.message }}</div>
+    <div v-else-if="data && url">
+        <img :src="url" alt="Transformed" />
+        <div>
+            <label>
+                Width:
+                <input type="number" :value="transform.width" @input="transform.width = Number(($event.target as HTMLInputElement).value)" />
+            </label>
+            <label>
+                Height:
+                <input type="number" :value="transform.height" @input="transform.height = Number(($event.target as HTMLInputElement).value)" />
+            </label>
+            <label>
+                Quality:
+                <input
+                    type="number"
+                    min="1"
+                    max="100"
+                    :value="transform.quality"
+                    @input="transform.quality = Number(($event.target as HTMLInputElement).value)"
+                />
+            </label>
+        </div>
     </div>
-  </div>
 </template>
 ```
 
@@ -513,23 +490,23 @@ watch(data, (blob) => {
 import { useTransformMetadata } from "@visulima/storage-client/vue";
 
 const { data, isLoading, error } = useTransformMetadata({
-  endpoint: "/api/files",
+    endpoint: "/api/files",
 });
 </script>
 
 <template>
-  <div v-if="isLoading">Loading...</div>
-  <div v-else-if="error">Error: {{ error.message }}</div>
-  <div v-else-if="data">
-    <h3>Available Formats</h3>
-    <ul>
-      <li v-for="format in data.formats" :key="format">{{ format }}</li>
-    </ul>
-    <h3>Available Parameters</h3>
-    <ul>
-      <li v-for="param in data.parameters" :key="param">{{ param }}</li>
-    </ul>
-  </div>
+    <div v-if="isLoading">Loading...</div>
+    <div v-else-if="error">Error: {{ error.message }}</div>
+    <div v-else-if="data">
+        <h3>Available Formats</h3>
+        <ul>
+            <li v-for="format in data.formats" :key="format">{{ format }}</li>
+        </ul>
+        <h3>Available Parameters</h3>
+        <ul>
+            <li v-for="param in data.parameters" :key="param">{{ param }}</li>
+        </ul>
+    </div>
 </template>
 ```
 
@@ -542,12 +519,12 @@ const { data, isLoading, error } = useTransformMetadata({
 import { useAbortAll } from "@visulima/storage-client/vue";
 
 const { abortAll } = useAbortAll({
-  endpoint: "/api/upload/multipart",
+    endpoint: "/api/upload/multipart",
 });
 </script>
 
 <template>
-  <button @click="abortAll">Abort All Uploads</button>
+    <button @click="abortAll">Abort All Uploads</button>
 </template>
 ```
 
@@ -560,12 +537,12 @@ import { useAbortBatch } from "@visulima/storage-client/vue";
 const props = defineProps<{ batchId: string }>();
 
 const { abortBatch } = useAbortBatch({
-  endpoint: "/api/upload/multipart",
+    endpoint: "/api/upload/multipart",
 });
 </script>
 
 <template>
-  <button @click="() => abortBatch(props.batchId)">Abort Batch</button>
+    <button @click="() => abortBatch(props.batchId)">Abort Batch</button>
 </template>
 ```
 
@@ -578,12 +555,12 @@ import { useAbortItem } from "@visulima/storage-client/vue";
 const props = defineProps<{ itemId: string }>();
 
 const { abortItem } = useAbortItem({
-  endpoint: "/api/upload/multipart",
+    endpoint: "/api/upload/multipart",
 });
 </script>
 
 <template>
-  <button @click="() => abortItem(props.itemId)">Abort Upload</button>
+    <button @click="() => abortItem(props.itemId)">Abort Upload</button>
 </template>
 ```
 
@@ -598,12 +575,12 @@ import { useRetry } from "@visulima/storage-client/vue";
 const props = defineProps<{ itemId: string }>();
 
 const { retryItem } = useRetry({
-  endpoint: "/api/upload/multipart",
+    endpoint: "/api/upload/multipart",
 });
 </script>
 
 <template>
-  <button @click="() => retryItem(props.itemId)">Retry Upload</button>
+    <button @click="() => retryItem(props.itemId)">Retry Upload</button>
 </template>
 ```
 
@@ -616,12 +593,12 @@ import { useBatchRetry } from "@visulima/storage-client/vue";
 const props = defineProps<{ batchId: string }>();
 
 const { retryBatch } = useBatchRetry({
-  endpoint: "/api/upload/multipart",
+    endpoint: "/api/upload/multipart",
 });
 </script>
 
 <template>
-  <button @click="() => retryBatch(props.batchId)">Retry Failed Items in Batch</button>
+    <button @click="() => retryBatch(props.batchId)">Retry Failed Items in Batch</button>
 </template>
 ```
 
@@ -640,8 +617,8 @@ const storage = new DiskStorage({ directory: "./uploads" });
 const multipart = new Multipart({ storage });
 
 export default defineEventHandler(async (event) => {
-  event.node.res.setHeader("Access-Control-Allow-Origin", "*");
-  await multipart.handle(event.node.req, event.node.res);
+    event.node.res.setHeader("Access-Control-Allow-Origin", "*");
+    await multipart.handle(event.node.req, event.node.res);
 });
 ```
 
@@ -655,16 +632,16 @@ import { DiskStorage } from "@visulima/storage";
 import storageModule from "@visulima/storage/adapter/nuxt";
 
 export default defineNuxtConfig({
-  modules: [
-    [
-      storageModule,
-      {
-        storage: new DiskStorage({
-          directory: "./uploads",
-        }),
-      },
+    modules: [
+        [
+            storageModule,
+            {
+                storage: new DiskStorage({
+                    directory: "./uploads",
+                }),
+            },
+        ],
     ],
-  ],
 });
 ```
 
@@ -675,8 +652,8 @@ Then use the client in your components:
 import { useUpload } from "@visulima/storage-client/vue";
 
 const { upload, progress, isUploading } = useUpload({
-  endpointMultipart: "/api/upload/multipart",
-  endpointTus: "/api/upload/tus",
+    endpointMultipart: "/api/upload/multipart",
+    endpointTus: "/api/upload/tus",
 });
 </script>
 ```
@@ -689,44 +666,39 @@ Listen to batch upload events:
 
 ```vue
 <script setup lang="ts">
-import {
-  useBatchStartListener,
-  useBatchProgressListener,
-  useBatchFinishListener,
-  useBatchErrorListener,
-} from "@visulima/storage-client/vue";
+import { useBatchStartListener, useBatchProgressListener, useBatchFinishListener, useBatchErrorListener } from "@visulima/storage-client/vue";
 
 useBatchStartListener({
-  endpoint: "/api/upload/multipart",
-  onBatchStart: (batchId) => {
-    console.log("Batch started:", batchId);
-  },
+    endpoint: "/api/upload/multipart",
+    onBatchStart: (batchId) => {
+        console.log("Batch started:", batchId);
+    },
 });
 
 useBatchProgressListener({
-  endpoint: "/api/upload/multipart",
-  onBatchProgress: (progress, batchId) => {
-    console.log(`Batch ${batchId} progress: ${progress}%`);
-  },
+    endpoint: "/api/upload/multipart",
+    onBatchProgress: (progress, batchId) => {
+        console.log(`Batch ${batchId} progress: ${progress}%`);
+    },
 });
 
 useBatchFinishListener({
-  endpoint: "/api/upload/multipart",
-  onBatchFinish: (results, batchId) => {
-    console.log(`Batch ${batchId} finished:`, results);
-  },
+    endpoint: "/api/upload/multipart",
+    onBatchFinish: (results, batchId) => {
+        console.log(`Batch ${batchId} finished:`, results);
+    },
 });
 
 useBatchErrorListener({
-  endpoint: "/api/upload/multipart",
-  onBatchError: (error, batchId) => {
-    console.error(`Batch ${batchId} error:`, error);
-  },
+    endpoint: "/api/upload/multipart",
+    onBatchError: (error, batchId) => {
+        console.error(`Batch ${batchId} error:`, error);
+    },
 });
 </script>
 
 <template>
-  <div>Upload component with listeners</div>
+    <div>Upload component with listeners</div>
 </template>
 ```
 
@@ -737,15 +709,15 @@ useBatchErrorListener({
 import { useRetryListener } from "@visulima/storage-client/vue";
 
 useRetryListener({
-  endpoint: "/api/upload/multipart",
-  onRetry: (itemId) => {
-    console.log("Retrying item:", itemId);
-  },
+    endpoint: "/api/upload/multipart",
+    onRetry: (itemId) => {
+        console.log("Retrying item:", itemId);
+    },
 });
 </script>
 
 <template>
-  <!-- This is just a listener -->
+    <!-- This is just a listener -->
 </template>
 ```
 
@@ -756,15 +728,15 @@ useRetryListener({
 import { useAllAbortListener } from "@visulima/storage-client/vue";
 
 useAllAbortListener({
-  endpoint: "/api/upload/multipart",
-  onAbortAll: () => {
-    console.log("All uploads aborted");
-  },
+    endpoint: "/api/upload/multipart",
+    onAbortAll: () => {
+        console.log("All uploads aborted");
+    },
 });
 </script>
 
 <template>
-  <!-- This is just a listener -->
+    <!-- This is just a listener -->
 </template>
 ```
 
@@ -772,4 +744,3 @@ useAllAbortListener({
 
 - [React Guide](/docs/package/storage-client/react) - Compare with React implementation
 - [API Reference](/docs/package/storage-client/api) - Complete API documentation
-

@@ -16,7 +16,7 @@ class MockXMLHttpRequest {
 
     private eventListeners = new Map<string, Set<(event: Event) => void>>();
 
-    private uploadEventListeners = new Map<string, Set<(event: ProgressEvent) => void>>();
+    private _uploadEventListeners = new Map<string, Set<(event: ProgressEvent) => void>>();
 
     public upload = {
         addEventListener: vi.fn(),
@@ -66,7 +66,7 @@ describe("uploader Abort Operations", () => {
     });
 
     it("should abort specific item", () => {
-        expect.assertions(2);
+        expect.assertions(1);
 
         const uploader = createUploader({
             endpoint: "/api/upload",
@@ -80,7 +80,6 @@ describe("uploader Abort Operations", () => {
 
         uploader.abortItem(itemId);
 
-        expect(onItemAbort).toHaveBeenCalled();
         expect(onItemAbort).toHaveBeenCalledWith(
             expect.objectContaining({
                 id: itemId,
@@ -112,7 +111,12 @@ describe("uploader Abort Operations", () => {
         if (batchId) {
             uploader.abortBatch(batchId);
 
-            expect(onBatchCancelled).toHaveBeenCalled();
+            expect(onBatchCancelled).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    id: batchId,
+                    status: "cancelled",
+                }),
+            );
         }
     });
 

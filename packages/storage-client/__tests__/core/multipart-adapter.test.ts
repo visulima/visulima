@@ -31,7 +31,7 @@ class MockXMLHttpRequest {
 
     public open = vi.fn();
 
-    public send = vi.fn((data?: FormData) => {
+    public send = vi.fn((_data?: FormData) => {
         // Simulate upload progress
         setTimeout(() => {
             const handlers = this.uploadEventListeners.get("progress");
@@ -172,7 +172,7 @@ describe(createMultipartAdapter, () => {
 
         // Create a new mock XHR that simulates error
         class ErrorMockXMLHttpRequest extends MockXMLHttpRequest {
-            public send = vi.fn((data?: FormData) => {
+            public send = vi.fn((_data?: FormData) => {
                 setTimeout(() => {
                     const handlers = this.eventListeners.get("error");
 

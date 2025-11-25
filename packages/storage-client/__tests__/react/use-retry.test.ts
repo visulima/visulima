@@ -19,8 +19,6 @@ describe(useRetry, () => {
     });
 
     it("should provide retryItem function", () => {
-        expect.assertions(2);
-
         const { result } = renderHookWithQueryClient(() =>
             useRetry({
                 endpoint: "/api/upload",
@@ -28,7 +26,8 @@ describe(useRetry, () => {
         );
 
         expect(result.current.retryItem).toBeDefined();
-        expect(typeof result.current.retryItem).toBe("function");
+
+        expectTypeOf(result.current.retryItem).toBeFunction();
     });
 
     it("should retry item without throwing", () => {

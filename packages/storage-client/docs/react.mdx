@@ -24,11 +24,7 @@ import { ReactNode } from "react";
 const queryClient = new QueryClient();
 
 function App({ children }: { children: ReactNode }) {
-  return (
-    <QueryClientProvider client={queryClient}>
-      {children}
-    </QueryClientProvider>
-  );
+    return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
 }
 ```
 
@@ -41,39 +37,39 @@ import { useUpload } from "@visulima/storage-client/react";
 import { useState } from "react";
 
 function UploadComponent() {
-  const [file, setFile] = useState<File | null>(null);
-  const { upload, progress, isUploading, error, result } = useUpload({
-    endpointMultipart: "/api/upload/multipart",
-    endpointTus: "/api/upload/tus",
-    onSuccess: (result) => {
-      console.log("Upload successful:", result);
-    },
-    onError: (error) => {
-      console.error("Upload error:", error);
-    },
-  });
+    const [file, setFile] = useState<File | null>(null);
+    const { upload, progress, isUploading, error, result } = useUpload({
+        endpointMultipart: "/api/upload/multipart",
+        endpointTus: "/api/upload/tus",
+        onSuccess: (result) => {
+            console.log("Upload successful:", result);
+        },
+        onError: (error) => {
+            console.error("Upload error:", error);
+        },
+    });
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFile(e.target.files?.[0] || null);
-  };
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setFile(e.target.files?.[0] || null);
+    };
 
-  const handleUpload = async () => {
-    if (file) {
-      await upload(file);
-    }
-  };
+    const handleUpload = async () => {
+        if (file) {
+            await upload(file);
+        }
+    };
 
-  return (
-    <div>
-      <input type="file" onChange={handleFileChange} disabled={isUploading} />
-      <button onClick={handleUpload} disabled={!file || isUploading}>
-        {isUploading ? "Uploading..." : "Upload"}
-      </button>
-      {isUploading && <div>Progress: {progress}%</div>}
-      {error && <div>Error: {error.message}</div>}
-      {result && <div>Upload complete! File: {result.filename}</div>}
-    </div>
-  );
+    return (
+        <div>
+            <input type="file" onChange={handleFileChange} disabled={isUploading} />
+            <button onClick={handleUpload} disabled={!file || isUploading}>
+                {isUploading ? "Uploading..." : "Upload"}
+            </button>
+            {isUploading && <div>Progress: {progress}%</div>}
+            {error && <div>Error: {error.message}</div>}
+            {result && <div>Upload complete! File: {result.filename}</div>}
+        </div>
+    );
 }
 ```
 
@@ -85,26 +81,26 @@ For traditional form-based uploads:
 import { useMultipartUpload } from "@visulima/storage-client/react";
 
 function MultipartUpload() {
-  const { upload, progress, isUploading } = useMultipartUpload({
-    endpoint: "/api/upload/multipart",
-  });
+    const { upload, progress, isUploading } = useMultipartUpload({
+        endpoint: "/api/upload/multipart",
+    });
 
-  const handleUpload = async (file: File) => {
-    await upload(file);
-  };
+    const handleUpload = async (file: File) => {
+        await upload(file);
+    };
 
-  return (
-    <div>
-      <input
-        type="file"
-        onChange={(e) => {
-          const file = e.target.files?.[0];
-          if (file) handleUpload(file);
-        }}
-      />
-      {isUploading && <progress value={progress} max={100} />}
-    </div>
-  );
+    return (
+        <div>
+            <input
+                type="file"
+                onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) handleUpload(file);
+                }}
+            />
+            {isUploading && <progress value={progress} max={100} />}
+        </div>
+    );
 }
 ```
 
@@ -116,35 +112,31 @@ For large files with pause/resume support:
 import { useTusUpload } from "@visulima/storage-client/react";
 
 function TusUpload() {
-  const { upload, pause, resume, progress, isUploading, isPaused } = useTusUpload({
-    endpoint: "/api/upload/tus",
-  });
+    const { upload, pause, resume, progress, isUploading, isPaused } = useTusUpload({
+        endpoint: "/api/upload/tus",
+    });
 
-  const handleUpload = async (file: File) => {
-    await upload(file);
-  };
+    const handleUpload = async (file: File) => {
+        await upload(file);
+    };
 
-  return (
-    <div>
-      <input
-        type="file"
-        onChange={(e) => {
-          const file = e.target.files?.[0];
-          if (file) handleUpload(file);
-        }}
-      />
-      {isUploading && (
+    return (
         <div>
-          <progress value={progress} max={100} />
-          {isPaused ? (
-            <button onClick={resume}>Resume</button>
-          ) : (
-            <button onClick={pause}>Pause</button>
-          )}
+            <input
+                type="file"
+                onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) handleUpload(file);
+                }}
+            />
+            {isUploading && (
+                <div>
+                    <progress value={progress} max={100} />
+                    {isPaused ? <button onClick={resume}>Resume</button> : <button onClick={pause}>Pause</button>}
+                </div>
+            )}
         </div>
-      )}
-    </div>
-  );
+    );
 }
 ```
 
@@ -156,27 +148,27 @@ For client-side chunked uploads:
 import { useChunkedRestUpload } from "@visulima/storage-client/react";
 
 function ChunkedUpload() {
-  const { upload, progress, isUploading } = useChunkedRestUpload({
-    endpoint: "/api/upload/chunked-rest",
-    chunkSize: 5 * 1024 * 1024, // 5MB chunks
-  });
+    const { upload, progress, isUploading } = useChunkedRestUpload({
+        endpoint: "/api/upload/chunked-rest",
+        chunkSize: 5 * 1024 * 1024, // 5MB chunks
+    });
 
-  const handleUpload = async (file: File) => {
-    await upload(file);
-  };
+    const handleUpload = async (file: File) => {
+        await upload(file);
+    };
 
-  return (
-    <div>
-      <input
-        type="file"
-        onChange={(e) => {
-          const file = e.target.files?.[0];
-          if (file) handleUpload(file);
-        }}
-      />
-      {isUploading && <progress value={progress} max={100} />}
-    </div>
-  );
+    return (
+        <div>
+            <input
+                type="file"
+                onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) handleUpload(file);
+                }}
+            />
+            {isUploading && <progress value={progress} max={100} />}
+        </div>
+    );
 }
 ```
 
@@ -188,32 +180,34 @@ Upload multiple files simultaneously:
 import { useBatchUpload } from "@visulima/storage-client/react";
 
 function BatchUpload() {
-  const { uploadBatch, progress, isUploading, items, completedCount, errorCount } = useBatchUpload({
-    endpoint: "/api/upload/multipart",
-    onSuccess: (results) => {
-      console.log("Batch upload complete:", results);
-    },
-  });
+    const { uploadBatch, progress, isUploading, items, completedCount, errorCount } = useBatchUpload({
+        endpoint: "/api/upload/multipart",
+        onSuccess: (results) => {
+            console.log("Batch upload complete:", results);
+        },
+    });
 
-  const handleFilesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    if (files.length > 0) {
-      uploadBatch(files);
-    }
-  };
+    const handleFilesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = Array.from(e.target.files || []);
+        if (files.length > 0) {
+            uploadBatch(files);
+        }
+    };
 
-  return (
-    <div>
-      <input type="file" multiple onChange={handleFilesChange} />
-      {isUploading && (
+    return (
         <div>
-          <div>Progress: {progress}%</div>
-          <div>Completed: {completedCount} / {items.length}</div>
-          <div>Errors: {errorCount}</div>
+            <input type="file" multiple onChange={handleFilesChange} />
+            {isUploading && (
+                <div>
+                    <div>Progress: {progress}%</div>
+                    <div>
+                        Completed: {completedCount} / {items.length}
+                    </div>
+                    <div>Errors: {errorCount}</div>
+                </div>
+            )}
         </div>
-      )}
-    </div>
-  );
+    );
 }
 ```
 
@@ -226,46 +220,36 @@ import { useFileInput } from "@visulima/storage-client/react";
 import { useUpload } from "@visulima/storage-client/react";
 
 function DragDropUpload() {
-  const { files, inputRef, handleFileChange, handleDrop, handleDragOver, openFileDialog } = useFileInput({
-    multiple: true,
-    onFilesSelected: (files) => {
-      console.log("Files selected:", files);
-    },
-  });
+    const { files, inputRef, handleFileChange, handleDrop, handleDragOver, openFileDialog } = useFileInput({
+        multiple: true,
+        onFilesSelected: (files) => {
+            console.log("Files selected:", files);
+        },
+    });
 
-  const { uploadBatch } = useBatchUpload({
-    endpoint: "/api/upload/multipart",
-  });
+    const { uploadBatch } = useBatchUpload({
+        endpoint: "/api/upload/multipart",
+    });
 
-  const handleUpload = () => {
-    if (files.length > 0) {
-      uploadBatch(files);
-    }
-  };
+    const handleUpload = () => {
+        if (files.length > 0) {
+            uploadBatch(files);
+        }
+    };
 
-  return (
-    <div
-      onDrop={handleDrop}
-      onDragOver={handleDragOver}
-      style={{ border: "2px dashed #ccc", padding: "2rem", textAlign: "center" }}
-    >
-      <input
-        ref={inputRef}
-        type="file"
-        multiple
-        onChange={handleFileChange}
-        style={{ display: "none" }}
-      />
-      <p>Drag and drop files here or</p>
-      <button onClick={openFileDialog}>Select Files</button>
-      {files.length > 0 && (
-        <div>
-          <p>Selected: {files.length} files</p>
-          <button onClick={handleUpload}>Upload</button>
+    return (
+        <div onDrop={handleDrop} onDragOver={handleDragOver} style={{ border: "2px dashed #ccc", padding: "2rem", textAlign: "center" }}>
+            <input ref={inputRef} type="file" multiple onChange={handleFileChange} style={{ display: "none" }} />
+            <p>Drag and drop files here or</p>
+            <button onClick={openFileDialog}>Select Files</button>
+            {files.length > 0 && (
+                <div>
+                    <p>Selected: {files.length} files</p>
+                    <button onClick={handleUpload}>Upload</button>
+                </div>
+            )}
         </div>
-      )}
-    </div>
-  );
+    );
 }
 ```
 
@@ -278,36 +262,31 @@ import { usePasteUpload } from "@visulima/storage-client/react";
 import { useUpload } from "@visulima/storage-client/react";
 
 function PasteUpload() {
-  const { pastedFiles, handlePaste } = usePasteUpload({
-    onFilesPasted: (files) => {
-      console.log("Files pasted:", files);
-    },
-  });
-  
-  const { upload, isUploading } = useUpload({
-    endpointMultipart: "/api/upload/multipart",
-  });
+    const { pastedFiles, handlePaste } = usePasteUpload({
+        onFilesPasted: (files) => {
+            console.log("Files pasted:", files);
+        },
+    });
 
-  const handlePasteAndUpload = (e: React.ClipboardEvent) => {
-    handlePaste(e);
-    // Upload the first pasted file
-    if (pastedFiles.length > 0) {
-      upload(pastedFiles[0]);
-    }
-  };
+    const { upload, isUploading } = useUpload({
+        endpointMultipart: "/api/upload/multipart",
+    });
 
-  return (
-    <div
-      onPaste={handlePasteAndUpload}
-      style={{ padding: "2rem", border: "1px solid #ccc" }}
-    >
-      <p>Paste an image here</p>
-      {isUploading && <p>Uploading...</p>}
-      {pastedFiles.length > 0 && (
-        <p>{pastedFiles.length} file(s) pasted</p>
-      )}
-    </div>
-  );
+    const handlePasteAndUpload = (e: React.ClipboardEvent) => {
+        handlePaste(e);
+        // Upload the first pasted file
+        if (pastedFiles.length > 0) {
+            upload(pastedFiles[0]);
+        }
+    };
+
+    return (
+        <div onPaste={handlePasteAndUpload} style={{ padding: "2rem", border: "1px solid #ccc" }}>
+            <p>Paste an image here</p>
+            {isUploading && <p>Uploading...</p>}
+            {pastedFiles.length > 0 && <p>{pastedFiles.length} file(s) pasted</p>}
+        </div>
+    );
 }
 ```
 
@@ -319,24 +298,24 @@ function PasteUpload() {
 import { useGetFile } from "@visulima/storage-client/react";
 
 function FileViewer({ fileId }: { fileId: string }) {
-  const { data, isLoading, error, meta } = useGetFile({
-    endpoint: "/api/files",
-    id: fileId,
-  });
+    const { data, isLoading, error, meta } = useGetFile({
+        endpoint: "/api/files",
+        id: fileId,
+    });
 
-  if (isLoading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error.message}</div>;
-  if (!data) return null;
+    if (isLoading) return <div>Loading...</div>;
+    if (error) return <div>Error: {error.message}</div>;
+    if (!data) return null;
 
-  // Create object URL from blob
-  const url = URL.createObjectURL(data);
+    // Create object URL from blob
+    const url = URL.createObjectURL(data);
 
-  return (
-    <div>
-      <img src={url} alt={meta?.filename || "File"} />
-      {meta && <p>Filename: {meta.filename}</p>}
-    </div>
-  );
+    return (
+        <div>
+            <img src={url} alt={meta?.filename || "File"} />
+            {meta && <p>Filename: {meta.filename}</p>}
+        </div>
+    );
 }
 ```
 
@@ -346,15 +325,15 @@ function FileViewer({ fileId }: { fileId: string }) {
 import { useDeleteFile } from "@visulima/storage-client/react";
 
 function DeleteButton({ fileId }: { fileId: string }) {
-  const { deleteFile, isLoading } = useDeleteFile({
-    endpoint: "/api/files",
-  });
+    const { deleteFile, isLoading } = useDeleteFile({
+        endpoint: "/api/files",
+    });
 
-  return (
-    <button onClick={() => deleteFile(fileId)} disabled={isLoading}>
-      {isLoading ? "Deleting..." : "Delete"}
-    </button>
-  );
+    return (
+        <button onClick={() => deleteFile(fileId)} disabled={isLoading}>
+            {isLoading ? "Deleting..." : "Delete"}
+        </button>
+    );
 }
 ```
 
@@ -364,19 +343,19 @@ function DeleteButton({ fileId }: { fileId: string }) {
 import { useGetFileList } from "@visulima/storage-client/react";
 
 function FileList() {
-  const { data, isLoading } = useGetFileList({
-    endpoint: "/api/files",
-  });
+    const { data, isLoading } = useGetFileList({
+        endpoint: "/api/files",
+    });
 
-  if (isLoading) return <div>Loading...</div>;
+    if (isLoading) return <div>Loading...</div>;
 
-  return (
-    <ul>
-      {data?.data.map((file) => (
-        <li key={file.id}>{file.filename}</li>
-      ))}
-    </ul>
-  );
+    return (
+        <ul>
+            {data?.data.map((file) => (
+                <li key={file.id}>{file.filename}</li>
+            ))}
+        </ul>
+    );
 }
 ```
 
@@ -386,23 +365,27 @@ function FileList() {
 import { useGetFileMeta } from "@visulima/storage-client/react";
 
 function FileMetadata({ fileId }: { fileId: string }) {
-  const { data: meta, isLoading, error } = useGetFileMeta({
-    endpoint: "/api/files",
-    id: fileId,
-  });
+    const {
+        data: meta,
+        isLoading,
+        error,
+    } = useGetFileMeta({
+        endpoint: "/api/files",
+        id: fileId,
+    });
 
-  if (isLoading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error.message}</div>;
-  if (!meta) return null;
+    if (isLoading) return <div>Loading...</div>;
+    if (error) return <div>Error: {error.message}</div>;
+    if (!meta) return null;
 
-  return (
-    <div>
-      <p>Filename: {meta.filename}</p>
-      <p>Size: {meta.size} bytes</p>
-      <p>Content Type: {meta.contentType}</p>
-      {meta.url && <p>URL: {meta.url}</p>}
-    </div>
-  );
+    return (
+        <div>
+            <p>Filename: {meta.filename}</p>
+            <p>Size: {meta.size} bytes</p>
+            <p>Content Type: {meta.contentType}</p>
+            {meta.url && <p>URL: {meta.url}</p>}
+        </div>
+    );
 }
 ```
 
@@ -412,26 +395,26 @@ function FileMetadata({ fileId }: { fileId: string }) {
 import { useHeadFile } from "@visulima/storage-client/react";
 
 function UploadStatus({ fileId }: { fileId: string }) {
-  const { data, isLoading } = useHeadFile({
-    endpoint: "/api/files",
-    id: fileId,
-  });
+    const { data, isLoading } = useHeadFile({
+        endpoint: "/api/files",
+        id: fileId,
+    });
 
-  if (isLoading) return <div>Checking status...</div>;
-  if (!data) return null;
+    if (isLoading) return <div>Checking status...</div>;
+    if (!data) return null;
 
-  return (
-    <div>
-      {data.uploadComplete ? (
-        <p>Upload complete</p>
-      ) : (
-        <p>Upload in progress: {data.uploadOffset} / {data.contentLength} bytes</p>
-      )}
-      {data.receivedChunks && (
-        <p>Received chunks: {data.receivedChunks.length}</p>
-      )}
-    </div>
-  );
+    return (
+        <div>
+            {data.uploadComplete ? (
+                <p>Upload complete</p>
+            ) : (
+                <p>
+                    Upload in progress: {data.uploadOffset} / {data.contentLength} bytes
+                </p>
+            )}
+            {data.receivedChunks && <p>Received chunks: {data.receivedChunks.length}</p>}
+        </div>
+    );
 }
 ```
 
@@ -442,34 +425,34 @@ import { usePutFile } from "@visulima/storage-client/react";
 import { useState } from "react";
 
 function PutFileComponent({ fileId }: { fileId: string }) {
-  const [file, setFile] = useState<File | null>(null);
-  const { putFile, progress, isLoading, error, data } = usePutFile({
-    endpoint: "/api/files",
-    onSuccess: (result) => {
-      console.log("File uploaded:", result);
-    },
-  });
+    const [file, setFile] = useState<File | null>(null);
+    const { putFile, progress, isLoading, error, data } = usePutFile({
+        endpoint: "/api/files",
+        onSuccess: (result) => {
+            console.log("File uploaded:", result);
+        },
+    });
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFile(e.target.files?.[0] || null);
-  };
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setFile(e.target.files?.[0] || null);
+    };
 
-  const handleUpload = async () => {
-    if (file) {
-      await putFile(fileId, file);
-    }
-  };
+    const handleUpload = async () => {
+        if (file) {
+            await putFile(fileId, file);
+        }
+    };
 
-  return (
-    <div>
-      <input type="file" onChange={handleFileChange} />
-      <button onClick={handleUpload} disabled={!file || isLoading}>
-        {isLoading ? `Uploading... ${progress}%` : "Upload"}
-      </button>
-      {error && <div>Error: {error.message}</div>}
-      {data && <div>Upload complete! ID: {data.id}</div>}
-    </div>
-  );
+    return (
+        <div>
+            <input type="file" onChange={handleFileChange} />
+            <button onClick={handleUpload} disabled={!file || isLoading}>
+                {isLoading ? `Uploading... ${progress}%` : "Upload"}
+            </button>
+            {error && <div>Error: {error.message}</div>}
+            {data && <div>Upload complete! ID: {data.id}</div>}
+        </div>
+    );
 }
 ```
 
@@ -479,26 +462,26 @@ function PutFileComponent({ fileId }: { fileId: string }) {
 import { useBatchDeleteFiles } from "@visulima/storage-client/react";
 
 function BatchDeleteComponent() {
-  const { batchDeleteFiles, isLoading } = useBatchDeleteFiles({
-    endpoint: "/api/files",
-    onSuccess: (result) => {
-      console.log(`Deleted ${result.successful} files`);
-      if (result.failed) {
-        console.log(`${result.failed} files failed to delete`);
-      }
-    },
-  });
+    const { batchDeleteFiles, isLoading } = useBatchDeleteFiles({
+        endpoint: "/api/files",
+        onSuccess: (result) => {
+            console.log(`Deleted ${result.successful} files`);
+            if (result.failed) {
+                console.log(`${result.failed} files failed to delete`);
+            }
+        },
+    });
 
-  const handleDelete = async () => {
-    const fileIds = ["file1", "file2", "file3"];
-    await batchDeleteFiles(fileIds);
-  };
+    const handleDelete = async () => {
+        const fileIds = ["file1", "file2", "file3"];
+        await batchDeleteFiles(fileIds);
+    };
 
-  return (
-    <button onClick={handleDelete} disabled={isLoading}>
-      {isLoading ? "Deleting..." : "Delete Selected Files"}
-    </button>
-  );
+    return (
+        <button onClick={handleDelete} disabled={isLoading}>
+            {isLoading ? "Deleting..." : "Delete Selected Files"}
+        </button>
+    );
 }
 ```
 
@@ -513,57 +496,49 @@ import { useTransformFile } from "@visulima/storage-client/react";
 import { useState } from "react";
 
 function TransformImage({ fileId }: { fileId: string }) {
-  const [transform, setTransform] = useState({ width: 800, height: 600, quality: 85 });
-  const { data, isLoading, error, meta } = useTransformFile({
-    endpoint: "/api/files",
-    id: fileId,
-    transform,
-  });
+    const [transform, setTransform] = useState({ width: 800, height: 600, quality: 85 });
+    const { data, isLoading, error, meta } = useTransformFile({
+        endpoint: "/api/files",
+        id: fileId,
+        transform,
+    });
 
-  const [url, setUrl] = useState<string | null>(null);
+    const [url, setUrl] = useState<string | null>(null);
 
-  // Create object URL from blob
-  if (data && !url) {
-    setUrl(URL.createObjectURL(data));
-  }
+    // Create object URL from blob
+    if (data && !url) {
+        setUrl(URL.createObjectURL(data));
+    }
 
-  if (isLoading) return <div>Transforming...</div>;
-  if (error) return <div>Error: {error.message}</div>;
-  if (!data || !url) return null;
+    if (isLoading) return <div>Transforming...</div>;
+    if (error) return <div>Error: {error.message}</div>;
+    if (!data || !url) return null;
 
-  return (
-    <div>
-      <img src={url} alt="Transformed" />
-      <div>
-        <label>
-          Width:
-          <input
-            type="number"
-            value={transform.width}
-            onChange={(e) => setTransform({ ...transform, width: Number(e.target.value) })}
-          />
-        </label>
-        <label>
-          Height:
-          <input
-            type="number"
-            value={transform.height}
-            onChange={(e) => setTransform({ ...transform, height: Number(e.target.value) })}
-          />
-        </label>
-        <label>
-          Quality:
-          <input
-            type="number"
-            min="1"
-            max="100"
-            value={transform.quality}
-            onChange={(e) => setTransform({ ...transform, quality: Number(e.target.value) })}
-          />
-        </label>
-      </div>
-    </div>
-  );
+    return (
+        <div>
+            <img src={url} alt="Transformed" />
+            <div>
+                <label>
+                    Width:
+                    <input type="number" value={transform.width} onChange={(e) => setTransform({ ...transform, width: Number(e.target.value) })} />
+                </label>
+                <label>
+                    Height:
+                    <input type="number" value={transform.height} onChange={(e) => setTransform({ ...transform, height: Number(e.target.value) })} />
+                </label>
+                <label>
+                    Quality:
+                    <input
+                        type="number"
+                        min="1"
+                        max="100"
+                        value={transform.quality}
+                        onChange={(e) => setTransform({ ...transform, quality: Number(e.target.value) })}
+                    />
+                </label>
+            </div>
+        </div>
+    );
 }
 ```
 
@@ -575,30 +550,30 @@ Get available transformation options:
 import { useTransformMetadata } from "@visulima/storage-client/react";
 
 function TransformOptions() {
-  const { data, isLoading, error } = useTransformMetadata({
-    endpoint: "/api/files",
-  });
+    const { data, isLoading, error } = useTransformMetadata({
+        endpoint: "/api/files",
+    });
 
-  if (isLoading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error.message}</div>;
-  if (!data) return null;
+    if (isLoading) return <div>Loading...</div>;
+    if (error) return <div>Error: {error.message}</div>;
+    if (!data) return null;
 
-  return (
-    <div>
-      <h3>Available Formats</h3>
-      <ul>
-        {data.formats?.map((format) => (
-          <li key={format}>{format}</li>
-        ))}
-      </ul>
-      <h3>Available Parameters</h3>
-      <ul>
-        {data.parameters?.map((param) => (
-          <li key={param}>{param}</li>
-        ))}
-      </ul>
-    </div>
-  );
+    return (
+        <div>
+            <h3>Available Formats</h3>
+            <ul>
+                {data.formats?.map((format) => (
+                    <li key={format}>{format}</li>
+                ))}
+            </ul>
+            <h3>Available Parameters</h3>
+            <ul>
+                {data.parameters?.map((param) => (
+                    <li key={param}>{param}</li>
+                ))}
+            </ul>
+        </div>
+    );
 }
 ```
 
@@ -610,24 +585,24 @@ Upload individual chunks for chunked uploads:
 import { usePatchChunk } from "@visulima/storage-client/react";
 
 function ChunkUploader({ fileId }: { fileId: string }) {
-  const { patchChunk, isLoading, error, data } = usePatchChunk({
-    endpoint: "/api/upload/chunked-rest",
-    onSuccess: (result) => {
-      console.log("Chunk uploaded:", result);
-    },
-  });
+    const { patchChunk, isLoading, error, data } = usePatchChunk({
+        endpoint: "/api/upload/chunked-rest",
+        onSuccess: (result) => {
+            console.log("Chunk uploaded:", result);
+        },
+    });
 
-  const uploadChunk = async (chunk: Blob, offset: number) => {
-    await patchChunk(fileId, chunk, offset);
-  };
+    const uploadChunk = async (chunk: Blob, offset: number) => {
+        await patchChunk(fileId, chunk, offset);
+    };
 
-  return (
-    <div>
-      {isLoading && <div>Uploading chunk...</div>}
-      {error && <div>Error: {error.message}</div>}
-      {data && <div>Chunk uploaded. Offset: {data.offset}</div>}
-    </div>
-  );
+    return (
+        <div>
+            {isLoading && <div>Uploading chunk...</div>}
+            {error && <div>Error: {error.message}</div>}
+            {data && <div>Chunk uploaded. Offset: {data.offset}</div>}
+        </div>
+    );
 }
 ```
 
@@ -639,15 +614,11 @@ function ChunkUploader({ fileId }: { fileId: string }) {
 import { useAbortAll } from "@visulima/storage-client/react";
 
 function AbortAllButton() {
-  const { abortAll } = useAbortAll({
-    endpoint: "/api/upload/multipart",
-  });
+    const { abortAll } = useAbortAll({
+        endpoint: "/api/upload/multipart",
+    });
 
-  return (
-    <button onClick={abortAll}>
-      Abort All Uploads
-    </button>
-  );
+    return <button onClick={abortAll}>Abort All Uploads</button>;
 }
 ```
 
@@ -657,15 +628,11 @@ function AbortAllButton() {
 import { useAbortBatch } from "@visulima/storage-client/react";
 
 function AbortBatchButton({ batchId }: { batchId: string }) {
-  const { abortBatch } = useAbortBatch({
-    endpoint: "/api/upload/multipart",
-  });
+    const { abortBatch } = useAbortBatch({
+        endpoint: "/api/upload/multipart",
+    });
 
-  return (
-    <button onClick={() => abortBatch(batchId)}>
-      Abort Batch
-    </button>
-  );
+    return <button onClick={() => abortBatch(batchId)}>Abort Batch</button>;
 }
 ```
 
@@ -675,15 +642,11 @@ function AbortBatchButton({ batchId }: { batchId: string }) {
 import { useAbortItem } from "@visulima/storage-client/react";
 
 function AbortItemButton({ itemId }: { itemId: string }) {
-  const { abortItem } = useAbortItem({
-    endpoint: "/api/upload/multipart",
-  });
+    const { abortItem } = useAbortItem({
+        endpoint: "/api/upload/multipart",
+    });
 
-  return (
-    <button onClick={() => abortItem(itemId)}>
-      Abort Upload
-    </button>
-  );
+    return <button onClick={() => abortItem(itemId)}>Abort Upload</button>;
 }
 ```
 
@@ -695,15 +658,11 @@ function AbortItemButton({ itemId }: { itemId: string }) {
 import { useRetry } from "@visulima/storage-client/react";
 
 function RetryButton({ itemId }: { itemId: string }) {
-  const { retryItem } = useRetry({
-    endpoint: "/api/upload/multipart",
-  });
+    const { retryItem } = useRetry({
+        endpoint: "/api/upload/multipart",
+    });
 
-  return (
-    <button onClick={() => retryItem(itemId)}>
-      Retry Upload
-    </button>
-  );
+    return <button onClick={() => retryItem(itemId)}>Retry Upload</button>;
 }
 ```
 
@@ -713,15 +672,11 @@ function RetryButton({ itemId }: { itemId: string }) {
 import { useBatchRetry } from "@visulima/storage-client/react";
 
 function BatchRetryButton({ batchId }: { batchId: string }) {
-  const { retryBatch } = useBatchRetry({
-    endpoint: "/api/upload/multipart",
-  });
+    const { retryBatch } = useBatchRetry({
+        endpoint: "/api/upload/multipart",
+    });
 
-  return (
-    <button onClick={() => retryBatch(batchId)}>
-      Retry Failed Items in Batch
-    </button>
-  );
+    return <button onClick={() => retryBatch(batchId)}>Retry Failed Items in Batch</button>;
 }
 ```
 
@@ -736,36 +691,36 @@ import { useBatchStartListener, useBatchProgressListener, useBatchFinishListener
 import { useEffect } from "react";
 
 function BatchUploadWithListeners() {
-  useBatchStartListener({
-    endpoint: "/api/upload/multipart",
-    onBatchStart: (batchId) => {
-      console.log("Batch started:", batchId);
-    },
-  });
+    useBatchStartListener({
+        endpoint: "/api/upload/multipart",
+        onBatchStart: (batchId) => {
+            console.log("Batch started:", batchId);
+        },
+    });
 
-  useBatchProgressListener({
-    endpoint: "/api/upload/multipart",
-    onBatchProgress: (progress, batchId) => {
-      console.log(`Batch ${batchId} progress: ${progress}%`);
-    },
-  });
+    useBatchProgressListener({
+        endpoint: "/api/upload/multipart",
+        onBatchProgress: (progress, batchId) => {
+            console.log(`Batch ${batchId} progress: ${progress}%`);
+        },
+    });
 
-  useBatchFinishListener({
-    endpoint: "/api/upload/multipart",
-    onBatchFinish: (results, batchId) => {
-      console.log(`Batch ${batchId} finished:`, results);
-    },
-  });
+    useBatchFinishListener({
+        endpoint: "/api/upload/multipart",
+        onBatchFinish: (results, batchId) => {
+            console.log(`Batch ${batchId} finished:`, results);
+        },
+    });
 
-  useBatchErrorListener({
-    endpoint: "/api/upload/multipart",
-    onBatchError: (error, batchId) => {
-      console.error(`Batch ${batchId} error:`, error);
-    },
-  });
+    useBatchErrorListener({
+        endpoint: "/api/upload/multipart",
+        onBatchError: (error, batchId) => {
+            console.error(`Batch ${batchId} error:`, error);
+        },
+    });
 
-  // Your upload component...
-  return <div>Upload component with listeners</div>;
+    // Your upload component...
+    return <div>Upload component with listeners</div>;
 }
 ```
 
@@ -775,14 +730,14 @@ function BatchUploadWithListeners() {
 import { useRetryListener } from "@visulima/storage-client/react";
 
 function RetryListener() {
-  useRetryListener({
-    endpoint: "/api/upload/multipart",
-    onRetry: (itemId) => {
-      console.log("Retrying item:", itemId);
-    },
-  });
+    useRetryListener({
+        endpoint: "/api/upload/multipart",
+        onRetry: (itemId) => {
+            console.log("Retrying item:", itemId);
+        },
+    });
 
-  return null; // This is just a listener
+    return null; // This is just a listener
 }
 ```
 
@@ -792,14 +747,14 @@ function RetryListener() {
 import { useAllAbortListener } from "@visulima/storage-client/react";
 
 function AbortListener() {
-  useAllAbortListener({
-    endpoint: "/api/upload/multipart",
-    onAbortAll: () => {
-      console.log("All uploads aborted");
-    },
-  });
+    useAllAbortListener({
+        endpoint: "/api/upload/multipart",
+        onAbortAll: () => {
+            console.log("All uploads aborted");
+        },
+    });
 
-  return null; // This is just a listener
+    return null; // This is just a listener
 }
 ```
 
@@ -808,4 +763,3 @@ function AbortListener() {
 - [Next.js Guide](/docs/package/storage-client/nextjs) - Learn how to use with Next.js
 - [TanStack Start Guide](/docs/package/storage-client/tanstack-start) - Learn how to use with TanStack Start
 - [API Reference](/docs/package/storage-client/api) - Complete API documentation
-

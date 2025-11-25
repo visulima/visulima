@@ -217,4 +217,3 @@ export const useBatchUpload = (options: UseBatchUploadOptions): UseBatchUploadRe
         uploadBatch,
     };
 };
-

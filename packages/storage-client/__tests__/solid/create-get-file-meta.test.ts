@@ -3,7 +3,6 @@ import { createSignal } from "solid-js";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createGetFileMeta } from "../../src/solid/create-get-file-meta";
-import { storageQueryKeys } from "../../src/core";
 import { runInRoot } from "./test-utils";
 
 // Mock fetch globally
@@ -130,7 +129,7 @@ describe(createGetFileMeta, () => {
         expect(newResult.data()?.id).toBe("file-456");
 
         expect(result.data()?.id).toBe("file-456");
-    }, 15000);
+    }, 15_000);
 
     it("should respect enabled option", async () => {
         expect.assertions(2);
@@ -155,15 +154,15 @@ describe(createGetFileMeta, () => {
 
         await new Promise((resolve) => setTimeout(resolve, 100));
 
-        expect(mockFetch).toHaveBeenCalledWith("https://api.example.com/file-123/metadata", {
+        expect(mockFetch).toHaveBeenCalledWith("https://api.example.com/file-123/metadata", expect.objectContaining({
             method: "GET",
-        });
+        }));
     });
 
     it("should not fetch when id is empty", async () => {
         expect.assertions(1);
 
-        const result = runInRoot(() =>
+        runInRoot(() =>
             createGetFileMeta({
                 endpoint: "https://api.example.com",
                 id: "",

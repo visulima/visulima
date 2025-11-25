@@ -104,7 +104,7 @@ describe(useTusUpload, () => {
         let patchCallCount = 0;
         let headCallCount = 0;
 
-        mockFetch.mockImplementation((url: string, options?: RequestInit) => {
+        mockFetch.mockImplementation((_url: string, options?: RequestInit) => {
             if (options?.method === "PATCH") {
                 patchCallCount++;
 
@@ -172,9 +172,12 @@ describe(useTusUpload, () => {
         // Resume the upload
         await result.current.resume();
 
-        await waitFor(() => {
-            expect(result.current.isPaused).toBe(false);
-        }, { timeout: 3000 });
+        await waitFor(
+            () => {
+                expect(result.current.isPaused).toBe(false);
+            },
+            { timeout: 3000 },
+        );
 
         await uploadPromise;
     });
@@ -231,7 +234,7 @@ describe(useTusUpload, () => {
         await result.current.upload(file);
 
         await waitFor(() => {
-            expect(onStart).toHaveBeenCalled();
+            expect(onStart).toHaveBeenCalledWith();
             expect(onProgress).toHaveBeenCalledWith(expect.any(Number));
             expect(onSuccess).toHaveBeenCalledWith(expect.any(Object));
             expect(onError).not.toHaveBeenCalled();

@@ -22,12 +22,11 @@ export interface UseAbortBatchReturn {
 export const useAbortBatch = (options: UseAbortBatchOptions): UseAbortBatchReturn => {
     const { endpoint, metadata } = options;
 
-    const adapter = computed(
-        () =>
-            createMultipartAdapter({
-                endpoint,
-                metadata,
-            }),
+    const adapter = computed(() =>
+        createMultipartAdapter({
+            endpoint,
+            metadata,
+        }),
     );
 
     const abortBatch = (batchId: string): void => {
@@ -38,4 +37,3 @@ export const useAbortBatch = (options: UseAbortBatchOptions): UseAbortBatchRetur
         abortBatch,
     };
 };
-

@@ -69,7 +69,9 @@ describe(createGetFileList, () => {
 
         await new Promise((resolve) => setTimeout(resolve, 100));
 
-        expect(mockFetch).toHaveBeenCalled();
+        expect(mockFetch).toHaveBeenCalledWith("https://api.example.com/", expect.objectContaining({
+            method: "GET",
+        }));
         expect(result.data()).toBeDefined();
         expect(result.data()?.data).toHaveLength(2);
     });
@@ -147,7 +149,7 @@ describe(createGetFileList, () => {
 
         const [enabled, setEnabled] = createSignal(false);
 
-        const result = runInRoot(() =>
+        runInRoot(() =>
             createGetFileList({
                 enabled,
                 endpoint: "https://api.example.com",
@@ -167,7 +169,9 @@ describe(createGetFileList, () => {
         const [page, setPage] = createSignal(1);
 
         mockFetch.mockResolvedValue({
-            json: async () => { return { data: [] }; },
+            json: async () => {
+                return { data: [] };
+            },
             ok: true,
         });
 
@@ -190,7 +194,9 @@ describe(createGetFileList, () => {
             attempts++;
         }
 
-        expect(mockFetch).toHaveBeenCalled();
+        expect(mockFetch).toHaveBeenCalledWith("https://api.example.com/?limit=10&page=1", expect.objectContaining({
+            method: "GET",
+        }));
 
         // Use batch to update both signals atomically - this prevents multiple query runs
         batch(() => {

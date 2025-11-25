@@ -43,4 +43,3 @@ export const useBatchFinalizeListener = (options: UseBatchFinalizeListenerOption
         };
     }, [endpoint, metadata]);
 };
-
