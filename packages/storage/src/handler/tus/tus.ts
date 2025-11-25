@@ -5,8 +5,9 @@ import { format } from "node:url";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import createHttpError from "http-errors";
 
-import type { UploadFile } from "../../storage/utils/file";
+import type { FileInit, UploadFile } from "../../storage/utils/file";
 import { getBaseUrl, getHeader, getIdFromRequest, getRequestStream } from "../../utils/http";
+import type { ResponseBody, UploadResponse } from "../../utils/types";
 import BaseHandlerNode from "../base/base-handler-node";
 import type { Handlers, ResponseFile, UploadOptions } from "../types";
 import { TusBase } from "./tus-base";
@@ -34,7 +35,7 @@ export class Tus<
      */
     public static override readonly methods: Handlers[] = ["delete", "download", "get", "head", "options", "patch", "post"];
 
-    public disableTerminationForFinishedUploads = false;
+    public override disableTerminationForFinishedUploads = false;
 
     private readonly tusBase: TusBase<TFile>;
 
@@ -229,16 +230,17 @@ export class Tus<
         response: NodeResponse,
         { body = "", headers = {}, statusCode = 200 }: { body?: unknown; headers?: Record<string, string | number>; statusCode?: number },
     ): void {
-        super.send(response, {
-            body,
+        const uploadResponse: UploadResponse = {
+            body: body as ResponseBody | undefined,
             headers: {
                 ...headers,
                 "Access-Control-Expose-Headers":
                     "location,upload-expires,upload-offset,upload-length,upload-metadata,upload-defer-length,tus-resumable,tus-extension,tus-max-size,tus-version,tus-checksum-algorithm,cache-control",
                 "Tus-Resumable": "1.0.0",
             },
-            statusCode,
-        });
+            statusCode: statusCode || 200,
+        };
+        super.send(response, uploadResponse);
     }
 
     /**

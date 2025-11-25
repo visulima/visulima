@@ -12,7 +12,7 @@ import filePathUrlMatcher from "../../utils/file-path-url-matcher";
 import { HeaderUtilities } from "../../utils/headers";
 import { getRealPath, setHeaders, uuidRegex } from "../../utils/http";
 import pick from "../../utils/primitives/pick";
-import type { HttpError, UploadResponse } from "../../utils/types";
+import type { HttpError, ResponseBody, UploadResponse } from "../../utils/types";
 import { isValidationError } from "../../utils/validator";
 import type { AsyncHandler, Handlers, MethodHandler, ResponseFile, ResponseList, UploadOptions } from "../types";
 import { waitForStorage } from "../utils/storage-utils";
@@ -101,7 +101,10 @@ abstract class BaseHandlerNode<
             if (["HEAD", "OPTIONS"].includes(request.method as string)) {
                 handleHeadOptionsRequest(file as ResponseFile<TFile>, this.send.bind(this), response);
             } else if (request.method === "GET") {
-                handleGetRequest(file, request, response, next, this.send.bind(this), this.sendStream.bind(this), this.parseRangeHeader.bind(this));
+                const fileResponse = file as ResponseFile<TFile> | ResponseList<TFile>;
+                if (fileResponse) {
+                    handleGetRequest(fileResponse, request, response, next, this.send.bind(this), this.sendStream.bind(this), this.parseRangeHeader.bind(this));
+                }
             } else {
                 const { headers: fileHeaders, statusCode, ...basicFile } = file as ResponseFile<TFile>;
 
@@ -115,9 +118,17 @@ abstract class BaseHandlerNode<
                 }
 
                 if (basicFile.status === "completed") {
-                    await handleCompletedUpload(file as ResponseFile<TFile>, request, response, next, this.storage, this.logger, this.finish.bind(this));
+                    await handleCompletedUpload(file as ResponseFile<TFile>, request, response, next, this.storage, this.logger, (_req, resp, uploadResp) => {
+                        this.finish(_req, resp, uploadResp);
+                    });
                 } else {
-                    handlePartialUpload(file as ResponseFile<TFile>, request, response, this.send.bind(this));
+                    handlePartialUpload(file as ResponseFile<TFile>, request, response, (resp, data) => {
+                        this.send(resp, {
+                            body: data.body,
+                            headers: data.headers,
+                            statusCode: data.statusCode,
+                        });
+                    });
                 }
             }
         } catch (error: unknown) {
@@ -210,7 +221,7 @@ abstract class BaseHandlerNode<
             // If body is already an object, use it directly
             // If body is a string, wrap it in error structure for consistency
             if (typeof httpError.body === "object" && httpError.body !== null) {
-                errorResponse = { body: httpError.body, headers: httpError.headers, statusCode: httpError.statusCode };
+                errorResponse = { body: httpError.body as unknown as ResponseBody, headers: httpError.headers, statusCode: httpError.statusCode };
             } else {
                 // Body is a string, wrap it in error structure
                 errorResponse = {
@@ -287,7 +298,7 @@ abstract class BaseHandlerNode<
         }
 
         // Handle backpressure-aware piping (includes error handling)
-        pipeWithBackpressure(finalStream, response, this.sendError.bind(this));
+        pipeWithBackpressure(finalStream, response, (resp, err) => this.sendError(resp, err));
     }
 
     /**
@@ -324,8 +335,8 @@ abstract class BaseHandlerNode<
             const uploadResp = uploadResponse as UploadResponse;
 
             body = uploadResp.body;
-            headers = uploadResp.headers || {};
-            statusCode = uploadResp.statusCode;
+            headers = (uploadResp.headers as Record<string, string | number>) || {};
+            statusCode = uploadResp.statusCode || 200;
         }
 
         if (body && typeof body === "object" && (body as TFile).content !== undefined) {
@@ -339,7 +350,7 @@ abstract class BaseHandlerNode<
         }
 
         this.send(response, {
-            body: body || uploadResponse,
+            body: (body || uploadResponse) as ResponseBody | undefined,
             headers,
             statusCode,
         });
@@ -645,7 +656,7 @@ abstract class BaseHandlerNode<
                 return;
             }
 
-            await this.sendError(response, error);
+            await this.sendError(response, error as Error);
         }
     }
 

@@ -5,7 +5,7 @@ import type { UploadError } from "../../utils/errors";
 import { ERRORS, isUploadError } from "../../utils/errors";
 import { HeaderUtilities } from "../../utils/headers";
 import pick from "../../utils/primitives/pick";
-import type { HttpError, UploadResponse } from "../../utils/types";
+import type { HttpError, ResponseBody, UploadResponse } from "../../utils/types";
 import { isValidationError } from "../../utils/validator";
 import type { Handlers, ResponseFile, ResponseList, UploadOptions } from "../types";
 import { waitForStorage } from "../utils/storage-utils";
@@ -175,15 +175,7 @@ abstract class BaseHandlerFetch<TFile extends UploadFile> extends BaseHandlerCor
             const { headers: responseFileHeaders, statusCode: responseFileStatusCode, ...fileData } = responseFile;
 
             // Remove non-serializable properties
-            const cleanFileData = { ...fileData };
-
-            if ("content" in cleanFileData) {
-                delete cleanFileData.content;
-            }
-
-            if ("stream" in cleanFileData) {
-                delete cleanFileData.stream;
-            }
+            const { content, stream, ...cleanFileData } = fileData;
 
             return this.createResponse({
                 body: cleanFileData,
@@ -288,7 +280,7 @@ abstract class BaseHandlerFetch<TFile extends UploadFile> extends BaseHandlerCor
                     mediaType: "application/json",
                 });
             }
-        } else if (body === undefined && statusCode >= 200 && statusCode < 300) {
+        } else if (body === undefined && statusCode !== undefined && statusCode >= 200 && statusCode < 300) {
             // For successful responses without a body (except 204), return empty JSON object
             responseBody = "{}";
 
@@ -340,7 +332,7 @@ abstract class BaseHandlerFetch<TFile extends UploadFile> extends BaseHandlerCor
             // If body is already an object, use it directly
             // If body is a string, wrap it in error structure for consistency
             if (typeof httpError.body === "object" && httpError.body !== null) {
-                errorResponse = { body: httpError.body, headers: httpError.headers, statusCode: httpError.statusCode };
+                errorResponse = { body: httpError.body as unknown as ResponseBody, headers: httpError.headers, statusCode: httpError.statusCode };
             } else {
                 // Body is a string, wrap it in error structure
                 errorResponse = {

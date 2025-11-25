@@ -2,7 +2,7 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import createHttpError from "http-errors";
 
-import type { UploadFile } from "../../storage/utils/file";
+import type { FileInit, UploadFile } from "../../storage/utils/file";
 import BaseHandlerFetch from "../base/base-handler-fetch";
 import type { Handlers, ResponseFile, UploadOptions } from "../types";
 import { TusBase } from "./tus-base";
