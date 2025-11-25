@@ -1,7 +1,6 @@
 <script lang="ts">
     import { QueryClientProvider } from "@tanstack/svelte-query";
     import type { QueryClient } from "@tanstack/svelte-query";
-    import { createDeleteFile } from "../../src/svelte/create-delete-file";
     import type { CreateDeleteFileOptions, CreateDeleteFileReturn } from "../../src/svelte/create-delete-file";
     import DeleteFileInner from "./DeleteFileInner.svelte";
 

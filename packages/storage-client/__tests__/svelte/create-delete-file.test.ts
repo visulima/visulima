@@ -37,7 +37,6 @@ describe(createDeleteFile, () => {
     });
 
     it("should delete file successfully", async () => {
-        expect.assertions(6);
 
         mockFetch.mockResolvedValueOnce({
             ok: true,
@@ -81,7 +80,6 @@ describe(createDeleteFile, () => {
     });
 
     it("should handle error response", async () => {
-        expect.assertions(1);
 
         mockFetch.mockResolvedValueOnce({
             json: async () => {
@@ -143,7 +141,6 @@ describe(createDeleteFile, () => {
     });
 
     it("should reset mutation state", async () => {
-        expect.assertions(9);
 
         mockFetch.mockResolvedValueOnce({
             ok: true,

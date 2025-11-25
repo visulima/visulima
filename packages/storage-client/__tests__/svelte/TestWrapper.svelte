@@ -1,8 +1,8 @@
 <script lang="ts">
     import { QueryClientProvider } from "@tanstack/svelte-query";
-    import type { ComponentProps } from "svelte";
+    import type { QueryClient } from "@tanstack/svelte-query";
 
-    export let client: ComponentProps<QueryClientProvider>["client"];
+    export let client: QueryClient;
 </script>
 
 <QueryClientProvider {client}>
