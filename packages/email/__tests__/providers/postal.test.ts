@@ -3,7 +3,6 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { postalProvider } from "../../src/providers/postal/index.js";
 import type { PostalEmailOptions } from "../../src/providers/postal/types.js";
 import { makeRequest } from "../../src/utils/make-request.js";
-import { retry } from "../../src/utils/retry.js";
 
 vi.mock(import("../../src/utils/make-request.js"), () => {
     return {
@@ -46,6 +45,7 @@ describe(postalProvider, () => {
     describe("sendEmail", () => {
         it("should send email successfully", async () => {
             const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
             makeRequestMock
                 .mockResolvedValueOnce({
                     data: {

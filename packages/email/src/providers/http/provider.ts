@@ -6,7 +6,7 @@ import { makeRequest } from "../../utils/make-request";
 import { validateEmailOptions } from "../../utils/validate-email-options";
 import type { ProviderFactory } from "../provider";
 import { defineProvider } from "../provider";
-import { ProviderState, createProviderLogger, handleProviderError } from "../utils";
+import { createProviderLogger, handleProviderError, ProviderState } from "../utils";
 import type { HttpEmailConfig, HttpEmailOptions } from "./types";
 
 const PROVIDER_NAME = "http";

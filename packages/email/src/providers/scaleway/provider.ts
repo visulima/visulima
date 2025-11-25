@@ -1,7 +1,7 @@
 import { Buffer } from "node:buffer";
 
 import { EmailError, RequiredOptionError } from "../../errors/email-error";
-import type { EmailAddress, EmailResult, Result } from "../../types";
+import type { EmailResult, Result } from "../../types";
 import { generateMessageId } from "../../utils/generate-message-id";
 import { headersToRecord } from "../../utils/headers-to-record";
 import { makeRequest } from "../../utils/make-request";
@@ -16,7 +16,6 @@ const PROVIDER_NAME = "scaleway";
 const DEFAULT_ENDPOINT = "https://api.scaleway.com/transactional-email/v1alpha1";
 const DEFAULT_TIMEOUT = 30_000;
 const DEFAULT_RETRIES = 3;
-
 
 /**
  * Scaleway Provider for sending emails through Scaleway API
@@ -73,7 +72,7 @@ export const scalewayProvider: ProviderFactory<ScalewayConfig, unknown, Scaleway
                         };
                     }
 
-                await providerState.ensureInitialized(() => this.initialize(), PROVIDER_NAME);
+                    await providerState.ensureInitialized(() => this.initialize(), PROVIDER_NAME);
 
                     const headers: Record<string, string> = {
                         "Content-Type": "application/json",
@@ -110,7 +109,6 @@ export const scalewayProvider: ProviderFactory<ScalewayConfig, unknown, Scaleway
                         success: true,
                     };
                 } catch (error) {
-
                     return {
                         error: handleProviderError(PROVIDER_NAME, "retrieve email", error, logger),
                         success: false,
@@ -166,7 +164,7 @@ export const scalewayProvider: ProviderFactory<ScalewayConfig, unknown, Scaleway
                         };
                     }
 
-                await providerState.ensureInitialized(() => this.initialize(), PROVIDER_NAME);
+                    await providerState.ensureInitialized(() => this.initialize(), PROVIDER_NAME);
 
                     // Build payload for Scaleway API
                     const payload: Record<string, unknown> = {

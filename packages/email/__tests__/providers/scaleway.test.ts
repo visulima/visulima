@@ -3,7 +3,6 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { scalewayProvider } from "../../src/providers/scaleway/index.js";
 import type { ScalewayEmailOptions } from "../../src/providers/scaleway/types.js";
 import { makeRequest } from "../../src/utils/make-request.js";
-import { retry } from "../../src/utils/retry.js";
 
 vi.mock(import("../../src/utils/make-request.js"), () => {
     return {
@@ -46,6 +45,7 @@ describe(scalewayProvider, () => {
     describe("sendEmail", () => {
         it("should send email successfully", async () => {
             const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
             makeRequestMock
                 .mockResolvedValueOnce({
                     data: {

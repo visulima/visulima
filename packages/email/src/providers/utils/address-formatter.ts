@@ -1,7 +1,7 @@
 import type { EmailAddress } from "../../types";
 
 /**
- * Format a single email address as "Name <email>" or just "email"
+ * Format a single email address as "Name &lt;email>" or just "email"
  */
 export function formatAddress(address: EmailAddress): string {
     if (address.name) {
@@ -12,7 +12,7 @@ export function formatAddress(address: EmailAddress): string {
 }
 
 /**
- * Format an array of email addresses or a single address as "Name <email>" format
+ * Format an array of email addresses or a single address as "Name &lt;email>" format
  */
 export function formatAddresses(addresses: EmailAddress | EmailAddress[]): string[] {
     const addressList = Array.isArray(addresses) ? addresses : [addresses];
@@ -26,7 +26,7 @@ export function formatAddresses(addresses: EmailAddress | EmailAddress[]): strin
 export function formatSendGridAddress(address: EmailAddress): { email: string; name?: string } {
     return {
         email: address.email,
-        ...(address.name && { name: address.name }),
+        ...address.name && { name: address.name },
     };
 }
 
@@ -54,7 +54,7 @@ export function formatAddressEmails(addresses: EmailAddress | EmailAddress[]): s
 export function formatAzureAddress(address: EmailAddress): { displayName?: string; email: string } {
     return {
         email: address.email,
-        ...(address.name && { displayName: address.name }),
+        ...address.name && { displayName: address.name },
     };
 }
 
@@ -73,7 +73,7 @@ export function formatAzureAddresses(addresses: EmailAddress | EmailAddress[]): 
 export function formatMailjetAddress(address: EmailAddress): { Email: string; Name?: string } {
     return {
         Email: address.email,
-        ...(address.name && { Name: address.name }),
+        ...address.name && { Name: address.name },
     };
 }
 
@@ -92,7 +92,7 @@ export function formatMailjetAddresses(addresses: EmailAddress | EmailAddress[])
 export function formatMandrillAddress(address: EmailAddress, type: string = "to"): { email: string; name?: string; type: string } {
     return {
         email: address.email,
-        ...(address.name && { name: address.name }),
+        ...address.name && { name: address.name },
         type,
     };
 }
@@ -112,7 +112,7 @@ export function formatMandrillAddresses(addresses: EmailAddress | EmailAddress[]
 export function formatPostalAddress(address: EmailAddress): { address: string; name?: string } {
     return {
         address: address.email,
-        ...(address.name && { name: address.name }),
+        ...address.name && { name: address.name },
     };
 }
 
@@ -137,13 +137,16 @@ export function formatMailpaceAddresses(addresses: EmailAddress | EmailAddress[]
 export function formatZeptomailAddress(address: EmailAddress): { address: string; name?: string } {
     return {
         address: address.email,
-        ...(address.name && { name: address.name }),
+        ...address.name && { name: address.name },
     };
 }
 
 export function formatZeptomailAddresses(addresses: EmailAddress | EmailAddress[]): { email_address: { address: string; name?: string } }[] {
     const addressList = Array.isArray(addresses) ? addresses : [addresses];
-    return addressList.map((address) => ({
-        email_address: formatZeptomailAddress(address),
-    }));
+
+    return addressList.map((address) => {
+        return {
+            email_address: formatZeptomailAddress(address),
+        };
+    });
 }

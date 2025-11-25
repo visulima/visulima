@@ -17,7 +17,11 @@ export const detectMimeType = (filename: string): string => mime.getType(filenam
  * @returns A unique Content-ID string
  */
 export const generateContentId = (filename: string): string => {
-    const name = filename.replaceAll(/[^a-z0-9]/gi, "-").replaceAll(/-+/g, "-").replaceAll(/^-|-$/g, "").toLowerCase();
+    const name = filename
+        .replaceAll(/[^a-z0-9]/gi, "-")
+        .replaceAll(/-+/g, "-")
+        .replaceAll(/^-|-$/g, "")
+        .toLowerCase();
     const random = Math.random().toString(36).slice(2, 9);
 
     return `${name}-${random}@email`;

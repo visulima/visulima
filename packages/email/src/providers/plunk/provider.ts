@@ -98,7 +98,6 @@ export const plunkProvider: ProviderFactory<PlunkConfig, unknown, PlunkEmailOpti
                     success: true,
                 };
             } catch (error) {
-
                 return {
                     error: handleProviderError(PROVIDER_NAME, "retrieve email", error, logger),
                     success: false,

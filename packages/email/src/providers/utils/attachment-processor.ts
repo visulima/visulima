@@ -14,6 +14,7 @@ export async function processAttachmentContent(attachment: Attachment, providerN
             content = attachment.content;
         } else if (attachment.content instanceof Promise) {
             const buffer = await attachment.content;
+
             content = Buffer.from(buffer).toString("base64");
         } else {
             content = attachment.content.toString("base64");
@@ -35,10 +36,10 @@ export async function createStandardAttachment(
     providerName: string,
 ): Promise<{
     content: string;
-    filename: string;
-    contentType: string;
     contentId?: string;
+    contentType: string;
     disposition: string;
+    filename: string;
 }> {
     const content = await processAttachmentContent(attachment, providerName);
 
@@ -47,7 +48,7 @@ export async function createStandardAttachment(
         contentType: attachment.contentType || "application/octet-stream",
         disposition: attachment.contentDisposition || "attachment",
         filename: attachment.filename,
-        ...(attachment.cid && { contentId: attachment.cid }),
+        ...attachment.cid && { contentId: attachment.cid },
     };
 }
 
@@ -59,10 +60,10 @@ export async function createSendGridAttachment(
     providerName: string,
 ): Promise<{
     content: string;
-    filename: string;
-    type: string;
     content_id?: string;
     disposition: string;
+    filename: string;
+    type: string;
 }> {
     const content = await processAttachmentContent(attachment, providerName);
 
@@ -71,7 +72,7 @@ export async function createSendGridAttachment(
         disposition: attachment.contentDisposition || "attachment",
         filename: attachment.filename,
         type: attachment.contentType || "application/octet-stream",
-        ...(attachment.cid && { content_id: attachment.cid }),
+        ...attachment.cid && { content_id: attachment.cid },
     };
 }
 
@@ -83,9 +84,9 @@ export async function createPostmarkAttachment(
     providerName: string,
 ): Promise<{
     Content: string;
+    ContentID?: string;
     ContentType: string;
     Name: string;
-    ContentID?: string;
 }> {
     const content = await processAttachmentContent(attachment, providerName);
 
@@ -93,7 +94,7 @@ export async function createPostmarkAttachment(
         Content: content,
         ContentType: attachment.contentType || "application/octet-stream",
         Name: attachment.filename,
-        ...(attachment.cid && { ContentID: attachment.cid }),
+        ...attachment.cid && { ContentID: attachment.cid },
     };
 }
 

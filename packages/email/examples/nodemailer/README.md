@@ -40,6 +40,7 @@ pnpm run gmail
 ```
 
 **Note**: To generate a Gmail App Password:
+
 1. Go to your Google Account settings
 2. Enable 2-Step Verification
 3. Generate an App Password for "Mail"
@@ -60,6 +61,7 @@ pnpm run sendmail
 ### 4. Custom Transport (`custom-transport.ts`)
 
 Advanced example demonstrating:
+
 - Connection pooling
 - Rate limiting
 - Attachments
@@ -233,4 +235,3 @@ tsx custom-transport.ts
 - [Nodemailer Documentation](https://nodemailer.com/about/)
 - [@visulima/email Documentation](https://visulima.com/packages/email)
 - [Nodemailer Transports](https://nodemailer.com/transports/)
-

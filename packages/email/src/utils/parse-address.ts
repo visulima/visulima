@@ -66,13 +66,13 @@ export const parseAddress = (address: string): EmailAddress | undefined => {
 
     // Check for quote in middle (not at start) - invalid pattern like unterminated"@example.com
     // Valid quotes should only be at the start for quoted local parts: "quoted"@domain
-    if (trimmed.includes('"') && !trimmed.startsWith('"')) {
+    if (trimmed.includes("\"") && !trimmed.startsWith("\"")) {
         // Quote exists but not at start - invalid unless it's part of a name in angle brackets
         // But for plain email format, quotes in the middle are invalid
-        const quoteIndex = trimmed.indexOf('"');
+        const quoteIndex = trimmed.indexOf("\"");
 
         // If quote appears before @ and it's not at the start, it's invalid for plain email
-        if (quoteIndex < trimmed.indexOf('@')) {
+        if (quoteIndex < trimmed.indexOf("@")) {
             return undefined;
         }
     }
@@ -80,22 +80,23 @@ export const parseAddress = (address: string): EmailAddress | undefined => {
     // Check for unterminated quoted string: "unterminated@example.com (missing closing quote)
     // Valid pattern should be: "quoted"@domain
     // We need to find the @ that comes AFTER the closing quote, not inside the quotes
-    if (trimmed.startsWith('"')) {
+    if (trimmed.startsWith("\"")) {
         let i = 1;
         let foundClosingQuote = false;
 
         // Look for the closing quote (allowing escaped quotes)
         while (i < trimmed.length) {
-            if (trimmed[i] === '\\' && i + 1 < trimmed.length) {
+            if (trimmed[i] === "\\" && i + 1 < trimmed.length) {
                 // Skip escaped character
                 i += 2;
-            } else if (trimmed[i] === '"') {
+            } else if (trimmed[i] === "\"") {
                 // Found a quote - check if it's followed by @
-                if (i + 1 < trimmed.length && trimmed[i + 1] === '@') {
+                if (i + 1 < trimmed.length && trimmed[i + 1] === "@") {
                     // This is the closing quote for a quoted local part: "quoted"@domain
                     foundClosingQuote = true;
                     break;
                 }
+
                 // Quote not followed by @, continue
                 i++;
             } else {
@@ -105,10 +106,10 @@ export const parseAddress = (address: string): EmailAddress | undefined => {
 
         // If we have a quote at the start but no proper closing quote followed by @,
         // and there's an @ in the string, it's likely unterminated
-        if (!foundClosingQuote && trimmed.includes('@')) {
+        if (!foundClosingQuote && trimmed.includes("@")) {
             // Check if @ appears before any closing quote - that's invalid
-            const firstAt = trimmed.indexOf('@');
-            const firstQuoteAfterStart = trimmed.slice(1).indexOf('"');
+            const firstAt = trimmed.indexOf("@");
+            const firstQuoteAfterStart = trimmed.slice(1).indexOf("\"");
 
             if (firstQuoteAfterStart === -1 || firstAt < firstQuoteAfterStart + 1) {
                 // No closing quote found, or @ appears before closing quote - unterminated

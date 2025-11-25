@@ -1,7 +1,7 @@
 import { Buffer } from "node:buffer";
 
 import { EmailError, RequiredOptionError } from "../../errors/email-error";
-import type { EmailAddress, EmailResult, Result } from "../../types";
+import type { EmailResult, Result } from "../../types";
 import { generateMessageId } from "../../utils/generate-message-id";
 import { headersToRecord } from "../../utils/headers-to-record";
 import { makeRequest } from "../../utils/make-request";
@@ -16,7 +16,6 @@ const PROVIDER_NAME = "mailomat";
 const DEFAULT_ENDPOINT = "https://api.mailomat.com";
 const DEFAULT_TIMEOUT = 30_000;
 const DEFAULT_RETRIES = 3;
-
 
 /**
  * Mailomat Provider for sending emails through Mailomat API
@@ -66,7 +65,7 @@ export const mailomatProvider: ProviderFactory<MailomatConfig, unknown, Mailomat
                         };
                     }
 
-                await providerState.ensureInitialized(() => this.initialize(), PROVIDER_NAME);
+                    await providerState.ensureInitialized(() => this.initialize(), PROVIDER_NAME);
 
                     const headers: Record<string, string> = {
                         "Content-Type": "application/json",
@@ -103,7 +102,6 @@ export const mailomatProvider: ProviderFactory<MailomatConfig, unknown, Mailomat
                         success: true,
                     };
                 } catch (error) {
-
                     return {
                         error: handleProviderError(PROVIDER_NAME, "retrieve email", error, logger),
                         success: false,
@@ -159,7 +157,7 @@ export const mailomatProvider: ProviderFactory<MailomatConfig, unknown, Mailomat
                         };
                     }
 
-                await providerState.ensureInitialized(() => this.initialize(), PROVIDER_NAME);
+                    await providerState.ensureInitialized(() => this.initialize(), PROVIDER_NAME);
 
                     // Build payload for Mailomat API (standard REST API pattern)
                     const payload: Record<string, unknown> = {

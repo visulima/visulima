@@ -1,5 +1,5 @@
 import { EmailError, RequiredOptionError } from "../../errors/email-error";
-import type { EmailAddress, EmailResult, Result } from "../../types";
+import type { EmailResult, Result } from "../../types";
 import { generateMessageId } from "../../utils/generate-message-id";
 import { headersToRecord } from "../../utils/headers-to-record";
 import { makeRequest } from "../../utils/make-request";
@@ -7,7 +7,7 @@ import { retry } from "../../utils/retry";
 import { validateEmailOptions } from "../../utils/validate-email-options";
 import type { ProviderFactory } from "../provider";
 import { defineProvider } from "../provider";
-import { createProviderLogger, formatAddress, formatAddresses, formatAddressEmails, handleProviderError, ProviderState } from "../utils";
+import { createProviderLogger, formatAddress, formatAddressEmails, formatAddresses, handleProviderError, ProviderState } from "../utils";
 import type { ResendConfig, ResendEmailOptions, ResendEmailTag } from "./types";
 
 const PROVIDER_NAME = "resend";
@@ -77,16 +77,16 @@ export const resendProvider: ProviderFactory<ResendConfig, unknown, ResendEmailO
          * @param id Email ID to retrieve
          * @returns Email details
          */
-            async getEmail(id: string): Promise<Result<unknown>> {
-                try {
-                    if (!id) {
-                        return {
-                            error: new EmailError(PROVIDER_NAME, "Email ID is required to retrieve email details"),
-                            success: false,
-                        };
-                    }
+        async getEmail(id: string): Promise<Result<unknown>> {
+            try {
+                if (!id) {
+                    return {
+                        error: new EmailError(PROVIDER_NAME, "Email ID is required to retrieve email details"),
+                        success: false,
+                    };
+                }
 
-                    await providerState.ensureInitialized(() => this.initialize(), PROVIDER_NAME);
+                await providerState.ensureInitialized(() => this.initialize(), PROVIDER_NAME);
 
                 const headers: Record<string, string> = {
                     Authorization: `Bearer ${options.apiKey}`,

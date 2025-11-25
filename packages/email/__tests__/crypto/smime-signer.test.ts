@@ -1,6 +1,5 @@
 import { readFile } from "node:fs/promises";
 
-import { Certificate } from "pkijs";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createSmimeSigner, SmimeSigner } from "../../src/crypto/smime-signer.js";

@@ -1,7 +1,7 @@
 import { Buffer } from "node:buffer";
 
 import { EmailError, RequiredOptionError } from "../../errors/email-error";
-import type { EmailAddress, EmailResult, Result } from "../../types";
+import type { EmailResult, Result } from "../../types";
 import { generateMessageId } from "../../utils/generate-message-id";
 import { headersToRecord } from "../../utils/headers-to-record";
 import { makeRequest } from "../../utils/make-request";
@@ -16,7 +16,6 @@ const PROVIDER_NAME = "sweego";
 const DEFAULT_ENDPOINT = "https://api.sweego.com";
 const DEFAULT_TIMEOUT = 30_000;
 const DEFAULT_RETRIES = 3;
-
 
 /**
  * Sweego Provider for sending emails through Sweego API
@@ -100,7 +99,6 @@ export const sweegoProvider: ProviderFactory<SweegoConfig, unknown, SweegoEmailO
                     success: true,
                 };
             } catch (error) {
-
                 return {
                     error: handleProviderError(PROVIDER_NAME, "retrieve email", error, logger),
                     success: false,

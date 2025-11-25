@@ -1,7 +1,7 @@
 import { Buffer } from "node:buffer";
 
 import { EmailError, RequiredOptionError } from "../../errors/email-error";
-import type { EmailAddress, EmailResult, Result } from "../../types";
+import type { EmailResult, Result } from "../../types";
 import { generateMessageId } from "../../utils/generate-message-id";
 import { headersToRecord } from "../../utils/headers-to-record";
 import { makeRequest } from "../../utils/make-request";
@@ -16,7 +16,6 @@ const PROVIDER_NAME = "mailtrap";
 const DEFAULT_ENDPOINT = "https://send.api.mailtrap.io";
 const DEFAULT_TIMEOUT = 30_000;
 const DEFAULT_RETRIES = 3;
-
 
 /**
  * Mailtrap Provider for sending emails through Mailtrap API
@@ -36,8 +35,8 @@ export const mailtrapProvider: ProviderFactory<MailtrapConfig, unknown, Mailtrap
             ...options_.logger && { logger: options_.logger },
         };
 
-    const providerState = new ProviderState();
-    const logger = createProviderLogger(PROVIDER_NAME, options.debug, options_.logger);
+        const providerState = new ProviderState();
+        const logger = createProviderLogger(PROVIDER_NAME, options.debug, options_.logger);
 
         return {
             features: {
@@ -66,7 +65,7 @@ export const mailtrapProvider: ProviderFactory<MailtrapConfig, unknown, Mailtrap
                         };
                     }
 
-                await providerState.ensureInitialized(() => this.initialize(), PROVIDER_NAME);
+                    await providerState.ensureInitialized(() => this.initialize(), PROVIDER_NAME);
 
                     const headers: Record<string, string> = {
                         "Api-Token": options.apiToken,
@@ -104,7 +103,6 @@ export const mailtrapProvider: ProviderFactory<MailtrapConfig, unknown, Mailtrap
                         success: true,
                     };
                 } catch (error) {
-
                     return {
                         error: handleProviderError(PROVIDER_NAME, "retrieve email", error, logger),
                         success: false,
@@ -185,7 +183,7 @@ export const mailtrapProvider: ProviderFactory<MailtrapConfig, unknown, Mailtrap
                         };
                     }
 
-                await providerState.ensureInitialized(() => this.initialize(), PROVIDER_NAME);
+                    await providerState.ensureInitialized(() => this.initialize(), PROVIDER_NAME);
 
                     // Build payload for Mailtrap API
                     const payload: Record<string, unknown> = {

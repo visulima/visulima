@@ -17,6 +17,7 @@ export class PayloadBuilder {
         if (value !== undefined && value !== null) {
             this.payload[key] = value;
         }
+
         return this;
     }
 
@@ -27,16 +28,14 @@ export class PayloadBuilder {
         for (const [key, value] of Object.entries(fields)) {
             this.set(key, value);
         }
+
         return this;
     }
 
     /**
      * Add recipients (to, cc, bcc) using a formatter function
      */
-    addRecipients(
-        emailOptions: EmailOptions,
-        formatter: (addresses: EmailAddress | EmailAddress[]) => unknown,
-    ): this {
+    addRecipients(emailOptions: EmailOptions, formatter: (addresses: EmailAddress | EmailAddress[]) => unknown): this {
         if (emailOptions.to) {
             this.set("to", formatter(emailOptions.to));
         }
@@ -57,11 +56,11 @@ export class PayloadBuilder {
      */
     addStandardFields(emailOptions: EmailOptions): this {
         return this.setMultiple({
-            subject: emailOptions.subject,
             html: emailOptions.html,
-            text: emailOptions.text,
             reply_to: emailOptions.replyTo,
             replyTo: emailOptions.replyTo, // Alternative key
+            subject: emailOptions.subject,
+            text: emailOptions.text,
         });
     }
 
@@ -100,6 +99,7 @@ export class PayloadBuilder {
     addTags(emailOptions: EmailOptions, formatter?: (tags: unknown[]) => unknown): this {
         if (emailOptions.tags && emailOptions.tags.length > 0) {
             const tags = formatter ? formatter(emailOptions.tags) : emailOptions.tags;
+
             this.set("tags", tags);
             this.set("o:tag", emailOptions.tags); // Mailgun format
             this.set("Tag", emailOptions.tags[0]); // Postmark format (single tag)
@@ -114,6 +114,7 @@ export class PayloadBuilder {
     addHeaders(emailOptions: EmailOptions, formatter?: (headers: Record<string, string>) => unknown): this {
         if (emailOptions.headers) {
             const headers = formatter ? formatter(emailOptions.headers) : emailOptions.headers;
+
             this.set("headers", headers);
         }
 

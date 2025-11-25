@@ -3,13 +3,12 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { mailgunProvider } from "../../src/providers/mailgun/index.js";
 import type { MailgunEmailOptions } from "../../src/providers/mailgun/types.js";
 import { makeRequest } from "../../src/utils/make-request.js";
-import { retry } from "../../src/utils/retry.js";
 
 // Mock the makeRequest function
 vi.mock(import("../../src/utils/make-request.js"), () => {
     return {
         makeRequest: vi.fn((url, options, data) =>
-        // Return a mock result that matches the expected structure
+            // Return a mock result that matches the expected structure
             Promise.resolve({
                 data: {
                     body: { id: "test-message-id" },
@@ -131,6 +130,7 @@ describe(mailgunProvider, () => {
     describe("sendEmail", () => {
         it("should send email successfully", async () => {
             const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
             makeRequestMock
                 .mockResolvedValueOnce({
                     data: {
@@ -185,6 +185,7 @@ describe(mailgunProvider, () => {
 
         it("should format recipients correctly", async () => {
             const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
             makeRequestMock
                 .mockResolvedValueOnce({
                     data: {
@@ -220,6 +221,7 @@ describe(mailgunProvider, () => {
 
         it("should include CC and BCC recipients", async () => {
             const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
             makeRequestMock
                 .mockResolvedValueOnce({
                     data: {
@@ -303,6 +305,7 @@ describe(mailgunProvider, () => {
 
         it("should include tags", async () => {
             const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
             makeRequestMock
                 .mockResolvedValueOnce({
                     data: {
@@ -339,6 +342,7 @@ describe(mailgunProvider, () => {
 
         it("should include tracking options", async () => {
             const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
             makeRequestMock
                 .mockResolvedValueOnce({
                     data: {
@@ -376,6 +380,7 @@ describe(mailgunProvider, () => {
 
         it("should include custom headers", async () => {
             const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
             makeRequestMock
                 .mockResolvedValueOnce({
                     data: {
@@ -411,6 +416,7 @@ describe(mailgunProvider, () => {
 
         it("should handle errors gracefully", async () => {
             const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
             makeRequestMock
                 .mockResolvedValueOnce({
                     data: {

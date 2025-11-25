@@ -3,7 +3,6 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { azureProvider } from "../../src/providers/azure/index.js";
 import type { AzureEmailOptions } from "../../src/providers/azure/types.js";
 import { makeRequest } from "../../src/utils/make-request.js";
-import { retry } from "../../src/utils/retry.js";
 
 vi.mock(import("../../src/utils/make-request.js"), () => {
     return {
@@ -53,6 +52,7 @@ describe(azureProvider, () => {
     describe("sendEmail", () => {
         it("should send email successfully", async () => {
             const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
             makeRequestMock
                 .mockResolvedValueOnce({
                     data: {

@@ -1,7 +1,7 @@
 import { Buffer } from "node:buffer";
 
 import { EmailError, RequiredOptionError } from "../../errors/email-error";
-import type { EmailAddress, EmailResult, Result } from "../../types";
+import type { EmailResult, Result } from "../../types";
 import { generateMessageId } from "../../utils/generate-message-id";
 import { headersToRecord } from "../../utils/headers-to-record";
 import { makeRequest } from "../../utils/make-request";
@@ -16,7 +16,6 @@ const PROVIDER_NAME = "mailersend";
 const DEFAULT_ENDPOINT = "https://api.mailersend.com";
 const DEFAULT_TIMEOUT = 30_000;
 const DEFAULT_RETRIES = 3;
-
 
 /**
  * MailerSend Provider for sending emails through MailerSend API
@@ -36,8 +35,8 @@ export const mailerSendProvider: ProviderFactory<MailerSendConfig, unknown, Mail
             ...options_.logger && { logger: options_.logger },
         };
 
-    const providerState = new ProviderState();
-    const logger = createProviderLogger(PROVIDER_NAME, options.debug, options_.logger);
+        const providerState = new ProviderState();
+        const logger = createProviderLogger(PROVIDER_NAME, options.debug, options_.logger);
 
         return {
             features: {
@@ -66,7 +65,7 @@ export const mailerSendProvider: ProviderFactory<MailerSendConfig, unknown, Mail
                         };
                     }
 
-                await providerState.ensureInitialized(() => this.initialize(), PROVIDER_NAME);
+                    await providerState.ensureInitialized(() => this.initialize(), PROVIDER_NAME);
 
                     const headers: Record<string, string> = {
                         Authorization: `Bearer ${options.apiToken}`,
@@ -103,26 +102,25 @@ export const mailerSendProvider: ProviderFactory<MailerSendConfig, unknown, Mail
                         success: true,
                     };
                 } catch (error) {
-
-                return {
-                    error: handleProviderError(PROVIDER_NAME, "retrieve email", error, logger),
-                    success: false,
-                };
+                    return {
+                        error: handleProviderError(PROVIDER_NAME, "retrieve email", error, logger),
+                        success: false,
+                    };
                 }
             },
 
             /**
              * Initialize the MailerSend provider
              */
-        async initialize(): Promise<void> {
-            await providerState.ensureInitialized(async () => {
-                if (!await this.isAvailable()) {
-                    throw new EmailError(PROVIDER_NAME, "MailerSend API not available or invalid API token");
-                }
+            async initialize(): Promise<void> {
+                await providerState.ensureInitialized(async () => {
+                    if (!await this.isAvailable()) {
+                        throw new EmailError(PROVIDER_NAME, "MailerSend API not available or invalid API token");
+                    }
 
-                logger.debug("Provider initialized successfully");
-            }, PROVIDER_NAME);
-        },
+                    logger.debug("Provider initialized successfully");
+                }, PROVIDER_NAME);
+            },
 
             /**
              * Check if MailerSend API is available and credentials are valid
@@ -184,7 +182,7 @@ export const mailerSendProvider: ProviderFactory<MailerSendConfig, unknown, Mail
                         };
                     }
 
-                await providerState.ensureInitialized(() => this.initialize(), PROVIDER_NAME);
+                    await providerState.ensureInitialized(() => this.initialize(), PROVIDER_NAME);
 
                     // Build payload for MailerSend API
                     const payload: Record<string, unknown> = {

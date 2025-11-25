@@ -3,16 +3,19 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { sendGridProvider } from "../../src/providers/sendgrid/index.js";
 import type { SendGridEmailOptions } from "../../src/providers/sendgrid/types.js";
 import { makeRequest } from "../../src/utils/make-request.js";
-import { retry } from "../../src/utils/retry.js";
 
 // Mock the makeRequest and retry functions
-vi.mock(import("../../src/utils/make-request.js"), () => ({
-    makeRequest: vi.fn(),
-}));
+vi.mock(import("../../src/utils/make-request.js"), () => {
+    return {
+        makeRequest: vi.fn(),
+    };
+});
 
-vi.mock(import("../../src/utils/retry.js"), () => ({
-    retry: vi.fn(async (function_) => await function_()),
-}));
+vi.mock(import("../../src/utils/retry.js"), () => {
+    return {
+        retry: vi.fn(async (function_) => await function_()),
+    };
+});
 
 describe(sendGridProvider, () => {
     beforeEach(() => {
@@ -105,6 +108,7 @@ describe(sendGridProvider, () => {
     describe("sendEmail", () => {
         it("should send email successfully", async () => {
             const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
             makeRequestMock
                 .mockResolvedValueOnce({
                     data: {

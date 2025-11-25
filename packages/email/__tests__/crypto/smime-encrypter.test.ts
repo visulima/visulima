@@ -1,6 +1,5 @@
 import { readFile } from "node:fs/promises";
 
-import { Certificate } from "pkijs";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createSmimeEncrypter, SmimeEncrypter } from "../../src/crypto/smime-encrypter.js";

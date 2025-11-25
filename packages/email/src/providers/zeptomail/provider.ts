@@ -1,5 +1,5 @@
 import { EmailError, RequiredOptionError } from "../../errors/email-error";
-import type { EmailAddress, EmailResult, Result } from "../../types";
+import type { EmailResult, Result } from "../../types";
 import { generateMessageId } from "../../utils/generate-message-id";
 import { headersToRecord } from "../../utils/headers-to-record";
 import { makeRequest } from "../../utils/make-request";
@@ -112,8 +112,7 @@ export const zeptomailProvider: ProviderFactory<ZeptomailConfig, unknown, Zeptom
                     }
 
                     // Make sure provider is initialized
-                await providerState.ensureInitialized(() => this.initialize(), PROVIDER_NAME);
-
+                    await providerState.ensureInitialized(() => this.initialize(), PROVIDER_NAME);
 
                     // Prepare request payload
                     const payload: Record<string, any> = {

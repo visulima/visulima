@@ -3,7 +3,6 @@ import { beforeEach, describe, expect, expectTypeOf, it, vi } from "vitest";
 import { brevoProvider } from "../../src/providers/brevo/index.js";
 import type { BrevoEmailOptions } from "../../src/providers/brevo/types.js";
 import { makeRequest } from "../../src/utils/make-request.js";
-import { retry } from "../../src/utils/retry.js";
 
 // Mock the makeRequest function
 vi.mock(import("../../src/utils/make-request.js"), () => {
@@ -118,6 +117,7 @@ describe(brevoProvider, () => {
     describe("sendEmail", () => {
         it("should send email successfully", async () => {
             const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
             makeRequestMock
                 .mockResolvedValueOnce({
                     data: {
@@ -172,6 +172,7 @@ describe(brevoProvider, () => {
 
         it("should format recipients correctly", async () => {
             const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
             makeRequestMock
                 .mockResolvedValueOnce({
                     data: {
@@ -222,6 +223,7 @@ describe(brevoProvider, () => {
 
         it("should include CC and BCC recipients", async () => {
             const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
             makeRequestMock
                 .mockResolvedValueOnce({
                     data: {
@@ -319,6 +321,7 @@ describe(brevoProvider, () => {
 
         it("should include tags", async () => {
             const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
             makeRequestMock
                 .mockResolvedValueOnce({
                     data: {
@@ -367,6 +370,7 @@ describe(brevoProvider, () => {
 
         it("should include scheduled date/time", async () => {
             const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
             makeRequestMock
                 .mockResolvedValueOnce({
                     data: {
@@ -417,6 +421,7 @@ describe(brevoProvider, () => {
 
         it("should include custom headers", async () => {
             const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
             makeRequestMock
                 .mockResolvedValueOnce({
                     data: {
@@ -465,6 +470,7 @@ describe(brevoProvider, () => {
 
         it("should include attachments", async () => {
             const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
             makeRequestMock
                 .mockResolvedValueOnce({
                     data: {
@@ -520,6 +526,7 @@ describe(brevoProvider, () => {
 
         it("should handle errors gracefully", async () => {
             const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
             makeRequestMock
                 .mockResolvedValueOnce({
                     data: {

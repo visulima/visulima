@@ -1,7 +1,7 @@
 import { Buffer } from "node:buffer";
 
 import { EmailError, RequiredOptionError } from "../../errors/email-error";
-import type { EmailAddress, EmailResult, Result } from "../../types";
+import type { EmailResult, Result } from "../../types";
 import { generateMessageId } from "../../utils/generate-message-id";
 import { headersToRecord } from "../../utils/headers-to-record";
 import { makeRequest } from "../../utils/make-request";
@@ -16,7 +16,6 @@ const PROVIDER_NAME = "mailgun";
 const DEFAULT_ENDPOINT = "https://api.mailgun.net";
 const DEFAULT_TIMEOUT = 30_000;
 const DEFAULT_RETRIES = 3;
-
 
 /**
  * Convert object to form data format
@@ -324,6 +323,7 @@ export const mailgunProvider: ProviderFactory<MailgunConfig, unknown, MailgunEma
                     // In a real implementation, you'd use FormData
                     for (let i = 0; i < emailOptions.attachments.length; i++) {
                         const attachmentData = await createMailgunAttachment(emailOptions.attachments[i], PROVIDER_NAME, i);
+
                         formData[attachmentData.key] = attachmentData.content;
                     }
                 }

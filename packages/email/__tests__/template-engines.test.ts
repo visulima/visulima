@@ -369,11 +369,15 @@ describe("template-engines", () => {
 
                 const result = await renderVueEmail("<template></template>", {}, options);
 
-                expect(mockVueRender.render).toHaveBeenCalledWith("<template></template>", {}, {
-                    htmlToTextOptions: undefined,
-                    plainText: undefined,
-                    pretty: undefined,
-                });
+                expect(mockVueRender.render).toHaveBeenCalledWith(
+                    "<template></template>",
+                    {},
+                    {
+                        htmlToTextOptions: undefined,
+                        plainText: undefined,
+                        pretty: undefined,
+                    },
+                );
                 expect(result).toBe("<div>With options</div>");
             });
 
@@ -425,6 +429,7 @@ describe("template-engines", () => {
 
             it("should throw error for non-React element", async () => {
                 const error = new Error("Invalid React element");
+
                 mockReactRender.render.mockRejectedValue(error);
 
                 await expect(renderReactEmail("not a component", {})).rejects.toThrow(EmailError);
@@ -452,7 +457,9 @@ describe("template-engines", () => {
                 const component = { props: {}, type: "div" };
 
                 await expect(renderReactEmail(component, {})).rejects.toThrow(EmailError);
-                await expect(renderReactEmail(component, {})).rejects.toThrow("@react-email/render is not installed. Please install it: pnpm add @react-email/render");
+                await expect(renderReactEmail(component, {})).rejects.toThrow(
+                    "@react-email/render is not installed. Please install it: pnpm add @react-email/render",
+                );
             });
         });
     });

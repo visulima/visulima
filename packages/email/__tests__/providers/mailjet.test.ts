@@ -3,7 +3,6 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { mailjetProvider } from "../../src/providers/mailjet/index.js";
 import type { MailjetEmailOptions } from "../../src/providers/mailjet/types.js";
 import { makeRequest } from "../../src/utils/make-request.js";
-import { retry } from "../../src/utils/retry.js";
 
 // Mock the utils module
 vi.mock(import("../../src/utils/make-request.js"), () => {
@@ -172,6 +171,7 @@ describe(mailjetProvider, () => {
 
         it("should format recipients correctly", async () => {
             const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
             makeRequestMock
                 .mockResolvedValueOnce({
                     data: {
@@ -216,6 +216,7 @@ describe(mailjetProvider, () => {
 
         it("should include CC and BCC recipients", async () => {
             const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
             makeRequestMock
                 .mockResolvedValueOnce({
                     data: {
@@ -311,6 +312,7 @@ describe(mailjetProvider, () => {
 
         it("should include tags", async () => {
             const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
             makeRequestMock
                 .mockResolvedValueOnce({
                     data: {
@@ -352,6 +354,7 @@ describe(mailjetProvider, () => {
 
         it("should include custom headers", async () => {
             const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
             makeRequestMock
                 .mockResolvedValueOnce({
                     data: {
@@ -396,6 +399,7 @@ describe(mailjetProvider, () => {
 
         it("should include attachments", async () => {
             const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
             makeRequestMock
                 .mockResolvedValueOnce({
                     data: {

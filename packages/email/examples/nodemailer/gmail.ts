@@ -36,11 +36,13 @@ const main = async () => {
         .to("recipient@example.com")
         .from("your-email@gmail.com")
         .subject("Hello from Gmail via Nodemailer")
-        .html(`
+        .html(
+            `
             <h1>Hello from Gmail!</h1>
             <p>This email was sent using Nodemailer with Gmail.</p>
             <p>Make sure to use an <strong>App Password</strong> instead of your regular Gmail password.</p>
-        `)
+        `,
+        )
         .text("Hello from Gmail!\n\nThis email was sent using Nodemailer with Gmail.")
         .send();
 
@@ -60,4 +62,3 @@ main().catch((error) => {
     console.error("Error:", error);
     process.exit(1);
 });
-

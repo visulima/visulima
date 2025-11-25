@@ -3,7 +3,6 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { EmailOptions, Mailable } from "../src/mail.js";
 import { createMail, MailMessage } from "../src/mail.js";
 import type { Provider } from "../src/providers/provider.js";
-import { resendProvider } from "../src/providers/resend/index.js";
 import type { EmailResult, Result } from "../src/types.js";
 
 // Mock provider for testing
@@ -258,6 +257,7 @@ describe(MailMessage, () => {
             message.from("sender@example.com").to("user@example.com").subject("Test").text("Plain text");
 
             const options = await message.build();
+
             expect(options.text).toBe("Plain text");
         });
 
@@ -268,6 +268,7 @@ describe(MailMessage, () => {
             message.from("sender@example.com").to("user@example.com").subject("Test").html("<h1>HTML</h1>");
 
             const options = await message.build();
+
             expect(options.html).toBe("<h1>HTML</h1>");
         });
     });

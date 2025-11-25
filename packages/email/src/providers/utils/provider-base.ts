@@ -1,7 +1,7 @@
 import { EmailError } from "../../errors/email-error";
+import type { Logger, MaybePromise } from "../../types";
 import { createLogger } from "../../utils/create-logger";
 import { makeRequest } from "../../utils/make-request";
-import type { Logger, MaybePromise } from "../../types";
 
 /**
  * Common provider configuration interface
@@ -35,13 +35,10 @@ export class ProviderState {
     /**
      * Ensure provider is initialized, initialize if not
      */
-    async ensureInitialized(
-        initializeFn: () => MaybePromise<void>,
-        providerName: string,
-    ): Promise<void> {
+    async ensureInitialized(initializeFunction: () => MaybePromise<void>, providerName: string): Promise<void> {
         if (!this.isInitialized) {
             try {
-                await initializeFn();
+                await initializeFunction();
                 this.isInitialized = true;
             } catch (error) {
                 throw new EmailError(providerName, `Failed to initialize: ${(error as Error).message}`, { cause: error as Error });
@@ -60,12 +57,13 @@ export function createProviderLogger(providerName: string, debug?: boolean, cust
 /**
  * Check if an HTTP response indicates success (2xx status codes)
  */
-export function isSuccessfulResponse(result: { success: boolean; data?: unknown }): boolean {
+export function isSuccessfulResponse(result: { data?: unknown; success: boolean }): boolean {
     if (!result.success || !result.data) {
         return false;
     }
 
     const data = result.data as { statusCode?: number };
+
     return typeof data.statusCode === "number" && data.statusCode >= 200 && data.statusCode < 300;
 }
 
@@ -97,6 +95,7 @@ export async function checkApiAvailability(
         return isSuccessfulResponse(result);
     } catch (error) {
         logger.debug("Error checking availability:", error);
+
         return false;
     }
 }
@@ -127,12 +126,7 @@ export async function validateApiCredentials(
 /**
  * Standard error handling for provider operations
  */
-export function handleProviderError(
-    providerName: string,
-    operation: string,
-    error: unknown,
-    logger?: Logger,
-): EmailError {
+export function handleProviderError(providerName: string, operation: string, error: unknown, logger?: Logger): EmailError {
     const message = `Failed to ${operation}: ${(error as Error).message}`;
 
     if (logger) {

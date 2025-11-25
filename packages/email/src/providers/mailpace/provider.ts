@@ -1,7 +1,7 @@
 import { Buffer } from "node:buffer";
 
 import { EmailError, RequiredOptionError } from "../../errors/email-error";
-import type { EmailAddress, EmailResult, Result } from "../../types";
+import type { EmailResult, Result } from "../../types";
 import { generateMessageId } from "../../utils/generate-message-id";
 import { headersToRecord } from "../../utils/headers-to-record";
 import { makeRequest } from "../../utils/make-request";
@@ -16,7 +16,6 @@ const PROVIDER_NAME = "mailpace";
 const DEFAULT_ENDPOINT = "https://app.mailpace.com/api/v1";
 const DEFAULT_TIMEOUT = 30_000;
 const DEFAULT_RETRIES = 3;
-
 
 /**
  * MailPace Provider for sending emails through MailPace API
@@ -66,7 +65,7 @@ export const mailPaceProvider: ProviderFactory<MailPaceConfig, unknown, MailPace
                         };
                     }
 
-                await providerState.ensureInitialized(() => this.initialize(), PROVIDER_NAME);
+                    await providerState.ensureInitialized(() => this.initialize(), PROVIDER_NAME);
 
                     const headers: Record<string, string> = {
                         Authorization: `Bearer ${options.apiToken}`,
@@ -103,7 +102,6 @@ export const mailPaceProvider: ProviderFactory<MailPaceConfig, unknown, MailPace
                         success: true,
                     };
                 } catch (error) {
-
                     return {
                         error: handleProviderError(PROVIDER_NAME, "retrieve email", error, logger),
                         success: false,
@@ -184,7 +182,7 @@ export const mailPaceProvider: ProviderFactory<MailPaceConfig, unknown, MailPace
                         };
                     }
 
-                await providerState.ensureInitialized(() => this.initialize(), PROVIDER_NAME);
+                    await providerState.ensureInitialized(() => this.initialize(), PROVIDER_NAME);
 
                     // Build payload for MailPace API
                     const payload: Record<string, unknown> = {

@@ -1,7 +1,5 @@
-import { Buffer } from "node:buffer";
-
 import { EmailError, RequiredOptionError } from "../../errors/email-error";
-import type { EmailAddress, EmailResult, Result } from "../../types";
+import type { EmailResult, Result } from "../../types";
 import { generateMessageId } from "../../utils/generate-message-id";
 import { headersToRecord } from "../../utils/headers-to-record";
 import { makeRequest } from "../../utils/make-request";
@@ -9,7 +7,14 @@ import { retry } from "../../utils/retry";
 import { validateEmailOptions } from "../../utils/validate-email-options";
 import type { ProviderFactory } from "../provider";
 import { defineProvider } from "../provider";
-import { createProviderLogger, createSendGridAttachment, formatAddress, formatSendGridAddress, formatSendGridAddresses, handleProviderError, ProviderState } from "../utils";
+import {
+    createProviderLogger,
+    createSendGridAttachment,
+    formatSendGridAddress,
+    formatSendGridAddresses,
+    handleProviderError,
+    ProviderState,
+} from "../utils";
 import type { SendGridConfig, SendGridEmailOptions } from "./types";
 
 const PROVIDER_NAME = "sendgrid";
@@ -30,12 +35,12 @@ export const sendGridProvider: ProviderFactory<SendGridConfig, unknown, SendGrid
             apiKey: options_.apiKey,
             debug: options_.debug || false,
             endpoint: options_.endpoint || DEFAULT_ENDPOINT,
-        retries: options_.retries || DEFAULT_RETRIES,
-        timeout: options_.timeout || DEFAULT_TIMEOUT,
-    };
+            retries: options_.retries || DEFAULT_RETRIES,
+            timeout: options_.timeout || DEFAULT_TIMEOUT,
+        };
 
-    const providerState = new ProviderState();
-    const logger = createProviderLogger(PROVIDER_NAME, options.debug, options_.logger);
+        const providerState = new ProviderState();
+        const logger = createProviderLogger(PROVIDER_NAME, options.debug, options_.logger);
 
         return {
             endpoint: options.endpoint,

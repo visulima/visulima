@@ -1,5 +1,5 @@
 import { EmailError } from "../../errors/email-error";
-import type { EmailOptions, EmailResult, Receipt, Result } from "../../types";
+import type { EmailResult, Receipt, Result } from "../../types";
 import { createLogger } from "../../utils/create-logger";
 import { generateMessageId } from "../../utils/generate-message-id";
 import { validateEmailOptions } from "../../utils/validate-email-options";

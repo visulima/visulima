@@ -3,14 +3,13 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { postmarkProvider } from "../../src/providers/postmark/index.js";
 import type { PostmarkEmailOptions } from "../../src/providers/postmark/types.js";
 import { makeRequest } from "../../src/utils/make-request.js";
-import { retry } from "../../src/utils/retry.js";
 
 // Mock retry and makeRequest for testing
 // Mock the makeRequest function
 vi.mock(import("../../src/utils/make-request.js"), () => {
     return {
         makeRequest: vi.fn((url, options, data) =>
-        // Return a mock result that matches the expected structure
+            // Return a mock result that matches the expected structure
             Promise.resolve({
                 data: {
                     body: { id: "test-message-id" },
@@ -125,6 +124,7 @@ describe(postmarkProvider, () => {
     describe("sendEmail", () => {
         it("should send email successfully", async () => {
             const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
             makeRequestMock
                 .mockResolvedValueOnce({
                     data: {
@@ -178,6 +178,7 @@ describe(postmarkProvider, () => {
 
         it("should format recipients correctly", async () => {
             const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
             makeRequestMock
                 .mockResolvedValueOnce({
                     data: {
@@ -225,6 +226,7 @@ describe(postmarkProvider, () => {
 
         it("should include CC and BCC recipients", async () => {
             const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
             makeRequestMock
                 .mockResolvedValueOnce({
                     data: {
@@ -320,6 +322,7 @@ describe(postmarkProvider, () => {
 
         it("should include template alias if provided", async () => {
             const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
             makeRequestMock
                 .mockResolvedValueOnce({
                     data: {
@@ -369,6 +372,7 @@ describe(postmarkProvider, () => {
 
         it("should include tracking options", async () => {
             const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
             makeRequestMock
                 .mockResolvedValueOnce({
                     data: {
@@ -418,6 +422,7 @@ describe(postmarkProvider, () => {
 
         it("should include tag", async () => {
             const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
             makeRequestMock
                 .mockResolvedValueOnce({
                     data: {
@@ -465,6 +470,7 @@ describe(postmarkProvider, () => {
 
         it("should include custom headers", async () => {
             const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
             makeRequestMock
                 .mockResolvedValueOnce({
                     data: {
@@ -515,6 +521,7 @@ describe(postmarkProvider, () => {
 
         it("should include attachments", async () => {
             const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
             makeRequestMock
                 .mockResolvedValueOnce({
                     data: {
@@ -570,6 +577,7 @@ describe(postmarkProvider, () => {
 
         it("should handle errors gracefully", async () => {
             const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+
             makeRequestMock
                 .mockResolvedValueOnce({
                     data: {
