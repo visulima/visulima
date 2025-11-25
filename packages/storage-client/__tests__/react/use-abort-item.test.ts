@@ -59,7 +59,7 @@ describe(useAbortItem, () => {
     });
 
     it("should provide abortItem function", () => {
-        expect.assertions(1);
+        expect.assertions(2);
 
         const { result } = renderHookWithQueryClient(() =>
             useAbortItem({
@@ -67,7 +67,8 @@ describe(useAbortItem, () => {
             }),
         );
 
-        expectTypeOf(result.current.abortItem).toBeFunction();
+        expect(result.current.abortItem).toBeDefined();
+        expect(typeof result.current.abortItem).toBe("function");
     });
 
     it("should abort item without throwing", () => {

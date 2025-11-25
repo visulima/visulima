@@ -15,77 +15,11 @@ import { buildChunkedUploadHeaders, buildFileHeaders, buildFileMetadataHeaders, 
  */
 abstract class RestBase<TFile extends UploadFile> {
     /**
-     * Storage instance for file operations.
-     */
-    protected get storage(): {
-        create: (config: FileInit) => Promise<TFile>;
-        delete: (options: { id: string }) => Promise<TFile>;
-        deleteBatch: (ids: string[]) => Promise<{
-            failed: { error: string; id: string }[];
-            failedCount: number;
-            successful: TFile[];
-            successfulCount: number;
-        }>;
-        getMeta: (id: string) => Promise<TFile>;
-        maxUploadSize: number;
-        update: (options: { id: string }, updates: { metadata?: Record<string, unknown>; status?: string }) => Promise<void>;
-        write: (options: { body: unknown; contentLength: number; id: string; start: number }) => Promise<TFile>;
-    } {
-        // This will be overridden by subclasses
-        throw new Error("storage must be implemented");
-    }
-
-    /**
-     * Build file URL from request URL and file data.
-     * @param requestUrl Request URL string
-     * @param file File object containing ID and content type
-     * @returns Constructed file URL with extension based on content type
-     */
-    protected buildFileUrl(requestUrl: string, file: TFile): string {
-        // This will be overridden by subclasses
-        throw new Error("buildFileUrl must be implemented");
-    }
-
-    /**
-     * Handle batch file deletion.
-     * @param ids Array of file IDs to delete
-     * @returns Promise resolving to ResponseList with deletion results
-     */
-    protected async deleteBatch(ids: string[]): Promise<ResponseList<TFile>> {
-        // Use storage-level batch delete if available, otherwise fall back to individual deletes
-        const result = await this.storage.deleteBatch(ids);
-
-        // If all deletions failed, return error
-        if (result.successfulCount === 0 && result.failedCount > 0) {
-            const failedIds = result.failed.map((errorItem) => errorItem.id).join(", ");
-
-            throw createHttpError(404, `Failed to delete files: ${failedIds}`);
-        }
-
-        // Return successful deletions (partial success is OK)
-        // Always include headers for batch operations to indicate results
-        return {
-            data: result.successful,
-            headers:
-                result.failedCount > 0
-                    ? {
-                          "X-Delete-Errors": JSON.stringify(result.failed),
-                          "X-Delete-Failed": String(result.failedCount),
-                          "X-Delete-Successful": String(result.successfulCount),
-                      }
-                    : {
-                          "X-Delete-Successful": String(result.successfulCount),
-                      },
-            statusCode: result.successfulCount === ids.length ? 204 : 207, // 207 Multi-Status for partial success
-        };
-    }
-
-    /**
      * Handle single file deletion.
      * @param id File ID to delete
      * @returns Promise resolving to ResponseFile with deletion result
      */
-    protected async deleteSingle(id: string): Promise<ResponseFile<TFile>> {
+    public async deleteSingle(id: string): Promise<ResponseFile<TFile>> {
         const file = await this.storage.delete({ id });
 
         if (file.status === undefined) {
@@ -104,7 +38,7 @@ abstract class RestBase<TFile extends UploadFile> {
      * @param contentLength Content length (for non-chunked uploads)
      * @returns Promise resolving to ResponseFile with upload result
      */
-    protected async handlePost(
+    public async handlePost(
         config: FileInit,
         isChunkedUpload: boolean,
         requestUrl: string,
@@ -112,8 +46,11 @@ abstract class RestBase<TFile extends UploadFile> {
         contentLength: number,
     ): Promise<ResponseFile<TFile>> {
         // Validate total size for chunked uploads
-        if (isChunkedUpload && config.size > 0 && config.size > this.storage.maxUploadSize) {
-            throw createHttpError(413, `File size exceeds maximum allowed size of ${this.storage.maxUploadSize} bytes`);
+        if (isChunkedUpload && config.size !== undefined) {
+            const size = typeof config.size === "number" ? config.size : Number.parseInt(String(config.size), 10);
+            if (size > 0 && size > this.storage.maxUploadSize) {
+                throw createHttpError(413, `File size exceeds maximum allowed size of ${this.storage.maxUploadSize} bytes`);
+            }
         }
 
         // Create file in storage
@@ -157,7 +94,7 @@ abstract class RestBase<TFile extends UploadFile> {
      * @param metadata Optional metadata to merge (for updates)
      * @returns Promise resolving to ResponseFile with upload result
      */
-    protected async handlePut(
+    public async handlePut(
         id: string,
         config: FileInit,
         requestUrl: string,
@@ -170,7 +107,7 @@ abstract class RestBase<TFile extends UploadFile> {
         let isUpdate = false;
 
         try {
-            const existingFile = await this.storage.getMeta(id);
+            await this.storage.getMeta(id);
 
             // File exists, this is an update
             isUpdate = true;
@@ -227,7 +164,7 @@ abstract class RestBase<TFile extends UploadFile> {
      * @param bodyStream Request body stream
      * @returns Promise resolving to ResponseFile with upload progress
      */
-    protected async handlePatch(
+    public async handlePatch(
         id: string,
         chunkOffset: number,
         contentLength: number,
@@ -300,7 +237,7 @@ abstract class RestBase<TFile extends UploadFile> {
         await this.storage.update({ id }, { metadata: updatedMetadata });
 
         // Write chunk data using start offset (handles out-of-order chunks)
-        const updatedFile = await this.storage.write({
+        let updatedFile = await this.storage.write({
             body: bodyStream,
             contentLength,
             id,
@@ -319,8 +256,7 @@ abstract class RestBase<TFile extends UploadFile> {
             if (updatedFile.status === "completed" && !isComplete) {
                 await this.storage.update({ id }, { status: "part" });
                 // Update local object for response
-
-                (updatedFile as TFile).status = "part";
+                updatedFile = { ...updatedFile, status: "part" } as TFile;
             }
         }
 
@@ -342,7 +278,7 @@ abstract class RestBase<TFile extends UploadFile> {
      * @param id File ID from URL
      * @returns Promise resolving to ResponseFile with metadata headers
      */
-    protected async handleHead(id: string): Promise<ResponseFile<TFile>> {
+    public async handleHead(id: string): Promise<ResponseFile<TFile>> {
         let file = await this.storage.getMeta(id);
         const isChunkedUploadFile = isChunkedUpload(file);
 
@@ -378,7 +314,7 @@ abstract class RestBase<TFile extends UploadFile> {
      * @param maxUploadSize Maximum upload size
      * @returns ResponseFile with CORS headers
      */
-    protected handleOptions(methods: string[], maxUploadSize: number): ResponseFile<TFile> {
+    public handleOptions(methods: string[], maxUploadSize: number): ResponseFile<TFile> {
         const headers = {
             "Access-Control-Allow-Headers":
                 "Authorization, Content-Type, Content-Length, Content-Disposition, X-File-Metadata, X-Chunked-Upload, X-Total-Size, X-Chunk-Offset, X-Chunk-Checksum",
@@ -391,6 +327,72 @@ abstract class RestBase<TFile extends UploadFile> {
             headers: headers as Record<string, string | number>,
             statusCode: 204,
         } as ResponseFile<TFile>;
+    }
+
+    /**
+     * Handle batch file deletion.
+     * @param ids Array of file IDs to delete
+     * @returns Promise resolving to ResponseList with deletion results
+     */
+    public async deleteBatch(ids: string[]): Promise<ResponseList<TFile>> {
+        // Use storage-level batch delete if available, otherwise fall back to individual deletes
+        const result = await this.storage.deleteBatch(ids);
+
+        // If all deletions failed, return error
+        if (result.successfulCount === 0 && result.failedCount > 0) {
+            const failedIds = result.failed.map((errorItem) => errorItem.id).join(", ");
+
+            throw createHttpError(404, `Failed to delete files: ${failedIds}`);
+        }
+
+        // Return successful deletions (partial success is OK)
+        // Always include headers for batch operations to indicate results
+        return {
+            data: result.successful,
+            headers:
+                result.failedCount > 0
+                    ? {
+                          "X-Delete-Errors": JSON.stringify(result.failed),
+                          "X-Delete-Failed": String(result.failedCount),
+                          "X-Delete-Successful": String(result.successfulCount),
+                      }
+                    : {
+                          "X-Delete-Successful": String(result.successfulCount),
+                      },
+            statusCode: result.successfulCount === ids.length ? 204 : 207, // 207 Multi-Status for partial success
+        };
+    }
+
+    /**
+     * Storage instance for file operations.
+     */
+    protected get storage(): {
+        create: (config: FileInit) => Promise<TFile>;
+        delete: (options: { id: string }) => Promise<TFile>;
+        deleteBatch: (ids: string[]) => Promise<{
+            failed: { error: string; id: string }[];
+            failedCount: number;
+            successful: TFile[];
+            successfulCount: number;
+        }>;
+        getMeta: (id: string) => Promise<TFile>;
+        maxUploadSize: number;
+        update: (options: { id: string }, updates: { metadata?: Record<string, unknown>; status?: string }) => Promise<void>;
+        write: (options: { body: unknown; contentLength: number; id: string; start: number }) => Promise<TFile>;
+    } {
+        // This will be overridden by subclasses
+        throw new Error("storage must be implemented");
+    }
+
+    /**
+     * Build file URL from request URL and file data.
+     * @param _requestUrl Request URL string
+     * @param _file File object containing ID and content type
+     * @returns Constructed file URL with extension based on content type
+     */
+    protected buildFileUrl(_requestUrl: string, _file: TFile): string {
+        // This will be overridden by subclasses
+        throw new Error("buildFileUrl must be implemented");
     }
 }
 

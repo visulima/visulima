@@ -29,6 +29,7 @@ export default createConfig(
         },
     },
     // Vue configuration
+    ...vue.configs["flat/recommended"],
     {
         files: ["**/*.vue"],
         languageOptions: {
@@ -42,9 +43,6 @@ export default createConfig(
             vue,
         },
         processor: vue.processors[".vue"],
-        rules: {
-            ...vue.configs["flat/recommended"].reduce((acc, config) => ({ ...acc, ...config.rules }), {}),
-        },
     },
     // Solid configuration
     {
@@ -57,8 +55,9 @@ export default createConfig(
         },
     },
     // Svelte configuration
+    ...svelte.configs.recommended,
     {
-        files: ["**/*.svelte"],
+        files: ["**/*.svelte", "*.svelte", "**/*.svelte.js", "*.svelte.js", "**/*.svelte.ts", "*.svelte.ts"],
         languageOptions: {
             parser: svelteParser,
             parserOptions: {
@@ -68,10 +67,6 @@ export default createConfig(
         },
         plugins: {
             svelte,
-        },
-        processor: svelte.processors.svelte,
-        rules: {
-            ...svelte.configs.recommended.reduce((acc, config) => ({ ...acc, ...(config.rules || {}) }), {}),
         },
     },
 );

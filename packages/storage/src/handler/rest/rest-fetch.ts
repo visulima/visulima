@@ -47,11 +47,24 @@ class RestFetch<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
         const restInstance = this;
 
         this.restBase = new (class extends RestBase<TFile> {
-            protected get storage() {
-                return restInstance.storage;
+            protected override get storage() {
+                return restInstance.storage as unknown as {
+                    create: (config: FileInit) => Promise<TFile>;
+                    delete: (options: { id: string }) => Promise<TFile>;
+                    deleteBatch: (ids: string[]) => Promise<{
+                        failed: { error: string; id: string }[];
+                        failedCount: number;
+                        successful: TFile[];
+                        successfulCount: number;
+                    }>;
+                    getMeta: (id: string) => Promise<TFile>;
+                    maxUploadSize: number;
+                    update: (options: { id: string }, updates: { metadata?: Record<string, unknown>; status?: string }) => Promise<void>;
+                    write: (options: { body: unknown; contentLength: number; id: string; start: number }) => Promise<TFile>;
+                };
             }
 
-            protected buildFileUrl(requestUrl: string, file: TFile): string {
+            protected override buildFileUrl(requestUrl: string, file: TFile): string {
                 return restInstance.buildFileUrl({ url: requestUrl } as Request, file);
             }
         })();
@@ -327,20 +340,20 @@ class RestFetch<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
 
     /**
      * Handle OPTIONS requests with REST API capabilities.
-     * @param request Web API Request
+     * @param _request Web API Request
      * @returns Promise resolving to ResponseFile with CORS headers
      */
-    public async options(request: Request): Promise<ResponseFile<TFile>> {
+    public async options(_request: Request): Promise<ResponseFile<TFile>> {
         return this.restBase.handleOptions(RestFetch.methods, this.storage.maxUploadSize);
     }
 
     /**
      * Retrieves a file or list of files based on the request path.
      * Delegates to BaseHandlerFetch.fetch() method.
-     * @param request Web API Request
+     * @param _request Web API Request
      * @returns Promise resolving to Web API Response
      */
-    public async get(request: Request): Promise<ResponseFile<TFile> | ResponseList<TFile>> {
+    public async get(_request: Request): Promise<ResponseFile<TFile> | ResponseList<TFile>> {
         // For Fetch version, get is handled by the fetch() method
         // This method signature exists for consistency but shouldn't be called directly
         throw createHttpError(500, "GET requests should be handled via fetch() method");
@@ -387,14 +400,14 @@ const getIdFromRequestUrl = (url: string): string | null => {
         const lastPart = pathParts[pathParts.length - 1];
 
         if (!lastPart) {
-            return undefined;
+            return null;
         }
 
         // Remove extension if present
         const id = lastPart.replace(/\.[^.]+$/, "");
 
-        return id || undefined;
+        return id || null;
     } catch {
-        return undefined;
+        return null;
     }
 };

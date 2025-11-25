@@ -53,7 +53,7 @@ describe(useAbortBatch, () => {
     });
 
     it("should provide abortBatch function", () => {
-        expect.assertions(1);
+        expect.assertions(2);
 
         const { result } = renderHookWithQueryClient(() =>
             useAbortBatch({
@@ -61,7 +61,8 @@ describe(useAbortBatch, () => {
             }),
         );
 
-        expectTypeOf(result.current.abortBatch).toBeFunction();
+        expect(result.current.abortBatch).toBeDefined();
+        expect(typeof result.current.abortBatch).toBe("function");
     });
 
     it("should abort batch without throwing", () => {

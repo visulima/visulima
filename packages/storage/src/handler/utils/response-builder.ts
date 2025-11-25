@@ -85,7 +85,6 @@ export const buildLocationHeader = (
 ): string => {
     const url = new URL(requestUrl || "/", "http://localhost");
     const { pathname } = url;
-    const query = Object.fromEntries(url.searchParams.entries());
     const relative = `${pathname}/${fileId}.${mime.getExtension(contentType)}`;
 
     return useRelativeLocation ? relative : `${baseUrl || ""}${relative}`;

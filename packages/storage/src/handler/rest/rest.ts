@@ -50,11 +50,24 @@ class Rest<
         const restInstance = this;
 
         this.restBase = new (class extends RestBase<TFile> {
-            protected get storage() {
-                return restInstance.storage;
+            protected override get storage() {
+                return restInstance.storage as unknown as {
+                    create: (config: FileInit) => Promise<TFile>;
+                    delete: (options: { id: string }) => Promise<TFile>;
+                    deleteBatch: (ids: string[]) => Promise<{
+                        failed: { error: string; id: string }[];
+                        failedCount: number;
+                        successful: TFile[];
+                        successfulCount: number;
+                    }>;
+                    getMeta: (id: string) => Promise<TFile>;
+                    maxUploadSize: number;
+                    update: (options: { id: string }, updates: { metadata?: Record<string, unknown>; status?: string }) => Promise<void>;
+                    write: (options: { body: unknown; contentLength: number; id: string; start: number }) => Promise<TFile>;
+                };
             }
 
-            protected buildFileUrl(requestUrl: string, file: TFile): string {
+            protected override buildFileUrl(requestUrl: string, file: TFile): string {
                 return restInstance.buildFileUrlForRest(requestUrl, file);
             }
         })();
@@ -63,7 +76,7 @@ class Rest<
     /**
      * Compose and register HTTP method handlers.
      */
-    protected compose(): void {
+    protected override compose(): void {
         this.registeredHandlers.set("POST", this.post.bind(this));
         this.registeredHandlers.set("PUT", this.put.bind(this));
         this.registeredHandlers.set("PATCH", this.patch.bind(this));
@@ -105,7 +118,7 @@ class Rest<
         const contentType = getHeader(request, "content-type") || "application/octet-stream";
         const config = extractFileInit(request, contentLength, contentType);
 
-        const requestUrl = request.originalUrl || (request.url as string);
+        const requestUrl = (request as NodeRequest & { originalUrl?: string }).originalUrl || (request.url as string);
         const bodyStream = getRequestStream(request);
 
         return this.restBase.handlePost(config, isChunkedUpload, requestUrl, bodyStream, contentLength);
@@ -169,7 +182,7 @@ class Rest<
             size: contentLength,
         };
 
-        const requestUrl = request.originalUrl || (request.url as string);
+        const requestUrl = (request as NodeRequest & { originalUrl?: string }).originalUrl || (request.url as string);
         const bodyStream = getRequestStream(request);
 
         return this.restBase.handlePut(id, config, requestUrl, bodyStream, contentLength, metadata);
@@ -289,7 +302,7 @@ class Rest<
         }
 
         const chunkChecksum = getHeader(request, "x-chunk-checksum", true);
-        const requestUrl = request.originalUrl || (request.url as string);
+        const requestUrl = (request as NodeRequest & { originalUrl?: string }).originalUrl || (request.url as string);
         const bodyStream = getRequestStream(request);
 
         return this.restBase.handlePatch(id, chunkOffset, contentLength, chunkChecksum, requestUrl, bodyStream);
@@ -321,7 +334,7 @@ class Rest<
      * Handle OPTIONS requests with REST API capabilities.
      * @returns Promise resolving to ResponseFile with CORS headers
      */
-    public async options(): Promise<ResponseFile<TFile>> {
+    public override async options(): Promise<ResponseFile<TFile>> {
         return this.restBase.handleOptions(Rest.methods, this.storage.maxUploadSize);
     }
 
@@ -332,7 +345,7 @@ class Rest<
      * @param response Node.js ServerResponse.
      * @returns Promise resolving to a single file, paginated list, or array of files.
      */
-    public async get(request: NodeRequest, response: NodeResponse): Promise<ResponseFile<TFile> | ResponseList<TFile>> {
+    public override async get(request: NodeRequest, response: NodeResponse): Promise<ResponseFile<TFile> | ResponseList<TFile>> {
         return super.get(request, response);
     }
 }

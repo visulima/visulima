@@ -73,23 +73,28 @@ class Multipart<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
         const multipartInstance = this;
 
         this.multipartBase = new (class extends MultipartBase<TFile> {
-            protected get storage() {
+            // eslint-disable-next-line class-methods-use-this
+            protected override get storage() {
                 return multipartInstance.storage;
             }
 
-            protected get maxFileSize() {
+            // eslint-disable-next-line class-methods-use-this
+            protected override get maxFileSize() {
                 return multipartInstance.maxFileSize;
             }
 
-            protected get maxHeaderSize() {
+            // eslint-disable-next-line class-methods-use-this
+            protected override get maxHeaderSize() {
                 return multipartInstance.maxHeaderSize;
             }
 
-            protected buildFileUrl(requestUrl: string, file: TFile): string {
+            // eslint-disable-next-line class-methods-use-this
+            protected override buildFileUrl(requestUrl: string, file: TFile): string {
                 return multipartInstance.buildFileUrl({ url: requestUrl } as Request, file);
             }
 
-            protected createStreamFromBytes(bytes: unknown): unknown {
+            // eslint-disable-next-line class-methods-use-this
+            protected override createStreamFromBytes(bytes: unknown): unknown {
                 // For Fetch API, convert to Node.js Readable stream for storage.write
                 // storage.write expects a Node.js Readable stream, not Uint8Array
                 if (bytes instanceof Uint8Array) {
@@ -104,23 +109,12 @@ class Multipart<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
                 return Readable.from(new Uint8Array(0));
             }
 
+            // eslint-disable-next-line class-methods-use-this
             protected createEmptyStream(): unknown {
                 // Return Node.js Readable stream, not Uint8Array
                 return Readable.from(new Uint8Array(0));
             }
         })();
-    }
-
-    /**
-     * Compose and register HTTP method handlers.
-     */
-    protected compose(): void {
-        this.registeredHandlers.set("POST", this.post.bind(this));
-        this.registeredHandlers.set("DELETE", this.delete.bind(this));
-        this.registeredHandlers.set("GET", this.get.bind(this));
-        this.registeredHandlers.set("OPTIONS", this.options.bind(this));
-
-        this.logger?.debug("Registered handler: %s", [...this.registeredHandlers.keys()].join(", "));
     }
 
     /**
@@ -132,7 +126,7 @@ class Multipart<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
     public async post(request: Request): Promise<ResponseFile<TFile>> {
         const contentType = request.headers.get("content-type") || "";
 
-        if (!RE_MIME.test(contentType.split(";")[0])) {
+        if (!RE_MIME.test(contentType.split(";")[0] || "")) {
             throw createHttpError(400, "Invalid content-type");
         }
 
@@ -218,13 +212,25 @@ class Multipart<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
     /**
      * Retrieves a file or list of files based on the request path.
      * Delegates to BaseHandlerFetch.fetch() method.
-     * @param request Web API Request
+     * @param _request Web API Request
      * @returns Promise resolving to Web API Response
      */
-    public async get(request: Request): Promise<ResponseFile<TFile>> {
+    public async get(_request: Request): Promise<ResponseFile<TFile>> {
         // For Fetch version, get is handled by the fetch() method
         // This method signature exists for consistency but shouldn't be called directly
         throw createHttpError(500, "GET requests should be handled via fetch() method");
+    }
+
+    /**
+     * Compose and register HTTP method handlers.
+     */
+    protected compose(): void {
+        this.registeredHandlers.set("POST", this.post.bind(this));
+        this.registeredHandlers.set("DELETE", this.delete.bind(this));
+        this.registeredHandlers.set("GET", this.get.bind(this));
+        this.registeredHandlers.set("OPTIONS", this.options.bind(this));
+
+        this.logger?.debug("Registered handler: %s", [...this.registeredHandlers.keys()].join(", "));
     }
 }
 

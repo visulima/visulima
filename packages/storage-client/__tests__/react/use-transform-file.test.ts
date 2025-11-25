@@ -135,7 +135,7 @@ describe(useTransformFile, () => {
         );
 
         await waitFor(() => {
-            expect(onError).toHaveBeenCalledWith();
+            expect(onError).toHaveBeenCalledWith(expect.any(Error));
         });
     });
 

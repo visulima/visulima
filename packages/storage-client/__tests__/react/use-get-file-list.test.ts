@@ -146,7 +146,7 @@ describe(useGetFileList, () => {
         );
 
         await waitFor(() => {
-            expect(onSuccess).toHaveBeenCalledWith();
+            expect(onSuccess).toHaveBeenCalledWith(expect.any(Object));
         });
     });
 
@@ -177,7 +177,7 @@ describe(useGetFileList, () => {
         );
 
         await waitFor(() => {
-            expect(onError).toHaveBeenCalledWith();
+            expect(onError).toHaveBeenCalledWith(expect.any(Error));
         });
     });
 

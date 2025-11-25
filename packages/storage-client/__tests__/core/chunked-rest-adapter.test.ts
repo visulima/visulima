@@ -211,9 +211,9 @@ describe(createChunkedRestAdapter, () => {
 
         await adapter.upload(file);
 
-        expect(onStart).toHaveBeenCalledWith();
-        expect(onProgress).toHaveBeenCalledWith();
-        expect(onFinish).toHaveBeenCalledWith();
+        expect(onStart).toHaveBeenCalled();
+        expect(onProgress).toHaveBeenCalledWith(expect.any(Number), expect.any(Number));
+        expect(onFinish).toHaveBeenCalled();
         expect(onError).not.toHaveBeenCalled();
     });
 

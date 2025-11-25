@@ -64,6 +64,7 @@ export abstract class TusBase<TFile extends UploadFile> {
         create: (config: FileInit) => Promise<TFile>;
         delete: (options: { id: string }) => Promise<TFile>;
         getMeta: (id: string) => Promise<TFile>;
+        getStream?: (options: { id: string }) => Promise<{ size?: number; stream: unknown }>;
         maxUploadSize: number;
         tusExtension: string[];
         update: (options: { id: string }, updates: { id?: string; metadata?: Record<string, unknown>; size?: number }) => Promise<TFile>;
@@ -81,11 +82,11 @@ export abstract class TusBase<TFile extends UploadFile> {
 
     /**
      * Build file URL from request URL and file data.
-     * @param requestUrl Request URL string
-     * @param file File object containing ID
+     * @param _requestUrl Request URL string
+     * @param _file File object containing ID
      * @returns Constructed file URL for TUS protocol
      */
-    protected buildFileUrl(requestUrl: string, file: TFile): string {
+    protected buildFileUrl(_requestUrl: string, _file: TFile): string {
         // This will be overridden by subclasses
         throw new Error("buildFileUrl must be implemented");
     }
@@ -95,7 +96,7 @@ export abstract class TusBase<TFile extends UploadFile> {
      * @param methods Array of supported HTTP methods
      * @returns ResponseFile with TUS headers
      */
-    protected handleOptions(methods: string[]): ResponseFile<TFile> {
+    public handleOptions(methods: string[]): ResponseFile<TFile> {
         const headers = {
             "Access-Control-Allow-Headers":
                 "Authorization, Content-Type, Location, Tus-Extension, Tus-Max-Size, Tus-Resumable, Tus-Version, Upload-Concat, Upload-Defer-Length, Upload-Length, Upload-Metadata, Upload-Offset, X-HTTP-Method-Override, X-Requested-With",
@@ -122,7 +123,7 @@ export abstract class TusBase<TFile extends UploadFile> {
      * @param contentType Content type (for creation-with-upload)
      * @returns Promise resolving to ResponseFile with upload result
      */
-    protected async handlePost(
+    public async handlePost(
         uploadLength: string | undefined,
         uploadDeferLength: string | undefined,
         uploadConcat: string | undefined,
@@ -375,14 +376,14 @@ export abstract class TusBase<TFile extends UploadFile> {
      * @param contentLength Content length
      * @returns Promise resolving to ResponseFile with upload progress
      */
-    protected async handlePatch(
+    public async handlePatch(
         id: string,
         uploadOffset: number,
         uploadLength: string | undefined,
         metadataHeader: string | undefined,
         checksum: string | undefined,
         checksumAlgorithm: string | undefined,
-        requestUrl: string,
+        _requestUrl: string,
         bodyStream: unknown,
         contentLength: number,
     ): Promise<ResponseFile<TFile>> {
@@ -460,7 +461,7 @@ export abstract class TusBase<TFile extends UploadFile> {
 
             // Check if upload is now completed
             if (file.bytesWritten === file.size) {
-                file.status = "completed";
+                file = { ...file, status: "completed" } as TFile;
             }
         }
 
@@ -478,7 +479,7 @@ export abstract class TusBase<TFile extends UploadFile> {
      * @param id File ID from URL
      * @returns Promise resolving to ResponseFile with upload status headers
      */
-    protected async handleHead(id: string): Promise<ResponseFile<TFile>> {
+    public async handleHead(id: string): Promise<ResponseFile<TFile>> {
         const file = await this.storage.getMeta(id);
 
         await this.storage.checkIfExpired(file);
@@ -513,7 +514,7 @@ export abstract class TusBase<TFile extends UploadFile> {
      * @param id File ID from URL
      * @returns Promise resolving to ResponseFile with file metadata as JSON
      */
-    protected async handleGet(id: string): Promise<ResponseFile<TFile>> {
+    public async handleGet(id: string): Promise<ResponseFile<TFile>> {
         const file = await this.storage.getMeta(id);
 
         return {
@@ -533,7 +534,7 @@ export abstract class TusBase<TFile extends UploadFile> {
      * @param id File ID from URL
      * @returns Promise resolving to ResponseFile with deletion confirmation
      */
-    protected async handleDelete(id: string): Promise<ResponseFile<TFile>> {
+    public async handleDelete(id: string): Promise<ResponseFile<TFile>> {
         // Check if termination is disabled for finished uploads
         if (this.disableTerminationForFinishedUploads) {
             const file = await this.storage.getMeta(id);
@@ -578,7 +579,7 @@ export abstract class TusBase<TFile extends UploadFile> {
      * @param checksumHeader Upload-Checksum header value
      * @returns Object containing checksum algorithm and value
      */
-    protected extractChecksum(checksumHeader: string | undefined): Checksum {
+    public extractChecksum(checksumHeader: string | undefined): Checksum {
         if (!checksumHeader) {
             return { checksum: undefined, checksumAlgorithm: undefined };
         }
@@ -593,7 +594,7 @@ export abstract class TusBase<TFile extends UploadFile> {
      * @param tusResumable Tus-Resumable header value
      * @throws {Error} 412 if version doesn't match or header is missing
      */
-    protected validateTusResumableHeader(tusResumable: string | undefined): void {
+    public validateTusResumableHeader(tusResumable: string | undefined): void {
         if (!tusResumable) {
             throw createHttpError(412, "Missing Tus-Resumable header");
         }
@@ -616,6 +617,9 @@ export abstract class TusBase<TFile extends UploadFile> {
         // eslint-disable-next-line no-loops/no-loops
         for (const partialFile of partialFiles) {
             // Get stream for this partial file
+            if (!this.storage.getStream) {
+                throw createHttpError(501, "getStream is not supported by this storage backend");
+            }
             const { size, stream } = await this.storage.getStream({ id: partialFile.id });
 
             if (size === undefined) {
@@ -636,10 +640,7 @@ export abstract class TusBase<TFile extends UploadFile> {
         }
 
         // Final file should already be completed after all writes
-        // But ensure bytesWritten matches total size
-        if (finalFile.size !== undefined && finalFile.bytesWritten !== finalFile.size) {
-            await this.storage.update({ id: finalFile.id }, { bytesWritten: finalFile.size });
-        }
+        // bytesWritten is updated automatically by the write operations
     }
 }
 

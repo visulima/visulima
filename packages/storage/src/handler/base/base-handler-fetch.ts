@@ -389,7 +389,7 @@ abstract class BaseHandlerFetch<TFile extends UploadFile> extends BaseHandlerCor
      * @param supportedTypes Array of supported MIME types to match against.
      * @returns Best matching content type or undefined if no match found.
      */
-    public negotiateContentType(request: Request, supportedTypes: string[]): string | undefined {
+    public override negotiateContentType(request: Request, supportedTypes: string[]): string | undefined {
         return super.negotiateContentType(request.headers.get("accept") || undefined, supportedTypes);
     }
 }

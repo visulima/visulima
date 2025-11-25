@@ -42,3 +42,4 @@ export const useBatchErrorListener = (options: UseBatchErrorListenerOptions): vo
         };
     }, [endpoint, metadata]);
 };
+

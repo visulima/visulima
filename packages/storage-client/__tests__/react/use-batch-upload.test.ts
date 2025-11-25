@@ -160,7 +160,7 @@ describe(useBatchUpload, () => {
 
         result.current.uploadBatch([file1]);
 
-        expect(onStart).toHaveBeenCalledWith();
+        expect(onStart).toHaveBeenCalledWith(expect.any(String));
 
         // Clean up
         unmount();

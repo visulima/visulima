@@ -191,7 +191,7 @@ describe("uploader Batch Operations", () => {
         // Wait for progress event
         await new Promise((resolve) => setTimeout(resolve, 15));
 
-        expect(onBatchProgress).toHaveBeenCalledWith();
+        expect(onBatchProgress).toHaveBeenCalled();
         expect(onBatchProgress).toHaveBeenCalledWith(
             expect.objectContaining({
                 progress: expect.any(Number),
@@ -216,7 +216,7 @@ describe("uploader Batch Operations", () => {
         // Wait for completion
         await new Promise((resolve) => setTimeout(resolve, 25));
 
-        expect(onBatchFinish).toHaveBeenCalledWith();
+        expect(onBatchFinish).toHaveBeenCalled();
         expect(onBatchFinish).toHaveBeenCalledWith(
             expect.objectContaining({
                 completedCount: 1,

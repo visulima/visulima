@@ -3,7 +3,6 @@ import type { Readable } from "node:stream";
 import { getStore } from "@netlify/blobs";
 
 import { detectFileTypeFromBuffer } from "../../utils/detect-file-type";
-import { UploadError } from "../../utils/errors";
 import toMilliseconds from "../../utils/primitives/to-milliseconds";
 import type { RetryConfig } from "../../utils/retry";
 import { createRetryWrapper } from "../../utils/retry";

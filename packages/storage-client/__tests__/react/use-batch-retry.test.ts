@@ -53,7 +53,7 @@ describe(useBatchRetry, () => {
     });
 
     it("should provide retryBatch function", () => {
-        expect.assertions(1);
+        expect.assertions(2);
 
         const { result } = renderHookWithQueryClient(() =>
             useBatchRetry({
@@ -61,7 +61,8 @@ describe(useBatchRetry, () => {
             }),
         );
 
-        expectTypeOf(result.current.retryBatch).toBeFunction();
+        expect(result.current.retryBatch).toBeDefined();
+        expect(typeof result.current.retryBatch).toBe("function");
     });
 
     it("should retry batch without throwing", () => {
