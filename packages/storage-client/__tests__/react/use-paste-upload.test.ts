@@ -13,11 +13,12 @@ describe(usePasteUpload, () => {
     });
 
     it("should provide handlePaste function", () => {
-        expect.assertions(1);
+        expect.assertions(2);
 
         const { result } = renderHook(() => usePasteUpload());
 
-        expectTypeOf(result.current.handlePaste).toBeFunction();
+        expect(result.current.handlePaste).toBeDefined();
+        expect(typeof result.current.handlePaste).toBe("function");
     });
 
     it("should handle paste event with files", async () => {

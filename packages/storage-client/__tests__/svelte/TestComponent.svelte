@@ -3,19 +3,17 @@
     import type { QueryClient } from "@tanstack/svelte-query";
     import { createGetFile } from "../../src/svelte/create-get-file";
     import type { CreateGetFileOptions, CreateGetFileReturn } from "../../src/svelte/create-get-file";
+    import GetFileInner from "./GetFileInner.svelte";
 
     export let client: QueryClient;
     export let options: CreateGetFileOptions;
     
-    // Initialize result - pass queryClient directly since createGetFile accepts it
-    // Use reactive statement to ensure it updates when options change
-    let result: CreateGetFileReturn | undefined = undefined;
-    $: result = createGetFile({ ...options, queryClient: client });
+    let innerResult: CreateGetFileReturn | undefined = undefined;
     
     // Expose result for testing
-    export const getResult = () => result;
+    export const getResult = () => innerResult;
 </script>
 
 <QueryClientProvider {client}>
-    <!-- Component content -->
+    <GetFileInner bind:result={innerResult} {options} />
 </QueryClientProvider>

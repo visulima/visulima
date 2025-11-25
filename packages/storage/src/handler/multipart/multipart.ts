@@ -62,23 +62,28 @@ class Multipart<
         const multipartInstance = this;
 
         this.multipartBase = new (class extends MultipartBase<TFile> {
-            protected get storage() {
+            // eslint-disable-next-line class-methods-use-this
+            protected override get storage() {
                 return multipartInstance.storage;
             }
 
-            protected get maxFileSize() {
+            // eslint-disable-next-line class-methods-use-this
+            protected override get maxFileSize() {
                 return multipartInstance.maxFileSize;
             }
 
-            protected get maxHeaderSize() {
+            // eslint-disable-next-line class-methods-use-this
+            protected override get maxHeaderSize() {
                 return multipartInstance.maxHeaderSize;
             }
 
-            protected buildFileUrl(requestUrl: string, file: TFile): string {
+            // eslint-disable-next-line class-methods-use-this
+            protected override buildFileUrl(requestUrl: string, file: TFile): string {
                 return multipartInstance.buildFileUrl({ url: requestUrl } as NodeRequest & { originalUrl?: string }, file);
             }
 
-            protected createStreamFromBytes(bytes: unknown): unknown {
+            // eslint-disable-next-line class-methods-use-this
+            protected override createStreamFromBytes(bytes: unknown): unknown {
                 if (bytes instanceof Uint8Array || Buffer.isBuffer(bytes)) {
                     return Readable.from(Buffer.from(bytes));
                 }
@@ -90,22 +95,11 @@ class Multipart<
                 return Readable.from(Buffer.from(String(bytes)));
             }
 
+            // eslint-disable-next-line class-methods-use-this
             protected createEmptyStream(): unknown {
                 return Readable.from(new Uint8Array(0));
             }
         })();
-    }
-
-    /**
-     * Compose and register HTTP method handlers.
-     */
-    protected compose(): void {
-        this.registeredHandlers.set("POST", this.post.bind(this));
-        this.registeredHandlers.set("DELETE", this.delete.bind(this));
-        this.registeredHandlers.set("GET", this.get.bind(this));
-        this.registeredHandlers.set("OPTIONS", this.options.bind(this));
-
-        this.logger?.debug("Registered handler: %s", [...this.registeredHandlers.keys()].join(", "));
     }
 
     /**
@@ -137,7 +131,7 @@ class Multipart<
                 throw createHttpError(400, "No file found in multipart request");
             }
 
-            const requestUrl = request.originalUrl || (request.url as string);
+            const requestUrl = (request as NodeRequest & { originalUrl?: string }).originalUrl || (request.url as string);
 
             return this.multipartBase.handlePost(filePart, parts, requestUrl);
         } catch (error) {
@@ -178,6 +172,18 @@ class Multipart<
 
             throw error;
         }
+    }
+
+    /**
+     * Compose and register HTTP method handlers.
+     */
+    protected compose(): void {
+        this.registeredHandlers.set("POST", this.post.bind(this));
+        this.registeredHandlers.set("DELETE", this.delete.bind(this));
+        this.registeredHandlers.set("GET", this.get.bind(this));
+        this.registeredHandlers.set("OPTIONS", this.options.bind(this));
+
+        this.logger?.debug("Registered handler: %s", [...this.registeredHandlers.keys()].join(", "));
     }
 }
 

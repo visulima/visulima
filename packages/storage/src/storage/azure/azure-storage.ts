@@ -4,7 +4,7 @@ import { BlobServiceClient, StorageSharedKeyCredential } from "@azure/storage-bl
 import { normalize } from "@visulima/path";
 
 import { detectFileTypeFromStream } from "../../utils/detect-file-type";
-import { ERRORS, throwErrorCode, UploadError } from "../../utils/errors";
+import { ERRORS, throwErrorCode } from "../../utils/errors";
 import toMilliseconds from "../../utils/primitives/to-milliseconds";
 import type { RetryConfig } from "../../utils/retry";
 import { createRetryWrapper } from "../../utils/retry";

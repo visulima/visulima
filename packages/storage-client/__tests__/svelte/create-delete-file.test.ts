@@ -53,7 +53,7 @@ describe(createDeleteFile, () => {
             },
         });
 
-        // Wait for result to be initialized and have proper stores
+        // Wait for result to be initialized and stores to be available
         let result: ReturnType<typeof component.result>;
 
         await waitFor(() => {
@@ -62,11 +62,12 @@ describe(createDeleteFile, () => {
             expect(r).toBeDefined();
             expect(r?.deleteFile).toBeDefined();
             expect(r?.isLoading).toBeDefined();
-
-            expectTypeOf(r?.isLoading?.subscribe).toBeFunction();
+            expect(typeof r?.isLoading?.subscribe).toBe("function");
+            expect(r?.error).toBeDefined();
+            expect(typeof r?.error?.subscribe).toBe("function");
 
             result = r!;
-        });
+        }, { timeout: 2000 });
 
         await result.deleteFile("file-123");
 
@@ -105,7 +106,7 @@ describe(createDeleteFile, () => {
             },
         });
 
-        // Wait for result to be initialized and have proper stores
+        // Wait for result to be initialized and stores to be available
         let result: ReturnType<typeof component.result>;
 
         await waitFor(() => {
@@ -113,12 +114,13 @@ describe(createDeleteFile, () => {
 
             expect(r).toBeDefined();
             expect(r?.deleteFile).toBeDefined();
+            expect(r?.isLoading).toBeDefined();
+            expect(typeof r?.isLoading?.subscribe).toBe("function");
             expect(r?.error).toBeDefined();
-
-            expectTypeOf(r?.error?.subscribe).toBeFunction();
+            expect(typeof r?.error?.subscribe).toBe("function");
 
             result = r!;
-        });
+        }, { timeout: 2000 });
 
         // The mutation will reject, but we need to catch it to allow the error to be set in the store
         try {
@@ -137,7 +139,7 @@ describe(createDeleteFile, () => {
             const error = get(result.error);
 
             expect(error).toBeDefined();
-        }, { timeout: 2000 });
+        }, { timeout: 3000 });
     });
 
     it("should reset mutation state", async () => {
@@ -157,7 +159,7 @@ describe(createDeleteFile, () => {
             },
         });
 
-        // Wait for result to be initialized and have proper stores
+        // Wait for result to be initialized and stores to be available
         let result: ReturnType<typeof component.result>;
 
         await waitFor(() => {
@@ -166,15 +168,12 @@ describe(createDeleteFile, () => {
             expect(r).toBeDefined();
             expect(r?.deleteFile).toBeDefined();
             expect(r?.isLoading).toBeDefined();
-
-            expectTypeOf(r?.isLoading?.subscribe).toBeFunction();
-
+            expect(typeof r?.isLoading?.subscribe).toBe("function");
             expect(r?.error).toBeDefined();
-
-            expectTypeOf(r?.error?.subscribe).toBeFunction();
+            expect(typeof r?.error?.subscribe).toBe("function");
 
             result = r!;
-        });
+        }, { timeout: 2000 });
 
         await result.deleteFile("file-123");
 

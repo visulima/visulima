@@ -53,7 +53,7 @@ describe(useAbortAll, () => {
     });
 
     it("should provide abortAll function", () => {
-        expect.assertions(1);
+        expect.assertions(2);
 
         const { result } = renderHookWithQueryClient(() =>
             useAbortAll({
@@ -61,7 +61,8 @@ describe(useAbortAll, () => {
             }),
         );
 
-        expectTypeOf(result.current.abortAll).toBeFunction();
+        expect(result.current.abortAll).toBeDefined();
+        expect(typeof result.current.abortAll).toBe("function");
     });
 
     it("should abort all uploads without throwing", () => {

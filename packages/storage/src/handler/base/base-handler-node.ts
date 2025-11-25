@@ -361,7 +361,7 @@ abstract class BaseHandlerNode<
      * @param supportedTypes Array of supported MIME types to match against.
      * @returns Best matching content type or undefined if no match found.
      */
-    public negotiateContentType(request: NodeRequest, supportedTypes: string[]): string | undefined {
+    public override negotiateContentType(request: NodeRequest, supportedTypes: string[]): string | undefined {
         return super.negotiateContentType(request.headers.accept, supportedTypes);
     }
 
@@ -654,7 +654,7 @@ abstract class BaseHandlerNode<
      * @param error Error object to check
      */
     // eslint-disable-next-line class-methods-use-this
-    protected checkForUndefinedIdOrPath(error: unknown): void {
+    protected override checkForUndefinedIdOrPath(error: unknown): void {
         if (error instanceof Error && ["Id is undefined", "Invalid request URL", "Path is undefined"].includes(error.message)) {
             throw createHttpError(404, "File not found");
         }

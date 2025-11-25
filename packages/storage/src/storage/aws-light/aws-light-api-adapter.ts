@@ -66,11 +66,8 @@ class AwsLightApiAdapter implements S3ApiOperations {
 
     private readonly endpoint: string;
 
-    private readonly region: string;
-
     public constructor(config: AwsLightClientConfig & { bucket: string }) {
         this.bucket = config.bucket;
-        this.region = config.region;
         this.endpoint = config.endpoint || `https://${config.bucket}.s3.${config.region}.amazonaws.com`;
 
         this.aws = new AwsClient({
@@ -80,28 +77,6 @@ class AwsLightApiAdapter implements S3ApiOperations {
             service: config.service || "s3",
             sessionToken: config.sessionToken,
         });
-    }
-
-    /**
-     * Builds S3 API URL.
-     */
-    private buildUrl(key: string, queryParams?: Record<string, string>): string {
-        const url = new URL(key, this.endpoint);
-
-        if (queryParams) {
-            for (const [parameterKey, value] of Object.entries(queryParams)) {
-                url.searchParams.set(parameterKey, value);
-            }
-        }
-
-        return url.toString();
-    }
-
-    /**
-     * Converts ReadableStream to Readable for Node.js compatibility.
-     */
-    private streamToReadable(stream: ReadableStream<Uint8Array>): Readable {
-        return Readable.fromWeb(stream);
     }
 
     public async createMultipartUpload(params: {
@@ -533,7 +508,7 @@ ${partsXml}
         }
     }
 
-    public async checkBucketAccess(params: { Bucket: string }): Promise<void> {
+    public async checkBucketAccess(_params: { Bucket: string }): Promise<void> {
         // Simple HEAD request to check bucket access
         const url = this.buildUrl("");
         const response = await this.aws.fetch(url, {
@@ -545,6 +520,28 @@ ${partsXml}
 
             throw new Error(`Failed to access bucket: ${response.status} ${text}`);
         }
+    }
+
+    /**
+     * Builds S3 API URL.
+     */
+    private buildUrl(key: string, queryParams?: Record<string, string>): string {
+        const url = new URL(key, this.endpoint);
+
+        if (queryParams) {
+            for (const [parameterKey, value] of Object.entries(queryParams)) {
+                url.searchParams.set(parameterKey, value);
+            }
+        }
+
+        return url.toString();
+    }
+
+    /**
+     * Converts ReadableStream to Readable for Node.js compatibility.
+     */
+    private streamToReadable(stream: ReadableStream<Uint8Array>): Readable {
+        return Readable.fromWeb(stream);
     }
 }
 

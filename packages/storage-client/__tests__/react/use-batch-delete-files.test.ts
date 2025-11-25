@@ -151,7 +151,7 @@ describe(useBatchDeleteFiles, () => {
         await expect(result.current.batchDeleteFiles(["file-1", "file-2"])).rejects.toThrow();
 
         await waitFor(() => {
-            expect(onError).toHaveBeenCalledWith();
+            expect(onError).toHaveBeenCalledWith(expect.any(Error));
         });
     });
 

@@ -51,7 +51,7 @@ describe(createGetFile, () => {
         });
 
         // Access result from component instance
-        // Wait for result to be initialized
+        // Wait for result to be initialized and stores to be available
         let result: ReturnType<typeof component.getResult>;
 
         await waitFor(() => {
@@ -59,7 +59,9 @@ describe(createGetFile, () => {
 
             expect(r).toBeDefined();
             expect(r?.isLoading).toBeDefined();
+            expect(typeof r?.isLoading?.subscribe).toBe("function");
             expect(r?.data).toBeDefined();
+            expect(typeof r?.data?.subscribe).toBe("function");
 
             result = r!;
         }, { timeout: 2000 });
@@ -103,13 +105,17 @@ describe(createGetFile, () => {
             },
         });
 
-        // Wait for result to be initialized
+        // Wait for result to be initialized and stores to be available
         let result: ReturnType<typeof component.getResult>;
 
         await waitFor(() => {
             const r = component.getResult();
 
             expect(r).toBeDefined();
+            expect(r?.isLoading).toBeDefined();
+            expect(typeof r?.isLoading?.subscribe).toBe("function");
+            expect(r?.data).toBeDefined();
+            expect(typeof r?.data?.subscribe).toBe("function");
 
             result = r!;
         }, { timeout: 2000 });

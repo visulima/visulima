@@ -311,7 +311,7 @@ describe("query-client", () => {
 
             expect(result.etag).toBe("\"test-etag\"");
             expect(result.location).toBe("https://api.example.com/file/123");
-            expect(onProgress).toHaveBeenCalledWith();
+            expect(onProgress).toHaveBeenCalledWith(expect.any(Number));
         });
 
         it("should handle upload without progress callback", async () => {

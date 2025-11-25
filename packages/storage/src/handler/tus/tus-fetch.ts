@@ -43,8 +43,6 @@ export class Tus<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
      */
     public static override readonly methods: Handlers[] = ["delete", "download", "get", "head", "options", "patch", "post"];
 
-    public disableTerminationForFinishedUploads = false;
-
     private readonly tusBase: TusBase<TFile>;
 
     public constructor(options: UploadOptions<TFile>) {
@@ -54,15 +52,26 @@ export class Tus<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
         const tusInstance = this;
 
         this.tusBase = new (class extends TusBase<TFile> {
-            protected get storage() {
-                return tusInstance.storage;
+            protected override get storage() {
+                return tusInstance.storage as unknown as {
+                    checkIfExpired: (file: TFile) => Promise<void>;
+                    checksumTypes: string[];
+                    config: { useRelativeLocation?: boolean };
+                    create: (config: FileInit) => Promise<TFile>;
+                    delete: (options: { id: string }) => Promise<TFile>;
+                    getMeta: (id: string) => Promise<TFile>;
+                    maxUploadSize: number;
+                    tusExtension: string[];
+                    update: (options: { id: string }, updates: { id?: string; metadata?: Record<string, unknown>; size?: number }) => Promise<TFile>;
+                    write: (options: { body: unknown; checksum?: string; checksumAlgorithm?: string; contentLength: number; id: string; start: number }) => Promise<TFile>;
+                };
             }
 
-            protected get disableTerminationForFinishedUploads() {
+            protected override get disableTerminationForFinishedUploads() {
                 return tusInstance.disableTerminationForFinishedUploads;
             }
 
-            protected buildFileUrl(requestUrl: string, file: TFile): string {
+            protected override buildFileUrl(requestUrl: string, file: TFile): string {
                 return tusInstance.buildFileUrlForTus(requestUrl, file);
             }
         })();

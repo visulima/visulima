@@ -80,7 +80,7 @@ describe("uploader Abort Operations", () => {
 
         uploader.abortItem(itemId);
 
-        expect(onItemAbort).toHaveBeenCalledWith();
+        expect(onItemAbort).toHaveBeenCalled();
         expect(onItemAbort).toHaveBeenCalledWith(
             expect.objectContaining({
                 id: itemId,
@@ -112,7 +112,7 @@ describe("uploader Abort Operations", () => {
         if (batchId) {
             uploader.abortBatch(batchId);
 
-            expect(onBatchCancelled).toHaveBeenCalledWith();
+            expect(onBatchCancelled).toHaveBeenCalled();
         }
     });
 

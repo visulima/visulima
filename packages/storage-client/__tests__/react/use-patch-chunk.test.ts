@@ -132,7 +132,7 @@ describe(usePatchChunk, () => {
         await result.current.patchChunk("file-123", chunk, 0);
 
         await waitFor(() => {
-            expect(onSuccess).toHaveBeenCalledWith();
+            expect(onSuccess).toHaveBeenCalledWith(expect.any(Object));
         });
     });
 
@@ -166,7 +166,7 @@ describe(usePatchChunk, () => {
         await expect(result.current.patchChunk("file-123", chunk, 0)).rejects.toThrow();
 
         await waitFor(() => {
-            expect(onError).toHaveBeenCalledWith();
+            expect(onError).toHaveBeenCalledWith(expect.any(Error));
         });
     });
 

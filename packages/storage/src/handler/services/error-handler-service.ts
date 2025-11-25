@@ -4,7 +4,7 @@ import type { BaseStorage } from "../../storage/storage";
 import type { UploadFile } from "../../storage/utils/file";
 import type { ErrorResponses } from "../../utils/errors";
 import { isUploadError } from "../../utils/errors";
-import type { HttpError, UploadResponse } from "../../utils/types";
+import type { HttpError, ResponseBody, UploadResponse } from "../../utils/types";
 import { isValidationError } from "../../utils/validator";
 import { buildErrorResponseBody } from "../utils/response-builder";
 
@@ -60,15 +60,23 @@ class ErrorHandlerService<TFile extends UploadFile> {
         // Format error response - if body is not set, format it into body.error structure
         if (httpError.body) {
             return {
-                body: httpError.body,
+                body: httpError.body as unknown as ResponseBody,
                 headers: httpError.headers,
                 statusCode: httpError.statusCode,
             };
         }
 
         // Format the error properties into a body.error structure
+        const errorCode = (httpError.code || httpError.name || "Error") as string;
+        const errorMessage = (httpError.message || "Unknown error") as string;
+        const errorName = (httpError.name || "Error") as string;
+
         return {
-            body: buildErrorResponseBody(httpError),
+            body: buildErrorResponseBody({
+                code: errorCode,
+                message: errorMessage,
+                name: errorName,
+            }),
             headers: httpError.headers,
             statusCode: httpError.statusCode || 500,
         };

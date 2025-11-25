@@ -19,7 +19,7 @@ describe(useRetry, () => {
     });
 
     it("should provide retryItem function", () => {
-        expect.assertions(1);
+        expect.assertions(2);
 
         const { result } = renderHookWithQueryClient(() =>
             useRetry({
@@ -27,7 +27,8 @@ describe(useRetry, () => {
             }),
         );
 
-        expectTypeOf(result.current.retryItem).toBeFunction();
+        expect(result.current.retryItem).toBeDefined();
+        expect(typeof result.current.retryItem).toBe("function");
     });
 
     it("should retry item without throwing", () => {

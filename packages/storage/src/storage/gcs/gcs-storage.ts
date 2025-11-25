@@ -6,7 +6,7 @@ import { GoogleAuth } from "google-auth-library";
 
 import package_ from "../../../package.json";
 import { detectFileTypeFromStream } from "../../utils/detect-file-type";
-import { ERRORS, throwErrorCode, UploadError } from "../../utils/errors";
+import { ERRORS, throwErrorCode } from "../../utils/errors";
 import toMilliseconds from "../../utils/primitives/to-milliseconds";
 import type { HttpError } from "../../utils/types";
 import LocalMetaStorage from "../local/local-meta-storage";

@@ -121,8 +121,8 @@ describe(createGetFileMeta, () => {
         // We need to wait for the new query to complete
         let attempts = 0;
 
-        while (result.data()?.id !== "file-456" && attempts < 200) {
-            await new Promise((resolve) => setTimeout(resolve, 25));
+        while (result.data()?.id !== "file-456" && attempts < 100) {
+            await new Promise((resolve) => setTimeout(resolve, 50));
             attempts++;
         }
 
@@ -132,8 +132,8 @@ describe(createGetFileMeta, () => {
             // Force refetch which should use the new queryKey from the reactive id signal
             result.refetch();
             attempts = 0;
-            while ((result.isLoading() || result.data()?.id !== "file-456") && attempts < 200) {
-                await new Promise((resolve) => setTimeout(resolve, 25));
+            while ((result.isLoading() || result.data()?.id !== "file-456") && attempts < 50) {
+                await new Promise((resolve) => setTimeout(resolve, 50));
                 attempts++;
             }
         }

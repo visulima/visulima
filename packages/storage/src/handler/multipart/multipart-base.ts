@@ -1,3 +1,4 @@
+/* eslint-disable jsdoc/require-returns-check */
 import createHttpError from "http-errors";
 
 import type { FileInit, UploadFile } from "../../storage/utils/file";
@@ -9,40 +10,6 @@ import type { ResponseFile } from "../types";
  * @template TFile The file type used by this handler.
  */
 abstract class MultipartBase<TFile extends UploadFile> {
-    /**
-     * Storage instance for file operations.
-     */
-    protected get storage(): {
-        create: (config: FileInit) => Promise<TFile>;
-        delete: (options: { id: string }) => Promise<TFile>;
-        maxUploadSize: number;
-        update: (options: { id: string }, updates: { metadata?: Record<string, unknown> }) => Promise<TFile>;
-        write: (options: { body: unknown; contentLength: number; id: string; start: number }) => Promise<TFile>;
-    } {
-        // This will be overridden by subclasses
-        throw new Error("storage must be implemented");
-    }
-
-    /**
-     * Maximum file size allowed for multipart uploads
-     */
-    protected abstract get maxFileSize(): number;
-
-    /**
-     * Maximum header size allowed for multipart parser
-     */
-    protected abstract get maxHeaderSize(): number;
-
-    /**
-     * Build file URL from request URL and file data.
-     * @param _requestUrl Request URL string
-     * @param _file File object containing ID and content type
-     * @returns Constructed file URL with extension based on content type
-     */
-    protected buildFileUrl(_requestUrl: string, _file: TFile): string {
-        // This will be overridden by subclasses
-        throw new Error("buildFileUrl must be implemented");
-    }
 
     /**
      * Handle multipart POST (upload file).
@@ -55,7 +22,8 @@ abstract class MultipartBase<TFile extends UploadFile> {
      * @param requestUrl Request URL for Location header
      * @returns Promise resolving to ResponseFile with upload result
      */
-    protected async handlePost(
+    // eslint-disable-next-line sonarjs/cognitive-complexity
+    public async handlePost(
         filePart: { bytes: unknown; filename?: string; mediaType?: string; size: number },
         metadataParts: { isFile: boolean; name?: string; text?: string }[],
         requestUrl: string,
@@ -137,7 +105,7 @@ abstract class MultipartBase<TFile extends UploadFile> {
      * @param id File ID from URL
      * @returns Promise resolving to ResponseFile with deletion result
      */
-    protected async handleDelete(id: string): Promise<ResponseFile<TFile>> {
+    public async handleDelete(id: string): Promise<ResponseFile<TFile>> {
         const file = await this.storage.delete({ id });
 
         if (file.status === undefined) {
@@ -145,6 +113,43 @@ abstract class MultipartBase<TFile extends UploadFile> {
         }
 
         return { ...file, headers: {}, statusCode: 204 } as ResponseFile<TFile>;
+    }
+
+    /**
+     * Storage instance for file operations.
+     */
+    // eslint-disable-next-line class-methods-use-this
+    protected get storage(): {
+        create: (config: FileInit) => Promise<TFile>;
+        delete: (options: { id: string }) => Promise<TFile>;
+        maxUploadSize: number;
+        update: (options: { id: string }, updates: { metadata?: Record<string, unknown> }) => Promise<TFile>;
+        write: (options: { body: unknown; contentLength: number; id: string; start: number }) => Promise<TFile>;
+    } {
+        // This will be overridden by subclasses
+        throw new Error("storage must be implemented");
+    }
+
+    /**
+     * Maximum file size allowed for multipart uploads
+     */
+    protected abstract get maxFileSize(): number;
+
+    /**
+     * Maximum header size allowed for multipart parser
+     */
+    protected abstract get maxHeaderSize(): number;
+
+    /**
+     * Build file URL from request URL and file data.
+     * @param _requestUrl Request URL string
+     * @param _file File object containing ID and content type
+     * @returns Constructed file URL with extension based on content type
+     */
+    // eslint-disable-next-line class-methods-use-this
+    protected buildFileUrl(_requestUrl: string, _file: TFile): string {
+        // This will be overridden by subclasses
+        throw new Error("buildFileUrl must be implemented");
     }
 
     /**

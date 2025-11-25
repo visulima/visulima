@@ -149,7 +149,7 @@ describe(useBatchUpload, () => {
 
         result.uploadBatch([file1]);
 
-        expect(onStart).toHaveBeenCalledWith();
+        expect(onStart).toHaveBeenCalledWith(expect.any(String));
     });
 
     it("should reset batch state", () => {

@@ -45,15 +45,26 @@ export class Tus<
         const tusInstance = this;
 
         this.tusBase = new (class extends TusBase<TFile> {
-            protected get storage() {
-                return tusInstance.storage;
+            protected override get storage() {
+                return tusInstance.storage as unknown as {
+                    checkIfExpired: (file: TFile) => Promise<void>;
+                    checksumTypes: string[];
+                    config: { useRelativeLocation?: boolean };
+                    create: (config: FileInit) => Promise<TFile>;
+                    delete: (options: { id: string }) => Promise<TFile>;
+                    getMeta: (id: string) => Promise<TFile>;
+                    maxUploadSize: number;
+                    tusExtension: string[];
+                    update: (options: { id: string }, updates: { id?: string; metadata?: Record<string, unknown>; size?: number }) => Promise<TFile>;
+                    write: (options: { body: unknown; checksum?: string; checksumAlgorithm?: string; contentLength: number; id: string; start: number }) => Promise<TFile>;
+                };
             }
 
-            protected get disableTerminationForFinishedUploads() {
+            protected override get disableTerminationForFinishedUploads() {
                 return tusInstance.disableTerminationForFinishedUploads;
             }
 
-            protected buildFileUrl(requestUrl: string, file: TFile): string {
+            protected override buildFileUrl(requestUrl: string, file: TFile): string {
                 return tusInstance.buildFileUrlForTus(requestUrl, file);
             }
         })();
@@ -63,7 +74,7 @@ export class Tus<
      * Handle OPTIONS requests with TUS protocol capabilities.
      * @returns Promise resolving to ResponseFile with TUS headers
      */
-    public async options(): Promise<ResponseFile<TFile>> {
+    public override async options(): Promise<ResponseFile<TFile>> {
         return this.tusBase.handleOptions(Tus.methods);
     }
 
@@ -81,7 +92,7 @@ export class Tus<
         const metadataHeader = getHeader(request, "upload-metadata", true);
         const contentType = getHeader(request, "content-type") || "";
         const contentLength = Number.parseInt(getHeader(request, "content-length") || "0", 10);
-        const requestUrl = request.originalUrl || (request.url as string);
+        const requestUrl = (request as NodeRequest & { originalUrl?: string }).originalUrl || (request.url as string);
         const bodyStream = getRequestStream(request);
 
         return this.tusBase.handlePost(uploadLength, uploadDeferLength, uploadConcat, metadataHeader, requestUrl, bodyStream, contentLength, contentType);
@@ -117,7 +128,7 @@ export class Tus<
             const contentLength = Number(getHeader(request, "content-length"));
             const checksumHeader = getHeader(request, "upload-checksum");
             const { checksum, checksumAlgorithm } = this.tusBase.extractChecksum(checksumHeader);
-            const requestUrl = request.originalUrl || (request.url as string);
+            const requestUrl = (request as NodeRequest & { originalUrl?: string }).originalUrl || (request.url as string);
             const bodyStream = getRequestStream(request);
 
             return this.tusBase.handlePatch(id, uploadOffset, uploadLength, metadataHeader, checksum, checksumAlgorithm, requestUrl, bodyStream, contentLength);

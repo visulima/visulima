@@ -69,7 +69,7 @@ describe(createGetFileList, () => {
 
         await new Promise((resolve) => setTimeout(resolve, 100));
 
-        expect(mockFetch).toHaveBeenCalledWith();
+        expect(mockFetch).toHaveBeenCalled();
         expect(result.data()).toBeDefined();
         expect(result.data()?.data).toHaveLength(2);
     });
@@ -190,7 +190,7 @@ describe(createGetFileList, () => {
             attempts++;
         }
 
-        expect(mockFetch).toHaveBeenCalledWith();
+        expect(mockFetch).toHaveBeenCalled();
 
         // Use batch to update both signals atomically - this prevents multiple query runs
         batch(() => {

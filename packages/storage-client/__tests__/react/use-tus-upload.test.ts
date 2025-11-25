@@ -231,9 +231,9 @@ describe(useTusUpload, () => {
         await result.current.upload(file);
 
         await waitFor(() => {
-            expect(onStart).toHaveBeenCalledWith();
-            expect(onProgress).toHaveBeenCalledWith();
-            expect(onSuccess).toHaveBeenCalledWith();
+            expect(onStart).toHaveBeenCalled();
+            expect(onProgress).toHaveBeenCalledWith(expect.any(Number));
+            expect(onSuccess).toHaveBeenCalledWith(expect.any(Object));
             expect(onError).not.toHaveBeenCalled();
         });
     });

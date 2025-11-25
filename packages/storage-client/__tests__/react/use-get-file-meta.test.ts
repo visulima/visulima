@@ -99,7 +99,7 @@ describe(useGetFileMeta, () => {
         );
 
         await waitFor(() => {
-            expect(onSuccess).toHaveBeenCalledWith();
+            expect(onSuccess).toHaveBeenCalledWith(expect.any(Object));
         });
     });
 
@@ -131,7 +131,7 @@ describe(useGetFileMeta, () => {
         );
 
         await waitFor(() => {
-            expect(onError).toHaveBeenCalledWith();
+            expect(onError).toHaveBeenCalledWith(expect.any(Error));
         });
     });
 

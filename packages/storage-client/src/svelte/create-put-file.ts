@@ -1,6 +1,6 @@
 import { createMutation, useQueryClient } from "@tanstack/svelte-query";
 import type { Readable } from "svelte/store";
-import { derived, readable, writable } from "svelte/store";
+import { derived, writable } from "svelte/store";
 
 import { buildUrl, putFile, storageQueryKeys } from "../core";
 import type { UploadResult } from "../react/types";
@@ -68,15 +68,10 @@ export const createPutFile = (options: CreatePutFileOptions): CreatePutFileRetur
         };
     });
 
-    // Ensure stores are always defined (mutation stores might be undefined initially in test environments)
-    const errorStore = mutation.error || readable(undefined);
-    const isLoadingStore = mutation.isPending || readable(false);
-    const dataStore = mutation.data || readable(undefined);
-
     return {
-        data: derived(dataStore, ($data) => $data || undefined),
-        error: derived(errorStore, ($error) => ($error as Error) || undefined),
-        isLoading: isLoadingStore,
+        data: derived(mutation.data, ($data) => $data || undefined),
+        error: derived(mutation.error, ($error) => ($error as Error) || undefined),
+        isLoading: mutation.isPending,
         progress,
         putFile: (id: string, file: File | Blob) => mutation.mutateAsync({ file, id }),
         reset: () => {

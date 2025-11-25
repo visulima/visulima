@@ -2,7 +2,7 @@ import type { QueryClient } from "@tanstack/svelte-query";
 import { createQuery } from "@tanstack/svelte-query";
 import { onDestroy } from "svelte";
 import type { Readable } from "svelte/store";
-import { derived, get, readable } from "svelte/store";
+import { derived, get } from "svelte/store";
 
 import { buildUrl, extractFileMetaFromHeaders, storageQueryKeys } from "../core";
 import type { FileMeta } from "../react/types";
@@ -92,20 +92,15 @@ export const createGetFile = (options: CreateGetFileOptions): CreateGetFileRetur
         queryClient ? () => queryClient : undefined,
     );
 
-    // Ensure stores are always defined
-    const dataStore = query?.data ?? readable(undefined);
-    const errorStore = query?.error ?? readable(undefined);
-    const isLoadingStore = query?.isLoading ?? readable(false);
-
     // Extract metadata from response if available
-    const meta = derived(dataStore, ($data) => $data?.meta || undefined);
+    const meta = derived(query.data, ($data) => $data?.meta || undefined);
 
     // Subscribe to data and error changes to call callbacks
     let unsubscribeData: (() => void) | undefined;
     let unsubscribeError: (() => void) | undefined;
 
     if (onSuccess || onError) {
-        unsubscribeData = dataStore.subscribe(($data) => {
+        unsubscribeData = query.data.subscribe(($data) => {
             if ($data && onSuccess) {
                 const currentMeta = get(meta);
 
@@ -113,7 +108,7 @@ export const createGetFile = (options: CreateGetFileOptions): CreateGetFileRetur
             }
         });
 
-        unsubscribeError = errorStore.subscribe(($error) => {
+        unsubscribeError = query.error.subscribe(($error) => {
             if ($error && onError) {
                 onError($error as Error);
             }
@@ -126,12 +121,12 @@ export const createGetFile = (options: CreateGetFileOptions): CreateGetFileRetur
     }
 
     return {
-        data: derived(dataStore, ($data) => $data?.blob),
-        error: derived(errorStore, ($error) => ($error as Error) || undefined),
-        isLoading: isLoadingStore,
+        data: derived(query.data, ($data) => $data?.blob),
+        error: derived(query.error, ($error) => ($error as Error) || undefined),
+        isLoading: query.isLoading,
         meta,
         refetch: () => {
-            query?.refetch();
+            query.refetch();
         },
     };
 };

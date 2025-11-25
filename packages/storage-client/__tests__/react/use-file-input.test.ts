@@ -21,15 +21,20 @@ describe(useFileInput, () => {
     });
 
     it("should provide file handling functions", () => {
-        expect.assertions(5);
+        expect.assertions(10);
 
         const { result } = renderHook(() => useFileInput());
 
-        expectTypeOf(result.current.handleFileChange).toBeFunction();
-        expectTypeOf(result.current.handleDragOver).toBeFunction();
-        expectTypeOf(result.current.handleDragLeave).toBeFunction();
-        expectTypeOf(result.current.handleDrop).toBeFunction();
-        expectTypeOf(result.current.openFileDialog).toBeFunction();
+        expect(result.current.handleFileChange).toBeDefined();
+        expect(typeof result.current.handleFileChange).toBe("function");
+        expect(result.current.handleDragOver).toBeDefined();
+        expect(typeof result.current.handleDragOver).toBe("function");
+        expect(result.current.handleDragLeave).toBeDefined();
+        expect(typeof result.current.handleDragLeave).toBe("function");
+        expect(result.current.handleDrop).toBeDefined();
+        expect(typeof result.current.handleDrop).toBe("function");
+        expect(result.current.openFileDialog).toBeDefined();
+        expect(typeof result.current.openFileDialog).toBe("function");
     });
 
     it("should handle file selection", async () => {
