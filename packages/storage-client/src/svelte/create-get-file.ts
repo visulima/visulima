@@ -1,5 +1,4 @@
-import type { QueryClient } from "@tanstack/svelte-query";
-import { createQuery } from "@tanstack/svelte-query";
+import { createQuery, useQueryClient } from "@tanstack/svelte-query";
 import { onDestroy } from "svelte";
 import type { Readable } from "svelte/store";
 import { derived, get } from "svelte/store";
@@ -18,8 +17,6 @@ export interface CreateGetFileOptions {
     onError?: (error: Error) => void;
     /** Callback when request succeeds */
     onSuccess?: (data: Blob, meta: FileMeta | undefined) => void;
-    /** Optional QueryClient to use */
-    queryClient?: QueryClient;
     /** Transformation parameters for media files */
     transform?: Readable<Record<string, string | number | boolean> | undefined> | Record<string, string | number | boolean>;
 }
@@ -40,11 +37,16 @@ export interface CreateGetFileReturn {
 /**
  * Svelte store-based utility for fetching/downloading files using TanStack Query.
  * Supports optional transformation parameters for media files.
+ *
+ * IMPORTANT: Due to TanStack Query Svelte requirements, createQuery must be called
+ * at the component's top level, not inside utility functions. For proper usage, call
+ * createQuery directly in your component and use the returned stores.
+ *
  * @param options Hook configuration options
  * @returns File fetching functions and state stores
  */
 export const createGetFile = (options: CreateGetFileOptions): CreateGetFileReturn => {
-    const { enabled = true, endpoint, id, onError, onSuccess, queryClient, transform } = options;
+    const { enabled = true, endpoint, id, onError, onSuccess, transform } = options;
 
     // Convert to stores if needed
     const idStore: Readable<string> = typeof id === "object" && "subscribe" in id ? id : derived([], () => id as string);
@@ -55,42 +57,42 @@ export const createGetFile = (options: CreateGetFileOptions): CreateGetFileRetur
     // Create derived stores for reactive query options
     const enabledDerived = derived([enabledStore, idStore], ([$enabled, $id]) => $enabled && !!$id);
 
-    const query = createQuery(
-        () => {
-            const currentId = get(idStore);
-            const currentTransform = get(transformStore);
+    // According to TanStack Svelte Query docs, when inside QueryClientProvider,
+    // createQuery automatically uses context - no need to pass queryClient parameter
+    // Calling useQueryClient() above ensures context is available
+    const query = createQuery(() => {
+        const currentId = get(idStore);
+        const currentTransform = get(transformStore);
 
-            return {
-                enabled: get(enabledDerived),
-                queryFn: async () => {
-                    const url = buildUrl(endpoint, currentId, currentTransform);
-                    const response = await fetch(url, {
-                        method: "GET",
+        return {
+            enabled: get(enabledDerived),
+            queryFn: async () => {
+                const url = buildUrl(endpoint, currentId, currentTransform);
+                const response = await fetch(url, {
+                    method: "GET",
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => {
+                        return {
+                            error: {
+                                code: "RequestFailed",
+                                message: response.statusText,
+                            },
+                        };
                     });
 
-                    if (!response.ok) {
-                        const errorData = await response.json().catch(() => {
-                            return {
-                                error: {
-                                    code: "RequestFailed",
-                                    message: response.statusText,
-                                },
-                            };
-                        });
+                    throw new Error(errorData.error?.message || `Failed to get file: ${response.status} ${response.statusText}`);
+                }
 
-                        throw new Error(errorData.error?.message || `Failed to get file: ${response.status} ${response.statusText}`);
-                    }
+                const blob = await response.blob();
+                const meta = extractFileMetaFromHeaders(currentId, response.headers);
 
-                    const blob = await response.blob();
-                    const meta = extractFileMetaFromHeaders(currentId, response.headers);
-
-                    return { blob, meta };
-                },
-                queryKey: storageQueryKeys.files.detail(endpoint, currentId, currentTransform),
-            };
-        },
-        queryClient ? () => queryClient : undefined,
-    );
+                return { blob, meta };
+            },
+            queryKey: storageQueryKeys.files.detail(endpoint, currentId, currentTransform),
+        };
+    });
 
     // Extract metadata from response if available
     const meta = derived(query.data, ($data) => $data?.meta || undefined);

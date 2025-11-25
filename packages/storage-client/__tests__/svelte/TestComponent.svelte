@@ -1,7 +1,6 @@
 <script lang="ts">
     import { QueryClientProvider } from "@tanstack/svelte-query";
     import type { QueryClient } from "@tanstack/svelte-query";
-    import { createGetFile } from "../../src/svelte/create-get-file";
     import type { CreateGetFileOptions, CreateGetFileReturn } from "../../src/svelte/create-get-file";
     import GetFileInner from "./GetFileInner.svelte";
 
