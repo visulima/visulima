@@ -9,7 +9,7 @@ import { retry } from "../../utils/retry";
 import { validateEmailOptions } from "../../utils/validate-email-options";
 import type { ProviderFactory } from "../provider";
 import { defineProvider } from "../provider";
-import { createPostmarkAttachment, createProviderLogger, formatAddress, handleProviderError, ProviderState } from "../utils";
+import { createPostmarkAttachment, createProviderLogger, formatAddress, formatAddresses, handleProviderError, ProviderState } from "../utils";
 import type { PostmarkConfig, PostmarkEmailOptions } from "./types";
 
 const PROVIDER_NAME = "postmark";
@@ -191,7 +191,7 @@ export const postmarkProvider: ProviderFactory<PostmarkConfig, unknown, Postmark
                     const payload: Record<string, unknown> = {
                         From: formatAddress(emailOptions.from),
                         Subject: emailOptions.subject,
-                        To: formatAddresses(emailOptions.to),
+                        To: formatAddresses(emailOptions.to).join(","),
                     };
 
                     // Add HTML content
@@ -206,12 +206,12 @@ export const postmarkProvider: ProviderFactory<PostmarkConfig, unknown, Postmark
 
                     // Add CC
                     if (emailOptions.cc) {
-                        payload.Cc = formatAddresses(emailOptions.cc);
+                        payload.Cc = formatAddresses(emailOptions.cc).join(",");
                     }
 
                     // Add BCC
                     if (emailOptions.bcc) {
-                        payload.Bcc = formatAddresses(emailOptions.bcc);
+                        payload.Bcc = formatAddresses(emailOptions.bcc).join(",");
                     }
 
                     // Add reply-to

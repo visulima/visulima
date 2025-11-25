@@ -5,12 +5,14 @@ import type { MailPaceEmailOptions } from "../../src/providers/mailpace/types.js
 import { makeRequest } from "../../src/utils/make-request.js";
 import { retry } from "../../src/utils/retry.js";
 
-vi.mock(import("../../src/utils.js"), async () => {
-    const actual = await vi.importActual("../../src/utils.js");
-
+vi.mock(import("../../src/utils/make-request.js"), () => {
     return {
-        ...actual,
         makeRequest: vi.fn(),
+    };
+});
+
+vi.mock(import("../../src/utils/retry.js"), () => {
+    return {
         retry: vi.fn(async (function_) => await function_()),
     };
 });
@@ -37,13 +39,22 @@ describe(mailPaceProvider, () => {
 
     describe("sendEmail", () => {
         it("should send email successfully", async () => {
-            const makeRequestSpy = vi.spyOn(utils, "makeRequest").mockResolvedValue({
-                data: {
-                    body: { id: "test-message-id" },
-                    statusCode: 200,
-                },
-                success: true,
-            });
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+            makeRequestMock
+                .mockResolvedValueOnce({
+                    data: {
+                        body: {},
+                        statusCode: 200,
+                    },
+                    success: true,
+                })
+                .mockResolvedValueOnce({
+                    data: {
+                        body: { id: "test-message-id" },
+                        statusCode: 200,
+                    },
+                    success: true,
+                });
 
             const provider = mailPaceProvider({ apiToken: "test123" });
             const emailOptions: MailPaceEmailOptions = {

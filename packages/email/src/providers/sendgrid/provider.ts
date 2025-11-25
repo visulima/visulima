@@ -9,7 +9,7 @@ import { retry } from "../../utils/retry";
 import { validateEmailOptions } from "../../utils/validate-email-options";
 import type { ProviderFactory } from "../provider";
 import { defineProvider } from "../provider";
-import { createProviderLogger, createSendGridAttachment, formatSendGridAddresses, handleProviderError, ProviderState } from "../utils";
+import { createProviderLogger, createSendGridAttachment, formatAddress, formatSendGridAddress, formatSendGridAddresses, handleProviderError, ProviderState } from "../utils";
 import type { SendGridConfig, SendGridEmailOptions } from "./types";
 
 const PROVIDER_NAME = "sendgrid";
@@ -38,6 +38,8 @@ export const sendGridProvider: ProviderFactory<SendGridConfig, unknown, SendGrid
     const logger = createProviderLogger(PROVIDER_NAME, options.debug, options_.logger);
 
         return {
+            endpoint: options.endpoint,
+
             features: {
                 attachments: true,
                 batchSending: true,
@@ -220,7 +222,7 @@ export const sendGridProvider: ProviderFactory<SendGridConfig, unknown, SendGrid
                     }
 
                     const payload: Record<string, unknown> = {
-                        from: formatAddress(emailOptions.from),
+                        from: formatSendGridAddress(emailOptions.from),
                         personalizations: [personalization],
                     };
 
@@ -241,7 +243,7 @@ export const sendGridProvider: ProviderFactory<SendGridConfig, unknown, SendGrid
 
                     // Add reply-to
                     if (emailOptions.replyTo) {
-                        payload.reply_to = formatAddress(emailOptions.replyTo);
+                        payload.reply_to = formatSendGridAddress(emailOptions.replyTo);
                     }
 
                     // Add subject (also in personalizations, but can be at root level)

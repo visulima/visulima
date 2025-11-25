@@ -44,6 +44,8 @@ export const mailjetProvider: ProviderFactory<MailjetConfig, unknown, MailjetEma
     const logger = createProviderLogger(PROVIDER_NAME, options.debug, options_.logger);
 
     return {
+        endpoint: options.endpoint,
+
         features: {
             attachments: true,
             batchSending: true,

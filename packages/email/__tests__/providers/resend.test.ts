@@ -5,16 +5,14 @@ import type { ResendEmailOptions } from "../../src/providers/resend/types.js";
 import { makeRequest } from "../../src/utils/make-request.js";
 import { retry } from "../../src/utils/retry.js";
 
-// Mock the utils module
-vi.mock(import("../../src/utils.js"), async () => {
-    const actual = await vi.importActual("../../src/utils.js");
+// Mock the makeRequest and retry functions
+vi.mock(import("../../src/utils/make-request.js"), () => ({
+    makeRequest: vi.fn(),
+}));
 
-    return {
-        ...actual,
-        makeRequest: vi.fn(),
-        retry: vi.fn(async (function_) => await function_()),
-    };
-});
+vi.mock(import("../../src/utils/retry.js"), () => ({
+    retry: vi.fn(async (function_) => await function_()),
+}));
 
 describe(resendProvider, () => {
     beforeEach(() => {

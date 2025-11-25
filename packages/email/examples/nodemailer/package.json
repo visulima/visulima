@@ -1,0 +1,23 @@
+{
+    "name": "email_nodemailer_example_email",
+    "version": "1.0.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "dev": "tsx watch smtp.ts",
+        "smtp": "tsx smtp.ts",
+        "sendmail": "tsx sendmail.ts",
+        "gmail": "tsx gmail.ts",
+        "custom": "tsx custom-transport.ts"
+    },
+    "dependencies": {
+        "@visulima/email": "workspace:*",
+        "nodemailer": "^7.0.10"
+    },
+    "devDependencies": {
+        "@types/node": "24.10.1",
+        "tsx": "^4.20.6",
+        "typescript": "5.9.3"
+    }
+}
+

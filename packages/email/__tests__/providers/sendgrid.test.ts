@@ -5,16 +5,14 @@ import type { SendGridEmailOptions } from "../../src/providers/sendgrid/types.js
 import { makeRequest } from "../../src/utils/make-request.js";
 import { retry } from "../../src/utils/retry.js";
 
-// Mock the utils module
-vi.mock(import("../../src/utils.js"), async () => {
-    const actual = await vi.importActual("../../src/utils.js");
+// Mock the makeRequest and retry functions
+vi.mock(import("../../src/utils/make-request.js"), () => ({
+    makeRequest: vi.fn(),
+}));
 
-    return {
-        ...actual,
-        makeRequest: vi.fn(),
-        retry: vi.fn(async (function_) => await function_()),
-    };
-});
+vi.mock(import("../../src/utils/retry.js"), () => ({
+    retry: vi.fn(async (function_) => await function_()),
+}));
 
 describe(sendGridProvider, () => {
     beforeEach(() => {
@@ -106,13 +104,22 @@ describe(sendGridProvider, () => {
 
     describe("sendEmail", () => {
         it("should send email successfully", async () => {
-            (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValue({
-                data: {
-                    headers: new Headers({ "X-Message-Id": "test-message-id" }),
-                    statusCode: 202,
-                },
-                success: true,
-            });
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+            makeRequestMock
+                .mockResolvedValueOnce({
+                    data: {
+                        body: {},
+                        statusCode: 200,
+                    },
+                    success: true,
+                })
+                .mockResolvedValueOnce({
+                    data: {
+                        headers: new Headers({ "X-Message-Id": "test-message-id" }),
+                        statusCode: 202,
+                    },
+                    success: true,
+                });
 
             const provider = sendGridProvider({ apiKey: "SG.test123" });
             const emailOptions: SendGridEmailOptions = {

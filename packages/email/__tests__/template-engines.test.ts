@@ -31,9 +31,9 @@ vi.mock(import("html-to-text"), () => {
     };
 });
 
-vi.mock(import("@vue-email/compiler"), () => {
+vi.mock(import("@vue-email/render"), () => {
     return {
-        compileTemplate: vi.fn(),
+        render: vi.fn(),
     };
 });
 
@@ -51,9 +51,10 @@ vi.mock(import("@react-email/render"), () => {
 
 describe("template-engines", () => {
     describe("handlebars", () => {
-        const mockHandlebars = await import("handlebars");
+        let mockHandlebars: Awaited<ReturnType<typeof import("handlebars")>>;
 
-        beforeEach(() => {
+        beforeEach(async () => {
+            mockHandlebars = await import("handlebars");
             vi.clearAllMocks();
         });
 
@@ -94,7 +95,7 @@ describe("template-engines", () => {
             });
 
             it("should throw error for non-string template", () => {
-                expect(() => renderHandlebars(123)).toThrow(TypeError);
+                expect(() => renderHandlebars(123)).toThrow(EmailError);
                 expect(() => renderHandlebars(123)).toThrow("Handlebars template must be a string");
             });
 
@@ -165,9 +166,10 @@ describe("template-engines", () => {
     });
 
     describe("mJML", () => {
-        const mockMjml = await import("mjml");
+        let mockMjml: Awaited<ReturnType<typeof import("mjml")>>;
 
-        beforeEach(() => {
+        beforeEach(async () => {
+            mockMjml = await import("mjml");
             vi.clearAllMocks();
         });
 
@@ -219,7 +221,7 @@ describe("template-engines", () => {
             });
 
             it("should throw error for non-string template", () => {
-                expect(() => renderMjml(null)).toThrow(TypeError);
+                expect(() => renderMjml(null)).toThrow(EmailError);
                 expect(() => renderMjml(null)).toThrow("MJML template must be a string");
             });
 
@@ -259,9 +261,10 @@ describe("template-engines", () => {
     });
 
     describe("hTML to Text", () => {
-        const mockHtmlToText = await import("html-to-text");
+        let mockHtmlToText: Awaited<ReturnType<typeof import("html-to-text")>>;
 
-        beforeEach(() => {
+        beforeEach(async () => {
+            mockHtmlToText = await import("html-to-text");
             vi.clearAllMocks();
         });
 
@@ -343,112 +346,113 @@ describe("template-engines", () => {
     });
 
     describe("vue Email", () => {
-        const mockVueCompiler = await import("@vue-email/compiler");
+        let mockVueRender: Awaited<ReturnType<typeof import("@vue-email/render")>>;
 
-        beforeEach(() => {
+        beforeEach(async () => {
+            mockVueRender = await import("@vue-email/render");
             vi.clearAllMocks();
         });
 
         describe(renderVueEmail, () => {
-            it("should render Vue template", () => {
-                mockVueCompiler.compileTemplate.mockReturnValue("<div>Rendered Vue</div>");
+            it("should render Vue template", async () => {
+                mockVueRender.render.mockResolvedValue("<div>Rendered Vue</div>");
 
-                const result = renderVueEmail("<template><div>{{message}}</div></template>", { message: "Hello" });
+                const result = await renderVueEmail("<template><div>{{message}}</div></template>", { message: "Hello" });
 
-                expect(mockVueCompiler.compileTemplate).toHaveBeenCalledWith("<template><div>{{message}}</div></template>", { message: "Hello" }, undefined);
+                expect(mockVueRender.render).toHaveBeenCalledWith("<template><div>{{message}}</div></template>", { message: "Hello" }, {});
                 expect(result).toBe("<div>Rendered Vue</div>");
             });
 
-            it("should render with options", () => {
-                mockVueCompiler.compileTemplate.mockReturnValue("<div>With options</div>");
+            it("should render with options", async () => {
+                mockVueRender.render.mockResolvedValue("<div>With options</div>");
                 const options = { minify: true };
 
-                const result = renderVueEmail("<template></template>", {}, options);
+                const result = await renderVueEmail("<template></template>", {}, options);
 
-                expect(mockVueCompiler.compileTemplate).toHaveBeenCalledWith("<template></template>", {}, options);
+                expect(mockVueRender.render).toHaveBeenCalledWith("<template></template>", {}, {
+                    htmlToTextOptions: undefined,
+                    plainText: undefined,
+                    pretty: undefined,
+                });
                 expect(result).toBe("<div>With options</div>");
             });
 
-            it("should throw EmailError for compilation errors", () => {
+            it("should throw EmailError for compilation errors", async () => {
                 const error = new Error("Vue compilation failed");
 
-                mockVueCompiler.compileTemplate.mockImplementation(() => {
-                    throw error;
-                });
+                mockVueRender.render.mockRejectedValue(error);
 
-                expect(() => renderVueEmail("<invalid>", {})).toThrow(EmailError);
-                expect(() => renderVueEmail("<invalid>", {})).toThrow("Failed to render Vue email template: Vue compilation failed");
+                await expect(renderVueEmail("<invalid>", {})).rejects.toThrow(EmailError);
+                await expect(renderVueEmail("<invalid>", {})).rejects.toThrow("Failed to render Vue Email component: Vue compilation failed");
             });
 
-            it("should throw EmailError when Vue Email is not installed", () => {
-                const error = new Error("Cannot find module '@vue-email/compiler'");
+            it("should throw EmailError when Vue Email is not installed", async () => {
+                const error = new Error("Cannot find module '@vue-email/render'");
 
-                mockVueCompiler.compileTemplate.mockImplementation(() => {
-                    throw error;
-                });
+                mockVueRender.render.mockRejectedValue(error);
 
-                expect(() => renderVueEmail("<template></template>", {})).toThrow(EmailError);
-                expect(() => renderVueEmail("<template></template>", {})).toThrow(
-                    "Vue Email is not installed. Please install it: pnpm add @vue-email/compiler",
+                await expect(renderVueEmail("<template></template>", {})).rejects.toThrow(EmailError);
+                await expect(renderVueEmail("<template></template>", {})).rejects.toThrow(
+                    "@vue-email/render is not installed. Please install it: pnpm add @vue-email/render",
                 );
             });
         });
     });
 
     describe("react Email", () => {
-        const mockReactRender = await import("@react-email/render");
-        const mockReact = await import("react");
+        let mockReactRender: Awaited<ReturnType<typeof import("@react-email/render")>>;
+        let mockReact: Awaited<ReturnType<typeof import("react")>>;
 
-        beforeEach(() => {
+        beforeEach(async () => {
+            mockReactRender = await import("@react-email/render");
+            mockReact = await import("react");
             vi.clearAllMocks();
         });
 
         describe(renderReactEmail, () => {
-            it("should render React component", () => {
-                mockReact.isValidElement.mockReturnValue(true);
-                mockReactRender.render.mockReturnValue("<div>Rendered React</div>");
+            it("should render React component", async () => {
+                mockReactRender.render.mockResolvedValue("<div>Rendered React</div>");
 
                 const component = { props: {}, type: "div" };
-                const result = renderReactEmail(component, { message: "Hello" });
+                const result = await renderReactEmail(component, { message: "Hello" });
 
-                expect(mockReact.isValidElement).toHaveBeenCalledWith(component);
-                expect(mockReactRender.render).toHaveBeenCalledWith(component, { message: "Hello" });
+                expect(mockReactRender.render).toHaveBeenCalledWith(component, {
+                    plainText: undefined,
+                    pretty: undefined,
+                });
                 expect(result).toBe("<div>Rendered React</div>");
             });
 
-            it("should throw error for non-React element", () => {
-                mockReact.isValidElement.mockReturnValue(false);
+            it("should throw error for non-React element", async () => {
+                const error = new Error("Invalid React element");
+                mockReactRender.render.mockRejectedValue(error);
 
-                expect(() => renderReactEmail("not a component", {})).toThrow(TypeError);
-                expect(() => renderReactEmail("not a component", {})).toThrow("React Email template must be a valid React element");
+                await expect(renderReactEmail("not a component", {})).rejects.toThrow(EmailError);
+                await expect(renderReactEmail("not a component", {})).rejects.toThrow("Failed to render React Email component");
             });
 
-            it("should throw EmailError for rendering errors", () => {
+            it("should throw EmailError for rendering errors", async () => {
                 mockReact.isValidElement.mockReturnValue(true);
                 const error = new Error("React rendering failed");
 
-                mockReactRender.render.mockImplementation(() => {
-                    throw error;
-                });
+                mockReactRender.render.mockRejectedValue(error);
 
                 const component = { props: {}, type: "div" };
 
-                expect(() => renderReactEmail(component, {})).toThrow(EmailError);
-                expect(() => renderReactEmail(component, {})).toThrow("Failed to render React email template: React rendering failed");
+                await expect(renderReactEmail(component, {})).rejects.toThrow(EmailError);
+                await expect(renderReactEmail(component, {})).rejects.toThrow("Failed to render React Email component: React rendering failed");
             });
 
-            it("should throw EmailError when React Email is not installed", () => {
+            it("should throw EmailError when React Email is not installed", async () => {
                 mockReact.isValidElement.mockReturnValue(true);
                 const error = new Error("Cannot find module '@react-email/render'");
 
-                mockReactRender.render.mockImplementation(() => {
-                    throw error;
-                });
+                mockReactRender.render.mockRejectedValue(error);
 
                 const component = { props: {}, type: "div" };
 
-                expect(() => renderReactEmail(component, {})).toThrow(EmailError);
-                expect(() => renderReactEmail(component, {})).toThrow("React Email is not installed. Please install it: pnpm add @react-email/render");
+                await expect(renderReactEmail(component, {})).rejects.toThrow(EmailError);
+                await expect(renderReactEmail(component, {})).rejects.toThrow("@react-email/render is not installed. Please install it: pnpm add @react-email/render");
             });
         });
     });

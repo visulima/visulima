@@ -5,12 +5,14 @@ import type { PostalEmailOptions } from "../../src/providers/postal/types.js";
 import { makeRequest } from "../../src/utils/make-request.js";
 import { retry } from "../../src/utils/retry.js";
 
-vi.mock(import("../../src/utils.js"), async () => {
-    const actual = await vi.importActual("../../src/utils.js");
-
+vi.mock(import("../../src/utils/make-request.js"), () => {
     return {
-        ...actual,
         makeRequest: vi.fn(),
+    };
+});
+
+vi.mock(import("../../src/utils/retry.js"), () => {
+    return {
         retry: vi.fn(async (function_) => await function_()),
     };
 });
@@ -43,13 +45,22 @@ describe(postalProvider, () => {
 
     describe("sendEmail", () => {
         it("should send email successfully", async () => {
-            const makeRequestSpy = vi.spyOn(utils, "makeRequest").mockResolvedValue({
-                data: {
-                    body: { message_id: 12_345 },
-                    statusCode: 200,
-                },
-                success: true,
-            });
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+            makeRequestMock
+                .mockResolvedValueOnce({
+                    data: {
+                        body: {},
+                        statusCode: 200,
+                    },
+                    success: true,
+                })
+                .mockResolvedValueOnce({
+                    data: {
+                        body: { message_id: 12_345 },
+                        statusCode: 200,
+                    },
+                    success: true,
+                });
 
             const provider = postalProvider({ apiKey: "test123", host: "example.com" });
             const emailOptions: PostalEmailOptions = {

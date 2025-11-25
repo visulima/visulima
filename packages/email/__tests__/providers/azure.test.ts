@@ -5,12 +5,14 @@ import type { AzureEmailOptions } from "../../src/providers/azure/types.js";
 import { makeRequest } from "../../src/utils/make-request.js";
 import { retry } from "../../src/utils/retry.js";
 
-vi.mock(import("../../src/utils.js"), async () => {
-    const actual = await vi.importActual("../../src/utils.js");
-
+vi.mock(import("../../src/utils/make-request.js"), () => {
     return {
-        ...actual,
         makeRequest: vi.fn(),
+    };
+});
+
+vi.mock(import("../../src/utils/retry.js"), () => {
+    return {
         retry: vi.fn(async (function_) => await function_()),
     };
 });
@@ -50,13 +52,22 @@ describe(azureProvider, () => {
 
     describe("sendEmail", () => {
         it("should send email successfully", async () => {
-            const makeRequestSpy = vi.spyOn(utils, "makeRequest").mockResolvedValue({
-                data: {
-                    body: { messageId: "test-message-id" },
-                    statusCode: 202,
-                },
-                success: true,
-            });
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+            makeRequestMock
+                .mockResolvedValueOnce({
+                    data: {
+                        body: {},
+                        statusCode: 200,
+                    },
+                    success: true,
+                })
+                .mockResolvedValueOnce({
+                    data: {
+                        body: { messageId: "test-message-id" },
+                        statusCode: 202,
+                    },
+                    success: true,
+                });
 
             const provider = azureProvider({ accessToken: "test123", region: "eastus" });
             const emailOptions: AzureEmailOptions = {

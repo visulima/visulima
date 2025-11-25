@@ -7,7 +7,7 @@ import { retry } from "../../utils/retry";
 import { validateEmailOptions } from "../../utils/validate-email-options";
 import type { ProviderFactory } from "../provider";
 import { defineProvider } from "../provider";
-import { createProviderLogger, formatAddress, formatAddressEmails, handleProviderError, ProviderState } from "../utils";
+import { createProviderLogger, formatAddress, formatAddresses, formatAddressEmails, handleProviderError, ProviderState } from "../utils";
 import type { ResendConfig, ResendEmailOptions, ResendEmailTag } from "./types";
 
 const PROVIDER_NAME = "resend";
@@ -58,6 +58,8 @@ export const resendProvider: ProviderFactory<ResendConfig, unknown, ResendEmailO
     const logger = createProviderLogger(PROVIDER_NAME, options.debug, options_.logger);
 
     return {
+        endpoint: options.endpoint,
+
         features: {
             attachments: true,
             batchSending: true,
@@ -226,7 +228,7 @@ export const resendProvider: ProviderFactory<ResendConfig, unknown, ResendEmailO
                     html: emailOptions.html,
                     subject: emailOptions.subject,
                     text: emailOptions.text,
-                    to: formatAddressEmails(emailOptions.to),
+                    to: formatAddresses(emailOptions.to),
                 };
 
                 if (emailOptions.cc) {

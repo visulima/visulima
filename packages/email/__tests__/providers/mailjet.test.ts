@@ -6,12 +6,14 @@ import { makeRequest } from "../../src/utils/make-request.js";
 import { retry } from "../../src/utils/retry.js";
 
 // Mock the utils module
-vi.mock(import("../../src/utils.js"), async () => {
-    const actual = await vi.importActual("../../src/utils.js");
-
+vi.mock(import("../../src/utils/make-request.js"), () => {
     return {
-        ...actual,
         makeRequest: vi.fn(),
+    };
+});
+
+vi.mock(import("../../src/utils/retry.js"), () => {
+    return {
         retry: vi.fn(async (function_) => await function_()),
     };
 });
@@ -169,19 +171,28 @@ describe(mailjetProvider, () => {
         });
 
         it("should format recipients correctly", async () => {
-            (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValue({
-                data: {
-                    body: {
-                        Messages: [
-                            {
-                                To: [{ MessageID: 12_345 }],
-                            },
-                        ],
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+            makeRequestMock
+                .mockResolvedValueOnce({
+                    data: {
+                        body: {},
+                        statusCode: 200,
                     },
-                    statusCode: 200,
-                },
-                success: true,
-            });
+                    success: true,
+                })
+                .mockResolvedValueOnce({
+                    data: {
+                        body: {
+                            Messages: [
+                                {
+                                    To: [{ MessageID: 12_345 }],
+                                },
+                            ],
+                        },
+                        statusCode: 200,
+                    },
+                    success: true,
+                });
 
             const provider = mailjetProvider({ apiKey: "key123", apiSecret: "secret123" });
             const emailOptions: MailjetEmailOptions = {
@@ -193,7 +204,7 @@ describe(mailjetProvider, () => {
 
             await provider.sendEmail(emailOptions);
 
-            const callArgs = (makeRequest as ReturnType<typeof vi.fn>).mock.calls[0];
+            const callArgs = makeRequestMock.mock.calls[1]; // Second call is sendEmail
             const payload = JSON.parse(callArgs[2] as string);
 
             expect(payload.Messages[0].From.Email).toBe("sender@example.com");
@@ -204,19 +215,28 @@ describe(mailjetProvider, () => {
         });
 
         it("should include CC and BCC recipients", async () => {
-            (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValue({
-                data: {
-                    body: {
-                        Messages: [
-                            {
-                                To: [{ MessageID: 12_345 }],
-                            },
-                        ],
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+            makeRequestMock
+                .mockResolvedValueOnce({
+                    data: {
+                        body: {},
+                        statusCode: 200,
                     },
-                    statusCode: 200,
-                },
-                success: true,
-            });
+                    success: true,
+                })
+                .mockResolvedValueOnce({
+                    data: {
+                        body: {
+                            Messages: [
+                                {
+                                    To: [{ MessageID: 12_345 }],
+                                },
+                            ],
+                        },
+                        statusCode: 200,
+                    },
+                    success: true,
+                });
 
             const provider = mailjetProvider({ apiKey: "key123", apiSecret: "secret123" });
             const emailOptions: MailjetEmailOptions = {
@@ -230,7 +250,7 @@ describe(mailjetProvider, () => {
 
             await provider.sendEmail(emailOptions);
 
-            const callArgs = (makeRequest as ReturnType<typeof vi.fn>).mock.calls[0];
+            const callArgs = makeRequestMock.mock.calls[1]; // Second call is sendEmail
             const payload = JSON.parse(callArgs[2] as string);
 
             expect(payload.Messages[0].Cc).toBeDefined();
@@ -240,23 +260,29 @@ describe(mailjetProvider, () => {
         it("should include template if provided", async () => {
             const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
 
-            makeRequestMock.mockResolvedValue({
-                data: {
-                    body: {
-                        Messages: [
-                            {
-                                To: [{ MessageID: 12_345 }],
-                            },
-                        ],
+            makeRequestMock
+                .mockResolvedValueOnce({
+                    data: {
+                        body: {},
+                        statusCode: 200,
                     },
-                    statusCode: 200,
-                },
-                success: true,
-            });
+                    success: true,
+                })
+                .mockResolvedValueOnce({
+                    data: {
+                        body: {
+                            Messages: [
+                                {
+                                    To: [{ MessageID: 12_345 }],
+                                },
+                            ],
+                        },
+                        statusCode: 200,
+                    },
+                    success: true,
+                });
 
             const provider = mailjetProvider({ apiKey: "key123", apiSecret: "secret123" });
-
-            await provider.initialize();
 
             const emailOptions: MailjetEmailOptions = {
                 from: { email: "sender@example.com" },
@@ -267,21 +293,16 @@ describe(mailjetProvider, () => {
                 to: { email: "user@example.com" },
             };
 
-            const callCountBefore = makeRequestMock.mock.calls.length;
-
             const result = await provider.sendEmail(emailOptions);
 
             expect(result.success).toBe(true);
 
-            const { calls } = makeRequestMock.mock;
-            const callWithPayload = calls
-                .slice(callCountBefore)
-                .find((call) => call.length > 2 && call[2] && typeof call[2] === "string" && (call[2] as string).includes("TemplateID"));
+            const sendEmailCall = makeRequestMock.mock.calls[1]; // Second call is sendEmail
 
-            expect(callWithPayload).toBeDefined();
+            expect(sendEmailCall).toBeDefined();
 
-            if (callWithPayload && callWithPayload[2]) {
-                const payload = JSON.parse(callWithPayload[2] as string);
+            if (sendEmailCall && sendEmailCall[2]) {
+                const payload = JSON.parse(sendEmailCall[2] as string);
 
                 expect(payload.Messages[0].TemplateID).toBe(12_345);
                 expect(payload.Messages[0].Variables).toEqual({ name: "John" });
@@ -289,19 +310,28 @@ describe(mailjetProvider, () => {
         });
 
         it("should include tags", async () => {
-            (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValue({
-                data: {
-                    body: {
-                        Messages: [
-                            {
-                                To: [{ MessageID: 12_345 }],
-                            },
-                        ],
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+            makeRequestMock
+                .mockResolvedValueOnce({
+                    data: {
+                        body: {},
+                        statusCode: 200,
                     },
-                    statusCode: 200,
-                },
-                success: true,
-            });
+                    success: true,
+                })
+                .mockResolvedValueOnce({
+                    data: {
+                        body: {
+                            Messages: [
+                                {
+                                    To: [{ MessageID: 12_345 }],
+                                },
+                            ],
+                        },
+                        statusCode: 200,
+                    },
+                    success: true,
+                });
 
             const provider = mailjetProvider({ apiKey: "key123", apiSecret: "secret123" });
             const emailOptions: MailjetEmailOptions = {
@@ -314,26 +344,35 @@ describe(mailjetProvider, () => {
 
             await provider.sendEmail(emailOptions);
 
-            const callArgs = (makeRequest as ReturnType<typeof vi.fn>).mock.calls[0];
+            const callArgs = makeRequestMock.mock.calls[1]; // Second call is sendEmail
             const payload = JSON.parse(callArgs[2] as string);
 
             expect(payload.Messages[0].CustomCampaign).toBe("tag1,tag2");
         });
 
         it("should include custom headers", async () => {
-            (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValue({
-                data: {
-                    body: {
-                        Messages: [
-                            {
-                                To: [{ MessageID: 12_345 }],
-                            },
-                        ],
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+            makeRequestMock
+                .mockResolvedValueOnce({
+                    data: {
+                        body: {},
+                        statusCode: 200,
                     },
-                    statusCode: 200,
-                },
-                success: true,
-            });
+                    success: true,
+                })
+                .mockResolvedValueOnce({
+                    data: {
+                        body: {
+                            Messages: [
+                                {
+                                    To: [{ MessageID: 12_345 }],
+                                },
+                            ],
+                        },
+                        statusCode: 200,
+                    },
+                    success: true,
+                });
 
             const provider = mailjetProvider({ apiKey: "key123", apiSecret: "secret123" });
             const emailOptions: MailjetEmailOptions = {
@@ -346,7 +385,7 @@ describe(mailjetProvider, () => {
 
             await provider.sendEmail(emailOptions);
 
-            const callArgs = (makeRequest as ReturnType<typeof vi.fn>).mock.calls[0];
+            const callArgs = makeRequestMock.mock.calls[1]; // Second call is sendEmail
             const payload = JSON.parse(callArgs[2] as string);
 
             expect(payload.Messages[0].Headers).toBeDefined();
@@ -356,19 +395,28 @@ describe(mailjetProvider, () => {
         });
 
         it("should include attachments", async () => {
-            (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValue({
-                data: {
-                    body: {
-                        Messages: [
-                            {
-                                To: [{ MessageID: 12_345 }],
-                            },
-                        ],
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+            makeRequestMock
+                .mockResolvedValueOnce({
+                    data: {
+                        body: {},
+                        statusCode: 200,
                     },
-                    statusCode: 200,
-                },
-                success: true,
-            });
+                    success: true,
+                })
+                .mockResolvedValueOnce({
+                    data: {
+                        body: {
+                            Messages: [
+                                {
+                                    To: [{ MessageID: 12_345 }],
+                                },
+                            ],
+                        },
+                        statusCode: 200,
+                    },
+                    success: true,
+                });
 
             const provider = mailjetProvider({ apiKey: "key123", apiSecret: "secret123" });
             const emailOptions: MailjetEmailOptions = {
@@ -387,7 +435,7 @@ describe(mailjetProvider, () => {
 
             await provider.sendEmail(emailOptions);
 
-            const callArgs = (makeRequest as ReturnType<typeof vi.fn>).mock.calls[0];
+            const callArgs = makeRequestMock.mock.calls[1]; // Second call is sendEmail
             const payload = JSON.parse(callArgs[2] as string);
 
             expect(payload.Messages[0].Attachments).toBeDefined();

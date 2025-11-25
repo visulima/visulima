@@ -8,16 +8,7 @@ import { retry } from "../../src/utils/retry.js";
 // Mock the makeRequest function
 vi.mock(import("../../src/utils/make-request.js"), () => {
     return {
-        makeRequest: vi.fn((url, options, data) =>
-        // Return a mock result that matches the expected structure
-            Promise.resolve({
-                data: {
-                    body: { messageId: "test-message-id" },
-                    statusCode: 200,
-                },
-                success: true,
-            }),
-        ),
+        makeRequest: vi.fn(),
     };
 });
 
@@ -126,13 +117,22 @@ describe(brevoProvider, () => {
 
     describe("sendEmail", () => {
         it("should send email successfully", async () => {
-            (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValue({
-                data: {
-                    body: { messageId: "test-message-id" },
-                    statusCode: 200,
-                },
-                success: true,
-            });
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+            makeRequestMock
+                .mockResolvedValueOnce({
+                    data: {
+                        body: {},
+                        statusCode: 200,
+                    },
+                    success: true,
+                })
+                .mockResolvedValueOnce({
+                    data: {
+                        body: { messageId: "test-message-id" },
+                        statusCode: 200,
+                    },
+                    success: true,
+                });
 
             const provider = brevoProvider({ apiKey: "test123" });
             const emailOptions: BrevoEmailOptions = {
@@ -146,7 +146,7 @@ describe(brevoProvider, () => {
 
             expect(result.success).toBe(true);
             expect(result.data?.messageId).toBeDefined();
-            expect(makeRequest as ReturnType<typeof vi.fn>).toHaveBeenCalledWith(
+            expect(makeRequestMock).toHaveBeenCalledWith(
                 `${provider.endpoint}/smtp/email`,
                 {
                     headers: {
@@ -171,13 +171,22 @@ describe(brevoProvider, () => {
         });
 
         it("should format recipients correctly", async () => {
-            (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValue({
-                data: {
-                    body: { messageId: "test-id" },
-                    statusCode: 200,
-                },
-                success: true,
-            });
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+            makeRequestMock
+                .mockResolvedValueOnce({
+                    data: {
+                        body: {},
+                        statusCode: 200,
+                    },
+                    success: true,
+                })
+                .mockResolvedValueOnce({
+                    data: {
+                        body: { messageId: "test-id" },
+                        statusCode: 200,
+                    },
+                    success: true,
+                });
 
             const provider = brevoProvider({ apiKey: "test123" });
             const emailOptions: BrevoEmailOptions = {
@@ -189,7 +198,7 @@ describe(brevoProvider, () => {
 
             await provider.sendEmail(emailOptions);
 
-            expect(makeRequest as ReturnType<typeof vi.fn>).toHaveBeenCalledWith(
+            expect(makeRequestMock).toHaveBeenCalledWith(
                 `${provider.endpoint}/smtp/email`,
                 expect.objectContaining({
                     headers: expect.objectContaining({
@@ -201,7 +210,7 @@ describe(brevoProvider, () => {
                 expect.any(String),
             );
 
-            const callArgs = (makeRequest as ReturnType<typeof vi.fn>).mock.calls[0];
+            const callArgs = makeRequestMock.mock.calls[1]; // Second call is sendEmail
             const payload = JSON.parse(callArgs[2] as string);
 
             expect(payload.sender.email).toBe("sender@example.com");
@@ -212,13 +221,22 @@ describe(brevoProvider, () => {
         });
 
         it("should include CC and BCC recipients", async () => {
-            (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValue({
-                data: {
-                    body: { messageId: "test-id" },
-                    statusCode: 200,
-                },
-                success: true,
-            });
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+            makeRequestMock
+                .mockResolvedValueOnce({
+                    data: {
+                        body: {},
+                        statusCode: 200,
+                    },
+                    success: true,
+                })
+                .mockResolvedValueOnce({
+                    data: {
+                        body: { messageId: "test-id" },
+                        statusCode: 200,
+                    },
+                    success: true,
+                });
 
             const provider = brevoProvider({ apiKey: "test123" });
             const emailOptions: BrevoEmailOptions = {
@@ -232,7 +250,7 @@ describe(brevoProvider, () => {
 
             await provider.sendEmail(emailOptions);
 
-            expect(makeRequest as ReturnType<typeof vi.fn>).toHaveBeenCalledWith(
+            expect(makeRequestMock).toHaveBeenCalledWith(
                 `${provider.endpoint}/smtp/email`,
                 expect.objectContaining({
                     headers: expect.objectContaining({
@@ -244,7 +262,7 @@ describe(brevoProvider, () => {
                 expect.any(String),
             );
 
-            const callArgs = (makeRequest as ReturnType<typeof vi.fn>).mock.calls[0];
+            const callArgs = makeRequestMock.mock.calls[1]; // Second call is sendEmail
             const payload = JSON.parse(callArgs[2] as string);
 
             expect(payload.cc).toBeDefined();
@@ -254,17 +272,23 @@ describe(brevoProvider, () => {
         it("should include template if provided", async () => {
             const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
 
-            makeRequestMock.mockResolvedValue({
-                data: {
-                    body: { messageId: "test-id" },
-                    statusCode: 200,
-                },
-                success: true,
-            });
+            makeRequestMock
+                .mockResolvedValueOnce({
+                    data: {
+                        body: {},
+                        statusCode: 200,
+                    },
+                    success: true,
+                })
+                .mockResolvedValueOnce({
+                    data: {
+                        body: { messageId: "test-id" },
+                        statusCode: 200,
+                    },
+                    success: true,
+                });
 
             const provider = brevoProvider({ apiKey: "test123" });
-
-            await provider.initialize();
 
             const emailOptions: BrevoEmailOptions = {
                 from: { email: "sender@example.com" },
@@ -275,21 +299,18 @@ describe(brevoProvider, () => {
                 to: { email: "user@example.com" },
             };
 
-            const callCountBefore = makeRequestMock.mock.calls.length;
-
             const result = await provider.sendEmail(emailOptions);
 
             expect(result.success).toBe(true);
 
             const { calls } = makeRequestMock.mock;
-            const callWithPayload = calls
-                .slice(callCountBefore)
-                .find((call) => call.length > 2 && call[2] && typeof call[2] === "string" && (call[2] as string).includes("templateId"));
+            // Find the sendEmail call (second call, index 1)
+            const sendEmailCall = calls[1];
 
-            expect(callWithPayload).toBeDefined();
+            expect(sendEmailCall).toBeDefined();
 
-            if (callWithPayload && callWithPayload[2]) {
-                const payload = JSON.parse(callWithPayload[2] as string);
+            if (sendEmailCall && sendEmailCall[2]) {
+                const payload = JSON.parse(sendEmailCall[2] as string);
 
                 expect(payload.templateId).toBe(12_345);
                 expect(payload.params).toEqual({ name: "John" });
@@ -297,13 +318,22 @@ describe(brevoProvider, () => {
         });
 
         it("should include tags", async () => {
-            (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValue({
-                data: {
-                    body: { messageId: "test-id" },
-                    statusCode: 200,
-                },
-                success: true,
-            });
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+            makeRequestMock
+                .mockResolvedValueOnce({
+                    data: {
+                        body: {},
+                        statusCode: 200,
+                    },
+                    success: true,
+                })
+                .mockResolvedValueOnce({
+                    data: {
+                        body: { messageId: "test-id" },
+                        statusCode: 200,
+                    },
+                    success: true,
+                });
 
             const provider = brevoProvider({ apiKey: "test123" });
             const emailOptions: BrevoEmailOptions = {
@@ -316,7 +346,7 @@ describe(brevoProvider, () => {
 
             await provider.sendEmail(emailOptions);
 
-            expect(makeRequest as ReturnType<typeof vi.fn>).toHaveBeenCalledWith(
+            expect(makeRequestMock).toHaveBeenCalledWith(
                 `${provider.endpoint}/smtp/email`,
                 expect.objectContaining({
                     headers: expect.objectContaining({
@@ -328,7 +358,7 @@ describe(brevoProvider, () => {
                 expect.any(String),
             );
 
-            const callArgs = (makeRequest as ReturnType<typeof vi.fn>).mock.calls[0];
+            const callArgs = makeRequestMock.mock.calls[1]; // Second call is sendEmail
             const payload = JSON.parse(callArgs[2] as string);
 
             expect(payload.tags).toBeDefined();
@@ -336,13 +366,22 @@ describe(brevoProvider, () => {
         });
 
         it("should include scheduled date/time", async () => {
-            (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValue({
-                data: {
-                    body: { messageId: "test-id" },
-                    statusCode: 200,
-                },
-                success: true,
-            });
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+            makeRequestMock
+                .mockResolvedValueOnce({
+                    data: {
+                        body: {},
+                        statusCode: 200,
+                    },
+                    success: true,
+                })
+                .mockResolvedValueOnce({
+                    data: {
+                        body: { messageId: "test-id" },
+                        statusCode: 200,
+                    },
+                    success: true,
+                });
 
             const provider = brevoProvider({ apiKey: "test123" });
             const scheduledAt = Math.floor(Date.now() / 1000) + 3600; // 1 hour from now
@@ -356,7 +395,7 @@ describe(brevoProvider, () => {
 
             await provider.sendEmail(emailOptions);
 
-            expect(makeRequest as ReturnType<typeof vi.fn>).toHaveBeenCalledWith(
+            expect(makeRequestMock).toHaveBeenCalledWith(
                 `${provider.endpoint}/smtp/email`,
                 expect.objectContaining({
                     headers: expect.objectContaining({
@@ -368,7 +407,7 @@ describe(brevoProvider, () => {
                 expect.any(String),
             );
 
-            const callArgs = (makeRequest as ReturnType<typeof vi.fn>).mock.calls[0];
+            const callArgs = makeRequestMock.mock.calls[1]; // Second call is sendEmail
             const payload = JSON.parse(callArgs[2] as string);
 
             expect(payload.scheduledAt).toBeDefined();
@@ -377,13 +416,22 @@ describe(brevoProvider, () => {
         });
 
         it("should include custom headers", async () => {
-            (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValue({
-                data: {
-                    body: { messageId: "test-id" },
-                    statusCode: 200,
-                },
-                success: true,
-            });
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+            makeRequestMock
+                .mockResolvedValueOnce({
+                    data: {
+                        body: {},
+                        statusCode: 200,
+                    },
+                    success: true,
+                })
+                .mockResolvedValueOnce({
+                    data: {
+                        body: { messageId: "test-id" },
+                        statusCode: 200,
+                    },
+                    success: true,
+                });
 
             const provider = brevoProvider({ apiKey: "test123" });
             const emailOptions: BrevoEmailOptions = {
@@ -396,7 +444,7 @@ describe(brevoProvider, () => {
 
             await provider.sendEmail(emailOptions);
 
-            expect(makeRequest as ReturnType<typeof vi.fn>).toHaveBeenCalledWith(
+            expect(makeRequestMock).toHaveBeenCalledWith(
                 `${provider.endpoint}/smtp/email`,
                 expect.objectContaining({
                     headers: expect.objectContaining({
@@ -408,7 +456,7 @@ describe(brevoProvider, () => {
                 expect.any(String),
             );
 
-            const callArgs = (makeRequest as ReturnType<typeof vi.fn>).mock.calls[0];
+            const callArgs = makeRequestMock.mock.calls[1]; // Second call is sendEmail
             const payload = JSON.parse(callArgs[2] as string);
 
             expect(payload.headers).toBeDefined();
@@ -416,13 +464,22 @@ describe(brevoProvider, () => {
         });
 
         it("should include attachments", async () => {
-            (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValue({
-                data: {
-                    body: { messageId: "test-id" },
-                    statusCode: 200,
-                },
-                success: true,
-            });
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+            makeRequestMock
+                .mockResolvedValueOnce({
+                    data: {
+                        body: {},
+                        statusCode: 200,
+                    },
+                    success: true,
+                })
+                .mockResolvedValueOnce({
+                    data: {
+                        body: { messageId: "test-id" },
+                        statusCode: 200,
+                    },
+                    success: true,
+                });
 
             const provider = brevoProvider({ apiKey: "test123" });
             const emailOptions: BrevoEmailOptions = {
@@ -441,7 +498,7 @@ describe(brevoProvider, () => {
 
             await provider.sendEmail(emailOptions);
 
-            expect(makeRequest as ReturnType<typeof vi.fn>).toHaveBeenCalledWith(
+            expect(makeRequestMock).toHaveBeenCalledWith(
                 `${provider.endpoint}/smtp/email`,
                 expect.objectContaining({
                     headers: expect.objectContaining({
@@ -453,7 +510,7 @@ describe(brevoProvider, () => {
                 expect.any(String),
             );
 
-            const callArgs = (makeRequest as ReturnType<typeof vi.fn>).mock.calls[0];
+            const callArgs = makeRequestMock.mock.calls[1]; // Second call is sendEmail
             const payload = JSON.parse(callArgs[2] as string);
 
             expect(payload.attachment).toBeDefined();
@@ -462,10 +519,19 @@ describe(brevoProvider, () => {
         });
 
         it("should handle errors gracefully", async () => {
-            (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-                error: new Error("API Error"),
-                success: false,
-            });
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+            makeRequestMock
+                .mockResolvedValueOnce({
+                    data: {
+                        body: {},
+                        statusCode: 200,
+                    },
+                    success: true,
+                })
+                .mockResolvedValueOnce({
+                    error: new Error("API Error"),
+                    success: false,
+                });
 
             const provider = brevoProvider({ apiKey: "test123" });
             const emailOptions: BrevoEmailOptions = {

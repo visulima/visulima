@@ -130,13 +130,22 @@ describe(mailgunProvider, () => {
 
     describe("sendEmail", () => {
         it("should send email successfully", async () => {
-            (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValue({
-                data: {
-                    body: { id: "test-message-id", message: "Queued. Thank you." },
-                    statusCode: 200,
-                },
-                success: true,
-            });
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+            makeRequestMock
+                .mockResolvedValueOnce({
+                    data: {
+                        body: {},
+                        statusCode: 200,
+                    },
+                    success: true,
+                })
+                .mockResolvedValueOnce({
+                    data: {
+                        body: { id: "test-message-id", message: "Queued. Thank you." },
+                        statusCode: 200,
+                    },
+                    success: true,
+                });
 
             const provider = mailgunProvider({ apiKey: "test123", domain: "example.com" });
             const emailOptions: MailgunEmailOptions = {
@@ -150,7 +159,7 @@ describe(mailgunProvider, () => {
 
             expect(result.success).toBe(true);
             expect(result.data?.messageId).toBeDefined();
-            expect(makeRequest as ReturnType<typeof vi.fn>).toHaveBeenCalledWith(
+            expect(makeRequestMock).toHaveBeenCalledWith(
                 `${provider.endpoint}/v3/example.com/messages`,
                 {
                     headers: {
@@ -175,13 +184,22 @@ describe(mailgunProvider, () => {
         });
 
         it("should format recipients correctly", async () => {
-            (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValue({
-                data: {
-                    body: { id: "test-id", message: "Queued" },
-                    statusCode: 200,
-                },
-                success: true,
-            });
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+            makeRequestMock
+                .mockResolvedValueOnce({
+                    data: {
+                        body: {},
+                        statusCode: 200,
+                    },
+                    success: true,
+                })
+                .mockResolvedValueOnce({
+                    data: {
+                        body: { id: "test-id", message: "Queued" },
+                        statusCode: 200,
+                    },
+                    success: true,
+                });
 
             const provider = mailgunProvider({ apiKey: "test123", domain: "example.com" });
             const emailOptions: MailgunEmailOptions = {
@@ -193,7 +211,7 @@ describe(mailgunProvider, () => {
 
             await provider.sendEmail(emailOptions);
 
-            const callArgs = (makeRequest as ReturnType<typeof vi.fn>).mock.calls[0];
+            const callArgs = makeRequestMock.mock.calls[1]; // Second call is sendEmail
             const body = callArgs[2] as string;
 
             expect(body).toContain("from=Sender%20%3Csender%40example.com%3E");
@@ -201,13 +219,22 @@ describe(mailgunProvider, () => {
         });
 
         it("should include CC and BCC recipients", async () => {
-            (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValue({
-                data: {
-                    body: { id: "test-id", message: "Queued" },
-                    statusCode: 200,
-                },
-                success: true,
-            });
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+            makeRequestMock
+                .mockResolvedValueOnce({
+                    data: {
+                        body: {},
+                        statusCode: 200,
+                    },
+                    success: true,
+                })
+                .mockResolvedValueOnce({
+                    data: {
+                        body: { id: "test-id", message: "Queued" },
+                        statusCode: 200,
+                    },
+                    success: true,
+                });
 
             const provider = mailgunProvider({ apiKey: "test123", domain: "example.com" });
             const emailOptions: MailgunEmailOptions = {
@@ -221,7 +248,7 @@ describe(mailgunProvider, () => {
 
             await provider.sendEmail(emailOptions);
 
-            const callArgs = (makeRequest as ReturnType<typeof vi.fn>).mock.calls[0];
+            const callArgs = makeRequestMock.mock.calls[1]; // Second call is sendEmail
             const body = callArgs[2] as string;
 
             expect(body).toContain("cc=cc%40example.com");
@@ -231,17 +258,23 @@ describe(mailgunProvider, () => {
         it("should include template if provided", async () => {
             const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
 
-            makeRequestMock.mockResolvedValue({
-                data: {
-                    body: { id: "test-id", message: "Queued" },
-                    statusCode: 200,
-                },
-                success: true,
-            });
+            makeRequestMock
+                .mockResolvedValueOnce({
+                    data: {
+                        body: {},
+                        statusCode: 200,
+                    },
+                    success: true,
+                })
+                .mockResolvedValueOnce({
+                    data: {
+                        body: { id: "test-id", message: "Queued" },
+                        statusCode: 200,
+                    },
+                    success: true,
+                });
 
             const provider = mailgunProvider({ apiKey: "test123", domain: "example.com" });
-
-            await provider.initialize();
 
             const emailOptions: MailgunEmailOptions = {
                 from: { email: "sender@example.com" },
@@ -252,21 +285,16 @@ describe(mailgunProvider, () => {
                 to: { email: "user@example.com" },
             };
 
-            const callCountBefore = makeRequestMock.mock.calls.length;
-
             const result = await provider.sendEmail(emailOptions);
 
             expect(result.success).toBe(true);
 
-            const { calls } = makeRequestMock.mock;
-            const callWithPayload = calls
-                .slice(callCountBefore)
-                .find((call) => call.length > 2 && call[2] && typeof call[2] === "string" && (call[2] as string).includes("template"));
+            const sendEmailCall = makeRequestMock.mock.calls[1]; // Second call is sendEmail
 
-            expect(callWithPayload).toBeDefined();
+            expect(sendEmailCall).toBeDefined();
 
-            if (callWithPayload && callWithPayload[2]) {
-                const body = callWithPayload[2] as string;
+            if (sendEmailCall && sendEmailCall[2]) {
+                const body = sendEmailCall[2] as string;
 
                 expect(body).toContain("template=welcome-template");
                 expect(body).toContain("v%3Aname=John");
@@ -274,13 +302,22 @@ describe(mailgunProvider, () => {
         });
 
         it("should include tags", async () => {
-            (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValue({
-                data: {
-                    body: { id: "test-id", message: "Queued" },
-                    statusCode: 200,
-                },
-                success: true,
-            });
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+            makeRequestMock
+                .mockResolvedValueOnce({
+                    data: {
+                        body: {},
+                        statusCode: 200,
+                    },
+                    success: true,
+                })
+                .mockResolvedValueOnce({
+                    data: {
+                        body: { id: "test-id", message: "Queued" },
+                        statusCode: 200,
+                    },
+                    success: true,
+                });
 
             const provider = mailgunProvider({ apiKey: "test123", domain: "example.com" });
             const emailOptions: MailgunEmailOptions = {
@@ -293,7 +330,7 @@ describe(mailgunProvider, () => {
 
             await provider.sendEmail(emailOptions);
 
-            const callArgs = (makeRequest as ReturnType<typeof vi.fn>).mock.calls[0];
+            const callArgs = makeRequestMock.mock.calls[1]; // Second call is sendEmail
             const body = callArgs[2] as string;
 
             expect(body).toContain("o%3Atag=tag1");
@@ -301,13 +338,22 @@ describe(mailgunProvider, () => {
         });
 
         it("should include tracking options", async () => {
-            (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValue({
-                data: {
-                    body: { id: "test-id", message: "Queued" },
-                    statusCode: 200,
-                },
-                success: true,
-            });
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+            makeRequestMock
+                .mockResolvedValueOnce({
+                    data: {
+                        body: {},
+                        statusCode: 200,
+                    },
+                    success: true,
+                })
+                .mockResolvedValueOnce({
+                    data: {
+                        body: { id: "test-id", message: "Queued" },
+                        statusCode: 200,
+                    },
+                    success: true,
+                });
 
             const provider = mailgunProvider({ apiKey: "test123", domain: "example.com" });
             const emailOptions: MailgunEmailOptions = {
@@ -321,7 +367,7 @@ describe(mailgunProvider, () => {
 
             await provider.sendEmail(emailOptions);
 
-            const callArgs = (makeRequest as ReturnType<typeof vi.fn>).mock.calls[0];
+            const callArgs = makeRequestMock.mock.calls[1]; // Second call is sendEmail
             const body = callArgs[2] as string;
 
             expect(body).toContain("o%3Aclicktracking=yes");
@@ -329,13 +375,22 @@ describe(mailgunProvider, () => {
         });
 
         it("should include custom headers", async () => {
-            (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValue({
-                data: {
-                    body: { id: "test-id", message: "Queued" },
-                    statusCode: 200,
-                },
-                success: true,
-            });
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+            makeRequestMock
+                .mockResolvedValueOnce({
+                    data: {
+                        body: {},
+                        statusCode: 200,
+                    },
+                    success: true,
+                })
+                .mockResolvedValueOnce({
+                    data: {
+                        body: { id: "test-id", message: "Queued" },
+                        statusCode: 200,
+                    },
+                    success: true,
+                });
 
             const provider = mailgunProvider({ apiKey: "test123", domain: "example.com" });
             const emailOptions: MailgunEmailOptions = {
@@ -348,17 +403,26 @@ describe(mailgunProvider, () => {
 
             await provider.sendEmail(emailOptions);
 
-            const callArgs = (makeRequest as ReturnType<typeof vi.fn>).mock.calls[0];
+            const callArgs = makeRequestMock.mock.calls[1]; // Second call is sendEmail
             const body = callArgs[2] as string;
 
             expect(body).toContain("h%3AX-Custom=value");
         });
 
         it("should handle errors gracefully", async () => {
-            (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-                error: new Error("API Error"),
-                success: false,
-            });
+            const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
+            makeRequestMock
+                .mockResolvedValueOnce({
+                    data: {
+                        body: {},
+                        statusCode: 200,
+                    },
+                    success: true,
+                })
+                .mockResolvedValueOnce({
+                    error: new Error("API Error"),
+                    success: false,
+                });
 
             const provider = mailgunProvider({ apiKey: "test123", domain: "example.com" });
             const emailOptions: MailgunEmailOptions = {

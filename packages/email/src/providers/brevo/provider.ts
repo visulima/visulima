@@ -9,7 +9,7 @@ import { retry } from "../../utils/retry";
 import { validateEmailOptions } from "../../utils/validate-email-options";
 import type { ProviderFactory } from "../provider";
 import { defineProvider } from "../provider";
-import { createProviderLogger, formatSendGridAddresses, handleProviderError, ProviderState } from "../utils";
+import { createProviderLogger, formatSendGridAddress, formatSendGridAddresses, handleProviderError, ProviderState } from "../utils";
 import type { BrevoConfig, BrevoEmailOptions } from "./types";
 
 const PROVIDER_NAME = "brevo";
@@ -187,9 +187,9 @@ export const brevoProvider: ProviderFactory<BrevoConfig, unknown, BrevoEmailOpti
 
                 // Build payload for Brevo API
                 const payload: Record<string, unknown> = {
-                    sender: formatAddress(emailOptions.from),
+                    sender: formatSendGridAddress(emailOptions.from),
                     subject: emailOptions.subject,
-                    to: formatAddresses(emailOptions.to),
+                    to: formatSendGridAddresses(emailOptions.to),
                 };
 
                 // Add HTML content
@@ -204,17 +204,17 @@ export const brevoProvider: ProviderFactory<BrevoConfig, unknown, BrevoEmailOpti
 
                 // Add CC
                 if (emailOptions.cc) {
-                    payload.cc = formatAddresses(emailOptions.cc);
+                    payload.cc = formatSendGridAddresses(emailOptions.cc);
                 }
 
                 // Add BCC
                 if (emailOptions.bcc) {
-                    payload.bcc = formatAddresses(emailOptions.bcc);
+                    payload.bcc = formatSendGridAddresses(emailOptions.bcc);
                 }
 
                 // Add reply-to
                 if (emailOptions.replyTo) {
-                    payload.replyTo = formatAddress(emailOptions.replyTo);
+                    payload.replyTo = formatSendGridAddress(emailOptions.replyTo);
                 }
 
                 // Add template

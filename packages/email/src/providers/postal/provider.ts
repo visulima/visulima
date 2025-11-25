@@ -9,7 +9,7 @@ import { retry } from "../../utils/retry";
 import { validateEmailOptions } from "../../utils/validate-email-options";
 import type { ProviderFactory } from "../provider";
 import { defineProvider } from "../provider";
-import { createProviderLogger, formatPostalAddresses, handleProviderError, ProviderState } from "../utils";
+import { createProviderLogger, formatPostalAddress, formatPostalAddresses, handleProviderError, ProviderState } from "../utils";
 import type { PostalConfig, PostalEmailOptions } from "./types";
 
 const PROVIDER_NAME = "postal";
@@ -71,9 +71,7 @@ export const postalProvider: ProviderFactory<PostalConfig, unknown, PostalEmailO
                     };
                 }
 
-                if (!isInitialized) {
-                    await this.initialize();
-                }
+                await providerState.ensureInitialized(() => this.initialize(), PROVIDER_NAME);
 
                 const headers: Record<string, string> = {
                     "Content-Type": "application/json",
@@ -121,20 +119,13 @@ export const postalProvider: ProviderFactory<PostalConfig, unknown, PostalEmailO
          * Initialize the Postal provider
          */
         async initialize(): Promise<void> {
-            if (isInitialized) {
-                return;
-            }
-
-            try {
+            await providerState.ensureInitialized(async () => {
                 if (!await this.isAvailable()) {
                     throw new EmailError(PROVIDER_NAME, "Postal API not available or invalid API key");
                 }
 
-                isInitialized = true;
                 logger.debug("Provider initialized successfully");
-            } catch (error) {
-                throw new EmailError(PROVIDER_NAME, `Failed to initialize: ${(error as Error).message}`, { cause: error as Error });
-            }
+            }, PROVIDER_NAME);
         },
 
         /**
@@ -197,15 +188,13 @@ export const postalProvider: ProviderFactory<PostalConfig, unknown, PostalEmailO
                     };
                 }
 
-                if (!isInitialized) {
-                    await this.initialize();
-                }
+                await providerState.ensureInitialized(() => this.initialize(), PROVIDER_NAME);
 
                 // Build payload for Postal API
                 const payload: Record<string, unknown> = {
-                    from: formatAddress(emailOptions.from).address,
+                    from: formatPostalAddress(emailOptions.from).address,
                     subject: emailOptions.subject,
-                    to: formatAddresses(emailOptions.to).map((addr) => addr.address),
+                    to: formatPostalAddresses(emailOptions.to).map((addr) => addr.address),
                 };
 
                 // Add HTML content
@@ -220,17 +209,17 @@ export const postalProvider: ProviderFactory<PostalConfig, unknown, PostalEmailO
 
                 // Add CC
                 if (emailOptions.cc) {
-                    payload.cc = formatAddresses(emailOptions.cc).map((addr) => addr.address);
+                    payload.cc = formatPostalAddresses(emailOptions.cc).map((addr) => addr.address);
                 }
 
                 // Add BCC
                 if (emailOptions.bcc) {
-                    payload.bcc = formatAddresses(emailOptions.bcc).map((addr) => addr.address);
+                    payload.bcc = formatPostalAddresses(emailOptions.bcc).map((addr) => addr.address);
                 }
 
                 // Add reply-to
                 if (emailOptions.replyTo) {
-                    payload.reply_to = formatAddress(emailOptions.replyTo).address;
+                    payload.reply_to = formatPostalAddress(emailOptions.replyTo).address;
                 }
 
                 // Add template
