@@ -30,13 +30,12 @@ const CONTENT_TYPE = "Content-Type";
  * @template NodeResponse The Node.js response type.
  */
 abstract class BaseHandlerNode<
-        TFile extends UploadFile,
-        NodeRequest extends IncomingMessage = IncomingMessage,
-        NodeResponse extends ServerResponse = ServerResponse,
-    >
+    TFile extends UploadFile,
+    NodeRequest extends IncomingMessage = IncomingMessage,
+    NodeResponse extends ServerResponse = ServerResponse,
+>
     extends BaseHandlerCore<TFile>
-    implements MethodHandler<NodeRequest, NodeResponse>
-{
+    implements MethodHandler<NodeRequest, NodeResponse> {
     /**
      * Limiting enabled HTTP method handler.
      */
@@ -89,7 +88,7 @@ abstract class BaseHandlerNode<
 
         try {
             await waitForStorage(this.storage);
-        } catch (error: unknown) {
+        } catch {
             await this.sendError(response, { UploadErrorCode: ERRORS.STORAGE_ERROR } as UploadError);
 
             return;
@@ -102,6 +101,7 @@ abstract class BaseHandlerNode<
                 handleHeadOptionsRequest(file as ResponseFile<TFile>, this.send.bind(this), response);
             } else if (request.method === "GET") {
                 const fileResponse = file as ResponseFile<TFile> | ResponseList<TFile>;
+
                 if (fileResponse) {
                     handleGetRequest(fileResponse, request, response, next, this.send.bind(this), this.sendStream.bind(this), this.parseRangeHeader.bind(this));
                 }
@@ -118,8 +118,8 @@ abstract class BaseHandlerNode<
                 }
 
                 if (basicFile.status === "completed") {
-                    await handleCompletedUpload(file as ResponseFile<TFile>, request, response, next, this.storage, this.logger, (_req, resp, uploadResp) => {
-                        this.finish(_req, resp, uploadResp);
+                    await handleCompletedUpload(file as ResponseFile<TFile>, request, response, next, this.storage, this.logger, (_request, resp, uploadResp) => {
+                        this.finish(_request, resp, uploadResp);
                     });
                 } else {
                     handlePartialUpload(file as ResponseFile<TFile>, request, response, (resp, data) => {
@@ -298,7 +298,7 @@ abstract class BaseHandlerNode<
         }
 
         // Handle backpressure-aware piping (includes error handling)
-        pipeWithBackpressure(finalStream, response, (resp, err) => this.sendError(resp, err));
+        pipeWithBackpressure(finalStream, response, (resp, error) => this.sendError(resp, error));
     }
 
     /**
@@ -422,8 +422,8 @@ abstract class BaseHandlerNode<
                                 charset: "utf8",
                                 mediaType: "application/json",
                             }),
-                            ...(file.expiredAt === undefined ? {} : { "X-Upload-Expires": file.expiredAt.toString() }),
-                            ...(file.modifiedAt === undefined ? {} : { "Last-Modified": file.modifiedAt.toString() }),
+                            ...file.expiredAt === undefined ? {} : { "X-Upload-Expires": file.expiredAt.toString() },
+                            ...file.modifiedAt === undefined ? {} : { "Last-Modified": file.modifiedAt.toString() },
                         } as Record<string, string>,
                         statusCode: 200,
                     } as ResponseFile<TFile>;
@@ -464,13 +464,13 @@ abstract class BaseHandlerNode<
                                 "X-Media-Type": transformedResult.mediaType,
                                 "X-Original-Format": transformedResult.originalFile?.contentType?.split("/")[1] || "",
                                 "X-Transformed-Format": transformedResult.format,
-                                ...(transformedResult.originalFile?.expiredAt === undefined
+                                ...transformedResult.originalFile?.expiredAt === undefined
                                     ? {}
-                                    : { "X-Upload-Expires": transformedResult.originalFile.expiredAt.toString() }),
-                                ...(transformedResult.originalFile?.modifiedAt === undefined
+                                    : { "X-Upload-Expires": transformedResult.originalFile.expiredAt.toString() },
+                                ...transformedResult.originalFile?.modifiedAt === undefined
                                     ? {}
-                                    : { "Last-Modified": transformedResult.originalFile.modifiedAt.toString() }),
-                                ...(transformedResult.originalFile?.ETag === undefined ? {} : { ETag: transformedResult.originalFile.ETag }),
+                                    : { "Last-Modified": transformedResult.originalFile.modifiedAt.toString() },
+                                ...transformedResult.originalFile?.ETag === undefined ? {} : { ETag: transformedResult.originalFile.ETag },
                             } as Record<string, string>,
                             statusCode: 200,
                         } as ResponseFile<TFile>;
@@ -535,9 +535,9 @@ abstract class BaseHandlerNode<
                         "Accept-Ranges": "bytes", // Indicate we support range requests
                         "Content-Length": String(size),
                         "Content-Type": contentType,
-                        ...(expiredAt === undefined ? {} : { "X-Upload-Expires": expiredAt.toString() }),
-                        ...(modifiedAt === undefined ? {} : { "Last-Modified": modifiedAt.toString() }),
-                        ...(ETag === undefined ? {} : { ETag }),
+                        ...expiredAt === undefined ? {} : { "X-Upload-Expires": expiredAt.toString() },
+                        ...modifiedAt === undefined ? {} : { "Last-Modified": modifiedAt.toString() },
+                        ...ETag === undefined ? {} : { ETag },
                     } as Record<string, string>,
                     statusCode: 200,
                     ...file,

@@ -59,7 +59,7 @@ abstract class BaseHandlerFetch<TFile extends UploadFile> extends BaseHandlerCor
 
         try {
             await waitForStorage(this.storage);
-        } catch (error: unknown) {
+        } catch {
             return this.createErrorResponse({ UploadErrorCode: ERRORS.STORAGE_ERROR } as UploadError);
         }
 
@@ -193,7 +193,7 @@ abstract class BaseHandlerFetch<TFile extends UploadFile> extends BaseHandlerCor
             ...allHeaders,
             "Access-Control-Expose-Headers":
                 "location,upload-expires,upload-offset,upload-length,upload-metadata,upload-defer-length,tus-resumable,tus-extension,tus-max-size,tus-version,tus-checksum-algorithm,cache-control",
-            ...(basicFile.hash === undefined ? {} : { [`X-Range-${basicFile.hash?.algorithm.toUpperCase()}`]: basicFile.hash?.value }),
+            ...basicFile.hash === undefined ? {} : { [`X-Range-${basicFile.hash?.algorithm.toUpperCase()}`]: basicFile.hash?.value },
         });
 
         // Ensure Location header is present

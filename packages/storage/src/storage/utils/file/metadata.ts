@@ -91,10 +91,10 @@ export const parseMetadata = (string_?: string): Metadata => {
         const [key, value] = tokens;
 
         if (
-            (tokens.length === 1 || tokens.length === 2) &&
-            validateKey(key as string) &&
-            (tokens.length === 1 || validateValue(value as string)) &&
-            !((key as string) in meta)
+            (tokens.length === 1 || tokens.length === 2)
+            && validateKey(key as string)
+            && (tokens.length === 1 || validateValue(value as string))
+            && !((key as string) in meta)
         ) {
             const decodedValue = tokens.length === 1 ? undefined : value ? Buffer.from(value, "base64").toString("utf8") : "";
 

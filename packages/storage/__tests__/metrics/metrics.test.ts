@@ -191,6 +191,7 @@ describe("metrics Instrumentation", () => {
             const storageMetrics = new OpenTelemetryMetrics(meter);
 
             storageMetrics.increment("test.counter");
+
             expect(() => storageMetrics.increment("test.counter")).not.toThrow();
         });
 
@@ -201,6 +202,7 @@ describe("metrics Instrumentation", () => {
             const storageMetrics = new OpenTelemetryMetrics(meter);
 
             storageMetrics.timing("test.timing", 100);
+
             expect(() => storageMetrics.timing("test.timing", 200)).not.toThrow();
         });
 
@@ -211,6 +213,7 @@ describe("metrics Instrumentation", () => {
             const storageMetrics = new OpenTelemetryMetrics(meter);
 
             storageMetrics.gauge("test.gauge", 10);
+
             expect(() => storageMetrics.gauge("test.gauge", 20)).not.toThrow();
         });
     });

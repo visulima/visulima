@@ -233,9 +233,9 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
                     const isFirstChunk = (part as FilePart).start === 0 || (part as FilePart).start === undefined;
 
                     if (
-                        isFirstChunk &&
-                        (file.bytesWritten === 0 || Number.isNaN(file.bytesWritten)) &&
-                        (!file.contentType || file.contentType === "application/octet-stream")
+                        isFirstChunk
+                        && (file.bytesWritten === 0 || Number.isNaN(file.bytesWritten))
+                        && (!file.contentType || file.contentType === "application/octet-stream")
                     ) {
                         try {
                             const { fileType, stream: detectedStream } = await detectFileTypeFromStream(part.body);
@@ -301,6 +301,7 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
                 const httpError = this.normalizeError(error instanceof Error ? error : new Error(String(error)));
 
                 await this.onError(httpError);
+
                 return throwErrorCode(ERRORS.FILE_ERROR, httpError.message);
             } finally {
                 await this.unlock(path);
@@ -335,6 +336,7 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
                     const httpError = this.normalizeError(error instanceof Error ? error : new Error(errorWithCode.message || String(error)));
 
                     await this.onError(httpError);
+
                     return throwErrorCode(ERRORS.FILE_NOT_FOUND, httpError.message);
                 }
 
@@ -380,8 +382,8 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
                     headers: {
                         "Content-Length": String(size || bytesWritten),
                         "Content-Type": contentType,
-                        ...(expiredAt && { "X-Upload-Expires": expiredAt.toString() }),
-                        ...(modifiedAt && { "Last-Modified": modifiedAt.toString() }),
+                        ...expiredAt && { "X-Upload-Expires": expiredAt.toString() },
+                        ...modifiedAt && { "Last-Modified": modifiedAt.toString() },
                         // Note: ETag requires reading the file content, so we don't include it for streaming
                         // Clients can use HEAD requests to get ETag if needed
                     },

@@ -282,8 +282,8 @@ class AzureStorage extends BaseStorage<AzureFile, FileReturn> {
                     // Detect file type from stream if contentType is not set or is default
                     // Only detect on first write (when bytesWritten is 0 or NaN)
                     if (
-                        (file.bytesWritten === 0 || Number.isNaN(file.bytesWritten)) &&
-                        (!file.contentType || file.contentType === "application/octet-stream")
+                        (file.bytesWritten === 0 || Number.isNaN(file.bytesWritten))
+                        && (!file.contentType || file.contentType === "application/octet-stream")
                     ) {
                         try {
                             const { fileType, stream: detectedStream } = await detectFileTypeFromStream(part.body);

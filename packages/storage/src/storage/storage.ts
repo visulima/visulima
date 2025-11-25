@@ -73,7 +73,7 @@ export const defaultFilesystemFileNameValidation = (name: string): boolean => {
     }
 
     const upperCase = name.toUpperCase();
-    const filesystemInvalidChars = ['"', "*", ":", "<", ">", "?", "\\", "|", "../", "\0"];
+    const filesystemInvalidChars = ["\"", "*", ":", "<", ">", "?", "\\", "|", "../", "\0"];
 
     return !filesystemInvalidChars.some((char) => upperCase.includes(char));
 };
@@ -392,6 +392,7 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
             const httpError = this.normalizeError(error instanceof Error ? error : new Error(String(error)));
 
             await this.onError(httpError);
+
             return throwErrorCode(ERRORS.FILE_NOT_FOUND);
         }
     }
@@ -496,8 +497,8 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
                 headers: {
                     "Content-Length": String(file.size),
                     "Content-Type": file.contentType,
-                    ...(file.ETag && { ETag: file.ETag }),
-                    ...(file.modifiedAt && { "Last-Modified": file.modifiedAt.toString() }),
+                    ...file.ETag && { ETag: file.ETag },
+                    ...file.modifiedAt && { "Last-Modified": file.modifiedAt.toString() },
                 },
                 size: typeof file.size === "number" ? file.size : undefined,
                 stream,

@@ -130,8 +130,8 @@ export const HeaderUtilities = {
     createContentDisposition(options: { filename?: string; filenameSplat?: string; type: "inline" | "attachment" }): string {
         const disposition = new ContentDisposition({
             type: options.type,
-            ...(options.filename && { filename: options.filename }),
-            ...(options.filenameSplat && { filenameSplat: options.filenameSplat }),
+            ...options.filename && { filename: options.filename },
+            ...options.filenameSplat && { filenameSplat: options.filenameSplat },
         });
 
         return disposition.toString();
@@ -148,8 +148,8 @@ export const HeaderUtilities = {
     createContentType(options: { boundary?: string; charset?: string; mediaType: string }): string {
         const contentType = new ContentType({
             mediaType: options.mediaType,
-            ...(options.charset && { charset: options.charset }),
-            ...(options.boundary && { boundary: options.boundary }),
+            ...options.charset && { charset: options.charset },
+            ...options.boundary && { boundary: options.boundary },
         });
 
         return contentType.toString();

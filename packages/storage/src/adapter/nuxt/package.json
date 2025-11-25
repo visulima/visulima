@@ -2,14 +2,14 @@
     "name": "@visulima/storage-nuxt",
     "version": "0.0.0",
     "type": "module",
-    "main": "./module.js",
-    "types": "./module.d.ts",
     "exports": {
         ".": {
             "types": "./module.d.ts",
             "import": "./module.js"
         }
     },
+    "main": "./module.js",
+    "types": "./module.d.ts",
     "files": [
         "."
     ],

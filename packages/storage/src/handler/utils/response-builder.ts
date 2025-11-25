@@ -39,8 +39,8 @@ export const buildFileHeaders = <TFile extends UploadFile>(
 ): Record<string, string | number> => {
     return {
         Location: locationUrl,
-        ...(file.expiredAt === undefined ? {} : { "X-Upload-Expires": file.expiredAt.toString() }),
-        ...(file.ETag === undefined ? {} : { ETag: file.ETag }),
+        ...file.expiredAt === undefined ? {} : { "X-Upload-Expires": file.expiredAt.toString() },
+        ...file.ETag === undefined ? {} : { ETag: file.ETag },
         ...additionalHeaders,
     };
 };
@@ -99,9 +99,9 @@ export const buildFileMetadataHeaders = <TFile extends UploadFile>(file: TFile):
     return {
         "Content-Length": String(file.size || 0),
         "Content-Type": file.contentType,
-        ...(file.expiredAt === undefined ? {} : { "X-Upload-Expires": file.expiredAt.toString() }),
-        ...(file.modifiedAt === undefined ? {} : { "Last-Modified": file.modifiedAt.toString() }),
-        ...(file.ETag === undefined ? {} : { ETag: file.ETag }),
+        ...file.expiredAt === undefined ? {} : { "X-Upload-Expires": file.expiredAt.toString() },
+        ...file.modifiedAt === undefined ? {} : { "Last-Modified": file.modifiedAt.toString() },
+        ...file.ETag === undefined ? {} : { ETag: file.ETag },
     };
 };
 

@@ -256,7 +256,7 @@ ${partsXml}
 
         const xml = parseXml(xmlText);
         const listPartsResult = (xml.ListPartsResult as Record<string, unknown>) || xml;
-        const parts = listPartsResult.Part ? (Array.isArray(listPartsResult.Part) ? listPartsResult.Part : [listPartsResult.Part]) : [];
+        const parts = listPartsResult.Part ? Array.isArray(listPartsResult.Part) ? listPartsResult.Part : [listPartsResult.Part] : [];
 
         return {
             Parts: parts.map((part: Record<string, unknown>) => {
@@ -440,11 +440,11 @@ ${partsXml}
         return {
             Contents: Array.isArray(contents)
                 ? contents.map((item: Record<string, unknown>) => {
-                      return {
-                          Key: item.Key as string | undefined,
-                          LastModified: item.LastModified ? new Date(String(item.LastModified)) : undefined,
-                      };
-                  })
+                    return {
+                        Key: item.Key as string | undefined,
+                        LastModified: item.LastModified ? new Date(String(item.LastModified)) : undefined,
+                    };
+                })
                 : [],
             IsTruncated: listResult.IsTruncated === "true" || listResult.IsTruncated === true,
             NextContinuationToken: listResult.NextContinuationToken as string | undefined,

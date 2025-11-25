@@ -570,8 +570,7 @@ describe("tUS Extended Tests (matching tus-node-server e2e)", () => {
                     .post(`${STORE_PATH}-locking`)
                     .set("Tus-Resumable", TUS_RESUMABLE)
                     .set("Upload-Length", "100")
-                    .set("Upload-Metadata", serializeMetadata({ ...metadata, name: `file${index}` })),
-            );
+                    .set("Upload-Metadata", serializeMetadata({ ...metadata, name: `file${index}` })));
 
             const responses = await Promise.all(uploadPromises);
 

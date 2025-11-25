@@ -52,7 +52,7 @@ describe("http Rest - Chunked Uploads", () => {
                 .set("Content-Length", "0")
                 .set("X-Chunked-Upload", "true")
                 .set("X-Total-Size", String(testFileSize))
-                .set("Content-Disposition", 'attachment; filename="test.bin"')
+                .set("Content-Disposition", "attachment; filename=\"test.bin\"")
                 .send("");
 
             expect(response.status).toBe(201);
@@ -477,7 +477,7 @@ describe("http Rest - Chunked Uploads", () => {
                 .set("Content-Length", "0")
                 .set("X-Chunked-Upload", "true")
                 .set("X-Total-Size", String(testFileSize))
-                .set("Content-Disposition", 'attachment; filename="test.bin"')
+                .set("Content-Disposition", "attachment; filename=\"test.bin\"")
                 .send("");
 
             expect(initResponse.status).toBe(201);

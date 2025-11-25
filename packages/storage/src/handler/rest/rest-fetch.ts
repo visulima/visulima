@@ -46,7 +46,7 @@ class RestFetch<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
         // Create RestBase instance with access to this RestFetch instance
         const restInstance = this;
 
-        this.restBase = new (class extends RestBase<TFile> {
+        this.restBase = new class extends RestBase<TFile> {
             protected override get storage() {
                 return restInstance.storage as unknown as {
                     create: (config: FileInit) => Promise<TFile>;
@@ -67,7 +67,7 @@ class RestFetch<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
             protected override buildFileUrl(requestUrl: string, file: TFile): string {
                 return restInstance.buildFileUrl({ url: requestUrl } as Request, file);
             }
-        })();
+        }();
     }
 
     /**

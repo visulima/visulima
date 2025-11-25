@@ -49,7 +49,7 @@ class Rest<
         // Create RestBase instance with access to this Rest instance
         const restInstance = this;
 
-        this.restBase = new (class extends RestBase<TFile> {
+        this.restBase = new class extends RestBase<TFile> {
             protected override get storage() {
                 return restInstance.storage as unknown as {
                     create: (config: FileInit) => Promise<TFile>;
@@ -70,7 +70,7 @@ class Rest<
             protected override buildFileUrl(requestUrl: string, file: TFile): string {
                 return restInstance.buildFileUrlForRest(requestUrl, file);
             }
-        })();
+        }();
     }
 
     /**

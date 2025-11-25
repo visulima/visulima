@@ -11,7 +11,7 @@ import {
 } from "../../src/openapi/shared";
 
 describe("openapi/shared", () => {
-    describe("sharedGet", () => {
+    describe(sharedGet, () => {
         it("should create GET operation without transform", () => {
             expect.assertions(3);
 
@@ -66,7 +66,7 @@ describe("openapi/shared", () => {
         });
     });
 
-    describe("sharedGetMeta", () => {
+    describe(sharedGetMeta, () => {
         it("should create GET metadata operation", () => {
             expect.assertions(3);
 
@@ -86,7 +86,7 @@ describe("openapi/shared", () => {
         });
     });
 
-    describe("sharedGetList", () => {
+    describe(sharedGetList, () => {
         it("should create GET list operation", () => {
             expect.assertions(3);
 
@@ -106,7 +106,7 @@ describe("openapi/shared", () => {
         });
     });
 
-    describe("sharedErrorSchemaObject", () => {
+    describe(sharedErrorSchemaObject, () => {
         it("should export error schema object", () => {
             expect.assertions(1);
 
@@ -126,7 +126,7 @@ describe("openapi/shared", () => {
         });
     });
 
-    describe("sharedFileMetaSchemaObject", () => {
+    describe(sharedFileMetaSchemaObject, () => {
         it("should export file meta schema object", () => {
             expect.assertions(1);
 
@@ -140,7 +140,7 @@ describe("openapi/shared", () => {
         });
     });
 
-    describe("sharedFileMetaExampleObject", () => {
+    describe(sharedFileMetaExampleObject, () => {
         it("should export file meta example object", () => {
             expect.assertions(1);
 
@@ -154,7 +154,7 @@ describe("openapi/shared", () => {
         });
     });
 
-    describe("getOrganizedTransformationParameters", () => {
+    describe(getOrganizedTransformationParameters, () => {
         it("should return empty parameters when transform is false", () => {
             expect.assertions(2);
 
@@ -214,4 +214,3 @@ describe("openapi/shared", () => {
         });
     });
 });
-

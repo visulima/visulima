@@ -63,7 +63,7 @@ export interface SolidStartHandlerConfig<TFile extends UploadFile> extends Uploa
  * export const OPTIONS = handler;
  * ```
  */
-export const createSolidStartHandler = <TFile extends UploadFile>(config: SolidStartHandlerConfig<TFile>): ((event: APIEvent) => Promise<Response>) => {
+export const createSolidStartHandler = <TFile extends UploadFile>(config: SolidStartHandlerConfig<TFile>): (event: APIEvent) => Promise<Response> => {
     let handler: Multipart<TFile> | Rest<TFile> | Tus<TFile>;
 
     // Create the appropriate handler based on type
@@ -92,11 +92,11 @@ export const createSolidStartHandler = <TFile extends UploadFile>(config: SolidS
             const errorObject = error as { message?: string; status?: string; statusCode?: number };
             const statusCode = errorObject.statusCode || (errorObject.status ? Number.parseInt(errorObject.status, 10) : undefined) || 500;
 
-            return new Response(JSON.stringify({ error: errorObject.message || "Request failed" }), {
-                status: statusCode,
+            return Response.json({ error: errorObject.message || "Request failed" }, {
                 headers: {
                     "Content-Type": "application/json",
                 },
+                status: statusCode,
             });
         }
     };

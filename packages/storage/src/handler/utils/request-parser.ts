@@ -41,7 +41,7 @@ export const parseContentDispositionValue = (contentDisposition: string | null |
     // Safer parsing to avoid ReDoS: find "filename" or "filename*" and extract value
     // Limit search to prevent excessive backtracking
     const maxSearchLength = 2000; // Reasonable limit for header values
-    const searchString = contentDisposition.length > maxSearchLength ? contentDisposition.substring(0, maxSearchLength) : contentDisposition;
+    const searchString = contentDisposition.length > maxSearchLength ? contentDisposition.slice(0, Math.max(0, maxSearchLength)) : contentDisposition;
 
     // Find "filename" or "filename*" (case-insensitive)
     const filenameIndex = searchString.toLowerCase().indexOf("filename");
@@ -78,7 +78,7 @@ export const parseContentDispositionValue = (contentDisposition: string | null |
     let valueEnd: number;
     const firstChar = searchString[equalsIndex];
 
-    if (firstChar === '"' || firstChar === "'") {
+    if (firstChar === "\"" || firstChar === "'") {
         // Quoted value: find matching quote
         valueStart = equalsIndex + 1;
         valueEnd = searchString.indexOf(firstChar, valueStart);
@@ -86,6 +86,7 @@ export const parseContentDispositionValue = (contentDisposition: string | null |
         if (valueEnd === -1) {
             // Unclosed quote, use rest of string up to semicolon or end
             valueEnd = searchString.indexOf(";", valueStart);
+
             if (valueEnd === -1) {
                 valueEnd = searchString.length;
             }
@@ -93,6 +94,7 @@ export const parseContentDispositionValue = (contentDisposition: string | null |
     } else {
         // Unquoted value: find semicolon or end of string
         valueEnd = searchString.indexOf(";", valueStart);
+
         if (valueEnd === -1) {
             valueEnd = searchString.length;
         }

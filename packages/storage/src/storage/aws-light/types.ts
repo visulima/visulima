@@ -10,13 +10,13 @@ export interface AwsLightClientConfig {
     sessionToken?: string;
 }
 
-export type AwsLightMetaStorageOptions = AwsLightClientConfig &
-    MetaStorageOptions & {
+export type AwsLightMetaStorageOptions = AwsLightClientConfig
+    & MetaStorageOptions & {
         bucket?: string;
     };
 
-export type AwsLightStorageOptions = AwsLightClientConfig &
-    BaseStorageOptions<AwsLightFile> & {
+export type AwsLightStorageOptions = AwsLightClientConfig
+    & BaseStorageOptions<AwsLightFile> & {
         /**
          * S3 bucket name.
          */
