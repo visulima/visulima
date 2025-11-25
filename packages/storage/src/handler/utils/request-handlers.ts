@@ -214,7 +214,9 @@ export const handleGetRequest = async <TFile extends UploadFile>(
                     return transformed;
                 }
 
-                logger?.warn("Media transformation failed, falling back to original file");
+                if (logger?.warn) {
+                    logger.warn("Media transformation failed, falling back to original file");
+                }
             }
 
             // Get file metadata first to determine if we should stream
@@ -230,7 +232,9 @@ export const handleGetRequest = async <TFile extends UploadFile>(
                     return streamed;
                 }
 
-                logger?.warn("Streaming failed, falling back to buffer");
+                if (logger?.warn) {
+                    logger.warn("Streaming failed, falling back to buffer");
+                }
             }
 
             // Serve original file (fallback or no transformation requested)

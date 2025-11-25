@@ -137,7 +137,9 @@ export const handleCompletedUpload = async <TFile extends UploadFile, NodeRespon
                 await result;
             }
         } catch (error) {
-            logger?.error("[onComplete error]: %O", error);
+            if (logger?.error) {
+                logger.error("[onComplete error]: %O", error);
+            }
             throw error;
         }
 
@@ -238,7 +240,9 @@ export const handleUploadError = async <NodeResponse extends ServerResponse>(
         emit("error", errorEvent);
     }
 
-    logger?.error("[error]: %O", errorEvent);
+    if (logger?.error) {
+        logger.error("[error]: %O", errorEvent);
+    }
 
     await sendError(response, errorObject);
 };

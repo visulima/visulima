@@ -22,7 +22,7 @@ const parseXml = (text: string): Record<string, unknown> => {
     for (const match of matches) {
         const [, tagName, content] = match;
 
-        if (content.trim()) {
+        if (tagName && content && content.trim()) {
             if (result[tagName]) {
                 // Multiple children with same tag - convert to array
                 if (!Array.isArray(result[tagName])) {
@@ -44,7 +44,7 @@ const parseXml = (text: string): Record<string, unknown> => {
     while ((nestedMatch = nestedRegex.exec(cleanText)) !== null) {
         const [, tagName, innerContent] = nestedMatch;
 
-        if (innerContent.includes("<")) {
+        if (tagName && innerContent && innerContent.includes("<")) {
             const nested = parseXml(innerContent);
 
             if (Object.keys(nested).length > 0) {
