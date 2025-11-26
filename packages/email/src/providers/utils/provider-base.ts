@@ -1,14 +1,24 @@
 import { EmailError } from "../../errors/email-error";
-import type { Logger, MaybePromise } from "../../types";
-import { createLogger } from "../../utils/create-logger";
+import type { MaybePromise } from "../../types";
+import createLogger from "../../utils/create-logger";
 import { makeRequest } from "../../utils/make-request";
+
+/**
+ * Logger interface with debug, error, info, and warn methods
+ */
+type Logger = {
+    debug: (message: string, ...args: unknown[]) => void;
+    error: (message: string, ...args: unknown[]) => void;
+    info: (message: string, ...args: unknown[]) => void;
+    warn: (message: string, ...args: unknown[]) => void;
+};
 
 /**
  * Common provider configuration interface
  */
 export interface BaseProviderConfig {
     debug?: boolean;
-    logger?: Logger;
+    logger?: Console;
     timeout?: number;
 }
 
@@ -50,8 +60,8 @@ export class ProviderState {
 /**
  * Create a logger for a provider
  */
-export function createProviderLogger(providerName: string, debug?: boolean, customLogger?: Logger): Logger {
-    return createLogger(providerName, debug, customLogger);
+export function createProviderLogger(providerName: string, customLogger?: Console): Logger {
+    return createLogger(providerName, customLogger);
 }
 
 /**

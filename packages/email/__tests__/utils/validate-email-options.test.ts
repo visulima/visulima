@@ -1,10 +1,12 @@
 import { describe, expect, it } from "vitest";
 
-import type { EmailOptions } from "../../src/types.js";
-import { validateEmailOptions } from "../../src/utils/validate-email-options.js";
+import type { EmailOptions } from "../../src/types";
+import validateEmailOptions from "../../src/utils/validate-email-options";
 
 describe(validateEmailOptions, () => {
     it("should validate correct email options", () => {
+        expect.assertions(1);
+
         const options: EmailOptions = {
             from: { email: "sender@example.com" },
             html: "<h1>Test</h1>",
@@ -18,6 +20,8 @@ describe(validateEmailOptions, () => {
     });
 
     it("should return errors for missing required fields", () => {
+        expect.assertions(4);
+
         const options = {} as EmailOptions;
 
         const errors = validateEmailOptions(options);
@@ -29,6 +33,8 @@ describe(validateEmailOptions, () => {
     });
 
     it("should return error if neither text nor html is provided", () => {
+        expect.assertions(1);
+
         const options: EmailOptions = {
             from: { email: "sender@example.com" },
             subject: "Test",
@@ -41,6 +47,8 @@ describe(validateEmailOptions, () => {
     });
 
     it("should validate email addresses", () => {
+        expect.assertions(1);
+
         const options: EmailOptions = {
             from: { email: "invalid-email" },
             html: "<h1>Test</h1>",
@@ -54,6 +62,8 @@ describe(validateEmailOptions, () => {
     });
 
     it("should validate CC and BCC addresses", () => {
+        expect.assertions(2);
+
         const options: EmailOptions = {
             bcc: { email: "invalid-bcc" },
             cc: { email: "invalid-cc" },

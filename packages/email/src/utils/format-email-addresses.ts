@@ -1,13 +1,17 @@
 import type { EmailAddress } from "../types";
-import { formatEmailAddress } from "./format-email-address";
+import formatEmailAddressDefault from "./format-email-address";
 
 /**
  * Format email addresses list
+ * @param addresses The email address(es) to format (single or array)
+ * @returns The formatted email addresses string (comma-separated if multiple)
  */
-export const formatEmailAddresses = (addresses: EmailAddress | EmailAddress[]): string => {
+const formatEmailAddresses = (addresses: EmailAddress | EmailAddress[]): string => {
     if (Array.isArray(addresses)) {
-        return addresses.map(formatEmailAddress).join(", ");
+        return addresses.map(formatEmailAddressDefault).join(", ");
     }
 
-    return formatEmailAddress(addresses);
+    return formatEmailAddressDefault(addresses);
 };
+
+export default formatEmailAddresses;

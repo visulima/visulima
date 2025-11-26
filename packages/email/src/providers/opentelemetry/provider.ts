@@ -3,7 +3,7 @@ import { context, SpanStatusCode, trace } from "@opentelemetry/api";
 
 import { EmailError, RequiredOptionError } from "../../errors/email-error";
 import type { EmailOptions, EmailResult, Result } from "../../types";
-import { createLogger } from "../../utils/create-logger";
+import createLogger from "../../utils/create-logger";
 import type { Provider, ProviderFactory } from "../provider";
 import { defineProvider } from "../provider";
 import type { OpenTelemetryConfig, OpenTelemetryEmailOptions } from "./types";
@@ -117,7 +117,7 @@ export const opentelemetryProvider: ProviderFactory<OpenTelemetryConfig, unknown
 
         let isInitialized = false;
         let wrappedProvider: Provider;
-        const logger = createLogger(PROVIDER_NAME, options.debug, options_.logger);
+        const logger = createLogger(PROVIDER_NAME, options_.logger);
 
         /**
          * Get or create the tracer

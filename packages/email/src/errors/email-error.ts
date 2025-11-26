@@ -2,6 +2,9 @@ import { VisulimaError } from "@visulima/error";
 
 /**
  * Base error class for email package operations
+ * @param component The component name where the error occurred
+ * @param message The error message
+ * @param options Optional error options (cause, code, hint)
  */
 export class EmailError extends VisulimaError {
     public readonly component: string;
@@ -23,6 +26,8 @@ export class EmailError extends VisulimaError {
 
 /**
  * Error for missing required options
+ * @param component The component name where the error occurred
+ * @param name The name(s) of the missing required option(s)
  */
 export class RequiredOptionError extends EmailError {
     public constructor(component: string, name: string | string[]) {

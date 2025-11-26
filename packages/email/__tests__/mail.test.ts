@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { EmailOptions, Mailable } from "../src/mail.js";
-import { createMail, MailMessage } from "../src/mail.js";
-import type { Provider } from "../src/providers/provider.js";
-import type { EmailResult, Result } from "../src/types.js";
+import type { EmailOptions, Mailable } from "../src/mail";
+import { createMail, MailMessage } from "../src/mail";
+import type { Provider } from "../src/providers/provider";
+import type { EmailResult, Result } from "../src/types";
 
 // Mock provider for testing
 const createMockProvider = (): Provider => {
@@ -136,6 +136,8 @@ describe(MailMessage, () => {
         });
 
         it("should build email options", async () => {
+            expect.assertions(1);
+
             const message = new MailMessage();
 
             message.mailer(provider);
@@ -145,15 +147,9 @@ describe(MailMessage, () => {
             const options = await message.build();
 
             expect(options).toEqual({
-                attachments: undefined,
-                bcc: undefined,
-                cc: undefined,
                 from: { email: "sender@example.com" },
-                headers: undefined,
                 html: "<h1>Test</h1>",
-                replyTo: undefined,
                 subject: "Test",
-                text: undefined,
                 to: { email: "user@example.com" },
             });
         });
@@ -166,7 +162,7 @@ describe(MailMessage, () => {
             message.mailer(provider);
             message.from("sender@example.com").to("user@example.com").subject("Test").html("<h1>Test</h1>");
 
-            expect((await message.build()).from).toEqual({ email: "sender@example.com" });
+            expect((await message.build()).from).toStrictEqual({ email: "sender@example.com" });
         });
 
         it("should accept EmailAddress object", async () => {
@@ -175,7 +171,7 @@ describe(MailMessage, () => {
             message.mailer(provider);
             message.from({ email: "sender@example.com", name: "Sender" }).to("user@example.com").subject("Test").html("<h1>Test</h1>");
 
-            expect((await message.build()).from).toEqual({ email: "sender@example.com", name: "Sender" });
+            expect((await message.build()).from).toStrictEqual({ email: "sender@example.com", name: "Sender" });
         });
     });
 
@@ -188,7 +184,7 @@ describe(MailMessage, () => {
 
             const options = await message.build();
 
-            expect(options.to).toEqual({ email: "user@example.com" });
+            expect(options.to).toStrictEqual({ email: "user@example.com" });
         });
 
         it("should accept array of strings", async () => {
@@ -199,7 +195,7 @@ describe(MailMessage, () => {
 
             const options = await message.build();
 
-            expect(options.to).toEqual([{ email: "user1@example.com" }, { email: "user2@example.com" }]);
+            expect(options.to).toStrictEqual([{ email: "user1@example.com" }, { email: "user2@example.com" }]);
         });
 
         it("should accept EmailAddress object", async () => {
@@ -210,7 +206,7 @@ describe(MailMessage, () => {
 
             const options = await message.build();
 
-            expect(options.to).toEqual({ email: "user@example.com", name: "User" });
+            expect(options.to).toStrictEqual({ email: "user@example.com", name: "User" });
         });
     });
 
@@ -223,7 +219,7 @@ describe(MailMessage, () => {
 
             const options = await message.build();
 
-            expect(options.cc).toEqual({ email: "cc@example.com" });
+            expect(options.cc).toStrictEqual({ email: "cc@example.com" });
         });
 
         it("should set BCC recipients", async () => {
@@ -234,7 +230,7 @@ describe(MailMessage, () => {
 
             const options = await message.build();
 
-            expect(options.bcc).toEqual({ email: "bcc@example.com" });
+            expect(options.bcc).toStrictEqual({ email: "bcc@example.com" });
         });
     });
 
@@ -275,6 +271,8 @@ describe(MailMessage, () => {
 
     describe("attach()", () => {
         it("should add attachment", async () => {
+            expect.assertions(2);
+
             const message = new MailMessage();
 
             message.mailer(provider);
@@ -284,13 +282,10 @@ describe(MailMessage, () => {
 
             expect(options.attachments).toHaveLength(1);
             expect(options.attachments?.[0]).toEqual({
-                cid: undefined,
                 content: "content",
                 contentDisposition: "attachment",
                 contentType: "text/plain",
-                encoding: undefined,
                 filename: "file.txt",
-                path: undefined,
             });
         });
     });

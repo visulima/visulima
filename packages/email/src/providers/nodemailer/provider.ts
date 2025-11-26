@@ -2,9 +2,9 @@ import nodemailerModule from "nodemailer";
 
 import { EmailError, RequiredOptionError } from "../../errors/email-error";
 import type { EmailResult, Result } from "../../types";
-import { generateMessageId } from "../../utils/generate-message-id";
-import { headersToRecord } from "../../utils/headers-to-record";
-import { validateEmailOptions } from "../../utils/validate-email-options";
+import generateMessageId from "../../utils/generate-message-id";
+import headersToRecord from "../../utils/headers-to-record";
+import validateEmailOptions from "../../utils/validate-email-options";
 import type { ProviderFactory } from "../provider";
 import { defineProvider } from "../provider";
 import type { NodemailerConfig, NodemailerEmailOptions } from "./types";

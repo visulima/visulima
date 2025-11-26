@@ -2,14 +2,14 @@ import { readFile } from "node:fs/promises";
 
 import { describe, expect, it, vi } from "vitest";
 
-import { createDkimSigner, DkimSigner } from "../../src/crypto/dkim-signer.js";
-import type { DkimOptions } from "../../src/crypto/types.js";
-import type { EmailOptions } from "../../src/types.js";
+import { createDkimSigner, DkimSigner } from "../../src/crypto/dkim-signer";
+import type { DkimOptions } from "../../src/crypto/types";
+import type { EmailOptions } from "../../src/types";
 
 // Mock node:fs/promises
 vi.mock(import("node:fs/promises"), () => {
     return {
-        readFile: vi.fn(),
+        readFile: vi.fn<Parameters<typeof import("node:fs/promises").readFile>>(),
     };
 });
 

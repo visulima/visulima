@@ -1,11 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { mailgunProvider } from "../../src/providers/mailgun/index.js";
-import type { MailgunEmailOptions } from "../../src/providers/mailgun/types.js";
-import { makeRequest } from "../../src/utils/make-request.js";
+import { mailgunProvider } from "../../src/providers/mailgun/index";
+import type { MailgunEmailOptions } from "../../src/providers/mailgun/types";
+import { makeRequest } from "../../src/utils/make-request";
 
 // Mock the makeRequest function
-vi.mock(import("../../src/utils/make-request.js"), () => {
+vi.mock(import("../../src/utils/make-request"), () => {
     return {
         makeRequest: vi.fn((url, options, data) =>
             // Return a mock result that matches the expected structure
@@ -21,9 +21,9 @@ vi.mock(import("../../src/utils/make-request.js"), () => {
 });
 
 // Mock the retry function
-vi.mock(import("../../src/utils/retry.js"), () => {
+vi.mock(import("../../src/utils/retry"), () => {
     return {
-        retry: vi.fn(async (function_) => await function_()),
+        default: vi.fn(async (function_) => await function_()),
     };
 });
 

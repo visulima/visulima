@@ -1,18 +1,18 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { sweegoProvider } from "../../src/providers/sweego/index.js";
-import type { SweegoEmailOptions } from "../../src/providers/sweego/types.js";
-import { makeRequest } from "../../src/utils/make-request.js";
+import { sweegoProvider } from "../../src/providers/sweego/index";
+import type { SweegoEmailOptions } from "../../src/providers/sweego/types";
+import { makeRequest } from "../../src/utils/make-request";
 
-vi.mock(import("../../src/utils/make-request.js"), () => {
+vi.mock(import("../../src/utils/make-request"), () => {
     return {
         makeRequest: vi.fn(),
     };
 });
 
-vi.mock(import("../../src/utils/retry.js"), () => {
+vi.mock(import("../../src/utils/retry"), () => {
     return {
-        retry: vi.fn(async (function_) => await function_()),
+        default: vi.fn(async (function_) => await function_()),
     };
 });
 

@@ -2,10 +2,10 @@ import { createHash, createHmac, randomUUID } from "node:crypto";
 
 import { EmailError, RequiredOptionError } from "../../errors/email-error";
 import type { EmailAddress, EmailOptions, EmailResult, Result } from "../../types";
-import { createLogger } from "../../utils/create-logger";
-import { headersToRecord } from "../../utils/headers-to-record";
+import createLogger from "../../utils/create-logger";
+import headersToRecord from "../../utils/headers-to-record";
 import { makeRequest } from "../../utils/make-request";
-import { validateEmailOptions } from "../../utils/validate-email-options";
+import validateEmailOptions from "../../utils/validate-email-options";
 import type { ProviderFactory } from "../provider";
 import { defineProvider } from "../provider";
 import type { AwsSesConfig, AwsSesEmailOptions } from "./types";
@@ -38,7 +38,7 @@ const defaultOptions: Partial<AwsSesConfig> = {
 export const awsSesProvider: ProviderFactory<AwsSesConfig, unknown, AwsSesEmailOptions> = defineProvider((options_: AwsSesConfig = {} as AwsSesConfig) => {
     const options = { ...defaultOptions, ...options_ } as Required<AwsSesConfig>;
 
-    const logger = createLogger("AWS-SES", options.debug, options_.logger);
+    const logger = createLogger("AWS-SES", options_.logger);
 
     /**
      * Create canonical request for AWS Signature V4

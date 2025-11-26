@@ -4,11 +4,13 @@ import { EmailError } from "../errors/email-error";
 import type { TemplateRenderer } from "./types";
 
 /**
- * Render Handlebars template
- * @param template Handlebars template string
- * @param data Data to pass to the template
- * @param options Handlebars compile options
- * @returns Rendered HTML string
+ * Renders Handlebars template.
+ * @param template Handlebars template string.
+ * @param data Data to pass to the template.
+ * @param options Handlebars compile options.
+ * @returns Rendered HTML string.
+ * @throws {TypeError} When template is not a string.
+ * @throws {EmailError} When Handlebars is not installed or rendering fails.
  */
 export const renderHandlebars: TemplateRenderer = (template: unknown, data?: Record<string, unknown>, options?: Record<string, unknown>): string => {
     try {
@@ -29,9 +31,10 @@ export const renderHandlebars: TemplateRenderer = (template: unknown, data?: Rec
 };
 
 /**
- * Register a Handlebars helper
- * @param name Helper name
- * @param helper Helper function
+ * Registers a Handlebars helper.
+ * @param name Helper name.
+ * @param helper Helper function.
+ * @throws {EmailError} When Handlebars is not installed.
  */
 export const registerHandlebarsHelper = (name: string, helper: unknown): void => {
     try {
@@ -46,9 +49,10 @@ export const registerHandlebarsHelper = (name: string, helper: unknown): void =>
 };
 
 /**
- * Register Handlebars partial
- * @param name Partial name
- * @param partial Partial template string
+ * Registers Handlebars partial.
+ * @param name Partial name.
+ * @param partial Partial template string.
+ * @throws {EmailError} When Handlebars is not installed.
  */
 export const registerHandlebarsPartial = (name: string, partial: string): void => {
     try {

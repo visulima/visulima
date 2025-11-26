@@ -1,10 +1,12 @@
 import type { EmailAddress, EmailOptions } from "../types";
-import { validateEmail } from "./validate-email";
+import validateEmailDefault from "./validate-email";
 
 /**
  * Validate email options
+ * @param options The email options to validate
+ * @returns Array of error messages (empty if validation passes)
  */
-export const validateEmailOptions = <T extends EmailOptions>(options: T): string[] => {
+const validateEmailOptions = <T extends EmailOptions>(options: T): string[] => {
     const errors: string[] = [];
 
     if (!options.from || !options.from.email) {
@@ -23,7 +25,7 @@ export const validateEmailOptions = <T extends EmailOptions>(options: T): string
         errors.push("Either text or html content is required");
     }
 
-    if (options.from && options.from.email && !validateEmail(options.from.email)) {
+    if (options.from && options.from.email && !validateEmailDefault(options.from.email)) {
         errors.push(`Invalid from email address: ${options.from.email}`);
     }
 
@@ -34,7 +36,7 @@ export const validateEmailOptions = <T extends EmailOptions>(options: T): string
         const list = Array.isArray(addresses) ? addresses : [addresses];
 
         list.forEach((addr) => {
-            if (!validateEmail(addr.email)) {
+            if (!validateEmailDefault(addr.email)) {
                 errors.push(`Invalid ${field} email address: ${addr.email}`);
             }
         });
@@ -44,9 +46,11 @@ export const validateEmailOptions = <T extends EmailOptions>(options: T): string
     checkAddresses(options.cc, "cc");
     checkAddresses(options.bcc, "bcc");
 
-    if (options.replyTo && !validateEmail(options.replyTo.email)) {
+    if (options.replyTo && !validateEmailDefault(options.replyTo.email)) {
         errors.push(`Invalid replyTo email address: ${options.replyTo.email}`);
     }
 
     return errors;
 };
+
+export default validateEmailOptions;

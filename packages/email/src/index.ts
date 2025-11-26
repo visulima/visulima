@@ -14,23 +14,22 @@ export type {
     EmailTag,
     FeatureFlags,
     ImmutableHeaders,
-    Logger,
     MaybePromise,
     Priority,
     Receipt,
     Result,
 } from "./types";
-export { buildMimeMessage } from "./utils/build-mime-message";
-export { comparePriority } from "./utils/compare-priority";
-export { createLogger } from "./utils/create-logger";
-export { formatEmailAddress } from "./utils/format-email-address";
-export { formatEmailAddresses } from "./utils/format-email-addresses";
-export { generateBoundary } from "./utils/generate-boundary";
-export { generateMessageId } from "./utils/generate-message-id";
-export { headersToRecord } from "./utils/headers-to-record";
-export { isPortAvailable } from "./utils/is-port-available";
+export { default as buildMimeMessage } from "./utils/build-mime-message";
+export { default as comparePriority } from "./utils/compare-priority";
+export { default as createLogger } from "./utils/create-logger";
+export { default as formatEmailAddress } from "./utils/format-email-address";
+export { default as formatEmailAddresses } from "./utils/format-email-addresses";
+export { default as generateBoundary } from "./utils/generate-boundary";
+export { default as generateMessageId } from "./utils/generate-message-id";
+export { default as headersToRecord } from "./utils/headers-to-record";
+export { default as isPortAvailable } from "./utils/is-port-available";
 export { makeRequest, type RequestOptions } from "./utils/make-request";
-export { parseAddress } from "./utils/parse-address";
-export { retry } from "./utils/retry";
-export { validateEmail } from "./utils/validate-email";
-export { validateEmailOptions } from "./utils/validate-email-options";
+export { default as parseAddress } from "./utils/parse-address";
+export { default as retry } from "./utils/retry";
+export { default as validateEmail } from "./utils/validate-email";
+export { default as validateEmailOptions } from "./utils/validate-email-options";

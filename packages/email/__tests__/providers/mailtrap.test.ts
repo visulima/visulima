@@ -1,18 +1,18 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { mailtrapProvider } from "../../src/providers/mailtrap/index.js";
-import type { MailtrapEmailOptions } from "../../src/providers/mailtrap/types.js";
-import { makeRequest } from "../../src/utils/make-request.js";
+import { mailtrapProvider } from "../../src/providers/mailtrap/index";
+import type { MailtrapEmailOptions } from "../../src/providers/mailtrap/types";
+import { makeRequest } from "../../src/utils/make-request";
 
-vi.mock(import("../../src/utils/make-request.js"), () => {
+vi.mock(import("../../src/utils/make-request"), () => {
     return {
         makeRequest: vi.fn(),
     };
 });
 
-vi.mock(import("../../src/utils/retry.js"), () => {
+vi.mock(import("../../src/utils/retry"), () => {
     return {
-        retry: vi.fn(async (function_) => await function_()),
+        default: vi.fn(async (function_) => await function_()),
     };
 });
 

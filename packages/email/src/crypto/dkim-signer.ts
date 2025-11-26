@@ -7,7 +7,10 @@ import type { DkimOptions, EmailSigner } from "./types";
 const hasBuffer = globalThis.Buffer !== undefined;
 
 /**
- * Canonicalize headers according to DKIM specification
+ * Canonicalizes headers according to DKIM specification.
+ * @param headers The headers to canonicalize.
+ * @param method The canonicalization method ('simple' or 'relaxed').
+ * @returns The canonicalized header string.
  */
 const canonicalizeHeaders = (headers: Record<string, string>, method: "simple" | "relaxed" = "simple"): string => {
     const headerLines: string[] = [];
@@ -23,7 +26,10 @@ const canonicalizeHeaders = (headers: Record<string, string>, method: "simple" |
 };
 
 /**
- * Canonicalize body according to DKIM specification
+ * Canonicalizes body according to DKIM specification.
+ * @param body The email body to canonicalize.
+ * @param method The canonicalization method ('simple' or 'relaxed').
+ * @returns The canonicalized body string.
  */
 const canonicalizeBody = (body: string, method: "simple" | "relaxed" = "simple"): string => {
     if (method === "simple") {
@@ -36,7 +42,11 @@ const canonicalizeBody = (body: string, method: "simple" | "relaxed" = "simple")
 };
 
 /**
- * Create DKIM signature header value (without the signature itself)
+ * Creates DKIM signature header value (without the signature itself).
+ * @param headers The email headers.
+ * @param options DKIM signing options.
+ * @param bodyHash The base64-encoded body hash.
+ * @returns The DKIM signature header string (without the signature value).
  */
 const createDkimSignatureHeader = (headers: Record<string, string>, options: DkimOptions, bodyHash: string): string => {
     const headerCanon = options.headerCanon || "simple";
@@ -67,14 +77,18 @@ export class DkimSigner implements EmailSigner {
     private readonly options: DkimOptions;
 
     /**
-     * Create a new DKIM signer
+     * Creates a new DKIM signer.
+     * @param options DKIM signing options.
      */
     constructor(options: DkimOptions) {
         this.options = options;
     }
 
     /**
-     * Sign an email message with DKIM
+     * Signs an email message with DKIM.
+     * @param email The email options to sign.
+     * @returns The email options with DKIM signature header added.
+     * @throws {Error} When signing fails (e.g., invalid private key).
      */
     async sign(email: EmailOptions): Promise<EmailOptions> {
         // Load private key
@@ -166,7 +180,11 @@ export class DkimSigner implements EmailSigner {
     }
 
     /**
-     * Format email address for headers
+     * Formats email address for headers.
+     * @param address The email address object.
+     * @param address.email The email address.
+     * @param address.name Optional name for the email address.
+     * @returns The formatted email address string.
      */
     private formatAddress(address: { email: string; name?: string }): string {
         if (address.name) {
@@ -177,7 +195,9 @@ export class DkimSigner implements EmailSigner {
     }
 
     /**
-     * Format email addresses for headers
+     * Formats email addresses for headers.
+     * @param addresses The email address(es) to format (single or array).
+     * @returns The formatted email addresses string (comma-separated if multiple).
      */
     private formatAddresses(addresses: { email: string; name?: string } | { email: string; name?: string }[]): string {
         const addressArray = Array.isArray(addresses) ? addresses : [addresses];
@@ -187,6 +207,8 @@ export class DkimSigner implements EmailSigner {
 }
 
 /**
- * Create a DKIM signer instance
+ * Creates a DKIM signer instance.
+ * @param options DKIM signing options.
+ * @returns A new DkimSigner instance.
  */
 export const createDkimSigner = (options: DkimOptions): DkimSigner => new DkimSigner(options);

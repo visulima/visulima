@@ -3,8 +3,11 @@ import { Socket } from "node:net";
 /**
  * Check if a port is available on a host
  * Works across environments with polyfills
+ * @param host The hostname or IP address to check
+ * @param port The port number to check
+ * @returns Promise that resolves to true if the port is available, false otherwise
  */
-export const isPortAvailable = (host: string, port: number): Promise<boolean> =>
+const isPortAvailable = (host: string, port: number): Promise<boolean> =>
     new Promise<boolean>((resolve) => {
         const socket = new Socket();
 
@@ -22,3 +25,5 @@ export const isPortAvailable = (host: string, port: number): Promise<boolean> =>
             resolve(true);
         });
     });
+
+export default isPortAvailable;

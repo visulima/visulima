@@ -3,8 +3,10 @@ const hasBuffer = globalThis.Buffer !== undefined;
 /**
  * Convert content to base64 string
  * Works across Node.js, Deno, Bun, and Workers
+ * @param content The content to convert (string, Buffer, or Uint8Array)
+ * @returns The base64-encoded string
  */
-export const toBase64 = (content: string | Buffer | Uint8Array): string => {
+const toBase64 = (content: string | Buffer | Uint8Array): string => {
     if (typeof content === "string") {
         if (hasBuffer) {
             return Buffer.from(content, "utf8").toString("base64");
@@ -28,3 +30,5 @@ export const toBase64 = (content: string | Buffer | Uint8Array): string => {
 
     return btoa(String.fromCharCode(...uint8Array));
 };
+
+export default toBase64;

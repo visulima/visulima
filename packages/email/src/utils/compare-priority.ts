@@ -13,7 +13,7 @@ import type { Priority } from "../types";
  * @param b The second priority to compare
  * @returns A negative number if a is less than b, a positive number if a is greater than b, and zero if they are equal
  */
-export const comparePriority = (a: Priority, b: Priority): number => {
+const comparePriority = (a: Priority, b: Priority): number => {
     if (a === b) {
         return 0;
     }
@@ -32,3 +32,5 @@ export const comparePriority = (a: Priority, b: Priority): number => {
 
     return -1;
 };
+
+export default comparePriority;

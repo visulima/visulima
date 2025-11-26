@@ -1,8 +1,8 @@
 import { EmailError } from "../../errors/email-error";
 import type { EmailResult, Receipt, Result } from "../../types";
-import { createLogger } from "../../utils/create-logger";
-import { generateMessageId } from "../../utils/generate-message-id";
-import { validateEmailOptions } from "../../utils/validate-email-options";
+import createLogger from "../../utils/create-logger";
+import generateMessageId from "../../utils/generate-message-id";
+import validateEmailOptions from "../../utils/validate-email-options";
 import type { ProviderFactory } from "../provider";
 import { defineProvider } from "../provider";
 import type { MockConfig, MockEmailEntry, MockEmailOptions } from "./types";
@@ -52,7 +52,7 @@ export const mockProvider: ProviderFactory<MockConfig, MockEmailEntry[], MockEma
             ...options_,
         };
 
-    const logger = createLogger(PROVIDER_NAME, config.debug, config.logger);
+    const logger = createLogger(PROVIDER_NAME, config.logger);
 
     return {
         /**

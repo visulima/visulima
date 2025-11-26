@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { mockProvider } from "../../src/providers/mock/index.js";
-import type { MockEmailOptions } from "../../src/providers/mock/types.js";
+import { mockProvider } from "../../src/providers/mock/index";
+import type { MockEmailOptions } from "../../src/providers/mock/types";
 
 describe(mockProvider, () => {
     beforeEach(() => {

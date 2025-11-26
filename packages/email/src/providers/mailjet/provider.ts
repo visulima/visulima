@@ -2,11 +2,11 @@ import { Buffer } from "node:buffer";
 
 import { EmailError, RequiredOptionError } from "../../errors/email-error";
 import type { EmailResult, Result } from "../../types";
-import { generateMessageId } from "../../utils/generate-message-id";
-import { headersToRecord } from "../../utils/headers-to-record";
+import generateMessageId from "../../utils/generate-message-id";
+import headersToRecord from "../../utils/headers-to-record";
 import { makeRequest } from "../../utils/make-request";
-import { retry } from "../../utils/retry";
-import { validateEmailOptions } from "../../utils/validate-email-options";
+import retry from "../../utils/retry";
+import validateEmailOptions from "../../utils/validate-email-options";
 import type { ProviderFactory } from "../provider";
 import { defineProvider } from "../provider";
 import { createProviderLogger, formatMailjetAddress, formatMailjetAddresses, handleProviderError, ProviderState } from "../utils";
@@ -40,7 +40,7 @@ export const mailjetProvider: ProviderFactory<MailjetConfig, unknown, MailjetEma
     };
 
     const providerState = new ProviderState();
-    const logger = createProviderLogger(PROVIDER_NAME, options.debug, options_.logger);
+    const logger = createProviderLogger(PROVIDER_NAME, options_.logger);
 
     return {
         endpoint: options.endpoint,

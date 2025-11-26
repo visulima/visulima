@@ -1,19 +1,19 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { mailjetProvider } from "../../src/providers/mailjet/index.js";
-import type { MailjetEmailOptions } from "../../src/providers/mailjet/types.js";
-import { makeRequest } from "../../src/utils/make-request.js";
+import { mailjetProvider } from "../../src/providers/mailjet/index";
+import type { MailjetEmailOptions } from "../../src/providers/mailjet/types";
+import { makeRequest } from "../../src/utils/make-request";
 
 // Mock the utils module
-vi.mock(import("../../src/utils/make-request.js"), () => {
+vi.mock(import("../../src/utils/make-request"), () => {
     return {
         makeRequest: vi.fn(),
     };
 });
 
-vi.mock(import("../../src/utils/retry.js"), () => {
+vi.mock(import("../../src/utils/retry"), () => {
     return {
-        retry: vi.fn(async (function_) => await function_()),
+        default: vi.fn(async (function_) => await function_()),
     };
 });
 

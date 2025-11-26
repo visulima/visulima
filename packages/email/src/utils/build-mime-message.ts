@@ -1,17 +1,19 @@
 import { EmailError } from "../errors/email-error";
 import type { EmailOptions } from "../types";
-import { formatEmailAddress } from "./format-email-address";
-import { formatEmailAddresses } from "./format-email-addresses";
-import { generateBoundary } from "./generate-boundary";
-import { headersToRecord } from "./headers-to-record";
-import { toBase64 } from "./to-base64";
+import formatEmailAddress from "./format-email-address";
+import formatEmailAddresses from "./format-email-addresses";
+import generateBoundary from "./generate-boundary";
+import headersToRecord from "./headers-to-record";
+import toBase64 from "./to-base64";
 
 const hasBuffer = globalThis.Buffer !== undefined;
 
 /**
  * Build a MIME message from email options
+ * @param options The email options to build the MIME message from
+ * @returns The MIME-formatted email message as a string
  */
-export const buildMimeMessage = async <T extends EmailOptions>(options: T): Promise<string> => {
+const buildMimeMessage = async <T extends EmailOptions>(options: T): Promise<string> => {
     const boundary = generateBoundary();
     const message: string[] = [];
 
@@ -116,3 +118,5 @@ export const buildMimeMessage = async <T extends EmailOptions>(options: T): Prom
 
     return message.join("\r\n");
 };
+
+export default buildMimeMessage;

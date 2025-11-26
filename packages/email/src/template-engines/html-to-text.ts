@@ -3,12 +3,13 @@ import { convert } from "html-to-text";
 import { EmailError } from "../errors/email-error";
 
 /**
- * Convert HTML to plain text
- * @param html HTML string
- * @param options html-to-text options
- * @returns Plain text string
+ * Converts HTML to plain text.
+ * @param html HTML string.
+ * @param options html-to-text options.
+ * @returns Plain text string.
+ * @throws {EmailError} When html-to-text is not installed or conversion fails.
  */
-export const htmlToText = (
+const htmlToText = (
     html: string,
     options?: {
         longWordSplit?: {
@@ -39,3 +40,5 @@ export const htmlToText = (
         throw new EmailError("html-to-text", `Failed to convert HTML to text: ${(error as Error).message}`, { cause: error });
     }
 };
+
+export default htmlToText;

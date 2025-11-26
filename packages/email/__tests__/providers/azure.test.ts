@@ -1,18 +1,18 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { azureProvider } from "../../src/providers/azure/index.js";
-import type { AzureEmailOptions } from "../../src/providers/azure/types.js";
-import { makeRequest } from "../../src/utils/make-request.js";
+import { azureProvider } from "../../src/providers/azure/index";
+import type { AzureEmailOptions } from "../../src/providers/azure/types";
+import { makeRequest } from "../../src/utils/make-request";
 
-vi.mock(import("../../src/utils/make-request.js"), () => {
+vi.mock(import("../../src/utils/make-request"), () => {
     return {
         makeRequest: vi.fn(),
     };
 });
 
-vi.mock(import("../../src/utils/retry.js"), () => {
+vi.mock(import("../../src/utils/retry"), () => {
     return {
-        retry: vi.fn(async (function_) => await function_()),
+        default: vi.fn(async (function_) => await function_()),
     };
 });
 

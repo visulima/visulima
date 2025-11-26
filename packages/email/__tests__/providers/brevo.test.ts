@@ -1,20 +1,20 @@
 import { beforeEach, describe, expect, expectTypeOf, it, vi } from "vitest";
 
-import { brevoProvider } from "../../src/providers/brevo/index.js";
-import type { BrevoEmailOptions } from "../../src/providers/brevo/types.js";
-import { makeRequest } from "../../src/utils/make-request.js";
+import { brevoProvider } from "../../src/providers/brevo/index";
+import type { BrevoEmailOptions } from "../../src/providers/brevo/types";
+import { makeRequest } from "../../src/utils/make-request";
 
 // Mock the makeRequest function
-vi.mock(import("../../src/utils/make-request.js"), () => {
+vi.mock(import("../../src/utils/make-request"), () => {
     return {
         makeRequest: vi.fn(),
     };
 });
 
 // Mock the retry function
-vi.mock(import("../../src/utils/retry.js"), () => {
+vi.mock(import("../../src/utils/retry"), () => {
     return {
-        retry: vi.fn(async (function_) => await function_()),
+        default: vi.fn(async (function_) => await function_()),
     };
 });
 

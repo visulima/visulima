@@ -1,6 +1,6 @@
 import { EmailError, RequiredOptionError } from "../../errors/email-error";
 import type { EmailOptions, EmailResult, Result } from "../../types";
-import { createLogger } from "../../utils/create-logger";
+import createLogger from "../../utils/create-logger";
 import type { Provider, ProviderFactory } from "../provider";
 import { defineProvider } from "../provider";
 import type { RoundRobinConfig, RoundRobinEmailOptions } from "./types";
@@ -39,7 +39,7 @@ export const roundRobinProvider: ProviderFactory<RoundRobinConfig, unknown, Roun
         const providers: Provider[] = [];
         let currentIndex = 0;
 
-        const logger = createLogger(PROVIDER_NAME, options.debug, options_.logger);
+        const logger = createLogger(PROVIDER_NAME, options_.logger);
 
         /**
          * Initialize all providers

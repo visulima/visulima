@@ -1,19 +1,19 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { resendProvider } from "../../src/providers/resend/index.js";
-import type { ResendEmailOptions } from "../../src/providers/resend/types.js";
-import { makeRequest } from "../../src/utils/make-request.js";
+import { resendProvider } from "../../src/providers/resend/index";
+import type { ResendEmailOptions } from "../../src/providers/resend/types";
+import { makeRequest } from "../../src/utils/make-request";
 
 // Mock the makeRequest and retry functions
-vi.mock(import("../../src/utils/make-request.js"), () => {
+vi.mock(import("../../src/utils/make-request"), () => {
     return {
         makeRequest: vi.fn(),
     };
 });
 
-vi.mock(import("../../src/utils/retry.js"), () => {
+vi.mock(import("../../src/utils/retry"), () => {
     return {
-        retry: vi.fn(async (function_) => await function_()),
+        default: vi.fn(async (function_) => await function_()),
     };
 });
 

@@ -21,21 +21,11 @@ export interface FeatureFlags {
 }
 
 /**
- * Logger interface for email package logging
- */
-export interface Logger {
-    debug: (message: string, ...args: unknown[]) => void;
-    error?: (message: string, ...args: unknown[]) => void;
-    info?: (message: string, ...args: unknown[]) => void;
-    warn?: (message: string, ...args: unknown[]) => void;
-}
-
-/**
  * Base configuration for all providers
  */
 export interface BaseConfig {
     debug?: boolean;
-    logger?: Logger;
+    logger?: Console;
     retries?: number;
     timeout?: number;
 }

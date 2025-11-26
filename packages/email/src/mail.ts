@@ -1,26 +1,19 @@
+/* eslint-disable max-classes-per-file */
 import { basename } from "node:path";
 
 import type { AttachmentDataOptions, AttachmentOptions } from "./attachment-helpers";
 import { detectMimeType, generateContentId, readFileAsBuffer } from "./attachment-helpers";
 import type { EmailEncrypter, EmailSigner } from "./crypto";
 import type { Provider } from "./providers/provider";
-import { htmlToText } from "./template-engines/html-to-text";
+import htmlToText from "./template-engines/html-to-text";
 import type { TemplateRenderer } from "./template-engines/types";
 import type { Attachment, EmailAddress, EmailHeaders, EmailOptions, EmailResult, Priority, Receipt, Result } from "./types";
-import { headersToRecord } from "./utils/headers-to-record";
+import headersToRecord from "./utils/headers-to-record";
 
 /**
- * Mailable interface - represents an email that can be sent
- */
-export interface Mailable {
-    /**
-     * Build the email message
-     */
-    build: () => Promise<EmailOptions>;
-}
-
-/**
- * Normalize email address(es) to EmailAddress array
+ * Normalizes email address(es) to EmailAddress array.
+ * @param address The email address(es) to normalize (can be string, EmailAddress, or arrays of either).
+ * @returns Array of EmailAddress objects.
  */
 const normalizeAddresses = (address: EmailAddress | EmailAddress[] | string | string[]): EmailAddress[] => {
     if (Array.isArray(address)) {
@@ -31,7 +24,17 @@ const normalizeAddresses = (address: EmailAddress | EmailAddress[] | string | st
 };
 
 /**
- * Mail message builder - provides fluent interface for building emails
+ * Mailable interface - represents an email that can be sent.
+ */
+export interface Mailable {
+    /**
+     * Builds the email message.
+     */
+    build: () => Promise<EmailOptions>;
+}
+
+/**
+ * Mail message builder - provides fluent interface for building emails.
  */
 export class MailMessage {
     private fromAddress?: EmailAddress;
@@ -65,7 +68,9 @@ export class MailMessage {
     private encrypter?: EmailEncrypter;
 
     /**
-     * Set the sender address
+     * Sets the sender address.
+     * @param address The sender email address (string or EmailAddress object).
+     * @returns This instance for method chaining.
      */
     from(address: EmailAddress | string): this {
         this.fromAddress = typeof address === "string" ? { email: address } : address;
@@ -74,7 +79,9 @@ export class MailMessage {
     }
 
     /**
-     * Set the recipient address(es)
+     * Sets the recipient address(es).
+     * @param address The recipient email address(es) (string, EmailAddress, or arrays of either).
+     * @returns This instance for method chaining.
      */
     to(address: EmailAddress | EmailAddress[] | string | string[]): this {
         this.toAddresses.push(...normalizeAddresses(address));
@@ -83,7 +90,9 @@ export class MailMessage {
     }
 
     /**
-     * Set the CC recipient address(es)
+     * Sets the CC recipient address(es).
+     * @param address The CC recipient email address(es) (string, EmailAddress, or arrays of either).
+     * @returns This instance for method chaining.
      */
     cc(address: EmailAddress | EmailAddress[] | string | string[]): this {
         this.ccAddresses.push(...normalizeAddresses(address));
@@ -92,7 +101,9 @@ export class MailMessage {
     }
 
     /**
-     * Set the BCC recipient address(es)
+     * Sets the BCC recipient address(es).
+     * @param address The BCC recipient email address(es) (string, EmailAddress, or arrays of either).
+     * @returns This instance for method chaining.
      */
     bcc(address: EmailAddress | EmailAddress[] | string | string[]): this {
         this.bccAddresses.push(...normalizeAddresses(address));
@@ -101,7 +112,9 @@ export class MailMessage {
     }
 
     /**
-     * Set the email subject
+     * Sets the email subject.
+     * @param text The subject text.
+     * @returns This instance for method chaining.
      */
     subject(text: string): this {
         this.subjectText = text;
@@ -110,7 +123,9 @@ export class MailMessage {
     }
 
     /**
-     * Set the plain text content
+     * Sets the plain text content.
+     * @param content The plain text content.
+     * @returns This instance for method chaining.
      */
     text(content: string): this {
         this.textContent = content;
@@ -119,7 +134,9 @@ export class MailMessage {
     }
 
     /**
-     * Set the HTML content
+     * Sets the HTML content.
+     * @param content The HTML content.
+     * @returns This instance for method chaining.
      */
     html(content: string): this {
         this.htmlContent = content;
@@ -128,7 +145,10 @@ export class MailMessage {
     }
 
     /**
-     * Set a custom header
+     * Sets a custom header.
+     * @param name The header name.
+     * @param value The header value.
+     * @returns This instance for method chaining.
      */
     header(name: string, value: string): this {
         this.headers[name] = value;
@@ -137,8 +157,10 @@ export class MailMessage {
     }
 
     /**
-     * Set multiple headers
-     * Accepts both Record&lt;string, string> and ImmutableHeaders
+     * Sets multiple headers.
+     * Accepts both Record&lt;string, string> and ImmutableHeaders.
+     * @param headers The headers to set (Record or ImmutableHeaders).
+     * @returns This instance for method chaining.
      */
     setHeaders(headers: EmailHeaders): this {
         const headersRecord = headersToRecord(headers);
@@ -149,8 +171,11 @@ export class MailMessage {
     }
 
     /**
-     * Attach a file from path (reads file from filesystem)
-     * Similar to Laravel's attach() method
+     * Attaches a file from path (reads file from filesystem).
+     * Similar to Laravel's attach() method.
+     * @param filePath The absolute or relative filesystem path to the file to attach.
+     * @param options Optional attachment configuration (filename, contentType, etc.).
+     * @returns This instance for method chaining.
      * @example
      * ```ts
      * message.attachFromPath('/path/to/file.pdf')
@@ -176,8 +201,11 @@ export class MailMessage {
     }
 
     /**
-     * Attach raw data (string or Buffer)
-     * Similar to Laravel's attachData() method
+     * Attaches raw data (string or Buffer).
+     * Similar to Laravel's attachData() method.
+     * @param content The content to attach (string or Buffer).
+     * @param options Attachment options including filename.
+     * @returns This instance for method chaining.
      * @example
      * ```ts
      * message.attachData(Buffer.from('content'), 'file.txt')
@@ -201,9 +229,12 @@ export class MailMessage {
     }
 
     /**
-     * Embed an inline attachment from file path (for images in HTML)
-     * Similar to Laravel's embed() method
-     * Returns the Content-ID that can be used in HTML: &lt;img src="cid:{cid}">
+     * Embeds an inline attachment from file path (for images in HTML).
+     * Similar to Laravel's embed() method.
+     * Returns the Content-ID that can be used in HTML: &lt;img src="cid:{cid}">.
+     * @param filePath The path to the file to embed.
+     * @param options Optional attachment options (filename, contentType, etc.).
+     * @returns The Content-ID string that can be used in HTML.
      * @example
      * ```ts
      * const cid = await message.embedFromPath('/path/to/logo.png')
@@ -228,9 +259,13 @@ export class MailMessage {
     }
 
     /**
-     * Embed raw data as inline attachment (for images in HTML)
-     * Similar to Laravel's embedData() method
-     * Returns the Content-ID that can be used in HTML: &lt;img src="cid:{cid}">
+     * Embeds raw data as inline attachment (for images in HTML).
+     * Similar to Laravel's embedData() method.
+     * Returns the Content-ID that can be used in HTML: &lt;img src="cid:{cid}">.
+     * @param content The content to embed (string or Buffer).
+     * @param filename The filename for the embedded attachment.
+     * @param options Optional attachment options (contentType, etc.).
+     * @returns The Content-ID string that can be used in HTML.
      * @example
      * ```ts
      * const imageBuffer = Buffer.from('...')
@@ -254,7 +289,9 @@ export class MailMessage {
     }
 
     /**
-     * Set the reply-to address
+     * Sets the reply-to address.
+     * @param address The reply-to email address (string or EmailAddress object).
+     * @returns This instance for method chaining.
      */
     replyTo(address: EmailAddress | string): this {
         this.replyToAddress = typeof address === "string" ? { email: address } : address;
@@ -263,7 +300,9 @@ export class MailMessage {
     }
 
     /**
-     * Set the email priority
+     * Sets the email priority.
+     * @param priority The priority level ('high', 'normal', or 'low').
+     * @returns This instance for method chaining.
      */
     priority(priority: Priority): this {
         this.priorityValue = priority;
@@ -272,7 +311,9 @@ export class MailMessage {
     }
 
     /**
-     * Set email tags
+     * Sets email tags for categorization.
+     * @param tags The tags to set (string or array of strings).
+     * @returns This instance for method chaining.
      */
     tags(tags: string | string[]): this {
         this.tagsValue = Array.isArray(tags) ? tags : [tags];
@@ -281,7 +322,9 @@ export class MailMessage {
     }
 
     /**
-     * Set the provider to use for sending
+     * Sets the provider to use for sending.
+     * @param provider The email provider instance.
+     * @returns This instance for method chaining.
      */
     mailer(provider: Provider): this {
         this.provider = provider;
@@ -290,8 +333,8 @@ export class MailMessage {
     }
 
     /**
-     * Sign the email message using a signer (DKIM or S/MIME)
-     * @param signer The signer instance to use
+     * Signs the email message using a signer (DKIM or S/MIME).
+     * @param signer The signer instance to use.
      * @example
      * ```ts
      * import { createDkimSigner } from '@visulima/email/crypto';
@@ -310,8 +353,8 @@ export class MailMessage {
     }
 
     /**
-     * Encrypt the email message using an encrypter (S/MIME)
-     * @param encrypter The encrypter instance to use
+     * Encrypts the email message using an encrypter (S/MIME).
+     * @param encrypter The encrypter instance to use.
      * @example
      * ```ts
      * import { createSmimeEncrypter } from '@visulima/email/crypto';
@@ -328,8 +371,14 @@ export class MailMessage {
     }
 
     /**
-     * Render a template and set as HTML content
-     * Accepts a render function for flexible template engine support
+     * Renders a template and sets as HTML content.
+     * Accepts a render function for flexible template engine support.
+     * @param render The template renderer function.
+     * @param template The template content (string, React component, etc.).
+     * @param data Optional data/variables to pass to the template.
+     * @param options Optional renderer-specific options.
+     * @param options.autoText Whether to auto-generate text version from HTML (default: true).
+     * @returns This instance for method chaining.
      * @example
      * ```ts
      * import { renderHandlebars } from '@visulima/email/template/handlebars';
@@ -372,7 +421,12 @@ export class MailMessage {
     }
 
     /**
-     * Render a text template and set as text content
+     * Renders a text template and sets as text content.
+     * @param render The template renderer function.
+     * @param template The text template content.
+     * @param data Optional data/variables to pass to the template.
+     * @param options Optional renderer-specific options.
+     * @returns This instance for method chaining.
      * @example
      * ```ts
      * import { renderHandlebars } from '@visulima/email/template/handlebars';
@@ -396,7 +450,9 @@ export class MailMessage {
     }
 
     /**
-     * Build the email options
+     * Builds the email options.
+     * @returns The built email options ready for sending.
+     * @throws {Error} When required fields (from, to, subject, content) are missing.
      */
     async build(): Promise<EmailOptions> {
         if (!this.fromAddress) {
@@ -473,7 +529,9 @@ export class MailMessage {
     }
 
     /**
-     * Send the email
+     * Sends the email.
+     * @returns A result object containing the email result or error.
+     * @throws {Error} When no provider is configured.
      */
     async send(): Promise<Result<EmailResult>> {
         if (!this.provider) {
@@ -487,20 +545,22 @@ export class MailMessage {
 }
 
 /**
- * Mail class - instance-based email sending
+ * Mail class - instance-based email sending.
  */
 export class Mail {
     private provider: Provider;
 
     /**
-     * Create a new Mail instance with a provider
+     * Creates a new Mail instance with a provider.
+     * @param provider The email provider instance.
      */
     constructor(provider: Provider) {
         this.provider = provider;
     }
 
     /**
-     * Create a new mail message
+     * Creates a new mail message.
+     * @returns A new MailMessage instance configured with this provider.
      */
     message(): MailMessage {
         const message = new MailMessage();
@@ -511,7 +571,9 @@ export class Mail {
     }
 
     /**
-     * Send a mailable instance
+     * Sends a mailable instance.
+     * @param mailable The mailable instance to send.
+     * @returns A result object containing the email result or error.
      */
     async send(mailable: Mailable): Promise<Result<EmailResult>> {
         const emailOptions = await mailable.build();
@@ -520,7 +582,9 @@ export class Mail {
     }
 
     /**
-     * Send email using email options directly
+     * Sends email using email options directly.
+     * @param options The email options to send.
+     * @returns A result object containing the email result or error.
      */
     async sendEmail(options: EmailOptions): Promise<Result<EmailResult>> {
         return this.provider.sendEmail(options);
@@ -544,9 +608,10 @@ export class Mail {
      *   }
      * }
      * ```
-     * @param messages An iterable of email options or mailables to send
-     * @param options Optional parameters for sending (e.g., abort signal)
-     * @returns An async iterable that yields receipts for each sent message
+     * @param messages An iterable of email options or mailables to send.
+     * @param options Optional parameters for sending.
+     * @param options.signal Abort signal to cancel the operation.
+     * @returns An async iterable that yields receipts for each sent message.
      */
     async* sendMany(
         messages: Iterable<EmailOptions | Mailable> | AsyncIterable<EmailOptions | Mailable>,
@@ -604,6 +669,8 @@ export class Mail {
 }
 
 /**
- * Create a new Mail instance with a provider
+ * Creates a new Mail instance with a provider.
+ * @param provider The email provider instance.
+ * @returns A new Mail instance.
  */
 export const createMail = (provider: Provider): Mail => new Mail(provider);

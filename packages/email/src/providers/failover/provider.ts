@@ -1,6 +1,6 @@
 import { EmailError, RequiredOptionError } from "../../errors/email-error";
 import type { EmailOptions, EmailResult, Result } from "../../types";
-import { createLogger } from "../../utils/create-logger";
+import createLogger from "../../utils/create-logger";
 import type { Provider, ProviderFactory } from "../provider";
 import { defineProvider } from "../provider";
 import type { FailoverConfig, FailoverEmailOptions } from "./types";
@@ -38,7 +38,7 @@ export const failoverProvider: ProviderFactory<FailoverConfig, unknown, Failover
         let isInitialized = false;
         const providers: Provider[] = [];
 
-        const logger = createLogger(PROVIDER_NAME, options.debug, options_.logger);
+        const logger = createLogger(PROVIDER_NAME, options_.logger);
 
         /**
          * Initialize all providers

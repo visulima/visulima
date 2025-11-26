@@ -2,8 +2,12 @@ import type { Result } from "../types";
 
 /**
  * Helper function to retry a function with exponential backoff
+ * @param function_ The async function to retry
+ * @param retries Number of retry attempts (default: 3)
+ * @param delay Initial delay in milliseconds (default: 300, doubles on each retry)
+ * @returns A result object containing the function result or error
  */
-export const retry = async <T>(function_: () => Promise<Result<T>>, retries: number = 3, delay: number = 300): Promise<Result<T>> => {
+const retry = async <T>(function_: () => Promise<Result<T>>, retries: number = 3, delay: number = 300): Promise<Result<T>> => {
     try {
         const result = await function_();
 
@@ -27,3 +31,5 @@ export const retry = async <T>(function_: () => Promise<Result<T>>, retries: num
         return retry(function_, retries - 1, delay * 2);
     }
 };
+
+export default retry;

@@ -29,7 +29,9 @@ import type { EmailSigner, SmimeSignOptions } from "./types";
 const hasBuffer = globalThis.Buffer !== undefined;
 
 /**
- * Convert PEM to DER (binary) format
+ * Converts PEM to DER (binary) format.
+ * @param pem The PEM string to convert.
+ * @returns The DER format as Uint8Array.
  */
 const pemToDer = (pem: string): Uint8Array => {
     const base64 = pem
@@ -53,7 +55,10 @@ const pemToDer = (pem: string): Uint8Array => {
 };
 
 /**
- * Convert DER to PEM format
+ * Converts DER to PEM format.
+ * @param der The DER format as ArrayBuffer.
+ * @param type The type of certificate/key (e.g., 'CERTIFICATE', 'PRIVATE KEY').
+ * @returns The PEM formatted string.
  */
 const derToPem = (der: ArrayBuffer, type: string): string => {
     let base64: string;
@@ -81,14 +86,18 @@ export class SmimeSigner implements EmailSigner {
     private readonly options: SmimeSignOptions;
 
     /**
-     * Create a new S/MIME signer
+     * Creates a new S/MIME signer.
+     * @param options S/MIME signing options.
      */
     constructor(options: SmimeSignOptions) {
         this.options = options;
     }
 
     /**
-     * Sign an email message with S/MIME
+     * Signs an email message with S/MIME.
+     * @param email The email options to sign.
+     * @returns The email options with S/MIME signature.
+     * @throws {Error} When signing fails (e.g., invalid certificate/key or missing Web Crypto API).
      */
     async sign(email: EmailOptions): Promise<EmailOptions> {
         // Get Web Crypto API
@@ -366,5 +375,11 @@ export class SmimeSigner implements EmailSigner {
 
 /**
  * Create an S/MIME signer instance
+ */
+
+/**
+ * Create an S/MIME signer instance
+ * @param options S/MIME signing options
+ * @returns A new SmimeSigner instance
  */
 export const createSmimeSigner = (options: SmimeSignOptions): SmimeSigner => new SmimeSigner(options);

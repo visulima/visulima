@@ -1,18 +1,18 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { mandrillProvider } from "../../src/providers/mandrill/index.js";
-import type { MandrillEmailOptions } from "../../src/providers/mandrill/types.js";
-import { makeRequest } from "../../src/utils/make-request.js";
+import { mandrillProvider } from "../../src/providers/mandrill/index";
+import type { MandrillEmailOptions } from "../../src/providers/mandrill/types";
+import { makeRequest } from "../../src/utils/make-request";
 
-vi.mock(import("../../src/utils/make-request.js"), () => {
+vi.mock(import("../../src/utils/make-request"), () => {
     return {
         makeRequest: vi.fn(),
     };
 });
 
-vi.mock(import("../../src/utils/retry.js"), () => {
+vi.mock(import("../../src/utils/retry"), () => {
     return {
-        retry: vi.fn(async (function_) => await function_()),
+        default: vi.fn(async (function_) => await function_()),
     };
 });
 

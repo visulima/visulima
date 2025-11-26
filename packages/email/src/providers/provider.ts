@@ -30,6 +30,8 @@ export type ProviderFactory<OptionsT = unknown, InstanceT = unknown, EmailOption
 
 /**
  * Helper function to define an email provider
+ * @param factory The provider factory function
+ * @returns The same factory function (for type inference)
  */
 export const defineProvider = <OptionsT = unknown, InstanceT = unknown, EmailOptionsT extends EmailOptions = EmailOptions>(
     factory: ProviderFactory<OptionsT, InstanceT, EmailOptionsT>,

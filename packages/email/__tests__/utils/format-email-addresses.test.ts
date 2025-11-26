@@ -1,10 +1,12 @@
 import { describe, expect, it } from "vitest";
 
-import type { EmailAddress } from "../../src/types.js";
-import { formatEmailAddresses } from "../../src/utils/format-email-addresses.js";
+import type { EmailAddress } from "../../src/types";
+import formatEmailAddresses from "../../src/utils/format-email-addresses";
 
 describe(formatEmailAddresses, () => {
     it("should format single address", () => {
+        expect.assertions(1);
+
         const address: EmailAddress = { email: "user@example.com" };
         const formatted = formatEmailAddresses(address);
 
@@ -12,6 +14,8 @@ describe(formatEmailAddresses, () => {
     });
 
     it("should format array of addresses", () => {
+        expect.assertions(1);
+
         const addresses: EmailAddress[] = [{ email: "user1@example.com" }, { email: "user2@example.com", name: "User 2" }];
         const formatted = formatEmailAddresses(addresses);
 

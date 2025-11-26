@@ -20,7 +20,9 @@ import type { EmailEncrypter, SmimeEncryptOptions } from "./types";
 const hasBuffer = globalThis.Buffer !== undefined;
 
 /**
- * Convert PEM to DER (binary) format
+ * Converts PEM to DER (binary) format.
+ * @param pem The PEM string to convert.
+ * @returns The DER format as Uint8Array.
  */
 const pemToDer = (pem: string): Uint8Array => {
     const base64 = pem
@@ -44,7 +46,10 @@ const pemToDer = (pem: string): Uint8Array => {
 };
 
 /**
- * Convert DER to PEM format
+ * Converts DER to PEM format.
+ * @param der The DER format as ArrayBuffer.
+ * @param type The type of certificate/key (e.g., 'CERTIFICATE', 'PRIVATE KEY').
+ * @returns The PEM formatted string.
  */
 const derToPem = (der: ArrayBuffer, type: string): string => {
     let base64: string;
@@ -72,14 +77,18 @@ export class SmimeEncrypter implements EmailEncrypter {
     private readonly options: SmimeEncryptOptions;
 
     /**
-     * Create a new S/MIME encrypter
+     * Creates a new S/MIME encrypter.
+     * @param options S/MIME encryption options.
      */
     constructor(options: SmimeEncryptOptions) {
         this.options = options;
     }
 
     /**
-     * Encrypt an email message with S/MIME
+     * Encrypts an email message with S/MIME.
+     * @param email The email options to encrypt.
+     * @returns The encrypted email options.
+     * @throws {Error} When encryption fails (e.g., invalid certificate or missing Web Crypto API).
      */
     async encrypt(email: EmailOptions): Promise<EmailOptions> {
         // Get Web Crypto API
@@ -333,5 +342,11 @@ export class SmimeEncrypter implements EmailEncrypter {
 
 /**
  * Create an S/MIME encrypter instance
+ */
+
+/**
+ * Create an S/MIME encrypter instance
+ * @param options S/MIME encryption options
+ * @returns A new SmimeEncrypter instance
  */
 export const createSmimeEncrypter = (options: SmimeEncryptOptions): SmimeEncrypter => new SmimeEncrypter(options);

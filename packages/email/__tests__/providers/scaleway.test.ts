@@ -1,18 +1,18 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { scalewayProvider } from "../../src/providers/scaleway/index.js";
-import type { ScalewayEmailOptions } from "../../src/providers/scaleway/types.js";
-import { makeRequest } from "../../src/utils/make-request.js";
+import { scalewayProvider } from "../../src/providers/scaleway/index";
+import type { ScalewayEmailOptions } from "../../src/providers/scaleway/types";
+import { makeRequest } from "../../src/utils/make-request";
 
-vi.mock(import("../../src/utils/make-request.js"), () => {
+vi.mock(import("../../src/utils/make-request"), () => {
     return {
         makeRequest: vi.fn(),
     };
 });
 
-vi.mock(import("../../src/utils/retry.js"), () => {
+vi.mock(import("../../src/utils/retry"), () => {
     return {
-        retry: vi.fn(async (function_) => await function_()),
+        default: vi.fn(async (function_) => await function_()),
     };
 });
 

@@ -1,12 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { postmarkProvider } from "../../src/providers/postmark/index.js";
-import type { PostmarkEmailOptions } from "../../src/providers/postmark/types.js";
-import { makeRequest } from "../../src/utils/make-request.js";
+import { postmarkProvider } from "../../src/providers/postmark/index";
+import type { PostmarkEmailOptions } from "../../src/providers/postmark/types";
+import { makeRequest } from "../../src/utils/make-request";
 
 // Mock retry and makeRequest for testing
 // Mock the makeRequest function
-vi.mock(import("../../src/utils/make-request.js"), () => {
+vi.mock(import("../../src/utils/make-request"), () => {
     return {
         makeRequest: vi.fn((url, options, data) =>
             // Return a mock result that matches the expected structure
@@ -22,9 +22,9 @@ vi.mock(import("../../src/utils/make-request.js"), () => {
 });
 
 // Mock the retry function
-vi.mock(import("../../src/utils/retry.js"), () => {
+vi.mock(import("../../src/utils/retry"), () => {
     return {
-        retry: vi.fn(async (function_) => await function_()),
+        default: vi.fn(async (function_) => await function_()),
     };
 });
 

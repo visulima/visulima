@@ -1,5 +1,5 @@
 import type { EmailAddress } from "../types";
-import { validateEmail } from "./validate-email";
+import validateEmailDefault from "./validate-email";
 
 /**
  * Parses a string representation of an email address into an EmailAddress object.
@@ -14,10 +14,10 @@ import { validateEmail } from "./validate-email";
  * const address = parseAddress("jane@example.com");
  * // { email: "jane@example.com" }
  * ```
- * @param address The string representation of the address to parse
- * @returns An EmailAddress object if parsing is successful, or undefined if invalid
+ * @param address The string representation of the address to parse.
+ * @returns An EmailAddress object if parsing is successful, or undefined if invalid.
  */
-export const parseAddress = (address: string): EmailAddress | undefined => {
+const parseAddress = (address: string): EmailAddress | undefined => {
     if (!address || typeof address !== "string") {
         return undefined;
     }
@@ -128,6 +128,8 @@ export const parseAddress = (address: string): EmailAddress | undefined => {
 
 /**
  * Validates email format including quoted local parts and domain literals
+ * @param email The email string to validate
+ * @returns True if the email format is valid, false otherwise
  */
 const isValidEmailFormat = (email: string): boolean => {
     // Check for domain literal format: user@[192.168.1.1]
@@ -166,15 +168,17 @@ const isValidEmailFormat = (email: string): boolean => {
             return false;
         }
 
-        return validateEmail(`test@${domain}`);
+        return validateEmailDefault(`test@${domain}`);
     }
 
     // Standard email validation
-    return validateEmail(email);
+    return validateEmailDefault(email);
 };
 
 /**
  * Validates local part (can be quoted or unquoted)
+ * @param localPart The local part of the email address to validate
+ * @returns True if the local part is valid, false otherwise
  */
 const isValidLocalPart = (localPart: string): boolean => {
     // Remove quotes if present
@@ -195,3 +199,5 @@ const isValidLocalPart = (localPart: string): boolean => {
 
     return true;
 };
+
+export default parseAddress;

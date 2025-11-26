@@ -2,9 +2,9 @@ import { readFile } from "node:fs/promises";
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { createSmimeSigner, SmimeSigner } from "../../src/crypto/smime-signer.js";
-import type { SmimeSignOptions } from "../../src/crypto/types.js";
-import type { EmailOptions } from "../../src/types.js";
+import { createSmimeSigner, SmimeSigner } from "../../src/crypto/smime-signer";
+import type { SmimeSignOptions } from "../../src/crypto/types";
+import type { EmailOptions } from "../../src/types";
 
 vi.mock(import("node:fs/promises"), () => {
     return {

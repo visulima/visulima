@@ -1,7 +1,9 @@
 /**
  * Validate email address format
+ * @param email The email address string to validate
+ * @returns True if the email address is valid, false otherwise
  */
-export const validateEmail = (email: string): boolean => {
+const validateEmail = (email: string): boolean => {
     // Basic validation first
     const basicRegex = /^[^\s@]+@[^\s@][^\s.@]*\.[^\s@]+$/;
 
@@ -37,3 +39,5 @@ export const validateEmail = (email: string): boolean => {
 
     return true;
 };
+
+export default validateEmail;

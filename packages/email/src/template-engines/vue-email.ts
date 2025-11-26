@@ -4,17 +4,14 @@ import { EmailError } from "../errors/email-error";
 import type { TemplateRenderer } from "./types";
 
 /**
- * Render Vue Email component to HTML
- * @param component Vue component from @vue-email/components
- * @param data Data/variables to pass to the template
- * @param options Render options (pretty, plainText, htmlToTextOptions)
- * @returns HTML or plain text string
+ * Renders Vue Email component to HTML.
+ * @param template Vue component from @vue-email/components.
+ * @param data Data/variables to pass to the template.
+ * @param options Render options (pretty, plainText, htmlToTextOptions).
+ * @returns HTML or plain text string.
+ * @throws {EmailError} When @vue-email/render is not installed or rendering fails.
  */
-export const renderVueEmail: TemplateRenderer = async (
-    template: unknown,
-    data?: Record<string, unknown>,
-    options?: Record<string, unknown>,
-): Promise<string> => {
+const renderVueEmail: TemplateRenderer = async (template: unknown, data?: Record<string, unknown>, options?: Record<string, unknown>): Promise<string> => {
     try {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return await render(template as any, data ?? {}, {
@@ -30,3 +27,5 @@ export const renderVueEmail: TemplateRenderer = async (
         throw new EmailError("vue-email", `Failed to render Vue Email component: ${(error as Error).message}`, { cause: error });
     }
 };
+
+export default renderVueEmail;

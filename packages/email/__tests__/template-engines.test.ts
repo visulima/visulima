@@ -1,12 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { EmailError } from "../src/errors/email-error.js";
+import { EmailError } from "../src/errors/email-error";
 // Import after mocking
-import { registerHandlebarsHelper, registerHandlebarsPartial, renderHandlebars } from "../src/template-engines/handlebars.js";
-import { htmlToText } from "../src/template-engines/html-to-text.js";
-import { renderMjml } from "../src/template-engines/mjml.js";
-import { renderReactEmail } from "../src/template-engines/react-email.js";
-import { renderVueEmail } from "../src/template-engines/vue-email.js";
+import { registerHandlebarsHelper, registerHandlebarsPartial, renderHandlebars } from "../src/template-engines/handlebars";
+import htmlToText from "../src/template-engines/html-to-text";
+import renderMjml from "../src/template-engines/mjml";
+import renderReactEmail from "../src/template-engines/react-email";
+import renderVueEmail from "../src/template-engines/vue-email";
 
 // Mock template engine dependencies
 vi.mock(import("handlebars"), () => {
