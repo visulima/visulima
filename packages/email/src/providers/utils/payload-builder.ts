@@ -1,4 +1,5 @@
 import type { EmailAddress, EmailOptions } from "../../types";
+import headersToRecord from "../../utils/headers-to-record";
 
 /**
  * Common payload building utilities for email providers
@@ -6,14 +7,17 @@ import type { EmailAddress, EmailOptions } from "../../types";
 export class PayloadBuilder {
     private payload: Record<string, unknown> = {};
 
-    constructor(initialPayload: Record<string, unknown> = {}) {
+    public constructor(initialPayload: Record<string, unknown> = {}) {
         this.payload = { ...initialPayload };
     }
 
     /**
-     * Set a field in the payload
+     * Sets a field in the payload.
+     * @param key The field key to set.
+     * @param value The field value to set (undefined and null values are ignored).
+     * @returns This instance for method chaining.
      */
-    set(key: string, value: unknown): this {
+    public set(key: string, value: unknown): this {
         if (value !== undefined && value !== null) {
             this.payload[key] = value;
         }
@@ -22,9 +26,11 @@ export class PayloadBuilder {
     }
 
     /**
-     * Set multiple fields conditionally
+     * Sets multiple fields conditionally in the payload.
+     * @param fields An object containing key-value pairs to set.
+     * @returns This instance for method chaining.
      */
-    setMultiple(fields: Record<string, unknown>): this {
+    public setMultiple(fields: Record<string, unknown>): this {
         for (const [key, value] of Object.entries(fields)) {
             this.set(key, value);
         }
@@ -33,9 +39,12 @@ export class PayloadBuilder {
     }
 
     /**
-     * Add recipients (to, cc, bcc) using a formatter function
+     * Adds recipients (to, cc, bcc) to the payload using a formatter function.
+     * @param emailOptions The email options containing recipient addresses.
+     * @param formatter A function to format the addresses for the specific provider.
+     * @returns This instance for method chaining.
      */
-    addRecipients(emailOptions: EmailOptions, formatter: (addresses: EmailAddress | EmailAddress[]) => unknown): this {
+    public addRecipients(emailOptions: EmailOptions, formatter: (addresses: EmailAddress | EmailAddress[]) => unknown): this {
         if (emailOptions.to) {
             this.set("to", formatter(emailOptions.to));
         }
@@ -52,9 +61,11 @@ export class PayloadBuilder {
     }
 
     /**
-     * Add standard email fields (subject, html, text, replyTo)
+     * Adds standard email fields (subject, html, text, replyTo) to the payload.
+     * @param emailOptions The email options containing the standard fields.
+     * @returns This instance for method chaining.
      */
-    addStandardFields(emailOptions: EmailOptions): this {
+    public addStandardFields(emailOptions: EmailOptions): this {
         return this.setMultiple({
             html: emailOptions.html,
             reply_to: emailOptions.replyTo,
@@ -65,14 +76,17 @@ export class PayloadBuilder {
     }
 
     /**
-     * Add template-related fields
+     * Adds template-related fields to the payload.
+     * @param emailOptions The email options containing template information.
+     * @param templateKey The key name to use for the template ID (default: "template_id").
+     * @returns This instance for method chaining.
      */
-    addTemplateFields(emailOptions: EmailOptions, templateKey = "template_id"): this {
-        if (emailOptions.templateId) {
+    public addTemplateFields(emailOptions: EmailOptions, templateKey = "template_id"): this {
+        if ("templateId" in emailOptions && emailOptions.templateId) {
             this.set(templateKey, emailOptions.templateId);
         }
 
-        if (emailOptions.templateData) {
+        if ("templateData" in emailOptions && emailOptions.templateData) {
             this.set("template_data", emailOptions.templateData);
             this.set("dynamicTemplateData", emailOptions.templateData); // SendGrid format
             this.set("data", emailOptions.templateData); // Resend format
@@ -82,10 +96,12 @@ export class PayloadBuilder {
     }
 
     /**
-     * Add scheduling fields
+     * Adds scheduling fields to the payload for delayed sending.
+     * @param emailOptions The email options containing scheduling information.
+     * @returns This instance for method chaining.
      */
-    addSchedulingFields(emailOptions: EmailOptions): this {
-        if (emailOptions.sendAt) {
+    public addSchedulingFields(emailOptions: EmailOptions): this {
+        if ("sendAt" in emailOptions && emailOptions.sendAt) {
             this.set("send_at", emailOptions.sendAt);
             this.set("scheduled_at", emailOptions.sendAt);
         }
@@ -94,9 +110,12 @@ export class PayloadBuilder {
     }
 
     /**
-     * Add tags
+     * Adds tags to the payload for email categorization.
+     * @param emailOptions The email options containing tags.
+     * @param formatter An optional function to format tags for the specific provider.
+     * @returns This instance for method chaining.
      */
-    addTags(emailOptions: EmailOptions, formatter?: (tags: unknown[]) => unknown): this {
+    public addTags(emailOptions: EmailOptions, formatter?: (tags: unknown[]) => unknown): this {
         if (emailOptions.tags && emailOptions.tags.length > 0) {
             const tags = formatter ? formatter(emailOptions.tags) : emailOptions.tags;
 
@@ -109,11 +128,15 @@ export class PayloadBuilder {
     }
 
     /**
-     * Add custom headers
+     * Adds custom headers to the payload.
+     * @param emailOptions The email options containing custom headers.
+     * @param formatter An optional function to format headers for the specific provider.
+     * @returns This instance for method chaining.
      */
-    addHeaders(emailOptions: EmailOptions, formatter?: (headers: Record<string, string>) => unknown): this {
+    public addHeaders(emailOptions: EmailOptions, formatter?: (headers: Record<string, string>) => unknown): this {
         if (emailOptions.headers) {
-            const headers = formatter ? formatter(emailOptions.headers) : emailOptions.headers;
+            const headersRecord = headersToRecord(emailOptions.headers);
+            const headers = formatter ? formatter(headersRecord) : headersRecord;
 
             this.set("headers", headers);
         }
@@ -122,10 +145,12 @@ export class PayloadBuilder {
     }
 
     /**
-     * Add batch ID
+     * Adds a batch ID to the payload for batch email operations.
+     * @param emailOptions The email options containing the batch ID.
+     * @returns This instance for method chaining.
      */
-    addBatchId(emailOptions: EmailOptions): this {
-        if (emailOptions.batchId) {
+    public addBatchId(emailOptions: EmailOptions): this {
+        if ("batchId" in emailOptions && emailOptions.batchId) {
             this.set("batch_id", emailOptions.batchId);
         }
 
@@ -133,16 +158,17 @@ export class PayloadBuilder {
     }
 
     /**
-     * Build the final payload
+     * Builds and returns the final payload object.
+     * @returns The complete payload object ready for API submission.
      */
-    build(): Record<string, unknown> {
+    public build(): Record<string, unknown> {
         return this.payload;
     }
 }
 
 /**
- * Create a payload builder instance
+ * Creates a new payload builder instance.
+ * @param initialPayload Optional initial payload object to start with.
+ * @returns A new PayloadBuilder instance.
  */
-export function createPayloadBuilder(initialPayload: Record<string, unknown> = {}): PayloadBuilder {
-    return new PayloadBuilder(initialPayload);
-}
+export const createPayloadBuilder = (initialPayload: Record<string, unknown> = {}): PayloadBuilder => new PayloadBuilder(initialPayload);

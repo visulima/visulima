@@ -1,6 +1,6 @@
 import mjml2html from "mjml";
 
-import { EmailError } from "../errors/email-error";
+import EmailError from "../errors/email-error";
 import type { TemplateRenderer } from "./types";
 
 /**
@@ -12,7 +12,7 @@ import type { TemplateRenderer } from "./types";
  * @throws {TypeError} When template is not a string.
  * @throws {EmailError} When MJML is not installed, validation fails, or rendering fails.
  */
-const renderMjml: TemplateRenderer = (template: unknown, _data?: Record<string, unknown>, options?: Record<string, unknown>): string => {
+const mjml: TemplateRenderer = (template: unknown, _data?: Record<string, unknown>, options?: Record<string, unknown>): string => {
     try {
         if (typeof template !== "string") {
             throw new TypeError("MJML template must be a string");
@@ -27,7 +27,7 @@ const renderMjml: TemplateRenderer = (template: unknown, _data?: Record<string, 
         });
 
         if (result.errors && result.errors.length > 0) {
-            const errorMessages = result.errors.map((e: { message: string }) => e.message).join("; ");
+            const errorMessages = result.errors.map((error: { message: string }) => error.message).join("; ");
 
             throw new EmailError("mjml", `MJML validation errors: ${errorMessages}`);
         }
@@ -46,4 +46,4 @@ const renderMjml: TemplateRenderer = (template: unknown, _data?: Record<string, 
     }
 };
 
-export default renderMjml;
+export default mjml;

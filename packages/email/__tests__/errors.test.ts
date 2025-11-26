@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { EmailError, RequiredOptionError } from "../src/errors/email-error";
+import EmailError from "../src/errors/email-error";
+import RequiredOptionError from "../src/errors/required-option-error";
 
 describe(EmailError, () => {
     describe(EmailError, () => {

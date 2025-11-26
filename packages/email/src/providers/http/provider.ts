@@ -1,4 +1,5 @@
-import { EmailError, RequiredOptionError } from "../../errors/email-error";
+import EmailError from "../../errors/email-error";
+import RequiredOptionError from "../../errors/required-option-error";
 import type { EmailResult, Result } from "../../types";
 import generateMessageId from "../../utils/generate-message-id";
 import headersToRecord from "../../utils/headers-to-record";
@@ -16,28 +17,29 @@ const DEFAULT_TIMEOUT = 30_000;
 /**
  * HTTP Email Provider for sending emails via HTTP API
  */
-export const httpProvider: ProviderFactory<HttpEmailConfig, unknown, HttpEmailOptions> = defineProvider((options_: HttpEmailConfig = {} as HttpEmailConfig) => {
-    if (!options_.endpoint) {
+const httpProvider: ProviderFactory<HttpEmailConfig, unknown, HttpEmailOptions> = defineProvider((config: HttpEmailConfig = {} as HttpEmailConfig) => {
+    if (!config.endpoint) {
         throw new RequiredOptionError(PROVIDER_NAME, "endpoint");
     }
 
     const options: Required<HttpEmailConfig> = {
-        apiKey: options_.apiKey || "",
-        endpoint: options_.endpoint,
-        headers: options_.headers || {},
-        method: options_.method || DEFAULT_METHOD,
+        apiKey: config.apiKey || "",
+        endpoint: config.endpoint,
+        headers: config.headers || {},
+        method: config.method || DEFAULT_METHOD,
     };
 
     const providerState = new ProviderState();
-    const logger = createProviderLogger(PROVIDER_NAME, options_.logger);
+    const logger = createProviderLogger(PROVIDER_NAME, undefined);
 
     /**
-     * Create standard headers for API requests
+     * Creates standard headers for API requests.
+     * @returns A record of standard HTTP headers including Content-Type and optional Authorization.
      */
     const getStandardHeaders = (): Record<string, string> => {
         const headers: Record<string, string> = {
             "Content-Type": "application/json",
-            ...options.headers ? headersToRecord(options.headers) : {},
+            ...(options.headers ? headersToRecord(options.headers) : {}),
         };
 
         if (options.apiKey) {
@@ -48,7 +50,9 @@ export const httpProvider: ProviderFactory<HttpEmailConfig, unknown, HttpEmailOp
     };
 
     /**
-     * Format the request based on email options
+     * Formats the request payload based on email options.
+     * @param emailOptions The email options to format into a request payload.
+     * @returns A record containing the formatted request data.
      */
     const formatRequest = (emailOptions: HttpEmailOptions): Record<string, unknown> => {
         const payload: Record<string, unknown> = {
@@ -89,18 +93,20 @@ export const httpProvider: ProviderFactory<HttpEmailConfig, unknown, HttpEmailOp
         },
 
         /**
-         * Initialize the HTTP provider
+         * Initializes the HTTP provider and validates endpoint availability.
+         * @throws {EmailError} When the API endpoint is not available.
          */
         async initialize(): Promise<void> {
             await providerState.ensureInitialized(async () => {
-                if (!await this.isAvailable()) {
+                if (!(await this.isAvailable())) {
                     throw new EmailError(PROVIDER_NAME, "API endpoint not available");
                 }
             }, PROVIDER_NAME);
         },
 
         /**
-         * Check if the HTTP endpoint is available
+         * Checks if the HTTP endpoint is available.
+         * @returns True if the endpoint is available, false otherwise.
          */
         async isAvailable(): Promise<boolean> {
             try {
@@ -144,8 +150,11 @@ export const httpProvider: ProviderFactory<HttpEmailConfig, unknown, HttpEmailOp
         options,
 
         /**
-         * Send email via HTTP API
+         * Sends an email via the HTTP API endpoint.
+         * @param emailOptions The email options to send.
+         * @returns A result object containing the email result or an error.
          */
+        // eslint-disable-next-line sonarjs/cognitive-complexity
         async sendEmail(emailOptions: HttpEmailOptions): Promise<Result<EmailResult>> {
             try {
                 const validationErrors = validateEmailOptions(emailOptions);
@@ -183,7 +192,11 @@ export const httpProvider: ProviderFactory<HttpEmailConfig, unknown, HttpEmailOp
 
                 if (!result.success) {
                     return {
-                        error: new EmailError(PROVIDER_NAME, `Failed to send email: ${result.error?.message || "Unknown error"}`, { cause: result.error }),
+                        error: new EmailError(
+                            PROVIDER_NAME,
+                            `Failed to send email: ${result.error instanceof Error ? result.error.message : "Unknown error"}`,
+                            { cause: result.error },
+                        ),
                         success: false,
                     };
                 }
@@ -192,12 +205,18 @@ export const httpProvider: ProviderFactory<HttpEmailConfig, unknown, HttpEmailOp
                 const responseBody = (result.data as { body?: Record<string, unknown> })?.body;
 
                 if (responseBody && typeof responseBody === "object") {
-                    messageId
-                        = (responseBody.id as string | undefined)
-                            || (responseBody.messageId as string | undefined)
-                            || (responseBody.data
-                                && typeof responseBody.data === "object"
-                                && ((responseBody.data as { id?: string }).id || (responseBody.data as { messageId?: string }).messageId));
+                    const { id } = responseBody as { id?: unknown };
+                    const messageIdValue = (responseBody as { messageId?: unknown }).messageId;
+                    const { data } = responseBody as { data?: unknown };
+                    const extractedId
+                        = (typeof id === "string" ? id : undefined)
+                            || (typeof messageIdValue === "string" ? messageIdValue : undefined)
+                            || (data && typeof data === "object" && (typeof (data as { id?: unknown }).id === "string" ? (data as { id: string }).id : undefined))
+                            || (typeof (data as { messageId?: unknown }).messageId === "string" ? (data as { messageId: string }).messageId : undefined);
+
+                    if (typeof extractedId === "string") {
+                        messageId = extractedId;
+                    }
                 }
 
                 if (!messageId) {
@@ -223,7 +242,8 @@ export const httpProvider: ProviderFactory<HttpEmailConfig, unknown, HttpEmailOp
         },
 
         /**
-         * Validate configuration
+         * Validates the HTTP provider configuration.
+         * @returns True if the configuration is valid, false otherwise.
          */
         async validateCredentials(): Promise<boolean> {
             try {
@@ -233,21 +253,20 @@ export const httpProvider: ProviderFactory<HttpEmailConfig, unknown, HttpEmailOp
                     timeout: DEFAULT_TIMEOUT,
                 });
 
-                if (
-                    result.data
-                    && typeof result.data === "object"
-                    && "statusCode" in result.data
-                    && typeof result.data.statusCode === "number"
-                    && result.data.statusCode >= 200
-                    && result.data.statusCode < 300
-                ) {
-                    return true;
-                }
+                const isSuccess
+                    = result.data
+                        && typeof result.data === "object"
+                        && "statusCode" in result.data
+                        && typeof (result.data as { statusCode?: unknown }).statusCode === "number"
+                        && (result.data as { statusCode: number }).statusCode >= 200
+                        && (result.data as { statusCode: number }).statusCode < 300;
 
-                return false;
+                return Boolean(isSuccess);
             } catch {
                 return false;
             }
         },
     };
 });
+
+export default httpProvider;

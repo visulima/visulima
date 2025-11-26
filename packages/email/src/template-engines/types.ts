@@ -5,6 +5,4 @@
  * @param options Options specific to the template engine.
  * @returns Rendered HTML string.
  */
-type TemplateRenderer = (template: unknown, data?: Record<string, unknown>, options?: Record<string, unknown>) => string | Promise<string>;
-
-export type { TemplateRenderer };
+export type TemplateRenderer = (template: unknown, data?: Record<string, unknown>, options?: Record<string, unknown>) => string | Promise<string>;

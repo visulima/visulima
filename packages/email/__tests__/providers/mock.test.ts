@@ -10,6 +10,8 @@ describe(mockProvider, () => {
 
     describe("initialization", () => {
         it("should create provider with default config", () => {
+            expect.assertions(5);
+
             const provider = mockProvider();
 
             expect(provider).toBeDefined();
@@ -20,6 +22,8 @@ describe(mockProvider, () => {
         });
 
         it("should create provider with custom config", () => {
+            expect.assertions(4);
+
             const provider = mockProvider({
                 debug: true,
                 delay: 100,
@@ -34,12 +38,16 @@ describe(mockProvider, () => {
         });
 
         it("should initialize successfully", async () => {
+            expect.assertions(1);
+
             const provider = mockProvider();
 
             await expect(provider.initialize()).resolves.not.toThrow();
         });
 
         it("should be available", async () => {
+            expect.assertions(1);
+
             const provider = mockProvider();
 
             const isAvailable = await provider.isAvailable();
@@ -48,6 +56,8 @@ describe(mockProvider, () => {
         });
 
         it("should validate credentials", async () => {
+            expect.assertions(1);
+
             const provider = mockProvider();
 
             const isValid = await provider.validateCredentials?.();
@@ -58,9 +68,11 @@ describe(mockProvider, () => {
 
     describe("features", () => {
         it("should have correct feature flags", () => {
+            expect.assertions(1);
+
             const provider = mockProvider();
 
-            expect(provider.features).toEqual({
+            expect(provider.features).toStrictEqual({
                 attachments: true,
                 batchSending: true,
                 customHeaders: true,
@@ -76,6 +88,8 @@ describe(mockProvider, () => {
 
     describe("sendEmail", () => {
         it("should send email successfully and store it", async () => {
+            expect.assertions(6);
+
             const provider = mockProvider();
             const emailOptions: MockEmailOptions = {
                 from: { email: "sender@example.com" },
@@ -98,6 +112,8 @@ describe(mockProvider, () => {
         });
 
         it("should validate email options", async () => {
+            expect.assertions(2);
+
             const provider = mockProvider();
             const emailOptions = {} as MockEmailOptions;
 
@@ -108,6 +124,8 @@ describe(mockProvider, () => {
         });
 
         it("should store email with all fields", async () => {
+            expect.assertions(2);
+
             const provider = mockProvider();
             const emailOptions: MockEmailOptions = {
                 bcc: { email: "bcc@example.com" },
@@ -127,10 +145,12 @@ describe(mockProvider, () => {
             const sentEmails = provider.getSentEmails();
 
             expect(sentEmails).toHaveLength(1);
-            expect(sentEmails[0]?.options).toEqual(emailOptions);
+            expect(sentEmails[0]?.options).toStrictEqual(emailOptions);
         });
 
         it("should handle multiple recipients", async () => {
+            expect.assertions(1);
+
             const provider = mockProvider();
             const emailOptions: MockEmailOptions = {
                 from: { email: "sender@example.com" },
@@ -149,6 +169,8 @@ describe(mockProvider, () => {
 
     describe("simulateFailure", () => {
         it("should simulate failure when simulateFailure is true", async () => {
+            expect.assertions(3);
+
             const provider = mockProvider({ simulateFailure: true });
             const emailOptions: MockEmailOptions = {
                 from: { email: "sender@example.com" },
@@ -167,6 +189,8 @@ describe(mockProvider, () => {
 
     describe("failureRate", () => {
         it("should fail with 100% failure rate", async () => {
+            expect.assertions(1);
+
             const provider = mockProvider({ failureRate: 1 });
             const emailOptions: MockEmailOptions = {
                 from: { email: "sender@example.com" },
@@ -181,6 +205,8 @@ describe(mockProvider, () => {
         });
 
         it("should succeed with 0% failure rate", async () => {
+            expect.assertions(1);
+
             const provider = mockProvider({ failureRate: 0 });
             const emailOptions: MockEmailOptions = {
                 from: { email: "sender@example.com" },
@@ -195,6 +221,8 @@ describe(mockProvider, () => {
         });
 
         it("should set failure rate dynamically", () => {
+            expect.assertions(1);
+
             const provider = mockProvider();
 
             provider.setFailureRate(0.75);
@@ -203,6 +231,8 @@ describe(mockProvider, () => {
         });
 
         it("should throw error for invalid failure rate", () => {
+            expect.assertions(2);
+
             const provider = mockProvider();
 
             expect(() => {
@@ -217,6 +247,8 @@ describe(mockProvider, () => {
 
     describe("delay", () => {
         it("should delay email sending", async () => {
+            expect.assertions(1);
+
             const startTime = Date.now();
             const provider = mockProvider({ delay: 100 });
             const emailOptions: MockEmailOptions = {
@@ -234,15 +266,19 @@ describe(mockProvider, () => {
         });
 
         it("should set delay dynamically", () => {
+            expect.assertions(2);
+
             const provider = mockProvider();
 
             provider.setDelay(200);
 
             expect(provider.options?.delay).toBe(200);
-            expect(provider.options?.randomDelayRange).toEqual({ max: 0, min: 0 });
+            expect(provider.options?.randomDelayRange).toStrictEqual({ max: 0, min: 0 });
         });
 
         it("should throw error for negative delay", () => {
+            expect.assertions(1);
+
             const provider = mockProvider();
 
             expect(() => {
@@ -253,15 +289,19 @@ describe(mockProvider, () => {
 
     describe("randomDelay", () => {
         it("should set random delay range", () => {
+            expect.assertions(2);
+
             const provider = mockProvider();
 
             provider.setRandomDelay(50, 100);
 
             expect(provider.options?.delay).toBe(0);
-            expect(provider.options?.randomDelayRange).toEqual({ max: 100, min: 50 });
+            expect(provider.options?.randomDelayRange).toStrictEqual({ max: 100, min: 50 });
         });
 
         it("should use random delay when sending", async () => {
+            expect.assertions(1);
+
             const provider = mockProvider();
 
             provider.setRandomDelay(10, 20);
@@ -281,6 +321,8 @@ describe(mockProvider, () => {
         });
 
         it("should throw error for invalid delay range", () => {
+            expect.assertions(2);
+
             const provider = mockProvider();
 
             expect(() => {
@@ -295,6 +337,8 @@ describe(mockProvider, () => {
 
     describe("nextResponse", () => {
         it("should use next response for next send", async () => {
+            expect.assertions(4);
+
             const provider = mockProvider();
             const customReceipt = {
                 messageId: "custom-id",
@@ -317,7 +361,7 @@ describe(mockProvider, () => {
 
             expect(result.success).toBe(true);
             expect(result.data?.messageId).toBe("custom-id");
-            expect(result.data?.timestamp).toEqual(new Date("2024-01-01"));
+            expect(result.data?.timestamp).toStrictEqual(new Date("2024-01-01"));
 
             // Next response should be cleared after use
             const result2 = await provider.sendEmail(emailOptions);
@@ -326,6 +370,8 @@ describe(mockProvider, () => {
         });
 
         it("should use next response for failure", async () => {
+            expect.assertions(2);
+
             const provider = mockProvider();
             const failureReceipt = {
                 errorMessages: ["Custom error"],
@@ -351,6 +397,8 @@ describe(mockProvider, () => {
 
     describe("defaultResponse", () => {
         it("should use default response when set", async () => {
+            expect.assertions(2);
+
             const provider = mockProvider();
             const defaultReceipt = {
                 messageId: "default-id",
@@ -375,6 +423,8 @@ describe(mockProvider, () => {
         });
 
         it("should use default response for multiple sends", async () => {
+            expect.assertions(1);
+
             const provider = mockProvider();
             const defaultReceipt = {
                 messageId: "default-id",
@@ -401,6 +451,8 @@ describe(mockProvider, () => {
 
     describe("getSentEmails", () => {
         it("should return all sent emails", async () => {
+            expect.assertions(3);
+
             const provider = mockProvider();
             const emailOptions: MockEmailOptions = {
                 from: { email: "sender@example.com" },
@@ -420,6 +472,8 @@ describe(mockProvider, () => {
         });
 
         it("should return empty array when no emails sent", () => {
+            expect.assertions(1);
+
             const provider = mockProvider();
 
             const sentEmails = provider.getSentEmails();
@@ -430,6 +484,8 @@ describe(mockProvider, () => {
 
     describe("getSentMessages", () => {
         it("should return all sent messages", async () => {
+            expect.assertions(2);
+
             const provider = mockProvider();
             const emailOptions: MockEmailOptions = {
                 from: { email: "sender@example.com" },
@@ -449,6 +505,8 @@ describe(mockProvider, () => {
 
     describe("getLastSentMessage", () => {
         it("should return last sent message", async () => {
+            expect.assertions(1);
+
             const provider = mockProvider();
             const emailOptions1: MockEmailOptions = {
                 from: { email: "sender@example.com" },
@@ -472,6 +530,8 @@ describe(mockProvider, () => {
         });
 
         it("should return undefined when no messages sent", () => {
+            expect.assertions(1);
+
             const provider = mockProvider();
 
             const lastMessage = provider.getLastSentMessage();
@@ -482,6 +542,8 @@ describe(mockProvider, () => {
 
     describe("getSentMessagesCount", () => {
         it("should return correct count", async () => {
+            expect.assertions(3);
+
             const provider = mockProvider();
             const emailOptions: MockEmailOptions = {
                 from: { email: "sender@example.com" },
@@ -504,6 +566,8 @@ describe(mockProvider, () => {
 
     describe("clearSentMessages", () => {
         it("should clear all sent messages", async () => {
+            expect.assertions(2);
+
             const provider = mockProvider();
             const emailOptions: MockEmailOptions = {
                 from: { email: "sender@example.com" },
@@ -523,6 +587,8 @@ describe(mockProvider, () => {
         });
 
         it("should not reset configuration", () => {
+            expect.assertions(2);
+
             const provider = mockProvider();
 
             provider.setFailureRate(0.5);
@@ -536,6 +602,8 @@ describe(mockProvider, () => {
 
     describe("findMessageBy", () => {
         it("should find message by predicate", async () => {
+            expect.assertions(2);
+
             const provider = mockProvider();
             const emailOptions1: MockEmailOptions = {
                 from: { email: "sender@example.com" },
@@ -560,6 +628,8 @@ describe(mockProvider, () => {
         });
 
         it("should return undefined when no match found", async () => {
+            expect.assertions(1);
+
             const provider = mockProvider();
             const emailOptions: MockEmailOptions = {
                 from: { email: "sender@example.com" },
@@ -578,6 +648,8 @@ describe(mockProvider, () => {
 
     describe("findMessagesBy", () => {
         it("should find all messages matching predicate", async () => {
+            expect.assertions(1);
+
             const provider = mockProvider();
             const emailOptions1: MockEmailOptions = {
                 from: { email: "sender@example.com" },
@@ -610,6 +682,8 @@ describe(mockProvider, () => {
 
     describe("getMessagesTo", () => {
         it("should find messages sent to specific email", async () => {
+            expect.assertions(2);
+
             const provider = mockProvider();
             const emailOptions1: MockEmailOptions = {
                 from: { email: "sender@example.com" },
@@ -634,6 +708,8 @@ describe(mockProvider, () => {
         });
 
         it("should find messages in CC", async () => {
+            expect.assertions(1);
+
             const provider = mockProvider();
             const emailOptions: MockEmailOptions = {
                 cc: { email: "cc@example.com" },
@@ -651,6 +727,8 @@ describe(mockProvider, () => {
         });
 
         it("should find messages in BCC", async () => {
+            expect.assertions(1);
+
             const provider = mockProvider();
             const emailOptions: MockEmailOptions = {
                 bcc: { email: "bcc@example.com" },
@@ -668,6 +746,8 @@ describe(mockProvider, () => {
         });
 
         it("should handle multiple recipients", async () => {
+            expect.assertions(2);
+
             const provider = mockProvider();
             const emailOptions: MockEmailOptions = {
                 from: { email: "sender@example.com" },
@@ -688,6 +768,8 @@ describe(mockProvider, () => {
 
     describe("getMessagesBySubject", () => {
         it("should find messages by subject", async () => {
+            expect.assertions(3);
+
             const provider = mockProvider();
             const emailOptions1: MockEmailOptions = {
                 from: { email: "sender@example.com" },
@@ -722,6 +804,8 @@ describe(mockProvider, () => {
 
     describe("waitForMessageCount", () => {
         it("should wait for specific message count", async () => {
+            expect.assertions(1);
+
             const provider = mockProvider();
             const emailOptions: MockEmailOptions = {
                 from: { email: "sender@example.com" },
@@ -739,6 +823,8 @@ describe(mockProvider, () => {
         });
 
         it("should timeout if count not reached", async () => {
+            expect.assertions(1);
+
             const provider = mockProvider();
 
             await expect(provider.waitForMessageCount(1, 100)).rejects.toThrow("Timeout");
@@ -747,6 +833,8 @@ describe(mockProvider, () => {
 
     describe("waitForMessage", () => {
         it("should wait for message matching predicate", async () => {
+            expect.assertions(1);
+
             const provider = mockProvider();
             const emailOptions: MockEmailOptions = {
                 from: { email: "sender@example.com" },
@@ -758,12 +846,14 @@ describe(mockProvider, () => {
             const sendPromise = provider.sendEmail(emailOptions);
             const waitPromise = provider.waitForMessage((message_) => message_.options.subject === "Special", 1000);
 
-            const [_, message] = await Promise.all([sendPromise, waitPromise]);
+            const [, message] = await Promise.all([sendPromise, waitPromise]);
 
             expect(message.options.subject).toBe("Special");
         });
 
         it("should timeout if message not found", async () => {
+            expect.assertions(1);
+
             const provider = mockProvider();
 
             await expect(provider.waitForMessage((message) => message.options.subject === "NonExistent", 100)).rejects.toThrow("Timeout");
@@ -772,6 +862,8 @@ describe(mockProvider, () => {
 
     describe("reset", () => {
         it("should reset to initial state", async () => {
+            expect.assertions(3);
+
             const provider = mockProvider();
             const emailOptions: MockEmailOptions = {
                 from: { email: "sender@example.com" },
@@ -799,6 +891,8 @@ describe(mockProvider, () => {
 
     describe("getEmail", () => {
         it("should retrieve email by ID", async () => {
+            expect.assertions(4);
+
             const provider = mockProvider();
             const emailOptions: MockEmailOptions = {
                 from: { email: "sender@example.com" },
@@ -811,7 +905,11 @@ describe(mockProvider, () => {
 
             expect(sendResult.success).toBe(true);
 
-            const messageId = sendResult.data?.messageId!;
+            const messageId = sendResult.data?.messageId;
+
+            if (!messageId) {
+                throw new Error("Expected messageId to be defined");
+            }
 
             const getResult = await provider.getEmail(messageId);
 
@@ -821,6 +919,8 @@ describe(mockProvider, () => {
         });
 
         it("should return error for non-existent ID", async () => {
+            expect.assertions(2);
+
             const provider = mockProvider();
 
             const result = await provider.getEmail("non-existent-id");
@@ -830,6 +930,8 @@ describe(mockProvider, () => {
         });
 
         it("should return error for empty ID", async () => {
+            expect.assertions(2);
+
             const provider = mockProvider();
 
             const result = await provider.getEmail("");
@@ -841,6 +943,8 @@ describe(mockProvider, () => {
 
     describe("getInstance", () => {
         it("should return storage array", async () => {
+            expect.assertions(2);
+
             const provider = mockProvider();
             const emailOptions: MockEmailOptions = {
                 from: { email: "sender@example.com" },
@@ -860,6 +964,8 @@ describe(mockProvider, () => {
 
     describe("shutdown", () => {
         it("should cleanup on shutdown", async () => {
+            expect.assertions(1);
+
             const provider = mockProvider();
             const emailOptions: MockEmailOptions = {
                 from: { email: "sender@example.com" },
@@ -880,6 +986,8 @@ describe(mockProvider, () => {
 
     describe("instance isolation", () => {
         it("should isolate storage between instances", async () => {
+            expect.assertions(2);
+
             const provider1 = mockProvider();
             const provider2 = mockProvider();
             const emailOptions: MockEmailOptions = {

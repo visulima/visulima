@@ -1,6 +1,7 @@
 import { Buffer } from "node:buffer";
 
-import { EmailError, RequiredOptionError } from "../../errors/email-error";
+import EmailError from "../../errors/email-error";
+import RequiredOptionError from "../../errors/required-option-error";
 import type { EmailResult, Result } from "../../types";
 import generateMessageId from "../../utils/generate-message-id";
 import headersToRecord from "../../utils/headers-to-record";
@@ -20,22 +21,22 @@ const DEFAULT_RETRIES = 3;
 /**
  * Brevo Provider for sending emails through Brevo API
  */
-export const brevoProvider: ProviderFactory<BrevoConfig, unknown, BrevoEmailOptions> = defineProvider((options_: BrevoConfig = {} as BrevoConfig) => {
-    if (!options_.apiKey) {
+const brevoProvider: ProviderFactory<BrevoConfig, unknown, BrevoEmailOptions> = defineProvider((config: BrevoConfig = {} as BrevoConfig) => {
+    if (!config.apiKey) {
         throw new RequiredOptionError(PROVIDER_NAME, "apiKey");
     }
 
     const options: Pick<BrevoConfig, "logger"> & Required<Omit<BrevoConfig, "logger">> = {
-        apiKey: options_.apiKey,
-        debug: options_.debug || false,
-        endpoint: options_.endpoint || DEFAULT_ENDPOINT,
-        retries: options_.retries || DEFAULT_RETRIES,
-        timeout: options_.timeout || DEFAULT_TIMEOUT,
-        ...options_.logger && { logger: options_.logger },
+        apiKey: config.apiKey,
+        debug: config.debug || false,
+        endpoint: config.endpoint || DEFAULT_ENDPOINT,
+        retries: config.retries || DEFAULT_RETRIES,
+        timeout: config.timeout || DEFAULT_TIMEOUT,
+        ...(config.logger && { logger: config.logger }),
     };
 
     const providerState = new ProviderState();
-    const logger = createProviderLogger(PROVIDER_NAME, options_.logger);
+    const logger = createProviderLogger(PROVIDER_NAME, config.logger);
 
     return {
         endpoint: options.endpoint,
@@ -53,9 +54,9 @@ export const brevoProvider: ProviderFactory<BrevoConfig, unknown, BrevoEmailOpti
         },
 
         /**
-         * Retrieve email by ID
-         * @param id Email ID to retrieve
-         * @returns Email details
+         * Retrieves an email by its ID from Brevo.
+         * @param id The email ID to retrieve.
+         * @returns A result object containing the email details or an error.
          */
         async getEmail(id: string): Promise<Result<unknown>> {
             try {
@@ -89,7 +90,11 @@ export const brevoProvider: ProviderFactory<BrevoConfig, unknown, BrevoEmailOpti
                     logger.debug("API request failed when retrieving email", result.error);
 
                     return {
-                        error: new EmailError(PROVIDER_NAME, `Failed to retrieve email: ${result.error?.message || "Unknown error"}`, { cause: result.error }),
+                        error: new EmailError(
+                            PROVIDER_NAME,
+                            `Failed to retrieve email: ${result.error instanceof Error ? result.error.message : "Unknown error"}`,
+                            { cause: result.error },
+                        ),
                         success: false,
                     };
                 }
@@ -109,11 +114,11 @@ export const brevoProvider: ProviderFactory<BrevoConfig, unknown, BrevoEmailOpti
         },
 
         /**
-         * Initialize the Brevo provider
+         * Initializes the Brevo provider and validates API availability.
          */
         async initialize(): Promise<void> {
             await providerState.ensureInitialized(async () => {
-                if (!await this.isAvailable()) {
+                if (!(await this.isAvailable())) {
                     throw new EmailError(PROVIDER_NAME, "Brevo API not available or invalid API key");
                 }
 
@@ -122,7 +127,8 @@ export const brevoProvider: ProviderFactory<BrevoConfig, unknown, BrevoEmailOpti
         },
 
         /**
-         * Check if Brevo API is available and credentials are valid
+         * Checks if the Brevo API is available and credentials are valid.
+         * @returns True if the API is available and credentials are valid, false otherwise.
          */
         async isAvailable(): Promise<boolean> {
             try {
@@ -141,19 +147,19 @@ export const brevoProvider: ProviderFactory<BrevoConfig, unknown, BrevoEmailOpti
                 });
 
                 logger.debug("Brevo API availability check response:", {
-                    error: result.error?.message,
+                    error: result.error instanceof Error ? result.error.message : undefined,
                     statusCode: (result.data as { statusCode?: number })?.statusCode,
                     success: result.success,
                 });
 
-                return (
+                return Boolean(
                     result.success
                     && result.data
                     && typeof result.data === "object"
                     && "statusCode" in result.data
-                    && typeof result.data.statusCode === "number"
-                    && result.data.statusCode >= 200
-                    && result.data.statusCode < 300
+                    && typeof (result.data as { statusCode?: unknown }).statusCode === "number"
+                    && (result.data as { statusCode: number }).statusCode >= 200
+                    && (result.data as { statusCode: number }).statusCode < 300,
                 );
             } catch (error) {
                 logger.debug("Error checking availability:", error);
@@ -167,9 +173,10 @@ export const brevoProvider: ProviderFactory<BrevoConfig, unknown, BrevoEmailOpti
         options,
 
         /**
-         * Send email through Brevo API
-         * @param emailOptions The email options including Brevo-specific features
+         * Sends an email through the Brevo API.
+         * @param emailOptions The email options. including Brevo-specific features
          */
+        // eslint-disable-next-line sonarjs/cognitive-complexity
         async sendEmail(emailOptions: BrevoEmailOptions): Promise<Result<EmailResult>> {
             try {
                 const validationErrors = validateEmailOptions(emailOptions);
@@ -274,7 +281,7 @@ export const brevoProvider: ProviderFactory<BrevoConfig, unknown, BrevoEmailOpti
                             return {
                                 content,
                                 name: attachment.filename,
-                                ...attachment.contentType && { type: attachment.contentType },
+                                ...(attachment.contentType && { type: attachment.contentType }),
                             };
                         }),
                     );
@@ -338,10 +345,12 @@ export const brevoProvider: ProviderFactory<BrevoConfig, unknown, BrevoEmailOpti
         },
 
         /**
-         * Validate API credentials
+         * Validates the Brevo API credentials.
          */
         async validateCredentials(): Promise<boolean> {
             return this.isAvailable();
         },
     };
 });
+
+export default brevoProvider;

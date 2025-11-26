@@ -1,6 +1,7 @@
 import { createHash, createHmac, randomUUID } from "node:crypto";
 
-import { EmailError, RequiredOptionError } from "../../errors/email-error";
+import EmailError from "../../errors/email-error";
+import RequiredOptionError from "../../errors/required-option-error";
 import type { EmailAddress, EmailOptions, EmailResult, Result } from "../../types";
 import createLogger from "../../utils/create-logger";
 import headersToRecord from "../../utils/headers-to-record";
@@ -35,17 +36,23 @@ const defaultOptions: Partial<AwsSesConfig> = {
  * AWS SES Email Provider Implementation - Zero dependency version
  * Uses native Node.js APIs instead of AWS SDK
  */
-export const awsSesProvider: ProviderFactory<AwsSesConfig, unknown, AwsSesEmailOptions> = defineProvider((options_: AwsSesConfig = {} as AwsSesConfig) => {
-    const options = { ...defaultOptions, ...options_ } as Required<AwsSesConfig>;
+const awsSesProvider: ProviderFactory<AwsSesConfig, unknown, AwsSesEmailOptions> = defineProvider((config: AwsSesConfig = {} as AwsSesConfig) => {
+    const options = { ...defaultOptions, ...config } as Required<AwsSesConfig>;
 
-    const logger = createLogger("AWS-SES", options_.logger);
+    const logger = createLogger("AWS-SES", config.logger);
 
     /**
-     * Create canonical request for AWS Signature V4
+     * Creates a canonical request for AWS Signature V4.
+     * @param method The HTTP method to use for the request.
+     * @param path The request path to include in the canonical request.
+     * @param query The query parameters to include in the canonical request.
+     * @param headers The request headers to include in the canonical request.
+     * @param payload The request payload to hash for the canonical request.
+     * @returns The canonical request string formatted according to AWS Signature V4 specification.
      */
     const createCanonicalRequest = (method: string, path: string, query: Record<string, string>, headers: Record<string, string>, payload: string): string => {
         const canonicalQueryString = Object.keys(query)
-            .sort()
+            .toSorted()
             .map((key) => {
                 const value = query[key];
 
@@ -55,12 +62,12 @@ export const awsSesProvider: ProviderFactory<AwsSesConfig, unknown, AwsSesEmailO
             .join("&");
 
         const canonicalHeaders = `${Object.keys(headers)
-            .sort()
+            .toSorted()
             .map((key) => `${key.toLowerCase()}:${headers[key]}`)
             .join("\n")}\n`;
 
         const signedHeaders = Object.keys(headers)
-            .sort()
+            .toSorted()
             .map((key) => key.toLowerCase())
             .join(";");
 
@@ -70,7 +77,11 @@ export const awsSesProvider: ProviderFactory<AwsSesConfig, unknown, AwsSesEmailO
     };
 
     /**
-     * Create string to sign for AWS Signature V4
+     * Creates a string to sign for AWS Signature V4.
+     * @param timestamp The request timestamp in ISO 8601 format.
+     * @param region The AWS region where the service is located.
+     * @param canonicalRequest The canonical request string to include in the signature.
+     * @returns The formatted string to sign according to AWS Signature V4 specification.
      */
     const createStringToSign = (timestamp: string, region: string, canonicalRequest: string): string => {
         const date = timestamp.slice(0, 8);
@@ -80,7 +91,12 @@ export const awsSesProvider: ProviderFactory<AwsSesConfig, unknown, AwsSesEmailO
     };
 
     /**
-     * Calculate AWS Signature V4
+     * Calculates the AWS Signature V4 using HMAC-SHA256.
+     * @param secretKey The AWS secret access key for signing.
+     * @param timestamp The request timestamp in ISO 8601 format.
+     * @param region The AWS region where the service is located.
+     * @param stringToSign The formatted string to sign.
+     * @returns The calculated hexadecimal signature string.
      */
     const calculateSignature = (secretKey: string, timestamp: string, region: string, stringToSign: string): string => {
         const date = timestamp.slice(0, 8);
@@ -97,12 +113,18 @@ export const awsSesProvider: ProviderFactory<AwsSesConfig, unknown, AwsSesEmailO
     };
 
     /**
-     * Create AWS SES authorization header
+     * Creates an AWS SES authorization header with Signature V4 credentials.
+     * @param accessKeyId The AWS access key ID to include in the authorization header.
+     * @param timestamp The request timestamp in ISO 8601 format.
+     * @param region The AWS region where the service is located.
+     * @param headers The request headers to include in the signed headers list.
+     * @param signature The calculated hexadecimal signature string.
+     * @returns The complete authorization header string ready for use in HTTP requests.
      */
     const createAuthHeader = (accessKeyId: string, timestamp: string, region: string, headers: Record<string, string>, signature: string): string => {
         const date = timestamp.slice(0, 8);
         const signedHeaders = Object.keys(headers)
-            .sort()
+            .toSorted()
             .map((key) => key.toLowerCase())
             .join(";");
 
@@ -114,8 +136,13 @@ export const awsSesProvider: ProviderFactory<AwsSesConfig, unknown, AwsSesEmailO
     };
 
     /**
-     * Make an HTTP request to AWS SES API using runtime-agnostic makeRequest
+     * Makes an HTTP request to the AWS SES API using runtime-agnostic makeRequest.
+     * @param action The AWS SES action to perform.
+     * @param params The parameters for the action.
+     * @returns A promise that resolves with the response data.
+     * @throws {EmailError} When the request fails.
      */
+    // eslint-disable-next-line sonarjs/cognitive-complexity
     const makeAwsRequest = async (action: string, params: Record<string, unknown>): Promise<Record<string, unknown>> => {
         if (!options.accessKeyId || !options.secretAccessKey) {
             logger.debug("Missing required credentials: accessKeyId or secretAccessKey");
@@ -207,8 +234,10 @@ export const awsSesProvider: ProviderFactory<AwsSesConfig, unknown, AwsSesEmailO
                 if (action === "SendRawEmail") {
                     const messageIdMatch = responseData.match(/<MessageId>(.*?)<\/MessageId>/);
 
-                    if (messageIdMatch && messageIdMatch[1]) {
-                        parsedResult.MessageId = messageIdMatch[1];
+                    if (messageIdMatch) {
+                        const [, messageId] = messageIdMatch;
+
+                        parsedResult.MessageId = messageId;
                         logger.debug("Extracted MessageId:", parsedResult.MessageId);
                     }
                 } else if (action === "GetSendQuota") {
@@ -237,45 +266,54 @@ export const awsSesProvider: ProviderFactory<AwsSesConfig, unknown, AwsSesEmailO
     };
 
     /**
-     * Format email address for email headers
+     * Formats an email address for use in email headers.
+     * @param address The email address object to format.
+     * @returns The formatted email address string.
      */
+
     const formatEmailAddress = (address: EmailAddress): string => (address.name ? `${address.name} <${address.email}>` : address.email);
 
     /**
-     * Generate MIME message for email
+     * Generates a MIME message for the email.
+     * @param emailOptions The email options to generate the message from.
+     * @returns The MIME-formatted email message as a string.
      */
-    const generateMimeMessage = (options: EmailOptions): string => {
+    const generateMimeMessage = (emailOptions: EmailOptions): string => {
         const boundary = `----=${randomUUID().replaceAll("-", "")}`;
         const now = new Date().toString();
-        const messageId = `<${randomUUID().replaceAll("-", "")}@${options.from.email.split("@")[1]}>`;
+        const messageId = `<${randomUUID().replaceAll("-", "")}@${emailOptions.from.email.split("@")[1]}>`;
 
         let message = "";
 
-        message += `From: ${formatEmailAddress(options.from)}\r\n`;
+        message += `From: ${formatEmailAddress(emailOptions.from)}\r\n`;
 
-        message += Array.isArray(options.to) ? `To: ${options.to.map(formatEmailAddress).join(", ")}\r\n` : `To: ${formatEmailAddress(options.to)}\r\n`;
+        message += Array.isArray(emailOptions.to)
+            ? `To: ${emailOptions.to.map((addr) => formatEmailAddress(addr)).join(", ")}\r\n`
+            : `To: ${formatEmailAddress(emailOptions.to)}\r\n`;
 
         // Add CC if present
-        if (options.cc) {
-            message += Array.isArray(options.cc) ? `Cc: ${options.cc.map(formatEmailAddress).join(", ")}\r\n` : `Cc: ${formatEmailAddress(options.cc)}\r\n`;
+        if (emailOptions.cc) {
+            message += Array.isArray(emailOptions.cc)
+                ? `Cc: ${emailOptions.cc.map((addr) => formatEmailAddress(addr)).join(", ")}\r\n`
+                : `Cc: ${formatEmailAddress(emailOptions.cc)}\r\n`;
         }
 
         // Add BCC if present
-        if (options.bcc) {
-            message += Array.isArray(options.bcc)
-                ? `Bcc: ${options.bcc.map(formatEmailAddress).join(", ")}\r\n`
-                : `Bcc: ${formatEmailAddress(options.bcc)}\r\n`;
+        if (emailOptions.bcc) {
+            message += Array.isArray(emailOptions.bcc)
+                ? `Bcc: ${emailOptions.bcc.map((addr) => formatEmailAddress(addr)).join(", ")}\r\n`
+                : `Bcc: ${formatEmailAddress(emailOptions.bcc)}\r\n`;
         }
 
         // Add other headers
-        message += `Subject: ${options.subject}\r\n`;
+        message += `Subject: ${emailOptions.subject}\r\n`;
         message += `Date: ${now}\r\n`;
         message += `Message-ID: ${messageId}\r\n`;
         message += "MIME-Version: 1.0\r\n";
 
         // Add custom headers if provided
-        if (options.headers) {
-            const headersRecord = headersToRecord(options.headers);
+        if (emailOptions.headers) {
+            const headersRecord = headersToRecord(emailOptions.headers);
 
             for (const [name, value] of Object.entries(headersRecord)) {
                 message += `${name}: ${value}\r\n`;
@@ -286,19 +324,19 @@ export const awsSesProvider: ProviderFactory<AwsSesConfig, unknown, AwsSesEmailO
         message += `Content-Type: multipart/alternative; boundary="${boundary}"\r\n\r\n`;
 
         // Add plain text part if provided
-        if (options.text) {
+        if (emailOptions.text) {
             message += `--${boundary}\r\n`;
             message += "Content-Type: text/plain; charset=UTF-8\r\n";
             message += "Content-Transfer-Encoding: quoted-printable\r\n\r\n";
-            message += `${options.text.replaceAll(/([=\r\n])/g, "=$1")}\r\n\r\n`;
+            message += `${emailOptions.text.replaceAll(/([=\r\n])/g, "=$1")}\r\n\r\n`;
         }
 
         // Add HTML part if provided
-        if (options.html) {
+        if (emailOptions.html) {
             message += `--${boundary}\r\n`;
             message += "Content-Type: text/html; charset=UTF-8\r\n";
             message += "Content-Transfer-Encoding: quoted-printable\r\n\r\n";
-            message += `${options.html.replaceAll(/([=\r\n])/g, "=$1")}\r\n\r\n`;
+            message += `${emailOptions.html.replaceAll(/([=\r\n])/g, "=$1")}\r\n\r\n`;
         }
 
         // Close the MIME message
@@ -321,12 +359,13 @@ export const awsSesProvider: ProviderFactory<AwsSesConfig, unknown, AwsSesEmailO
         },
 
         /**
-         * Get provider instance - returns null since we don't use AWS SDK
+         * Gets the provider instance (returns undefined since we don't use AWS SDK).
+         * @returns Undefined, as this provider doesn't use the AWS SDK.
          */
-        getInstance: () => null,
+        getInstance: () => undefined,
 
         /**
-         * Initialize the AWS SES provider
+         * Initializes the AWS SES provider.
          */
         initialize(): void {
             // Nothing special needed here
@@ -339,7 +378,8 @@ export const awsSesProvider: ProviderFactory<AwsSesConfig, unknown, AwsSesEmailO
         },
 
         /**
-         * Check if AWS SES is available
+         * Checks if the AWS SES service is available.
+         * @returns True if AWS SES is available, false otherwise.
          */
         async isAvailable(): Promise<boolean> {
             try {
@@ -356,8 +396,10 @@ export const awsSesProvider: ProviderFactory<AwsSesConfig, unknown, AwsSesEmailO
         options,
 
         /**
-         * Send email using AWS SES with the Raw Email API
-         * This avoids issues with the complex XML structure of the regular SendEmail API
+         * Sends an email using AWS SES with the Raw Email API.
+         * This avoids issues with the complex XML structure of the regular SendEmail API.
+         * @param emailOptions The email options to send.
+         * @returns A result object containing the email result or an error.
          */
         async sendEmail(emailOptions: AwsSesEmailOptions): Promise<Result<EmailResult>> {
             try {
@@ -428,10 +470,13 @@ export const awsSesProvider: ProviderFactory<AwsSesConfig, unknown, AwsSesEmailO
         },
 
         /**
-         * Validate AWS SES credentials
+         * Validates the AWS SES credentials.
+         * @returns A promise that resolves to true if credentials are valid, false otherwise.
          */
         async validateCredentials(): Promise<boolean> {
             return this.isAvailable();
         },
     };
 });
+
+export default awsSesProvider;

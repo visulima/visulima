@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import RequiredOptionError from "../../src/errors/required-option-error";
 import { mailPaceProvider } from "../../src/providers/mailpace/index";
 import type { MailPaceEmailOptions } from "../../src/providers/mailpace/types";
 import { makeRequest } from "../../src/utils/make-request";
@@ -23,12 +24,16 @@ describe(mailPaceProvider, () => {
 
     describe("initialization", () => {
         it("should throw error if apiToken is missing", () => {
+            expect.assertions(1);
+
             expect(() => {
                 mailPaceProvider({} as any);
-            }).toThrow();
+            }).toThrow(RequiredOptionError);
         });
 
         it("should create provider with apiToken", () => {
+            expect.assertions(2);
+
             const provider = mailPaceProvider({ apiToken: "test123" });
 
             expect(provider).toBeDefined();
@@ -38,6 +43,8 @@ describe(mailPaceProvider, () => {
 
     describe("sendEmail", () => {
         it("should send email successfully", async () => {
+            expect.assertions(2);
+
             const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
 
             makeRequestMock

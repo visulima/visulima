@@ -1,7 +1,8 @@
 import { Buffer } from "node:buffer";
 
-import { EmailError, RequiredOptionError } from "../../errors/email-error";
-import type { EmailResult, Result } from "../../types";
+import EmailError from "../../errors/email-error";
+import RequiredOptionError from "../../errors/required-option-error";
+import type { Attachment, EmailResult, Result } from "../../types";
 import generateMessageId from "../../utils/generate-message-id";
 import headersToRecord from "../../utils/headers-to-record";
 import { makeRequest } from "../../utils/make-request";
@@ -18,9 +19,11 @@ const DEFAULT_TIMEOUT = 30_000;
 const DEFAULT_RETRIES = 3;
 
 /**
- * Convert object to form data format
+ * Converts an object to form data format for multipart/form-data requests.
+ * @param data The data object to convert.
+ * @returns A FormData-like string representation.
  */
-function objectToFormData(data: Record<string, unknown>): string {
+const objectToFormData = (data: Record<string, unknown>): string => {
     const formData: string[] = [];
 
     for (const [key, value] of Object.entries(data)) {
@@ -40,32 +43,32 @@ function objectToFormData(data: Record<string, unknown>): string {
     }
 
     return formData.join("&");
-}
+};
 
 /**
  * Mailgun Provider for sending emails through Mailgun API
  */
-export const mailgunProvider: ProviderFactory<MailgunConfig, unknown, MailgunEmailOptions> = defineProvider((options_: MailgunConfig = {} as MailgunConfig) => {
-    if (!options_.apiKey) {
+const mailgunProvider: ProviderFactory<MailgunConfig, unknown, MailgunEmailOptions> = defineProvider((config: MailgunConfig = {} as MailgunConfig) => {
+    if (!config.apiKey) {
         throw new RequiredOptionError(PROVIDER_NAME, "apiKey");
     }
 
-    if (!options_.domain) {
+    if (!config.domain) {
         throw new RequiredOptionError(PROVIDER_NAME, "domain");
     }
 
     const options: Pick<MailgunConfig, "logger"> & Required<Omit<MailgunConfig, "logger">> = {
-        apiKey: options_.apiKey,
-        debug: options_.debug || false,
-        domain: options_.domain,
-        endpoint: options_.endpoint || DEFAULT_ENDPOINT,
-        retries: options_.retries || DEFAULT_RETRIES,
-        timeout: options_.timeout || DEFAULT_TIMEOUT,
-        ...options_.logger && { logger: options_.logger },
+        apiKey: config.apiKey,
+        debug: config.debug || false,
+        domain: config.domain,
+        endpoint: config.endpoint || DEFAULT_ENDPOINT,
+        retries: config.retries || DEFAULT_RETRIES,
+        timeout: config.timeout || DEFAULT_TIMEOUT,
+        ...(config.logger && { logger: config.logger }),
     };
 
     const providerState = new ProviderState();
-    const logger = createProviderLogger(PROVIDER_NAME, options_.logger);
+    const logger = createProviderLogger(PROVIDER_NAME, config.logger);
 
     return {
         endpoint: options.endpoint,
@@ -83,9 +86,9 @@ export const mailgunProvider: ProviderFactory<MailgunConfig, unknown, MailgunEma
         },
 
         /**
-         * Retrieve email by ID
-         * @param id Email ID to retrieve
-         * @returns Email details
+         * Retrieves an email by its ID from Mailgun.
+         * @param id The email ID to retrieve.
+         * @returns A result object containing the email details or an error.
          */
         async getEmail(id: string): Promise<Result<unknown>> {
             try {
@@ -121,7 +124,11 @@ export const mailgunProvider: ProviderFactory<MailgunConfig, unknown, MailgunEma
                     logger.debug("API request failed when retrieving email", result.error);
 
                     return {
-                        error: new EmailError(PROVIDER_NAME, `Failed to retrieve email: ${result.error?.message || "Unknown error"}`, { cause: result.error }),
+                        error: new EmailError(
+                            PROVIDER_NAME,
+                            `Failed to retrieve email: ${result.error instanceof Error ? result.error.message : "Unknown error"}`,
+                            { cause: result.error },
+                        ),
                         success: false,
                     };
                 }
@@ -141,11 +148,11 @@ export const mailgunProvider: ProviderFactory<MailgunConfig, unknown, MailgunEma
         },
 
         /**
-         * Initialize the Mailgun provider
+         * Initializes the Mailgun provider and validates API availability.
          */
         async initialize(): Promise<void> {
             await providerState.ensureInitialized(async () => {
-                if (!await this.isAvailable()) {
+                if (!(await this.isAvailable())) {
                     throw new EmailError(PROVIDER_NAME, "Mailgun API not available or invalid API key/domain");
                 }
 
@@ -154,7 +161,8 @@ export const mailgunProvider: ProviderFactory<MailgunConfig, unknown, MailgunEma
         },
 
         /**
-         * Check if Mailgun API is available and credentials are valid
+         * Checks if the Mailgun API is available and credentials are valid.
+         * @returns True if the API is available and credentials are valid, false otherwise.
          */
         async isAvailable(): Promise<boolean> {
             try {
@@ -174,19 +182,19 @@ export const mailgunProvider: ProviderFactory<MailgunConfig, unknown, MailgunEma
                 });
 
                 logger.debug("Mailgun API availability check response:", {
-                    error: result.error?.message,
+                    error: result.error instanceof Error ? result.error.message : undefined,
                     statusCode: (result.data as { statusCode?: number })?.statusCode,
                     success: result.success,
                 });
 
-                return (
+                return Boolean(
                     result.success
                     && result.data
                     && typeof result.data === "object"
                     && "statusCode" in result.data
-                    && typeof result.data.statusCode === "number"
-                    && result.data.statusCode >= 200
-                    && result.data.statusCode < 300
+                    && typeof (result.data as { statusCode?: unknown }).statusCode === "number"
+                    && (result.data as { statusCode: number }).statusCode >= 200
+                    && (result.data as { statusCode: number }).statusCode < 300,
                 );
             } catch (error) {
                 logger.debug("Error checking availability:", error);
@@ -200,9 +208,10 @@ export const mailgunProvider: ProviderFactory<MailgunConfig, unknown, MailgunEma
         options,
 
         /**
-         * Send email through Mailgun API
-         * @param emailOptions The email options including Mailgun-specific features
+         * Sends an email through the Mailgun API.
+         * @param emailOptions The email options. including Mailgun-specific features
          */
+        // eslint-disable-next-line sonarjs/cognitive-complexity
         async sendEmail(emailOptions: MailgunEmailOptions): Promise<Result<EmailResult>> {
             try {
                 const validationErrors = validateEmailOptions(emailOptions);
@@ -321,8 +330,9 @@ export const mailgunProvider: ProviderFactory<MailgunConfig, unknown, MailgunEma
                     // Mailgun requires multipart/form-data for attachments
                     // For now, we'll use form-urlencoded and base64 encode attachments
                     // In a real implementation, you'd use FormData
-                    for (let i = 0; i < emailOptions.attachments.length; i++) {
-                        const attachmentData = await createMailgunAttachment(emailOptions.attachments[i], PROVIDER_NAME, i);
+                    for (let i = 0; i < emailOptions.attachments.length; i += 1) {
+                        // eslint-disable-next-line no-await-in-loop
+                        const attachmentData = await createMailgunAttachment(emailOptions.attachments[i] as Attachment, PROVIDER_NAME, i);
 
                         formData[attachmentData.key] = attachmentData.content;
                     }
@@ -389,10 +399,12 @@ export const mailgunProvider: ProviderFactory<MailgunConfig, unknown, MailgunEma
         },
 
         /**
-         * Validate API credentials
+         * Validates the Mailgun API credentials.
          */
         async validateCredentials(): Promise<boolean> {
             return this.isAvailable();
         },
     };
 });
+
+export default mailgunProvider;

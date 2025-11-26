@@ -19,7 +19,7 @@ export interface MailPaceConfig extends BaseConfig {
 /**
  * MailPace-specific email options
  */
-export interface MailPaceEmailOptions extends EmailOptions {
+export interface MailPaceEmailOptions extends Omit<EmailOptions, "attachments"> {
     /**
      * Attachments (MailPace specific format)
      */

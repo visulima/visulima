@@ -102,7 +102,11 @@ describe(parseAddress, () => {
 
             expect(parsed).toBeDefined();
 
-            const formatted = formatEmailAddress(parsed!);
+            if (!parsed) {
+                throw new Error("Expected parsed to be defined");
+            }
+
+            const formatted = formatEmailAddress(parsed);
             const reparsed = parseAddress(formatted);
 
             expect(parsed).toStrictEqual(reparsed);

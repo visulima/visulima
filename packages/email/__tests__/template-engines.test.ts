@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { EmailError } from "../src/errors/email-error";
+import EmailError from "../src/errors/email-error";
 // Import after mocking
 import { registerHandlebarsHelper, registerHandlebarsPartial, renderHandlebars } from "../src/template-engines/handlebars";
 import htmlToText from "../src/template-engines/html-to-text";
@@ -60,6 +60,8 @@ describe("template-engines", () => {
 
         describe(renderHandlebars, () => {
             it("should render a simple Handlebars template", () => {
+                expect.assertions(3);
+
                 const compiledTemplate = vi.fn().mockReturnValue("<h1>Hello World</h1>");
 
                 mockHandlebars.default.compile.mockReturnValue(compiledTemplate);
@@ -72,6 +74,8 @@ describe("template-engines", () => {
             });
 
             it("should render template with options", () => {
+                expect.assertions(2);
+
                 const compiledTemplate = vi.fn().mockReturnValue("<div>Result</div>");
 
                 mockHandlebars.default.compile.mockReturnValue(compiledTemplate);
@@ -84,6 +88,8 @@ describe("template-engines", () => {
             });
 
             it("should render template without data", () => {
+                expect.assertions(2);
+
                 const compiledTemplate = vi.fn().mockReturnValue("<p>No data</p>");
 
                 mockHandlebars.default.compile.mockReturnValue(compiledTemplate);
@@ -95,11 +101,14 @@ describe("template-engines", () => {
             });
 
             it("should throw error for non-string template", () => {
+                expect.assertions(2);
                 expect(() => renderHandlebars(123)).toThrow(EmailError);
                 expect(() => renderHandlebars(123)).toThrow("Handlebars template must be a string");
             });
 
             it("should throw EmailError for Handlebars compilation errors", () => {
+                expect.assertions(2);
+
                 const error = new Error("Invalid template syntax");
 
                 mockHandlebars.default.compile.mockImplementation(() => {
@@ -111,6 +120,8 @@ describe("template-engines", () => {
             });
 
             it("should throw EmailError when Handlebars is not installed", () => {
+                expect.assertions(2);
+
                 const error = new Error("Cannot find module 'handlebars'");
 
                 mockHandlebars.default.compile.mockImplementation(() => {
@@ -124,6 +135,8 @@ describe("template-engines", () => {
 
         describe(registerHandlebarsHelper, () => {
             it("should register a helper function", () => {
+                expect.assertions(1);
+
                 const helper = vi.fn();
 
                 registerHandlebarsHelper("uppercase", helper);
@@ -132,6 +145,8 @@ describe("template-engines", () => {
             });
 
             it("should throw EmailError when Handlebars is not installed", () => {
+                expect.assertions(2);
+
                 const error = new Error("Cannot find module 'handlebars'");
 
                 mockHandlebars.default.registerHelper.mockImplementation(() => {
@@ -145,6 +160,8 @@ describe("template-engines", () => {
 
         describe(registerHandlebarsPartial, () => {
             it("should register a partial template", () => {
+                expect.assertions(1);
+
                 const partial = "<div>Partial content</div>";
 
                 registerHandlebarsPartial("header", partial);
@@ -153,6 +170,8 @@ describe("template-engines", () => {
             });
 
             it("should throw EmailError when Handlebars is not installed", () => {
+                expect.assertions(2);
+
                 const error = new Error("Cannot find module 'handlebars'");
 
                 mockHandlebars.default.registerPartial.mockImplementation(() => {
@@ -175,6 +194,8 @@ describe("template-engines", () => {
 
         describe(renderMjml, () => {
             it("should render MJML to HTML", () => {
+                expect.assertions(2);
+
                 const mjmlResult = {
                     errors: [],
                     html: "<div>Rendered HTML</div>",
@@ -195,6 +216,8 @@ describe("template-engines", () => {
             });
 
             it("should render with custom options", () => {
+                expect.assertions(2);
+
                 const mjmlResult = {
                     errors: [],
                     html: "<div>Custom HTML</div>",
@@ -221,11 +244,14 @@ describe("template-engines", () => {
             });
 
             it("should throw error for non-string template", () => {
+                expect.assertions(2);
                 expect(() => renderMjml(null)).toThrow(EmailError);
                 expect(() => renderMjml(null)).toThrow("MJML template must be a string");
             });
 
             it("should throw EmailError for MJML validation errors", () => {
+                expect.assertions(2);
+
                 const mjmlResult = {
                     errors: [{ message: "Invalid tag" }, { message: "Missing attribute" }],
                     html: "<div>Error HTML</div>",
@@ -238,6 +264,8 @@ describe("template-engines", () => {
             });
 
             it("should throw EmailError when MJML is not installed", () => {
+                expect.assertions(2);
+
                 const error = new Error("Cannot find module 'mjml'");
 
                 mockMjml.default.mockImplementation(() => {
@@ -249,6 +277,8 @@ describe("template-engines", () => {
             });
 
             it("should re-throw EmailError instances", () => {
+                expect.assertions(1);
+
                 const emailError = new EmailError("mjml", "Custom error");
 
                 mockMjml.default.mockImplementation(() => {
@@ -270,6 +300,8 @@ describe("template-engines", () => {
 
         describe(htmlToText, () => {
             it("should convert HTML to plain text", () => {
+                expect.assertions(2);
+
                 mockHtmlToText.convert.mockReturnValue("Plain text content");
 
                 const result = htmlToText("<h1>Title</h1><p>Content</p>");
@@ -284,6 +316,8 @@ describe("template-engines", () => {
             });
 
             it("should convert with custom options", () => {
+                expect.assertions(2);
+
                 mockHtmlToText.convert.mockReturnValue("Wrapped text");
                 const options = {
                     longWordSplit: {
@@ -322,6 +356,8 @@ describe("template-engines", () => {
             });
 
             it("should throw EmailError when html-to-text is not installed", () => {
+                expect.assertions(2);
+
                 const error = new Error("Cannot find module 'html-to-text'");
 
                 mockHtmlToText.convert.mockImplementation(() => {
@@ -333,6 +369,8 @@ describe("template-engines", () => {
             });
 
             it("should throw EmailError for conversion errors", () => {
+                expect.assertions(2);
+
                 const error = new Error("Conversion failed");
 
                 mockHtmlToText.convert.mockImplementation(() => {
@@ -355,6 +393,8 @@ describe("template-engines", () => {
 
         describe(renderVueEmail, () => {
             it("should render Vue template", async () => {
+                expect.assertions(2);
+
                 mockVueRender.render.mockResolvedValue("<div>Rendered Vue</div>");
 
                 const result = await renderVueEmail("<template><div>{{message}}</div></template>", { message: "Hello" });
@@ -364,6 +404,8 @@ describe("template-engines", () => {
             });
 
             it("should render with options", async () => {
+                expect.assertions(2);
+
                 mockVueRender.render.mockResolvedValue("<div>With options</div>");
                 const options = { minify: true };
 
@@ -382,6 +424,8 @@ describe("template-engines", () => {
             });
 
             it("should throw EmailError for compilation errors", async () => {
+                expect.assertions(2);
+
                 const error = new Error("Vue compilation failed");
 
                 mockVueRender.render.mockRejectedValue(error);
@@ -391,6 +435,8 @@ describe("template-engines", () => {
             });
 
             it("should throw EmailError when Vue Email is not installed", async () => {
+                expect.assertions(2);
+
                 const error = new Error("Cannot find module '@vue-email/render'");
 
                 mockVueRender.render.mockRejectedValue(error);
@@ -415,6 +461,8 @@ describe("template-engines", () => {
 
         describe(renderReactEmail, () => {
             it("should render React component", async () => {
+                expect.assertions(2);
+
                 mockReactRender.render.mockResolvedValue("<div>Rendered React</div>");
 
                 const component = { props: {}, type: "div" };
@@ -428,6 +476,8 @@ describe("template-engines", () => {
             });
 
             it("should throw error for non-React element", async () => {
+                expect.assertions(2);
+
                 const error = new Error("Invalid React element");
 
                 mockReactRender.render.mockRejectedValue(error);
@@ -437,6 +487,8 @@ describe("template-engines", () => {
             });
 
             it("should throw EmailError for rendering errors", async () => {
+                expect.assertions(2);
+
                 mockReact.isValidElement.mockReturnValue(true);
                 const error = new Error("React rendering failed");
 
@@ -449,6 +501,8 @@ describe("template-engines", () => {
             });
 
             it("should throw EmailError when React Email is not installed", async () => {
+                expect.assertions(2);
+
                 mockReact.isValidElement.mockReturnValue(true);
                 const error = new Error("Cannot find module '@react-email/render'");
 

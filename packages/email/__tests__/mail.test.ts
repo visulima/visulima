@@ -44,6 +44,8 @@ const createMockProvider = (): Provider => {
 describe("mail", () => {
     describe(createMail, () => {
         it("should create a Mail instance with a provider", () => {
+            expect.assertions(4);
+
             const provider = createMockProvider();
             const mail = createMail(provider);
 
@@ -56,6 +58,8 @@ describe("mail", () => {
 
     describe("mail.message()", () => {
         it("should create a MailMessage instance", () => {
+            expect.assertions(1);
+
             const provider = createMockProvider();
             const mail = createMail(provider);
             const message = mail.message();
@@ -64,6 +68,8 @@ describe("mail", () => {
         });
 
         it("should set the provider on the message", async () => {
+            expect.assertions(1);
+
             const provider = createMockProvider();
             const sendEmailSpy = vi.spyOn(provider, "sendEmail");
             const mail = createMail(provider);
@@ -76,12 +82,14 @@ describe("mail", () => {
 
     describe("mail.send()", () => {
         it("should send a mailable instance", async () => {
+            expect.assertions(1);
+
             const provider = createMockProvider();
             const sendEmailSpy = vi.spyOn(provider, "sendEmail");
             const mail = createMail(provider);
 
             class TestMailable implements Mailable {
-                build(): EmailOptions {
+                public build(): EmailOptions {
                     return {
                         from: { email: "sender@example.com" },
                         html: "<h1>Test</h1>",
@@ -99,6 +107,8 @@ describe("mail", () => {
 
     describe("mail.sendEmail()", () => {
         it("should send email options directly", async () => {
+            expect.assertions(1);
+
             const provider = createMockProvider();
             const sendEmailSpy = vi.spyOn(provider, "sendEmail");
             const mail = createMail(provider);
@@ -126,6 +136,8 @@ describe(MailMessage, () => {
 
     describe("fluent interface", () => {
         it("should chain methods", () => {
+            expect.assertions(1);
+
             const message = new MailMessage();
 
             message.mailer(provider);
@@ -146,10 +158,11 @@ describe(MailMessage, () => {
 
             const options = await message.build();
 
-            expect(options).toEqual({
+            expect(options).toStrictEqual({
                 from: { email: "sender@example.com" },
                 html: "<h1>Test</h1>",
                 subject: "Test",
+                text: undefined, // May be undefined if htmlToText conversion fails
                 to: { email: "user@example.com" },
             });
         });
@@ -157,26 +170,36 @@ describe(MailMessage, () => {
 
     describe("from()", () => {
         it("should accept string email", async () => {
+            expect.assertions(1);
+
             const message = new MailMessage();
 
             message.mailer(provider);
             message.from("sender@example.com").to("user@example.com").subject("Test").html("<h1>Test</h1>");
 
-            expect((await message.build()).from).toStrictEqual({ email: "sender@example.com" });
+            const built = await message.build();
+
+            expect(built.from).toStrictEqual({ email: "sender@example.com" });
         });
 
         it("should accept EmailAddress object", async () => {
+            expect.assertions(1);
+
             const message = new MailMessage();
 
             message.mailer(provider);
             message.from({ email: "sender@example.com", name: "Sender" }).to("user@example.com").subject("Test").html("<h1>Test</h1>");
 
-            expect((await message.build()).from).toStrictEqual({ email: "sender@example.com", name: "Sender" });
+            const built = await message.build();
+
+            expect(built.from).toStrictEqual({ email: "sender@example.com", name: "Sender" });
         });
     });
 
     describe("to()", () => {
         it("should accept string email", async () => {
+            expect.assertions(1);
+
             const message = new MailMessage();
 
             message.mailer(provider);
@@ -188,6 +211,8 @@ describe(MailMessage, () => {
         });
 
         it("should accept array of strings", async () => {
+            expect.assertions(1);
+
             const message = new MailMessage();
 
             message.mailer(provider);
@@ -199,6 +224,8 @@ describe(MailMessage, () => {
         });
 
         it("should accept EmailAddress object", async () => {
+            expect.assertions(1);
+
             const message = new MailMessage();
 
             message.mailer(provider);
@@ -212,6 +239,8 @@ describe(MailMessage, () => {
 
     describe("cc() and bcc()", () => {
         it("should set CC recipients", async () => {
+            expect.assertions(1);
+
             const message = new MailMessage();
 
             message.mailer(provider);
@@ -223,6 +252,8 @@ describe(MailMessage, () => {
         });
 
         it("should set BCC recipients", async () => {
+            expect.assertions(1);
+
             const message = new MailMessage();
 
             message.mailer(provider);
@@ -236,17 +267,23 @@ describe(MailMessage, () => {
 
     describe("subject()", () => {
         it("should set subject", async () => {
+            expect.assertions(1);
+
             const message = new MailMessage();
 
             message.mailer(provider);
             message.from("sender@example.com").to("user@example.com").subject("Test Subject").html("<h1>Test</h1>");
 
-            expect((await message.build()).subject).toBe("Test Subject");
+            const built = await message.build();
+
+            expect(built.subject).toBe("Test Subject");
         });
     });
 
     describe("text() and html()", () => {
         it("should set text content", async () => {
+            expect.assertions(1);
+
             const message = new MailMessage();
 
             message.mailer(provider);
@@ -258,6 +295,8 @@ describe(MailMessage, () => {
         });
 
         it("should set HTML content", async () => {
+            expect.assertions(1);
+
             const message = new MailMessage();
 
             message.mailer(provider);
@@ -281,17 +320,22 @@ describe(MailMessage, () => {
             const options = await message.build();
 
             expect(options.attachments).toHaveLength(1);
-            expect(options.attachments?.[0]).toEqual({
+            expect(options.attachments?.[0]).toStrictEqual({
+                cid: undefined,
                 content: "content",
                 contentDisposition: "attachment",
                 contentType: "text/plain",
+                encoding: undefined,
                 filename: "file.txt",
+                headers: undefined,
             });
         });
     });
 
     describe("send()", () => {
         it("should send email using provider", async () => {
+            expect.assertions(1);
+
             const sendEmailSpy = vi.spyOn(provider, "sendEmail");
             const message = new MailMessage();
 
@@ -303,6 +347,8 @@ describe(MailMessage, () => {
         });
 
         it("should throw error if no provider is set", async () => {
+            expect.assertions(1);
+
             const message = new MailMessage();
 
             await expect(message.to("user@example.com").from("sender@example.com").subject("Test").html("<h1>Test</h1>").send()).rejects.toThrow(
@@ -313,6 +359,8 @@ describe(MailMessage, () => {
 
     describe("build() validation", () => {
         it("should throw error if from is missing", async () => {
+            expect.assertions(1);
+
             const message = new MailMessage();
 
             message.mailer(provider);
@@ -322,6 +370,8 @@ describe(MailMessage, () => {
         });
 
         it("should throw error if to is missing", async () => {
+            expect.assertions(1);
+
             const message = new MailMessage();
 
             message.mailer(provider);
@@ -331,6 +381,8 @@ describe(MailMessage, () => {
         });
 
         it("should throw error if subject is missing", async () => {
+            expect.assertions(1);
+
             const message = new MailMessage();
 
             message.mailer(provider);
@@ -340,6 +392,8 @@ describe(MailMessage, () => {
         });
 
         it("should throw error if neither text nor html is provided", async () => {
+            expect.assertions(1);
+
             const message = new MailMessage();
 
             message.mailer(provider);

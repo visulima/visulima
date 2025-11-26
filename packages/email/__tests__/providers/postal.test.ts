@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import RequiredOptionError from "../../src/errors/required-option-error";
 import { postalProvider } from "../../src/providers/postal/index";
 import type { PostalEmailOptions } from "../../src/providers/postal/types";
 import { makeRequest } from "../../src/utils/make-request";
@@ -23,18 +24,24 @@ describe(postalProvider, () => {
 
     describe("initialization", () => {
         it("should throw error if host is missing", () => {
+            expect.assertions(1);
+
             expect(() => {
                 postalProvider({ apiKey: "test123" } as any);
-            }).toThrow();
+            }).toThrow(RequiredOptionError);
         });
 
         it("should throw error if apiKey is missing", () => {
+            expect.assertions(1);
+
             expect(() => {
                 postalProvider({ host: "example.com" } as any);
-            }).toThrow();
+            }).toThrow(RequiredOptionError);
         });
 
         it("should create provider with host and apiKey", () => {
+            expect.assertions(2);
+
             const provider = postalProvider({ apiKey: "test123", host: "example.com" });
 
             expect(provider).toBeDefined();
@@ -44,6 +51,8 @@ describe(postalProvider, () => {
 
     describe("sendEmail", () => {
         it("should send email successfully", async () => {
+            expect.assertions(2);
+
             const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
 
             makeRequestMock

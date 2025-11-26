@@ -1,4 +1,4 @@
-import { EmailError } from "../errors/email-error";
+import EmailError from "../errors/email-error";
 import type { EmailOptions } from "../types";
 import formatEmailAddress from "./format-email-address";
 import formatEmailAddresses from "./format-email-addresses";
@@ -9,16 +9,14 @@ import toBase64 from "./to-base64";
 const hasBuffer = globalThis.Buffer !== undefined;
 
 /**
- * Build a MIME message from email options
- * @param options The email options to build the MIME message from
- * @returns The MIME-formatted email message as a string
+ * Builds a MIME-formatted email message from email options.
+ * @param options The email options to build the MIME message from.
+ * @returns The MIME-formatted email message as a string.
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity
 const buildMimeMessage = async <T extends EmailOptions>(options: T): Promise<string> => {
     const boundary = generateBoundary();
-    const message: string[] = [];
-
-    message.push(`From: ${formatEmailAddress(options.from)}`);
-    message.push(`To: ${formatEmailAddresses(options.to)}`);
+    const message: string[] = [`From: ${formatEmailAddress(options.from)}`, `To: ${formatEmailAddresses(options.to)}`];
 
     if (options.cc) {
         message.push(`Cc: ${formatEmailAddresses(options.cc)}`);
@@ -54,7 +52,28 @@ const buildMimeMessage = async <T extends EmailOptions>(options: T): Promise<str
     }
 
     if (options.attachments && options.attachments.length > 0) {
-        for (const attachment of options.attachments) {
+        // Resolve all async attachments first to avoid await in loop
+        const resolvedAttachments = await Promise.all(
+            options.attachments.map(async (attachment) => {
+                let attachmentContent: string | Buffer | Uint8Array | undefined;
+
+                if (attachment.raw !== undefined) {
+                    attachmentContent = attachment.raw;
+                } else if (attachment.content === undefined) {
+                    throw new EmailError(
+                        "attachment",
+                        `Attachment '${attachment.filename}' must have content, raw, or be resolved from path/href before building MIME message`,
+                    );
+                } else {
+                    // Handle async content (Promise<Uint8Array>)
+                    attachmentContent = attachment.content instanceof Promise ? await attachment.content : attachment.content;
+                }
+
+                return { ...attachment, resolvedContent: attachmentContent };
+            }),
+        );
+
+        for (const attachment of resolvedAttachments) {
             message.push(`--${boundary}`);
 
             const contentType = attachment.contentType || "application/octet-stream";
@@ -79,19 +98,7 @@ const buildMimeMessage = async <T extends EmailOptions>(options: T): Promise<str
 
             message.push(`Content-Transfer-Encoding: ${encoding}`, "");
 
-            let attachmentContent: string | Buffer | Uint8Array | undefined;
-
-            if (attachment.raw !== undefined) {
-                attachmentContent = attachment.raw;
-            } else if (attachment.content === undefined) {
-                throw new EmailError(
-                    "attachment",
-                    `Attachment '${attachment.filename}' must have content, raw, or be resolved from path/href before building MIME message`,
-                );
-            } else {
-                // Handle async content (Promise<Uint8Array>)
-                attachmentContent = attachment.content instanceof Promise ? await attachment.content : attachment.content;
-            }
+            const attachmentContent = attachment.resolvedContent;
 
             if (encoding === "base64") {
                 message.push(toBase64(attachmentContent));
@@ -99,7 +106,7 @@ const buildMimeMessage = async <T extends EmailOptions>(options: T): Promise<str
                 if (typeof attachmentContent === "string") {
                     message.push(attachmentContent);
                 } else if (hasBuffer && attachmentContent instanceof Buffer) {
-                    message.push(attachmentContent.toString("utf-8"));
+                    message.push(attachmentContent.toString("utf8"));
                 } else {
                     // Uint8Array
                     const decoder = new TextDecoder();

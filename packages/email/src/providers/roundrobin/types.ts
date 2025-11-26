@@ -19,6 +19,4 @@ export interface RoundRobinConfig extends BaseConfig {
 /**
  * Round Robin-specific email options
  */
-export interface RoundRobinEmailOptions extends EmailOptions {
-    // No additional options beyond base EmailOptions
-}
+export type RoundRobinEmailOptions = EmailOptions;

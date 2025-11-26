@@ -1,6 +1,7 @@
 import { Buffer } from "node:buffer";
 
-import { EmailError, RequiredOptionError } from "../../errors/email-error";
+import EmailError from "../../errors/email-error";
+import RequiredOptionError from "../../errors/required-option-error";
 import type { EmailResult, Result } from "../../types";
 import generateMessageId from "../../utils/generate-message-id";
 import headersToRecord from "../../utils/headers-to-record";
@@ -20,23 +21,23 @@ const DEFAULT_RETRIES = 3;
 /**
  * MailerSend Provider for sending emails through MailerSend API
  */
-export const mailerSendProvider: ProviderFactory<MailerSendConfig, unknown, MailerSendEmailOptions> = defineProvider(
-    (options_: MailerSendConfig = {} as MailerSendConfig) => {
-        if (!options_.apiToken) {
+const mailerSendProvider: ProviderFactory<MailerSendConfig, unknown, MailerSendEmailOptions> = defineProvider(
+    (config: MailerSendConfig = {} as MailerSendConfig) => {
+        if (!config.apiToken) {
             throw new RequiredOptionError(PROVIDER_NAME, "apiToken");
         }
 
         const options: Pick<MailerSendConfig, "logger"> & Required<Omit<MailerSendConfig, "logger">> = {
-            apiToken: options_.apiToken,
-            debug: options_.debug || false,
-            endpoint: options_.endpoint || DEFAULT_ENDPOINT,
-            retries: options_.retries || DEFAULT_RETRIES,
-            timeout: options_.timeout || DEFAULT_TIMEOUT,
-            ...options_.logger && { logger: options_.logger },
+            apiToken: config.apiToken,
+            debug: config.debug || false,
+            endpoint: config.endpoint || DEFAULT_ENDPOINT,
+            retries: config.retries || DEFAULT_RETRIES,
+            timeout: config.timeout || DEFAULT_TIMEOUT,
+            ...(config.logger && { logger: config.logger }),
         };
 
         const providerState = new ProviderState();
-        const logger = createProviderLogger(PROVIDER_NAME, options_.logger);
+        const logger = createProviderLogger(PROVIDER_NAME, config.logger);
 
         return {
             features: {
@@ -52,9 +53,9 @@ export const mailerSendProvider: ProviderFactory<MailerSendConfig, unknown, Mail
             },
 
             /**
-             * Retrieve email by ID
-             * @param id Email ID to retrieve
-             * @returns Email details
+             * Retrieves an email by its ID from Mailersend.
+             * @param id The email ID to retrieve.
+             * @returns A result object containing the email details or an error.
              */
             async getEmail(id: string): Promise<Result<unknown>> {
                 try {
@@ -88,9 +89,13 @@ export const mailerSendProvider: ProviderFactory<MailerSendConfig, unknown, Mail
                         logger.debug("API request failed when retrieving email", result.error);
 
                         return {
-                            error: new EmailError(PROVIDER_NAME, `Failed to retrieve email: ${result.error?.message || "Unknown error"}`, {
-                                cause: result.error,
-                            }),
+                            error: new EmailError(
+                                PROVIDER_NAME,
+                                `Failed to retrieve email: ${result.error instanceof Error ? result.error.message : "Unknown error"}`,
+                                {
+                                    cause: result.error,
+                                },
+                            ),
                             success: false,
                         };
                     }
@@ -110,11 +115,12 @@ export const mailerSendProvider: ProviderFactory<MailerSendConfig, unknown, Mail
             },
 
             /**
-             * Initialize the MailerSend provider
+             * Initializes the MailerSend provider and validates API availability.
+             * @throws {EmailError} When the MailerSend API is not available or the API token is invalid.
              */
             async initialize(): Promise<void> {
                 await providerState.ensureInitialized(async () => {
-                    if (!await this.isAvailable()) {
+                    if (!(await this.isAvailable())) {
                         throw new EmailError(PROVIDER_NAME, "MailerSend API not available or invalid API token");
                     }
 
@@ -123,7 +129,8 @@ export const mailerSendProvider: ProviderFactory<MailerSendConfig, unknown, Mail
             },
 
             /**
-             * Check if MailerSend API is available and credentials are valid
+             * Checks if the MailerSend API is available and credentials are valid.
+             * @returns True if the API is available and credentials are valid, false otherwise.
              */
             async isAvailable(): Promise<boolean> {
                 try {
@@ -142,19 +149,19 @@ export const mailerSendProvider: ProviderFactory<MailerSendConfig, unknown, Mail
                     });
 
                     logger.debug("MailerSend API availability check response:", {
-                        error: result.error?.message,
+                        error: result.error instanceof Error ? result.error.message : undefined,
                         statusCode: (result.data as { statusCode?: number })?.statusCode,
                         success: result.success,
                     });
 
-                    return (
+                    return Boolean(
                         result.success
                         && result.data
                         && typeof result.data === "object"
                         && "statusCode" in result.data
-                        && typeof result.data.statusCode === "number"
-                        && result.data.statusCode >= 200
-                        && result.data.statusCode < 300
+                        && typeof (result.data as { statusCode?: unknown }).statusCode === "number"
+                        && (result.data as { statusCode: number }).statusCode >= 200
+                        && (result.data as { statusCode: number }).statusCode < 300,
                     );
                 } catch (error) {
                     logger.debug("Error checking availability:", error);
@@ -168,9 +175,11 @@ export const mailerSendProvider: ProviderFactory<MailerSendConfig, unknown, Mail
             options,
 
             /**
-             * Send email through MailerSend API
-             * @param emailOptions The email options including MailerSend-specific features
+             * Sends an email through the MailerSend API.
+             * @param emailOptions The email options including MailerSend-specific features.
+             * @returns A result object containing the email result or an error.
              */
+            // eslint-disable-next-line sonarjs/cognitive-complexity
             async sendEmail(emailOptions: MailerSendEmailOptions): Promise<Result<EmailResult>> {
                 try {
                     const validationErrors = validateEmailOptions(emailOptions);
@@ -277,8 +286,8 @@ export const mailerSendProvider: ProviderFactory<MailerSendConfig, unknown, Mail
                                 return {
                                     content,
                                     filename: attachment.filename,
-                                    ...attachment.contentType && { type: attachment.contentType },
-                                    ...attachment.cid && { id: attachment.cid },
+                                    ...(attachment.contentType && { type: attachment.contentType }),
+                                    ...(attachment.cid && { id: attachment.cid }),
                                 };
                             }),
                         );
@@ -342,7 +351,7 @@ export const mailerSendProvider: ProviderFactory<MailerSendConfig, unknown, Mail
             },
 
             /**
-             * Validate API credentials
+             * Validates the Mailersend API credentials.
              */
             async validateCredentials(): Promise<boolean> {
                 return this.isAvailable();
@@ -350,3 +359,5 @@ export const mailerSendProvider: ProviderFactory<MailerSendConfig, unknown, Mail
         };
     },
 );
+
+export default mailerSendProvider;

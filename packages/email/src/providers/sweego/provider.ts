@@ -1,6 +1,7 @@
 import { Buffer } from "node:buffer";
 
-import { EmailError, RequiredOptionError } from "../../errors/email-error";
+import EmailError from "../../errors/email-error";
+import RequiredOptionError from "../../errors/required-option-error";
 import type { EmailResult, Result } from "../../types";
 import generateMessageId from "../../utils/generate-message-id";
 import headersToRecord from "../../utils/headers-to-record";
@@ -20,22 +21,22 @@ const DEFAULT_RETRIES = 3;
 /**
  * Sweego Provider for sending emails through Sweego API
  */
-export const sweegoProvider: ProviderFactory<SweegoConfig, unknown, SweegoEmailOptions> = defineProvider((options_: SweegoConfig = {} as SweegoConfig) => {
-    if (!options_.apiKey) {
+const sweegoProvider: ProviderFactory<SweegoConfig, unknown, SweegoEmailOptions> = defineProvider((config: SweegoConfig = {} as SweegoConfig) => {
+    if (!config.apiKey) {
         throw new RequiredOptionError(PROVIDER_NAME, "apiKey");
     }
 
     const options: Pick<SweegoConfig, "logger"> & Required<Omit<SweegoConfig, "logger">> = {
-        apiKey: options_.apiKey,
-        debug: options_.debug || false,
-        endpoint: options_.endpoint || DEFAULT_ENDPOINT,
-        retries: options_.retries || DEFAULT_RETRIES,
-        timeout: options_.timeout || DEFAULT_TIMEOUT,
-        ...options_.logger && { logger: options_.logger },
+        apiKey: config.apiKey,
+        debug: config.debug || false,
+        endpoint: config.endpoint || DEFAULT_ENDPOINT,
+        retries: config.retries || DEFAULT_RETRIES,
+        timeout: config.timeout || DEFAULT_TIMEOUT,
+        ...(config.logger && { logger: config.logger }),
     };
 
     const providerState = new ProviderState();
-    const logger = createProviderLogger(PROVIDER_NAME, options_.logger);
+    const logger = createProviderLogger(PROVIDER_NAME, config.logger);
 
     return {
         features: {
@@ -51,9 +52,9 @@ export const sweegoProvider: ProviderFactory<SweegoConfig, unknown, SweegoEmailO
         },
 
         /**
-         * Retrieve email by ID
-         * @param id Email ID to retrieve
-         * @returns Email details
+         * Retrieves an email by its ID from Sweego.
+         * @param id The email ID to retrieve.
+         * @returns A result object containing the email details or an error.
          */
         async getEmail(id: string): Promise<Result<unknown>> {
             try {
@@ -87,7 +88,11 @@ export const sweegoProvider: ProviderFactory<SweegoConfig, unknown, SweegoEmailO
                     logger.debug("API request failed when retrieving email", result.error);
 
                     return {
-                        error: new EmailError(PROVIDER_NAME, `Failed to retrieve email: ${result.error?.message || "Unknown error"}`, { cause: result.error }),
+                        error: new EmailError(
+                            PROVIDER_NAME,
+                            `Failed to retrieve email: ${result.error instanceof Error ? result.error.message : "Unknown error"}`,
+                            { cause: result.error },
+                        ),
                         success: false,
                     };
                 }
@@ -107,11 +112,12 @@ export const sweegoProvider: ProviderFactory<SweegoConfig, unknown, SweegoEmailO
         },
 
         /**
-         * Initialize the Sweego provider
+         * Initializes the Sweego provider and validates API availability.
+         * @throws {EmailError} When the Sweego API is not available or the API key is invalid.
          */
         async initialize(): Promise<void> {
             await providerState.ensureInitialized(async () => {
-                if (!await this.isAvailable()) {
+                if (!(await this.isAvailable())) {
                     throw new EmailError(PROVIDER_NAME, "Sweego API not available or invalid API key");
                 }
 
@@ -120,7 +126,8 @@ export const sweegoProvider: ProviderFactory<SweegoConfig, unknown, SweegoEmailO
         },
 
         /**
-         * Check if Sweego API is available and credentials are valid
+         * Checks if the Sweego API is available and credentials are valid.
+         * @returns True if the API is available and credentials are valid, false otherwise.
          */
         async isAvailable(): Promise<boolean> {
             try {
@@ -140,9 +147,11 @@ export const sweegoProvider: ProviderFactory<SweegoConfig, unknown, SweegoEmailO
         options,
 
         /**
-         * Send email through Sweego API
-         * @param emailOptions The email options including Sweego-specific features
+         * Sends an email through the Sweego API.
+         * @param emailOptions The email options including Sweego-specific features.
+         * @returns A result object containing the email result or an error.
          */
+        // eslint-disable-next-line sonarjs/cognitive-complexity
         async sendEmail(emailOptions: SweegoEmailOptions): Promise<Result<EmailResult>> {
             try {
                 const validationErrors = validateEmailOptions(emailOptions);
@@ -235,7 +244,7 @@ export const sweegoProvider: ProviderFactory<SweegoConfig, unknown, SweegoEmailO
                                 content,
                                 contentType: attachment.contentType || "application/octet-stream",
                                 filename: attachment.filename,
-                                ...attachment.cid && { cid: attachment.cid },
+                                ...(attachment.cid && { cid: attachment.cid }),
                             };
                         }),
                     );
@@ -299,10 +308,13 @@ export const sweegoProvider: ProviderFactory<SweegoConfig, unknown, SweegoEmailO
         },
 
         /**
-         * Validate API credentials
+         * Validates the Sweego API credentials.
+         * @returns A promise that resolves to true if credentials are valid, false otherwise.
          */
         async validateCredentials(): Promise<boolean> {
             return this.isAvailable();
         },
     };
 });
+
+export default sweegoProvider;

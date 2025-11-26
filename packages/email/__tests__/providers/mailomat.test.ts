@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import RequiredOptionError from "../../src/errors/required-option-error";
 import { mailomatProvider } from "../../src/providers/mailomat/index";
 import type { MailomatEmailOptions } from "../../src/providers/mailomat/types";
 import { makeRequest } from "../../src/utils/make-request";
@@ -23,12 +24,16 @@ describe(mailomatProvider, () => {
 
     describe("initialization", () => {
         it("should throw error if apiKey is missing", () => {
+            expect.assertions(1);
+
             expect(() => {
                 mailomatProvider({} as any);
-            }).toThrow();
+            }).toThrow(RequiredOptionError);
         });
 
         it("should create provider with apiKey", () => {
+            expect.assertions(2);
+
             const provider = mailomatProvider({ apiKey: "test123" });
 
             expect(provider).toBeDefined();
@@ -38,6 +43,8 @@ describe(mailomatProvider, () => {
 
     describe("sendEmail", () => {
         it("should send email successfully", async () => {
+            expect.assertions(2);
+
             const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
 
             makeRequestMock

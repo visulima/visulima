@@ -1,7 +1,7 @@
 import type { EmailOptions, EmailResult, FeatureFlags, MaybePromise, Result } from "../types";
 
 /**
- * Standard provider interface for email services
+ * Standard provider interface for email services.
  */
 export interface Provider<OptionsT = unknown, InstanceT = unknown, EmailOptionsT extends EmailOptions = EmailOptions> {
     endpoint?: string;
@@ -22,16 +22,16 @@ export interface Provider<OptionsT = unknown, InstanceT = unknown, EmailOptionsT
 }
 
 /**
- * Type for provider factory function
+ * Type for provider factory function.
  */
 export type ProviderFactory<OptionsT = unknown, InstanceT = unknown, EmailOptionsT extends EmailOptions = EmailOptions> = (
     options?: OptionsT,
 ) => Provider<OptionsT, InstanceT, EmailOptionsT>;
 
 /**
- * Helper function to define an email provider
- * @param factory The provider factory function
- * @returns The same factory function (for type inference)
+ * Helper function to define an email provider.
+ * @param factory The provider factory function.
+ * @returns The same factory function (for type inference).
  */
 export const defineProvider = <OptionsT = unknown, InstanceT = unknown, EmailOptionsT extends EmailOptions = EmailOptions>(
     factory: ProviderFactory<OptionsT, InstanceT, EmailOptionsT>,

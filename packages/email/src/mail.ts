@@ -10,14 +10,19 @@ import type { TemplateRenderer } from "./template-engines/types";
 import type { Attachment, EmailAddress, EmailHeaders, EmailOptions, EmailResult, Priority, Receipt, Result } from "./types";
 import headersToRecord from "./utils/headers-to-record";
 
+type AddressInput = EmailAddress | EmailAddress[] | string | string[];
+
 /**
  * Normalizes email address(es) to EmailAddress array.
  * @param address The email address(es) to normalize (can be string, EmailAddress, or arrays of either).
  * @returns Array of EmailAddress objects.
  */
-const normalizeAddresses = (address: EmailAddress | EmailAddress[] | string | string[]): EmailAddress[] => {
+const normalizeAddresses = (address: AddressInput): EmailAddress[] => {
     if (Array.isArray(address)) {
-        return address.map((addr) => typeof addr === "string" ? { email: addr } : addr);
+        // eslint-disable-next-line arrow-body-style
+        return address.map((addr) => {
+            return typeof addr === "string" ? { email: addr } : addr;
+        });
     }
 
     return typeof address === "string" ? [{ email: address }] : [address];
@@ -72,7 +77,7 @@ export class MailMessage {
      * @param address The sender email address (string or EmailAddress object).
      * @returns This instance for method chaining.
      */
-    from(address: EmailAddress | string): this {
+    public from(address: EmailAddress | string): this {
         this.fromAddress = typeof address === "string" ? { email: address } : address;
 
         return this;
@@ -83,7 +88,7 @@ export class MailMessage {
      * @param address The recipient email address(es) (string, EmailAddress, or arrays of either).
      * @returns This instance for method chaining.
      */
-    to(address: EmailAddress | EmailAddress[] | string | string[]): this {
+    public to(address: AddressInput): this {
         this.toAddresses.push(...normalizeAddresses(address));
 
         return this;
@@ -94,7 +99,7 @@ export class MailMessage {
      * @param address The CC recipient email address(es) (string, EmailAddress, or arrays of either).
      * @returns This instance for method chaining.
      */
-    cc(address: EmailAddress | EmailAddress[] | string | string[]): this {
+    public cc(address: AddressInput): this {
         this.ccAddresses.push(...normalizeAddresses(address));
 
         return this;
@@ -105,52 +110,52 @@ export class MailMessage {
      * @param address The BCC recipient email address(es) (string, EmailAddress, or arrays of either).
      * @returns This instance for method chaining.
      */
-    bcc(address: EmailAddress | EmailAddress[] | string | string[]): this {
+    public bcc(address: AddressInput): this {
         this.bccAddresses.push(...normalizeAddresses(address));
 
         return this;
     }
 
     /**
-     * Sets the email subject.
-     * @param text The subject text.
+     * Sets the subject line for the email message.
+     * @param text The subject text to set.
      * @returns This instance for method chaining.
      */
-    subject(text: string): this {
+    public subject(text: string): this {
         this.subjectText = text;
 
         return this;
     }
 
     /**
-     * Sets the plain text content.
-     * @param content The plain text content.
+     * Sets the plain text content of the email.
+     * @param content The plain text content to set.
      * @returns This instance for method chaining.
      */
-    text(content: string): this {
+    public text(content: string): this {
         this.textContent = content;
 
         return this;
     }
 
     /**
-     * Sets the HTML content.
-     * @param content The HTML content.
+     * Sets the HTML content of the email.
+     * @param content The HTML content to set.
      * @returns This instance for method chaining.
      */
-    html(content: string): this {
+    public html(content: string): this {
         this.htmlContent = content;
 
         return this;
     }
 
     /**
-     * Sets a custom header.
-     * @param name The header name.
-     * @param value The header value.
+     * Sets a custom email header.
+     * @param name The header name to set.
+     * @param value The header value to set.
      * @returns This instance for method chaining.
      */
-    header(name: string, value: string): this {
+    public header(name: string, value: string): this {
         this.headers[name] = value;
 
         return this;
@@ -162,7 +167,7 @@ export class MailMessage {
      * @param headers The headers to set (Record or ImmutableHeaders).
      * @returns This instance for method chaining.
      */
-    setHeaders(headers: EmailHeaders): this {
+    public setHeaders(headers: EmailHeaders): this {
         const headersRecord = headersToRecord(headers);
 
         Object.assign(this.headers, headersRecord);
@@ -182,7 +187,7 @@ export class MailMessage {
      * message.attachFromPath('/path/to/file.pdf', { filename: 'custom-name.pdf' })
      * ```
      */
-    async attachFromPath(filePath: string, options?: AttachmentOptions): Promise<this> {
+    public async attachFromPath(filePath: string, options?: AttachmentOptions): Promise<this> {
         const content = await readFileAsBuffer(filePath);
         const filename = options?.filename || basename(filePath) || "attachment";
         const contentType = options?.contentType || detectMimeType(filename);
@@ -212,7 +217,7 @@ export class MailMessage {
      * message.attachData('content', 'file.txt', { contentType: 'text/plain' })
      * ```
      */
-    attachData(content: string | Buffer, options: AttachmentDataOptions): this {
+    public attachData(content: string | Buffer, options: AttachmentDataOptions): this {
         const contentType = options.contentType || detectMimeType(options.filename);
 
         this.attachments.push({
@@ -241,7 +246,7 @@ export class MailMessage {
      * message.html(`<img src="cid:${cid}">`)
      * ```
      */
-    async embedFromPath(filePath: string, options?: Omit<AttachmentOptions, "contentDisposition" | "cid">): Promise<string> {
+    public async embedFromPath(filePath: string, options?: Omit<AttachmentOptions, "contentDisposition" | "cid">): Promise<string> {
         const content = await readFileAsBuffer(filePath);
         const filename = options?.filename || basename(filePath) || "inline";
         const contentType = options?.contentType || detectMimeType(filename);
@@ -273,7 +278,7 @@ export class MailMessage {
      * message.html(`<img src="cid:${cid}">`)
      * ```
      */
-    embedData(content: string | Buffer, filename: string, options?: Omit<AttachmentDataOptions, "filename" | "contentDisposition" | "cid">): string {
+    public embedData(content: string | Buffer, filename: string, options?: Omit<AttachmentDataOptions, "filename" | "contentDisposition" | "cid">): string {
         const contentType = options?.contentType || detectMimeType(filename);
         const cid = generateContentId(filename);
 
@@ -293,7 +298,7 @@ export class MailMessage {
      * @param address The reply-to email address (string or EmailAddress object).
      * @returns This instance for method chaining.
      */
-    replyTo(address: EmailAddress | string): this {
+    public replyTo(address: EmailAddress | string): this {
         this.replyToAddress = typeof address === "string" ? { email: address } : address;
 
         return this;
@@ -304,7 +309,7 @@ export class MailMessage {
      * @param priority The priority level ('high', 'normal', or 'low').
      * @returns This instance for method chaining.
      */
-    priority(priority: Priority): this {
+    public priority(priority: Priority): this {
         this.priorityValue = priority;
 
         return this;
@@ -315,7 +320,7 @@ export class MailMessage {
      * @param tags The tags to set (string or array of strings).
      * @returns This instance for method chaining.
      */
-    tags(tags: string | string[]): this {
+    public tags(tags: string | string[]): this {
         this.tagsValue = Array.isArray(tags) ? tags : [tags];
 
         return this;
@@ -326,7 +331,7 @@ export class MailMessage {
      * @param provider The email provider instance.
      * @returns This instance for method chaining.
      */
-    mailer(provider: Provider): this {
+    public mailer(provider: Provider): this {
         this.provider = provider;
 
         return this;
@@ -346,7 +351,7 @@ export class MailMessage {
      * message.sign(signer)
      * ```
      */
-    sign(signer: EmailSigner): this {
+    public sign(signer: EmailSigner): this {
         this.signer = signer;
 
         return this;
@@ -364,7 +369,7 @@ export class MailMessage {
      * message.encrypt(encrypter)
      * ```
      */
-    encrypt(encrypter: EmailEncrypter): this {
+    public encrypt(encrypter: EmailEncrypter): this {
         this.encrypter = encrypter;
 
         return this;
@@ -391,7 +396,7 @@ export class MailMessage {
      * message.view(renderReactEmail, <WelcomeEmail name="John" />)
      * ```
      */
-    async view(
+    public async view(
         render: TemplateRenderer,
         template: unknown,
         data?: Record<string, unknown>,
@@ -433,7 +438,7 @@ export class MailMessage {
      * message.viewText(renderHandlebars, 'Hello {{name}}!', { name: 'John' })
      * ```
      */
-    async viewText(render: TemplateRenderer, template: string, data?: Record<string, unknown>, options?: Record<string, unknown>): Promise<this> {
+    public async viewText(render: TemplateRenderer, template: string, data?: Record<string, unknown>, options?: Record<string, unknown>): Promise<this> {
         try {
             const text = await render(template, data, options);
 
@@ -454,7 +459,8 @@ export class MailMessage {
      * @returns The built email options ready for sending.
      * @throws {Error} When required fields (from, to, subject, content) are missing.
      */
-    async build(): Promise<EmailOptions> {
+    // eslint-disable-next-line sonarjs/cognitive-complexity
+    public async build(): Promise<EmailOptions> {
         if (!this.fromAddress) {
             throw new Error("From address is required");
         }
@@ -484,7 +490,7 @@ export class MailMessage {
             html: this.htmlContent,
             subject: this.subjectText,
             text: this.textContent,
-            to: this.toAddresses.length === 1 ? this.toAddresses[0] : this.toAddresses,
+            to: this.toAddresses.length === 1 ? (this.toAddresses[0] as EmailAddress) : this.toAddresses,
         };
 
         if (this.ccAddresses.length > 0) {
@@ -533,7 +539,7 @@ export class MailMessage {
      * @returns A result object containing the email result or error.
      * @throws {Error} When no provider is configured.
      */
-    async send(): Promise<Result<EmailResult>> {
+    public async send(): Promise<Result<EmailResult>> {
         if (!this.provider) {
             throw new Error("No provider configured. Use mailer() method to set a provider.");
         }
@@ -554,7 +560,7 @@ export class Mail {
      * Creates a new Mail instance with a provider.
      * @param provider The email provider instance.
      */
-    constructor(provider: Provider) {
+    public constructor(provider: Provider) {
         this.provider = provider;
     }
 
@@ -562,7 +568,7 @@ export class Mail {
      * Creates a new mail message.
      * @returns A new MailMessage instance configured with this provider.
      */
-    message(): MailMessage {
+    public message(): MailMessage {
         const message = new MailMessage();
 
         message.mailer(this.provider);
@@ -575,7 +581,7 @@ export class Mail {
      * @param mailable The mailable instance to send.
      * @returns A result object containing the email result or error.
      */
-    async send(mailable: Mailable): Promise<Result<EmailResult>> {
+    public async send(mailable: Mailable): Promise<Result<EmailResult>> {
         const emailOptions = await mailable.build();
 
         return this.provider.sendEmail(emailOptions);
@@ -586,7 +592,7 @@ export class Mail {
      * @param options The email options to send.
      * @returns A result object containing the email result or error.
      */
-    async sendEmail(options: EmailOptions): Promise<Result<EmailResult>> {
+    public async sendEmail(options: EmailOptions): Promise<Result<EmailResult>> {
         return this.provider.sendEmail(options);
     }
 
@@ -613,7 +619,8 @@ export class Mail {
      * @param options.signal Abort signal to cancel the operation.
      * @returns An async iterable that yields receipts for each sent message.
      */
-    async* sendMany(
+    // eslint-disable-next-line sonarjs/cognitive-complexity
+    public async* sendMany(
         messages: Iterable<EmailOptions | Mailable> | AsyncIterable<EmailOptions | Mailable>,
         options?: { signal?: AbortSignal },
     ): AsyncIterable<Receipt> {
@@ -633,7 +640,8 @@ export class Mail {
 
             try {
                 // Convert mailable to email options if needed
-                const emailOptions: EmailOptions = "build" in message && typeof message.build === "function" ? await message.build() : message;
+                const emailOptions: EmailOptions
+                    = "build" in message && typeof message.build === "function" ? await (message as Mailable).build() : (message as EmailOptions);
 
                 // Send the email
                 const result = await this.provider.sendEmail(emailOptions);

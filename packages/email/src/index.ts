@@ -1,5 +1,6 @@
 export { type AttachmentDataOptions, type AttachmentOptions, detectMimeType, generateContentId, readFileAsBuffer } from "./attachment-helpers";
-export { EmailError, RequiredOptionError } from "./errors/email-error";
+export { default as EmailError } from "./errors/email-error";
+export { default as RequiredOptionError } from "./errors/required-option-error";
 export { createMail, Mail, type Mailable, MailMessage } from "./mail";
 export type { Provider, ProviderFactory } from "./providers/provider";
 export { defineProvider } from "./providers/provider";

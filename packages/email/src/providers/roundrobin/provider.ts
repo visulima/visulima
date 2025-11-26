@@ -1,4 +1,5 @@
-import { EmailError, RequiredOptionError } from "../../errors/email-error";
+import EmailError from "../../errors/email-error";
+import RequiredOptionError from "../../errors/required-option-error";
 import type { EmailOptions, EmailResult, Result } from "../../types";
 import createLogger from "../../utils/create-logger";
 import type { Provider, ProviderFactory } from "../provider";
@@ -6,14 +7,11 @@ import { defineProvider } from "../provider";
 import type { RoundRobinConfig, RoundRobinEmailOptions } from "./types";
 
 // Type guard to check if something is a ProviderFactory
-function isProviderFactory(value: unknown): value is ProviderFactory<unknown, unknown, EmailOptions> {
-    return typeof value === "function";
-}
+const isProviderFactory = (value: unknown): value is ProviderFactory<unknown, unknown, EmailOptions> => typeof value === "function";
 
 // Type guard to check if something is a Provider
-function isProvider(value: unknown): value is Provider {
-    return value !== null && typeof value === "object" && "sendEmail" in value && "initialize" in value && "isAvailable" in value;
-}
+const isProvider = (value: unknown): value is Provider =>
+    value !== undefined && value !== null && typeof value === "object" && "sendEmail" in value && "initialize" in value && "isAvailable" in value;
 
 // Constants
 const PROVIDER_NAME = "roundrobin";
@@ -21,28 +19,32 @@ const PROVIDER_NAME = "roundrobin";
 /**
  * Round Robin Provider for distributing email sending across multiple providers
  */
-export const roundRobinProvider: ProviderFactory<RoundRobinConfig, unknown, RoundRobinEmailOptions> = defineProvider(
-    (options_: RoundRobinConfig = {} as RoundRobinConfig) => {
+const roundRobinProvider: ProviderFactory<RoundRobinConfig, unknown, RoundRobinEmailOptions> = defineProvider(
+    (config: RoundRobinConfig = {} as RoundRobinConfig) => {
         // Validate required options
-        if (!options_.mailers || options_.mailers.length === 0) {
+        if (!config.mailers || config.mailers.length === 0) {
             throw new RequiredOptionError(PROVIDER_NAME, "mailers");
         }
 
         // Initialize with defaults
-        const options: Required<RoundRobinConfig> = {
-            debug: options_.debug || false,
-            mailers: options_.mailers,
-            retryAfter: options_.retryAfter ?? 60,
+        const options: Pick<RoundRobinConfig, "logger"> & Required<Omit<RoundRobinConfig, "logger">> = {
+            debug: config.debug || false,
+            logger: config.logger,
+            mailers: config.mailers,
+            retries: config.retries || 3,
+            retryAfter: config.retryAfter ?? 60,
+            timeout: config.timeout || 30_000,
         };
 
         let isInitialized = false;
         const providers: Provider[] = [];
         let currentIndex = 0;
 
-        const logger = createLogger(PROVIDER_NAME, options_.logger);
+        const logger = createLogger(PROVIDER_NAME, config.logger);
 
         /**
-         * Initialize all providers
+         * Initializes all providers in the round-robin configuration.
+         * @throws {EmailError} When no providers could be initialized.
          */
         const initializeProviders = async (): Promise<void> => {
             providers.length = 0;
@@ -64,6 +66,7 @@ export const roundRobinProvider: ProviderFactory<RoundRobinConfig, unknown, Roun
 
                     // Try to initialize the provider
                     try {
+                        // eslint-disable-next-line no-await-in-loop
                         await provider.initialize();
                         providers.push(provider);
                         logger.debug(`Initialized provider: ${provider.name || "unknown"}`);
@@ -82,16 +85,18 @@ export const roundRobinProvider: ProviderFactory<RoundRobinConfig, unknown, Roun
             }
 
             // Initialize currentIndex to a random provider
+            // eslint-disable-next-line sonarjs/pseudo-random
             currentIndex = Math.floor(Math.random() * providers.length);
             logger.debug(`Round robin starting at index ${currentIndex} (${providers[currentIndex]?.name || "unknown"})`);
         };
 
         /**
-         * Get the next available provider in round-robin fashion
+         * Gets the next available provider in round-robin fashion.
+         * @returns The next provider in the rotation, or undefined if no providers are available.
          */
-        const getNextProvider = async (): Promise<Provider | null> => {
+        const getNextProvider = async (): Promise<Provider | undefined> => {
             if (providers.length === 0) {
-                return null;
+                return undefined;
             }
 
             // Try to find an available provider starting from currentIndex
@@ -100,10 +105,18 @@ export const roundRobinProvider: ProviderFactory<RoundRobinConfig, unknown, Roun
 
             while (attempts < providers.length) {
                 const provider = providers[currentIndex];
+
+                if (!provider) {
+                    currentIndex = (currentIndex + 1) % providers.length;
+                    attempts += 1;
+                    continue;
+                }
+
                 const providerName = provider.name || `provider-${currentIndex + 1}`;
 
                 // Check if provider is available
                 try {
+                    // eslint-disable-next-line no-await-in-loop
                     const isAvailable = await provider.isAvailable();
 
                     if (isAvailable) {
@@ -119,18 +132,23 @@ export const roundRobinProvider: ProviderFactory<RoundRobinConfig, unknown, Roun
 
                 // Move to next provider
                 currentIndex = (currentIndex + 1) % providers.length;
-                attempts++;
+                attempts += 1;
 
                 // If we've tried all providers, wait before retrying
                 if (attempts < providers.length && options.retryAfter > 0) {
-                    await new Promise((resolve) => setTimeout(resolve, options.retryAfter));
+                    // eslint-disable-next-line no-await-in-loop
+                    await new Promise((resolve) => {
+                        setTimeout(() => {
+                            resolve(undefined);
+                        }, options.retryAfter);
+                    });
                 }
             }
 
             // If we've tried all providers and none are available, return the one at startIndex
             logger.debug(`No available providers found, using provider at index ${startIndex}`);
 
-            return providers[startIndex] || null;
+            return providers[startIndex] || undefined;
         };
 
         return {
@@ -148,7 +166,8 @@ export const roundRobinProvider: ProviderFactory<RoundRobinConfig, unknown, Roun
             },
 
             /**
-             * Initialize the round robin provider and all underlying providers
+             * Initializes the round robin provider and all underlying providers.
+             * @throws {EmailError} When initialization fails.
              */
             async initialize(): Promise<void> {
                 if (isInitialized) {
@@ -165,7 +184,8 @@ export const roundRobinProvider: ProviderFactory<RoundRobinConfig, unknown, Roun
             },
 
             /**
-             * Check if at least one provider is available
+             * Checks if at least one provider is available.
+             * @returns True if at least one provider is available, false otherwise.
              */
             async isAvailable(): Promise<boolean> {
                 try {
@@ -173,18 +193,10 @@ export const roundRobinProvider: ProviderFactory<RoundRobinConfig, unknown, Roun
                         await initializeProviders();
                     }
 
-                    // Check if at least one provider is available
-                    for (const provider of providers) {
-                        try {
-                            if (await provider.isAvailable()) {
-                                return true;
-                            }
-                        } catch {
-                            // Continue checking other providers
-                        }
-                    }
+                    // Check if at least one provider is available (check in parallel for efficiency)
+                    const availabilityChecks = await Promise.allSettled(providers.map((provider) => provider.isAvailable()));
 
-                    return false;
+                    return availabilityChecks.some((result) => result.status === "fulfilled" && result.value === true);
                 } catch {
                     return false;
                 }
@@ -195,9 +207,12 @@ export const roundRobinProvider: ProviderFactory<RoundRobinConfig, unknown, Roun
             options,
 
             /**
-             * Send email through round robin providers
-             * Selects the next available provider in rotation
+             * Sends an email through round robin providers.
+             * Selects the next available provider in rotation.
+             * @param emailOptions The email options to send.
+             * @returns A result object containing the email result or an error.
              */
+            // eslint-disable-next-line sonarjs/cognitive-complexity
             async sendEmail(emailOptions: RoundRobinEmailOptions): Promise<Result<EmailResult>> {
                 try {
                     // Make sure providers are initialized
@@ -236,7 +251,7 @@ export const roundRobinProvider: ProviderFactory<RoundRobinConfig, unknown, Roun
                             data: {
                                 ...result.data,
                                 provider: `${PROVIDER_NAME}(${providerName})`,
-                            },
+                            } as EmailResult,
                             success: true,
                         };
                     }
@@ -250,10 +265,10 @@ export const roundRobinProvider: ProviderFactory<RoundRobinConfig, unknown, Roun
                     }
 
                     // Try remaining providers in order
-                    const startIndex = currentIndex;
                     let attempts = 0;
 
                     while (attempts < providers.length - 1) {
+                        // eslint-disable-next-line no-await-in-loop
                         const nextProvider = await getNextProvider();
 
                         if (!nextProvider || nextProvider === provider) {
@@ -265,6 +280,7 @@ export const roundRobinProvider: ProviderFactory<RoundRobinConfig, unknown, Roun
                         logger.debug(`Retrying with ${nextProviderName}`);
 
                         try {
+                            // eslint-disable-next-line no-await-in-loop
                             const retryResult = await nextProvider.sendEmail(emailOptions);
 
                             if (retryResult.success) {
@@ -274,7 +290,7 @@ export const roundRobinProvider: ProviderFactory<RoundRobinConfig, unknown, Roun
                                     data: {
                                         ...retryResult.data,
                                         provider: `${PROVIDER_NAME}(${nextProviderName})`,
-                                    },
+                                    } as EmailResult,
                                     success: true,
                                 };
                             }
@@ -286,14 +302,16 @@ export const roundRobinProvider: ProviderFactory<RoundRobinConfig, unknown, Roun
                             errors.push(error instanceof Error ? error : new Error(String(error)));
                         }
 
-                        attempts++;
+                        attempts += 1;
                     }
 
                     // All providers failed
-                    const errorMessages = errors.map((e) => e.message).join("; ");
+                    const errorMessages = errors.map((error) => (error instanceof Error ? error.message : String(error))).join("; ");
 
                     return {
-                        error: new EmailError(PROVIDER_NAME, `Failed to send email via all providers. Errors: ${errorMessages}`, { cause: errors[0] }),
+                        error: new EmailError(PROVIDER_NAME, `Failed to send email via all providers. Errors: ${errorMessages}`, {
+                            cause: errors[0] instanceof Error ? errors[0] : new Error(String(errors[0])),
+                        }),
                         success: false,
                     };
                 } catch (error) {
@@ -305,7 +323,8 @@ export const roundRobinProvider: ProviderFactory<RoundRobinConfig, unknown, Roun
             },
 
             /**
-             * Validate credentials by checking if at least one provider is available
+             * Validates credentials by checking if at least one provider is available.
+             * @returns A promise that resolves to true if at least one provider is available, false otherwise.
              */
             async validateCredentials(): Promise<boolean> {
                 return this.isAvailable();
@@ -313,3 +332,5 @@ export const roundRobinProvider: ProviderFactory<RoundRobinConfig, unknown, Roun
         };
     },
 );
+
+export default roundRobinProvider;

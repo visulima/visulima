@@ -1,6 +1,7 @@
 import type { Buffer } from "node:buffer";
-import { readFile } from "node:fs/promises";
 
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { readFile } from "@visulima/fs";
 import mime from "mime";
 
 /**
@@ -20,8 +21,10 @@ export const generateContentId = (filename: string): string => {
     const name = filename
         .replaceAll(/[^a-z0-9]/gi, "-")
         .replaceAll(/-+/g, "-")
+        // eslint-disable-next-line sonarjs/anchor-precedence
         .replaceAll(/^-|-$/g, "")
         .toLowerCase();
+    // eslint-disable-next-line sonarjs/pseudo-random
     const random = Math.random().toString(36).slice(2, 9);
 
     return `${name}-${random}@email`;
@@ -32,7 +35,7 @@ export const generateContentId = (filename: string): string => {
  * @param filePath Path to the file.
  * @returns Buffer containing file content.
  */
-export const readFileAsBuffer = async (filePath: string): Promise<Buffer> => readFile(filePath);
+export const readFileAsBuffer = async (filePath: string): Promise<Buffer> => readFile(filePath, { buffer: true });
 
 /**
  * Attachment options for helper methods

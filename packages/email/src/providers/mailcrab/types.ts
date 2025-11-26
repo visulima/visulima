@@ -23,6 +23,4 @@ export interface MailCrabConfig extends BaseConfig {
 /**
  * MailCrab-specific email options
  */
-export interface MailCrabEmailOptions extends EmailOptions {
-    // No additional options beyond base EmailOptions
-}
+export type MailCrabEmailOptions = EmailOptions;

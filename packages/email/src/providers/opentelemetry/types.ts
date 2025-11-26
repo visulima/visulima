@@ -34,6 +34,4 @@ export interface OpenTelemetryConfig extends BaseConfig {
 /**
  * OpenTelemetry-specific email options
  */
-export interface OpenTelemetryEmailOptions extends EmailOptions {
-    // No additional options beyond base EmailOptions
-}
+export type OpenTelemetryEmailOptions = EmailOptions;

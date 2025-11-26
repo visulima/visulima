@@ -1,12 +1,19 @@
+// @ts-expect-error - html-to-text doesn't have type definitions
 import { convert } from "html-to-text";
 
-import { EmailError } from "../errors/email-error";
+import EmailError from "../errors/email-error";
 
 /**
- * Converts HTML to plain text.
- * @param html HTML string.
- * @param options html-to-text options.
- * @returns Plain text string.
+ * Converts HTML content to plain text format.
+ * @param html The HTML string to convert.
+ * @param options Configuration options for the html-to-text conversion.
+ * @param options.longWordSplit Options for handling long words that exceed the word wrap limit.
+ * @param options.longWordSplit.forceWrapOnLimit Whether to force wrap on the limit.
+ * @param options.longWordSplit.wrapCharacters Characters to use for wrapping.
+ * @param options.preserveNewlines Whether to preserve newlines in the output.
+ * @param options.selectors Custom selectors for formatting specific HTML elements.
+ * @param options.wordwrap The word wrap limit (number of characters) or false to disable.
+ * @returns The converted plain text string.
  * @throws {EmailError} When html-to-text is not installed or conversion fails.
  */
 const htmlToText = (

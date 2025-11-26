@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import RequiredOptionError from "../../src/errors/required-option-error";
 import { scalewayProvider } from "../../src/providers/scaleway/index";
 import type { ScalewayEmailOptions } from "../../src/providers/scaleway/types";
 import { makeRequest } from "../../src/utils/make-request";
@@ -23,18 +24,24 @@ describe(scalewayProvider, () => {
 
     describe("initialization", () => {
         it("should throw error if apiKey is missing", () => {
+            expect.assertions(1);
+
             expect(() => {
                 scalewayProvider({ region: "fr-par" } as any);
-            }).toThrow();
+            }).toThrow(RequiredOptionError);
         });
 
         it("should throw error if region is missing", () => {
+            expect.assertions(1);
+
             expect(() => {
                 scalewayProvider({ apiKey: "test123" } as any);
-            }).toThrow();
+            }).toThrow(RequiredOptionError);
         });
 
         it("should create provider with apiKey and region", () => {
+            expect.assertions(2);
+
             const provider = scalewayProvider({ apiKey: "test123", region: "fr-par" });
 
             expect(provider).toBeDefined();
@@ -44,6 +51,8 @@ describe(scalewayProvider, () => {
 
     describe("sendEmail", () => {
         it("should send email successfully", async () => {
+            expect.assertions(2);
+
             const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
 
             makeRequestMock

@@ -24,7 +24,7 @@ export interface MailjetConfig extends BaseConfig {
 /**
  * Mailjet-specific email options
  */
-export interface MailjetEmailOptions extends EmailOptions {
+export interface MailjetEmailOptions extends Omit<EmailOptions, "priority"> {
     /**
      * Custom campaign name
      */

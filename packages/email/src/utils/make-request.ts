@@ -1,4 +1,4 @@
-import { EmailError } from "../errors/email-error";
+import EmailError from "../errors/email-error";
 import type { Result } from "../types";
 
 const hasBuffer = globalThis.Buffer !== undefined;
@@ -14,12 +14,13 @@ export interface RequestOptions {
 }
 
 /**
- * Makes an HTTP request using Fetch API (compatible with Node.js 20.19+, Deno, Bun, Cloudflare Workers)
- * @param url The URL to make the request to
- * @param options Request options (method, headers, timeout)
- * @param data Optional request body data (string, Buffer, or Uint8Array)
- * @returns A result object containing the response data or error
+ * Makes an HTTP request using Fetch API (compatible with Node.js 20.19+, Deno, Bun, Cloudflare Workers).
+ * @param url The URL to make the request to.
+ * @param options Request options including method, headers, and timeout.
+ * @param data Optional request body data (string, Buffer, or Uint8Array).
+ * @returns A result object containing the response data or error.
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity
 export const makeRequest = async (url: string | URL, options: RequestOptions = {}, data?: string | Buffer | Uint8Array): Promise<Result<unknown>> => {
     const urlObject = typeof url === "string" ? new URL(url) : url;
 

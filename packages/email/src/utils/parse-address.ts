@@ -2,8 +2,82 @@ import type { EmailAddress } from "../types";
 import validateEmailDefault from "./validate-email";
 
 /**
+ * Validates the local part of an email address (can be quoted or unquoted).
+ * @param localPart The local part of the email address to validate.
+ * @returns True if the local part is valid, false otherwise.
+ */
+const isValidLocalPart = (localPart: string): boolean => {
+    // Remove quotes if present
+    const unquoted = localPart.replace(/^"(.+)"$/, "$1");
+
+    // Basic validation: no empty, no consecutive dots, no leading/trailing dots
+    if (!unquoted || unquoted.length === 0) {
+        return false;
+    }
+
+    if (unquoted.includes("..")) {
+        return false;
+    }
+
+    if (unquoted.startsWith(".") || unquoted.endsWith(".")) {
+        return false;
+    }
+
+    return true;
+};
+
+/**
+ * Validates email format including quoted local parts and domain literals.
+ * @param email The email string to validate.
+ * @returns True if the email format is valid, false otherwise.
+ */
+const isValidEmailFormat = (email: string): boolean => {
+    // Check for domain literal format: user@[192.168.1.1]
+    // Must have both opening and closing brackets
+    const domainLiteralMatch = email.match(/^(.+)@\[([^\]]+)\]$/);
+
+    if (domainLiteralMatch) {
+        const localPart = domainLiteralMatch[1];
+        const domainLiteral = domainLiteralMatch[2];
+
+        // Domain literal must be valid (IP address or domain)
+        if (!domainLiteral || domainLiteral.trim().length === 0) {
+            return false;
+        }
+
+        // Local part validation (can be quoted or unquoted)
+        return localPart ? isValidLocalPart(localPart) : false;
+    }
+
+    // Check for invalid domain literal (missing closing bracket)
+    if (email.includes("@[") && !email.includes("]")) {
+        return false;
+    }
+
+    // Check for quoted local part: "user@domain"@example.com
+    // Handle escaped quotes and backslashes in the quoted string
+    // The pattern allows any characters (including @) inside the quotes when properly escaped
+    const quotedLocalMatch = email.match(/^"((?:[^"\\]|\\.)+)"@(.+)$/);
+
+    if (quotedLocalMatch && quotedLocalMatch[2]) {
+        const domain = quotedLocalMatch[2];
+
+        // Domain must be valid (not a domain literal in this case)
+        // Check that domain doesn't start with [
+        if (domain.startsWith("[")) {
+            return false;
+        }
+
+        return validateEmailDefault(`test@${domain}`);
+    }
+
+    // Standard email validation
+    return validateEmailDefault(email);
+};
+
+/**
  * Parses a string representation of an email address into an EmailAddress object.
- * Supports formats: "email@example.com", "Name &lt;email@example.com>", "&lt;email@example.com>"
+ * Supports formats: "email@example.com", "Name &lt;email@example.com>", "&lt;email@example.com>".
  * @example Parsing an address with a name
  * ```ts
  * const address = parseAddress("John Doe <john@example.com>");
@@ -17,6 +91,7 @@ import validateEmailDefault from "./validate-email";
  * @param address The string representation of the address to parse.
  * @returns An EmailAddress object if parsing is successful, or undefined if invalid.
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity
 const parseAddress = (address: string): EmailAddress | undefined => {
     if (!address || typeof address !== "string") {
         return undefined;
@@ -28,27 +103,34 @@ const parseAddress = (address: string): EmailAddress | undefined => {
         return undefined;
     }
 
-    // Check for name and angle bracket format: "Name <email@domain.com>"
-    const nameAngleBracketMatch = trimmed.match(/^(.+?)\s*<(.+?)>$/);
+    // Check for angle bracket format: "Name <email@domain.com>" or "<email@domain.com>"
+    // Find the last < before > to avoid backtracking issues
+    // Split manually to avoid regex backtracking vulnerabilities
+    const lastOpenBracket = trimmed.lastIndexOf("<");
+    const lastCloseBracket = trimmed.lastIndexOf(">");
 
-    if (nameAngleBracketMatch) {
-        const name = nameAngleBracketMatch[1].trim();
-        const email = nameAngleBracketMatch[2].trim();
+    if (lastOpenBracket !== -1 && lastCloseBracket > lastOpenBracket) {
+        const name = trimmed.slice(0, lastOpenBracket).trim();
+        const email = trimmed.slice(lastOpenBracket + 1, lastCloseBracket).trim();
 
-        if (!isValidEmailFormat(email)) {
-            return undefined;
+        if (email && isValidEmailFormat(email)) {
+            // If there's a name, return it; otherwise just return the email
+            if (name) {
+                // Remove quotes from name if present
+                const cleanName = name.replace(/^"(.+)"$/, "$1");
+
+                return { email, name: cleanName };
+            }
+
+            return { email };
         }
-
-        // Remove quotes from name if present
-        const cleanName = name.replace(/^"(.+)"$/, "$1");
-
-        return { email, name: cleanName };
     }
 
     // Check for angle bracket format without name: "<email@domain.com>"
-    const angleBracketMatch = trimmed.match(/^<(.+?)>$/);
+    // Use [^>]+ instead of .+? to avoid backtracking
+    const angleBracketMatch = trimmed.match(/^<([^>]+)>$/);
 
-    if (angleBracketMatch) {
+    if (angleBracketMatch && angleBracketMatch[1]) {
         const email = angleBracketMatch[1].trim();
 
         if (!isValidEmailFormat(email)) {
@@ -98,9 +180,9 @@ const parseAddress = (address: string): EmailAddress | undefined => {
                 }
 
                 // Quote not followed by @, continue
-                i++;
+                i += 1;
             } else {
-                i++;
+                i += 1;
             }
         }
 
@@ -124,80 +206,6 @@ const parseAddress = (address: string): EmailAddress | undefined => {
     }
 
     return undefined;
-};
-
-/**
- * Validates email format including quoted local parts and domain literals
- * @param email The email string to validate
- * @returns True if the email format is valid, false otherwise
- */
-const isValidEmailFormat = (email: string): boolean => {
-    // Check for domain literal format: user@[192.168.1.1]
-    // Must have both opening and closing brackets
-    const domainLiteralMatch = email.match(/^(.+)@\[([^\]]+)\]$/);
-
-    if (domainLiteralMatch) {
-        const localPart = domainLiteralMatch[1];
-        const domainLiteral = domainLiteralMatch[2];
-
-        // Domain literal must be valid (IP address or domain)
-        if (!domainLiteral || domainLiteral.trim().length === 0) {
-            return false;
-        }
-
-        // Local part validation (can be quoted or unquoted)
-        return isValidLocalPart(localPart);
-    }
-
-    // Check for invalid domain literal (missing closing bracket)
-    if (email.includes("@[") && !email.includes("]")) {
-        return false;
-    }
-
-    // Check for quoted local part: "user@domain"@example.com
-    // Handle escaped quotes and backslashes in the quoted string
-    // The pattern allows any characters (including @) inside the quotes when properly escaped
-    const quotedLocalMatch = email.match(/^"((?:[^"\\]|\\.)+)"@(.+)$/);
-
-    if (quotedLocalMatch) {
-        const domain = quotedLocalMatch[2];
-
-        // Domain must be valid (not a domain literal in this case)
-        // Check that domain doesn't start with [
-        if (domain.startsWith("[")) {
-            return false;
-        }
-
-        return validateEmailDefault(`test@${domain}`);
-    }
-
-    // Standard email validation
-    return validateEmailDefault(email);
-};
-
-/**
- * Validates local part (can be quoted or unquoted)
- * @param localPart The local part of the email address to validate
- * @returns True if the local part is valid, false otherwise
- */
-const isValidLocalPart = (localPart: string): boolean => {
-    // Remove quotes if present
-    const unquoted = localPart.replace(/^"(.+)"$/, "$1");
-
-    // Basic validation: no empty, no consecutive dots, no leading/trailing dots
-    if (!unquoted || unquoted.length === 0) {
-        return false;
-    }
-
-    if (unquoted.includes("..")) {
-        return false;
-    }
-
-    if (unquoted.startsWith(".") || unquoted.endsWith(".")) {
-        return false;
-    }
-
-    return true;
 };
 
 export default parseAddress;

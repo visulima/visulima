@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import RequiredOptionError from "../../src/errors/required-option-error";
 import { mailgunProvider } from "../../src/providers/mailgun/index";
 import type { MailgunEmailOptions } from "../../src/providers/mailgun/types";
 import { makeRequest } from "../../src/utils/make-request";
@@ -7,7 +8,7 @@ import { makeRequest } from "../../src/utils/make-request";
 // Mock the makeRequest function
 vi.mock(import("../../src/utils/make-request"), () => {
     return {
-        makeRequest: vi.fn((url, options, data) =>
+        makeRequest: vi.fn((_url, _options, _data) =>
             // Return a mock result that matches the expected structure
             Promise.resolve({
                 data: {
@@ -34,18 +35,22 @@ describe(mailgunProvider, () => {
 
     describe("initialization", () => {
         it("should throw error if apiKey is missing", () => {
+            expect.assertions(1);
             expect(() => {
                 mailgunProvider({ domain: "example.com" } as any);
-            }).toThrow();
+            }).toThrow(RequiredOptionError);
         });
 
         it("should throw error if domain is missing", () => {
+            expect.assertions(1);
             expect(() => {
                 mailgunProvider({ apiKey: "test123" } as any);
-            }).toThrow();
+            }).toThrow(RequiredOptionError);
         });
 
         it("should create provider with apiKey and domain", () => {
+            expect.assertions(2);
+
             const provider = mailgunProvider({ apiKey: "test123", domain: "example.com" });
 
             expect(provider).toBeDefined();
@@ -53,12 +58,16 @@ describe(mailgunProvider, () => {
         });
 
         it("should use default endpoint if not provided", () => {
+            expect.assertions(1);
+
             const provider = mailgunProvider({ apiKey: "test123", domain: "example.com" });
 
             expect(provider.options?.endpoint).toBe("https://api.mailgun.net");
         });
 
         it("should use custom endpoint if provided", () => {
+            expect.assertions(1);
+
             const provider = mailgunProvider({
                 apiKey: "test123",
                 domain: "example.com",
@@ -71,9 +80,11 @@ describe(mailgunProvider, () => {
 
     describe("features", () => {
         it("should have correct feature flags", () => {
+            expect.assertions(1);
+
             const provider = mailgunProvider({ apiKey: "test123", domain: "example.com" });
 
-            expect(provider.features).toEqual({
+            expect(provider.features).toStrictEqual({
                 attachments: true,
                 batchSending: true,
                 customHeaders: true,
@@ -89,6 +100,8 @@ describe(mailgunProvider, () => {
 
     describe("isAvailable", () => {
         it("should check API availability", async () => {
+            expect.assertions(2);
+
             (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValue({
                 data: {
                     body: {},
@@ -114,6 +127,8 @@ describe(mailgunProvider, () => {
         });
 
         it("should return false if API is unavailable", async () => {
+            expect.assertions(1);
+
             (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
                 error: new Error("API Error"),
                 success: false,
@@ -129,6 +144,8 @@ describe(mailgunProvider, () => {
 
     describe("sendEmail", () => {
         it("should send email successfully", async () => {
+            expect.assertions(3);
+
             const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
 
             makeRequestMock
@@ -174,6 +191,8 @@ describe(mailgunProvider, () => {
         });
 
         it("should validate email options", async () => {
+            expect.assertions(2);
+
             const provider = mailgunProvider({ apiKey: "test123", domain: "example.com" });
             const emailOptions = {} as MailgunEmailOptions;
 
@@ -184,6 +203,8 @@ describe(mailgunProvider, () => {
         });
 
         it("should format recipients correctly", async () => {
+            expect.assertions(2);
+
             const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
 
             makeRequestMock
@@ -220,6 +241,8 @@ describe(mailgunProvider, () => {
         });
 
         it("should include CC and BCC recipients", async () => {
+            expect.assertions(2);
+
             const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
 
             makeRequestMock
@@ -258,6 +281,8 @@ describe(mailgunProvider, () => {
         });
 
         it("should include template if provided", async () => {
+            expect.assertions(5);
+
             const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
 
             makeRequestMock
@@ -294,16 +319,17 @@ describe(mailgunProvider, () => {
             const sendEmailCall = makeRequestMock.mock.calls[1]; // Second call is sendEmail
 
             expect(sendEmailCall).toBeDefined();
+            expect(sendEmailCall?.[2]).toBeDefined();
 
-            if (sendEmailCall && sendEmailCall[2]) {
-                const body = sendEmailCall[2] as string;
+            const body = sendEmailCall[2] as string;
 
-                expect(body).toContain("template=welcome-template");
-                expect(body).toContain("v%3Aname=John");
-            }
+            expect(body).toContain("template=welcome-template");
+            expect(body).toContain("v%3Aname=John");
         });
 
         it("should include tags", async () => {
+            expect.assertions(2);
+
             const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
 
             makeRequestMock
@@ -341,6 +367,8 @@ describe(mailgunProvider, () => {
         });
 
         it("should include tracking options", async () => {
+            expect.assertions(2);
+
             const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
 
             makeRequestMock
@@ -379,6 +407,8 @@ describe(mailgunProvider, () => {
         });
 
         it("should include custom headers", async () => {
+            expect.assertions(1);
+
             const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
 
             makeRequestMock
@@ -415,6 +445,8 @@ describe(mailgunProvider, () => {
         });
 
         it("should handle errors gracefully", async () => {
+            expect.assertions(2);
+
             const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
 
             makeRequestMock

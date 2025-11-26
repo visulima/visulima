@@ -1,6 +1,6 @@
 import Handlebars from "handlebars";
 
-import { EmailError } from "../errors/email-error";
+import EmailError from "../errors/email-error";
 import type { TemplateRenderer } from "./types";
 
 /**
@@ -31,14 +31,14 @@ export const renderHandlebars: TemplateRenderer = (template: unknown, data?: Rec
 };
 
 /**
- * Registers a Handlebars helper.
- * @param name Helper name.
- * @param helper Helper function.
+ * Registers a Handlebars helper function for use in templates.
+ * @param name The name of the helper to register.
+ * @param helper The helper function to register.
  * @throws {EmailError} When Handlebars is not installed.
  */
 export const registerHandlebarsHelper = (name: string, helper: unknown): void => {
     try {
-        Handlebars.registerHelper(name, helper);
+        Handlebars.registerHelper(name, helper as Handlebars.HelperDelegate);
     } catch (error) {
         if (error instanceof Error && error.message.includes("Cannot find module")) {
             throw new EmailError("handlebars", "Handlebars is not installed. Please install it: pnpm add handlebars", { cause: error });
@@ -49,9 +49,9 @@ export const registerHandlebarsHelper = (name: string, helper: unknown): void =>
 };
 
 /**
- * Registers Handlebars partial.
- * @param name Partial name.
- * @param partial Partial template string.
+ * Registers a Handlebars partial template for reuse in other templates.
+ * @param name The name of the partial to register.
+ * @param partial The partial template string to register.
  * @throws {EmailError} When Handlebars is not installed.
  */
 export const registerHandlebarsPartial = (name: string, partial: string): void => {

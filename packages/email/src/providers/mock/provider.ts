@@ -1,5 +1,5 @@
-import { EmailError } from "../../errors/email-error";
-import type { EmailResult, Receipt, Result } from "../../types";
+import EmailError from "../../errors/email-error";
+import type { EmailAddress, EmailResult, Receipt, Result } from "../../types";
 import createLogger from "../../utils/create-logger";
 import generateMessageId from "../../utils/generate-message-id";
 import validateEmailOptions from "../../utils/validate-email-options";
@@ -12,11 +12,14 @@ const PROVIDER_NAME = "mock";
 // Global storage for all mock providers (shared across instances)
 const emailStorage = new Map<string, MockEmailEntry[]>();
 
+type DefaultMockConfig = Pick<MockConfig, "logger" | "defaultResponse" | "randomDelayRange">
+    & Required<Omit<MockConfig, "logger" | "defaultResponse" | "randomDelayRange">>;
+
 /**
- * Create default mock config
+ * Creates a default mock configuration.
+ * @returns The default mock configuration object.
  */
-const createDefaultConfig = (): Pick<MockConfig, "logger" | "defaultResponse" | "randomDelayRange">
-    & Required<Omit<MockConfig, "logger" | "defaultResponse" | "randomDelayRange">> => {
+const createDefaultConfig = (): DefaultMockConfig => {
     return {
         debug: false,
         delay: 0,
@@ -32,24 +35,30 @@ const createDefaultConfig = (): Pick<MockConfig, "logger" | "defaultResponse" | 
  * Mock Provider for testing emails without actually sending them
  * Stores emails in memory for later retrieval and inspection
  */
-export const mockProvider: ProviderFactory<MockConfig, MockEmailEntry[], MockEmailOptions> = defineProvider((options_: MockConfig = {} as MockConfig) => {
+const mockProvider: ProviderFactory<MockConfig, MockEmailEntry[], MockEmailOptions> = defineProvider((options: MockConfig = {} as MockConfig) => {
     // Use instance ID to separate storage for different provider instances
+    // eslint-disable-next-line sonarjs/pseudo-random
     const instanceId = `mock-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 
     if (!emailStorage.has(instanceId)) {
         emailStorage.set(instanceId, []);
     }
 
-    const storage = emailStorage.get(instanceId)!;
+    const storage = emailStorage.get(instanceId);
+
+    if (!storage) {
+        throw new Error(`Storage not found for instance: ${instanceId}`);
+    }
+
     let isInitialized = false;
-    let nextResponse: Receipt | null = null;
+    let nextResponse: Receipt | undefined;
     const config: Pick<MockConfig, "logger" | "defaultResponse" | "randomDelayRange">
         & Required<Omit<MockConfig, "logger" | "defaultResponse" | "randomDelayRange">> = {
             ...createDefaultConfig(),
-            defaultResponse: options_.defaultResponse,
-            logger: options_.logger,
-            randomDelayRange: options_.randomDelayRange || { max: 0, min: 0 },
-            ...options_,
+            defaultResponse: options.defaultResponse,
+            logger: options.logger,
+            randomDelayRange: options.randomDelayRange || { max: 0, min: 0 },
+            ...options,
         };
 
     const logger = createLogger(PROVIDER_NAME, config.logger);
@@ -81,20 +90,20 @@ export const mockProvider: ProviderFactory<MockConfig, MockEmailEntry[], MockEma
          * Find the first message matching the given predicate.
          */
         findMessageBy(predicate: (message: MockEmailEntry) => boolean): MockEmailEntry | undefined {
-            return storage.find(predicate);
+            return storage.find((message) => predicate(message));
         },
 
         /**
          * Find all messages matching the given predicate.
          */
         findMessagesBy(predicate: (message: MockEmailEntry) => boolean): ReadonlyArray<MockEmailEntry> {
-            return storage.filter(predicate);
+            return storage.filter((message) => predicate(message));
         },
 
         /**
-         * Get email by ID
-         * @param id Email ID to retrieve
-         * @returns Email details
+         * Gets an email by its ID from the mock storage.
+         * @param id The email ID to retrieve.
+         * @returns A result object containing the email details or an error.
          */
         async getEmail(id: string): Promise<Result<unknown>> {
             try {
@@ -131,36 +140,51 @@ export const mockProvider: ProviderFactory<MockConfig, MockEmailEntry[], MockEma
         },
 
         /**
-         * Get the storage array for this instance (useful for testing)
+         * Gets the storage array for this instance (useful for testing).
+         * @returns The array of stored email entries.
          */
         getInstance(): MockEmailEntry[] {
             return storage;
         },
 
         /**
-         * Get the last message that was sent, or undefined if no messages have been sent.
+         * Gets the last message that was sent, or undefined if no messages have been sent.
+         * @returns The last sent email entry, or undefined if no messages have been sent.
          */
         getLastSentMessage(): MockEmailEntry | undefined {
             return storage[storage.length - 1];
         },
 
         /**
-         * Get all messages with a specific subject.
+         * Gets all messages with a specific subject.
+         * @param subject The subject to search for.
+         * @returns An array of email entries matching the subject.
          */
         getMessagesBySubject(subject: string): ReadonlyArray<MockEmailEntry> {
             return storage.filter((message) => message.options.subject === subject);
         },
 
         /**
-         * Get all messages sent to a specific email address.
-         * Searches through To, CC, and BCC recipients to find messages
-         * that were sent to the specified email address.
+         * Gets all messages sent to a specific email address.
+         * Searches through To, CC, and BCC recipients to find messages that were sent to the specified email address.
+         * @param email The email address to search for.
+         * @returns An array of email entries sent to the specified address.
          */
         getMessagesTo(email: string): ReadonlyArray<MockEmailEntry> {
             return storage.filter((message) => {
                 const toAddresses = Array.isArray(message.options.to) ? message.options.to : [message.options.to];
-                const ccAddresses = message.options.cc ? Array.isArray(message.options.cc) ? message.options.cc : [message.options.cc] : [];
-                const bccAddresses = message.options.bcc ? Array.isArray(message.options.bcc) ? message.options.bcc : [message.options.bcc] : [];
+
+                let ccAddresses: EmailAddress[] = [];
+
+                if (message.options.cc) {
+                    ccAddresses = Array.isArray(message.options.cc) ? message.options.cc : [message.options.cc];
+                }
+
+                let bccAddresses: EmailAddress[] = [];
+
+                if (message.options.bcc) {
+                    bccAddresses = Array.isArray(message.options.bcc) ? message.options.bcc : [message.options.bcc];
+                }
 
                 const allRecipients = [...toAddresses, ...ccAddresses, ...bccAddresses];
 
@@ -169,29 +193,32 @@ export const mockProvider: ProviderFactory<MockConfig, MockEmailEntry[], MockEma
         },
 
         /**
-         * Get all sent emails for this instance
+         * Gets all sent emails for this instance.
+         * @returns An array of all sent email entries.
          */
         getSentEmails(): MockEmailEntry[] {
             return [...storage];
         },
 
         /**
-         * Get all messages that have been "sent" through this transport.
-         * Alias for getSentEmails() for consistency with reference implementation
+         * Gets all messages that have been "sent" through this transport.
+         * Alias for getSentEmails() for consistency with reference implementation.
+         * @returns An array of all sent email entries.
          */
         getSentMessages(): ReadonlyArray<MockEmailEntry> {
             return [...storage];
         },
 
         /**
-         * Get the total number of messages that have been sent.
+         * Gets the total number of messages that have been sent.
+         * @returns The total count of messages stored in the mock provider.
          */
         getSentMessagesCount(): number {
             return storage.length;
         },
 
         /**
-         * Initialize the mock provider
+         * Initializes the mock provider.
          */
         async initialize(): Promise<void> {
             if (isInitialized) {
@@ -209,7 +236,8 @@ export const mockProvider: ProviderFactory<MockConfig, MockEmailEntry[], MockEma
         },
 
         /**
-         * Check if mock provider is available (always true)
+         * Checks if the mock provider is available (always true).
+         * @returns Always returns true.
          */
         async isAvailable(): Promise<boolean> {
             return true;
@@ -220,11 +248,12 @@ export const mockProvider: ProviderFactory<MockConfig, MockEmailEntry[], MockEma
         options: config,
 
         /**
-         * Clear all stored emails for this instance
+         * Resets the mock provider to its initial state.
+         * Clears all stored emails and resets configuration to defaults.
          */
         reset(): void {
             storage.length = 0;
-            nextResponse = null;
+            nextResponse = undefined;
             const defaultConfig = createDefaultConfig();
 
             // Update config properties instead of reassigning to keep options reference
@@ -240,9 +269,11 @@ export const mockProvider: ProviderFactory<MockConfig, MockEmailEntry[], MockEma
         },
 
         /**
-         * Send email (mock - stores in memory)
-         * @param emailOptions The email options
+         * Sends an email (mock - stores in memory).
+         * @param emailOptions The email options to send.
+         * @returns A result object containing the email result or an error.
          */
+        // eslint-disable-next-line sonarjs/cognitive-complexity
         async sendEmail(emailOptions: MockEmailOptions): Promise<Result<EmailResult>> {
             try {
                 const validationErrors = validateEmailOptions(emailOptions);
@@ -264,6 +295,7 @@ export const mockProvider: ProviderFactory<MockConfig, MockEmailEntry[], MockEma
                 if (config.randomDelayRange && config.randomDelayRange.max > 0) {
                     const { max, min } = config.randomDelayRange;
 
+                    // eslint-disable-next-line sonarjs/pseudo-random
                     delayMs = Math.floor(Math.random() * (max - min + 1)) + min;
                 }
 
@@ -275,10 +307,10 @@ export const mockProvider: ProviderFactory<MockConfig, MockEmailEntry[], MockEma
                 }
 
                 // Check if nextResponse is set (takes precedence)
-                if (nextResponse !== null) {
+                if (nextResponse !== undefined) {
                     const response = nextResponse;
 
-                    nextResponse = null; // Reset after use
+                    nextResponse = undefined; // Reset after use
 
                     // If it's a failure response, return error
                     if (!response.successful) {
@@ -320,6 +352,7 @@ export const mockProvider: ProviderFactory<MockConfig, MockEmailEntry[], MockEma
                 }
 
                 // Check for random failure based on failure rate
+                // eslint-disable-next-line sonarjs/pseudo-random
                 const shouldFail = config.simulateFailure || (config.failureRate > 0 && Math.random() < config.failureRate);
 
                 if (shouldFail) {
@@ -335,10 +368,11 @@ export const mockProvider: ProviderFactory<MockConfig, MockEmailEntry[], MockEma
                 const messageId = config.defaultResponse?.successful ? config.defaultResponse.messageId : generateMessageId();
                 const timestamp = config.defaultResponse?.successful && config.defaultResponse.timestamp ? config.defaultResponse.timestamp : new Date();
 
+                const defaultResponse = config.defaultResponse && "response" in config.defaultResponse ? config.defaultResponse.response : undefined;
                 const result: EmailResult = {
                     messageId,
                     provider: PROVIDER_NAME,
-                    response: config.defaultResponse?.response || {
+                    response: defaultResponse ?? {
                         mock: true,
                         stored: true,
                     },
@@ -377,9 +411,9 @@ export const mockProvider: ProviderFactory<MockConfig, MockEmailEntry[], MockEma
         },
 
         /**
-         * Set the default response that will be returned for send operations.
-         * This response is used when no next response is set and random failures
-         * are not triggered.
+         * Sets the default response that will be returned for send operations.
+         * This response is used when no next response is set and random failures are not triggered.
+         * @param receipt The receipt object to use as the default response.
          */
         setDefaultResponse(receipt: Receipt): void {
             config.defaultResponse = receipt;
@@ -387,8 +421,9 @@ export const mockProvider: ProviderFactory<MockConfig, MockEmailEntry[], MockEma
         },
 
         /**
-         * Set a fixed delay in milliseconds for all send operations.
+         * Sets a fixed delay in milliseconds for all send operations.
          * This overrides any random delay range that was previously configured.
+         * @param milliseconds The fixed delay duration in milliseconds to apply to all send operations.
          */
         setDelay(milliseconds: number): void {
             if (milliseconds < 0) {
@@ -401,8 +436,8 @@ export const mockProvider: ProviderFactory<MockConfig, MockEmailEntry[], MockEma
         },
 
         /**
-         * Set the failure rate (0.0 to 1.0). When set, sends will randomly fail
-         * at the specified rate instead of using the configured responses.
+         * Sets the failure rate (0.0 to 1.0). When set, sends will randomly fail at the specified rate instead of using the configured responses.
+         * @param rate The failure rate between 0.0 and 1.0.
          */
         setFailureRate(rate: number): void {
             if (rate < 0 || rate > 1) {
@@ -414,9 +449,10 @@ export const mockProvider: ProviderFactory<MockConfig, MockEmailEntry[], MockEma
         },
 
         /**
-         * Set the response that will be returned for the next send operation.
+         * Sets the response that will be returned for the next send operation.
          * After being used once, it will revert to the default response.
          * This is useful for testing specific success or failure scenarios.
+         * @param receipt The receipt object to use for the next send operation.
          */
         setNextResponse(receipt: Receipt): void {
             nextResponse = receipt;
@@ -424,8 +460,10 @@ export const mockProvider: ProviderFactory<MockConfig, MockEmailEntry[], MockEma
         },
 
         /**
-         * Set a random delay range in milliseconds for send operations.
+         * Sets a random delay range in milliseconds for send operations.
          * This overrides any fixed delay that was previously configured.
+         * @param min The minimum delay in milliseconds.
+         * @param max The maximum delay in milliseconds.
          */
         setRandomDelay(min: number, max: number): void {
             if (min < 0 || max < 0 || min > max) {
@@ -438,7 +476,7 @@ export const mockProvider: ProviderFactory<MockConfig, MockEmailEntry[], MockEma
         },
 
         /**
-         * Shutdown and cleanup
+         * Shuts down the mock provider and cleans up resources.
          */
         async shutdown(): Promise<void> {
             storage.length = 0;
@@ -447,23 +485,27 @@ export const mockProvider: ProviderFactory<MockConfig, MockEmailEntry[], MockEma
         },
 
         /**
-         * Validate credentials (always true for mock)
+         * Validates credentials (always true for mock).
+         * @returns Always returns true.
          */
         async validateCredentials(): Promise<boolean> {
             return true;
         },
 
         /**
-         * Wait for a message matching the given predicate.
-         * This method polls for a matching message until one is found or the timeout
-         * expires. Useful for testing async email workflows where you need to wait
-         * for specific messages.
+         * Waits for a message matching the given predicate.
+         * This method polls for a matching message until one is found or the timeout expires.
+         * Useful for testing async email workflows where you need to wait for specific messages.
+         * @param predicate The predicate function to match messages.
+         * @param timeout The timeout in milliseconds (default: 5000).
+         * @returns A promise that resolves with the matching message.
+         * @throws {Error} When the timeout expires before a matching message is found.
          */
         async waitForMessage(predicate: (message: MockEmailEntry) => boolean, timeout: number = 5000): Promise<MockEmailEntry> {
             const startTime = Date.now();
 
             while (true) {
-                const message = this.findMessageBy(predicate);
+                const message = storage.find((message_) => predicate(message_));
 
                 if (message) {
                     return message;
@@ -474,6 +516,7 @@ export const mockProvider: ProviderFactory<MockConfig, MockEmailEntry[], MockEma
                 }
 
                 // Wait a bit before checking again
+                // eslint-disable-next-line no-await-in-loop
                 await new Promise((resolve) => {
                     setTimeout(resolve, 10);
                 });
@@ -481,10 +524,13 @@ export const mockProvider: ProviderFactory<MockConfig, MockEmailEntry[], MockEma
         },
 
         /**
-         * Wait for a specific number of messages to be sent.
-         * This method polls the message count until the target is reached or
-         * the timeout expires. Useful for testing async email workflows where you
-         * need to wait for messages to be sent.
+         * Waits for a specific number of messages to be sent.
+         * This method polls the message count until the target is reached or the timeout expires.
+         * Useful for testing async email workflows where you need to wait for messages to be sent.
+         * @param count The target number of messages to wait for.
+         * @param timeout The timeout in milliseconds (default: 5000).
+         * @returns A promise that resolves when the target count is reached.
+         * @throws {Error} When the timeout expires before the target count is reached.
          */
         async waitForMessageCount(count: number, timeout: number = 5000): Promise<void> {
             const startTime = Date.now();
@@ -495,6 +541,7 @@ export const mockProvider: ProviderFactory<MockConfig, MockEmailEntry[], MockEma
                 }
 
                 // Wait a bit before checking again
+                // eslint-disable-next-line no-await-in-loop
                 await new Promise((resolve) => {
                     setTimeout(resolve, 10);
                 });
@@ -502,3 +549,5 @@ export const mockProvider: ProviderFactory<MockConfig, MockEmailEntry[], MockEma
         },
     };
 });
+
+export default mockProvider;

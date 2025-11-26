@@ -1,7 +1,8 @@
 import { Buffer } from "node:buffer";
 
-import { EmailError, RequiredOptionError } from "../../errors/email-error";
-import type { EmailResult, Result } from "../../types";
+import EmailError from "../../errors/email-error";
+import RequiredOptionError from "../../errors/required-option-error";
+import type { EmailOptions, EmailResult, Result } from "../../types";
 import generateMessageId from "../../utils/generate-message-id";
 import headersToRecord from "../../utils/headers-to-record";
 import { makeRequest } from "../../utils/make-request";
@@ -18,29 +19,30 @@ const DEFAULT_TIMEOUT = 30_000;
 const DEFAULT_RETRIES = 3;
 
 /**
- * Mailjet Provider for sending emails through Mailjet API
+ * Mailjet Provider for sending emails through Mailjet API.
  */
-export const mailjetProvider: ProviderFactory<MailjetConfig, unknown, MailjetEmailOptions> = defineProvider((options_: MailjetConfig = {} as MailjetConfig) => {
-    if (!options_.apiKey) {
+// @ts-expect-error - MailjetEmailOptions extends Omit<EmailOptions, "priority"> which doesn't satisfy the constraint, but is compatible at runtime
+const provider = defineProvider<MailjetConfig, unknown, MailjetEmailOptions>(((config: MailjetConfig = {} as MailjetConfig) => {
+    if (!config.apiKey) {
         throw new RequiredOptionError(PROVIDER_NAME, "apiKey");
     }
 
-    if (!options_.apiSecret) {
+    if (!config.apiSecret) {
         throw new RequiredOptionError(PROVIDER_NAME, "apiSecret");
     }
 
     const options: Pick<MailjetConfig, "logger"> & Required<Omit<MailjetConfig, "logger">> = {
-        apiKey: options_.apiKey,
-        apiSecret: options_.apiSecret,
-        debug: options_.debug || false,
-        endpoint: options_.endpoint || DEFAULT_ENDPOINT,
-        retries: options_.retries || DEFAULT_RETRIES,
-        timeout: options_.timeout || DEFAULT_TIMEOUT,
-        ...options_.logger && { logger: options_.logger },
+        apiKey: config.apiKey,
+        apiSecret: config.apiSecret,
+        debug: config.debug || false,
+        endpoint: config.endpoint || DEFAULT_ENDPOINT,
+        retries: config.retries || DEFAULT_RETRIES,
+        timeout: config.timeout || DEFAULT_TIMEOUT,
+        ...(config.logger && { logger: config.logger }),
     };
 
     const providerState = new ProviderState();
-    const logger = createProviderLogger(PROVIDER_NAME, options_.logger);
+    const logger = createProviderLogger(PROVIDER_NAME, config.logger);
 
     return {
         endpoint: options.endpoint,
@@ -58,9 +60,9 @@ export const mailjetProvider: ProviderFactory<MailjetConfig, unknown, MailjetEma
         },
 
         /**
-         * Retrieve email by ID
-         * @param id Email ID to retrieve
-         * @returns Email details
+         * Retrieves an email by its ID from Mailjet.
+         * @param id The email ID to retrieve.
+         * @returns A result object containing the email details or an error.
          */
         async getEmail(id: string): Promise<Result<unknown>> {
             try {
@@ -95,7 +97,11 @@ export const mailjetProvider: ProviderFactory<MailjetConfig, unknown, MailjetEma
                     logger.debug("API request failed when retrieving email", result.error);
 
                     return {
-                        error: new EmailError(PROVIDER_NAME, `Failed to retrieve email: ${result.error?.message || "Unknown error"}`, { cause: result.error }),
+                        error: new EmailError(
+                            PROVIDER_NAME,
+                            `Failed to retrieve email: ${result.error instanceof Error ? result.error.message : "Unknown error"}`,
+                            { cause: result.error },
+                        ),
                         success: false,
                     };
                 }
@@ -115,11 +121,11 @@ export const mailjetProvider: ProviderFactory<MailjetConfig, unknown, MailjetEma
         },
 
         /**
-         * Initialize the Mailjet provider
+         * Initializes the Mailjet provider and validates API availability.
          */
         async initialize(): Promise<void> {
             await providerState.ensureInitialized(async () => {
-                if (!await this.isAvailable()) {
+                if (!(await this.isAvailable())) {
                     throw new EmailError(PROVIDER_NAME, "Mailjet API not available or invalid API credentials");
                 }
 
@@ -128,7 +134,8 @@ export const mailjetProvider: ProviderFactory<MailjetConfig, unknown, MailjetEma
         },
 
         /**
-         * Check if Mailjet API is available and credentials are valid
+         * Checks if the Mailjet API is available and credentials are valid.
+         * @returns True if the API is available and credentials are valid, false otherwise.
          */
         async isAvailable(): Promise<boolean> {
             try {
@@ -148,19 +155,19 @@ export const mailjetProvider: ProviderFactory<MailjetConfig, unknown, MailjetEma
                 });
 
                 logger.debug("Mailjet API availability check response:", {
-                    error: result.error?.message,
+                    error: result.error instanceof Error ? result.error.message : undefined,
                     statusCode: (result.data as { statusCode?: number })?.statusCode,
                     success: result.success,
                 });
 
-                return (
+                return Boolean(
                     result.success
                     && result.data
                     && typeof result.data === "object"
                     && "statusCode" in result.data
-                    && typeof result.data.statusCode === "number"
-                    && result.data.statusCode >= 200
-                    && result.data.statusCode < 300
+                    && typeof (result.data as { statusCode?: unknown }).statusCode === "number"
+                    && (result.data as { statusCode: number }).statusCode >= 200
+                    && (result.data as { statusCode: number }).statusCode < 300,
                 );
             } catch (error) {
                 logger.debug("Error checking availability:", error);
@@ -174,12 +181,13 @@ export const mailjetProvider: ProviderFactory<MailjetConfig, unknown, MailjetEma
         options,
 
         /**
-         * Send email through Mailjet API
-         * @param emailOptions The email options including Mailjet-specific features
+         * Sends an email through the Mailjet API.
+         * @param emailOptions The email options. including Mailjet-specific features
          */
+        // eslint-disable-next-line sonarjs/cognitive-complexity
         async sendEmail(emailOptions: MailjetEmailOptions): Promise<Result<EmailResult>> {
             try {
-                const validationErrors = validateEmailOptions(emailOptions);
+                const validationErrors = validateEmailOptions(emailOptions as EmailOptions);
 
                 if (validationErrors.length > 0) {
                     return {
@@ -312,7 +320,7 @@ export const mailjetProvider: ProviderFactory<MailjetConfig, unknown, MailjetEma
                                 Base64Content: content,
                                 ContentType: attachment.contentType || "application/octet-stream",
                                 Filename: attachment.filename,
-                                ...attachment.cid && { ContentID: attachment.cid },
+                                ...(attachment.cid && { ContentID: attachment.cid }),
                             };
                         }),
                     );
@@ -381,10 +389,13 @@ export const mailjetProvider: ProviderFactory<MailjetConfig, unknown, MailjetEma
         },
 
         /**
-         * Validate API credentials
+         * Validates the Mailjet API credentials.
          */
         async validateCredentials(): Promise<boolean> {
             return this.isAvailable();
         },
     };
-});
+    // @ts-expect-error - MailjetEmailOptions extends Omit<EmailOptions, "priority"> which doesn't satisfy the constraint, but is compatible at runtime
+}) as unknown as ProviderFactory<MailjetConfig, unknown, MailjetEmailOptions>);
+
+export default provider;

@@ -1,15 +1,14 @@
-import { readFile } from "node:fs/promises";
-
+import { readFile } from "@visulima/fs";
 import { describe, expect, it, vi } from "vitest";
 
 import { createDkimSigner, DkimSigner } from "../../src/crypto/dkim-signer";
 import type { DkimOptions } from "../../src/crypto/types";
 import type { EmailOptions } from "../../src/types";
 
-// Mock node:fs/promises
-vi.mock(import("node:fs/promises"), () => {
+// Mock @visulima/fs
+vi.mock(import("@visulima/fs"), () => {
     return {
-        readFile: vi.fn<Parameters<typeof import("node:fs/promises").readFile>>(),
+        readFile: vi.fn<Parameters<typeof import("@visulima/fs").readFile>>(),
     };
 });
 
@@ -46,6 +45,8 @@ aLMrhh/PiK9jJ41+Y4w6oSKh
 describe(DkimSigner, () => {
     describe("constructor", () => {
         it("should create a DkimSigner instance", () => {
+            expect.assertions(1);
+
             const options: DkimOptions = {
                 domainName: "example.com",
                 keySelector: "default",
@@ -60,6 +61,8 @@ describe(DkimSigner, () => {
 
     describe(createDkimSigner, () => {
         it("should create a DkimSigner instance", () => {
+            expect.assertions(1);
+
             const options: DkimOptions = {
                 domainName: "example.com",
                 keySelector: "default",
@@ -74,6 +77,8 @@ describe(DkimSigner, () => {
 
     describe("sign", () => {
         it("should sign an email message with DKIM", async () => {
+            expect.assertions(6);
+
             const options: DkimOptions = {
                 domainName: "example.com",
                 keySelector: "default",
@@ -99,6 +104,8 @@ describe(DkimSigner, () => {
         });
 
         it("should sign an email with text content", async () => {
+            expect.assertions(1);
+
             const options: DkimOptions = {
                 domainName: "example.com",
                 keySelector: "default",
@@ -119,6 +126,8 @@ describe(DkimSigner, () => {
         });
 
         it("should sign an email with both text and html", async () => {
+            expect.assertions(1);
+
             const options: DkimOptions = {
                 domainName: "example.com",
                 keySelector: "default",
@@ -140,6 +149,8 @@ describe(DkimSigner, () => {
         });
 
         it("should handle file-based private keys", async () => {
+            expect.assertions(2);
+
             const filePath = "/path/to/private-key.pem";
 
             vi.mocked(readFile).mockResolvedValue(TEST_PRIVATE_KEY);
@@ -160,11 +171,13 @@ describe(DkimSigner, () => {
             const signer = createDkimSigner(options);
             const signed = await signer.sign(email);
 
-            expect(readFile).toHaveBeenCalledWith(filePath, "utf-8");
+            expect(readFile).toHaveBeenCalledWith(filePath, { encoding: "utf8" });
             expect(signed.headers["DKIM-Signature"]).toBeDefined();
         });
 
         it("should handle CC recipients", async () => {
+            expect.assertions(2);
+
             const options: DkimOptions = {
                 domainName: "example.com",
                 keySelector: "default",
@@ -187,6 +200,8 @@ describe(DkimSigner, () => {
         });
 
         it("should handle Reply-To header", async () => {
+            expect.assertions(2);
+
             const options: DkimOptions = {
                 domainName: "example.com",
                 keySelector: "default",
@@ -209,6 +224,8 @@ describe(DkimSigner, () => {
         });
 
         it("should handle multiple recipients", async () => {
+            expect.assertions(3);
+
             const options: DkimOptions = {
                 domainName: "example.com",
                 keySelector: "default",
@@ -231,6 +248,8 @@ describe(DkimSigner, () => {
         });
 
         it("should handle custom headers", async () => {
+            expect.assertions(2);
+
             const options: DkimOptions = {
                 domainName: "example.com",
                 keySelector: "default",
@@ -255,6 +274,8 @@ describe(DkimSigner, () => {
         });
 
         it("should use relaxed canonicalization when specified", async () => {
+            expect.assertions(1);
+
             const options: DkimOptions = {
                 bodyCanon: "relaxed",
                 domainName: "example.com",
@@ -277,6 +298,8 @@ describe(DkimSigner, () => {
         });
 
         it("should ignore specified headers", async () => {
+            expect.assertions(3);
+
             const options: DkimOptions = {
                 domainName: "example.com",
                 headersToIgnore: ["Message-ID", "X-Custom-Header"],
@@ -304,6 +327,8 @@ describe(DkimSigner, () => {
         });
 
         it("should handle email addresses with names", async () => {
+            expect.assertions(3);
+
             const options: DkimOptions = {
                 domainName: "example.com",
                 keySelector: "default",
@@ -326,6 +351,8 @@ describe(DkimSigner, () => {
         });
 
         it("should throw error for invalid private key", async () => {
+            expect.assertions(1);
+
             const options: DkimOptions = {
                 domainName: "example.com",
                 keySelector: "default",
@@ -345,11 +372,14 @@ describe(DkimSigner, () => {
         });
 
         it("should handle passphrase option for encrypted keys", async () => {
+            expect.assertions(1);
+
             // Note: The test key is not encrypted, so providing a passphrase won't cause an error
             // This test verifies that the passphrase option is accepted and processed
             const options: DkimOptions = {
                 domainName: "example.com",
                 keySelector: "default",
+                // eslint-disable-next-line sonarjs/no-hardcoded-passwords
                 passphrase: "test-passphrase",
                 privateKey: TEST_PRIVATE_KEY,
             };

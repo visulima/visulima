@@ -1,20 +1,19 @@
 import { render } from "@react-email/render";
 
-import { EmailError } from "../errors/email-error";
+import EmailError from "../errors/email-error";
 import type { TemplateRenderer } from "./types";
 
 /**
- * Renders React Email component to HTML.
- * @param template React component from @react-email/components.
- * @param _data Data (not used for React Email).
- * @param options Render options (plainText, pretty).
- * @returns HTML string.
- * @throws {EmailError} When @react-email/render is not installed or rendering fails.
+ * Renders a React Email component to HTML.
+ * @param template The React component from \@react-email/components to render.
+ * @param _data Data object (not used for React Email, but kept for API compatibility).
+ * @param options Render options including plainText and pretty formatting.
+ * @returns The rendered HTML string.
+ * @throws {EmailError} When \@react-email/render is not installed or rendering fails.
  */
-const renderReactEmail: TemplateRenderer = async (template: unknown, _data?: Record<string, unknown>, options?: Record<string, unknown>): Promise<string> => {
+const reactEmail: TemplateRenderer = async (template: unknown, _data?: Record<string, unknown>, options?: Record<string, unknown>): Promise<string> => {
     try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        return await render(template as any, {
+        return await render(template as unknown as Parameters<typeof render>[0], {
             plainText: options?.plainText as boolean | undefined,
             pretty: options?.pretty as boolean | undefined,
         });
@@ -27,4 +26,4 @@ const renderReactEmail: TemplateRenderer = async (template: unknown, _data?: Rec
     }
 };
 
-export default renderReactEmail;
+export default reactEmail;

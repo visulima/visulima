@@ -1,6 +1,7 @@
 import { Buffer } from "node:buffer";
 
-import { EmailError, RequiredOptionError } from "../../errors/email-error";
+import EmailError from "../../errors/email-error";
+import RequiredOptionError from "../../errors/required-option-error";
 import type { EmailResult, Result } from "../../types";
 import generateMessageId from "../../utils/generate-message-id";
 import headersToRecord from "../../utils/headers-to-record";
@@ -19,31 +20,31 @@ const DEFAULT_RETRIES = 3;
 /**
  * Azure Communication Services Provider for sending emails through Azure API
  */
-export const azureProvider: ProviderFactory<AzureConfig, unknown, AzureEmailOptions> = defineProvider((options_: AzureConfig = {} as AzureConfig) => {
-    if (!options_.region) {
+const azureProvider: ProviderFactory<AzureConfig, unknown, AzureEmailOptions> = defineProvider((config: AzureConfig = {} as AzureConfig) => {
+    if (!config.region) {
         throw new RequiredOptionError(PROVIDER_NAME, "region");
     }
 
-    if (!options_.connectionString && !options_.accessToken) {
+    if (!config.connectionString && !config.accessToken) {
         throw new RequiredOptionError(PROVIDER_NAME, "connectionString or accessToken");
     }
 
-    const endpoint = options_.endpoint || `https://${options_.region}.communication.azure.com`;
+    const endpoint = config.endpoint || `https://${config.region}.communication.azure.com`;
 
     const options: Pick<AzureConfig, "logger" | "endpoint" | "connectionString" | "accessToken">
         & Required<Omit<AzureConfig, "logger" | "endpoint" | "connectionString" | "accessToken">> & { endpoint: string } = {
-            debug: options_.debug || false,
+            debug: config.debug || false,
             endpoint,
-            region: options_.region,
-            retries: options_.retries || DEFAULT_RETRIES,
-            timeout: options_.timeout || DEFAULT_TIMEOUT,
-            ...options_.connectionString && { connectionString: options_.connectionString },
-            ...options_.accessToken && { accessToken: options_.accessToken },
-            ...options_.logger && { logger: options_.logger },
+            region: config.region,
+            retries: config.retries || DEFAULT_RETRIES,
+            timeout: config.timeout || DEFAULT_TIMEOUT,
+            ...(config.connectionString && { connectionString: config.connectionString }),
+            ...(config.accessToken && { accessToken: config.accessToken }),
+            ...(config.logger && { logger: config.logger }),
         };
 
     const providerState = new ProviderState();
-    const logger = createProviderLogger(PROVIDER_NAME, options_.logger);
+    const logger = createProviderLogger(PROVIDER_NAME, config.logger);
 
     return {
         features: {
@@ -59,9 +60,9 @@ export const azureProvider: ProviderFactory<AzureConfig, unknown, AzureEmailOpti
         },
 
         /**
-         * Retrieve email by ID
-         * @param id Email ID to retrieve
-         * @returns Email details
+         * Retrieves an email by its ID from Azure Communication Services.
+         * @param id The email ID to retrieve.
+         * @returns A result object containing the email details or an error.
          */
         async getEmail(id: string): Promise<Result<unknown>> {
             try {
@@ -105,7 +106,11 @@ export const azureProvider: ProviderFactory<AzureConfig, unknown, AzureEmailOpti
                     logger.debug("API request failed when retrieving email", result.error);
 
                     return {
-                        error: new EmailError(PROVIDER_NAME, `Failed to retrieve email: ${result.error?.message || "Unknown error"}`, { cause: result.error }),
+                        error: new EmailError(
+                            PROVIDER_NAME,
+                            `Failed to retrieve email: ${result.error instanceof Error ? result.error.message : "Unknown error"}`,
+                            { cause: result.error },
+                        ),
                         success: false,
                     };
                 }
@@ -125,11 +130,12 @@ export const azureProvider: ProviderFactory<AzureConfig, unknown, AzureEmailOpti
         },
 
         /**
-         * Initialize the Azure provider
+         * Initializes the Azure provider and validates API availability.
+         * @throws {EmailError} When the Azure Communication Services API is not available or credentials are invalid.
          */
         async initialize(): Promise<void> {
             await providerState.ensureInitialized(async () => {
-                if (!await this.isAvailable()) {
+                if (!(await this.isAvailable())) {
                     throw new EmailError(PROVIDER_NAME, "Azure Communication Services API not available or invalid credentials");
                 }
 
@@ -138,7 +144,8 @@ export const azureProvider: ProviderFactory<AzureConfig, unknown, AzureEmailOpti
         },
 
         /**
-         * Check if Azure API is available and credentials are valid
+         * Checks if the Azure Communication Services API is available and credentials are valid.
+         * @returns True if the API is available and credentials are valid, false otherwise.
          */
         async isAvailable(): Promise<boolean> {
             try {
@@ -176,9 +183,11 @@ export const azureProvider: ProviderFactory<AzureConfig, unknown, AzureEmailOpti
         options,
 
         /**
-         * Send email through Azure Communication Services API
-         * @param emailOptions The email options including Azure-specific features
+         * Sends an email through the Azure Communication Services API.
+         * @param emailOptions The email options including Azure-specific features.
+         * @returns A result object containing the email result or an error.
          */
+        // eslint-disable-next-line sonarjs/cognitive-complexity
         async sendEmail(emailOptions: AzureEmailOptions): Promise<Result<EmailResult>> {
             try {
                 const validationErrors = validateEmailOptions(emailOptions);
@@ -193,7 +202,15 @@ export const azureProvider: ProviderFactory<AzureConfig, unknown, AzureEmailOpti
                 await providerState.ensureInitialized(() => this.initialize(), PROVIDER_NAME);
 
                 // Build payload for Azure API
-                const payload: Record<string, unknown> = {
+                const payload: {
+                    attachments?: unknown[];
+                    content: { html?: string; plainText?: string; subject: string };
+                    headers?: Record<string, string>;
+                    importance?: string;
+                    recipients: { bcc?: unknown[]; cc?: unknown[]; to: unknown[] };
+                    replyTo?: string;
+                    senderAddress: string;
+                } = {
                     content: {
                         subject: emailOptions.subject,
                     },
@@ -225,7 +242,7 @@ export const azureProvider: ProviderFactory<AzureConfig, unknown, AzureEmailOpti
 
                 // Add reply-to
                 if (emailOptions.replyTo) {
-                    payload.replyTo = formatAzureAddress(emailOptions.replyTo);
+                    payload.replyTo = formatAzureAddress(emailOptions.replyTo).email;
                 }
 
                 // Add importance
@@ -274,7 +291,7 @@ export const azureProvider: ProviderFactory<AzureConfig, unknown, AzureEmailOpti
                 logger.debug("Sending email via Azure Communication Services API", {
                     subject: payload.content.subject,
                     to: payload.recipients.to,
-                });
+                } as Record<string, unknown>);
 
                 const headers: Record<string, string> = {
                     "Content-Type": "application/json",
@@ -343,10 +360,13 @@ export const azureProvider: ProviderFactory<AzureConfig, unknown, AzureEmailOpti
         },
 
         /**
-         * Validate API credentials
+         * Validates the Azure Communication Services API credentials.
+         * @returns A promise that resolves to true if credentials are valid, false otherwise.
          */
         async validateCredentials(): Promise<boolean> {
             return this.isAvailable();
         },
     };
 });
+
+export default azureProvider;

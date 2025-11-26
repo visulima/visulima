@@ -27,7 +27,7 @@ export interface ResendEmailTag extends EmailTag {
 /**
  * Resend-specific email options
  */
-export interface ResendEmailOptions extends EmailOptions {
+export interface ResendEmailOptions extends Omit<EmailOptions, "tags"> {
     /**
      * Schedule email for delivery at a specific time
      */

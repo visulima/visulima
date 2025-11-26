@@ -1,4 +1,4 @@
-import type { BaseConfig, EmailOptions } from "../../types";
+import type { BaseConfig, EmailAddress, EmailOptions } from "../../types";
 
 /**
  * Brevo configuration

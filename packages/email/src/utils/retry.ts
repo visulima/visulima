@@ -1,11 +1,11 @@
 import type { Result } from "../types";
 
 /**
- * Helper function to retry a function with exponential backoff
- * @param function_ The async function to retry
- * @param retries Number of retry attempts (default: 3)
- * @param delay Initial delay in milliseconds (default: 300, doubles on each retry)
- * @returns A result object containing the function result or error
+ * Helper function to retry an async function with exponential backoff.
+ * @param function_ The async function to retry.
+ * @param retries Number of retry attempts (default: 3).
+ * @param delay Initial delay in milliseconds (default: 300, doubles on each retry).
+ * @returns A result object containing the function result or error.
  */
 const retry = async <T>(function_: () => Promise<Result<T>>, retries: number = 3, delay: number = 300): Promise<Result<T>> => {
     try {
@@ -15,7 +15,11 @@ const retry = async <T>(function_: () => Promise<Result<T>>, retries: number = 3
             return result;
         }
 
-        await new Promise((resolve) => setTimeout(resolve, delay));
+        await new Promise<void>((resolve) => {
+            setTimeout(() => {
+                resolve();
+            }, delay);
+        });
 
         return retry(function_, retries - 1, delay * 2);
     } catch (error) {
@@ -26,7 +30,11 @@ const retry = async <T>(function_: () => Promise<Result<T>>, retries: number = 3
             };
         }
 
-        await new Promise((resolve) => setTimeout(resolve, delay));
+        await new Promise<void>((resolve) => {
+            setTimeout(() => {
+                resolve();
+            }, delay);
+        });
 
         return retry(function_, retries - 1, delay * 2);
     }

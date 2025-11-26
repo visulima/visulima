@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import RequiredOptionError from "../../src/errors/required-option-error";
 import { resendProvider } from "../../src/providers/resend/index";
 import type { ResendEmailOptions } from "../../src/providers/resend/types";
 import { makeRequest } from "../../src/utils/make-request";
@@ -24,12 +25,16 @@ describe(resendProvider, () => {
 
     describe("initialization", () => {
         it("should throw error if apiKey is missing", () => {
+            expect.assertions(1);
+
             expect(() => {
                 resendProvider({} as any);
-            }).toThrow();
+            }).toThrow(RequiredOptionError);
         });
 
         it("should create provider with apiKey", () => {
+            expect.assertions(2);
+
             const provider = resendProvider({ apiKey: "re_test123" });
 
             expect(provider).toBeDefined();
@@ -37,12 +42,16 @@ describe(resendProvider, () => {
         });
 
         it("should use default endpoint if not provided", () => {
+            expect.assertions(1);
+
             const provider = resendProvider({ apiKey: "re_test123" });
 
             expect(provider.options?.endpoint).toBe("https://api.resend.com");
         });
 
         it("should use custom endpoint if provided", () => {
+            expect.assertions(1);
+
             const provider = resendProvider({
                 apiKey: "re_test123",
                 endpoint: "https://custom.endpoint.com",
@@ -54,9 +63,11 @@ describe(resendProvider, () => {
 
     describe("features", () => {
         it("should have correct feature flags", () => {
+            expect.assertions(1);
+
             const provider = resendProvider({ apiKey: "re_test123" });
 
-            expect(provider.features).toEqual({
+            expect(provider.features).toStrictEqual({
                 attachments: true,
                 batchSending: true,
                 customHeaders: true,
@@ -72,6 +83,8 @@ describe(resendProvider, () => {
 
     describe("isAvailable", () => {
         it("should return true for valid API key format", async () => {
+            expect.assertions(1);
+
             const provider = resendProvider({ apiKey: "re_test123" });
 
             const isAvailable = await provider.isAvailable();
@@ -80,6 +93,8 @@ describe(resendProvider, () => {
         });
 
         it("should check API availability for non-standard keys", async () => {
+            expect.assertions(2);
+
             (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValue({
                 data: {
                     body: {},
@@ -107,6 +122,8 @@ describe(resendProvider, () => {
 
     describe("sendEmail", () => {
         it("should send email successfully", async () => {
+            expect.assertions(3);
+
             (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValue({
                 data: {
                     body: { id: "test-message-id" },
@@ -143,6 +160,8 @@ describe(resendProvider, () => {
         });
 
         it("should validate email options", async () => {
+            expect.assertions(2);
+
             const provider = resendProvider({ apiKey: "re_test123" });
             const emailOptions = {} as ResendEmailOptions;
 
@@ -153,6 +172,8 @@ describe(resendProvider, () => {
         });
 
         it("should format recipients correctly", async () => {
+            expect.assertions(2);
+
             (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValue({
                 data: {
                     body: { id: "test-id" },
@@ -176,10 +197,12 @@ describe(resendProvider, () => {
             const payload = JSON.parse(callArgs[2] as string);
 
             expect(payload.from).toBe("Sender <sender@example.com>");
-            expect(payload.to).toEqual(["User 1 <user1@example.com>", "user2@example.com"]);
+            expect(payload.to).toStrictEqual(["User 1 <user1@example.com>", "user2@example.com"]);
         });
 
         it("should include tags if provided", async () => {
+            expect.assertions(1);
+
             (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValue({
                 data: {
                     body: { id: "test-id" },
@@ -206,13 +229,15 @@ describe(resendProvider, () => {
             const callArgs = (makeRequest as ReturnType<typeof vi.fn>).mock.calls[0];
             const payload = JSON.parse(callArgs[2] as string);
 
-            expect(payload.tags).toEqual([
+            expect(payload.tags).toStrictEqual([
                 { name: "category", value: "newsletter" },
                 { name: "campaign", value: "summer2024" },
             ]);
         });
 
         it("should validate tag format", async () => {
+            expect.assertions(2);
+
             const provider = resendProvider({ apiKey: "re_test123" });
             const emailOptions: ResendEmailOptions = {
                 from: { email: "sender@example.com" },
@@ -229,6 +254,8 @@ describe(resendProvider, () => {
         });
 
         it("should include template if provided", async () => {
+            expect.assertions(6);
+
             // Mock makeRequest to handle sendEmail call
             const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
 
@@ -260,12 +287,6 @@ describe(resendProvider, () => {
 
             const result = await provider.sendEmail(emailOptions);
 
-            // Debug: log error if send failed
-            if (!result.success) {
-                console.error("Send failed:", result.error?.message);
-                console.error("Error details:", result.error);
-            }
-
             // Verify email was sent successfully
             expect(result.success).toBe(true);
 
@@ -279,29 +300,17 @@ describe(resendProvider, () => {
                 .find((call) => call.length > 2 && call[2] && typeof call[2] === "string" && (call[2] as string).includes("template"));
 
             expect(callWithPayload).toBeDefined();
+            expect(callWithPayload?.[2]).toBeDefined();
 
-            if (callWithPayload && callWithPayload[2]) {
-                const payload = JSON.parse(callWithPayload[2] as string);
+            const payload = JSON.parse(callWithPayload[2] as string);
 
-                expect(payload.template).toBe("template_123");
-                expect(payload.data).toEqual({ name: "John" });
-            } else {
-                // Fallback: check all recent calls
-                const recentCalls = calls.slice(-3); // Check last 3 calls
-                const anyCallWithPayload = recentCalls.find((call) => call.length > 2 && call[2]);
-
-                if (anyCallWithPayload && anyCallWithPayload[2]) {
-                    const payload = JSON.parse(anyCallWithPayload[2] as string);
-
-                    expect(payload.template).toBe("template_123");
-                    expect(payload.data).toEqual({ name: "John" });
-                } else {
-                    throw new Error(`Could not find makeRequest call with payload. Total calls: ${calls.length}`);
-                }
-            }
+            expect(payload.template).toBe("template_123");
+            expect(payload.data).toStrictEqual({ name: "John" });
         });
 
         it("should handle errors gracefully", async () => {
+            expect.assertions(2);
+
             (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
                 error: new Error("API Error"),
                 success: false,

@@ -1,5 +1,6 @@
-import { EmailError, RequiredOptionError } from "../../errors/email-error";
-import type { EmailResult, Result } from "../../types";
+import EmailError from "../../errors/email-error";
+import RequiredOptionError from "../../errors/required-option-error";
+import type { EmailOptions, EmailResult, Result } from "../../types";
 import generateMessageId from "../../utils/generate-message-id";
 import headersToRecord from "../../utils/headers-to-record";
 import { makeRequest } from "../../utils/make-request";
@@ -16,10 +17,12 @@ const DEFAULT_TIMEOUT = 30_000;
 const DEFAULT_RETRIES = 3;
 
 /**
- * Validates tag format for Resend API
- * Tags can only contain ASCII letters, numbers, underscores, or dashes
+ * Validates tag format for Resend API.
+ * Tags can only contain ASCII letters, numbers, underscores, or dashes.
+ * @param tag The tag object to validate.
+ * @returns An array of error messages (empty if validation passes).
  */
-function validateTag(tag: ResendEmailTag): string[] {
+const validateTag = (tag: ResendEmailTag): string[] => {
     const errors: string[] = [];
     const validPattern = /^[\w-]+$/;
 
@@ -36,26 +39,28 @@ function validateTag(tag: ResendEmailTag): string[] {
     }
 
     return errors;
-}
+};
 
 /**
- * Resend Provider for sending emails through Resend API
+ * Resend Provider for sending emails through Resend API.
  */
-export const resendProvider: ProviderFactory<ResendConfig, unknown, ResendEmailOptions> = defineProvider((options_: ResendConfig = {} as ResendConfig) => {
-    if (!options_.apiKey) {
+// @ts-expect-error - ResendEmailOptions extends Omit<EmailOptions, "tags"> which doesn't satisfy the constraint, but is compatible at runtime
+const resendProvider = defineProvider<ResendConfig, unknown, ResendEmailOptions>(((config: ResendConfig = {} as ResendConfig) => {
+    if (!config.apiKey) {
         throw new RequiredOptionError(PROVIDER_NAME, "apiKey");
     }
 
-    const options: Required<ResendConfig> = {
-        apiKey: options_.apiKey,
-        debug: options_.debug || false,
-        endpoint: options_.endpoint || DEFAULT_ENDPOINT,
-        retries: options_.retries || DEFAULT_RETRIES,
-        timeout: options_.timeout || DEFAULT_TIMEOUT,
+    const options: Pick<ResendConfig, "logger"> & Required<Omit<ResendConfig, "logger">> = {
+        apiKey: config.apiKey,
+        debug: config.debug || false,
+        endpoint: config.endpoint || DEFAULT_ENDPOINT,
+        logger: config.logger,
+        retries: config.retries || DEFAULT_RETRIES,
+        timeout: config.timeout || DEFAULT_TIMEOUT,
     };
 
     const providerState = new ProviderState();
-    const logger = createProviderLogger(PROVIDER_NAME, options_.logger);
+    const logger = createProviderLogger(PROVIDER_NAME, config.logger);
 
     return {
         endpoint: options.endpoint,
@@ -73,9 +78,9 @@ export const resendProvider: ProviderFactory<ResendConfig, unknown, ResendEmailO
         },
 
         /**
-         * Retrieve email by ID
-         * @param id Email ID to retrieve
-         * @returns Email details
+         * Retrieves an email by its ID from Resend.
+         * @param id The email ID to retrieve.
+         * @returns A result object containing the email details or an error.
          */
         async getEmail(id: string): Promise<Result<unknown>> {
             try {
@@ -109,7 +114,11 @@ export const resendProvider: ProviderFactory<ResendConfig, unknown, ResendEmailO
                     logger.debug("API request failed when retrieving email", result.error);
 
                     return {
-                        error: new EmailError(PROVIDER_NAME, `Failed to retrieve email: ${result.error?.message || "Unknown error"}`, { cause: result.error }),
+                        error: new EmailError(
+                            PROVIDER_NAME,
+                            `Failed to retrieve email: ${result.error instanceof Error ? result.error.message : "Unknown error"}`,
+                            { cause: result.error },
+                        ),
                         success: false,
                     };
                 }
@@ -129,11 +138,12 @@ export const resendProvider: ProviderFactory<ResendConfig, unknown, ResendEmailO
         },
 
         /**
-         * Initialize the Resend provider
+         * Initializes the Resend provider and validates API availability.
+         * @throws {EmailError} When the Resend API is not available or the API key is invalid.
          */
         async initialize(): Promise<void> {
             await providerState.ensureInitialized(async () => {
-                if (!await this.isAvailable()) {
+                if (!(await this.isAvailable())) {
                     throw new EmailError(PROVIDER_NAME, "Resend API not available or invalid API key");
                 }
 
@@ -142,7 +152,8 @@ export const resendProvider: ProviderFactory<ResendConfig, unknown, ResendEmailO
         },
 
         /**
-         * Check if Resend API is available and credentials are valid
+         * Checks if the Resend API is available and credentials are valid.
+         * @returns True if the API is available and credentials are valid, false otherwise.
          */
         async isAvailable(): Promise<boolean> {
             try {
@@ -180,19 +191,19 @@ export const resendProvider: ProviderFactory<ResendConfig, unknown, ResendEmailO
                 }
 
                 logger.debug("Resend API availability check response:", {
-                    error: result.error?.message,
+                    error: result.error instanceof Error ? result.error.message : undefined,
                     statusCode: (result.data as { statusCode?: number })?.statusCode,
                     success: result.success,
                 });
 
-                return (
+                return Boolean(
                     result.success
                     && result.data
                     && typeof result.data === "object"
                     && "statusCode" in result.data
-                    && typeof result.data.statusCode === "number"
-                    && result.data.statusCode >= 200
-                    && result.data.statusCode < 300
+                    && typeof (result.data as { statusCode?: unknown }).statusCode === "number"
+                    && (result.data as { statusCode: number }).statusCode >= 200
+                    && (result.data as { statusCode: number }).statusCode < 300,
                 );
             } catch (error) {
                 logger.debug("Error checking availability:", error);
@@ -206,12 +217,14 @@ export const resendProvider: ProviderFactory<ResendConfig, unknown, ResendEmailO
         options,
 
         /**
-         * Send email through Resend API
-         * @param emailOpts The email options including Resend-specific features
+         * Sends an email through the Resend API.
+         * @param emailOptions The email options including Resend-specific features.
+         * @returns A result object containing the email result or an error.
          */
+        // eslint-disable-next-line sonarjs/cognitive-complexity
         async sendEmail(emailOptions: ResendEmailOptions): Promise<Result<EmailResult>> {
             try {
-                const validationErrors = validateEmailOptions(emailOptions);
+                const validationErrors = validateEmailOptions(emailOptions as EmailOptions);
 
                 if (validationErrors.length > 0) {
                     return {
@@ -282,14 +295,34 @@ export const resendProvider: ProviderFactory<ResendConfig, unknown, ResendEmailO
                 }
 
                 if (emailOptions.attachments && emailOptions.attachments.length > 0) {
-                    payload.attachments = emailOptions.attachments.map((attachment) => {
-                        return {
-                            content: typeof attachment.content === "string" ? attachment.content : attachment.content.toString("base64"),
-                            content_type: attachment.contentType,
-                            filename: attachment.filename,
-                            path: attachment.path,
-                        };
-                    });
+                    payload.attachments = await Promise.all(
+                        emailOptions.attachments.map(async (attachment) => {
+                            let content: string;
+
+                            if (attachment.content) {
+                                if (typeof attachment.content === "string") {
+                                    content = attachment.content;
+                                } else if (attachment.content instanceof Promise) {
+                                    const buffer = await attachment.content;
+
+                                    content = Buffer.from(buffer).toString("base64");
+                                } else {
+                                    content = attachment.content.toString("base64");
+                                }
+                            } else if (attachment.raw) {
+                                content = typeof attachment.raw === "string" ? attachment.raw : attachment.raw.toString("base64");
+                            } else {
+                                throw new EmailError(PROVIDER_NAME, `Attachment ${attachment.filename} has no content`);
+                            }
+
+                            return {
+                                content,
+                                content_type: attachment.contentType,
+                                filename: attachment.filename,
+                                ...(attachment.path && { path: attachment.path }),
+                            };
+                        }),
+                    );
                 }
 
                 logger.debug("Sending email via Resend API", {
@@ -350,10 +383,14 @@ export const resendProvider: ProviderFactory<ResendConfig, unknown, ResendEmailO
         },
 
         /**
-         * Validate API credentials
+         * Validates the Resend API credentials.
+         * @returns A promise that resolves to true if credentials are valid, false otherwise.
          */
         async validateCredentials(): Promise<boolean> {
             return this.isAvailable();
         },
     };
-});
+    // @ts-expect-error - ResendEmailOptions extends Omit<EmailOptions, "tags"> which doesn't satisfy the constraint, but is compatible at runtime
+}) as unknown as ProviderFactory<ResendConfig, unknown, ResendEmailOptions>);
+
+export default resendProvider;

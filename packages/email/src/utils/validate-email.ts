@@ -1,7 +1,7 @@
 /**
- * Validate email address format
- * @param email The email address string to validate
- * @returns True if the email address is valid, false otherwise
+ * Validates an email address format according to basic RFC standards.
+ * @param email The email address string to validate.
+ * @returns True if the email address is valid, false otherwise.
  */
 const validateEmail = (email: string): boolean => {
     // Basic validation first
@@ -11,7 +11,17 @@ const validateEmail = (email: string): boolean => {
         return false;
     }
 
-    const [localPart, domain] = email.split("@");
+    const parts = email.split("@");
+
+    if (parts.length !== 2) {
+        return false;
+    }
+
+    const [localPart, domain] = parts;
+
+    if (!localPart || !domain) {
+        return false;
+    }
 
     // No consecutive dots anywhere
     if (email.includes("..")) {

@@ -1,20 +1,19 @@
 import { render } from "@vue-email/render";
 
-import { EmailError } from "../errors/email-error";
+import EmailError from "../errors/email-error";
 import type { TemplateRenderer } from "./types";
 
 /**
- * Renders Vue Email component to HTML.
- * @param template Vue component from @vue-email/components.
- * @param data Data/variables to pass to the template.
- * @param options Render options (pretty, plainText, htmlToTextOptions).
- * @returns HTML or plain text string.
- * @throws {EmailError} When @vue-email/render is not installed or rendering fails.
+ * Renders a Vue Email component to HTML.
+ * @param template The Vue component from \@vue-email/components to render.
+ * @param data Data and variables to pass to the template.
+ * @param options Render options including pretty formatting, plainText output, and htmlToTextOptions.
+ * @returns The rendered HTML or plain text string.
+ * @throws {EmailError} When \@vue-email/render is not installed or rendering fails.
  */
-const renderVueEmail: TemplateRenderer = async (template: unknown, data?: Record<string, unknown>, options?: Record<string, unknown>): Promise<string> => {
+const vueEmail: TemplateRenderer = async (template: unknown, data?: Record<string, unknown>, options?: Record<string, unknown>): Promise<string> => {
     try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        return await render(template as any, data ?? {}, {
+        return await render(template as unknown as Parameters<typeof render>[0], data ?? {}, {
             htmlToTextOptions: options?.htmlToTextOptions as Record<string, unknown> | undefined,
             plainText: options?.plainText as boolean | undefined,
             pretty: options?.pretty as boolean | undefined,
@@ -28,4 +27,4 @@ const renderVueEmail: TemplateRenderer = async (template: unknown, data?: Record
     }
 };
 
-export default renderVueEmail;
+export default vueEmail;

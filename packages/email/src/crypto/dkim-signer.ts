@@ -1,10 +1,11 @@
 import { createHash, createPrivateKey, createSign } from "node:crypto";
-import { readFile } from "node:fs/promises";
+
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { readFile } from "@visulima/fs";
 
 import type { EmailOptions } from "../types";
+import headersToRecord from "../utils/headers-to-record";
 import type { DkimOptions, EmailSigner } from "./types";
-
-const hasBuffer = globalThis.Buffer !== undefined;
 
 /**
  * Canonicalizes headers according to DKIM specification.
@@ -38,6 +39,7 @@ const canonicalizeBody = (body: string, method: "simple" | "relaxed" = "simple")
     }
 
     // Relaxed: normalize whitespace
+    // eslint-disable-next-line sonarjs/slow-regex
     return body.replaceAll("\r\n", "\n").replaceAll("\r", "\n").replaceAll(/\s+\n/g, "\n").replaceAll(/\n\s+/g, "\n").replace(/\n+$/, "\n");
 };
 
@@ -74,13 +76,39 @@ const createDkimSignatureHeader = (headers: Record<string, string>, options: Dki
  * DKIM signer implementation
  */
 export class DkimSigner implements EmailSigner {
+    /**
+     * Formats an email address for use in email headers.
+     * @param address The email address object to format.
+     * @param address.email The email address string.
+     * @param address.name Optional display name for the email address.
+     * @returns The formatted email address string in RFC 5322 format.
+     */
+    private static formatAddress(address: { email: string; name?: string }): string {
+        if (address.name) {
+            return `"${address.name}" <${address.email}>`;
+        }
+
+        return address.email;
+    }
+
+    /**
+     * Formats email addresses for headers.
+     * @param addresses The email address(es) to format (single or array).
+     * @returns The formatted email addresses string (comma-separated if multiple).
+     */
+    private static formatAddresses(addresses: { email: string; name?: string } | { email: string; name?: string }[]): string {
+        const addressArray = Array.isArray(addresses) ? addresses : [addresses];
+
+        return addressArray.map((addr) => DkimSigner.formatAddress(addr)).join(", ");
+    }
+
     private readonly options: DkimOptions;
 
     /**
      * Creates a new DKIM signer.
      * @param options DKIM signing options.
      */
-    constructor(options: DkimOptions) {
+    public constructor(options: DkimOptions) {
         this.options = options;
     }
 
@@ -90,30 +118,29 @@ export class DkimSigner implements EmailSigner {
      * @returns The email options with DKIM signature header added.
      * @throws {Error} When signing fails (e.g., invalid private key).
      */
-    async sign(email: EmailOptions): Promise<EmailOptions> {
+    public async sign(email: EmailOptions): Promise<EmailOptions> {
         // Load private key
         let privateKeyContent = this.options.privateKey;
 
         if (privateKeyContent.startsWith("file://")) {
             const filePath = privateKeyContent.slice(7);
 
-            // Use node:fs/promises (supported in Node.js, Bun, and Deno with Node.js compatibility)
-            privateKeyContent = await readFile(filePath, "utf-8");
+            privateKeyContent = await readFile(filePath, { encoding: "utf8" });
         }
 
         // Build the email message for signing
         const headers: Record<string, string> = {
-            ...email.headers,
-            From: this.formatAddress(email.from),
-            To: this.formatAddresses(email.to),
+            ...email.headers ? headersToRecord(email.headers) : {},
+            From: DkimSigner.formatAddress(email.from),
+            To: DkimSigner.formatAddresses(email.to),
         };
 
         if (email.cc) {
-            headers.Cc = this.formatAddresses(email.cc);
+            headers.Cc = DkimSigner.formatAddresses(email.cc);
         }
 
         if (email.replyTo) {
-            headers["Reply-To"] = this.formatAddress(email.replyTo);
+            headers["Reply-To"] = DkimSigner.formatAddress(email.replyTo);
         }
 
         headers.Subject = email.subject;
@@ -177,32 +204,6 @@ export class DkimSigner implements EmailSigner {
             ...email,
             headers: signedHeaders,
         };
-    }
-
-    /**
-     * Formats email address for headers.
-     * @param address The email address object.
-     * @param address.email The email address.
-     * @param address.name Optional name for the email address.
-     * @returns The formatted email address string.
-     */
-    private formatAddress(address: { email: string; name?: string }): string {
-        if (address.name) {
-            return `"${address.name}" <${address.email}>`;
-        }
-
-        return address.email;
-    }
-
-    /**
-     * Formats email addresses for headers.
-     * @param addresses The email address(es) to format (single or array).
-     * @returns The formatted email addresses string (comma-separated if multiple).
-     */
-    private formatAddresses(addresses: { email: string; name?: string } | { email: string; name?: string }[]): string {
-        const addressArray = Array.isArray(addresses) ? addresses : [addresses];
-
-        return addressArray.map((addr) => this.formatAddress(addr)).join(", ");
     }
 }
 

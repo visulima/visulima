@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import RequiredOptionError from "../../src/errors/required-option-error";
 import { azureProvider } from "../../src/providers/azure/index";
 import type { AzureEmailOptions } from "../../src/providers/azure/types";
 import { makeRequest } from "../../src/utils/make-request";
@@ -23,18 +24,24 @@ describe(azureProvider, () => {
 
     describe("initialization", () => {
         it("should throw error if region is missing", () => {
+            expect.assertions(1);
+
             expect(() => {
                 azureProvider({ accessToken: "test123" } as any);
-            }).toThrow();
+            }).toThrow(RequiredOptionError);
         });
 
         it("should throw error if both connectionString and accessToken are missing", () => {
+            expect.assertions(1);
+
             expect(() => {
                 azureProvider({ region: "eastus" } as any);
-            }).toThrow();
+            }).toThrow(RequiredOptionError);
         });
 
         it("should create provider with accessToken and region", () => {
+            expect.assertions(2);
+
             const provider = azureProvider({ accessToken: "test123", region: "eastus" });
 
             expect(provider).toBeDefined();
@@ -42,6 +49,8 @@ describe(azureProvider, () => {
         });
 
         it("should create provider with connectionString and region", () => {
+            expect.assertions(2);
+
             const provider = azureProvider({ connectionString: "endpoint=test;accesskey=key123", region: "eastus" });
 
             expect(provider).toBeDefined();
@@ -51,6 +60,8 @@ describe(azureProvider, () => {
 
     describe("sendEmail", () => {
         it("should send email successfully", async () => {
+            expect.assertions(2);
+
             const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
 
             makeRequestMock

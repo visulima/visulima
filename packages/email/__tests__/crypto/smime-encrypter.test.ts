@@ -1,14 +1,35 @@
-import { readFile } from "node:fs/promises";
-
+import { readFile } from "@visulima/fs";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createSmimeEncrypter, SmimeEncrypter } from "../../src/crypto/smime-encrypter";
 import type { SmimeEncryptOptions } from "../../src/crypto/types";
 import type { EmailOptions } from "../../src/types";
 
-vi.mock(import("node:fs/promises"), () => {
+vi.mock(import("@visulima/fs"), () => {
     return {
         readFile: vi.fn(),
+    };
+});
+
+vi.mock(import("node:crypto"), async () => {
+    const actualCrypto = (await vi.importActual("node:crypto")) as typeof import("node:crypto");
+
+    return {
+        ...actualCrypto,
+        createPublicKey: vi.fn(
+            (_key: string) =>
+                // Return a mock KeyObject-like object
+                // The actual implementation will use publicEncrypt which we'll also mock
+                ({
+                    asymmetricKeyType: "rsa",
+                    type: "public",
+                }) as ReturnType<typeof actualCrypto.createPublicKey>,
+        ),
+        publicEncrypt: vi.fn(
+            (_options: any, _buffer: Buffer) =>
+                // Mock publicEncrypt to return a buffer of the expected size
+                Buffer.alloc(256), // RSA encrypted data is typically 256 bytes for 2048-bit key
+        ),
     };
 });
 
@@ -17,24 +38,30 @@ vi.mock(import("pkijs"), async () => {
 
     // Mock Certificate class completely to avoid real parsing
     class MockCertificate {
-        issuer = { value: "CN=Test CA" };
+        public issuer = { value: "CN=Test CA" };
 
-        serialNumber = { valueHex: new Uint8Array([1, 2, 3, 4]) };
+        public serialNumber = { valueHex: new Uint8Array([1, 2, 3, 4]) };
 
-        getPublicKey = vi.fn().mockResolvedValue({
+        public getPublicKey = vi.fn().mockResolvedValue({
             algorithm: { name: "RSA-OAEP" },
             extractable: true,
             type: "public",
         } as CryptoKey);
 
-        constructor(options?: any) {
+        public constructor(_options?: any) {
             // Accept any constructor parameters but don't use them
+        }
+
+        public toSchema() {
+            return {
+                toBER: vi.fn(() => new Uint8Array([1, 2, 3, 4, 5])),
+            };
         }
     }
 
     // Mock other classes used in the code to avoid real crypto operations
     class MockEnvelopedData {
-        constructor(options?: any) {
+        public constructor(options?: any) {
             Object.assign(this, {
                 encryptedContentInfo: {
                     contentEncryptionAlgorithm: {},
@@ -51,7 +78,7 @@ vi.mock(import("pkijs"), async () => {
     }
 
     class MockRecipientInfo {
-        constructor(options?: any) {
+        public constructor(options?: any) {
             Object.assign(this, {
                 value: {
                     encryptedKey: new Uint8Array([1, 2, 3]),
@@ -67,7 +94,7 @@ vi.mock(import("pkijs"), async () => {
     return {
         ...actualPKIjs,
         AlgorithmIdentifier: class {
-            constructor(options?: any) {
+            public constructor(options?: any) {
                 Object.assign(this, {
                     algorithmId: options?.algorithmId || "",
                     algorithmParams: options?.algorithmParams || null,
@@ -76,7 +103,7 @@ vi.mock(import("pkijs"), async () => {
         },
         Certificate: MockCertificate,
         ContentInfo: class {
-            constructor(options?: any) {
+            public constructor(_options?: any) {
                 Object.assign(this, {
                     toSchema: vi.fn(() => {
                         return {
@@ -86,12 +113,31 @@ vi.mock(import("pkijs"), async () => {
                 });
             }
         },
+        EncryptedContentInfo: class {
+            public constructor(options?: any) {
+                Object.assign(this, {
+                    contentEncryptionAlgorithm: options?.contentEncryptionAlgorithm || null,
+                    contentType: options?.contentType || "",
+                    encryptedContent: options?.encryptedContent || null,
+                    toSchema: vi.fn(() => {
+                        return { toBER: vi.fn(() => new Uint8Array([1, 2, 3])) };
+                    }),
+                });
+            }
+        },
         EnvelopedData: MockEnvelopedData,
-        EnvelopedDataVersion: { v0: 0 },
-        id_Data: "1.2.840.113549.1.7.1",
-        id_EnvelopedData: "1.2.840.113549.1.7.3",
+        id_ContentType_Data: "1.2.840.113549.1.7.1",
+        id_ContentType_EnvelopedData: "1.2.840.113549.1.7.3",
+        IssuerAndSerialNumber: class {
+            public constructor(options?: any) {
+                Object.assign(this, {
+                    issuer: options?.issuer || {},
+                    serialNumber: options?.serialNumber || {},
+                });
+            }
+        },
         KeyTransRecipientInfo: class {
-            constructor(options?: any) {
+            public constructor(options?: any) {
                 Object.assign(this, {
                     encryptedKey: options?.encryptedKey || new Uint8Array([1, 2, 3]),
                     keyEncryptionAlgorithm: options?.keyEncryptionAlgorithm || {},
@@ -100,19 +146,28 @@ vi.mock(import("pkijs"), async () => {
                 });
             }
         },
-        RecipientIdentifierType: { issuerAndSerialNumber: 0 },
         RecipientInfo: MockRecipientInfo,
     };
 });
 
-vi.mock(import("asn1js"), () => {
+vi.mock(import("asn1js"), async () => {
+    const actualAsn1js = await vi.importActual("asn1js");
+
     return {
+        ...actualAsn1js,
         fromBER: vi.fn(() => {
             return {
                 offset: 0,
                 result: { valueHex: new Uint8Array([1, 2, 3, 4]) },
             };
         }),
+        OctetString: class {
+            public constructor(options?: any) {
+                Object.assign(this, {
+                    valueHex: options?.valueHex || new ArrayBuffer(0),
+                });
+            }
+        },
     };
 });
 
@@ -138,6 +193,8 @@ describe(SmimeEncrypter, () => {
 
     describe("constructor", () => {
         it("should create a SmimeEncrypter instance", () => {
+            expect.assertions(1);
+
             const options: SmimeEncryptOptions = {
                 certificates: "/path/to/certificate.crt",
             };
@@ -150,6 +207,8 @@ describe(SmimeEncrypter, () => {
 
     describe(createSmimeEncrypter, () => {
         it("should create a SmimeEncrypter instance", () => {
+            expect.assertions(1);
+
             const options: SmimeEncryptOptions = {
                 certificates: "/path/to/certificate.crt",
             };
@@ -165,6 +224,8 @@ describe(SmimeEncrypter, () => {
         // The error handling is tested implicitly when the modules are not available
 
         it("should encrypt email with single certificate", async () => {
+            expect.assertions(5);
+
             vi.mocked(readFile).mockResolvedValue(TEST_CERTIFICATE);
 
             const options: SmimeEncryptOptions = {
@@ -181,10 +242,6 @@ describe(SmimeEncrypter, () => {
             const encrypter = createSmimeEncrypter(options);
 
             // Mock Web Crypto API
-            const mockPublicKey = {
-                algorithm: { name: "RSA-OAEP" },
-            } as CryptoKey;
-
             const mockSubtle = {
                 encrypt: vi.fn().mockResolvedValue(new ArrayBuffer(256)),
                 exportKey: vi.fn().mockResolvedValue(new ArrayBuffer(32)),
@@ -192,11 +249,13 @@ describe(SmimeEncrypter, () => {
                     algorithm: { name: "AES-CBC" },
                 } as CryptoKey),
                 getRandomValues: vi.fn((array: Uint8Array) => {
-                    for (let i = 0; i < array.length; i++) {
-                        array[i] = i % 256;
+                    const result = new Uint8Array(array.length);
+
+                    for (let i = 0; i < array.length; i += 1) {
+                        result[i] = i % 256;
                     }
 
-                    return array;
+                    return result;
                 }),
             } as unknown as SubtleCrypto;
 
@@ -209,7 +268,7 @@ describe(SmimeEncrypter, () => {
             try {
                 const encrypted = await encrypter.encrypt(email);
 
-                expect(readFile).toHaveBeenCalledWith("/path/to/certificate.crt", "utf-8");
+                expect(readFile).toHaveBeenCalledWith("/path/to/certificate.crt", { encoding: "utf8" });
                 expect(encrypted.text).toBeDefined();
                 expect(encrypted.html).toBeUndefined();
                 expect(encrypted.headers).toBeDefined();
@@ -224,6 +283,8 @@ describe(SmimeEncrypter, () => {
         });
 
         it("should encrypt email with multiple certificates", async () => {
+            expect.assertions(3);
+
             vi.mocked(readFile).mockResolvedValue(TEST_CERTIFICATE);
 
             const options: SmimeEncryptOptions = {
@@ -242,10 +303,6 @@ describe(SmimeEncrypter, () => {
 
             const encrypter = createSmimeEncrypter(options);
 
-            const mockPublicKey = {
-                algorithm: { name: "RSA-OAEP" },
-            } as CryptoKey;
-
             const mockSubtle = {
                 encrypt: vi.fn().mockResolvedValue(new ArrayBuffer(256)),
                 exportKey: vi.fn().mockResolvedValue(new ArrayBuffer(32)),
@@ -253,11 +310,13 @@ describe(SmimeEncrypter, () => {
                     algorithm: { name: "AES-CBC" },
                 } as CryptoKey),
                 getRandomValues: vi.fn((array: Uint8Array) => {
-                    for (let i = 0; i < array.length; i++) {
-                        array[i] = i % 256;
+                    const result = new Uint8Array(array.length);
+
+                    for (let i = 0; i < array.length; i += 1) {
+                        result[i] = i % 256;
                     }
 
-                    return array;
+                    return result;
                 }),
             } as unknown as SubtleCrypto;
 
@@ -270,8 +329,8 @@ describe(SmimeEncrypter, () => {
             try {
                 const encrypted = await encrypter.encrypt(email);
 
-                expect(readFile).toHaveBeenCalledWith("/path/to/recipient1.crt", "utf-8");
-                expect(readFile).toHaveBeenCalledWith("/path/to/recipient2.crt", "utf-8");
+                expect(readFile).toHaveBeenCalledWith("/path/to/recipient1.crt", { encoding: "utf8" });
+                expect(readFile).toHaveBeenCalledWith("/path/to/recipient2.crt", { encoding: "utf8" });
                 expect(encrypted.text).toBeDefined();
             } finally {
                 Object.defineProperty(globalThis.crypto, "subtle", {
@@ -283,6 +342,8 @@ describe(SmimeEncrypter, () => {
         });
 
         it("should throw error if certificate not found for recipient", async () => {
+            expect.assertions(1);
+
             const options: SmimeEncryptOptions = {
                 certificates: {
                     "recipient1@example.com": "/path/to/recipient1.crt",
@@ -302,6 +363,8 @@ describe(SmimeEncrypter, () => {
         });
 
         it("should use default algorithm (aes-256-cbc)", async () => {
+            expect.assertions(1);
+
             vi.mocked(readFile).mockResolvedValue(TEST_CERTIFICATE);
 
             const options: SmimeEncryptOptions = {
@@ -316,10 +379,6 @@ describe(SmimeEncrypter, () => {
             };
 
             const encrypter = createSmimeEncrypter(options);
-
-            const mockPublicKey = {
-                algorithm: { name: "RSA-OAEP" },
-            } as CryptoKey;
 
             const mockSubtle = {
                 encrypt: vi.fn().mockResolvedValue(new ArrayBuffer(256)),
@@ -350,6 +409,8 @@ describe(SmimeEncrypter, () => {
         });
 
         it("should use specified algorithm", async () => {
+            expect.assertions(1);
+
             vi.mocked(readFile).mockResolvedValue(TEST_CERTIFICATE);
 
             const options: SmimeEncryptOptions = {
@@ -365,10 +426,6 @@ describe(SmimeEncrypter, () => {
             };
 
             const encrypter = createSmimeEncrypter(options);
-
-            const mockPublicKey = {
-                algorithm: { name: "RSA-OAEP" },
-            } as CryptoKey;
 
             const mockSubtle = {
                 encrypt: vi.fn().mockResolvedValue(new ArrayBuffer(256)),
@@ -399,6 +456,8 @@ describe(SmimeEncrypter, () => {
         });
 
         it("should handle text content", async () => {
+            expect.assertions(2);
+
             vi.mocked(readFile).mockResolvedValue(TEST_CERTIFICATE);
 
             const options: SmimeEncryptOptions = {
@@ -413,10 +472,6 @@ describe(SmimeEncrypter, () => {
             };
 
             const encrypter = createSmimeEncrypter(options);
-
-            const mockPublicKey = {
-                algorithm: { name: "RSA-OAEP" },
-            } as CryptoKey;
 
             const mockSubtle = {
                 encrypt: vi.fn().mockResolvedValue(new ArrayBuffer(256)),
@@ -448,6 +503,8 @@ describe(SmimeEncrypter, () => {
         });
 
         it("should throw error for invalid certificate", async () => {
+            expect.assertions(1);
+
             vi.mocked(readFile).mockResolvedValue("invalid-certificate");
 
             const asn1js = await import("asn1js");
@@ -474,6 +531,8 @@ describe(SmimeEncrypter, () => {
         });
 
         it("should throw error for invalid certificate in multiple certificates setup", async () => {
+            expect.assertions(1);
+
             vi.mocked(readFile).mockResolvedValue("invalid-certificate");
 
             const asn1js = await import("asn1js");

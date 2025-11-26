@@ -1,16 +1,18 @@
-import { readFile } from "node:fs/promises";
+import { createCipheriv, createPublicKey, publicEncrypt, randomBytes } from "node:crypto";
 
-import { fromBER } from "asn1js";
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { readFile } from "@visulima/fs";
+import { fromBER, OctetString } from "asn1js";
 import {
     AlgorithmIdentifier,
     Certificate,
     ContentInfo,
+    EncryptedContentInfo,
     EnvelopedData,
-    EnvelopedDataVersion,
-    id_Data,
-    id_EnvelopedData,
+    id_ContentType_Data,
+    id_ContentType_EnvelopedData,
+    IssuerAndSerialNumber,
     KeyTransRecipientInfo,
-    RecipientIdentifierType,
     RecipientInfo,
 } from "pkijs";
 
@@ -38,8 +40,8 @@ const pemToDer = (pem: string): Uint8Array => {
     const binaryString = atob(base64);
     const bytes = new Uint8Array(binaryString.length);
 
-    for (let i = 0; i < binaryString.length; i++) {
-        bytes[i] = binaryString.charCodeAt(i);
+    for (let i = 0; i < binaryString.length; i += 1) {
+        bytes[i] = binaryString.codePointAt(i) as number;
     }
 
     return bytes;
@@ -59,7 +61,7 @@ const derToPem = (der: ArrayBuffer, type: string): string => {
     } else {
         const bytes = new Uint8Array(der);
 
-        base64 = btoa(String.fromCharCode(...bytes));
+        base64 = btoa(String.fromCodePoint(...bytes));
     }
 
     // Split into 64-character lines
@@ -71,16 +73,44 @@ const derToPem = (der: ArrayBuffer, type: string): string => {
 /**
  * S/MIME encrypter implementation using PKIjs
  * Note: Requires pkijs and asn1js for S/MIME operations
- * Works in Node.js, Bun, and Deno (with Web Crypto API support)
+ * Uses Node.js crypto for all cryptographic operations
  */
 export class SmimeEncrypter implements EmailEncrypter {
+    /**
+     * Formats an email address for use in email headers.
+     * @param address The email address to format (string or EmailAddress object).
+     * @returns The formatted email address string in RFC 5322 format.
+     */
+    private static formatAddress(address: EmailAddress | string): string {
+        if (typeof address === "string") {
+            return address;
+        }
+
+        if (address.name) {
+            return `"${address.name}" <${address.email}>`;
+        }
+
+        return address.email;
+    }
+
+    /**
+     * Formats email addresses for use in email headers.
+     * @param addresses The email addresses to format (single or array, string or EmailAddress objects).
+     * @returns The formatted email addresses string (comma-separated if multiple).
+     */
+    private static formatAddresses(addresses: EmailAddress | EmailAddress[] | string | string[]): string {
+        const addressArray = Array.isArray(addresses) ? addresses : [addresses];
+
+        return addressArray.map((addr) => SmimeEncrypter.formatAddress(addr)).join(", ");
+    }
+
     private readonly options: SmimeEncryptOptions;
 
     /**
      * Creates a new S/MIME encrypter.
      * @param options S/MIME encryption options.
      */
-    constructor(options: SmimeEncryptOptions) {
+    public constructor(options: SmimeEncryptOptions) {
         this.options = options;
     }
 
@@ -88,25 +118,18 @@ export class SmimeEncrypter implements EmailEncrypter {
      * Encrypts an email message with S/MIME.
      * @param email The email options to encrypt.
      * @returns The encrypted email options.
-     * @throws {Error} When encryption fails (e.g., invalid certificate or missing Web Crypto API).
+     * @throws {Error} When encryption fails (e.g., invalid certificate).
      */
-    async encrypt(email: EmailOptions): Promise<EmailOptions> {
-        // Get Web Crypto API
-        const { crypto } = globalThis;
-
-        if (!crypto || !crypto.subtle) {
-            throw new Error("Web Crypto API is required for S/MIME encryption. Available in Node.js 20+, Bun, and Deno.");
-        }
-
+    public async encrypt(email: EmailOptions): Promise<EmailOptions> {
         // Determine which certificate(s) to use
         const recipients = Array.isArray(email.to) ? email.to : [email.to];
         const certificates: Certificate[] = [];
 
         if (typeof this.options.certificates === "string") {
             // Single certificate for all recipients
-            const certPem = await readFile(this.options.certificates, "utf-8");
+            const certPem = await readFile(this.options.certificates, { encoding: "utf8" });
             const certDer = pemToDer(certPem);
-            const asn1 = fromBER(certDer.buffer);
+            const asn1 = fromBER(certDer);
 
             if (asn1.offset === -1) {
                 throw new Error("Failed to parse certificate: Invalid ASN.1 structure");
@@ -115,24 +138,26 @@ export class SmimeEncrypter implements EmailEncrypter {
             certificates.push(new Certificate({ schema: asn1.result }));
         } else {
             // Map of email -> certificate path
-            for (const recipient of recipients) {
+            const certPromises = recipients.map(async (recipient) => {
                 const emailAddress = typeof recipient === "string" ? recipient : recipient.email;
-                const certPath = this.options.certificates[emailAddress];
+                const certPath = (this.options.certificates as Record<string, string>)[emailAddress];
 
                 if (!certPath) {
                     throw new Error(`No certificate found for recipient: ${emailAddress}`);
                 }
 
-                const certPem = await readFile(certPath, "utf-8");
+                const certPem = await readFile(certPath, { encoding: "utf8" });
                 const certDer = pemToDer(certPem);
-                const asn1 = fromBER(certDer.buffer);
+                const asn1 = fromBER(certDer);
 
                 if (asn1.offset === -1) {
                     throw new Error(`Failed to parse certificate for ${emailAddress}: Invalid ASN.1 structure`);
                 }
 
-                certificates.push(new Certificate({ schema: asn1.result }));
-            }
+                return new Certificate({ schema: asn1.result });
+            });
+
+            certificates.push(...await Promise.all(certPromises));
         }
 
         // Build the email message
@@ -141,13 +166,13 @@ export class SmimeEncrypter implements EmailEncrypter {
 
         // Create PKCS#7 enveloped data
         const envelopedData = new EnvelopedData({
-            version: EnvelopedDataVersion.v0,
+            version: 0,
         });
 
         // Set content type
-        envelopedData.encryptedContentInfo = {
-            contentType: id_Data,
-        };
+        envelopedData.encryptedContentInfo = new EncryptedContentInfo({
+            contentType: id_ContentType_Data,
+        });
 
         // Determine encryption algorithm
         const algorithm = this.options.algorithm || "aes-256-cbc";
@@ -173,91 +198,88 @@ export class SmimeEncrypter implements EmailEncrypter {
                 keyLength = 24;
                 break;
             }
-            case "aes256":
-            case "aes-256-cbc":
             default: {
+                // Default to AES-256-CBC
                 algorithmId = "2.16.840.1.101.3.4.1.42"; // AES-256-CBC
                 keyLength = 32;
                 break;
             }
         }
 
-        // Generate content encryption key
-        const contentEncryptionKey = await crypto.subtle.generateKey(
-            {
-                length: keyLength * 8,
-                name: "AES-CBC",
-            },
-            true,
-            ["encrypt"],
-        );
+        // Generate content encryption key using Node.js crypto
+        const contentEncryptionKey = randomBytes(keyLength);
+        const keyArray = hasBuffer ? contentEncryptionKey : new Uint8Array(contentEncryptionKey);
 
-        const keyData = await crypto.subtle.exportKey("raw", contentEncryptionKey);
-        const keyArray = new Uint8Array(keyData);
+        // Generate IV using Node.js crypto
+        const iv = randomBytes(16);
+        const ivArray = hasBuffer ? iv : new Uint8Array(iv);
 
-        // Generate IV
-        const iv = crypto.getRandomValues(new Uint8Array(16));
-
-        // Encrypt content
-        const encryptedContent = await crypto.subtle.encrypt(
-            {
-                iv,
-                name: "AES-CBC",
-            },
-            contentEncryptionKey,
-            messageBuffer,
-        );
+        // Encrypt content using Node.js crypto
+        const cipher = createCipheriv(`aes-${keyLength * 8}-cbc`, contentEncryptionKey, iv);
+        const messageBufferNode = Buffer.from(messageBuffer);
+        const encryptedChunks: Buffer[] = [cipher.update(messageBufferNode), cipher.final()];
+        const encryptedContent = Buffer.concat(encryptedChunks);
 
         // Set encrypted content
-        envelopedData.encryptedContentInfo.encryptedContent = new Uint8Array(encryptedContent);
+        envelopedData.encryptedContentInfo.encryptedContent = new OctetString({
+            valueHex: encryptedContent.buffer.slice(encryptedContent.byteOffset, encryptedContent.byteOffset + encryptedContent.byteLength),
+        });
 
         // Add recipient infos (one per certificate)
-        for (const cert of certificates) {
-            // Extract public key from certificate
-            const publicKey = await cert.getPublicKey();
+        const recipientInfos = await Promise.all(
+            certificates.map(async (cert) => {
+                // Extract public key from certificate using Node.js crypto
+                // Export certificate to PEM and extract public key
+                const certPem = cert.toSchema().toBER(false);
+                const certPemString = derToPem(certPem, "CERTIFICATE");
+                const publicKeyObject = createPublicKey(certPemString);
 
-            if (!publicKey) {
-                throw new Error("Failed to extract public key from certificate");
-            }
-
-            // Encrypt content encryption key with recipient's public key
-            const encryptedKey = await crypto.subtle.encrypt(
-                {
-                    name: "RSA-OAEP",
-                },
-                publicKey,
-                keyArray,
-            );
-
-            // Create recipient info
-            const recipientInfo = new RecipientInfo({
-                value: new KeyTransRecipientInfo({
-                    encryptedKey: new Uint8Array(encryptedKey),
-                    keyEncryptionAlgorithm: new AlgorithmIdentifier({
-                        algorithmId: "1.2.840.113549.1.1.1", // RSA-OAEP
-                    }),
-                    rid: {
-                        issuer: cert.issuer,
-                        serialNumber: cert.serialNumber,
+                // Encrypt content encryption key with recipient's public key using Node.js crypto
+                // Use RSAES-PKCS1-v1_5 (more compatible than OAEP)
+                const keyBuffer = Buffer.from(keyArray);
+                const encryptedKeyBuffer = publicEncrypt(
+                    {
+                        key: publicKeyObject,
+                        padding: 1, // RSA_PKCS1_PADDING
                     },
-                    version: 0,
-                }),
-                variant: RecipientIdentifierType.issuerAndSerialNumber,
-            });
+                    keyBuffer,
+                );
 
-            envelopedData.recipientInfos.push(recipientInfo);
-        }
+                // Create recipient info
+                return new RecipientInfo({
+                    value: new KeyTransRecipientInfo({
+                        encryptedKey: new OctetString({
+                            valueHex: encryptedKeyBuffer.buffer.slice(
+                                encryptedKeyBuffer.byteOffset,
+                                encryptedKeyBuffer.byteOffset + encryptedKeyBuffer.byteLength,
+                            ),
+                        }),
+                        keyEncryptionAlgorithm: new AlgorithmIdentifier({
+                            algorithmId: "1.2.840.113549.1.1.1", // RSAES-PKCS1-v1_5
+                        }),
+                        rid: new IssuerAndSerialNumber({
+                            issuer: cert.issuer,
+                            serialNumber: cert.serialNumber,
+                        }),
+                        version: 0,
+                    }),
+                    variant: 0, // RecipientIdentifierType.issuerAndSerialNumber
+                });
+            }),
+        );
+
+        envelopedData.recipientInfos.push(...recipientInfos);
 
         // Set encryption algorithm
         envelopedData.encryptedContentInfo.contentEncryptionAlgorithm = new AlgorithmIdentifier({
             algorithmId,
-            algorithmParams: iv,
+            algorithmParams: ivArray,
         });
 
         // Encode to BER
         const cmsContent = new ContentInfo({
             content: envelopedData.toSchema(),
-            contentType: id_EnvelopedData,
+            contentType: id_ContentType_EnvelopedData,
         });
 
         const cmsBuffer = cmsContent.toSchema().toBER(false);
@@ -280,20 +302,20 @@ export class SmimeEncrypter implements EmailEncrypter {
     }
 
     /**
-     * Build the email message from options
+     * Builds the email message string from email options.
+     * @param email The email options to build the message from.
+     * @returns The formatted email message as a string.
      */
+    // eslint-disable-next-line class-methods-use-this
     private async buildMessage(email: EmailOptions): Promise<string> {
-        const lines: string[] = [];
-
-        lines.push(`From: ${this.formatAddress(email.from)}`);
-        lines.push(`To: ${this.formatAddresses(email.to)}`);
-
-        if (email.cc) {
-            lines.push(`Cc: ${this.formatAddresses(email.cc)}`);
-        }
+        const lines: string[] = [
+            `From: ${SmimeEncrypter.formatAddress(email.from)}`,
+            `To: ${SmimeEncrypter.formatAddresses(email.to)}`,
+            ...email.cc ? [`Cc: ${SmimeEncrypter.formatAddresses(email.cc)}`] : [],
+        ];
 
         if (email.replyTo) {
-            lines.push(`Reply-To: ${this.formatAddress(email.replyTo)}`);
+            lines.push(`Reply-To: ${SmimeEncrypter.formatAddress(email.replyTo)}`);
         }
 
         lines.push(`Subject: ${email.subject}`, "MIME-Version: 1.0");
@@ -314,39 +336,11 @@ export class SmimeEncrypter implements EmailEncrypter {
 
         return lines.join("\r\n");
     }
-
-    /**
-     * Format email address for headers
-     */
-    private formatAddress(address: EmailAddress | string): string {
-        if (typeof address === "string") {
-            return address;
-        }
-
-        if (address.name) {
-            return `"${address.name}" <${address.email}>`;
-        }
-
-        return address.email;
-    }
-
-    /**
-     * Format email addresses for headers
-     */
-    private formatAddresses(addresses: EmailAddress | EmailAddress[] | string | string[]): string {
-        const addressArray = Array.isArray(addresses) ? addresses : [addresses];
-
-        return addressArray.map((addr) => this.formatAddress(addr)).join(", ");
-    }
 }
 
 /**
- * Create an S/MIME encrypter instance
- */
-
-/**
- * Create an S/MIME encrypter instance
- * @param options S/MIME encryption options
- * @returns A new SmimeEncrypter instance
+ * Creates a new S/MIME encrypter instance.
+ * @param options The S/MIME encryption options.
+ * @returns A new SmimeEncrypter instance ready to encrypt emails.
  */
 export const createSmimeEncrypter = (options: SmimeEncryptOptions): SmimeEncrypter => new SmimeEncrypter(options);

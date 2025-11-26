@@ -2,9 +2,9 @@ import type { EmailAddress, EmailOptions } from "../types";
 import validateEmailDefault from "./validate-email";
 
 /**
- * Validate email options
- * @param options The email options to validate
- * @returns Array of error messages (empty if validation passes)
+ * Validates email options and returns any validation errors.
+ * @param options The email options to validate.
+ * @returns Array of error messages (empty if validation passes).
  */
 const validateEmailOptions = <T extends EmailOptions>(options: T): string[] => {
     const errors: string[] = [];

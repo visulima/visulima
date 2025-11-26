@@ -1,13 +1,12 @@
-import { readFile } from "node:fs/promises";
-
+import { readFile } from "@visulima/fs";
 import { describe, expect, it, vi } from "vitest";
 
 import type { AttachmentDataOptions, AttachmentOptions } from "../src/attachment-helpers";
 import { detectMimeType, generateContentId, readFileAsBuffer } from "../src/attachment-helpers";
 
-vi.mock(import("node:fs/promises"), () => {
+vi.mock(import("@visulima/fs"), () => {
     return {
-        readFile: vi.fn<Parameters<typeof import("node:fs/promises").readFile>>(),
+        readFile: vi.fn<Parameters<typeof import("@visulima/fs").readFile>>(),
     };
 });
 
@@ -82,7 +81,7 @@ describe("attachment-helpers", () => {
 
             const result = await readFileAsBuffer("/path/to/file.txt");
 
-            expect(readFile).toHaveBeenCalledWith("/path/to/file.txt");
+            expect(readFile).toHaveBeenCalledWith("/path/to/file.txt", { buffer: true });
             expect(result).toBe(mockBuffer);
         });
 

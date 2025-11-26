@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import RequiredOptionError from "../../src/errors/required-option-error";
 import { sendGridProvider } from "../../src/providers/sendgrid/index";
 import type { SendGridEmailOptions } from "../../src/providers/sendgrid/types";
 import { makeRequest } from "../../src/utils/make-request";
@@ -24,12 +25,16 @@ describe(sendGridProvider, () => {
 
     describe("initialization", () => {
         it("should throw error if apiKey is missing", () => {
+            expect.assertions(1);
+
             expect(() => {
                 sendGridProvider({} as any);
-            }).toThrow();
+            }).toThrow(RequiredOptionError);
         });
 
         it("should create provider with apiKey", () => {
+            expect.assertions(2);
+
             const provider = sendGridProvider({ apiKey: "SG.test123" });
 
             expect(provider).toBeDefined();
@@ -37,12 +42,16 @@ describe(sendGridProvider, () => {
         });
 
         it("should use default endpoint if not provided", () => {
+            expect.assertions(1);
+
             const provider = sendGridProvider({ apiKey: "SG.test123" });
 
             expect(provider.options?.endpoint).toBe("https://api.sendgrid.com/v3");
         });
 
         it("should use custom endpoint if provided", () => {
+            expect.assertions(1);
+
             const provider = sendGridProvider({
                 apiKey: "SG.test123",
                 endpoint: "https://custom.endpoint.com/v3",
@@ -54,9 +63,11 @@ describe(sendGridProvider, () => {
 
     describe("features", () => {
         it("should have correct feature flags", () => {
+            expect.assertions(1);
+
             const provider = sendGridProvider({ apiKey: "SG.test123" });
 
-            expect(provider.features).toEqual({
+            expect(provider.features).toStrictEqual({
                 attachments: true,
                 batchSending: true,
                 customHeaders: true,
@@ -72,6 +83,8 @@ describe(sendGridProvider, () => {
 
     describe("isAvailable", () => {
         it("should return true for valid API key format", async () => {
+            expect.assertions(1);
+
             const provider = sendGridProvider({ apiKey: "SG.test123" });
 
             const isAvailable = await provider.isAvailable();
@@ -80,6 +93,8 @@ describe(sendGridProvider, () => {
         });
 
         it("should check API availability for non-standard keys", async () => {
+            expect.assertions(2);
+
             (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValue({
                 data: {
                     body: {},
@@ -107,6 +122,8 @@ describe(sendGridProvider, () => {
 
     describe("sendEmail", () => {
         it("should send email successfully", async () => {
+            expect.assertions(3);
+
             const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
 
             makeRequestMock
@@ -152,6 +169,8 @@ describe(sendGridProvider, () => {
         });
 
         it("should validate email options", async () => {
+            expect.assertions(2);
+
             const provider = sendGridProvider({ apiKey: "SG.test123" });
             const emailOptions = {} as SendGridEmailOptions;
 
@@ -162,6 +181,8 @@ describe(sendGridProvider, () => {
         });
 
         it("should format recipients correctly", async () => {
+            expect.assertions(5);
+
             (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValue({
                 data: {
                     headers: new Headers({ "X-Message-Id": "test-id" }),
@@ -191,6 +212,8 @@ describe(sendGridProvider, () => {
         });
 
         it("should include CC and BCC recipients", async () => {
+            expect.assertions(2);
+
             (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValue({
                 data: {
                     headers: new Headers({ "X-Message-Id": "test-id" }),
@@ -219,6 +242,8 @@ describe(sendGridProvider, () => {
         });
 
         it("should include template if provided", async () => {
+            expect.assertions(5);
+
             const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
 
             makeRequestMock.mockResolvedValue({
@@ -254,16 +279,17 @@ describe(sendGridProvider, () => {
                 .find((call) => call.length > 2 && call[2] && typeof call[2] === "string" && (call[2] as string).includes("template"));
 
             expect(callWithPayload).toBeDefined();
+            expect(callWithPayload?.[2]).toBeDefined();
 
-            if (callWithPayload && callWithPayload[2]) {
-                const payload = JSON.parse(callWithPayload[2] as string);
+            const payload = JSON.parse(callWithPayload[2] as string);
 
-                expect(payload.template_id).toBe("template_123");
-                expect(payload.personalizations[0].dynamicTemplateData).toEqual({ name: "John" });
-            }
+            expect(payload.template_id).toBe("template_123");
+            expect(payload.personalizations[0].dynamicTemplateData).toStrictEqual({ name: "John" });
         });
 
         it("should include attachments", async () => {
+            expect.assertions(3);
+
             (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValue({
                 data: {
                     headers: new Headers({ "X-Message-Id": "test-id" }),
@@ -298,6 +324,8 @@ describe(sendGridProvider, () => {
         });
 
         it("should include custom headers", async () => {
+            expect.assertions(2);
+
             (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValue({
                 data: {
                     headers: new Headers({ "X-Message-Id": "test-id" }),
@@ -325,6 +353,8 @@ describe(sendGridProvider, () => {
         });
 
         it("should include tags as customArgs", async () => {
+            expect.assertions(3);
+
             (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValue({
                 data: {
                     headers: new Headers({ "X-Message-Id": "test-id" }),
@@ -353,6 +383,8 @@ describe(sendGridProvider, () => {
         });
 
         it("should handle errors gracefully", async () => {
+            expect.assertions(2);
+
             (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
                 error: new Error("API Error"),
                 success: false,

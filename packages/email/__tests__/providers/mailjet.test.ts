@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import RequiredOptionError from "../../src/errors/required-option-error";
 import { mailjetProvider } from "../../src/providers/mailjet/index";
 import type { MailjetEmailOptions } from "../../src/providers/mailjet/types";
 import { makeRequest } from "../../src/utils/make-request";
@@ -24,18 +25,22 @@ describe(mailjetProvider, () => {
 
     describe("initialization", () => {
         it("should throw error if apiKey is missing", () => {
+            expect.assertions(1);
             expect(() => {
                 mailjetProvider({ apiSecret: "secret123" } as any);
-            }).toThrow();
+            }).toThrow(RequiredOptionError);
         });
 
         it("should throw error if apiSecret is missing", () => {
+            expect.assertions(1);
             expect(() => {
                 mailjetProvider({ apiKey: "key123" } as any);
-            }).toThrow();
+            }).toThrow(RequiredOptionError);
         });
 
         it("should create provider with apiKey and apiSecret", () => {
+            expect.assertions(2);
+
             const provider = mailjetProvider({ apiKey: "key123", apiSecret: "secret123" });
 
             expect(provider).toBeDefined();
@@ -43,12 +48,16 @@ describe(mailjetProvider, () => {
         });
 
         it("should use default endpoint if not provided", () => {
+            expect.assertions(1);
+
             const provider = mailjetProvider({ apiKey: "key123", apiSecret: "secret123" });
 
             expect(provider.options?.endpoint).toBe("https://api.mailjet.com");
         });
 
         it("should use custom endpoint if provided", () => {
+            expect.assertions(1);
+
             const provider = mailjetProvider({
                 apiKey: "key123",
                 apiSecret: "secret123",
@@ -61,9 +70,11 @@ describe(mailjetProvider, () => {
 
     describe("features", () => {
         it("should have correct feature flags", () => {
+            expect.assertions(1);
+
             const provider = mailjetProvider({ apiKey: "key123", apiSecret: "secret123" });
 
-            expect(provider.features).toEqual({
+            expect(provider.features).toStrictEqual({
                 attachments: true,
                 batchSending: true,
                 customHeaders: true,
@@ -79,6 +90,8 @@ describe(mailjetProvider, () => {
 
     describe("isAvailable", () => {
         it("should check API availability", async () => {
+            expect.assertions(2);
+
             (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValue({
                 data: {
                     body: {},
@@ -104,6 +117,8 @@ describe(mailjetProvider, () => {
         });
 
         it("should return false if API is unavailable", async () => {
+            expect.assertions(1);
+
             (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
                 error: new Error("API Error"),
                 success: false,
@@ -119,6 +134,8 @@ describe(mailjetProvider, () => {
 
     describe("sendEmail", () => {
         it("should send email successfully", async () => {
+            expect.assertions(3);
+
             (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValue({
                 data: {
                     body: {
@@ -160,6 +177,8 @@ describe(mailjetProvider, () => {
         });
 
         it("should validate email options", async () => {
+            expect.assertions(2);
+
             const provider = mailjetProvider({ apiKey: "key123", apiSecret: "secret123" });
             const emailOptions = {} as MailjetEmailOptions;
 
@@ -170,6 +189,8 @@ describe(mailjetProvider, () => {
         });
 
         it("should format recipients correctly", async () => {
+            expect.assertions(5);
+
             const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
 
             makeRequestMock
@@ -215,6 +236,8 @@ describe(mailjetProvider, () => {
         });
 
         it("should include CC and BCC recipients", async () => {
+            expect.assertions(2);
+
             const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
 
             makeRequestMock
@@ -259,6 +282,8 @@ describe(mailjetProvider, () => {
         });
 
         it("should include template if provided", async () => {
+            expect.assertions(5);
+
             const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
 
             makeRequestMock
@@ -301,16 +326,17 @@ describe(mailjetProvider, () => {
             const sendEmailCall = makeRequestMock.mock.calls[1]; // Second call is sendEmail
 
             expect(sendEmailCall).toBeDefined();
+            expect(sendEmailCall?.[2]).toBeDefined();
 
-            if (sendEmailCall && sendEmailCall[2]) {
-                const payload = JSON.parse(sendEmailCall[2] as string);
+            const payload = JSON.parse(sendEmailCall[2] as string);
 
-                expect(payload.Messages[0].TemplateID).toBe(12_345);
-                expect(payload.Messages[0].Variables).toEqual({ name: "John" });
-            }
+            expect(payload.Messages[0].TemplateID).toBe(12_345);
+            expect(payload.Messages[0].Variables).toStrictEqual({ name: "John" });
         });
 
         it("should include tags", async () => {
+            expect.assertions(1);
+
             const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
 
             makeRequestMock
@@ -353,6 +379,8 @@ describe(mailjetProvider, () => {
         });
 
         it("should include custom headers", async () => {
+            expect.assertions(4);
+
             const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
 
             makeRequestMock
@@ -398,6 +426,8 @@ describe(mailjetProvider, () => {
         });
 
         it("should include attachments", async () => {
+            expect.assertions(3);
+
             const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
 
             makeRequestMock
@@ -448,6 +478,8 @@ describe(mailjetProvider, () => {
         });
 
         it("should handle errors gracefully", async () => {
+            expect.assertions(2);
+
             (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
                 error: new Error("API Error"),
                 success: false,

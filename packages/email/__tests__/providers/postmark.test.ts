@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import RequiredOptionError from "../../src/errors/required-option-error";
 import { postmarkProvider } from "../../src/providers/postmark/index";
 import type { PostmarkEmailOptions } from "../../src/providers/postmark/types";
 import { makeRequest } from "../../src/utils/make-request";
@@ -8,7 +9,7 @@ import { makeRequest } from "../../src/utils/make-request";
 // Mock the makeRequest function
 vi.mock(import("../../src/utils/make-request"), () => {
     return {
-        makeRequest: vi.fn((url, options, data) =>
+        makeRequest: vi.fn((_url, _options, _data) =>
             // Return a mock result that matches the expected structure
             Promise.resolve({
                 data: {
@@ -35,12 +36,16 @@ describe(postmarkProvider, () => {
 
     describe("initialization", () => {
         it("should throw error if serverToken is missing", () => {
+            expect.assertions(1);
+
             expect(() => {
                 postmarkProvider({} as any);
-            }).toThrow();
+            }).toThrow(RequiredOptionError);
         });
 
         it("should create provider with serverToken", () => {
+            expect.assertions(2);
+
             const provider = postmarkProvider({ serverToken: "test123" });
 
             expect(provider).toBeDefined();
@@ -48,12 +53,16 @@ describe(postmarkProvider, () => {
         });
 
         it("should use default endpoint if not provided", () => {
+            expect.assertions(1);
+
             const provider = postmarkProvider({ serverToken: "test123" });
 
             expect(provider.options?.endpoint).toBe("https://api.postmarkapp.com");
         });
 
         it("should use custom endpoint if provided", () => {
+            expect.assertions(1);
+
             const provider = postmarkProvider({
                 endpoint: "https://custom.endpoint.com",
                 serverToken: "test123",
@@ -65,9 +74,11 @@ describe(postmarkProvider, () => {
 
     describe("features", () => {
         it("should have correct feature flags", () => {
+            expect.assertions(1);
+
             const provider = postmarkProvider({ serverToken: "test123" });
 
-            expect(provider.features).toEqual({
+            expect(provider.features).toStrictEqual({
                 attachments: true,
                 batchSending: true,
                 customHeaders: true,
@@ -83,6 +94,8 @@ describe(postmarkProvider, () => {
 
     describe("isAvailable", () => {
         it("should check API availability", async () => {
+            expect.assertions(2);
+
             (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValue({
                 data: {
                     body: {},
@@ -108,6 +121,8 @@ describe(postmarkProvider, () => {
         });
 
         it("should return false if API is unavailable", async () => {
+            expect.assertions(1);
+
             (makeRequest as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
                 error: new Error("API Error"),
                 success: false,
@@ -123,6 +138,8 @@ describe(postmarkProvider, () => {
 
     describe("sendEmail", () => {
         it("should send email successfully", async () => {
+            expect.assertions(3);
+
             const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
 
             makeRequestMock
@@ -167,6 +184,8 @@ describe(postmarkProvider, () => {
         });
 
         it("should validate email options", async () => {
+            expect.assertions(2);
+
             const provider = postmarkProvider({ serverToken: "test123" });
             const emailOptions = {} as PostmarkEmailOptions;
 
@@ -177,6 +196,8 @@ describe(postmarkProvider, () => {
         });
 
         it("should format recipients correctly", async () => {
+            expect.assertions(3);
+
             const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
 
             makeRequestMock
@@ -225,6 +246,8 @@ describe(postmarkProvider, () => {
         });
 
         it("should include CC and BCC recipients", async () => {
+            expect.assertions(3);
+
             const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
 
             makeRequestMock
@@ -275,6 +298,8 @@ describe(postmarkProvider, () => {
         });
 
         it("should include template if provided", async () => {
+            expect.assertions(5);
+
             const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
 
             makeRequestMock
@@ -311,16 +336,17 @@ describe(postmarkProvider, () => {
             const sendEmailCall = makeRequestMock.mock.calls[1]; // Second call is sendEmail
 
             expect(sendEmailCall).toBeDefined();
+            expect(sendEmailCall?.[2]).toBeDefined();
 
-            if (sendEmailCall && sendEmailCall[2]) {
-                const payload = JSON.parse(sendEmailCall[2] as string);
+            const payload = JSON.parse(sendEmailCall[2] as string);
 
-                expect(payload.TemplateId).toBe(12_345);
-                expect(payload.TemplateModel).toEqual({ name: "John" });
-            }
+            expect(payload.TemplateId).toBe(12_345);
+            expect(payload.TemplateModel).toStrictEqual({ name: "John" });
         });
 
         it("should include template alias if provided", async () => {
+            expect.assertions(3);
+
             const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
 
             makeRequestMock
@@ -367,10 +393,12 @@ describe(postmarkProvider, () => {
             const payload = JSON.parse(callArgs[2] as string);
 
             expect(payload.TemplateAlias).toBe("welcome-template");
-            expect(payload.TemplateModel).toEqual({ name: "John" });
+            expect(payload.TemplateModel).toStrictEqual({ name: "John" });
         });
 
         it("should include tracking options", async () => {
+            expect.assertions(3);
+
             const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
 
             makeRequestMock
@@ -421,6 +449,8 @@ describe(postmarkProvider, () => {
         });
 
         it("should include tag", async () => {
+            expect.assertions(2);
+
             const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
 
             makeRequestMock
@@ -469,6 +499,8 @@ describe(postmarkProvider, () => {
         });
 
         it("should include custom headers", async () => {
+            expect.assertions(5);
+
             const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
 
             makeRequestMock
@@ -520,6 +552,8 @@ describe(postmarkProvider, () => {
         });
 
         it("should include attachments", async () => {
+            expect.assertions(4);
+
             const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
 
             makeRequestMock
@@ -576,6 +610,8 @@ describe(postmarkProvider, () => {
         });
 
         it("should handle errors gracefully", async () => {
+            expect.assertions(2);
+
             const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
 
             makeRequestMock

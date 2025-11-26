@@ -19,6 +19,4 @@ export interface FailoverConfig extends BaseConfig {
 /**
  * Failover-specific email options
  */
-export interface FailoverEmailOptions extends EmailOptions {
-    // No additional options beyond base EmailOptions
-}
+export type FailoverEmailOptions = EmailOptions;

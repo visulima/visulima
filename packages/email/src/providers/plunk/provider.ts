@@ -1,6 +1,7 @@
 import { Buffer } from "node:buffer";
 
-import { EmailError, RequiredOptionError } from "../../errors/email-error";
+import EmailError from "../../errors/email-error";
+import RequiredOptionError from "../../errors/required-option-error";
 import type { EmailAddress, EmailResult, Result } from "../../types";
 import generateMessageId from "../../utils/generate-message-id";
 import headersToRecord from "../../utils/headers-to-record";
@@ -18,23 +19,24 @@ const DEFAULT_TIMEOUT = 30_000;
 const DEFAULT_RETRIES = 3;
 
 /**
- * Plunk Provider for sending emails through Plunk API
+ * Plunk Provider for sending emails through Plunk API.
  */
-export const plunkProvider: ProviderFactory<PlunkConfig, unknown, PlunkEmailOptions> = defineProvider((options_: PlunkConfig = {} as PlunkConfig) => {
-    if (!options_.apiKey) {
+const plunkProvider: ProviderFactory<PlunkConfig, unknown, PlunkEmailOptions> = defineProvider((config: PlunkConfig = {} as PlunkConfig) => {
+    if (!config.apiKey) {
         throw new RequiredOptionError(PROVIDER_NAME, "apiKey");
     }
 
-    const options: Required<PlunkConfig> = {
-        apiKey: options_.apiKey,
-        debug: options_.debug || false,
-        endpoint: options_.endpoint || DEFAULT_ENDPOINT,
-        retries: options_.retries || DEFAULT_RETRIES,
-        timeout: options_.timeout || DEFAULT_TIMEOUT,
+    const options: Pick<PlunkConfig, "logger"> & Required<Omit<PlunkConfig, "logger">> = {
+        apiKey: config.apiKey,
+        debug: config.debug || false,
+        endpoint: config.endpoint || DEFAULT_ENDPOINT,
+        logger: config.logger,
+        retries: config.retries || DEFAULT_RETRIES,
+        timeout: config.timeout || DEFAULT_TIMEOUT,
     };
 
     const providerState = new ProviderState();
-    const logger = createProviderLogger(PROVIDER_NAME, options_.logger);
+    const logger = createProviderLogger(PROVIDER_NAME, config.logger);
 
     return {
         features: {
@@ -50,9 +52,9 @@ export const plunkProvider: ProviderFactory<PlunkConfig, unknown, PlunkEmailOpti
         },
 
         /**
-         * Retrieve email by ID
-         * @param id Email ID to retrieve
-         * @returns Email details
+         * Retrieves an email by its ID from Plunk.
+         * @param id The email ID to retrieve.
+         * @returns A result object containing the email details or an error.
          */
         async getEmail(id: string): Promise<Result<unknown>> {
             try {
@@ -86,7 +88,11 @@ export const plunkProvider: ProviderFactory<PlunkConfig, unknown, PlunkEmailOpti
                     logger.debug("API request failed when retrieving email", result.error);
 
                     return {
-                        error: new EmailError(PROVIDER_NAME, `Failed to retrieve email: ${result.error?.message || "Unknown error"}`, { cause: result.error }),
+                        error: new EmailError(
+                            PROVIDER_NAME,
+                            `Failed to retrieve email: ${result.error instanceof Error ? result.error.message : "Unknown error"}`,
+                            { cause: result.error },
+                        ),
                         success: false,
                     };
                 }
@@ -106,11 +112,11 @@ export const plunkProvider: ProviderFactory<PlunkConfig, unknown, PlunkEmailOpti
         },
 
         /**
-         * Initialize the Plunk provider
+         * Initializes the Plunk provider and validates API availability.
          */
         async initialize(): Promise<void> {
             await providerState.ensureInitialized(async () => {
-                if (!await this.isAvailable()) {
+                if (!(await this.isAvailable())) {
                     throw new EmailError(PROVIDER_NAME, "Plunk API not available or invalid API key");
                 }
 
@@ -119,7 +125,8 @@ export const plunkProvider: ProviderFactory<PlunkConfig, unknown, PlunkEmailOpti
         },
 
         /**
-         * Check if Plunk API is available and credentials are valid
+         * Checks if the Plunk API is available and credentials are valid.
+         * @returns True if the API is available and credentials are valid, false otherwise.
          */
         async isAvailable(): Promise<boolean> {
             try {
@@ -143,9 +150,10 @@ export const plunkProvider: ProviderFactory<PlunkConfig, unknown, PlunkEmailOpti
         options,
 
         /**
-         * Send email through Plunk API
-         * @param emailOptions The email options including Plunk-specific features
+         * Sends an email through the Plunk API.
+         * @param emailOptions The email options. including Plunk-specific features
          */
+        // eslint-disable-next-line sonarjs/cognitive-complexity
         async sendEmail(emailOptions: PlunkEmailOptions): Promise<Result<EmailResult>> {
             try {
                 const validationErrors = validateEmailOptions(emailOptions);
@@ -332,10 +340,12 @@ export const plunkProvider: ProviderFactory<PlunkConfig, unknown, PlunkEmailOpti
         },
 
         /**
-         * Validate API credentials
+         * Validates the Plunk API credentials.
          */
         async validateCredentials(): Promise<boolean> {
             return this.isAvailable();
         },
     };
 });
+
+export default plunkProvider;

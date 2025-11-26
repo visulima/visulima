@@ -1,12 +1,16 @@
 import { Buffer } from "node:buffer";
 
-import { EmailError } from "../../errors/email-error";
+import EmailError from "../../errors/email-error";
 import type { Attachment } from "../../types";
 
 /**
- * Process attachment content and convert to base64 string
+ * Processes attachment content and converts it to a base64-encoded string.
+ * @param attachment The attachment object to process.
+ * @param providerName The name of the provider (for error messages).
+ * @returns The base64-encoded string representation of the attachment content.
+ * @throws {EmailError} When the attachment has no content.
  */
-export async function processAttachmentContent(attachment: Attachment, providerName: string): Promise<string> {
+export const processAttachmentContent = async (attachment: Attachment, providerName: string): Promise<string> => {
     let content: string;
 
     if (attachment.content) {
@@ -26,12 +30,15 @@ export async function processAttachmentContent(attachment: Attachment, providerN
     }
 
     return content;
-}
+};
 
 /**
- * Create a standardized attachment object for API payloads
+ * Creates a standardized attachment object for API payloads.
+ * @param attachment The attachment object to standardize.
+ * @param providerName The name of the provider (for error messages).
+ * @returns A standardized attachment object with content, contentType, disposition, filename, and optional contentId.
  */
-export async function createStandardAttachment(
+export const createStandardAttachment = async (
     attachment: Attachment,
     providerName: string,
 ): Promise<{
@@ -40,7 +47,7 @@ export async function createStandardAttachment(
     contentType: string;
     disposition: string;
     filename: string;
-}> {
+}> => {
     const content = await processAttachmentContent(attachment, providerName);
 
     return {
@@ -48,14 +55,17 @@ export async function createStandardAttachment(
         contentType: attachment.contentType || "application/octet-stream",
         disposition: attachment.contentDisposition || "attachment",
         filename: attachment.filename,
-        ...attachment.cid && { contentId: attachment.cid },
+        ...(attachment.cid && { contentId: attachment.cid }),
     };
-}
+};
 
 /**
- * Create SendGrid-specific attachment format
+ * Creates a SendGrid-specific attachment format.
+ * @param attachment The attachment object to format.
+ * @param providerName The name of the provider (for error messages).
+ * @returns A SendGrid-formatted attachment object with content, type, disposition, filename, and optional content_id.
  */
-export async function createSendGridAttachment(
+export const createSendGridAttachment = async (
     attachment: Attachment,
     providerName: string,
 ): Promise<{
@@ -64,7 +74,7 @@ export async function createSendGridAttachment(
     disposition: string;
     filename: string;
     type: string;
-}> {
+}> => {
     const content = await processAttachmentContent(attachment, providerName);
 
     return {
@@ -72,14 +82,17 @@ export async function createSendGridAttachment(
         disposition: attachment.contentDisposition || "attachment",
         filename: attachment.filename,
         type: attachment.contentType || "application/octet-stream",
-        ...attachment.cid && { content_id: attachment.cid },
+        ...(attachment.cid && { content_id: attachment.cid }),
     };
-}
+};
 
 /**
- * Create Postmark-specific attachment format
+ * Creates a Postmark-specific attachment format.
+ * @param attachment The attachment object to format.
+ * @param providerName The name of the provider (for error messages).
+ * @returns A Postmark-formatted attachment object with Content, ContentType, Name, and optional ContentID.
  */
-export async function createPostmarkAttachment(
+export const createPostmarkAttachment = async (
     attachment: Attachment,
     providerName: string,
 ): Promise<{
@@ -87,32 +100,36 @@ export async function createPostmarkAttachment(
     ContentID?: string;
     ContentType: string;
     Name: string;
-}> {
+}> => {
     const content = await processAttachmentContent(attachment, providerName);
 
     return {
         Content: content,
         ContentType: attachment.contentType || "application/octet-stream",
         Name: attachment.filename,
-        ...attachment.cid && { ContentID: attachment.cid },
+        ...(attachment.cid && { ContentID: attachment.cid }),
     };
-}
+};
 
 /**
- * Create Mailgun-specific attachment format (form data)
+ * Creates a Mailgun-specific attachment format for form data.
+ * @param attachment The attachment object to format.
+ * @param providerName The name of the provider (for error messages).
+ * @param index The index of the attachment in the attachments array.
+ * @returns A Mailgun-formatted attachment object with content and key properties.
  */
-export async function createMailgunAttachment(
+export const createMailgunAttachment = async (
     attachment: Attachment,
     providerName: string,
     index: number,
 ): Promise<{
     content: string;
     key: string;
-}> {
+}> => {
     const content = await processAttachmentContent(attachment, providerName);
 
     return {
         content,
         key: `attachment[${index}]`,
     };
-}
+};

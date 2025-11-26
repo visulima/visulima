@@ -45,9 +45,7 @@ export interface MockConfig extends BaseConfig {
 /**
  * Mock-specific email options
  */
-export interface MockEmailOptions extends EmailOptions {
-    // No additional options beyond base EmailOptions
-}
+export type MockEmailOptions = EmailOptions;
 
 /**
  * Stored email entry in mock provider

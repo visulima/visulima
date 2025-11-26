@@ -1,12 +1,11 @@
-import { readFile } from "node:fs/promises";
-
+import { readFile } from "@visulima/fs";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createSmimeSigner, SmimeSigner } from "../../src/crypto/smime-signer";
 import type { SmimeSignOptions } from "../../src/crypto/types";
 import type { EmailOptions } from "../../src/types";
 
-vi.mock(import("node:fs/promises"), () => {
+vi.mock(import("@visulima/fs"), () => {
     return {
         readFile: vi.fn(),
     };
@@ -17,24 +16,24 @@ vi.mock(import("pkijs"), async () => {
 
     // Mock Certificate class completely to avoid real parsing
     class MockCertificate {
-        issuer = { value: "CN=Test CA" };
+        public issuer = { value: "CN=Test CA" };
 
-        serialNumber = { valueHex: new Uint8Array([1, 2, 3, 4]) };
+        public serialNumber = { valueHex: new Uint8Array([1, 2, 3, 4]) };
 
-        getPublicKey = vi.fn().mockResolvedValue({
+        public getPublicKey = vi.fn().mockResolvedValue({
             algorithm: { name: "RSA-PSS" },
             extractable: true,
             type: "public",
         } as CryptoKey);
 
-        constructor(options?: any) {
+        public constructor(_options?: any) {
             // Accept any constructor parameters but don't use them
         }
     }
 
     // Mock other classes used in the code to avoid real crypto operations
     class MockSignedData {
-        constructor(options?: any) {
+        public constructor(options?: any) {
             Object.assign(this, {
                 certificates: [],
                 encapContentInfo: {},
@@ -48,7 +47,7 @@ vi.mock(import("pkijs"), async () => {
     }
 
     class MockSignerInfo {
-        constructor(options?: any) {
+        public constructor(options?: any) {
             Object.assign(this, {
                 digestAlgorithm: {},
                 sid: {},
@@ -63,7 +62,7 @@ vi.mock(import("pkijs"), async () => {
     return {
         ...actualPKIjs,
         AlgorithmIdentifier: class {
-            constructor(options?: any) {
+            public constructor(options?: any) {
                 Object.assign(this, {
                     algorithmId: options?.algorithmId || "",
                     algorithmParams: options?.algorithmParams || null,
@@ -71,7 +70,7 @@ vi.mock(import("pkijs"), async () => {
             }
         },
         Attribute: class {
-            constructor(options?: any) {
+            public constructor(options?: any) {
                 Object.assign(this, {
                     type: options?.type || "",
                     values: options?.values || [],
@@ -80,7 +79,7 @@ vi.mock(import("pkijs"), async () => {
         },
         Certificate: MockCertificate,
         ContentInfo: class {
-            constructor(options?: any) {
+            public constructor(_options?: any) {
                 Object.assign(this, {
                     toSchema: vi.fn(() => {
                         return {
@@ -91,37 +90,41 @@ vi.mock(import("pkijs"), async () => {
             }
         },
         EncapsulatedContentInfo: class {
-            constructor(options?: any) {
+            public constructor(options?: any) {
                 Object.assign(this, {
                     eContent: options?.eContent || null,
                     eContentType: options?.eContentType || "",
                 });
             }
         },
-        id_ContentType: "1.2.840.113549.1.9.3",
-        id_Data: "1.2.840.113549.1.7.1",
-        id_MessageDigest: "1.2.840.113549.1.9.4",
-        id_RSASSA_PKCS1_v1_5: "1.2.840.113549.1.1.1",
-        id_RSASSA_PSS: "1.2.840.113549.1.1.10",
-        id_SHA256: "2.16.840.1.101.3.4.2.1",
-        id_SignedData: "1.2.840.113549.1.7.2",
-        id_SigningTime: "1.2.840.113549.1.9.5",
+        id_ContentType_Data: "1.2.840.113549.1.7.1",
+        id_ContentType_SignedData: "1.2.840.113549.1.7.2",
+        id_sha256: "2.16.840.1.101.3.4.2.1",
         IssuerAndSerialNumber: class {
-            constructor(options?: any) {
+            public constructor(options?: any) {
                 Object.assign(this, {
                     issuer: options?.issuer || {},
                     serialNumber: options?.serialNumber || {},
                 });
             }
         },
-        SignedAttributes: class {
-            constructor(options?: any) {
-                Object.assign(this, {
-                    attributes: options?.attributes || [],
-                    toSchema: vi.fn(() => {
-                        return { toBER: vi.fn(() => new Uint8Array([1, 2, 3])) };
-                    }),
-                });
+        SignedAndUnsignedAttributes: class {
+            public attributes: any[];
+
+            public type: number;
+
+            public encodedValue: ArrayBuffer;
+
+            public constructor(options?: any) {
+                this.attributes = options?.attributes || [];
+                this.type = 0;
+                this.encodedValue = new ArrayBuffer(0);
+            }
+
+            public toSchema() {
+                return {
+                    toBER: vi.fn(() => new Uint8Array([1, 2, 3])),
+                };
             }
         },
         SignedData: MockSignedData,
@@ -143,21 +146,21 @@ vi.mock(import("asn1js"), async () => {
             };
         }),
         ObjectIdentifier: class {
-            constructor(options?: any) {
+            public constructor(options?: any) {
                 Object.assign(this, {
                     value: options?.value || "",
                 });
             }
         },
         OctetString: class {
-            constructor(options?: any) {
+            public constructor(options?: any) {
                 Object.assign(this, {
                     valueHex: options?.valueHex || new ArrayBuffer(0),
                 });
             }
         },
         UTCTime: class {
-            constructor(options?: any) {
+            public constructor(options?: any) {
                 Object.assign(this, {
                     valueDate: options?.valueDate || new Date(),
                 });
@@ -217,6 +220,8 @@ describe(SmimeSigner, () => {
 
     describe("constructor", () => {
         it("should create a SmimeSigner instance", () => {
+            expect.assertions(1);
+
             const options: SmimeSignOptions = {
                 certificate: "/path/to/certificate.crt",
                 privateKey: "/path/to/private-key.key",
@@ -230,6 +235,8 @@ describe(SmimeSigner, () => {
 
     describe(createSmimeSigner, () => {
         it("should create a SmimeSigner instance", () => {
+            expect.assertions(1);
+
             const options: SmimeSignOptions = {
                 certificate: "/path/to/certificate.crt",
                 privateKey: "/path/to/private-key.key",
@@ -246,6 +253,8 @@ describe(SmimeSigner, () => {
         // The error handling is tested implicitly when the modules are not available
 
         it("should read certificate and private key from files", async () => {
+            expect.assertions(5);
+
             vi.mocked(readFile).mockResolvedValueOnce(TEST_CERTIFICATE).mockResolvedValueOnce(TEST_PRIVATE_KEY);
 
             const options: SmimeSignOptions = {
@@ -281,8 +290,8 @@ describe(SmimeSigner, () => {
             try {
                 const signed = await signer.sign(email);
 
-                expect(readFile).toHaveBeenCalledWith("/path/to/certificate.crt", "utf-8");
-                expect(readFile).toHaveBeenCalledWith("/path/to/private-key.key", "utf-8");
+                expect(readFile).toHaveBeenCalledWith("/path/to/certificate.crt", { encoding: "utf8" });
+                expect(readFile).toHaveBeenCalledWith("/path/to/private-key.key", { encoding: "utf8" });
                 expect(signed.text).toBeDefined();
                 expect(signed.headers).toBeDefined();
                 expect(signed.headers["Content-Type"]).toContain("multipart/signed");
@@ -296,10 +305,13 @@ describe(SmimeSigner, () => {
         });
 
         it("should handle passphrase for encrypted keys", async () => {
+            expect.assertions(1);
+
             vi.mocked(readFile).mockResolvedValueOnce(TEST_CERTIFICATE).mockResolvedValueOnce(TEST_PRIVATE_KEY);
 
             const options: SmimeSignOptions = {
                 certificate: "/path/to/certificate.crt",
+                // eslint-disable-next-line sonarjs/no-hardcoded-passwords
                 passphrase: "test-passphrase",
                 privateKey: "/path/to/private-key.key",
             };
@@ -343,6 +355,8 @@ describe(SmimeSigner, () => {
         });
 
         it("should handle intermediate certificates", async () => {
+            expect.assertions(2);
+
             vi.mocked(readFile).mockResolvedValueOnce(TEST_CERTIFICATE).mockResolvedValueOnce(TEST_PRIVATE_KEY).mockResolvedValueOnce(TEST_CERTIFICATE);
 
             const options: SmimeSignOptions = {
@@ -375,7 +389,7 @@ describe(SmimeSigner, () => {
             try {
                 const signed = await signer.sign(email);
 
-                expect(readFile).toHaveBeenCalledWith("/path/to/intermediate.crt", "utf-8");
+                expect(readFile).toHaveBeenCalledWith("/path/to/intermediate.crt", { encoding: "utf8" });
                 expect(signed.text).toBeDefined();
             } finally {
                 globalThis.crypto.subtle = originalSubtle;
@@ -383,6 +397,8 @@ describe(SmimeSigner, () => {
         });
 
         it("should handle text content", async () => {
+            expect.assertions(2);
+
             vi.mocked(readFile).mockResolvedValueOnce(TEST_CERTIFICATE).mockResolvedValueOnce(TEST_PRIVATE_KEY);
 
             const options: SmimeSignOptions = {
@@ -430,6 +446,8 @@ describe(SmimeSigner, () => {
         });
 
         it("should throw error for invalid certificate", async () => {
+            expect.assertions(1);
+
             vi.mocked(readFile).mockResolvedValueOnce("invalid-certificate").mockResolvedValueOnce(TEST_PRIVATE_KEY);
 
             const asn1js = await import("asn1js");
@@ -457,6 +475,8 @@ describe(SmimeSigner, () => {
         });
 
         it("should throw error for invalid private key", async () => {
+            expect.assertions(1);
+
             vi.mocked(readFile).mockResolvedValueOnce(TEST_CERTIFICATE).mockResolvedValueOnce("invalid-key");
 
             const options: SmimeSignOptions = {
@@ -477,6 +497,8 @@ describe(SmimeSigner, () => {
         });
 
         it("should throw error for invalid intermediate certificate", async () => {
+            expect.assertions(1);
+
             vi.mocked(readFile)
                 .mockResolvedValueOnce(TEST_CERTIFICATE)
                 .mockResolvedValueOnce(TEST_PRIVATE_KEY)

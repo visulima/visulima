@@ -1,7 +1,8 @@
 import nodemailerModule from "nodemailer";
 
-import { EmailError, RequiredOptionError } from "../../errors/email-error";
-import type { EmailResult, Result } from "../../types";
+import EmailError from "../../errors/email-error";
+import RequiredOptionError from "../../errors/required-option-error";
+import type { EmailAddress, EmailResult, Result } from "../../types";
 import generateMessageId from "../../utils/generate-message-id";
 import headersToRecord from "../../utils/headers-to-record";
 import validateEmailOptions from "../../utils/validate-email-options";
@@ -15,7 +16,7 @@ const PROVIDER_NAME = "nodemailer";
 /**
  * Nodemailer Provider for sending emails via nodemailer
  */
-export const nodemailerProvider: ProviderFactory<NodemailerConfig, unknown, NodemailerEmailOptions> = defineProvider(
+const nodemailerProvider: ProviderFactory<NodemailerConfig, unknown, NodemailerEmailOptions> = defineProvider(
     (options: NodemailerConfig = {} as NodemailerConfig) => {
         // Validate required options
         if (!options.transport) {
@@ -26,18 +27,22 @@ export const nodemailerProvider: ProviderFactory<NodemailerConfig, unknown, Node
         let transporter: ReturnType<typeof nodemailerModule.createTransport> | undefined;
 
         /**
-         * Create transporter from transport configuration
+         * Creates a transporter from transport configuration.
+         * @param transport Optional transport configuration override.
+         * @returns A nodemailer transporter instance.
          */
         const createTransporter = (transport?: Record<string, unknown> | string) => {
             const transportConfig = transport || options.transport;
 
+            // eslint-disable-next-line sonarjs/no-clear-text-protocols
             return nodemailerModule.createTransport(transportConfig as Parameters<typeof nodemailerModule.createTransport>[0]);
         };
 
         let isInitialized = false;
 
         /**
-         * Initialize function
+         * Initializes the nodemailer provider by creating and verifying the transporter.
+         * @throws {EmailError} When transporter verification fails.
          */
         const initializeProvider = async () => {
             if (isInitialized) {
@@ -56,23 +61,21 @@ export const nodemailerProvider: ProviderFactory<NodemailerConfig, unknown, Node
         };
 
         /**
-         * Convert EmailOptions to nodemailer mail options
+         * Converts EmailOptions to nodemailer mail options format.
+         * @param emailOptions The email options object to convert to nodemailer format.
+         * @returns A record containing nodemailer-compatible mail options with all fields properly formatted.
          */
+
         const convertToNodemailerOptions = (emailOptions: NodemailerEmailOptions) => {
+            const formatFromAddress = (address: EmailAddress): string => (address.name ? `${address.name} <${address.email}>` : address.email);
+
+            const formatToAddress = (address: EmailAddress): string => (address.name ? `${address.name} <${address.email}>` : address.email);
+
+            const fromAddress = options.defaultFrom || emailOptions.from;
             const mailOptions: Record<string, unknown> = {
-                from: options.defaultFrom
-                    ? options.defaultFrom.name
-                        ? `${options.defaultFrom.name} <${options.defaultFrom.email}>`
-                        : options.defaultFrom.email
-                    : emailOptions.from.name
-                        ? `${emailOptions.from.name} <${emailOptions.from.email}>`
-                        : emailOptions.from.email,
+                from: formatFromAddress(fromAddress),
                 subject: emailOptions.subject,
-                to: Array.isArray(emailOptions.to)
-                    ? emailOptions.to.map((addr) => addr.name ? `${addr.name} <${addr.email}>` : addr.email)
-                    : emailOptions.to.name
-                        ? `${emailOptions.to.name} <${emailOptions.to.email}>`
-                        : emailOptions.to.email,
+                to: Array.isArray(emailOptions.to) ? emailOptions.to.map((addr) => formatToAddress(addr)) : formatToAddress(emailOptions.to),
             };
 
             if (emailOptions.text) {
@@ -84,19 +87,11 @@ export const nodemailerProvider: ProviderFactory<NodemailerConfig, unknown, Node
             }
 
             if (emailOptions.cc) {
-                mailOptions.cc = Array.isArray(emailOptions.cc)
-                    ? emailOptions.cc.map((addr) => addr.name ? `${addr.name} <${addr.email}>` : addr.email)
-                    : emailOptions.cc.name
-                        ? `${emailOptions.cc.name} <${emailOptions.cc.email}>`
-                        : emailOptions.cc.email;
+                mailOptions.cc = Array.isArray(emailOptions.cc) ? emailOptions.cc.map((addr) => formatToAddress(addr)) : formatToAddress(emailOptions.cc);
             }
 
             if (emailOptions.bcc) {
-                mailOptions.bcc = Array.isArray(emailOptions.bcc)
-                    ? emailOptions.bcc.map((addr) => addr.name ? `${addr.name} <${addr.email}>` : addr.email)
-                    : emailOptions.bcc.name
-                        ? `${emailOptions.bcc.name} <${emailOptions.bcc.email}>`
-                        : emailOptions.bcc.email;
+                mailOptions.bcc = Array.isArray(emailOptions.bcc) ? emailOptions.bcc.map((addr) => formatToAddress(addr)) : formatToAddress(emailOptions.bcc);
             }
 
             if (emailOptions.replyTo) {
@@ -167,12 +162,13 @@ export const nodemailerProvider: ProviderFactory<NodemailerConfig, unknown, Node
             },
 
             /**
-             * Initialize the provider
+             * Initializes the nodemailer provider.
              */
             initialize: initializeProvider,
 
             /**
-             * Check if provider is available
+             * Checks if the nodemailer provider is available.
+             * @returns True if the provider is available, false otherwise.
              */
             isAvailable: async () => {
                 try {
@@ -193,7 +189,9 @@ export const nodemailerProvider: ProviderFactory<NodemailerConfig, unknown, Node
             options,
 
             /**
-             * Send email using nodemailer
+             * Sends an email using nodemailer.
+             * @param emailOptions The email options to send.
+             * @returns A result object containing the email result or an error.
              */
             sendEmail: async (emailOptions: NodemailerEmailOptions): Promise<Result<EmailResult>> => {
                 // Validate email options
@@ -213,7 +211,11 @@ export const nodemailerProvider: ProviderFactory<NodemailerConfig, unknown, Node
                     }
 
                     // Use transport override if provided, otherwise use default
-                    const emailTransporter = emailOptions.transportOverride ? createTransporter(emailOptions.transportOverride) : transporter!;
+                    if (!transporter) {
+                        throw new EmailError(PROVIDER_NAME, "Transporter not initialized. Call initialize() first.");
+                    }
+
+                    const emailTransporter = emailOptions.transportOverride ? createTransporter(emailOptions.transportOverride) : transporter;
 
                     // Convert to nodemailer format
                     const mailOptions = convertToNodemailerOptions(emailOptions);
@@ -242,7 +244,7 @@ export const nodemailerProvider: ProviderFactory<NodemailerConfig, unknown, Node
             },
 
             /**
-             * Shutdown/cleanup
+             * Shuts down the nodemailer provider and cleans up resources.
              */
             shutdown: async () => {
                 if (transporter && typeof transporter.close === "function") {
@@ -254,7 +256,8 @@ export const nodemailerProvider: ProviderFactory<NodemailerConfig, unknown, Node
             },
 
             /**
-             * Validate credentials
+             * Validates nodemailer credentials by verifying the transporter.
+             * @returns A promise that resolves to true if credentials are valid, false otherwise.
              */
             validateCredentials: async (): Promise<boolean> => {
                 try {
@@ -272,3 +275,5 @@ export const nodemailerProvider: ProviderFactory<NodemailerConfig, unknown, Node
         };
     },
 );
+
+export default nodemailerProvider;

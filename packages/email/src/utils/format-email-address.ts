@@ -1,12 +1,12 @@
-import { EmailError } from "../errors/email-error";
+import EmailError from "../errors/email-error";
 import type { EmailAddress } from "../types";
 import validateEmailDefault from "./validate-email";
 
 /**
- * Format email address as "Name &lt;email@example.com>"
- * @param address The email address object to format
- * @returns The formatted email address string
- * @throws {EmailError} When the email address is invalid
+ * Formats an email address as "Name &lt;email@example.com>" or just "email@example.com" if no name is provided.
+ * @param address The email address object to format.
+ * @returns The formatted email address string in RFC 5322 format.
+ * @throws {EmailError} When the email address is invalid.
  */
 const formatEmailAddress = (address: EmailAddress): string => {
     if (!validateEmailDefault(address.email)) {

@@ -4,7 +4,8 @@ import type { Socket } from "node:net";
 import { createConnection } from "node:net";
 import { connect } from "node:tls";
 
-import { EmailError, RequiredOptionError } from "../../errors/email-error";
+import EmailError from "../../errors/email-error";
+import RequiredOptionError from "../../errors/required-option-error";
 import type { EmailResult, Result } from "../../types";
 import buildMimeMessage from "../../utils/build-mime-message";
 import generateMessageId from "../../utils/generate-message-id";
@@ -26,29 +27,37 @@ const DEFAULT_POOL_WAIT_TIMEOUT = 30_000;
 /**
  * SMTP provider for sending emails via SMTP protocol
  */
-export const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions> = defineProvider((options_: SmtpConfig = {} as SmtpConfig) => {
+const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions> = defineProvider((config: SmtpConfig = {} as SmtpConfig) => {
     // Validate required options
-    if (!options_.host) {
+    if (!config.host) {
         throw new RequiredOptionError(PROVIDER_NAME, "host");
     }
 
     // Initialize with defaults
-    const options: Pick<SmtpConfig, "user" | "password" | "oauth2" | "dkim"> & Required<Omit<SmtpConfig, "user" | "password" | "oauth2" | "dkim">> = {
-        authMethod: options_.authMethod || "LOGIN", // Assign default to avoid undefined
-        debug: options_.debug ?? false,
-        dkim: options_.dkim,
-        host: options_.host,
-        maxConnections: options_.maxConnections ?? DEFAULT_MAX_CONNECTIONS,
-        oauth2: options_.oauth2,
-        password: options_.password,
-        pool: options_.pool ?? false,
-        port: options_.port === undefined ? options_.secure ? DEFAULT_SECURE_PORT : DEFAULT_PORT : options_.port,
-        rejectUnauthorized: options_.rejectUnauthorized ?? true,
-        retries: options_.retries ?? 0,
-        secure: options_.secure ?? DEFAULT_SECURE,
-        timeout: options_.timeout ?? DEFAULT_TIMEOUT,
-        user: options_.user,
-        ...options_.logger && { logger: options_.logger },
+    type SmtpOptions = Pick<SmtpConfig, "user" | "password" | "oauth2" | "dkim"> & Required<Omit<SmtpConfig, "user" | "password" | "oauth2" | "dkim">>;
+    const options: SmtpOptions = {
+        authMethod: config.authMethod || "LOGIN", // Assign default to avoid undefined
+        debug: config.debug ?? false,
+        dkim: config.dkim,
+        host: config.host,
+        maxConnections: config.maxConnections ?? DEFAULT_MAX_CONNECTIONS,
+        oauth2: config.oauth2,
+        password: config.password,
+        pool: config.pool ?? false,
+
+        port: (() => {
+            if (config.port !== undefined) {
+                return config.port;
+            }
+
+            return config.secure ? DEFAULT_SECURE_PORT : DEFAULT_PORT;
+        })(),
+        rejectUnauthorized: config.rejectUnauthorized ?? true,
+        retries: config.retries ?? 0,
+        secure: config.secure ?? DEFAULT_SECURE,
+        timeout: config.timeout ?? DEFAULT_TIMEOUT,
+        user: config.user,
+        ...(config.logger && { logger: config.logger }),
     } as Pick<SmtpConfig, "user" | "password" | "oauth2" | "dkim"> & Required<Omit<SmtpConfig, "user" | "password" | "oauth2" | "dkim">>;
 
     // Track connection state
@@ -63,13 +72,17 @@ export const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions
     }[] = [];
 
     /**
-     * Sanitize header value to prevent injection attacks
-     * Removes newlines and other control characters
+     * Sanitizes a header value to prevent injection attacks.
+     * Removes newlines and other control characters.
+     * @param value The header value to sanitize.
+     * @returns The sanitized header value.
      */
     const sanitizeHeaderValue = (value: string): string => value.replaceAll(/[\r\n\t\v\f]/g, " ").trim();
 
     /**
-     * Parse SMTP server response to check capabilities
+     * Parses an SMTP server response to check capabilities.
+     * @param response The SMTP server response string.
+     * @returns A record of capabilities with their values.
      */
     const parseEhloResponse = (response: string): Record<string, string[]> => {
         const lines = response.split("\r\n");
@@ -91,21 +104,29 @@ export const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions
     };
 
     /**
-     * Send SMTP command and await response
+     * Sends an SMTP command and awaits the response.
+     * @param socket The socket connection to send the command through.
+     * @param command The SMTP command to send.
+     * @param expectedCode The expected response code(s) to accept.
+     * @returns A promise that resolves with the response string.
+     * @throws {EmailError} When the command times out or receives an unexpected response code.
      */
     const sendSmtpCommand = async (socket: Socket, command: string, expectedCode: string | string[]): Promise<string> =>
         new Promise<string>((resolve, reject) => {
             const expectedCodes = Array.isArray(expectedCode) ? expectedCode : [expectedCode];
             let responseBuffer = "";
             let lastLineCode = "";
-            let timeoutHandle: NodeJS.Timeout;
 
-            // Declare functions before use
-            let onData: (data: Buffer) => void;
-            let onError: (error: Error) => void;
+            const timeoutHandle: NodeJS.Timeout = setTimeout(() => {
+                // eslint-disable-next-line @typescript-eslint/no-use-before-define
+                cleanup();
+                reject(new EmailError(PROVIDER_NAME, `Command timeout after ${options.timeout}ms: ${command?.slice(0, 50)}...`));
+            }, options.timeout);
 
             const cleanup = () => {
+                // eslint-disable-next-line @typescript-eslint/no-use-before-define
                 socket.removeListener("data", onData);
+                // eslint-disable-next-line @typescript-eslint/no-use-before-define
                 socket.removeListener("error", onError);
 
                 if (timeoutHandle) {
@@ -113,12 +134,8 @@ export const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions
                 }
             };
 
-            onError = (error: Error) => {
-                cleanup();
-                reject(new EmailError(PROVIDER_NAME, `Socket error: ${error.message}`, { cause: error }));
-            };
-
-            onData = (data: Buffer) => {
+            // eslint-disable-next-line sonarjs/cognitive-complexity
+            const onData: (data: Buffer) => void = (data: Buffer) => {
                 responseBuffer += data.toString();
                 // SMTP çok satırlı yanıtlar: 250-...\r\n, son satır 250 ...\r\n
                 // Her satırı kontrol et
@@ -130,8 +147,10 @@ export const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions
                     if (lastLine) {
                         const match = lastLine.match(/^(\d{3})[\s-]/);
 
-                        if (match && match[1]) {
-                            lastLineCode = match[1];
+                        if (match) {
+                            const [, code] = match;
+
+                            lastLineCode = code as string;
 
                             // Son satırda boşluk varsa (multi-line bitti)
                             if (lastLine[3] === " ") {
@@ -150,11 +169,10 @@ export const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions
                 }
             };
 
-            // Set up timeout
-            timeoutHandle = setTimeout(() => {
+            const onError: (error: Error) => void = (error: Error) => {
                 cleanup();
-                reject(new EmailError(PROVIDER_NAME, `Command timeout after ${options.timeout}ms: ${command?.slice(0, 50)}...`));
-            }, options.timeout);
+                reject(new EmailError(PROVIDER_NAME, `Socket error: ${error.message}`, { cause: error }));
+            };
 
             socket.on("data", onData);
             socket.on("error", onError);
@@ -165,7 +183,9 @@ export const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions
         });
 
     /**
-     * Create SMTP connection
+     * Creates a new SMTP connection.
+     * @returns A promise that resolves with the connected socket.
+     * @throws {EmailError} When connection fails or times out.
      */
     const createSmtpConnection = async (): Promise<Socket> => {
         // If pooling is enabled and there are available connections, use one
@@ -273,7 +293,10 @@ export const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions
     };
 
     /**
-     * Upgrade plain connection to TLS using STARTTLS
+     * Upgrades a plain connection to TLS using STARTTLS.
+     * @param socket The plain socket connection to upgrade.
+     * @returns A promise that resolves with the TLS socket.
+     * @throws {EmailError} When the TLS upgrade fails.
      */
     const upgradeToTLS = async (socket: Socket): Promise<Socket> =>
         new Promise<Socket>((resolve, reject) => {
@@ -339,7 +362,8 @@ export const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions
         });
 
     /**
-     * Return a connection to the pool or close it
+     * Returns a connection to the pool or closes it if pooling is disabled.
+     * @param socket The socket connection to release.
      */
     const releaseConnection = (socket: Socket): void => {
         // If the socket is destroyed or pooling is disabled, don't try to reuse it
@@ -370,7 +394,10 @@ export const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions
     };
 
     /**
-     * Close SMTP connection
+     * Closes the SMTP connection gracefully.
+     * @param socket The socket connection to close.
+     * @param release Whether to release the connection back to the pool instead of closing it.
+     * @returns A promise that resolves when the connection is closed or released.
      */
     const closeConnection = async (socket: Socket, release = false): Promise<void> =>
         new Promise<void>((resolve) => {
@@ -397,8 +424,12 @@ export const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions
         });
 
     /**
-     * Perform SMTP authentication
+     * Performs SMTP authentication using the configured credentials.
+     * @param socket The socket connection to authenticate on.
+     * @returns A promise that resolves when authentication is complete.
+     * @throws {EmailError} When authentication fails.
      */
+    // eslint-disable-next-line sonarjs/cognitive-complexity
     const authenticate = async (socket: Socket): Promise<void> => {
         if (!options.user) {
             return; // No authentication needed
@@ -418,15 +449,17 @@ export const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions
         // Add null check before accessing capabilities with authCapability
         const supportedMethods = authCapability ? capabilities[authCapability] || [] : [];
 
-        const authMethod
-            = options.authMethod
-                || (supportedMethods.includes("CRAM-MD5")
-                    ? "CRAM-MD5"
-                    : supportedMethods.includes("LOGIN")
-                        ? "LOGIN"
-                        : supportedMethods.includes("PLAIN")
-                            ? "PLAIN"
-                            : null);
+        let { authMethod } = options;
+
+        if (!authMethod) {
+            if (supportedMethods.includes("CRAM-MD5")) {
+                authMethod = "CRAM-MD5";
+            } else if (supportedMethods.includes("LOGIN")) {
+                authMethod = "LOGIN";
+            } else if (supportedMethods.includes("PLAIN")) {
+                authMethod = "PLAIN";
+            }
+        }
 
         if (!authMethod) {
             throw new EmailError(PROVIDER_NAME, "No supported authentication methods");
@@ -466,7 +499,7 @@ export const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions
                     throw new EmailError(PROVIDER_NAME, "Invalid CRAM-MD5 challenge response");
                 }
 
-                const challenge = Buffer.from(challengePart, "base64").toString("utf-8");
+                const challenge = Buffer.from(challengePart, "base64").toString("utf8");
 
                 // Calculate HMAC digest
                 const hmac = createHmac("md5", options.password);
@@ -539,7 +572,9 @@ export const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions
     };
 
     /**
-     * Sign email with DKIM
+     * Signs an email message with DKIM if configured.
+     * @param message The email message to sign.
+     * @returns The signed email message, or the original message if DKIM is not configured.
      */
     const signWithDkim = (message: string): string => {
         if (!options.dkim) {
@@ -592,7 +627,7 @@ export const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions
                 .join("; ")}; b=`;
 
             // Canonicalize headers for signing
-            const headersForSign = [...headersToSign, dkimHeader].map(canonicalize).join("\r\n");
+            const headersForSign = [...headersToSign, dkimHeader].map((header) => canonicalize(header)).join("\r\n");
             const signer = createSign("RSA-SHA256");
 
             signer.update(headersForSign);
@@ -602,6 +637,7 @@ export const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions
             // DKIM-Signature en başa eklenmeli
             return `${finalDkimHeader}\r\n${headers.join("\r\n")}\r\n\r\n${bodyPart}`;
         } catch (error) {
+            // eslint-disable-next-line no-console
             console.error(`[${PROVIDER_NAME}] DKIM signing error:`, error);
 
             return message;
@@ -622,7 +658,8 @@ export const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions
         },
 
         /**
-         * Initialize the SMTP provider
+         * Initializes the SMTP provider and validates connection settings.
+         * @throws {EmailError} When initialization fails or connection cannot be established.
          */
         async initialize(): Promise<void> {
             // Check if the provider is already initialized
@@ -632,7 +669,7 @@ export const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions
 
             try {
                 // Check if SMTP server is available
-                if (!await this.isAvailable()) {
+                if (!(await this.isAvailable())) {
                     throw new EmailError(PROVIDER_NAME, `SMTP server not available at ${options.host}:${options.port}`);
                 }
 
@@ -643,7 +680,8 @@ export const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions
         },
 
         /**
-         * Check if SMTP server is available
+         * Checks if the SMTP server is available and accessible.
+         * @returns True if the SMTP server is available, false otherwise.
          */
         async isAvailable(): Promise<boolean> {
             try {
@@ -670,8 +708,11 @@ export const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions
         options,
 
         /**
-         * Send email through SMTP
+         * Sends an email through the SMTP server.
+         * @param emailOptions The email options to send.
+         * @returns A result object containing the email result or an error.
          */
+        // eslint-disable-next-line sonarjs/cognitive-complexity
         async sendEmail(emailOptions: SmtpEmailOptions): Promise<Result<EmailResult>> {
             try {
                 // Validate email options
@@ -759,6 +800,7 @@ export const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions
 
                     // Send RCPT TO for each recipient
                     for (const recipient of recipients) {
+                        // eslint-disable-next-line no-await-in-loop
                         await sendSmtpCommand(socket, `RCPT TO:<${recipient}>`, "250");
                     }
 
@@ -809,6 +851,10 @@ export const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions
                                 additionalHeaders.push("Importance: Normal");
                                 break;
                             }
+                            default: {
+                                priorityValue = "3 (Normal)";
+                                break;
+                            }
                         }
 
                         additionalHeaders.push(`X-Priority: ${priorityValue}`);
@@ -822,7 +868,7 @@ export const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions
                     // Add References header if specified
                     if (emailOptions.references) {
                         const references = Array.isArray(emailOptions.references)
-                            ? emailOptions.references.map(sanitizeHeaderValue).join(" ")
+                            ? emailOptions.references.map((ref) => sanitizeHeaderValue(ref)).join(" ")
                             : sanitizeHeaderValue(emailOptions.references);
 
                         additionalHeaders.push(`References: ${references}`);
@@ -830,9 +876,7 @@ export const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions
 
                     // Add List-Unsubscribe header if specified
                     if (emailOptions.listUnsubscribe) {
-                        let unsubValue;
-
-                        unsubValue = Array.isArray(emailOptions.listUnsubscribe)
+                        const unsubValue = Array.isArray(emailOptions.listUnsubscribe)
                             ? emailOptions.listUnsubscribe.map((value) => `<${sanitizeHeaderValue(value)}>`).join(", ")
                             : `<${sanitizeHeaderValue(emailOptions.listUnsubscribe)}>`;
 
@@ -914,12 +958,14 @@ export const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions
         },
 
         /**
-         * Cleanly shut down the provider and release resources
+         * Cleanly shuts down the provider and releases all resources.
+         * Closes all connections in the pool and rejects any waiting connections.
          */
         async shutdown(): Promise<void> {
             // Close all connections in the pool
             for (const socket of connectionPool) {
                 try {
+                    // eslint-disable-next-line no-await-in-loop
                     await closeConnection(socket);
                 } catch {
                     // Ignore errors during shutdown
@@ -940,11 +986,12 @@ export const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions
         },
 
         /**
-         * Validate SMTP credentials
+         * Validates SMTP credentials by attempting to connect and authenticate.
+         * @returns A promise that resolves to true if credentials are valid, false otherwise.
          */
         async validateCredentials(): Promise<boolean> {
             try {
-                if (!await this.isAvailable()) {
+                if (!(await this.isAvailable())) {
                     return false;
                 }
 
@@ -1000,3 +1047,5 @@ export const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions
         },
     };
 });
+
+export default smtpProvider;

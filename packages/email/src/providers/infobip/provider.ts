@@ -1,6 +1,7 @@
 import { Buffer } from "node:buffer";
 
-import { EmailError, RequiredOptionError } from "../../errors/email-error";
+import EmailError from "../../errors/email-error";
+import RequiredOptionError from "../../errors/required-option-error";
 import type { EmailResult, Result } from "../../types";
 import generateMessageId from "../../utils/generate-message-id";
 import headersToRecord from "../../utils/headers-to-record";
@@ -20,26 +21,26 @@ const DEFAULT_RETRIES = 3;
 /**
  * Infobip Provider for sending emails through Infobip API
  */
-export const infobipProvider: ProviderFactory<InfobipConfig, unknown, InfobipEmailOptions> = defineProvider((options_: InfobipConfig = {} as InfobipConfig) => {
-    if (!options_.apiKey) {
+const infobipProvider: ProviderFactory<InfobipConfig, unknown, InfobipEmailOptions> = defineProvider((config: InfobipConfig = {} as InfobipConfig) => {
+    if (!config.apiKey) {
         throw new RequiredOptionError(PROVIDER_NAME, "apiKey");
     }
 
-    const baseUrl = options_.baseUrl || DEFAULT_BASE_URL;
-    const endpoint = options_.endpoint || `${baseUrl}/email/3/send`;
+    const baseUrl = config.baseUrl || DEFAULT_BASE_URL;
+    const endpoint = config.endpoint || `${baseUrl}/email/3/send`;
 
     const options: Pick<InfobipConfig, "logger"> & Required<Omit<InfobipConfig, "logger" | "baseUrl" | "endpoint">> & { baseUrl: string; endpoint: string } = {
-        apiKey: options_.apiKey,
+        apiKey: config.apiKey,
         baseUrl,
-        debug: options_.debug || false,
+        debug: config.debug || false,
         endpoint,
-        retries: options_.retries || DEFAULT_RETRIES,
-        timeout: options_.timeout || DEFAULT_TIMEOUT,
-        ...options_.logger && { logger: options_.logger },
+        retries: config.retries || DEFAULT_RETRIES,
+        timeout: config.timeout || DEFAULT_TIMEOUT,
+        ...(config.logger && { logger: config.logger }),
     };
 
     const providerState = new ProviderState();
-    const logger = createProviderLogger(PROVIDER_NAME, options_.logger);
+    const logger = createProviderLogger(PROVIDER_NAME, config.logger);
 
     return {
         features: {
@@ -55,9 +56,9 @@ export const infobipProvider: ProviderFactory<InfobipConfig, unknown, InfobipEma
         },
 
         /**
-         * Retrieve email by ID
-         * @param id Email ID to retrieve
-         * @returns Email details
+         * Retrieves an email by its ID from Infobip.
+         * @param id The email ID to retrieve.
+         * @returns A result object containing the email details or an error.
          */
         async getEmail(id: string): Promise<Result<unknown>> {
             try {
@@ -91,7 +92,11 @@ export const infobipProvider: ProviderFactory<InfobipConfig, unknown, InfobipEma
                     logger.debug("API request failed when retrieving email", result.error);
 
                     return {
-                        error: new EmailError(PROVIDER_NAME, `Failed to retrieve email: ${result.error?.message || "Unknown error"}`, { cause: result.error }),
+                        error: new EmailError(
+                            PROVIDER_NAME,
+                            `Failed to retrieve email: ${result.error instanceof Error ? result.error.message : "Unknown error"}`,
+                            { cause: result.error },
+                        ),
                         success: false,
                     };
                 }
@@ -111,11 +116,11 @@ export const infobipProvider: ProviderFactory<InfobipConfig, unknown, InfobipEma
         },
 
         /**
-         * Initialize the Infobip provider
+         * Initializes the Infobip provider and validates API availability.
          */
         async initialize(): Promise<void> {
             await providerState.ensureInitialized(async () => {
-                if (!await this.isAvailable()) {
+                if (!(await this.isAvailable())) {
                     throw new EmailError(PROVIDER_NAME, "Infobip API not available or invalid API key");
                 }
 
@@ -124,15 +129,11 @@ export const infobipProvider: ProviderFactory<InfobipConfig, unknown, InfobipEma
         },
 
         /**
-         * Check if Infobip API is available and credentials are valid
+         * Checks if the Infobip API is available and credentials are valid.
+         * @returns True if the API is available and credentials are valid, false otherwise.
          */
         async isAvailable(): Promise<boolean> {
             try {
-                const headers: Record<string, string> = {
-                    Authorization: `App ${options.apiKey}`,
-                    "Content-Type": "application/json",
-                };
-
                 logger.debug("Checking Infobip API availability");
 
                 // Infobip doesn't have a simple health check, so we'll assume it's available if API key is present
@@ -149,9 +150,10 @@ export const infobipProvider: ProviderFactory<InfobipConfig, unknown, InfobipEma
         options,
 
         /**
-         * Send email through Infobip API
-         * @param emailOptions The email options including Infobip-specific features
+         * Sends an email through the Infobip API.
+         * @param emailOptions The email options. including Infobip-specific features
          */
+        // eslint-disable-next-line sonarjs/cognitive-complexity
         async sendEmail(emailOptions: InfobipEmailOptions): Promise<Result<EmailResult>> {
             try {
                 const validationErrors = validateEmailOptions(emailOptions);
@@ -322,10 +324,12 @@ export const infobipProvider: ProviderFactory<InfobipConfig, unknown, InfobipEma
         },
 
         /**
-         * Validate API credentials
+         * Validates the Infobip API credentials.
          */
         async validateCredentials(): Promise<boolean> {
             return this.isAvailable();
         },
     };
 });
+
+export default infobipProvider;
