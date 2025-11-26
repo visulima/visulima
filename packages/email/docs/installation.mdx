@@ -41,10 +41,29 @@ pnpm add @visulima/email
 The following providers work in **Node.js**, **Deno**, **Bun**, and **Cloudflare Workers**:
 
 - **Resend** - Uses Fetch API
-- **HTTP** - Uses Fetch API
+- **Brevo** - Uses Fetch API
+- **Mailgun** - Uses Fetch API
+- **Mailjet** - Uses Fetch API
+- **MailerSend** - Uses Fetch API
+- **Mandrill** - Uses Fetch API
+- **MailPace** - Uses Fetch API
+- **Mailtrap** - Uses Fetch API
+- **Postal** - Uses Fetch API
+- **Postmark** - Uses Fetch API
+- **Azure** - Uses Fetch API (requires OAuth2 token or connection string)
+- **Infobip** - Uses Fetch API
+- **Scaleway** - Uses Fetch API
+- **AhaSend** - Uses Fetch API
+- **Mailomat** - Uses Fetch API
+- **Sweego** - Uses Fetch API
+- **SendGrid** - Uses Fetch API
 - **Zeptomail** - Uses Fetch API
+- **Plunk** - Uses Fetch API
+- **HTTP** - Uses Fetch API
+- **Mock** - In-memory provider
 - **Failover** - Works if all wrapped providers support the runtime
 - **Round Robin** - Works if all wrapped providers support the runtime
+- **OpenTelemetry** - Works if wrapped provider supports the runtime
 
 ### Node.js Only
 
@@ -57,51 +76,81 @@ The following providers require Node.js built-in modules (`node:crypto`, `node:n
 
 ### Runtime Compatibility Table
 
-| Provider    | Node.js | Deno | Bun  | Cloudflare Workers |
-| ----------- | ------- | ---- | ---- | ------------------ |
-| Resend      | ✅      | ✅   | ✅   | ✅                 |
-| HTTP        | ✅      | ✅   | ✅   | ✅                 |
-| Zeptomail   | ✅      | ✅   | ✅   | ✅                 |
-| AWS SES     | ✅      | ❌   | ❌   | ❌                 |
-| SMTP        | ✅      | ❌   | ❌   | ❌                 |
-| MailCrab    | ✅      | ❌   | ❌   | ❌                 |
-| Nodemailer  | ✅      | ❌   | ❌   | ❌                 |
-| Failover    | ✅\*    | ✅\* | ✅\* | ✅\*               |
-| Round Robin | ✅\*    | ✅\* | ✅\* | ✅\*               |
+| Provider      | Node.js | Deno | Bun  | Cloudflare Workers |
+| ------------- | ------- | ---- | ---- | ------------------ |
+| Resend        | ✅      | ✅   | ✅   | ✅                 |
+| Brevo         | ✅      | ✅   | ✅   | ✅                 |
+| Mailgun       | ✅      | ✅   | ✅   | ✅                 |
+| Mailjet       | ✅      | ✅   | ✅   | ✅                 |
+| MailerSend    | ✅      | ✅   | ✅   | ✅                 |
+| Mandrill      | ✅      | ✅   | ✅   | ✅                 |
+| MailPace      | ✅      | ✅   | ✅   | ✅                 |
+| Mailtrap      | ✅      | ✅   | ✅   | ✅                 |
+| Postal        | ✅      | ✅   | ✅   | ✅                 |
+| Postmark      | ✅      | ✅   | ✅   | ✅                 |
+| Azure         | ✅      | ✅   | ✅   | ✅                 |
+| Infobip       | ✅      | ✅   | ✅   | ✅                 |
+| Scaleway      | ✅      | ✅   | ✅   | ✅                 |
+| AhaSend       | ✅      | ✅   | ✅   | ✅                 |
+| Mailomat      | ✅      | ✅   | ✅   | ✅                 |
+| Sweego        | ✅      | ✅   | ✅   | ✅                 |
+| SendGrid      | ✅      | ✅   | ✅   | ✅                 |
+| Zeptomail     | ✅      | ✅   | ✅   | ✅                 |
+| Plunk         | ✅      | ✅   | ✅   | ✅                 |
+| HTTP          | ✅      | ✅   | ✅   | ✅                 |
+| Mock          | ✅      | ✅   | ✅   | ✅                 |
+| AWS SES       | ✅      | ❌   | ❌   | ❌                 |
+| SMTP          | ✅      | ❌   | ❌   | ❌                 |
+| MailCrab      | ✅      | ❌   | ❌   | ❌                 |
+| Nodemailer    | ✅      | ❌   | ❌   | ❌                 |
+| Failover      | ✅\*    | ✅\* | ✅\* | ✅\*               |
+| Round Robin   | ✅\*    | ✅\* | ✅\* | ✅\*               |
+| OpenTelemetry | ✅\*    | ✅\* | ✅\* | ✅\*               |
 
 \* Runtime support depends on the wrapped providers. Works if all wrapped providers support the runtime.
 
 ## Provider Dependencies
 
-@visulima/email uses peer dependencies for providers. You only need to install the providers you plan to use.
+@visulima/email uses peer dependencies for providers. You only need to install the providers you plan to use. Most providers work out of the box with no additional dependencies - they use the native Fetch API.
 
-### Resend
+### Universal Providers (No Additional Dependencies)
 
-```bash
-# No additional dependencies needed
-# Just configure with your API key
-```
+The following providers work without any additional dependencies:
 
-### AWS SES
+- **Resend** - Just configure with your API key
+- **Brevo** - Just configure with your API key
+- **Mailgun** - Just configure with your API key and domain
+- **Mailjet** - Just configure with your API key and secret
+- **MailerSend** - Just configure with your API key
+- **Mandrill** - Just configure with your API key
+- **MailPace** - Just configure with your API key
+- **Mailtrap** - Just configure with your API key
+- **Postal** - Just configure with your API key and server URL
+- **Postmark** - Just configure with your API key
+- **Azure** - Configure with OAuth2 token or connection string
+- **Infobip** - Just configure with your API key
+- **Scaleway** - Just configure with your API key
+- **AhaSend** - Just configure with your API key
+- **Mailomat** - Just configure with your API key
+- **Sweego** - Just configure with your API key
+- **SendGrid** - Just configure with your API key
+- **Zeptomail** - Just configure with your API key
+- **Plunk** - Just configure with your API key
+- **HTTP** - Configure with your custom HTTP endpoint
+- **Mock** - No configuration needed (for testing)
 
-```bash
-# No additional dependencies needed
-# Uses native fetch API
-```
+### Node.js Only Providers
 
-### SMTP
+- **AWS SES** - No additional dependencies needed, uses native fetch API and `node:crypto` for AWS Signature V4 signing
+- **SMTP** - No additional dependencies needed, uses native Node.js SMTP support (`node:net` and `node:tls`)
+- **Nodemailer** - Nodemailer is included as a dependency, no additional installation needed
+- **MailCrab** - No additional dependencies needed, wraps SMTP provider
 
-```bash
-# No additional dependencies needed
-# Uses native Node.js SMTP support
-```
+### Composite Providers
 
-### Nodemailer
-
-```bash
-# Nodemailer is included as a dependency
-# No additional installation needed
-```
+- **Failover** - No additional dependencies, works with any providers
+- **Round Robin** - No additional dependencies, works with any providers
+- **OpenTelemetry** - Requires `@opentelemetry/api` package for observability features
 
 ## Template Engine Dependencies
 

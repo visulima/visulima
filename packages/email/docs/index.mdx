@@ -11,7 +11,7 @@ description: Get started with @visulima/email, a powerful email sending package 
 
 ## Why @visulima/email?
 
-- **Multiple Providers** - Support for AWS SES, Resend, SMTP, Zeptomail, HTTP, Nodemailer, and more
+- **Multiple Providers** - Support for 30+ providers including AWS SES, Resend, Brevo, Mailgun, Mailjet, SendGrid, Postmark, SMTP, and more
 - **Provider Agnostic** - Switch between providers without changing your code
 - **Cross-Runtime Support** - Works in Node.js, Deno, Bun, and Cloudflare Workers (provider-dependent)
 - **Fluent API** - Clean, chainable API inspired by Laravel's Mail system
@@ -27,7 +27,7 @@ description: Get started with @visulima/email, a powerful email sending package 
 
 @visulima/email supports multiple JavaScript runtimes. Some providers work universally (Node.js, Deno, Bun, Cloudflare Workers), while others require Node.js:
 
-**Universal Providers** (all runtimes): Resend, HTTP, Zeptomail  
+**Universal Providers** (all runtimes): Resend, HTTP, Zeptomail, Brevo, Mailgun, Mailjet, MailerSend, Mandrill, MailPace, Mailtrap, Postal, Postmark, Azure, Infobip, Scaleway, AhaSend, Mailomat, Sweego, SendGrid, Plunk, Mock, and more  
 **Node.js Only**: AWS SES, SMTP, MailCrab, Nodemailer
 
 See [Runtime Support](/docs/package/email/installation#runtime-support) for complete details.
@@ -73,19 +73,43 @@ pnpm add @visulima/email
 - **Node.js**: 20.19 or higher, up to 25.x (for Node.js-specific providers)
 - **TypeScript**: Optional but recommended for full type safety
 
-**Note**: Universal providers (Resend, HTTP, Zeptomail) work in Node.js, Deno, Bun, and Cloudflare Workers without Node.js version requirements.
+**Note**: Universal providers work in Node.js, Deno, Bun, and Cloudflare Workers without Node.js version requirements. See [Runtime Support](/docs/package/email/installation#runtime-support) for complete details.
 
 ## Supported Providers
 
-- **AWS SES** - Amazon Simple Email Service
+### Universal Providers (All Runtimes)
 - **Resend** - Modern email API for developers
-- **SMTP** - Standard SMTP protocol
+- **Brevo** - Email marketing and transactional email platform (formerly Sendinblue)
+- **Mailgun** - Developer-friendly email API service
+- **Mailjet** - Email marketing and transactional email platform
+- **MailerSend** - Modern email API for developers
+- **Mandrill** - Mailchimp Transactional Email
+- **MailPace** - Simple transactional email service
+- **Mailtrap** - Email testing and development tool
+- **Postal** - Self-hosted email server
+- **Postmark** - Transactional email service focused on deliverability
+- **Azure** - Microsoft Azure Communication Services
+- **Infobip** - Global communication platform
+- **Scaleway** - European cloud provider email service
+- **AhaSend** - Email delivery service
+- **Mailomat** - Email service provider
+- **Sweego** - Email delivery service
+- **SendGrid** - Cloud-based email service for transactional and marketing emails
 - **Zeptomail** - Zeptomail email service
+- **Plunk** - Modern email platform built on AWS SES
 - **HTTP** - Generic HTTP API provider
+- **Mock** - In-memory provider for testing
+
+### Node.js Only Providers
+- **AWS SES** - Amazon Simple Email Service
+- **SMTP** - Standard SMTP protocol
 - **Nodemailer** - Popular Node.js email library wrapper
+- **MailCrab** - Local development email testing
+
+### Composite Providers
 - **Failover** - Automatic failover between multiple providers
 - **Round Robin** - Load balancing across multiple providers
-- **MailCrab** - Local development email testing
+- **OpenTelemetry** - OpenTelemetry instrumentation wrapper for observability
 
 ## Template Engines
 
