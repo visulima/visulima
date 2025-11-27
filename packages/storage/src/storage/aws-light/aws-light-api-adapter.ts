@@ -152,11 +152,13 @@ class AwsLightApiAdapter implements S3ApiOperations {
         }
 
         // Convert Readable to ReadableStream if needed
-        let body: ReadableStream | Uint8Array = params.Body as ReadableStream | Uint8Array;
+        let body: BodyInit;
 
         if (params.Body instanceof Readable) {
             // Convert Node.js Readable to ReadableStream
-            body = Readable.toWeb(params.Body) as ReadableStream<Uint8Array>;
+            body = Readable.toWeb(params.Body) as unknown as ReadableStream<Uint8Array>;
+        } else {
+            body = params.Body as BodyInit;
         }
 
         const url = this.buildUrl(params.Key, queryParams);
@@ -495,8 +497,20 @@ ${partsXml}
             }
         }
 
+        let body: BodyInit | null | undefined;
+
+        if (params.Body === undefined) {
+            body = undefined;
+        } else if (params.Body instanceof Uint8Array) {
+            body = new Uint8Array(params.Body);
+        } else if (params.Body instanceof ReadableStream) {
+            body = params.Body;
+        } else {
+            body = undefined;
+        }
+
         const response = await this.aws.fetch(url, {
-            body: params.Body,
+            body,
             headers,
             method: "PUT",
         });
@@ -542,7 +556,7 @@ ${partsXml}
      */
     // eslint-disable-next-line class-methods-use-this
     private streamToReadable(stream: ReadableStream<Uint8Array>): Readable {
-        return Readable.fromWeb(stream);
+        return Readable.fromWeb(stream as unknown as import("node:stream/web").ReadableStream<Uint8Array>);
     }
 }
 

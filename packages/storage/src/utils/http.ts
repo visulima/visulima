@@ -291,9 +291,9 @@ export const getIdFromRequest = (request: IncomingMessage & { originalUrl?: stri
  */
 export const getRequestStream = (request: IncomingMessage | Request): Readable => {
     // Check if it's a Web API Request with ReadableStream body
-    if ("body" in request && request.body && typeof request.body.getReader === "function") {
+    if ("body" in request && request.body && typeof (request.body as ReadableStream).getReader === "function") {
         // Web API ReadableStream - convert to Node.js Readable
-        return Readable.fromWeb(request.body as ReadableStream<Uint8Array>);
+        return Readable.fromWeb(request.body as unknown as import("node:stream/web").ReadableStream);
     }
 
     // Check if request has body property with buffer data (converted Web API request)

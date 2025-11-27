@@ -313,7 +313,7 @@ class AzureStorage extends BaseStorage<AzureFile, FileReturn> {
                             blobHTTPHeaders: {
                                 blobContentType: file.contentType ?? "application/octet-stream",
                             },
-                            metadata: file.metadata,
+                            metadata: file.metadata as Record<string, string>,
                         }),
                     );
 
@@ -484,7 +484,7 @@ class AzureStorage extends BaseStorage<AzureFile, FileReturn> {
     }
 
     private async accessCheck(): Promise<void> {
-        return this.retry(() => this.containerClient.getProperties());
+        await this.retry(() => this.containerClient.getProperties());
     }
 }
 

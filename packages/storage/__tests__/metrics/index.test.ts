@@ -37,5 +37,3 @@ describe("metrics/index", () => {
         }
     });
 });
-
-

@@ -3,7 +3,6 @@ import { chmod, mkdir, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { Readable } from "node:stream";
 
-import { createRequest } from "node-mocks-http";
 import { temporaryDirectory } from "tempy";
 import { afterAll, beforeAll, beforeEach, describe, expect, expectTypeOf, it, vi } from "vitest";
 
@@ -1143,27 +1142,23 @@ describe(DiskStorage, () => {
             { contentType: "audio/mpeg", name: "audio.mp3" },
             { contentType: "video/x-msvideo", name: "video.avi" },
             { contentType: "image/jpeg", name: "image.jpg" },
-        ])(
-            "should handle media format: %s",
-            { retry: 2 },
-            async (mediaFile) => {
-                const testFile = {
-                    ...metafile,
-                    contentType: mediaFile.contentType,
-                    id: mediaFile.name,
-                    name: mediaFile.name,
-                    size: 100,
-                };
+        ])("should handle media format: %s", { retry: 2 }, async (mediaFile) => {
+            const testFile = {
+                ...metafile,
+                contentType: mediaFile.contentType,
+                id: mediaFile.name,
+                name: mediaFile.name,
+                size: 100,
+            };
 
-                const diskFile = await storage.create(testFile);
+            const diskFile = await storage.create(testFile);
 
-                await storage.write({ ...diskFile, body: Readable.from(Buffer.alloc(100)) });
+            await storage.write({ ...diskFile, body: Readable.from(Buffer.alloc(100)) });
 
-                const streamResult = await storage.getStream({ id: diskFile.id });
+            const streamResult = await storage.getStream({ id: diskFile.id });
 
-                expect(streamResult.headers["Content-Type"]).toBe(mediaFile.contentType);
-            },
-        );
+            expect(streamResult.headers["Content-Type"]).toBe(mediaFile.contentType);
+        });
     });
 
     describe("input validation", () => {

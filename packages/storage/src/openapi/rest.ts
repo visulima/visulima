@@ -805,7 +805,7 @@ const swaggerSpec = (
                     tags,
                 },
             },
-        },
+        } as OpenAPIV3.PathsObject,
     };
 };
 

@@ -51,7 +51,7 @@ export interface RetryConfig {
 /**
  * Default retry configuration
  */
-const defaultRetryConfig: Required<RetryConfig> = {
+const defaultRetryConfig: Required<Omit<RetryConfig, "calculateDelay">> & { calculateDelay?: RetryConfig["calculateDelay"] } = {
     backoffMultiplier: 2,
     calculateDelay: undefined,
     initialDelay: 1000,
@@ -103,20 +103,23 @@ export const isRetryableError = (error: unknown, retryableStatusCodes: number[] 
             }
         }
 
-        // AWS SDK v2 errors
-        if (errorWithMetadata.retryable === true) {
-            return true;
-        }
-
         // Azure Storage errors
         if (errorWithMetadata.statusCode && retryableStatusCodes.includes(errorWithMetadata.statusCode)) {
             return true;
         }
 
-        // Check for retryable flag in error
-        if (errorWithMetadata.retryable === true) {
+        // Check for retryable flag in error (AWS SDK v2 and other errors)
+        const { retryable } = errorWithMetadata;
+
+        if (retryable === true) {
             return true;
         }
+
+        if (typeof retryable === "string" && retryable === "true") {
+            return true;
+        }
+
+        return false;
     }
 
     return false;

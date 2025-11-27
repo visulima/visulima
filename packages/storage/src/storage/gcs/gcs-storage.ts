@@ -410,7 +410,17 @@ class GCStorage extends BaseStorage<GCSFile, FileReturn> {
             const response = await this.makeRequest<{ data: unknown }>({ params: { alt: "media" }, url: data.uri });
 
             const responseData = response.data;
-            const bufferData = typeof responseData === "string" ? Buffer.from(responseData, "utf8") : Buffer.from(responseData as ArrayLike<number>);
+            let bufferData: Buffer;
+
+            if (typeof responseData === "string") {
+                bufferData = Buffer.from(responseData, "utf8");
+            } else if (responseData && typeof responseData === "object" && "data" in responseData) {
+                const dataValue = (responseData as { data: unknown }).data;
+
+                bufferData = Buffer.from(dataValue as unknown as ArrayLike<number>);
+            } else {
+                bufferData = Buffer.from(responseData as unknown as ArrayLike<number>);
+            }
 
             return {
                 ...data,
@@ -453,7 +463,7 @@ class GCStorage extends BaseStorage<GCSFile, FileReturn> {
                     } catch (error) {
                         truncated = false;
 
-                        const httpError = this.normalizeError(error instanceof Error ? error : new Error(String(error)));
+                        const httpError = this.normalizeError((error instanceof Error ? error : new Error(String(error))) as ClientError);
 
                         await this.onError(httpError);
                         throw error;
@@ -501,11 +511,11 @@ class GCStorage extends BaseStorage<GCSFile, FileReturn> {
                 return size as number;
             }
 
-            throw new FetchError(response.data, `GCS${response.status}`, { uri });
+            throw new FetchError(String(response.data), `GCS${response.status}`, { uri });
         } catch (error) {
             this.logger?.error(uri, error);
 
-            const httpError = this.normalizeError(error instanceof Error ? error : new Error(String(error)));
+            const httpError = this.normalizeError((error instanceof Error ? error : new Error(String(error))) as ClientError);
 
             await this.onError(httpError);
             throw error;

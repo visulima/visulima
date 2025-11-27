@@ -194,7 +194,7 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
         if (metaStorage) {
             this.meta = metaStorage;
         } else {
-            const metaConfig = { ...config, ...metaStorageConfig, logger: this.logger };
+            const metaConfig = { ...config, ...(metaStorageConfig as Record<string, unknown>), logger: this.logger } as Record<string, unknown>;
             const localMeta = "directory" in metaConfig;
 
             if (localMeta) {
@@ -339,7 +339,10 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
                     // Detect file type from stream if contentType is not set or is default
                     if (file.Parts.length === 0 && (!file.contentType || file.contentType === "application/octet-stream")) {
                         try {
-                            const { fileType, stream: detectedStream } = await detectFileTypeFromStream(part.body as ReadableStream<Uint8Array>);
+                            const readable
+                                = part.body instanceof Readable ? part.body : Readable.fromWeb(part.body as unknown as import("node:stream/web").ReadableStream<any>);
+
+                            const { fileType, stream: detectedStream } = await detectFileTypeFromStream(readable);
 
                             if (fileType?.mime) {
                                 file.contentType = fileType.mime;

@@ -116,7 +116,7 @@ export const parseMetadata = (string_?: string): Metadata => {
                 }
             }
 
-            meta[key as string] = parsedValue;
+            (meta as Record<string, unknown>)[key as string] = parsedValue;
         } else {
             throw new Error("Metadata string is not valid");
         }

@@ -103,7 +103,15 @@ abstract class BaseHandlerNode<
                 const fileResponse = file as ResponseFile<TFile> | ResponseList<TFile>;
 
                 if (fileResponse) {
-                    handleGetRequest(fileResponse, request, response, next, this.send.bind(this), this.sendStream.bind(this), this.parseRangeHeader.bind(this));
+                    handleGetRequest(
+                        fileResponse,
+                        request as IncomingMessage & NodeRequest,
+                        response,
+                        next,
+                        this.send.bind(this),
+                        this.sendStream.bind(this),
+                        this.parseRangeHeader.bind(this),
+                    );
                 }
             } else {
                 const { headers: fileHeaders, statusCode, ...basicFile } = file as ResponseFile<TFile>;
@@ -118,9 +126,17 @@ abstract class BaseHandlerNode<
                 }
 
                 if (basicFile.status === "completed") {
-                    await handleCompletedUpload(file as ResponseFile<TFile>, request, response, next, this.storage, this.logger, (_request, resp, uploadResp) => {
-                        this.finish(_request, resp, uploadResp);
-                    });
+                    await handleCompletedUpload(
+                        file as ResponseFile<TFile>,
+                        request as IncomingMessage,
+                        response,
+                        next,
+                        this.storage,
+                        this.logger,
+                        (_request, resp, uploadResp) => {
+                            this.finish(_request as NodeRequest, resp, uploadResp);
+                        },
+                    );
                 } else {
                     handlePartialUpload(file as ResponseFile<TFile>, request, response, (resp, data) => {
                         this.send(resp, {
@@ -372,8 +388,8 @@ abstract class BaseHandlerNode<
      * @param supportedTypes Array of supported MIME types to match against.
      * @returns Best matching content type or undefined if no match found.
      */
-    public override negotiateContentType(request: NodeRequest, supportedTypes: string[]): string | undefined {
-        return super.negotiateContentType(request.headers.accept, supportedTypes);
+    public negotiateContentType(request: NodeRequest, supportedTypes: string[]): string | undefined {
+        return super.negotiateContentTypeFromHeader(request.headers.accept, supportedTypes);
     }
 
     /**

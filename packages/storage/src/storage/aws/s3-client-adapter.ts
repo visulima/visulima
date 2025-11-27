@@ -24,7 +24,6 @@ import {
     waitUntilBucketExists,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import type { SdkStream } from "@aws-sdk/types";
 
 import type { Part, S3ApiOperations } from "./s3-base-storage";
 
@@ -35,7 +34,10 @@ class S3ClientAdapter implements S3ApiOperations {
     public constructor(
         private readonly client: S3Client,
         private readonly bucket: string,
-    ) {}
+    ) {
+        // Bucket is used in getSignedUrl calls
+        void this.bucket;
+    }
 
     public async createMultipartUpload(params: {
         ACL?: string;
@@ -71,11 +73,9 @@ class S3ClientAdapter implements S3ApiOperations {
         UploadId: string;
     }): Promise<{ ETag: string }> {
         // Convert ReadableStream to Readable if needed
-        let body: Readable | Uint8Array = params.Body as Readable | Uint8Array;
+        let body: Readable | Uint8Array | undefined;
 
-        if (params.Body instanceof ReadableStream) {
-            body = Readable.fromWeb(params.Body);
-        }
+        body = params.Body instanceof ReadableStream ? Readable.fromWeb(params.Body as unknown as import("node:stream/web").ReadableStream<any>) : params.Body as Readable | Uint8Array;
 
         const command = new UploadPartCommand({
             Body: body,
@@ -144,15 +144,21 @@ class S3ClientAdapter implements S3ApiOperations {
 
         const response: ListPartsCommandOutput = await this.client.send(command);
 
-        return {
-            Parts: response.Parts?.map((part) => {
-                return {
-                    ETag: part.ETag,
-                    PartNumber: part.PartNumber,
-                    Size: part.Size,
-                };
-            }),
-        };
+        const parts: Part[] = [];
+
+        if (response.Parts) {
+            for (const part of response.Parts) {
+                if (part.ETag && part.PartNumber) {
+                    parts.push({
+                        ETag: part.ETag,
+                        PartNumber: part.PartNumber,
+                        Size: part.Size,
+                    });
+                }
+            }
+        }
+
+        return { Parts: parts.length > 0 ? parts : undefined };
     }
 
     public async getObject(params: { Bucket: string; Key: string }): Promise<{
@@ -175,9 +181,18 @@ class S3ClientAdapter implements S3ApiOperations {
         let body: Readable | undefined;
 
         if (response.Body) {
-            const sdkStream = response.Body as SdkStream<Uint8Array>;
+            const sdkStream = response.Body;
 
-            body = Readable.fromWeb(sdkStream as ReadableStream<Uint8Array>);
+            if (sdkStream instanceof Readable) {
+                body = sdkStream;
+            } else if (typeof sdkStream === "object" && "transform" in sdkStream) {
+                // Handle Web ReadableStream if returned by SDK
+                body = Readable.fromWeb(sdkStream as unknown as import("node:stream/web").ReadableStream<any>);
+            } else {
+                // Handle Blob or other types
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                body = Readable.from(sdkStream as any);
+            }
         }
 
         return {
@@ -228,8 +243,11 @@ class S3ClientAdapter implements S3ApiOperations {
             Bucket: params.Bucket,
             CopySource: params.CopySource,
             Key: params.Key,
-            ...params.StorageClass && { StorageClass: params.StorageClass },
         };
+
+        if (params.StorageClass) {
+            commandInput.StorageClass = params.StorageClass as CopyObjectCommandInput["StorageClass"];
+        }
 
         const command = new CopyObjectCommand(commandInput);
 

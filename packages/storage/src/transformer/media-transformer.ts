@@ -812,15 +812,8 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
             }
 
             // Create a mock request object for storage.create
-            const mockRequest = {
-                body: result.buffer,
-                headers: {
-                    "content-type": mime.getType(result.format),
-                },
-            } as any;
-
             // Save to storage
-            await this.storage.create(mockRequest, {
+            await this.storage.create({
                 contentType: mime.getType(result.format) ?? undefined,
                 metadata,
                 originalName: `${transformedFileId}.${result.format}`,

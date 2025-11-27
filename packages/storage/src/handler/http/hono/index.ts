@@ -13,7 +13,7 @@ const createHandlerFunction
     = <TFile extends UploadFile>(handler: Multipart<TFile> | Rest<TFile> | Tus<TFile>): (c: Context) => Promise<Response> =>
         async (c: Context): Promise<Response> => {
             try {
-                // Get the raw Request from Hono's Context
+            // Get the raw Request from Hono's Context
                 const request = c.req.raw;
 
                 return await handler.fetch(request);

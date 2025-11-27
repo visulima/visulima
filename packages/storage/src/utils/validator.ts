@@ -69,7 +69,7 @@ export class Validator<T> {
 
             if (!isValid) {
                 const errorResponse = validator.response || (code in ErrorMap ? ErrorMap[code as keyof typeof ErrorMap] : ErrorMap.UnknownError);
-                const response = toResponse(errorResponse);
+                const response = toResponse(errorResponse as ResponseTuple<ResponseBody> | UploadResponse<ResponseBody>);
                 const { body, headers, message, statusCode } = response as {
                     body?: unknown;
                     headers?: Record<string, unknown>;

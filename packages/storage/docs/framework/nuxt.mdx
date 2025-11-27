@@ -40,6 +40,7 @@ export default defineNuxtConfig({
 ```
 
 This automatically registers three upload endpoints:
+
 - `/api/upload/multipart` - Multipart/form-data uploads
 - `/api/upload/rest` - REST API for direct binary uploads
 - `/api/upload/tus` - TUS resumable uploads
@@ -184,13 +185,7 @@ export default defineNuxtConfig({
         cors: {
             origin: ["https://example.com", "https://app.example.com"],
             methods: ["GET", "POST", "PATCH", "PUT", "HEAD", "DELETE", "OPTIONS"],
-            headers: [
-                "Content-Type",
-                "Upload-Offset",
-                "Upload-Length",
-                "Tus-Resumable",
-                "Authorization",
-            ],
+            headers: ["Content-Type", "Upload-Offset", "Upload-Length", "Tus-Resumable", "Authorization"],
         },
     },
 });
@@ -373,15 +368,3 @@ The Nuxt module requires Nuxt 4.0.0 or higher.
 - Explore [Batch Operations](/docs/batch-operations) for deleting multiple files
 - Check out [Error Handling](/docs/error-handling) for advanced error management
 - See [OpenAPI Documentation](/docs/openapi) for API documentation generation
-
-
-
-
-
-
-
-
-
-
-
-
