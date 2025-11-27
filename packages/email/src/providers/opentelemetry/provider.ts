@@ -108,7 +108,11 @@ const createSpanAttributes = (emailOptions: EmailOptions, recordContent: boolean
  * OpenTelemetry Provider for instrumenting email sending with OpenTelemetry traces and metrics
  */
 // @ts-expect-error - Type inference issue with ProviderFactory generic parameters
-const opentelemetryProvider = defineProvider<OpenTelemetryConfig, Provider<unknown, unknown, EmailOptions>, EmailOptions>((config: OpenTelemetryConfig) => {
+const opentelemetryProvider: ProviderFactory<OpenTelemetryConfig, Provider<unknown, unknown, EmailOptions>, EmailOptions> = defineProvider<
+    OpenTelemetryConfig,
+    Provider<unknown, unknown, EmailOptions>,
+    EmailOptions
+>((config: OpenTelemetryConfig) => {
     // Validate required options
     if (!config.provider) {
         throw new RequiredOptionError(PROVIDER_NAME, "provider");

@@ -45,7 +45,9 @@ const validateTag = (tag: ResendEmailTag): string[] => {
  * Resend Provider for sending emails through Resend API.
  */
 // @ts-expect-error - ResendEmailOptions extends Omit<EmailOptions, "tags"> which doesn't satisfy the constraint, but is compatible at runtime
-const resendProvider = defineProvider<ResendConfig, unknown, ResendEmailOptions>(((config: ResendConfig = {} as ResendConfig) => {
+const resendProvider: ProviderFactory<ResendConfig, unknown, ResendEmailOptions> = defineProvider<ResendConfig, unknown, ResendEmailOptions>(((
+    config: ResendConfig = {} as ResendConfig,
+) => {
     if (!config.apiKey) {
         throw new RequiredOptionError(PROVIDER_NAME, "apiKey");
     }

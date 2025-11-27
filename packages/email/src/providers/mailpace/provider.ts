@@ -21,7 +21,9 @@ const DEFAULT_RETRIES = 3;
  * MailPace Provider for sending emails through MailPace API.
  */
 // @ts-expect-error - MailPaceEmailOptions extends Omit<EmailOptions, "attachments"> which doesn't satisfy the constraint, but is compatible at runtime
-const mailPaceProvider = defineProvider<MailPaceConfig, unknown, MailPaceEmailOptions>(((config: MailPaceConfig = {} as MailPaceConfig) => {
+const mailPaceProvider: ProviderFactory<MailPaceConfig, unknown, MailPaceEmailOptions> = defineProvider<MailPaceConfig, unknown, MailPaceEmailOptions>(((
+    config: MailPaceConfig = {} as MailPaceConfig,
+) => {
     if (!config.apiToken) {
         throw new RequiredOptionError(PROVIDER_NAME, "apiToken");
     }

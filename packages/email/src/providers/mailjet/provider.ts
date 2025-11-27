@@ -22,7 +22,9 @@ const DEFAULT_RETRIES = 3;
  * Mailjet Provider for sending emails through Mailjet API.
  */
 // @ts-expect-error - MailjetEmailOptions extends Omit<EmailOptions, "priority"> which doesn't satisfy the constraint, but is compatible at runtime
-const provider = defineProvider<MailjetConfig, unknown, MailjetEmailOptions>(((config: MailjetConfig = {} as MailjetConfig) => {
+const provider: ProviderFactory<MailjetConfig, unknown, MailjetEmailOptions> = defineProvider<MailjetConfig, unknown, MailjetEmailOptions>(((
+    config: MailjetConfig = {} as MailjetConfig,
+) => {
     if (!config.apiKey) {
         throw new RequiredOptionError(PROVIDER_NAME, "apiKey");
     }

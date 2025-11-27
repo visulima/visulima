@@ -1,11 +1,11 @@
-import EmailError from "../../errors/email-error.js";
-import RequiredOptionError from "../../errors/required-option-error.js";
-import { createLogger } from "../../index.js";
-import type { EmailOptions, EmailResult, Result } from "../../types.js";
-import generateMessageId from "../../utils/generate-message-id.js";
-import type { Provider, ProviderFactory } from "../provider.js";
-import { defineProvider } from "../provider.js";
-import type { FailoverConfig, FailoverEmailOptions } from "./types.js";
+import EmailError from "../../errors/email-error";
+import RequiredOptionError from "../../errors/required-option-error";
+import { createLogger } from "../../index";
+import type { EmailOptions, EmailResult, Result } from "../../types";
+import generateMessageId from "../../utils/generate-message-id";
+import type { Provider, ProviderFactory } from "../provider";
+import { defineProvider } from "../provider";
+import type { FailoverConfig, FailoverEmailOptions } from "./types";
 
 const isProviderFactory = (value: unknown): value is ProviderFactory<unknown, unknown, EmailOptions> => typeof value === "function";
 

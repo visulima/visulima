@@ -1,9 +1,12 @@
-import { EmailError, RequiredOptionError } from "../../errors/email-error.js";
-import type { EmailResult, HttpEmailConfig, Result } from "../../types.js";
-import { generateMessageId, makeRequest, validateEmailOptions } from "../../utils.js";
-import type { ProviderFactory } from "../provider.js";
-import { defineProvider } from "../provider.js";
-import type { HttpEmailOptions } from "./types.js";
+import EmailError from "../../errors/email-error";
+import RequiredOptionError from "../../errors/required-option-error";
+import type { EmailResult, Result } from "../../types";
+import generateMessageId from "../../utils/generate-message-id";
+import { makeRequest } from "../../utils/make-request";
+import validateEmailOptions from "../../utils/validate-email-options";
+import type { ProviderFactory } from "../provider";
+import { defineProvider } from "../provider";
+import type { HttpEmailConfig, HttpEmailOptions } from "./types";
 
 // Constants
 const PROVIDER_NAME = "http";
@@ -201,7 +204,9 @@ const httpProvider: ProviderFactory<HttpEmailConfig, unknown, HttpEmailOptions> 
 
                 if (!result.success) {
                     return {
-                        error: new EmailError(PROVIDER_NAME, `Failed to send email: ${result.error?.message || "Unknown error"}`, { cause: result.error }),
+                        error: new EmailError(PROVIDER_NAME, `Failed to send email: ${(result.error as Error)?.message || "Unknown error"}`, {
+                            cause: result.error as Error,
+                        }),
                         success: false,
                     };
                 }
@@ -214,9 +219,9 @@ const httpProvider: ProviderFactory<HttpEmailConfig, unknown, HttpEmailOptions> 
                     messageId
                         = (responseBody.id as string | undefined)
                             || (responseBody.messageId as string | undefined)
-                            || (responseBody.data
+                            || ((responseBody.data
                                 && typeof responseBody.data === "object"
-                                && ((responseBody.data as { id?: string }).id || (responseBody.data as { messageId?: string }).messageId));
+                                && ((responseBody.data as { id?: string }).id || (responseBody.data as { messageId?: string }).messageId)) as string | undefined);
                 }
 
                 // Fall back to generating a message ID if none found
