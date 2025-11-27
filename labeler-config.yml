@@ -28,6 +28,9 @@
 "package: deep-clone":
     - changed-files:
           - any-glob-to-any-file: "packages/deep-clone/**/*"
+"package: email":
+    - changed-files:
+          - any-glob-to-any-file: "packages/email/**/*"
 "package: error":
     - changed-files:
           - any-glob-to-any-file: "packages/error/**/*"

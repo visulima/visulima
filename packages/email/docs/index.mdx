@@ -1,0 +1,131 @@
+---
+title: Introduction
+description: Get started with @visulima/email, a powerful email sending package with multiple provider support
+---
+
+# Email
+
+**Powerful email sending package with multiple provider support**
+
+@visulima/email is a flexible, provider-agnostic email sending library that works across multiple JavaScript runtimes. It provides a clean, fluent API for building and sending emails with support for multiple email service providers, template engines, and advanced features like failover and load balancing.
+
+## Why @visulima/email?
+
+- **Multiple Providers** - Support for 30+ providers including AWS SES, Resend, Brevo, Mailgun, Mailjet, SendGrid, Postmark, SMTP, and more
+- **Provider Agnostic** - Switch between providers without changing your code
+- **Cross-Runtime Support** - Works in Node.js, Deno, Bun, and Cloudflare Workers (provider-dependent)
+- **Fluent API** - Clean, chainable API inspired by Laravel's Mail system
+- **Template Engines** - Support for Handlebars, MJML, React Email, Vue Email, and HTML-to-text conversion
+- **Failover & Load Balancing** - Built-in failover and round-robin providers for high availability
+- **TypeScript Support** - Full type safety out of the box
+- **Tree-shakeable** - Import only what you need for optimal bundle size
+- **Optional Dependencies** - Template engines and providers are optional peer dependencies
+- **Attachment Support** - Rich attachment handling with inline images and files
+- **Mailable Classes** - Organize emails using class-based mailables
+
+## Runtime Support
+
+@visulima/email supports multiple JavaScript runtimes. Some providers work universally (Node.js, Deno, Bun, Cloudflare Workers), while others require Node.js:
+
+**Universal Providers** (all runtimes): Resend, HTTP, Zeptomail, Brevo, Mailgun, Mailjet, MailerSend, Mandrill, MailPace, Mailtrap, Postal, Postmark, Azure, Infobip, Scaleway, AhaSend, Mailomat, Sweego, SendGrid, Plunk, Mock, and more  
+**Node.js Only**: AWS SES, SMTP, MailCrab, Nodemailer
+
+See [Runtime Support](/docs/package/email/installation#runtime-support) for complete details.
+
+## Quick Start
+
+```typescript
+import { createMail } from "@visulima/email";
+import { resendProvider } from "@visulima/email/providers/resend";
+
+// Create a provider
+const resend = resendProvider({
+    apiKey: "re_xxx",
+});
+
+// Create a Mail instance
+const mail = createMail(resend);
+
+// Send an email using the message builder
+const result = await mail.message().to("user@example.com").from("sender@example.com").subject("Hello").html("<h1>Hello World</h1>").send();
+
+if (result.success) {
+    console.log("Email sent:", result.data?.messageId);
+}
+```
+
+## Installation
+
+```bash
+npm install @visulima/email
+```
+
+```bash
+yarn add @visulima/email
+```
+
+```bash
+pnpm add @visulima/email
+```
+
+## Requirements
+
+- **Node.js**: 20.19 or higher, up to 25.x (for Node.js-specific providers)
+- **TypeScript**: Optional but recommended for full type safety
+
+**Note**: Universal providers work in Node.js, Deno, Bun, and Cloudflare Workers without Node.js version requirements. See [Runtime Support](/docs/package/email/installation#runtime-support) for complete details.
+
+## Supported Providers
+
+### Universal Providers (All Runtimes)
+
+- **Resend** - Modern email API for developers
+- **Brevo** - Email marketing and transactional email platform (formerly Sendinblue)
+- **Mailgun** - Developer-friendly email API service
+- **Mailjet** - Email marketing and transactional email platform
+- **MailerSend** - Modern email API for developers
+- **Mandrill** - Mailchimp Transactional Email
+- **MailPace** - Simple transactional email service
+- **Mailtrap** - Email testing and development tool
+- **Postal** - Self-hosted email server
+- **Postmark** - Transactional email service focused on deliverability
+- **Azure** - Microsoft Azure Communication Services
+- **Infobip** - Global communication platform
+- **Scaleway** - European cloud provider email service
+- **AhaSend** - Email delivery service
+- **Mailomat** - Email service provider
+- **Sweego** - Email delivery service
+- **SendGrid** - Cloud-based email service for transactional and marketing emails
+- **Zeptomail** - Zeptomail email service
+- **Plunk** - Modern email platform built on AWS SES
+- **HTTP** - Generic HTTP API provider
+- **Mock** - In-memory provider for testing
+
+### Node.js Only Providers
+
+- **AWS SES** - Amazon Simple Email Service
+- **SMTP** - Standard SMTP protocol
+- **Nodemailer** - Popular Node.js email library wrapper
+- **MailCrab** - Local development email testing
+
+### Composite Providers
+
+- **Failover** - Automatic failover between multiple providers
+- **Round Robin** - Load balancing across multiple providers
+- **OpenTelemetry** - OpenTelemetry instrumentation wrapper for observability
+
+## Template Engines
+
+- **Handlebars** - Logic-less templating
+- **MJML** - Email framework that makes responsive email easy
+- **React Email** - Build beautiful emails with React
+- **Vue Email** - Build beautiful emails with Vue
+- **HTML-to-Text** - Convert HTML emails to plain text automatically
+
+## What's Next?
+
+- [Installation Guide](/docs/package/email/installation) - Learn how to install and set up @visulima/email
+- [Getting Started](/docs/package/email/getting-started/introduction) - Start sending emails with simple examples
+- [Building Messages](/docs/package/email/mail-messages/building-messages) - Learn how to build email messages
+- [Providers](/docs/package/email/providers/introduction) - Explore available email providers
+- [Template Engines](/docs/package/email/templates/introduction) - Use template engines for dynamic emails
