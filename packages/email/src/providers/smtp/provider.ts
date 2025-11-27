@@ -15,7 +15,6 @@ import type { ProviderFactory } from "../provider";
 import { defineProvider } from "../provider";
 import type { SmtpConfig, SmtpEmailOptions } from "./types";
 
-// Constants
 const PROVIDER_NAME = "smtp";
 const DEFAULT_PORT = 25;
 const DEFAULT_SECURE_PORT = 465;
@@ -28,15 +27,13 @@ const DEFAULT_POOL_WAIT_TIMEOUT = 30_000;
  * SMTP provider for sending emails via SMTP protocol
  */
 const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions> = defineProvider((config: SmtpConfig = {} as SmtpConfig) => {
-    // Validate required options
     if (!config.host) {
         throw new RequiredOptionError(PROVIDER_NAME, "host");
     }
 
-    // Initialize with defaults
     type SmtpOptions = Pick<SmtpConfig, "user" | "password" | "oauth2" | "dkim"> & Required<Omit<SmtpConfig, "user" | "password" | "oauth2" | "dkim">>;
     const options: SmtpOptions = {
-        authMethod: config.authMethod || "LOGIN", // Assign default to avoid undefined
+        authMethod: config.authMethod || "LOGIN",
         debug: config.debug ?? false,
         dkim: config.dkim,
         host: config.host,
@@ -60,10 +57,8 @@ const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions> = def
         ...(config.logger && { logger: config.logger }),
     } as Pick<SmtpConfig, "user" | "password" | "oauth2" | "dkim"> & Required<Omit<SmtpConfig, "user" | "password" | "oauth2" | "dkim">>;
 
-    // Track connection state
     let isInitialized = false;
 
-    // Connection pool management
     const connectionPool: Socket[] = [];
     const connectionQueue: {
         reject: (error: Error) => void;
@@ -137,8 +132,6 @@ const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions> = def
             // eslint-disable-next-line sonarjs/cognitive-complexity
             const onData: (data: Buffer) => void = (data: Buffer) => {
                 responseBuffer += data.toString();
-                // SMTP çok satırlı yanıtlar: 250-...\r\n, son satır 250 ...\r\n
-                // Her satırı kontrol et
                 const lines = responseBuffer.split("\r\n").filter(Boolean);
 
                 if (lines.length > 0) {
@@ -152,7 +145,6 @@ const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions> = def
 
                             lastLineCode = code as string;
 
-                            // Son satırda boşluk varsa (multi-line bitti)
                             if (lastLine[3] === " ") {
                                 cleanup();
 
@@ -188,7 +180,6 @@ const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions> = def
      * @throws {EmailError} When connection fails or times out.
      */
     const createSmtpConnection = async (): Promise<Socket> => {
-        // If pooling is enabled and there are available connections, use one
         if (options.pool && connectionPool.length > 0) {
             const socket = connectionPool.pop();
 
@@ -197,17 +188,14 @@ const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions> = def
             }
         }
 
-        // If we've reached max connections and pooling is enabled, wait for a connection
         if (options.pool && connectionPool.length + 1 >= options.maxConnections) {
             return new Promise<Socket>((resolve, reject) => {
-                // Create queue item with explicit timeout property
                 const queueItem: {
                     reject: (error: Error) => void;
                     resolve: (socket: Socket) => void;
                     timeout?: NodeJS.Timeout;
                 } = { reject, resolve };
 
-                // Set a timeout for waiting in the queue
                 queueItem.timeout = setTimeout(() => {
                     const index = connectionQueue.indexOf(queueItem);
 
@@ -233,7 +221,6 @@ const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions> = def
                 }
             };
 
-            // Set up connection timeout using Promise-based timeout
             connectionTimeout = setTimeout(() => {
                 if (!isResolved) {
                     isResolved = true;
@@ -248,7 +235,6 @@ const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions> = def
             }, options.timeout);
 
             try {
-                // Create appropriate socket based on secure option
                 socket = options.secure
                     ? connect({
                         host: options.host,
@@ -257,7 +243,6 @@ const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions> = def
                     })
                     : createConnection(options.port, options.host);
 
-                // Handle errors
                 socket.on("error", (error) => {
                     if (!isResolved) {
                         isResolved = true;
@@ -266,7 +251,6 @@ const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions> = def
                     }
                 });
 
-                // Wait for connection and server greeting
                 socket.once("data", (data: Buffer) => {
                     if (!isResolved && socket) {
                         isResolved = true;
@@ -310,7 +294,6 @@ const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions> = def
                 }
             };
 
-            // Set up TLS connection timeout using Promise-based timeout
             tlsTimeout = setTimeout(() => {
                 if (!isResolved) {
                     isResolved = true;
@@ -325,17 +308,14 @@ const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions> = def
             }, options.timeout);
 
             try {
-                // Create TLS socket options
                 const tlsOptions = {
                     host: options.host,
                     rejectUnauthorized: options.rejectUnauthorized,
                     socket,
                 };
 
-                // Create TLS connection
                 tlsSocket = connect(tlsOptions);
 
-                // Handle TLS connection errors
                 tlsSocket.on("error", (error) => {
                     if (!isResolved) {
                         isResolved = true;
@@ -344,7 +324,6 @@ const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions> = def
                     }
                 });
 
-                // Resolve when secure connection is established
                 tlsSocket.once("secure", () => {
                     if (!isResolved && tlsSocket) {
                         isResolved = true;
@@ -366,7 +345,6 @@ const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions> = def
      * @param socket The socket connection to release.
      */
     const releaseConnection = (socket: Socket): void => {
-        // If the socket is destroyed or pooling is disabled, don't try to reuse it
         if (socket.destroyed || !options.pool) {
             try {
                 socket.destroy();
@@ -377,7 +355,6 @@ const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions> = def
             return;
         }
 
-        // If there are connections waiting in the queue, give this socket to the next one
         if (connectionQueue.length > 0) {
             const next = connectionQueue.shift();
 

@@ -21,14 +21,12 @@ import {
 import type { EmailOptions } from "../types";
 import type { EmailSigner, SmimeSignOptions } from "./types";
 
-// OID constants for CMS attributes
 const idContentType = "1.2.840.113549.1.9.3";
 const idMessageDigest = "1.2.840.113549.1.9.4";
 const idSigningTime = "1.2.840.113549.1.9.5";
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const id_RSASSA_PKCS1_v1_5 = "1.2.840.113549.1.1.1";
 
-// Version constants
 const SignedDataVersion = { v1: 1 } as const;
 const SignerInfoVersion = { v1: 1 } as const;
 
@@ -49,7 +47,6 @@ const pemToDer = (pem: string): Uint8Array => {
         return Buffer.from(base64, "base64");
     }
 
-    // Convert base64 to Uint8Array
     const binaryString = atob(base64);
     const bytes = new Uint8Array(binaryString.length);
 
@@ -73,7 +70,6 @@ const derToPem = (der: ArrayBuffer, type: string): string => {
         base64 = Buffer.from(der).toString("base64");
     } else {
         const bytes = new Uint8Array(der);
-        // Convert in chunks to avoid stack overflow for large inputs
         let binaryString = "";
         const chunkSize = 8192;
 
@@ -87,7 +83,6 @@ const derToPem = (der: ArrayBuffer, type: string): string => {
         base64 = btoa(binaryString);
     }
 
-    // Split into 64-character lines
     const lines = base64.match(/.{1,64}/g) || [];
 
     return `-----BEGIN ${type}-----\n${lines.join("\n")}\n-----END ${type}-----\n`;
@@ -131,11 +126,9 @@ export class SmimeSigner implements EmailSigner {
      * @throws {Error} When signing fails (e.g., invalid certificate/key).
      */
     public async sign(email: EmailOptions): Promise<EmailOptions> {
-        // Load certificate and private key
         const certificatePem = await readFile(this.options.certificate, { encoding: "utf8" });
         const privateKeyPem = await readFile(this.options.privateKey, { encoding: "utf8" });
 
-        // Parse certificate from PEM
         const certDer = pemToDer(certificatePem);
         const asn1 = fromBER(certDer);
 
@@ -145,8 +138,6 @@ export class SmimeSigner implements EmailSigner {
 
         const cert = new Certificate({ schema: asn1.result });
 
-        // Parse private key - use Node.js crypto for all key formats (PKCS#8, PKCS#1, encrypted)
-        // Node.js crypto handles encrypted keys (PBES2/PBKDF2) automatically
         let privateKeyObject: ReturnType<typeof createPrivateKey>;
 
         try {
@@ -160,7 +151,6 @@ export class SmimeSigner implements EmailSigner {
             throw new Error(`Failed to parse private key: ${(error as Error).message}`);
         }
 
-        // Load intermediate certificates if provided
         const intermediateCerts: Certificate[] = [];
 
         if (this.options.intermediateCerts) {
@@ -179,21 +169,17 @@ export class SmimeSigner implements EmailSigner {
             intermediateCerts.push(...await Promise.all(certPromises));
         }
 
-        // Build the email message
         const message = this.buildMessage(email);
         const messageBuffer = new TextEncoder().encode(message);
 
-        // Create PKCS#7 signed data
         const signedData = new SignedData({
             version: SignedDataVersion.v1,
         });
 
-        // Set content (detached signature)
         signedData.encapContentInfo = new EncapsulatedContentInfo({
             eContentType: id_ContentType_Data,
         });
 
-        // Create signer info
         const signerInfo = new SignerInfo({
             digestAlgorithm: new AlgorithmIdentifier({
                 algorithmId: id_sha256,
@@ -208,14 +194,12 @@ export class SmimeSigner implements EmailSigner {
             version: SignerInfoVersion.v1,
         });
 
-        // Calculate message digest using Node.js crypto
         const hash = createHash("sha256");
 
         hash.update(hasBuffer ? Buffer.from(messageBuffer) : messageBuffer);
         const digestBuffer = hash.digest();
         const messageDigest = new Uint8Array(digestBuffer);
 
-        // Create authenticated attributes
         const authenticatedAttributes = new SignedAndUnsignedAttributes({
             attributes: [
                 new Attribute({
@@ -240,11 +224,9 @@ export class SmimeSigner implements EmailSigner {
 
         signerInfo.signedAttrs = authenticatedAttributes;
 
-        // Sign the authenticated attributes using Node.js crypto
         const attributesBuffer = authenticatedAttributes.toSchema().toBER(false);
         const attributesArray = hasBuffer ? Buffer.from(attributesBuffer) : new Uint8Array(attributesBuffer);
 
-        // Use RSASSA-PKCS1-v1_5 for signing (most compatible)
         const sign = createSign("RSA-SHA256");
 
         sign.update(attributesArray);
@@ -255,13 +237,10 @@ export class SmimeSigner implements EmailSigner {
 
         signerInfo.signature = new OctetString({ valueHex: signature });
 
-        // Add signer info
         signedData.signerInfos.push(signerInfo);
 
-        // Add certificates
         signedData.certificates = [cert, ...intermediateCerts];
 
-        // Encode to BER
         const cmsContent = new ContentInfo({
             content: signedData.toSchema(),
             contentType: id_ContentType_SignedData,
@@ -269,10 +248,8 @@ export class SmimeSigner implements EmailSigner {
 
         const cmsBuffer = cmsContent.toSchema().toBER(false);
 
-        // Convert to PEM format
         const signedDataPem = derToPem(cmsBuffer, "PKCS7");
 
-        // Create multipart/signed message
         const boundary = `----_=_NextPart_${Date.now()}_${randomBytes(8).toString("hex")}`;
         const signedMessage = [
             `Content-Type: multipart/signed; protocol="application/pkcs7-signature"; micalg=sha-256; boundary="${boundary}"`,
@@ -291,14 +268,13 @@ export class SmimeSigner implements EmailSigner {
             `--${boundary}--`,
         ].join("\r\n");
 
-        // Return modified email with signed content
         return {
             ...email,
             headers: {
                 ...email.headers,
                 "Content-Type": `multipart/signed; protocol="application/pkcs7-signature"; micalg=sha-256; boundary="${boundary}"`,
             },
-            html: undefined, // S/MIME signed messages are typically text-based
+            html: undefined,
             text: signedMessage,
         };
     }

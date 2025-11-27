@@ -36,7 +36,6 @@ const pemToDer = (pem: string): Uint8Array => {
         return Buffer.from(base64, "base64");
     }
 
-    // Convert base64 to Uint8Array
     const binaryString = atob(base64);
     const bytes = new Uint8Array(binaryString.length);
 
@@ -65,7 +64,6 @@ const derToPem = (der: ArrayBuffer, type: string): string => {
         base64 = btoa(String.fromCodePoint(...bytes));
     }
 
-    // Split into 64-character lines
     const lines = base64.match(/.{1,64}/g) || [];
 
     return `-----BEGIN ${type}-----\n${lines.join("\n")}\n-----END ${type}-----\n`;
@@ -122,12 +120,10 @@ export class SmimeEncrypter implements EmailEncrypter {
      * @throws {Error} When encryption fails (e.g., invalid certificate).
      */
     public async encrypt(email: EmailOptions): Promise<EmailOptions> {
-        // Determine which certificate(s) to use
         const recipients = Array.isArray(email.to) ? email.to : [email.to];
         const certificates: Certificate[] = [];
 
         if (typeof this.options.certificates === "string") {
-            // Single certificate for all recipients
             const certPem = await readFile(this.options.certificates, { encoding: "utf8" });
             const certDer = pemToDer(certPem);
             const asn1 = fromBER(certDer);
@@ -138,7 +134,6 @@ export class SmimeEncrypter implements EmailEncrypter {
 
             certificates.push(new Certificate({ schema: asn1.result }));
         } else {
-            // Map of email -> certificate path
             const certPromises = recipients.map(async (recipient) => {
                 const emailAddress = typeof recipient === "string" ? recipient : recipient.email;
                 const certPath = (this.options.certificates as Record<string, string>)[emailAddress];
@@ -161,25 +156,20 @@ export class SmimeEncrypter implements EmailEncrypter {
             certificates.push(...await Promise.all(certPromises));
         }
 
-        // Build the email message
         const message = await this.buildMessage(email);
         const messageBuffer = new TextEncoder().encode(message);
 
-        // Create PKCS#7 enveloped data
         const envelopedData = new EnvelopedData({
             version: 0,
         });
 
-        // Set content type
         envelopedData.encryptedContentInfo = new EncryptedContentInfo({
             contentType: id_ContentType_Data,
         });
 
-        // Determine encryption algorithm
         const algorithm = this.options.algorithm || "aes-256-cbc";
         const algorithmLower = algorithm.toLowerCase();
 
-        // Reject deprecated/insecure algorithms
         if (algorithmLower === "3des" || algorithmLower === "des-ede3-cbc") {
             throw new Error(
                 "3DES/DES-EDE3-CBC is deprecated and insecure (Sweet32 vulnerability). Please use AES-256-CBC, AES-192-CBC, or AES-128-CBC instead.",
@@ -203,53 +193,42 @@ export class SmimeEncrypter implements EmailEncrypter {
                 break;
             }
             default: {
-                // Default to AES-256-CBC
-                algorithmId = "2.16.840.1.101.3.4.1.42"; // AES-256-CBC
+                algorithmId = "2.16.840.1.101.3.4.1.42";
                 keyLength = 32;
                 break;
             }
         }
 
-        // Generate content encryption key using Node.js crypto
         const contentEncryptionKey = randomBytes(keyLength);
         const keyArray = hasBuffer ? contentEncryptionKey : new Uint8Array(contentEncryptionKey);
 
-        // Generate IV using Node.js crypto
         const iv = randomBytes(16);
         const ivArray = hasBuffer ? iv : new Uint8Array(iv);
 
-        // Encrypt content using Node.js crypto
         const cipher = createCipheriv(`aes-${keyLength * 8}-cbc`, contentEncryptionKey, iv);
         const messageBufferNode = Buffer.from(messageBuffer);
         const encryptedChunks: Buffer[] = [cipher.update(messageBufferNode), cipher.final()];
         const encryptedContent = Buffer.concat(encryptedChunks);
 
-        // Set encrypted content
         envelopedData.encryptedContentInfo.encryptedContent = new OctetString({
             valueHex: encryptedContent.buffer.slice(encryptedContent.byteOffset, encryptedContent.byteOffset + encryptedContent.byteLength),
         });
 
-        // Add recipient infos (one per certificate)
         const recipientInfos = await Promise.all(
             certificates.map(async (cert) => {
-                // Extract public key from certificate using Node.js crypto
-                // Export certificate to PEM and extract public key
                 const certPem = cert.toSchema().toBER(false);
                 const certPemString = derToPem(certPem, "CERTIFICATE");
                 const publicKeyObject = createPublicKey(certPemString);
 
-                // Encrypt content encryption key with recipient's public key using Node.js crypto
-                // Use RSAES-PKCS1-v1_5 (more compatible than OAEP)
                 const keyBuffer = Buffer.from(keyArray);
                 const encryptedKeyBuffer = publicEncrypt(
                     {
                         key: publicKeyObject,
-                        padding: 1, // RSA_PKCS1_PADDING
+                        padding: 1,
                     },
                     keyBuffer,
                 );
 
-                // Create recipient info
                 return new RecipientInfo({
                     value: new KeyTransRecipientInfo({
                         encryptedKey: new OctetString({
@@ -274,13 +253,11 @@ export class SmimeEncrypter implements EmailEncrypter {
 
         envelopedData.recipientInfos.push(...recipientInfos);
 
-        // Set encryption algorithm
         envelopedData.encryptedContentInfo.contentEncryptionAlgorithm = new AlgorithmIdentifier({
             algorithmId,
             algorithmParams: ivArray,
         });
 
-        // Encode to BER
         const cmsContent = new ContentInfo({
             content: envelopedData.toSchema(),
             contentType: id_ContentType_EnvelopedData,
@@ -288,10 +265,8 @@ export class SmimeEncrypter implements EmailEncrypter {
 
         const cmsBuffer = cmsContent.toSchema().toBER(false);
 
-        // Convert to PEM format
         const encryptedDataPem = derToPem(cmsBuffer, "PKCS7");
 
-        // Return encrypted email
         return {
             ...email,
             headers: {
@@ -300,7 +275,7 @@ export class SmimeEncrypter implements EmailEncrypter {
                 "Content-Transfer-Encoding": "base64",
                 "Content-Type": "application/pkcs7-mime; smime-type=enveloped-data; name=smime.p7m",
             },
-            html: undefined, // Encrypted messages are binary/text
+            html: undefined,
             text: encryptedDataPem,
         };
     }
@@ -330,7 +305,6 @@ export class SmimeEncrypter implements EmailEncrypter {
             }
         }
 
-        // Add Content-Type based on content
         if (email.html) {
             lines.push("Content-Type: text/html; charset=utf-8");
         } else if (email.text) {

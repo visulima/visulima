@@ -577,7 +577,6 @@ export class MailMessage {
                     this.logger.debug("Auto-generated text content from HTML");
                 }
             } catch {
-                // HTML-to-text conversion failed silently; email will be sent without text part
                 if (this.logger) {
                     this.logger.debug("Failed to convert HTML to text; proceeding without text content.");
                 }
@@ -628,7 +627,6 @@ export class MailMessage {
             emailOptions.tags = this.tagsValue;
         }
 
-        // Apply signing before encryption (sign then encrypt)
         if (this.signer) {
             if (this.logger) {
                 this.logger.debug("Signing email message");
@@ -641,7 +639,6 @@ export class MailMessage {
             }
         }
 
-        // Apply encryption (encrypts the signed message if signing was applied)
         if (this.encrypter) {
             if (this.logger) {
                 this.logger.debug("Encrypting email message");
@@ -875,7 +872,6 @@ export class Mail {
         }
 
         for await (const message of messages) {
-            // Check for abort signal
             if (options?.signal?.aborted) {
                 if (this.logger) {
                     this.logger.warn("Batch send operation was aborted", {
@@ -897,7 +893,6 @@ export class Mail {
             processedCount += 1;
 
             try {
-                // Convert mailable to email options if needed
                 const emailOptions: EmailOptions
                     = "build" in message && typeof message.build === "function" ? await (message as Mailable).build() : (message as EmailOptions);
 
@@ -908,7 +903,6 @@ export class Mail {
                     });
                 }
 
-                // Send the email
                 const result = await this.provider.sendEmail(emailOptions);
 
                 if (result.success && result.data) {

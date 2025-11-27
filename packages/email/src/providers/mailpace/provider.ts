@@ -139,7 +139,6 @@ const mailPaceProvider = defineProvider<MailPaceConfig, unknown, MailPaceEmailOp
 
                 logger.debug("Checking MailPace API availability");
 
-                // Check account info
                 const result = await makeRequest(`${options.endpoint}/account`, {
                     headers,
                     method: "GET",
@@ -191,39 +190,32 @@ const mailPaceProvider = defineProvider<MailPaceConfig, unknown, MailPaceEmailOp
 
                 await providerState.ensureInitialized(() => this.initialize(), PROVIDER_NAME);
 
-                // Build payload for MailPace API
                 const payload: Record<string, unknown> = {
                     from: formatAddress(emailOptions.from),
                     subject: emailOptions.subject,
                     to: formatMailpaceAddresses(emailOptions.to),
                 };
 
-                // Add HTML content
                 if (emailOptions.html) {
                     payload.htmlbody = emailOptions.html;
                 }
 
-                // Add text content
                 if (emailOptions.text) {
                     payload.textbody = emailOptions.text;
                 }
 
-                // Add CC
                 if (emailOptions.cc) {
                     payload.cc = formatMailpaceAddresses(emailOptions.cc);
                 }
 
-                // Add BCC
                 if (emailOptions.bcc) {
                     payload.bcc = formatMailpaceAddresses(emailOptions.bcc);
                 }
 
-                // Add reply-to
                 if (emailOptions.replyTo) {
                     payload.replyto = formatAddress(emailOptions.replyTo);
                 }
 
-                // Add template
                 if (emailOptions.templateId) {
                     payload.template_id = emailOptions.templateId;
 
@@ -232,24 +224,20 @@ const mailPaceProvider = defineProvider<MailPaceConfig, unknown, MailPaceEmailOp
                     }
                 }
 
-                // Add tags
                 if (emailOptions.tags && emailOptions.tags.length > 0) {
                     payload.tags = emailOptions.tags;
                 }
 
-                // Add list unsubscribe
                 if (emailOptions.listUnsubscribe) {
                     payload.list_unsubscribe = emailOptions.listUnsubscribe;
                 }
 
-                // Add custom headers
                 if (emailOptions.headers) {
                     const headersRecord = headersToRecord(emailOptions.headers);
 
                     payload.headers = headersRecord;
                 }
 
-                // Add attachments (MailPace attachments are already in the correct format)
                 if (emailOptions.attachments && emailOptions.attachments.length > 0) {
                     payload.attachments = emailOptions.attachments;
                 }

@@ -34,11 +34,9 @@ const canonicalizeHeaders = (headers: Record<string, string>, method: "simple" |
  */
 const canonicalizeBody = (body: string, method: "simple" | "relaxed" = "simple"): string => {
     if (method === "simple") {
-        // Simple: remove trailing CRLF sequences
         return body.replace(/\r\n$/, "").replace(/\n$/, "");
     }
 
-    // Relaxed: normalize whitespace
     // eslint-disable-next-line sonarjs/slow-regex
     return body.replaceAll("\r\n", "\n").replaceAll("\r", "\n").replaceAll(/\s+\n/g, "\n").replaceAll(/\n\s+/g, "\n").replace(/\n+$/, "\n");
 };
@@ -119,7 +117,6 @@ export class DkimSigner implements EmailSigner {
      * @throws {Error} When signing fails (e.g., invalid private key).
      */
     public async sign(email: EmailOptions): Promise<EmailOptions> {
-        // Load private key
         let privateKeyContent = this.options.privateKey;
 
         if (privateKeyContent.startsWith("file://")) {
@@ -128,7 +125,6 @@ export class DkimSigner implements EmailSigner {
             privateKeyContent = await readFile(filePath, { encoding: "utf8" });
         }
 
-        // Build the email message for signing
         const headers: Record<string, string> = {
             ...email.headers ? headersToRecord(email.headers) : {},
             From: DkimSigner.formatAddress(email.from),
@@ -146,7 +142,6 @@ export class DkimSigner implements EmailSigner {
         headers.Subject = email.subject;
         headers["MIME-Version"] = "1.0";
 
-        // Build body
         const bodyParts: string[] = [];
 
         if (email.text) {
@@ -159,19 +154,15 @@ export class DkimSigner implements EmailSigner {
 
         const body = bodyParts.join("\n\n");
 
-        // Canonicalize headers and body
         const headerCanon = this.options.headerCanon || "simple";
         const bodyCanon = this.options.bodyCanon || "simple";
         const canonicalHeaders = canonicalizeHeaders(headers, headerCanon);
         const canonicalBody = canonicalizeBody(body, bodyCanon);
 
-        // Create body hash
         const bodyHash = createHash("sha256").update(canonicalBody).digest("base64");
 
-        // Create DKIM-Signature header (without signature value)
         const dkimSignatureHeader = createDkimSignatureHeader(headers, this.options, bodyHash);
 
-        // Sign the header
         const signData = `${canonicalHeaders}\r\nDKIM-Signature: ${dkimSignatureHeader}`;
         const signer = createSign("RSA-SHA256");
 
@@ -190,11 +181,8 @@ export class DkimSigner implements EmailSigner {
             throw new Error(`Failed to create DKIM signature: ${(error as Error).message}`);
         }
 
-        // Format signature with proper line breaks (DKIM spec allows folding)
-        // The signature can be split into multiple lines with whitespace for readability
         const formattedSignature = signature.match(/.{1,72}/g)?.join("\r\n ") || signature;
 
-        // Add DKIM signature to headers
         const signedHeaders = {
             ...headers,
             "DKIM-Signature": `${dkimSignatureHeader}${formattedSignature}`,
