@@ -1,6 +1,7 @@
 import EmailError from "../errors/email-error";
 import type { EmailAddress } from "../types";
 import validateEmailDefault from "./validate-email";
+import { sanitizeHeaderValue } from "./sanitize-header";
 
 /**
  * Formats an email address as "Name &lt;email@example.com>" or just "email@example.com" if no name is provided.
@@ -13,7 +14,13 @@ const formatEmailAddress = (address: EmailAddress): string => {
         throw new EmailError("email", `Invalid email address: ${address.email}`);
     }
 
-    return address.name ? `${address.name} <${address.email}>` : address.email;
+    if (address.name) {
+        const sanitizedName = sanitizeHeaderValue(address.name);
+
+        return `${sanitizedName} <${address.email}>`;
+    }
+
+    return address.email;
 };
 
 export default formatEmailAddress;

@@ -7,6 +7,7 @@ import generateMessageId from "../../utils/generate-message-id";
 import headersToRecord from "../../utils/headers-to-record";
 import { makeRequest } from "../../utils/make-request";
 import retry from "../../utils/retry";
+import { sanitizeHeaderName, sanitizeHeaderValue } from "../../utils/sanitize-header";
 import validateEmailOptions from "../../utils/validate-email-options";
 import type { ProviderFactory } from "../provider";
 import { defineProvider } from "../provider";
@@ -245,8 +246,13 @@ const plunkProvider: ProviderFactory<PlunkConfig, unknown, PlunkEmailOptions> = 
                 // Add custom headers
                 if (emailOptions.headers) {
                     const headersRecord = headersToRecord(emailOptions.headers);
+                    const sanitizedHeaders: Record<string, string> = {};
 
-                    payload.headers = headersRecord;
+                    Object.entries(headersRecord).forEach(([key, value]) => {
+                        sanitizedHeaders[sanitizeHeaderName(key)] = sanitizeHeaderValue(value);
+                    });
+
+                    payload.headers = sanitizedHeaders;
                 }
 
                 // Add attachments if provided

@@ -60,8 +60,18 @@ const derToPem = (der: ArrayBuffer, type: string): string => {
         base64 = Buffer.from(der).toString("base64");
     } else {
         const bytes = new Uint8Array(der);
+        let binaryString = "";
+        const chunkSize = 8192;
 
-        base64 = btoa(String.fromCodePoint(...bytes));
+        // Convert in chunks to avoid stack overflow for large inputs
+        for (let i = 0; i < bytes.length; i += chunkSize) {
+            const chunk = bytes.subarray(i, Math.min(i + chunkSize, bytes.length));
+
+            // eslint-disable-next-line unicorn/prefer-code-point -- fromCharCode is correct for binary data, not fromCodePoint
+            binaryString += String.fromCharCode.apply(undefined, chunk as unknown as number[]);
+        }
+
+        base64 = btoa(binaryString);
     }
 
     const lines = base64.match(/.{1,64}/g) || [];

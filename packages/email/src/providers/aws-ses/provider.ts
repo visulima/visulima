@@ -2,10 +2,12 @@ import { createHash, createHmac, randomUUID } from "node:crypto";
 
 import EmailError from "../../errors/email-error";
 import RequiredOptionError from "../../errors/required-option-error";
-import type { EmailAddress, EmailOptions, EmailResult, Result } from "../../types";
+import type { EmailOptions, EmailResult, Result } from "../../types";
 import createLogger from "../../utils/create-logger";
+import formatEmailAddressDefault from "../../utils/format-email-address";
 import headersToRecord from "../../utils/headers-to-record";
 import { makeRequest } from "../../utils/make-request";
+import { sanitizeHeaderName, sanitizeHeaderValue } from "../../utils/sanitize-header";
 import validateEmailOptions from "../../utils/validate-email-options";
 import type { ProviderFactory } from "../provider";
 import { defineProvider } from "../provider";
@@ -266,14 +268,6 @@ const awsSesProvider: ProviderFactory<AwsSesConfig, unknown, AwsSesEmailOptions>
     };
 
     /**
-     * Formats an email address for use in email headers.
-     * @param address The email address object to format.
-     * @returns The formatted email address string.
-     */
-
-    const formatEmailAddress = (address: EmailAddress): string => (address.name ? `${address.name} <${address.email}>` : address.email);
-
-    /**
      * Generates a MIME message for the email.
      * @param emailOptions The email options to generate the message from.
      * @returns The MIME-formatted email message as a string.
@@ -287,43 +281,41 @@ const awsSesProvider: ProviderFactory<AwsSesConfig, unknown, AwsSesEmailOptions>
 
         let message = "";
 
-        message += `From: ${formatEmailAddress(emailOptions.from)}\r\n`;
+        message += `From: ${formatEmailAddressDefault(emailOptions.from)}\r\n`;
 
         message += Array.isArray(emailOptions.to)
-            ? `To: ${emailOptions.to.map((addr) => formatEmailAddress(addr)).join(", ")}\r\n`
-            : `To: ${formatEmailAddress(emailOptions.to)}\r\n`;
+            ? `To: ${emailOptions.to.map((addr) => formatEmailAddressDefault(addr)).join(", ")}\r\n`
+            : `To: ${formatEmailAddressDefault(emailOptions.to)}\r\n`;
 
         // Add CC if present
         if (emailOptions.cc) {
             message += Array.isArray(emailOptions.cc)
-                ? `Cc: ${emailOptions.cc.map((addr) => formatEmailAddress(addr)).join(", ")}\r\n`
-                : `Cc: ${formatEmailAddress(emailOptions.cc)}\r\n`;
+                ? `Cc: ${emailOptions.cc.map((addr) => formatEmailAddressDefault(addr)).join(", ")}\r\n`
+                : `Cc: ${formatEmailAddressDefault(emailOptions.cc)}\r\n`;
         }
 
         // Add BCC if present
         if (emailOptions.bcc) {
             message += Array.isArray(emailOptions.bcc)
-                ? `Bcc: ${emailOptions.bcc.map((addr) => formatEmailAddress(addr)).join(", ")}\r\n`
-                : `Bcc: ${formatEmailAddress(emailOptions.bcc)}\r\n`;
+                ? `Bcc: ${emailOptions.bcc.map((addr) => formatEmailAddressDefault(addr)).join(", ")}\r\n`
+                : `Bcc: ${formatEmailAddressDefault(emailOptions.bcc)}\r\n`;
         }
 
-        // Add other headers
-        message += `Subject: ${emailOptions.subject}\r\n`;
+        // Add other headers with sanitized subject
+        message += `Subject: ${sanitizeHeaderValue(emailOptions.subject)}\r\n`;
         message += `Date: ${now}\r\n`;
         message += `Message-ID: ${messageId}\r\n`;
         message += "MIME-Version: 1.0\r\n";
-
-        // Log if replyTo was provided but not supported
-        if (emailOptions.replyTo) {
-            logger.debug("replyTo is not currently supported by AWS SES raw email provider");
-        }
 
         // Add custom headers if provided
         if (emailOptions.headers) {
             const headersRecord = headersToRecord(emailOptions.headers);
 
             for (const [name, value] of Object.entries(headersRecord)) {
-                message += `${name}: ${value}\r\n`;
+                const sanitizedName = sanitizeHeaderName(name);
+                const sanitizedValue = sanitizeHeaderValue(value);
+
+                message += `${sanitizedName}: ${sanitizedValue}\r\n`;
             }
         }
 
@@ -409,12 +401,49 @@ const awsSesProvider: ProviderFactory<AwsSesConfig, unknown, AwsSesEmailOptions>
          * @returns A result object containing the email result or an error.
          */
         async sendEmail(emailOptions: AwsSesEmailOptions): Promise<Result<EmailResult>> {
+            /**
+             * Checks for unsupported fields that would be silently ignored.
+             * @param awsEmailOptions The email options to check.
+             * @returns Array of unsupported field names.
+             */
+            const checkUnsupportedFields = (awsEmailOptions: AwsSesEmailOptions): string[] => {
+                const unsupportedFields: string[] = [];
+
+                if (awsEmailOptions.attachments && awsEmailOptions.attachments.length > 0) {
+                    unsupportedFields.push("attachments");
+                }
+
+                if (awsEmailOptions.priority) {
+                    unsupportedFields.push("priority");
+                }
+
+                if (awsEmailOptions.tags && awsEmailOptions.tags.length > 0) {
+                    unsupportedFields.push("tags (use messageTags instead)");
+                }
+
+                if (awsEmailOptions.replyTo) {
+                    unsupportedFields.push("replyTo");
+                }
+
+                return unsupportedFields;
+            };
+
             try {
                 // Validate email options
                 const validationErrors = validateEmailOptions(emailOptions);
 
                 if (validationErrors.length > 0) {
                     throw new EmailError(PROVIDER_NAME, `Invalid email options: ${validationErrors.join(", ")}`);
+                }
+
+                // Check for unsupported fields that would be silently ignored
+                const unsupportedFields = checkUnsupportedFields(emailOptions);
+
+                if (unsupportedFields.length > 0) {
+                    throw new EmailError(
+                        PROVIDER_NAME,
+                        `Unsupported fields provided: ${unsupportedFields.join(", ")}. These fields are not supported by AWS SES Raw Email API and would be silently ignored.`,
+                    );
                 }
 
                 // Prepare AWS SES specific options
@@ -456,9 +485,22 @@ const awsSesProvider: ProviderFactory<AwsSesConfig, unknown, AwsSesEmailOptions>
                 // Send the raw email
                 const response = await makeAwsRequest("SendRawEmail", params);
 
+                // Validate response contains MessageId
+                const messageId = response.MessageId as string | undefined;
+
+                if (!messageId || messageId.trim() === "") {
+                    return {
+                        error: new EmailError(
+                            PROVIDER_NAME,
+                            "AWS SES API returned a response without a MessageId. The email may not have been sent successfully.",
+                        ),
+                        success: false,
+                    };
+                }
+
                 return {
                     data: {
-                        messageId: (response.MessageId as string) || "",
+                        messageId,
                         provider: PROVIDER_NAME,
                         response,
                         sent: true,

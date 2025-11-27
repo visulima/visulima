@@ -5,6 +5,7 @@ import generateMessageId from "../../utils/generate-message-id";
 import headersToRecord from "../../utils/headers-to-record";
 import { makeRequest } from "../../utils/make-request";
 import retry from "../../utils/retry";
+import { sanitizeHeaderName, sanitizeHeaderValue } from "../../utils/sanitize-header";
 import validateEmailOptions from "../../utils/validate-email-options";
 import type { ProviderFactory } from "../provider";
 import { defineProvider } from "../provider";
@@ -276,7 +277,7 @@ const postmarkProvider: ProviderFactory<PostmarkConfig, unknown, PostmarkEmailOp
                     const headersArray: { Name: string; Value: string }[] = [];
 
                     for (const [key, value] of Object.entries(headersRecord)) {
-                        headersArray.push({ Name: key, Value: String(value) });
+                        headersArray.push({ Name: sanitizeHeaderName(key), Value: sanitizeHeaderValue(String(value)) });
                     }
 
                     if (headersArray.length > 0) {

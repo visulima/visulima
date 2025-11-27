@@ -359,7 +359,7 @@ describe(failoverProvider, () => {
         });
 
         it("should wait retryAfter milliseconds between retries", async () => {
-            expect.assertions(2);
+            expect.assertions(3);
 
             vi.useFakeTimers();
 
@@ -380,11 +380,21 @@ describe(failoverProvider, () => {
             };
 
             const sendPromise = failover.sendEmail(emailOptions);
+            let resolved = false;
+
+            (sendPromise as Promise<Result<EmailResult>>)
+                // eslint-disable-next-line promise/always-return
+                .then(() => {
+                    resolved = true;
+                })
+                .catch(() => {
+                    // Ignore errors for this test
+                });
 
             // Advance time by 50ms - should still be waiting
             await vi.advanceTimersByTimeAsync(50);
 
-            expect(sendPromise).toBeInstanceOf(Promise);
+            expect(resolved).toBe(false);
 
             // Advance time by another 60ms - should complete
             await vi.advanceTimersByTimeAsync(60);
@@ -392,6 +402,7 @@ describe(failoverProvider, () => {
 
             vi.useRealTimers();
 
+            expect(resolved).toBe(true);
             expect(result.success).toBe(true);
         });
 

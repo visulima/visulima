@@ -169,10 +169,50 @@ const azureProvider: ProviderFactory<AzureConfig, unknown, AzureEmailOptions> = 
 
                 logger.debug("Checking Azure Communication Services API availability");
 
-                // Azure doesn't have a simple health check, so we'll assume it's available if credentials are present
-                return true;
+                // Make a lightweight request to verify connectivity and credentials
+                // Use a minimal invalid payload that will return 400 if service is reachable and auth is valid,
+                // or 401/403 if credentials are invalid
+                const result = await makeRequest(
+                    `${options.endpoint}/emails:send`,
+                    {
+                        headers,
+                        method: "POST",
+                        timeout: options.timeout,
+                    },
+                    JSON.stringify({}),
+                );
+
+                if (result.success) {
+                    // 2xx – API reachable and credentials accepted.
+                    return true;
+                }
+
+                const statusCode = (result.data as { statusCode?: number })?.statusCode;
+
+                if (statusCode === 401 || statusCode === 403) {
+                    // API reachable but credentials invalid.
+                    return false;
+                }
+
+                // 400 (Bad Request) means API is reachable and credentials are valid, but payload is invalid
+                // This is acceptable for availability check
+                if (statusCode === 400) {
+                    return true;
+                }
+
+                // Other errors: treat as unavailable.
+                return false;
             } catch (error) {
                 logger.debug("Error checking availability:", error);
+
+                // Check for 401/403 errors - these mean credentials are invalid
+                if (error instanceof Error) {
+                    const errorMessage = error.message;
+
+                    if (errorMessage.includes("401") || errorMessage.includes("403")) {
+                        return false;
+                    }
+                }
 
                 return false;
             }

@@ -7,6 +7,7 @@ import generateMessageId from "../../utils/generate-message-id";
 import headersToRecord from "../../utils/headers-to-record";
 import { makeRequest } from "../../utils/make-request";
 import retry from "../../utils/retry";
+import { sanitizeHeaderName, sanitizeHeaderValue } from "../../utils/sanitize-header";
 import validateEmailOptions from "../../utils/validate-email-options";
 import type { ProviderFactory } from "../provider";
 import { defineProvider } from "../provider";
@@ -240,18 +241,27 @@ const mandrillProvider: ProviderFactory<MandrillConfig, unknown, MandrillEmailOp
 
                 // Add reply-to
                 if (emailOptions.replyTo) {
+                    const replyToValue = emailOptions.replyTo.name
+                        ? `${sanitizeHeaderValue(emailOptions.replyTo.name)} <${emailOptions.replyTo.email}>`
+                        : emailOptions.replyTo.email;
+
                     message.headers = {
-                        "Reply-To": emailOptions.replyTo.name ? `${emailOptions.replyTo.name} <${emailOptions.replyTo.email}>` : emailOptions.replyTo.email,
+                        "Reply-To": replyToValue,
                     };
                 }
 
                 // Add custom headers
                 if (emailOptions.headers) {
                     const headersRecord = headersToRecord(emailOptions.headers);
+                    const sanitizedHeaders: Record<string, string> = {};
+
+                    Object.entries(headersRecord).forEach(([key, value]) => {
+                        sanitizedHeaders[sanitizeHeaderName(key)] = sanitizeHeaderValue(value);
+                    });
 
                     message.headers = {
                         ...(message.headers as Record<string, string>),
-                        ...headersRecord,
+                        ...sanitizedHeaders,
                     };
                 }
 

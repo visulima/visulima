@@ -73,6 +73,9 @@ export class MailMessage {
 
     private textContent?: string;
 
+    // Controls whether text should be auto-generated from HTML.
+    private autoTextEnabled = true;
+
     private htmlContent?: string;
 
     private headers: Record<string, string> = {};
@@ -479,15 +482,19 @@ export class MailMessage {
         options?: { [key: string]: unknown; autoText?: boolean },
     ): Promise<this> {
         try {
+            const autoTextEnabled = options?.autoText !== false;
+
+            this.autoTextEnabled = autoTextEnabled;
+
             if (this.logger) {
-                this.logger.debug("Rendering template", { autoText: options?.autoText !== false });
+                this.logger.debug("Rendering template", { autoText: autoTextEnabled });
             }
 
             const html = await render(template, data, options);
 
             this.html(html);
 
-            if (options?.autoText !== false && html) {
+            if (autoTextEnabled && html) {
                 this.tryAutoGenerateText(html);
             }
 
@@ -569,7 +576,7 @@ export class MailMessage {
             this.throwAndLogError("Subject is required", "Build failed: subject is required");
         }
 
-        if (this.htmlContent && !this.textContent) {
+        if (this.htmlContent && !this.textContent && this.autoTextEnabled) {
             try {
                 this.textContent = htmlToText(this.htmlContent);
 

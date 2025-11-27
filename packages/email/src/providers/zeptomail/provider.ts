@@ -5,6 +5,7 @@ import generateMessageId from "../../utils/generate-message-id";
 import headersToRecord from "../../utils/headers-to-record";
 import { makeRequest } from "../../utils/make-request";
 import retry from "../../utils/retry";
+import { sanitizeHeaderName, sanitizeHeaderValue } from "../../utils/sanitize-header";
 import validateEmailOptions from "../../utils/validate-email-options";
 import type { ProviderFactory } from "../provider";
 import { defineProvider } from "../provider";
@@ -225,7 +226,7 @@ const zeptomailProvider: ProviderFactory<ZeptomailConfig, unknown, ZeptomailEmai
 
                             Object.entries(headersRecord).forEach(([key, value]) => {
                                 if (payload.mime_headers) {
-                                    payload.mime_headers[key] = value;
+                                    payload.mime_headers[sanitizeHeaderName(key)] = sanitizeHeaderValue(value);
                                 }
                             });
                         }

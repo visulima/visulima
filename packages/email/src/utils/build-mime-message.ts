@@ -4,6 +4,7 @@ import formatEmailAddress from "./format-email-address";
 import formatEmailAddresses from "./format-email-addresses";
 import generateBoundary from "./generate-boundary";
 import headersToRecord from "./headers-to-record";
+import { sanitizeHeaderName, sanitizeHeaderValue } from "./sanitize-header";
 import toBase64 from "./to-base64";
 
 const hasBuffer = globalThis.Buffer !== undefined;
@@ -30,14 +31,17 @@ const buildMimeMessage = async <T extends EmailOptions>(options: T): Promise<str
         message.push(`Reply-To: ${formatEmailAddress(options.replyTo)}`);
     }
 
-    message.push(`Subject: ${options.subject}`, "MIME-Version: 1.0");
+    message.push(`Subject: ${sanitizeHeaderValue(options.subject)}`, "MIME-Version: 1.0");
 
     if (options.headers) {
         // Convert ImmutableHeaders to Record<string, string> if needed
         const headersRecord = headersToRecord(options.headers);
 
         Object.entries(headersRecord).forEach(([key, value]) => {
-            message.push(`${key}: ${value}`);
+            const sanitizedName = sanitizeHeaderName(key);
+            const sanitizedValue = sanitizeHeaderValue(value);
+
+            message.push(`${sanitizedName}: ${sanitizedValue}`);
         });
     }
 
@@ -77,12 +81,13 @@ const buildMimeMessage = async <T extends EmailOptions>(options: T): Promise<str
             message.push(`--${boundary}`);
 
             const contentType = attachment.contentType || "application/octet-stream";
+            const sanitizedFilename = sanitizeHeaderValue(attachment.filename);
 
-            message.push(`Content-Type: ${contentType}; name="${attachment.filename}"`);
+            message.push(`Content-Type: ${contentType}; name="${sanitizedFilename}"`);
 
             const disposition = attachment.contentDisposition || "attachment";
 
-            message.push(`Content-Disposition: ${disposition}; filename="${attachment.filename}"`);
+            message.push(`Content-Disposition: ${disposition}; filename="${sanitizedFilename}"`);
 
             if (attachment.cid) {
                 message.push(`Content-ID: <${attachment.cid}>`);
@@ -90,7 +95,10 @@ const buildMimeMessage = async <T extends EmailOptions>(options: T): Promise<str
 
             if (attachment.headers) {
                 Object.entries(attachment.headers).forEach(([key, value]) => {
-                    message.push(`${key}: ${value}`);
+                    const sanitizedName = sanitizeHeaderName(key);
+                    const sanitizedValue = sanitizeHeaderValue(value);
+
+                    message.push(`${sanitizedName}: ${sanitizedValue}`);
                 });
             }
 

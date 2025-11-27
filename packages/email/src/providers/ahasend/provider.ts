@@ -65,7 +65,7 @@ const ahaSendProvider: ProviderFactory<AhaSendConfig, unknown, AhaSendEmailOptio
                     };
                 }
 
-                await providerState.ensureInitialized(() => this.initialize(), PROVIDER_NAME);
+                await this.initialize();
 
                 const headers: Record<string, string> = {
                     Authorization: `Bearer ${options.apiKey}`,
@@ -143,17 +143,19 @@ const ahaSendProvider: ProviderFactory<AhaSendConfig, unknown, AhaSendEmailOptio
                     timeout: options.timeout,
                 });
 
-                // Treat 2xx as available, 401/403 as available (API exists, auth may be invalid)
                 if (result.success) {
+                    // 2xx – API reachable and credentials accepted.
                     return true;
                 }
 
                 const statusCode = (result.data as { statusCode?: number })?.statusCode;
 
-                if (statusCode && statusCode >= 400 && statusCode < 500) {
-                    return true; // Endpoint exists, auth/permissions issue
+                if (statusCode === 401 || statusCode === 403) {
+                    // API reachable but credentials invalid.
+                    return false;
                 }
 
+                // Other non‑2xx/non‑auth errors: treat as unavailable.
                 return false;
             } catch (error) {
                 logger.debug("Error checking availability:", error);
@@ -183,7 +185,7 @@ const ahaSendProvider: ProviderFactory<AhaSendConfig, unknown, AhaSendEmailOptio
                     };
                 }
 
-                await providerState.ensureInitialized(() => this.initialize(), PROVIDER_NAME);
+                await this.initialize();
 
                 // Build payload for AhaSend API (standard REST API pattern)
                 const payload: Record<string, unknown> = {

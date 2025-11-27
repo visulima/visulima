@@ -17,236 +17,234 @@ const PROVIDER_NAME = "failover";
 /**
  * Failover Provider for sending emails with automatic failover to backup providers.
  */
-const provider: ProviderFactory<FailoverConfig, unknown, FailoverEmailOptions> = defineProvider(
-    (config: FailoverConfig = {} as FailoverConfig) => {
-        if (!config.mailers || config.mailers.length === 0) {
-            throw new RequiredOptionError(PROVIDER_NAME, "mailers");
+const provider: ProviderFactory<FailoverConfig, unknown, FailoverEmailOptions> = defineProvider((config: FailoverConfig = {} as FailoverConfig) => {
+    if (!config.mailers || config.mailers.length === 0) {
+        throw new RequiredOptionError(PROVIDER_NAME, "mailers");
+    }
+
+    const options: FailoverConfig & { debug: boolean; retryAfter: number } = {
+        debug: config.debug || false,
+        mailers: config.mailers,
+        retryAfter: config.retryAfter ?? 60,
+    };
+
+    let isInitialized = false;
+
+    const providers: Provider[] = [];
+    const logger = createLogger(PROVIDER_NAME, config.logger);
+
+    let initializationPromise: Promise<void> | undefined;
+
+    /**
+     * Initializes all providers.
+     */
+    const initializeProviders = async (): Promise<void> => {
+        if (initializationPromise) {
+            return initializationPromise;
         }
 
-        const options: FailoverConfig & { debug: boolean; retryAfter: number } = {
-            debug: config.debug || false,
-            mailers: config.mailers,
-            retryAfter: config.retryAfter ?? 60,
-        };
+        initializationPromise = (async () => {
+            providers.length = 0;
 
-        let isInitialized = false;
+            for (const mailer of options.mailers) {
+                try {
+                    let mailerProvider: Provider;
 
-        const providers: Provider[] = [];
-        const logger = createLogger(PROVIDER_NAME, config.logger);
+                    if (isProviderFactory(mailer)) {
+                        mailerProvider = mailer({} as never);
+                    } else if (isProvider(mailer)) {
+                        mailerProvider = mailer;
+                    } else {
+                        logger.debug(`Skipping invalid mailer: ${mailer}`);
+                        continue;
+                    }
 
-        let initializationPromise: Promise<void> | undefined;
-
-        /**
-         * Initializes all providers.
-         */
-        const initializeProviders = async (): Promise<void> => {
-            if (initializationPromise) {
-                return initializationPromise;
+                    try {
+                        // eslint-disable-next-line no-await-in-loop -- Sequential initialization is required
+                        await mailerProvider.initialize();
+                        providers.push(mailerProvider);
+                        logger.debug(`Initialized provider: ${mailerProvider.name || "unknown"}`);
+                    } catch (error) {
+                        logger.debug(`Failed to initialize provider ${mailerProvider.name || "unknown"}:`, error);
+                    }
+                } catch (error) {
+                    logger.debug(`Error processing mailer:`, error);
+                }
             }
 
-            initializationPromise = (async () => {
-                providers.length = 0;
+            if (providers.length === 0) {
+                throw new EmailError(PROVIDER_NAME, "No providers could be initialized");
+            }
+        })();
 
-                for (const mailer of options.mailers) {
+        return initializationPromise;
+    };
+
+    return {
+        features: {
+            attachments: true,
+            batchSending: false,
+            customHeaders: true,
+            html: true,
+            replyTo: true,
+            scheduling: false,
+            tagging: false,
+            templates: false,
+            tracking: false,
+        },
+
+        /**
+         * Initializes the failover provider and all underlying providers.
+         */
+        async initialize(): Promise<void> {
+            if (isInitialized) {
+                return;
+            }
+
+            try {
+                await initializeProviders();
+                isInitialized = true;
+                logger.debug(`Failover provider initialized with ${providers.length} provider(s)`);
+            } catch (error) {
+                throw new EmailError(PROVIDER_NAME, `Failed to initialize: ${(error as Error).message}`, { cause: error as Error });
+            }
+        },
+
+        /**
+         * Checks if at least one provider is available.
+         */
+        async isAvailable(): Promise<boolean> {
+            try {
+                if (providers.length === 0) {
+                    await initializeProviders();
+                }
+
+                for (const providerToCheck of providers) {
                     try {
-                        let provider: Provider;
-
-                        if (isProviderFactory(mailer)) {
-                            provider = mailer({} as never);
-                        } else if (isProvider(mailer)) {
-                            provider = mailer;
-                        } else {
-                            logger.debug(`Skipping invalid mailer: ${mailer}`);
-                            continue;
+                        // eslint-disable-next-line no-await-in-loop -- Sequential checking is required
+                        if (await providerToCheck.isAvailable()) {
+                            return true;
                         }
-
-                        try {
-                            // eslint-disable-next-line no-await-in-loop -- Sequential initialization is required
-                            await provider.initialize();
-                            providers.push(provider);
-                            logger.debug(`Initialized provider: ${provider.name || "unknown"}`);
-                        } catch (error) {
-                            logger.debug(`Failed to initialize provider ${provider.name || "unknown"}:`, error);
-                        }
-                    } catch (error) {
-                        logger.debug(`Error processing mailer:`, error);
+                    } catch {
+                        // Continue checking other providers
                     }
+                }
+
+                return false;
+            } catch {
+                return false;
+            }
+        },
+
+        name: PROVIDER_NAME,
+
+        options,
+
+        /**
+         * Sends email through failover providers.
+         * Tries each provider in order until one succeeds.
+         */
+        // eslint-disable-next-line sonarjs/cognitive-complexity -- Failover logic requires complexity
+        async sendEmail(emailOptions: FailoverEmailOptions): Promise<Result<EmailResult>> {
+            try {
+                if (providers.length === 0) {
+                    await initializeProviders();
                 }
 
                 if (providers.length === 0) {
-                    throw new EmailError(PROVIDER_NAME, "No providers could be initialized");
-                }
-            })();
-
-            return initializationPromise;
-        };
-
-        return {
-            features: {
-                attachments: true,
-                batchSending: false,
-                customHeaders: true,
-                html: true,
-                replyTo: true,
-                scheduling: false,
-                tagging: false,
-                templates: false,
-                tracking: false,
-            },
-
-            /**
-             * Initializes the failover provider and all underlying providers.
-             */
-            async initialize(): Promise<void> {
-                if (isInitialized) {
-                    return;
+                    return {
+                        error: new EmailError(PROVIDER_NAME, "No providers available"),
+                        success: false,
+                    };
                 }
 
-                try {
-                    await initializeProviders();
-                    isInitialized = true;
-                    logger.debug(`Failover provider initialized with ${providers.length} provider(s)`);
-                } catch (error) {
-                    throw new EmailError(PROVIDER_NAME, `Failed to initialize: ${(error as Error).message}`, { cause: error as Error });
-                }
-            },
+                const errors: (Error | unknown)[] = [];
+                let lastError: Error | unknown | undefined;
 
-            /**
-             * Checks if at least one provider is available.
-             */
-            async isAvailable(): Promise<boolean> {
-                try {
-                    if (providers.length === 0) {
-                        await initializeProviders();
+                for (let i = 0; i < providers.length; i += 1) {
+                    const currentProvider = providers[i];
+
+                    if (!currentProvider) {
+                        continue;
                     }
 
-                    for (const provider of providers) {
-                        try {
-                            // eslint-disable-next-line no-await-in-loop -- Sequential checking is required
-                            if (await provider.isAvailable()) {
-                                return true;
-                            }
-                        } catch {
-                            // Continue checking other providers
-                        }
-                    }
+                    const providerName = currentProvider.name || `provider-${i + 1}`;
 
-                    return false;
-                } catch {
-                    return false;
-                }
-            },
+                    logger.debug(`Attempting to send email via ${providerName} (${i + 1}/${providers.length})`);
 
-            name: PROVIDER_NAME,
+                    try {
+                        // eslint-disable-next-line no-await-in-loop -- Sequential processing is required for failover
+                        const isAvailable = await currentProvider.isAvailable();
 
-            options,
-
-            /**
-             * Sends email through failover providers.
-             * Tries each provider in order until one succeeds.
-             */
-            // eslint-disable-next-line sonarjs/cognitive-complexity -- Failover logic requires complexity
-            async sendEmail(emailOptions: FailoverEmailOptions): Promise<Result<EmailResult>> {
-                try {
-                    if (providers.length === 0) {
-                        await initializeProviders();
-                    }
-
-                    if (providers.length === 0) {
-                        return {
-                            error: new EmailError(PROVIDER_NAME, "No providers available"),
-                            success: false,
-                        };
-                    }
-
-                    const errors: (Error | unknown)[] = [];
-                    let lastError: Error | unknown | undefined;
-
-                    for (let i = 0; i < providers.length; i += 1) {
-                        const provider = providers[i];
-
-                        if (!provider) {
+                        if (!isAvailable) {
+                            logger.debug(`Provider ${providerName} is not available, skipping`);
+                            errors.push(new EmailError(PROVIDER_NAME, `Provider ${providerName} is not available`));
                             continue;
                         }
 
-                        const providerName = provider.name || `provider-${i + 1}`;
+                        // eslint-disable-next-line no-await-in-loop -- Sequential processing is required for failover
+                        const result = await currentProvider.sendEmail(emailOptions);
 
-                        logger.debug(`Attempting to send email via ${providerName} (${i + 1}/${providers.length})`);
+                        if (result.success && result.data) {
+                            logger.debug(`Email sent successfully via ${providerName}`);
 
-                        try {
-                            // eslint-disable-next-line no-await-in-loop -- Sequential processing is required for failover
-                            const isAvailable = await provider.isAvailable();
-
-                            if (!isAvailable) {
-                                logger.debug(`Provider ${providerName} is not available, skipping`);
-                                errors.push(new EmailError(PROVIDER_NAME, `Provider ${providerName} is not available`));
-                                continue;
-                            }
-
-                            // eslint-disable-next-line no-await-in-loop -- Sequential processing is required for failover
-                            const result = await provider.sendEmail(emailOptions);
-
-                            if (result.success && result.data) {
-                                logger.debug(`Email sent successfully via ${providerName}`);
-
-                                return {
-                                    data: {
-                                        ...result.data,
-                                        messageId: result.data.messageId || generateMessageId(),
-                                        provider: `${PROVIDER_NAME}(${providerName})`,
-                                    },
-                                    success: true,
-                                };
-                            }
-
-                            if (result.error) {
-                                lastError = result.error;
-                                errors.push(result.error);
-                                const errorMessage = result.error instanceof Error ? result.error.message : String(result.error);
-
-                                logger.debug(`Failed to send via ${providerName}:`, errorMessage);
-                            }
-                        } catch (error) {
-                            lastError = error instanceof Error ? error : new Error(String(error));
-                            errors.push(lastError);
-                            const errorMessage = lastError instanceof Error ? lastError.message : String(lastError);
-
-                            logger.debug(`Exception sending via ${providerName}:`, errorMessage);
+                            return {
+                                data: {
+                                    ...result.data,
+                                    messageId: result.data.messageId || generateMessageId(),
+                                    provider: `${PROVIDER_NAME}(${providerName})`,
+                                },
+                                success: true,
+                            };
                         }
 
-                        if (i < providers.length - 1 && options.retryAfter > 0) {
-                            logger.debug(`Waiting ${options.retryAfter}ms before trying next provider`);
-                            // eslint-disable-next-line no-await-in-loop -- Sequential delay is required for failover
-                            await new Promise<void>((resolve) => {
-                                setTimeout(() => {
-                                    resolve();
-                                }, options.retryAfter);
-                            });
+                        if (result.error) {
+                            lastError = result.error;
+                            errors.push(result.error);
+                            const errorMessage = result.error instanceof Error ? result.error.message : String(result.error);
+
+                            logger.debug(`Failed to send via ${providerName}:`, errorMessage);
                         }
+                    } catch (error) {
+                        lastError = error instanceof Error ? error : new Error(String(error));
+                        errors.push(lastError);
+                        const errorMessage = lastError instanceof Error ? lastError.message : String(lastError);
+
+                        logger.debug(`Exception sending via ${providerName}:`, errorMessage);
                     }
 
-                    const errorMessages = errors.map((error) => (error instanceof Error ? error.message : String(error))).join("; ");
-
-                    return {
-                        error: new EmailError(PROVIDER_NAME, `All providers failed. Errors: ${errorMessages}`, { cause: lastError }),
-                        success: false,
-                    };
-                } catch (error) {
-                    return {
-                        error: new EmailError(PROVIDER_NAME, `Failed to send email: ${(error as Error).message}`, { cause: error as Error }),
-                        success: false,
-                    };
+                    if (i < providers.length - 1 && options.retryAfter > 0) {
+                        logger.debug(`Waiting ${options.retryAfter}ms before trying next provider`);
+                        // eslint-disable-next-line no-await-in-loop -- Sequential delay is required for failover
+                        await new Promise<void>((resolve) => {
+                            setTimeout(() => {
+                                resolve();
+                            }, options.retryAfter);
+                        });
+                    }
                 }
-            },
 
-            /**
-             * Validates credentials by checking if at least one provider is available.
-             */
-            async validateCredentials(): Promise<boolean> {
-                return this.isAvailable();
-            },
-        };
-    },
-);
+                const errorMessages = errors.map((error) => (error instanceof Error ? error.message : String(error))).join("; ");
+
+                return {
+                    error: new EmailError(PROVIDER_NAME, `All providers failed. Errors: ${errorMessages}`, { cause: lastError }),
+                    success: false,
+                };
+            } catch (error) {
+                return {
+                    error: new EmailError(PROVIDER_NAME, `Failed to send email: ${(error as Error).message}`, { cause: error as Error }),
+                    success: false,
+                };
+            }
+        },
+
+        /**
+         * Validates credentials by checking if at least one provider is available.
+         */
+        async validateCredentials(): Promise<boolean> {
+            return this.isAvailable();
+        },
+    };
+});
 
 export default provider;

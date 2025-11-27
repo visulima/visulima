@@ -57,7 +57,7 @@ describe(headersToRecord, () => {
 
             const headers = new Headers();
 
-            // Note: Headers.append() replaces the value, not appends
+            // Note: Headers.set() replaces the value.
             // To test multiple values, we need to set them differently
             headers.set("x-custom", "value1, value2");
 

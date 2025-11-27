@@ -198,6 +198,8 @@ describe(roundRobinProvider, () => {
         it("should check providers in parallel for efficiency", async () => {
             expect.assertions(1);
 
+            vi.useFakeTimers();
+
             const provider1 = createMockProvider("provider1", { available: true, delay: 10 });
             const provider2 = createMockProvider("provider2", { available: true, delay: 10 });
             const roundRobin = roundRobinProvider({
@@ -206,13 +208,19 @@ describe(roundRobinProvider, () => {
 
             await roundRobin.initialize();
 
-            const startTime = Date.now();
+            const availabilityPromise = roundRobin.isAvailable();
 
-            await roundRobin.isAvailable();
-            const endTime = Date.now();
+            // Advance timers by the simulated provider delay (10ms)
+            // If providers run in parallel, both should complete after 10ms
+            // If sequential, would need 20ms
+            vi.advanceTimersByTime(10);
 
-            // Should complete in roughly 10ms (parallel) not 20ms (sequential)
-            expect(endTime - startTime).toBeLessThan(20);
+            const result = await availabilityPromise;
+
+            // Should resolve after 10ms (parallel) not 20ms (sequential)
+            expect(result).toBe(true);
+
+            vi.useRealTimers();
         });
     });
 

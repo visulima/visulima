@@ -183,9 +183,9 @@ const failover = failoverProvider({
 });
 ```
 
-### Round Robin Provider
+### Round-Robin Provider
 
-The round robin provider distributes your email sending workload across multiple providers. Each email is sent using the next available provider in rotation, providing load balancing across your mailers.
+The round-robin provider distributes your email sending workload across multiple providers. Each email is sent using the next available provider in rotation, providing load balancing across your mailers.
 
 ```typescript
 import { createMail, roundRobinProvider, resendProvider, smtpProvider } from "@visulima/email";
@@ -199,7 +199,7 @@ const smtp = smtpProvider({
     password: "password",
 });
 
-// Create round robin provider with multiple mailers
+// Create round-robin provider with multiple mailers
 const roundRobin = roundRobinProvider({
     mailers: [
         resend, // First provider
@@ -208,7 +208,7 @@ const roundRobin = roundRobinProvider({
     retryAfter: 60, // Wait 60ms before trying next provider if current is unavailable (default: 60)
 });
 
-// Use round robin provider
+// Use round-robin provider
 const mail = createMail(roundRobin);
 
 // Each email will be distributed across providers in rotation
@@ -242,7 +242,7 @@ const roundRobin = roundRobinProvider({
 });
 ```
 
-**Note:** The round robin provider starts at a random provider and then rotates through providers for each subsequent email. If a provider is unavailable, it will automatically try the next provider in the rotation.
+**Note:** The round-robin provider starts at a random provider and then rotates through providers for each subsequent email. If a provider is unavailable, it will automatically try the next provider in the rotation.
 
 ### Mailgun Provider
 

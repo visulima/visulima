@@ -83,10 +83,11 @@ describe(toBase64, () => {
         it("should handle ArrayLike input", () => {
             expect.assertions(1);
 
-            const arrayLike = { 0: 116, 1: 101, 2: 115, 3: 116, length: 4 };
-            const result = toBase64(arrayLike as unknown as Uint8Array);
+            // ArrayLike representing bytes [116, 101, 115, 116] which is "test" in ASCII
+            const arrayLike: ArrayLike<number> = { 0: 116, 1: 101, 2: 115, 3: 116, length: 4 };
+            const result = toBase64(arrayLike);
 
-            expect(result).toBeDefined();
+            expect(result).toBe("dGVzdA==");
         });
 
         it("should produce consistent results for same input", () => {
