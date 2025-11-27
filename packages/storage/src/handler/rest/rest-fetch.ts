@@ -47,6 +47,7 @@ class RestFetch<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
         const restInstance = this;
 
         this.restBase = new class extends RestBase<TFile> {
+            // eslint-disable-next-line class-methods-use-this
             protected override get storage() {
                 return restInstance.storage as unknown as {
                     create: (config: FileInit) => Promise<TFile>;
@@ -64,6 +65,7 @@ class RestFetch<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
                 };
             }
 
+            // eslint-disable-next-line class-methods-use-this
             protected override buildFileUrl(requestUrl: string, file: TFile): string {
                 return restInstance.buildFileUrl({ url: requestUrl } as Request, file);
             }
@@ -353,6 +355,7 @@ class RestFetch<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
      * @param _request Web API Request
      * @returns Promise resolving to Web API Response
      */
+    // eslint-disable-next-line class-methods-use-this
     public async get(_request: Request): Promise<ResponseFile<TFile> | ResponseList<TFile>> {
         // For Fetch version, get is handled by the fetch() method
         // This method signature exists for consistency but shouldn't be called directly

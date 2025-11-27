@@ -57,6 +57,7 @@ export abstract class TusBase<TFile extends UploadFile> {
     /**
      * Storage instance for file operations.
      */
+    // eslint-disable-next-line class-methods-use-this
     protected get storage(): {
         checkIfExpired: (file: TFile) => Promise<void>;
         checksumTypes: string[];
@@ -86,6 +87,7 @@ export abstract class TusBase<TFile extends UploadFile> {
      * @param _file File object containing ID
      * @returns Constructed file URL for TUS protocol
      */
+    // eslint-disable-next-line class-methods-use-this
     protected buildFileUrl(_requestUrl: string, _file: TFile): string {
         // This will be overridden by subclasses
         throw new Error("buildFileUrl must be implemented");
@@ -579,6 +581,7 @@ export abstract class TusBase<TFile extends UploadFile> {
      * @param checksumHeader Upload-Checksum header value
      * @returns Object containing checksum algorithm and value
      */
+    // eslint-disable-next-line class-methods-use-this
     public extractChecksum(checksumHeader: string | undefined): Checksum {
         if (!checksumHeader) {
             return { checksum: undefined, checksumAlgorithm: undefined };
@@ -594,6 +597,7 @@ export abstract class TusBase<TFile extends UploadFile> {
      * @param tusResumable Tus-Resumable header value
      * @throws {Error} 412 if version doesn't match or header is missing
      */
+    // eslint-disable-next-line class-methods-use-this
     public validateTusResumableHeader(tusResumable: string | undefined): void {
         if (!tusResumable) {
             throw createHttpError(412, "Missing Tus-Resumable header");

@@ -19,6 +19,8 @@ describe(useRetry, () => {
     });
 
     it("should provide retryItem function", () => {
+        expect.assertions(1);
+
         const { result } = renderHookWithQueryClient(() =>
             useRetry({
                 endpoint: "/api/upload",

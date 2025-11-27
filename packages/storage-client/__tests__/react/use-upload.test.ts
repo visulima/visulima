@@ -6,7 +6,7 @@ import { useUpload } from "../../src/react/use-upload";
 import { renderHookWithQueryClient } from "./test-utils";
 
 // Mock fetch globally
-const mockFetch = vi.fn();
+const mockFetch = vi.fn<Parameters<typeof fetch>, ReturnType<typeof fetch>>();
 
 // Mock XMLHttpRequest for multipart uploads
 class MockXMLHttpRequest {
@@ -18,10 +18,8 @@ class MockXMLHttpRequest {
 
     public responseText = "";
 
-    private eventListeners = new Map<string, Set<(event: Event) => void>>();
-
     public upload = {
-        addEventListener: vi.fn((_event: string, handler: (event: ProgressEvent) => void) => {
+        addEventListener: vi.fn<[string, (event: ProgressEvent) => void], void>((_event: string, handler: (event: ProgressEvent) => void) => {
             setTimeout(() => {
                 const progressEvent = {
                     lengthComputable: true,
@@ -32,12 +30,12 @@ class MockXMLHttpRequest {
                 handler(progressEvent);
             }, 10);
         }),
-        removeEventListener: vi.fn(),
+        removeEventListener: vi.fn<[string, (event: ProgressEvent) => void], void>(),
     };
 
-    public open = vi.fn();
+    public open = vi.fn<[string, string | URL, boolean?, string?, string?], void>();
 
-    public send = vi.fn(() => {
+    public send = vi.fn<[Document | XMLHttpRequestBodyInit | null?], void>(() => {
         setTimeout(() => {
             this.readyState = 4;
             this.status = 200;
@@ -55,11 +53,11 @@ class MockXMLHttpRequest {
         }, 20);
     });
 
-    public setRequestHeader = vi.fn();
+    public setRequestHeader = vi.fn<[string, string], void>();
 
-    public getResponseHeader = vi.fn(() => null);
+    public getResponseHeader = vi.fn<[string], string | null>(() => undefined);
 
-    public addEventListener = vi.fn((event: string, handler: (event: Event) => void) => {
+    public addEventListener = vi.fn<[string, (event: Event) => void], void>((event: string, handler: (event: Event) => void) => {
         if (!this.eventListeners.has(event)) {
             this.eventListeners.set(event, new Set());
         }
@@ -67,7 +65,9 @@ class MockXMLHttpRequest {
         this.eventListeners.get(event)?.add(handler);
     });
 
-    public removeEventListener = vi.fn();
+    public removeEventListener = vi.fn<[string, (event: Event) => void], void>();
+
+    private eventListeners = new Map<string, Set<(event: Event) => void>>();
 }
 
 describe(useUpload, () => {
@@ -86,6 +86,8 @@ describe(useUpload, () => {
     });
 
     it("should initialize with default state", () => {
+        expect.assertions(4);
+
         const { result } = renderHookWithQueryClient(
             () =>
                 useUpload({
@@ -101,6 +103,8 @@ describe(useUpload, () => {
     });
 
     it("should auto-detect multipart method", () => {
+        expect.assertions(1);
+
         const { result } = renderHookWithQueryClient(
             () =>
                 useUpload({
@@ -113,6 +117,8 @@ describe(useUpload, () => {
     });
 
     it("should auto-detect TUS method", () => {
+        expect.assertions(1);
+
         const { result } = renderHookWithQueryClient(
             () =>
                 useUpload({
@@ -125,6 +131,8 @@ describe(useUpload, () => {
     });
 
     it("should use specified method", () => {
+        expect.assertions(1);
+
         const { result } = renderHookWithQueryClient(
             () =>
                 useUpload({
@@ -138,6 +146,8 @@ describe(useUpload, () => {
     });
 
     it("should upload file with multipart method", async () => {
+        expect.assertions(1);
+
         const file = new File(["test content"], "test.txt", { type: "text/plain" });
 
         const { result } = renderHookWithQueryClient(
@@ -155,6 +165,8 @@ describe(useUpload, () => {
     });
 
     it("should handle auto method selection based on file size", () => {
+        expect.assertions(2);
+
         // When both endpoints are provided and method is auto, it defaults to multipart
         // The actual method selection happens when uploading based on file size
         const { result: smallFileResult } = renderHookWithQueryClient(
@@ -185,11 +197,13 @@ describe(useUpload, () => {
     });
 
     it("should call callbacks correctly", async () => {
+        expect.assertions(4);
+
         const file = new File(["test content"], "test.txt", { type: "text/plain" });
-        const onStart = vi.fn();
-        const onProgress = vi.fn();
-        const onSuccess = vi.fn();
-        const onError = vi.fn();
+        const onStart = vi.fn<[], void>();
+        const onProgress = vi.fn<[number], void>();
+        const onSuccess = vi.fn<[unknown], void>();
+        const onError = vi.fn<[unknown], void>();
 
         const { result } = renderHookWithQueryClient(
             () =>
@@ -215,6 +229,8 @@ describe(useUpload, () => {
     });
 
     it("should reset state", async () => {
+        expect.assertions(3);
+
         const { result } = renderHookWithQueryClient(
             () =>
                 useUpload({

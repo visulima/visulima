@@ -207,6 +207,7 @@ class S3Storage extends S3BaseStorage<S3File> {
         return this.s3Api;
     }
 
+    // eslint-disable-next-line class-methods-use-this
     protected getFileClass(): new (config: FileInit) => S3File {
         return S3File;
     }

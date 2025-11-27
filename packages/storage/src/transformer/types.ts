@@ -4,6 +4,11 @@ import type { Cache } from "../utils/cache";
 import type BaseTransformer from "./base-transformer";
 
 /**
+ * Supported image formats for transformation
+ */
+export type ImageFormat = "jpeg" | "png" | "webp" | "avif" | "tiff" | "gif";
+
+/**
  * Image transformation options
  */
 export interface TransformOptions {
@@ -16,7 +21,7 @@ export interface TransformOptions {
     /** Effort for AVIF encoding (0-10) */
     effort?: number;
     /** Output format */
-    format?: "jpeg" | "png" | "webp" | "avif" | "tiff" | "gif";
+    format?: ImageFormat;
     /** GIF number of animation iterations, use 0 for infinite */
     loop?: number;
     /** Whether to use lossless compression for WebP */

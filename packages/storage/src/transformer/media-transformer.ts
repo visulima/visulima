@@ -421,6 +421,7 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
      * @param query Query parameters to validate.
      * @throws {ValidationError} When validation fails.
      */
+    // eslint-disable-next-line class-methods-use-this
     private validateImageQueryParameters(query: MediaTransformQuery): void {
         const allowedParameters = new Set([
             "alphaQuality",
@@ -546,6 +547,7 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
      * @param query Query parameters to validate.
      * @throws {ValidationError} When validation fails.
      */
+    // eslint-disable-next-line class-methods-use-this
     private validateVideoQueryParameters(query: MediaTransformQuery): void {
         const allowedParameters = new Set([
             "angle",
@@ -674,6 +676,7 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
      * @returns Unique deterministic identifier for the transformed file.
      * @private
      */
+    // eslint-disable-next-line class-methods-use-this
     private generateTransformedFileId(originalFileId: string, query: MediaTransformQuery, mediaType: string): string {
         // Create a deterministic hash of the transformation parameters
         const transformParameters = Object.keys(query)
@@ -836,6 +839,7 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
      * @param query Query parameters to validate.
      * @throws {ValidationError} When validation fails.
      */
+    // eslint-disable-next-line class-methods-use-this
     private validateAudioQueryParameters(query: MediaTransformQuery): void {
         const allowedParameters = new Set(["bitrate", "codec", "format", "numberOfChannels", "quality", "sampleRate"]);
 
@@ -1220,6 +1224,7 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
      * @returns Boolean value or undefined.
      * @private
      */
+    // eslint-disable-next-line class-methods-use-this
     private parseBooleanParameter(value: string | null): boolean | undefined {
         if (value === null)
             return undefined;
@@ -1463,6 +1468,7 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
      * @throws Error if content type is missing or unsupported.
      * @private
      */
+    // eslint-disable-next-line class-methods-use-this
     private detectMediaType(contentType: string | undefined): "image" | "video" | "audio" {
         if (!contentType) {
             throw new Error("Cannot detect media type: no content type provided");
@@ -1549,6 +1555,7 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
      * @returns True if video transformations are requested.
      * @private
      */
+    // eslint-disable-next-line class-methods-use-this
     private hasVideoTransformations(query: MediaTransformQuery): boolean {
         return !!(
             query.width
@@ -1578,6 +1585,7 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
      * @returns True if audio transformations are requested.
      * @private
      */
+    // eslint-disable-next-line class-methods-use-this
     private hasAudioTransformations(query: MediaTransformQuery): boolean {
         return !!(query.sampleRate || query.numberOfChannels || query.codec || query.bitrate || query.format || query.quality);
     }
@@ -1588,6 +1596,7 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
      * @returns Unified media transformation result.
      * @private
      */
+    // eslint-disable-next-line class-methods-use-this
     private convertImageResult(result: TransformResult): MediaTransformResult {
         return {
             buffer: result.buffer,
@@ -1606,6 +1615,7 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
      * @returns Unified media transformation result.
      * @private
      */
+    // eslint-disable-next-line class-methods-use-this
     private convertVideoResult(result: VideoTransformResult): MediaTransformResult {
         return {
             bitrate: result.bitrate,
@@ -1626,6 +1636,7 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
      * @returns Unified media transformation result.
      * @private
      */
+    // eslint-disable-next-line class-methods-use-this
     private convertAudioResult(result: AudioTransformResult): MediaTransformResult {
         return {
             bitrate: result.bitrate,

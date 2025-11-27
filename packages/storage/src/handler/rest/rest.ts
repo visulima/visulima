@@ -50,6 +50,7 @@ class Rest<
         const restInstance = this;
 
         this.restBase = new class extends RestBase<TFile> {
+            // eslint-disable-next-line class-methods-use-this
             protected override get storage() {
                 return restInstance.storage as unknown as {
                     create: (config: FileInit) => Promise<TFile>;
@@ -67,6 +68,7 @@ class Rest<
                 };
             }
 
+            // eslint-disable-next-line class-methods-use-this
             protected override buildFileUrl(requestUrl: string, file: TFile): string {
                 return restInstance.buildFileUrlForRest(requestUrl, file);
             }

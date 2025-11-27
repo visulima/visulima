@@ -215,6 +215,7 @@ class Multipart<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
      * @param _request Web API Request
      * @returns Promise resolving to Web API Response
      */
+    // eslint-disable-next-line class-methods-use-this
     public async get(_request: Request): Promise<ResponseFile<TFile>> {
         // For Fetch version, get is handled by the fetch() method
         // This method signature exists for consistency but shouldn't be called directly

@@ -197,6 +197,7 @@ abstract class BaseHandlerCore<TFile extends UploadFile> extends EventEmitter {
      * Check for undefined ID or path errors and throw appropriate HTTP errors.
      * @param error The error to check
      */
+    // eslint-disable-next-line class-methods-use-this
     protected checkForUndefinedIdOrPath(error: unknown): void {
         if (error instanceof Error && ["Id is undefined", "Invalid request URL", "Path is undefined"].includes(error.message)) {
             // This will be handled by the platform-specific error handler

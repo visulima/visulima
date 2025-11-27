@@ -20,6 +20,7 @@ import type {
     ErodeOptions,
     ExtractChannelOptions,
     GreyscaleOptions,
+    ImageFormat,
     ImageTransformerConfig,
     JoinChannelOptions,
     LinearOptions,
@@ -140,8 +141,8 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
      * @param options Additional transform options.
      * @returns Promise resolving to transformed image result.
      */
-    public async convertFormat(fileId: string, format: string, options: TransformOptions = {}): Promise<TransformResult<TFileReturn>> {
-        return this.transform(fileId, [{ options: { ...options, format: format as any }, type: "format" }]);
+    public async convertFormat(fileId: string, format: ImageFormat, options: TransformOptions = {}): Promise<TransformResult<TFileReturn>> {
+        return this.transform(fileId, [{ options: { ...options, format }, type: "format" }]);
     }
 
     /**
@@ -1282,6 +1283,7 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
      * @returns Record of format options for Sharp processing.
      * @private
      */
+    // eslint-disable-next-line class-methods-use-this
     private getFormatOptions(options: TransformOptions): Record<string, any> {
         const { alphaQuality, compressionLevel, delay, effort, loop, lossless, progressive, quality } = options;
         const formatOptions: Record<string, any> = {};
@@ -1367,6 +1369,7 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
      * @returns Image transformation result with metadata.
      * @private
      */
+    // eslint-disable-next-line class-methods-use-this
     private async createTransformResult(buffer: Buffer, originalFile: TFileReturn): Promise<TransformResult<TFileReturn>> {
         const metadata = await sharp(buffer).metadata();
 
@@ -1387,6 +1390,7 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
      * @returns Unique cache key string.
      * @private
      */
+    // eslint-disable-next-line class-methods-use-this
     private generateCacheKey(fileId: string, steps: TransformationStep[]): string {
         const stepsKey = steps.map((step) => `${step.type}:${JSON.stringify(step.options)}`).join("|");
 

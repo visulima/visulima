@@ -69,5 +69,9 @@ export const runInRoot = <T>(callback: () => T, queryClient?: QueryClient): T =>
         // This might leak memory in long running processes but is fine for short-lived tests
     });
 
-    return result!;
+    if (result === undefined) {
+        throw new Error("Result is undefined");
+    }
+
+    return result;
 };

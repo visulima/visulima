@@ -6,7 +6,7 @@ import { useBatchDeleteFiles } from "../../src/react/use-batch-delete-files";
 import { renderHookWithQueryClient } from "./test-utils";
 
 // Mock fetch globally
-const mockFetch = vi.fn();
+const mockFetch = vi.fn<Parameters<typeof fetch>, ReturnType<typeof fetch>>();
 let originalFetch: typeof globalThis.fetch | undefined;
 
 describe(useBatchDeleteFiles, () => {
@@ -28,7 +28,8 @@ describe(useBatchDeleteFiles, () => {
         if (originalFetch) {
             globalThis.fetch = originalFetch;
         } else {
-            delete (globalThis as any).fetch;
+            // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+            delete (globalThis as { fetch?: typeof fetch }).fetch;
         }
 
         vi.restoreAllMocks();

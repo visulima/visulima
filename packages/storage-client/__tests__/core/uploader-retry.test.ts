@@ -14,18 +14,14 @@ class ErrorMockXMLHttpRequest {
 
     public response = "";
 
-    private eventListeners = new Map<string, Set<(event: Event) => void>>();
-
-    private _uploadEventListeners = new Map<string, Set<(event: ProgressEvent) => void>>();
-
     public upload = {
-        addEventListener: vi.fn(),
-        removeEventListener: vi.fn(),
+        addEventListener: vi.fn<[string, (event: ProgressEvent) => void], void>(),
+        removeEventListener: vi.fn<[string, (event: ProgressEvent) => void], void>(),
     };
 
-    public open = vi.fn();
+    public open = vi.fn<[string, string | URL, boolean?, string?, string?], void>();
 
-    public send = vi.fn((_data?: FormData) => {
+    public send = vi.fn<[Document | XMLHttpRequestBodyInit | null?], void>((_data?: FormData) => {
         // Simulate error
         setTimeout(() => {
             const handlers = this.eventListeners.get("error");
@@ -36,11 +32,11 @@ class ErrorMockXMLHttpRequest {
         }, 10);
     });
 
-    public setRequestHeader = vi.fn();
+    public setRequestHeader = vi.fn<[string, string], void>();
 
-    public getResponseHeader = vi.fn(() => null);
+    public getResponseHeader = vi.fn<[string], string | null>(() => undefined);
 
-    public addEventListener = vi.fn((event: string, handler: (event: Event) => void) => {
+    public addEventListener = vi.fn<[string, (event: Event) => void], void>((event: string, handler: (event: Event) => void) => {
         if (!this.eventListeners.has(event)) {
             this.eventListeners.set(event, new Set());
         }
@@ -48,9 +44,13 @@ class ErrorMockXMLHttpRequest {
         this.eventListeners.get(event)?.add(handler);
     });
 
-    public removeEventListener = vi.fn();
+    public removeEventListener = vi.fn<[string, (event: Event) => void], void>();
 
-    public abort = vi.fn();
+    public abort = vi.fn<[], void>();
+
+    private eventListeners = new Map<string, Set<(event: Event) => void>>();
+
+    private _uploadEventListeners = new Map<string, Set<(event: ProgressEvent) => void>>();
 }
 
 // Mock XMLHttpRequest that succeeds on retry
@@ -65,21 +65,15 @@ class RetrySuccessMockXMLHttpRequest {
 
     public response = "";
 
-    private eventListeners = new Map<string, Set<(event: Event) => void>>();
-
-    private _uploadEventListeners = new Map<string, Set<(event: ProgressEvent) => void>>();
-
-    private attemptCount = 0;
-
     public upload = {
-        addEventListener: vi.fn(),
-        removeEventListener: vi.fn(),
+        addEventListener: vi.fn<[string, (event: ProgressEvent) => void], void>(),
+        removeEventListener: vi.fn<[string, (event: ProgressEvent) => void], void>(),
     };
 
-    public open = vi.fn();
+    public open = vi.fn<[string, string | URL, boolean?, string?, string?], void>();
 
-    public send = vi.fn((_data?: FormData) => {
-        this.attemptCount += 1;
+    public send = vi.fn<[Document | XMLHttpRequestBodyInit | null?], void>((_data?: FormData) => {
+        this.attemptCount = (this.attemptCount ?? 0) + 1;
 
         // First attempt fails, second succeeds
         if (this.attemptCount === 1) {
@@ -113,11 +107,11 @@ class RetrySuccessMockXMLHttpRequest {
         }
     });
 
-    public setRequestHeader = vi.fn();
+    public setRequestHeader = vi.fn<[string, string], void>();
 
-    public getResponseHeader = vi.fn(() => null);
+    public getResponseHeader = vi.fn<[string], string | null>(() => undefined);
 
-    public addEventListener = vi.fn((event: string, handler: (event: Event) => void) => {
+    public addEventListener = vi.fn<[string, (event: Event) => void], void>((event: string, handler: (event: Event) => void) => {
         if (!this.eventListeners.has(event)) {
             this.eventListeners.set(event, new Set());
         }
@@ -125,9 +119,15 @@ class RetrySuccessMockXMLHttpRequest {
         this.eventListeners.get(event)?.add(handler);
     });
 
-    public removeEventListener = vi.fn();
+    public removeEventListener = vi.fn<[string, (event: Event) => void], void>();
 
-    public abort = vi.fn();
+    public abort = vi.fn<[], void>();
+
+    private eventListeners = new Map<string, Set<(event: Event) => void>>();
+
+    private _uploadEventListeners = new Map<string, Set<(event: ProgressEvent) => void>>();
+
+    private attemptCount = 0;
 }
 
 describe("uploader Retry Operations", () => {
@@ -152,7 +152,7 @@ describe("uploader Retry Operations", () => {
         const uploader = createUploader({
             endpoint: "/api/upload",
         });
-        const onItemStart = vi.fn();
+        const onItemStart = vi.fn<[unknown], void>();
 
         uploader.on("ITEM_START", onItemStart);
 

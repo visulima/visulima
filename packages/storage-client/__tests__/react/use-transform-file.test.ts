@@ -6,7 +6,7 @@ import { useTransformFile } from "../../src/react/use-transform-file";
 import { renderHookWithQueryClient } from "./test-utils";
 
 // Mock fetch globally
-const mockFetch = vi.fn();
+const mockFetch = vi.fn<Parameters<typeof fetch>, ReturnType<typeof fetch>>();
 let originalFetch: typeof globalThis.fetch | undefined;
 
 describe(useTransformFile, () => {
@@ -28,7 +28,7 @@ describe(useTransformFile, () => {
         if (originalFetch) {
             globalThis.fetch = originalFetch;
         } else {
-            delete (globalThis as any).fetch;
+            delete (globalThis as { fetch?: typeof fetch }).fetch;
         }
 
         vi.restoreAllMocks();
@@ -77,7 +77,7 @@ describe(useTransformFile, () => {
     it("should call onSuccess callback", async () => {
         expect.assertions(2);
 
-        const onSuccess = vi.fn();
+        const onSuccess = vi.fn<[Blob, Record<string, unknown>], void>();
         const mockBlob = new Blob(["transformed content"], { type: "image/jpeg" });
 
         mockFetch.mockResolvedValueOnce({
@@ -107,7 +107,7 @@ describe(useTransformFile, () => {
     it("should handle error and call onError callback", async () => {
         expect.assertions(2);
 
-        const onError = vi.fn();
+        const onError = vi.fn<[Error], void>();
 
         mockFetch.mockResolvedValueOnce({
             json: async () => {

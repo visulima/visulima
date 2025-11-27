@@ -216,10 +216,12 @@ describe(createChunkedRestAdapter, () => {
 
         expect(onStart).toHaveBeenCalledWith();
         expect(onProgress).toHaveBeenCalledWith(expect.any(Number), expect.any(Number));
-        expect(onFinish).toHaveBeenCalledWith(expect.objectContaining({
-            id: expect.any(String),
-            bytesWritten: expect.any(Number),
-        }));
+        expect(onFinish).toHaveBeenCalledWith(
+            expect.objectContaining({
+                bytesWritten: expect.any(Number),
+                id: expect.any(String),
+            }),
+        );
         expect(onError).not.toHaveBeenCalled();
     });
 

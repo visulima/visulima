@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createTusAdapter } from "../../src/core/tus-adapter";
 
 // Mock fetch
-const mockFetch = vi.fn();
+const mockFetch = vi.fn<Parameters<typeof fetch>, ReturnType<typeof fetch>>();
 let originalFetch: typeof globalThis.fetch | undefined;
 
 describe(createTusAdapter, () => {
@@ -18,7 +18,7 @@ describe(createTusAdapter, () => {
         if (originalFetch) {
             globalThis.fetch = originalFetch;
         } else {
-            delete (globalThis as any).fetch;
+            delete (globalThis as { fetch?: typeof fetch }).fetch;
         }
 
         vi.restoreAllMocks();
