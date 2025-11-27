@@ -37,8 +37,14 @@ const canonicalizeBody = (body: string, method: "simple" | "relaxed" = "simple")
         // Simple: Remove empty lines (consecutive CRLFs) at the end, but preserve the CRLF
         // that terminates the last line of actual content. If no trailing CRLF, add one.
         const normalized = body.replace(/(\r\n|\r|\n)$/, "\n");
-        // eslint-disable-next-line sonarjs/slow-regex -- Anchored pattern, safe from backtracking
-        const trimmed = normalized.replace(/\n+$/, "");
+        // Remove trailing newlines efficiently without regex backtracking
+        let endIndex = normalized.length;
+
+        while (endIndex > 0 && normalized[endIndex - 1] === "\n") {
+            endIndex -= 1;
+        }
+
+        const trimmed = normalized.slice(0, endIndex);
 
         return trimmed ? `${trimmed}\n` : "\n";
     }
@@ -62,8 +68,14 @@ const canonicalizeBody = (body: string, method: "simple" | "relaxed" = "simple")
     normalized = processedLines.join("\n");
 
     // Remove empty lines at the end, but ensure there's at least one \n at the end
-    // eslint-disable-next-line sonarjs/slow-regex -- Anchored pattern, safe from backtracking
-    const trimmed = normalized.replace(/\n+$/, "");
+    // Remove trailing newlines efficiently without regex backtracking
+    let endIndex = normalized.length;
+
+    while (endIndex > 0 && normalized[endIndex - 1] === "\n") {
+        endIndex -= 1;
+    }
+
+    const trimmed = normalized.slice(0, endIndex);
 
     return trimmed ? `${trimmed}\n` : "\n";
 };
@@ -102,6 +114,46 @@ const createDkimSignatureHeader = (headers: Record<string, string>, options: Dki
  */
 export class DkimSigner implements EmailSigner {
     /**
+     * Sanitizes a display name for use in quoted email headers per RFC 5322.
+     * Removes/replaces CR, LF, tabs with space, escapes backslashes and quotes,
+     * and strips non-printable control characters.
+     * @param name The display name to sanitize.
+     * @returns The sanitized display name, or empty string if nothing remains.
+     */
+    private static sanitizeDisplayName(name: string): string {
+        // Replace CR, LF, and tabs with a single space
+        let sanitized = name.replaceAll(/[\r\n\t]+/g, " ");
+
+        // Strip non-printable control characters (outside ASCII printable range 0x20-0x7E)
+        // This removes characters below space (0x20) and above tilde (0x7E)
+        // Use character code filtering to avoid regex control character issues
+        sanitized = [...sanitized]
+            .filter((char) => {
+                const code = char.codePointAt(0);
+
+                if (code === undefined) {
+                    return false;
+                }
+
+                // Keep printable ASCII range (0x20-0x7E) and allow extended ASCII/Unicode
+                // Remove only control characters (0x00-0x1F and 0x7F-0x9F)
+                return (code >= 0x20 && code <= 0x7e) || code > 0x9f;
+            })
+            .join("");
+
+        // Escape backslashes and double quotes per RFC 5322
+        const backslashChar = "\\";
+        const quoteChar = "\"";
+
+        sanitized = sanitized.replaceAll(backslashChar, backslashChar + backslashChar).replaceAll(quoteChar, backslashChar + quoteChar);
+
+        // Trim and collapse multiple spaces
+        sanitized = sanitized.trim().replaceAll(/\s+/g, " ");
+
+        return sanitized;
+    }
+
+    /**
      * Formats an email address for use in email headers.
      * @param address The email address object to format.
      * @param address.email The email address string.
@@ -110,7 +162,14 @@ export class DkimSigner implements EmailSigner {
      */
     private static formatAddress(address: { email: string; name?: string }): string {
         if (address.name) {
-            return `"${address.name}" <${address.email}>`;
+            const sanitizedName = DkimSigner.sanitizeDisplayName(address.name);
+
+            // If name is empty after sanitization, return only the email
+            if (!sanitizedName) {
+                return address.email;
+            }
+
+            return `"${sanitizedName}" <${address.email}>`;
         }
 
         return address.email;
