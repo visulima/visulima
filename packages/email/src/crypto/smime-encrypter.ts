@@ -41,7 +41,8 @@ const pemToDer = (pem: string): Uint8Array => {
     const bytes = new Uint8Array(binaryString.length);
 
     for (let i = 0; i < binaryString.length; i += 1) {
-        bytes[i] = binaryString.codePointAt(i) as number;
+        // eslint-disable-next-line unicorn/prefer-code-point -- charCodeAt is correct for binary data, not codePointAt
+        bytes[i] = binaryString.charCodeAt(i);
     }
 
     return bytes;
@@ -176,16 +177,19 @@ export class SmimeEncrypter implements EmailEncrypter {
 
         // Determine encryption algorithm
         const algorithm = this.options.algorithm || "aes-256-cbc";
+        const algorithmLower = algorithm.toLowerCase();
+
+        // Reject deprecated/insecure algorithms
+        if (algorithmLower === "3des" || algorithmLower === "des-ede3-cbc") {
+            throw new Error(
+                "3DES/DES-EDE3-CBC is deprecated and insecure (Sweet32 vulnerability). Please use AES-256-CBC, AES-192-CBC, or AES-128-CBC instead.",
+            );
+        }
+
         let algorithmId: string;
         let keyLength: number;
 
-        switch (algorithm.toLowerCase()) {
-            case "3des":
-            case "des-ede3-cbc": {
-                algorithmId = "1.2.840.113549.3.7"; // 3DES-CBC
-                keyLength = 24;
-                break;
-            }
+        switch (algorithmLower) {
             case "aes128":
             case "aes-128-cbc": {
                 algorithmId = "2.16.840.1.101.3.4.1.2"; // AES-128-CBC
@@ -324,6 +328,13 @@ export class SmimeEncrypter implements EmailEncrypter {
             for (const [key, value] of Object.entries(email.headers)) {
                 lines.push(`${key}: ${value}`);
             }
+        }
+
+        // Add Content-Type based on content
+        if (email.html) {
+            lines.push("Content-Type: text/html; charset=utf-8");
+        } else if (email.text) {
+            lines.push("Content-Type: text/plain; charset=utf-8");
         }
 
         lines.push("");

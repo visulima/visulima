@@ -39,11 +39,6 @@ export interface MailerSendEmailOptions extends EmailOptions {
     scheduledAt?: number;
 
     /**
-     * Tags for categorization
-     */
-    tags?: string[];
-
-    /**
      * MailerSend template ID for template-based emails
      */
     templateId?: string;

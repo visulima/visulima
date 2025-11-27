@@ -21,11 +21,6 @@ export interface AhaSendConfig extends BaseConfig {
  */
 export interface AhaSendEmailOptions extends EmailOptions {
     /**
-     * Tags for categorization
-     */
-    tags?: string[];
-
-    /**
      * AhaSend template ID for template-based emails
      */
     templateId?: string;

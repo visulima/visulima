@@ -57,11 +57,6 @@ export interface MailgunEmailOptions extends EmailOptions {
     skipVerification?: boolean;
 
     /**
-     * Mailgun tags for categorization
-     */
-    tags?: string[];
-
-    /**
      * Mailgun template name
      */
     template?: string;

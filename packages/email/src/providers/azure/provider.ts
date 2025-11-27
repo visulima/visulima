@@ -266,7 +266,7 @@ const azureProvider: ProviderFactory<AzureConfig, unknown, AzureEmailOptions> = 
                             if (attachment.content) {
                                 if (typeof attachment.content === "string") {
                                     content = attachment.content;
-                                } else if (attachment.content instanceof Promise) {
+                                } else if (attachment.content && typeof (attachment.content as PromiseLike<unknown>).then === "function") {
                                     const buffer = await attachment.content;
 
                                     content = Buffer.from(buffer).toString("base64");

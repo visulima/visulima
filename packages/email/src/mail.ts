@@ -8,15 +8,12 @@ import type { Provider } from "./providers/provider";
 import htmlToText from "./template-engines/html-to-text";
 import type { TemplateRenderer } from "./template-engines/types";
 import type { Attachment, EmailAddress, EmailHeaders, EmailOptions, EmailResult, Priority, Receipt, Result } from "./types";
+import type { Logger } from "./utils/create-logger";
+import createLogger from "./utils/create-logger";
 import headersToRecord from "./utils/headers-to-record";
 
 type AddressInput = EmailAddress | EmailAddress[] | string | string[];
 
-/**
- * Normalizes email address(es) to EmailAddress array.
- * @param address The email address(es) to normalize (can be string, EmailAddress, or arrays of either).
- * @returns Array of EmailAddress objects.
- */
 const normalizeAddresses = (address: AddressInput): EmailAddress[] => {
     if (Array.isArray(address)) {
         // eslint-disable-next-line arrow-body-style
@@ -26,6 +23,28 @@ const normalizeAddresses = (address: AddressInput): EmailAddress[] => {
     }
 
     return typeof address === "string" ? [{ email: address }] : [address];
+};
+
+/**
+ * Logs the result of sending an email.
+ * @param logger Optional logger instance.
+ * @param result Send result to log.
+ * @param providerName Name of the provider used.
+ */
+const logSendResult = (logger: Logger | undefined, result: Result<EmailResult>, providerName: string): void => {
+    if (result.success && result.data) {
+        if (logger) {
+            logger.info("Email sent successfully", {
+                messageId: result.data.messageId,
+                provider: result.data.provider,
+            });
+        }
+    } else if (logger) {
+        logger.error("Email send failed", {
+            error: result.error,
+            provider: providerName,
+        });
+    }
 };
 
 /**
@@ -71,6 +90,8 @@ export class MailMessage {
     private signer?: EmailSigner;
 
     private encrypter?: EmailEncrypter;
+
+    private logger?: Logger;
 
     /**
      * Sets the sender address.
@@ -188,19 +209,31 @@ export class MailMessage {
      * ```
      */
     public async attachFromPath(filePath: string, options?: AttachmentOptions): Promise<this> {
-        const content = await readFileAsBuffer(filePath);
-        const filename = options?.filename || basename(filePath) || "attachment";
-        const contentType = options?.contentType || detectMimeType(filename);
+        try {
+            const content = await readFileAsBuffer(filePath);
+            const filename = options?.filename || basename(filePath) || "attachment";
+            const contentType = options?.contentType || detectMimeType(filename);
 
-        this.attachments.push({
-            cid: options?.cid,
-            content,
-            contentDisposition: options?.contentDisposition || "attachment",
-            contentType,
-            encoding: options?.encoding,
-            filename,
-            headers: options?.headers,
-        });
+            this.attachments.push({
+                cid: options?.cid,
+                content,
+                contentDisposition: options?.contentDisposition || "attachment",
+                contentType,
+                encoding: options?.encoding,
+                filename,
+                headers: options?.headers,
+            });
+
+            if (this.logger) {
+                this.logger.debug(`Attachment added from path: ${filePath}`, { contentType, filename });
+            }
+        } catch (error) {
+            if (this.logger) {
+                this.logger.error(`Failed to attach file from path: ${filePath}`, error);
+            }
+
+            throw error;
+        }
 
         return this;
     }
@@ -230,6 +263,10 @@ export class MailMessage {
             headers: options.headers,
         });
 
+        if (this.logger) {
+            this.logger.debug("Attachment added from data", { contentType, filename: options.filename });
+        }
+
         return this;
     }
 
@@ -247,20 +284,32 @@ export class MailMessage {
      * ```
      */
     public async embedFromPath(filePath: string, options?: Omit<AttachmentOptions, "contentDisposition" | "cid">): Promise<string> {
-        const content = await readFileAsBuffer(filePath);
-        const filename = options?.filename || basename(filePath) || "inline";
-        const contentType = options?.contentType || detectMimeType(filename);
-        const cid = generateContentId(filename);
+        try {
+            const content = await readFileAsBuffer(filePath);
+            const filename = options?.filename || basename(filePath) || "inline";
+            const contentType = options?.contentType || detectMimeType(filename);
+            const cid = generateContentId(filename);
 
-        this.attachments.push({
-            cid,
-            content,
-            contentDisposition: "inline",
-            contentType,
-            filename,
-        });
+            this.attachments.push({
+                cid,
+                content,
+                contentDisposition: "inline",
+                contentType,
+                filename,
+            });
 
-        return cid;
+            if (this.logger) {
+                this.logger.debug(`Inline attachment embedded from path: ${filePath}`, { cid, contentType, filename });
+            }
+
+            return cid;
+        } catch (error) {
+            if (this.logger) {
+                this.logger.error(`Failed to embed file from path: ${filePath}`, error);
+            }
+
+            throw error;
+        }
     }
 
     /**
@@ -289,6 +338,10 @@ export class MailMessage {
             contentType,
             filename,
         });
+
+        if (this.logger) {
+            this.logger.debug("Inline attachment embedded from data", { cid, contentType, filename });
+        }
 
         return cid;
     }
@@ -354,6 +407,10 @@ export class MailMessage {
     public sign(signer: EmailSigner): this {
         this.signer = signer;
 
+        if (this.logger) {
+            this.logger.debug("Email signer configured");
+        }
+
         return this;
     }
 
@@ -371,6 +428,25 @@ export class MailMessage {
      */
     public encrypt(encrypter: EmailEncrypter): this {
         this.encrypter = encrypter;
+
+        if (this.logger) {
+            this.logger.debug("Email encrypter configured");
+        }
+
+        return this;
+    }
+
+    /**
+     * Sets the logger instance for this message.
+     * @param logger The logger instance (Console) to use for logging.
+     * @returns This instance for method chaining.
+     * @example
+     * ```ts
+     * message.logger(console)
+     * ```
+     */
+    public setLogger(logger: Console): this {
+        this.logger = createLogger("MailMessage", logger);
 
         return this;
     }
@@ -403,22 +479,26 @@ export class MailMessage {
         options?: { [key: string]: unknown; autoText?: boolean },
     ): Promise<this> {
         try {
+            if (this.logger) {
+                this.logger.debug("Rendering template", { autoText: options?.autoText !== false });
+            }
+
             const html = await render(template, data, options);
 
             this.html(html);
 
             if (options?.autoText !== false && html) {
-                try {
-                    const text = htmlToText(html);
+                this.tryAutoGenerateText(html);
+            }
 
-                    if (text && !this.textContent) {
-                        this.text(text);
-                    }
-                } catch {
-                    // Ignore errors in text conversion
-                }
+            if (this.logger) {
+                this.logger.debug("Template rendered successfully");
             }
         } catch (error) {
+            if (this.logger) {
+                this.logger.error("Failed to render template", error);
+            }
+
             throw new Error(`Failed to render template: ${(error as Error).message}`);
         }
 
@@ -440,14 +520,26 @@ export class MailMessage {
      */
     public async viewText(render: TemplateRenderer, template: string, data?: Record<string, unknown>, options?: Record<string, unknown>): Promise<this> {
         try {
+            if (this.logger) {
+                this.logger.debug("Rendering text template");
+            }
+
             const text = await render(template, data, options);
 
             if (typeof text === "string") {
                 this.text(text);
+
+                if (this.logger) {
+                    this.logger.debug("Text template rendered successfully");
+                }
             } else {
                 throw new TypeError("Text renderer must return a string");
             }
         } catch (error) {
+            if (this.logger) {
+                this.logger.error("Failed to render text template", error);
+            }
+
             throw new Error(`Failed to render text template: ${(error as Error).message}`);
         }
 
@@ -461,28 +553,39 @@ export class MailMessage {
      */
     // eslint-disable-next-line sonarjs/cognitive-complexity
     public async build(): Promise<EmailOptions> {
+        if (this.logger) {
+            this.logger.debug("Building email message");
+        }
+
         if (!this.fromAddress) {
-            throw new Error("From address is required");
+            this.throwAndLogError("From address is required", "Build failed: from address is required");
         }
 
         if (this.toAddresses.length === 0) {
-            throw new Error("At least one recipient is required");
+            this.throwAndLogError("At least one recipient is required", "Build failed: at least one recipient is required");
         }
 
         if (!this.subjectText) {
-            throw new Error("Subject is required");
+            this.throwAndLogError("Subject is required", "Build failed: subject is required");
         }
 
         if (this.htmlContent && !this.textContent) {
             try {
                 this.textContent = htmlToText(this.htmlContent);
+
+                if (this.logger) {
+                    this.logger.debug("Auto-generated text content from HTML");
+                }
             } catch {
-                // Ignore errors in text conversion
+                // HTML-to-text conversion failed silently; email will be sent without text part
+                if (this.logger) {
+                    this.logger.debug("Failed to convert HTML to text; proceeding without text content.");
+                }
             }
         }
 
         if (!this.textContent && !this.htmlContent) {
-            throw new Error("Either text or html content is required");
+            this.throwAndLogError("Either text or html content is required", "Build failed: either text or html content is required");
         }
 
         let emailOptions: EmailOptions = {
@@ -507,6 +610,10 @@ export class MailMessage {
 
         if (this.attachments.length > 0) {
             emailOptions.attachments = this.attachments;
+
+            if (this.logger) {
+                this.logger.debug(`Email includes ${this.attachments.length} attachment(s)`);
+            }
         }
 
         if (this.replyToAddress) {
@@ -523,12 +630,38 @@ export class MailMessage {
 
         // Apply signing before encryption (sign then encrypt)
         if (this.signer) {
+            if (this.logger) {
+                this.logger.debug("Signing email message");
+            }
+
             emailOptions = await this.signer.sign(emailOptions);
+
+            if (this.logger) {
+                this.logger.debug("Email message signed successfully");
+            }
         }
 
         // Apply encryption (encrypts the signed message if signing was applied)
         if (this.encrypter) {
+            if (this.logger) {
+                this.logger.debug("Encrypting email message");
+            }
+
             emailOptions = await this.encrypter.encrypt(emailOptions);
+
+            if (this.logger) {
+                this.logger.debug("Email message encrypted successfully");
+            }
+        }
+
+        if (this.logger) {
+            this.logger.debug("Email message built successfully", {
+                bcc: this.bccAddresses.length,
+                cc: this.ccAddresses.length,
+                hasHtml: !!this.htmlContent,
+                hasText: !!this.textContent,
+                to: this.toAddresses.length,
+            });
         }
 
         return emailOptions;
@@ -541,12 +674,58 @@ export class MailMessage {
      */
     public async send(): Promise<Result<EmailResult>> {
         if (!this.provider) {
-            throw new Error("No provider configured. Use mailer() method to set a provider.");
+            this.throwAndLogError("No provider configured. Use mailer() method to set a provider.", "Send failed: no provider configured");
+        }
+
+        if (this.logger) {
+            this.logger.debug("Sending email", { subject: this.subjectText, to: this.toAddresses.length });
         }
 
         const emailOptions = await this.build();
+        const result = await this.provider.sendEmail(emailOptions);
 
-        return this.provider.sendEmail(emailOptions);
+        logSendResult(this.logger, result, this.provider.name || "unknown");
+
+        return result;
+    }
+
+    /**
+     * Attempts to auto-generate text content from HTML.
+     * @param html The HTML content to convert.
+     * @private
+     */
+    private tryAutoGenerateText(html: string): void {
+        try {
+            const text = htmlToText(html);
+
+            if (text && !this.textContent) {
+                this.text(text);
+            }
+
+            if (this.logger) {
+                this.logger.debug("Auto-generated text content from HTML template");
+            }
+        } catch (error) {
+            if (this.logger) {
+                this.logger.warn("Failed to auto-generate text from HTML template", error);
+            }
+        }
+    }
+
+    /**
+     * Creates an error, logs it, and throws it.
+     * @param message Error message to throw.
+     * @param logMessage Optional log message (defaults to message).
+     * @private
+     */
+    private throwAndLogError(message: string, logMessage?: string): never {
+        const error = new Error(message);
+
+        if (this.logger) {
+            this.logger.error(logMessage || message);
+        }
+
+        throw error;
     }
 }
 
@@ -554,7 +733,25 @@ export class MailMessage {
  * Mail class - instance-based email sending.
  */
 export class Mail {
+    /**
+     * Extracts error messages from an error object.
+     * @param error Error object to extract messages from.
+     * @returns Array of error messages.
+     * @private
+     */
+    private static extractErrorMessages(error: unknown): string[] {
+        if (error instanceof Error) {
+            return [error.message];
+        }
+
+        return [String(error || "Unknown error")];
+    }
+
     private provider: Provider;
+
+    private logger?: Logger;
+
+    private loggerInstance?: Console;
 
     /**
      * Creates a new Mail instance with a provider.
@@ -565,13 +762,39 @@ export class Mail {
     }
 
     /**
+     * Sets the logger instance for this mail instance.
+     * The logger will be passed to all MailMessage instances created via message().
+     * @param logger The logger instance (Console) to use for logging.
+     * @returns This instance for method chaining.
+     * @example
+     * ```ts
+     * const mail = createMail(provider);
+     * mail.setLogger(console);
+     * ```
+     */
+    public setLogger(logger: Console): this {
+        this.loggerInstance = logger;
+        this.logger = createLogger("Mail", logger);
+
+        return this;
+    }
+
+    /**
      * Creates a new mail message.
      * @returns A new MailMessage instance configured with this provider.
      */
     public message(): MailMessage {
+        if (this.logger) {
+            this.logger.debug("Creating new mail message");
+        }
+
         const message = new MailMessage();
 
         message.mailer(this.provider);
+
+        if (this.loggerInstance) {
+            message.setLogger(this.loggerInstance);
+        }
 
         return message;
     }
@@ -582,9 +805,16 @@ export class Mail {
      * @returns A result object containing the email result or error.
      */
     public async send(mailable: Mailable): Promise<Result<EmailResult>> {
-        const emailOptions = await mailable.build();
+        if (this.logger) {
+            this.logger.debug("Sending mailable instance");
+        }
 
-        return this.provider.sendEmail(emailOptions);
+        const emailOptions = await mailable.build();
+        const result = await this.provider.sendEmail(emailOptions);
+
+        logSendResult(this.logger, result, this.provider.name || "unknown");
+
+        return result;
     }
 
     /**
@@ -593,7 +823,18 @@ export class Mail {
      * @returns A result object containing the email result or error.
      */
     public async sendEmail(options: EmailOptions): Promise<Result<EmailResult>> {
-        return this.provider.sendEmail(options);
+        if (this.logger) {
+            this.logger.debug("Sending email with options", {
+                subject: options.subject,
+                to: Array.isArray(options.to) ? options.to.length : 1,
+            });
+        }
+
+        const result = await this.provider.sendEmail(options);
+
+        logSendResult(this.logger, result, this.provider.name || "unknown");
+
+        return result;
     }
 
     /**
@@ -625,10 +866,25 @@ export class Mail {
         options?: { signal?: AbortSignal },
     ): AsyncIterable<Receipt> {
         const providerName = this.provider.name;
+        let processedCount = 0;
+        let successCount = 0;
+        let failureCount = 0;
+
+        if (this.logger) {
+            this.logger.debug("Starting batch email send", { provider: providerName });
+        }
 
         for await (const message of messages) {
             // Check for abort signal
             if (options?.signal?.aborted) {
+                if (this.logger) {
+                    this.logger.warn("Batch send operation was aborted", {
+                        failed: failureCount,
+                        processed: processedCount,
+                        successful: successCount,
+                    });
+                }
+
                 yield {
                     errorMessages: ["Send operation was aborted"],
                     provider: providerName,
@@ -638,15 +894,32 @@ export class Mail {
                 return;
             }
 
+            processedCount += 1;
+
             try {
                 // Convert mailable to email options if needed
                 const emailOptions: EmailOptions
                     = "build" in message && typeof message.build === "function" ? await (message as Mailable).build() : (message as EmailOptions);
 
+                if (this.logger) {
+                    this.logger.debug(`Sending email ${processedCount}`, {
+                        subject: emailOptions.subject,
+                        to: Array.isArray(emailOptions.to) ? emailOptions.to.length : 1,
+                    });
+                }
+
                 // Send the email
                 const result = await this.provider.sendEmail(emailOptions);
 
                 if (result.success && result.data) {
+                    successCount += 1;
+
+                    if (this.logger) {
+                        this.logger.debug(`Email ${processedCount} sent successfully`, {
+                            messageId: result.data.messageId,
+                        });
+                    }
+
                     yield {
                         messageId: result.data.messageId,
                         provider: result.data.provider || providerName,
@@ -655,23 +928,41 @@ export class Mail {
                         timestamp: result.data.timestamp,
                     };
                 } else {
-                    const errorMessages = result.error instanceof Error ? [result.error.message] : [String(result.error || "Unknown error")];
+                    failureCount += 1;
+
+                    if (this.logger) {
+                        this.logger.error(`Email ${processedCount} send failed`, {
+                            error: result.error,
+                        });
+                    }
 
                     yield {
-                        errorMessages,
+                        errorMessages: Mail.extractErrorMessages(result.error),
                         provider: providerName,
                         successful: false,
                     };
                 }
             } catch (error) {
-                const errorMessages = error instanceof Error ? [error.message] : [String(error)];
+                failureCount += 1;
+
+                if (this.logger) {
+                    this.logger.error(`Email ${processedCount} send failed with exception`, error);
+                }
 
                 yield {
-                    errorMessages,
+                    errorMessages: Mail.extractErrorMessages(error),
                     provider: providerName,
                     successful: false,
                 };
             }
+        }
+
+        if (this.logger) {
+            this.logger.info("Batch email send completed", {
+                failed: failureCount,
+                successful: successCount,
+                total: processedCount,
+            });
         }
     }
 }

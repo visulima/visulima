@@ -11,6 +11,39 @@ vi.mock(import("@visulima/fs"), () => {
     };
 });
 
+vi.mock(import("node:crypto"), async () => {
+    const actualCrypto = (await vi.importActual("node:crypto")) as typeof import("node:crypto");
+
+    return {
+        ...actualCrypto,
+        createHash: vi.fn(() => {
+            return {
+                digest: vi.fn(() => Buffer.alloc(32)),
+                update: vi.fn().mockReturnThis(),
+            };
+        }),
+        createPrivateKey: vi.fn((key: string | { key: string; passphrase?: string }) => {
+            const keyString = typeof key === "string" ? key : key.key;
+
+            if (keyString === "invalid-key") {
+                throw new Error("Invalid key format");
+            }
+
+            return {
+                asymmetricKeyType: "rsa",
+                type: "private",
+            } as ReturnType<typeof actualCrypto.createPrivateKey>;
+        }),
+        createSign: vi.fn(() => {
+            return {
+                sign: vi.fn(() => Buffer.alloc(256)),
+                update: vi.fn().mockReturnThis(),
+            };
+        }),
+        randomBytes: vi.fn((size: number) => Buffer.alloc(size)),
+    };
+});
+
 vi.mock(import("pkijs"), async () => {
     const actualPKIjs = await vi.importActual("pkijs");
 
@@ -271,37 +304,13 @@ describe(SmimeSigner, () => {
 
             const signer = createSmimeSigner(options);
 
-            const mockCryptoKey = {
-                algorithm: { name: "RSASSA-PKCS1-v1_5" },
-            } as CryptoKey;
+            const signed = await signer.sign(email);
 
-            const mockSubtle = {
-                digest: vi.fn().mockResolvedValue(new ArrayBuffer(32)),
-                importKey: vi.fn().mockResolvedValue(mockCryptoKey),
-                sign: vi.fn().mockResolvedValue(new ArrayBuffer(256)),
-            } as unknown as SubtleCrypto;
-
-            Object.defineProperty(globalThis.crypto, "subtle", {
-                configurable: true,
-                value: mockSubtle,
-                writable: true,
-            });
-
-            try {
-                const signed = await signer.sign(email);
-
-                expect(readFile).toHaveBeenCalledWith("/path/to/certificate.crt", { encoding: "utf8" });
-                expect(readFile).toHaveBeenCalledWith("/path/to/private-key.key", { encoding: "utf8" });
-                expect(signed.text).toBeDefined();
-                expect(signed.headers).toBeDefined();
-                expect(signed.headers["Content-Type"]).toContain("multipart/signed");
-            } finally {
-                Object.defineProperty(globalThis.crypto, "subtle", {
-                    configurable: true,
-                    value: globalThis.crypto.subtle,
-                    writable: true,
-                });
-            }
+            expect(readFile).toHaveBeenCalledWith("/path/to/certificate.crt", { encoding: "utf8" });
+            expect(readFile).toHaveBeenCalledWith("/path/to/private-key.key", { encoding: "utf8" });
+            expect(signed.text).toBeDefined();
+            expect(signed.headers).toBeDefined();
+            expect(signed.headers["Content-Type"]).toContain("multipart/signed");
         });
 
         it("should handle passphrase for encrypted keys", async () => {
@@ -325,33 +334,9 @@ describe(SmimeSigner, () => {
 
             const signer = createSmimeSigner(options);
 
-            const mockCryptoKey = {
-                algorithm: { name: "RSASSA-PKCS1-v1_5" },
-            } as CryptoKey;
+            const signed = await signer.sign(email);
 
-            const mockSubtle = {
-                digest: vi.fn().mockResolvedValue(new ArrayBuffer(32)),
-                importKey: vi.fn().mockResolvedValue(mockCryptoKey),
-                sign: vi.fn().mockResolvedValue(new ArrayBuffer(256)),
-            } as unknown as SubtleCrypto;
-
-            Object.defineProperty(globalThis.crypto, "subtle", {
-                configurable: true,
-                value: mockSubtle,
-                writable: true,
-            });
-
-            try {
-                const signed = await signer.sign(email);
-
-                expect(signed.text).toBeDefined();
-            } finally {
-                Object.defineProperty(globalThis.crypto, "subtle", {
-                    configurable: true,
-                    value: globalThis.crypto.subtle,
-                    writable: true,
-                });
-            }
+            expect(signed.text).toBeDefined();
         });
 
         it("should handle intermediate certificates", async () => {
@@ -374,26 +359,10 @@ describe(SmimeSigner, () => {
 
             const signer = createSmimeSigner(options);
 
-            const mockCryptoKey = {
-                algorithm: { name: "RSASSA-PKCS1-v1_5" },
-            } as CryptoKey;
+            const signed = await signer.sign(email);
 
-            const originalSubtle = globalThis.crypto.subtle;
-
-            globalThis.crypto.subtle = {
-                digest: vi.fn().mockResolvedValue(new ArrayBuffer(32)),
-                importKey: vi.fn().mockResolvedValue(mockCryptoKey),
-                sign: vi.fn().mockResolvedValue(new ArrayBuffer(256)),
-            } as unknown as SubtleCrypto;
-
-            try {
-                const signed = await signer.sign(email);
-
-                expect(readFile).toHaveBeenCalledWith("/path/to/intermediate.crt", { encoding: "utf8" });
-                expect(signed.text).toBeDefined();
-            } finally {
-                globalThis.crypto.subtle = originalSubtle;
-            }
+            expect(readFile).toHaveBeenCalledWith("/path/to/intermediate.crt", { encoding: "utf8" });
+            expect(signed.text).toBeDefined();
         });
 
         it("should handle text content", async () => {
@@ -415,34 +384,10 @@ describe(SmimeSigner, () => {
 
             const signer = createSmimeSigner(options);
 
-            const mockCryptoKey = {
-                algorithm: { name: "RSASSA-PKCS1-v1_5" },
-            } as CryptoKey;
+            const signed = await signer.sign(email);
 
-            const mockSubtle = {
-                digest: vi.fn().mockResolvedValue(new ArrayBuffer(32)),
-                importKey: vi.fn().mockResolvedValue(mockCryptoKey),
-                sign: vi.fn().mockResolvedValue(new ArrayBuffer(256)),
-            } as unknown as SubtleCrypto;
-
-            Object.defineProperty(globalThis.crypto, "subtle", {
-                configurable: true,
-                value: mockSubtle,
-                writable: true,
-            });
-
-            try {
-                const signed = await signer.sign(email);
-
-                expect(signed.text).toBeDefined();
-                expect(signed.html).toBeUndefined();
-            } finally {
-                Object.defineProperty(globalThis.crypto, "subtle", {
-                    configurable: true,
-                    value: globalThis.crypto.subtle,
-                    writable: true,
-                });
-            }
+            expect(signed.text).toBeDefined();
+            expect(signed.html).toBeUndefined();
         });
 
         it("should throw error for invalid certificate", async () => {

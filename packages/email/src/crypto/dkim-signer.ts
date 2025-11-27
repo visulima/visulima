@@ -54,7 +54,7 @@ const createDkimSignatureHeader = (headers: Record<string, string>, options: Dki
     const headerCanon = options.headerCanon || "simple";
     const bodyCanon = options.bodyCanon || "simple";
     const headersToSign = Object.keys(headers)
-        .filter((h) => !options.headersToIgnore?.includes(h))
+        .filter((h) => !options.headersToIgnore?.some((ignore) => ignore.toLowerCase() === h.toLowerCase()))
         .map((h) => h.toLowerCase())
         .join(":");
 

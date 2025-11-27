@@ -311,6 +311,11 @@ const awsSesProvider: ProviderFactory<AwsSesConfig, unknown, AwsSesEmailOptions>
         message += `Message-ID: ${messageId}\r\n`;
         message += "MIME-Version: 1.0\r\n";
 
+        // Log if replyTo was provided but not supported
+        if (emailOptions.replyTo) {
+            logger.debug("replyTo is not currently supported by AWS SES raw email provider");
+        }
+
         // Add custom headers if provided
         if (emailOptions.headers) {
             const headersRecord = headersToRecord(emailOptions.headers);

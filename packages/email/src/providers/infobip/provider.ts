@@ -136,8 +136,19 @@ const infobipProvider: ProviderFactory<InfobipConfig, unknown, InfobipEmailOptio
             try {
                 logger.debug("Checking Infobip API availability");
 
-                // Infobip doesn't have a simple health check, so we'll assume it's available if API key is present
-                return true;
+                // Use account info endpoint to validate API key
+                const headers: Record<string, string> = {
+                    Authorization: `App ${options.apiKey}`,
+                    "Content-Type": "application/json",
+                };
+
+                const result = await makeRequest(`${options.baseUrl}/account/1/me`, {
+                    headers,
+                    method: "GET",
+                    timeout: options.timeout,
+                });
+
+                return result.success;
             } catch (error) {
                 logger.debug("Error checking availability:", error);
 
@@ -169,7 +180,7 @@ const infobipProvider: ProviderFactory<InfobipConfig, unknown, InfobipEmailOptio
 
                 // Build payload for Infobip API
                 const payload: Record<string, unknown> = {
-                    from: emailOptions.from.email,
+                    from: typeof emailOptions.from === "string" ? emailOptions.from : emailOptions.from.email,
                     subject: emailOptions.subject,
                     to: formatAddressEmails(emailOptions.to),
                 };
@@ -196,7 +207,7 @@ const infobipProvider: ProviderFactory<InfobipConfig, unknown, InfobipEmailOptio
 
                 // Add reply-to
                 if (emailOptions.replyTo) {
-                    payload.replyTo = emailOptions.replyTo.email;
+                    payload.replyTo = typeof emailOptions.replyTo === "string" ? emailOptions.replyTo : emailOptions.replyTo.email;
                 }
 
                 // Add template

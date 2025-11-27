@@ -44,4 +44,5 @@ const createLogger = (providerName: string, logger?: Console): Logger => {
     };
 };
 
+export type { Logger };
 export default createLogger;

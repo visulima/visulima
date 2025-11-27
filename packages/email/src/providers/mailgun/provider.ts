@@ -187,15 +187,13 @@ const mailgunProvider: ProviderFactory<MailgunConfig, unknown, MailgunEmailOptio
                     success: result.success,
                 });
 
-                return Boolean(
-                    result.success
-                    && result.data
-                    && typeof result.data === "object"
-                    && "statusCode" in result.data
-                    && typeof (result.data as { statusCode?: unknown }).statusCode === "number"
-                    && (result.data as { statusCode: number }).statusCode >= 200
-                    && (result.data as { statusCode: number }).statusCode < 300,
-                );
+                if (!result.success || !result.data || typeof result.data !== "object") {
+                    return false;
+                }
+
+                const { statusCode } = result.data as { statusCode?: number };
+
+                return typeof statusCode === "number" && statusCode >= 200 && statusCode < 300;
             } catch (error) {
                 logger.debug("Error checking availability:", error);
 
@@ -330,10 +328,11 @@ const mailgunProvider: ProviderFactory<MailgunConfig, unknown, MailgunEmailOptio
                     // Mailgun requires multipart/form-data for attachments
                     // For now, we'll use form-urlencoded and base64 encode attachments
                     // In a real implementation, you'd use FormData
-                    for (let i = 0; i < emailOptions.attachments.length; i += 1) {
-                        // eslint-disable-next-line no-await-in-loop
-                        const attachmentData = await createMailgunAttachment(emailOptions.attachments[i] as Attachment, PROVIDER_NAME, i);
+                    const attachmentResults = await Promise.all(
+                        emailOptions.attachments.map((attachment, i) => createMailgunAttachment(attachment as Attachment, PROVIDER_NAME, i)),
+                    );
 
+                    for (const attachmentData of attachmentResults) {
                         formData[attachmentData.key] = attachmentData.content;
                     }
                 }
@@ -376,7 +375,7 @@ const mailgunProvider: ProviderFactory<MailgunConfig, unknown, MailgunEmailOptio
 
                 // Mailgun returns message ID in response body
                 const responseBody = (result.data as { body?: { id?: string; message?: string } })?.body;
-                const messageId = responseBody?.id || responseBody?.message || generateMessageId();
+                const messageId = responseBody?.id || generateMessageId();
 
                 logger.debug("Email sent successfully", { messageId });
 

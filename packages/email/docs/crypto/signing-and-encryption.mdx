@@ -134,14 +134,14 @@ const encrypter = createSmimeEncrypter({
     certificates: "/path/to/recipient-certificate.crt",
 });
 
-// Or, different certificates per recipient
-const encrypter = createSmimeEncrypter({
+// Or, use different certificates per recipient
+const perRecipientEncrypter = createSmimeEncrypter({
     certificates: {
         "jane@example.com": "/path/to/jane-certificate.crt",
         "john@example.com": "/path/to/john-certificate.crt",
     },
     // Optional: encryption algorithm
-    // Supported: 'aes-256-cbc', 'aes-192-cbc', 'aes-128-cbc', '3des', 'des-ede3-cbc'
+    // Supported: 'aes-256-cbc', 'aes-192-cbc', 'aes-128-cbc'
     // Default: 'aes-256-cbc'
     // algorithm: "aes-256-cbc",
 });
@@ -162,7 +162,6 @@ const result = await mail.message().to("user@example.com").from("sender@example.
 - `aes-256-cbc` (default) - AES-256 in CBC mode
 - `aes-192-cbc` - AES-192 in CBC mode
 - `aes-128-cbc` - AES-128 in CBC mode
-- `3des` or `des-ede3-cbc` - Triple DES in CBC mode
 
 ## Combining Signing and Encryption
 
@@ -220,8 +219,11 @@ const result = await mail
 | S/MIME Signing    | ✅\*\*  | ✅\*\* | ✅\*\* | ❌\*\*\*           |
 | S/MIME Encryption | ✅\*\*  | ✅\*\* | ✅\*\* | ❌\*\*\*           |
 
-\*DKIM in Cloudflare Workers: Full support - requires `nodejs_compat` flag and key content as strings (no file paths). Uses `unenv` polyfills for `node:crypto` compatibility ([unenv](https://github.com/unjs/unenv)). All required functions (`createHash`, `createSign`, `createPrivateKey`) are available.
-**S/MIME requires Web Crypto API (Node.js 20+, Bun, Deno) and pkijs/asn1js packages. All runtimes use Node.js APIs via compatibility layers where available. \***S/MIME in Cloudflare Workers: Not supported - requires `node:fs/promises` for file reading. Current implementation expects file paths, not strings. Code would need modification to accept strings instead of file paths.
+\* DKIM in Cloudflare Workers: Full support - requires `nodejs_compat` flag and key content as strings (no file paths). Uses `unenv` polyfills for `node:crypto` compatibility ([unenv](https://github.com/unjs/unenv)). All required functions (`createHash`, `createSign`, `createPrivateKey`) are available.
+
+\*\* S/MIME requires Web Crypto API (Node.js 20+, Bun, Deno) and pkijs/asn1js packages. All runtimes use Node.js APIs via compatibility layers where available.
+
+\*\*\* S/MIME in Cloudflare Workers: Not supported - requires `node:fs/promises` for file reading. Current implementation expects file paths, not strings. Code would need modification to accept strings instead of file paths.
 
 ## Examples
 
@@ -332,21 +334,18 @@ import { createMail } from "@visulima/email";
 import { resendProvider } from "@visulima/email/providers/resend";
 import { createDkimSigner } from "@visulima/email/crypto";
 
-// Store private key in environment variable (must be string, not file path)
-const PRIVATE_KEY = env.DKIM_PRIVATE_KEY; // PEM format string
-
-const mail = createMail(resendProvider({ apiKey: env.RESEND_API_KEY }));
-
-const dkimSigner = createDkimSigner({
-    domainName: "example.com",
-    keySelector: "default",
-    privateKey: PRIVATE_KEY, // Must be string, not file:// path
-    // Optional: passphrase for encrypted keys (supported via unenv)
-    // passphrase: env.DKIM_PASSPHRASE,
-});
-
 export default {
     async fetch(request: Request, env: Env): Promise<Response> {
+        const mail = createMail(resendProvider({ apiKey: env.RESEND_API_KEY }));
+
+        const dkimSigner = createDkimSigner({
+            domainName: "example.com",
+            keySelector: "default",
+            privateKey: env.DKIM_PRIVATE_KEY, // Must be string, not file:// path
+            // Optional: passphrase for encrypted keys (supported via unenv)
+            // passphrase: env.DKIM_PASSPHRASE,
+        });
+
         await mail
             .message()
             .to("recipient@example.com")

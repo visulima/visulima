@@ -4,67 +4,65 @@ import EmailError from "../src/errors/email-error";
 import RequiredOptionError from "../src/errors/required-option-error";
 
 describe(EmailError, () => {
-    describe(EmailError, () => {
-        it("should create an EmailError with component and message", () => {
-            expect.assertions(5);
+    it("should create an EmailError with component and message", () => {
+        expect.assertions(5);
 
-            const error = new EmailError("test", "Something went wrong");
+        const error = new EmailError("test", "Something went wrong");
 
-            expect(error).toBeInstanceOf(EmailError);
-            expect(error.component).toBe("test");
-            expect(error.message).toBe("[@visulima/email] [test] Something went wrong");
-            expect(error.name).toBe("EmailError");
-            expect(error.title).toBe("Email test Error");
+        expect(error).toBeInstanceOf(EmailError);
+        expect(error.component).toBe("test");
+        expect(error.message).toBe("[@visulima/email] [test] Something went wrong");
+        expect(error.name).toBe("EmailError");
+        expect(error.title).toBe("Email test Error");
+    });
+
+    it("should include code when provided", () => {
+        expect.assertions(2);
+
+        const error = new EmailError("smtp", "Connection failed", { code: "ECONNREFUSED" });
+
+        expect(error.code).toBe("ECONNREFUSED");
+        expect(error.message).toBe("[@visulima/email] [smtp] Connection failed");
+    });
+
+    it("should include cause when provided", () => {
+        expect.assertions(1);
+
+        const cause = new Error("Network timeout");
+        const error = new EmailError("http", "Request failed", { cause });
+
+        expect(error.cause).toBe(cause);
+    });
+
+    it("should include hint when provided", () => {
+        expect.assertions(1);
+
+        const error = new EmailError("auth", "Invalid credentials", {
+            hint: "Check your API key",
         });
 
-        it("should include code when provided", () => {
-            expect.assertions(2);
+        expect(error.hint).toBe("Check your API key");
+    });
 
-            const error = new EmailError("smtp", "Connection failed", { code: "ECONNREFUSED" });
+    it("should include multiple hints when provided as array", () => {
+        expect.assertions(1);
 
-            expect(error.code).toBe("ECONNREFUSED");
-            expect(error.message).toBe("[@visulima/email] [smtp] Connection failed");
+        const error = new EmailError("config", "Invalid configuration", {
+            hint: ["Check your API key", "Verify your domain settings"],
         });
 
-        it("should include cause when provided", () => {
-            expect.assertions(1);
+        expect(error.hint).toStrictEqual(["Check your API key", "Verify your domain settings"]);
+    });
 
-            const cause = new Error("Network timeout");
-            const error = new EmailError("http", "Request failed", { cause });
+    it("should inherit from VisulimaError", () => {
+        expect.assertions(3);
 
-            expect(error.cause).toBe(cause);
-        });
+        const error = new EmailError("test", "Message");
 
-        it("should include hint when provided", () => {
-            expect.assertions(1);
-
-            const error = new EmailError("auth", "Invalid credentials", {
-                hint: "Check your API key",
-            });
-
-            expect(error.hint).toBe("Check your API key");
-        });
-
-        it("should include multiple hints when provided as array", () => {
-            expect.assertions(1);
-
-            const error = new EmailError("config", "Invalid configuration", {
-                hint: ["Check your API key", "Verify your domain settings"],
-            });
-
-            expect(error.hint).toStrictEqual(["Check your API key", "Verify your domain settings"]);
-        });
-
-        it("should inherit from VisulimaError", () => {
-            expect.assertions(3);
-
-            const error = new EmailError("test", "Message");
-
-            // Test that it has VisulimaError properties/methods
-            expect(error).toHaveProperty("message");
-            expect(error).toHaveProperty("name");
-            expect(error).toHaveProperty("stack");
-        });
+        // Test that it has VisulimaError properties/methods
+        expect(error).toHaveProperty("message");
+        expect(error).toHaveProperty("name");
+        expect(error).toHaveProperty("stack");
     });
 
     describe(RequiredOptionError, () => {

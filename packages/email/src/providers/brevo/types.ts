@@ -36,7 +36,9 @@ export interface BrevoEmailOptions extends EmailOptions {
     replyTo?: EmailAddress;
 
     /**
-     * Scheduled date/time (ISO 8601 format or Unix timestamp)
+     * Scheduled date/time
+     * - If string: ISO 8601 format (e.g., "2025-01-15T10:00:00Z")
+     * - If number: Unix timestamp in seconds (not milliseconds)
      */
     scheduledAt?: string | number;
 

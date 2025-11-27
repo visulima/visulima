@@ -133,8 +133,28 @@ const ahaSendProvider: ProviderFactory<AhaSendConfig, unknown, AhaSendEmailOptio
             try {
                 logger.debug("Checking AhaSend API availability");
 
-                // AhaSend doesn't have a documented health check, so we'll assume it's available if API key is present
-                return true;
+                // Verify API availability using the documented ping endpoint
+                const result = await makeRequest(`${options.endpoint}/v2/ping`, {
+                    headers: {
+                        Authorization: `Bearer ${options.apiKey}`,
+                        "Content-Type": "application/json",
+                    },
+                    method: "GET",
+                    timeout: options.timeout,
+                });
+
+                // Treat 2xx as available, 401/403 as available (API exists, auth may be invalid)
+                if (result.success) {
+                    return true;
+                }
+
+                const statusCode = (result.data as { statusCode?: number })?.statusCode;
+
+                if (statusCode && statusCode >= 400 && statusCode < 500) {
+                    return true; // Endpoint exists, auth/permissions issue
+                }
+
+                return false;
             } catch (error) {
                 logger.debug("Error checking availability:", error);
 

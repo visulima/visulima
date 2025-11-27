@@ -15,7 +15,18 @@ const toBase64 = (content: string | Buffer | Uint8Array): string => {
         const encoder = new TextEncoder();
         const bytes = encoder.encode(content);
 
-        return btoa(String.fromCodePoint(...bytes));
+        // Convert in chunks to avoid stack overflow for large inputs
+        let binaryString = "";
+        const chunkSize = 8192;
+
+        for (let i = 0; i < bytes.length; i += chunkSize) {
+            const chunk = bytes.subarray(i, Math.min(i + chunkSize, bytes.length));
+
+            // eslint-disable-next-line unicorn/prefer-code-point -- fromCharCode is correct for binary data
+            binaryString += String.fromCharCode.apply(undefined, chunk as unknown as number[]);
+        }
+
+        return btoa(binaryString);
     }
 
     if (hasBuffer && content instanceof Buffer) {
@@ -28,7 +39,18 @@ const toBase64 = (content: string | Buffer | Uint8Array): string => {
         return Buffer.from(uint8Array).toString("base64");
     }
 
-    return btoa(String.fromCodePoint(...uint8Array));
+    // Convert in chunks to avoid stack overflow for large inputs
+    let binaryString = "";
+    const chunkSize = 8192;
+
+    for (let i = 0; i < uint8Array.length; i += chunkSize) {
+        const chunk = uint8Array.subarray(i, Math.min(i + chunkSize, uint8Array.length));
+
+        // eslint-disable-next-line unicorn/prefer-code-point -- fromCharCode is correct for binary data
+        binaryString += String.fromCharCode.apply(undefined, chunk as unknown as number[]);
+    }
+
+    return btoa(binaryString);
 };
 
 export default toBase64;

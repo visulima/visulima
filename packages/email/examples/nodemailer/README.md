@@ -141,7 +141,7 @@ const provider = nodemailerProvider({
         },
         // Optional TLS options
         tls: {
-            rejectUnauthorized: false,
+            rejectUnauthorized: false, // WARNING: Only for development! Enable in production.
         },
     },
 });
@@ -228,7 +228,7 @@ tsx custom-transport.ts
 
 - Set `secure: true` for port 465
 - Set `secure: false` for ports 587, 25, etc.
-- For self-signed certificates, set `tls: { rejectUnauthorized: false }`
+- For self-signed certificates in development only, set `tls: { rejectUnauthorized: false }` (never use in production)
 
 ## More Information
 

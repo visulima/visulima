@@ -21,7 +21,8 @@ const main = async () => {
             },
             // Optional: Add TLS options
             tls: {
-                // Do not fail on invalid certs
+                // WARNING: Development only! Do not disable in production.
+                // Only use with self-signed certificates in testing.
                 rejectUnauthorized: false,
             },
         },

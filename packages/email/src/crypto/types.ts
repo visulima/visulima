@@ -58,8 +58,8 @@ export interface SmimeSignOptions {
     intermediateCerts?: string[];
 
     /**
-     * Signing options (bitwise flags for openssl_pkcs7_sign)
-     * Default: PKCS7_DETACHED | PKCS7_BINARY
+     * Signing options flags
+     * Reserved for future use
      */
     options?: number;
 
@@ -80,7 +80,7 @@ export interface SmimeSignOptions {
 export interface SmimeEncryptOptions {
     /**
      * Encryption algorithm (cipher)
-     * Supported: 'aes-256-cbc', 'aes-192-cbc', 'aes-128-cbc', '3des', 'des-ede3-cbc'
+     * Supported: 'aes-256-cbc', 'aes-192-cbc', 'aes-128-cbc'
      * Default: 'aes-256-cbc'
      */
     algorithm?: string;

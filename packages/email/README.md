@@ -922,7 +922,7 @@ import { createMail, mailCrabProvider } from "@visulima/email";
 const mailCrab = mailCrabProvider({});
 
 // Or customize the connection
-const mailCrab = mailCrabProvider({
+const customMailCrab = mailCrabProvider({
     host: "localhost",
     port: 1025, // Default MailCrab port
     secure: false, // Typically false for development

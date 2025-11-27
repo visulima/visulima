@@ -324,7 +324,7 @@ AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE
 AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
 SMTP_USER=user@example.com
 SMTP_PASSWORD=password
-ZEPTOMAIL_TOKEN=Zoho-enczapikey <your_api_key>
+ZEPTOMAIL_TOKEN=Zoho-enczapikey YOUR_API_KEY_HERE
 BREVO_API_KEY=your-brevo-api-key
 MAILJET_API_KEY=your-mailjet-api-key
 MAILJET_API_SECRET=your-mailjet-api-secret
@@ -469,7 +469,7 @@ const failover = failoverProvider({
             password: "password",
         }),
     ],
-    retryAfter: 60, // Wait 60ms before trying next provider
+    retryAfter: 60, // Wait 60 seconds before trying next provider
     timeout: 30000,
     retries: 3,
 });

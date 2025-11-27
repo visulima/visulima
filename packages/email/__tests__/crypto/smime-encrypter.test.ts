@@ -241,45 +241,13 @@ describe(SmimeEncrypter, () => {
 
             const encrypter = createSmimeEncrypter(options);
 
-            // Mock Web Crypto API
-            const mockSubtle = {
-                encrypt: vi.fn().mockResolvedValue(new ArrayBuffer(256)),
-                exportKey: vi.fn().mockResolvedValue(new ArrayBuffer(32)),
-                generateKey: vi.fn().mockResolvedValue({
-                    algorithm: { name: "AES-CBC" },
-                } as CryptoKey),
-                getRandomValues: vi.fn((array: Uint8Array) => {
-                    const result = new Uint8Array(array.length);
+            const encrypted = await encrypter.encrypt(email);
 
-                    for (let i = 0; i < array.length; i += 1) {
-                        result[i] = i % 256;
-                    }
-
-                    return result;
-                }),
-            } as unknown as SubtleCrypto;
-
-            Object.defineProperty(globalThis.crypto, "subtle", {
-                configurable: true,
-                value: mockSubtle,
-                writable: true,
-            });
-
-            try {
-                const encrypted = await encrypter.encrypt(email);
-
-                expect(readFile).toHaveBeenCalledWith("/path/to/certificate.crt", { encoding: "utf8" });
-                expect(encrypted.text).toBeDefined();
-                expect(encrypted.html).toBeUndefined();
-                expect(encrypted.headers).toBeDefined();
-                expect(encrypted.headers["Content-Type"]).toContain("application/pkcs7-mime");
-            } finally {
-                Object.defineProperty(globalThis.crypto, "subtle", {
-                    configurable: true,
-                    value: globalThis.crypto.subtle,
-                    writable: true,
-                });
-            }
+            expect(readFile).toHaveBeenCalledWith("/path/to/certificate.crt", { encoding: "utf8" });
+            expect(encrypted.text).toBeDefined();
+            expect(encrypted.html).toBeUndefined();
+            expect(encrypted.headers).toBeDefined();
+            expect(encrypted.headers["Content-Type"]).toContain("application/pkcs7-mime");
         });
 
         it("should encrypt email with multiple certificates", async () => {
@@ -303,42 +271,11 @@ describe(SmimeEncrypter, () => {
 
             const encrypter = createSmimeEncrypter(options);
 
-            const mockSubtle = {
-                encrypt: vi.fn().mockResolvedValue(new ArrayBuffer(256)),
-                exportKey: vi.fn().mockResolvedValue(new ArrayBuffer(32)),
-                generateKey: vi.fn().mockResolvedValue({
-                    algorithm: { name: "AES-CBC" },
-                } as CryptoKey),
-                getRandomValues: vi.fn((array: Uint8Array) => {
-                    const result = new Uint8Array(array.length);
+            const encrypted = await encrypter.encrypt(email);
 
-                    for (let i = 0; i < array.length; i += 1) {
-                        result[i] = i % 256;
-                    }
-
-                    return result;
-                }),
-            } as unknown as SubtleCrypto;
-
-            Object.defineProperty(globalThis.crypto, "subtle", {
-                configurable: true,
-                value: mockSubtle,
-                writable: true,
-            });
-
-            try {
-                const encrypted = await encrypter.encrypt(email);
-
-                expect(readFile).toHaveBeenCalledWith("/path/to/recipient1.crt", { encoding: "utf8" });
-                expect(readFile).toHaveBeenCalledWith("/path/to/recipient2.crt", { encoding: "utf8" });
-                expect(encrypted.text).toBeDefined();
-            } finally {
-                Object.defineProperty(globalThis.crypto, "subtle", {
-                    configurable: true,
-                    value: globalThis.crypto.subtle,
-                    writable: true,
-                });
-            }
+            expect(readFile).toHaveBeenCalledWith("/path/to/recipient1.crt", { encoding: "utf8" });
+            expect(readFile).toHaveBeenCalledWith("/path/to/recipient2.crt", { encoding: "utf8" });
+            expect(encrypted.text).toBeDefined();
         });
 
         it("should throw error if certificate not found for recipient", async () => {
@@ -380,32 +317,9 @@ describe(SmimeEncrypter, () => {
 
             const encrypter = createSmimeEncrypter(options);
 
-            const mockSubtle = {
-                encrypt: vi.fn().mockResolvedValue(new ArrayBuffer(256)),
-                exportKey: vi.fn().mockResolvedValue(new ArrayBuffer(32)),
-                generateKey: vi.fn().mockResolvedValue({
-                    algorithm: { name: "AES-CBC" },
-                } as CryptoKey),
-                getRandomValues: vi.fn((array: Uint8Array) => array),
-            } as unknown as SubtleCrypto;
+            const encrypted = await encrypter.encrypt(email);
 
-            Object.defineProperty(globalThis.crypto, "subtle", {
-                configurable: true,
-                value: mockSubtle,
-                writable: true,
-            });
-
-            try {
-                const encrypted = await encrypter.encrypt(email);
-
-                expect(encrypted.text).toBeDefined();
-            } finally {
-                Object.defineProperty(globalThis.crypto, "subtle", {
-                    configurable: true,
-                    value: globalThis.crypto.subtle,
-                    writable: true,
-                });
-            }
+            expect(encrypted.text).toBeDefined();
         });
 
         it("should use specified algorithm", async () => {
@@ -427,32 +341,9 @@ describe(SmimeEncrypter, () => {
 
             const encrypter = createSmimeEncrypter(options);
 
-            const mockSubtle = {
-                encrypt: vi.fn().mockResolvedValue(new ArrayBuffer(256)),
-                exportKey: vi.fn().mockResolvedValue(new ArrayBuffer(16)),
-                generateKey: vi.fn().mockResolvedValue({
-                    algorithm: { name: "AES-CBC" },
-                } as CryptoKey),
-                getRandomValues: vi.fn((array: Uint8Array) => array),
-            } as unknown as SubtleCrypto;
+            const encrypted = await encrypter.encrypt(email);
 
-            Object.defineProperty(globalThis.crypto, "subtle", {
-                configurable: true,
-                value: mockSubtle,
-                writable: true,
-            });
-
-            try {
-                const encrypted = await encrypter.encrypt(email);
-
-                expect(encrypted.text).toBeDefined();
-            } finally {
-                Object.defineProperty(globalThis.crypto, "subtle", {
-                    configurable: true,
-                    value: globalThis.crypto.subtle,
-                    writable: true,
-                });
-            }
+            expect(encrypted.text).toBeDefined();
         });
 
         it("should handle text content", async () => {
@@ -473,33 +364,10 @@ describe(SmimeEncrypter, () => {
 
             const encrypter = createSmimeEncrypter(options);
 
-            const mockSubtle = {
-                encrypt: vi.fn().mockResolvedValue(new ArrayBuffer(256)),
-                exportKey: vi.fn().mockResolvedValue(new ArrayBuffer(32)),
-                generateKey: vi.fn().mockResolvedValue({
-                    algorithm: { name: "AES-CBC" },
-                } as CryptoKey),
-                getRandomValues: vi.fn((array: Uint8Array) => array),
-            } as unknown as SubtleCrypto;
+            const encrypted = await encrypter.encrypt(email);
 
-            Object.defineProperty(globalThis.crypto, "subtle", {
-                configurable: true,
-                value: mockSubtle,
-                writable: true,
-            });
-
-            try {
-                const encrypted = await encrypter.encrypt(email);
-
-                expect(encrypted.text).toBeDefined();
-                expect(encrypted.html).toBeUndefined();
-            } finally {
-                Object.defineProperty(globalThis.crypto, "subtle", {
-                    configurable: true,
-                    value: globalThis.crypto.subtle,
-                    writable: true,
-                });
-            }
+            expect(encrypted.text).toBeDefined();
+            expect(encrypted.html).toBeUndefined();
         });
 
         it("should throw error for invalid certificate", async () => {

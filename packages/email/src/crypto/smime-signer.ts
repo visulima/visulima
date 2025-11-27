@@ -73,8 +73,18 @@ const derToPem = (der: ArrayBuffer, type: string): string => {
         base64 = Buffer.from(der).toString("base64");
     } else {
         const bytes = new Uint8Array(der);
+        // Convert in chunks to avoid stack overflow for large inputs
+        let binaryString = "";
+        const chunkSize = 8192;
 
-        base64 = btoa(String.fromCodePoint(...bytes));
+        for (let i = 0; i < bytes.length; i += chunkSize) {
+            const chunk = bytes.subarray(i, Math.min(i + chunkSize, bytes.length));
+
+            // eslint-disable-next-line unicorn/prefer-code-point -- fromCharCode is correct for binary data, not fromCodePoint
+            binaryString += String.fromCharCode.apply(undefined, chunk as unknown as number[]);
+        }
+
+        base64 = btoa(binaryString);
     }
 
     // Split into 64-character lines
@@ -170,7 +180,7 @@ export class SmimeSigner implements EmailSigner {
         }
 
         // Build the email message
-        const message = await this.buildMessage(email);
+        const message = this.buildMessage(email);
         const messageBuffer = new TextEncoder().encode(message);
 
         // Create PKCS#7 signed data
@@ -298,7 +308,7 @@ export class SmimeSigner implements EmailSigner {
      * @param email The email options to build the message from.
      * @returns The formatted email message as a string.
      */
-    private async buildMessage(email: EmailOptions): Promise<string> {
+    private buildMessage(email: EmailOptions): string {
         const lines: string[] = [`From: ${SmimeSigner.formatAddress(email.from)}`, `To: ${this.formatAddresses(email.to)}`];
 
         if (email.cc) {

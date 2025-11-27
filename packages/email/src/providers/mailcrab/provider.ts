@@ -16,7 +16,7 @@ const DEFAULT_PORT = 1025;
  */
 const mailCrabProvider: ProviderFactory<MailCrabConfig, unknown, MailCrabEmailOptions> = defineProvider((config: MailCrabConfig = {} as MailCrabConfig) => {
     const options: Pick<MailCrabConfig, "timeout" | "retries" | "logger"> & Required<Omit<MailCrabConfig, "timeout" | "retries" | "logger">> = {
-        debug: config.debug || false,
+        debug: config.debug ?? false,
         host: config.host || DEFAULT_HOST,
         logger: config.logger,
         port: config.port || DEFAULT_PORT,
