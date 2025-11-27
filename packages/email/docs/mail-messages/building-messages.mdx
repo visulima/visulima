@@ -268,17 +268,18 @@ import { renderHandlebars } from "@visulima/email/template/handlebars";
 
 const mail = createMail(resendProvider({ apiKey: "re_xxx" }));
 
-const result = await mail
+const message = mail
     .message()
     .to({ email: "user@example.com", name: "John Doe" })
     .cc("cc@example.com")
     .from({ email: "sender@example.com", name: "My App" })
     .replyTo("support@example.com")
     .subject("Welcome!")
-    .view(renderHandlebars, "<h1>Hello {{name}}!</h1>", { name: "John" })
-    .attachFromPath("/path/to/welcome.pdf")
-    .header("X-Priority", "1")
-    .send();
+    .view(renderHandlebars, "<h1>Hello {{name}}!</h1>", { name: "John" });
+
+await message.attachFromPath("/path/to/welcome.pdf");
+
+const result = await message.header("X-Priority", "1").send();
 ```
 
 ## Next Steps

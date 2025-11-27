@@ -265,7 +265,7 @@ const azureProvider: ProviderFactory<AzureConfig, unknown, AzureEmailOptions> = 
 
                             if (attachment.content) {
                                 if (typeof attachment.content === "string") {
-                                    content = attachment.content;
+                                    content = Buffer.from(attachment.content, "utf8").toString("base64");
                                 } else if (attachment.content && typeof (attachment.content as PromiseLike<unknown>).then === "function") {
                                     const buffer = await attachment.content;
 
@@ -274,7 +274,10 @@ const azureProvider: ProviderFactory<AzureConfig, unknown, AzureEmailOptions> = 
                                     content = attachment.content.toString("base64");
                                 }
                             } else if (attachment.raw) {
-                                content = typeof attachment.raw === "string" ? attachment.raw : attachment.raw.toString("base64");
+                                content
+                                    = typeof attachment.raw === "string"
+                                        ? Buffer.from(attachment.raw, "utf8").toString("base64")
+                                        : attachment.raw.toString("base64");
                             } else {
                                 throw new EmailError(PROVIDER_NAME, `Attachment ${attachment.filename} has no content`);
                             }

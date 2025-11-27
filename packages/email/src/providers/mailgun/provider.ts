@@ -112,7 +112,7 @@ const mailgunProvider: ProviderFactory<MailgunConfig, unknown, MailgunEmailOptio
 
                 const result = await retry(
                     async () =>
-                        makeRequest(`${options.endpoint}/v3/${options.domain}/events/${id}`, {
+                        makeRequest(`${options.endpoint}/v3/${options.domain}/events?message-id=${encodeURIComponent(id)}&limit=1`, {
                             headers,
                             method: "GET",
                             timeout: options.timeout,
@@ -135,8 +135,13 @@ const mailgunProvider: ProviderFactory<MailgunConfig, unknown, MailgunEmailOptio
 
                 logger.debug("Email details retrieved successfully");
 
+                // Mailgun Events API returns { items: [...] } structure
+                const responseData = result.data as { items?: { message?: { headers?: unknown }; storage?: { url?: string } }[] };
+                const items = responseData?.items || [];
+                const eventData = items.length > 0 ? items[0] : undefined;
+
                 return {
-                    data: (result.data as { body?: unknown })?.body,
+                    data: eventData?.message?.headers || eventData?.storage || undefined,
                     success: true,
                 };
             } catch (error) {

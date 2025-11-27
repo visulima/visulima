@@ -34,11 +34,38 @@ const canonicalizeHeaders = (headers: Record<string, string>, method: "simple" |
  */
 const canonicalizeBody = (body: string, method: "simple" | "relaxed" = "simple"): string => {
     if (method === "simple") {
-        return body.replace(/\r\n$/, "").replace(/\n$/, "");
+        // Simple: Remove empty lines (consecutive CRLFs) at the end, but preserve the CRLF
+        // that terminates the last line of actual content. If no trailing CRLF, add one.
+        const normalized = body.replace(/(\r\n|\r|\n)$/, "\n");
+        // eslint-disable-next-line sonarjs/slow-regex -- Anchored pattern, safe from backtracking
+        const trimmed = normalized.replace(/\n+$/, "");
+
+        return trimmed ? `${trimmed}\n` : "\n";
     }
 
-    // eslint-disable-next-line sonarjs/slow-regex
-    return body.replaceAll("\r\n", "\n").replaceAll("\r", "\n").replaceAll(/\s+\n/g, "\n").replaceAll(/\n\s+/g, "\n").replace(/\n+$/, "\n");
+    // Relaxed: Normalize line endings, reduce whitespace sequences, remove trailing whitespace
+    // per line, remove empty lines at end, but preserve indentation (leading whitespace)
+    let normalized = body.replaceAll("\r\n", "\n").replaceAll("\r", "\n");
+
+    // Process each line: reduce whitespace sequences to single space, remove trailing whitespace
+    const lines = normalized.split("\n");
+    const processedLines = lines.map((line) => {
+        // Reduce sequences of whitespace within a line to a single space
+        // Processing line-by-line limits input size, preventing DoS
+        const normalizedLine = line.replaceAll(/\s+/g, " ");
+
+        // Remove trailing whitespace (but preserve the line itself)
+        // eslint-disable-next-line sonarjs/slow-regex -- Anchored pattern, safe from backtracking
+        return normalizedLine.replace(/[ \t]+$/, "");
+    });
+
+    normalized = processedLines.join("\n");
+
+    // Remove empty lines at the end, but ensure there's at least one \n at the end
+    // eslint-disable-next-line sonarjs/slow-regex -- Anchored pattern, safe from backtracking
+    const trimmed = normalized.replace(/\n+$/, "");
+
+    return trimmed ? `${trimmed}\n` : "\n";
 };
 
 /**

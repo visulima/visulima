@@ -255,7 +255,7 @@ export class SmimeEncrypter implements EmailEncrypter {
 
         envelopedData.encryptedContentInfo.contentEncryptionAlgorithm = new AlgorithmIdentifier({
             algorithmId,
-            algorithmParams: ivArray,
+            algorithmParams: new OctetString({ valueHex: ivArray.buffer }),
         });
 
         const cmsContent = new ContentInfo({

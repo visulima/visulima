@@ -280,8 +280,10 @@ const awsSesProvider: ProviderFactory<AwsSesConfig, unknown, AwsSesEmailOptions>
      */
     const generateMimeMessage = (emailOptions: EmailOptions): string => {
         const boundary = `----=${randomUUID().replaceAll("-", "")}`;
-        const now = new Date().toString();
-        const messageId = `<${randomUUID().replaceAll("-", "")}@${emailOptions.from.email.split("@")[1]}>`;
+        const now = new Date().toUTCString();
+        const domain = emailOptions.from.email.includes("@") ? emailOptions.from.email.split("@")[1] : "localhost";
+        const messageId = `<${randomUUID().replaceAll("-", "")}@${domain}>`;
+        const Buffer = getBuffer();
 
         let message = "";
 
@@ -332,16 +334,16 @@ const awsSesProvider: ProviderFactory<AwsSesConfig, unknown, AwsSesEmailOptions>
         if (emailOptions.text) {
             message += `--${boundary}\r\n`;
             message += "Content-Type: text/plain; charset=UTF-8\r\n";
-            message += "Content-Transfer-Encoding: quoted-printable\r\n\r\n";
-            message += `${emailOptions.text.replaceAll(/([=\r\n])/g, "=$1")}\r\n\r\n`;
+            message += "Content-Transfer-Encoding: base64\r\n\r\n";
+            message += `${Buffer.from(emailOptions.text, "utf8").toString("base64")}\r\n\r\n`;
         }
 
         // Add HTML part if provided
         if (emailOptions.html) {
             message += `--${boundary}\r\n`;
             message += "Content-Type: text/html; charset=UTF-8\r\n";
-            message += "Content-Transfer-Encoding: quoted-printable\r\n\r\n";
-            message += `${emailOptions.html.replaceAll(/([=\r\n])/g, "=$1")}\r\n\r\n`;
+            message += "Content-Transfer-Encoding: base64\r\n\r\n";
+            message += `${Buffer.from(emailOptions.html, "utf8").toString("base64")}\r\n\r\n`;
         }
 
         // Close the MIME message
