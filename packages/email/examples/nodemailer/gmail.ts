@@ -9,17 +9,23 @@ import { createMail } from "@visulima/email";
 import { nodemailerProvider } from "@visulima/email/providers/nodemailer";
 
 const main = async () => {
+    if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
+        console.error("Error: GMAIL_USER and GMAIL_APP_PASSWORD environment variables are required");
+        console.error("Set them in your .env file or export them before running this script");
+        process.exit(1);
+    }
+
     // Create nodemailer provider with Gmail SMTP
     const provider = nodemailerProvider({
         transport: {
             service: "gmail", // Use Gmail service
             auth: {
-                user: process.env.GMAIL_USER || "your-email@gmail.com",
-                pass: process.env.GMAIL_APP_PASSWORD || "your-app-password", // Use App Password, not regular password
+                user: process.env.GMAIL_USER,
+                pass: process.env.GMAIL_APP_PASSWORD, // Use App Password, not regular password
             },
         },
         defaultFrom: {
-            email: process.env.GMAIL_USER || "your-email@gmail.com",
+            email: process.env.GMAIL_USER,
             name: "Your Name",
         },
     });

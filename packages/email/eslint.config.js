@@ -15,6 +15,7 @@ export default createConfig(
             ".secretlintrc.cjs",
             ".prettierrc.cjs",
             "package.json",
+            "__tests__/crypto/fixtures.ts",
             "README.md",
         ],
     },

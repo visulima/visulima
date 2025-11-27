@@ -4,7 +4,7 @@ import generateBoundary from "../../src/utils/generate-boundary";
 
 describe(generateBoundary, () => {
     it("should generate a boundary string", () => {
-        expect.assertions(0);
+        expect.assertions(1);
 
         const boundary = generateBoundary();
 

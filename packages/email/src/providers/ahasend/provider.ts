@@ -148,7 +148,8 @@ const ahaSendProvider: ProviderFactory<AhaSendConfig, unknown, AhaSendEmailOptio
                     return true;
                 }
 
-                const statusCode = (result.data as { statusCode?: number })?.statusCode;
+                // Check status code from error response if available
+                const statusCode = (result.data as { statusCode?: number })?.statusCode ?? (result.error as { statusCode?: number })?.statusCode;
 
                 if (statusCode === 401 || statusCode === 403) {
                     // API reachable but credentials invalid.

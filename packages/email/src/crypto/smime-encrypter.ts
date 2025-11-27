@@ -86,6 +86,42 @@ const derToPem = (der: ArrayBuffer, type: string): string => {
  */
 export class SmimeEncrypter implements EmailEncrypter {
     /**
+     * Collects and normalizes all recipients (to, cc, bcc) from email options.
+     * Normalizes each to an array, extracts email addresses, and deduplicates.
+     * @param email The email options containing recipients.
+     * @returns An array of unique email addresses (strings).
+     */
+    private static collectRecipients(email: EmailOptions): string[] {
+        const emailAddresses: string[] = [];
+
+        // Helper to normalize and extract email addresses from a recipient field
+        const extractEmails = (recipients: EmailAddress | EmailAddress[] | undefined): void => {
+            if (!recipients) {
+                return;
+            }
+
+            const normalized = Array.isArray(recipients) ? recipients : [recipients];
+
+            for (const recipient of normalized) {
+                // Handle both string (for backward compatibility) and EmailAddress object
+                const emailAddress = typeof recipient === "string" ? recipient : recipient.email;
+
+                if (emailAddress) {
+                    emailAddresses.push(emailAddress);
+                }
+            }
+        };
+
+        // Collect from to, cc, and bcc
+        extractEmails(email.to);
+        extractEmails(email.cc);
+        extractEmails(email.bcc);
+
+        // Deduplicate by converting to Set and back to array
+        return [...new Set(emailAddresses)];
+    }
+
+    /**
      * Formats an email address for use in email headers.
      * @param address The email address to format (string or EmailAddress object).
      * @returns The formatted email address string in RFC 5322 format.
@@ -130,7 +166,8 @@ export class SmimeEncrypter implements EmailEncrypter {
      * @throws {Error} When encryption fails (e.g., invalid certificate).
      */
     public async encrypt(email: EmailOptions): Promise<EmailOptions> {
-        const recipients = Array.isArray(email.to) ? email.to : [email.to];
+        // Collect all recipients (to, cc, bcc) and deduplicate
+        const recipients = SmimeEncrypter.collectRecipients(email);
         const certificates: Certificate[] = [];
 
         if (typeof this.options.certificates === "string") {
@@ -144,8 +181,7 @@ export class SmimeEncrypter implements EmailEncrypter {
 
             certificates.push(new Certificate({ schema: asn1.result }));
         } else {
-            const certPromises = recipients.map(async (recipient) => {
-                const emailAddress = typeof recipient === "string" ? recipient : recipient.email;
+            const certPromises = recipients.map(async (emailAddress) => {
                 const certPath = (this.options.certificates as Record<string, string>)[emailAddress];
 
                 if (!certPath) {
@@ -323,10 +359,10 @@ export class SmimeEncrypter implements EmailEncrypter {
 
         lines.push("");
 
-        if (email.text) {
-            lines.push(email.text);
-        } else if (email.html) {
+        if (email.html) {
             lines.push(email.html);
+        } else if (email.text) {
+            lines.push(email.text);
         }
 
         return lines.join("\r\n");

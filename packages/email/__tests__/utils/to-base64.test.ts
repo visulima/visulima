@@ -29,12 +29,11 @@ describe(toBase64, () => {
         });
 
         it("should encode unicode string", () => {
-            expect.assertions(2);
+            expect.assertions(1);
 
             const result = toBase64("Hello 世界");
 
-            expect(result).toBeDefined();
-            expect(result.length).toBeGreaterThan(0);
+            expect(result).toBe("SGVsbG8g5LiW55WM");
         });
     });
 
