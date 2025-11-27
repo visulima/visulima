@@ -54,7 +54,10 @@ export const parseContentDispositionValue = (contentDisposition: string | null |
     let equalsIndex = filenameIndex + 8; // "filename" is 8 chars
 
     // Skip optional asterisk and whitespace
-    while (equalsIndex < searchString.length && (searchString[equalsIndex] === "*" || searchString[equalsIndex] === " " || searchString[equalsIndex] === "\t")) {
+    while (
+        equalsIndex < searchString.length
+        && (searchString[equalsIndex] === "*" || searchString[equalsIndex] === " " || searchString[equalsIndex] === "\t")
+    ) {
         equalsIndex++;
     }
 

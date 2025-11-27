@@ -270,7 +270,7 @@ abstract class BaseHandlerFetch<TFile extends UploadFile> extends BaseHandlerCor
         } else if (typeof body === "string") {
             responseBody = body;
         } else if (body instanceof Buffer) {
-            responseBody = body;
+            responseBody = new Uint8Array(body);
         } else if (body && typeof body === "object") {
             responseBody = JSON.stringify(body);
 
@@ -381,8 +381,8 @@ abstract class BaseHandlerFetch<TFile extends UploadFile> extends BaseHandlerCor
      * @param supportedTypes Array of supported MIME types to match against.
      * @returns Best matching content type or undefined if no match found.
      */
-    public override negotiateContentType(request: Request, supportedTypes: string[]): string | undefined {
-        return super.negotiateContentType(request.headers.get("accept") || undefined, supportedTypes);
+    public negotiateContentType(request: Request, supportedTypes: string[]): string | undefined {
+        return super.negotiateContentTypeFromHeader(request.headers.get("accept") || undefined, supportedTypes);
     }
 }
 

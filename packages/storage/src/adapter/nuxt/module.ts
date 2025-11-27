@@ -1,6 +1,5 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 
-import type { Nuxt, NuxtModule } from "@nuxt/kit";
 import { defineNuxtModule } from "@nuxt/kit";
 
 import type { UploadOptions } from "../../handler/types";
@@ -18,10 +17,13 @@ interface NitroEvent {
 }
 
 // Store handlers at module level so they persist across Nitro initialization
-const handlerStorage = new Map<string, {
-    handler: any;
-    setCorsHeaders: (event: NitroEvent) => void;
-}>();
+const handlerStorage = new Map<
+    string,
+    {
+        handler: any;
+        setCorsHeaders: (event: NitroEvent) => void;
+    }
+>();
 
 /**
  * CORS configuration for upload endpoints
@@ -59,7 +61,7 @@ export interface ModuleOptions {
     tusOptions?: Omit<UploadOptions<UploadFile>, "storage">;
 }
 
-export default defineNuxtModule<ModuleOptions>({
+const nuxtModule: any = defineNuxtModule<ModuleOptions>({
     defaults: {
         basePath: "/api/upload",
         cors: {
@@ -78,7 +80,7 @@ export default defineNuxtModule<ModuleOptions>({
         configKey: "storage",
         name: "@visulima/storage",
     },
-    async setup(options: ModuleOptions, nuxt: Nuxt) {
+    async setup(options: ModuleOptions, nuxt: any) {
         const {
             basePath = "/api/upload",
             cors = {
@@ -136,7 +138,7 @@ export default defineNuxtModule<ModuleOptions>({
         }
 
         // Set up route rules for CORS
-        nuxt.hook("nitro:config", (nitroConfig) => {
+        nuxt.hook("nitro:config", (nitroConfig: any) => {
             const routeRules = nitroConfig.routeRules || {};
 
             if (multipartHandler) {
@@ -155,8 +157,8 @@ export default defineNuxtModule<ModuleOptions>({
         });
 
         // Use nitro:init to add route handlers via request hook
-        nuxt.hook("nitro:init", (nitro) => {
-            nitro.hooks.hook("request", async (event) => {
+        nuxt.hook("nitro:init", (nitro: any) => {
+            nitro.hooks.hook("request", async (event: any) => {
                 const url = event.node.req.url || "";
 
                 // Check if this URL matches any of our stored handlers
@@ -171,4 +173,6 @@ export default defineNuxtModule<ModuleOptions>({
             });
         });
     },
-}) as NuxtModule<ModuleOptions, ModuleOptions, false>;
+});
+
+export default nuxtModule;

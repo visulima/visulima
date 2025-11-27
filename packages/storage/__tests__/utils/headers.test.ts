@@ -322,10 +322,7 @@ describe("headers", () => {
             it("should return preferred media type from accept header", () => {
                 expect.assertions(1);
 
-                const result = HeaderUtilities.getPreferredMediaType("application/json, text/html", [
-                    "application/json",
-                    "text/html",
-                ]);
+                const result = HeaderUtilities.getPreferredMediaType("application/json, text/html", ["application/json", "text/html"]);
 
                 expect(result).toBe("application/json");
             });

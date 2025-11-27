@@ -67,7 +67,7 @@ export interface IncomingMessageWithBody<T = unknown> extends IncomingMessage {
 export type Header = string[] | number | string;
 export type Headers = Record<string, Header>;
 
-export type ResponseBody = Record<string, unknown> | string;
+export type ResponseBody = Record<string, unknown> | string | Buffer | Uint8Array;
 export type ResponseBodyType = "json" | "text";
 
 /**

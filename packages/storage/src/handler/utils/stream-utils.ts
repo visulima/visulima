@@ -75,10 +75,10 @@ export const createRangeLimitedStream = (sourceStream: Readable, start: number, 
  * @param destination Destination response stream to pipe to
  * @param sendError Function to send error responses
  */
-export const pipeWithBackpressure = (
+export const pipeWithBackpressure = <TResponse extends ServerResponse>(
     source: Readable,
-    destination: ServerResponse,
-    sendError: (response: ServerResponse, error: Error) => Promise<void>,
+    destination: TResponse,
+    sendError: (response: TResponse, error: Error) => Promise<void>,
 ): void => {
     let isDestroyed = false;
 

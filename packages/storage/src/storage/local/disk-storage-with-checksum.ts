@@ -158,7 +158,7 @@ class DiskStorageWithChecksum<TFile extends File = File> extends DiskStorage<TFi
 
             await this.onError(httpError);
 
-            return throwErrorCode(ERRORS.FILE_ERROR, httpError.message);
+            return throwErrorCode(ERRORS.FILE_ERROR, (typeof httpError.message === "string" ? httpError.message : String(error)) || String(error));
         }
     }
 

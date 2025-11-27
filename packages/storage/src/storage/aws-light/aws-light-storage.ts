@@ -154,7 +154,8 @@ class AwsLightStorage extends S3BaseStorage<AwsLightFile> {
             await this.checkIfExpired({ expiredAt: Expires } as AwsLightFile);
 
             // Body from adapter is ReadableStream, convert to Readable
-            const stream: Readable = Body instanceof ReadableStream ? Readable.fromWeb(Body as ReadableStream<Uint8Array>) : (Body as Readable);
+            const stream: Readable
+                = Body instanceof ReadableStream ? Readable.fromWeb(Body as unknown as import("node:stream/web").ReadableStream<Uint8Array>) : (Body as Readable);
 
             const readableStream = new Readable({
                 read() {

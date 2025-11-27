@@ -92,12 +92,15 @@ export const createSolidStartHandler = <TFile extends UploadFile>(config: SolidS
             const errorObject = error as { message?: string; status?: string; statusCode?: number };
             const statusCode = errorObject.statusCode || (errorObject.status ? Number.parseInt(errorObject.status, 10) : undefined) || 500;
 
-            return Response.json({ error: errorObject.message || "Request failed" }, {
-                headers: {
-                    "Content-Type": "application/json",
+            return Response.json(
+                { error: errorObject.message || "Request failed" },
+                {
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    status: statusCode,
                 },
-                status: statusCode,
-            });
+            );
         }
     };
 

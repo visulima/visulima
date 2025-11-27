@@ -64,13 +64,20 @@ export class Tus<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
                     maxUploadSize: number;
                     tusExtension: string[];
                     update: (options: { id: string }, updates: { id?: string; metadata?: Record<string, unknown>; size?: number }) => Promise<TFile>;
-                    write: (options: { body: unknown; checksum?: string; checksumAlgorithm?: string; contentLength: number; id: string; start: number }) => Promise<TFile>;
+                    write: (options: {
+                        body: unknown;
+                        checksum?: string;
+                        checksumAlgorithm?: string;
+                        contentLength: number;
+                        id: string;
+                        start: number;
+                    }) => Promise<TFile>;
                 };
             }
 
             // eslint-disable-next-line class-methods-use-this
             protected override get disableTerminationForFinishedUploads() {
-                return tusInstance.disableTerminationForFinishedUploads;
+                return tusInstance.disableTerminationForFinishedUploads ?? false;
             }
 
             // eslint-disable-next-line class-methods-use-this

@@ -19,7 +19,7 @@ import type { HttpError } from "../../utils/types";
 import type MetaStorage from "../meta-storage";
 import { BaseStorage, defaultFilesystemFileNameValidation } from "../storage";
 import type { DiskStorageOptions } from "../types";
-import type { FileInit, FilePart, FileQuery } from "../utils/file";
+import type { FileInit, FilePart, FileQuery, UploadEventType } from "../utils/file";
 import { File, getFileStatus, hasContent, partMatch, updateSize } from "../utils/file";
 import type { FileReturn } from "../utils/file/types";
 import LocalMetaStorage from "./local-meta-storage";
@@ -154,7 +154,7 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
                 const httpError = this.normalizeError(error instanceof Error ? error : new Error(String(error)));
 
                 await this.onError(httpError);
-                throwErrorCode(ERRORS.FILE_ERROR, httpError.message);
+                throwErrorCode(ERRORS.FILE_ERROR, httpError.message as string);
             }
 
             file.status = getFileStatus(file);
@@ -256,7 +256,7 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
 
                     // Create lazyWritePart ensuring body stream and signal are preserved
                     const signalFromPart = (part as FilePart & { signal?: AbortSignal }).signal;
-                    const lazyWritePart: FilePart & { signal?: AbortSignal } = { ...file, ...part, body: part.body };
+                    const lazyWritePart = { ...file, ...part, body: part.body } as FilePart & TFile & { signal?: AbortSignal };
 
                     // Explicitly preserve body stream reference and signal
 
@@ -264,7 +264,7 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
                         lazyWritePart.signal = signalFromPart;
                     }
 
-                    const [bytesWritten, errorCode] = await this.lazyWrite(lazyWritePart);
+                    const [bytesWritten, errorCode] = await this.lazyWrite(lazyWritePart as FilePart & TFile);
 
                     if (errorCode) {
                         await truncate(path, file.bytesWritten);
@@ -278,7 +278,7 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
                     file.bytesWritten = Math.max(file.bytesWritten || 0, expectedBytesWritten);
                     // Also update with the actual bytes written from lazyWrite
                     file.bytesWritten = Math.max(file.bytesWritten || 0, bytesWritten);
-                    const previousStatus = file.status;
+                    const previousStatus = file.status as UploadEventType | undefined;
 
                     file.status = getFileStatus(file);
 
@@ -287,7 +287,10 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
                     // Call onComplete hook when file status becomes "completed"
                     // Note: onComplete in storage layer doesn't have request/response context
                     // It's only called from handlers with full context
-                    if (file.status === "completed" && previousStatus !== "completed") {
+                    const currentStatus = file.status;
+                    const wasNotCompletedBefore = previousStatus !== undefined && (previousStatus as string) !== "completed";
+
+                    if (currentStatus === "completed" && wasNotCompletedBefore) {
                         // Storage-level onComplete is a no-op since it doesn't have response context
                         // The actual onComplete is called from handlers with response object
                     }
@@ -302,7 +305,7 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
 
                 await this.onError(httpError);
 
-                return throwErrorCode(ERRORS.FILE_ERROR, httpError.message);
+                return throwErrorCode(ERRORS.FILE_ERROR, (typeof httpError.message === "string" ? httpError.message : String(error)) || String(error));
             } finally {
                 await this.unlock(path);
             }
@@ -337,7 +340,7 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
 
                     await this.onError(httpError);
 
-                    return throwErrorCode(ERRORS.FILE_NOT_FOUND, httpError.message);
+                    return throwErrorCode(ERRORS.FILE_NOT_FOUND, (typeof httpError.message === "string" ? httpError.message : String(error)) || String(error));
                 }
 
                 const httpError = this.normalizeError(error instanceof Error ? error : new Error(String(error)));
@@ -395,7 +398,7 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
                 const httpError = this.normalizeError(error instanceof Error ? error : new Error(String(error)));
 
                 await this.onError(httpError);
-                throw throwErrorCode(ERRORS.FILE_NOT_FOUND, httpError.message);
+                throw throwErrorCode(ERRORS.FILE_NOT_FOUND, (typeof httpError.message === "string" ? httpError.message : String(error)) || String(error));
             }
         });
     }

@@ -256,7 +256,7 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile, FileReturn> {
             file.status = "deleted";
 
             try {
-                await this.retry(() => this.store.delete(file.pathname));
+                await this.retry(() => this.store.delete(file.pathname as string));
             } catch (error) {
                 this.logger?.error("Failed to delete blob from Netlify Blob:", error);
 
@@ -285,13 +285,23 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile, FileReturn> {
 
             // Fetch the blob from Netlify Blob
             // Note: Netlify Blobs returns Blob or null
-            const blob = await this.retry(() => this.store.get(file.pathname, { type: "blob" }));
+            const blob = await this.retry(() => this.store.get(file.pathname as string, { type: "blob" }));
 
             if (!blob) {
                 throw new Error("File not found in Netlify Blob");
             }
 
-            const arrayBuffer = await this.retry(() => blob.arrayBuffer());
+            // Handle both Blob object and string types
+            let arrayBuffer: ArrayBuffer;
+
+            if (typeof blob === "string") {
+                arrayBuffer = Buffer.from(blob, "utf8").buffer;
+            } else if (blob && typeof blob === "object" && "arrayBuffer" in blob && typeof blob.arrayBuffer === "function") {
+                arrayBuffer = await this.retry(() => blob.arrayBuffer());
+            } else {
+                throw new Error("Invalid blob type returned from Netlify Blob");
+            }
+
             const content = Buffer.from(arrayBuffer);
 
             // Get metadata - Netlify Blobs stores metadata separately
@@ -345,7 +355,7 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile, FileReturn> {
             }
 
             // Get the source blob
-            const sourceBlob = await this.retry(() => this.store.get(sourceFile.pathname, { type: "blob" }));
+            const sourceBlob = await this.retry(() => this.store.get(sourceFile.pathname as string, { type: "blob" }));
 
             if (!sourceBlob) {
                 throw new Error("Source file not found in Netlify Blob");
@@ -356,17 +366,30 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile, FileReturn> {
             let sourceMetadata: { contentType?: string; metadata?: Record<string, unknown> } | null = null;
 
             try {
-                sourceMetadata
-                    = await (
-                        this.store as { getMetadata?: (key: string) => Promise<{ contentType?: string; metadata?: Record<string, unknown> } | null> }
-                    ).getMetadata?.(sourceFile.pathname) || null;
+                const storeWithMetadata = this.store as {
+                    getMetadata?: (key: string) => Promise<{ contentType?: string; metadata?: Record<string, unknown> } | null>;
+                };
+
+                if (storeWithMetadata.getMetadata && sourceFile.pathname) {
+                    sourceMetadata = await storeWithMetadata.getMetadata(sourceFile.pathname);
+                }
             } catch {
                 // Metadata retrieval not supported, use file metadata
             }
 
             // Copy by setting the destination with source content
-            const sourceBlobWithArrayBuffer = sourceBlob as { arrayBuffer: () => Promise<ArrayBuffer> };
-            const arrayBuffer = await this.retry(() => sourceBlobWithArrayBuffer.arrayBuffer());
+            let arrayBuffer: ArrayBuffer;
+
+            if (typeof sourceBlob === "string") {
+                arrayBuffer = Buffer.from(sourceBlob, "utf8").buffer;
+            } else if (sourceBlob && typeof sourceBlob === "object" && "arrayBuffer" in sourceBlob) {
+                const blobWithArrayBuffer = sourceBlob as { arrayBuffer: () => Promise<ArrayBuffer> };
+
+                arrayBuffer = await this.retry(() => blobWithArrayBuffer.arrayBuffer());
+            } else {
+                throw new Error("Invalid blob type returned from Netlify Blob");
+            }
+
             const buffer = Buffer.from(arrayBuffer);
 
             // Convert Buffer to ArrayBuffer for Netlify Blob API

@@ -11,10 +11,12 @@ export default defineConfig({
             path: "./LICENSE.md",
         },
         copy: {
-            targets:  [{
-                dest: "./adapter/nuxt",
-                src: "./src/adapter/nuxt/package.json",
-            }]
+            targets: [
+                {
+                    dest: "./adapter/nuxt",
+                    src: "./src/adapter/nuxt/package.json",
+                },
+            ],
         },
     },
     transformer,

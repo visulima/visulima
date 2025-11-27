@@ -185,7 +185,7 @@ abstract class BaseHandlerCore<TFile extends UploadFile> extends EventEmitter {
      * @returns Best matching content type or undefined if no match found
      */
     // eslint-disable-next-line class-methods-use-this
-    public negotiateContentType(acceptHeader: string | undefined, supportedTypes: string[]): string | undefined {
+    public negotiateContentTypeFromHeader(acceptHeader: string | undefined, supportedTypes: string[]): string | undefined {
         if (!acceptHeader) {
             return undefined;
         }

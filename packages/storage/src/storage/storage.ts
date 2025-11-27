@@ -243,14 +243,22 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
                     return true;
                 }
 
-                const fileSize = Number(file.size);
+                const fileSizeValue = (file as { size?: unknown }).size;
 
-                // Reject negative sizes
-                if (fileSize < 0) {
+                if (fileSizeValue === undefined || fileSizeValue === null) {
                     return false;
                 }
 
-                return fileSize <= this.value;
+                const fileSize = typeof fileSizeValue === "number" ? fileSizeValue : Number(fileSizeValue);
+
+                // Reject negative sizes or NaN
+                if (Number.isNaN(fileSize) || fileSize < 0) {
+                    return false;
+                }
+
+                const maxSize = typeof this.value === "number" ? this.value : Number(this.value);
+
+                return !Number.isNaN(maxSize) && fileSize <= maxSize;
             },
             response: ErrorMap.RequestEntityTooLarge as HttpError,
             value: this.maxUploadSize,

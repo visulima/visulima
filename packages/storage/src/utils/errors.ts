@@ -125,11 +125,23 @@ export const isUploadError = (error: unknown): error is UploadError => !!(error 
  * @param detail Optional additional error details
  * @throws UploadError with the specified code and message
  */
-export const throwErrorCode = (UploadErrorCode: string, detail?: string): never => {
-    const errorResponse = ErrorMap[UploadErrorCode as ERRORS];
-    const error = new UploadError(detail || errorResponse?.message || ERRORS.UNKNOWN_ERROR);
+export const throwErrorCode = (UploadErrorCode: ERRORS | string, detail?: string): never => {
+    const errorCode = UploadErrorCode as ERRORS;
+    let errorResponse: HttpError | undefined;
 
-    error.UploadErrorCode = UploadErrorCode as ERRORS;
+    if (errorCode && typeof errorCode === "string" && errorCode in ErrorMap) {
+        errorResponse = ErrorMap[errorCode];
+    }
+
+    const message
+        = detail
+            || (errorResponse?.body && typeof errorResponse.body === "object" && "message" in errorResponse.body
+                ? (errorResponse.body as { message: string }).message
+                : undefined)
+            || ERRORS.UNKNOWN_ERROR;
+    const error = new UploadError(errorCode, message);
+
+    error.UploadErrorCode = errorCode;
 
     if (typeof detail === "string") {
         error.detail = detail;

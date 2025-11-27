@@ -41,7 +41,7 @@ abstract class BaseTransformer<
         this.config = config;
         this.logger = logger;
 
-        this.cache = config.cache ?? new NoOpCache();
+        this.cache = (config.cache ?? new NoOpCache()) as Cache<string, CacheValue>;
     }
 
     /**

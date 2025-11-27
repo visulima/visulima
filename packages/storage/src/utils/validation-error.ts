@@ -5,6 +5,19 @@ import type { Headers, HttpErrorBody, ValidationError as IValidationError } from
  * Implements the ValidationError interface for consistent error handling.
  */
 class ValidationError extends Error implements IValidationError {
+    public readonly code: string;
+
+    public readonly statusCode: number;
+
+    public readonly body: HttpErrorBody;
+
+    public readonly headers: Headers;
+
+    public override readonly name: string = "ValidationError";
+
+    // Satisfy UploadResponse interface (from HttpError)
+    [key: string]: unknown;
+
     /**
      * Creates a new ValidationError instance.
      * @param code Machine-readable error code
@@ -12,15 +25,15 @@ class ValidationError extends Error implements IValidationError {
      * @param body Error response body (string or structured object)
      * @param headers HTTP headers to include in error response
      */
-    public constructor(
-        public code: string,
-        public statusCode: number,
-        public body: HttpErrorBody,
-        public headers: Headers,
-    ) {
-        super(typeof body === "string" ? body : body?.message);
+    public constructor(code: string, statusCode: number, body: HttpErrorBody, headers: Headers) {
+        const message = typeof body === "string" ? body : body?.message || "Validation error";
 
-        this.name = "ValidationError" as const;
+        super(message);
+
+        this.code = code;
+        this.statusCode = statusCode;
+        this.body = body;
+        this.headers = headers;
     }
 }
 

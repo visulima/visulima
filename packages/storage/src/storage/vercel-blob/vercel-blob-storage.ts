@@ -280,7 +280,14 @@ class VercelBlobStorage extends BaseStorage<VercelBlobFile, FileReturn> {
                 access: "public",
             });
 
-            return result;
+            // Convert CopyBlobResult to VercelBlobFile
+            return {
+                ...sourceFile,
+                id: destination,
+                name: destination,
+                pathname: result.pathname,
+                url: result.url,
+            } as VercelBlobFile;
         });
     }
 

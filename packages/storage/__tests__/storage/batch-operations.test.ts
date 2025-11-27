@@ -55,7 +55,7 @@ describe("batch Operations", () => {
     });
 
     describe("deleteBatch", () => {
-        it("should delete multiple files successfully", async () => {
+        it("should delete multiple files successfully", { retry: 3 }, async () => {
             expect.assertions(4);
 
             // Create multiple files

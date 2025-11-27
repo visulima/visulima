@@ -208,7 +208,7 @@ export const handleGetRequest = async <TFile extends UploadFile>(
             const hasTransformationParameters = Object.keys(queryParameters).length > 0 && mediaTransformer;
 
             if (hasTransformationParameters && mediaTransformer) {
-                const transformed = await handleTransformationRequest(mediaTransformer, uuid, queryParameters);
+                const transformed = await handleTransformationRequest<TFile>(mediaTransformer, uuid, queryParameters);
 
                 if (transformed) {
                     return transformed;

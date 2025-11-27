@@ -58,7 +58,14 @@ export class Tus<
                     maxUploadSize: number;
                     tusExtension: string[];
                     update: (options: { id: string }, updates: { id?: string; metadata?: Record<string, unknown>; size?: number }) => Promise<TFile>;
-                    write: (options: { body: unknown; checksum?: string; checksumAlgorithm?: string; contentLength: number; id: string; start: number }) => Promise<TFile>;
+                    write: (options: {
+                        body: unknown;
+                        checksum?: string;
+                        checksumAlgorithm?: string;
+                        contentLength: number;
+                        id: string;
+                        start: number;
+                    }) => Promise<TFile>;
                 };
             }
 
@@ -229,10 +236,7 @@ export class Tus<
      * @param response Node.js ServerResponse to send response to
      * @param uploadResponse Response data with body, headers, and status code
      */
-    public override send(
-        response: NodeResponse,
-        { body = "", headers = {}, statusCode = 200 }: { body?: unknown; headers?: Record<string, string | number>; statusCode?: number },
-    ): void {
+    public override send(response: NodeResponse, { body = "", headers = {}, statusCode = 200 }: UploadResponse): void {
         const uploadResponse: UploadResponse = {
             body: body as ResponseBody | undefined,
             headers: {
