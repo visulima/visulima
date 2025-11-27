@@ -6,7 +6,7 @@ import { useTransformMetadata } from "../../src/react/use-transform-metadata";
 import { renderHookWithQueryClient } from "./test-utils";
 
 // Mock fetch globally
-const mockFetch = vi.fn();
+const mockFetch = vi.fn<Parameters<typeof fetch>, ReturnType<typeof fetch>>();
 let originalFetch: typeof globalThis.fetch | undefined;
 
 describe(useTransformMetadata, () => {
@@ -28,7 +28,7 @@ describe(useTransformMetadata, () => {
         if (originalFetch) {
             globalThis.fetch = originalFetch;
         } else {
-            delete (globalThis as any).fetch;
+            delete (globalThis as { fetch?: typeof fetch }).fetch;
         }
 
         vi.restoreAllMocks();
@@ -59,15 +59,15 @@ describe(useTransformMetadata, () => {
             expect(result.current.isLoading).toBe(false);
         });
 
-        expect(result.current.data).toEqual(mockMetadata);
+        expect(result.current.data).toStrictEqual(mockMetadata);
         expect(result.current.error).toBeUndefined();
-        expect(result.current.data?.formats).toEqual(["jpeg", "png", "webp"]);
+        expect(result.current.data?.formats).toStrictEqual(["jpeg", "png", "webp"]);
     });
 
     it("should call onSuccess callback", async () => {
         expect.assertions(2);
 
-        const onSuccess = vi.fn();
+        const onSuccess = vi.fn<[unknown], void>();
         const mockMetadata = {
             formats: ["jpeg", "png"],
             parameters: ["width", "height"],
@@ -95,7 +95,7 @@ describe(useTransformMetadata, () => {
     it("should handle error and call onError callback", async () => {
         expect.assertions(2);
 
-        const onError = vi.fn();
+        const onError = vi.fn<[Error], void>();
 
         mockFetch.mockResolvedValueOnce({
             json: async () => {
@@ -149,7 +149,7 @@ describe(useTransformMetadata, () => {
             expect(result.current.isLoading).toBe(false);
         });
 
-        expect(result.current.data).toEqual({
+        expect(result.current.data).toStrictEqual({
             formats: ["jpeg"],
             parameters: undefined,
         });

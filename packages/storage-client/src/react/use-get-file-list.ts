@@ -61,12 +61,20 @@ export const useGetFileList = (options: UseGetFileListOptions): UseGetFileListRe
             const data = await fetchJson<FileListResponse | FileMeta[]>(url);
 
             // Handle both paginated and non-paginated responses
-            return Array.isArray(data)
-                ? { data }
-                : {
-                    data: data.data || (data as unknown as FileMeta[]),
-                    meta: (data as FileListResponse).meta,
-                };
+            if (Array.isArray(data)) {
+                return { data };
+            }
+
+            const response = data as FileListResponse;
+            const result: FileListResponse = {
+                data: response.data || (data as unknown as FileMeta[]),
+            };
+
+            if (response.meta) {
+                result.meta = response.meta;
+            }
+
+            return result;
         },
         queryKey: storageQueryKeys.files.list(endpoint, { limit, page }),
     });

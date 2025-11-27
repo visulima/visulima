@@ -13,7 +13,7 @@ import {
 } from "../../src/core/query-client";
 
 // Mock fetch globally
-const mockFetch = vi.fn();
+const mockFetch = vi.fn<Parameters<typeof fetch>, ReturnType<typeof fetch>>();
 
 // Mock XMLHttpRequest
 class MockXMLHttpRequest {
@@ -25,10 +25,8 @@ class MockXMLHttpRequest {
 
     public responseText = "";
 
-    private eventListeners = new Map<string, Set<(event: Event) => void>>();
-
     public upload = {
-        addEventListener: vi.fn((_event: string, handler: (event: ProgressEvent) => void) => {
+        addEventListener: vi.fn<[string, (event: ProgressEvent) => void], void>((_event: string, handler: (event: ProgressEvent) => void) => {
             // Simulate progress
             setTimeout(() => {
                 const progressEvent = {
@@ -40,12 +38,12 @@ class MockXMLHttpRequest {
                 handler(progressEvent);
             }, 10);
         }),
-        removeEventListener: vi.fn(),
+        removeEventListener: vi.fn<[string, (event: ProgressEvent) => void], void>(),
     };
 
-    public open = vi.fn();
+    public open = vi.fn<[string, string | URL, boolean?, string?, string?], void>();
 
-    public send = vi.fn(() => {
+    public send = vi.fn<[Document | XMLHttpRequestBodyInit | null?], void>(() => {
         setTimeout(() => {
             this.readyState = 4;
             this.status = 200;
@@ -57,9 +55,9 @@ class MockXMLHttpRequest {
         }, 20);
     });
 
-    public setRequestHeader = vi.fn();
+    public setRequestHeader = vi.fn<[string, string], void>();
 
-    public getResponseHeader = vi.fn((name: string) => {
+    public getResponseHeader = vi.fn<[string], string | null>((name: string) => {
         if (name === "ETag") {
             return "\"test-etag\"";
         }
@@ -68,10 +66,10 @@ class MockXMLHttpRequest {
             return "https://api.example.com/file/123";
         }
 
-        return null;
+        return undefined;
     });
 
-    public addEventListener = vi.fn((event: string, handler: (event: Event) => void) => {
+    public addEventListener = vi.fn<[string, (event: Event) => void], void>((event: string, handler: (event: Event) => void) => {
         if (!this.eventListeners.has(event)) {
             this.eventListeners.set(event, new Set());
         }
@@ -79,7 +77,9 @@ class MockXMLHttpRequest {
         this.eventListeners.get(event)?.add(handler);
     });
 
-    public removeEventListener = vi.fn();
+    public removeEventListener = vi.fn<[string, (event: Event) => void], void>();
+
+    private eventListeners = new Map<string, Set<(event: Event) => void>>();
 }
 
 describe("query-client", () => {

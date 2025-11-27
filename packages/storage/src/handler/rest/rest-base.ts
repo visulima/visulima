@@ -315,6 +315,7 @@ abstract class RestBase<TFile extends UploadFile> {
      * @param maxUploadSize Maximum upload size
      * @returns ResponseFile with CORS headers
      */
+    // eslint-disable-next-line class-methods-use-this
     public handleOptions(methods: string[], maxUploadSize: number): ResponseFile<TFile> {
         const headers = {
             "Access-Control-Allow-Headers":
@@ -367,6 +368,7 @@ abstract class RestBase<TFile extends UploadFile> {
     /**
      * Storage instance for file operations.
      */
+    // eslint-disable-next-line class-methods-use-this
     protected get storage(): {
         create: (config: FileInit) => Promise<TFile>;
         delete: (options: { id: string }) => Promise<TFile>;
@@ -391,6 +393,7 @@ abstract class RestBase<TFile extends UploadFile> {
      * @param _file File object containing ID and content type
      * @returns Constructed file URL with extension based on content type
      */
+    // eslint-disable-next-line class-methods-use-this
     protected buildFileUrl(_requestUrl: string, _file: TFile): string {
         // This will be overridden by subclasses
         throw new Error("buildFileUrl must be implemented");

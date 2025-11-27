@@ -14,24 +14,20 @@ class MockXMLHttpRequest {
 
     public response = "";
 
-    private eventListeners = new Map<string, Set<(event: Event) => void>>();
-
-    private uploadEventListeners = new Map<string, Set<(event: ProgressEvent) => void>>();
-
     public upload = {
-        addEventListener: vi.fn((event: string, handler: (event: ProgressEvent) => void) => {
+        addEventListener: vi.fn<[string, (event: ProgressEvent) => void], void>((event: string, handler: (event: ProgressEvent) => void) => {
             if (!this.uploadEventListeners.has(event)) {
                 this.uploadEventListeners.set(event, new Set());
             }
 
             this.uploadEventListeners.get(event)?.add(handler);
         }),
-        removeEventListener: vi.fn(),
+        removeEventListener: vi.fn<[string, (event: ProgressEvent) => void], void>(),
     };
 
-    public open = vi.fn();
+    public open = vi.fn<[string, string | URL, boolean?, string?, string?], void>();
 
-    public send = vi.fn((_data?: FormData) => {
+    public send = vi.fn<[Document | XMLHttpRequestBodyInit | null?], void>((_data?: FormData) => {
         // Simulate upload progress
         setTimeout(() => {
             const handlers = this.uploadEventListeners.get("progress");
@@ -69,11 +65,11 @@ class MockXMLHttpRequest {
         }, 20);
     });
 
-    public setRequestHeader = vi.fn();
+    public setRequestHeader = vi.fn<[string, string], void>();
 
-    public getResponseHeader = vi.fn(() => null);
+    public getResponseHeader = vi.fn<[string], string | null>(() => undefined);
 
-    public addEventListener = vi.fn((event: string, handler: (event: Event) => void) => {
+    public addEventListener = vi.fn<[string, (event: Event) => void], void>((event: string, handler: (event: Event) => void) => {
         if (!this.eventListeners.has(event)) {
             this.eventListeners.set(event, new Set());
         }
@@ -81,15 +77,19 @@ class MockXMLHttpRequest {
         this.eventListeners.get(event)?.add(handler);
     });
 
-    public removeEventListener = vi.fn();
+    public removeEventListener = vi.fn<[string, (event: Event) => void], void>();
 
-    public abort = vi.fn(() => {
+    public abort = vi.fn<[], void>(() => {
         const handlers = this.eventListeners.get("abort");
 
         if (handlers) {
             handlers.forEach((handler) => handler(new Event("abort")));
         }
     });
+
+    private eventListeners = new Map<string, Set<(event: Event) => void>>();
+
+    private uploadEventListeners = new Map<string, Set<(event: ProgressEvent) => void>>();
 }
 
 describe("uploader Batch Operations", () => {

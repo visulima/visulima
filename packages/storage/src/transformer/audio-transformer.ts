@@ -211,6 +211,7 @@ class AudioTransformer<TFile extends File = File, TFileReturn extends FileReturn
      * @returns Mediabunny audio options object for conversion
      * @private
      */
+    // eslint-disable-next-line class-methods-use-this
     private stepsToAudioOptions(steps: AudioTransformationStep[]): any {
         const options: any = {};
 
@@ -286,6 +287,7 @@ class AudioTransformer<TFile extends File = File, TFileReturn extends FileReturn
      * @returns Mediabunny output format instance
      * @private
      */
+    // eslint-disable-next-line class-methods-use-this
     private formatStringToOutputFormat(format: string): any {
         switch (format.toLowerCase()) {
             case "aac": {

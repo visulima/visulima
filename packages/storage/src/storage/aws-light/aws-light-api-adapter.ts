@@ -540,6 +540,7 @@ ${partsXml}
     /**
      * Converts ReadableStream to Readable for Node.js compatibility.
      */
+    // eslint-disable-next-line class-methods-use-this
     private streamToReadable(stream: ReadableStream<Uint8Array>): Readable {
         return Readable.fromWeb(stream);
     }

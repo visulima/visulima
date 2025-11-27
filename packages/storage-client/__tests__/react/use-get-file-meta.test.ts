@@ -6,7 +6,7 @@ import { useGetFileMeta } from "../../src/react/use-get-file-meta";
 import { renderHookWithQueryClient } from "./test-utils";
 
 // Mock fetch globally
-const mockFetch = vi.fn();
+const mockFetch = vi.fn<Parameters<typeof fetch>, ReturnType<typeof fetch>>();
 
 describe(useGetFileMeta, () => {
     let queryClient: QueryClient;
@@ -23,6 +23,8 @@ describe(useGetFileMeta, () => {
     });
 
     it("should fetch file metadata successfully", async () => {
+        expect.assertions(3);
+
         const mockData = {
             contentType: "text/plain",
             id: "file-123",
@@ -48,10 +50,12 @@ describe(useGetFileMeta, () => {
             expect(result.current.isLoading).toBe(false);
         });
 
-        expect(result.current.data).toEqual(mockData);
+        expect(result.current.data).toStrictEqual(mockData);
     });
 
     it("should use provided id if not in response", async () => {
+        expect.assertions(2);
+
         const mockData = {
             name: "test.txt",
             size: 1024,
@@ -77,7 +81,9 @@ describe(useGetFileMeta, () => {
     });
 
     it("should call onSuccess callback", async () => {
-        const onSuccess = vi.fn();
+        expect.assertions(2);
+
+        const onSuccess = vi.fn<[unknown], void>();
         const mockData = {
             id: "file-123",
             name: "test.txt",
@@ -104,7 +110,9 @@ describe(useGetFileMeta, () => {
     });
 
     it("should handle error and call onError callback", async () => {
-        const onError = vi.fn();
+        expect.assertions(2);
+
+        const onError = vi.fn<[Error], void>();
 
         mockFetch.mockResolvedValueOnce({
             json: async () => {
@@ -136,6 +144,8 @@ describe(useGetFileMeta, () => {
     });
 
     it("should respect enabled option", async () => {
+        expect.assertions(2);
+
         const { result } = renderHookWithQueryClient(
             () =>
                 useGetFileMeta({
@@ -151,6 +161,8 @@ describe(useGetFileMeta, () => {
     });
 
     it("should not fetch when id is empty", async () => {
+        expect.assertions(2);
+
         const { result } = renderHookWithQueryClient(
             () =>
                 useGetFileMeta({
@@ -165,6 +177,8 @@ describe(useGetFileMeta, () => {
     });
 
     it("should refetch data", async () => {
+        expect.assertions(3);
+
         const mockData = {
             id: "file-123",
             name: "test.txt",

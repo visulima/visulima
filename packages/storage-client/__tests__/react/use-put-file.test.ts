@@ -15,22 +15,18 @@ class MockXMLHttpRequest {
 
     public responseText = "";
 
-    private eventListeners = new Map<string, Set<(event: Event) => void>>();
-
-    private uploadProgressHandlers = new Set<(event: ProgressEvent) => void>();
-
     public upload = {
-        addEventListener: vi.fn((event: string, handler: (event: ProgressEvent) => void) => {
+        addEventListener: vi.fn<[string, (event: ProgressEvent) => void], void>((event: string, handler: (event: ProgressEvent) => void) => {
             if (event === "progress") {
                 this.uploadProgressHandlers.add(handler);
             }
         }),
-        removeEventListener: vi.fn(),
+        removeEventListener: vi.fn<[string, (event: ProgressEvent) => void], void>(),
     };
 
-    public open = vi.fn();
+    public open = vi.fn<[string, string | URL, boolean?, string?, string?], void>();
 
-    public send = vi.fn(() => {
+    public send = vi.fn<[Document | XMLHttpRequestBodyInit | null?], void>(() => {
         // Fire progress event after a short delay
         setTimeout(() => {
             const progressEvent = {
@@ -56,9 +52,9 @@ class MockXMLHttpRequest {
         }, 100);
     });
 
-    public setRequestHeader = vi.fn();
+    public setRequestHeader = vi.fn<[string, string], void>();
 
-    public getResponseHeader = vi.fn((header: string) => {
+    public getResponseHeader = vi.fn<[string], string | null>((header: string) => {
         if (header === "Location") {
             return "https://api.example.com/files/file-123";
         }
@@ -67,10 +63,10 @@ class MockXMLHttpRequest {
             return "\"test-etag\"";
         }
 
-        return null;
+        return undefined;
     });
 
-    public addEventListener = vi.fn((event: string, handler: (event: Event) => void) => {
+    public addEventListener = vi.fn<[string, (event: Event) => void], void>((event: string, handler: (event: Event) => void) => {
         if (!this.eventListeners.has(event)) {
             this.eventListeners.set(event, new Set());
         }
@@ -78,9 +74,13 @@ class MockXMLHttpRequest {
         this.eventListeners.get(event)?.add(handler);
     });
 
-    public removeEventListener = vi.fn();
+    public removeEventListener = vi.fn<[string, (event: Event) => void], void>();
 
-    public abort = vi.fn();
+    public abort = vi.fn<[], void>();
+
+    private eventListeners = new Map<string, Set<(event: Event) => void>>();
+
+    private uploadProgressHandlers = new Set<(event: ProgressEvent) => void>();
 }
 
 describe(usePutFile, () => {
@@ -105,7 +105,7 @@ describe(usePutFile, () => {
     });
 
     it("should upload file successfully", async () => {
-        // expect.assertions(4);
+        expect.assertions(6);
 
         const file = new File(["test content"], "test.jpg", { type: "image/jpeg" });
 
@@ -137,7 +137,9 @@ describe(usePutFile, () => {
     });
 
     it("should track upload progress", async () => {
-        const onProgress = vi.fn();
+        expect.assertions(3);
+
+        const onProgress = vi.fn<[number], void>();
         const file = new File(["test content"], "test.jpg", { type: "image/jpeg" });
 
         const { result } = renderHookWithQueryClient(
@@ -165,10 +167,10 @@ describe(usePutFile, () => {
     });
 
     it("should handle upload errors", async () => {
-        // expect.assertions(2);
+        expect.assertions(3);
 
         class ErrorXHR extends MockXMLHttpRequest {
-            public send = vi.fn(() => {
+            public send = vi.fn<[Document | XMLHttpRequestBodyInit | null?], void>(() => {
                 setTimeout(() => {
                     this.readyState = 4;
                     this.status = 500;
@@ -211,7 +213,7 @@ describe(usePutFile, () => {
     });
 
     it("should invalidate queries on success", async () => {
-        // expect.assertions(1);
+        expect.assertions(1);
 
         const invalidateQueriesSpy = vi.spyOn(queryClient, "invalidateQueries");
         const file = new File(["test content"], "test.jpg", { type: "image/jpeg" });
@@ -234,7 +236,7 @@ describe(usePutFile, () => {
     });
 
     it("should reset mutation state", async () => {
-        // expect.assertions(3);
+        expect.assertions(5);
 
         const file = new File(["test content"], "test.jpg", { type: "image/jpeg" });
 

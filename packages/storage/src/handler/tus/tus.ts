@@ -46,6 +46,7 @@ export class Tus<
         const tusInstance = this;
 
         this.tusBase = new class extends TusBase<TFile> {
+            // eslint-disable-next-line class-methods-use-this
             protected override get storage() {
                 return tusInstance.storage as unknown as {
                     checkIfExpired: (file: TFile) => Promise<void>;
@@ -61,10 +62,12 @@ export class Tus<
                 };
             }
 
+            // eslint-disable-next-line class-methods-use-this
             protected override get disableTerminationForFinishedUploads() {
                 return tusInstance.disableTerminationForFinishedUploads;
             }
 
+            // eslint-disable-next-line class-methods-use-this
             protected override buildFileUrl(requestUrl: string, file: TFile): string {
                 return tusInstance.buildFileUrlForTus(requestUrl, file);
             }

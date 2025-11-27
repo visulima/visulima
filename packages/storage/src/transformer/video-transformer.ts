@@ -232,6 +232,7 @@ class VideoTransformer<TFile extends File = File, TFileReturn extends FileReturn
      * @returns Mediabunny video options object for conversion.
      * @private
      */
+    // eslint-disable-next-line class-methods-use-this
     private stepsToVideoOptions(steps: VideoTransformationStep[]): any {
         const options: any = {};
 
@@ -333,6 +334,7 @@ class VideoTransformer<TFile extends File = File, TFileReturn extends FileReturn
      * @returns Mediabunny output format instance.
      * @private
      */
+    // eslint-disable-next-line class-methods-use-this
     private formatStringToOutputFormat(format: string): any {
         switch (format.toLowerCase()) {
             case "mkv": {
@@ -434,6 +436,7 @@ class VideoTransformer<TFile extends File = File, TFileReturn extends FileReturn
      * @returns Unique cache key string.
      * @private
      */
+    // eslint-disable-next-line class-methods-use-this
     private generateCacheKey(fileId: string, steps: VideoTransformationStep[]): string {
         const stepsKey = steps.map((step) => `${step.type}:${JSON.stringify(step.options)}`).join("|");
 

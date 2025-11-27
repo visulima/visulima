@@ -63,8 +63,6 @@ describe(DiskStorage, () => {
     let storage: DiskStorage;
     let readStream: RequestReadStream;
 
-    const request = createRequest();
-
     beforeAll(async () => {
         directory = temporaryDirectory();
         options = { ...storageOptions, directory };
@@ -1141,42 +1139,31 @@ describe(DiskStorage, () => {
             expect(streamData.equals(videoContent)).toBe(true);
         });
 
-        it("should handle different media formats", async () => {
-            // Each file will have exactly one assertion (either success or error)
-            expect.assertions(3);
+        it.each([
+            { contentType: "audio/mpeg", name: "audio.mp3" },
+            { contentType: "video/x-msvideo", name: "video.avi" },
+            { contentType: "image/jpeg", name: "image.jpg" },
+        ])(
+            "should handle media format: %s",
+            { retry: 2 },
+            async (mediaFile) => {
+                const testFile = {
+                    ...metafile,
+                    contentType: mediaFile.contentType,
+                    id: mediaFile.name,
+                    name: mediaFile.name,
+                    size: 100,
+                };
 
-            const mediaFiles = [
-                { contentType: "audio/mpeg", name: "audio.mp3" },
-                { contentType: "video/x-msvideo", name: "video.avi" },
-                { contentType: "image/jpeg", name: "image.jpg" },
-            ];
+                const diskFile = await storage.create(testFile);
 
-            await Promise.all(
-                mediaFiles.map(async (mediaFile) => {
-                    const testFile = {
-                        ...metafile,
-                        contentType: mediaFile.contentType,
-                        id: mediaFile.name,
-                        name: mediaFile.name,
-                        size: 100,
-                    };
+                await storage.write({ ...diskFile, body: Readable.from(Buffer.alloc(100)) });
 
-                    try {
-                        const diskFile = await storage.create(testFile);
+                const streamResult = await storage.getStream({ id: diskFile.id });
 
-                        await storage.write({ ...diskFile, body: Readable.from(Buffer.alloc(100)) });
-
-                        const streamResult = await storage.getStream({ id: diskFile.id });
-
-                        expect(streamResult.headers["Content-Type"]).toBe(mediaFile.contentType);
-                    } catch (error) {
-                        // Some MIME types might be rejected, which is also valid behavior
-                        // Assert that an error occurred to maintain assertion count
-                        expect(error).toBeDefined();
-                    }
-                }),
-            );
-        });
+                expect(streamResult.headers["Content-Type"]).toBe(mediaFile.contentType);
+            },
+        );
     });
 
     describe("input validation", () => {

@@ -33,16 +33,16 @@ const App = () => {
     };
 
     return (
-        <div class="app">
+        <div className="app">
             <h1>Storage Client - React Example</h1>
-            <div class="upload-section">
+            <div className="upload-section">
                 <input disabled={isUploading} onChange={handleFileChange} type="file" />
                 <button disabled={!file || isUploading} onClick={handleUpload}>
                     {isUploading ? "Uploading..." : "Upload"}
                 </button>
             </div>
             {isUploading && (
-                <div class="progress-section">
+                <div className="progress-section">
                     <div>
                         Progress:
                         {progress}
@@ -52,13 +52,13 @@ const App = () => {
                 </div>
             )}
             {error && (
-                <div class="error">
+                <div className="error">
                     Error:
                     {error.message}
                 </div>
             )}
             {result && (
-                <div class="success">
+                <div className="success">
                     Upload complete! File:
                     {result.filename}
                 </div>

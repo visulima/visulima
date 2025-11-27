@@ -15,32 +15,32 @@ class MockXMLHttpRequest {
 
     public response = "";
 
-    private eventListeners = new Map<string, Set<(event: Event) => void>>();
-
     public upload = {
-        addEventListener: vi.fn(),
-        removeEventListener: vi.fn(),
+        addEventListener: vi.fn<[string, (event: ProgressEvent) => void], void>(),
+        removeEventListener: vi.fn<[string, (event: ProgressEvent) => void], void>(),
     };
 
-    public open = vi.fn();
+    public open = vi.fn<[string, string | URL, boolean?, string?, string?], void>();
 
-    public send = vi.fn();
+    public send = vi.fn<[Document | XMLHttpRequestBodyInit | null?], void>();
 
-    public setRequestHeader = vi.fn();
+    public setRequestHeader = vi.fn<[string, string], void>();
 
-    public getResponseHeader = vi.fn(() => null);
+    public getResponseHeader = vi.fn<[string], string | null>(() => undefined);
 
-    public addEventListener = vi.fn();
+    public addEventListener = vi.fn<[string, (event: Event) => void], void>();
 
-    public removeEventListener = vi.fn();
+    public removeEventListener = vi.fn<[string, (event: Event) => void], void>();
 
-    public abort = vi.fn(() => {
+    public abort = vi.fn<[], void>(() => {
         const handlers = this.eventListeners.get("abort");
 
         if (handlers) {
             handlers.forEach((handler) => handler(new Event("abort")));
         }
     });
+
+    private eventListeners = new Map<string, Set<(event: Event) => void>>();
 }
 
 describe(useAbortItem, () => {
@@ -59,6 +59,8 @@ describe(useAbortItem, () => {
     });
 
     it("should provide abortItem function", () => {
+        expect.assertions(1);
+
         const { result } = renderHookWithQueryClient(() =>
             useAbortItem({
                 endpoint: "/api/upload",

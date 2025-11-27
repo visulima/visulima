@@ -6,7 +6,7 @@ import { useGetFileList } from "../../src/react/use-get-file-list";
 import { renderHookWithQueryClient } from "./test-utils";
 
 // Mock fetch globally
-const mockFetch = vi.fn();
+const mockFetch = vi.fn<Parameters<typeof fetch>, ReturnType<typeof fetch>>();
 
 describe(useGetFileList, () => {
     let queryClient: QueryClient;
@@ -23,6 +23,8 @@ describe(useGetFileList, () => {
     });
 
     it("should fetch file list successfully", async () => {
+        expect.assertions(3);
+
         const mockData = {
             data: [
                 {
@@ -55,10 +57,12 @@ describe(useGetFileList, () => {
             expect(result.current.isLoading).toBe(false);
         });
 
-        expect(result.current.data).toEqual(mockData);
+        expect(result.current.data).toStrictEqual(mockData);
     });
 
     it("should handle paginated response", async () => {
+        expect.assertions(3);
+
         const mockData = {
             data: [
                 {
@@ -91,10 +95,12 @@ describe(useGetFileList, () => {
             expect(result.current.isLoading).toBe(false);
         });
 
-        expect(result.current.data?.meta).toEqual(mockData.meta);
+        expect(result.current.data?.meta).toStrictEqual(mockData.meta);
     });
 
     it("should handle array response", async () => {
+        expect.assertions(2);
+
         const mockData = [
             {
                 id: "file-1",
@@ -116,12 +122,14 @@ describe(useGetFileList, () => {
         );
 
         await waitFor(() => {
-            expect(result.current.data?.data).toEqual(mockData);
+            expect(result.current.data?.data).toStrictEqual(mockData);
         });
     });
 
     it("should call onSuccess callback", async () => {
-        const onSuccess = vi.fn();
+        expect.assertions(2);
+
+        const onSuccess = vi.fn<[unknown], void>();
         const mockData = {
             data: [
                 {
@@ -151,7 +159,9 @@ describe(useGetFileList, () => {
     });
 
     it("should handle error and call onError callback", async () => {
-        const onError = vi.fn();
+        expect.assertions(2);
+
+        const onError = vi.fn<[Error], void>();
 
         mockFetch.mockResolvedValueOnce({
             json: async () => {
@@ -182,6 +192,8 @@ describe(useGetFileList, () => {
     });
 
     it("should respect enabled option", async () => {
+        expect.assertions(2);
+
         const { result } = renderHookWithQueryClient(
             () =>
                 useGetFileList({
@@ -196,6 +208,8 @@ describe(useGetFileList, () => {
     });
 
     it("should refetch data", async () => {
+        expect.assertions(3);
+
         const mockData = {
             data: [
                 {

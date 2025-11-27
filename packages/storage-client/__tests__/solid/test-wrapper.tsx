@@ -7,4 +7,10 @@ interface TestWrapperProps {
     client: QueryClient;
 }
 
-export const TestWrapper = (props: TestWrapperProps) => <QueryClientProvider client={props.client}>{props.children}</QueryClientProvider>;
+const TestWrapper = (props: TestWrapperProps): JSX.Element => (
+    <QueryClientProvider client={props.client}>{props.children}</QueryClientProvider>
+);
+
+export default TestWrapper;
+
+

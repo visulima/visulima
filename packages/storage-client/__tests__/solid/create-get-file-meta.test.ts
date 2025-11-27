@@ -28,7 +28,8 @@ describe(createGetFileMeta, () => {
         if (originalFetch) {
             globalThis.fetch = originalFetch;
         } else {
-            delete (globalThis as any).fetch;
+            // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+            delete (globalThis as { fetch?: typeof fetch }).fetch;
         }
 
         vi.restoreAllMocks();
@@ -154,9 +155,12 @@ describe(createGetFileMeta, () => {
 
         await new Promise((resolve) => setTimeout(resolve, 100));
 
-        expect(mockFetch).toHaveBeenCalledWith("https://api.example.com/file-123/metadata", expect.objectContaining({
-            method: "GET",
-        }));
+        expect(mockFetch).toHaveBeenCalledWith(
+            "https://api.example.com/file-123/metadata",
+            expect.objectContaining({
+                method: "GET",
+            }),
+        );
     });
 
     it("should not fetch when id is empty", async () => {

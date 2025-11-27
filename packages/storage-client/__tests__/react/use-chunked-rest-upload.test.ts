@@ -6,7 +6,7 @@ import { useChunkedRestUpload } from "../../src/react/use-chunked-rest-upload";
 import { renderHookWithQueryClient } from "./test-utils";
 
 // Mock fetch globally
-const mockFetch = vi.fn();
+const mockFetch = vi.fn<Parameters<typeof fetch>, ReturnType<typeof fetch>>();
 // Capture original fetch once before the suite
 const originalFetch = globalThis.fetch;
 
@@ -28,7 +28,8 @@ describe(useChunkedRestUpload, () => {
         if (originalFetch) {
             globalThis.fetch = originalFetch;
         } else {
-            delete (globalThis as any).fetch;
+            // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+            delete (globalThis as { fetch?: typeof fetch }).fetch;
         }
     });
 

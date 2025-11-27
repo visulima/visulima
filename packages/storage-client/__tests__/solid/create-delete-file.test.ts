@@ -5,7 +5,7 @@ import { createDeleteFile } from "../../src/solid/create-delete-file";
 import { runInRoot } from "./test-utils";
 
 // Mock fetch globally
-const mockFetch = vi.fn();
+const mockFetch = vi.fn<Parameters<typeof fetch>, ReturnType<typeof fetch>>();
 let originalFetch: typeof globalThis.fetch | undefined;
 
 describe(createDeleteFile, () => {
@@ -27,7 +27,7 @@ describe(createDeleteFile, () => {
         if (originalFetch) {
             globalThis.fetch = originalFetch;
         } else {
-            delete (globalThis as any).fetch;
+            delete (globalThis as { fetch?: typeof fetch }).fetch;
         }
 
         vi.restoreAllMocks();
@@ -51,9 +51,12 @@ describe(createDeleteFile, () => {
 
         await result.deleteFile("file-123");
 
-        expect(mockFetch).toHaveBeenCalledWith("https://api.example.com/file-123", expect.objectContaining({
-            method: "DELETE",
-        }));
+        expect(mockFetch).toHaveBeenCalledWith(
+            "https://api.example.com/file-123",
+            expect.objectContaining({
+                method: "DELETE",
+            }),
+        );
         expect(result.error()).toBeUndefined();
     });
 
@@ -82,7 +85,7 @@ describe(createDeleteFile, () => {
             queryClient,
         );
 
-        await expect(result.deleteFile("file-123")).rejects.toThrow();
+        await expect(result.deleteFile("file-123")).rejects.toThrow("File not found");
 
         expect(result.error()).toBeDefined();
     });

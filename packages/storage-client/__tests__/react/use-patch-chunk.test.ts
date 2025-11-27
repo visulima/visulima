@@ -6,7 +6,7 @@ import { usePatchChunk } from "../../src/react/use-patch-chunk";
 import { renderHookWithQueryClient } from "./test-utils";
 
 // Mock fetch globally
-const mockFetch = vi.fn();
+const mockFetch = vi.fn<Parameters<typeof fetch>, ReturnType<typeof fetch>>();
 
 describe(usePatchChunk, () => {
     let queryClient: QueryClient;

@@ -30,7 +30,8 @@ describe(createDeleteFile, () => {
         if (originalFetch) {
             globalThis.fetch = originalFetch;
         } else {
-            delete (globalThis as any).fetch;
+            // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+            delete (globalThis as { fetch?: typeof fetch }).fetch;
         }
 
         vi.restoreAllMocks();
@@ -79,9 +80,12 @@ describe(createDeleteFile, () => {
             expect(get(result.isLoading)).toBe(false);
         });
 
-        expect(mockFetch).toHaveBeenCalledWith("https://api.example.com/file-123", expect.objectContaining({
-            method: "DELETE",
-        }));
+        expect(mockFetch).toHaveBeenCalledWith(
+            "https://api.example.com/file-123",
+            expect.objectContaining({
+                method: "DELETE",
+            }),
+        );
     });
 
     it("should handle error response", async () => {

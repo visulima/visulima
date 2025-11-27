@@ -28,7 +28,8 @@ describe(createGetFileList, () => {
         if (originalFetch) {
             globalThis.fetch = originalFetch;
         } else {
-            delete (globalThis as any).fetch;
+            // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+            delete (globalThis as { fetch?: typeof fetch }).fetch;
         }
 
         vi.restoreAllMocks();
@@ -69,9 +70,12 @@ describe(createGetFileList, () => {
 
         await new Promise((resolve) => setTimeout(resolve, 100));
 
-        expect(mockFetch).toHaveBeenCalledWith("https://api.example.com/", expect.objectContaining({
-            method: "GET",
-        }));
+        expect(mockFetch).toHaveBeenCalledWith(
+            "https://api.example.com/",
+            expect.objectContaining({
+                method: "GET",
+            }),
+        );
         expect(result.data()).toBeDefined();
         expect(result.data()?.data).toHaveLength(2);
     });
@@ -194,9 +198,12 @@ describe(createGetFileList, () => {
             attempts++;
         }
 
-        expect(mockFetch).toHaveBeenCalledWith("https://api.example.com/?limit=10&page=1", expect.objectContaining({
-            method: "GET",
-        }));
+        expect(mockFetch).toHaveBeenCalledWith(
+            "https://api.example.com/?limit=10&page=1",
+            expect.objectContaining({
+                method: "GET",
+            }),
+        );
 
         // Use batch to update both signals atomically - this prevents multiple query runs
         batch(() => {

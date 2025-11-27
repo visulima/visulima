@@ -8,6 +8,7 @@ export type {
     AudioTransformOptions,
     AudioTransformResult,
     CropOptions,
+    ImageFormat,
     ImageTransformerConfig,
     MediaTransformationStep,
     MediaTransformerConfig,
