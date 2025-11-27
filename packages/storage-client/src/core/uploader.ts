@@ -339,7 +339,7 @@ export class Uploader {
                         data: fileMeta,
                         response: responseText,
                     };
-                    item.url = fileMeta.url || xhr.getResponseHeader("Location") || undefined;
+                    item.url = xhr.getResponseHeader("Location") || undefined;
 
                     this.items.set(item.id, item);
 

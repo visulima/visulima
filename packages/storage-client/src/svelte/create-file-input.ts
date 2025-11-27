@@ -20,7 +20,7 @@ export interface CreateFileInputReturn {
 }
 
 export const createFileInput = (options: CreateFileInputOptions = {}): CreateFileInputReturn => {
-    const { accept, multiple = false, onFilesSelected } = options;
+    const { accept: _accept, multiple: _multiple = false, onFilesSelected } = options;
 
     const files: Writable<File[]> = writable([]);
     const inputRef = { current: undefined as HTMLInputElement | undefined };
@@ -115,5 +115,3 @@ export const createFileInput = (options: CreateFileInputOptions = {}): CreateFil
         reset,
     };
 };
-
-

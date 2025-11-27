@@ -68,86 +68,106 @@ export const useBatchUpload = (options: UseBatchUploadOptions): UseBatchUploadRe
         const { uploader } = uploaderInstance;
 
         // Track batch start
-        const onBatchStart = (batch: BatchState): void => {
-            currentBatchId.value = batch.id;
-            isUploading.value = true;
-            progress.value = 0;
-            error.value = undefined;
-            completedCount.value = 0;
-            errorCount.value = 0;
-            items.value = uploader.getBatchItems(batch.id);
-            onStart?.(batch.id);
+        const onBatchStart = (itemOrBatch: UploadItem | BatchState): void => {
+            if ("itemIds" in itemOrBatch) {
+                const batch = itemOrBatch;
+
+                currentBatchId.value = batch.id;
+                isUploading.value = true;
+                progress.value = 0;
+                error.value = undefined;
+                completedCount.value = 0;
+                errorCount.value = 0;
+                items.value = uploader.getBatchItems(batch.id);
+                onStart?.(batch.id);
+            }
         };
 
         // Track batch progress
-        const onBatchProgress = (batch: BatchState): void => {
-            if (batch.id === currentBatchId.value) {
-                progress.value = batch.progress;
-                completedCount.value = batch.completedCount;
-                errorCount.value = batch.errorCount;
-                items.value = uploader.getBatchItems(batch.id);
-                onProgress?.(batch.progress, batch.id);
+        const onBatchProgress = (itemOrBatch: UploadItem | BatchState): void => {
+            if ("itemIds" in itemOrBatch) {
+                const batch = itemOrBatch;
+
+                if (batch.id === currentBatchId.value) {
+                    progress.value = batch.progress;
+                    completedCount.value = batch.completedCount;
+                    errorCount.value = batch.errorCount;
+                    items.value = uploader.getBatchItems(batch.id);
+                    onProgress?.(batch.progress, batch.id);
+                }
             }
         };
 
         // Track batch finish
-        const onBatchFinish = (batch: BatchState): void => {
-            if (batch.id === currentBatchId.value) {
-                const batchItems = uploader.getBatchItems(batch.id);
-                const results: UploadResult[] = batchItems
-                    .filter((item) => item.status === "completed")
-                    .map((item) => {
-                        let fileMeta: Partial<FileMeta> = {};
+        const onBatchFinish = (itemOrBatch: UploadItem | BatchState): void => {
+            if ("itemIds" in itemOrBatch) {
+                const batch = itemOrBatch;
 
-                        try {
-                            if (item.uploadResponse?.data && typeof item.uploadResponse.data === "object") {
-                                fileMeta = item.uploadResponse.data as Partial<FileMeta>;
-                            } else if (item.uploadResponse?.response) {
-                                fileMeta = JSON.parse(item.uploadResponse.response) as Partial<FileMeta>;
+                if (batch.id === currentBatchId.value) {
+                    const batchItems = uploader.getBatchItems(batch.id);
+                    const results: UploadResult[] = batchItems
+                        .filter((item) => item.status === "completed")
+                        .map((item) => {
+                            let fileMeta: Partial<FileMeta> = {};
+
+                            try {
+                                if (item.uploadResponse?.data && typeof item.uploadResponse.data === "object") {
+                                    fileMeta = item.uploadResponse.data as Partial<FileMeta>;
+                                } else if (item.uploadResponse?.response) {
+                                    fileMeta = JSON.parse(item.uploadResponse.response) as Partial<FileMeta>;
+                                }
+                            } catch {
+                                // If parsing fails, use fallback values
                             }
-                        } catch {
-                            // If parsing fails, use fallback values
-                        }
 
-                        return {
-                            bytesWritten: fileMeta.bytesWritten,
-                            contentType: fileMeta.contentType ?? item.file.type,
-                            createdAt: fileMeta.createdAt,
-                            filename: fileMeta.originalName ?? item.file.name,
-                            id: fileMeta.id ?? item.id,
-                            metadata: fileMeta.metadata,
-                            name: fileMeta.name,
-                            originalName: fileMeta.originalName ?? item.file.name,
-                            size: fileMeta.size ?? item.file.size,
-                            status: (fileMeta.status as UploadResult["status"]) ?? "completed",
-                            url: item.url,
-                        } as UploadResult;
-                    });
+                            return {
+                                bytesWritten: fileMeta.bytesWritten,
+                                contentType: fileMeta.contentType ?? item.file.type,
+                                createdAt: fileMeta.createdAt,
+                                filename: fileMeta.originalName ?? item.file.name,
+                                id: fileMeta.id ?? item.id,
+                                metadata: fileMeta.metadata,
+                                name: fileMeta.name,
+                                originalName: fileMeta.originalName ?? item.file.name,
+                                size: fileMeta.size ?? item.file.size,
+                                status: (fileMeta.status as UploadResult["status"]) ?? "completed",
+                                url: item.url,
+                            } as UploadResult;
+                        });
 
-                progress.value = 100;
-                isUploading.value = false;
-                onSuccess?.(results, batch.id);
+                    progress.value = 100;
+                    isUploading.value = false;
+                    onSuccess?.(results, batch.id);
+                }
             }
         };
 
         // Track batch error
-        const onBatchError = (batch: BatchState): void => {
-            if (batch.id === currentBatchId.value) {
-                const uploadError = new Error(`Batch upload failed: ${batch.errorCount} file(s) failed`);
+        const onBatchError = (itemOrBatch: UploadItem | BatchState): void => {
+            if ("itemIds" in itemOrBatch) {
+                const batch = itemOrBatch;
 
-                error.value = uploadError;
-                isUploading.value = false;
-                errorCount.value = batch.errorCount;
-                completedCount.value = batch.completedCount;
-                onError?.(uploadError, batch.id);
+                if (batch.id === currentBatchId.value) {
+                    const uploadError = new Error(`Batch upload failed: ${batch.errorCount} file(s) failed`);
+
+                    error.value = uploadError;
+                    isUploading.value = false;
+                    errorCount.value = batch.errorCount;
+                    completedCount.value = batch.completedCount;
+                    onError?.(uploadError, batch.id);
+                }
             }
         };
 
         // Track batch cancelled
-        const onBatchCancelled = (batch: BatchState): void => {
-            if (batch.id === currentBatchId.value) {
-                isUploading.value = false;
-                progress.value = 0;
+        const onBatchCancelled = (itemOrBatch: UploadItem | BatchState): void => {
+            if ("itemIds" in itemOrBatch) {
+                const batch = itemOrBatch;
+
+                if (batch.id === currentBatchId.value) {
+                    isUploading.value = false;
+                    progress.value = 0;
+                }
             }
         };
 
@@ -201,5 +221,3 @@ export const useBatchUpload = (options: UseBatchUploadOptions): UseBatchUploadRe
         uploadBatch,
     };
 };
-
-

@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { createMultipartAdapter } from "../core/multipart-adapter";
-import type { FileMeta, UploadItem, UploadResult } from "./types";
+import type { BatchState, UploadItem } from "../core/uploader";
+import type { FileMeta, UploadResult } from "./types";
 
 export interface UseMultipartUploadOptions {
     /** Upload endpoint URL */
@@ -70,8 +71,9 @@ export const useMultipartUpload = (options: UseMultipartUploadOptions): UseMulti
         const { uploader } = uploaderInstance;
 
         // Track upload progress
-        const onItemProgress = (item: UploadItem): void => {
-            if (item.id === currentItemRef.current) {
+        const onItemProgress = (itemOrBatch: UploadItem | BatchState): void => {
+            if ("file" in itemOrBatch && itemOrBatch.id === currentItemRef.current) {
+                const item = itemOrBatch;
                 // Progress is already a percentage (0-100)
                 const progressValue = Math.min(100, Math.max(0, item.completed));
 
@@ -81,19 +83,24 @@ export const useMultipartUpload = (options: UseMultipartUploadOptions): UseMulti
         };
 
         // Track when upload starts
-        const onItemStart = (item: UploadItem): void => {
-            currentItemRef.current = item.id;
-            currentFileRef.current = item.file;
-            setIsUploading(true);
-            setProgress(0);
-            setError(undefined);
-            callbacksRef.current.onStart?.();
+        const onItemStart = (itemOrBatch: UploadItem | BatchState): void => {
+            if ("file" in itemOrBatch) {
+                const item = itemOrBatch;
+
+                currentItemRef.current = item.id;
+                currentFileRef.current = item.file;
+                setIsUploading(true);
+                setProgress(0);
+                setError(undefined);
+                callbacksRef.current.onStart?.();
+            }
         };
 
         // Track when upload completes
         // Parse response according to OpenAPI FileMeta schema
-        const onItemFinish = (item: UploadItem): void => {
-            if (item.id === currentItemRef.current) {
+        const onItemFinish = (itemOrBatch: UploadItem | BatchState): void => {
+            if ("file" in itemOrBatch && itemOrBatch.id === currentItemRef.current) {
+                const item = itemOrBatch;
                 // Try to parse the response as FileMeta (OpenAPI schema)
                 let fileMeta: Partial<FileMeta> = {};
 
@@ -132,8 +139,9 @@ export const useMultipartUpload = (options: UseMultipartUploadOptions): UseMulti
         };
 
         // Track errors
-        const onUploadError = (item: UploadItem): void => {
-            if (item.id === currentItemRef.current) {
+        const onUploadError = (itemOrBatch: UploadItem | BatchState): void => {
+            if ("file" in itemOrBatch && itemOrBatch.id === currentItemRef.current) {
+                const item = itemOrBatch;
                 const uploadError = new Error(item.error || "Upload failed");
 
                 setError(uploadError);

@@ -1,5 +1,5 @@
 import type { FileMeta, UploadResult } from "../react/types";
-import type { Uploader, UploadItem } from "./uploader";
+import type { BatchState, Uploader, UploadItem } from "./uploader";
 import { createUploader } from "./uploader";
 
 export interface MultipartAdapterOptions {
@@ -82,8 +82,9 @@ export const createMultipartAdapter = (options: MultipartAdapterOptions): Multip
                 let timeoutId: ReturnType<typeof setTimeout> | undefined;
 
                 // Handle upload completion
-                const onItemFinish = (item: UploadItem): void => {
-                    if (!resolved && item.file.name === file.name) {
+                const onItemFinish = (itemOrBatch: UploadItem | BatchState): void => {
+                    if ("file" in itemOrBatch && !resolved && itemOrBatch.file.name === file.name) {
+                        const item = itemOrBatch as UploadItem;
                         // Parse response as FileMeta
                         let fileMeta: Partial<FileMeta> = {};
 
@@ -119,8 +120,9 @@ export const createMultipartAdapter = (options: MultipartAdapterOptions): Multip
                 };
 
                 // Handle errors
-                const onError = (item: UploadItem): void => {
-                    if (!resolved && item.file.name === file.name) {
+                const onError = (itemOrBatch: UploadItem | BatchState): void => {
+                    if ("file" in itemOrBatch && !resolved && itemOrBatch.file.name === file.name) {
+                        const item = itemOrBatch as UploadItem;
                         const error = new Error(item.error || "Upload failed");
 
                         resolved = true;

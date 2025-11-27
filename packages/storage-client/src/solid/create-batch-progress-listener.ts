@@ -1,7 +1,7 @@
 import { onCleanup, onMount } from "solid-js";
 
 import { createMultipartAdapter } from "../core/multipart-adapter";
-import type { BatchState } from "../core/uploader";
+import type { BatchState, UploadItem } from "../core/uploader";
 
 export interface CreateBatchProgressListenerOptions {
     endpoint: string;
@@ -14,7 +14,11 @@ export const createBatchProgressListener = (options: CreateBatchProgressListener
 
     onMount(() => {
         const adapter = createMultipartAdapter({ endpoint, metadata });
-        const handler = (batch: BatchState): void => onBatchProgress(batch);
+        const handler = (itemOrBatch: UploadItem | BatchState): void => {
+            if ("itemIds" in itemOrBatch) {
+                onBatchProgress(itemOrBatch);
+            }
+        };
 
         adapter.uploader.on("BATCH_PROGRESS", handler);
 
@@ -23,5 +27,3 @@ export const createBatchProgressListener = (options: CreateBatchProgressListener
         });
     });
 };
-
-

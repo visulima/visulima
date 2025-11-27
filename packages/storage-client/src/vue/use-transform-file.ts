@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/vue-query";
-import type { MaybeRefOrGetter } from "vue";
+import type { MaybeRefOrGetter, Ref } from "vue";
 import { computed, toValue } from "vue";
 
 import { buildUrl, extractFileMetaFromHeaders, storageQueryKeys } from "../core";
@@ -64,14 +64,14 @@ export const useTransformFile = (options: UseTransformFileOptions): UseTransform
             });
 
             if (!response.ok) {
-                const errorData = await response.json().catch(() => {
+                const errorData = (await response.json().catch(() => {
                     return {
                         error: {
                             code: "RequestFailed",
                             message: response.statusText,
                         },
                     };
-                });
+                })) as { error: { code: string; message: string } };
 
                 throw new Error(errorData.error?.message || `Failed to get transformed file: ${response.status} ${response.statusText}`);
             }
@@ -81,7 +81,15 @@ export const useTransformFile = (options: UseTransformFileOptions): UseTransform
 
             return { blob, meta };
         },
-        queryKey: computed(() => storageQueryKeys.transform.file(endpoint, toValue(id), toValue(transform))),
+        queryKey: computed(() => {
+            const transformValue = toValue(transform);
+            const filteredTransform = Object.fromEntries(Object.entries(transformValue).filter(([, value]) => value !== undefined)) as Record<
+                string,
+                string | number | boolean
+            >;
+
+            return storageQueryKeys.transform.file(endpoint, toValue(id), filteredTransform);
+        }),
     });
 
     return {

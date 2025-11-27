@@ -16,7 +16,7 @@ export interface ApiError {
  */
 export const parseApiError = async (response: Response): Promise<Error> => {
     try {
-        const errorData: ApiError = await response.json();
+        const errorData = (await response.json()) as ApiError;
 
         return new Error(errorData.error?.message || `Request failed: ${response.status} ${response.statusText}`);
     } catch {
@@ -31,7 +31,6 @@ export const extractFileMetaFromHeaders = (id: string, headers: Headers): FileMe
     const contentType = headers.get("Content-Type");
     const contentLength = headers.get("Content-Length");
     const lastModified = headers.get("Last-Modified");
-    const _etag = headers.get("ETag");
 
     const fileMeta: FileMeta = {
         contentType: contentType || undefined,

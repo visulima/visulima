@@ -19,11 +19,11 @@ export interface CreateFileInputReturn {
 }
 
 export const createFileInput = (options: CreateFileInputOptions = {}): CreateFileInputReturn => {
-    const { accept, multiple = false, onFilesSelected } = options;
+    const { accept: _accept, multiple: _multiple = false, onFilesSelected } = options;
 
     const [files, setFiles] = createSignal<File[]>([]);
     const inputRef = { current: undefined as HTMLInputElement | undefined };
-    const [dragCounter, setDragCounter] = createSignal(0);
+    const [_dragCounter, setDragCounter] = createSignal(0);
 
     const processFiles = (fileList: FileList | null): void => {
         if (!fileList || fileList.length === 0) {
@@ -114,5 +114,3 @@ export const createFileInput = (options: CreateFileInputOptions = {}): CreateFil
         reset,
     };
 };
-
-

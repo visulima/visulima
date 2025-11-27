@@ -69,14 +69,14 @@ export const createTransformFile = (options: CreateTransformFileOptions): Create
                 });
 
                 if (!response.ok) {
-                    const errorData = await response.json().catch(() => {
+                    const errorData = (await response.json().catch(() => {
                         return {
                             error: {
                                 code: "RequestFailed",
                                 message: response.statusText,
                             },
                         };
-                    });
+                    })) as { error: { code: string; message: string } };
 
                     throw new Error(errorData.error?.message || `Failed to get transformed file: ${response.status} ${response.statusText}`);
                 }
@@ -86,26 +86,56 @@ export const createTransformFile = (options: CreateTransformFileOptions): Create
 
                 return { blob, meta };
             },
-            queryKey: storageQueryKeys.transform.file(endpoint, fileId, transformParams),
+            queryKey: (() => {
+                const filteredTransform = Object.fromEntries(Object.entries(transformParams).filter(([, value]) => value !== undefined)) as Record<
+                    string,
+                    string | number | boolean
+                >;
+
+                return storageQueryKeys.transform.file(endpoint, fileId, filteredTransform);
+            })(),
         };
     });
 
     return {
         data: () => {
-            const data = typeof query.data === "function" ? query.data() : query.data;
+            try {
+                const dataValue = (query as any).data;
+                const data = typeof dataValue === "function" ? dataValue() : dataValue;
 
-            return data?.blob;
+                return data?.blob;
+            } catch {
+                return undefined;
+            }
         },
         error: () => {
-            const error = typeof query.error === "function" ? query.error() : query.error;
+            try {
+                const errorValue = (query as any).error;
+                const error = typeof errorValue === "function" ? errorValue() : errorValue;
 
-            return (error as Error) || undefined;
+                return (error as Error) || undefined;
+            } catch {
+                return undefined;
+            }
         },
-        isLoading: () => (typeof query.isLoading === "function" ? query.isLoading() : query.isLoading) as boolean,
-        meta: () => {
-            const data = typeof query.data === "function" ? query.data() : query.data;
+        isLoading: () => {
+            try {
+                const isLoadingValue = (query as any).isLoading;
 
-            return data?.meta || undefined;
+                return (typeof isLoadingValue === "function" ? isLoadingValue() : isLoadingValue) as boolean;
+            } catch {
+                return false;
+            }
+        },
+        meta: () => {
+            try {
+                const dataValue = (query as any).data;
+                const data = typeof dataValue === "function" ? dataValue() : dataValue;
+
+                return data?.meta || undefined;
+            } catch {
+                return undefined;
+            }
         },
         refetch: () => {
             query.refetch();

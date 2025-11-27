@@ -59,20 +59,20 @@ export const useTransformFile = (options: UseTransformFileOptions): UseTransform
     const query = useQuery({
         enabled: enabled && !!id && !!transform,
         queryFn: async () => {
-            const url = buildUrl(endpoint, id, transform);
+            const url = buildUrl(endpoint, id, transform as Record<string, string | number | boolean | undefined>);
             const response = await fetch(url, {
                 method: "GET",
             });
 
             if (!response.ok) {
-                const errorData = await response.json().catch(() => {
+                const errorData = (await response.json().catch(() => {
                     return {
                         error: {
                             code: "RequestFailed",
                             message: response.statusText,
                         },
                     };
-                });
+                })) as { error: { code: string; message: string } };
 
                 throw new Error(errorData.error?.message || `Failed to get transformed file: ${response.status} ${response.statusText}`);
             }
@@ -82,7 +82,14 @@ export const useTransformFile = (options: UseTransformFileOptions): UseTransform
 
             return { blob, meta };
         },
-        queryKey: storageQueryKeys.transform.file(endpoint, id, transform),
+        queryKey: (() => {
+            const filteredTransform = Object.fromEntries(Object.entries(transform).filter(([, value]) => value !== undefined)) as Record<
+                string,
+                string | number | boolean
+            >;
+
+            return storageQueryKeys.transform.file(endpoint, id, filteredTransform);
+        })(),
     });
 
     // Extract metadata from response if available

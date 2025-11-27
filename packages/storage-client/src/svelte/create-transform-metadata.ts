@@ -1,6 +1,6 @@
 import { createQuery } from "@tanstack/svelte-query";
 import type { Readable } from "svelte/store";
-import { derived, get } from "svelte/store";
+import { derived, get, readable } from "svelte/store";
 
 import { buildUrl, fetchJson, storageQueryKeys } from "../core";
 
@@ -58,10 +58,17 @@ export const createTransformMetadata = (options: CreateTransformMetadataOptions)
         };
     });
 
+    const dataStore = (query.data as Readable<TransformMetadata | undefined> | null) ?? readable<TransformMetadata | undefined>(undefined);
+    const errorStore = (query.error as Readable<Error | null> | null) ?? readable<Error | null>(null);
+    const isLoadingStore: Readable<boolean>
+        = typeof (query.isLoading as any) === "object" && (query.isLoading as any) !== null && "subscribe" in (query.isLoading as any)
+            ? (query.isLoading as unknown as Readable<boolean>)
+            : readable<boolean>(false);
+
     return {
-        data: query.data,
-        error: derived(query.error, ($error) => ($error as Error) || undefined),
-        isLoading: query.isLoading,
+        data: derived(dataStore, ($data) => $data || undefined),
+        error: derived(errorStore, ($error) => $error ? ($error as Error) : undefined),
+        isLoading: isLoadingStore,
         refetch: () => {
             query.refetch();
         },

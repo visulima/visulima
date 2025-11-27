@@ -1,7 +1,7 @@
 import { onDestroy, onMount } from "svelte";
 
 import { createMultipartAdapter } from "../core/multipart-adapter";
-import type { UploadItem } from "../core/uploader";
+import type { BatchState, UploadItem } from "../core/uploader";
 
 export interface CreateAllAbortListenerOptions {
     endpoint: string;
@@ -14,7 +14,11 @@ export const createAllAbortListener = (options: CreateAllAbortListenerOptions): 
 
     onMount(() => {
         const adapter = createMultipartAdapter({ endpoint, metadata });
-        const handler = (item: UploadItem): void => onAbort(item);
+        const handler = (itemOrBatch: UploadItem | BatchState): void => {
+            if ("file" in itemOrBatch) {
+                onAbort(itemOrBatch);
+            }
+        };
 
         adapter.uploader.on("ITEM_ABORT", handler);
 
@@ -23,5 +27,3 @@ export const createAllAbortListener = (options: CreateAllAbortListenerOptions): 
         });
     });
 };
-
-

@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/vue-query";
-import type { MaybeRefOrGetter } from "vue";
+import type { MaybeRefOrGetter, Ref } from "vue";
 import { computed, toValue } from "vue";
 
 import { buildUrl, fetchHead, storageQueryKeys } from "../core";

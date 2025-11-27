@@ -69,13 +69,35 @@ export const createPutFile = (options: CreatePutFileOptions): CreatePutFileRetur
     });
 
     return {
-        data: () => mutation.data() || undefined,
-        error: () => {
-            const error = typeof mutation.error === "function" ? mutation.error() : mutation.error;
+        data: () => {
+            try {
+                const dataValue = (mutation as any).data;
+                const data = typeof dataValue === "function" ? dataValue() : dataValue;
 
-            return (error as Error) || undefined;
+                return data || undefined;
+            } catch {
+                return undefined;
+            }
         },
-        isLoading: () => (typeof mutation.isPending === "function" ? mutation.isPending() : mutation.isPending) as boolean,
+        error: () => {
+            try {
+                const errorValue = (mutation as any).error;
+                const error = typeof errorValue === "function" ? errorValue() : errorValue;
+
+                return (error as Error) || undefined;
+            } catch {
+                return undefined;
+            }
+        },
+        isLoading: () => {
+            try {
+                const isPendingValue = (mutation as any).isPending;
+
+                return (typeof isPendingValue === "function" ? isPendingValue() : isPendingValue) as boolean;
+            } catch {
+                return false;
+            }
+        },
         progress,
         putFile: (id: string, file: File | Blob) => mutation.mutateAsync({ file, id }),
         reset: () => {

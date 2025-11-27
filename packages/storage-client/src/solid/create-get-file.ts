@@ -63,14 +63,14 @@ export const createGetFile = (options: CreateGetFileOptions): CreateGetFileRetur
                     });
 
                     if (!response.ok) {
-                        const errorData = await response.json().catch(() => {
+                        const errorData = (await response.json().catch(() => {
                             return {
                                 error: {
                                     code: "RequestFailed",
                                     message: response.statusText,
                                 },
                             };
-                        });
+                        })) as { error: { code: string; message: string } };
 
                         throw new Error(errorData.error?.message || `Failed to get file: ${response.status} ${response.statusText}`);
                     }
@@ -83,7 +83,7 @@ export const createGetFile = (options: CreateGetFileOptions): CreateGetFileRetur
                 queryKey: storageQueryKeys.files.detail(endpoint, fileId, transformParams),
             };
         },
-        () => queryClient,
+        queryClient ? () => queryClient : undefined,
     );
 
     // Extract metadata from response if available
