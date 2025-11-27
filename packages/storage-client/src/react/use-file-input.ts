@@ -21,7 +21,7 @@ export interface UseFileInputReturn {
     /** Handle file input change event */
     handleFileChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
     /** File input element ref */
-    inputRef: React.RefObject<HTMLInputElement>;
+    inputRef: React.RefObject<HTMLInputElement | null>;
     /** Open file dialog programmatically */
     openFileDialog: () => void;
     /** Reset selected files */

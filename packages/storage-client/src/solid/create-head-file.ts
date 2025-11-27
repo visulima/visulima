@@ -126,18 +126,37 @@ export const createHeadFile = (options: CreateHeadFileOptions): CreateHeadFileRe
 
     return {
         data: () => {
-            if (typeof query.data === "function") {
-                return query.data() as FileHeadMetadata | undefined;
-            }
+            try {
+                const dataValue = (query as any).data;
 
-            return query.data as FileHeadMetadata | undefined;
+                if (typeof dataValue === "function") {
+                    return dataValue() as FileHeadMetadata | undefined;
+                }
+
+                return dataValue as FileHeadMetadata | undefined;
+            } catch {
+                return undefined;
+            }
         },
         error: () => {
-            const error = typeof query.error === "function" ? query.error() : query.error;
+            try {
+                const errorValue = (query as any).error;
+                const error = typeof errorValue === "function" ? errorValue() : errorValue;
 
-            return (error as Error) || undefined;
+                return (error as Error) || undefined;
+            } catch {
+                return undefined;
+            }
         },
-        isLoading: () => (typeof query.isLoading === "function" ? query.isLoading() : query.isLoading) as boolean,
+        isLoading: () => {
+            try {
+                const isLoadingValue = (query as any).isLoading;
+
+                return (typeof isLoadingValue === "function" ? isLoadingValue() : isLoadingValue) as boolean;
+            } catch {
+                return false;
+            }
+        },
         refetch: () => {
             query.refetch();
         },

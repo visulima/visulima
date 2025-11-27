@@ -49,11 +49,24 @@ export const createDeleteFile = (options: CreateDeleteFileOptions): CreateDelete
     return {
         deleteFile: mutation.mutateAsync,
         error: () => {
-            const error = typeof mutation.error === "function" ? mutation.error() : mutation.error;
+            try {
+                const errorValue = (mutation as any).error;
+                const error = typeof errorValue === "function" ? errorValue() : errorValue;
 
-            return (error as Error) || undefined;
+                return (error as Error) || undefined;
+            } catch {
+                return undefined;
+            }
         },
-        isLoading: () => (typeof mutation.isPending === "function" ? mutation.isPending() : mutation.isPending) as boolean,
+        isLoading: () => {
+            try {
+                const isPendingValue = (mutation as any).isPending;
+
+                return (typeof isPendingValue === "function" ? isPendingValue() : isPendingValue) as boolean;
+            } catch {
+                return false;
+            }
+        },
         reset: mutation.reset,
     };
 };

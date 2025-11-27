@@ -1,7 +1,7 @@
 import { onDestroy, onMount } from "svelte";
 
 import { createMultipartAdapter } from "../core/multipart-adapter";
-import type { UploadItem } from "../core/uploader";
+import type { BatchState, UploadItem } from "../core/uploader";
 
 export interface CreateRetryListenerOptions {
     endpoint: string;
@@ -15,9 +15,9 @@ export const createRetryListener = (options: CreateRetryListenerOptions): void =
     onMount(() => {
         const adapter = createMultipartAdapter({ endpoint, metadata });
 
-        const handler = (item: UploadItem): void => {
-            if (item.retryCount && item.retryCount > 0) {
-                onRetry(item);
+        const handler = (itemOrBatch: UploadItem | BatchState): void => {
+            if ("file" in itemOrBatch && itemOrBatch.retryCount && itemOrBatch.retryCount > 0) {
+                onRetry(itemOrBatch);
             }
         };
 
@@ -28,5 +28,3 @@ export const createRetryListener = (options: CreateRetryListenerOptions): void =
         });
     });
 };
-
-

@@ -1,7 +1,7 @@
 import { onBeforeUnmount, onMounted } from "vue";
 
 import { createMultipartAdapter } from "../core/multipart-adapter";
-import type { BatchState } from "../core/uploader";
+import type { BatchState, UploadItem } from "../core/uploader";
 
 export interface UseBatchProgressListenerOptions {
     /** Upload endpoint URL (used to create uploader instance) */
@@ -25,8 +25,10 @@ export const useBatchProgressListener = (options: UseBatchProgressListenerOption
             metadata,
         });
 
-        const handler = (batch: BatchState): void => {
-            onBatchProgress(batch);
+        const handler = (itemOrBatch: UploadItem | BatchState): void => {
+            if ("itemIds" in itemOrBatch) {
+                onBatchProgress(itemOrBatch);
+            }
         };
 
         adapter.uploader.on("BATCH_PROGRESS", handler);
@@ -36,5 +38,3 @@ export const useBatchProgressListener = (options: UseBatchProgressListenerOption
         });
     });
 };
-
-

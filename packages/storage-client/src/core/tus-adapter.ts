@@ -344,7 +344,8 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
             });
 
             const location = headResponse.headers.get("Location") || uploadUrl;
-            const uploadMetadata = decodeMetadata(headResponse.headers.get("Upload-Metadata"));
+            const uploadMetadataHeader = headResponse.headers.get("Upload-Metadata");
+            const uploadMetadata = decodeMetadata(uploadMetadataHeader ?? undefined);
 
             // Try to parse response as FileMeta if available
             let fileMeta: Partial<FileMeta> = {};

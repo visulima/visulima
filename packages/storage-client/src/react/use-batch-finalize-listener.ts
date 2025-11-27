@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 
 import { createMultipartAdapter } from "../core/multipart-adapter";
-import type { BatchState } from "../core/uploader";
+import type { BatchState, UploadItem } from "../core/uploader";
 
 export interface UseBatchFinalizeListenerOptions {
     /** Upload endpoint URL (used to create uploader instance) */
@@ -32,8 +32,10 @@ export const useBatchFinalizeListener = (options: UseBatchFinalizeListenerOption
             metadata,
         });
 
-        const handler = (batch: BatchState): void => {
-            callbackRef.current(batch);
+        const handler = (itemOrBatch: UploadItem | BatchState): void => {
+            if ("itemIds" in itemOrBatch) {
+                callbackRef.current(itemOrBatch);
+            }
         };
 
         adapter.uploader.on("BATCH_FINALIZE", handler);
@@ -43,5 +45,3 @@ export const useBatchFinalizeListener = (options: UseBatchFinalizeListenerOption
         };
     }, [endpoint, metadata]);
 };
-
-

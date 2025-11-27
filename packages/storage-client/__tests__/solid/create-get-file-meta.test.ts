@@ -28,7 +28,6 @@ describe(createGetFileMeta, () => {
         if (originalFetch) {
             globalThis.fetch = originalFetch;
         } else {
-            // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
             delete (globalThis as { fetch?: typeof fetch }).fetch;
         }
 

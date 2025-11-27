@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/vue-query";
+import type { Ref } from "vue";
 import { computed } from "vue";
 
 import { storageQueryKeys } from "../core";
@@ -48,14 +49,14 @@ export const useBatchDeleteFiles = (options: UseBatchDeleteFilesOptions): UseBat
             });
 
             if (!response.ok) {
-                const errorData = await response.json().catch(() => {
+                const errorData = (await response.json().catch(() => {
                     return {
                         error: {
                             code: "RequestFailed",
                             message: response.statusText,
                         },
                     };
-                });
+                })) as { error: { code: string; message: string } };
 
                 throw new Error(errorData.error?.message || `Failed to batch delete files: ${response.status} ${response.statusText}`);
             }
@@ -77,7 +78,7 @@ export const useBatchDeleteFiles = (options: UseBatchDeleteFilesOptions): UseBat
 
             return result;
         },
-        onSuccess: (result, ids) => {
+        onSuccess: (_result, ids) => {
             // Invalidate all file-related queries
             queryClient.invalidateQueries({ queryKey: storageQueryKeys.files.all(endpoint) });
             // Remove queries for deleted files

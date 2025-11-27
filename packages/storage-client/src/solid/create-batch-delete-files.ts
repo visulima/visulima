@@ -49,14 +49,14 @@ export const createBatchDeleteFiles = (options: CreateBatchDeleteFilesOptions): 
                 });
 
                 if (!response.ok) {
-                    const errorData = await response.json().catch(() => {
+                    const errorData = (await response.json().catch(() => {
                         return {
                             error: {
                                 code: "RequestFailed",
                                 message: response.statusText,
                             },
                         };
-                    });
+                    })) as { error: { code: string; message: string } };
 
                     throw new Error(errorData.error?.message || `Failed to batch delete files: ${response.status} ${response.statusText}`);
                 }
@@ -78,7 +78,7 @@ export const createBatchDeleteFiles = (options: CreateBatchDeleteFilesOptions): 
 
                 return result;
             },
-            onSuccess: (result, ids) => {
+            onSuccess: (_result, ids) => {
                 // Invalidate all file-related queries
                 queryClient.invalidateQueries({ queryKey: storageQueryKeys.files.all(endpoint) });
                 // Remove queries for deleted files
@@ -94,11 +94,24 @@ export const createBatchDeleteFiles = (options: CreateBatchDeleteFilesOptions): 
     return {
         batchDeleteFiles: mutation.mutateAsync,
         error: () => {
-            const error = typeof mutation.error === "function" ? mutation.error() : mutation.error;
+            try {
+                const errorValue = (mutation as any).error;
+                const error = typeof errorValue === "function" ? errorValue() : errorValue;
 
-            return (error as Error) || undefined;
+                return (error as Error) || undefined;
+            } catch {
+                return undefined;
+            }
         },
-        isLoading: () => (typeof mutation.isPending === "function" ? mutation.isPending() : mutation.isPending) as boolean,
+        isLoading: () => {
+            try {
+                const isPendingValue = (mutation as any).isPending;
+
+                return (typeof isPendingValue === "function" ? isPendingValue() : isPendingValue) as boolean;
+            } catch {
+                return false;
+            }
+        },
         reset: mutation.reset,
     };
 };

@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/vue-query";
-import type { MaybeRefOrGetter } from "vue";
+import type { MaybeRefOrGetter, Ref } from "vue";
 import { computed, toValue, watch } from "vue";
 
 import { buildUrl, extractFileMetaFromHeaders, storageQueryKeys } from "../core";
@@ -53,14 +53,14 @@ export const useGetFile = (options: UseGetFileOptions): UseGetFileReturn => {
             });
 
             if (!response.ok) {
-                const errorData = await response.json().catch(() => {
+                const errorData = (await response.json().catch(() => {
                     return {
                         error: {
                             code: "RequestFailed",
                             message: response.statusText,
                         },
                     };
-                });
+                })) as { error: { code: string; message: string } };
 
                 throw new Error(errorData.error?.message || `Failed to get file: ${response.status} ${response.statusText}`);
             }

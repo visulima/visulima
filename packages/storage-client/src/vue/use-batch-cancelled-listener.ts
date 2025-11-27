@@ -1,7 +1,7 @@
 import { onBeforeUnmount, onMounted } from "vue";
 
 import { createMultipartAdapter } from "../core/multipart-adapter";
-import type { BatchState } from "../core/uploader";
+import type { BatchState, UploadItem } from "../core/uploader";
 
 export interface UseBatchCancelledListenerOptions {
     /** Upload endpoint URL (used to create uploader instance) */
@@ -25,8 +25,10 @@ export const useBatchCancelledListener = (options: UseBatchCancelledListenerOpti
             metadata,
         });
 
-        const handler = (batch: BatchState): void => {
-            onBatchCancelled(batch);
+        const handler = (itemOrBatch: UploadItem | BatchState): void => {
+            if ("itemIds" in itemOrBatch) {
+                onBatchCancelled(itemOrBatch);
+            }
         };
 
         adapter.uploader.on("BATCH_CANCELLED", handler);
@@ -36,5 +38,3 @@ export const useBatchCancelledListener = (options: UseBatchCancelledListenerOpti
         });
     });
 };
-
-

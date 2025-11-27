@@ -1,7 +1,7 @@
 import { onBeforeUnmount, onMounted } from "vue";
 
 import { createMultipartAdapter } from "../core/multipart-adapter";
-import type { UploadItem } from "../core/uploader";
+import type { BatchState, UploadItem } from "../core/uploader";
 
 export interface UseAllAbortListenerOptions {
     /** Upload endpoint URL (used to create uploader instance) */
@@ -25,8 +25,10 @@ export const useAllAbortListener = (options: UseAllAbortListenerOptions): void =
             metadata,
         });
 
-        const handler = (item: UploadItem): void => {
-            onAbort(item);
+        const handler = (itemOrBatch: UploadItem | BatchState): void => {
+            if ("file" in itemOrBatch) {
+                onAbort(itemOrBatch);
+            }
         };
 
         adapter.uploader.on("ITEM_ABORT", handler);
@@ -36,5 +38,3 @@ export const useAllAbortListener = (options: UseAllAbortListenerOptions): void =
         });
     });
 };
-
-

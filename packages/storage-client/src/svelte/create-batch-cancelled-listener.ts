@@ -1,7 +1,7 @@
 import { onDestroy, onMount } from "svelte";
 
 import { createMultipartAdapter } from "../core/multipart-adapter";
-import type { BatchState } from "../core/uploader";
+import type { BatchState, UploadItem } from "../core/uploader";
 
 export interface CreateBatchCancelledListenerOptions {
     endpoint: string;
@@ -14,7 +14,11 @@ export const createBatchCancelledListener = (options: CreateBatchCancelledListen
 
     onMount(() => {
         const adapter = createMultipartAdapter({ endpoint, metadata });
-        const handler = (batch: BatchState): void => onBatchCancelled(batch);
+        const handler = (itemOrBatch: UploadItem | BatchState): void => {
+            if ("itemIds" in itemOrBatch) {
+                onBatchCancelled(itemOrBatch);
+            }
+        };
 
         adapter.uploader.on("BATCH_CANCELLED", handler);
 

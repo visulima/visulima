@@ -1,6 +1,6 @@
 import { createMutation, useQueryClient } from "@tanstack/svelte-query";
 import type { Readable } from "svelte/store";
-import { derived } from "svelte/store";
+import { derived, readable } from "svelte/store";
 
 import { storageQueryKeys } from "../core";
 
@@ -50,14 +50,14 @@ export const createBatchDeleteFiles = (options: CreateBatchDeleteFilesOptions): 
                 });
 
                 if (!response.ok) {
-                    const errorData = await response.json().catch(() => {
+                    const errorData = (await response.json().catch(() => {
                         return {
                             error: {
                                 code: "RequestFailed",
                                 message: response.statusText,
                             },
                         };
-                    });
+                    })) as { error: { code: string; message: string } };
 
                     throw new Error(errorData.error?.message || `Failed to batch delete files: ${response.status} ${response.statusText}`);
                 }
@@ -79,7 +79,7 @@ export const createBatchDeleteFiles = (options: CreateBatchDeleteFilesOptions): 
 
                 return result;
             },
-            onSuccess: (result, ids) => {
+            onSuccess: (_result, ids) => {
                 // Invalidate all file-related queries
                 queryClient.invalidateQueries({ queryKey: storageQueryKeys.files.all(endpoint) });
                 // Remove queries for deleted files
@@ -92,10 +92,18 @@ export const createBatchDeleteFiles = (options: CreateBatchDeleteFilesOptions): 
         };
     });
 
+    const errorStore = derived((mutation.error as Readable<Error | null> | null) ?? readable<Error | null>(null), ($error) =>
+        ($error ? ($error as Error) : undefined),
+    );
+    const isLoadingStore: Readable<boolean>
+        = typeof (mutation.isPending as any) === "object" && (mutation.isPending as any) !== null && "subscribe" in (mutation.isPending as any)
+            ? (mutation.isPending as unknown as Readable<boolean>)
+            : readable<boolean>(false);
+
     return {
         batchDeleteFiles: mutation.mutateAsync,
-        error: derived(mutation.error, ($error) => ($error as Error) || undefined),
-        isLoading: mutation.isPending,
+        error: errorStore,
+        isLoading: isLoadingStore,
         reset: mutation.reset,
     };
 };

@@ -1,6 +1,6 @@
 import { createQuery } from "@tanstack/svelte-query";
 import type { Readable } from "svelte/store";
-import { derived, get } from "svelte/store";
+import { derived, get, readable } from "svelte/store";
 
 import { buildUrl, extractFileMetaFromHeaders, storageQueryKeys } from "../core";
 import type { FileMeta } from "../react/types";
@@ -55,7 +55,9 @@ export const createTransformFile = (options: CreateTransformFileOptions): Create
 
     const idStore: Readable<string> = typeof id === "object" && "subscribe" in id ? id : derived([], () => id as string);
     const transformStore: Readable<TransformOptions>
-        = typeof transform === "object" && "subscribe" in transform ? transform : derived([], () => transform as TransformOptions);
+        = typeof transform === "object" && "subscribe" in transform
+            ? (transform as Readable<TransformOptions>)
+            : derived([], () => transform as TransformOptions);
     const enabledStore: Readable<boolean> = typeof enabled === "object" && "subscribe" in enabled ? enabled : derived([], () => enabled as boolean);
 
     const query = createQuery(() => {
@@ -72,14 +74,14 @@ export const createTransformFile = (options: CreateTransformFileOptions): Create
                 });
 
                 if (!response.ok) {
-                    const errorData = await response.json().catch(() => {
+                    const errorData = (await response.json().catch(() => {
                         return {
                             error: {
                                 code: "RequestFailed",
                                 message: response.statusText,
                             },
                         };
-                    });
+                    })) as { error: { code: string; message: string } };
 
                     throw new Error(errorData.error?.message || `Failed to get transformed file: ${response.status} ${response.statusText}`);
                 }
@@ -89,15 +91,31 @@ export const createTransformFile = (options: CreateTransformFileOptions): Create
 
                 return { blob, meta };
             },
-            queryKey: storageQueryKeys.transform.file(endpoint, currentId, currentTransform),
+            queryKey: (() => {
+                const filteredTransform = Object.fromEntries(Object.entries(currentTransform).filter(([, value]) => value !== undefined)) as Record<
+                    string,
+                    string | number | boolean
+                >;
+
+                return storageQueryKeys.transform.file(endpoint, currentId, filteredTransform);
+            })(),
         };
     });
 
+    const dataStore
+        = (query.data as unknown as Readable<{ blob: Blob; meta: FileMeta } | undefined> | null)
+            ?? readable<{ blob: Blob; meta: FileMeta } | undefined>(undefined);
+    const errorStore = (query.error as unknown as Readable<Error | null> | null) ?? readable<Error | null>(null);
+    const isLoadingStore: Readable<boolean>
+        = typeof (query.isLoading as any) === "object" && (query.isLoading as any) !== null && "subscribe" in (query.isLoading as any)
+            ? (query.isLoading as unknown as Readable<boolean>)
+            : readable<boolean>(false);
+
     return {
-        data: derived(query.data, ($data) => $data?.blob),
-        error: derived(query.error, ($error) => ($error as Error) || undefined),
-        isLoading: query.isLoading,
-        meta: derived(query.data, ($data) => $data?.meta || undefined),
+        data: derived(dataStore, ($data) => $data?.blob),
+        error: derived(errorStore, ($error) => ($error ? ($error as Error) : undefined)),
+        isLoading: isLoadingStore,
+        meta: derived(dataStore, ($data) => $data?.meta || undefined),
         refetch: () => {
             query.refetch();
         },

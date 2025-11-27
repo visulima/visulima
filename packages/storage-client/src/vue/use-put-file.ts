@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/vue-query";
+import type { Ref } from "vue";
 import { computed, ref } from "vue";
 
 import { buildUrl, putFile, storageQueryKeys } from "../core";

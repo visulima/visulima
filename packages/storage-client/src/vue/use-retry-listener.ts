@@ -1,7 +1,7 @@
 import { onBeforeUnmount, onMounted } from "vue";
 
 import { createMultipartAdapter } from "../core/multipart-adapter";
-import type { UploadItem } from "../core/uploader";
+import type { BatchState, UploadItem } from "../core/uploader";
 
 export interface UseRetryListenerOptions {
     /** Upload endpoint URL (used to create uploader instance) */
@@ -26,10 +26,10 @@ export const useRetryListener = (options: UseRetryListenerOptions): void => {
             metadata,
         });
 
-        const handler = (item: UploadItem): void => {
+        const handler = (itemOrBatch: UploadItem | BatchState): void => {
             // Only trigger retry callback if item has been retried
-            if (item.retryCount && item.retryCount > 0) {
-                onRetry(item);
+            if ("file" in itemOrBatch && itemOrBatch.retryCount && itemOrBatch.retryCount > 0) {
+                onRetry(itemOrBatch);
             }
         };
 
@@ -40,5 +40,3 @@ export const useRetryListener = (options: UseRetryListenerOptions): void => {
         });
     });
 };
-
-

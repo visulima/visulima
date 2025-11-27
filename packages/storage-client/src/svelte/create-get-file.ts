@@ -1,7 +1,7 @@
 import { createQuery } from "@tanstack/svelte-query";
 import { onDestroy } from "svelte";
 import type { Readable } from "svelte/store";
-import { derived, get } from "svelte/store";
+import { derived, get, readable } from "svelte/store";
 
 import { buildUrl, extractFileMetaFromHeaders, storageQueryKeys } from "../core";
 import type { FileMeta } from "../react/types";
@@ -50,7 +50,9 @@ export const createGetFile = (options: CreateGetFileOptions): CreateGetFileRetur
     // Convert to stores if needed
     const idStore: Readable<string> = typeof id === "object" && "subscribe" in id ? id : derived([], () => id as string);
     const transformStore: Readable<Record<string, string | number | boolean> | undefined>
-        = typeof transform === "object" && "subscribe" in transform ? transform : derived([], () => transform);
+        = typeof transform === "object" && "subscribe" in transform
+            ? (transform as Readable<Record<string, string | number | boolean> | undefined>)
+            : derived([], () => transform);
     const enabledStore: Readable<boolean> = typeof enabled === "object" && "subscribe" in enabled ? enabled : derived([], () => enabled as boolean);
 
     // Create derived stores for reactive query options
@@ -72,14 +74,14 @@ export const createGetFile = (options: CreateGetFileOptions): CreateGetFileRetur
                 });
 
                 if (!response.ok) {
-                    const errorData = await response.json().catch(() => {
+                    const errorData = (await response.json().catch(() => {
                         return {
                             error: {
                                 code: "RequestFailed",
                                 message: response.statusText,
                             },
                         };
-                    });
+                    })) as { error: { code: string; message: string } };
 
                     throw new Error(errorData.error?.message || `Failed to get file: ${response.status} ${response.statusText}`);
                 }
@@ -89,19 +91,37 @@ export const createGetFile = (options: CreateGetFileOptions): CreateGetFileRetur
 
                 return { blob, meta };
             },
-            queryKey: storageQueryKeys.files.detail(endpoint, currentId, currentTransform),
+            queryKey: (() => {
+                const filteredTransform = currentTransform
+                    ? (Object.fromEntries(Object.entries(currentTransform).filter(([, value]) => value !== undefined)) as Record<
+                        string,
+                          string | number | boolean
+                    >)
+                    : undefined;
+
+                return storageQueryKeys.files.detail(endpoint, currentId, filteredTransform);
+            })(),
         };
     });
 
+    const queryDataStore
+        = (query.data as unknown as Readable<{ blob: Blob; meta: FileMeta } | undefined> | null)
+            ?? readable<{ blob: Blob; meta: FileMeta } | undefined>(undefined);
+    const queryErrorStore = (query.error as unknown as Readable<Error | null> | null) ?? readable<Error | null>(null);
+    const queryIsLoadingStore: Readable<boolean>
+        = typeof (query.isLoading as any) === "object" && (query.isLoading as any) !== null && "subscribe" in (query.isLoading as any)
+            ? (query.isLoading as unknown as Readable<boolean>)
+            : readable<boolean>(false);
+
     // Extract metadata from response if available
-    const meta = derived(query.data, ($data) => $data?.meta || undefined);
+    const meta = derived(queryDataStore, ($data) => $data?.meta || undefined);
 
     // Subscribe to data and error changes to call callbacks
     let unsubscribeData: (() => void) | undefined;
     let unsubscribeError: (() => void) | undefined;
 
     if (onSuccess || onError) {
-        unsubscribeData = query.data.subscribe(($data) => {
+        unsubscribeData = queryDataStore.subscribe(($data: { blob: Blob; meta: FileMeta } | undefined) => {
             if ($data && onSuccess) {
                 const currentMeta = get(meta);
 
@@ -109,7 +129,7 @@ export const createGetFile = (options: CreateGetFileOptions): CreateGetFileRetur
             }
         });
 
-        unsubscribeError = query.error.subscribe(($error) => {
+        unsubscribeError = queryErrorStore.subscribe(($error: Error | null) => {
             if ($error && onError) {
                 onError($error as Error);
             }
@@ -122,9 +142,9 @@ export const createGetFile = (options: CreateGetFileOptions): CreateGetFileRetur
     }
 
     return {
-        data: derived(query.data, ($data) => $data?.blob),
-        error: derived(query.error, ($error) => ($error as Error) || undefined),
-        isLoading: query.isLoading,
+        data: derived(queryDataStore, ($data) => $data?.blob),
+        error: derived(queryErrorStore, ($error) => ($error ? ($error as Error) : undefined)),
+        isLoading: queryIsLoadingStore,
         meta,
         refetch: () => {
             query.refetch();

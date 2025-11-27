@@ -1,6 +1,6 @@
 import { createMutation, useQueryClient } from "@tanstack/svelte-query";
 import type { Readable } from "svelte/store";
-import { derived } from "svelte/store";
+import { derived, readable } from "svelte/store";
 
 import { buildUrl, deleteRequest, storageQueryKeys } from "../core";
 
@@ -51,10 +51,18 @@ export const createDeleteFile = (options: CreateDeleteFileOptions): CreateDelete
         };
     });
 
+    const errorStore = derived((mutation.error as Readable<Error | null> | null) ?? readable<Error | null>(null), ($error) =>
+        ($error ? ($error as Error) : undefined),
+    );
+    const isLoadingStore: Readable<boolean>
+        = typeof (mutation.isPending as any) === "object" && (mutation.isPending as any) !== null && "subscribe" in (mutation.isPending as any)
+            ? (mutation.isPending as unknown as Readable<boolean>)
+            : readable<boolean>(false);
+
     return {
         deleteFile: mutation.mutateAsync,
-        error: derived(mutation.error, ($error) => ($error as Error) || undefined),
-        isLoading: mutation.isPending,
+        error: errorStore,
+        isLoading: isLoadingStore,
         reset: mutation.reset,
     };
 };
