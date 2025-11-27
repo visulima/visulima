@@ -17,8 +17,7 @@ const PROVIDER_NAME = "failover";
 /**
  * Failover Provider for sending emails with automatic failover to backup providers.
  */
-// eslint-disable-next-line import/prefer-default-export -- Named export is intentional
-export const failoverProvider: ProviderFactory<FailoverConfig, unknown, FailoverEmailOptions> = defineProvider(
+const provider: ProviderFactory<FailoverConfig, unknown, FailoverEmailOptions> = defineProvider(
     (config: FailoverConfig = {} as FailoverConfig) => {
         if (!config.mailers || config.mailers.length === 0) {
             throw new RequiredOptionError(PROVIDER_NAME, "mailers");
@@ -249,3 +248,5 @@ export const failoverProvider: ProviderFactory<FailoverConfig, unknown, Failover
         };
     },
 );
+
+export default provider;

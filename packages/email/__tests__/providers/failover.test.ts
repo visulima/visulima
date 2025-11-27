@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import EmailError from "../../src/errors/email-error";
 import RequiredOptionError from "../../src/errors/required-option-error";
-import { failoverProvider } from "../../src/providers/failover/provider";
+import failoverProvider from "../../src/providers/failover/provider";
 import type { Provider } from "../../src/providers/provider";
 import type { EmailOptions, EmailResult, Result } from "../../src/types";
 
