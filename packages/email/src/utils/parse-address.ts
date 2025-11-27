@@ -29,14 +29,33 @@ const isValidLocalPart = (localPart: string): boolean => {
  * @param email The email string to validate.
  * @returns True if the email format is valid, false otherwise.
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity
 const isValidEmailFormat = (email: string): boolean => {
-    const domainLiteralMatch = email.match(/^(.+)@\[([^\]]+)\]$/);
+    // Check for domain literal format without vulnerable regex backtracking
+    // Pattern: localpart@[domain-literal]
+    // Use indexOf to avoid regex backtracking vulnerabilities
+    const atBracketIndex = email.indexOf("@[");
 
-    if (domainLiteralMatch) {
-        const localPart = domainLiteralMatch[1];
-        const domainLiteral = domainLiteralMatch[2];
+    if (atBracketIndex > 0 && email.endsWith("]")) {
+        // Ensure there's only one @[ and it's the one we're matching
+        // by checking that there's no @[ after the first one (before the closing bracket)
+        const closingBracketIndex = email.length - 1;
+        const domainLiteralSection = email.slice(atBracketIndex + 2, closingBracketIndex);
+
+        // If there's another @[ in the domain literal section, it's invalid
+        if (domainLiteralSection.includes("@[")) {
+            return false;
+        }
+
+        const localPart = email.slice(0, atBracketIndex);
+        const domainLiteral = domainLiteralSection;
 
         if (!domainLiteral || domainLiteral.trim().length === 0) {
+            return false;
+        }
+
+        // Ensure no unescaped closing bracket in domain literal
+        if (domainLiteral.includes("]")) {
             return false;
         }
 

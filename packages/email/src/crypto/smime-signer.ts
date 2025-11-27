@@ -19,6 +19,7 @@ import {
 } from "pkijs";
 
 import type { EmailOptions } from "../types";
+import generateBoundary from "../utils/generate-boundary";
 import type { EmailSigner, SmimeSignOptions } from "./types";
 
 const idContentType = "1.2.840.113549.1.9.3";
@@ -103,7 +104,10 @@ export class SmimeSigner implements EmailSigner {
      */
     private static formatAddress(address: { email: string; name?: string }): string {
         if (address.name) {
-            return `"${address.name}" <${address.email}>`;
+            // Escape backslashes and double quotes per RFC 5322
+            const escapedName = address.name.replaceAll("\\", "\\\\").replaceAll("\"", String.raw`\"`);
+
+            return `"${escapedName}" <${address.email}>`;
         }
 
         return address.email;
@@ -303,11 +307,45 @@ export class SmimeSigner implements EmailSigner {
             }
         }
 
+        // Add Content-Type header based on content
+        const hasText = Boolean(email.text);
+        const hasHtml = Boolean(email.html);
+        let boundary: string | undefined;
+
+        if (hasText && hasHtml) {
+            // Both text and html present: use multipart/alternative
+            boundary = generateBoundary();
+            lines.push(`Content-Type: multipart/alternative; boundary="${boundary}"`);
+        } else if (hasHtml) {
+            // Only HTML present
+            lines.push("Content-Type: text/html; charset=utf-8");
+        } else {
+            // Only text present (or neither, default to text/plain)
+            lines.push("Content-Type: text/plain; charset=utf-8");
+        }
+
         lines.push("");
 
-        if (email.text) {
+        // Add body content
+        if (hasText && hasHtml && boundary) {
+            // Multipart/alternative structure
+            // Add text part
+            lines.push(
+                `--${boundary}`,
+                "Content-Type: text/plain; charset=utf-8",
+                "",
+                email.text,
+                "",
+                `--${boundary}`,
+                "Content-Type: text/html; charset=utf-8",
+                "",
+                email.html,
+                "",
+                `--${boundary}--`,
+            );
+        } else if (hasText) {
             lines.push(email.text);
-        } else if (email.html) {
+        } else if (hasHtml) {
             lines.push(email.html);
         }
 

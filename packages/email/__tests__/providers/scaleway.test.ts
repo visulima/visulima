@@ -55,21 +55,13 @@ describe(scalewayProvider, () => {
 
             const makeRequestMock = makeRequest as ReturnType<typeof vi.fn>;
 
-            makeRequestMock
-                .mockResolvedValueOnce({
-                    data: {
-                        body: {},
-                        statusCode: 200,
-                    },
-                    success: true,
-                })
-                .mockResolvedValueOnce({
-                    data: {
-                        body: { id: "test-message-id" },
-                        statusCode: 201,
-                    },
-                    success: true,
-                });
+            makeRequestMock.mockResolvedValueOnce({
+                data: {
+                    body: { id: "test-message-id" },
+                    statusCode: 201,
+                },
+                success: true,
+            });
 
             const provider = scalewayProvider({ apiKey: "test123", region: "fr-par" });
             const emailOptions: ScalewayEmailOptions = {
