@@ -50,7 +50,7 @@ import type { AwsError, S3StorageOptions } from "./types";
  * ## Supported Operations
  * - ✅ create, write, delete, get, getStream, list, update, copy, move
  * - ✅ Batch operations: deleteBatch, copyBatch, moveBatch (inherited from BaseStorage)
- * - ❌ exists: Not implemented (use get() and catch FILE_NOT_FOUND error)
+ * - ✅ exists: Implemented (checks metadata and S3 object)
  * - ❌ getUrl: Not implemented (presigned URLs available via buildPresigned for clientDirectUpload)
  * - ❌ getUploadUrl: Not implemented (presigned URLs available via buildPresigned for clientDirectUpload)
  */

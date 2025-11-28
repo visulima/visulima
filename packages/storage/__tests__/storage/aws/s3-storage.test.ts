@@ -381,4 +381,82 @@ describe("s3PresignedStorage", () => {
             expect(s3file.status).toBe("completed");
         });
     });
+
+    describe(".exists()", () => {
+        it("should return true when both metadata and S3 object exist", async () => {
+            expect.assertions(1);
+
+            // Set up mocks for create operation
+            s3Mock.on(HeadObjectCommand).rejects(); // File doesn't exist initially
+            s3Mock.on(CreateMultipartUploadCommand).resolves({ UploadId: "123456789" });
+            s3Mock.on(ListPartsCommand).resolves({ Parts: [] });
+
+            // Create file first
+            await storage.create(metafile);
+
+            // Reset mocks for exists operation
+            s3Mock.reset();
+
+            // Mock headObject calls: first for metadata (.META suffix), then for actual file
+            s3Mock
+                .on(HeadObjectCommand)
+                .resolvesOnce(metafileResponse) // Metadata check (getMeta)
+                .resolvesOnce({
+                    ContentLength: 100,
+                    ContentType: "video/mp4",
+                    ETag: "test-etag",
+                }); // File check (headObject)
+
+            const exists = await storage.exists({ id: metafile.id });
+
+            expect(exists).toBe(true);
+        });
+
+        it("should return false when metadata does not exist", async () => {
+            expect.assertions(1);
+
+            // Mock getMeta to throw (metadata doesn't exist)
+            s3Mock.on(HeadObjectCommand).rejects({ $metadata: { httpStatusCode: 404 } });
+
+            const exists = await storage.exists({ id: "non-existent-id" });
+
+            expect(exists).toBe(false);
+        });
+
+        it("should return false when metadata exists but S3 object does not exist", async () => {
+            expect.assertions(1);
+
+            // Set up mocks for create operation
+            s3Mock.on(HeadObjectCommand).rejects(); // File doesn't exist initially
+            s3Mock.on(CreateMultipartUploadCommand).resolves({ UploadId: "123456789" });
+            s3Mock.on(ListPartsCommand).resolves({ Parts: [] });
+
+            // Create file (metadata exists)
+            await storage.create(metafile);
+
+            // Reset mocks for exists operation
+            s3Mock.reset();
+
+            // Mock headObject calls: metadata check succeeds, file check fails with 404
+            s3Mock
+                .on(HeadObjectCommand)
+                .resolvesOnce(metafileResponse) // Metadata check (getMeta) - succeeds
+                .rejectsOnce({ $metadata: { httpStatusCode: 404 } }); // File check (headObject) - fails
+
+            const exists = await storage.exists({ id: metafile.id });
+
+            expect(exists).toBe(false);
+        });
+
+        it("should return false when S3 object exists but metadata does not exist", async () => {
+            expect.assertions(1);
+
+            // Mock getMeta to throw (metadata doesn't exist)
+            s3Mock.on(HeadObjectCommand).rejects({ $metadata: { httpStatusCode: 404 } });
+
+            const exists = await storage.exists({ id: "orphaned-object-id" });
+
+            expect(exists).toBe(false);
+        });
+    });
 });

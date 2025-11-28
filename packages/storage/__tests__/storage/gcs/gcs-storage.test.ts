@@ -1,5 +1,4 @@
 import type { Response as NodeFetchResponse } from "node-fetch";
-import { createRequest } from "node-mocks-http";
 import { afterEach, beforeEach, describe, expect, expectTypeOf, it, vi } from "vitest";
 
 import FetchError from "../../../src/storage/gcs/fetch-error";
@@ -46,7 +45,7 @@ describe(GCStorage, async () => {
 
     // eslint-disable-next-line sonarjs/no-clear-text-protocols
     const uri = "http://api.com?upload_id=123456789";
-    const request = createRequest({ headers: { origin: "http://api.com" } });
+
     const metafileResponse = (): { data: GCSFile; status: number } =>
         structuredClone({
             data: { ...metafile, createdAt: new Date().toISOString(), uri },
@@ -116,6 +115,8 @@ describe(GCStorage, async () => {
         });
 
         it("should handle TTL option and set expiration timestamp", async () => {
+            expect.assertions(3);
+
             mockAuthRequest.mockRejectedValueOnce({ code: 404, detail: "meta not found" }); // getMeta
             mockAuthRequest.mockResolvedValueOnce({
                 headers: {
@@ -172,6 +173,8 @@ describe(GCStorage, async () => {
         });
 
         it("should handle TTL option and set expiration timestamp during update", async () => {
+            expect.assertions(3);
+
             mockAuthRequest.mockResolvedValue(metafileResponse());
 
             const gcsFile = await storage.update(metafile, { ttl: "2h" });
@@ -304,6 +307,57 @@ describe(GCStorage, async () => {
             vi.spyOn(storage, "getMeta").mockRejectedValue(new Error("File not found"));
 
             await expect(storage.delete(metafile)).rejects.toThrow();
+        });
+    });
+
+    describe(".exists()", () => {
+        it("should return true when both metadata and GCS object exist", async () => {
+            expect.assertions(1);
+
+            // Mock getMeta to return metadata
+            vi.spyOn(storage, "getMeta").mockResolvedValue({ ...metafile, uri });
+
+            // Mock HEAD request to return success (object exists)
+            mockAuthRequest.mockResolvedValueOnce({ status: 200 });
+
+            const exists = await storage.exists({ id: metafile.id });
+
+            expect(exists).toBe(true);
+        });
+
+        it("should return false when metadata does not exist", async () => {
+            expect.assertions(1);
+
+            // Mock getMeta to throw error (metadata doesn't exist)
+            vi.spyOn(storage, "getMeta").mockRejectedValue(new Error("File not found"));
+
+            const exists = await storage.exists({ id: "non-existent-id" });
+
+            expect(exists).toBe(false);
+        });
+
+        it("should return false when metadata exists but GCS object does not exist", async () => {
+            expect.assertions(1);
+
+            // Mock getMeta to return metadata
+            vi.spyOn(storage, "getMeta").mockResolvedValue({ ...metafile, uri });
+
+            // Mock HEAD request to throw error for 404 (object doesn't exist)
+            // gaxios errors have response.status structure
+            const fetchError = {
+                code: "ENOTFOUND",
+                message: "Not Found",
+                response: { status: 404 },
+                status: 404,
+            };
+
+            // Clear previous mocks and ensure the error is thrown
+            mockAuthRequest.mockReset();
+            mockAuthRequest.mockRejectedValueOnce(fetchError);
+
+            const exists = await storage.exists({ id: metafile.id });
+
+            expect(exists).toBe(false);
         });
     });
 

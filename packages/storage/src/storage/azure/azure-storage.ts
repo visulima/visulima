@@ -25,7 +25,7 @@ import type { AzureStorageOptions } from "./types";
  * ## Supported Operations
  * - ✅ create, write, delete, get, list, update, copy, move
  * - ✅ Batch operations: deleteBatch, copyBatch, moveBatch (inherited from BaseStorage)
- * - ❌ exists: Not implemented (use get() and catch FILE_NOT_FOUND error)
+ * - ✅ exists: Implemented (checks metadata and Azure blob)
  * - ❌ getStream: Not implemented (use get() for file retrieval)
  * - ❌ getUrl: Not implemented (Azure Blob URLs not supported)
  * - ❌ getUploadUrl: Not implemented (Azure Blob upload URLs handled internally)
@@ -381,6 +381,30 @@ class AzureStorage extends BaseStorage<AzureFile, FileReturn> {
                 originalName: metadata?.originalName || "",
                 size: contentLength as number,
             };
+        });
+    }
+
+    /**
+     * Checks if a file exists by verifying both metadata and the actual Azure blob.
+     * Returns true only if both the metadata and the blob exist.
+     * @param query File query containing the file ID to check.
+     * @returns Promise resolving to true if both metadata and blob exist, false otherwise.
+     */
+    public override async exists({ id }: FileQuery): Promise<boolean> {
+        return this.instrumentOperation("exists", async () => {
+            try {
+                // First check if metadata exists
+                await this.getMeta(id);
+
+                // Then verify the actual blob exists
+                const blobClient = this.containerClient.getBlockBlobClient(id);
+                const exists = await this.retry(() => blobClient.exists());
+
+                return exists;
+            } catch {
+                // Return false if metadata doesn't exist or blob doesn't exist
+                return false;
+            }
         });
     }
 

@@ -43,7 +43,7 @@ import type { AwsLightError, AwsLightStorageOptions } from "./types";
  * ## Supported Operations
  * - ✅ create, write, delete, get, getStream, list, update, copy, move
  * - ✅ Batch operations: deleteBatch, copyBatch, moveBatch (inherited from BaseStorage)
- * - ❌ exists: Not implemented (use get() and catch FILE_NOT_FOUND error)
+ * - ✅ exists: Implemented (checks metadata and S3 object)
  * - ⚠️ getUrl/getUploadUrl: Limited presigned URL support (uses aws4fetch signing)
  */
 class AwsLightStorage extends S3BaseStorage<AwsLightFile> {

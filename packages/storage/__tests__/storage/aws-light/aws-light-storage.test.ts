@@ -886,4 +886,93 @@ describe("awsLightPresignedStorage", () => {
             expect(awsLightFile.status).toBe("completed");
         });
     });
+
+    describe(".exists()", () => {
+        it("should return true when both metadata and S3 object exist", async () => {
+            expect.assertions(1);
+
+            const mockFetch = getMockFetch();
+
+            mockBucketAccessCheck();
+
+            storage = new AwsLightStorage(options);
+
+            // Mock metadata exists (for getMeta - called during exists)
+            mockFetch.mockResolvedValueOnce(
+                createMetaHeadResponse({
+                    ...metafile,
+                    bytesWritten: 0,
+                    createdAt: new Date().toISOString(),
+                    status: "created",
+                    UploadId: "987654321",
+                }),
+            );
+
+            // Mock headObject to return success (object exists)
+            mockFetch.mockResolvedValueOnce({
+                headers: new Headers({
+                    "content-length": "100",
+                    "content-type": "video/mp4",
+                    etag: "test-etag",
+                }),
+                ok: true,
+                status: 200,
+            } as Response);
+
+            const exists = await storage.exists({ id: metafile.id });
+
+            expect(exists).toBe(true);
+        });
+
+        it("should return false when metadata does not exist", async () => {
+            expect.assertions(1);
+
+            const mockFetch = getMockFetch();
+
+            mockBucketAccessCheck();
+
+            storage = new AwsLightStorage(options);
+
+            // Mock headObject to return 404 (metadata doesn't exist)
+            mockFetch.mockResolvedValueOnce({
+                ok: false,
+                status: 404,
+            } as Response);
+
+            const exists = await storage.exists({ id: "non-existent-id" });
+
+            expect(exists).toBe(false);
+        });
+
+        it("should return false when metadata exists but S3 object does not exist", async () => {
+            expect.assertions(1);
+
+            const mockFetch = getMockFetch();
+
+            mockBucketAccessCheck();
+
+            storage = new AwsLightStorage(options);
+
+            // Mock metadata exists (for getMeta - called during exists)
+            mockFetch.mockResolvedValueOnce(
+                createMetaHeadResponse({
+                    ...metafile,
+                    bytesWritten: 0,
+                    createdAt: new Date().toISOString(),
+                    status: "created",
+                    UploadId: "987654321",
+                }),
+            );
+
+            // Mock headObject to return 404 (object doesn't exist)
+            mockFetch.mockResolvedValueOnce({
+                ok: false,
+                status: 404,
+            } as Response);
+
+            const exists = await storage.exists({ id: metafile.id });
+
+            expect(exists).toBe(false);
+        });
+    });
 });

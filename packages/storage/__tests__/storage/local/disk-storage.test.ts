@@ -476,6 +476,66 @@ describe(DiskStorage, () => {
     });
 
     describe("streaming functionality", () => {
+        describe(".exists()", () => {
+            beforeEach(async () => {
+                storage = new DiskStorage(options);
+            });
+
+            it("should return true when both metadata and file exist", async () => {
+                expect.assertions(1);
+
+                // Create a file with metadata and actual file
+                const file = await storage.create(metafile);
+
+                await storage.write({ ...file, body: Readable.from("test content"), start: 0 });
+
+                const exists = await storage.exists({ id: file.id });
+
+                expect(exists).toBe(true);
+            });
+
+            it("should return false when metadata does not exist", async () => {
+                expect.assertions(1);
+
+                const exists = await storage.exists({ id: "non-existent-id" });
+
+                expect(exists).toBe(false);
+            });
+
+            it("should return false when metadata exists but file does not exist", async () => {
+                expect.assertions(1);
+
+                // Create metadata but don't create the actual file
+                const file = await storage.create(metafile);
+
+                // Delete the actual file if it was created
+                try {
+                    const filePath = join(storage.directory, file.name);
+
+                    await fsp.unlink(filePath);
+                } catch {
+                    // File doesn't exist, which is what we want
+                }
+
+                const exists = await storage.exists({ id: file.id });
+
+                expect(exists).toBe(false);
+            });
+
+            it("should return false when file exists but metadata does not exist", async () => {
+                expect.assertions(1);
+
+                // Create a file directly on disk without metadata
+                const filePath = join(storage.directory, "orphaned-file.mp4");
+
+                await fsp.writeFile(filePath, "test content");
+
+                const exists = await storage.exists({ id: "orphaned-file.mp4" });
+
+                expect(exists).toBe(false);
+            });
+        });
+
         describe(".getStream()", () => {
             beforeEach(async () => {
                 storage = new DiskStorage(options);

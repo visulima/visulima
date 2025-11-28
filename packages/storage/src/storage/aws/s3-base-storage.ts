@@ -537,6 +537,43 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
     }
 
     /**
+     * Checks if a file exists by verifying both metadata and the actual S3 object.
+     * Returns true only if both the metadata and the S3 object exist.
+     * @param query File query containing the file ID to check.
+     * @returns Promise resolving to true if both metadata and S3 object exist, false otherwise.
+     */
+    public override async exists({ id }: FileQuery): Promise<boolean> {
+        return this.instrumentOperation("exists", async () => {
+            try {
+                // First check if metadata exists
+                await this.getMeta(id);
+
+                // Then verify the actual S3 object exists
+                const s3Api = this.getS3Api();
+
+                await this.retry(() =>
+                    s3Api.headObject({
+                        Bucket: this.bucket,
+                        Key: id,
+                    }),
+                );
+
+                return true;
+            } catch (error: unknown) {
+                // Check if it's a 404 error (file not found)
+                const errorWithMetadata = error as { $metadata?: { httpStatusCode?: number } };
+
+                if (errorWithMetadata.$metadata?.httpStatusCode === 404) {
+                    return false;
+                }
+
+                // For metadata errors (FILE_NOT_FOUND), also return false
+                return false;
+            }
+        });
+    }
+
+    /**
      * Gets an uploaded file by ID.
      */
     public async get({ id }: FileQuery): Promise<FileReturn> {

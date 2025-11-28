@@ -46,6 +46,8 @@ describe("http Rest - Chunked Uploads", () => {
 
     describe("pOST - Initialize chunked upload", () => {
         it("should create chunked upload session", async () => {
+            expect.assertions(5);
+
             response = await supertest(app)
                 .post(basePath)
                 .set("Content-Type", "application/octet-stream")
@@ -66,6 +68,8 @@ describe("http Rest - Chunked Uploads", () => {
         });
 
         it("should create chunked upload with metadata", async () => {
+            expect.assertions(3);
+
             const metadata = { category: "test", description: "Chunked upload test" };
 
             response = await supertest(app)
@@ -84,6 +88,8 @@ describe("http Rest - Chunked Uploads", () => {
         });
 
         it("should return 413 when total size exceeds max upload size", async () => {
+            expect.assertions(2);
+
             const largeSize = 10_000_000_000; // 10GB
 
             response = await supertest(app)
@@ -148,6 +154,8 @@ describe("http Rest - Chunked Uploads", () => {
         });
 
         it("should upload first chunk", async () => {
+            expect.assertions(9);
+
             // Verify file exists before uploading chunk
             const headResponse = await supertest(app).head(`${basePath}/${fileId}`);
 
@@ -167,6 +175,8 @@ describe("http Rest - Chunked Uploads", () => {
         });
 
         it("should upload chunks in order", async () => {
+            expect.assertions(7);
+
             // Upload chunk 1
             await supertest(app)
                 .patch(`${basePath}/${fileId}`)
@@ -302,6 +312,8 @@ describe("http Rest - Chunked Uploads", () => {
         });
 
         it("should return 404 when upload session doesn't exist", async () => {
+            expect.assertions(6);
+
             response = await supertest(app)
                 .patch(`${basePath}/non-existent-id`)
                 .set("Content-Type", "application/octet-stream")
@@ -311,11 +323,11 @@ describe("http Rest - Chunked Uploads", () => {
 
             expect(response.status).toBe(404);
             expect(response.body.error).toBeDefined();
-
-            expectTypeOf(response.body.error).toBeObject();
         });
 
         it("should return 400 when file is not a chunked upload", async () => {
+            expect.assertions(7);
+
             // Create a regular (non-chunked) upload
             const regularUpload = await supertest(app)
                 .post(basePath)
@@ -343,6 +355,8 @@ describe("http Rest - Chunked Uploads", () => {
         });
 
         it("should return 200 when upload is already completed", async () => {
+            expect.assertions(6);
+
             // Complete the upload
             await supertest(app)
                 .patch(`${basePath}/${fileId}`)
@@ -397,6 +411,8 @@ describe("http Rest - Chunked Uploads", () => {
         });
 
         it("should return chunked upload status headers", async () => {
+            expect.assertions(5);
+
             response = await supertest(app).head(`${basePath}/${fileId}`);
 
             expect(response.status).toBe(200);
@@ -407,6 +423,8 @@ describe("http Rest - Chunked Uploads", () => {
         });
 
         it("should return received chunks info", async () => {
+            expect.assertions(4);
+
             // Upload a chunk
             await supertest(app)
                 .patch(`${basePath}/${fileId}`)
@@ -431,6 +449,8 @@ describe("http Rest - Chunked Uploads", () => {
         });
 
         it("should return complete status when upload is finished", async () => {
+            expect.assertions(2);
+
             // Complete the upload
             await supertest(app)
                 .patch(`${basePath}/${fileId}`)
@@ -460,6 +480,8 @@ describe("http Rest - Chunked Uploads", () => {
         });
 
         it("should not return chunked headers for regular uploads", async () => {
+            expect.assertions(2);
+
             // Create a regular (non-chunked) upload
             const regularUpload = await supertest(app)
                 .post(basePath)
@@ -478,6 +500,8 @@ describe("http Rest - Chunked Uploads", () => {
 
     describe("complete chunked upload flow", () => {
         it("should complete full chunked upload workflow", async () => {
+            expect.assertions(7);
+
             // 1. Initialize chunked upload
             const initResponse = await supertest(app)
                 .post(basePath)
