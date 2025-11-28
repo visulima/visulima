@@ -55,7 +55,7 @@ describe(AzureMetaStorage, () => {
         } as unknown as ContainerClient;
 
         // Mock BlobServiceClient constructor to return our mock instance
-        (BlobServiceClient as ReturnType<typeof vi.fn>).mockImplementation(function () {
+        (BlobServiceClient as ReturnType<typeof vi.fn>).mockImplementation(() => {
             return {
                 getContainerClient: vi.fn().mockReturnValue(mockContainerClient),
             };
