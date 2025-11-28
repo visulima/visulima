@@ -181,7 +181,6 @@ describe(DiskStorage, () => {
         it("should write data and update file status and bytesWritten", async () => {
             expect.assertions(2);
 
-            // eslint-disable-next-line no-underscore-dangle
             readStream.__mockSend();
 
             const file = await storage.write({ ...metafile, body: readStream, start: 0 });
@@ -277,7 +276,6 @@ describe(DiskStorage, () => {
         it("should reject write operation when range is invalid", async () => {
             expect.assertions(1);
 
-            // eslint-disable-next-line no-underscore-dangle
             readStream.__mockSend();
 
             await expect(() => storage.write({ ...metafile, body: readStream, start: (metafile.size as number) - 2 })).rejects.toThrow("File conflict");
@@ -286,7 +284,6 @@ describe(DiskStorage, () => {
         it("should support file locking to prevent concurrent writes", async () => {
             expect.assertions(1);
 
-            // eslint-disable-next-line no-underscore-dangle
             readStream.__mockSend();
 
             const write = storage.write({ ...metafile, body: readStream, start: 0 });

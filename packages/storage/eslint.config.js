@@ -21,6 +21,23 @@ export default createConfig(
     {
         files: ["__tests__/**"],
         rules: {
+            "no-underscore-dangle": [
+                "error",
+                {
+                    allow: [
+                        "__mockSend",
+                        "__mockAbort",
+                        "__mockPipeError",
+                        "__mockdata",
+                        "__delay",
+                        "_chunkedUpload",
+                        "_chunks",
+                        "_totalSize",
+                        "_getStatusCode",
+                    ],
+                },
+            ],
+            "radar/no-duplicate-string": "off",
             "vitest/prefer-called-exactly-once-with": "off",
             "vitest/require-mock-type-parameters": "off",
         },
@@ -29,6 +46,12 @@ export default createConfig(
         files: ["src/**"],
         rules: {
             "n/no-unsupported-features/node-builtins": "off",
+        },
+    },
+    {
+        files: ["src/openapi/*.ts", "src/storage/gcs/gcs-storage.ts", "src/handler/multipart/multipart.ts"],
+        rules: {
+            "sonarjs/file-name-differ-from-class": "off",
         },
     },
 );

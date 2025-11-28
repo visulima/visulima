@@ -2,7 +2,6 @@ import { PassThrough } from "node:stream";
 
 import type FileWriteStream from "./file-write-stream";
 
-/* eslint-disable no-underscore-dangle */
 class RequestReadStream extends PassThrough {
     public __delay = 0; // Make synchronous for testing to avoid timeouts
 
@@ -27,5 +26,5 @@ class RequestReadStream extends PassThrough {
         destination.emit("error", new Error("Broken pipe"));
     }
 }
-/* eslint-enable no-underscore-dangle */
+
 export default RequestReadStream;

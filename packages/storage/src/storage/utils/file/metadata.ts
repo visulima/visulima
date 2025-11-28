@@ -9,9 +9,9 @@ const isNumeric = (input: unknown): boolean => {
         return false;
     }
 
-    const number_ = Number.parseFloat(input);
+    const parsedNumber = Number.parseFloat(input);
 
-    return !Number.isNaN(number_) && isFinite(number_);
+    return !Number.isNaN(parsedNumber) && Number.isFinite(parsedNumber);
 };
 
 export class Metadata {
@@ -45,7 +45,7 @@ export const validateKey = (key: string): boolean => {
         return false;
     }
 
-    for (let index = 0; index < key.length; ++index) {
+    for (let index = 0; index < key.length; index += 1) {
         const charCodePoint = key.codePointAt(index) as number;
 
         if (charCodePoint > 127 || charCodePoint === ASCII_SPACE || charCodePoint === ASCII_COMMA) {
@@ -96,7 +96,13 @@ export const parseMetadata = (string_?: string): Metadata => {
             && (tokens.length === 1 || validateValue(value as string))
             && !((key as string) in meta)
         ) {
-            const decodedValue = tokens.length === 1 ? undefined : value ? Buffer.from(value, "base64").toString("utf8") : "";
+            let decodedValue: string | undefined = "";
+
+            if (tokens.length === 1) {
+                decodedValue = undefined;
+            } else if (value) {
+                decodedValue = Buffer.from(value, "base64").toString("utf8");
+            }
 
             // Try to parse as JSON for objects/arrays, then handle primitives
             let parsedValue: unknown = decodedValue;

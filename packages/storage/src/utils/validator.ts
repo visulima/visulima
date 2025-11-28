@@ -64,7 +64,10 @@ export class Validator<T> {
      * @throws ValidationError if validation fails
      */
     public async verify(t: T): Promise<never | void> {
+        // Sequential execution is intentional - we want to stop on first validation failure
+
         for (const [code, validator] of Object.entries(this.validators)) {
+            // eslint-disable-next-line no-await-in-loop
             const isValid = await validator.isValid(t);
 
             if (!isValid) {

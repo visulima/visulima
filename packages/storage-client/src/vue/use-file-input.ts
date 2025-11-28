@@ -35,7 +35,6 @@ export interface UseFileInputReturn {
  * @returns File input functions and state
  */
 export const useFileInput = (options: UseFileInputOptions = {}): UseFileInputReturn => {
-    const { accept: _accept, multiple: _multiple = false, onFilesSelected } = options;
 
     const files = ref<File[]>([]);
     const inputRef = ref<HTMLInputElement | undefined>(undefined);
@@ -49,7 +48,7 @@ export const useFileInput = (options: UseFileInputOptions = {}): UseFileInputRet
         const fileArray = [...fileList];
 
         files.value = fileArray;
-        onFilesSelected?.(fileArray);
+        options?.onFilesSelected?.(fileArray);
     };
 
     const handleFileChange = (event: Event): void => {

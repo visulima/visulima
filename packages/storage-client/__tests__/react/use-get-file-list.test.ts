@@ -6,7 +6,7 @@ import { useGetFileList } from "../../src/react/use-get-file-list";
 import { renderHookWithQueryClient } from "./test-utils";
 
 // Mock fetch globally
-const mockFetch = vi.fn<Parameters<typeof fetch>, ReturnType<typeof fetch>>();
+const mockFetch = vi.fn();
 
 describe(useGetFileList, () => {
     let queryClient: QueryClient;
@@ -129,7 +129,7 @@ describe(useGetFileList, () => {
     it("should call onSuccess callback", async () => {
         expect.assertions(2);
 
-        const onSuccess = vi.fn<[unknown], void>();
+        const onSuccess = vi.fn();
         const mockData = {
             data: [
                 {
@@ -161,7 +161,7 @@ describe(useGetFileList, () => {
     it("should handle error and call onError callback", async () => {
         expect.assertions(2);
 
-        const onError = vi.fn<[Error], void>();
+        const onError = vi.fn();
 
         mockFetch.mockResolvedValueOnce({
             json: async () => {

@@ -6,7 +6,7 @@ import { useHeadFile } from "../../src/react/use-head-file";
 import { renderHookWithQueryClient } from "./test-utils";
 
 // Mock fetch globally
-const mockFetch = vi.fn<Parameters<typeof fetch>, ReturnType<typeof fetch>>();
+const mockFetch = vi.fn();
 
 describe(useHeadFile, () => {
     let queryClient: QueryClient;

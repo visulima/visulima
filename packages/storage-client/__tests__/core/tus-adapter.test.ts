@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createTusAdapter } from "../../src/core/tus-adapter";
 
 // Mock fetch
-const mockFetch = vi.fn<Parameters<typeof fetch>, ReturnType<typeof fetch>>();
+const mockFetch = vi.fn();
 let originalFetch: typeof globalThis.fetch | undefined;
 
 describe(createTusAdapter, () => {
@@ -113,7 +113,11 @@ describe(createTusAdapter, () => {
 
         // Mock POST response
         mockFetch.mockImplementationOnce(async () => {
-            await new Promise((resolve) => setTimeout(resolve, 10));
+            await new Promise<void>((resolve) => {
+                setTimeout(() => {
+                    resolve();
+                }, 10);
+            });
             postCompleted = true;
 
             return {
@@ -165,11 +169,19 @@ describe(createTusAdapter, () => {
 
         // Wait for POST to complete (uploadUrl to be set)
         while (!postCompleted) {
-            await new Promise((resolve) => setTimeout(resolve, 5));
+            await new Promise<void>((resolve) => {
+                setTimeout(() => {
+                    resolve();
+                }, 5);
+            });
         }
 
         // Additional wait to ensure uploadUrl is set in state
-        await new Promise((resolve) => setTimeout(resolve, 10));
+        await new Promise<void>((resolve) => {
+            setTimeout(() => {
+                resolve();
+            }, 10);
+        });
 
         // Pause during upload
         adapter.pause();
@@ -197,7 +209,7 @@ describe(createTusAdapter, () => {
 
         const file = new File(["test"], "test.jpg", { type: "image/jpeg" });
 
-        await expect(adapter.upload(file)).rejects.toThrow();
+        await expect(adapter.upload(file)).rejects.toThrow("Network error");
     });
 
     it("should handle 409 conflict (offset mismatch)", async () => {

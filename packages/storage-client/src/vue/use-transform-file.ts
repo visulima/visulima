@@ -83,12 +83,13 @@ export const useTransformFile = (options: UseTransformFileOptions): UseTransform
         },
         queryKey: computed(() => {
             const transformValue = toValue(transform);
+            const fileId = toValue(id);
             const filteredTransform = Object.fromEntries(Object.entries(transformValue).filter(([, value]) => value !== undefined)) as Record<
                 string,
                 string | number | boolean
             >;
 
-            return storageQueryKeys.transform.file(endpoint, toValue(id), filteredTransform);
+            return storageQueryKeys.transform.file(endpoint, fileId, filteredTransform);
         }),
     });
 

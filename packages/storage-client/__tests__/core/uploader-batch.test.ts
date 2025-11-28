@@ -1,96 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createUploader } from "../../src/core/uploader";
-
-// Mock XMLHttpRequest
-class MockXMLHttpRequest {
-    public readyState = 0;
-
-    public status = 200;
-
-    public statusText = "OK";
-
-    public responseText = "";
-
-    public response = "";
-
-    public upload = {
-        addEventListener: vi.fn<[string, (event: ProgressEvent) => void], void>((event: string, handler: (event: ProgressEvent) => void) => {
-            if (!this.uploadEventListeners.has(event)) {
-                this.uploadEventListeners.set(event, new Set());
-            }
-
-            this.uploadEventListeners.get(event)?.add(handler);
-        }),
-        removeEventListener: vi.fn<[string, (event: ProgressEvent) => void], void>(),
-    };
-
-    public open = vi.fn<[string, string | URL, boolean?, string?, string?], void>();
-
-    public send = vi.fn<[Document | XMLHttpRequestBodyInit | null?], void>((_data?: FormData) => {
-        // Simulate upload progress
-        setTimeout(() => {
-            const handlers = this.uploadEventListeners.get("progress");
-
-            if (handlers) {
-                const progressEvent = {
-                    lengthComputable: true,
-                    loaded: 50,
-                    total: 100,
-                } as ProgressEvent;
-
-                handlers.forEach((handler) => handler(progressEvent));
-            }
-        }, 10);
-
-        // Simulate completion
-        setTimeout(() => {
-            this.readyState = 4;
-            this.status = 200;
-            this.responseText = JSON.stringify({
-                contentType: "image/jpeg",
-                id: "test-id",
-                name: "test-name",
-                originalName: "test.jpg",
-                size: 100,
-                status: "completed",
-            });
-            this.response = this.responseText;
-
-            const handlers = this.eventListeners.get("load");
-
-            if (handlers) {
-                handlers.forEach((handler) => handler(new Event("load")));
-            }
-        }, 20);
-    });
-
-    public setRequestHeader = vi.fn<[string, string], void>();
-
-    public getResponseHeader = vi.fn<[string], string | null>(() => undefined);
-
-    public addEventListener = vi.fn<[string, (event: Event) => void], void>((event: string, handler: (event: Event) => void) => {
-        if (!this.eventListeners.has(event)) {
-            this.eventListeners.set(event, new Set());
-        }
-
-        this.eventListeners.get(event)?.add(handler);
-    });
-
-    public removeEventListener = vi.fn<[string, (event: Event) => void], void>();
-
-    public abort = vi.fn<[], void>(() => {
-        const handlers = this.eventListeners.get("abort");
-
-        if (handlers) {
-            handlers.forEach((handler) => handler(new Event("abort")));
-        }
-    });
-
-    private eventListeners = new Map<string, Set<(event: Event) => void>>();
-
-    private uploadEventListeners = new Map<string, Set<(event: ProgressEvent) => void>>();
-}
+import { MockXMLHttpRequest } from "../mock-xhr";
 
 describe("uploader Batch Operations", () => {
     let originalXHR: typeof XMLHttpRequest;
@@ -161,7 +72,7 @@ describe("uploader Batch Operations", () => {
         const file1 = new File(["test1"], "test1.jpg", { type: "image/jpeg" });
         const file2 = new File(["test2"], "test2.jpg", { type: "image/jpeg" });
 
-        const _itemIds = uploader.addBatch([file1, file2]);
+        uploader.addBatch([file1, file2]);
         const batchId = uploader.getBatches()[0]?.id;
 
         expect(batchId).toBeDefined();
@@ -188,7 +99,11 @@ describe("uploader Batch Operations", () => {
         uploader.addBatch([file1]);
 
         // Wait for progress event
-        await new Promise((resolve) => setTimeout(resolve, 15));
+        await new Promise<void>((resolve) => {
+            setTimeout(() => {
+                resolve();
+            }, 15);
+        });
 
         expect(onBatchProgress).toHaveBeenCalledWith(
             expect.objectContaining({
@@ -212,7 +127,11 @@ describe("uploader Batch Operations", () => {
         uploader.addBatch([file1]);
 
         // Wait for completion
-        await new Promise((resolve) => setTimeout(resolve, 25));
+        await new Promise<void>((resolve) => {
+            setTimeout(() => {
+                resolve();
+            }, 25);
+        });
 
         expect(onBatchFinish).toHaveBeenCalledWith(
             expect.objectContaining({
@@ -234,7 +153,11 @@ describe("uploader Batch Operations", () => {
         uploader.addBatch([file1]);
 
         // Wait for progress
-        await new Promise((resolve) => setTimeout(resolve, 15));
+        await new Promise<void>((resolve) => {
+            setTimeout(() => {
+                resolve();
+            }, 15);
+        });
 
         const batches = uploader.getBatches();
 

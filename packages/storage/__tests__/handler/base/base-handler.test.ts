@@ -128,7 +128,6 @@ describe("baseHandler", () => {
 
         await uploader.handle(request, response);
 
-        // eslint-disable-next-line no-underscore-dangle
         expect(response._getStatusCode()).toBe(200);
     });
 

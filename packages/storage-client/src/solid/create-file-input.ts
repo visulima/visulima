@@ -1,5 +1,5 @@
 import type { Accessor } from "solid-js";
-import { createSignal, onCleanup, onMount } from "solid-js";
+import { createMemo, createSignal, onCleanup, onMount } from "solid-js";
 
 export interface CreateFileInputOptions {
     accept?: string;
@@ -14,16 +14,16 @@ export interface CreateFileInputReturn {
     handleDrop: (event: DragEvent) => void;
     handleFileChange: (event: Event) => void;
     inputRef: { current: HTMLInputElement | undefined };
+    isDragging: Accessor<boolean>;
     openFileDialog: () => void;
     reset: () => void;
 }
 
 export const createFileInput = (options: CreateFileInputOptions = {}): CreateFileInputReturn => {
-    const { accept: _accept, multiple: _multiple = false, onFilesSelected } = options;
-
     const [files, setFiles] = createSignal<File[]>([]);
     const inputRef = { current: undefined as HTMLInputElement | undefined };
-    const [_dragCounter, setDragCounter] = createSignal(0);
+    const [dragCounter, setDragCounter] = createSignal(0);
+    const isDragging = createMemo(() => dragCounter() > 0);
 
     const processFiles = (fileList: FileList | null): void => {
         if (!fileList || fileList.length === 0) {
@@ -33,7 +33,7 @@ export const createFileInput = (options: CreateFileInputOptions = {}): CreateFil
         const fileArray = [...fileList];
 
         setFiles(fileArray);
-        onFilesSelected?.(fileArray);
+        options?.onFilesSelected?.(fileArray);
     };
 
     const handleFileChange = (event: Event): void => {
@@ -55,7 +55,15 @@ export const createFileInput = (options: CreateFileInputOptions = {}): CreateFil
         event.preventDefault();
         event.stopPropagation();
 
-        setDragCounter((previous) => previous - 1);
+        setDragCounter((previous) => {
+            const newValue = previous - 1;
+
+            if (newValue === 0) {
+                // Remove drag over styling if needed
+            }
+
+            return newValue;
+        });
     };
 
     const handleDrop = (event: DragEvent): void => {
@@ -110,6 +118,7 @@ export const createFileInput = (options: CreateFileInputOptions = {}): CreateFil
         handleDrop,
         handleFileChange,
         inputRef,
+        isDragging,
         openFileDialog,
         reset,
     };

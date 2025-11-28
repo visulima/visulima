@@ -138,6 +138,7 @@ export const throwErrorCode = (UploadErrorCode: ERRORS | string, detail?: string
             || (errorResponse?.body && typeof errorResponse.body === "object" && "message" in errorResponse.body
                 ? (errorResponse.body as { message: string }).message
                 : undefined)
+            || (errorResponse?.message as string | undefined)
             || ERRORS.UNKNOWN_ERROR;
     const error = new UploadError(errorCode, message);
 

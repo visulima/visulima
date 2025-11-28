@@ -67,7 +67,11 @@ describe(createGetFileList, () => {
             queryClient,
         );
 
-        await new Promise((resolve) => setTimeout(resolve, 100));
+        await new Promise<void>((resolve) => {
+            setTimeout(() => {
+                resolve();
+            }, 100);
+        });
 
         expect(mockFetch).toHaveBeenCalledWith(
             "https://api.example.com/",
@@ -111,7 +115,11 @@ describe(createGetFileList, () => {
             }),
         );
 
-        await new Promise((resolve) => setTimeout(resolve, 100));
+        await new Promise<void>((resolve) => {
+            setTimeout(() => {
+                resolve();
+            }, 100);
+        });
 
         expect(result.data()?.data).toHaveLength(1);
         expect(result.data()?.meta?.total).toBe(50);
@@ -142,7 +150,11 @@ describe(createGetFileList, () => {
             queryClient,
         );
 
-        await new Promise((resolve) => setTimeout(resolve, 100));
+        await new Promise<void>((resolve) => {
+            setTimeout(() => {
+                resolve();
+            }, 100);
+        });
 
         expect(result.data()?.data).toHaveLength(1);
     });
@@ -160,7 +172,11 @@ describe(createGetFileList, () => {
             }),
         );
 
-        await new Promise((resolve) => setTimeout(resolve, 50));
+        await new Promise<void>((resolve) => {
+            setTimeout(() => {
+                resolve();
+            }, 50);
+        });
 
         expect(mockFetch).not.toHaveBeenCalled();
     });
@@ -193,8 +209,12 @@ describe(createGetFileList, () => {
         let attempts = 0;
 
         while (result.isLoading() && attempts < 50) {
-            await new Promise((resolve) => setTimeout(resolve, 10));
-            attempts++;
+            await new Promise<void>((resolve) => {
+                setTimeout(() => {
+                    resolve();
+                }, 10);
+            });
+            attempts += 1;
         }
 
         expect(mockFetch).toHaveBeenCalledWith(
@@ -211,20 +231,32 @@ describe(createGetFileList, () => {
         });
 
         // Force a small delay to ensure signals are processed
-        await new Promise((resolve) => setTimeout(resolve, 50));
+        await new Promise<void>((resolve) => {
+            setTimeout(() => {
+                resolve();
+            }, 50);
+        });
 
         // Wait for the query to complete after batched update
         // TanStack Query should detect the queryKey change and refetch automatically
         attempts = 0;
         while ((result.isLoading() || mockFetch.mock.calls.length < 2) && attempts < 200) {
-            await new Promise((resolve) => setTimeout(resolve, 10));
-            attempts++;
+            await new Promise<void>((resolve) => {
+                setTimeout(() => {
+                    resolve();
+                }, 10);
+            });
+            attempts += 1;
         }
 
         // If still not refetched, manually trigger refetch
         if (mockFetch.mock.calls.length < 2) {
             result.refetch();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise<void>((resolve) => {
+                setTimeout(() => {
+                    resolve();
+                }, 100);
+            });
         }
 
         expect(mockFetch).toHaveBeenCalledTimes(2);
@@ -255,7 +287,11 @@ describe(createGetFileList, () => {
             queryClient,
         );
 
-        await new Promise((resolve) => setTimeout(resolve, 100));
+        await new Promise<void>((resolve) => {
+            setTimeout(() => {
+                resolve();
+            }, 100);
+        });
 
         expect(result.error()).toBeDefined();
     });

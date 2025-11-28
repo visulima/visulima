@@ -11,7 +11,9 @@ import { isAbsolute, join } from "@visulima/path";
 import etag from "etag";
 
 import { detectFileTypeFromStream } from "../../utils/detect-file-type";
-import { ERRORS, throwErrorCode } from "../../utils/errors";
+// @ts-expect-error - UploadError is used for type checking in error handling
+import type { UploadError } from "../../utils/errors";
+import { ERRORS, isUploadError, throwErrorCode } from "../../utils/errors";
 import { streamChecksum } from "../../utils/pipes/stream-checksum";
 import StreamLength from "../../utils/pipes/stream-length";
 import toMilliseconds from "../../utils/primitives/to-milliseconds";
@@ -75,6 +77,8 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
         this.accessCheck()
             .then(() => {
                 this.isReady = true;
+
+                return undefined;
             })
             .catch((error) => {
                 this.logger?.error("Storage access check failed: %O", error);
@@ -301,6 +305,11 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
 
                 return file;
             } catch (error: unknown) {
+                // Preserve UploadError instances (they already have the correct error code)
+                if (isUploadError(error)) {
+                    throw error;
+                }
+
                 const httpError = this.normalizeError(error instanceof Error ? error : new Error(String(error)));
 
                 await this.onError(httpError);

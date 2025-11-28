@@ -87,7 +87,7 @@ describe(useDeleteFile, () => {
             queryClient,
         );
 
-        await expect(result.deleteFile("file-123")).rejects.toThrow();
+        await expect(result.deleteFile("file-123")).rejects.toThrow("File not found");
 
         expect(result.error.value).toBeDefined();
 

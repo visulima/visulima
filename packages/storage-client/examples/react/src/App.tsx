@@ -45,8 +45,7 @@ const App = () => {
                 <div class="progress-section">
                     <div>
                         Progress:
-                        {progress}
-                        %
+                        {progress}%
                     </div>
                     <progress max={100} value={progress} />
                 </div>

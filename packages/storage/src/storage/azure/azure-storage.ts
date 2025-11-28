@@ -4,6 +4,8 @@ import { BlobServiceClient, StorageSharedKeyCredential } from "@azure/storage-bl
 import { normalize } from "@visulima/path";
 
 import { detectFileTypeFromStream } from "../../utils/detect-file-type";
+// @ts-expect-error - UploadError is used for type checking in error handling
+import type { UploadError } from "../../utils/errors";
 import { ERRORS, throwErrorCode } from "../../utils/errors";
 import toMilliseconds from "../../utils/primitives/to-milliseconds";
 import type { RetryConfig } from "../../utils/retry";
@@ -135,8 +137,12 @@ class AzureStorage extends BaseStorage<AzureFile, FileReturn> {
         this.accessCheck()
             .then(() => {
                 this.isReady = true;
+
+                return undefined;
             })
-            .catch((error) => this.logger?.error("Storage access check failed: %O", error));
+            .catch((error) => {
+                this.logger?.error("Storage access check failed: %O", error);
+            });
     }
 
     public async create(config: FileInit): Promise<AzureFile> {
@@ -294,6 +300,7 @@ class AzureStorage extends BaseStorage<AzureFile, FileReturn> {
                             }
 
                             // Use the stream from file type detection
+                            // eslint-disable-next-line no-param-reassign
                             part.body = detectedStream;
                         } catch {
                             // If file type detection fails, continue with original stream
@@ -455,10 +462,10 @@ class AzureStorage extends BaseStorage<AzureFile, FileReturn> {
                             token = response.continuationToken;
                         }
                     } catch (error) {
-                        truncated = false;
-
                         const httpError = this.normalizeError(error instanceof Error ? error : new Error(String(error)));
 
+                        // Sequential error handling is intentional
+                        // eslint-disable-next-line no-await-in-loop
                         await this.onError(httpError);
                         throw error;
                     }

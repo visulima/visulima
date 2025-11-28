@@ -8,7 +8,7 @@ import { useMultipartUpload } from "./use-multipart-upload";
 import type { UseTusUploadOptions } from "./use-tus-upload";
 import { useTusUpload } from "./use-tus-upload";
 
-export interface UseUploadOptions {
+interface UseUploadOptions {
     /** Chunk size for TUS and chunked REST uploads (default: 1MB for TUS, 5MB for chunked REST) */
     chunkSize?: number;
     /** Chunked REST upload endpoint URL */
@@ -41,7 +41,7 @@ export interface UseUploadOptions {
     tusThreshold?: number;
 }
 
-export interface UseUploadReturn {
+interface UseUploadReturn {
     /** Abort the current upload */
     abort: () => void;
     /** Current upload method being used */
@@ -77,7 +77,7 @@ const DEFAULT_TUS_THRESHOLD = 10 * 1024 * 1024; // 10MB
  * @param options Upload configuration options
  * @returns Upload functions and state
  */
-export const useUpload = (options: UseUploadOptions): UseUploadReturn => {
+const useUpload = (options: UseUploadOptions): UseUploadReturn => {
     const {
         chunkSize,
         endpointChunkedRest,
@@ -291,38 +291,117 @@ export const useUpload = (options: UseUploadOptions): UseUploadReturn => {
         return "multipart";
     }, [detectedMethod, tusUpload, chunkedRestUpload, multipartUpload, endpointChunkedRest, endpointMultipart, endpointTus]);
 
+    const getError = (): Error | undefined => {
+        if (currentMethod === "tus") {
+            return tusUpload?.error ?? undefined;
+        }
+
+        if (currentMethod === "chunked-rest") {
+            return chunkedRestUpload?.error ?? undefined;
+        }
+
+        return multipartUpload?.error ?? undefined;
+    };
+
+    const getIsPaused = (): boolean | undefined => {
+        if (currentMethod === "tus") {
+            return tusUpload?.isPaused;
+        }
+
+        if (currentMethod === "chunked-rest") {
+            return chunkedRestUpload?.isPaused;
+        }
+
+        return undefined;
+    };
+
+    const getIsUploading = (): boolean => {
+        if (currentMethod === "tus") {
+            return tusUpload?.isUploading ?? false;
+        }
+
+        if (currentMethod === "chunked-rest") {
+            return chunkedRestUpload?.isUploading ?? false;
+        }
+
+        return multipartUpload?.isUploading ?? false;
+    };
+
+    const getOffset = (): number | undefined => {
+        if (currentMethod === "tus") {
+            return tusUpload?.offset;
+        }
+
+        if (currentMethod === "chunked-rest") {
+            return chunkedRestUpload?.offset;
+        }
+
+        return undefined;
+    };
+
+    const getPause = (): (() => void) | undefined => {
+        if (currentMethod === "tus") {
+            return tusUpload?.pause;
+        }
+
+        if (currentMethod === "chunked-rest") {
+            return chunkedRestUpload?.pause;
+        }
+
+        return undefined;
+    };
+
+    const getProgress = (): number => {
+        if (currentMethod === "tus") {
+            return tusUpload?.progress ?? 0;
+        }
+
+        if (currentMethod === "chunked-rest") {
+            return chunkedRestUpload?.progress ?? 0;
+        }
+
+        return multipartUpload?.progress ?? 0;
+    };
+
+    const getResult = (): UploadResult | undefined => {
+        if (currentMethod === "tus") {
+            return tusUpload?.result ?? undefined;
+        }
+
+        if (currentMethod === "chunked-rest") {
+            return chunkedRestUpload?.result ?? undefined;
+        }
+
+        return multipartUpload?.result ?? undefined;
+    };
+
+    const getResume = (): (() => Promise<void>) | undefined => {
+        if (currentMethod === "tus") {
+            return tusUpload?.resume;
+        }
+
+        if (currentMethod === "chunked-rest") {
+            return chunkedRestUpload?.resume;
+        }
+
+        return undefined;
+    };
+
     return {
         abort,
         currentMethod,
-        error:
-            currentMethod === "tus"
-                ? tusUpload?.error ?? undefined
-                : currentMethod === "chunked-rest"
-                    ? chunkedRestUpload?.error ?? undefined
-                    : multipartUpload?.error ?? undefined,
-        isPaused: currentMethod === "tus" ? tusUpload?.isPaused : currentMethod === "chunked-rest" ? chunkedRestUpload?.isPaused : undefined,
-        isUploading:
-            currentMethod === "tus"
-                ? tusUpload?.isUploading ?? false
-                : currentMethod === "chunked-rest"
-                    ? chunkedRestUpload?.isUploading ?? false
-                    : multipartUpload?.isUploading ?? false,
-        offset: currentMethod === "tus" ? tusUpload?.offset : currentMethod === "chunked-rest" ? chunkedRestUpload?.offset : undefined,
-        pause: currentMethod === "tus" ? tusUpload?.pause : currentMethod === "chunked-rest" ? chunkedRestUpload?.pause : undefined,
-        progress:
-            currentMethod === "tus"
-                ? tusUpload?.progress ?? 0
-                : currentMethod === "chunked-rest"
-                    ? chunkedRestUpload?.progress ?? 0
-                    : multipartUpload?.progress ?? 0,
+        error: getError(),
+        isPaused: getIsPaused(),
+        isUploading: getIsUploading(),
+        offset: getOffset(),
+        pause: getPause(),
+        progress: getProgress(),
         reset,
-        result:
-            currentMethod === "tus"
-                ? tusUpload?.result ?? undefined
-                : currentMethod === "chunked-rest"
-                    ? chunkedRestUpload?.result ?? undefined
-                    : multipartUpload?.result ?? undefined,
-        resume: currentMethod === "tus" ? tusUpload?.resume : currentMethod === "chunked-rest" ? chunkedRestUpload?.resume : undefined,
+        result: getResult(),
+        resume: getResume(),
         upload,
     };
 };
+
+export type { UseUploadOptions, UseUploadReturn };
+export { useUpload };

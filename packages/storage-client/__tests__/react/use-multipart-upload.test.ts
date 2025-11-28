@@ -55,7 +55,11 @@ describe("useMultipartUpload", () => {
         const uploadPromise = adapter.upload(file);
 
         // Wait for progress event
-        await new Promise((resolve) => setTimeout(resolve, 15));
+        await new Promise<void>((resolve) => {
+            setTimeout(() => {
+                resolve();
+            }, 15);
+        });
 
         await uploadPromise;
 
@@ -92,7 +96,11 @@ describe("useMultipartUpload", () => {
         await adapter.upload(file);
 
         // Wait a bit to ensure timeout would have fired if not cleared
-        await new Promise((resolve) => setTimeout(resolve, 50));
+        await new Promise<void>((resolve) => {
+            setTimeout(() => {
+                resolve();
+            }, 50);
+        });
 
         // Timeout should have been cleared
         // In Node.js, setTimeout returns a Timeout object.

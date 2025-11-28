@@ -94,13 +94,18 @@ export const createTransformFile = (options: CreateTransformFileOptions): Create
 
                 return storageQueryKeys.transform.file(endpoint, fileId, filteredTransform);
             })(),
+
         };
     });
 
     return {
         data: () => {
             try {
-                const dataValue = (query as any).data;
+                const dataValue = (
+                    query as {
+                        data?: Accessor<{ blob: Blob; meta?: FileMeta | undefined } | undefined> | { blob: Blob; meta?: FileMeta | undefined } | undefined;
+                    }
+                ).data;
                 const data = typeof dataValue === "function" ? dataValue() : dataValue;
 
                 return data?.blob;
@@ -110,7 +115,7 @@ export const createTransformFile = (options: CreateTransformFileOptions): Create
         },
         error: () => {
             try {
-                const errorValue = (query as any).error;
+                const errorValue = (query as { error?: Accessor<Error | undefined> | Error | undefined }).error;
                 const error = typeof errorValue === "function" ? errorValue() : errorValue;
 
                 return (error as Error) || undefined;
@@ -120,7 +125,7 @@ export const createTransformFile = (options: CreateTransformFileOptions): Create
         },
         isLoading: () => {
             try {
-                const isLoadingValue = (query as any).isLoading;
+                const isLoadingValue = (query as { isLoading?: Accessor<boolean> | boolean }).isLoading;
 
                 return (typeof isLoadingValue === "function" ? isLoadingValue() : isLoadingValue) as boolean;
             } catch {
@@ -129,7 +134,11 @@ export const createTransformFile = (options: CreateTransformFileOptions): Create
         },
         meta: () => {
             try {
-                const dataValue = (query as any).data;
+                const dataValue = (
+                    query as {
+                        data?: Accessor<{ blob: Blob; meta?: FileMeta | undefined } | undefined> | { blob: Blob; meta?: FileMeta | undefined } | undefined;
+                    }
+                ).data;
                 const data = typeof dataValue === "function" ? dataValue() : dataValue;
 
                 return data?.meta || undefined;

@@ -15,13 +15,13 @@ class ErrorMockXMLHttpRequest {
     public response = "";
 
     public upload = {
-        addEventListener: vi.fn<[string, (event: ProgressEvent) => void], void>(),
-        removeEventListener: vi.fn<[string, (event: ProgressEvent) => void], void>(),
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
     };
 
-    public open = vi.fn<[string, string | URL, boolean?, string?, string?], void>();
+    public open = vi.fn();
 
-    public send = vi.fn<[Document | XMLHttpRequestBodyInit | null?], void>((_data?: FormData) => {
+    public send = vi.fn((_data?: FormData) => {
         // Simulate error
         setTimeout(() => {
             const handlers = this.eventListeners.get("error");
@@ -32,11 +32,11 @@ class ErrorMockXMLHttpRequest {
         }, 10);
     });
 
-    public setRequestHeader = vi.fn<[string, string], void>();
+    public setRequestHeader = vi.fn();
 
-    public getResponseHeader = vi.fn<[string], string | null>(() => undefined);
+    public getResponseHeader = vi.fn(() => undefined);
 
-    public addEventListener = vi.fn<[string, (event: Event) => void], void>((event: string, handler: (event: Event) => void) => {
+    public addEventListener = vi.fn((event: string, handler: (event: Event) => void) => {
         if (!this.eventListeners.has(event)) {
             this.eventListeners.set(event, new Set());
         }
@@ -44,13 +44,11 @@ class ErrorMockXMLHttpRequest {
         this.eventListeners.get(event)?.add(handler);
     });
 
-    public removeEventListener = vi.fn<[string, (event: Event) => void], void>();
+    public removeEventListener = vi.fn();
 
-    public abort = vi.fn<[], void>();
+    public abort = vi.fn();
 
     private eventListeners = new Map<string, Set<(event: Event) => void>>();
-
-    private _uploadEventListeners = new Map<string, Set<(event: ProgressEvent) => void>>();
 }
 
 // Mock XMLHttpRequest that succeeds on retry
@@ -66,13 +64,13 @@ class RetrySuccessMockXMLHttpRequest {
     public response = "";
 
     public upload = {
-        addEventListener: vi.fn<[string, (event: ProgressEvent) => void], void>(),
-        removeEventListener: vi.fn<[string, (event: ProgressEvent) => void], void>(),
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
     };
 
-    public open = vi.fn<[string, string | URL, boolean?, string?, string?], void>();
+    public open = vi.fn();
 
-    public send = vi.fn<[Document | XMLHttpRequestBodyInit | null?], void>((_data?: FormData) => {
+    public send = vi.fn(() => {
         this.attemptCount = (this.attemptCount ?? 0) + 1;
 
         // First attempt fails, second succeeds
@@ -107,11 +105,11 @@ class RetrySuccessMockXMLHttpRequest {
         }
     });
 
-    public setRequestHeader = vi.fn<[string, string], void>();
+    public setRequestHeader = vi.fn();
 
-    public getResponseHeader = vi.fn<[string], string | null>(() => undefined);
+    public getResponseHeader = vi.fn(() => undefined);
 
-    public addEventListener = vi.fn<[string, (event: Event) => void], void>((event: string, handler: (event: Event) => void) => {
+    public addEventListener = vi.fn((event: string, handler: (event: Event) => void) => {
         if (!this.eventListeners.has(event)) {
             this.eventListeners.set(event, new Set());
         }
@@ -119,9 +117,9 @@ class RetrySuccessMockXMLHttpRequest {
         this.eventListeners.get(event)?.add(handler);
     });
 
-    public removeEventListener = vi.fn<[string, (event: Event) => void], void>();
+    public removeEventListener = vi.fn();
 
-    public abort = vi.fn<[], void>();
+    public abort = vi.fn();
 
     private eventListeners = new Map<string, Set<(event: Event) => void>>();
 
@@ -152,15 +150,19 @@ describe("uploader Retry Operations", () => {
         const uploader = createUploader({
             endpoint: "/api/upload",
         });
-        const onItemStart = vi.fn<[unknown], void>();
+        const onItemStart = vi.fn();
 
         uploader.on("ITEM_START", onItemStart);
 
         const file = new File(["test"], "test.jpg", { type: "image/jpeg" });
         const itemId = uploader.add(file);
 
-        // Wait for error
-        await new Promise((resolve) => setTimeout(resolve, 15));
+        // Wait for error to be processed
+        await new Promise<void>((resolve) => {
+            setTimeout(() => {
+                resolve();
+            }, 50);
+        });
 
         const item = uploader.getItem(itemId);
 
@@ -170,7 +172,11 @@ describe("uploader Retry Operations", () => {
         uploader.retryItem(itemId);
 
         // Wait for retry start
-        await new Promise((resolve) => setTimeout(resolve, 5));
+        await new Promise<void>((resolve) => {
+            setTimeout(() => {
+                resolve();
+            }, 5);
+        });
 
         // Should have been called at least twice (initial + retry)
         expect(onItemStart.mock.calls.length).toBeGreaterThanOrEqual(2);
@@ -190,12 +196,20 @@ describe("uploader Retry Operations", () => {
         const itemId = uploader.add(file);
 
         // Wait for error
-        await new Promise((resolve) => setTimeout(resolve, 15));
+        await new Promise<void>((resolve) => {
+            setTimeout(() => {
+                resolve();
+            }, 15);
+        });
 
         uploader.retryItem(itemId);
 
         // Wait a bit
-        await new Promise((resolve) => setTimeout(resolve, 5));
+        await new Promise<void>((resolve) => {
+            setTimeout(() => {
+                resolve();
+            }, 5);
+        });
 
         const item = uploader.getItem(itemId);
 
@@ -219,7 +233,11 @@ describe("uploader Retry Operations", () => {
         uploader.addBatch([file1, file2]);
 
         // Wait for errors
-        await new Promise((resolve) => setTimeout(resolve, 15));
+        await new Promise<void>((resolve) => {
+            setTimeout(() => {
+                resolve();
+            }, 15);
+        });
 
         const batches = uploader.getBatches();
         const batchId = batches[0]?.id;
@@ -230,7 +248,11 @@ describe("uploader Retry Operations", () => {
             uploader.retryBatch(batchId);
 
             // Wait a bit
-            await new Promise((resolve) => setTimeout(resolve, 5));
+            await new Promise<void>((resolve) => {
+            setTimeout(() => {
+                resolve();
+            }, 5);
+        });
 
             const batch = uploader.getBatch(batchId);
 

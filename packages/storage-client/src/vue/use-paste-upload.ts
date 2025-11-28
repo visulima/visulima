@@ -64,41 +64,12 @@ export const usePasteUpload = (options: UsePasteUploadOptions = {}): UsePasteUpl
 
     // Set up global paste listener if no element-specific handler is used
     onMounted(() => {
-        const handleGlobalPaste = (event: ClipboardEvent): void => {
-            const items = event.clipboardData?.items;
-
-            if (!items) {
-                return;
-            }
-
-            const files: File[] = [];
-
-            for (const item of items) {
-                if (item.kind === "file") {
-                    const file = item.getAsFile();
-
-                    if (file) {
-                        if (filter && !filter(file)) {
-                            continue;
-                        }
-
-                        files.push(file);
-                    }
-                }
-            }
-
-            if (files.length > 0) {
-                pastedFiles.value = files;
-                onFilesPasted?.(files);
-            }
-        };
-
         // Only add listener if we're not using element-specific paste handling
         // This is a fallback for when handlePaste is not attached to an element
-        document.addEventListener("paste", handleGlobalPaste);
+        document.addEventListener("paste", handlePaste);
 
         onBeforeUnmount(() => {
-            document.removeEventListener("paste", handleGlobalPaste);
+            document.removeEventListener("paste", handlePaste);
         });
     });
 

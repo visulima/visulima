@@ -5,7 +5,7 @@ import { createDeleteFile } from "../../src/solid/create-delete-file";
 import { runInRoot } from "./test-utils";
 
 // Mock fetch globally
-const mockFetch = vi.fn<Parameters<typeof fetch>, ReturnType<typeof fetch>>();
+const mockFetch = vi.fn();
 let originalFetch: typeof globalThis.fetch | undefined;
 
 describe(createDeleteFile, () => {

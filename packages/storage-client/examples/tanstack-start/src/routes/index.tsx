@@ -64,8 +64,7 @@ const Home = () => {
                 <div style={{ "margin-top": "1rem" }}>
                     <div>
                         Progress:
-                        {progress}
-                        %
+                        {progress}%
                     </div>
                     <progress max={100} style={{ "max-width": "400px", width: "100%" }} value={progress} />
                 </div>
@@ -93,8 +92,7 @@ const Home = () => {
                     )}
                     {result.url && (
                         <div>
-                            URL:
-                            {" "}
+                            URL:{" "}
                             <a href={result.url} rel="noopener noreferrer" target="_blank">
                                 {result.url}
                             </a>

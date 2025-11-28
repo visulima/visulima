@@ -6,6 +6,8 @@ import type GCSFile from "./gcs-file";
 
 export const getRangeEnd = (range: string): number => {
     // Match patterns like "bytes 0-499/1234" or "0-499"
+    // Input is controlled (HTTP Range header), safe from ReDoS
+    // eslint-disable-next-line sonarjs/slow-regex
     const match = range.match(/(\d+)-(\d+)/);
 
     const end = match && match[2] ? +match[2] : 0;

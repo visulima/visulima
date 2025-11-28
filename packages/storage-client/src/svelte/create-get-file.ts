@@ -6,6 +6,8 @@ import { derived, get, readable } from "svelte/store";
 import { buildUrl, extractFileMetaFromHeaders, storageQueryKeys } from "../core";
 import type { FileMeta } from "../react/types";
 
+type TransformParams = Record<string, string | number | boolean> | undefined;
+
 export interface CreateGetFileOptions {
     /** Whether to enable the query */
     enabled?: Readable<boolean> | boolean;
@@ -18,7 +20,7 @@ export interface CreateGetFileOptions {
     /** Callback when request succeeds */
     onSuccess?: (data: Blob, meta: FileMeta | undefined) => void;
     /** Transformation parameters for media files */
-    transform?: Readable<Record<string, string | number | boolean> | undefined> | Record<string, string | number | boolean>;
+    transform?: Readable<TransformParams> | TransformParams;
 }
 
 export interface CreateGetFileReturn {
@@ -107,8 +109,9 @@ export const createGetFile = (options: CreateGetFileOptions): CreateGetFileRetur
     const queryDataStore
         = (query.data as unknown as Readable<{ blob: Blob; meta: FileMeta } | undefined> | null)
             ?? readable<{ blob: Blob; meta: FileMeta } | undefined>(undefined);
-    const queryErrorStore = (query.error as unknown as Readable<Error | null> | null) ?? readable<Error | null>(null);
+    const queryErrorStore = (query.error as unknown as Readable<Error | null> | null) ?? readable<Error | null>(undefined);
     const queryIsLoadingStore: Readable<boolean>
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TanStack Query query type is complex
         = typeof (query.isLoading as any) === "object" && (query.isLoading as any) !== null && "subscribe" in (query.isLoading as any)
             ? (query.isLoading as unknown as Readable<boolean>)
             : readable<boolean>(false);

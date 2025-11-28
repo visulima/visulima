@@ -51,39 +51,10 @@ export const createPasteUpload = (options: CreatePasteUploadOptions = {}): Creat
     };
 
     onMount(() => {
-        const handleGlobalPaste = (event: ClipboardEvent): void => {
-            const items = event.clipboardData?.items;
-
-            if (!items) {
-                return;
-            }
-
-            const files: File[] = [];
-
-            for (const item of items) {
-                if (item.kind === "file") {
-                    const file = item.getAsFile();
-
-                    if (file) {
-                        if (filter && !filter(file)) {
-                            continue;
-                        }
-
-                        files.push(file);
-                    }
-                }
-            }
-
-            if (files.length > 0) {
-                setPastedFiles(files);
-                onFilesPasted?.(files);
-            }
-        };
-
-        document.addEventListener("paste", handleGlobalPaste);
+        document.addEventListener("paste", handlePaste);
 
         onCleanup(() => {
-            document.removeEventListener("paste", handleGlobalPaste);
+            document.removeEventListener("paste", handlePaste);
         });
     });
 

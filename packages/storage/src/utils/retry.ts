@@ -1,4 +1,40 @@
 /**
+ * Default retry configuration
+ */
+const defaultRetryConfig: Required<Omit<RetryConfig, "calculateDelay">> & { calculateDelay?: RetryConfig["calculateDelay"] } = {
+    backoffMultiplier: 2,
+    calculateDelay: undefined,
+    initialDelay: 1000,
+    maxDelay: 30_000,
+    maxRetries: 3,
+    retryableStatusCodes: [408, 429, 500, 502, 503, 504],
+    shouldRetry: () => true,
+};
+
+/**
+ * Calculate exponential backoff delay
+ * @param attempt Current retry attempt (0-indexed)
+ * @param initialDelay Initial delay in milliseconds
+ * @param backoffMultiplier Multiplier for exponential backoff
+ * @param maxDelay Maximum delay in milliseconds
+ * @returns Delay in milliseconds
+ */
+const calculateExponentialBackoff = (attempt: number, initialDelay: number, backoffMultiplier: number, maxDelay: number): number => {
+    const delay = initialDelay * backoffMultiplier ** attempt;
+
+    return Math.min(delay, maxDelay);
+};
+
+/**
+ * Sleep for a specified number of milliseconds
+ * @param ms Milliseconds to sleep
+ */
+const sleep = (ms: number): Promise<void> =>
+    new Promise((resolve) => {
+        setTimeout(resolve, ms);
+    });
+
+/**
  * Retry configuration options for storage operations
  */
 export interface RetryConfig {
@@ -47,19 +83,6 @@ export interface RetryConfig {
      */
     shouldRetry?: (error: unknown) => boolean;
 }
-
-/**
- * Default retry configuration
- */
-const defaultRetryConfig: Required<Omit<RetryConfig, "calculateDelay">> & { calculateDelay?: RetryConfig["calculateDelay"] } = {
-    backoffMultiplier: 2,
-    calculateDelay: undefined,
-    initialDelay: 1000,
-    maxDelay: 30_000,
-    maxRetries: 3,
-    retryableStatusCodes: [408, 429, 500, 502, 503, 504],
-    shouldRetry: () => true,
-};
 
 /**
  * Determines if an error is retryable based on common patterns
@@ -126,26 +149,6 @@ export const isRetryableError = (error: unknown, retryableStatusCodes: number[] 
 };
 
 /**
- * Calculate exponential backoff delay
- * @param attempt Current retry attempt (0-indexed)
- * @param initialDelay Initial delay in milliseconds
- * @param backoffMultiplier Multiplier for exponential backoff
- * @param maxDelay Maximum delay in milliseconds
- * @returns Delay in milliseconds
- */
-const calculateExponentialBackoff = (attempt: number, initialDelay: number, backoffMultiplier: number, maxDelay: number): number => {
-    const delay = initialDelay * backoffMultiplier ** attempt;
-
-    return Math.min(delay, maxDelay);
-};
-
-/**
- * Sleep for a specified number of milliseconds
- * @param ms Milliseconds to sleep
- */
-const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
-
-/**
  * Retry an async operation with exponential backoff
  * @param fn The async function to retry
  * @param config Retry configuration
@@ -165,7 +168,9 @@ export const retry = async <T>(function_: () => Promise<T>, config: RetryConfig 
 
     let lastError: unknown;
 
-    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    // Sequential retries are intentional - we want to wait between attempts
+
+    for (let attempt = 0; attempt <= maxRetries; attempt += 1) {
         try {
             return await function_();
         } catch (error: unknown) {
@@ -187,6 +192,8 @@ export const retry = async <T>(function_: () => Promise<T>, config: RetryConfig 
             const delay = calculateDelay ? calculateDelay(attempt, error) : calculateExponentialBackoff(attempt, initialDelay, backoffMultiplier, maxDelay);
 
             if (delay !== undefined && delay > 0) {
+                // Sequential delay is intentional for retry logic
+                // eslint-disable-next-line no-await-in-loop
                 await sleep(delay);
             }
         }
@@ -196,7 +203,7 @@ export const retry = async <T>(function_: () => Promise<T>, config: RetryConfig 
 };
 
 /**
- * Create a retry wrapper function with pre-configured settings
+ * Create a retry wrapper function with pre-configured settings.
  * @param config Retry configuration
  * @returns A function that wraps async operations with retry logic
  */

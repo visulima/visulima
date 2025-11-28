@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 
 import { buildUrl, extractFileMetaFromHeaders, storageQueryKeys } from "../core";
 import type { FileMeta } from "./types";
@@ -56,6 +56,15 @@ export interface UseTransformFileReturn {
 export const useTransformFile = (options: UseTransformFileOptions): UseTransformFileReturn => {
     const { enabled = true, endpoint, id, onError, onSuccess, transform } = options;
 
+    const queryKey = useMemo(() => {
+        const filteredTransform = Object.fromEntries(Object.entries(transform).filter(([, value]) => value !== undefined)) as Record<
+            string,
+            string | number | boolean
+        >;
+
+        return storageQueryKeys.transform.file(endpoint, id, filteredTransform);
+    }, [endpoint, id, transform]);
+
     const query = useQuery({
         enabled: enabled && !!id && !!transform,
         queryFn: async () => {
@@ -82,14 +91,7 @@ export const useTransformFile = (options: UseTransformFileOptions): UseTransform
 
             return { blob, meta };
         },
-        queryKey: (() => {
-            const filteredTransform = Object.fromEntries(Object.entries(transform).filter(([, value]) => value !== undefined)) as Record<
-                string,
-                string | number | boolean
-            >;
-
-            return storageQueryKeys.transform.file(endpoint, id, filteredTransform);
-        })(),
+        queryKey,
     });
 
     // Extract metadata from response if available

@@ -1,3 +1,4 @@
+/* eslint-disable no-secrets/no-secrets -- XML test data strings are false positives */
 import { beforeEach, describe, expect, expectTypeOf, it, vi } from "vitest";
 
 // Import AFTER the mock is set up to ensure import calls are intercepted
@@ -13,7 +14,8 @@ vi.mock(import("aws4fetch"), () => {
     // Store it in globalThis so tests can access it
     const sharedMockFetch = vi.fn();
 
-    (globalThis as Record<string, unknown>)["__aws4fetchMockFetch"] = sharedMockFetch;
+    // eslint-disable-next-line no-underscore-dangle
+    globalThis.__aws4fetchMockFetch = sharedMockFetch;
 
     // Return a mock AwsClient class that uses the shared mock fetch
     return {
@@ -27,7 +29,8 @@ vi.mock(import("aws4fetch"), () => {
 });
 
 // Helper function to get the shared mock fetch function from globalThis
-const getMockFetch = (): ReturnType<typeof vi.fn> => (globalThis as Record<string, ReturnType<typeof vi.fn>>)["__aws4fetchMockFetch"] || vi.fn();
+// eslint-disable-next-line no-underscore-dangle
+const getMockFetch = (): ReturnType<typeof vi.fn> => globalThis.__aws4fetchMockFetch || vi.fn();
 
 // Legacy mockStore for backward compatibility (deprecated, use getMockFetch() instead)
 const mockStore: { fetch: ReturnType<typeof vi.fn> } = {
@@ -35,7 +38,8 @@ const mockStore: { fetch: ReturnType<typeof vi.fn> } = {
         return getMockFetch();
     },
     set fetch(value: ReturnType<typeof vi.fn>) {
-        (globalThis as Record<string, ReturnType<typeof vi.fn>>)["__aws4fetchMockFetch"] = value;
+        // eslint-disable-next-line no-underscore-dangle
+        globalThis.__aws4fetchMockFetch = value;
     },
 };
 

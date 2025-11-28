@@ -6,9 +6,10 @@ import { useUpload } from "../../src/react/use-upload";
 import { renderHookWithQueryClient } from "./test-utils";
 
 // Mock fetch globally
-const mockFetch = vi.fn<Parameters<typeof fetch>, ReturnType<typeof fetch>>();
+const mockFetch = vi.fn();
 
 // Mock XMLHttpRequest for multipart uploads
+// eslint-disable-next-line @typescript-eslint/member-ordering -- Mock class follows XMLHttpRequest API structure
 class MockXMLHttpRequest {
     public readyState = 0;
 
@@ -18,24 +19,41 @@ class MockXMLHttpRequest {
 
     public responseText = "";
 
-    public upload = {
-        addEventListener: vi.fn<[string, (event: ProgressEvent) => void], void>((_event: string, handler: (event: ProgressEvent) => void) => {
-            setTimeout(() => {
-                const progressEvent = {
-                    lengthComputable: true,
-                    loaded: 50,
-                    total: 100,
-                } as ProgressEvent;
+    private eventListeners = new Map<string, Set<(event: Event) => void>>();
 
-                handler(progressEvent);
-            }, 10);
+    private uploadEventListeners = new Map<string, Set<(event: ProgressEvent) => void>>();
+
+    public upload = {
+        addEventListener: vi.fn((event: string, handler: (event: ProgressEvent) => void) => {
+            if (!this.uploadEventListeners.has(event)) {
+                this.uploadEventListeners.set(event, new Set());
+            }
+
+            this.uploadEventListeners.get(event)?.add(handler);
+
+            // Simulate progress event
+            if (event === "progress") {
+                setTimeout(() => {
+                    const progressEvent = {
+                        lengthComputable: true,
+                        loaded: 50,
+                        total: 100,
+                    } as ProgressEvent;
+
+                    const handlers = this.uploadEventListeners.get("progress");
+
+                    if (handlers) {
+                        handlers.forEach((h) => h(progressEvent));
+                    }
+                }, 10);
+            }
         }),
-        removeEventListener: vi.fn<[string, (event: ProgressEvent) => void], void>(),
+        removeEventListener: vi.fn(),
     };
 
-    public open = vi.fn<[string, string | URL, boolean?, string?, string?], void>();
+    public open = vi.fn();
 
-    public send = vi.fn<[Document | XMLHttpRequestBodyInit | null?], void>(() => {
+    public send = vi.fn(() => {
         setTimeout(() => {
             this.readyState = 4;
             this.status = 200;
@@ -53,11 +71,11 @@ class MockXMLHttpRequest {
         }, 20);
     });
 
-    public setRequestHeader = vi.fn<[string, string], void>();
+    public setRequestHeader = vi.fn();
 
-    public getResponseHeader = vi.fn<[string], string | null>(() => undefined);
+    public getResponseHeader = vi.fn(undefined);
 
-    public addEventListener = vi.fn<[string, (event: Event) => void], void>((event: string, handler: (event: Event) => void) => {
+    public addEventListener = vi.fn((event: string, handler: (event: Event) => void) => {
         if (!this.eventListeners.has(event)) {
             this.eventListeners.set(event, new Set());
         }
@@ -65,9 +83,7 @@ class MockXMLHttpRequest {
         this.eventListeners.get(event)?.add(handler);
     });
 
-    public removeEventListener = vi.fn<[string, (event: Event) => void], void>();
-
-    private eventListeners = new Map<string, Set<(event: Event) => void>>();
+    public removeEventListener = vi.fn();
 }
 
 describe(useUpload, () => {
@@ -200,10 +216,10 @@ describe(useUpload, () => {
         expect.assertions(4);
 
         const file = new File(["test content"], "test.txt", { type: "text/plain" });
-        const onStart = vi.fn<[], void>();
-        const onProgress = vi.fn<[number], void>();
-        const onSuccess = vi.fn<[unknown], void>();
-        const onError = vi.fn<[unknown], void>();
+        const onStart = vi.fn();
+        const onProgress = vi.fn();
+        const onSuccess = vi.fn();
+        const onError = vi.fn();
 
         const { result } = renderHookWithQueryClient(
             () =>

@@ -58,7 +58,11 @@ describe(createGetFileMeta, () => {
             queryClient,
         );
 
-        await new Promise((resolve) => setTimeout(resolve, 100));
+        await new Promise<void>((resolve) => {
+            setTimeout(() => {
+                resolve();
+            }, 100);
+        });
 
         expect(mockFetch).toHaveBeenCalledWith(
             "https://api.example.com/file-123/metadata",
@@ -109,7 +113,11 @@ describe(createGetFileMeta, () => {
             queryClient,
         );
 
-        await new Promise((resolve) => setTimeout(resolve, 100));
+        await new Promise<void>((resolve) => {
+            setTimeout(() => {
+                resolve();
+            }, 100);
+        });
 
         // Since reactive queryKey changes don't work in this test environment,
         // let's test the intended behavior by creating a new query with the changed id
@@ -123,7 +131,11 @@ describe(createGetFileMeta, () => {
             queryClient,
         );
 
-        await new Promise((resolve) => setTimeout(resolve, 100));
+        await new Promise<void>((resolve) => {
+            setTimeout(() => {
+                resolve();
+            }, 100);
+        });
 
         // Now check if the new query has the correct data
         expect(newResult.data()?.id).toBe("file-456");
@@ -145,14 +157,22 @@ describe(createGetFileMeta, () => {
             }),
         );
 
-        await new Promise((resolve) => setTimeout(resolve, 50));
+        await new Promise<void>((resolve) => {
+            setTimeout(() => {
+                resolve();
+            }, 50);
+        });
 
         expect(mockFetch).not.toHaveBeenCalled();
 
         // Now enable it and check that it fetches
         setEnabled(true);
 
-        await new Promise((resolve) => setTimeout(resolve, 100));
+        await new Promise<void>((resolve) => {
+            setTimeout(() => {
+                resolve();
+            }, 100);
+        });
 
         expect(mockFetch).toHaveBeenCalledWith(
             "https://api.example.com/file-123/metadata",
@@ -173,7 +193,11 @@ describe(createGetFileMeta, () => {
             }),
         );
 
-        await new Promise((resolve) => setTimeout(resolve, 50));
+        await new Promise<void>((resolve) => {
+            setTimeout(() => {
+                resolve();
+            }, 50);
+        });
 
         expect(mockFetch).not.toHaveBeenCalled();
     });
@@ -209,8 +233,12 @@ describe(createGetFileMeta, () => {
         let attempts = 0;
 
         while (!result.error() && attempts < 200) {
-            await new Promise((resolve) => setTimeout(resolve, 10));
-            attempts++;
+            await new Promise<void>((resolve) => {
+                setTimeout(() => {
+                    resolve();
+                }, 10);
+            });
+            attempts += 1;
         }
 
         // If error still not captured, the query might have succeeded - check the actual response
@@ -219,7 +247,11 @@ describe(createGetFileMeta, () => {
             // But if it's not being captured, the query might be using cached data
             // Force a refetch to ensure the error is captured
             result.refetch();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise<void>((resolve) => {
+                setTimeout(() => {
+                    resolve();
+                }, 100);
+            });
         }
 
         expect(result.error()).toBeDefined();
@@ -249,11 +281,19 @@ describe(createGetFileMeta, () => {
             queryClient,
         );
 
-        await new Promise((resolve) => setTimeout(resolve, 100));
+        await new Promise<void>((resolve) => {
+            setTimeout(() => {
+                resolve();
+            }, 100);
+        });
 
         result.refetch();
 
-        await new Promise((resolve) => setTimeout(resolve, 100));
+        await new Promise<void>((resolve) => {
+            setTimeout(() => {
+                resolve();
+            }, 100);
+        });
 
         expect(mockFetch).toHaveBeenCalledTimes(2);
         expect(result.data()).toBeDefined();

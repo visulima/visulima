@@ -46,7 +46,7 @@ class OpenTelemetryMetrics implements Metrics {
     /**
      * Creates a new OpenTelemetryMetrics instance.
      * @param meter OpenTelemetry Meter instance. If not provided, uses the default meter.
-     * @throws {Error} If @opentelemetry/api is not installed
+     * @throws {Error} If \@opentelemetry/api is not installed
      */
     public constructor(meter?: Meter) {
         // Use global import - will throw at module load time if not installed
@@ -66,7 +66,11 @@ class OpenTelemetryMetrics implements Metrics {
             this.counters.set(name, this.meter.createCounter(name, options));
         }
 
-        const counter = this.counters.get(name)!;
+        const counter = this.counters.get(name);
+
+        if (!counter) {
+            throw new Error(`Counter ${name} was not created`);
+        }
 
         counter.add(value, attributes);
     }
@@ -84,7 +88,11 @@ class OpenTelemetryMetrics implements Metrics {
             this.histograms.set(name, this.meter.createHistogram(name, options));
         }
 
-        const histogram = this.histograms.get(name)!;
+        const histogram = this.histograms.get(name);
+
+        if (!histogram) {
+            throw new Error(`Histogram ${name} was not created`);
+        }
 
         histogram.record(duration, attributes);
     }
@@ -101,7 +109,11 @@ class OpenTelemetryMetrics implements Metrics {
             this.gauges.set(name, this.meter.createUpDownCounter(name, options));
         }
 
-        const gauge = this.gauges.get(name)!;
+        const gauge = this.gauges.get(name);
+
+        if (!gauge) {
+            throw new Error(`Gauge ${name} was not created`);
+        }
 
         // For gauges, we record the delta from current value
         // In practice, you might want to track the previous value

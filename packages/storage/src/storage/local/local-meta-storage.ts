@@ -69,7 +69,7 @@ class LocalMetaStorage<T extends File = File> extends MetaStorage<T> {
             const json = await readFile(this.getMetaPath(id));
 
             if (json === undefined) {
-                throw new TypeError("Invalid metafile");
+                throw throwErrorCode(ERRORS.FILE_NOT_FOUND);
             }
 
             const file = JSON.parse(json) as T;
@@ -80,8 +80,17 @@ class LocalMetaStorage<T extends File = File> extends MetaStorage<T> {
 
             return file;
         } catch (error) {
-            if (error instanceof Error && error.message.includes("ENOENT")) {
+            const errorWithCode = error as { code?: string };
+            const isSyntaxError = error instanceof SyntaxError;
+
+            // Handle file not found errors (ENOENT code) or JSON parsing errors (corrupted metadata)
+            if (errorWithCode.code === "ENOENT" || isSyntaxError) {
                 throw throwErrorCode(ERRORS.FILE_NOT_FOUND);
+            }
+
+            // Re-throw UploadError instances as-is
+            if (error instanceof Error && "UploadErrorCode" in error) {
+                throw error;
             }
 
             throw error;

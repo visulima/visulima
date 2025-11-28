@@ -155,10 +155,14 @@ export const calculateUploadProgress = (
  */
 export const getBytesWritten = <TFile extends UploadFile>(file: TFile): number => {
     const metadata = file.metadata || {};
+    // eslint-disable-next-line no-underscore-dangle
     const isChunkedUpload = metadata._chunkedUpload === true;
 
+    // eslint-disable-next-line no-underscore-dangle
     if (isChunkedUpload && Array.isArray(metadata._chunks)) {
+        // eslint-disable-next-line no-underscore-dangle
         const totalSize = typeof metadata._totalSize === "number" ? metadata._totalSize : file.size || 0;
+        // eslint-disable-next-line no-underscore-dangle
         const progress = calculateUploadProgress(metadata._chunks as ChunkInfo[], totalSize);
 
         return progress.bytesWritten;
@@ -175,6 +179,7 @@ export const getBytesWritten = <TFile extends UploadFile>(file: TFile): number =
 export const isChunkedUpload = <TFile extends UploadFile>(file: TFile): boolean => {
     const metadata = file.metadata || {};
 
+    // eslint-disable-next-line no-underscore-dangle
     return metadata._chunkedUpload === true;
 };
 
@@ -185,9 +190,12 @@ export const isChunkedUpload = <TFile extends UploadFile>(file: TFile): boolean 
  */
 export const getTotalSize = <TFile extends UploadFile>(file: TFile): number | undefined => {
     const metadata = file.metadata || {};
-    const isChunkedUpload = metadata._chunkedUpload === true;
+    // eslint-disable-next-line no-underscore-dangle
+    const isChunkedUploadFile = metadata._chunkedUpload === true;
 
-    if (isChunkedUpload && typeof metadata._totalSize === "number") {
+    // eslint-disable-next-line no-underscore-dangle
+    if (isChunkedUploadFile && typeof metadata._totalSize === "number") {
+        // eslint-disable-next-line no-underscore-dangle
         return metadata._totalSize;
     }
 

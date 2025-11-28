@@ -16,7 +16,7 @@ import { getFileStatus, hasContent, partMatch, updateSize } from "../utils/file"
 import DiskStorage from "./disk-storage";
 
 /**
- *  Additionally calculates checksum of the file/range
+ * Additionally calculates checksum of the file/range.
  */
 class DiskStorageWithChecksum<TFile extends File = File> extends DiskStorage<TFile> {
     private hashes: RangeHasher;

@@ -79,10 +79,11 @@ export const createGetFileList = (options: CreateGetFileListOptions): CreateGetF
     });
 
     const dataStore = (query.data as unknown as Readable<FileListResponse | undefined> | null) ?? readable<FileListResponse | undefined>(undefined);
-    const errorStore = derived((query.error as unknown as Readable<Error | null> | null) ?? readable<Error | null>(null), ($error) =>
+    const errorStore = derived((query.error as unknown as Readable<Error | null> | null) ?? readable<Error | null>(undefined), ($error) =>
         ($error ? ($error as Error) : undefined),
     );
     const isLoadingStore: Readable<boolean>
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TanStack Query query type is complex
         = typeof (query.isLoading as any) === "object" && (query.isLoading as any) !== null && "subscribe" in (query.isLoading as any)
             ? (query.isLoading as unknown as Readable<boolean>)
             : readable<boolean>(false);

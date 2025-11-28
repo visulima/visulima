@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createUploader } from "../../src/core/uploader";
 
 // Mock XMLHttpRequest
+// eslint-disable-next-line @typescript-eslint/member-ordering -- Mock class follows XMLHttpRequest API structure
 class MockXMLHttpRequest {
     public readyState = 0;
 
@@ -15,25 +16,26 @@ class MockXMLHttpRequest {
     public response = "";
 
     public upload = {
-        addEventListener: vi.fn<[string, (event: ProgressEvent) => void], void>((event: string, handler: (event: ProgressEvent) => void) => {
+        addEventListener: vi.fn((event: string, handler: (event: ProgressEvent) => void) => {
             if (!this.uploadEventListeners.has(event)) {
                 this.uploadEventListeners.set(event, new Set());
             }
 
             this.uploadEventListeners.get(event)?.add(handler);
         }),
-        removeEventListener: vi.fn<[string, (event: ProgressEvent) => void], void>(),
+        removeEventListener: vi.fn(),
     };
 
-    public open = vi.fn<[string, string | URL, boolean?, string?, string?], void>();
+    public open = vi.fn();
 
-    public send = vi.fn<[Document | XMLHttpRequestBodyInit | null?], void>();
+    public send = vi.fn();
 
-    public setRequestHeader = vi.fn<[string, string], void>();
+    public setRequestHeader = vi.fn();
 
-    public getResponseHeader = vi.fn<[string], string | null>(() => undefined);
+    // eslint-disable-next-line unicorn/no-null -- XMLHttpRequest.getResponseHeader returns string | null
+    public getResponseHeader = vi.fn(() => undefined);
 
-    public addEventListener = vi.fn<[string, (event: Event) => void], void>((event: string, handler: (event: Event) => void) => {
+    public addEventListener = vi.fn((event: string, handler: (event: Event) => void) => {
         if (!this.eventListeners.has(event)) {
             this.eventListeners.set(event, new Set());
         }
@@ -41,9 +43,9 @@ class MockXMLHttpRequest {
         this.eventListeners.get(event)?.add(handler);
     });
 
-    public removeEventListener = vi.fn<[string, (event: Event) => void], void>();
+    public removeEventListener = vi.fn();
 
-    public abort = vi.fn<[], void>(() => {
+    public abort = vi.fn(() => {
         const handlers = this.eventListeners.get("abort");
 
         if (handlers) {
@@ -92,7 +94,7 @@ describe(createUploader, () => {
         const uploader = createUploader({
             endpoint: "/api/upload",
         });
-        const onItemStart = vi.fn<[unknown], void>();
+        const onItemStart = vi.fn();
 
         uploader.on("ITEM_START", onItemStart);
 
@@ -115,10 +117,10 @@ describe(createUploader, () => {
         const uploader = createUploader({
             endpoint: "/api/upload",
         });
-        const onItemStart = vi.fn<[unknown], void>();
-        const onItemProgress = vi.fn<[unknown], void>();
-        const onItemFinish = vi.fn<[unknown], void>();
-        const onItemError = vi.fn<[unknown], void>();
+        const onItemStart = vi.fn();
+        const onItemProgress = vi.fn();
+        const onItemFinish = vi.fn();
+        const onItemError = vi.fn();
 
         uploader.on("ITEM_START", onItemStart);
         uploader.on("ITEM_PROGRESS", onItemProgress);

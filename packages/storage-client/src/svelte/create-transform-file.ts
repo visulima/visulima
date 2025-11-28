@@ -105,8 +105,9 @@ export const createTransformFile = (options: CreateTransformFileOptions): Create
     const dataStore
         = (query.data as unknown as Readable<{ blob: Blob; meta: FileMeta } | undefined> | null)
             ?? readable<{ blob: Blob; meta: FileMeta } | undefined>(undefined);
-    const errorStore = (query.error as unknown as Readable<Error | null> | null) ?? readable<Error | null>(null);
+    const errorStore = (query.error as unknown as Readable<Error | null> | null) ?? readable<Error | null>(undefined);
     const isLoadingStore: Readable<boolean>
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TanStack Query query type is complex
         = typeof (query.isLoading as any) === "object" && (query.isLoading as any) !== null && "subscribe" in (query.isLoading as any)
             ? (query.isLoading as unknown as Readable<boolean>)
             : readable<boolean>(false);

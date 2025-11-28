@@ -148,10 +148,14 @@ describe(createChunkedRestAdapter, () => {
         const uploadPromise = adapter.upload(file);
 
         // Wait a bit for upload to start, then abort
-        await new Promise((resolve) => setTimeout(resolve, 20));
+        await new Promise<void>((resolve) => {
+            setTimeout(() => {
+                resolve();
+            }, 20);
+        });
         adapter.abort();
 
-        await expect(uploadPromise).rejects.toThrow();
+        await expect(uploadPromise).rejects.toThrow("Upload aborted");
     }, 10_000);
 
     it("should call callbacks correctly", async () => {
@@ -248,7 +252,7 @@ describe(createChunkedRestAdapter, () => {
         // Multiple chunk uploads - need to mock each chunk separately
         const numberChunks = Math.ceil(file.size / customChunkSize);
 
-        for (let i = 0; i < numberChunks; i++) {
+        for (let i = 0; i < numberChunks; i += 1) {
             mockFetch.mockResolvedValueOnce({
                 headers: new Headers({
                     "X-Upload-Offset": String(Math.min((i + 1) * customChunkSize, file.size)),

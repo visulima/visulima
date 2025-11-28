@@ -6,7 +6,7 @@ import { useChunkedRestUpload } from "../../src/react/use-chunked-rest-upload";
 import { renderHookWithQueryClient } from "./test-utils";
 
 // Mock fetch globally
-const mockFetch = vi.fn<Parameters<typeof fetch>, ReturnType<typeof fetch>>();
+const mockFetch = vi.fn();
 // Capture original fetch once before the suite
 const originalFetch = globalThis.fetch;
 
@@ -132,7 +132,7 @@ describe(useChunkedRestUpload, () => {
 
         mockFetch.mockImplementation((_url: string, options?: RequestInit) => {
             if (options?.method === "HEAD") {
-                headCallCount++;
+                headCallCount += 1;
 
                 if (headCallCount === 1) {
                     // Initial status check
@@ -154,7 +154,7 @@ describe(useChunkedRestUpload, () => {
             }
 
             if (options?.method === "PATCH") {
-                patchCallCount++;
+                patchCallCount += 1;
 
                 // Delay first PATCH so we can pause
                 if (patchCallCount === 1) {
@@ -180,7 +180,7 @@ describe(useChunkedRestUpload, () => {
             }
 
             if (options?.method === "GET") {
-                getCallCount++;
+                getCallCount += 1;
 
                 return Promise.resolve({
                     json: async () => {
@@ -313,7 +313,7 @@ describe(useChunkedRestUpload, () => {
 
         mockFetch.mockImplementation((_url: string, options?: RequestInit) => {
             if (options?.method === "HEAD") {
-                headCallCount++;
+                headCallCount += 1;
 
                 return Promise.resolve({
                     headers: new Headers({
@@ -350,7 +350,7 @@ describe(useChunkedRestUpload, () => {
             }
 
             if (options?.method === "GET") {
-                getCallCount++;
+                getCallCount += 1;
 
                 return Promise.resolve({
                     json: async () => {
@@ -393,7 +393,7 @@ describe(useChunkedRestUpload, () => {
 
         result.current.abort();
 
-        await expect(uploadPromise).rejects.toThrow();
+        await expect(uploadPromise).rejects.toThrow("Upload aborted");
     }, 10_000);
 
     it("should reset state", async () => {
