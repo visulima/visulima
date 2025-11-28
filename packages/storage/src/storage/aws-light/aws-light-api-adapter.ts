@@ -155,9 +155,8 @@ class AwsLightApiAdapter implements S3ApiOperations {
         }
 
         // Convert Node.js Readable to ReadableStream if needed
-        const body: BodyInit = params.Body instanceof Readable
-            ? (Readable.toWeb(params.Body) as unknown as ReadableStream<Uint8Array>)
-            : (params.Body as BodyInit);
+        const body: BodyInit
+            = params.Body instanceof Readable ? (Readable.toWeb(params.Body) as unknown as ReadableStream<Uint8Array>) : (params.Body as BodyInit);
 
         const url = this.buildUrl(params.Key, queryParams);
         const response = await this.aws.fetch(url, {
@@ -266,9 +265,9 @@ ${partsXml}
 
         return {
             Parts: (parts as Record<string, unknown>[]).map((part: Record<string, unknown>) => {
-            return {
-                ETag: (part.ETag as string)?.replaceAll(/(^"|"$)/g, ""),
-                PartNumber: Number(part.PartNumber) || 0,
+                return {
+                    ETag: (part.ETag as string)?.replaceAll(/(^"|"$)/g, ""),
+                    PartNumber: Number(part.PartNumber) || 0,
                     Size: part.Size ? Number(part.Size) : undefined,
                 };
             }),

@@ -1,0 +1,25 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`VercelBlobFile > should include Vercel Blob-specific properties and match snapshot 1`] = `
+VercelBlobFile {
+  "ETag": undefined,
+  "bytesWritten": NaN,
+  "content": undefined,
+  "contentType": "application/octet-stream",
+  "createdAt": undefined,
+  "downloadUrl": "https://example.com/blob/test-file/download",
+  "expiredAt": undefined,
+  "hash": undefined,
+  "id": "PsRqecfPghVJE6veB-IcX",
+  "metadata": {
+    "foo": "bar",
+  },
+  "modifiedAt": undefined,
+  "name": "",
+  "originalName": "testfile.mp4",
+  "pathname": "test-path",
+  "size": undefined,
+  "status": undefined,
+  "url": "https://example.com/blob/test-file",
+}
+`;

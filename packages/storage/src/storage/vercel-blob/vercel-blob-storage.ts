@@ -27,7 +27,7 @@ import VercelBlobFile from "./vercel-blob-file";
  * ## Supported Operations
  * - ✅ create, write, delete, get, copy, move
  * - ✅ Batch operations: deleteBatch, copyBatch, moveBatch (inherited from BaseStorage)
- * - ❌ exists: Not implemented (use get() and catch FILE_NOT_FOUND error)
+ * - ✅ exists: Implemented (checks metadata and Vercel Blob)
  * - ❌ getStream: Not implemented (use get() for file retrieval)
  * - ❌ list: Not implemented (Vercel Blob API doesn't support listing)
  * - ❌ update: Not implemented (Vercel Blob API doesn't support metadata updates)
@@ -229,6 +229,33 @@ class VercelBlobStorage extends BaseStorage<VercelBlobFile, FileReturn> {
             await this.onDelete(deletedFile);
 
             return deletedFile;
+        });
+    }
+
+    /**
+     * Checks if a file exists by verifying both metadata and the actual Vercel Blob.
+     * Returns true only if both the metadata and the blob exist.
+     * @param query File query containing the file ID to check.
+     * @returns Promise resolving to true if both metadata and blob exist, false otherwise.
+     */
+    public override async exists({ id }: FileQuery): Promise<boolean> {
+        return this.instrumentOperation("exists", async () => {
+            try {
+                // First check if metadata exists
+                const file = await this.getMeta(id);
+
+                if (!file.url || file.url.length === 0) {
+                    return false;
+                }
+
+                // Then verify the actual blob exists by checking if URL is accessible
+                const response = await fetch(file.url, { method: "HEAD" });
+
+                return response.ok;
+            } catch {
+                // Return false if metadata doesn't exist or blob doesn't exist
+                return false;
+            }
         });
     }
 

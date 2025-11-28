@@ -43,7 +43,7 @@ const validateStatus = (code: number): boolean => (code >= 200 && code < 300) ||
  * ## Supported Operations
  * - ✅ create, write, delete, get, list, update, copy, move
  * - ✅ Batch operations: deleteBatch, copyBatch, moveBatch (inherited from BaseStorage)
- * - ❌ exists: Not implemented (use get() and catch FILE_NOT_FOUND error)
+ * - ✅ exists: Implemented (checks metadata and GCS object)
  * - ❌ getStream: Not implemented (use get() for file retrieval)
  * - ❌ getUrl: Not implemented (GCS public URLs not supported)
  * - ❌ getUploadUrl: Not implemented (resumable upload URLs handled internally)
@@ -433,6 +433,40 @@ class GCStorage extends BaseStorage<GCSFile, FileReturn> {
                 ...data,
                 content: bufferData,
             } as FileReturn;
+        });
+    }
+
+    /**
+     * Checks if a file exists by verifying both metadata and the actual GCS object.
+     * Returns true only if both the metadata and the GCS object exist.
+     * @param query File query containing the file ID to check.
+     * @returns Promise resolving to true if both metadata and GCS object exist, false otherwise.
+     */
+    public override async exists({ id }: FileQuery): Promise<boolean> {
+        return this.instrumentOperation("exists", async () => {
+            try {
+                // First check if metadata exists
+                await this.getMeta(id);
+
+                // Then verify the actual GCS object exists using HEAD request
+                await this.makeRequest({
+                    method: "HEAD",
+                    url: `${this.storageBaseURI}/${id}`,
+                });
+
+                return true;
+            } catch (error: unknown) {
+                // Check if it's a 404 error (file not found)
+                const errorWithStatus = error as { response?: { status?: number }; status?: number };
+                const statusCode = errorWithStatus.status || errorWithStatus.response?.status;
+
+                if (statusCode === 404) {
+                    return false;
+                }
+
+                // For metadata errors, also return false
+                return false;
+            }
         });
     }
 

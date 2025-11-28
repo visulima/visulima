@@ -374,6 +374,38 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
     }
 
     /**
+     * Checks if a file exists by verifying both metadata and the actual filesystem file.
+     * Returns true only if both the metadata and the file exist.
+     * @param query File query containing the file ID to check.
+     * @returns Promise resolving to true if both metadata and file exist, false otherwise.
+     */
+    public override async exists({ id }: FileQuery): Promise<boolean> {
+        return this.instrumentOperation("exists", async () => {
+            try {
+                // First check if metadata exists
+                const file = await this.getMeta(id);
+
+                // Then verify the actual file exists on filesystem
+                const filePath = this.getFilePath(file.name);
+
+                await stat(filePath);
+
+                return true;
+            } catch (error: unknown) {
+                // Check if it's a file not found error
+                const errorWithCode = error as { code?: string };
+
+                if (errorWithCode.code === "ENOENT") {
+                    return false;
+                }
+
+                // For metadata errors, also return false
+                return false;
+            }
+        });
+    }
+
+    /**
      * Gets an uploaded file as a readable stream for efficient large file handling.
      * @param query File query containing the file ID to stream.
      * @param query.id File ID to stream.

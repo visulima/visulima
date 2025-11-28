@@ -1,7 +1,6 @@
 import { rm } from "node:fs/promises";
 import { Readable } from "node:stream";
 
-import { createRequest } from "node-mocks-http";
 import { temporaryDirectory } from "tempy";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 
@@ -24,8 +23,6 @@ describe(DiskStorageWithChecksum, () => {
     vi.useFakeTimers().setSystemTime(new Date("2022-02-02"));
 
     let options: typeof storageOptions & { checksum: "sha1" };
-
-    const request = createRequest();
 
     beforeAll(async () => {
         directory = temporaryDirectory();
