@@ -135,7 +135,9 @@ export const useTusUpload = (options: UseTusUploadOptions): UseTusUploadReturn =
                 clearInterval(intervalRef.current);
                 intervalRef.current = undefined;
             }
+
             // Cleanup callbacks
+
             adapterInstance.setOnStart(undefined);
             adapterInstance.setOnProgress(undefined);
             adapterInstance.setOnFinish(undefined);
@@ -186,6 +188,7 @@ export const useTusUpload = (options: UseTusUploadOptions): UseTusUploadReturn =
             clearInterval(intervalRef.current);
             intervalRef.current = undefined;
         }
+
         adapterInstance.abort();
         setIsUploading(false);
         setIsPaused(false);

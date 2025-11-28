@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { storageQueryKeys } from "../../src/core/query-keys";
+import storageQueryKeys from "../../src/core/query-keys";
 
 describe(storageQueryKeys, () => {
     it("should have correct base key", () => {

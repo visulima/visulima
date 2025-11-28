@@ -35,7 +35,6 @@ export interface UseFileInputReturn {
  * @returns File input functions and state
  */
 export const useFileInput = (options: UseFileInputOptions = {}): UseFileInputReturn => {
-
     const files = ref<File[]>([]);
     const inputRef = ref<HTMLInputElement | undefined>(undefined);
     const dragCounter = ref(0);

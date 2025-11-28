@@ -80,7 +80,7 @@ describe(createMultipartAdapter, () => {
         expect.assertions(1);
 
         // Create a new mock XHR that simulates error
-        // eslint-disable-next-line @typescript-eslint/member-ordering -- Mock class follows XMLHttpRequest API structure
+
         class ErrorMockXMLHttpRequest extends MockXMLHttpRequest {
             public send = vi.fn((_data?: FormData) => {
                 const triggerErrorHandlers = (): void => {

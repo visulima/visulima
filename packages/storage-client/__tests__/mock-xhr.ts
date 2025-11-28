@@ -4,7 +4,7 @@ import { vi } from "vitest";
  * Mock XMLHttpRequest for testing upload functionality.
  * Can be extended for custom behavior in specific tests.
  */
-// eslint-disable-next-line @typescript-eslint/member-ordering -- Mock class follows XMLHttpRequest API structure
+
 export class MockXMLHttpRequest {
     public readyState = 0;
 
@@ -73,7 +73,6 @@ export class MockXMLHttpRequest {
 
     public setRequestHeader = vi.fn();
 
-    // eslint-disable-next-line unicorn/no-null -- XMLHttpRequest.getResponseHeader returns string | null
     public getResponseHeader = vi.fn(undefined);
 
     public addEventListener = vi.fn((event: string, handler: (event: Event) => void) => {
@@ -94,4 +93,3 @@ export class MockXMLHttpRequest {
         }
     });
 }
-

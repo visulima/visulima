@@ -20,7 +20,6 @@ export interface CreateFileInputReturn {
 }
 
 export const createFileInput = (options: CreateFileInputOptions = {}): CreateFileInputReturn => {
-
     const files: Writable<File[]> = writable([]);
     const inputRef = { current: undefined as HTMLInputElement | undefined };
     const dragCounter = writable(0);

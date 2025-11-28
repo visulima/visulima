@@ -94,7 +94,6 @@ export const createTransformFile = (options: CreateTransformFileOptions): Create
 
                 return storageQueryKeys.transform.file(endpoint, fileId, filteredTransform);
             })(),
-
         };
     });
 
