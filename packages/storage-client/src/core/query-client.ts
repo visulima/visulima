@@ -203,6 +203,10 @@ export const patchChunk = async (
         location: response.headers.get("Location") || undefined,
         uploadComplete: response.headers.get("X-Upload-Complete") === "true",
         uploadExpires: response.headers.get("X-Upload-Expires") || undefined,
-        uploadOffset: response.headers.get("X-Upload-Offset") ? Number.parseInt(response.headers.get("X-Upload-Offset")!, 10) : undefined,
+        uploadOffset: (() => {
+            const offsetHeader = response.headers.get("X-Upload-Offset");
+
+            return offsetHeader ? Number.parseInt(offsetHeader, 10) : undefined;
+        })(),
     };
 };

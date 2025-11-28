@@ -9,7 +9,7 @@ import { renderHookWithQueryClient } from "./test-utils";
 const mockFetch = vi.fn();
 
 // Mock XMLHttpRequest for multipart uploads
-// eslint-disable-next-line @typescript-eslint/member-ordering -- Mock class follows XMLHttpRequest API structure
+
 class MockXMLHttpRequest {
     public readyState = 0;
 

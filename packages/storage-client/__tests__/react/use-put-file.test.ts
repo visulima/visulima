@@ -38,7 +38,6 @@ class CustomMockXMLHttpRequest extends MockXMLHttpRequest {
         }, 100);
     });
 
-    // eslint-disable-next-line unicorn/no-null -- XMLHttpRequest.getResponseHeader returns string | null
     public override getResponseHeader = vi.fn((header: string) => {
         if (header === "Location") {
             return "https://api.example.com/files/file-123";
@@ -138,7 +137,6 @@ describe(usePutFile, () => {
     it("should handle upload errors", async () => {
         expect.assertions(3);
 
-        // eslint-disable-next-line @typescript-eslint/member-ordering -- Mock class follows XMLHttpRequest API structure
         class ErrorXHR extends CustomMockXMLHttpRequest {
             public send = vi.fn(() => {
                 const triggerLoadHandlers = (): void => {

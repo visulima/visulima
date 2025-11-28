@@ -76,42 +76,45 @@ export const createMultipartAdapter = (options: MultipartAdapterOptions): Multip
          * Uploads a file and returns visulima-compatible result.
          */
         upload: async (file: File): Promise<UploadResult> =>
-            new Promise((resolve, reject) => {
-                let uploadResult: UploadResult | undefined;
+            new Promise<UploadResult>((resolve, reject) => {
                 let resolved = false;
                 let timeoutId: ReturnType<typeof setTimeout> | undefined;
 
-                // Handle upload completion
+                const parseFileMeta = (item: UploadItem): Partial<FileMeta> => {
+                    let fileMeta: Partial<FileMeta> = {};
+
+                    try {
+                        if (item.uploadResponse?.data && typeof item.uploadResponse.data === "object") {
+                            fileMeta = item.uploadResponse.data as Partial<FileMeta>;
+                        } else if (item.uploadResponse?.response) {
+                            fileMeta = JSON.parse(item.uploadResponse.response) as Partial<FileMeta>;
+                        }
+                    } catch {
+                        // Use fallback values if parsing fails
+                    }
+
+                    return fileMeta;
+                };
+
+                const buildUploadResult = (item: UploadItem, fileMeta: Partial<FileMeta>): UploadResult => ({
+                    bytesWritten: fileMeta.bytesWritten,
+                    contentType: fileMeta.contentType ?? item.file.type,
+                    createdAt: fileMeta.createdAt,
+                    filename: fileMeta.originalName ?? item.file.name,
+                    id: fileMeta.id ?? item.id,
+                    metadata: fileMeta.metadata,
+                    name: fileMeta.name,
+                    originalName: fileMeta.originalName ?? item.file.name,
+                    size: fileMeta.size ?? item.file.size,
+                    status: (fileMeta.status as UploadResult["status"]) ?? "completed",
+                    url: item.url,
+                });
+
                 const onItemFinish = (itemOrBatch: UploadItem | BatchState): void => {
                     if ("file" in itemOrBatch && !resolved && itemOrBatch.file.name === file.name) {
                         const item = itemOrBatch as UploadItem;
-                        // Parse response as FileMeta
-                        let fileMeta: Partial<FileMeta> = {};
-
-                        try {
-                            if (item.uploadResponse?.data && typeof item.uploadResponse.data === "object") {
-                                fileMeta = item.uploadResponse.data as Partial<FileMeta>;
-                            } else if (item.uploadResponse?.response) {
-                                fileMeta = JSON.parse(item.uploadResponse.response) as Partial<FileMeta>;
-                            }
-                        } catch {
-                            // Use fallback values if parsing fails
-                        }
-
-                        // Build UploadResult from FileMeta
-                        uploadResult = {
-                            bytesWritten: fileMeta.bytesWritten,
-                            contentType: fileMeta.contentType ?? item.file.type,
-                            createdAt: fileMeta.createdAt,
-                            filename: fileMeta.originalName ?? item.file.name,
-                            id: fileMeta.id ?? item.id,
-                            metadata: fileMeta.metadata,
-                            name: fileMeta.name,
-                            originalName: fileMeta.originalName ?? item.file.name,
-                            size: fileMeta.size ?? item.file.size,
-                            status: (fileMeta.status as UploadResult["status"]) ?? "completed",
-                            url: item.url,
-                        };
+                        const fileMeta = parseFileMeta(item);
+                        const uploadResult = buildUploadResult(item, fileMeta);
 
                         resolved = true;
                         cleanup();
@@ -119,7 +122,6 @@ export const createMultipartAdapter = (options: MultipartAdapterOptions): Multip
                     }
                 };
 
-                // Handle errors
                 const onError = (itemOrBatch: UploadItem | BatchState): void => {
                     if ("file" in itemOrBatch && !resolved && itemOrBatch.file.name === file.name) {
                         const item = itemOrBatch as UploadItem;
@@ -131,7 +133,6 @@ export const createMultipartAdapter = (options: MultipartAdapterOptions): Multip
                     }
                 };
 
-                // Cleanup function
                 const cleanup = (): void => {
                     if (timeoutId) {
                         clearTimeout(timeoutId);
@@ -145,7 +146,6 @@ export const createMultipartAdapter = (options: MultipartAdapterOptions): Multip
                 uploader.on("ITEM_FINISH", onItemFinish);
                 uploader.on("ITEM_ERROR", onError);
 
-                // Start upload
                 uploader.add(file);
 
                 timeoutId = setTimeout(() => {
@@ -154,7 +154,7 @@ export const createMultipartAdapter = (options: MultipartAdapterOptions): Multip
                         cleanup();
                         reject(new Error("Upload timeout"));
                     }
-                }, 300_000); // 5 minutes
+                }, 300_000);
             }),
 
         /**

@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createUploader } from "../../src/core/uploader";
 
 // Mock XMLHttpRequest
-// eslint-disable-next-line @typescript-eslint/member-ordering -- Mock class follows XMLHttpRequest API structure
+
 class MockXMLHttpRequest {
     public readyState = 0;
 

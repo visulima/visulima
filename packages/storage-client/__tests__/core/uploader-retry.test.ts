@@ -249,10 +249,10 @@ describe("uploader Retry Operations", () => {
 
             // Wait a bit
             await new Promise<void>((resolve) => {
-            setTimeout(() => {
-                resolve();
-            }, 5);
-        });
+                setTimeout(() => {
+                    resolve();
+                }, 5);
+            });
 
             const batch = uploader.getBatch(batchId);
 

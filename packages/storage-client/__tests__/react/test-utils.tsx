@@ -4,8 +4,6 @@ import { renderHook } from "@testing-library/react";
 import type { ReactNode } from "react";
 import React from "react";
 
-import { MockXMLHttpRequest } from "../mock-xhr";
-
 /**
  * Creates a new QueryClient for each test to ensure isolation.
  */
@@ -29,7 +27,7 @@ export const createTestQueryClient = (): QueryClient =>
 /**
  * Wrapper component for React Query Provider.
  */
-export const createWrapper = (queryClient?: QueryClient): ((props: { children: ReactNode }) => JSX.Element) => {
+export const createWrapper = (queryClient?: QueryClient): (props: { children: ReactNode }) => JSX.Element => {
     const client = queryClient || createTestQueryClient();
 
     return (props: { children: ReactNode }) => <QueryClientProvider client={client}>{props.children}</QueryClientProvider>;

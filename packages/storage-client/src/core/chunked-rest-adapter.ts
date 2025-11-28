@@ -2,6 +2,16 @@ import type { UploadResult } from "../react/types";
 
 const DEFAULT_CHUNK_SIZE = 5 * 1024 * 1024; // 5MB default chunk size
 
+interface UploadState {
+    abortController?: AbortController;
+    aborted: boolean;
+    file?: File;
+    fileId?: string;
+    paused: boolean;
+    totalSize: number;
+    uploadedChunks: Set<number>; // Track uploaded chunk offsets
+}
+
 export interface ChunkedRestAdapterOptions {
     /** Chunk size in bytes (default: 5MB) */
     chunkSize?: number;
@@ -38,16 +48,6 @@ export interface ChunkedRestAdapter {
     setOnStart: (callback?: () => void) => void;
     /** Upload a file in chunks */
     upload: (file: File) => Promise<UploadResult>;
-}
-
-interface UploadState {
-    abortController?: AbortController;
-    aborted: boolean;
-    file?: File;
-    fileId?: string;
-    paused: boolean;
-    totalSize: number;
-    uploadedChunks: Set<number>; // Track uploaded chunk offsets
 }
 
 /**
@@ -89,7 +89,12 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
             const remaining = ms - (Date.now() - startTime);
             const waitTime = Math.min(checkInterval, remaining);
 
-            await new Promise((resolve) => setTimeout(resolve, waitTime));
+            // eslint-disable-next-line no-await-in-loop -- Sequential delay required for abortable delay
+            await new Promise<void>((resolve) => {
+                setTimeout(() => {
+                    resolve();
+                }, waitTime);
+            });
         }
     };
 
@@ -204,7 +209,7 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
      */
     const uploadChunk = async (file: File, fileId: string, startOffset: number, endOffset: number, signal: AbortSignal): Promise<void> => {
         const chunk = file.slice(startOffset, endOffset);
-        const chunkSize = endOffset - startOffset;
+        const currentChunkSize = endOffset - startOffset;
 
         // Skip if already uploaded
         if (uploadState.uploadedChunks.has(startOffset)) {
@@ -216,7 +221,7 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
         const response = await fetchWithRetry(url, {
             body: chunk,
             headers: {
-                "Content-Length": String(chunkSize),
+                "Content-Length": String(currentChunkSize),
                 "Content-Type": "application/octet-stream",
                 "X-Chunk-Offset": String(startOffset),
             },
@@ -255,7 +260,7 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
         // Upload chunks in parallel (but respect pause/abort)
         const uploadPromises: Promise<void>[] = [];
 
-        for (let i = 0; i < totalChunks; i++) {
+        for (let i = 0; i < totalChunks; i += 1) {
             const startOffset = i * chunkSize;
             const endOffset = Math.min(startOffset + chunkSize, file.size);
 
@@ -266,7 +271,12 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
 
             // Skip if paused
             while (uploadState.paused && !uploadState.aborted) {
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                // eslint-disable-next-line no-await-in-loop -- Sequential delay required for abortable delay
+                await new Promise<void>((resolve) => {
+                    setTimeout(() => {
+                        resolve();
+                    }, 100);
+                });
             }
 
             if (uploadState.aborted) {
@@ -285,6 +295,11 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
 
         if (finalStatus.offset < file.size) {
             throw new Error(`Upload incomplete. Expected ${file.size} bytes, got ${finalStatus.offset}`);
+        }
+
+        // Check if uploadedChunks set has any items
+        if (uploadState.uploadedChunks.size <= 0) {
+            throw new Error("No chunks were uploaded");
         }
 
         // Parse response as FileMeta
@@ -313,7 +328,7 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
 
         // Build UploadResult
         return {
-            bytesWritten: fileMeta.bytesWritten || file.size,
+            bytesWritten: fileMeta.bytesWritten || Math.max(file.size, 0),
             contentType: fileMeta.contentType || file.type,
             createdAt: fileMeta.createdAt,
             filename: fileMeta.originalName || file.name,
@@ -365,11 +380,15 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
 
                 return status.offset;
             } catch {
-                return [...uploadState.uploadedChunks].reduce((sum, offset) => {
+                let totalOffset = 0;
+
+                for (const offset of uploadState.uploadedChunks) {
                     const chunkEnd = Math.min(offset + chunkSize, uploadState.totalSize);
 
-                    return sum + (chunkEnd - offset);
-                }, 0);
+                    totalOffset += chunkEnd - offset;
+                }
+
+                return totalOffset;
             }
         },
 
@@ -443,84 +462,86 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
         /**
          * Uploads a file in chunks.
          */
-        upload: async (file: File): Promise<UploadResult> =>
-            new Promise((resolve, reject) => {
-                let resolved = false;
-                const originalFinishCallback = finishCallback;
-                const originalErrorCallback = errorCallback;
-                let timeoutId: NodeJS.Timeout | undefined;
+        upload: async (file: File): Promise<UploadResult> => {
+            let resolved = false;
+            const originalFinishCallback = finishCallback;
+            const originalErrorCallback = errorCallback;
+            let timeoutId: NodeJS.Timeout | undefined;
 
-                const cleanupTimeout = (): void => {
-                    if (timeoutId) {
-                        clearTimeout(timeoutId);
-                        timeoutId = undefined;
-                    }
+            const cleanupTimeout = (): void => {
+                if (timeoutId) {
+                    clearTimeout(timeoutId);
+                    timeoutId = undefined;
+                }
 
-                    finishCallback = originalFinishCallback;
-                    errorCallback = originalErrorCallback;
-                };
+                finishCallback = originalFinishCallback;
+                errorCallback = originalErrorCallback;
+            };
 
-                const internalFinishCallback = (result: UploadResult) => {
-                    if (!resolved) {
-                        resolved = true;
-                        cleanupTimeout();
-                        originalFinishCallback?.(result);
-                        resolve(result);
-                    }
-                };
+            const internalFinishCallback = (result: UploadResult): void => {
+                if (!resolved) {
+                    resolved = true;
+                    cleanupTimeout();
+                    originalFinishCallback?.(result);
+                }
+            };
 
-                const internalErrorCallback = (error: Error) => {
-                    if (!resolved) {
-                        resolved = true;
-                        cleanupTimeout();
-                        originalErrorCallback?.(error);
-                        reject(error);
-                    }
-                };
+            const internalErrorCallback = (error: Error): void => {
+                if (!resolved) {
+                    resolved = true;
+                    cleanupTimeout();
+                    originalErrorCallback?.(error);
+                }
+            };
 
-                finishCallback = internalFinishCallback;
-                errorCallback = internalErrorCallback;
+            finishCallback = internalFinishCallback;
+            errorCallback = internalErrorCallback;
 
-                uploadState = {
-                    aborted: false,
-                    file,
-                    paused: false,
-                    totalSize: file.size,
-                    uploadedChunks: new Set(),
-                };
+            uploadState = {
+                aborted: false,
+                file,
+                paused: false,
+                totalSize: file.size,
+                uploadedChunks: new Set(),
+            };
 
-                startCallback?.();
+            startCallback?.();
 
-                (async () => {
-                    try {
-                        const abortController = new AbortController();
+            const uploadPromise = (async (): Promise<UploadResult> => {
+                const abortController = new AbortController();
 
-                        uploadState.abortController = abortController;
+                uploadState.abortController = abortController;
 
-                        // Create upload session
-                        const fileId = await createUpload(file);
+                // Create upload session
+                const fileId = await createUpload(file);
 
-                        uploadState.fileId = fileId;
+                uploadState.fileId = fileId;
 
-                        // Perform upload
-                        const result = await performUpload(file, fileId, abortController.signal);
+                // Perform upload
+                return performUpload(file, fileId, abortController.signal);
+            })();
 
-                        internalFinishCallback(result);
-                    } catch (error) {
-                        const uploadError = error instanceof Error ? error : new Error(String(error));
+            // Safety timeout (5 minutes)
+            timeoutId = setTimeout(() => {
+                if (!resolved) {
+                    uploadState.aborted = true;
+                    cleanupTimeout();
+                    internalErrorCallback(new Error("Upload timeout"));
+                }
+            }, 300_000);
 
-                        internalErrorCallback(uploadError);
-                    }
-                })();
+            try {
+                const result = await uploadPromise;
 
-                // Safety timeout (5 minutes)
-                timeoutId = setTimeout(() => {
-                    if (!resolved) {
-                        uploadState.aborted = true;
-                        cleanupTimeout();
-                        internalErrorCallback(new Error("Upload timeout"));
-                    }
-                }, 300_000);
-            }),
+                internalFinishCallback(result);
+
+                return result;
+            } catch (error) {
+                const uploadError = error instanceof Error ? error : new Error(String(error));
+
+                internalErrorCallback(uploadError);
+                throw uploadError;
+            }
+        },
     };
 };

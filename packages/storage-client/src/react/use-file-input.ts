@@ -34,11 +34,9 @@ export interface UseFileInputReturn {
  * @returns File input functions and state
  */
 export const useFileInput = (options: UseFileInputOptions = {}): UseFileInputReturn => {
-
     const [files, setFiles] = useState<File[]>([]);
     const inputRef = useRef<HTMLInputElement>(null);
     const dragCounterRef = useRef(0);
-
     const processFiles = useCallback(
         (fileList: FileList | null): void => {
             if (!fileList || fileList.length === 0) {

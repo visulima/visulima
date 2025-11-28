@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createUploader } from "../../src/core/uploader";
 
 // Mock XMLHttpRequest
-// eslint-disable-next-line @typescript-eslint/member-ordering -- Mock class follows XMLHttpRequest API structure
+
 class MockXMLHttpRequest {
     public readyState = 0;
 
@@ -32,7 +32,6 @@ class MockXMLHttpRequest {
 
     public setRequestHeader = vi.fn();
 
-    // eslint-disable-next-line unicorn/no-null -- XMLHttpRequest.getResponseHeader returns string | null
     public getResponseHeader = vi.fn(() => undefined);
 
     public addEventListener = vi.fn((event: string, handler: (event: Event) => void) => {

@@ -4,7 +4,7 @@ import { useBatchUpload } from "../../src/vue/use-batch-upload";
 import { withQueryClient } from "./test-utils";
 
 // Mock XMLHttpRequest
-// eslint-disable-next-line @typescript-eslint/member-ordering -- Mock class follows XMLHttpRequest API structure
+
 class MockXMLHttpRequest {
     public readyState = 0;
 

@@ -3,7 +3,7 @@
  * Provides consistent query key generation across all hooks
  */
 
-export const storageQueryKeys = {
+const storageQueryKeys = {
     /**
      * Base key for all storage queries
      */
@@ -34,3 +34,5 @@ export const storageQueryKeys = {
         metadata: (endpoint: string): ReadonlyArray<unknown> => [...storageQueryKeys.transform.all(endpoint), "metadata"] as const,
     },
 } as const;
+
+export default storageQueryKeys;

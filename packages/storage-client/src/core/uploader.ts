@@ -91,159 +91,10 @@ export interface UploaderOptions {
  * Uploader class - event-driven file uploader inspired by rpldy design
  */
 export class Uploader {
-    private items = new Map<string, UploadItem>();
-
-    private batches = new Map<string, BatchState>();
-
-    private eventHandlers = new Map<UploaderEventType, Set<UploaderEventHandler>>();
-
-    private activeUploads = new Map<string, XMLHttpRequest>();
-
-    private itemIdCounter = 0;
-
-    private batchIdCounter = 0;
-
-    constructor(private options: UploaderOptions) {}
-
-    /**
-     * Generates a unique item ID.
-     */
-    private generateItemId(): string {
-        this.itemIdCounter += 1;
-
-        return `item-${Date.now()}-${this.itemIdCounter}`;
-    }
-
-    /**
-     * Generates a unique batch ID.
-     */
-    private generateBatchId(): string {
-        this.batchIdCounter += 1;
-
-        return `batch-${Date.now()}-${this.batchIdCounter}`;
-    }
-
-    /**
-     * Calculates aggregate progress for a batch.
-     */
-    private calculateBatchProgress(batch: BatchState): number {
-        const items = batch.itemIds.map((id) => this.items.get(id)).filter(Boolean) as UploadItem[];
-
-        if (items.length === 0) {
-            return 0;
-        }
-
-        const totalSize = items.reduce((sum, item) => sum + item.size, 0);
-        const loadedSize = items.reduce((sum, item) => sum + item.loaded, 0);
-
-        return totalSize > 0 ? Math.round((loadedSize / totalSize) * 100) : 0;
-    }
-
-    /**
-     * Updates batch state and emits batch progress event.
-     */
-    private updateBatchProgress(batchId: string): void {
-        const batch = this.batches.get(batchId);
-
-        if (!batch) {
-            return;
-        }
-
-        const items = batch.itemIds.map((id) => this.items.get(id)).filter(Boolean) as UploadItem[];
-
-        batch.completedCount = items.filter((item) => item.status === "completed").length;
-        batch.errorCount = items.filter((item) => item.status === "error").length;
-        batch.progress = this.calculateBatchProgress(batch);
-
-        // Update batch status
-        if (batch.completedCount + batch.errorCount === batch.totalCount) {
-            if (batch.errorCount > 0 && batch.completedCount > 0) {
-                batch.status = "error";
-            } else if (batch.errorCount === batch.totalCount) {
-                batch.status = "error";
-            } else {
-                batch.status = "completed";
-            }
-        } else if (batch.completedCount > 0 || batch.errorCount > 0) {
-            batch.status = "uploading";
-        }
-
-        this.batches.set(batchId, batch);
-
-        // Emit batch progress event
-        this.emitBatch("BATCH_PROGRESS", batch);
-
-        // Check if batch is complete
-        if (batch.completedCount + batch.errorCount === batch.totalCount) {
-            if (batch.status === "completed") {
-                this.emitBatch("BATCH_FINISH", batch);
-            } else if (batch.status === "error") {
-                this.emitBatch("BATCH_ERROR", batch);
-            }
-
-            // Emit finalize event after a short delay to allow listeners to process
-            setTimeout(() => {
-                this.emitBatch("BATCH_FINALIZE", batch);
-            }, 0);
-        }
-    }
-
-    /**
-     * Emits a batch event to all registered handlers.
-     */
-    private emitBatch(event: UploaderEventType, batch: BatchState): void {
-        const handlers = this.eventHandlers.get(event);
-
-        if (handlers) {
-            handlers.forEach((handler) => {
-                try {
-                    handler(batch);
-                } catch (error) {
-                    console.error(`[Uploader] Error in ${event} handler:`, error);
-                }
-            });
-        }
-    }
-
-    /**
-     * Subscribes to uploader events.
-     */
-    public on(event: UploaderEventType, handler: UploaderEventHandler): void {
-        if (!this.eventHandlers.has(event)) {
-            this.eventHandlers.set(event, new Set());
-        }
-
-        this.eventHandlers.get(event)?.add(handler);
-    }
-
-    /**
-     * Unsubscribes from uploader events.
-     */
-    public off(event: UploaderEventType, handler: UploaderEventHandler): void {
-        this.eventHandlers.get(event)?.delete(handler);
-    }
-
-    /**
-     * Emits an event to all registered handlers.
-     */
-    private emit(event: UploaderEventType, item: UploadItem): void {
-        const handlers = this.eventHandlers.get(event);
-
-        if (handlers) {
-            handlers.forEach((handler) => {
-                try {
-                    handler(item);
-                } catch (error) {
-                    console.error(`[Uploader] Error in ${event} handler:`, error);
-                }
-            });
-        }
-    }
-
     /**
      * Creates FormData for visulima multipart handler.
      */
-    private createFormData(file: File, metadata?: Record<string, string>): FormData {
+    private static createFormData(file: File, metadata?: Record<string, string>): FormData {
         const formData = new FormData();
 
         formData.append("file", file);
@@ -258,7 +109,7 @@ export class Uploader {
     /**
      * Parses response as FileMeta.
      */
-    private parseResponse(responseText: string, response: Response | XMLHttpRequest): Partial<FileMeta> {
+    private static parseResponse(responseText: string, response: Response | XMLHttpRequest): Partial<FileMeta> {
         try {
             // Try to parse as JSON
             const parsed = JSON.parse(responseText) as Partial<FileMeta>;
@@ -281,150 +132,36 @@ export class Uploader {
         }
     }
 
+    private items = new Map<string, UploadItem>();
+
+    private batches = new Map<string, BatchState>();
+
+    private eventHandlers = new Map<UploaderEventType, Set<UploaderEventHandler>>();
+
+    private activeUploads = new Map<string, XMLHttpRequest>();
+
+    private itemIdCounter = 0;
+
+    private batchIdCounter = 0;
+
+    public constructor(private readonly options: UploaderOptions) {}
+
     /**
-     * Uploads a single file.
+     * Subscribes to uploader events.
      */
-    private async uploadFile(item: UploadItem): Promise<void> {
-        return new Promise((resolve, reject) => {
-            const xhr = new XMLHttpRequest();
-            const formData = this.createFormData(item.file, this.options.metadata);
+    public on(event: UploaderEventType, handler: UploaderEventHandler): void {
+        if (!this.eventHandlers.has(event)) {
+            this.eventHandlers.set(event, new Set());
+        }
 
-            // Store XHR for potential abort
-            this.activeUploads.set(item.id, xhr);
+        this.eventHandlers.get(event)?.add(handler);
+    }
 
-            // Update item status
-            item.status = "uploading";
-            this.items.set(item.id, item);
-
-            // Emit start event
-            this.emit("ITEM_START", item);
-
-            // Track upload progress
-            xhr.upload.addEventListener("progress", (event) => {
-                if (event.lengthComputable) {
-                    const { loaded } = event;
-                    const { total } = event;
-                    const completed = Math.round((loaded / total) * 100);
-
-                    // Update item progress
-                    item.loaded = loaded;
-                    item.completed = completed;
-                    item.size = total;
-
-                    // Update stored item
-                    this.items.set(item.id, item);
-
-                    // Emit progress event
-                    this.emit("ITEM_PROGRESS", item);
-
-                    // Update batch if item belongs to one
-                    if (item.batchId) {
-                        this.updateBatchProgress(item.batchId);
-                    }
-                }
-            });
-
-            // Handle completion
-            xhr.addEventListener("load", () => {
-                this.activeUploads.delete(item.id);
-
-                if (xhr.status >= 200 && xhr.status < 300) {
-                    // Parse response
-                    const responseText = xhr.responseText || xhr.response;
-                    const fileMeta = this.parseResponse(responseText, xhr);
-
-                    // Update item with response
-                    item.status = "completed";
-                    item.uploadResponse = {
-                        data: fileMeta,
-                        response: responseText,
-                    };
-                    item.url = xhr.getResponseHeader("Location") || undefined;
-
-                    this.items.set(item.id, item);
-
-                    // Emit finish event
-                    this.emit("ITEM_FINISH", item);
-
-                    // Update batch if item belongs to one
-                    if (item.batchId) {
-                        this.updateBatchProgress(item.batchId);
-                    }
-
-                    resolve();
-                } else {
-                    // Handle error response
-                    const error = new Error(`Upload failed: ${xhr.status} ${xhr.statusText}`);
-
-                    item.status = "error";
-                    item.error = error.message;
-                    this.items.set(item.id, item);
-
-                    this.emit("ITEM_ERROR", item);
-
-                    // Update batch if item belongs to one
-                    if (item.batchId) {
-                        this.updateBatchProgress(item.batchId);
-                    }
-
-                    reject(error);
-                }
-            });
-
-            // Handle errors
-            xhr.addEventListener("error", () => {
-                this.activeUploads.delete(item.id);
-
-                const error = new Error("Network error during upload");
-
-                item.status = "error";
-                item.error = error.message;
-                this.items.set(item.id, item);
-
-                this.emit("ITEM_ERROR", item);
-
-                // Update batch if item belongs to one
-                if (item.batchId) {
-                    this.updateBatchProgress(item.batchId);
-                }
-
-                reject(error);
-            });
-
-            // Handle abort
-            xhr.addEventListener("abort", () => {
-                this.activeUploads.delete(item.id);
-
-                item.status = "aborted";
-                this.items.set(item.id, item);
-
-                // Emit abort event
-                this.emit("ITEM_ABORT", item);
-
-                // Update batch if item belongs to one
-                if (item.batchId) {
-                    const batch = this.batches.get(item.batchId);
-
-                    if (batch) {
-                        batch.status = "cancelled";
-                        this.batches.set(item.batchId, batch);
-                        this.emitBatch("BATCH_CANCELLED", batch);
-                    }
-                }
-
-                reject(new Error("Upload aborted"));
-            });
-
-            // Open and send request
-            xhr.open("POST", this.options.endpoint, true);
-
-            // Set headers if metadata is provided
-            if (this.options.metadata) {
-                xhr.setRequestHeader("X-File-Metadata", JSON.stringify(this.options.metadata));
-            }
-
-            xhr.send(formData);
-        });
+    /**
+     * Unsubscribes from uploader events.
+     */
+    public off(event: UploaderEventType, handler: UploaderEventHandler): void {
+        this.eventHandlers.get(event)?.delete(handler);
     }
 
     /**
@@ -447,6 +184,7 @@ export class Uploader {
 
         // Start upload immediately
         this.uploadFile(item).catch((error) => {
+            // eslint-disable-next-line no-console -- Error logging for debugging
             console.error(`[Uploader] Upload failed for item ${id}:`, error);
         });
 
@@ -633,6 +371,7 @@ export class Uploader {
 
         // Start upload again
         this.uploadFile(item).catch((error) => {
+            // eslint-disable-next-line no-console -- Error logging for debugging
             console.error(`[Uploader] Retry failed for item ${id}:`, error);
         });
     }
@@ -660,6 +399,282 @@ export class Uploader {
         batch.progress = 0;
         this.batches.set(batchId, batch);
         this.emitBatch("BATCH_START", batch);
+    }
+
+    /**
+     * Generates a unique item ID.
+     */
+    private generateItemId(): string {
+        this.itemIdCounter += 1;
+
+        return `item-${Date.now()}-${this.itemIdCounter}`;
+    }
+
+    /**
+     * Generates a unique batch ID.
+     */
+    private generateBatchId(): string {
+        this.batchIdCounter += 1;
+
+        return `batch-${Date.now()}-${this.batchIdCounter}`;
+    }
+
+    /**
+     * Calculates aggregate progress for a batch.
+     */
+    private calculateBatchProgress(batch: BatchState): number {
+        const items = batch.itemIds.map((id) => this.items.get(id)).filter(Boolean) as UploadItem[];
+
+        if (items.length === 0) {
+            return 0;
+        }
+
+        const totalSize = items.reduce((sum, item) => sum + item.size, 0);
+        const loadedSize = items.reduce((sum, item) => sum + item.loaded, 0);
+
+        return totalSize > 0 ? Math.round((loadedSize / totalSize) * 100) : 0;
+    }
+
+    /**
+     * Updates batch state and emits batch progress event.
+     */
+    private updateBatchProgress(batchId: string): void {
+        const batch = this.batches.get(batchId);
+
+        if (!batch) {
+            return;
+        }
+
+        const items = batch.itemIds.map((id) => this.items.get(id)).filter(Boolean) as UploadItem[];
+
+        batch.completedCount = items.filter((item) => item.status === "completed").length;
+        batch.errorCount = items.filter((item) => item.status === "error").length;
+        batch.progress = this.calculateBatchProgress(batch);
+
+        // Update batch status
+        if (batch.completedCount + batch.errorCount === batch.totalCount) {
+            if (batch.errorCount > 0 && batch.completedCount > 0) {
+                batch.status = "error";
+            } else if (batch.errorCount === batch.totalCount) {
+                batch.status = "error";
+            } else {
+                batch.status = "completed";
+            }
+        } else if (batch.completedCount > 0 || batch.errorCount > 0) {
+            batch.status = "uploading";
+        }
+
+        this.batches.set(batchId, batch);
+
+        // Emit batch progress event
+        this.emitBatch("BATCH_PROGRESS", batch);
+
+        // Check if batch is complete
+        if (batch.completedCount + batch.errorCount === batch.totalCount) {
+            if (batch.status === "completed") {
+                this.emitBatch("BATCH_FINISH", batch);
+            } else if (batch.status === "error") {
+                this.emitBatch("BATCH_ERROR", batch);
+            }
+
+            // Emit finalize event after a short delay to allow listeners to process
+            setTimeout(() => {
+                this.emitBatch("BATCH_FINALIZE", batch);
+            }, 0);
+        }
+    }
+
+    /**
+     * Emits a batch event to all registered handlers.
+     */
+    private emitBatch(event: UploaderEventType, batch: BatchState): void {
+        const handlers = this.eventHandlers.get(event);
+
+        if (handlers) {
+            handlers.forEach((handler) => {
+                try {
+                    handler(batch);
+                } catch (error) {
+                    // eslint-disable-next-line no-console -- Error logging for debugging
+                    console.error(`[Uploader] Error in ${event} handler:`, error);
+                }
+            });
+        }
+    }
+
+    /**
+     * Emits an event to all registered handlers.
+     */
+    private emit(event: UploaderEventType, item: UploadItem): void {
+        const handlers = this.eventHandlers.get(event);
+
+        if (handlers) {
+            handlers.forEach((handler) => {
+                try {
+                    handler(item);
+                } catch (error) {
+                    // eslint-disable-next-line no-console -- Error logging for debugging
+                    console.error(`[Uploader] Error in ${event} handler:`, error);
+                }
+            });
+        }
+    }
+
+    /**
+     * Uploads a single file.
+     */
+    private async uploadFile(item: UploadItem): Promise<void> {
+        return new Promise((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+            const formData = Uploader.createFormData(item.file, this.options.metadata);
+
+            // Store XHR for potential abort
+            this.activeUploads.set(item.id, xhr);
+
+            // Update item status
+            item.status = "uploading";
+            this.items.set(item.id, item);
+
+            // Emit start event
+            this.emit("ITEM_START", item);
+
+            // Track upload progress
+            xhr.upload.addEventListener("progress", (event) => {
+                if (event.lengthComputable) {
+                    const { loaded } = event;
+                    const { total } = event;
+                    const completed = Math.round((loaded / total) * 100);
+
+                    // Update item progress
+                    // eslint-disable-next-line no-param-reassign -- Required to update item state
+                    item.loaded = loaded;
+                    // eslint-disable-next-line no-param-reassign -- Required to update item state
+                    item.completed = completed;
+                    // eslint-disable-next-line no-param-reassign -- Required to update item state
+                    item.size = total;
+
+                    // Update stored item
+                    this.items.set(item.id, item);
+
+                    // Emit progress event
+                    this.emit("ITEM_PROGRESS", item);
+
+                    // Update batch if item belongs to one
+                    if (item.batchId) {
+                        this.updateBatchProgress(item.batchId);
+                    }
+                }
+            });
+
+            // Handle completion
+            xhr.addEventListener("load", () => {
+                this.activeUploads.delete(item.id);
+
+                if (xhr.status >= 200 && xhr.status < 300) {
+                    // Parse response
+                    const responseText = xhr.responseText || xhr.response;
+                    const fileMeta = Uploader.parseResponse(responseText, xhr);
+
+                    // Update item with response
+                    // eslint-disable-next-line no-param-reassign -- Required to update item state
+                    item.status = "completed";
+                    // eslint-disable-next-line no-param-reassign -- Required to update item state
+                    item.uploadResponse = {
+                        data: fileMeta,
+                        response: responseText,
+                    };
+                    // eslint-disable-next-line no-param-reassign -- Required to update item state
+                    item.url = xhr.getResponseHeader("Location") || undefined;
+
+                    this.items.set(item.id, item);
+
+                    // Emit finish event
+                    this.emit("ITEM_FINISH", item);
+
+                    // Update batch if item belongs to one
+                    if (item.batchId) {
+                        this.updateBatchProgress(item.batchId);
+                    }
+
+                    resolve();
+                } else {
+                    // Handle error response
+                    const error = new Error(`Upload failed: ${xhr.status} ${xhr.statusText}`);
+
+                    // eslint-disable-next-line no-param-reassign -- Required to update item state
+                    item.status = "error";
+                    // eslint-disable-next-line no-param-reassign -- Required to update item state
+                    item.error = error.message;
+                    this.items.set(item.id, item);
+
+                    this.emit("ITEM_ERROR", item);
+
+                    // Update batch if item belongs to one
+                    if (item.batchId) {
+                        this.updateBatchProgress(item.batchId);
+                    }
+
+                    reject(error);
+                }
+            });
+
+            // Handle errors
+            xhr.addEventListener("error", () => {
+                this.activeUploads.delete(item.id);
+
+                const error = new Error("Network error during upload");
+
+                // eslint-disable-next-line no-param-reassign -- Required to update item state
+                item.status = "error";
+                // eslint-disable-next-line no-param-reassign -- Required to update item state
+                item.error = error.message;
+                this.items.set(item.id, item);
+
+                this.emit("ITEM_ERROR", item);
+
+                // Update batch if item belongs to one
+                if (item.batchId) {
+                    this.updateBatchProgress(item.batchId);
+                }
+
+                reject(error);
+            });
+
+            // Handle abort
+            xhr.addEventListener("abort", () => {
+                this.activeUploads.delete(item.id);
+
+                // eslint-disable-next-line no-param-reassign -- Required to update item state
+                item.status = "aborted";
+                this.items.set(item.id, item);
+
+                // Emit abort event
+                this.emit("ITEM_ABORT", item);
+
+                // Update batch if item belongs to one
+                if (item.batchId) {
+                    const batch = this.batches.get(item.batchId);
+
+                    if (batch) {
+                        batch.status = "cancelled";
+                        this.batches.set(item.batchId, batch);
+                        this.emitBatch("BATCH_CANCELLED", batch);
+                    }
+                }
+
+                reject(new Error("Upload aborted"));
+            });
+
+            // Open and send request
+            xhr.open("POST", this.options.endpoint, true);
+
+            // Set headers if metadata is provided
+            if (this.options.metadata) {
+                xhr.setRequestHeader("X-File-Metadata", JSON.stringify(this.options.metadata));
+            }
+
+            xhr.send(formData);
+        });
     }
 }
 
