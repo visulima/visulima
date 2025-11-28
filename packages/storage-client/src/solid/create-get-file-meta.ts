@@ -41,12 +41,12 @@ export const createGetFileMeta = (options: CreateGetFileMetaOptions): CreateGetF
     const query = createQuery(
         () => {
             const fileId = idValue();
-            const enabled = enabledValue() && !!fileId;
+            const isEnabled = enabledValue() && !!fileId;
 
             const queryKey = storageQueryKeys.files.meta(endpoint, fileId);
 
             return {
-                enabled,
+                enabled: isEnabled,
                 queryFn: async (): Promise<FileMeta> => {
                     const url = buildUrl(endpoint, `${fileId}/metadata`);
                     const data = await fetchJson<FileMeta>(url);
@@ -65,7 +65,7 @@ export const createGetFileMeta = (options: CreateGetFileMetaOptions): CreateGetF
     return {
         data: () => {
             try {
-                const dataValue = (query as any).data;
+                const dataValue = (query as { data?: Accessor<FileMeta | undefined> | FileMeta | undefined }).data;
 
                 if (typeof dataValue === "function") {
                     return dataValue() as FileMeta | undefined;
@@ -78,7 +78,7 @@ export const createGetFileMeta = (options: CreateGetFileMetaOptions): CreateGetF
         },
         error: () => {
             try {
-                const errorValue = (query as any).error;
+                const errorValue = (query as { error?: Accessor<Error | undefined> | Error | undefined }).error;
                 const error = typeof errorValue === "function" ? errorValue() : errorValue;
 
                 return (error as Error) || undefined;
@@ -88,7 +88,7 @@ export const createGetFileMeta = (options: CreateGetFileMetaOptions): CreateGetF
         },
         isLoading: () => {
             try {
-                const isLoadingValue = (query as any).isLoading;
+                const isLoadingValue = (query as { isLoading?: Accessor<boolean> | boolean }).isLoading;
 
                 return (typeof isLoadingValue === "function" ? isLoadingValue() : isLoadingValue) as boolean;
             } catch {

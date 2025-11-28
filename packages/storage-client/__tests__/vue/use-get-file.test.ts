@@ -46,7 +46,11 @@ describe(useGetFile, () => {
             queryClient,
         );
 
-        await new Promise((resolve) => setTimeout(resolve, 100));
+        await new Promise<void>((resolve) => {
+            setTimeout(() => {
+                resolve();
+            }, 100);
+        });
 
         // Compare blob content instead of reference
         expect(result.data.value).toBeDefined();
@@ -84,7 +88,11 @@ describe(useGetFile, () => {
             queryClient,
         );
 
-        await new Promise((resolve) => setTimeout(resolve, 100));
+        await new Promise<void>((resolve) => {
+            setTimeout(() => {
+                resolve();
+            }, 100);
+        });
 
         // Compare blob content instead of reference
         expect(result.data.value).toBeDefined();
@@ -92,7 +100,11 @@ describe(useGetFile, () => {
 
         id.value = "file-456";
 
-        await new Promise((resolve) => setTimeout(resolve, 100));
+        await new Promise<void>((resolve) => {
+            setTimeout(() => {
+                resolve();
+            }, 100);
+        });
 
         expect(result.data.value).toBeDefined();
         expect(result.data.value?.size).toBe(mockBlob2.size);
@@ -113,7 +125,11 @@ describe(useGetFile, () => {
             queryClient,
         );
 
-        await new Promise((resolve) => setTimeout(resolve, 50));
+        await new Promise<void>((resolve) => {
+            setTimeout(() => {
+                resolve();
+            }, 50);
+        });
 
         // Query should not run when disabled
         expect(mockFetch).not.toHaveBeenCalled();

@@ -4,6 +4,7 @@ import { useAbortItem } from "../../src/react/use-abort-item";
 import { renderHookWithQueryClient } from "./test-utils";
 
 // Mock XMLHttpRequest
+// eslint-disable-next-line @typescript-eslint/member-ordering -- Mock class follows XMLHttpRequest API structure
 class MockXMLHttpRequest {
     public readyState = 0;
 
@@ -16,23 +17,23 @@ class MockXMLHttpRequest {
     public response = "";
 
     public upload = {
-        addEventListener: vi.fn<[string, (event: ProgressEvent) => void], void>(),
-        removeEventListener: vi.fn<[string, (event: ProgressEvent) => void], void>(),
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
     };
 
-    public open = vi.fn<[string, string | URL, boolean?, string?, string?], void>();
+    public open = vi.fn();
 
-    public send = vi.fn<[Document | XMLHttpRequestBodyInit | null?], void>();
+    public send = vi.fn();
 
-    public setRequestHeader = vi.fn<[string, string], void>();
+    public setRequestHeader = vi.fn();
 
-    public getResponseHeader = vi.fn<[string], string | null>(() => undefined);
+    public getResponseHeader = vi.fn(() => undefined);
 
-    public addEventListener = vi.fn<[string, (event: Event) => void], void>();
+    public addEventListener = vi.fn();
 
-    public removeEventListener = vi.fn<[string, (event: Event) => void], void>();
+    public removeEventListener = vi.fn();
 
-    public abort = vi.fn<[], void>(() => {
+    public abort = vi.fn(() => {
         const handlers = this.eventListeners.get("abort");
 
         if (handlers) {

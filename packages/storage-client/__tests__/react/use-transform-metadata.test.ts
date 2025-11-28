@@ -6,7 +6,7 @@ import { useTransformMetadata } from "../../src/react/use-transform-metadata";
 import { renderHookWithQueryClient } from "./test-utils";
 
 // Mock fetch globally
-const mockFetch = vi.fn<Parameters<typeof fetch>, ReturnType<typeof fetch>>();
+const mockFetch = vi.fn();
 let originalFetch: typeof globalThis.fetch | undefined;
 
 describe(useTransformMetadata, () => {
@@ -67,7 +67,7 @@ describe(useTransformMetadata, () => {
     it("should call onSuccess callback", async () => {
         expect.assertions(2);
 
-        const onSuccess = vi.fn<[unknown], void>();
+        const onSuccess = vi.fn();
         const mockMetadata = {
             formats: ["jpeg", "png"],
             parameters: ["width", "height"],
@@ -95,7 +95,7 @@ describe(useTransformMetadata, () => {
     it("should handle error and call onError callback", async () => {
         expect.assertions(2);
 
-        const onError = vi.fn<[Error], void>();
+        const onError = vi.fn();
 
         mockFetch.mockResolvedValueOnce({
             json: async () => {

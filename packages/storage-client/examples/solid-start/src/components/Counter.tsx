@@ -7,9 +7,7 @@ export default function Counter() {
 
     return (
         <button className="increment" onClick={() => setCount(count() + 1)} type="button">
-            Clicks:
-            {" "}
-            {count()}
+            Clicks: {count()}
         </button>
     );
 }

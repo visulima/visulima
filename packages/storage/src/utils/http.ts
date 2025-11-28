@@ -78,7 +78,13 @@ export const getHeader = (request: IncomingMessage, name: string, all = false): 
         return "";
     }
 
-    return all ? raw.toString().trim() : getLastOne(Array.isArray(raw) ? raw : raw.split(",")).trim();
+    if (all) {
+        return raw.toString().trim();
+    }
+
+    const array = Array.isArray(raw) ? raw : raw.split(",");
+
+    return getLastOne(array).trim();
 };
 
 /**
@@ -230,7 +236,7 @@ export const getIdFromRequest = (request: IncomingMessage & { originalUrl?: stri
     }
 
     // Try to find a UUID-like segment first (check from the end)
-    for (let index = segments.length - 1; index >= 0; index--) {
+    for (let index = segments.length - 1; index >= 0; index -= 1) {
         const segment = segments[index];
 
         if (!segment) {

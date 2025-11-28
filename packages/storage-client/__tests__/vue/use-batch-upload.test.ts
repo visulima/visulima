@@ -4,6 +4,7 @@ import { useBatchUpload } from "../../src/vue/use-batch-upload";
 import { withQueryClient } from "./test-utils";
 
 // Mock XMLHttpRequest
+// eslint-disable-next-line @typescript-eslint/member-ordering -- Mock class follows XMLHttpRequest API structure
 class MockXMLHttpRequest {
     public readyState = 0;
 
@@ -70,7 +71,7 @@ class MockXMLHttpRequest {
 
     public setRequestHeader = vi.fn();
 
-    public getResponseHeader = vi.fn(() => null);
+    public getResponseHeader = vi.fn(() => undefined);
 
     public addEventListener = vi.fn((event: string, handler: (event: Event) => void) => {
         if (!this.eventListeners.has(event)) {

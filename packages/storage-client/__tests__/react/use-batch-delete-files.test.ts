@@ -6,7 +6,7 @@ import { useBatchDeleteFiles } from "../../src/react/use-batch-delete-files";
 import { renderHookWithQueryClient } from "./test-utils";
 
 // Mock fetch globally
-const mockFetch = vi.fn<Parameters<typeof fetch>, ReturnType<typeof fetch>>();
+const mockFetch = vi.fn();
 let originalFetch: typeof globalThis.fetch | undefined;
 
 describe(useBatchDeleteFiles, () => {
@@ -148,7 +148,7 @@ describe(useBatchDeleteFiles, () => {
             { queryClient },
         );
 
-        await expect(result.current.batchDeleteFiles(["file-1", "file-2"])).rejects.toThrow();
+        await expect(result.current.batchDeleteFiles(["file-1", "file-2"])).rejects.toThrow("Batch delete failed");
 
         await waitFor(() => {
             expect(onError).toHaveBeenCalledWith(expect.any(Error));

@@ -46,7 +46,11 @@ describe(createGetFile, () => {
         );
 
         // Wait for query to complete
-        await new Promise((resolve) => setTimeout(resolve, 100));
+        await new Promise<void>((resolve) => {
+            setTimeout(() => {
+                resolve();
+            }, 100);
+        });
 
         expect(mockFetch).toHaveBeenCalledWith(
             "https://api.example.com/file-123",
@@ -91,14 +95,22 @@ describe(createGetFile, () => {
             }),
         );
 
-        await new Promise((resolve) => setTimeout(resolve, 100));
+        await new Promise<void>((resolve) => {
+            setTimeout(() => {
+                resolve();
+            }, 100);
+        });
 
         expect(result.data()).toBeDefined();
         expect(result.data()?.size).toBe(mockBlob1.size);
 
         setId("file-456");
 
-        await new Promise((resolve) => setTimeout(resolve, 100));
+        await new Promise<void>((resolve) => {
+            setTimeout(() => {
+                resolve();
+            }, 100);
+        });
 
         expect(result.data()).toBeDefined();
         expect(result.data()?.size).toBe(mockBlob2.size);
@@ -118,7 +130,11 @@ describe(createGetFile, () => {
             }),
         );
 
-        await new Promise((resolve) => setTimeout(resolve, 50));
+        await new Promise<void>((resolve) => {
+            setTimeout(() => {
+                resolve();
+            }, 50);
+        });
 
         // Query should not run when disabled
         expect(mockFetch).not.toHaveBeenCalled();
@@ -144,7 +160,11 @@ describe(createGetFile, () => {
             }),
         );
 
-        await new Promise((resolve) => setTimeout(resolve, 100));
+        await new Promise<void>((resolve) => {
+            setTimeout(() => {
+                resolve();
+            }, 100);
+        });
 
         expect(mockFetch).toHaveBeenCalledWith(expect.stringContaining("format=png"), expect.any(Object));
     });

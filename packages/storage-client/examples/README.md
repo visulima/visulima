@@ -114,8 +114,7 @@ const UploadComponent = () => {
             {isUploading && (
                 <div>
                     Progress:
-                    {progress}
-                    %
+                    {progress}%
                 </div>
             )}
         </div>
@@ -137,15 +136,10 @@ const { upload, progress, isUploading } = useUpload({
 </script>
 
 <template>
-  <div>
-    <input
-      type="file"
-      @change="(e) => upload((e.target as HTMLInputElement).files?.[0])"
-    >
-    <div v-if="isUploading">
-      Progress: {{ progress }}%
+    <div>
+        <input type="file" @change="(e) => upload((e.target as HTMLInputElement).files?.[0])" />
+        <div v-if="isUploading">Progress: {{ progress }}%</div>
     </div>
-  </div>
 </template>
 ```
 
@@ -175,8 +169,7 @@ const UploadComponent = () => {
             {isUploading() && (
                 <div>
                     Progress:
-                    {progress()}
-                    %
+                    {progress()}%
                 </div>
             )}
         </div>
@@ -217,15 +210,10 @@ const { upload, progress, isUploading } = useUpload({
 </script>
 
 <template>
-  <div>
-    <input
-      type="file"
-      @change="(e) => upload((e.target as HTMLInputElement).files?.[0])"
-    >
-    <div v-if="isUploading">
-      Progress: {{ progress }}%
+    <div>
+        <input type="file" @change="(e) => upload((e.target as HTMLInputElement).files?.[0])" />
+        <div v-if="isUploading">Progress: {{ progress }}%</div>
     </div>
-  </div>
 </template>
 ```
 

@@ -227,7 +227,6 @@ describe("metrics Instrumentation", () => {
 
                 const readStream = new RequestReadStream();
 
-                // eslint-disable-next-line no-underscore-dangle
                 readStream.__mockSend();
 
                 await storage.create(metafile);
@@ -258,7 +257,6 @@ describe("metrics Instrumentation", () => {
 
                 const readStream = new RequestReadStream();
 
-                // eslint-disable-next-line no-underscore-dangle
                 readStream.__mockSend();
 
                 await storage.write({ ...metafile, body: readStream, start: 0 });
@@ -290,7 +288,6 @@ describe("metrics Instrumentation", () => {
                 await createTestFile(storage);
                 const readStream = new RequestReadStream();
 
-                // eslint-disable-next-line no-underscore-dangle
                 readStream.__mockSend();
                 await storage.write({ ...metafile, body: readStream, start: 0 });
 
@@ -346,7 +343,6 @@ describe("metrics Instrumentation", () => {
                 await createTestFile(storage);
                 const readStream = new RequestReadStream();
 
-                // eslint-disable-next-line no-underscore-dangle
                 readStream.__mockSend();
                 await storage.write({ ...metafile, body: readStream, start: 0 });
 
@@ -377,7 +373,6 @@ describe("metrics Instrumentation", () => {
                 await createTestFile(storage);
                 const readStream = new RequestReadStream();
 
-                // eslint-disable-next-line no-underscore-dangle
                 readStream.__mockSend();
                 await storage.write({ ...metafile, body: readStream, start: 0 });
 
@@ -460,7 +455,6 @@ describe("metrics Instrumentation", () => {
             await createTestFile(storage);
             const readStream = new RequestReadStream();
 
-            // eslint-disable-next-line no-underscore-dangle
             readStream.__mockSend();
             await storage.write({ ...metafile, body: readStream, start: 0 });
 
@@ -472,7 +466,6 @@ describe("metrics Instrumentation", () => {
             await writeFile(file2Path, "");
             const readStream2 = new RequestReadStream();
 
-            // eslint-disable-next-line no-underscore-dangle
             readStream2.__mockSend();
             await storage.write({ ...file2, body: readStream2, start: 0 });
         });

@@ -6,7 +6,7 @@ import { useGetFileMeta } from "../../src/react/use-get-file-meta";
 import { renderHookWithQueryClient } from "./test-utils";
 
 // Mock fetch globally
-const mockFetch = vi.fn<Parameters<typeof fetch>, ReturnType<typeof fetch>>();
+const mockFetch = vi.fn();
 
 describe(useGetFileMeta, () => {
     let queryClient: QueryClient;
@@ -83,7 +83,7 @@ describe(useGetFileMeta, () => {
     it("should call onSuccess callback", async () => {
         expect.assertions(2);
 
-        const onSuccess = vi.fn<[unknown], void>();
+        const onSuccess = vi.fn();
         const mockData = {
             id: "file-123",
             name: "test.txt",
@@ -112,7 +112,7 @@ describe(useGetFileMeta, () => {
     it("should handle error and call onError callback", async () => {
         expect.assertions(2);
 
-        const onError = vi.fn<[Error], void>();
+        const onError = vi.fn();
 
         mockFetch.mockResolvedValueOnce({
             json: async () => {

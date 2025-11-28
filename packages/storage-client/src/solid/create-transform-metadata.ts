@@ -58,7 +58,7 @@ export const createTransformMetadata = (options: CreateTransformMetadataOptions)
     return {
         data: () => {
             try {
-                const dataValue = (query as any).data;
+                const dataValue = (query as { data?: Accessor<TransformMetadata | undefined> | TransformMetadata | undefined }).data;
 
                 if (typeof dataValue === "function") {
                     return dataValue() as TransformMetadata | undefined;
@@ -71,7 +71,7 @@ export const createTransformMetadata = (options: CreateTransformMetadataOptions)
         },
         error: () => {
             try {
-                const errorValue = (query as any).error;
+                const errorValue = (query as { error?: Accessor<Error | undefined> | Error | undefined }).error;
                 const error = typeof errorValue === "function" ? errorValue() : errorValue;
 
                 return (error as Error) || undefined;
@@ -81,7 +81,7 @@ export const createTransformMetadata = (options: CreateTransformMetadataOptions)
         },
         isLoading: () => {
             try {
-                const isLoadingValue = (query as any).isLoading;
+                const isLoadingValue = (query as { isLoading?: Accessor<boolean> | boolean }).isLoading;
 
                 return (typeof isLoadingValue === "function" ? isLoadingValue() : isLoadingValue) as boolean;
             } catch {

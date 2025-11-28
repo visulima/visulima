@@ -227,7 +227,14 @@ export const createBandwidthLimitedStream = (sourceStream: Readable, bytesPerSec
         }
 
         isProcessing = true;
-        const chunk = bufferedChunks.shift()!;
+        const chunk = bufferedChunks.shift();
+
+        if (!chunk) {
+            isProcessing = false;
+
+            return;
+        }
+
         const now = Date.now();
         const timeSinceLastChunk = now - lastChunkTime;
         const targetDelay = (chunk.length / bytesPerSecond) * 1000;
@@ -299,13 +306,19 @@ export const createBandwidthLimitedStream = (sourceStream: Readable, bytesPerSec
 
     targetStream.on("end", () => {
         // Clear all pending timeouts
-        pendingTimeouts.forEach(clearTimeout);
+        for (const timeout of pendingTimeouts) {
+            clearTimeout(timeout);
+        }
+
         pendingTimeouts.length = 0;
     });
 
     targetStream.on("close", () => {
         // Clear all pending timeouts
-        pendingTimeouts.forEach(clearTimeout);
+        for (const timeout of pendingTimeouts) {
+            clearTimeout(timeout);
+        }
+
         pendingTimeouts.length = 0;
     });
 

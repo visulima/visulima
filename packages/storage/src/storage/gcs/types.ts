@@ -22,8 +22,8 @@ interface StorageSettings {
 
 export interface ClientError extends Error {
     code: string;
-    config: Record<string, any>;
-    response?: Record<string, any>;
+    config: Record<string, unknown>;
+    response?: Record<string, unknown>;
 }
 
 export interface GCStorageOptions extends BaseStorageOptions<GCSFile>, Omit<GoogleAuthOptions, "authClient" | "projectId">, StorageSettings {

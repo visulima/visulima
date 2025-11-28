@@ -11,53 +11,14 @@ import {
     patchChunk,
     putFile,
 } from "../../src/core/query-client";
+import { MockXMLHttpRequest } from "../mock-xhr";
 
 // Mock fetch globally
-const mockFetch = vi.fn<Parameters<typeof fetch>, ReturnType<typeof fetch>>();
+const mockFetch = vi.fn();
 
-// Mock XMLHttpRequest
-class MockXMLHttpRequest {
-    public readyState = 0;
-
-    public status = 200;
-
-    public statusText = "OK";
-
-    public responseText = "";
-
-    public upload = {
-        addEventListener: vi.fn<[string, (event: ProgressEvent) => void], void>((_event: string, handler: (event: ProgressEvent) => void) => {
-            // Simulate progress
-            setTimeout(() => {
-                const progressEvent = {
-                    lengthComputable: true,
-                    loaded: 50,
-                    total: 100,
-                } as ProgressEvent;
-
-                handler(progressEvent);
-            }, 10);
-        }),
-        removeEventListener: vi.fn<[string, (event: ProgressEvent) => void], void>(),
-    };
-
-    public open = vi.fn<[string, string | URL, boolean?, string?, string?], void>();
-
-    public send = vi.fn<[Document | XMLHttpRequestBodyInit | null?], void>(() => {
-        setTimeout(() => {
-            this.readyState = 4;
-            this.status = 200;
-            const handlers = this.eventListeners.get("load");
-
-            if (handlers) {
-                handlers.forEach((handler) => handler(new Event("load")));
-            }
-        }, 20);
-    });
-
-    public setRequestHeader = vi.fn<[string, string], void>();
-
-    public getResponseHeader = vi.fn<[string], string | null>((name: string) => {
+// Extended MockXMLHttpRequest with custom getResponseHeader for query-client tests
+class CustomMockXMLHttpRequest extends MockXMLHttpRequest {
+    public override getResponseHeader = vi.fn((name: string) => {
         if (name === "ETag") {
             return "\"test-etag\"";
         }
@@ -68,24 +29,12 @@ class MockXMLHttpRequest {
 
         return undefined;
     });
-
-    public addEventListener = vi.fn<[string, (event: Event) => void], void>((event: string, handler: (event: Event) => void) => {
-        if (!this.eventListeners.has(event)) {
-            this.eventListeners.set(event, new Set());
-        }
-
-        this.eventListeners.get(event)?.add(handler);
-    });
-
-    public removeEventListener = vi.fn<[string, (event: Event) => void], void>();
-
-    private eventListeners = new Map<string, Set<(event: Event) => void>>();
 }
 
 describe("query-client", () => {
     beforeEach(() => {
         globalThis.fetch = mockFetch;
-        globalThis.XMLHttpRequest = MockXMLHttpRequest as unknown as typeof XMLHttpRequest;
+        globalThis.XMLHttpRequest = CustomMockXMLHttpRequest as unknown as typeof XMLHttpRequest;
         vi.clearAllMocks();
     });
 
@@ -201,7 +150,7 @@ describe("query-client", () => {
                 statusText: "Not Found",
             });
 
-            await expect(fetchFile("https://api.example.com/file/123")).rejects.toThrow();
+            await expect(fetchFile("https://api.example.com/file/123")).rejects.toThrow("File not found");
         });
     });
 
@@ -234,7 +183,7 @@ describe("query-client", () => {
                 statusText: "Internal Server Error",
             });
 
-            await expect(fetchJson("https://api.example.com/data")).rejects.toThrow();
+            await expect(fetchJson("https://api.example.com/data")).rejects.toThrow("Request failed");
         });
     });
 
@@ -270,7 +219,7 @@ describe("query-client", () => {
                 statusText: "Not Found",
             });
 
-            await expect(fetchHead("https://api.example.com/file/123")).rejects.toThrow();
+            await expect(fetchHead("https://api.example.com/file/123")).rejects.toThrow("Request failed");
         });
     });
 
@@ -298,7 +247,7 @@ describe("query-client", () => {
                 statusText: "Internal Server Error",
             });
 
-            await expect(deleteRequest("https://api.example.com/file/123")).rejects.toThrow();
+            await expect(deleteRequest("https://api.example.com/file/123")).rejects.toThrow("Delete failed");
         });
     });
 
@@ -382,7 +331,7 @@ describe("query-client", () => {
 
             const chunk = new Blob(["chunk data"], { type: "application/octet-stream" });
 
-            await expect(patchChunk("https://api.example.com/upload/123", chunk, 0)).rejects.toThrow();
+            await expect(patchChunk("https://api.example.com/upload/123", chunk, 0)).rejects.toThrow("Upload failed");
         });
     });
 });

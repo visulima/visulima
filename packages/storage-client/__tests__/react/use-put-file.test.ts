@@ -3,42 +3,28 @@ import { waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { usePutFile } from "../../src/react/use-put-file";
+import { MockXMLHttpRequest } from "../mock-xhr";
 import { renderHookWithQueryClient } from "./test-utils";
 
-// Mock XMLHttpRequest for progress tracking
-class MockXMLHttpRequest {
-    public readyState = 0;
-
-    public status = 200;
-
-    public statusText = "OK";
-
-    public responseText = "";
-
-    public upload = {
-        addEventListener: vi.fn<[string, (event: ProgressEvent) => void], void>((event: string, handler: (event: ProgressEvent) => void) => {
-            if (event === "progress") {
-                this.uploadProgressHandlers.add(handler);
-            }
-        }),
-        removeEventListener: vi.fn<[string, (event: ProgressEvent) => void], void>(),
-    };
-
-    public open = vi.fn<[string, string | URL, boolean?, string?, string?], void>();
-
-    public send = vi.fn<[Document | XMLHttpRequestBodyInit | null?], void>(() => {
-        // Fire progress event after a short delay
+// Extended MockXMLHttpRequest with custom getResponseHeader for use-put-file tests
+class CustomMockXMLHttpRequest extends MockXMLHttpRequest {
+    public override send = vi.fn(() => {
+        // Fire progress event
         setTimeout(() => {
-            const progressEvent = {
-                lengthComputable: true,
-                loaded: 50,
-                total: 100,
-            } as ProgressEvent;
+            const progressHandlers = this.uploadEventListeners.get("progress");
 
-            this.uploadProgressHandlers.forEach((handler) => handler(progressEvent));
+            if (progressHandlers) {
+                const progressEvent = {
+                    lengthComputable: true,
+                    loaded: 50,
+                    total: 100,
+                } as ProgressEvent;
+
+                progressHandlers.forEach((handler) => handler(progressEvent));
+            }
         }, 10);
 
-        // Fire load event after upload completes
+        // Fire load event after upload completes (longer delay for this test)
         setTimeout(() => {
             this.readyState = 4;
             this.status = 200;
@@ -52,9 +38,8 @@ class MockXMLHttpRequest {
         }, 100);
     });
 
-    public setRequestHeader = vi.fn<[string, string], void>();
-
-    public getResponseHeader = vi.fn<[string], string | null>((header: string) => {
+    // eslint-disable-next-line unicorn/no-null -- XMLHttpRequest.getResponseHeader returns string | null
+    public override getResponseHeader = vi.fn((header: string) => {
         if (header === "Location") {
             return "https://api.example.com/files/file-123";
         }
@@ -65,22 +50,6 @@ class MockXMLHttpRequest {
 
         return undefined;
     });
-
-    public addEventListener = vi.fn<[string, (event: Event) => void], void>((event: string, handler: (event: Event) => void) => {
-        if (!this.eventListeners.has(event)) {
-            this.eventListeners.set(event, new Set());
-        }
-
-        this.eventListeners.get(event)?.add(handler);
-    });
-
-    public removeEventListener = vi.fn<[string, (event: Event) => void], void>();
-
-    public abort = vi.fn<[], void>();
-
-    private eventListeners = new Map<string, Set<(event: Event) => void>>();
-
-    private uploadProgressHandlers = new Set<(event: ProgressEvent) => void>();
 }
 
 describe(usePutFile, () => {
@@ -96,7 +65,7 @@ describe(usePutFile, () => {
         });
         originalXHR = globalThis.XMLHttpRequest;
         // @ts-expect-error - Mock XMLHttpRequest
-        globalThis.XMLHttpRequest = MockXMLHttpRequest;
+        globalThis.XMLHttpRequest = CustomMockXMLHttpRequest as unknown as typeof XMLHttpRequest;
         vi.clearAllMocks();
     });
 
@@ -139,7 +108,7 @@ describe(usePutFile, () => {
     it("should track upload progress", async () => {
         expect.assertions(3);
 
-        const onProgress = vi.fn<[number], void>();
+        const onProgress = vi.fn();
         const file = new File(["test content"], "test.jpg", { type: "image/jpeg" });
 
         const { result } = renderHookWithQueryClient(
@@ -169,9 +138,10 @@ describe(usePutFile, () => {
     it("should handle upload errors", async () => {
         expect.assertions(3);
 
-        class ErrorXHR extends MockXMLHttpRequest {
-            public send = vi.fn<[Document | XMLHttpRequestBodyInit | null?], void>(() => {
-                setTimeout(() => {
+        // eslint-disable-next-line @typescript-eslint/member-ordering -- Mock class follows XMLHttpRequest API structure
+        class ErrorXHR extends CustomMockXMLHttpRequest {
+            public send = vi.fn(() => {
+                const triggerLoadHandlers = (): void => {
                     this.readyState = 4;
                     this.status = 500;
                     this.statusText = "Internal Server Error";
@@ -182,7 +152,9 @@ describe(usePutFile, () => {
                     if (handlers) {
                         handlers.forEach((handler) => handler(new Event("load")));
                     }
-                }, 20);
+                };
+
+                setTimeout(triggerLoadHandlers, 20);
             });
         }
 

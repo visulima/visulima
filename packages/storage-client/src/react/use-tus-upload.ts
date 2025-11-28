@@ -83,6 +83,7 @@ export const useTusUpload = (options: UseTusUploadOptions): UseTusUploadReturn =
 
     // Store callbacks in refs to avoid re-subscribing on every render
     const callbacksRef = useRef({ onError, onPause, onProgress, onResume, onStart, onSuccess });
+    const intervalRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
     // Update callbacks ref when they change
     useEffect(() => {
@@ -121,13 +122,19 @@ export const useTusUpload = (options: UseTusUploadOptions): UseTusUploadReturn =
         });
 
         // Sync state with adapter periodically
-        const checkInterval = setInterval(() => {
-            setOffset(adapterInstance.getOffset());
-            setIsPaused(adapterInstance.isPaused());
+        intervalRef.current = setInterval(() => {
+            // Only update state if interval is still active (not cleared)
+            if (intervalRef.current) {
+                setOffset(adapterInstance.getOffset());
+                setIsPaused(adapterInstance.isPaused());
+            }
         }, 100);
 
         return () => {
-            clearInterval(checkInterval);
+            if (intervalRef.current) {
+                clearInterval(intervalRef.current);
+                intervalRef.current = undefined;
+            }
             // Cleanup callbacks
             adapterInstance.setOnStart(undefined);
             adapterInstance.setOnProgress(undefined);
@@ -175,6 +182,10 @@ export const useTusUpload = (options: UseTusUploadOptions): UseTusUploadReturn =
     }, [adapterInstance]);
 
     const abort = useCallback((): void => {
+        if (intervalRef.current) {
+            clearInterval(intervalRef.current);
+            intervalRef.current = undefined;
+        }
         adapterInstance.abort();
         setIsUploading(false);
         setIsPaused(false);

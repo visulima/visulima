@@ -28,7 +28,9 @@ export interface FileReturn extends Omit<Required<FileInit>, "storageClass" | "t
     storageClass?: string;
 }
 
-export type UploadEventType = "completed" | "created" | "deleted" | "part" | "updated";
+type UploadEventTypeValue = "completed" | "created" | "deleted" | "part" | "updated";
+
+export type UploadEventType = UploadEventTypeValue;
 
 export interface FileQuery {
     id: string;

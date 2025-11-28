@@ -11,11 +11,14 @@ import typeis from "type-is";
 import NoOpMetrics from "../metrics/no-op-metrics";
 import type { Cache } from "../utils/cache";
 import { NoOpCache } from "../utils/cache";
-import type { ErrorResponses } from "../utils/errors";
+// @ts-expect-error - UploadError is used for type checking in error handling
+import type { ErrorResponses, UploadError } from "../utils/errors";
 import { ErrorMap, ERRORS, throwErrorCode } from "../utils/errors";
 import Locker from "../utils/locker";
 import toMilliseconds from "../utils/primitives/to-milliseconds";
 import type { HttpError, Metrics, ValidatorConfig } from "../utils/types";
+// @ts-expect-error - ValidationError is used for type checking in error handling
+import ValidationError from "../utils/validation-error";
 import { Validator } from "../utils/validator";
 import type MetaStorage from "./meta-storage";
 import type { BaseStorageOptions, BatchOperationResponse, PurgeList } from "./types";
@@ -414,10 +417,9 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
      */
     public async checkIfExpired(file: TFile): Promise<TFile> {
         if (isExpired(file)) {
-            // eslint-disable-next-line no-void
-            void this.delete(file).catch(() => undefined);
-            // eslint-disable-next-line no-void
-            void this.deleteMeta(file.id).catch(() => undefined);
+            // Fire-and-forget deletion operations
+            this.delete(file).catch(() => undefined);
+            this.deleteMeta(file.id).catch(() => undefined);
 
             return throwErrorCode(ERRORS.GONE);
         }
@@ -887,8 +889,9 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
             throw new Error("“purgeInterval” must be less than 2147483647 ms");
         }
 
-        // eslint-disable-next-line no-void
-        setInterval(() => void this.purge().catch((error) => this.logger?.error(error)), purgeInterval);
+        setInterval(() => {
+            this.purge().catch((error) => this.logger?.error(error));
+        }, purgeInterval);
     }
 
     protected updateTimestamps(file: TFile): TFile {

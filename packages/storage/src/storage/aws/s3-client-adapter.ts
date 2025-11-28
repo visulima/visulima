@@ -1,4 +1,5 @@
 import { Readable } from "node:stream";
+import { ReadableStream as NodeReadableStream } from "node:stream/web";
 
 import type {
     CompleteMultipartUploadOutput,
@@ -27,16 +28,19 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 import type { Part, S3ApiOperations } from "./s3-base-storage";
 
+// Use global ReadableStream type for interface compatibility
+type ReadableStream = globalThis.ReadableStream;
+
 /**
  * Adapter that wraps AWS SDK S3Client to implement S3ApiOperations interface.
  */
 class S3ClientAdapter implements S3ApiOperations {
     public constructor(
         private readonly client: S3Client,
-        private readonly bucket: string,
+
+        _bucket: string,
     ) {
-        // Bucket is used in getSignedUrl calls
-        void this.bucket;
+        // Bucket is stored for potential future use in getSignedUrl calls
     }
 
     public async createMultipartUpload(params: {
@@ -73,9 +77,10 @@ class S3ClientAdapter implements S3ApiOperations {
         UploadId: string;
     }): Promise<{ ETag: string }> {
         // Convert ReadableStream to Readable if needed
-        let body: Readable | Uint8Array | undefined;
-
-        body = params.Body instanceof ReadableStream ? Readable.fromWeb(params.Body as unknown as import("node:stream/web").ReadableStream<any>) : params.Body as Readable | Uint8Array;
+        const body: Readable | Uint8Array
+            = params.Body instanceof NodeReadableStream
+                ? Readable.fromWeb(params.Body as unknown as NodeReadableStream<Uint8Array>)
+                : (params.Body as Readable | Uint8Array);
 
         const command = new UploadPartCommand({
             Body: body,
@@ -178,16 +183,16 @@ class S3ClientAdapter implements S3ApiOperations {
         const response: GetObjectCommandOutput = await this.client.send(command);
 
         // Convert SdkStream to Readable
-        let body: Readable | undefined;
+        let body: Readable | ReadableStream | undefined;
 
         if (response.Body) {
             const sdkStream = response.Body;
 
             if (sdkStream instanceof Readable) {
                 body = sdkStream;
-            } else if (typeof sdkStream === "object" && "transform" in sdkStream) {
+            } else if (typeof sdkStream === "object" && "transform" in sdkStream && sdkStream instanceof NodeReadableStream) {
                 // Handle Web ReadableStream if returned by SDK
-                body = Readable.fromWeb(sdkStream as unknown as import("node:stream/web").ReadableStream<any>);
+                body = sdkStream as unknown as ReadableStream;
             } else {
                 // Handle Blob or other types
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any

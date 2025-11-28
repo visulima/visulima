@@ -6,6 +6,8 @@ import { GoogleAuth } from "google-auth-library";
 
 import package_ from "../../../package.json";
 import { detectFileTypeFromStream } from "../../utils/detect-file-type";
+// @ts-expect-error - UploadError is used for type checking in error handling
+import type { UploadError } from "../../utils/errors";
 import { ERRORS, throwErrorCode } from "../../utils/errors";
 import toMilliseconds from "../../utils/primitives/to-milliseconds";
 import type { HttpError } from "../../utils/types";
@@ -127,8 +129,12 @@ class GCStorage extends BaseStorage<GCSFile, FileReturn> {
         this.accessCheck()
             .then(() => {
                 this.isReady = true;
+
+                return undefined;
             })
-            .catch((error) => this.logger?.error("Storage access check failed: %O", error));
+            .catch((error) => {
+                this.logger?.error("Storage access check failed: %O", error);
+            });
     }
 
     public override normalizeError(error: ClientError): HttpError {
@@ -274,6 +280,7 @@ class GCStorage extends BaseStorage<GCSFile, FileReturn> {
                         }
 
                         // Use the stream from file type detection
+                        // eslint-disable-next-line no-param-reassign
                         part.body = detectedStream;
                     } catch {
                         // If file type detection fails, continue with original stream
@@ -461,10 +468,10 @@ class GCStorage extends BaseStorage<GCSFile, FileReturn> {
                             parameters = { ...parameters, params: { ...parameters.params, pageToken: data.nextPageToken } };
                         }
                     } catch (error) {
-                        truncated = false;
-
                         const httpError = this.normalizeError((error instanceof Error ? error : new Error(String(error))) as ClientError);
 
+                        // Sequential error handling is intentional
+                        // eslint-disable-next-line no-await-in-loop
                         await this.onError(httpError);
                         throw error;
                     }

@@ -13,6 +13,7 @@ const parseXml = (text: string): Record<string, unknown> => {
     const result: Record<string, unknown> = {};
 
     // Remove XML declaration and namespaces
+    // Input is controlled (S3 API responses), safe from ReDoS
     const cleanText = text.replaceAll(/<\?xml[^>]*\?>/g, "").replaceAll(/xmlns[^=]*="[^"]*"/g, "");
 
     // Extract tags and their content
@@ -37,6 +38,8 @@ const parseXml = (text: string): Record<string, unknown> => {
     }
 
     // Handle nested structures
+    // Input is controlled (S3 API responses), safe from ReDoS
+    // eslint-disable-next-line sonarjs/slow-regex
     const nestedRegex = /<([^>]+)>([\s\S]*?)<\/\1>/g;
     let nestedMatch;
 
@@ -151,15 +154,10 @@ class AwsLightApiAdapter implements S3ApiOperations {
             headers["Content-MD5"] = params.ContentMD5;
         }
 
-        // Convert Readable to ReadableStream if needed
-        let body: BodyInit;
-
-        if (params.Body instanceof Readable) {
-            // Convert Node.js Readable to ReadableStream
-            body = Readable.toWeb(params.Body) as unknown as ReadableStream<Uint8Array>;
-        } else {
-            body = params.Body as BodyInit;
-        }
+        // Convert Node.js Readable to ReadableStream if needed
+        const body: BodyInit = params.Body instanceof Readable
+            ? (Readable.toWeb(params.Body) as unknown as ReadableStream<Uint8Array>)
+            : (params.Body as BodyInit);
 
         const url = this.buildUrl(params.Key, queryParams);
         const response = await this.aws.fetch(url, {
@@ -183,7 +181,7 @@ class AwsLightApiAdapter implements S3ApiOperations {
         }
 
         // Remove quotes from ETag
-        return { ETag: etag.replaceAll(/^"|"$/g, "") };
+        return { ETag: etag.replaceAll(/(^"|"$)/g, "") };
     }
 
     public async completeMultipartUpload(params: {
@@ -197,6 +195,8 @@ class AwsLightApiAdapter implements S3ApiOperations {
         // Build XML body for complete multipart upload
         const partsXml = params.Parts.map(({ ETag, PartNumber }) => `<Part><PartNumber>${PartNumber}</PartNumber><ETag>"${ETag}"</ETag></Part>`).join("");
 
+        // XML template string - false positive for entropy detection
+        // eslint-disable-next-line no-secrets/no-secrets
         const xmlBody = `<?xml version="1.0" encoding="UTF-8"?>
 <CompleteMultipartUpload xmlns="http://s3.amazonaws.com/doc/2006-03-01/">
 ${partsXml}
@@ -224,7 +224,7 @@ ${partsXml}
         const etag = result.ETag as string | undefined;
 
         return {
-            ETag: etag?.replaceAll(/^"|"$/g, ""),
+            ETag: etag?.replaceAll(/(^"|"$)/g, ""),
             Location: location,
         };
     }
@@ -258,13 +258,17 @@ ${partsXml}
 
         const xml = parseXml(xmlText);
         const listPartsResult = (xml.ListPartsResult as Record<string, unknown>) || xml;
-        const parts = listPartsResult.Part ? Array.isArray(listPartsResult.Part) ? listPartsResult.Part : [listPartsResult.Part] : [];
+        let parts: unknown[] = [];
+
+        if (listPartsResult.Part) {
+            parts = Array.isArray(listPartsResult.Part) ? listPartsResult.Part : [listPartsResult.Part];
+        }
 
         return {
-            Parts: parts.map((part: Record<string, unknown>) => {
-                return {
-                    ETag: (part.ETag as string)?.replaceAll(/^"|"$/g, ""),
-                    PartNumber: Number(part.PartNumber) || 0,
+            Parts: (parts as Record<string, unknown>[]).map((part: Record<string, unknown>) => {
+            return {
+                ETag: (part.ETag as string)?.replaceAll(/(^"|"$)/g, ""),
+                PartNumber: Number(part.PartNumber) || 0,
                     Size: part.Size ? Number(part.Size) : undefined,
                 };
             }),
@@ -315,7 +319,7 @@ ${partsXml}
             Body: body ? this.streamToReadable(body) : undefined,
             ContentLength: contentLength ? Number(contentLength) : undefined,
             ContentType: contentType || undefined,
-            ETag: etag?.replaceAll(/^"|"$/g, "") || undefined,
+            ETag: etag?.replaceAll(/(^"|"$)/g, "") || undefined,
             Expires: expires ? new Date(expires) : undefined,
             LastModified: lastModified ? new Date(lastModified) : undefined,
             Metadata: Object.keys(metadata).length > 0 ? metadata : undefined,
@@ -360,7 +364,7 @@ ${partsXml}
         return {
             ContentLength: contentLength ? Number(contentLength) : undefined,
             ContentType: contentType || undefined,
-            ETag: etag?.replaceAll(/^"|"$/g, "") || undefined,
+            ETag: etag?.replaceAll(/(^"|"$)/g, "") || undefined,
             Expires: expires ? new Date(expires) : undefined,
             LastModified: lastModified ? new Date(lastModified) : undefined,
             Metadata: Object.keys(metadata).length > 0 ? metadata : undefined,

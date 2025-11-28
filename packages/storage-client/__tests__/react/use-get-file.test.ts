@@ -6,7 +6,7 @@ import { useGetFile } from "../../src/react/use-get-file";
 import { renderHookWithQueryClient } from "./test-utils";
 
 // Mock fetch globally
-const mockFetch = vi.fn<Parameters<typeof fetch>, ReturnType<typeof fetch>>();
+const mockFetch = vi.fn();
 
 describe(useGetFile, () => {
     let queryClient: QueryClient;

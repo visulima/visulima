@@ -2,89 +2,8 @@ import { act, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { useBatchUpload } from "../../src/react/use-batch-upload";
+import { MockXMLHttpRequest } from "../mock-xhr";
 import { renderHookWithQueryClient } from "./test-utils";
-
-// Mock XMLHttpRequest
-class MockXMLHttpRequest {
-    public readyState = 0;
-
-    public status = 200;
-
-    public statusText = "OK";
-
-    public responseText = "";
-
-    public response = "";
-
-    private eventListeners = new Map<string, Set<(event: Event) => void>>();
-
-    private uploadEventListeners = new Map<string, Set<(event: ProgressEvent) => void>>();
-
-    public upload = {
-        addEventListener: vi.fn((event: string, handler: (event: ProgressEvent) => void) => {
-            if (!this.uploadEventListeners.has(event)) {
-                this.uploadEventListeners.set(event, new Set());
-            }
-
-            this.uploadEventListeners.get(event)?.add(handler);
-        }),
-        removeEventListener: vi.fn(),
-    };
-
-    public open = vi.fn();
-
-    public send = vi.fn((_data?: FormData) => {
-        setTimeout(() => {
-            const handlers = this.uploadEventListeners.get("progress");
-
-            if (handlers) {
-                const progressEvent = {
-                    lengthComputable: true,
-                    loaded: 50,
-                    total: 100,
-                } as ProgressEvent;
-
-                handlers.forEach((handler) => handler(progressEvent));
-            }
-        }, 10);
-
-        setTimeout(() => {
-            this.readyState = 4;
-            this.status = 200;
-            this.responseText = JSON.stringify({
-                contentType: "image/jpeg",
-                id: "test-id",
-                name: "test-name",
-                originalName: "test.jpg",
-                size: 100,
-                status: "completed",
-            });
-            this.response = this.responseText;
-
-            const handlers = this.eventListeners.get("load");
-
-            if (handlers) {
-                handlers.forEach((handler) => handler(new Event("load")));
-            }
-        }, 20);
-    });
-
-    public setRequestHeader = vi.fn();
-
-    public getResponseHeader = vi.fn(() => null);
-
-    public addEventListener = vi.fn((event: string, handler: (event: Event) => void) => {
-        if (!this.eventListeners.has(event)) {
-            this.eventListeners.set(event, new Set());
-        }
-
-        this.eventListeners.get(event)?.add(handler);
-    });
-
-    public removeEventListener = vi.fn();
-
-    public abort = vi.fn();
-}
 
 describe(useBatchUpload, () => {
     let originalXHR: typeof XMLHttpRequest;
@@ -99,7 +18,11 @@ describe(useBatchUpload, () => {
     afterEach(async () => {
         // Wait for any pending React updates to complete
         await act(async () => {
-            await new Promise((resolve) => setTimeout(resolve, 0));
+            await new Promise<void>((resolve) => {
+                setTimeout(() => {
+                    resolve();
+                }, 0);
+            });
         });
         globalThis.XMLHttpRequest = originalXHR;
         vi.restoreAllMocks();
@@ -204,7 +127,11 @@ describe(useBatchUpload, () => {
         // Clean up
         unmount();
         // Wait for React cleanup
-        await new Promise((resolve) => setTimeout(resolve, 50));
+        await new Promise<void>((resolve) => {
+            setTimeout(() => {
+                resolve();
+            }, 50);
+        });
     });
 
     it("should reset batch state", () => {
@@ -242,7 +169,7 @@ describe(useBatchUpload, () => {
 
         const file1 = new File(["test1"], "test1.jpg", { type: "image/jpeg" });
 
-        const _itemIds = result.current.uploadBatch([file1]);
+        result.current.uploadBatch([file1]);
 
         // Get batch ID from uploader (would need to access internal state in real scenario)
         // For now, just verify abortBatch doesn't throw

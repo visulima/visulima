@@ -95,8 +95,8 @@ class S3MetaStorage<T extends File = File> extends MetaStorage<T> {
         return file;
     }
 
-    private async accessCheck(bucket: string, maxWaitTime = 30): Promise<any> {
-        return waitUntilBucketExists({ client: this.client, maxWaitTime }, { Bucket: bucket });
+    private async accessCheck(bucket: string, maxWaitTime = 30): Promise<void> {
+        await waitUntilBucketExists({ client: this.client, maxWaitTime }, { Bucket: bucket });
     }
 }
 

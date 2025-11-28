@@ -173,7 +173,11 @@ describe(createGetFile, () => {
             },
         });
 
-        await new Promise((resolve) => setTimeout(resolve, 50));
+        await new Promise<void>((resolve) => {
+            setTimeout(() => {
+                resolve();
+            }, 50);
+        });
 
         // Query should not run when disabled
         expect(mockFetch).not.toHaveBeenCalled();

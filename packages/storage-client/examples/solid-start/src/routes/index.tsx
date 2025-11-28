@@ -52,8 +52,7 @@ export default function Home() {
                 <div style={{ "margin-top": "1rem" }}>
                     <div>
                         Progress:
-                        {progress()}
-                        %
+                        {progress()}%
                     </div>
                     <progress max={100} value={progress()} />
                 </div>

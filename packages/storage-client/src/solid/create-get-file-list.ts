@@ -59,26 +59,26 @@ export const createGetFileList = (options: CreateGetFileListOptions): CreateGetF
 
     const query = createQuery(
         () => {
-            const limit = limitValue();
-            const page = pageValue();
-            const enabled = enabledValue();
+            const currentLimit = limitValue();
+            const currentPage = pageValue();
+            const isEnabled = enabledValue();
 
             // Build filters with stable structure - use undefined for missing values
             // This ensures TanStack Query can properly compare queryKeys using deep equality
             const filters: { limit?: number; page?: number } | undefined
-                = limit !== undefined || page !== undefined
+                = currentLimit !== undefined || currentPage !== undefined
                     ? {
-                        ...limit !== undefined && { limit },
-                        ...page !== undefined && { page },
+                        ...currentLimit !== undefined && { limit: currentLimit },
+                        ...currentPage !== undefined && { page: currentPage },
                     }
                     : undefined;
 
             const queryKey = storageQueryKeys.files.list(endpoint, filters);
 
             return {
-                enabled,
+                enabled: isEnabled,
                 queryFn: async (): Promise<FileListResponse> => {
-                    const url = buildUrl(endpoint, "", { limit, page });
+                    const url = buildUrl(endpoint, "", { limit: currentLimit, page: currentPage });
                     const data = await fetchJson<FileListResponse | FileMeta[]>(url);
 
                     // Handle both paginated and non-paginated responses
@@ -98,7 +98,7 @@ export const createGetFileList = (options: CreateGetFileListOptions): CreateGetF
     return {
         data: () => {
             try {
-                const dataValue = (query as any).data;
+                const dataValue = (query as { data?: Accessor<FileListResponse | undefined> | FileListResponse | undefined }).data;
 
                 if (typeof dataValue === "function") {
                     return dataValue() as FileListResponse | undefined;
@@ -111,7 +111,7 @@ export const createGetFileList = (options: CreateGetFileListOptions): CreateGetF
         },
         error: () => {
             try {
-                const errorValue = (query as any).error;
+                const errorValue = (query as { error?: Accessor<Error | undefined> | Error | undefined }).error;
                 const error = typeof errorValue === "function" ? errorValue() : errorValue;
 
                 return (error as Error) || undefined;
@@ -121,7 +121,7 @@ export const createGetFileList = (options: CreateGetFileListOptions): CreateGetF
         },
         isLoading: () => {
             try {
-                const isLoadingValue = (query as any).isLoading;
+                const isLoadingValue = (query as { isLoading?: Accessor<boolean> | boolean }).isLoading;
 
                 return (typeof isLoadingValue === "function" ? isLoadingValue() : isLoadingValue) as boolean;
             } catch {

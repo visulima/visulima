@@ -550,8 +550,8 @@ const getOrganizedTransformationParameters = (
     const parameters = getTransformationParameters(transform, format);
     const groups: Record<string, string[]> = {};
 
-    parameters.forEach((parameter) => {
-        const group = (parameter as any)["x-group"] || "Other";
+    parameters.forEach((parameter: OpenAPIV3.ParameterObject) => {
+        const group = (parameter as OpenAPIV3.ParameterObject & { "x-group": string | undefined })["x-group"] || "Other";
 
         if (!groups[group]) {
             groups[group] = [];

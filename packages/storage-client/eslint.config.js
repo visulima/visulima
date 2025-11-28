@@ -15,6 +15,7 @@ export default createConfig(
             "coverage",
             "__fixtures__",
             "__docs__",
+            "examples",
             "vitest.config.ts",
             "packem.config.ts",
             ".secretlintrc.cjs",
@@ -27,6 +28,7 @@ export default createConfig(
         files: ["__tests__/**"],
         rules: {
             "max-classes-per-file": "off",
+            "vitest/require-mock-type-parameters": "off",
         },
     },
     // Vue configuration

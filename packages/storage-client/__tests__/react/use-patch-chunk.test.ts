@@ -6,7 +6,7 @@ import { usePatchChunk } from "../../src/react/use-patch-chunk";
 import { renderHookWithQueryClient } from "./test-utils";
 
 // Mock fetch globally
-const mockFetch = vi.fn<Parameters<typeof fetch>, ReturnType<typeof fetch>>();
+const mockFetch = vi.fn();
 
 describe(usePatchChunk, () => {
     let queryClient: QueryClient;
@@ -163,7 +163,7 @@ describe(usePatchChunk, () => {
             { queryClient },
         );
 
-        await expect(result.current.patchChunk("file-123", chunk, 0)).rejects.toThrow();
+        await expect(result.current.patchChunk("file-123", chunk, 0)).rejects.toThrow("Upload failed");
 
         await waitFor(() => {
             expect(onError).toHaveBeenCalledWith(expect.any(Error));

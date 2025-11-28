@@ -278,78 +278,78 @@ export const useUpload = (options: UseUploadOptions): UseUploadReturn => {
         abort,
         currentMethod,
         error: computed(() => {
-            const method = currentMethod.value;
+            const currentUploadMethod = currentMethod.value;
 
-            if (method === "tus") {
+            if (currentUploadMethod === "tus") {
                 return tusUpload?.error.value ?? undefined;
             }
 
-            if (method === "chunked-rest") {
+            if (currentUploadMethod === "chunked-rest") {
                 return chunkedRestUpload?.error.value ?? undefined;
             }
 
             return multipartUpload?.error.value ?? undefined;
         }),
         isPaused: computed(() => {
-            const method = currentMethod.value;
+            const currentUploadMethod = currentMethod.value;
 
-            if (method === "tus") {
+            if (currentUploadMethod === "tus") {
                 return tusUpload?.isPaused.value;
             }
 
-            if (method === "chunked-rest") {
+            if (currentUploadMethod === "chunked-rest") {
                 return chunkedRestUpload?.isPaused.value;
             }
 
             return undefined;
         }),
         isUploading: computed(() => {
-            const method = currentMethod.value;
+            const currentUploadMethod = currentMethod.value;
 
-            if (method === "tus") {
+            if (currentUploadMethod === "tus") {
                 return tusUpload?.isUploading.value ?? false;
             }
 
-            if (method === "chunked-rest") {
+            if (currentUploadMethod === "chunked-rest") {
                 return chunkedRestUpload?.isUploading.value ?? false;
             }
 
             return multipartUpload?.isUploading.value ?? false;
         }),
         offset: computed(() => {
-            const method = currentMethod.value;
+            const currentUploadMethod = currentMethod.value;
 
-            if (method === "tus") {
+            if (currentUploadMethod === "tus") {
                 return tusUpload?.offset.value;
             }
 
-            if (method === "chunked-rest") {
+            if (currentUploadMethod === "chunked-rest") {
                 return chunkedRestUpload?.offset.value;
             }
 
             return undefined;
         }),
         pause: computed(() => {
-            const method = currentMethod.value;
+            const currentUploadMethod = currentMethod.value;
 
-            if (method === "tus") {
+            if (currentUploadMethod === "tus") {
                 return tusUpload?.pause;
             }
 
-            if (method === "chunked-rest") {
+            if (currentUploadMethod === "chunked-rest") {
                 return chunkedRestUpload?.pause;
             }
 
             return undefined;
         }),
         progress: computed(() => {
-            const method = currentMethod.value;
+            const currentUploadMethod = currentMethod.value;
 
-            if (method === "tus") {
+            if (currentUploadMethod === "tus") {
                 return tusUpload?.progress.value ?? 0;
             }
 
-            if (method === "chunked-rest") {
+            if (currentUploadMethod === "chunked-rest") {
                 return chunkedRestUpload?.progress.value ?? 0;
             }
 
@@ -357,26 +357,26 @@ export const useUpload = (options: UseUploadOptions): UseUploadReturn => {
         }),
         reset,
         result: computed(() => {
-            const method = currentMethod.value;
+            const currentUploadMethod = currentMethod.value;
 
-            if (method === "tus") {
+            if (currentUploadMethod === "tus") {
                 return tusUpload?.result.value ?? undefined;
             }
 
-            if (method === "chunked-rest") {
+            if (currentUploadMethod === "chunked-rest") {
                 return chunkedRestUpload?.result.value ?? undefined;
             }
 
             return multipartUpload?.result.value ?? undefined;
         }),
         resume: computed(() => {
-            const method = currentMethod.value;
+            const currentUploadMethod = currentMethod.value;
 
-            if (method === "tus") {
+            if (currentUploadMethod === "tus") {
                 return tusUpload?.resume;
             }
 
-            if (method === "chunked-rest") {
+            if (currentUploadMethod === "chunked-rest") {
                 return chunkedRestUpload?.resume;
             }
 

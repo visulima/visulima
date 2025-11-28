@@ -114,6 +114,8 @@ describe("http Rest - Chunked Uploads", () => {
                 .set("X-Total-Size", String(testFileSize))
                 .send("");
 
+            // Setup assertions in beforeEach are necessary for test setup
+            // eslint-disable-next-line vitest/no-standalone-expect
             expect(initResponse.status).toBe(201);
 
             // Extract fileId from response body (preferred) or Location header
@@ -127,15 +129,21 @@ describe("http Rest - Chunked Uploads", () => {
                 fileId = lastPart.replace(/\.[^/.]+$/, "");
             }
 
+            // Setup assertions in beforeEach are necessary for test setup
+            // eslint-disable-next-line vitest/no-standalone-expect
             expect(fileId).toBeDefined();
 
             expectTypeOf(fileId).toBeString();
 
+            // Setup assertions in beforeEach are necessary for test setup
+            // eslint-disable-next-line vitest/no-standalone-expect
             expect(fileId.length).toBeGreaterThanOrEqual(8); // getIdFromRequest requires at least 8 chars
 
             // Verify file exists by making a HEAD request
             const verifyResponse = await supertest(app).head(`${basePath}/${fileId}`);
 
+            // Setup assertions in beforeEach are necessary for test setup
+            // eslint-disable-next-line vitest/no-standalone-expect
             expect(verifyResponse.status).toBe(200);
         });
 

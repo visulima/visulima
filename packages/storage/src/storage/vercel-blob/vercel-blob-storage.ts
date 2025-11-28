@@ -3,6 +3,8 @@ import type { Readable } from "node:stream";
 import { copy, del, list, put } from "@vercel/blob";
 
 import { detectFileTypeFromBuffer } from "../../utils/detect-file-type";
+// @ts-expect-error - UploadError is used for type checking in error handling
+import type { UploadError } from "../../utils/errors";
 import toMilliseconds from "../../utils/primitives/to-milliseconds";
 import LocalMetaStorage from "../local/local-meta-storage";
 import type MetaStorage from "../meta-storage";

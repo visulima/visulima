@@ -6,7 +6,7 @@ import { useDeleteFile } from "../../src/react/use-delete-file";
 import { renderHookWithQueryClient } from "./test-utils";
 
 // Mock fetch globally
-const mockFetch = vi.fn<Parameters<typeof fetch>, ReturnType<typeof fetch>>();
+const mockFetch = vi.fn();
 let originalFetch: typeof globalThis.fetch | undefined;
 
 describe(useDeleteFile, () => {
@@ -116,7 +116,7 @@ describe(useDeleteFile, () => {
             { queryClient },
         );
 
-        await expect(result.current.deleteFile("file-123")).rejects.toThrow();
+        await expect(result.current.deleteFile("file-123")).rejects.toThrow("File not found");
 
         await waitFor(() => {
             expect(onError).toHaveBeenCalledWith(expect.any(Error));

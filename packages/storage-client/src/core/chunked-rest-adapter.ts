@@ -71,6 +71,29 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
     let errorCallback: ((error: Error) => void) | undefined;
 
     /**
+     * Creates an abortable delay that checks the signal periodically.
+     */
+    const abortableDelay = async (ms: number, signal?: AbortSignal): Promise<void> => {
+        if (signal?.aborted) {
+            throw new Error("Aborted");
+        }
+
+        const checkInterval = 100; // Check every 100ms
+        const startTime = Date.now();
+
+        while (Date.now() - startTime < ms) {
+            if (signal?.aborted) {
+                throw new Error("Aborted");
+            }
+
+            const remaining = ms - (Date.now() - startTime);
+            const waitTime = Math.min(checkInterval, remaining);
+
+            await new Promise((resolve) => setTimeout(resolve, waitTime));
+        }
+    };
+
+    /**
      * Retries a fetch request with exponential backoff.
      */
     const fetchWithRetry = async (url: string, init: RequestInit, retriesLeft = maxRetries): Promise<Response> => {
@@ -81,17 +104,22 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
                 // Exponential backoff: 1s, 2s, 4s
                 const delay = 1000 * 2 ** (maxRetries - retriesLeft);
 
-                await new Promise((resolve) => setTimeout(resolve, delay));
+                await abortableDelay(delay, init.signal as AbortSignal);
 
                 return fetchWithRetry(url, init, retriesLeft - 1);
             }
 
             return response;
         } catch (error) {
+            // If aborted, don't retry
+            if (init.signal?.aborted || (error instanceof Error && error.message === "Aborted")) {
+                throw error;
+            }
+
             if (retriesLeft > 0 && retry) {
                 const delay = 1000 * 2 ** (maxRetries - retriesLeft);
 
-                await new Promise((resolve) => setTimeout(resolve, delay));
+                await abortableDelay(delay, init.signal as AbortSignal);
 
                 return fetchWithRetry(url, init, retriesLeft - 1);
             }

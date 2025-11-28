@@ -50,7 +50,7 @@ export const createDeleteFile = (options: CreateDeleteFileOptions): CreateDelete
         deleteFile: mutation.mutateAsync,
         error: () => {
             try {
-                const errorValue = (mutation as any).error;
+                const errorValue = (mutation as { error?: Accessor<Error | undefined> | Error | undefined }).error;
                 const error = typeof errorValue === "function" ? errorValue() : errorValue;
 
                 return (error as Error) || undefined;
@@ -60,7 +60,7 @@ export const createDeleteFile = (options: CreateDeleteFileOptions): CreateDelete
         },
         isLoading: () => {
             try {
-                const isPendingValue = (mutation as any).isPending;
+                const isPendingValue = (mutation as { isPending?: Accessor<boolean> | boolean }).isPending;
 
                 return (typeof isPendingValue === "function" ? isPendingValue() : isPendingValue) as boolean;
             } catch {

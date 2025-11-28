@@ -16,6 +16,9 @@ import { BaseStorage } from "../storage";
 import type { File, FileInit, FilePart, FileQuery, FileReturn } from "../utils/file";
 import { getFileStatus, hasContent, isExpired, partMatch, updateSize } from "../utils/file";
 
+const MIN_PART_SIZE = 5 * 1024 * 1024;
+const PART_SIZE = 16 * 1024 * 1024;
+
 /**
  * Part interface for multipart uploads.
  */
@@ -35,9 +38,6 @@ export interface S3CompatibleFile extends File {
     UploadId?: string;
     uri?: string;
 }
-
-const MIN_PART_SIZE = 5 * 1024 * 1024;
-const PART_SIZE = 16 * 1024 * 1024;
 
 /**
  * S3 API operations interface that must be implemented by concrete storage classes.
@@ -211,6 +211,8 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
         this.accessCheck()
             .then(() => {
                 this.isReady = true;
+
+                return undefined;
             })
             .catch((error) => {
                 this.logger?.error("Storage access check failed: %O", error);
@@ -340,7 +342,9 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
                     if (file.Parts.length === 0 && (!file.contentType || file.contentType === "application/octet-stream")) {
                         try {
                             const readable
-                                = part.body instanceof Readable ? part.body : Readable.fromWeb(part.body as unknown as import("node:stream/web").ReadableStream<any>);
+                                = part.body instanceof Readable
+                                    ? part.body
+                                    : Readable.fromWeb(part.body as unknown as import("node:stream/web").ReadableStream<Uint8Array>);
 
                             const { fileType, stream: detectedStream } = await detectFileTypeFromStream(readable);
 
@@ -478,6 +482,7 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
     public override async list(limit = 1000): Promise<TFile[]> {
         return this.instrumentOperation(
             "list",
+            // eslint-disable-next-line sonarjs/cognitive-complexity
             async () => {
                 const s3Api = this.getS3Api();
                 let parameters: { Bucket: string; ContinuationToken?: string; MaxKeys?: number } = {
@@ -499,6 +504,7 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
                                 const { Expires } = await this.retry(() => s3Api.headObject({ Bucket: this.bucket, Key }));
 
                                 if (Expires && isExpired({ expiredAt: Expires } as TFile)) {
+                                    // eslint-disable-next-line no-await-in-loop
                                     await this.delete({ id: Key });
                                 } else {
                                     items.push({
@@ -515,10 +521,10 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
                             parameters = { ...parameters, ContinuationToken: response.NextContinuationToken };
                         }
                     } catch (error) {
-                        truncated = false;
-
                         const httpError = this.normalizeError(error instanceof Error ? error : new Error(String(error)));
 
+                        // Sequential error handling is intentional
+                        // eslint-disable-next-line no-await-in-loop
                         await this.onError(httpError);
                         throw error;
                     }
@@ -629,6 +635,12 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
     protected async getPartsPresignedUrls(file: TFile): Promise<string[]> {
         (file as TFile & { partSize?: number }).partSize ??= this.partSize;
 
+        const uploadId = file.UploadId;
+
+        if (!uploadId) {
+            throw new Error("UploadId is required for getting presigned URLs");
+        }
+
         const partsNumber = Math.trunc((file.size as number) / this.partSize) + 1;
         const promises = [];
         const expiresIn = Math.trunc(toSeconds(this.config.expiration?.maxAge || "6hrs"));
@@ -642,7 +654,7 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
                     expiresIn,
                     Key: file.name,
                     PartNumber: index + 1,
-                    UploadId: file.UploadId!,
+                    UploadId: uploadId,
                 }),
             );
         }

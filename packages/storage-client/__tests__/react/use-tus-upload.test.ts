@@ -106,7 +106,7 @@ describe(useTusUpload, () => {
 
         mockFetch.mockImplementation((_url: string, options?: RequestInit) => {
             if (options?.method === "PATCH") {
-                patchCallCount++;
+                patchCallCount += 1;
 
                 if (patchCallCount === 1) {
                     // First PATCH - delay it so we can pause
@@ -134,7 +134,7 @@ describe(useTusUpload, () => {
             }
 
             if (options?.method === "HEAD") {
-                headCallCount++;
+                headCallCount += 1;
 
                 // HEAD request to get upload offset (when resuming) or final file info
                 return Promise.resolve({
@@ -162,7 +162,11 @@ describe(useTusUpload, () => {
         const uploadPromise = result.current.upload(file);
 
         // Wait a bit for upload to start, then pause
-        await new Promise((resolve) => setTimeout(resolve, 50));
+        await new Promise<void>((resolve) => {
+            setTimeout(() => {
+                resolve();
+            }, 50);
+        });
         result.current.pause();
 
         await waitFor(() => {
@@ -242,28 +246,51 @@ describe(useTusUpload, () => {
     });
 
     it("should handle abort", async () => {
+        expect.assertions(1);
+
         const file = new File(["test content"], "test.txt", { type: "text/plain" });
 
-        // Mock TUS discovery
-        mockFetch.mockResolvedValueOnce({
-            headers: new Headers({
-                "Tus-Resumable": "1.0.0",
-            }),
-            ok: true,
-            status: 204,
+        // Mock requests: POST (create), then PATCH (upload chunk that can be aborted)
+        mockFetch.mockImplementation((_url: string, options?: RequestInit) => {
+            if (options?.method === "POST") {
+                // First call: create upload
+                return Promise.resolve({
+                    headers: new Headers({
+                        Location: "https://api.example.com/upload/file-123",
+                        "Upload-Offset": "0",
+                    }),
+                    ok: true,
+                    status: 201,
+                });
+            }
+
+            if (options?.method === "PATCH") {
+                // Second call: upload chunk - check abort signal periodically
+                return new Promise((_resolve, reject) => {
+                    const signal = options?.signal as AbortSignal | undefined;
+
+                    if (signal) {
+                        // Check if already aborted
+                        if (signal.aborted) {
+                            reject(new DOMException("The operation was aborted.", "AbortError"));
+
+                            return;
+                        }
+
+                        // Listen for abort
+                        signal.addEventListener("abort", () => {
+                            reject(new DOMException("The operation was aborted.", "AbortError"));
+                        });
+                    }
+
+                    // Otherwise, promise never resolves (simulating slow upload)
+                });
+            }
+
+            return Promise.reject(new Error(`Unexpected request: ${options?.method}`));
         });
 
-        // Mock create upload
-        mockFetch.mockResolvedValueOnce({
-            headers: new Headers({
-                Location: "https://api.example.com/upload/file-123",
-                "Upload-Offset": "0",
-            }),
-            ok: true,
-            status: 201,
-        });
-
-        const { result } = renderHookWithQueryClient(
+        const { result, unmount } = renderHookWithQueryClient(
             () =>
                 useTusUpload({
                     endpoint: "https://api.example.com/upload",
@@ -273,9 +300,19 @@ describe(useTusUpload, () => {
 
         const uploadPromise = result.current.upload(file);
 
+        // Give upload time to start (POST completes, onStart fires, PATCH begins)
+        await new Promise<void>((resolve) => {
+            setTimeout(() => {
+                resolve();
+            }, 50);
+        });
+
         result.current.abort();
 
-        await expect(uploadPromise).rejects.toThrow();
+        await expect(uploadPromise).rejects.toThrow("Upload aborted");
+
+        // Cleanup
+        unmount();
     });
 
     it("should reset state", async () => {
