@@ -49,7 +49,9 @@ describe(AzureStorage, () => {
         } as unknown as ContainerClient;
 
         // Mock BlobServiceClient constructor to return our mock instance
-        (BlobServiceClient as ReturnType<typeof vi.fn>).mockImplementation(() => {
+        // Note: Must use 'function' declaration, not arrow function, for constructor mocks
+        // eslint-disable-next-line func-names, prefer-arrow-callback
+        (BlobServiceClient as ReturnType<typeof vi.fn>).mockImplementation(function () {
             return {
                 getContainerClient: vi.fn().mockReturnValue(mockContainerClient),
             };
