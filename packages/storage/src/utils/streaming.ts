@@ -215,7 +215,7 @@ export const createBandwidthLimitedStream = (sourceStream: Readable, bytesPerSec
         },
     });
 
-    const processNextChunk = () => {
+    function processNextChunk(): void {
         if (bufferedChunks.length === 0 || isProcessing) {
             // Check if we should end the stream
             if (bufferedChunks.length === 0 && !isProcessing && pendingTimeouts.length === 0 && sourceStream.readableEnded) {
@@ -275,7 +275,7 @@ export const createBandwidthLimitedStream = (sourceStream: Readable, bytesPerSec
                 // Stream has ended, ignore
             }
         }
-    };
+    }
 
     sourceStream.on("data", (chunk: Buffer) => {
         bufferedChunks.push(chunk);

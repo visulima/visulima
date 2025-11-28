@@ -1,3 +1,5 @@
+/* eslint-disable vitest/require-hook -- This is a helper file, not a test file */
+
 import type { Express } from "express";
 import express from "express";
 

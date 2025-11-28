@@ -1,9 +1,7 @@
 import { utimes } from "node:fs/promises";
 import { tmpdir } from "node:os";
 
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { ensureDir, readFile, remove, writeFile } from "@visulima/fs";
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { join, normalize } from "@visulima/path";
 
 import { ERRORS, throwErrorCode } from "../../utils/errors";

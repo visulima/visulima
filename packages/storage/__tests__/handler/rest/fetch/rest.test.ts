@@ -57,17 +57,17 @@ describe("fetch RestFetch", () => {
 
             const directory = temporaryDirectory();
             const logger = {
-                debug: (...args: unknown[]) => {
-                    console.log("[DEBUG]", ...args);
+                debug: (..._args: unknown[]) => {
+                    // Debug logging disabled for tests
                 },
-                error: (...args: unknown[]) => {
-                    console.error("[ERROR]", ...args);
+                error: (..._args: unknown[]) => {
+                    // Error logging disabled for tests
                 },
-                info: (...args: unknown[]) => {
-                    console.log("[INFO]", ...args);
+                info: (..._args: unknown[]) => {
+                    // Info logging disabled for tests
                 },
-                warn: (...args: unknown[]) => {
-                    console.warn("[WARN]", ...args);
+                warn: (..._args: unknown[]) => {
+                    // Warn logging disabled for tests
                 },
             };
             const storage = new DiskStorage({ ...storageOptions, directory, logger });
@@ -90,18 +90,11 @@ describe("fetch RestFetch", () => {
             const response = await restHandler.fetch(request);
             const responseText = await response.text();
 
-            console.log("[TEST] Response status:", response.status);
-            console.log("[TEST] Response text:", responseText);
-            console.log("[TEST] Response headers:", Object.fromEntries(response.headers.entries()));
-
             let body;
 
             try {
                 body = JSON.parse(responseText);
-                console.log("[TEST] Parsed body:", body);
             } catch (error) {
-                console.error("[TEST] JSON parse error:", error);
-                console.error("[TEST] Response text was:", responseText);
                 throw error;
             }
 

@@ -106,7 +106,7 @@ export const handleCompletedUpload = async <TFile extends UploadFile, NodeRespon
     logger: { error?: (message: string, error: unknown) => void } | undefined,
     finish: (request: IncomingMessage, response: NodeResponse, uploadResponse: ResponseFile<TFile>) => void,
 ): Promise<void> => {
-    const { headers: fileHeaders, statusCode, ...basicFile } = file;
+    const { headers: _fileHeaders, statusCode: _statusCode, ...basicFile } = file;
 
     if (typeof next === "function") {
         // eslint-disable-next-line no-underscore-dangle

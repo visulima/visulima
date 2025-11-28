@@ -2,9 +2,7 @@ import { Readable } from "node:stream";
 import { setInterval } from "node:timers";
 import { inspect } from "node:util";
 
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { parseBytes } from "@visulima/humanizer";
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { isAbsolute, normalize } from "@visulima/path";
 import typeis from "type-is";
 

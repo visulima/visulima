@@ -175,7 +175,7 @@ abstract class BaseHandlerFetch<TFile extends UploadFile> extends BaseHandlerCor
             const { headers: responseFileHeaders, statusCode: responseFileStatusCode, ...fileData } = responseFile;
 
             // Remove non-serializable properties
-            const { content, stream, ...cleanFileData } = fileData;
+            const { content: _content, stream: _stream, ...cleanFileData } = fileData;
 
             return this.createResponse({
                 body: cleanFileData,

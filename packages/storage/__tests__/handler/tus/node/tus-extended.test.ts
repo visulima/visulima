@@ -283,6 +283,8 @@ describe("tUS Extended Tests (matching tus-node-server e2e)", () => {
         });
 
         it("should not allow creating upload that exceeds max file size", async () => {
+            expect.assertions(1);
+
             await maxSizeAgent
                 .post(`${STORE_PATH}-maxsize`)
                 .set("Tus-Resumable", TUS_RESUMABLE)

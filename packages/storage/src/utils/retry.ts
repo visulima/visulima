@@ -150,7 +150,7 @@ export const isRetryableError = (error: unknown, retryableStatusCodes: number[] 
 
 /**
  * Retry an async operation with exponential backoff
- * @param fn The async function to retry
+ * @param function_ The async function to retry
  * @param config Retry configuration
  * @returns The result of the function
  * @throws The last error if all retries are exhausted

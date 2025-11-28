@@ -114,7 +114,7 @@ abstract class BaseHandlerNode<
                     );
                 }
             } else {
-                const { headers: fileHeaders, statusCode, ...basicFile } = file as ResponseFile<TFile>;
+                const { headers: _fileHeaders, statusCode: _statusCode, ...basicFile } = file as ResponseFile<TFile>;
 
                 this.logger?.debug("[%s]: %s: %d/%d", basicFile.status, basicFile.name, basicFile.bytesWritten, basicFile.size);
 
@@ -340,7 +340,7 @@ abstract class BaseHandlerNode<
             const fileStatusCode = responseFile.statusCode || 200;
 
             // Extract file data (excluding headers and statusCode)
-            const { headers: _, statusCode: __, ...fileData } = responseFile;
+            const { headers: _headers, statusCode: _statusCode, ...fileData } = responseFile;
 
             body = fileData;
             // Create a new object to ensure headers are preserved

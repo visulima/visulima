@@ -1,6 +1,5 @@
 import { Readable } from "node:stream";
 
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { parseBytes } from "@visulima/humanizer";
 
 import { detectFileTypeFromStream } from "../../utils/detect-file-type";
