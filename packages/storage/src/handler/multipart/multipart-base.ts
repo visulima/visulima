@@ -43,7 +43,8 @@ abstract class MultipartBase<TFile extends UploadFile> {
                     try {
                         data = JSON.parse(part.text);
                     } catch {
-                        // ignore
+                        // Ignore invalid JSON - use empty object as fallback
+                        data = {};
                     }
                 } else if (part.name) {
                     data = { [part.name]: part.text };

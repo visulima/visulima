@@ -49,7 +49,7 @@ export default createConfig(
         },
     },
     {
-        files: ["src/openapi/*.ts", "src/storage/gcs/gcs-storage.ts", "src/handler/multipart/multipart.ts"],
+        files: ["src/openapi/*.ts", "src/storage/gcs/gcs-storage.ts", "src/handler/multipart/multipart.ts", "__tests__/__helpers__/express-app.ts"],
         rules: {
             "sonarjs/file-name-differ-from-class": "off",
         },

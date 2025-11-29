@@ -1,4 +1,3 @@
-/* eslint-disable sonarjs/file-name-differ-from-class -- This is a helper file, not a class file */
 /* eslint-disable vitest/require-hook -- This is a helper file, not a test file */
 
 import type { Express } from "express";

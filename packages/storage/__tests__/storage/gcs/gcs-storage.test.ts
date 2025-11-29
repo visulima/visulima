@@ -43,7 +43,6 @@ describe(GCStorage, async () => {
 
     let storage: GCStorage;
 
-    // eslint-disable-next-line no-secrets/no-secrets -- Test URL, not a secret
     // eslint-disable-next-line sonarjs/no-clear-text-protocols -- Test URL
     const uri = "http://api.com?upload_id=123456789";
 
