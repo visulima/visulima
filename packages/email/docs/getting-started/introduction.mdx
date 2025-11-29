@@ -70,12 +70,15 @@ const resend = resendProvider({
 // 2. Create a Mail instance
 const mail = createMail(resend);
 
+// Optional: Set default configuration for all emails
+mail.setFrom({ email: "noreply@example.com", name: "My App" });
+
 // 3. Build and send a message
 import { MailMessage } from "@visulima/email";
 
 const message = new MailMessage()
     .to("user@example.com")
-    .from("sender@example.com")
+    // .from() is optional if set via mail.setFrom()
     .subject("Welcome!")
     .html("<h1>Welcome to our service!</h1>")
     .text("Welcome to our service!");

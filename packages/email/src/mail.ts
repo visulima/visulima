@@ -1,8 +1,9 @@
 import MailMessage from "./mail-message";
 import type { Provider } from "./providers/provider";
-import type { EmailOptions, EmailResult, Receipt, Result } from "./types";
+import type { EmailAddress, EmailHeaders, EmailOptions, EmailResult, Receipt, Result } from "./types";
 import type { Logger } from "./utils/create-logger";
 import { createLogger } from "./utils/create-logger";
+import headersToRecord from "./utils/headers-to-record";
 
 /**
  * Logs the result of sending an email.
@@ -32,6 +33,27 @@ const logSendResult = (logger: Logger | undefined, result: Result<EmailResult>, 
 export type SendableMessage = MailMessage | EmailOptions;
 
 /**
+ * Global email configuration that applies to all emails sent through a Mail instance.
+ */
+export interface MailGlobalConfig {
+    /**
+     * Default from address to use if not specified in the message.
+     */
+    from?: EmailAddress;
+
+    /**
+     * Global headers to add to all emails.
+     * These will be merged with message-specific headers, with message headers taking precedence.
+     */
+    headers?: EmailHeaders;
+
+    /**
+     * Default reply-to address to use if not specified in the message.
+     */
+    replyTo?: EmailAddress;
+}
+
+/**
  * Mail class - instance-based email sending.
  */
 export class Mail {
@@ -55,6 +77,8 @@ export class Mail {
 
     private loggerInstance?: Console;
 
+    private globalConfig?: MailGlobalConfig;
+
     /**
      * Creates a new Mail instance with a provider.
      * @param provider The email provider instance.
@@ -76,6 +100,84 @@ export class Mail {
     public setLogger(logger: Console): this {
         this.loggerInstance = logger;
         this.logger = createLogger("Mail", logger);
+
+        return this;
+    }
+
+    /**
+     * Sets the default from address for all emails sent through this Mail instance.
+     * @param from Default from address to use if not specified in the message.
+     * @returns This instance for method chaining.
+     * @example
+     * ```ts
+     * const mail = createMail(provider);
+     * mail.setFrom({ email: "noreply@example.com", name: "My App" });
+     * ```
+     */
+    public setFrom(from: EmailAddress): this {
+        if (!this.globalConfig) {
+            this.globalConfig = {};
+        }
+
+        this.globalConfig.from = from;
+
+        if (this.logger) {
+            this.logger.debug("Default from address updated", { from: from.email });
+        }
+
+        return this;
+    }
+
+    /**
+     * Sets the default reply-to address for all emails sent through this Mail instance.
+     * @param replyTo Default reply-to address to use if not specified in the message.
+     * @returns This instance for method chaining.
+     * @example
+     * ```ts
+     * const mail = createMail(provider);
+     * mail.setReplyTo({ email: "support@example.com" });
+     * ```
+     */
+    public setReplyTo(replyTo: EmailAddress): this {
+        if (!this.globalConfig) {
+            this.globalConfig = {};
+        }
+
+        this.globalConfig.replyTo = replyTo;
+
+        if (this.logger) {
+            this.logger.debug("Default reply-to address updated", { replyTo: replyTo.email });
+        }
+
+        return this;
+    }
+
+    /**
+     * Sets default headers for all emails sent through this Mail instance.
+     * These headers will be merged with message-specific headers, with message headers taking precedence.
+     * @param headers Default headers to add to all emails.
+     * @returns This instance for method chaining.
+     * @example
+     * ```ts
+     * const mail = createMail(provider);
+     * mail.setHeaders({ "X-App-Name": "MyApp", "X-Version": "1.0.0" });
+     * ```
+     */
+    public setHeaders(headers: EmailHeaders): this {
+        if (!this.globalConfig) {
+            this.globalConfig = {};
+        }
+
+        this.globalConfig.headers = headers;
+
+        if (this.logger) {
+            const headersRecord = headersToRecord(headers);
+
+            this.logger.debug("Default headers updated", {
+                count: Object.keys(headersRecord).length,
+                headers: Object.keys(headersRecord),
+            });
+        }
 
         return this;
     }
@@ -129,6 +231,9 @@ export class Mail {
 
             emailOptions = options;
         }
+
+        // Apply global configuration
+        emailOptions = this.applyGlobalConfig(emailOptions);
 
         const result = await this.provider.sendEmail(emailOptions);
 
@@ -213,6 +318,9 @@ export class Mail {
                     });
                 }
 
+                // Apply global configuration
+                emailOptions = this.applyGlobalConfig(emailOptions);
+
                 const result = await this.provider.sendEmail(emailOptions);
 
                 if (result.success && result.data) {
@@ -269,11 +377,69 @@ export class Mail {
             });
         }
     }
+
+    /**
+     * Applies global configuration to email options.
+     * Global values are only applied if the corresponding field is not already set in the email options.
+     * @param emailOptions The email options to apply global configuration to.
+     * @returns Email options with global configuration applied.
+     * @private
+     */
+    private applyGlobalConfig(emailOptions: EmailOptions): EmailOptions {
+        if (!this.globalConfig) {
+            return emailOptions;
+        }
+
+        const merged: EmailOptions = { ...emailOptions };
+
+        // Apply default from if not set
+        if (!merged.from && this.globalConfig.from) {
+            merged.from = this.globalConfig.from;
+
+            if (this.logger) {
+                this.logger.debug("Applied global from address", { from: this.globalConfig.from.email });
+            }
+        }
+
+        // Apply default reply-to if not set
+        if (!merged.replyTo && this.globalConfig.replyTo) {
+            merged.replyTo = this.globalConfig.replyTo;
+
+            if (this.logger) {
+                this.logger.debug("Applied global reply-to address", { replyTo: this.globalConfig.replyTo.email });
+            }
+        }
+
+        // Merge global headers with message headers (message headers take precedence)
+        if (this.globalConfig.headers) {
+            const globalHeadersRecord = headersToRecord(this.globalConfig.headers);
+            const messageHeadersRecord = merged.headers ? headersToRecord(merged.headers) : {};
+
+            merged.headers = {
+                ...globalHeadersRecord,
+                ...messageHeadersRecord,
+            };
+
+            if (this.logger) {
+                this.logger.debug("Merged global headers", {
+                    globalCount: Object.keys(globalHeadersRecord).length,
+                    messageCount: Object.keys(messageHeadersRecord).length,
+                });
+            }
+        }
+
+        return merged;
+    }
 }
 
 /**
  * Creates a new Mail instance with a provider.
  * @param provider The email provider instance.
  * @returns A new Mail instance.
+ * @example
+ * ```ts
+ * const mail = createMail(provider);
+ * mail.setFrom({ email: "noreply@example.com", name: "My App" });
+ * ```
  */
 export const createMail = (provider: Provider): Mail => new Mail(provider);
