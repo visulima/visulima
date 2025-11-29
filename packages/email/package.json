@@ -246,6 +246,10 @@
             "types": "./dist/utils/verify-email.d.ts",
             "default": "./dist/utils/verify-email.js"
         },
+        "./utils/normalize-email-aliases": {
+            "types": "./dist/utils/normalize-email-aliases.d.ts",
+            "default": "./dist/utils/normalize-email-aliases.js"
+        },
         "./package.json": "./package.json"
     },
     "files": [
