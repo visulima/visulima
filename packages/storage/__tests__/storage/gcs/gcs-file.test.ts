@@ -11,8 +11,10 @@ describe(GCSFile, () => {
         file.GCSUploadURI = "https://storage.googleapis.com/upload/example";
         file.uri = "gs://bucket-name/file-name";
 
+        // eslint-disable-next-line no-secrets/no-secrets -- Test ID, not a secret
         file.id = "GCSFileTestId123456789";
 
+        // eslint-disable-next-line no-secrets/no-secrets -- Test ID, not a secret
         file.originalName = "GCSFileTestId123456789";
 
         expect(file).toMatchSnapshot();

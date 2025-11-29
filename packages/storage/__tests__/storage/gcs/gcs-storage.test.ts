@@ -43,7 +43,8 @@ describe(GCStorage, async () => {
 
     let storage: GCStorage;
 
-    // eslint-disable-next-line sonarjs/no-clear-text-protocols
+    // eslint-disable-next-line no-secrets/no-secrets -- Test URL, not a secret
+    // eslint-disable-next-line sonarjs/no-clear-text-protocols -- Test URL
     const uri = "http://api.com?upload_id=123456789";
 
     const metafileResponse = (): { data: GCSFile; status: number } =>
@@ -156,7 +157,6 @@ describe(GCStorage, async () => {
 
             mockAuthRequest.mockResolvedValue(metafileResponse());
 
-            // eslint-disable-next-line radar/no-duplicate-string
             const gcsFile = await storage.update(metafile, { metadata: { name: "newname.mp4" } });
 
             expect(gcsFile.metadata.name).toBe("newname.mp4");
@@ -246,7 +246,7 @@ describe(GCStorage, async () => {
             try {
                 await storage.write({ contentLength: 0, id: metafile.id });
             } catch (error) {
-                // eslint-disable-next-line no-secrets/no-secrets
+                // eslint-disable-next-line sonarjs/no-clear-text-protocols -- Test URL
                 expect(error).toStrictEqual(new FetchError("Bad Request", "GCS400", { uri: "http://api.com?upload_id=123456789" }));
                 expect(error).toMatchSnapshot();
             }
