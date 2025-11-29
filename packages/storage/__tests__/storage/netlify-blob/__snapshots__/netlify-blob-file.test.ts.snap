@@ -1,0 +1,24 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`NetlifyBlobFile > should include Netlify Blob-specific properties and match snapshot 1`] = `
+NetlifyBlobFile {
+  "ETag": undefined,
+  "bytesWritten": NaN,
+  "content": undefined,
+  "contentType": "application/octet-stream",
+  "createdAt": undefined,
+  "expiredAt": undefined,
+  "hash": undefined,
+  "id": "PsRqecfPghVJE6veB-IcX",
+  "metadata": {
+    "foo": "bar",
+  },
+  "modifiedAt": undefined,
+  "name": "",
+  "originalName": "testfile.mp4",
+  "pathname": "test-path",
+  "size": undefined,
+  "status": undefined,
+  "url": "https://example.com/blob/test-file",
+}
+`;

@@ -1,0 +1,30 @@
+{
+    "name": "@visulima/storage",
+    "version": "0.0.0",
+    "exports": {
+        ".": "./src/index.ts",
+        "./provider/azure": "./src/storage/azure/index.ts",
+        "./provider/aws": "./src/storage/aws/index.ts",
+        "./provider/aws/s3/clients": "./src/storage/aws/clients/index.ts",
+        "./provider/aws-light": "./src/storage/aws-light/index.ts",
+        "./provider/gcs": "./src/storage/gcs/index.ts",
+        "./provider/vercel": "./src/storage/vercel-blob/index.ts",
+        "./provider/netlify": "./src/storage/netlify-blob/index.ts",
+        "./provider/local": "./src/storage/local/index.ts",
+        "./openapi": "./src/openapi/index.ts",
+        "./handler/http/node": "./src/handler/http/node/index.ts",
+        "./handler/http/fetch": "./src/handler/http/fetch/index.ts",
+        "./handler/http/hono": "./src/handler/http/hono/index.ts",
+        "./handler/http/bun": "./src/handler/http/fetch/index.ts",
+        "./handler/http/cloudflare": "./src/handler/http/fetch/index.ts",
+        "./handler/http/deno": "./src/handler/http/fetch/index.ts",
+        "./handler/http/nextjs": "./src/handler/http/nextjs/index.ts",
+        "./handler/http/solid-start": "./src/handler/http/solid-start/index.ts",
+        "./handler/http/edge": "./src/handler/http/fetch/index.ts",
+        "./transformer/audio": "./src/transformer/audio-transformer.ts",
+        "./transformer/video": "./src/transformer/video-transformer.ts",
+        "./transformer/image": "./src/transformer/image-transformer.ts",
+        "./transformer": "./src/transformer/index.ts",
+        "./adapter/nuxt": "./src/adapter/nuxt/module.ts"
+    }
+}

@@ -1,0 +1,24 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`AzureFile > should include Azure-specific properties and match snapshot 1`] = `
+AzureFile {
+  "ETag": undefined,
+  "bytesWritten": NaN,
+  "content": undefined,
+  "contentType": "application/octet-stream",
+  "createdAt": undefined,
+  "expiredAt": undefined,
+  "hash": undefined,
+  "id": "PsRqecfPghVJE6veB-IcX",
+  "metadata": {
+    "foo": "bar",
+  },
+  "modifiedAt": undefined,
+  "name": "",
+  "originalName": "PsRqecfPghVJE6veB-IcX",
+  "requestId": "requestId",
+  "size": undefined,
+  "status": undefined,
+  "uri": "uri",
+}
+`;
