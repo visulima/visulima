@@ -1,0 +1,244 @@
+# Visulima upload
+
+Store files in a web-accessible location via a simplified API. Can automatically scale and rotate images. Includes S3, Azure, GCS and local filesystem-based backends with the most convenient features of each.
+
+## Features
+
+- **TypeScript ready** - Full TypeScript support with comprehensive type definitions
+- **Multiple Upload Handlers** - Multipart (form-based), REST (direct binary), and TUS (resumable) uploads
+- **Chunked Uploads** - REST handler supports client-side chunked uploads for large files
+- **Automatic Retry** - Built-in retry mechanism with exponential backoff for all storage backends
+- **Multiple Storage Backends** - AWS S3, Azure Blob Storage, Google Cloud Storage, Vercel Blob, Netlify Blob, and local filesystem
+- **S3-Compatible Services** - Support for DigitalOcean Spaces, Cloudflare R2, MinIO, Backblaze B2, Wasabi, and Tigris
+- Parent directories are created automatically as needed (like S3 and Azure)
+- Content types are inferred from file extensions (like the filesystem)
+- Files are by default marked as readable via the web (like a filesystem + web server)
+- **On-demand media transformations** - Transform images, videos, and audio via URL query parameters
+- **ImageTransformer class** - Programmatic image processing with Sharp
+- **VideoTransformer class** - Programmatic video processing with Mediabunny
+- **AudioTransformer class** - Programmatic audio processing with Mediabunny
+- **MediaTransformer class** - Unified transformer that automatically detects and processes any media type
+- **Web API Support** - Native fetch method for Hono, Cloudflare Workers, and other modern frameworks
+- Images can be automatically scaled to multiple sizes
+- Images can be cropped, rotated, and converted between formats
+- Images are automatically rotated if necessary for proper display on the web (i.e. iPhone photos with rotation hints are right side up)
+- Image width, image height and correct file extension are made available to the developer
+- Non-image files are also supported
+- Web access to files can be disabled and re-enabled
+- GIF is supported, including animation, with full support for scaling and cropping
+- High-performance caching for transformed media
+- Support for JPEG, PNG, WebP, AVIF, and TIFF image formats
+- Support for MP4, WebM, MKV video formats
+- Support for MP3, WAV, OGG, AAC, FLAC audio formats
+- **Batch Operations** - Delete multiple files in a single request
+- **File Validation** - Customizable validation rules for file types, sizes, and metadata
+- **Filename Validation** - Configurable filename validation with adapter-specific defaults (strict for filesystem, permissive for cloud storage)
+- **Expiration Management** - Automatic file expiration and cleanup
+- **Checksum Support** - MD5, SHA1, and other checksum algorithms for file integrity
+- On fire about minimizing file sizes for your resized images? You can plug in `imagemin` and compatible tools using the `postprocessors` option.
+
+## Getting started
+
+```sh
+npm install @visulima/storage
+```
+
+```sh
+yarn add @visulima/storage
+```
+
+```sh
+pnpm add @visulima/storage
+```
+
+## Quick Start
+
+### Node.js/Express
+
+```ts
+import { DiskStorage } from "@visulima/storage";
+import { Multipart, Rest } from "@visulima/storage/handler/http/node";
+
+const storage = new DiskStorage({ directory: "./uploads" });
+
+// Multipart handler (for form-based uploads)
+const multipart = new Multipart({ storage });
+app.use("/upload", multipart.upload, (req, res) => {
+    res.json({ id: req.file?.id });
+});
+
+// REST handler (for direct binary uploads)
+const rest = new Rest({ storage });
+app.use("/files", rest.handle);
+```
+
+### Modern Frameworks (Hono, Cloudflare Workers)
+
+#### Hono (Recommended)
+
+```ts
+import { Hono } from "hono";
+import { DiskStorage } from "@visulima/storage";
+import { createStorageHandler } from "@visulima/storage/handler/http/hono";
+
+const app = new Hono();
+const storage = new DiskStorage({ directory: "./uploads" });
+
+// Register handlers - routes are automatically registered!
+createStorageHandler(app, { path: "/files", storage, type: "multipart" });
+createStorageHandler(app, { path: "/files-rest", storage, type: "rest" });
+```
+
+#### Manual Route Registration
+
+```ts
+import { DiskStorage } from "@visulima/storage";
+import { Multipart, Rest } from "@visulima/storage/handler/http/fetch";
+
+const storage = new DiskStorage({ directory: "./uploads" });
+
+// Multipart handler
+const multipart = new Multipart({ storage });
+app.post("/upload", async (c) => {
+    return await multipart.fetch(c.req.raw);
+});
+
+// REST handler (for direct binary uploads)
+const rest = new Rest({ storage });
+app.post("/files", async (c) => {
+    return await rest.fetch(c.req.raw);
+});
+```
+
+## Upload Handlers
+
+Visulima upload provides three handlers for different upload scenarios:
+
+- **Multipart**: Traditional `multipart/form-data` uploads (web forms)
+- **REST**: Direct binary uploads via POST/PUT (raw binary data)
+- **TUS**: Resumable uploads with chunking support (large files, unreliable networks)
+
+## API Methods
+
+All handlers provide multiple API methods for different environments:
+
+### `handle()` - Node.js/Express
+
+Traditional Node.js method using IncomingMessage and ServerResponse.
+
+```ts
+// Express middleware
+app.use("/upload", multipart.handle, (req, res) => {
+    res.json({ id: req.file?.id });
+});
+
+// Direct usage
+app.use("/upload", (req, res) => {
+    multipart.handle(req, res);
+});
+```
+
+### `fetch()` - Web API Frameworks
+
+Native Web API method for Hono, Cloudflare Workers, Deno, and other modern frameworks.
+
+```ts
+// Hono
+app.post("/upload", async (c) => {
+    return await multipart.fetch(c.req.raw);
+});
+
+// Cloudflare Worker
+export default {
+    async fetch(request, env, ctx) {
+        const multipart = new Multipart({ storage });
+        return await multipart.fetch(request);
+    },
+};
+```
+
+### `upload()` - Express Middleware
+
+Convenience middleware that combines parsing and response handling.
+
+```ts
+app.use("/upload", multipart.upload, (req, res) => {
+    res.json({ id: req.file?.id });
+});
+```
+
+## Image Transformations
+
+Transform images on-demand using URL query parameters or programmatically with the ImageTransformer class.
+
+### URL-based Transformations
+
+Apply transformations by adding query parameters to your image URLs:
+
+```http
+GET /files/image.jpg?width=300&height=200&fit=cover&quality=80
+GET /files/photo.png?width=800&format=webp&lossless=true
+GET /files/animation.gif?width=400&height=300&loop=0&delay=100
+```
+
+#### Available Parameters
+
+| Parameter      | Type    | Description                                             | Values                                                                                             |
+| -------------- | ------- | ------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| `width`        | number  | Width in pixels                                         | 1-10000                                                                                            |
+| `height`       | number  | Height in pixels                                        | 1-10000                                                                                            |
+| `fit`          | string  | Resize fit mode                                         | `cover`, `contain`, `fill`, `inside`, `outside`                                                    |
+| `position`     | string  | Position for cover/contain fits                         | `centre`, `top`, `right top`, `right`, `right bottom`, `bottom`, `left bottom`, `left`, `left top` |
+| `quality`      | number  | Quality for JPEG/WebP (1-100)                           | 1-100                                                                                              |
+| `lossless`     | boolean | Use lossless compression for WebP                       | `true`, `false`                                                                                    |
+| `effort`       | number  | CPU effort for AVIF encoding (0-10)                     | 0-10                                                                                               |
+| `alphaQuality` | number  | Quality of alpha layer for WebP (0-100)                 | 0-100                                                                                              |
+| `loop`         | number  | GIF number of animation iterations (use 0 for infinite) | 0+                                                                                                 |
+| `delay`        | number  | GIF delay between animation frames (in milliseconds)    | 0+                                                                                                 |
+
+### Programmatic Usage
+
+Use the ImageTransformer class for programmatic image processing:
+
+```ts
+import { LRUCache } from "lru-cache";
+import { DiskStorage } from "@visulima/storage";
+import ImageTransformer from "@visulima/storage/transformer/image";
+
+const storage = new DiskStorage({ directory: "./uploads" });
+
+// Initialize cache for transformed images
+const cache = new LRUCache({
+    max: 1000, // Maximum number of cached items
+    ttl: 3600000, // 1 hour in milliseconds
+});
+
+const transformer = new ImageTransformer(storage, {
+    cache,
+    cacheTtl: 3600, // 1 hour
+    maxImageSize: 10 * 1024 * 1024, // 10MB
+});
+
+// Resize an image
+const result = await transformer.resize("image-id", {
+    width: 800,
+    height: 600,
+    fit: "cover",
+    quality: 85,
+    format: "jpeg",
+});
+
+// Crop an image
+const cropped = await transformer.crop("image-id", {
+    width: 400,
+    height: 300,
+    left: 100,
+    top: 50,
+});
+
+// Convert format
+const webp = await transformer.transform("image-id", {
+    format: "webp",
+    lossless: true,
+});
+```

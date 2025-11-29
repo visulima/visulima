@@ -1,0 +1,14 @@
+{
+    "express": {
+        "title": "Express"
+    },
+    "nextjs": {
+        "title": "Next.js"
+    },
+    "nuxt": {
+        "title": "Nuxt"
+    },
+    "modern": {
+        "title": "Modern Frameworks (Fetch API)"
+    }
+}

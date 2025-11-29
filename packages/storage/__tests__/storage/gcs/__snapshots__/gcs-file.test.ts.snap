@@ -1,0 +1,24 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`GCSFile > should include GCS-specific properties and match snapshot 1`] = `
+GCSFile {
+  "ETag": undefined,
+  "GCSUploadURI": "https://storage.googleapis.com/upload/example",
+  "bytesWritten": NaN,
+  "content": undefined,
+  "contentType": "application/octet-stream",
+  "createdAt": undefined,
+  "expiredAt": undefined,
+  "hash": undefined,
+  "id": "GCSFileTestId123456789",
+  "metadata": {
+    "foo": "bar",
+  },
+  "modifiedAt": undefined,
+  "name": "",
+  "originalName": "GCSFileTestId123456789",
+  "size": undefined,
+  "status": undefined,
+  "uri": "gs://bucket-name/file-name",
+}
+`;

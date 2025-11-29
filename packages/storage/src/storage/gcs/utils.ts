@@ -1,0 +1,54 @@
+import type { GaxiosError, RetryConfig } from "gaxios";
+
+import type { FilePart } from "../utils/file";
+import { hasContent } from "../utils/file";
+import type GCSFile from "./gcs-file";
+
+export const getRangeEnd = (range: string): number => {
+    // Match patterns like "bytes 0-499/1234" or "0-499"
+    // Input is controlled (HTTP Range header), safe from ReDoS
+    // eslint-disable-next-line sonarjs/slow-regex
+    const match = range.match(/(\d+)-(\d+)/);
+
+    const end = match && match[2] ? +match[2] : 0;
+
+    return end > 0 ? end + 1 : 0;
+};
+
+export const buildContentRange = (part: GCSFile & Partial<FilePart>): string => {
+    if (hasContent(part)) {
+        const end = part.contentLength ? part.start + part.contentLength - 1 : "*";
+
+        return `bytes ${part.start}-${end}/${part.size ?? "*"}`;
+    }
+
+    return `bytes */${part.size ?? "*"}`;
+};
+
+export const shouldRetry = (error: GaxiosError): boolean => {
+    if (error.response !== undefined) {
+        const { response } = error;
+
+        return response?.data?.error?.errors
+            ?.map(({ reason = "" }) => {
+                if (reason === "rateLimitExceeded") {
+                    return true;
+                }
+
+                if (reason === "userRateLimitExceeded") {
+                    return true;
+                }
+
+                return !!(reason && reason.includes("EAI_AGAIN"));
+            })
+            .includes(true);
+    }
+
+    return false;
+};
+
+export const retryOptions: RetryConfig = {
+    retry: 3,
+    shouldRetry,
+    statusCodesToRetry: [[408, 429, 500, 502, 503, 504], [100, 199], [429], [500, 599]],
+};
