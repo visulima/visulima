@@ -97,7 +97,7 @@ describe(DiskStorageWithChecksum, () => {
 
         await storage.write({ ...diskFile, body: Readable.from("01234"), start: 0 });
 
-        const deletedFile = await storage.delete({ id: diskFile.id });
+        await storage.delete({ id: diskFile.id });
 
         expect(onDeleteHook).toHaveBeenCalledTimes(1);
         expect(onDeleteHook).toHaveBeenCalledWith(
@@ -118,8 +118,9 @@ describe(DiskStorageWithChecksum, () => {
             vi.mocked(fileTypeFromBuffer).mockResolvedValue(mockFileType);
 
             const storage = new DiskStorageWithChecksum(options);
+            // eslint-disable-next-line sonarjs/pseudo-random
             const uniqueId = `test-png-${Date.now()}-${Math.random()}`;
-            const { contentType: _, metadata: __, ...metafileWithoutContentType } = metafile;
+            const { contentType: _contentType, metadata: _metadata, ...metafileWithoutContentType } = metafile;
             const file = await storage.create({
                 ...metafileWithoutContentType,
                 contentType: undefined,
@@ -156,6 +157,7 @@ describe(DiskStorageWithChecksum, () => {
             vi.mocked(fileTypeFromBuffer).mockResolvedValue(mockFileType);
 
             const storage = new DiskStorageWithChecksum(options);
+            // eslint-disable-next-line sonarjs/pseudo-random
             const uniqueId = `test-jpg-${Date.now()}-${Math.random()}`;
             const file = await storage.create({
                 ...metafile,
@@ -191,6 +193,7 @@ describe(DiskStorageWithChecksum, () => {
             vi.mocked(fileTypeFromBuffer).mockResolvedValue({ ext: "png", mime: "image/png" });
 
             const storage = new DiskStorageWithChecksum(options);
+            // eslint-disable-next-line sonarjs/pseudo-random
             const uniqueId = `test-mp4-${Date.now()}-${Math.random()}`;
             const file = await storage.create({
                 ...metafile,
@@ -225,8 +228,9 @@ describe(DiskStorageWithChecksum, () => {
             vi.mocked(fileTypeFromBuffer).mockResolvedValue(mockFileType);
 
             const storage = new DiskStorageWithChecksum(options);
+            // eslint-disable-next-line sonarjs/pseudo-random
             const uniqueId = `test-chunked-${Date.now()}-${Math.random()}`;
-            const { contentType: _, metadata: __, ...metafileWithoutContentType } = metafile;
+            const { contentType: _contentType, metadata: _metadata, ...metafileWithoutContentType } = metafile;
             const file = await storage.create({
                 ...metafileWithoutContentType,
                 contentType: undefined,

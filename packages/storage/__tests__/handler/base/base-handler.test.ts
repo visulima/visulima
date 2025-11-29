@@ -54,20 +54,20 @@ describe("baseHandler", () => {
         });
     });
 
-    afterAll(async () => {
-        try {
-            await rm(directory, { force: true, recursive: true });
-        } catch {
-            // ignore if directory doesn't exist
-        }
-    });
-
     beforeEach(async () => {
         uploader = new TestUploader({ storage });
     });
 
     afterEach(() => {
         vi.restoreAllMocks();
+    });
+
+    afterAll(async () => {
+        try {
+            await rm(directory, { force: true, recursive: true });
+        } catch {
+            // ignore if directory doesn't exist
+        }
     });
 
     it("baseHandler.compose registers correct HTTP methods as handlers", () => {

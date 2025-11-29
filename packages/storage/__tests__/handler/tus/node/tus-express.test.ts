@@ -132,7 +132,6 @@ describe("express Tus", () => {
     });
 
     describe("head", () => {
-        // eslint-disable-next-line radar/no-duplicate-string
         it("should return upload status for completed upload", async () => {
             expect.assertions(8);
 

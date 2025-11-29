@@ -1,4 +1,3 @@
-import type { Response as NodeFetchResponse } from "node-fetch";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import GCSMetaStorage from "../../../src/storage/gcs/gcs-meta-storage";
@@ -21,8 +20,6 @@ vi.mock(import("google-auth-library"), () => {
 });
 
 describe(GCSMetaStorage, async () => {
-    const { Response } = await vi.importActual<{ Response: typeof NodeFetchResponse }>("node-fetch");
-
     vi.useFakeTimers().setSystemTime(new Date("2022-02-02"));
 
     let metaStorage: GCSMetaStorage;

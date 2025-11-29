@@ -3,9 +3,7 @@ import { copyFile, stat, truncate } from "node:fs/promises";
 import type { Readable } from "node:stream";
 import { pipeline } from "node:stream";
 
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { ensureDir, ensureFile, move, readFile, remove, walk } from "@visulima/fs";
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { isAbsolute, join } from "@visulima/path";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import etag from "etag";

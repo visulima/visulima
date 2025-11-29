@@ -48,6 +48,7 @@ describe("utils", () => {
                 await expect(pipeline(stream, transformer)).rejects.toThrow("Checksum mismatch");
 
                 expect(transformer).toBeInstanceOf(StreamChecksum);
+                // eslint-disable-next-line no-secrets/no-secrets -- Test checksum value, not a secret
                 expect(transformer.calculatedDigest).toBe("CY9rzUYh03PK3k6DJie09g==");
             });
         });

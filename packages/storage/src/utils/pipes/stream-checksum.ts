@@ -75,5 +75,6 @@ export class StreamChecksum extends Transform {
  * @param encoding Encoding for checksum comparison
  * @returns StreamChecksum instance or PassThrough stream
  */
-export const streamChecksum = (checksum: string, algorithm: string, encoding: BinaryToTextEncoding = "base64"): PassThrough | StreamChecksum =>
-    algorithm ? new StreamChecksum(checksum, algorithm, encoding) : new PassThrough();
+export const streamChecksum = (checksum: string, algorithm: string, encoding: BinaryToTextEncoding = "base64"): PassThrough | StreamChecksum => {
+    return algorithm ? new StreamChecksum(checksum, algorithm, encoding) : new PassThrough();
+};

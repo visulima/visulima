@@ -32,20 +32,20 @@ describe("range request functionality", () => {
         });
     });
 
-    afterAll(async () => {
-        try {
-            await rm(directory, { force: true, recursive: true });
-        } catch {
-            // ignore if directory doesn't exist
-        }
-    });
-
     beforeEach(() => {
         uploader = new TestUploader({ storage });
     });
 
     afterEach(() => {
         vi.restoreAllMocks();
+    });
+
+    afterAll(async () => {
+        try {
+            await rm(directory, { force: true, recursive: true });
+        } catch {
+            // ignore if directory doesn't exist
+        }
     });
 
     describe("range header parsing", () => {
