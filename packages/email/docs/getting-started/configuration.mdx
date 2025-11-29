@@ -500,6 +500,118 @@ const roundRobin = roundRobinProvider({
 });
 ```
 
+## Default Email Configuration
+
+You can configure default values for all emails sent through a Mail instance. This is useful when you want to set a default `from` address, `replyTo` address, or headers that apply to all emails.
+
+### Setting Default From Address
+
+```typescript
+import { createMail } from "@visulima/email";
+import { resendProvider } from "@visulima/email/providers/resend";
+
+const mail = createMail(resendProvider({ apiKey: "re_xxx" }));
+
+// Set default from address
+mail.setFrom({ email: "noreply@example.com", name: "My App" });
+
+// Now all emails will use this from address if not specified
+const message = new MailMessage()
+    .to("user@example.com")
+    .subject("Hello")
+    .html("<h1>Hello World</h1>");
+// No need to set .from() - it will use the default
+
+await mail.send(message);
+```
+
+### Setting Default Reply-To Address
+
+```typescript
+const mail = createMail(resendProvider({ apiKey: "re_xxx" }));
+
+// Set default reply-to address
+mail.setReplyTo({ email: "support@example.com" });
+
+// All emails will include this reply-to if not specified in the message
+```
+
+### Setting Default Headers
+
+```typescript
+const mail = createMail(resendProvider({ apiKey: "re_xxx" }));
+
+// Set default headers
+mail.setHeaders({
+    "X-App-Name": "MyApp",
+    "X-Version": "1.0.0",
+    "X-Environment": "production",
+});
+
+// These headers will be added to all emails
+// Message-specific headers will take precedence if they conflict
+```
+
+### Chaining Configuration Methods
+
+You can chain the configuration methods together:
+
+```typescript
+const mail = createMail(resendProvider({ apiKey: "re_xxx" }))
+    .setFrom({ email: "noreply@example.com", name: "My App" })
+    .setReplyTo({ email: "support@example.com" })
+    .setHeaders({ "X-App-Name": "MyApp" });
+```
+
+### Overriding Defaults
+
+Default values are only applied if the corresponding field is not set in the message:
+
+```typescript
+const mail = createMail(resendProvider({ apiKey: "re_xxx" }));
+mail.setFrom({ email: "noreply@example.com" });
+
+// This message will use the default from address
+const message1 = new MailMessage()
+    .to("user@example.com")
+    .subject("Hello")
+    .html("<h1>Hello</h1>");
+await mail.send(message1); // Uses noreply@example.com
+
+// This message overrides the default
+const message2 = new MailMessage()
+    .to("user@example.com")
+    .from({ email: "custom@example.com" }) // Overrides default
+    .subject("Hello")
+    .html("<h1>Hello</h1>");
+await mail.send(message2); // Uses custom@example.com
+```
+
+### Header Merging
+
+When setting default headers, they are merged with message-specific headers. Message headers take precedence:
+
+```typescript
+const mail = createMail(resendProvider({ apiKey: "re_xxx" }));
+mail.setHeaders({
+    "X-App-Name": "MyApp",
+    "X-Version": "1.0.0",
+});
+
+const message = new MailMessage()
+    .to("user@example.com")
+    .from("sender@example.com")
+    .subject("Hello")
+    .html("<h1>Hello</h1>")
+    .header("X-Version", "2.0.0") // Overrides default
+    .header("X-Custom", "value"); // Additional header
+
+// Final headers will be:
+// X-App-Name: MyApp (from default)
+// X-Version: 2.0.0 (from message, overrides default)
+// X-Custom: value (from message)
+```
+
 ## Next Steps
 
 - [Sending Mail](/docs/package/email/getting-started/sending-mail) - Learn how to send emails
