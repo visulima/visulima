@@ -170,6 +170,8 @@ const mail = createMail(resend);
 Since all providers implement the same interface, you can switch providers without changing your email code:
 
 ```typescript
+import { createMail, MailMessage } from "@visulima/email";
+
 // Use Resend in production
 const productionMail = createMail(resendProvider({ apiKey: process.env.RESEND_API_KEY! }));
 
@@ -184,7 +186,8 @@ const developmentMail = createMail(
 
 // Same code works with both
 const sendEmail = async (mail: Mail) => {
-    await mail.message().to("user@example.com").from("sender@example.com").subject("Hello").html("<h1>Hello</h1>").send();
+    const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Hello").html("<h1>Hello</h1>");
+    await mail.send(message);
 };
 ```
 

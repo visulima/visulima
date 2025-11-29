@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { isRoleAccount, ROLE_ACCOUNT_PREFIXES } from "../../src/utils/validation/role-accounts";
+import { isRoleAccount, ROLE_ACCOUNT_PREFIXES } from "../../../src/utils/validation/role-accounts";
 
 describe(isRoleAccount, () => {
     it("should detect common role account prefixes", () => {

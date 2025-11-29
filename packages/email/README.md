@@ -44,7 +44,7 @@ pnpm add @visulima/email
 ### Basic Usage
 
 ```typescript
-import { createMail, resendProvider } from "@visulima/email";
+import { createMail, MailMessage, resendProvider } from "@visulima/email";
 
 // Create a provider
 const resend = resendProvider({
@@ -55,7 +55,9 @@ const resend = resendProvider({
 const mail = createMail(resend);
 
 // Send an email using the message builder
-const result = await mail.message().to("user@example.com").from("sender@example.com").subject("Hello").html("<h1>Hello World</h1>").send();
+const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Hello").html("<h1>Hello World</h1>");
+
+const result = await mail.send(message);
 
 if (result.success) {
     console.log("Email sent:", result.data?.messageId);
@@ -64,8 +66,8 @@ if (result.success) {
 
 ### Using Different Providers
 
-```typescript
-import { createMail, smtpProvider, resendProvider } from "@visulima/email";
+````typescript
+import { createMail, MailMessage, smtpProvider, resendProvider } from "@visulima/email";
 
 // SMTP provider
 const smtp = smtpProvider({
@@ -86,31 +88,13 @@ const smtpMail = createMail(smtp);
 const resendMail = createMail(resend);
 
 // Send via specific provider
-await resendMail.message().to("user@example.com").from("sender@example.com").subject("Hello").html("<h1>Hello World</h1>").send();
-```
+const message = new MailMessage()
+    .to("user@example.com")
+    .from("sender@example.com")
+    .subject("Hello")
+    .html("<h1>Hello World</h1>");
 
-### Using Mailable Classes
-
-```typescript
-import { createMail, type Mailable, type EmailOptions } from "@visulima/email";
-import { resendProvider } from "@visulima/email";
-
-class WelcomeEmail implements Mailable {
-    constructor(private user: { name: string; email: string }) {}
-
-    build(): EmailOptions {
-        return {
-            from: { email: "noreply@example.com" },
-            to: { email: this.user.email, name: this.user.name },
-            subject: "Welcome!",
-            html: `<h1>Welcome ${this.user.name}!</h1>`,
-        };
-    }
-}
-
-const mail = createMail(resendProvider({ apiKey: "re_xxx" }));
-const result = await mail.send(new WelcomeEmail({ name: "John", email: "john@example.com" }));
-```
+await resendMail.send(message);
 
 ### Direct Email Sending
 
@@ -126,15 +110,15 @@ const emailOptions: EmailOptions = {
     html: "<h1>Hello World</h1>",
 };
 
-const result = await mail.sendEmail(emailOptions);
-```
+const result = await mail.send(emailOptions);
+````
 
 ### Failover Provider
 
 The failover provider allows you to configure multiple email providers as backups. If the primary provider fails, it will automatically try the next provider in the list.
 
 ```typescript
-import { createMail, failoverProvider, resendProvider, smtpProvider } from "@visulima/email";
+import { createMail, MailMessage, failoverProvider, resendProvider, smtpProvider } from "@visulima/email";
 
 // Create individual providers
 const resend = resendProvider({ apiKey: "re_xxx" });
@@ -157,7 +141,9 @@ const failover = failoverProvider({
 // Use failover provider
 const mail = createMail(failover);
 
-const result = await mail.message().to("user@example.com").from("sender@example.com").subject("Hello").html("<h1>Hello World</h1>").send();
+const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Hello").html("<h1>Hello World</h1>");
+
+const result = await mail.send(message);
 
 // The failover provider will try Resend first, and if it fails,
 // automatically try SMTP
@@ -188,7 +174,7 @@ const failover = failoverProvider({
 The round-robin provider distributes your email sending workload across multiple providers. Each email is sent using the next available provider in rotation, providing load balancing across your mailers.
 
 ```typescript
-import { createMail, roundRobinProvider, resendProvider, smtpProvider } from "@visulima/email";
+import { createMail, MailMessage, roundRobinProvider, resendProvider, smtpProvider } from "@visulima/email";
 
 // Create individual providers
 const resend = resendProvider({ apiKey: "re_xxx" });
@@ -212,13 +198,16 @@ const roundRobin = roundRobinProvider({
 const mail = createMail(roundRobin);
 
 // Each email will be distributed across providers in rotation
-await mail.message().to("user1@example.com").from("sender@example.com").subject("Email 1").html("<h1>Email 1</h1>").send();
+const message1 = new MailMessage().to("user1@example.com").from("sender@example.com").subject("Email 1").html("<h1>Email 1</h1>");
+await mail.send(message1);
 // Uses resend (or random start)
 
-await mail.message().to("user2@example.com").from("sender@example.com").subject("Email 2").html("<h1>Email 2</h1>").send();
+const message2 = new MailMessage().to("user2@example.com").from("sender@example.com").subject("Email 2").html("<h1>Email 2</h1>");
+await mail.send(message2);
 // Uses smtp (next in rotation)
 
-await mail.message().to("user3@example.com").from("sender@example.com").subject("Email 3").html("<h1>Email 3</h1>").send();
+const message3 = new MailMessage().to("user3@example.com").from("sender@example.com").subject("Email 3").html("<h1>Email 3</h1>");
+await mail.send(message3);
 // Uses resend (back to first)
 ```
 
@@ -262,7 +251,8 @@ const mailgun = mailgunProvider({
 const mail = createMail(mailgun);
 
 // Send email with Mailgun-specific options
-const result = await mail.message().to("user@example.com").from("sender@example.com").subject("Welcome").html("<h1>Welcome!</h1>").send();
+const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Welcome").html("<h1>Welcome!</h1>");
+const result = await mail.send(message);
 
 // Or use Mailgun-specific features
 import type { MailgunEmailOptions } from "@visulima/email/providers/mailgun";
@@ -280,7 +270,7 @@ const mailgunOptions: MailgunEmailOptions = {
     deliveryTime: Math.floor(Date.now() / 1000) + 3600, // Schedule for 1 hour from now
 };
 
-await mail.sendEmail(mailgunOptions);
+await mail.send(mailgunOptions);
 ```
 
 ### Mailjet Provider
@@ -301,7 +291,8 @@ const mailjet = mailjetProvider({
 const mail = createMail(mailjet);
 
 // Send email with Mailjet-specific options
-const result = await mail.message().to("user@example.com").from("sender@example.com").subject("Welcome").html("<h1>Welcome!</h1>").send();
+const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Welcome").html("<h1>Welcome!</h1>");
+const result = await mail.send(message);
 
 // Or use Mailjet-specific features
 import type { MailjetEmailOptions } from "@visulima/email/providers/mailjet";
@@ -320,7 +311,7 @@ const mailjetOptions: MailjetEmailOptions = {
     deliveryTime: Math.floor(Date.now() / 1000) + 3600, // Schedule for 1 hour from now
 };
 
-await mail.sendEmail(mailjetOptions);
+await mail.send(mailjetOptions);
 ```
 
 ### MailerSend Provider
@@ -359,7 +350,7 @@ const mailerSendOptions: MailerSendEmailOptions = {
     scheduledAt: Math.floor(Date.now() / 1000) + 3600, // Schedule for 1 hour from now
 };
 
-await mail.sendEmail(mailerSendOptions);
+await mail.send(mailerSendOptions);
 ```
 
 ### Mandrill Provider (Mailchimp Transactional)
@@ -393,7 +384,7 @@ const mandrillOptions: MandrillEmailOptions = {
     metadata: { orderId: "123" },
 };
 
-await mail.sendEmail(mandrillOptions);
+await mail.send(mandrillOptions);
 ```
 
 ### Postal Provider
@@ -426,7 +417,7 @@ const postalOptions: PostalEmailOptions = {
     tags: ["welcome"],
 };
 
-await mail.sendEmail(postalOptions);
+await mail.send(postalOptions);
 ```
 
 ### Mailtrap Provider
@@ -460,7 +451,7 @@ const mailtrapOptions: MailtrapEmailOptions = {
     tags: ["welcome"],
 };
 
-await mail.sendEmail(mailtrapOptions);
+await mail.send(mailtrapOptions);
 ```
 
 ### MailPace Provider
@@ -493,7 +484,7 @@ const mailPaceOptions: MailPaceEmailOptions = {
     listUnsubscribe: "<mailto:unsubscribe@example.com>",
 };
 
-await mail.sendEmail(mailPaceOptions);
+await mail.send(mailPaceOptions);
 ```
 
 ### Azure Communication Services Provider
@@ -530,7 +521,7 @@ const azureOptions: AzureEmailOptions = {
     importance: "high", // "normal" or "high"
 };
 
-await mail.sendEmail(azureOptions);
+await mail.send(azureOptions);
 ```
 
 ### Infobip Provider
@@ -564,7 +555,7 @@ const infobipOptions: InfobipEmailOptions = {
     sendAt: Date.now() + 3600000, // Schedule for 1 hour from now (milliseconds)
 };
 
-await mail.sendEmail(infobipOptions);
+await mail.send(infobipOptions);
 ```
 
 ### Scaleway Provider
@@ -596,7 +587,7 @@ const scalewayOptions: ScalewayEmailOptions = {
     projectId: "project-uuid", // Optional
 };
 
-await mail.sendEmail(scalewayOptions);
+await mail.send(scalewayOptions);
 ```
 
 ### AhaSend Provider
@@ -628,7 +619,7 @@ const ahaSendOptions: AhaSendEmailOptions = {
     tags: ["welcome"],
 };
 
-await mail.sendEmail(ahaSendOptions);
+await mail.send(ahaSendOptions);
 ```
 
 ### Mailomat Provider
@@ -660,7 +651,7 @@ const mailomatOptions: MailomatEmailOptions = {
     tags: ["welcome"],
 };
 
-await mail.sendEmail(mailomatOptions);
+await mail.send(mailomatOptions);
 ```
 
 ### Sweego Provider
@@ -692,7 +683,7 @@ const sweegoOptions: SweegoEmailOptions = {
     tags: ["welcome"],
 };
 
-await mail.sendEmail(sweegoOptions);
+await mail.send(sweegoOptions);
 ```
 
 ### Brevo Provider (formerly Sendinblue)
@@ -712,7 +703,8 @@ const brevo = brevoProvider({
 const mail = createMail(brevo);
 
 // Send email with Brevo-specific options
-const result = await mail.message().to("user@example.com").from("sender@example.com").subject("Welcome").html("<h1>Welcome!</h1>").send();
+const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Welcome").html("<h1>Welcome!</h1>");
+const result = await mail.send(message);
 
 // Or use Brevo-specific features
 import type { BrevoEmailOptions } from "@visulima/email/providers/brevo";
@@ -728,7 +720,7 @@ const brevoOptions: BrevoEmailOptions = {
     scheduledAt: Math.floor(Date.now() / 1000) + 3600, // Schedule for 1 hour from now
 };
 
-await mail.sendEmail(brevoOptions);
+await mail.send(brevoOptions);
 ```
 
 ### Postmark Provider
@@ -748,7 +740,8 @@ const postmark = postmarkProvider({
 const mail = createMail(postmark);
 
 // Send email with Postmark-specific options
-const result = await mail.message().to("user@example.com").from("sender@example.com").subject("Welcome").html("<h1>Welcome!</h1>").send();
+const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Welcome").html("<h1>Welcome!</h1>");
+const result = await mail.send(message);
 
 // Or use Postmark-specific features
 import type { PostmarkEmailOptions } from "@visulima/email/providers/postmark";
@@ -767,7 +760,7 @@ const postmarkOptions: PostmarkEmailOptions = {
     metadata: { userId: "123" }, // Custom metadata
 };
 
-await mail.sendEmail(postmarkOptions);
+await mail.send(postmarkOptions);
 ```
 
 ### SendGrid Provider
@@ -787,7 +780,8 @@ const sendgrid = sendGridProvider({
 const mail = createMail(sendgrid);
 
 // Send email with SendGrid-specific options
-const result = await mail.message().to("user@example.com").from("sender@example.com").subject("Welcome").html("<h1>Welcome!</h1>").send();
+const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Welcome").html("<h1>Welcome!</h1>");
+const result = await mail.send(message);
 
 // Or use SendGrid-specific features
 import type { SendGridEmailOptions } from "@visulima/email/providers/sendgrid";
@@ -807,7 +801,7 @@ const sendGridOptions: SendGridEmailOptions = {
     },
 };
 
-await mail.sendEmail(sendGridOptions);
+await mail.send(sendGridOptions);
 ```
 
 ### Plunk Provider
@@ -827,7 +821,8 @@ const plunk = plunkProvider({
 const mail = createMail(plunk);
 
 // Send email with Plunk-specific options
-const result = await mail.message().to("user@example.com").from("sender@example.com").subject("Welcome").html("<h1>Welcome!</h1>").send();
+const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Welcome").html("<h1>Welcome!</h1>");
+const result = await mail.send(message);
 
 // Or use Plunk-specific features
 import type { PlunkEmailOptions } from "@visulima/email/providers/plunk";
@@ -843,7 +838,7 @@ const plunkOptions: PlunkEmailOptions = {
     data: { name: "John" }, // Template data
 };
 
-await mail.sendEmail(plunkOptions);
+await mail.send(plunkOptions);
 ```
 
 ### Mock Provider (for Testing)
@@ -864,7 +859,8 @@ const mock = mockProvider({
 const mail = createMail(mock);
 
 // Send email (stored in memory)
-const result = await mail.message().to("user@example.com").from("sender@example.com").subject("Test").html("<h1>Test</h1>").send();
+const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Test").html("<h1>Test</h1>");
+const result = await mail.send(message);
 
 // Access stored emails
 const sentEmails = mock.getSentEmails();
@@ -931,7 +927,8 @@ const customMailCrab = mailCrabProvider({
 // Use MailCrab provider
 const mail = createMail(mailCrab);
 
-const result = await mail.message().to("user@example.com").from("sender@example.com").subject("Test Email").html("<h1>Test</h1>").send();
+const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Test Email").html("<h1>Test</h1>");
+const result = await mail.send(message);
 ```
 
 **Note:** Make sure MailCrab is running locally before using this provider. MailCrab can be installed via Docker or as a standalone application.
@@ -1069,7 +1066,7 @@ pnpm add disposable-domains
 ### Usage
 
 ```typescript
-import { isDisposableEmail } from "@visulima/email/utils/is-disposable-email";
+import { isDisposableEmail } from "@visulima/email/validation/is-disposable-email";
 
 // Check if an email is disposable
 if (isDisposableEmail("user@mailinator.com")) {
@@ -1094,7 +1091,7 @@ The package provides comprehensive email verification utilities including MX rec
 Check if a domain has valid MX (Mail Exchange) records:
 
 ```typescript
-import { checkMxRecords } from "@visulima/email/utils/check-mx-records";
+import { checkMxRecords } from "@visulima/email/validation/check-mx-records";
 
 const result = await checkMxRecords("example.com");
 
@@ -1106,12 +1103,72 @@ if (result.valid) {
 }
 ```
 
+#### Caching MX Records
+
+Use caching to improve performance and reduce DNS lookups:
+
+```typescript
+import { checkMxRecords } from "@visulima/email/validation/check-mx-records";
+import { InMemoryCache } from "@visulima/email/utils/cache";
+
+// Create a cache instance
+const cache = new InMemoryCache();
+
+// Use cache with default TTL (1 hour)
+const result1 = await checkMxRecords("example.com", { cache });
+
+// Use cache with custom TTL (5 minutes)
+const result2 = await checkMxRecords("example.com", {
+    cache,
+    ttl: 5 * 60 * 1000, // 5 minutes in milliseconds
+});
+
+// Clear cache when needed
+await cache.clear();
+```
+
+#### Custom Cache Implementation
+
+You can implement your own cache using the `Cache` interface (e.g., for Redis, LRU cache, etc.):
+
+```typescript
+import type { Cache, MxCheckResult } from "@visulima/email/utils/cache";
+import { checkMxRecords } from "@visulima/email/validation/check-mx-records";
+
+// Example: Custom Redis cache implementation
+const redisCache: Cache<MxCheckResult> = {
+    get: async (key: string) => {
+        const cached = await redis.get(`mx:${key}`);
+        return cached ? JSON.parse(cached) : undefined;
+    },
+    set: async (key: string, value: MxCheckResult, ttl: number) => {
+        await redis.setex(`mx:${key}`, Math.floor(ttl / 1000), JSON.stringify(value));
+    },
+    delete: async (key: string) => {
+        await redis.del(`mx:${key}`);
+    },
+    clear: async () => {
+        // Clear all MX cache keys
+        const keys = await redis.keys("mx:*");
+        if (keys.length > 0) {
+            await redis.del(...keys);
+        }
+    },
+};
+
+// Use custom cache
+const result = await checkMxRecords("example.com", {
+    cache: redisCache,
+    ttl: 10 * 60 * 1000, // 10 minutes
+});
+```
+
 ### Role Account Detection
 
 Detect if an email address is a role account (non-personal email like `noreply@`, `support@`, etc.):
 
 ```typescript
-import { isRoleAccount } from "@visulima/email/utils/role-accounts";
+import { isRoleAccount } from "@visulima/email/validation/role-accounts";
 
 if (isRoleAccount("noreply@example.com")) {
     console.log("This is a role account");
@@ -1129,12 +1186,21 @@ if (isRoleAccount("custom-role@example.com", customPrefixes)) {
 Verify if an email address exists by connecting to the mail server:
 
 ```typescript
-import { verifySmtp } from "@visulima/email/utils/verify-smtp";
+import { verifySmtp } from "@visulima/email/validation/verify-smtp";
+import { InMemoryCache } from "@visulima/email/utils/cache";
+import type { MxCheckResult, SmtpVerificationResult } from "@visulima/email/validation/check-mx-records";
+
+// Create separate caches for MX records and SMTP results
+const mxCache = new InMemoryCache<MxCheckResult>();
+const smtpCache = new InMemoryCache<SmtpVerificationResult>();
 
 const result = await verifySmtp("user@example.com", {
     timeout: 5000,
     fromEmail: "test@example.com",
     port: 25,
+    cache: mxCache, // Optional: cache MX records
+    smtpCache, // Optional: cache SMTP verification results
+    ttl: 5 * 60 * 1000, // Cache for 5 minutes
 });
 
 if (result.valid) {
@@ -1151,13 +1217,21 @@ if (result.valid) {
 Combine all verification checks in a single function:
 
 ```typescript
-import { verifyEmail } from "@visulima/email/utils/verify-email";
+import { verifyEmail } from "@visulima/email/validation/verify-email";
+import { InMemoryCache } from "@visulima/email/utils/cache";
+import type { MxCheckResult, SmtpVerificationResult } from "@visulima/email/validation/check-mx-records";
+
+// Create separate caches for MX records and SMTP results
+const mxCache = new InMemoryCache<MxCheckResult>();
+const smtpCache = new InMemoryCache<SmtpVerificationResult>();
 
 const result = await verifyEmail("user@example.com", {
     checkDisposable: true,
     checkRoleAccount: true,
     checkMx: true,
     checkSmtp: false, // Optional, many servers block this
+    cache: mxCache, // Optional: cache MX records
+    smtpCache, // Optional: cache SMTP verification results
     customDisposableDomains: new Set(["custom-disposable.com"]),
     customRolePrefixes: new Set(["custom-role"]),
 });
@@ -1184,7 +1258,7 @@ The package also exports standalone utility functions that can be used independe
 #### Email Validation
 
 ```typescript
-import { validateEmail } from "@visulima/email/utils/validate-email";
+import { validateEmail } from "@visulima/email/validation/validate-email";
 
 if (validateEmail("user@example.com")) {
     console.log("Valid email!");

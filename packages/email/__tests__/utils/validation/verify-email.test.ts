@@ -1,6 +1,6 @@
 import { describe, expect, expectTypeOf, it } from "vitest";
 
-import { verifyEmail } from "../../src/utils/validation/verify-email";
+import { verifyEmail } from "../../../src/utils/validation/verify-email";
 
 const consoleMessage = "Skipping network-dependent email verification in CI environment, please validate this test locally.";
 

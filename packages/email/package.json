@@ -6,6 +6,7 @@
         "visulima",
         "email",
         "mail",
+        "better-mail",
         "smtp",
         "resend",
         "aws-ses",
@@ -214,14 +215,6 @@
             "types": "./dist/providers/sweego/index.d.ts",
             "default": "./dist/providers/sweego/index.js"
         },
-        "./utils/is-disposable-email": {
-            "types": "./dist/utils/is-disposable-email.d.ts",
-            "default": "./dist/utils/is-disposable-email.js"
-        },
-        "./utils/validate-email": {
-            "types": "./dist/utils/validate-email.d.ts",
-            "default": "./dist/utils/validate-email.js"
-        },
         "./utils/parse-address": {
             "types": "./dist/utils/parse-address.d.ts",
             "default": "./dist/utils/parse-address.js"
@@ -230,21 +223,33 @@
             "types": "./dist/utils/format-email-address.d.ts",
             "default": "./dist/utils/format-email-address.js"
         },
-        "./utils/check-mx-records": {
-            "types": "./dist/utils/check-mx-records.d.ts",
-            "default": "./dist/utils/check-mx-records.js"
+        "./utils/cache": {
+            "types": "./dist/utils/cache.d.ts",
+            "default": "./dist/utils/cache.js"
         },
-        "./utils/role-accounts": {
-            "types": "./dist/utils/role-accounts.d.ts",
-            "default": "./dist/utils/role-accounts.js"
+        "./validation/is-disposable-email": {
+            "types": "./dist/utils/validation/is-disposable-email.d.ts",
+            "default": "./dist/utils/validation/is-disposable-email.js"
         },
-        "./utils/verify-smtp": {
-            "types": "./dist/utils/verify-smtp.d.ts",
-            "default": "./dist/utils/verify-smtp.js"
+        "./validation/validate-email": {
+            "types": "./dist/utils/validation/validate-email.d.ts",
+            "default": "./dist/utils/validation/validate-email.js"
         },
-        "./utils/verify-email": {
-            "types": "./dist/utils/verify-email.d.ts",
-            "default": "./dist/utils/verify-email.js"
+        "./validation/check-mx-records": {
+            "types": "./dist/utils/validation/check-mx-records.d.ts",
+            "default": "./dist/utils/validation/check-mx-records.js"
+        },
+        "./validation/role-accounts": {
+            "types": "./dist/utils/validation/role-accounts.d.ts",
+            "default": "./dist/utils/validation/role-accounts.js"
+        },
+        "./validation/verify-smtp": {
+            "types": "./dist/utils/validation/verify-smtp.d.ts",
+            "default": "./dist/utils/validation/verify-smtp.js"
+        },
+        "./validation/verify-email": {
+            "types": "./dist/utils/validation/verify-email.d.ts",
+            "default": "./dist/utils/validation/verify-email.js"
         },
         "./utils/normalize-email-aliases": {
             "types": "./dist/utils/normalize-email-aliases.d.ts",
@@ -276,6 +281,8 @@
     },
     "dependencies": {
         "html-to-text": "^9.0.5",
+        "ical-generator": "^9.0.0",
+        "lru-cache": "^11.2.2",
         "mime": "^4.1.0"
     },
     "devDependencies": {

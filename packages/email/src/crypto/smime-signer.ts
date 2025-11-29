@@ -334,19 +334,19 @@ export class SmimeSigner implements EmailSigner {
                 `--${boundary}`,
                 "Content-Type: text/plain; charset=utf-8",
                 "",
-                email.text,
+                email.text as string,
                 "",
                 `--${boundary}`,
                 "Content-Type: text/html; charset=utf-8",
                 "",
-                email.html,
+                email.html as string,
                 "",
                 `--${boundary}--`,
             );
         } else if (hasText) {
-            lines.push(email.text);
+            lines.push(email.text as string);
         } else if (hasHtml) {
-            lines.push(email.html);
+            lines.push(email.html as string);
         }
 
         return lines.join("\r\n");

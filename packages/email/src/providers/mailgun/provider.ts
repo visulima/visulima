@@ -7,7 +7,7 @@ import generateMessageId from "../../utils/generate-message-id";
 import headersToRecord from "../../utils/headers-to-record";
 import { makeRequest } from "../../utils/make-request";
 import retry from "../../utils/retry";
-import validateEmailOptions from "../../utils/validate-email-options";
+import validateEmailOptions from "../../utils/validation/validate-email-options";
 import type { ProviderFactory } from "../provider";
 import { defineProvider } from "../provider";
 import { createMailgunAttachment, createProviderLogger, formatAddress, formatAddresses, handleProviderError, ProviderState } from "../utils";

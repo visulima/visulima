@@ -6,7 +6,7 @@ import headersToRecord from "../../utils/headers-to-record";
 import { makeRequest } from "../../utils/make-request";
 import retry from "../../utils/retry";
 import { sanitizeHeaderName, sanitizeHeaderValue } from "../../utils/sanitize-header";
-import validateEmailOptions from "../../utils/validate-email-options";
+import validateEmailOptions from "../../utils/validation/validate-email-options";
 import type { ProviderFactory } from "../provider";
 import { defineProvider } from "../provider";
 import { createPostmarkAttachment, createProviderLogger, formatAddress, formatAddresses, handleProviderError, ProviderState } from "../utils";
@@ -141,7 +141,6 @@ const postmarkProvider: ProviderFactory<PostmarkConfig, unknown, PostmarkEmailOp
 
                 logger.debug("Checking Postmark API availability");
 
-                // Check server info to validate token
                 const result = await makeRequest(`${options.endpoint}/server`, {
                     headers,
                     method: "GET",
@@ -193,39 +192,32 @@ const postmarkProvider: ProviderFactory<PostmarkConfig, unknown, PostmarkEmailOp
 
                 await providerState.ensureInitialized(() => this.initialize(), PROVIDER_NAME);
 
-                // Build payload for Postmark API
                 const payload: Record<string, unknown> = {
                     From: formatAddress(emailOptions.from),
                     Subject: emailOptions.subject,
                     To: formatAddresses(emailOptions.to).join(","),
                 };
 
-                // Add HTML content
                 if (emailOptions.html) {
                     payload.HtmlBody = emailOptions.html;
                 }
 
-                // Add text content
                 if (emailOptions.text) {
                     payload.TextBody = emailOptions.text;
                 }
 
-                // Add CC
                 if (emailOptions.cc) {
                     payload.Cc = formatAddresses(emailOptions.cc).join(",");
                 }
 
-                // Add BCC
                 if (emailOptions.bcc) {
                     payload.Bcc = formatAddresses(emailOptions.bcc).join(",");
                 }
 
-                // Add reply-to
                 if (emailOptions.replyTo) {
                     payload.ReplyTo = formatAddress(emailOptions.replyTo);
                 }
 
-                // Add template (either templateId or templateAlias)
                 if (emailOptions.templateId) {
                     payload.TemplateId = emailOptions.templateId;
 
@@ -240,7 +232,6 @@ const postmarkProvider: ProviderFactory<PostmarkConfig, unknown, PostmarkEmailOp
                     }
                 }
 
-                // Add tracking options
                 if (emailOptions.trackOpens !== undefined) {
                     payload.TrackOpens = emailOptions.trackOpens;
                 }
@@ -249,29 +240,24 @@ const postmarkProvider: ProviderFactory<PostmarkConfig, unknown, PostmarkEmailOp
                     payload.TrackLinks = emailOptions.trackLinks;
                 }
 
-                // Add inline CSS
                 if (emailOptions.inlineCss !== undefined) {
                     payload.InlineCss = emailOptions.inlineCss;
                 }
 
-                // Add message stream
                 if (emailOptions.messageStream) {
                     payload.MessageStream = emailOptions.messageStream;
                 }
 
-                // Add metadata
                 if (emailOptions.metadata) {
                     payload.Metadata = emailOptions.metadata;
                 }
 
-                // Add tags (Postmark uses Tag field)
                 if (emailOptions.tags && emailOptions.tags.length > 0) {
                     const [firstTag] = emailOptions.tags;
 
-                    payload.Tag = firstTag; // Postmark supports single tag, use first one
+                    payload.Tag = firstTag;
                 }
 
-                // Add custom headers (Postmark expects array of {Name, Value} objects)
                 if (emailOptions.headers) {
                     const headersRecord = headersToRecord(emailOptions.headers);
                     const headersArray: { Name: string; Value: string }[] = [];
@@ -285,7 +271,6 @@ const postmarkProvider: ProviderFactory<PostmarkConfig, unknown, PostmarkEmailOp
                     }
                 }
 
-                // Add attachments
                 if (emailOptions.attachments && emailOptions.attachments.length > 0) {
                     payload.Attachments = await Promise.all(
                         emailOptions.attachments.map(async (attachment) => createPostmarkAttachment(attachment, PROVIDER_NAME)),
@@ -325,7 +310,6 @@ const postmarkProvider: ProviderFactory<PostmarkConfig, unknown, PostmarkEmailOp
                     };
                 }
 
-                // Postmark returns message ID in response body
                 const responseBody = (result.data as { body?: { MessageID?: string } })?.body;
                 const messageId = responseBody?.MessageID || generateMessageId();
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import isDisposableEmail from "../../src/utils/validation/is-disposable-email";
+import isDisposableEmail from "../../../src/utils/validation/is-disposable-email";
 
 describe(isDisposableEmail, () => {
     it("should detect disposable email addresses from exact matches", () => {

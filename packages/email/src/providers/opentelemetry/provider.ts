@@ -4,19 +4,16 @@ import { context, SpanStatusCode, trace } from "@opentelemetry/api";
 import EmailError from "../../errors/email-error";
 import RequiredOptionError from "../../errors/required-option-error";
 import type { EmailOptions, EmailResult, Result } from "../../types";
-import createLogger from "../../utils/create-logger";
+import { createLogger } from "../../utils/create-logger";
 import type { Provider, ProviderFactory } from "../provider";
 import { defineProvider } from "../provider";
 import type { OpenTelemetryConfig, OpenTelemetryEmailOptions } from "./types";
 
-// Type guard to check if something is a ProviderFactory
 const isProviderFactory = (value: unknown): value is ProviderFactory<unknown, unknown, EmailOptions> => typeof value === "function";
 
-// Type guard to check if something is a Provider
 const isProvider = (value: unknown): value is Provider =>
     value !== null && typeof value === "object" && "sendEmail" in value && "initialize" in value && "isAvailable" in value;
 
-// Constants
 const PROVIDER_NAME = "opentelemetry";
 const DEFAULT_SERVICE_NAME = "email";
 const DEFAULT_SPAN_NAME = "email.send";
@@ -107,18 +104,15 @@ const createSpanAttributes = (emailOptions: EmailOptions, recordContent: boolean
 /**
  * OpenTelemetry Provider for instrumenting email sending with OpenTelemetry traces and metrics
  */
-// @ts-expect-error - Type inference issue with ProviderFactory generic parameters
 const opentelemetryProvider: ProviderFactory<OpenTelemetryConfig, Provider<unknown, unknown, EmailOptions>, EmailOptions> = defineProvider<
     OpenTelemetryConfig,
     Provider<unknown, unknown, EmailOptions>,
     EmailOptions
->((config: OpenTelemetryConfig) => {
-    // Validate required options
-    if (!config.provider) {
+>((config?: OpenTelemetryConfig) => {
+    if (!config?.provider) {
         throw new RequiredOptionError(PROVIDER_NAME, "provider");
     }
 
-    // Initialize with defaults
     const options: Pick<OpenTelemetryConfig, "logger">
         & Required<Omit<OpenTelemetryConfig, "logger" | "provider" | "tracer">> & { provider: Provider | ProviderFactory; tracer?: Tracer } = {
             debug: config.debug || false,
@@ -153,8 +147,6 @@ const opentelemetryProvider: ProviderFactory<OpenTelemetryConfig, Provider<unkno
      */
     const initializeProvider = async (): Promise<void> => {
         try {
-            // If provider is a factory, call it with empty config
-            // If it's already a provider instance, use it directly
             if (isProviderFactory(options.provider)) {
                 wrappedProvider = options.provider({} as never);
             } else if (isProvider(options.provider)) {
@@ -163,7 +155,6 @@ const opentelemetryProvider: ProviderFactory<OpenTelemetryConfig, Provider<unkno
                 throw new EmailError(PROVIDER_NAME, "Invalid provider: must be a Provider instance or ProviderFactory function");
             }
 
-            // Initialize the wrapped provider
             await wrappedProvider.initialize();
             logger.debug(`Initialized wrapped provider: ${wrappedProvider.name || "unknown"}`);
         } catch (error) {
@@ -176,7 +167,6 @@ const opentelemetryProvider: ProviderFactory<OpenTelemetryConfig, Provider<unkno
             return wrappedProvider.features;
         }
 
-        // Default conservative features
         return {
             attachments: true,
             batchSending: false,
@@ -257,26 +247,21 @@ const opentelemetryProvider: ProviderFactory<OpenTelemetryConfig, Provider<unkno
             const span = tracer.startSpan(DEFAULT_SPAN_NAME);
 
             try {
-                // Make sure provider is initialized
                 if (!wrappedProvider) {
                     await initializeProvider();
                 }
 
-                // Set span attributes
                 const attributes = createSpanAttributes(emailOptions, options.recordContent);
 
                 span.setAttributes(attributes);
 
-                // Add provider name attribute
                 if (wrappedProvider.name) {
                     span.setAttribute("email.provider", wrappedProvider.name);
                 }
 
-                // Execute the email send within the span context
                 const result = await context.with(trace.setSpan(context.active(), span), async () => await wrappedProvider.sendEmail(emailOptions));
 
                 if (result.success && result.data) {
-                    // Record success
                     span.setStatus({ code: SpanStatusCode.OK });
                     span.setAttribute("email.message_id", result.data.messageId);
                     span.setAttribute("email.sent", true);
@@ -296,7 +281,6 @@ const opentelemetryProvider: ProviderFactory<OpenTelemetryConfig, Provider<unkno
                     };
                 }
 
-                // Record failure
                 const errorMessage = result.error instanceof Error ? result.error.message : String(result.error || "Unknown error");
 
                 span.setStatus({

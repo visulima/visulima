@@ -7,7 +7,7 @@ import generateMessageId from "../../utils/generate-message-id";
 import headersToRecord from "../../utils/headers-to-record";
 import { makeRequest } from "../../utils/make-request";
 import retry from "../../utils/retry";
-import validateEmailOptions from "../../utils/validate-email-options";
+import validateEmailOptions from "../../utils/validation/validate-email-options";
 import type { ProviderFactory } from "../provider";
 import { defineProvider } from "../provider";
 import { createProviderLogger, formatSendGridAddress, formatSendGridAddresses, handleProviderError, ProviderState } from "../utils";
@@ -133,7 +133,6 @@ const ahaSendProvider: ProviderFactory<AhaSendConfig, unknown, AhaSendEmailOptio
             try {
                 logger.debug("Checking AhaSend API availability");
 
-                // Verify API availability using the documented ping endpoint
                 const result = await makeRequest(`${options.endpoint}/v2/ping`, {
                     headers: {
                         Authorization: `Bearer ${options.apiKey}`,
@@ -144,19 +143,15 @@ const ahaSendProvider: ProviderFactory<AhaSendConfig, unknown, AhaSendEmailOptio
                 });
 
                 if (result.success) {
-                    // 2xx – API reachable and credentials accepted.
                     return true;
                 }
 
-                // Check status code from error response if available
                 const statusCode = (result.data as { statusCode?: number })?.statusCode ?? (result.error as { statusCode?: number })?.statusCode;
 
                 if (statusCode === 401 || statusCode === 403) {
-                    // API reachable but credentials invalid.
                     return false;
                 }
 
-                // Other non‑2xx/non‑auth errors: treat as unavailable.
                 return false;
             } catch (error) {
                 logger.debug("Error checking availability:", error);
@@ -188,39 +183,32 @@ const ahaSendProvider: ProviderFactory<AhaSendConfig, unknown, AhaSendEmailOptio
 
                 await this.initialize();
 
-                // Build payload for AhaSend API (standard REST API pattern)
                 const payload: Record<string, unknown> = {
                     from: { email: emailOptions.from.email, name: emailOptions.from.name },
                     subject: emailOptions.subject,
                     to: formatSendGridAddresses(emailOptions.to),
                 };
 
-                // Add HTML content
                 if (emailOptions.html) {
                     payload.html = emailOptions.html;
                 }
 
-                // Add text content
                 if (emailOptions.text) {
                     payload.text = emailOptions.text;
                 }
 
-                // Add CC
                 if (emailOptions.cc) {
                     payload.cc = formatSendGridAddresses(emailOptions.cc);
                 }
 
-                // Add BCC
                 if (emailOptions.bcc) {
                     payload.bcc = formatSendGridAddresses(emailOptions.bcc);
                 }
 
-                // Add reply-to
                 if (emailOptions.replyTo) {
                     payload.replyTo = formatSendGridAddress(emailOptions.replyTo);
                 }
 
-                // Add template
                 if (emailOptions.templateId) {
                     payload.templateId = emailOptions.templateId;
 
@@ -229,19 +217,16 @@ const ahaSendProvider: ProviderFactory<AhaSendConfig, unknown, AhaSendEmailOptio
                     }
                 }
 
-                // Add tags
                 if (emailOptions.tags && emailOptions.tags.length > 0) {
                     payload.tags = emailOptions.tags;
                 }
 
-                // Add custom headers
                 if (emailOptions.headers) {
                     const headersRecord = headersToRecord(emailOptions.headers);
 
                     payload.headers = headersRecord;
                 }
 
-                // Add attachments
                 if (emailOptions.attachments && emailOptions.attachments.length > 0) {
                     payload.attachments = await Promise.all(
                         emailOptions.attachments.map(async (attachment) => {
@@ -306,7 +291,6 @@ const ahaSendProvider: ProviderFactory<AhaSendConfig, unknown, AhaSendEmailOptio
                     };
                 }
 
-                // AhaSend returns message ID in response body
                 const responseBody = (result.data as { body?: { id?: string; messageId?: string } })?.body;
                 const messageId = responseBody?.messageId || responseBody?.id || generateMessageId();
 

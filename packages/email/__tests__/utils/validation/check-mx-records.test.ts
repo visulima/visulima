@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 
-import type { Cache } from "../../src/utils/cache";
-import { InMemoryCache } from "../../src/utils/cache";
-import type { MxCheckResult } from "../../src/utils/validation/check-mx-records";
-import { checkMxRecords } from "../../src/utils/validation/check-mx-records";
+import type { Cache } from "../../../src/utils/cache";
+import { InMemoryCache } from "../../../src/utils/cache";
+import type { MxCheckResult } from "../../../src/utils/validation/check-mx-records";
+import { checkMxRecords } from "../../../src/utils/validation/check-mx-records";
 
 const consoleMessage = "Skipping MX record check in CI environment, please validate this test locally.";
 

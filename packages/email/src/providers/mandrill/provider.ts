@@ -8,7 +8,7 @@ import headersToRecord from "../../utils/headers-to-record";
 import { makeRequest } from "../../utils/make-request";
 import retry from "../../utils/retry";
 import { sanitizeHeaderName, sanitizeHeaderValue } from "../../utils/sanitize-header";
-import validateEmailOptions from "../../utils/validate-email-options";
+import validateEmailOptions from "../../utils/validation/validate-email-options";
 import type { ProviderFactory } from "../provider";
 import { defineProvider } from "../provider";
 import { createProviderLogger, formatMandrillAddresses, handleProviderError, ProviderState } from "../utils";

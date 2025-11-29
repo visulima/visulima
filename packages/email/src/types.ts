@@ -130,6 +130,21 @@ export type ImmutableHeaders = Omit<Headers, "append" | "delete" | "set">;
 export type EmailHeaders = Record<string, string> | ImmutableHeaders;
 
 /**
+ * Options for calendar event attachments
+ */
+export interface CalendarEventOptions {
+    /**
+     * Alternative text for the calendar event
+     */
+    alternativeText?: string;
+
+    /**
+     * Method for the calendar event (e.g., 'REQUEST', 'CANCEL', 'REPLY')
+     */
+    method?: string;
+}
+
+/**
  * Common email options that all providers support
  */
 export interface EmailOptions {
@@ -140,6 +155,7 @@ export interface EmailOptions {
     from: EmailAddress;
     headers?: EmailHeaders;
     html?: string;
+    icalEvent?: CalendarEventOptions & { content?: string; href?: string; path?: string };
     priority?: Priority;
     replyTo?: EmailAddress;
     subject: string;

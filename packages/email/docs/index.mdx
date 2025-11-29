@@ -21,7 +21,7 @@ description: Get started with @visulima/email, a powerful email sending package 
 - **Tree-shakeable** - Import only what you need for optimal bundle size
 - **Optional Dependencies** - Template engines and providers are optional peer dependencies
 - **Attachment Support** - Rich attachment handling with inline images and files
-- **Mailable Classes** - Organize emails using class-based mailables
+- **Reusable Templates** - Create reusable email templates using factory functions
 - **Email Verification** - Comprehensive email validation including format validation, disposable email detection, MX record checking, role account detection, and SMTP verification
 
 ## Runtime Support
@@ -48,7 +48,9 @@ const resend = resendProvider({
 const mail = createMail(resend);
 
 // Send an email using the message builder
-const result = await mail.message().to("user@example.com").from("sender@example.com").subject("Hello").html("<h1>Hello World</h1>").send();
+const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Hello").html("<h1>Hello World</h1>");
+
+const result = await mail.send(message);
 
 if (result.success) {
     console.log("Email sent:", result.data?.messageId);

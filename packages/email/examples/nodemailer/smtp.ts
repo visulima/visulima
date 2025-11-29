@@ -5,7 +5,7 @@
  * with a standard SMTP transport configuration.
  */
 
-import { createMail } from "@visulima/email";
+import { createMail, MailMessage } from "@visulima/email";
 import { nodemailerProvider } from "@visulima/email/providers/nodemailer";
 
 const main = async () => {
@@ -39,14 +39,14 @@ const main = async () => {
     await mail.initialize();
 
     // Send email using message builder
-    const result = await mail
-        .message()
+    const message = new MailMessage()
         .to("recipient@example.com")
         .from("sender@example.com")
         .subject("Hello from Nodemailer SMTP")
         .html("<h1>Hello World</h1><p>This email was sent using Nodemailer with SMTP transport.</p>")
-        .text("Hello World\n\nThis email was sent using Nodemailer with SMTP transport.")
-        .send();
+        .text("Hello World\n\nThis email was sent using Nodemailer with SMTP transport.");
+
+    const result = await mail.send(message);
 
     if (result.success) {
         console.log("✅ Email sent successfully!");
