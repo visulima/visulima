@@ -37,6 +37,7 @@ describe(createDeleteFile, () => {
     });
 
     it("should delete file successfully", async () => {
+        expect.assertions(6);
         mockFetch.mockResolvedValueOnce({
             ok: true,
             status: 204,
@@ -88,6 +89,7 @@ describe(createDeleteFile, () => {
     });
 
     it("should handle error response", async () => {
+        expect.assertions(7);
         mockFetch.mockResolvedValueOnce({
             json: async () => {
                 return {
@@ -134,15 +136,7 @@ describe(createDeleteFile, () => {
         );
 
         // The mutation will reject, but we need to catch it to allow the error to be set in the store
-        try {
-            await result.deleteFile("file-123");
-
-            // If we get here, the mutation didn't reject - this is unexpected
-            expect.fail("Expected deleteFile to reject");
-        } catch (error) {
-            // Expected - mutation should fail
-            expect(error).toBeDefined();
-        }
+        await expect(result.deleteFile("file-123")).rejects.toBeDefined();
 
         // Wait for the error to be captured in the store
         // Mutation errors are set after the mutation fails
@@ -157,6 +151,7 @@ describe(createDeleteFile, () => {
     });
 
     it("should reset mutation state", async () => {
+        expect.assertions(7);
         mockFetch.mockResolvedValueOnce({
             ok: true,
             status: 204,

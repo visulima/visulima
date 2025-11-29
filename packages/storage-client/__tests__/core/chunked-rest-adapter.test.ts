@@ -16,6 +16,8 @@ describe(createChunkedRestAdapter, () => {
     });
 
     it("should create adapter with default options", () => {
+        expect.assertions(12);
+
         const adapter = createChunkedRestAdapter({
             endpoint: "https://api.example.com/upload",
         });
@@ -113,6 +115,8 @@ describe(createChunkedRestAdapter, () => {
     });
 
     it("should handle abort", async () => {
+        expect.assertions(1);
+
         const file = new File(["test content"], "test.txt", { type: "text/plain" });
 
         // Mock create upload - return immediately but upload will be aborted
@@ -290,6 +294,8 @@ describe(createChunkedRestAdapter, () => {
     });
 
     it("should clear state", () => {
+        expect.assertions(1);
+
         const adapter = createChunkedRestAdapter({
             endpoint: "https://api.example.com/upload",
         });
@@ -301,6 +307,8 @@ describe(createChunkedRestAdapter, () => {
     });
 
     it("should handle getOffset when no file uploaded", async () => {
+        expect.assertions(1);
+
         const adapter = createChunkedRestAdapter({
             endpoint: "https://api.example.com/upload",
         });

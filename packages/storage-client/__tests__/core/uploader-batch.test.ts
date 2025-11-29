@@ -77,11 +77,9 @@ describe("uploader Batch Operations", () => {
 
         expect(batchId).toBeDefined();
 
-        if (batchId) {
-            const batchItems = uploader.getBatchItems(batchId);
+        const batchItems = uploader.getBatchItems(batchId!);
 
-            expect(batchItems).toHaveLength(2);
-        }
+        expect(batchItems).toHaveLength(2);
     });
 
     it("should emit BATCH_PROGRESS events", async () => {
@@ -173,6 +171,6 @@ describe("uploader Batch Operations", () => {
 
         const itemIds = uploader.addBatch([]);
 
-        expect(itemIds).toEqual([]);
+        expect(itemIds).toStrictEqual([]);
     });
 });

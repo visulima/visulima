@@ -37,7 +37,7 @@ describe(useBatchUpload, () => {
             }),
         );
 
-        expect(result.current.items).toEqual([]);
+        expect(result.current.items).toStrictEqual([]);
         expect(result.current.progress).toBe(0);
         expect(result.current.isUploading).toBe(false);
         expect(result.current.completedCount).toBe(0);
@@ -148,7 +148,7 @@ describe(useBatchUpload, () => {
         result.current.uploadBatch([file1]);
         result.current.reset();
 
-        expect(result.current.items).toEqual([]);
+        expect(result.current.items).toStrictEqual([]);
         expect(result.current.progress).toBe(0);
         expect(result.current.isUploading).toBe(false);
         expect(result.current.completedCount).toBe(0);

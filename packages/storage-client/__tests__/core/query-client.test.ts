@@ -40,6 +40,8 @@ describe("query-client", () => {
 
     describe(parseApiError, () => {
         it("should parse API error response", async () => {
+            expect.assertions(1);
+
             const response = Response.json(
                 {
                     error: {
@@ -56,6 +58,8 @@ describe("query-client", () => {
         });
 
         it("should handle non-JSON error response", async () => {
+            expect.assertions(1);
+
             const response = new Response("Internal Server Error", { status: 500, statusText: "Internal Server Error" });
 
             const error = await parseApiError(response);
@@ -66,6 +70,8 @@ describe("query-client", () => {
 
     describe(extractFileMetaFromHeaders, () => {
         it("should extract file metadata from headers", () => {
+            expect.assertions(4);
+
             const headers = new Headers({
                 "Content-Length": "1024",
                 "Content-Type": "image/jpeg",
@@ -82,6 +88,8 @@ describe("query-client", () => {
         });
 
         it("should handle missing headers", () => {
+            expect.assertions(3);
+
             const headers = new Headers();
 
             const fileMeta = extractFileMetaFromHeaders("file-123", headers);
@@ -94,6 +102,8 @@ describe("query-client", () => {
 
     describe(buildUrl, () => {
         it("should build URL with query parameters", () => {
+            expect.assertions(3);
+
             const url = buildUrl("https://api.example.com", "/files", { active: true, limit: 10, page: 1 });
 
             expect(url).toContain("page=1");
@@ -102,18 +112,24 @@ describe("query-client", () => {
         });
 
         it("should handle base URL without trailing slash", () => {
+            expect.assertions(1);
+
             const url = buildUrl("https://api.example.com", "/files");
 
             expect(url).toBe("https://api.example.com/files");
         });
 
         it("should handle base URL with trailing slash", () => {
+            expect.assertions(1);
+
             const url = buildUrl("https://api.example.com/", "/files");
 
             expect(url).toBe("https://api.example.com/files");
         });
 
         it("should skip undefined parameters", () => {
+            expect.assertions(2);
+
             const url = buildUrl("https://api.example.com", "/files", { limit: undefined, page: 1 });
 
             expect(url).toContain("page=1");
@@ -123,6 +139,8 @@ describe("query-client", () => {
 
     describe(fetchFile, () => {
         it("should fetch file successfully", async () => {
+            expect.assertions(1);
+
             const mockBlob = new Blob(["test content"], { type: "image/jpeg" });
 
             mockFetch.mockResolvedValueOnce({
@@ -136,6 +154,8 @@ describe("query-client", () => {
         });
 
         it("should throw error on failed request", async () => {
+            expect.assertions(1);
+
             mockFetch.mockResolvedValueOnce({
                 json: async () => {
                     return {
@@ -156,6 +176,8 @@ describe("query-client", () => {
 
     describe(fetchJson, () => {
         it("should fetch JSON successfully", async () => {
+            expect.assertions(1);
+
             const mockData = { id: "123", name: "test" };
 
             mockFetch.mockResolvedValueOnce({
@@ -165,10 +187,12 @@ describe("query-client", () => {
 
             const result = await fetchJson<{ id: string; name: string }>("https://api.example.com/data");
 
-            expect(result).toEqual(mockData);
+            expect(result).toStrictEqual(mockData);
         });
 
         it("should throw error on failed request", async () => {
+            expect.assertions(1);
+
             mockFetch.mockResolvedValueOnce({
                 json: async () => {
                     return {
@@ -189,6 +213,8 @@ describe("query-client", () => {
 
     describe(fetchHead, () => {
         it("should fetch headers successfully", async () => {
+            expect.assertions(1);
+
             const mockHeaders = new Headers({
                 "Content-Length": "1024",
                 "Content-Type": "image/jpeg",
@@ -205,6 +231,8 @@ describe("query-client", () => {
         });
 
         it("should throw error on failed request", async () => {
+            expect.assertions(1);
+
             mockFetch.mockResolvedValueOnce({
                 json: async () => {
                     return {
@@ -225,6 +253,8 @@ describe("query-client", () => {
 
     describe(deleteRequest, () => {
         it("should delete successfully", async () => {
+            expect.assertions(1);
+
             mockFetch.mockResolvedValueOnce({
                 ok: true,
             });
@@ -233,6 +263,8 @@ describe("query-client", () => {
         });
 
         it("should throw error on failed request", async () => {
+            expect.assertions(1);
+
             mockFetch.mockResolvedValueOnce({
                 json: async () => {
                     return {
@@ -253,6 +285,8 @@ describe("query-client", () => {
 
     describe(putFile, () => {
         it("should upload file successfully", async () => {
+            expect.assertions(3);
+
             const file = new File(["test content"], "test.txt", { type: "text/plain" });
             const onProgress = vi.fn();
 
@@ -264,6 +298,8 @@ describe("query-client", () => {
         });
 
         it("should handle upload without progress callback", async () => {
+            expect.assertions(1);
+
             const file = new File(["test content"], "test.txt", { type: "text/plain" });
 
             const result = await putFile("https://api.example.com/file/123", file);
@@ -274,6 +310,8 @@ describe("query-client", () => {
 
     describe(patchChunk, () => {
         it("should upload chunk successfully", async () => {
+            expect.assertions(3);
+
             const chunk = new Blob(["chunk data"], { type: "application/octet-stream" });
 
             mockFetch.mockResolvedValueOnce({
@@ -293,6 +331,8 @@ describe("query-client", () => {
         });
 
         it("should include checksum in headers when provided", async () => {
+            expect.assertions(1);
+
             const chunk = new Blob(["chunk data"], { type: "application/octet-stream" });
 
             mockFetch.mockResolvedValueOnce({
@@ -315,6 +355,8 @@ describe("query-client", () => {
         });
 
         it("should throw error on failed request", async () => {
+            expect.assertions(1);
+
             mockFetch.mockResolvedValueOnce({
                 json: async () => {
                     return {

@@ -9,7 +9,7 @@ describe(useFileInput, () => {
 
         const { result } = withQueryClient(() => useFileInput());
 
-        expect(result.files.value).toEqual([]);
+        expect(result.files.value).toStrictEqual([]);
     });
 
     it("should provide file handling functions", () => {

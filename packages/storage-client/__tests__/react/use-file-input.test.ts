@@ -9,7 +9,7 @@ describe(useFileInput, () => {
 
         const { result } = renderHook(() => useFileInput());
 
-        expect(result.current.files).toEqual([]);
+        expect(result.current.files).toStrictEqual([]);
     });
 
     it("should provide inputRef", () => {
@@ -47,6 +47,8 @@ describe(useFileInput, () => {
     });
 
     it("should handle file selection", async () => {
+        expect.assertions(3);
+
         const onFilesSelected = vi.fn();
 
         const { result } = renderHook(() =>
@@ -60,7 +62,7 @@ describe(useFileInput, () => {
         // Create a mock FileList
         const fileList = {
             0: file,
-            item: (index: number) => index === 0 ? file : null,
+            item: (index: number) => (index === 0 ? file : null),
             length: 1,
             * [Symbol.iterator]() {
                 yield file;
@@ -92,6 +94,8 @@ describe(useFileInput, () => {
     });
 
     it("should handle drag and drop", async () => {
+        expect.assertions(3);
+
         const onFilesSelected = vi.fn();
 
         const { result } = renderHook(() =>
@@ -105,7 +109,7 @@ describe(useFileInput, () => {
         // Create a mock FileList for dataTransfer
         const fileList = {
             0: file,
-            item: (index: number) => index === 0 ? file : null,
+            item: (index: number) => (index === 0 ? file : null),
             length: 1,
             * [Symbol.iterator]() {
                 yield file;
@@ -136,6 +140,8 @@ describe(useFileInput, () => {
     });
 
     it("should reset files", async () => {
+        expect.assertions(4);
+
         const { result } = renderHook(() => useFileInput());
 
         const file = new File(["test"], "test.jpg", { type: "image/jpeg" });
@@ -143,7 +149,7 @@ describe(useFileInput, () => {
         // Create a mock FileList
         const fileList = {
             0: file,
-            item: (index: number) => index === 0 ? file : null,
+            item: (index: number) => (index === 0 ? file : null),
             length: 1,
             * [Symbol.iterator]() {
                 yield file;
@@ -174,7 +180,7 @@ describe(useFileInput, () => {
         result.current.reset();
 
         await waitFor(() => {
-            expect(result.current.files).toEqual([]);
+            expect(result.current.files).toStrictEqual([]);
         });
     });
 

@@ -59,17 +59,13 @@ describe(createGetFile, () => {
             }),
         );
 
-        if (result.error()) {
-            console.error("Query Error:", result.error());
-        }
-
         expect(result.data()).toBeDefined();
         expect(result.data()?.size).toBe(mockBlob.size);
         expect(result.error()).toBeUndefined();
     });
 
     it("should handle reactive id changes", async () => {
-        // expect.assertions(2);
+        expect.assertions(4);
 
         const [id, setId] = createSignal("file-123");
         const mockBlob1 = new Blob(["content 1"], { type: "image/jpeg" });

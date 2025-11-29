@@ -23,6 +23,8 @@ describe(useTusUpload, () => {
     });
 
     it("should initialize with default state", () => {
+        expect.assertions(6);
+
         const { result } = renderHookWithQueryClient(
             () =>
                 useTusUpload({
@@ -40,6 +42,8 @@ describe(useTusUpload, () => {
     });
 
     it("should upload file successfully", async () => {
+        expect.assertions(2);
+
         const file = new File(["test content"], "test.txt", { type: "text/plain" });
         const uploadUrl = "https://api.example.com/upload/file-123";
 
@@ -88,6 +92,8 @@ describe(useTusUpload, () => {
     });
 
     it("should handle pause and resume", async () => {
+        expect.assertions(4);
+
         const file = new File(["test content"], "test.txt", { type: "text/plain" });
 
         // Mock POST (create upload)
@@ -187,6 +193,8 @@ describe(useTusUpload, () => {
     });
 
     it("should call callbacks correctly", async () => {
+        expect.assertions(4);
+
         const file = new File(["test content"], "test.txt", { type: "text/plain" });
         const onStart = vi.fn();
         const onProgress = vi.fn();
@@ -316,6 +324,8 @@ describe(useTusUpload, () => {
     });
 
     it("should reset state", async () => {
+        expect.assertions(3);
+
         const { result } = renderHookWithQueryClient(
             () =>
                 useTusUpload({

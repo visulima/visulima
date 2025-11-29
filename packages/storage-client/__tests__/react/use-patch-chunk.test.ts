@@ -24,6 +24,7 @@ describe(usePatchChunk, () => {
 
     it("should upload chunk successfully", async () => {
         expect.assertions(2);
+
         const chunk = new Blob(["chunk data"], { type: "application/octet-stream" });
 
         mockFetch.mockResolvedValueOnce({
@@ -54,6 +55,7 @@ describe(usePatchChunk, () => {
 
     it("should handle completed upload", async () => {
         expect.assertions(2);
+
         const chunk = new Blob(["chunk data"], { type: "application/octet-stream" });
 
         mockFetch.mockResolvedValueOnce({
@@ -81,6 +83,7 @@ describe(usePatchChunk, () => {
 
     it("should include checksum when provided", async () => {
         expect.assertions(1);
+
         const chunk = new Blob(["chunk data"], { type: "application/octet-stream" });
 
         mockFetch.mockResolvedValueOnce({
@@ -114,6 +117,7 @@ describe(usePatchChunk, () => {
 
     it("should call onSuccess callback", async () => {
         expect.assertions(1);
+
         const onSuccess = vi.fn();
         const chunk = new Blob(["chunk data"], { type: "application/octet-stream" });
 
@@ -142,6 +146,7 @@ describe(usePatchChunk, () => {
 
     it("should handle error and call onError callback", async () => {
         expect.assertions(2);
+
         const onError = vi.fn();
         const chunk = new Blob(["chunk data"], { type: "application/octet-stream" });
 
@@ -177,6 +182,7 @@ describe(usePatchChunk, () => {
 
     it("should reset mutation state", async () => {
         expect.assertions(2);
+
         const chunk = new Blob(["chunk data"], { type: "application/octet-stream" });
 
         mockFetch.mockResolvedValueOnce({

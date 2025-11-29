@@ -24,6 +24,7 @@ describe(useHeadFile, () => {
 
     it("should fetch file metadata via HEAD request", async () => {
         expect.assertions(3);
+
         const mockHeaders = new Headers({
             "Content-Length": "1024",
             "Content-Type": "image/jpeg",
@@ -54,6 +55,7 @@ describe(useHeadFile, () => {
 
     it("should extract upload metadata", async () => {
         expect.assertions(5);
+
         const mockHeaders = new Headers({
             "X-Chunked-Upload": "true",
             "X-Upload-Complete": "false",
@@ -85,6 +87,7 @@ describe(useHeadFile, () => {
 
     it("should parse received chunks", async () => {
         expect.assertions(2);
+
         const mockHeaders = new Headers({
             "X-Received-Chunks": JSON.stringify([0, 1024, 2048]),
         });
@@ -110,6 +113,7 @@ describe(useHeadFile, () => {
 
     it("should call onSuccess callback", async () => {
         expect.assertions(2);
+
         const onSuccess = vi.fn();
         const mockHeaders = new Headers({
             "Content-Length": "1024",
@@ -137,6 +141,7 @@ describe(useHeadFile, () => {
 
     it("should handle error and call onError callback", async () => {
         expect.assertions(2);
+
         const onError = vi.fn();
 
         mockFetch.mockResolvedValueOnce({
@@ -170,6 +175,7 @@ describe(useHeadFile, () => {
 
     it("should respect enabled option", async () => {
         expect.assertions(2);
+
         const { result } = renderHookWithQueryClient(
             () =>
                 useHeadFile({
@@ -186,6 +192,7 @@ describe(useHeadFile, () => {
 
     it("should not fetch when id is empty", async () => {
         expect.assertions(2);
+
         const { result } = renderHookWithQueryClient(
             () =>
                 useHeadFile({
@@ -201,6 +208,7 @@ describe(useHeadFile, () => {
 
     it("should refetch data", async () => {
         expect.assertions(3);
+
         const mockHeaders = new Headers({
             "Content-Length": "1024",
         });

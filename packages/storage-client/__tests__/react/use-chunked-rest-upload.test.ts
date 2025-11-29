@@ -33,6 +33,8 @@ describe(useChunkedRestUpload, () => {
     });
 
     it("should initialize with default state", () => {
+        expect.assertions(6);
+
         const { result } = renderHookWithQueryClient(
             () =>
                 useChunkedRestUpload({
@@ -50,6 +52,8 @@ describe(useChunkedRestUpload, () => {
     });
 
     it("should upload file successfully", async () => {
+        expect.assertions(2);
+
         const file = new File(["test content"], "test.txt", { type: "text/plain" });
         const fileId = "file-123";
 
@@ -115,6 +119,8 @@ describe(useChunkedRestUpload, () => {
     });
 
     it("should handle pause and resume", async () => {
+        expect.assertions(6);
+
         const file = new File(["test content"], "test.txt", { type: "text/plain" });
 
         // Mock create upload
@@ -236,6 +242,8 @@ describe(useChunkedRestUpload, () => {
     });
 
     it("should call callbacks correctly", async () => {
+        expect.assertions(4);
+
         const file = new File(["test content"], "test.txt", { type: "text/plain" });
         const onStart = vi.fn();
         const onProgress = vi.fn();
@@ -305,6 +313,8 @@ describe(useChunkedRestUpload, () => {
     });
 
     it("should handle abort", async () => {
+        expect.assertions(3);
+
         const file = new File(["test content"], "test.txt", { type: "text/plain" });
 
         // Use mockImplementation to handle all requests, especially PATCH with abort signal
@@ -397,6 +407,8 @@ describe(useChunkedRestUpload, () => {
     }, 10_000);
 
     it("should reset state", async () => {
+        expect.assertions(3);
+
         const { result } = renderHookWithQueryClient(
             () =>
                 useChunkedRestUpload({

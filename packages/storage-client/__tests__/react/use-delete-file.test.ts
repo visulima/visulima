@@ -124,6 +124,8 @@ describe(useDeleteFile, () => {
     });
 
     it("should reset mutation state", async () => {
+        expect.assertions(2);
+
         mockFetch.mockResolvedValueOnce({
             ok: true,
         });

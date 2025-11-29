@@ -241,11 +241,8 @@ describe(createGetFileMeta, () => {
             attempts += 1;
         }
 
-        // If error still not captured, the query might have succeeded - check the actual response
+        // Ensure error is captured - refetch if needed
         if (!result.error()) {
-            // The mock returns ok: false, so fetchJson should throw an error
-            // But if it's not being captured, the query might be using cached data
-            // Force a refetch to ensure the error is captured
             result.refetch();
             await new Promise<void>((resolve) => {
                 setTimeout(() => {

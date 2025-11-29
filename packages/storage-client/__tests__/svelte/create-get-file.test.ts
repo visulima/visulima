@@ -24,7 +24,7 @@ describe(createGetFile, () => {
     });
 
     it("should fetch file successfully", async () => {
-        // expect.assertions(4);
+        expect.assertions(8);
 
         const mockBlob = new Blob(["test content"], { type: "image/jpeg" });
         const mockHeaders = new Headers({
@@ -86,7 +86,7 @@ describe(createGetFile, () => {
     });
 
     it("should handle reactive id changes", async () => {
-        // expect.assertions(2);
+        expect.assertions(9);
 
         const id = writable("file-123");
         const mockBlob1 = new Blob(["content 1"], { type: "image/jpeg" });
@@ -158,7 +158,7 @@ describe(createGetFile, () => {
     });
 
     it("should respect enabled option", async () => {
-        // expect.assertions(1);
+        expect.assertions(1);
 
         const enabled = writable(false);
 
