@@ -1069,7 +1069,7 @@ pnpm add disposable-domains
 ### Usage
 
 ```typescript
-import { isDisposableEmail } from "@visulima/email/disposable";
+import { isDisposableEmail } from "@visulima/email/utils/is-disposable-email";
 
 // Check if an email is disposable
 if (isDisposableEmail("user@mailinator.com")) {
@@ -1084,6 +1084,98 @@ if (isDisposableEmail("user@my-disposable.com", customDomains)) {
 ```
 
 **Note:** The `disposable-domains` package must be installed as a peer dependency. If it's not installed, the function will throw an error with installation instructions.
+
+## Email Verification
+
+The package provides comprehensive email verification utilities including MX record checking, SMTP verification, and role account detection.
+
+### MX Record Checking
+
+Check if a domain has valid MX (Mail Exchange) records:
+
+```typescript
+import { checkMxRecords } from "@visulima/email/utils/check-mx-records";
+
+const result = await checkMxRecords("example.com");
+
+if (result.valid) {
+    console.log("MX records:", result.records);
+    // Records are sorted by priority (lowest first)
+} else {
+    console.error("No MX records found:", result.error);
+}
+```
+
+### Role Account Detection
+
+Detect if an email address is a role account (non-personal email like `noreply@`, `support@`, etc.):
+
+```typescript
+import { isRoleAccount } from "@visulima/email/utils/role-accounts";
+
+if (isRoleAccount("noreply@example.com")) {
+    console.log("This is a role account");
+}
+
+// With custom role prefixes
+const customPrefixes = new Set(["custom-role", "my-role"]);
+if (isRoleAccount("custom-role@example.com", customPrefixes)) {
+    console.log("Custom role account detected");
+}
+```
+
+### SMTP Verification
+
+Verify if an email address exists by connecting to the mail server:
+
+```typescript
+import { verifySmtp } from "@visulima/email/utils/verify-smtp";
+
+const result = await verifySmtp("user@example.com", {
+    timeout: 5000,
+    fromEmail: "test@example.com",
+    port: 25,
+});
+
+if (result.valid) {
+    console.log("Email address exists");
+} else {
+    console.error("Verification failed:", result.error);
+}
+```
+
+**Note:** Many mail servers block SMTP verification to prevent email harvesting. This method may not work for all domains.
+
+### Comprehensive Email Verification
+
+Combine all verification checks in a single function:
+
+```typescript
+import { verifyEmail } from "@visulima/email/utils/verify-email";
+
+const result = await verifyEmail("user@example.com", {
+    checkDisposable: true,
+    checkRoleAccount: true,
+    checkMx: true,
+    checkSmtp: false, // Optional, many servers block this
+    customDisposableDomains: new Set(["custom-disposable.com"]),
+    customRolePrefixes: new Set(["custom-role"]),
+});
+
+if (result.valid) {
+    console.log("Email is valid!");
+} else {
+    console.error("Errors:", result.errors);
+    console.warn("Warnings:", result.warnings);
+}
+
+// Access individual check results
+console.log("Format valid:", result.formatValid);
+console.log("Is disposable:", result.disposable);
+console.log("Is role account:", result.roleAccount);
+console.log("MX valid:", result.mxValid);
+console.log("SMTP valid:", result.smtpValid);
+```
 
 ### Email Utilities
 
