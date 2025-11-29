@@ -5,7 +5,7 @@ import RequiredOptionError from "../../errors/required-option-error";
 import type { EmailAddress, EmailResult, Result } from "../../types";
 import generateMessageId from "../../utils/generate-message-id";
 import headersToRecord from "../../utils/headers-to-record";
-import validateEmailOptions from "../../utils/validate-email-options";
+import validateEmailOptions from "../../utils/validation/validate-email-options";
 import type { ProviderFactory } from "../provider";
 import { defineProvider } from "../provider";
 import type { NodemailerConfig, NodemailerEmailOptions } from "./types";

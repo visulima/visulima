@@ -5,7 +5,7 @@
  * with Gmail SMTP. Note: Gmail requires an App Password for authentication.
  */
 
-import { createMail } from "@visulima/email";
+import { createMail, MailMessage } from "@visulima/email";
 import { nodemailerProvider } from "@visulima/email/providers/nodemailer";
 
 const main = async () => {
@@ -37,8 +37,7 @@ const main = async () => {
     await mail.initialize();
 
     // Send email with attachments
-    const result = await mail
-        .message()
+    const message = new MailMessage()
         .to("recipient@example.com")
         .from("your-email@gmail.com")
         .subject("Hello from Gmail via Nodemailer")
@@ -49,8 +48,9 @@ const main = async () => {
             <p>Make sure to use an <strong>App Password</strong> instead of your regular Gmail password.</p>
         `,
         )
-        .text("Hello from Gmail!\n\nThis email was sent using Nodemailer with Gmail.")
-        .send();
+        .text("Hello from Gmail!\n\nThis email was sent using Nodemailer with Gmail.");
+
+    const result = await mail.send(message);
 
     if (result.success) {
         console.log("✅ Email sent successfully via Gmail!");

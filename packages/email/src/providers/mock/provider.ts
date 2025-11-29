@@ -1,8 +1,8 @@
 import EmailError from "../../errors/email-error";
 import type { EmailAddress, EmailResult, Receipt, Result } from "../../types";
-import createLogger from "../../utils/create-logger";
+import { createLogger } from "../../utils/create-logger";
 import generateMessageId from "../../utils/generate-message-id";
-import validateEmailOptions from "../../utils/validate-email-options";
+import validateEmailOptions from "../../utils/validation/validate-email-options";
 import type { ProviderFactory } from "../provider";
 import { defineProvider } from "../provider";
 import type { MockConfig, MockEmailEntry, MockEmailOptions } from "./types";
@@ -289,7 +289,6 @@ const mockProvider: ProviderFactory<MockConfig, MockEmailEntry[], MockEmailOptio
                     await this.initialize();
                 }
 
-                // Calculate delay (random delay range takes precedence over fixed delay)
                 let delayMs = config.delay;
 
                 if (config.randomDelayRange && config.randomDelayRange.max > 0) {
@@ -299,20 +298,17 @@ const mockProvider: ProviderFactory<MockConfig, MockEmailEntry[], MockEmailOptio
                     delayMs = Math.floor(Math.random() * (max - min + 1)) + min;
                 }
 
-                // Simulate delay if configured
                 if (delayMs > 0) {
                     await new Promise((resolve) => {
                         setTimeout(resolve, delayMs);
                     });
                 }
 
-                // Check if nextResponse is set (takes precedence)
                 if (nextResponse !== undefined) {
                     const response = nextResponse;
 
-                    nextResponse = undefined; // Reset after use
+                    nextResponse = undefined;
 
-                    // If it's a failure response, return error
                     if (!response.successful) {
                         logger.debug("Using next response (failure)", response);
 
@@ -322,7 +318,6 @@ const mockProvider: ProviderFactory<MockConfig, MockEmailEntry[], MockEmailOptio
                         };
                     }
 
-                    // If it's a success response, create entry and return
                     const messageId = response.messageId || generateMessageId();
                     const timestamp = response.timestamp || new Date();
 
@@ -351,7 +346,6 @@ const mockProvider: ProviderFactory<MockConfig, MockEmailEntry[], MockEmailOptio
                     };
                 }
 
-                // Check for random failure based on failure rate
                 // eslint-disable-next-line sonarjs/pseudo-random
                 const shouldFail = config.simulateFailure || (config.failureRate > 0 && Math.random() < config.failureRate);
 
@@ -364,7 +358,6 @@ const mockProvider: ProviderFactory<MockConfig, MockEmailEntry[], MockEmailOptio
                     };
                 }
 
-                // Use default response if set, otherwise create success response
                 const messageId = config.defaultResponse?.successful ? config.defaultResponse.messageId : generateMessageId();
                 const timestamp = config.defaultResponse?.successful && config.defaultResponse.timestamp ? config.defaultResponse.timestamp : new Date();
 
@@ -380,7 +373,6 @@ const mockProvider: ProviderFactory<MockConfig, MockEmailEntry[], MockEmailOptio
                     timestamp,
                 };
 
-                // Store email in memory
                 const entry: MockEmailEntry = {
                     id: messageId,
                     options: emailOptions,

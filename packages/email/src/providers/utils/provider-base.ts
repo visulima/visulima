@@ -1,6 +1,6 @@
 import EmailError from "../../errors/email-error";
 import type { MaybePromise } from "../../types";
-import createLogger from "../../utils/create-logger";
+import { createLogger } from "../../utils/create-logger";
 
 /**
  * Logger interface with debug, error, info, and warn methods

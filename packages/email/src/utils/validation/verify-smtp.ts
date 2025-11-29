@@ -1,21 +1,25 @@
 import { Socket } from "node:net";
 
-import type { MxRecord } from "./check-mx-records";
-import checkMxRecords from "./check-mx-records";
+import type { Cache } from "../cache";
+import type { MxCheckResult, MxRecord } from "./check-mx-records";
+import { checkMxRecords } from "./check-mx-records";
 
 /**
  * Options for SMTP verification.
  */
-interface SmtpVerificationOptions {
+export interface SmtpVerificationOptions {
+    cache?: Cache<MxCheckResult>;
     fromEmail?: string;
     port?: number;
+    smtpCache?: Cache<SmtpVerificationResult>;
     timeout?: number;
+    ttl?: number;
 }
 
 /**
  * Detailed result of SMTP verification attempt.
  */
-interface SmtpVerificationResult {
+export interface SmtpVerificationResult {
     error?: string;
     mxRecords?: MxRecord[];
     smtpResponse?: string;
@@ -30,7 +34,7 @@ interface SmtpVerificationResult {
  * @returns Result containing verification status.
  * @example
  * ```ts
- * import { verifySmtp } from "@visulima/email/utils/verify-smtp";
+ * import { verifySmtp } from "@visulima/email/validation/verify-smtp";
  *
  * const result = await verifySmtp("user@example.com", {
  *     timeout: 5000,
@@ -38,8 +42,8 @@ interface SmtpVerificationResult {
  * });
  * ```
  */
-const verifySmtp = async (email: string, options: SmtpVerificationOptions = {}): Promise<SmtpVerificationResult> => {
-    const { fromEmail = "test@example.com", port = 25, timeout = 5000 } = options;
+export const verifySmtp = async (email: string, options: SmtpVerificationOptions = {}): Promise<SmtpVerificationResult> => {
+    const { fromEmail = "test@example.com", port = 25, timeout = 5000, ttl = 3_600_000 } = options;
 
     if (!email || typeof email !== "string") {
         return {
@@ -58,16 +62,37 @@ const verifySmtp = async (email: string, options: SmtpVerificationOptions = {}):
         };
     }
 
+    const { smtpCache } = options;
+    const cacheKey = `smtp:${normalizedEmail}:${fromEmail}:${port}`;
+
+    if (smtpCache) {
+        const cached = await smtpCache.get(cacheKey);
+
+        if (cached !== undefined) {
+            return cached;
+        }
+    }
+
     const domain = normalizedEmail.slice(atIndex + 1);
 
-    const mxCheck = await checkMxRecords(domain);
+    const mxCache = options.cache as Cache<MxCheckResult> | undefined;
+
+    const mxCheck = await checkMxRecords(domain, {
+        cache: mxCache,
+    });
 
     if (!mxCheck.valid || !mxCheck.records || mxCheck.records.length === 0) {
-        return {
+        const result: SmtpVerificationResult = {
             error: mxCheck.error || "No MX records found",
             mxRecords: mxCheck.records,
             valid: false,
         };
+
+        if (smtpCache) {
+            await smtpCache.set(cacheKey, result, ttl);
+        }
+
+        return result;
     }
 
     const mxRecord = mxCheck.records[0];
@@ -82,9 +107,19 @@ const verifySmtp = async (email: string, options: SmtpVerificationOptions = {}):
             socket.destroy();
         };
 
+        const cacheAndResolve = (result: SmtpVerificationResult): void => {
+            if (smtpCache) {
+                smtpCache.set(cacheKey, result, ttl).catch(() => {
+                    // Ignore cache errors
+                });
+            }
+
+            resolve(result);
+        };
+
         const onError = (error: Error): void => {
             cleanup();
-            resolve({
+            cacheAndResolve({
                 error: error.message,
                 mxRecords: mxCheck.records,
                 valid: false,
@@ -93,7 +128,7 @@ const verifySmtp = async (email: string, options: SmtpVerificationOptions = {}):
 
         const onTimeout = (): void => {
             cleanup();
-            resolve({
+            cacheAndResolve({
                 error: "SMTP connection timeout",
                 mxRecords: mxCheck.records,
                 valid: false,
@@ -119,14 +154,14 @@ const verifySmtp = async (email: string, options: SmtpVerificationOptions = {}):
                 socket.write(`RCPT TO:<${normalizedEmail}>\r\n`);
             } else if (state === "rcpt-to" && responseCode.startsWith("250")) {
                 cleanup();
-                resolve({
+                cacheAndResolve({
                     mxRecords: mxCheck.records,
                     smtpResponse: response,
                     valid: true,
                 });
             } else if (state === "rcpt-to" && (responseCode.startsWith("550") || responseCode.startsWith("551") || responseCode.startsWith("553"))) {
                 cleanup();
-                resolve({
+                cacheAndResolve({
                     error: "Email address does not exist",
                     mxRecords: mxCheck.records,
                     smtpResponse: response,
@@ -139,7 +174,7 @@ const verifySmtp = async (email: string, options: SmtpVerificationOptions = {}):
             socket.connect(port, mxRecord.exchange);
         } else {
             cleanup();
-            resolve({
+            cacheAndResolve({
                 error: "No MX record available",
                 mxRecords: mxCheck.records,
                 valid: false,
@@ -147,6 +182,3 @@ const verifySmtp = async (email: string, options: SmtpVerificationOptions = {}):
         }
     });
 };
-
-export default verifySmtp;
-export type { SmtpVerificationOptions, SmtpVerificationResult };

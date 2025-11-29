@@ -10,7 +10,7 @@
  * - Custom headers
  */
 
-import { createMail } from "@visulima/email";
+import { createMail, MailMessage } from "@visulima/email";
 import { nodemailerProvider } from "@visulima/email/providers/nodemailer";
 
 const main = async () => {
@@ -46,14 +46,14 @@ const main = async () => {
 
     // Example 1: Basic email with HTML and text
     console.log("Sending basic email...");
-    const result1 = await mail
-        .message()
+    const message1 = new MailMessage()
         .to("recipient@example.com")
         .from("sender@example.com")
         .subject("Basic Email Example")
         .html("<h1>Hello</h1><p>This is a basic email.</p>")
-        .text("Hello\n\nThis is a basic email.")
-        .send();
+        .text("Hello\n\nThis is a basic email.");
+
+    const result1 = await mail.send(message1);
 
     if (result1.success) {
         console.log("✅ Basic email sent:", result1.data?.messageId);
@@ -63,16 +63,16 @@ const main = async () => {
 
     // Example 2: Email with CC, BCC, and Reply-To
     console.log("\nSending email with CC, BCC, and Reply-To...");
-    const result2 = await mail
-        .message()
+    const message2 = new MailMessage()
         .to("recipient@example.com")
         .cc("cc@example.com")
         .bcc("bcc@example.com")
         .from("sender@example.com")
         .replyTo("reply@example.com")
         .subject("Email with CC, BCC, and Reply-To")
-        .html("<h1>Hello</h1><p>This email has CC, BCC, and Reply-To headers.</p>")
-        .send();
+        .html("<h1>Hello</h1><p>This email has CC, BCC, and Reply-To headers.</p>");
+
+    const result2 = await mail.send(message2);
 
     if (result2.success) {
         console.log("✅ Email with CC/BCC sent:", result2.data?.messageId);
@@ -82,8 +82,7 @@ const main = async () => {
 
     // Example 3: Email with attachments
     console.log("\nSending email with attachments...");
-    const result3 = await mail
-        .message()
+    const message3 = new MailMessage()
         .to("recipient@example.com")
         .from("sender@example.com")
         .subject("Email with Attachments")
@@ -97,8 +96,9 @@ const main = async () => {
             filename: "example.json",
             content: JSON.stringify({ message: "Hello from attachment" }, null, 2),
             contentType: "application/json",
-        })
-        .send();
+        });
+
+    const result3 = await mail.send(message3);
 
     if (result3.success) {
         console.log("✅ Email with attachments sent:", result3.data?.messageId);
@@ -108,15 +108,15 @@ const main = async () => {
 
     // Example 4: Email with custom headers
     console.log("\nSending email with custom headers...");
-    const result4 = await mail
-        .message()
+    const message4 = new MailMessage()
         .to("recipient@example.com")
         .from("sender@example.com")
         .subject("Email with Custom Headers")
         .html("<h1>Hello</h1><p>This email has custom headers.</p>")
         .header("X-Custom-Header", "custom-value")
-        .header("X-Priority", "1")
-        .send();
+        .header("X-Priority", "1");
+
+    const result4 = await mail.send(message4);
 
     if (result4.success) {
         console.log("✅ Email with custom headers sent:", result4.data?.messageId);
@@ -125,9 +125,9 @@ const main = async () => {
     }
 
     // Example 5: Email with transport override (use different transport for this email)
-    // Note: Transport override must be passed via sendEmail directly, not through message builder
+    // Note: Transport override must be passed via send directly, not through message builder
     console.log("\nSending email with transport override...");
-    const result5 = await mail.sendEmail({
+    const result5 = await mail.send({
         to: "recipient@example.com",
         from: "sender@example.com",
         subject: "Email with Transport Override",
@@ -151,16 +151,16 @@ const main = async () => {
 
     // Example 6: Multiple recipients
     console.log("\nSending email to multiple recipients...");
-    const result6 = await mail
-        .message()
+    const message6 = new MailMessage()
         .to([
             { email: "recipient1@example.com", name: "Recipient 1" },
             { email: "recipient2@example.com", name: "Recipient 2" },
         ])
         .from("sender@example.com")
         .subject("Email to Multiple Recipients")
-        .html("<h1>Hello</h1><p>This email is sent to multiple recipients.</p>")
-        .send();
+        .html("<h1>Hello</h1><p>This email is sent to multiple recipients.</p>");
+
+    const result6 = await mail.send(message6);
 
     if (result6.success) {
         console.log("✅ Email to multiple recipients sent:", result6.data?.messageId);

@@ -1,7 +1,7 @@
 /**
  * Logger interface with debug, error, info, and warn methods.
  */
-type Logger = {
+export type Logger = {
     debug: (message: string, ...args: unknown[]) => void;
     error: (message: string, ...args: unknown[]) => void;
     info: (message: string, ...args: unknown[]) => void;
@@ -14,7 +14,7 @@ type Logger = {
  * @param logger Optional Console instance. If provided, logs will be displayed with prefixes. If not provided, returns a no-op logger.
  * @returns A logger instance with debug, error, info, and warn methods.
  */
-const createLogger = (providerName: string, logger?: Console): Logger => {
+export const createLogger = (providerName: string, logger?: Console): Logger => {
     const noop = (): void => {
         // No-op logger when no logger is provided
     };
@@ -43,6 +43,3 @@ const createLogger = (providerName: string, logger?: Console): Logger => {
         },
     };
 };
-
-export type { Logger };
-export default createLogger;

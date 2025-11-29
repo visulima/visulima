@@ -1,4 +1,4 @@
-import type { EmailAddress, EmailOptions } from "../types";
+import type { EmailAddress, EmailOptions } from "../../types";
 import validateEmailDefault from "./validate-email";
 
 /**

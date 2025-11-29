@@ -7,7 +7,7 @@ import generateMessageId from "../../utils/generate-message-id";
 import headersToRecord from "../../utils/headers-to-record";
 import { makeRequest } from "../../utils/make-request";
 import retry from "../../utils/retry";
-import validateEmailOptions from "../../utils/validate-email-options";
+import validateEmailOptions from "../../utils/validation/validate-email-options";
 import type { ProviderFactory } from "../provider";
 import { defineProvider } from "../provider";
 import { createProviderLogger, formatAddressEmails, handleProviderError, ProviderState } from "../utils";
@@ -178,39 +178,32 @@ const infobipProvider: ProviderFactory<InfobipConfig, unknown, InfobipEmailOptio
 
                 await providerState.ensureInitialized(() => this.initialize(), PROVIDER_NAME);
 
-                // Build payload for Infobip API
                 const payload: Record<string, unknown> = {
                     from: typeof emailOptions.from === "string" ? emailOptions.from : emailOptions.from.email,
                     subject: emailOptions.subject,
                     to: formatAddressEmails(emailOptions.to),
                 };
 
-                // Add HTML content
                 if (emailOptions.html) {
                     payload.html = emailOptions.html;
                 }
 
-                // Add text content
                 if (emailOptions.text) {
                     payload.text = emailOptions.text;
                 }
 
-                // Add CC
                 if (emailOptions.cc) {
                     payload.cc = formatAddressEmails(emailOptions.cc);
                 }
 
-                // Add BCC
                 if (emailOptions.bcc) {
                     payload.bcc = formatAddressEmails(emailOptions.bcc);
                 }
 
-                // Add reply-to
                 if (emailOptions.replyTo) {
                     payload.replyTo = typeof emailOptions.replyTo === "string" ? emailOptions.replyTo : emailOptions.replyTo.email;
                 }
 
-                // Add template
                 if (emailOptions.templateId) {
                     payload.templateId = emailOptions.templateId;
 
@@ -219,34 +212,28 @@ const infobipProvider: ProviderFactory<InfobipConfig, unknown, InfobipEmailOptio
                     }
                 }
 
-                // Add tracking URL
                 if (emailOptions.trackingUrl) {
                     payload.trackingUrl = emailOptions.trackingUrl;
                 }
 
-                // Add notify URL
                 if (emailOptions.notifyUrl) {
                     payload.notifyUrl = emailOptions.notifyUrl;
                 }
 
-                // Add intermediate report
                 if (emailOptions.intermediateReport !== undefined) {
                     payload.intermediateReport = emailOptions.intermediateReport;
                 }
 
-                // Add send at
                 if (emailOptions.sendAt) {
                     payload.sendAt = emailOptions.sendAt;
                 }
 
-                // Add custom headers
                 if (emailOptions.headers) {
                     const headersRecord = headersToRecord(emailOptions.headers);
 
                     payload.headers = headersRecord;
                 }
 
-                // Add attachments
                 if (emailOptions.attachments && emailOptions.attachments.length > 0) {
                     payload.attachments = await Promise.all(
                         emailOptions.attachments.map(async (attachment) => {
@@ -310,7 +297,6 @@ const infobipProvider: ProviderFactory<InfobipConfig, unknown, InfobipEmailOptio
                     };
                 }
 
-                // Infobip returns message ID in response body
                 const responseBody = (result.data as { body?: { messages?: { messageId?: string }[] } })?.body;
                 const messageId = responseBody?.messages?.[0]?.messageId || generateMessageId();
 

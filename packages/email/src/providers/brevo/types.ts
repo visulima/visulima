@@ -14,12 +14,19 @@ export interface BrevoConfig extends BaseConfig {
      * Defaults to: https://api.brevo.com/v3
      */
     endpoint?: string;
+
+    /**
+     * Enable hard validation for replyTo addresses.
+     * If true, arrays will be rejected. If false, the first address from an array will be used.
+     * Defaults to: false
+     */
+    hardValidation?: boolean;
 }
 
 /**
  * Brevo-specific email options
  */
-export interface BrevoEmailOptions extends EmailOptions {
+export interface BrevoEmailOptions extends Omit<EmailOptions, "replyTo"> {
     /**
      * Batch ID for batch sending
      */
@@ -31,9 +38,10 @@ export interface BrevoEmailOptions extends EmailOptions {
     headers?: Record<string, string>;
 
     /**
-     * Reply-to email address (can override base replyTo)
+     * Reply-to email address (can override base replyTo).
+     * Only one address is allowed. If an array is provided and hardValidation is false, the first address will be used.
      */
-    replyTo?: EmailAddress;
+    replyTo?: EmailAddress | EmailAddress[];
 
     /**
      * Scheduled date/time

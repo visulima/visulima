@@ -6,13 +6,12 @@ import headersToRecord from "../../utils/headers-to-record";
 import { makeRequest } from "../../utils/make-request";
 import retry from "../../utils/retry";
 import { sanitizeHeaderName, sanitizeHeaderValue } from "../../utils/sanitize-header";
-import validateEmailOptions from "../../utils/validate-email-options";
+import validateEmailOptions from "../../utils/validation/validate-email-options";
 import type { ProviderFactory } from "../provider";
 import { defineProvider } from "../provider";
 import { createProviderLogger, formatZeptomailAddress, handleProviderError, ProviderState } from "../utils";
 import type { ZeptomailConfig, ZeptomailEmailOptions } from "./types";
 
-// Constants
 const PROVIDER_NAME = "zeptomail";
 const DEFAULT_ENDPOINT = "https://api.zeptomail.com/v1.1";
 const DEFAULT_TIMEOUT = 30_000;
@@ -23,17 +22,14 @@ const DEFAULT_RETRIES = 3;
  */
 const zeptomailProvider: ProviderFactory<ZeptomailConfig, unknown, ZeptomailEmailOptions> = defineProvider(
     (config: ZeptomailConfig = {} as ZeptomailConfig) => {
-        // Validate required options
         if (!config.token) {
             throw new RequiredOptionError(PROVIDER_NAME, "token");
         }
 
-        // Make sure token has correct format
         if (!config.token.startsWith("Zoho-enczapikey ")) {
             throw new EmailError(PROVIDER_NAME, "Token should be in the format \"Zoho-enczapikey <your_api_key>\"");
         }
 
-        // Initialize with defaults
         const options: Pick<ZeptomailConfig, "logger" | "token"> & Required<Omit<ZeptomailConfig, "logger" | "token">> = {
             debug: config.debug || false,
             endpoint: config.endpoint || DEFAULT_ENDPOINT,
@@ -65,7 +61,6 @@ const zeptomailProvider: ProviderFactory<ZeptomailConfig, unknown, ZeptomailEmai
              */
             async initialize(): Promise<void> {
                 await providerState.ensureInitialized(async () => {
-                    // Test endpoint availability and credentials
                     if (!(await this.isAvailable())) {
                         throw new EmailError(PROVIDER_NAME, "Zeptomail API not available or invalid token");
                     }
@@ -80,8 +75,6 @@ const zeptomailProvider: ProviderFactory<ZeptomailConfig, unknown, ZeptomailEmai
              */
             async isAvailable(): Promise<boolean> {
                 try {
-                    // Since Zeptomail doesn't have a dedicated endpoint to check token,
-                    // we'll just check if token exists and has correct format
                     if (options.token && options.token.startsWith("Zoho-enczapikey ")) {
                         logger.debug("Token format is valid, assuming Zeptomail is available");
 
@@ -108,7 +101,6 @@ const zeptomailProvider: ProviderFactory<ZeptomailConfig, unknown, ZeptomailEmai
             // eslint-disable-next-line sonarjs/cognitive-complexity
             async sendEmail(emailOptions: ZeptomailEmailOptions): Promise<Result<EmailResult>> {
                 try {
-                    // Validate email options
                     const validationErrors = validateEmailOptions(emailOptions);
 
                     if (validationErrors.length > 0) {
@@ -118,10 +110,8 @@ const zeptomailProvider: ProviderFactory<ZeptomailConfig, unknown, ZeptomailEmai
                         };
                     }
 
-                    // Make sure provider is initialized
                     await providerState.ensureInitialized(() => this.initialize(), PROVIDER_NAME);
 
-                    // Prepare request payload
                     type ZeptomailAttachment = {
                         content?: string;
                         file_cache_key?: string;
@@ -155,17 +145,14 @@ const zeptomailProvider: ProviderFactory<ZeptomailConfig, unknown, ZeptomailEmai
                         payload.to = emailOptions.to.email;
                     }
 
-                    // Add text body if present
                     if (emailOptions.text) {
                         payload.textbody = emailOptions.text;
                     }
 
-                    // Add HTML body if present
                     if (emailOptions.html) {
                         payload.htmlbody = emailOptions.html;
                     }
 
-                    // Add CC if present
                     if (emailOptions.cc) {
                         if (Array.isArray(emailOptions.cc)) {
                             payload.cc = emailOptions.cc.length === 1 ? (emailOptions.cc[0] as EmailAddress).email : emailOptions.cc.map((addr) => addr.email);
@@ -174,7 +161,6 @@ const zeptomailProvider: ProviderFactory<ZeptomailConfig, unknown, ZeptomailEmai
                         }
                     }
 
-                    // Add BCC if present
                     if (emailOptions.bcc) {
                         if (Array.isArray(emailOptions.bcc)) {
                             payload.bcc
@@ -184,12 +170,10 @@ const zeptomailProvider: ProviderFactory<ZeptomailConfig, unknown, ZeptomailEmai
                         }
                     }
 
-                    // Add reply-to if present
                     if (emailOptions.replyTo) {
                         payload.reply_to = [formatZeptomailAddress(emailOptions.replyTo).address];
                     }
 
-                    // Add tracking options if present
                     if (emailOptions.trackClicks !== undefined) {
                         payload.track_clicks = emailOptions.trackClicks;
                     }
@@ -198,12 +182,10 @@ const zeptomailProvider: ProviderFactory<ZeptomailConfig, unknown, ZeptomailEmai
                         payload.track_opens = emailOptions.trackOpens;
                     }
 
-                    // Add client reference if present
                     if (emailOptions.clientReference) {
                         payload.client_reference = emailOptions.clientReference;
                     }
 
-                    // Add MIME headers if present
                     if (emailOptions.mimeHeaders && Object.keys(emailOptions.mimeHeaders).length > 0) {
                         const mimeHeaders: Record<string, string> = {};
 
@@ -214,12 +196,10 @@ const zeptomailProvider: ProviderFactory<ZeptomailConfig, unknown, ZeptomailEmai
                         payload.mime_headers = mimeHeaders;
                     }
 
-                    // Add custom headers if present
                     if (emailOptions.headers) {
                         const headersRecord = headersToRecord(emailOptions.headers);
 
                         if (Object.keys(headersRecord).length > 0) {
-                            // Zeptomail doesn't have a dedicated field for custom headers, so we'll merge them into mime_headers
                             if (!payload.mime_headers) {
                                 payload.mime_headers = {};
                             }
@@ -232,14 +212,12 @@ const zeptomailProvider: ProviderFactory<ZeptomailConfig, unknown, ZeptomailEmai
                         }
                     }
 
-                    // Add attachments if present
                     if (emailOptions.attachments && emailOptions.attachments.length > 0) {
                         payload.attachments = emailOptions.attachments.map((attachment) => {
                             const attachmentData: ZeptomailAttachment = {
                                 name: attachment.filename,
                             };
 
-                            // Use content if provided
                             if (attachment.content) {
                                 attachmentData.content = typeof attachment.content === "string" ? attachment.content : attachment.content.toString("base64");
 
@@ -247,7 +225,6 @@ const zeptomailProvider: ProviderFactory<ZeptomailConfig, unknown, ZeptomailEmai
                                     attachmentData.mime_type = attachment.contentType;
                                 }
                             } else if (attachment.path) {
-                                // Or use file_cache_key if available (assuming this is something supported by Zeptomail)
                                 attachmentData.file_cache_key = attachment.path;
                             }
 
@@ -260,14 +237,12 @@ const zeptomailProvider: ProviderFactory<ZeptomailConfig, unknown, ZeptomailEmai
                         to: payload.to,
                     });
 
-                    // Create headers with API token
                     const headers: Record<string, string> = {
                         Accept: "application/json",
                         Authorization: options.token,
                         "Content-Type": "application/json",
                     };
 
-                    // Send request with retry capability
                     const result = await retry(
                         async () =>
                             makeRequest(
@@ -285,10 +260,8 @@ const zeptomailProvider: ProviderFactory<ZeptomailConfig, unknown, ZeptomailEmai
                     if (!result.success) {
                         logger.debug("API request failed", result.error);
 
-                        // Enhanced error messages based on response
                         let errorMessage = result.error instanceof Error ? result.error.message : "Unknown error";
 
-                        // Try to extract any error details from the response body
                         const responseBody = result.data as { body?: { error?: { message?: string }; message?: string } } | undefined;
 
                         if (responseBody?.body?.message) {
@@ -303,9 +276,7 @@ const zeptomailProvider: ProviderFactory<ZeptomailConfig, unknown, ZeptomailEmai
                         };
                     }
 
-                    // Extract information from response
                     const responseData = (result.data as { body?: { request_id?: string } })?.body;
-                    // Zeptomail returns a request_id in the successful response
                     const messageId = responseData?.request_id || generateMessageId();
 
                     logger.debug("Email sent successfully", { messageId });

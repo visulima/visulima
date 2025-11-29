@@ -1,6 +1,6 @@
 import { describe, expect, expectTypeOf, it } from "vitest";
 
-import { verifySmtp } from "../../src/utils/validation/verify-smtp";
+import { verifySmtp } from "../../../src/utils/validation/verify-smtp";
 
 const consoleMessage = "Skipping SMTP verification in CI environment, please validate this test locally.";
 
