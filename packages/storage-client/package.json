@@ -1,10 +1,31 @@
 {
     "name": "@visulima/storage-client",
     "version": "0.0.0",
-    "description": "&quot;The upload client library. Simple and easy file uploads for React | Vue | Solid | .",
+    "description": "The upload client library. Simple and easy file uploads for React | Vue | Solid | .",
     "keywords": [
         "visulima",
-        "storage-client"
+        "storage-client",
+        "file-upload",
+        "upload",
+        "upload-client",
+        "react",
+        "vue",
+        "solid",
+        "svelte",
+        "tus",
+        "resumable-upload",
+        "multipart-upload",
+        "chunked-upload",
+        "batch-upload",
+        "tanstack-query",
+        "react-query",
+        "vue-query",
+        "solid-query",
+        "svelte-query",
+        "file-management",
+        "progress-tracking",
+        "retry",
+        "abort-upload"
     ],
     "homepage": "https://visulima.com/packages/storage-client",
     "bugs": {
