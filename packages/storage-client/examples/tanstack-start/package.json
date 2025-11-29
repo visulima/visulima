@@ -9,9 +9,9 @@
         "test": "vitest run"
     },
     "dependencies": {
-        "@tanstack/react-router": "^1.139.6",
-        "@tanstack/react-start": "^1.139.6",
-        "@tanstack/router-plugin": "^1.139.6",
+        "@tanstack/react-router": "^1.139.11",
+        "@tanstack/react-start": "^1.139.11",
+        "@tanstack/router-plugin": "^1.139.11",
         "@visulima/storage": "workspace:*",
         "@visulima/storage-client": "workspace:*",
         "nitro": "latest",
