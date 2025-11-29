@@ -230,6 +230,22 @@
             "types": "./dist/utils/format-email-address.d.ts",
             "default": "./dist/utils/format-email-address.js"
         },
+        "./utils/check-mx-records": {
+            "types": "./dist/utils/check-mx-records.d.ts",
+            "default": "./dist/utils/check-mx-records.js"
+        },
+        "./utils/role-accounts": {
+            "types": "./dist/utils/role-accounts.d.ts",
+            "default": "./dist/utils/role-accounts.js"
+        },
+        "./utils/verify-smtp": {
+            "types": "./dist/utils/verify-smtp.d.ts",
+            "default": "./dist/utils/verify-smtp.js"
+        },
+        "./utils/verify-email": {
+            "types": "./dist/utils/verify-email.d.ts",
+            "default": "./dist/utils/verify-email.js"
+        },
         "./package.json": "./package.json"
     },
     "files": [
