@@ -54,14 +54,58 @@ const resend = resendProvider({
 // Create a Mail instance
 const mail = createMail(resend);
 
+// Optional: Set default configuration for all emails
+mail.setFrom({ email: "noreply@example.com", name: "My App" });
+
 // Send an email using the message builder
-const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Hello").html("<h1>Hello World</h1>");
+const message = new MailMessage()
+    .to("user@example.com")
+    // .from() is optional if set via mail.setFrom()
+    .subject("Hello")
+    .html("<h1>Hello World</h1>");
 
 const result = await mail.send(message);
 
 if (result.success) {
     console.log("Email sent:", result.data?.messageId);
 }
+```
+
+### Default Configuration
+
+You can configure default values for all emails sent through a Mail instance:
+
+```typescript
+import { createMail, MailMessage, resendProvider } from "@visulima/email";
+
+const mail = createMail(resendProvider({ apiKey: "re_xxx" }));
+
+// Set default from address
+mail.setFrom({ email: "noreply@example.com", name: "My App" });
+
+// Set default reply-to address
+mail.setReplyTo({ email: "support@example.com" });
+
+// Set default headers
+mail.setHeaders({
+    "X-App-Name": "MyApp",
+    "X-Version": "1.0.0",
+});
+
+// Or chain them together
+const mail2 = createMail(resendProvider({ apiKey: "re_xxx" }))
+    .setFrom({ email: "noreply@example.com" })
+    .setReplyTo({ email: "support@example.com" })
+    .setHeaders({ "X-App-Name": "MyApp" });
+
+// Now all emails will use these defaults if not specified in the message
+const message = new MailMessage()
+    .to("user@example.com")
+    .subject("Hello")
+    .html("<h1>Hello World</h1>");
+// No need to set .from() - it will use the default
+
+await mail.send(message);
 ```
 
 ### Using Different Providers
@@ -111,7 +155,7 @@ const emailOptions: EmailOptions = {
 };
 
 const result = await mail.send(emailOptions);
-````
+```
 
 ### Failover Provider
 
