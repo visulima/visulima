@@ -244,24 +244,22 @@ describe("uploader Retry Operations", () => {
 
         expect(batchId).toBeDefined();
 
-        if (batchId) {
-            uploader.retryBatch(batchId);
+        uploader.retryBatch(batchId!);
 
-            // Wait a bit
-            await new Promise<void>((resolve) => {
-                setTimeout(() => {
-                    resolve();
-                }, 5);
-            });
+        // Wait a bit
+        await new Promise<void>((resolve) => {
+            setTimeout(() => {
+                resolve();
+            }, 5);
+        });
 
-            const batch = uploader.getBatch(batchId);
+        const batch = uploader.getBatch(batchId!);
 
-            expect(batch?.status).toBe("uploading");
-        }
+        expect(batch?.status).toBe("uploading");
     });
 
     it("should not retry non-error items", () => {
-        expect.assertions(1);
+        expect.assertions(2);
 
         const uploader = createUploader({
             endpoint: "/api/upload",
@@ -272,19 +270,16 @@ describe("uploader Retry Operations", () => {
 
         const item = uploader.getItem(itemId);
 
-        // Item is pending or uploading, not error
-        if (item && item.status !== "error") {
-            const initialRetryCount = item.retryCount ?? 0;
+        expect(item?.status).not.toBe("error");
 
-            uploader.retryItem(itemId);
+        const initialRetryCount = item?.retryCount ?? 0;
 
-            // Retry count should not increment for non-error items (retryItem returns early)
-            const updatedItem = uploader.getItem(itemId);
+        uploader.retryItem(itemId);
 
-            // retryCount should remain the same (0) since retryItem returns early for non-error items
-            expect(updatedItem?.retryCount ?? 0).toBe(initialRetryCount);
-        } else {
-            expect(true).toBe(true); // Skip test if item is already in error state
-        }
+        // Retry count should not increment for non-error items (retryItem returns early)
+        const updatedItem = uploader.getItem(itemId);
+
+        // retryCount should remain the same (0) since retryItem returns early for non-error items
+        expect(updatedItem?.retryCount ?? 0).toBe(initialRetryCount);
     });
 });

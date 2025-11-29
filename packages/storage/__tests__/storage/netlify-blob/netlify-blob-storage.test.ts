@@ -112,4 +112,79 @@ describe(NetlifyBlobStorage, () => {
             expect(exists).toBe(false);
         });
     });
+
+    describe(".update()", () => {
+        it("should update changed metadata keys correctly", async () => {
+            expect.assertions(3);
+
+            // Mock getMeta to return existing file metadata
+            vi.spyOn(storage, "getMeta").mockResolvedValue({
+                ...metafile,
+                metadata: {
+                    name: "testfile.mp4",
+                    mimeType: "video/mp4",
+                },
+            } as never);
+
+            // Mock saveMeta to return the updated file
+            vi.spyOn(storage, "saveMeta").mockImplementation(async (file) => file as never);
+
+            const updatedFile = await storage.update({ id: metafile.id }, { metadata: { name: "newname.mp4" } });
+
+            expect(updatedFile.metadata.name).toBe("newname.mp4");
+            expect(updatedFile.metadata.mimeType).toBe("video/mp4");
+            expect(updatedFile.status).toBe("updated");
+        });
+
+        it("should reject update operation when file is not found", async () => {
+            expect.assertions(1);
+
+            // Mock getMeta to throw error (file doesn't exist)
+            vi.spyOn(storage, "getMeta").mockRejectedValue(new Error("File not found"));
+
+            await expect(storage.update({ id: "non-existent-id" }, { metadata: { name: "newname.mp4" } })).rejects.toThrow();
+        });
+
+        it("should handle TTL option and set expiration timestamp during update", async () => {
+            expect.assertions(4);
+
+            // Mock getMeta to return existing file metadata
+            vi.spyOn(storage, "getMeta").mockResolvedValue({
+                ...metafile,
+            } as never);
+
+            // Mock saveMeta to return the updated file
+            vi.spyOn(storage, "saveMeta").mockImplementation(async (file) => file as never);
+
+            const updatedFile = await storage.update({ id: metafile.id }, { ttl: "2h" });
+
+            expect(updatedFile.expiredAt).toBeDefined();
+            expect(typeof updatedFile.expiredAt).toBe("number");
+
+            // TTL should be converted to expiredAt timestamp
+            const expectedExpiry = Date.now() + 2 * 60 * 60 * 1000; // 2 hours in ms
+
+            expect(updatedFile.expiredAt).toBeGreaterThan(expectedExpiry - 1000); // Allow 1s tolerance
+            expect(updatedFile.expiredAt).toBeLessThan(expectedExpiry + 1000);
+        });
+
+        it("should call onUpdate hook after updating metadata", async () => {
+            expect.assertions(1);
+
+            const onUpdateSpy = vi.fn();
+            storage.onUpdate = onUpdateSpy;
+
+            // Mock getMeta to return existing file metadata
+            vi.spyOn(storage, "getMeta").mockResolvedValue({
+                ...metafile,
+            } as never);
+
+            // Mock saveMeta to return the updated file
+            vi.spyOn(storage, "saveMeta").mockImplementation(async (file) => file as never);
+
+            await storage.update({ id: metafile.id }, { metadata: { name: "newname.mp4" } });
+
+            expect(onUpdateSpy).toHaveBeenCalledTimes(1);
+        });
+    });
 });

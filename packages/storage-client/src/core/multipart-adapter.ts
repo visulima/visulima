@@ -96,19 +96,21 @@ export const createMultipartAdapter = (options: MultipartAdapterOptions): Multip
                     return fileMeta;
                 };
 
-                const buildUploadResult = (item: UploadItem, fileMeta: Partial<FileMeta>): UploadResult => ({
-                    bytesWritten: fileMeta.bytesWritten,
-                    contentType: fileMeta.contentType ?? item.file.type,
-                    createdAt: fileMeta.createdAt,
-                    filename: fileMeta.originalName ?? item.file.name,
-                    id: fileMeta.id ?? item.id,
-                    metadata: fileMeta.metadata,
-                    name: fileMeta.name,
-                    originalName: fileMeta.originalName ?? item.file.name,
-                    size: fileMeta.size ?? item.file.size,
-                    status: (fileMeta.status as UploadResult["status"]) ?? "completed",
-                    url: item.url,
-                });
+                const buildUploadResult = (item: UploadItem, fileMeta: Partial<FileMeta>): UploadResult => {
+                    return {
+                        bytesWritten: fileMeta.bytesWritten,
+                        contentType: fileMeta.contentType ?? item.file.type,
+                        createdAt: fileMeta.createdAt,
+                        filename: fileMeta.originalName ?? item.file.name,
+                        id: fileMeta.id ?? item.id,
+                        metadata: fileMeta.metadata,
+                        name: fileMeta.name,
+                        originalName: fileMeta.originalName ?? item.file.name,
+                        size: fileMeta.size ?? item.file.size,
+                        status: (fileMeta.status as UploadResult["status"]) ?? "completed",
+                        url: item.url,
+                    };
+                };
 
                 const onItemFinish = (itemOrBatch: UploadItem | BatchState): void => {
                     if ("file" in itemOrBatch && !resolved && itemOrBatch.file.name === file.name) {

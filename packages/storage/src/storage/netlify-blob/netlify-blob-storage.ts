@@ -12,7 +12,7 @@ import LocalMetaStorage from "../local/local-meta-storage";
 import type MetaStorage from "../meta-storage";
 import { BaseStorage } from "../storage";
 import type { FileInit, FilePart, FileQuery, FileReturn } from "../utils/file";
-import { getFileStatus, hasContent, partMatch, updateSize } from "../utils/file";
+import { getFileStatus, hasContent, partMatch, updateMetadata, updateSize } from "../utils/file";
 import NetlifyBlobFile from "./netlify-blob-file";
 import type { NetlifyBlobStorageOptions } from "./types";
 
@@ -30,8 +30,8 @@ import type { NetlifyBlobStorageOptions } from "./types";
  * - ✅ create, write, delete, get, list, copy, move
  * - ✅ Batch operations: deleteBatch, copyBatch, moveBatch (inherited from BaseStorage)
  * - ✅ exists: Implemented (checks metadata and Netlify Blob)
+ * - ✅ update: Implemented (updates metadata file, Netlify Blob API doesn't support blob metadata updates)
  * - ❌ getStream: Not implemented (use get() for file retrieval)
- * - ❌ update: Not implemented (Netlify Blob API doesn't support metadata updates)
  * - ❌ getUrl: Not implemented (Netlify Blob URLs available via Netlify Blob API)
  * - ❌ getUploadUrl: Not implemented (Netlify Blob upload URLs handled internally)
  */
@@ -458,6 +458,52 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile, FileReturn> {
             await this.delete({ id: name });
 
             return copiedFile;
+        });
+    }
+
+    /**
+     * Updates file metadata with user-provided key-value pairs.
+     * Updates the metadata file (overwrites it) but does not update Netlify Blob metadata
+     * since the Netlify Blob API doesn't support metadata updates.
+     * @param query File query containing the file ID to update.
+     * @param query.id File ID to update.
+     * @param metadata Partial file object containing fields to update.
+     * @returns Promise resolving to the updated file object.
+     * @throws {UploadError} If the file cannot be found (ERRORS.FILE_NOT_FOUND).
+     * @remarks
+     * Supports TTL (time-to-live) option: if metadata contains a 'ttl' field,
+     * it will be converted to an 'expiredAt' timestamp.
+     * TTL can be a number (milliseconds) or string (e.g., "1h", "30m", "7d").
+     */
+    public override async update({ id }: FileQuery, metadata: Partial<NetlifyBlobFile>): Promise<NetlifyBlobFile> {
+        return this.instrumentOperation("update", async () => {
+            const file = await this.getMeta(id);
+
+            // Handle TTL option in metadata
+            const processedMetadata = { ...metadata };
+
+            if ("ttl" in processedMetadata && processedMetadata.ttl !== undefined) {
+                const ttlValue = processedMetadata.ttl;
+                const ttlMs = typeof ttlValue === "string" ? toMilliseconds(ttlValue) : ttlValue;
+
+                if (ttlMs !== undefined) {
+                    processedMetadata.expiredAt = Date.now() + (ttlMs as number);
+                }
+
+                delete (processedMetadata as Record<string, unknown>).ttl;
+            }
+
+            // Update metadata (deep merge)
+            updateMetadata(file, processedMetadata);
+
+            // Save metadata (overwrites the meta file)
+            await this.saveMeta(file);
+
+            const updatedFile = { ...file, status: "updated" } as NetlifyBlobFile;
+
+            await this.onUpdate(updatedFile);
+
+            return updatedFile;
         });
     }
 

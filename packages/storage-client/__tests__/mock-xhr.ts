@@ -4,8 +4,7 @@ import { vi } from "vitest";
  * Mock XMLHttpRequest for testing upload functionality.
  * Can be extended for custom behavior in specific tests.
  */
-
-export class MockXMLHttpRequest {
+class MockXMLHttpRequest {
     public readyState = 0;
 
     public status = 200;
@@ -93,3 +92,6 @@ export class MockXMLHttpRequest {
         }
     });
 }
+
+export default MockXMLHttpRequest;
+export { MockXMLHttpRequest };

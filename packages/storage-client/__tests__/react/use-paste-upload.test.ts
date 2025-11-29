@@ -9,10 +9,11 @@ describe(usePasteUpload, () => {
 
         const { result } = renderHook(() => usePasteUpload());
 
-        expect(result.current.pastedFiles).toEqual([]);
+        expect(result.current.pastedFiles).toStrictEqual([]);
     });
 
     it("should provide handlePaste function", () => {
+        expect.assertions(1);
         const { result } = renderHook(() => usePasteUpload());
 
         expect(result.current.handlePaste).toBeDefined();
@@ -21,6 +22,7 @@ describe(usePasteUpload, () => {
     });
 
     it("should handle paste event with files", async () => {
+        expect.assertions(3);
         const onFilesPasted = vi.fn();
 
         const { result } = renderHook(() =>
@@ -59,6 +61,7 @@ describe(usePasteUpload, () => {
     });
 
     it("should filter files when filter function provided", async () => {
+        expect.assertions(3);
         const filter = vi.fn((file: File) => file.type === "image/jpeg");
         const onFilesPasted = vi.fn();
 
@@ -105,6 +108,7 @@ describe(usePasteUpload, () => {
     });
 
     it("should reset pasted files", async () => {
+        expect.assertions(4);
         const { result } = renderHook(() => usePasteUpload());
 
         const file = new File(["test"], "test.jpg", { type: "image/jpeg" });
@@ -136,7 +140,7 @@ describe(usePasteUpload, () => {
         result.current.reset();
 
         await waitFor(() => {
-            expect(result.current.pastedFiles).toEqual([]);
+            expect(result.current.pastedFiles).toStrictEqual([]);
         });
     });
 });

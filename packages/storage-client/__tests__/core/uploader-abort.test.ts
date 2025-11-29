@@ -109,16 +109,14 @@ describe("uploader Abort Operations", () => {
 
         expect(batchId).toBeDefined();
 
-        if (batchId) {
-            uploader.abortBatch(batchId);
+        uploader.abortBatch(batchId!);
 
-            expect(onBatchCancelled).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    id: batchId,
-                    status: "cancelled",
-                }),
-            );
-        }
+        expect(onBatchCancelled).toHaveBeenCalledWith(
+            expect.objectContaining({
+                id: batchId,
+                status: "cancelled",
+            }),
+        );
     });
 
     it("should abort all uploads", () => {
