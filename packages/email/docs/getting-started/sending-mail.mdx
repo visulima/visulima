@@ -235,27 +235,125 @@ if (isDisposableEmail("user@my-disposable.com", customDisposableDomains)) {
 }
 ```
 
+### Role Account Detection
+
+Detect if an email address is a role account (non-personal email addresses like `noreply@`, `support@`, `admin@`, etc.):
+
+```typescript
+import { isRoleAccount } from "@visulima/email/utils/role-accounts";
+
+if (isRoleAccount("noreply@example.com")) {
+    console.log("This is a role account (non-personal)");
+}
+
+// With custom role prefixes
+const customPrefixes = new Set(["custom-role", "my-role"]);
+if (isRoleAccount("custom-role@example.com", customPrefixes)) {
+    console.log("Custom role account detected");
+}
+```
+
+### MX Record Checking
+
+Verify that a domain has valid MX (Mail Exchange) records before sending:
+
+```typescript
+import { checkMxRecords } from "@visulima/email/utils/check-mx-records";
+
+const domain = "example.com";
+const mxResult = await checkMxRecords(domain);
+
+if (!mxResult.valid) {
+    throw new Error(`Domain ${domain} has no valid MX records`);
+}
+
+console.log("MX records found:", mxResult.records);
+```
+
+### SMTP Verification
+
+Verify if an email address exists by connecting to the mail server:
+
+```typescript
+import { verifySmtp } from "@visulima/email/utils/verify-smtp";
+
+const result = await verifySmtp("user@example.com", {
+    timeout: 5000,
+    fromEmail: "test@example.com",
+    port: 25,
+});
+
+if (result.valid) {
+    console.log("Email address exists");
+} else {
+    console.error("Verification failed:", result.error);
+}
+```
+
+**Note:** Many mail servers block SMTP verification to prevent email harvesting. This method may not work for all domains and should be used with caution.
+
+### Comprehensive Email Verification
+
+Use the comprehensive verification function to check multiple aspects of an email address:
+
+```typescript
+import { verifyEmail } from "@visulima/email/utils/verify-email";
+
+const result = await verifyEmail("user@example.com", {
+    checkDisposable: true,
+    checkRoleAccount: true,
+    checkMx: true,
+    checkSmtp: false, // Optional: many servers block SMTP verification
+});
+
+if (result.valid) {
+    console.log("Email passed all checks");
+} else {
+    console.error("Validation errors:", result.errors);
+    console.warn("Warnings:", result.warnings);
+}
+
+// Access individual check results
+if (result.disposable) {
+    console.warn("Email is from a disposable service");
+}
+
+if (result.roleAccount) {
+    console.warn("Email appears to be a role account");
+}
+
+if (result.mxValid === false) {
+    console.error("Domain has no valid MX records");
+}
+```
+
 ### Complete Validation Example
 
-Here's a complete example combining email validation and disposable email detection:
+Here's a complete example combining all validation checks:
 
 ```typescript
 import { createMail } from "@visulima/email";
 import { resendProvider } from "@visulima/email/providers/resend";
-import { validateEmail } from "@visulima/email/utils/validate-email";
-import { isDisposableEmail } from "@visulima/email/utils/is-disposable-email";
+import { verifyEmail } from "@visulima/email/utils/verify-email";
 
 const mail = createMail(resendProvider({ apiKey: "re_xxx" }));
 
 const validateAndSend = async (recipientEmail: string) => {
-    // Validate email format
-    if (!validateEmail(recipientEmail)) {
-        throw new Error(`Invalid email format: ${recipientEmail}`);
+    // Comprehensive verification
+    const verification = await verifyEmail(recipientEmail, {
+        checkDisposable: true,
+        checkRoleAccount: true,
+        checkMx: true,
+        checkSmtp: false,
+    });
+
+    if (!verification.valid) {
+        const errors = verification.errors.join(", ");
+        throw new Error(`Email validation failed: ${errors}`);
     }
 
-    // Check for disposable emails
-    if (isDisposableEmail(recipientEmail)) {
-        throw new Error(`Disposable email addresses are not allowed: ${recipientEmail}`);
+    if (verification.warnings.length > 0) {
+        console.warn("Email warnings:", verification.warnings);
     }
 
     // Send email
