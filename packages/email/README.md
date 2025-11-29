@@ -1220,6 +1220,28 @@ const simple = formatEmailAddress({ email: "user@example.com" });
 // "user@example.com"
 ```
 
+#### Normalize Email Aliases
+
+Normalize email aliases for supported providers (Gmail, Yahoo, Outlook, etc.):
+
+```typescript
+import { normalizeEmailAliases } from "@visulima/email/utils/normalize-email-aliases";
+
+// Gmail: removes dots and plus aliases
+normalizeEmailAliases("example+test@gmail.com"); // "example@gmail.com"
+normalizeEmailAliases("ex.ample@gmail.com"); // "example@gmail.com"
+
+// Yahoo, Outlook, FastMail, Mail.com, GMX, etc.: removes plus aliases only
+normalizeEmailAliases("user+tag@yahoo.com"); // "user@yahoo.com"
+normalizeEmailAliases("user.name@yahoo.com"); // "user.name@yahoo.com" (dots preserved)
+normalizeEmailAliases("user+tag@fastmail.com"); // "user@fastmail.com"
+normalizeEmailAliases("user+tag@mail.com"); // "user@mail.com"
+normalizeEmailAliases("user+tag@gmx.com"); // "user@gmx.com"
+
+// Unsupported domains return unchanged
+normalizeEmailAliases("user@example.com"); // "user@example.com"
+```
+
 ## Related
 
 ## Supported Node.js Versions

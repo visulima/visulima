@@ -375,6 +375,26 @@ try {
 }
 ```
 
+### Normalizing Email Aliases
+
+Some email providers support aliases that point to the same mailbox. Normalize emails to their canonical form to prevent duplicate accounts:
+
+```typescript
+import { normalizeEmailAliases } from "@visulima/email/utils/normalize-email-aliases";
+
+// Gmail: removes dots and plus aliases
+const normalized = normalizeEmailAliases("example+test@gmail.com");
+// Returns: "example@gmail.com"
+
+// Use before storing in database or checking for duplicates
+const userEmail = normalizeEmailAliases("user.name+tag@gmail.com");
+// Store "username@gmail.com" instead of "user.name+tag@gmail.com"
+```
+
+**Supported Providers:**
+- **Gmail**: Removes dots (`.`) and plus aliases (`+`)
+- **Yahoo, Outlook, Hotmail, Live, MSN, iCloud, ProtonMail, Zoho, FastMail, Mail.com, GMX**: Removes plus aliases (`+`) only, dots are preserved
+
 ## Setting a Provider Per Message
 
 You can override the default provider for a specific message:
