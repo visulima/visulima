@@ -1,14 +1,14 @@
-import checkMxRecords from "./check-mx-records";
+import { checkMxRecords } from "./check-mx-records";
 import isDisposableEmail from "./is-disposable-email";
 import { isRoleAccount } from "./role-accounts";
 import validateEmail from "./validate-email";
 import type { SmtpVerificationOptions } from "./verify-smtp";
-import verifySmtp from "./verify-smtp";
+import { verifySmtp } from "./verify-smtp";
 
 /**
  * Options for comprehensive email verification.
  */
-interface EmailVerificationOptions extends SmtpVerificationOptions {
+export interface EmailVerificationOptions extends SmtpVerificationOptions {
     checkDisposable?: boolean;
     checkMx?: boolean;
     checkRoleAccount?: boolean;
@@ -20,7 +20,7 @@ interface EmailVerificationOptions extends SmtpVerificationOptions {
 /**
  * Result of comprehensive email verification.
  */
-interface EmailVerificationResult {
+export interface EmailVerificationResult {
     disposable?: boolean;
     errors: string[];
     formatValid: boolean;
@@ -38,7 +38,7 @@ interface EmailVerificationResult {
  * @returns Detailed verification result.
  * @example
  * ```ts
- * import { verifyEmail } from "@visulima/email/utils/verify-email";
+ * import { verifyEmail } from "@visulima/email/validation/verify-email";
  *
  * const result = await verifyEmail("user@example.com", {
  *     checkDisposable: true,
@@ -53,7 +53,7 @@ interface EmailVerificationResult {
  * ```
  */
 // eslint-disable-next-line sonarjs/cognitive-complexity
-const verifyEmail = async (email: string, options: EmailVerificationOptions = {}): Promise<EmailVerificationResult> => {
+export const verifyEmail = async (email: string, options: EmailVerificationOptions = {}): Promise<EmailVerificationResult> => {
     const {
         checkDisposable = true,
         checkMx = true,
@@ -106,7 +106,24 @@ const verifyEmail = async (email: string, options: EmailVerificationOptions = {}
 
     if (checkMx) {
         const domain = email.split("@")[1];
-        const mxCheck = await checkMxRecords(domain);
+
+        if (!domain) {
+            errors.push("Invalid email format: missing domain");
+
+            return {
+                disposable,
+                errors,
+                formatValid: false,
+                mxValid: false,
+                roleAccount,
+                valid: false,
+                warnings,
+            };
+        }
+
+        const mxCheck = await checkMxRecords(domain, {
+            cache: options.cache,
+        });
 
         mxValid = mxCheck.valid;
 
@@ -116,7 +133,11 @@ const verifyEmail = async (email: string, options: EmailVerificationOptions = {}
     }
 
     if (checkSmtp) {
-        const smtpCheck = await verifySmtp(email, smtpOptions);
+        const smtpCheck = await verifySmtp(email, {
+            ...smtpOptions,
+            cache: options.cache,
+            smtpCache: options.smtpCache,
+        });
 
         smtpValid = smtpCheck.valid;
 
@@ -138,6 +159,3 @@ const verifyEmail = async (email: string, options: EmailVerificationOptions = {}
         warnings,
     };
 };
-
-export default verifyEmail;
-export type { EmailVerificationOptions, EmailVerificationResult };

@@ -34,7 +34,7 @@ You can sign messages using either **S/MIME** or **DKIM**. In both cases, the ce
 DKIM is an email authentication method that affixes a digital signature, linked to a domain name, to each outgoing email message. It requires a private key but not a certificate.
 
 ```typescript
-import { createMail } from "@visulima/email";
+import { createMail, MailMessage } from "@visulima/email";
 import { resendProvider } from "@visulima/email/providers/resend";
 import { createDkimSigner } from "@visulima/email/crypto";
 
@@ -50,8 +50,13 @@ const dkimSigner = createDkimSigner({
 });
 
 // Sign and send email
-const result = await mail.message().to("user@example.com").from("sender@example.com").subject("Hello").html("<h1>Hello World</h1>").sign(dkimSigner).send();
+const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Hello").html("<h1>Hello World</h1>").sign(dkimSigner);
+
+const result = await mail.send(message);
 ```
+
+<｜tool▁calls▁begin｜><｜tool▁call▁begin｜>
+read_file
 
 #### DKIM Options
 
@@ -89,7 +94,7 @@ const dkimSigner = createDkimSigner({
 S/MIME is a standard for public key encryption and signing of MIME data. It requires using both a certificate and a private key.
 
 ```typescript
-import { createMail } from "@visulima/email";
+import { createMail, MailMessage } from "@visulima/email";
 import { resendProvider } from "@visulima/email/providers/resend";
 import { createSmimeSigner } from "@visulima/email/crypto";
 
@@ -106,7 +111,9 @@ const smimeSigner = createSmimeSigner({
 });
 
 // Sign and send email
-const result = await mail.message().to("user@example.com").from("sender@example.com").subject("Hello").html("<h1>Hello World</h1>").sign(smimeSigner).send();
+const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Hello").html("<h1>Hello World</h1>").sign(smimeSigner);
+
+const result = await mail.send(message);
 ```
 
 **Platform Support**:
@@ -147,7 +154,9 @@ const perRecipientEncrypter = createSmimeEncrypter({
 });
 
 // Encrypt and send email
-const result = await mail.message().to("user@example.com").from("sender@example.com").subject("Hello").html("<h1>Hello World</h1>").encrypt(encrypter).send();
+const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Hello").html("<h1>Hello World</h1>").encrypt(encrypter);
+
+const result = await mail.send(message);
 ```
 
 **Platform Support**:
@@ -168,7 +177,7 @@ const result = await mail.message().to("user@example.com").from("sender@example.
 You can combine signing and encryption. The message will be signed first, then encrypted:
 
 ```typescript
-import { createMail } from "@visulima/email";
+import { createMail, MailMessage } from "@visulima/email";
 import { resendProvider } from "@visulima/email/providers/resend";
 import { createDkimSigner, createSmimeEncrypter } from "@visulima/email/crypto";
 
@@ -185,15 +194,15 @@ const encrypter = createSmimeEncrypter({
 });
 
 // Sign then encrypt
-const result = await mail
-    .message()
+const message = new MailMessage()
     .to("user@example.com")
     .from("sender@example.com")
     .subject("Hello")
     .html("<h1>Hello World</h1>")
     .sign(dkimSigner)
-    .encrypt(encrypter)
-    .send();
+    .encrypt(encrypter);
+
+const result = await mail.send(message);
 ```
 
 ## Important Notes
@@ -230,7 +239,7 @@ const result = await mail
 ### Example: DKIM Signing with File-based Key
 
 ```typescript
-import { createMail } from "@visulima/email";
+import { createMail, MailMessage } from "@visulima/email";
 import { smtpProvider } from "@visulima/email/providers/smtp";
 import { createDkimSigner } from "@visulima/email/crypto";
 
@@ -263,20 +272,20 @@ const dkimSigner = createDkimSigner({
 //   privateKey,
 // });
 
-await mail
-    .message()
+const message = new MailMessage()
     .to("recipient@example.com")
     .from("sender@example.com")
     .subject("Signed Email")
     .html("<h1>This email is signed with DKIM</h1>")
-    .sign(dkimSigner)
-    .send();
+    .sign(dkimSigner);
+
+await mail.send(message);
 ```
 
 ### Example: S/MIME Signing and Encryption
 
 ```typescript
-import { createMail } from "@visulima/email";
+import { createMail, MailMessage } from "@visulima/email";
 import { resendProvider } from "@visulima/email/providers/resend";
 import { createSmimeSigner, createSmimeEncrypter } from "@visulima/email/crypto";
 
@@ -295,15 +304,15 @@ const encrypter = createSmimeEncrypter({
     },
 });
 
-await mail
-    .message()
+const message = new MailMessage()
     .to(["recipient1@example.com", "recipient2@example.com"])
     .from("sender@example.com")
     .subject("Secure Email")
     .html("<h1>This email is signed and encrypted</h1>")
     .sign(signer)
-    .encrypt(encrypter)
-    .send();
+    .encrypt(encrypter);
+
+await mail.send(message);
 ```
 
 ### Cloudflare Workers Support
@@ -330,7 +339,7 @@ compatibility_flags = ["nodejs_compat"]
 **Example for Cloudflare Workers**:
 
 ```typescript
-import { createMail } from "@visulima/email";
+import { createMail, MailMessage } from "@visulima/email";
 import { resendProvider } from "@visulima/email/providers/resend";
 import { createDkimSigner } from "@visulima/email/crypto";
 
@@ -346,14 +355,14 @@ export default {
             // passphrase: env.DKIM_PASSPHRASE,
         });
 
-        await mail
-            .message()
+        const message = new MailMessage()
             .to("recipient@example.com")
             .from("sender@example.com")
             .subject("Signed Email")
             .html("<h1>This email is signed with DKIM</h1>")
-            .sign(dkimSigner)
-            .send();
+            .sign(dkimSigner);
+
+        await mail.send(message);
 
         return new Response("Email sent");
     },

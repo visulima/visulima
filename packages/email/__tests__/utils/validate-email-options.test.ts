@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { EmailOptions } from "../../src/types";
-import validateEmailOptions from "../../src/utils/validate-email-options";
+import validateEmailOptions from "../../src/utils/validation/validate-email-options";
 
 describe(validateEmailOptions, () => {
     it("should validate correct email options", () => {

@@ -61,7 +61,7 @@ const checkAllPartsAreRoleAccounts = (parts: string[], customPrefixes?: Set<stri
  * @returns True if the email is a role account, false otherwise.
  * @example
  * ```ts
- * import { isRoleAccount } from "@visulima/email/utils/role-accounts";
+ * import { isRoleAccount } from "@visulima/email/validation/role-accounts";
  *
  * if (isRoleAccount("noreply@example.com")) {
  *     console.log("This is a role account");

@@ -5,7 +5,7 @@
  * with the sendmail transport (uses system sendmail command).
  */
 
-import { createMail } from "@visulima/email";
+import { createMail, MailMessage } from "@visulima/email";
 import { nodemailerProvider } from "@visulima/email/providers/nodemailer";
 
 const main = async () => {
@@ -29,14 +29,14 @@ const main = async () => {
     await mail.initialize();
 
     // Send email using message builder
-    const result = await mail
-        .message()
+    const message = new MailMessage()
         .to("recipient@example.com")
         .from("sender@example.com")
         .subject("Hello from Sendmail")
         .html("<h1>Hello World</h1><p>This email was sent using the system sendmail command.</p>")
-        .text("Hello World\n\nThis email was sent using the system sendmail command.")
-        .send();
+        .text("Hello World\n\nThis email was sent using the system sendmail command.");
+
+    const result = await mail.send(message);
 
     if (result.success) {
         console.log("✅ Email sent successfully via sendmail!");

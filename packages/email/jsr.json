@@ -1,6 +1,6 @@
 {
     "name": "@visulima/email",
-    "version": "0.0.0",
+    "version": "1.0.0-alpha.1",
     "exports": {
         ".": "./src/index.ts",
         "./template/handlebars": "./src/template-engines/handlebars.ts",
@@ -36,6 +36,16 @@
         "./providers/scaleway": "./src/providers/scaleway/index.ts",
         "./providers/ahasend": "./src/providers/ahasend/index.ts",
         "./providers/mailomat": "./src/providers/mailomat/index.ts",
-        "./providers/sweego": "./src/providers/sweego/index.ts"
+        "./providers/sweego": "./src/providers/sweego/index.ts",
+        "./utils/is-disposable-email": "./src/utils/is-disposable-email.ts",
+        "./utils/validate-email": "./src/utils/validate-email.ts",
+        "./utils/parse-address": "./src/utils/parse-address.ts",
+        "./utils/format-email-address": "./src/utils/format-email-address.ts",
+        "./utils/cache": "./src/utils/cache.ts",
+        "./utils/check-mx-records": "./src/utils/check-mx-records.ts",
+        "./utils/role-accounts": "./src/utils/role-accounts.ts",
+        "./utils/verify-smtp": "./src/utils/verify-smtp.ts",
+        "./utils/verify-email": "./src/utils/verify-email.ts",
+        "./utils/normalize-email-aliases": "./src/utils/normalize-email-aliases.ts"
     }
 }

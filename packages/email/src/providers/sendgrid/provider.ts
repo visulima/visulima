@@ -5,7 +5,7 @@ import generateMessageId from "../../utils/generate-message-id";
 import headersToRecord from "../../utils/headers-to-record";
 import { makeRequest } from "../../utils/make-request";
 import retry from "../../utils/retry";
-import validateEmailOptions from "../../utils/validate-email-options";
+import validateEmailOptions from "../../utils/validation/validate-email-options";
 import type { ProviderFactory } from "../provider";
 import { defineProvider } from "../provider";
 import { createProviderLogger, createSendGridAttachment, formatSendGridAddress, formatSendGridAddresses, handleProviderError, ProviderState } from "../utils";
@@ -133,15 +133,12 @@ const sendGridProvider: ProviderFactory<SendGridConfig, unknown, SendGridEmailOp
          */
         async isAvailable(): Promise<boolean> {
             try {
-                // SendGrid doesn't have a simple health check endpoint
-                // We'll validate API key format (starts with SG.)
                 if (options.apiKey && options.apiKey.startsWith("SG.")) {
                     logger.debug("API key format is valid, assuming SendGrid is available");
 
                     return true;
                 }
 
-                // Try to validate by checking user profile
                 const headers: Record<string, string> = {
                     Authorization: `Bearer ${options.apiKey}`,
                     "Content-Type": "application/json",
@@ -200,7 +197,6 @@ const sendGridProvider: ProviderFactory<SendGridConfig, unknown, SendGridEmailOp
 
                 await providerState.ensureInitialized(() => this.initialize(), PROVIDER_NAME);
 
-                // Build personalizations (SendGrid's way of handling recipients)
                 const personalization: Record<string, unknown> = {
                     to: formatSendGridAddresses(emailOptions.to),
                 };
@@ -232,7 +228,6 @@ const sendGridProvider: ProviderFactory<SendGridConfig, unknown, SendGridEmailOp
                     personalizations: [personalization],
                 };
 
-                // Add content
                 const content: { type: string; value: string }[] = [];
 
                 if (emailOptions.html) {
@@ -247,66 +242,54 @@ const sendGridProvider: ProviderFactory<SendGridConfig, unknown, SendGridEmailOp
                     payload.content = content;
                 }
 
-                // Add reply-to
                 if (emailOptions.replyTo) {
                     payload.reply_to = formatSendGridAddress(emailOptions.replyTo);
                 }
 
-                // Add subject (also in personalizations, but can be at root level)
                 if (emailOptions.subject) {
                     payload.subject = emailOptions.subject;
                 }
 
-                // Add template ID
                 if (emailOptions.templateId) {
                     payload.template_id = emailOptions.templateId;
 
                     if (emailOptions.templateData) {
-                        // Template data goes in personalizations
                         personalization.dynamicTemplateData = emailOptions.templateData;
                     }
                 }
 
-                // Add send at timestamp (goes in personalizations)
                 if (emailOptions.sendAt) {
                     personalization.send_at = emailOptions.sendAt;
                 }
 
-                // Add batch ID
                 if (emailOptions.batchId) {
                     payload.batch_id = emailOptions.batchId;
                 }
 
-                // Add ASM group ID
                 if (emailOptions.asmGroupId) {
                     payload.asm = {
                         group_id: emailOptions.asmGroupId,
                     };
                 }
 
-                // Add IP pool name
                 if (emailOptions.ipPoolName) {
                     payload.ip_pool_name = emailOptions.ipPoolName;
                 }
 
-                // Add mail settings
                 if (emailOptions.mailSettings) {
                     payload.mail_settings = emailOptions.mailSettings;
                 }
 
-                // Add tracking settings
                 if (emailOptions.trackingSettings) {
                     payload.tracking_settings = emailOptions.trackingSettings;
                 }
 
-                // Add custom headers
                 if (emailOptions.headers) {
                     const headersRecord = headersToRecord(emailOptions.headers);
 
                     payload.headers = headersRecord;
                 }
 
-                // Add attachments
                 if (emailOptions.attachments && emailOptions.attachments.length > 0) {
                     payload.attachments = await Promise.all(
                         emailOptions.attachments.map(async (attachment) => createSendGridAttachment(attachment, PROVIDER_NAME)),
@@ -346,7 +329,6 @@ const sendGridProvider: ProviderFactory<SendGridConfig, unknown, SendGridEmailOp
                     };
                 }
 
-                // SendGrid returns message ID in X-Message-Id header or we generate one
                 const responseHeaders = (result.data as { headers?: Headers })?.headers;
                 const headerMessageId = responseHeaders && responseHeaders instanceof Headers ? responseHeaders.get("X-Message-Id") : undefined;
                 const messageId: string = headerMessageId || generateMessageId();

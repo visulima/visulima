@@ -100,4 +100,3 @@ describe(normalizeEmailAliases, () => {
         expect(normalizeEmailAliases("first.last+middle@gmail.com")).toBe("firstlast@gmail.com");
     });
 });
-

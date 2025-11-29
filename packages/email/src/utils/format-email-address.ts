@@ -1,7 +1,7 @@
 import EmailError from "../errors/email-error";
 import type { EmailAddress } from "../types";
 import { sanitizeHeaderValue } from "./sanitize-header";
-import validateEmailDefault from "./validate-email";
+import validateEmailDefault from "./validation/validate-email";
 
 /**
  * Formats an email address as "Name &lt;email@example.com>" or just "email@example.com" if no name is provided.

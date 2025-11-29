@@ -1,5 +1,5 @@
 import type { EmailAddress } from "../types";
-import validateEmailDefault from "./validate-email";
+import validateEmailDefault from "./validation/validate-email";
 
 /**
  * Validates the local part of an email address (can be quoted or unquoted).

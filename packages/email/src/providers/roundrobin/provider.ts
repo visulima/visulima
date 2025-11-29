@@ -1,7 +1,7 @@
 import EmailError from "../../errors/email-error";
 import RequiredOptionError from "../../errors/required-option-error";
 import type { EmailOptions, EmailResult, Result } from "../../types";
-import createLogger from "../../utils/create-logger";
+import { createLogger } from "../../utils/create-logger";
 import type { Provider, ProviderFactory } from "../provider";
 import { defineProvider } from "../provider";
 import type { RoundRobinConfig, RoundRobinEmailOptions } from "./types";

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, expectTypeOf, it, vi } from "vitest";
 
-import createLogger from "../../src/utils/create-logger";
+import { createLogger } from "../../src/utils/create-logger";
 
 describe(createLogger, () => {
     beforeEach(() => {

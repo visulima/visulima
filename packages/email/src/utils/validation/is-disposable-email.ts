@@ -39,7 +39,7 @@ const getDisposableDomains = (): { disposable: string[]; wildcard: string[] } =>
  * @returns True if the email is from a disposable email service, false otherwise.
  * @example
  * ```ts
- * import { isDisposableEmail } from "@visulima/email/disposable";
+ * import { isDisposableEmail } from "@visulima/email/validation/is-disposable-email";
  *
  * if (isDisposableEmail("user@mailinator.com")) {
  *     console.log("Disposable email detected!");

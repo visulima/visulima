@@ -1,113 +1,115 @@
 ---
-title: Mailable Classes
-description: Create reusable email templates using Mailable classes
+title: Reusable Email Templates
+description: Create reusable email templates using MailMessage factory functions
 ---
 
-# Mailable Classes
+# Reusable Email Templates
 
-Mailable classes provide a clean way to organize and reuse email templates. They implement the `Mailable` interface and encapsulate email logic.
+You can create reusable email templates using factory functions that return configured `MailMessage` instances. This provides a clean way to organize and reuse email logic.
 
-## Basic Mailable
+## Basic Template Function
 
 ```typescript
-import type { Mailable, EmailOptions } from "@visulima/email";
+import { MailMessage } from "@visulima/email";
 
-class WelcomeEmail implements Mailable {
-    constructor(private user: { name: string; email: string }) {}
-
-    async build(): Promise<EmailOptions> {
-        return {
-            from: { email: "noreply@example.com" },
-            to: { email: this.user.email, name: this.user.name },
-            subject: `Welcome, ${this.user.name}!`,
-            html: `<h1>Welcome ${this.user.name}!</h1><p>Thanks for joining us.</p>`,
-            text: `Welcome ${this.user.name}! Thanks for joining us.`,
-        };
-    }
-}
+const createWelcomeEmail = (user: { name: string; email: string }) => {
+    return new MailMessage()
+        .to({ email: user.email, name: user.name })
+        .from({ email: "noreply@example.com" })
+        .subject(`Welcome, ${user.name}!`)
+        .html(`<h1>Welcome ${user.name}!</h1><p>Thanks for joining us.</p>`)
+        .text(`Welcome ${user.name}! Thanks for joining us.`);
+};
 ```
 
-## Using Mailable Classes
+## Using Template Functions
 
 ```typescript
-import { createMail } from "@visulima/email";
+import { createMail, MailMessage } from "@visulima/email";
 import { resendProvider } from "@visulima/email/providers/resend";
 
 const mail = createMail(resendProvider({ apiKey: "re_xxx" }));
 
-const result = await mail.send(new WelcomeEmail({ name: "John", email: "john@example.com" }));
+const message = createWelcomeEmail({ name: "John", email: "john@example.com" });
+const result = await mail.send(message);
 ```
 
-## Using Templates in Mailables
+## Using Templates in Factory Functions
 
 ```typescript
-import type { Mailable, EmailOptions } from "@visulima/email";
+import { MailMessage } from "@visulima/email";
 import { renderHandlebars } from "@visulima/email/template/handlebars";
 
-class WelcomeEmail implements Mailable {
-    constructor(private user: { name: string; email: string }) {}
-
-    async build(): Promise<EmailOptions> {
-        const html = renderHandlebars(
-            `
+const createWelcomeEmail = async (user: { name: string; email: string }) => {
+    const html = await renderHandlebars(
+        `
       <h1>Welcome {{name}}!</h1>
       <p>Thanks for joining us on {{date}}.</p>
       `,
-            {
-                name: this.user.name,
-                date: new Date().toLocaleDateString(),
-            },
-        );
+        {
+            name: user.name,
+            date: new Date().toLocaleDateString(),
+        },
+    );
 
-        return {
-            from: { email: "noreply@example.com" },
-            to: { email: this.user.email, name: this.user.name },
-            subject: `Welcome, ${this.user.name}!`,
-            html,
-        };
-    }
-}
+    return new MailMessage().to({ email: user.email, name: user.name }).from({ email: "noreply@example.com" }).subject(`Welcome, ${user.name}!`).html(html);
+};
 ```
 
-## Complex Mailable Example
+## Complex Template Example
 
 ```typescript
-import type { Mailable, EmailOptions } from "@visulima/email";
+import { MailMessage } from "@visulima/email";
 import { renderHandlebars } from "@visulima/email/template/handlebars";
 import { readFile } from "node:fs/promises";
 
-class OrderConfirmationEmail implements Mailable {
-    constructor(
-        private order: {
-            id: string;
-            customer: { name: string; email: string };
-            items: Array<{ name: string; price: number }>;
-            total: number;
-        },
-    ) {}
+const createOrderConfirmationEmail = async (order: {
+    id: string;
+    customer: { name: string; email: string };
+    items: Array<{ name: string; price: number }>;
+    total: number;
+}) => {
+    const html = await renderHandlebars(await readFile("./templates/order-confirmation.hbs", "utf-8"), { order });
 
-    async build(): Promise<EmailOptions> {
-        const html = renderHandlebars(await readFile("./templates/order-confirmation.hbs", "utf-8"), {
-            order: this.order,
-        });
+    const message = new MailMessage()
+        .to({ email: order.customer.email, name: order.customer.name })
+        .from({ email: "orders@example.com", name: "Order Confirmation" })
+        .subject(`Order Confirmation #${order.id}`)
+        .html(html);
 
-        return {
-            from: { email: "orders@example.com", name: "Order Confirmation" },
-            to: { email: this.order.customer.email, name: this.order.customer.name },
-            subject: `Order Confirmation #${this.order.id}`,
-            html,
-            attachments: [
-                {
-                    filename: `invoice-${this.order.id}.pdf`,
-                    path: `./invoices/${this.order.id}.pdf`,
-                },
-            ],
-        };
+    await message.attachFromPath(`./invoices/${order.id}.pdf`, {
+        filename: `invoice-${order.id}.pdf`,
+    });
+
+    return message;
+};
+```
+
+## Using Classes (Optional)
+
+If you prefer a class-based approach, you can extend `MailMessage`:
+
+```typescript
+import { MailMessage } from "@visulima/email";
+
+class WelcomeEmail extends MailMessage {
+    constructor(user: { name: string; email: string }) {
+        super();
+        this.to({ email: user.email, name: user.name })
+            .from({ email: "noreply@example.com" })
+            .subject(`Welcome, ${user.name}!`)
+            .html(`<h1>Welcome ${user.name}!</h1><p>Thanks for joining us.</p>`)
+            .text(`Welcome ${user.name}! Thanks for joining us.`);
     }
 }
+
+// Usage
+const mail = createMail(resendProvider({ apiKey: "re_xxx" }));
+const message = new WelcomeEmail({ name: "John", email: "john@example.com" });
+await mail.send(message);
 ```
 
 ## Next Steps
 
 - [Building Messages](/docs/package/email/mail-messages/building-messages) - Learn the message builder API
-- [Attachments](/docs/package/email/mail-messages/attachments) - Add attachments to mailables
+- [Attachments](/docs/package/email/mail-messages/attachments) - Add attachments to your emails

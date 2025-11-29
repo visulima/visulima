@@ -10,7 +10,7 @@ import type { EmailResult, Result } from "../../types";
 import buildMimeMessage from "../../utils/build-mime-message";
 import generateMessageId from "../../utils/generate-message-id";
 import isPortAvailable from "../../utils/is-port-available";
-import validateEmailOptions from "../../utils/validate-email-options";
+import validateEmailOptions from "../../utils/validation/validate-email-options";
 import type { ProviderFactory } from "../provider";
 import { defineProvider } from "../provider";
 import type { SmtpConfig, SmtpEmailOptions } from "./types";
