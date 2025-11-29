@@ -1054,6 +1054,80 @@ Template engines are optional peer dependencies and work where their underlying 
 
 \* Runtime support depends on the wrapped providers. Works if all wrapped providers support the runtime.
 
+## Disposable Email Detection
+
+The package includes optional support for detecting disposable email addresses using the `disposable-domains` package.
+
+### Installation
+
+To use disposable email detection, install the optional peer dependency:
+
+```sh
+pnpm add disposable-domains
+```
+
+### Usage
+
+```typescript
+import { isDisposableEmail } from "@visulima/email/disposable";
+
+// Check if an email is disposable
+if (isDisposableEmail("user@mailinator.com")) {
+    console.log("Disposable email detected!");
+}
+
+// With custom domains
+const customDomains = new Set(["my-disposable.com"]);
+if (isDisposableEmail("user@my-disposable.com", customDomains)) {
+    console.log("Custom disposable email detected!");
+}
+```
+
+**Note:** The `disposable-domains` package must be installed as a peer dependency. If it's not installed, the function will throw an error with installation instructions.
+
+### Email Utilities
+
+The package also exports standalone utility functions that can be used independently:
+
+#### Email Validation
+
+```typescript
+import { validateEmail } from "@visulima/email/utils/validate-email";
+
+if (validateEmail("user@example.com")) {
+    console.log("Valid email!");
+}
+```
+
+#### Parse Email Address
+
+```typescript
+import { parseAddress } from "@visulima/email/utils/parse-address";
+
+// Parse email with name
+const address = parseAddress("John Doe <john@example.com>");
+// { name: "John Doe", email: "john@example.com" }
+
+// Parse email without name
+const simple = parseAddress("jane@example.com");
+// { email: "jane@example.com" }
+```
+
+#### Format Email Address
+
+```typescript
+import { formatEmailAddress } from "@visulima/email/utils/format-email-address";
+
+const formatted = formatEmailAddress({
+    email: "user@example.com",
+    name: "John Doe",
+});
+// "John Doe <user@example.com>"
+
+const simple = formatEmailAddress({ email: "user@example.com" });
+// "user@example.com"
+```
+
 ## Related
 
 ## Supported Node.js Versions

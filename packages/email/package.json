@@ -39,6 +39,8 @@
         "encryption",
         "signing",
         "crypto",
+        "disposable-email",
+        "disposable-domains",
         "handlebars",
         "mjml",
         "react-email",
@@ -212,6 +214,22 @@
             "types": "./dist/providers/sweego/index.d.ts",
             "default": "./dist/providers/sweego/index.js"
         },
+        "./utils/is-disposable-email": {
+            "types": "./dist/utils/is-disposable-email.d.ts",
+            "default": "./dist/utils/is-disposable-email.js"
+        },
+        "./utils/validate-email": {
+            "types": "./dist/utils/validate-email.d.ts",
+            "default": "./dist/utils/validate-email.js"
+        },
+        "./utils/parse-address": {
+            "types": "./dist/utils/parse-address.d.ts",
+            "default": "./dist/utils/parse-address.js"
+        },
+        "./utils/format-email-address": {
+            "types": "./dist/utils/format-email-address.d.ts",
+            "default": "./dist/utils/format-email-address.js"
+        },
         "./package.json": "./package.json"
     },
     "files": [
@@ -272,6 +290,7 @@
         "pkijs": "^3.3.3",
         "prettier": "^3.6.2",
         "publint": "^0.3.15",
+        "disposable-domains": "^1.0.15",
         "rimraf": "^6.1.2",
         "secretlint": "11.2.5",
         "semantic-release": "^25.0.2",
@@ -283,6 +302,7 @@
         "@react-email/render": "^2.0.0",
         "@vue-email/render": "0.0.9",
         "asn1js": "^3.0.0",
+        "disposable-domains": "^1.0.15",
         "handlebars": "^4.7.8",
         "mjml": "^4.15.3",
         "nodemailer": ">=7",
@@ -299,6 +319,9 @@
             "optional": true
         },
         "asn1js": {
+            "optional": true
+        },
+        "disposable-domains": {
             "optional": true
         },
         "handlebars": {
