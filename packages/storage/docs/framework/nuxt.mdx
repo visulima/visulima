@@ -1,0 +1,370 @@
+# Nuxt Integration
+
+Use Visulima Storage with Nuxt 3+ for file uploads and on-demand image transformations. The Nuxt module automatically registers upload endpoints without requiring manual API route files.
+
+## Installation
+
+```sh
+npm install @visulima/storage nuxt
+```
+
+```sh
+yarn add @visulima/storage nuxt
+```
+
+```sh
+pnpm add @visulima/storage nuxt
+```
+
+## Quick Start
+
+The Nuxt module automatically sets up upload endpoints. Simply configure it in your `nuxt.config.ts`:
+
+```ts
+// nuxt.config.ts
+import { DiskStorage } from "@visulima/storage";
+import storageModule from "@visulima/storage/adapter/nuxt";
+
+export default defineNuxtConfig({
+    modules: [
+        [
+            storageModule,
+            {
+                storage: new DiskStorage({
+                    directory: "./uploads",
+                }),
+            },
+        ],
+    ],
+});
+```
+
+This automatically registers three upload endpoints:
+
+- `/api/upload/multipart` - Multipart/form-data uploads
+- `/api/upload/rest` - REST API for direct binary uploads
+- `/api/upload/tus` - TUS resumable uploads
+
+## Configuration Options
+
+The Nuxt module accepts the following configuration options:
+
+```ts
+interface ModuleOptions {
+    /** Storage instance to use for file uploads (required) */
+    storage: BaseStorage;
+    /** Base path for upload routes (default: '/api/upload') */
+    basePath?: string;
+    /** CORS configuration */
+    cors?: {
+        headers?: string[];
+        methods?: string[];
+        origin?: string | string[];
+    };
+    /** Enable multipart upload endpoint (default: true) */
+    multipart?: boolean;
+    /** Additional options for multipart handler */
+    multipartOptions?: UploadOptions;
+    /** Enable REST API endpoint (default: true) */
+    rest?: boolean;
+    /** Additional options for REST handler */
+    restOptions?: UploadOptions;
+    /** Enable TUS resumable upload endpoint (default: true) */
+    tus?: boolean;
+    /** Additional options for TUS handler */
+    tusOptions?: UploadOptions;
+}
+```
+
+## Complete Example
+
+```ts
+// nuxt.config.ts
+import { DiskStorage } from "@visulima/storage";
+import storageModule from "@visulima/storage/adapter/nuxt";
+
+export default defineNuxtConfig({
+    modules: [storageModule],
+    storage: {
+        storage: new DiskStorage({
+            directory: "./uploads",
+            maxUploadSize: "100MB",
+        }),
+        basePath: "/api/upload",
+        cors: {
+            origin: ["http://localhost:3000", "https://example.com"],
+            methods: ["GET", "POST", "PATCH", "PUT", "HEAD", "DELETE", "OPTIONS"],
+            headers: ["Content-Type", "Upload-Offset", "Upload-Length", "Tus-Resumable"],
+        },
+        multipart: true,
+        rest: true,
+        tus: true,
+    },
+});
+```
+
+## Customizing Handler Options
+
+You can pass additional options to each handler type:
+
+```ts
+// nuxt.config.ts
+import { DiskStorage } from "@visulima/storage";
+import { MediaTransformer } from "@visulima/storage/transformer";
+import ImageTransformer from "@visulima/storage/transformer/image";
+import storageModule from "@visulima/storage/adapter/nuxt";
+
+const storage = new DiskStorage({ directory: "./uploads" });
+
+const mediaTransformer = new MediaTransformer(storage, {
+    ImageTransformer,
+    maxImageSize: 10 * 1024 * 1024, // 10MB
+});
+
+export default defineNuxtConfig({
+    modules: [storageModule],
+    storage: {
+        storage,
+        basePath: "/api/upload",
+        multipartOptions: {
+            mediaTransformer,
+        },
+        restOptions: {
+            mediaTransformer,
+        },
+        tusOptions: {
+            mediaTransformer,
+        },
+    },
+});
+```
+
+## Enabling/Disabling Specific Handlers
+
+You can enable or disable specific handlers:
+
+```ts
+// nuxt.config.ts
+export default defineNuxtConfig({
+    modules: [storageModule],
+    storage: {
+        storage: new DiskStorage({ directory: "./uploads" }),
+        // Only enable multipart and REST, disable TUS
+        multipart: true,
+        rest: true,
+        tus: false,
+    },
+});
+```
+
+## Custom Base Path
+
+Change the base path for upload endpoints:
+
+```ts
+// nuxt.config.ts
+export default defineNuxtConfig({
+    modules: [storageModule],
+    storage: {
+        storage: new DiskStorage({ directory: "./uploads" }),
+        basePath: "/api/files", // Changes to /api/files/multipart, /api/files/rest, /api/files/tus
+    },
+});
+```
+
+## CORS Configuration
+
+Configure CORS settings for upload endpoints:
+
+```ts
+// nuxt.config.ts
+export default defineNuxtConfig({
+    modules: [storageModule],
+    storage: {
+        storage: new DiskStorage({ directory: "./uploads" }),
+        cors: {
+            origin: ["https://example.com", "https://app.example.com"],
+            methods: ["GET", "POST", "PATCH", "PUT", "HEAD", "DELETE", "OPTIONS"],
+            headers: ["Content-Type", "Upload-Offset", "Upload-Length", "Tus-Resumable", "Authorization"],
+        },
+    },
+});
+```
+
+## Using Different Storage Backends
+
+### AWS S3
+
+```ts
+// nuxt.config.ts
+import { S3Storage } from "@visulima/storage/provider/aws";
+import storageModule from "@visulima/storage/adapter/nuxt";
+
+export default defineNuxtConfig({
+    modules: [storageModule],
+    storage: {
+        storage: new S3Storage({
+            bucket: process.env.S3_BUCKET!,
+            region: process.env.S3_REGION || "us-east-1",
+        }),
+    },
+});
+```
+
+### Azure Blob Storage
+
+```ts
+// nuxt.config.ts
+import { AzureStorage } from "@visulima/storage/provider/azure";
+import storageModule from "@visulima/storage/adapter/nuxt";
+
+export default defineNuxtConfig({
+    modules: [storageModule],
+    storage: {
+        storage: new AzureStorage({
+            containerName: process.env.AZURE_CONTAINER!,
+            accountName: process.env.AZURE_ACCOUNT_NAME!,
+            accountKey: process.env.AZURE_ACCOUNT_KEY!,
+        }),
+    },
+});
+```
+
+### Google Cloud Storage
+
+```ts
+// nuxt.config.ts
+import { GCStorage } from "@visulima/storage/provider/gcs";
+import storageModule from "@visulima/storage/adapter/nuxt";
+
+export default defineNuxtConfig({
+    modules: [storageModule],
+    storage: {
+        storage: new GCStorage({
+            bucket: process.env.GCS_BUCKET!,
+        }),
+    },
+});
+```
+
+## Client-Side Usage
+
+Use the `@visulima/storage-client` package with Vue composables for client-side uploads:
+
+```vue
+<!-- pages/upload.vue -->
+<template>
+    <div>
+        <input type="file" @change="handleFileChange" />
+        <button @click="handleUpload" :disabled="isUploading">
+            {{ isUploading ? "Uploading..." : "Upload" }}
+        </button>
+        <div v-if="progress > 0">Progress: {{ progress }}%</div>
+        <div v-if="error">Error: {{ error.message }}</div>
+        <div v-if="result">Upload complete! File ID: {{ result.id }}</div>
+    </div>
+</template>
+
+<script setup lang="ts">
+import { ref } from "vue";
+import { useUpload } from "@visulima/storage-client/vue";
+
+const file = ref<File | null>(null);
+const { upload, progress, isUploading, error, result } = useUpload({
+    endpointMultipart: "/api/upload/multipart",
+    endpointTus: "/api/upload/tus",
+});
+
+const handleFileChange = (e: Event) => {
+    const target = e.target as HTMLInputElement;
+    file.value = target.files?.[0] || null;
+};
+
+const handleUpload = async () => {
+    if (file.value) {
+        await upload(file.value);
+    }
+};
+</script>
+```
+
+## Manual API Routes (Advanced)
+
+If you need more control, you can create manual API routes instead of using the module:
+
+```ts
+// server/api/upload/multipart.post.ts
+import { DiskStorage } from "@visulima/storage";
+import { Multipart } from "@visulima/storage/handler/http/node";
+
+const storage = new DiskStorage({ directory: "./uploads" });
+const multipart = new Multipart({ storage });
+
+export default defineEventHandler(async (event) => {
+    event.node.res.setHeader("Access-Control-Allow-Origin", "*");
+    await multipart.handle(event.node.req, event.node.res);
+});
+```
+
+```ts
+// server/api/upload/rest.post.ts
+import { DiskStorage } from "@visulima/storage";
+import { Rest } from "@visulima/storage/handler/http/node";
+
+const storage = new DiskStorage({ directory: "./uploads" });
+const rest = new Rest({ storage });
+
+export default defineEventHandler(async (event) => {
+    event.node.res.setHeader("Access-Control-Allow-Origin", "*");
+    await rest.handle(event.node.req, event.node.res);
+});
+```
+
+## Environment Variables
+
+Use environment variables for configuration:
+
+```bash
+# .env
+UPLOAD_DIR=./uploads
+S3_BUCKET=my-bucket
+S3_REGION=us-east-1
+```
+
+```ts
+// nuxt.config.ts
+import { S3Storage } from "@visulima/storage/provider/aws";
+import storageModule from "@visulima/storage/adapter/nuxt";
+
+export default defineNuxtConfig({
+    modules: [storageModule],
+    storage: {
+        storage: new S3Storage({
+            bucket: process.env.S3_BUCKET!,
+            region: process.env.S3_REGION || "us-east-1",
+        }),
+    },
+});
+```
+
+## Error Handling
+
+The module automatically handles errors and returns appropriate HTTP responses. Errors are logged to the console in development mode.
+
+## Performance Tips
+
+1. **Use appropriate storage**: Choose storage backends based on your deployment environment
+2. **Enable caching**: For image transformations, configure caching in handler options
+3. **Configure limits**: Set appropriate `maxUploadSize` limits for your use case
+4. **Monitor errors**: Check server logs for upload errors in production
+
+## Supported Nuxt Versions
+
+The Nuxt module requires Nuxt 4.0.0 or higher.
+
+## Next Steps
+
+- Learn about [Media Transformers](/docs/transformers) for image/video/audio processing
+- Explore [Batch Operations](/docs/batch-operations) for deleting multiple files
+- Check out [Error Handling](/docs/error-handling) for advanced error management
+- See [OpenAPI Documentation](/docs/openapi) for API documentation generation

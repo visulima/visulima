@@ -1,0 +1,63 @@
+import { useQuery } from "@tanstack/vue-query";
+import type { MaybeRefOrGetter, Ref } from "vue";
+import { computed, toValue } from "vue";
+
+import { buildUrl, fetchJson, storageQueryKeys } from "../core";
+
+export interface TransformMetadata {
+    /** Available transformation formats */
+    formats?: string[];
+    /** Supported transformation parameters */
+    parameters?: string[];
+}
+
+export interface UseTransformMetadataOptions {
+    /** Whether to enable the query */
+    enabled?: MaybeRefOrGetter<boolean>;
+    /** Base endpoint URL for transform operations */
+    endpoint: string;
+}
+
+export interface UseTransformMetadataReturn {
+    /** Transform metadata */
+    data: Readonly<Ref<TransformMetadata | undefined>>;
+    /** Last request error, if any */
+    error: Readonly<Ref<Error | undefined>>;
+    /** Whether a request is currently in progress */
+    isLoading: Readonly<Ref<boolean>>;
+    /** Refetch the transform metadata */
+    refetch: () => void;
+}
+
+/**
+ * Vue composable for fetching transformation metadata using TanStack Query.
+ * Returns available formats and transformation parameters.
+ * @param options Hook configuration options
+ * @returns Transform metadata fetching functions and state
+ */
+export const useTransformMetadata = (options: UseTransformMetadataOptions): UseTransformMetadataReturn => {
+    const { enabled = true, endpoint } = options;
+
+    const query = useQuery({
+        enabled: computed(() => toValue(enabled)),
+        queryFn: async (): Promise<TransformMetadata> => {
+            const url = buildUrl(endpoint, "metadata");
+            const data = await fetchJson<TransformMetadata>(url);
+
+            return {
+                formats: data.formats,
+                parameters: data.parameters,
+            };
+        },
+        queryKey: computed(() => storageQueryKeys.transform.metadata(endpoint)),
+    });
+
+    return {
+        data: computed(() => query.data.value),
+        error: computed(() => (query.error.value as Error) || undefined),
+        isLoading: computed(() => query.isLoading.value),
+        refetch: () => {
+            query.refetch();
+        },
+    };
+};

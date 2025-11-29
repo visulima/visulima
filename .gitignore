@@ -51,6 +51,9 @@ typings/
 *.pem
 .tmp
 
+# JetBrains
+.idea
+
 # Storybook
 storybook-static/
 
@@ -68,3 +71,5 @@ dist
 
 .cursor/rules/nx-rules.mdc
 .github/instructions/nx.instructions.md
+
+data/

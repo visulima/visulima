@@ -9,8 +9,10 @@ packages:
   - '!packages/package/__fixtures__/which-package-manager/**'
   - '!packages/package/__fixtures__/workspaces/**'
   - '!packages/readdir/__fixtures__/**'
+  - '!packages/storage/src/adapter/nuxt'
   - apps/**
   - examples/**
+  - examples/uploads/**
   - packages/**
   - shared/**
   - packages/boxen/__bench__
@@ -73,6 +75,7 @@ onlyBuiltDependencies:
   - '@tailwindcss/oxide'
   - '@tree-sitter-grammars/tree-sitter-yaml'
   - '@visulima/string'
+  - aws-crt
   - core-js
   - core-js-pure
   - dtrace-provider
@@ -84,11 +87,14 @@ onlyBuiltDependencies:
   - nx
   - oxc-resolver
   - prisma
+  - protobufjs
   - rs-module-lexer
   - sharp
+  - svelte-preprocess
   - tree-sitter
   - tree-sitter-json
   - unrs-resolver
+  - vue-demi
   - yarn
 
 overrides:

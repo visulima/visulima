@@ -1,0 +1,242 @@
+# TUS Handler
+
+The TUS (Tus Resumable Upload Protocol) handler provides resumable uploads for large files, unreliable networks, and scenarios where uploads may be interrupted.
+
+## Overview
+
+TUS is an open protocol for resumable file uploads. It allows clients to:
+
+- Resume interrupted uploads
+- Upload large files efficiently
+- Track upload progress
+- Handle network failures gracefully
+
+## Installation
+
+TUS handler is included in the main package - no additional installation required.
+
+## Basic Usage
+
+### Express
+
+```typescript
+import express from "express";
+import { DiskStorage } from "@visulima/storage";
+import { Tus } from "@visulima/storage/handler/http/node";
+
+const app = express();
+const storage = new DiskStorage({ directory: "./uploads" });
+const tus = new Tus({ storage });
+
+// TUS endpoints
+app.post("/upload/tus", tus.handle);
+app.patch("/upload/tus/:id", tus.handle);
+app.head("/upload/tus/:id", tus.handle);
+app.delete("/upload/tus/:id", tus.handle);
+```
+
+### Modern Frameworks (Fetch API)
+
+```typescript
+import { DiskStorage } from "@visulima/storage";
+import { Tus } from "@visulima/storage/handler/http/fetch";
+
+const storage = new DiskStorage({ directory: "./uploads" });
+const tus = new Tus({ storage });
+
+// TUS endpoints
+app.post("/upload/tus", async (c) => {
+    return await tus.fetch(c.req.raw);
+});
+
+app.patch("/upload/tus/:id", async (c) => {
+    return await tus.fetch(c.req.raw);
+});
+
+app.head("/upload/tus/:id", async (c) => {
+    return await tus.fetch(c.req.raw);
+});
+
+app.delete("/upload/tus/:id", async (c) => {
+    return await tus.fetch(c.req.raw);
+});
+```
+
+## Client-Side Usage
+
+### JavaScript/TypeScript
+
+```typescript
+import * as tus from "tus-js-client";
+
+const file = document.getElementById("file-input").files[0];
+
+const upload = new tus.Upload(file, {
+    endpoint: "http://localhost:3000/upload/tus",
+    retryDelays: [0, 3000, 5000, 10000, 20000],
+    metadata: {
+        filename: file.name,
+        filetype: file.type,
+    },
+    onError: (error) => {
+        console.error("Upload failed:", error);
+    },
+    onProgress: (bytesUploaded, bytesTotal) => {
+        const percentage = ((bytesUploaded / bytesTotal) * 100).toFixed(2);
+        console.log(`Upload progress: ${percentage}%`);
+    },
+    onSuccess: () => {
+        console.log("Upload finished:", upload.url);
+    },
+});
+
+// Start the upload
+upload.start();
+
+// Pause the upload
+upload.abort();
+
+// Resume the upload
+upload.start();
+```
+
+## TUS Extensions
+
+The TUS handler supports several extensions:
+
+### Creation Extension
+
+Create uploads with metadata:
+
+```typescript
+// POST /upload/tus
+// Headers:
+//   Upload-Length: 10485760
+//   Upload-Metadata: filename dGVzdC5qcGc=,filetype aW1hZ2UvanBlZw==
+```
+
+### Creation-with-Upload Extension
+
+Create and upload in a single request:
+
+```typescript
+// POST /upload/tus
+// Headers:
+//   Upload-Length: 10485760
+//   Content-Type: application/offset+octet-stream
+// Body: [file data]
+```
+
+### Termination Extension
+
+Delete incomplete uploads:
+
+```typescript
+// DELETE /upload/tus/:id
+```
+
+### Checksum Extension
+
+Verify upload integrity:
+
+```typescript
+// PATCH /upload/tus/:id
+// Headers:
+//   Upload-Offset: 0
+//   Upload-Checksum: sha1 3f4f5f6f7f8f9f0f1f2f3f4f5f6f7f8f9f0f1f2
+//   Content-Type: application/offset+octet-stream
+// Body: [chunk data]
+```
+
+### Expiration Extension
+
+Automatic cleanup of expired uploads:
+
+```typescript
+const storage = new DiskStorage({
+    directory: "./uploads",
+    expiration: {
+        maxAge: "24h",
+        purgeInterval: "1h",
+    },
+});
+```
+
+## Response Headers
+
+TUS responses include standard TUS headers:
+
+- `Tus-Resumable`: TUS protocol version (e.g., "1.0.0")
+- `Tus-Version`: Supported TUS versions
+- `Tus-Extension`: Supported TUS extensions
+- `Tus-Max-Size`: Maximum upload size
+- `Location`: Upload URL for created uploads
+- `Upload-Offset`: Current upload offset
+- `Upload-Expires`: Upload expiration timestamp
+
+## Configuration
+
+```typescript
+const tus = new Tus({
+    storage,
+    // Customize TUS behavior
+    onUploadComplete: (file) => {
+        console.log("Upload complete:", file.id);
+    },
+    onUploadError: (error) => {
+        console.error("Upload error:", error);
+    },
+});
+```
+
+## Resuming Uploads
+
+TUS automatically handles resumable uploads:
+
+```typescript
+// Client checks upload status
+const response = await fetch("http://localhost:3000/upload/tus/upload-id", {
+    method: "HEAD",
+});
+
+const offset = response.headers.get("Upload-Offset");
+const length = response.headers.get("Upload-Length");
+
+// Resume from offset
+const upload = new tus.Upload(file, {
+    endpoint: "http://localhost:3000/upload/tus",
+    uploadUrl: "http://localhost:3000/upload/tus/upload-id",
+    // Upload will automatically resume from offset
+});
+```
+
+## Best Practices
+
+1. **Use appropriate chunk sizes** - Balance between efficiency and memory usage
+2. **Handle network errors** - Implement retry logic on the client side
+3. **Monitor progress** - Use HEAD requests to track upload status
+4. **Clean up incomplete uploads** - Use expiration extension for automatic cleanup
+5. **Verify integrity** - Use checksum extension for large files
+
+## Comparison with REST Handler
+
+| Feature           | TUS Handler   | REST Handler     |
+| ----------------- | ------------- | ---------------- |
+| Resumable         | ✅ Yes        | ✅ Yes (chunked) |
+| Protocol          | TUS Protocol  | HTTP REST        |
+| Client Library    | tus-js-client | Native fetch     |
+| Progress Tracking | Built-in      | Custom headers   |
+| Checksum Support  | ✅ Yes        | ✅ Yes           |
+| Batch Operations  | ❌ No         | ✅ Yes           |
+
+Choose TUS for:
+
+- Standard resumable upload protocol
+- Large files with unreliable networks
+- Client libraries that support TUS
+
+Choose REST for:
+
+- Simple HTTP-based uploads
+- Batch operations
+- Custom upload workflows

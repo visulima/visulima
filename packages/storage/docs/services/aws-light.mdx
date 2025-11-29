@@ -1,0 +1,291 @@
+# AWS Light Storage
+
+## Overview
+
+AWS Light Storage is a lightweight S3-compatible storage implementation optimized for worker environments. It uses `aws4fetch` instead of the full AWS SDK, making it perfect for Cloudflare Workers, Web Workers, and other edge runtime environments where the AWS SDK cannot run.
+
+## Key Features
+
+- **Worker Compatible**: Works in Cloudflare Workers, Web Workers, and edge runtimes
+- **Lightweight**: Uses `aws4fetch` (~6.4 KB) instead of the full AWS SDK
+- **S3-Compatible**: Full S3 API compatibility for multipart uploads, presigned URLs, and more
+- **No Node.js Dependencies**: Uses standard Web APIs (`fetch`, `SubtleCrypto`)
+
+## Installation
+
+```sh
+npm install aws4fetch
+```
+
+```sh
+yarn add aws4fetch
+```
+
+```sh
+pnpm add aws4fetch
+```
+
+## Usage
+
+### Basic Usage
+
+```typescript
+import { AwsLightStorage } from "@visulima/storage/provider/aws-light";
+
+const storage = new AwsLightStorage({
+    bucket: "my-bucket",
+    region: "us-east-1",
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+});
+```
+
+### Cloudflare Workers
+
+AWS Light Storage is perfect for Cloudflare Workers:
+
+```typescript
+export default {
+    async fetch(request: Request, env: any): Promise<Response> {
+        const storage = new AwsLightStorage({
+            bucket: env.S3_BUCKET,
+            region: env.AWS_REGION,
+            accessKeyId: env.AWS_ACCESS_KEY_ID,
+            secretAccessKey: env.AWS_SECRET_ACCESS_KEY,
+        });
+
+        // Use storage...
+        const file = await storage.create({
+            contentType: "image/jpeg",
+            size: 1024,
+        });
+
+        return new Response(JSON.stringify(file));
+    },
+};
+```
+
+### Web Workers
+
+```typescript
+// worker.ts
+import { AwsLightStorage } from "@visulima/storage/provider/aws-light";
+
+self.onmessage = async (event) => {
+    const storage = new AwsLightStorage({
+        bucket: "my-bucket",
+        region: "us-east-1",
+        accessKeyId: event.data.accessKeyId,
+        secretAccessKey: event.data.secretAccessKey,
+    });
+
+    const file = await storage.create(event.data.fileConfig);
+    self.postMessage({ file });
+};
+```
+
+### Custom Endpoint (S3-Compatible Services)
+
+AWS Light Storage works with any S3-compatible service:
+
+```typescript
+import { AwsLightStorage } from "@visulima/storage/provider/aws-light";
+
+// Cloudflare R2
+const r2Storage = new AwsLightStorage({
+    bucket: "my-r2-bucket",
+    region: "auto",
+    endpoint: "https://my-account-id.r2.cloudflarestorage.com",
+    accessKeyId: process.env.R2_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY!,
+});
+
+// DigitalOcean Spaces
+const spacesStorage = new AwsLightStorage({
+    bucket: "my-space",
+    region: "nyc3",
+    endpoint: "https://nyc3.digitaloceanspaces.com",
+    accessKeyId: process.env.DO_SPACES_KEY!,
+    secretAccessKey: process.env.DO_SPACES_SECRET!,
+});
+
+// MinIO
+const minioStorage = new AwsLightStorage({
+    bucket: "my-bucket",
+    region: "us-east-1",
+    endpoint: "https://minio.example.com",
+    accessKeyId: process.env.MINIO_ACCESS_KEY!,
+    secretAccessKey: process.env.MINIO_SECRET_KEY!,
+});
+```
+
+## Configuration
+
+### Environment Variables
+
+```typescript
+process.env.S3_BUCKET = "my-bucket";
+process.env.S3_REGION = "us-east-1";
+process.env.AWS_ACCESS_KEY_ID = "your-access-key";
+process.env.AWS_SECRET_ACCESS_KEY = "your-secret-key";
+
+const storage = new AwsLightStorage({
+    bucket: process.env.S3_BUCKET!,
+    region: process.env.S3_REGION!,
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+});
+```
+
+### Configuration Options
+
+| Name               | Type           | Description                                             | Default |
+| :----------------- | :------------- | :------------------------------------------------------ | :------ |
+| bucket             | string         | The name of the S3 bucket to use.                       |         |
+| region             | string         | The AWS region of the bucket.                           |         |
+| accessKeyId        | string         | AWS access key ID.                                      |         |
+| secretAccessKey    | string         | AWS secret access key.                                  |         |
+| sessionToken       | string         | Optional AWS session token (for temporary credentials). |         |
+| endpoint           | string         | Custom S3 endpoint (for S3-compatible services).        | Auto    |
+| service            | string         | AWS service name (usually "s3").                        | "s3"    |
+| clientDirectUpload | boolean        | Enable client-side direct upload with presigned URLs.   | false   |
+| partSize           | number\|string | Part size for multipart uploads.                        | "16MB"  |
+| expiration         | object         | File expiration configuration.                          |         |
+| logger             | Logger         | Logger instance for debugging.                          |         |
+
+## When to Use AWS Light vs AWS S3 Storage
+
+### Use AWS Light Storage When:
+
+- ✅ **Running in Worker Environments**: Cloudflare Workers, Web Workers, or edge runtimes
+- ✅ **Bundle Size Matters**: Need a lightweight solution (~6.4 KB vs ~2MB)
+- ✅ **No Node.js Available**: Running in browser or edge environments without Node.js
+- ✅ **Simple S3 Operations**: Basic upload, download, delete operations are sufficient
+- ✅ **S3-Compatible Services**: Using R2, DigitalOcean Spaces, MinIO, or other S3-compatible services
+
+### Use AWS S3 Storage When:
+
+- ✅ **Node.js Environment**: Running in traditional Node.js servers or applications
+- ✅ **Full AWS SDK Features**: Need advanced AWS SDK features and integrations
+- ✅ **Better Presigned URL Support**: Require robust presigned URL generation
+- ✅ **AWS Ecosystem Integration**: Need to integrate with other AWS services
+- ✅ **Production Node.js Apps**: Standard Node.js backend applications
+
+### Quick Decision Guide
+
+```
+┌─────────────────────────────────────────────────────────┐
+│ Are you running in a worker/edge environment?           │
+│   ├─ YES → Use AWS Light Storage                        │
+│   └─ NO → Continue...                                    │
+│                                                          │
+│ Is bundle size critical?                                │
+│   ├─ YES → Use AWS Light Storage                        │
+│   └─ NO → Continue...                                   │
+│                                                          │
+│ Do you need full AWS SDK features?                      │
+│   ├─ YES → Use AWS S3 Storage                           │
+│   └─ NO → Use AWS Light Storage                         │
+└─────────────────────────────────────────────────────────┘
+```
+
+## Comparison with S3Storage
+
+| Feature              | S3Storage       | AwsLightStorage     |
+| :------------------- | :-------------- | :------------------ |
+| Worker Support       | ❌ No           | ✅ Yes              |
+| Bundle Size          | ~2MB (AWS SDK)  | ~6.4 KB (aws4fetch) |
+| Node.js Required     | ✅ Yes          | ❌ No               |
+| Presigned URLs       | ✅ Full Support | ⚠️ Limited          |
+| All S3 Features      | ✅ Yes          | ✅ Yes              |
+| Edge Runtime Support | ❌ No           | ✅ Yes              |
+
+## Limitations
+
+1. **Presigned URLs**: Full presigned URL generation requires implementing AWS Signature Version 4 query string authentication. Currently, URLs are constructed but signing happens on-demand.
+
+2. **File Type Detection**: File type detection from streams may not work in all worker environments due to Node.js stream dependencies.
+
+## Best Practices
+
+1. **Use in Workers**: Perfect for Cloudflare Workers, Web Workers, and edge runtimes
+2. **Environment Variables**: Store credentials securely using environment variables
+3. **Error Handling**: Implement proper error handling for network failures
+4. **Retry Logic**: Configure retry logic for transient failures
+5. **Monitor Usage**: Track storage usage and costs in your AWS/S3 dashboard
+
+## Examples
+
+### Upload a File
+
+```typescript
+const file = await storage.create({
+    contentType: "image/jpeg",
+    size: 1024 * 1024, // 1MB
+    metadata: {
+        userId: "123",
+        category: "profile",
+    },
+});
+
+await storage.write({
+    id: file.id,
+    body: imageBuffer,
+    contentLength: imageBuffer.length,
+    start: 0,
+});
+```
+
+### Download a File
+
+```typescript
+const fileData = await storage.get({ id: "file-id" });
+console.log(fileData.content); // Buffer
+console.log(fileData.contentType); // "image/jpeg"
+```
+
+### Stream a File
+
+```typescript
+const { stream, size, headers } = await storage.getStream({ id: "file-id" });
+// stream is a Node.js Readable stream
+```
+
+### Delete a File
+
+```typescript
+await storage.delete({ id: "file-id" });
+```
+
+## Migration from S3Storage
+
+If you're migrating from `S3Storage` to `AwsLightStorage`:
+
+1. Install `aws4fetch` instead of `@aws-sdk/client-s3`
+2. Update imports: `S3Storage` → `AwsLightStorage`
+3. Update configuration: Remove `credentials` object, use `accessKeyId` and `secretAccessKey` directly
+4. Test presigned URL functionality if using `clientDirectUpload`
+
+```typescript
+// Before (S3Storage)
+import { S3Storage } from "@visulima/storage/provider/aws";
+
+const storage = new S3Storage({
+    bucket: "my-bucket",
+    region: "us-east-1",
+    credentials: {
+        accessKeyId: "...",
+        secretAccessKey: "...",
+    },
+});
+
+// After (AwsLightStorage)
+import { AwsLightStorage } from "@visulima/storage/provider/aws-light";
+
+const storage = new AwsLightStorage({
+    bucket: "my-bucket",
+    region: "us-east-1",
+    accessKeyId: "...",
+    secretAccessKey: "...",
+});
+```

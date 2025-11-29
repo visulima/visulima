@@ -88,6 +88,12 @@
 "package: source-map":
     - changed-files:
           - any-glob-to-any-file: "packages/source-map/**/*"
+"package: storage":
+    - changed-files:
+          - any-glob-to-any-file: "packages/storage/**/*"
+"package: storage-client":
+    - changed-files:
+          - any-glob-to-any-file: "packages/storage-client/**/*"
 "package: string":
     - changed-files:
           - any-glob-to-any-file: "packages/string/**/*"

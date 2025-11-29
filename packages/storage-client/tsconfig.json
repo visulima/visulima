@@ -1,0 +1,10 @@
+{
+    "$schema": "https://json.schemastore.org/tsconfig",
+    "extends": "../../tsconfig.base.json",
+    "compilerOptions": {
+        "jsx": "preserve",
+        "moduleResolution": "bundler",
+        "types": ["node"]
+    },
+    "include": ["src/**/*", "__tests__/**/*", "*.d.ts"]
+}

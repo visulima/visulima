@@ -1,0 +1,20 @@
+{
+    "name": "@visulima/storage-nuxt",
+    "version": "0.0.0",
+    "type": "module",
+    "exports": {
+        ".": {
+            "types": "./module.d.ts",
+            "import": "./module.js"
+        }
+    },
+    "main": "./module.js",
+    "types": "./module.d.ts",
+    "files": [
+        "."
+    ],
+    "peerDependencies": {
+        "@nuxt/kit": ">=4.0.0",
+        "nuxt": ">=4.0.0"
+    }
+}

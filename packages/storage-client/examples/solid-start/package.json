@@ -1,0 +1,24 @@
+{
+    "name": "storage-client-solid-start-example",
+    "version": "0.1.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "build": "vinxi build",
+        "dev": "vinxi dev",
+        "start": "vinxi start",
+        "version": "vinxi version"
+    },
+    "dependencies": {
+        "@solidjs/meta": "^0.29.4",
+        "@solidjs/router": "^0.15.4",
+        "@solidjs/start": "^1.2.0",
+        "@visulima/storage": "workspace:*",
+        "@visulima/storage-client": "workspace:*",
+        "solid-js": "^1.9.10",
+        "vinxi": "^0.5.8"
+    },
+    "engines": {
+        "node": ">=20"
+    }
+}

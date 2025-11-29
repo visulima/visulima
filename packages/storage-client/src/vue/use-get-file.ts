@@ -1,0 +1,107 @@
+import { useQuery } from "@tanstack/vue-query";
+import type { MaybeRefOrGetter, Ref } from "vue";
+import { computed, toValue, watch } from "vue";
+
+import { buildUrl, extractFileMetaFromHeaders, storageQueryKeys } from "../core";
+import type { FileMeta } from "../react/types";
+
+export interface UseGetFileOptions {
+    /** Whether to enable the query */
+    enabled?: MaybeRefOrGetter<boolean>;
+    /** Base endpoint URL for file operations */
+    endpoint: string;
+    /** File ID to fetch */
+    id: MaybeRefOrGetter<string>;
+    /** Callback when request fails */
+    onError?: (error: Error) => void;
+    /** Callback when request succeeds */
+    onSuccess?: (data: Blob, meta: FileMeta | undefined) => void;
+    /** Transformation parameters for media files */
+    transform?: MaybeRefOrGetter<Record<string, string | number | boolean> | undefined>;
+}
+
+export interface UseGetFileReturn {
+    /** File data as Blob */
+    data: Readonly<Ref<Blob | undefined>>;
+    /** Last request error, if any */
+    error: Readonly<Ref<Error | undefined>>;
+    /** Whether a request is currently in progress */
+    isLoading: Readonly<Ref<boolean>>;
+    /** File metadata from response headers */
+    meta: Readonly<Ref<FileMeta | undefined>>;
+    /** Refetch the file */
+    refetch: () => void;
+}
+
+/**
+ * Vue composable for fetching/downloading files using TanStack Query.
+ * Supports optional transformation parameters for media files.
+ * @param options Hook configuration options
+ * @returns File fetching functions and state
+ */
+export const useGetFile = (options: UseGetFileOptions): UseGetFileReturn => {
+    const { enabled = true, endpoint, id, onError, onSuccess, transform } = options;
+
+    const query = useQuery({
+        enabled: computed(() => toValue(enabled) && !!toValue(id)),
+        queryFn: async () => {
+            const fileId = toValue(id);
+            const transformParams = toValue(transform);
+            const url = buildUrl(endpoint, fileId, transformParams);
+            const response = await fetch(url, {
+                method: "GET",
+            });
+
+            if (!response.ok) {
+                const errorData = (await response.json().catch(() => {
+                    return {
+                        error: {
+                            code: "RequestFailed",
+                            message: response.statusText,
+                        },
+                    };
+                })) as { error: { code: string; message: string } };
+
+                throw new Error(errorData.error?.message || `Failed to get file: ${response.status} ${response.statusText}`);
+            }
+
+            const blob = await response.blob();
+            const meta = extractFileMetaFromHeaders(fileId, response.headers);
+
+            return { blob, meta };
+        },
+        queryKey: computed(() => storageQueryKeys.files.detail(endpoint, toValue(id), toValue(transform))),
+    });
+
+    // Extract metadata from response if available
+    const meta = computed(() => query.data.value?.meta || undefined);
+
+    // Call callbacks when data or error changes
+    watch(
+        () => query.data.value,
+        (data) => {
+            if (data && onSuccess) {
+                onSuccess(data.blob, meta.value);
+            }
+        },
+    );
+
+    watch(
+        () => query.error.value,
+        (error) => {
+            if (error && onError) {
+                onError(error as Error);
+            }
+        },
+    );
+
+    return {
+        data: computed(() => query.data.value?.blob),
+        error: computed(() => (query.error.value as Error) || undefined),
+        isLoading: computed(() => query.isLoading.value),
+        meta,
+        refetch: () => {
+            query.refetch();
+        },
+    };
+};

@@ -1,0 +1,323 @@
+# Express Integration
+
+Use Visulima upload with Express.js for file uploads and on-demand image transformations. For modern frameworks like Hono, Deno, or Bun, see the Modern (Fetch API) guide.
+
+## Installation
+
+```sh
+npm install @visulima/storage express
+```
+
+```sh
+yarn add @visulima/storage express
+```
+
+```sh
+pnpm add @visulima/storage express
+```
+
+## Basic File Upload
+
+### Multipart Handler (Form-based Uploads)
+
+````ts
+import express from "express";
+import { DiskStorage } from "@visulima/storage";
+import { Multipart } from "@visulima/storage/handler/http/node";
+
+const app = express();
+const PORT = 3000;
+
+// Create upload directory if it doesn't exist
+const uploadDirectory = "./uploads";
+
+// Initialize storage and multipart handler
+const storage = new DiskStorage({ directory: uploadDirectory });
+const multipart = new Multipart({ storage });
+
+app.use("/files", multipart.handle, (req, res) => {
+  const file = req.body;
+  res.json(file);
+});
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
+
+## Fetch Method Alternative
+
+For environments that support Web API Request/Response objects, you can also use the `fetch` method directly:
+
+```ts
+import express from "express";
+import { DiskStorage } from "@visulima/storage";
+import { Multipart } from "@visulima/storage/handler/http/node";
+
+const app = express();
+const PORT = 3000;
+
+const storage = new DiskStorage({ directory: uploadDirectory });
+const multipart = new Multipart({ storage });
+
+// Using fetch method with a custom handler
+app.use("/upload", express.raw({ type: "multipart/form-data" }), async (req, res) => {
+  try {
+    // Convert Node.js request to Web API Request
+    const webRequest = new Request(`http://localhost:${PORT}/upload`, {
+      method: req.method,
+      headers: req.headers as any,
+      body: req.body,
+    });
+
+    const response = await multipart.fetch(webRequest);
+
+    // Convert back to Express response
+    res.status(response.status);
+    for (const [key, value] of response.headers.entries()) {
+      res.setHeader(key, value);
+    }
+
+    const body = await response.text();
+    res.send(body);
+  } catch (error) {
+    res.status(500).json({ error: "Upload failed" });
+  }
+});
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
+````
+
+### REST Handler (Direct Binary Uploads)
+
+```ts
+import express from "express";
+import { DiskStorage } from "@visulima/storage";
+import { Rest } from "@visulima/storage/handler/http/node";
+
+const app = express();
+const PORT = 3000;
+
+const storage = new DiskStorage({ directory: "./uploads" });
+const rest = new Rest({ storage });
+
+// Upload file with raw binary data
+app.post("/files", rest.handle, (req, res) => {
+    const file = req.body;
+    res.json(file);
+});
+
+// Create or update file (requires ID in URL)
+app.put("/files/:id", rest.handle, (req, res) => {
+    const file = req.body;
+    res.json(file);
+});
+
+// Delete single file
+app.delete("/files/:id", rest.handle, (req, res) => {
+    res.status(204).send();
+});
+
+// Batch delete multiple files via query parameter
+// DELETE /files?ids=id1,id2,id3
+app.delete("/files", rest.handle, (req, res) => {
+    res.status(204).send();
+});
+
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+});
+```
+
+### Choosing Between Handlers
+
+- **Multipart**: Use for traditional web form uploads (`multipart/form-data`)
+- **REST**: Use for direct binary uploads, API-first applications, or when you need PUT support
+- **TUS**: Use for large files or when you need resumable uploads
+
+Note: The `handle` middleware attaches the completed `UploadFile` to `req.body` for POST/PUT uploads and streams/serves files for GET.
+
+## Image Transformations
+
+Add on-demand image transformations with URL query parameters:
+
+```ts
+import express from "express";
+import { LRUCache } from "lru-cache";
+import { DiskStorage } from "@visulima/storage";
+import { Multipart } from "@visulima/storage/handler/http/node";
+import ImageTransformer from "@visulima/storage/transformer/image";
+
+const app = express();
+const PORT = 3000;
+
+const uploadDirectory = "./uploads";
+
+// Initialize storage
+const storage = new DiskStorage({ directory: uploadDirectory });
+
+// Initialize cache for transformed images
+const cache = new LRUCache({
+    max: 1000, // Maximum number of cached items
+    ttl: 3600000, // 1 hour in milliseconds
+});
+
+// Initialize image transformer
+const imageTransformer = new ImageTransformer(storage, {
+    cache,
+    maxImageSize: 10 * 1024 * 1024, // 10MB
+    cacheTtl: 3600, // 1 hour
+});
+
+// Initialize multipart handler
+const multipart = new Multipart({ storage });
+
+// File upload endpoint
+app.use("/files", multipart.handle, (req, res) => {
+    const file = req.body;
+    res.json(file);
+});
+
+// Image transformation endpoint with query parameters
+// Example URLs:
+// GET /files/image123?width=300&height=200&fit=cover&quality=80
+// GET /files/photo456?width=800&format=webp&lossless=true
+// GET /files/anim.gif?width=400&height=300&loop=0&delay=100
+app.get("/files/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { width, height, fit, position, quality, lossless, effort, alphaQuality, loop, delay } = req.query;
+
+        // Check if any transformation parameters are provided
+        const hasTransformParams = width || height || fit || position || quality || lossless || effort || alphaQuality || loop || delay;
+
+        if (!hasTransformParams) {
+            // No transformation requested, serve original file
+            // Delegate GET to handler to stream efficiently (incl. range)
+            return multipart.upload(req as any, res as any);
+        }
+
+        // Parse transformation options
+        const transformOptions: any = {};
+
+        if (width) transformOptions.width = Number(width);
+        if (height) transformOptions.height = Number(height);
+        if (fit) transformOptions.fit = fit;
+        if (position) transformOptions.position = position;
+        if (quality) transformOptions.quality = Number(quality);
+        if (lossless !== undefined) transformOptions.lossless = lossless === "true";
+        if (effort) transformOptions.effort = Number(effort);
+        if (alphaQuality) transformOptions.alphaQuality = Number(alphaQuality);
+        if (loop !== undefined) transformOptions.loop = Number(loop);
+        if (delay) transformOptions.delay = Number(delay);
+
+        // Apply transformation
+        // Use high-level convenience methods when possible
+        const result = await imageTransformer.resize(id, transformOptions);
+
+        // Set appropriate headers
+        res.set({
+            "Content-Type": `image/${result.format}`,
+            "Content-Length": result.buffer.length,
+            "Cache-Control": "public, max-age=3600", // Cache for 1 hour
+            "X-Transformed": "true",
+        });
+
+        res.send(result.buffer);
+    } catch (error) {
+        console.error("Error transforming image:", error);
+        res.status(500).json({ error: "Image transformation failed" });
+    }
+});
+
+// Programmatic transformation example
+app.post("/transform/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { width, height, fit = "cover", quality = 80, format = "jpeg" } = req.body;
+
+        const result = await imageTransformer.resize(id, {
+            width: Number(width),
+            height: Number(height),
+            fit: fit as "cover" | "contain" | "fill" | "inside" | "outside",
+            quality: Number(quality),
+            format: format as "jpeg" | "png" | "webp" | "avif" | "tiff",
+        });
+
+        res.json({
+            originalSize: result.originalSize,
+            transformedSize: result.buffer.length,
+            format: result.format,
+            url: `/files/${id}?width=${width}&height=${height}&fit=${fit}&quality=${quality}`,
+        });
+    } catch (error) {
+        console.error("Error in programmatic transformation:", error);
+        res.status(500).json({ error: "Transformation failed" });
+    }
+});
+
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+    console.log(`Upload files to: http://localhost:${PORT}/files`);
+    console.log(`Transform images: http://localhost:${PORT}/files/{id}?width=300&height=200`);
+});
+```
+
+## Configuration Options
+
+### ImageTransformer Configuration
+
+```ts
+const imageTransformer = new ImageTransformer(storage, {
+    maxImageSize: 10 * 1024 * 1024, // Maximum image size in bytes (default: 50MB)
+    cacheTtl: 3600, // Cache TTL in seconds (default: 3600)
+    supportedFormats: ["jpeg", "png"], // Supported input formats (default: all)
+    logger: console, // Logger instance (default: console)
+});
+```
+
+### Storage Configuration
+
+```ts
+const storage = new DiskStorage({
+    directory: "./uploads", // Upload directory
+    expiration: { maxAge: "1h" }, // File expiration
+    logger: console, // Logger instance
+});
+```
+
+## Error Handling
+
+Handle common errors when working with image transformations:
+
+```ts
+app.get("/files/:id", async (req, res) => {
+    try {
+        // ... transformation logic ...
+    } catch (error) {
+        if (error.message?.includes("not found")) {
+            return res.status(404).json({ error: "File not found" });
+        }
+
+        if (error.message?.includes("exceeds maximum")) {
+            return res.status(413).json({ error: "File too large" });
+        }
+
+        if (error.message?.includes("Unsupported image format")) {
+            return res.status(415).json({ error: "Unsupported image format" });
+        }
+
+        console.error("Transformation error:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+```
+
+## Performance Tips
+
+1. **Enable Caching**: Provide a proper cache instance (e.g., LRUCache) to cache transformed images
+2. **Use Appropriate Quality**: Lower quality values reduce file size but may affect visual quality
+3. **Choose Efficient Formats**: WebP and AVIF often provide better compression than JPEG
+4. **Set Reasonable Limits**: Configure `maxImageSize` to prevent memory issues
+5. **Use Content-Length**: Always set the Content-Length header for better performance

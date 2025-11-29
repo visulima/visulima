@@ -1,0 +1,11 @@
+{
+    "name": "@visulima/storage-client",
+    "version": "0.0.0",
+    "exports": {
+        ".": "./src/index.ts",
+        "./react": "./src/react/index.ts",
+        "./vue": "./src/vue/index.ts",
+        "./solid": "./src/solid/index.ts",
+        "./svelte": "./src/svelte/index.ts"
+    }
+}

@@ -1,0 +1,10 @@
+{
+    "$schema": "https://json.schemastore.org/tsconfig",
+    "extends": "./tsconfig.dev.json",
+    "compilerOptions": {
+        "jsx": "preserve",
+        "types": ["node", "vitest/globals", "@testing-library/jest-dom"]
+    },
+    "include": ["__tests__/**/*", "src/**/*"],
+    "exclude": ["node_modules", "dist"]
+}
