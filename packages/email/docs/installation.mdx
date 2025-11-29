@@ -206,6 +206,20 @@ yarn add html-to-text
 pnpm add html-to-text
 ```
 
+### Disposable Email Detection
+
+The disposable email detection utility requires an optional peer dependency:
+
+```bash
+npm install disposable-domains
+# or
+yarn add disposable-domains
+# or
+pnpm add disposable-domains
+```
+
+This enables the `isDisposableEmail` utility function to detect temporary/disposable email addresses. See [Validating Email Addresses](/docs/package/email/getting-started/sending-mail#validating-email-addresses) for usage examples.
+
 ## TypeScript Support
 
 @visulima/email is written in TypeScript and provides full type definitions. No additional type packages are required.

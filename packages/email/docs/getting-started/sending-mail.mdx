@@ -149,6 +149,134 @@ try {
 }
 ```
 
+## Validating Email Addresses
+
+Before sending emails, you can validate email addresses to ensure they're valid and not from disposable email services.
+
+### Basic Email Validation
+
+```typescript
+import { validateEmail } from "@visulima/email/utils/validate-email";
+
+const email = "user@example.com";
+
+if (!validateEmail(email)) {
+    throw new Error("Invalid email address");
+}
+
+// Proceed with sending
+await mail.message().to(email).from("sender@example.com").subject("Hello").html("<h1>Hello</h1>").send();
+```
+
+### Disposable Email Detection
+
+To prevent sending emails to disposable/temporary email addresses, use the disposable email detection utility:
+
+**First, install the optional dependency:**
+
+```bash
+pnpm add disposable-domains
+```
+
+**Then use it before sending:**
+
+```typescript
+import { isDisposableEmail } from "@visulima/email/utils/is-disposable-email";
+import { createMail } from "@visulima/email";
+import { resendProvider } from "@visulima/email/providers/resend";
+
+const mail = createMail(resendProvider({ apiKey: "re_xxx" }));
+
+const recipientEmail = "user@mailinator.com";
+
+// Check if email is disposable
+if (isDisposableEmail(recipientEmail)) {
+    throw new Error("Disposable email addresses are not allowed");
+}
+
+// Send email if validation passes
+const result = await mail.message().to(recipientEmail).from("sender@example.com").subject("Welcome").html("<h1>Welcome!</h1>").send();
+```
+
+### Validating Multiple Recipients
+
+When sending to multiple recipients, validate all addresses:
+
+```typescript
+import { isDisposableEmail } from "@visulima/email/utils/is-disposable-email";
+import { validateEmail } from "@visulima/email/utils/validate-email";
+
+const recipients = ["user1@example.com", "user2@mailinator.com", "user3@example.com"];
+
+// Filter out invalid and disposable emails
+const validRecipients = recipients.filter((email) => {
+    return validateEmail(email) && !isDisposableEmail(email);
+});
+
+if (validRecipients.length === 0) {
+    throw new Error("No valid recipients");
+}
+
+// Send to valid recipients only
+await mail.message().to(validRecipients).from("sender@example.com").subject("Hello").html("<h1>Hello</h1>").send();
+```
+
+### Custom Disposable Domains
+
+You can also add custom disposable domains to check:
+
+```typescript
+import { isDisposableEmail } from "@visulima/email/utils/is-disposable-email";
+
+const customDisposableDomains = new Set(["my-disposable.com", "test-temp.com"]);
+
+if (isDisposableEmail("user@my-disposable.com", customDisposableDomains)) {
+    throw new Error("Disposable email addresses are not allowed");
+}
+```
+
+### Complete Validation Example
+
+Here's a complete example combining email validation and disposable email detection:
+
+```typescript
+import { createMail } from "@visulima/email";
+import { resendProvider } from "@visulima/email/providers/resend";
+import { validateEmail } from "@visulima/email/utils/validate-email";
+import { isDisposableEmail } from "@visulima/email/utils/is-disposable-email";
+
+const mail = createMail(resendProvider({ apiKey: "re_xxx" }));
+
+const validateAndSend = async (recipientEmail: string) => {
+    // Validate email format
+    if (!validateEmail(recipientEmail)) {
+        throw new Error(`Invalid email format: ${recipientEmail}`);
+    }
+
+    // Check for disposable emails
+    if (isDisposableEmail(recipientEmail)) {
+        throw new Error(`Disposable email addresses are not allowed: ${recipientEmail}`);
+    }
+
+    // Send email
+    const result = await mail.message().to(recipientEmail).from("sender@example.com").subject("Welcome").html("<h1>Welcome!</h1>").send();
+
+    if (!result.success) {
+        throw result.error;
+    }
+
+    return result.data;
+};
+
+// Use the validation function
+try {
+    const emailResult = await validateAndSend("user@example.com");
+    console.log("Email sent:", emailResult?.messageId);
+} catch (error) {
+    console.error("Failed to send email:", error);
+}
+```
+
 ## Setting a Provider Per Message
 
 You can override the default provider for a specific message:
