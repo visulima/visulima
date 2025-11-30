@@ -107,26 +107,23 @@ await mail.send(message);
 
 ### Creating Draft Emails
 
-You can create draft emails without sending them. Drafts automatically include an `X-Unsent: 1` header:
+You can create draft emails in EML (RFC 822) format without sending them. The `draft()` method returns the email as an EML string with an `X-Unsent: 1` header automatically added:
 
 ```typescript
 import { createMail, MailMessage, resendProvider } from "@visulima/email";
+import { writeFile } from "fs/promises";
 
 const mail = createMail(resendProvider({ apiKey: "re_xxx" }));
 
 const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Hello").html("<h1>Hello World</h1>");
 
-// Create a draft without sending
-const draft = await mail.draft(message);
+// Create a draft in EML format
+const eml = await mail.draft(message);
 
-// Draft includes X-Unsent: 1 header
-console.log("Draft headers:", draft.headers);
+// Save to file
+await writeFile("draft.eml", eml);
 
-// Preview or save the draft
-console.log("Draft:", draft);
-
-// Send the draft later
-await mail.send(draft);
+// EML files can be opened by email clients
 ```
 
 ### Using Different Providers
