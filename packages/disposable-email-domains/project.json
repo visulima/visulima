@@ -1,0 +1,8 @@
+{
+    "name": "disposable-email-domains",
+    "$schema": "../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "packages/disposable-email-domains/src",
+    "projectType": "library",
+    "tags": ["disposable-email-domains", "type:package"],
+    "implicitDependencies": ["tabular"]
+}
