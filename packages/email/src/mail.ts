@@ -1,6 +1,8 @@
+import DraftMailMessage from "./draft-mail-message";
 import MailMessage from "./mail-message";
 import type { Provider } from "./providers/provider";
 import type { EmailAddress, EmailHeaders, EmailOptions, EmailResult, Receipt, Result } from "./types";
+import buildMimeMessage from "./utils/build-mime-message";
 import type { Logger } from "./utils/create-logger";
 import { createLogger } from "./utils/create-logger";
 import headersToRecord from "./utils/headers-to-record";
@@ -183,10 +185,10 @@ export class Mail {
     }
 
     /**
-     * Creates a draft email without sending it.
+     * Creates a draft email in EML (RFC 822) format without sending it.
      * This is useful for previewing, saving for later, or testing email content.
      * @param message The message to create a draft from (MailMessage or EmailOptions).
-     * @returns The built email options ready for sending (but not actually sent).
+     * @returns The email in EML (RFC 822) format as a string with X-Unsent: 1 header.
      * @example
      * ```ts
      * // Create a draft from MailMessage
@@ -196,41 +198,22 @@ export class Mail {
      *   .subject("Hello")
      *   .html("<h1>Hello World</h1>");
      *
-     * const draft = await mail.draft(message);
-     * console.log("Draft created:", draft);
+     * const eml = await mail.draft(message);
+     * console.log("Draft EML:", eml);
      *
-     * // Send the draft later
-     * await mail.send(draft);
+     * // Save to file
+     * await fs.writeFile("draft.eml", eml);
+     *
+     * // Or send later by parsing the EML back to EmailOptions
      * ```
      */
-    public async draft(message: SendableMessage): Promise<EmailOptions> {
-        let emailOptions: EmailOptions;
+    public async draft(message: SendableMessage | DraftMailMessage): Promise<string> {
+        let emailOptions: EmailOptions
+            = message instanceof MailMessage || message instanceof DraftMailMessage
+                ? await this.buildDraftFromMessage(message)
+                : await this.buildDraftFromOptions(message as EmailOptions);
 
-        if (message instanceof MailMessage) {
-            if (this.logger) {
-                this.logger.debug("Creating draft from MailMessage instance");
-            }
-
-            // Set logger on message if available
-            if (this.loggerInstance) {
-                message.setLogger(this.loggerInstance);
-            }
-
-            emailOptions = await message.build();
-        } else {
-            const options = message as EmailOptions;
-
-            if (this.logger) {
-                this.logger.debug("Creating draft from email options", {
-                    subject: options.subject,
-                    to: Array.isArray(options.to) ? options.to.length : 1,
-                });
-            }
-
-            emailOptions = options;
-        }
-
-        // Apply global configuration
+        // Apply global configuration (for EmailOptions or to override message-specific values)
         emailOptions = this.applyGlobalConfig(emailOptions);
 
         // Add X-Unsent header to indicate this is a draft
@@ -241,15 +224,19 @@ export class Mail {
             "X-Unsent": "1",
         };
 
+        // Build MIME message (EML format)
+        const eml = await buildMimeMessage(emailOptions);
+
         if (this.logger) {
-            this.logger.debug("Draft created successfully", {
+            this.logger.debug("Draft created successfully in EML format", {
                 from: emailOptions.from.email,
+                size: eml.length,
                 subject: emailOptions.subject,
                 to: Array.isArray(emailOptions.to) ? emailOptions.to.length : 1,
             });
         }
 
-        return emailOptions;
+        return eml;
     }
 
     /**
@@ -273,13 +260,13 @@ export class Mail {
      *   subject: "Hello",
      *   html: "<h1>Hello World</h1>"
      * });
-     *
-     * // Using a draft
-     * const draft = await mail.draft(message);
-     * await mail.send(draft);
      * ```
      */
     public async send(message: SendableMessage): Promise<Result<EmailResult>> {
+        if (message instanceof DraftMailMessage) {
+            throw new TypeError("Cannot send draft messages. Convert to MailMessage first or remove X-Unsent header.");
+        }
+
         let emailOptions: EmailOptions;
 
         if (message instanceof MailMessage) {
@@ -306,7 +293,6 @@ export class Mail {
             emailOptions = options;
         }
 
-        // Apply global configuration
         emailOptions = this.applyGlobalConfig(emailOptions);
 
         const result = await this.provider.sendEmail(emailOptions);
@@ -351,6 +337,10 @@ export class Mail {
         }
 
         for await (const message of messages) {
+            if (message instanceof DraftMailMessage) {
+                throw new TypeError("Cannot send draft messages. Convert to MailMessage first or remove X-Unsent header.");
+            }
+
             if (options?.signal?.aborted) {
                 if (this.logger) {
                     this.logger.warn("Batch send operation was aborted", {
@@ -372,30 +362,7 @@ export class Mail {
             processedCount += 1;
 
             try {
-                let emailOptions: EmailOptions;
-
-                if (message instanceof MailMessage) {
-                    // Set logger on message if available
-                    if (this.loggerInstance) {
-                        message.setLogger(this.loggerInstance);
-                    }
-
-                    emailOptions = await message.build();
-                } else {
-                    emailOptions = message as EmailOptions;
-                }
-
-                if (this.logger) {
-                    this.logger.debug(`Sending email ${processedCount}`, {
-                        subject: emailOptions.subject,
-                        to: Array.isArray(emailOptions.to) ? emailOptions.to.length : 1,
-                    });
-                }
-
-                // Apply global configuration
-                emailOptions = this.applyGlobalConfig(emailOptions);
-
-                const result = await this.provider.sendEmail(emailOptions);
+                const result = await this.send(message);
 
                 if (result.success && result.data) {
                     successCount += 1;
@@ -444,10 +411,78 @@ export class Mail {
         }
 
         if (this.logger) {
-            this.logger.info("Batch email send completed", {
-                failed: failureCount,
-                successful: successCount,
-                total: processedCount,
+            this.logger.debug("Batch email send completed", {
+                failureCount,
+                processedCount,
+                provider: providerName,
+                successCount,
+            });
+        }
+    }
+
+    /**
+     * Builds email options from a MailMessage instance for draft creation.
+     * Applies global configuration before building to ensure required fields are set.
+     * @param message The MailMessage or DraftMailMessage instance.
+     * @returns Built email options.
+     * @private
+     */
+    private async buildDraftFromMessage(message: MailMessage | DraftMailMessage): Promise<EmailOptions> {
+        if (this.logger) {
+            this.logger.debug("Creating draft from MailMessage instance");
+        }
+
+        // Set logger on message if available
+        if (this.loggerInstance) {
+            message.setLogger(this.loggerInstance);
+        }
+
+        // Apply global configuration to message before building
+        this.applyGlobalConfigToMessage(message);
+
+        return await message.build();
+    }
+
+    /**
+     * Builds email options from EmailOptions for draft creation.
+     * @param options The EmailOptions object.
+     * @returns Email options.
+     * @private
+     */
+    private async buildDraftFromOptions(options: EmailOptions): Promise<EmailOptions> {
+        if (this.logger) {
+            this.logger.debug("Creating draft from email options", {
+                subject: options.subject,
+                to: Array.isArray(options.to) ? options.to.length : 1,
+            });
+        }
+
+        return options;
+    }
+
+    /**
+     * Applies global configuration to a MailMessage instance.
+     * @param message The MailMessage or DraftMailMessage instance.
+     * @private
+     */
+    private applyGlobalConfigToMessage(message: MailMessage | DraftMailMessage): void {
+        const globalFrom = this.globalConfig?.from;
+
+        if (globalFrom && !message.getFrom()) {
+            message.from(globalFrom);
+        }
+
+        const globalReplyTo = this.globalConfig?.replyTo;
+
+        if (globalReplyTo && !message.getReplyTo()) {
+            message.replyTo(globalReplyTo);
+        }
+
+        if (this.globalConfig?.headers) {
+            const globalHeadersRecord = headersToRecord(this.globalConfig.headers);
+
+            Object.entries(globalHeadersRecord).forEach(([key, value]) => {
+                message.header(key, value);
             });
         }
     }
