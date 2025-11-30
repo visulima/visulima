@@ -183,6 +183,76 @@ export class Mail {
     }
 
     /**
+     * Creates a draft email without sending it.
+     * This is useful for previewing, saving for later, or testing email content.
+     * @param message The message to create a draft from (MailMessage or EmailOptions).
+     * @returns The built email options ready for sending (but not actually sent).
+     * @example
+     * ```ts
+     * // Create a draft from MailMessage
+     * const message = new MailMessage()
+     *   .to("user@example.com")
+     *   .from("sender@example.com")
+     *   .subject("Hello")
+     *   .html("<h1>Hello World</h1>");
+     *
+     * const draft = await mail.draft(message);
+     * console.log("Draft created:", draft);
+     *
+     * // Send the draft later
+     * await mail.send(draft);
+     * ```
+     */
+    public async draft(message: SendableMessage): Promise<EmailOptions> {
+        let emailOptions: EmailOptions;
+
+        if (message instanceof MailMessage) {
+            if (this.logger) {
+                this.logger.debug("Creating draft from MailMessage instance");
+            }
+
+            // Set logger on message if available
+            if (this.loggerInstance) {
+                message.setLogger(this.loggerInstance);
+            }
+
+            emailOptions = await message.build();
+        } else {
+            const options = message as EmailOptions;
+
+            if (this.logger) {
+                this.logger.debug("Creating draft from email options", {
+                    subject: options.subject,
+                    to: Array.isArray(options.to) ? options.to.length : 1,
+                });
+            }
+
+            emailOptions = options;
+        }
+
+        // Apply global configuration
+        emailOptions = this.applyGlobalConfig(emailOptions);
+
+        // Add X-Unsent header to indicate this is a draft
+        const headersRecord = emailOptions.headers ? headersToRecord(emailOptions.headers) : {};
+
+        emailOptions.headers = {
+            ...headersRecord,
+            "X-Unsent": "1",
+        };
+
+        if (this.logger) {
+            this.logger.debug("Draft created successfully", {
+                from: emailOptions.from.email,
+                subject: emailOptions.subject,
+                to: Array.isArray(emailOptions.to) ? emailOptions.to.length : 1,
+            });
+        }
+
+        return emailOptions;
+    }
+
+    /**
      * Sends an email message or email options.
      * @param message The message to send (MailMessage or EmailOptions).
      * @returns A result object containing the email result or error.
@@ -203,6 +273,10 @@ export class Mail {
      *   subject: "Hello",
      *   html: "<h1>Hello World</h1>"
      * });
+     *
+     * // Using a draft
+     * const draft = await mail.draft(message);
+     * await mail.send(draft);
      * ```
      */
     public async send(message: SendableMessage): Promise<Result<EmailResult>> {

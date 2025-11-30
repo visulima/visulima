@@ -99,13 +99,34 @@ const mail2 = createMail(resendProvider({ apiKey: "re_xxx" }))
     .setHeaders({ "X-App-Name": "MyApp" });
 
 // Now all emails will use these defaults if not specified in the message
-const message = new MailMessage()
-    .to("user@example.com")
-    .subject("Hello")
-    .html("<h1>Hello World</h1>");
+const message = new MailMessage().to("user@example.com").subject("Hello").html("<h1>Hello World</h1>");
 // No need to set .from() - it will use the default
 
 await mail.send(message);
+```
+
+### Creating Draft Emails
+
+You can create draft emails without sending them. Drafts automatically include an `X-Unsent: 1` header:
+
+```typescript
+import { createMail, MailMessage, resendProvider } from "@visulima/email";
+
+const mail = createMail(resendProvider({ apiKey: "re_xxx" }));
+
+const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Hello").html("<h1>Hello World</h1>");
+
+// Create a draft without sending
+const draft = await mail.draft(message);
+
+// Draft includes X-Unsent: 1 header
+console.log("Draft headers:", draft.headers);
+
+// Preview or save the draft
+console.log("Draft:", draft);
+
+// Send the draft later
+await mail.send(draft);
 ```
 
 ### Using Different Providers
@@ -1388,3 +1409,4 @@ The visulima email is open-sourced software licensed under the [MIT][license-url
 [license-url]: LICENSE.md "license"
 [npm-image]: https://img.shields.io/npm/v/@visulima/email/latest.svg?style=for-the-badge&logo=npm
 [npm-url]: https://www.npmjs.com/package/@visulima/email/v/latest "npm"
+````
