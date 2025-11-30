@@ -516,10 +516,7 @@ const mail = createMail(resendProvider({ apiKey: "re_xxx" }));
 mail.setFrom({ email: "noreply@example.com", name: "My App" });
 
 // Now all emails will use this from address if not specified
-const message = new MailMessage()
-    .to("user@example.com")
-    .subject("Hello")
-    .html("<h1>Hello World</h1>");
+const message = new MailMessage().to("user@example.com").subject("Hello").html("<h1>Hello World</h1>");
 // No need to set .from() - it will use the default
 
 await mail.send(message);
@@ -572,10 +569,7 @@ const mail = createMail(resendProvider({ apiKey: "re_xxx" }));
 mail.setFrom({ email: "noreply@example.com" });
 
 // This message will use the default from address
-const message1 = new MailMessage()
-    .to("user@example.com")
-    .subject("Hello")
-    .html("<h1>Hello</h1>");
+const message1 = new MailMessage().to("user@example.com").subject("Hello").html("<h1>Hello</h1>");
 await mail.send(message1); // Uses noreply@example.com
 
 // This message overrides the default
