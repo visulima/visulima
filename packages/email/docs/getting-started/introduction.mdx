@@ -95,16 +95,18 @@ if (result.success) {
 
 ## Creating Drafts
 
-You can create draft emails without sending them:
+You can create draft emails in EML (RFC 822) format without sending them:
 
 ```typescript
+import { writeFile } from "fs/promises";
+
 const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Hello").html("<h1>Hello World</h1>");
 
-// Create a draft (doesn't send)
-const draft = await mail.draft(message);
+// Create a draft in EML format (doesn't send)
+const eml = await mail.draft(message);
 
-// Send the draft later
-await mail.send(draft);
+// Save to file - can be opened by email clients
+await writeFile("draft.eml", eml);
 ```
 
 ## Next Steps

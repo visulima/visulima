@@ -43,10 +43,22 @@ export class MailMessage {
 
     private textContent?: string;
 
+    // Charset for text content (accessible via getTextCharset())
+    private textCharset = "utf8";
+
     // Controls whether text should be auto-generated from HTML.
     private autoTextEnabled = true;
 
     private htmlContent?: string;
+
+    // Charset for HTML content (accessible via getHtmlCharset())
+    private htmlCharset = "utf8";
+
+    private dateValue?: Date;
+
+    private returnPathAddress?: EmailAddress;
+
+    private senderAddress?: EmailAddress;
 
     private headers: Record<string, string> = {};
 
@@ -83,6 +95,7 @@ export class MailMessage {
      * @returns This instance for method chaining.
      */
     public to(address: AddressInput): this {
+        this.toAddresses.length = 0;
         this.toAddresses.push(...normalizeAddresses(address));
 
         return this;
@@ -94,6 +107,7 @@ export class MailMessage {
      * @returns This instance for method chaining.
      */
     public cc(address: AddressInput): this {
+        this.ccAddresses.length = 0;
         this.ccAddresses.push(...normalizeAddresses(address));
 
         return this;
@@ -105,6 +119,7 @@ export class MailMessage {
      * @returns This instance for method chaining.
      */
     public bcc(address: AddressInput): this {
+        this.bccAddresses.length = 0;
         this.bccAddresses.push(...normalizeAddresses(address));
 
         return this;
@@ -124,10 +139,12 @@ export class MailMessage {
     /**
      * Sets the plain text content of the email.
      * @param content The plain text content to set.
+     * @param charset Optional charset for the text content (default: 'utf8').
      * @returns This instance for method chaining.
      */
-    public text(content: string): this {
+    public text(content: string, charset: string = "utf8"): this {
         this.textContent = content;
+        this.textCharset = charset;
 
         return this;
     }
@@ -135,10 +152,12 @@ export class MailMessage {
     /**
      * Sets the HTML content of the email.
      * @param content The HTML content to set.
+     * @param charset Optional charset for the HTML content (default: 'utf8').
      * @returns This instance for method chaining.
      */
-    public html(content: string): this {
+    public html(content: string, charset: string = "utf8"): this {
         this.htmlContent = content;
+        this.htmlCharset = charset;
 
         return this;
     }
@@ -326,6 +345,118 @@ export class MailMessage {
      */
     public replyTo(address: EmailAddress | string): this {
         this.replyToAddress = typeof address === "string" ? { email: address } : address;
+
+        return this;
+    }
+
+    /**
+     * Sets the date header for the email.
+     * @param date The date to set (Date object or ISO string).
+     * @returns This instance for method chaining.
+     */
+    public date(date: Date | string): this {
+        this.dateValue = typeof date === "string" ? new Date(date) : date;
+
+        if (this.logger) {
+            this.logger.debug("Date header set", { date: this.dateValue.toISOString() });
+        }
+
+        return this;
+    }
+
+    /**
+     * Sets the return-path address (bounce address).
+     * @param address The return-path email address (string or EmailAddress object).
+     * @returns This instance for method chaining.
+     */
+    public returnPath(address: EmailAddress | string): this {
+        this.returnPathAddress = typeof address === "string" ? { email: address } : address;
+
+        if (this.logger) {
+            this.logger.debug("Return-path address set", { returnPath: this.returnPathAddress.email });
+        }
+
+        return this;
+    }
+
+    /**
+     * Sets the sender address (different from From - used when From contains multiple addresses).
+     * @param address The sender email address (string or EmailAddress object).
+     * @returns This instance for method chaining.
+     */
+    public sender(address: EmailAddress | string): this {
+        this.senderAddress = typeof address === "string" ? { email: address } : address;
+
+        if (this.logger) {
+            this.logger.debug("Sender address set", { sender: this.senderAddress.email });
+        }
+
+        return this;
+    }
+
+    /**
+     * Adds recipient address(es) without replacing existing ones.
+     * @param address The recipient email address(es) (string, EmailAddress, or arrays of either).
+     * @returns This instance for method chaining.
+     */
+    public addTo(address: AddressInput): this {
+        this.toAddresses.push(...normalizeAddresses(address));
+
+        return this;
+    }
+
+    /**
+     * Adds CC recipient address(es) without replacing existing ones.
+     * @param address The CC recipient email address(es) (string, EmailAddress, or arrays of either).
+     * @returns This instance for method chaining.
+     */
+    public addCc(address: AddressInput): this {
+        this.ccAddresses.push(...normalizeAddresses(address));
+
+        return this;
+    }
+
+    /**
+     * Adds BCC recipient address(es) without replacing existing ones.
+     * @param address The BCC recipient email address(es) (string, EmailAddress, or arrays of either).
+     * @returns This instance for method chaining.
+     */
+    public addBcc(address: AddressInput): this {
+        this.bccAddresses.push(...normalizeAddresses(address));
+
+        return this;
+    }
+
+    /**
+     * Adds reply-to address(es) without replacing existing ones.
+     * @param address The reply-to email address(es) (string, EmailAddress, or arrays of either).
+     * @returns This instance for method chaining.
+     */
+    public addReplyTo(address: EmailAddress | string | (EmailAddress | string)[]): this {
+        const addresses = Array.isArray(address) ? address : [address];
+
+        if (addresses.length > 0) {
+            const firstAddress = addresses[0];
+
+            this.replyToAddress = typeof firstAddress === "string" ? { email: firstAddress } : firstAddress;
+        }
+
+        return this;
+    }
+
+    /**
+     * Adds from address(es) without replacing existing ones.
+     * @param address The sender email address(es) (string, EmailAddress, or arrays of either).
+     * @returns This instance for method chaining.
+     */
+    public addFrom(address: EmailAddress | string | (EmailAddress | string)[]): this {
+        const addresses = Array.isArray(address) ? address : [address];
+
+        if (addresses.length > 0) {
+            const firstAddress = addresses[0];
+
+            this.fromAddress = typeof firstAddress === "string" ? { email: firstAddress } : firstAddress;
+        }
 
         return this;
     }
@@ -678,6 +809,30 @@ export class MailMessage {
             }
         }
 
+        // Add date header if set
+        if (this.dateValue) {
+            emailOptions.headers = {
+                ...headersToRecord(emailOptions.headers || {}),
+                Date: this.dateValue.toUTCString(),
+            };
+        }
+
+        // Add return-path header if set
+        if (this.returnPathAddress) {
+            emailOptions.headers = {
+                ...headersToRecord(emailOptions.headers || {}),
+                "Return-Path": this.returnPathAddress.email,
+            };
+        }
+
+        // Add sender header if set
+        if (this.senderAddress) {
+            emailOptions.headers = {
+                ...headersToRecord(emailOptions.headers || {}),
+                Sender: this.senderAddress.email,
+            };
+        }
+
         if (this.signer) {
             if (this.logger) {
                 this.logger.debug("Signing email message");
@@ -713,6 +868,128 @@ export class MailMessage {
         }
 
         return emailOptions;
+    }
+
+    // Getter methods
+
+    /**
+     * Gets the subject of the email.
+     * @returns The subject text or empty string if not set.
+     */
+    public getSubject(): string {
+        return this.subjectText;
+    }
+
+    /**
+     * Gets the from address.
+     * @returns The from address or undefined if not set.
+     */
+    public getFrom(): EmailAddress | undefined {
+        return this.fromAddress;
+    }
+
+    /**
+     * Gets the recipient addresses.
+     * @returns Array of recipient addresses.
+     */
+    public getTo(): EmailAddress[] {
+        return [...this.toAddresses];
+    }
+
+    /**
+     * Gets the CC recipient addresses.
+     * @returns Array of CC recipient addresses.
+     */
+    public getCc(): EmailAddress[] {
+        return [...this.ccAddresses];
+    }
+
+    /**
+     * Gets the BCC recipient addresses.
+     * @returns Array of BCC recipient addresses.
+     */
+    public getBcc(): EmailAddress[] {
+        return [...this.bccAddresses];
+    }
+
+    /**
+     * Gets the reply-to address.
+     * @returns The reply-to address or undefined if not set.
+     */
+    public getReplyTo(): EmailAddress | undefined {
+        return this.replyToAddress;
+    }
+
+    /**
+     * Gets the sender address.
+     * @returns The sender address or undefined if not set.
+     */
+    public getSender(): EmailAddress | undefined {
+        return this.senderAddress;
+    }
+
+    /**
+     * Gets the return-path address.
+     * @returns The return-path address or undefined if not set.
+     */
+    public getReturnPath(): EmailAddress | undefined {
+        return this.returnPathAddress;
+    }
+
+    /**
+     * Gets the date header.
+     * @returns The date or undefined if not set.
+     */
+    public getDate(): Date | undefined {
+        return this.dateValue;
+    }
+
+    /**
+     * Gets the priority of the email.
+     * @returns The priority ('high', 'normal', 'low') or undefined if not set.
+     */
+    public getPriority(): Priority | undefined {
+        return this.priorityValue;
+    }
+
+    /**
+     * Gets the plain text content.
+     * @returns The text content or undefined if not set.
+     */
+    public getTextBody(): string | undefined {
+        return this.textContent;
+    }
+
+    /**
+     * Gets the charset for the text content.
+     * @returns The text charset (default: 'utf8').
+     */
+    public getTextCharset(): string {
+        return this.textCharset;
+    }
+
+    /**
+     * Gets the HTML content.
+     * @returns The HTML content or undefined if not set.
+     */
+    public getHtmlBody(): string | undefined {
+        return this.htmlContent;
+    }
+
+    /**
+     * Gets the charset for the HTML content.
+     * @returns The HTML charset (default: 'utf8').
+     */
+    public getHtmlCharset(): string {
+        return this.htmlCharset;
+    }
+
+    /**
+     * Gets the attachments.
+     * @returns Array of attachments.
+     */
+    public getAttachments(): Attachment[] {
+        return [...this.attachments];
     }
 
     /**

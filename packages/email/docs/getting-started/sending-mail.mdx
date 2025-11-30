@@ -87,27 +87,25 @@ const result = await mail.send(emailOptions);
 
 ## Creating Draft Emails
 
-You can create draft emails without sending them. This is useful for previewing, saving for later, or testing email content. Draft emails automatically include an `X-Unsent: 1` header to indicate they are drafts.
+You can create draft emails in EML (RFC 822) format without sending them. This is useful for previewing, saving for later, or testing email content. The `draft()` method returns the email as an EML string with an `X-Unsent: 1` header automatically added.
 
 ```typescript
 import { createMail, MailMessage } from "@visulima/email";
 import { resendProvider } from "@visulima/email/providers/resend";
+import { writeFile } from "fs/promises";
 
 const mail = createMail(resendProvider({ apiKey: "re_xxx" }));
 
 // Create a draft from MailMessage
 const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Hello").html("<h1>Hello World</h1>");
 
-const draft = await mail.draft(message);
+const eml = await mail.draft(message);
 
-// Preview the draft
-console.log("Draft subject:", draft.subject);
-console.log("Draft from:", draft.from);
-console.log("Draft to:", draft.to);
-console.log("Draft headers:", draft.headers); // Includes X-Unsent: 1
+// Save draft to file
+await writeFile("draft.eml", eml);
 
-// Send the draft later
-const result = await mail.send(draft);
+// Or preview the draft
+console.log("Draft EML:", eml);
 ```
 
 ### Using Drafts with EmailOptions
@@ -115,15 +113,15 @@ const result = await mail.send(draft);
 You can also create drafts from `EmailOptions`:
 
 ```typescript
-const draft = await mail.draft({
+const eml = await mail.draft({
     to: "user@example.com",
     from: "sender@example.com",
     subject: "Hello",
     html: "<h1>Hello World</h1>",
 });
 
-// Save draft to database, send later, etc.
-await saveDraftToDatabase(draft);
+// Save draft to database or file system
+await saveDraftToFile("draft.eml", eml);
 ```
 
 ### Drafts with Global Configuration
@@ -138,10 +136,38 @@ const mail = createMail(resendProvider({ apiKey: "re_xxx" }))
 const message = new MailMessage().to("user@example.com").subject("Hello").html("<h1>Hello</h1>");
 
 // Draft will include the global from address and headers
-const draft = await mail.draft(message);
-// draft.from will be "noreply@example.com"
-// draft.headers will include "X-App-Name": "MyApp"
+const eml = await mail.draft(message);
+// The EML will include "X-App-Name": "MyApp" and "X-Unsent": "1" headers
 ```
+
+### Serving Drafts as Downloads
+
+You can serve drafts as downloadable EML files (similar to Symfony):
+
+```typescript
+import { createMail, MailMessage } from "@visulima/email";
+import { resendProvider } from "@visulima/email/providers/resend";
+
+const mail = createMail(resendProvider({ apiKey: "re_xxx" }));
+
+// In your HTTP handler (e.g., Express, Fastify, etc.)
+app.get("/draft/:id", async (req, res) => {
+    const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Hello").html("<h1>Hello World</h1>");
+
+    const eml = await mail.draft(message);
+
+    res.setHeader("Content-Type", "message/rfc822");
+    res.setHeader("Content-Disposition", 'attachment; filename="draft.eml"');
+    res.send(eml);
+});
+```
+
+### Important Notes
+
+- Drafts are created in EML (RFC 822) format with the `X-Unsent: 1` header automatically added
+- The `draft()` method returns a string (EML format) that can be saved to a file or database
+- EML files can be opened by most email clients (Outlook, Thunderbird, Apple Mail, etc.)
+- The EML format is useful for archiving, previewing, or sharing draft emails
 
 ## Handling Results
 
