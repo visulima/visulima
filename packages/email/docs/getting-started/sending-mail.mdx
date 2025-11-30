@@ -85,6 +85,64 @@ const emailOptions: EmailOptions = {
 const result = await mail.send(emailOptions);
 ```
 
+## Creating Draft Emails
+
+You can create draft emails without sending them. This is useful for previewing, saving for later, or testing email content. Draft emails automatically include an `X-Unsent: 1` header to indicate they are drafts.
+
+```typescript
+import { createMail, MailMessage } from "@visulima/email";
+import { resendProvider } from "@visulima/email/providers/resend";
+
+const mail = createMail(resendProvider({ apiKey: "re_xxx" }));
+
+// Create a draft from MailMessage
+const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Hello").html("<h1>Hello World</h1>");
+
+const draft = await mail.draft(message);
+
+// Preview the draft
+console.log("Draft subject:", draft.subject);
+console.log("Draft from:", draft.from);
+console.log("Draft to:", draft.to);
+console.log("Draft headers:", draft.headers); // Includes X-Unsent: 1
+
+// Send the draft later
+const result = await mail.send(draft);
+```
+
+### Using Drafts with EmailOptions
+
+You can also create drafts from `EmailOptions`:
+
+```typescript
+const draft = await mail.draft({
+    to: "user@example.com",
+    from: "sender@example.com",
+    subject: "Hello",
+    html: "<h1>Hello World</h1>",
+});
+
+// Save draft to database, send later, etc.
+await saveDraftToDatabase(draft);
+```
+
+### Drafts with Global Configuration
+
+Drafts automatically apply global configuration (default from, reply-to, headers):
+
+```typescript
+const mail = createMail(resendProvider({ apiKey: "re_xxx" }))
+    .setFrom({ email: "noreply@example.com" })
+    .setHeaders({ "X-App-Name": "MyApp" });
+
+const message = new MailMessage().to("user@example.com").subject("Hello").html("<h1>Hello</h1>");
+
+// Draft will include the global from address and headers
+const draft = await mail.draft(message);
+// draft.from will be "noreply@example.com"
+// draft.headers will include "X-App-Name": "MyApp"
+```
+
 ## Handling Results
 
 All sending methods return a `Result<EmailResult>` object:

@@ -93,6 +93,20 @@ if (result.success) {
 }
 ```
 
+## Creating Drafts
+
+You can create draft emails without sending them:
+
+```typescript
+const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Hello").html("<h1>Hello World</h1>");
+
+// Create a draft (doesn't send)
+const draft = await mail.draft(message);
+
+// Send the draft later
+await mail.send(draft);
+```
+
 ## Next Steps
 
 - [Configuration](/docs/package/email/getting-started/configuration) - Configure providers
