@@ -141,7 +141,7 @@
         "@arethetypeswrong/cli": "^0.18.2",
         "@types/node": "24.10.1",
         "@visulima/error": "5.0.6",
-        "@visulima/packem": "2.0.0-alpha.37",
+        "@visulima/packem": "2.0.0-alpha.40",
         "@vitest/coverage-v8": "^4.0.14",
         "@vitest/ui": "^4.0.14",
         "conventional-changelog-conventionalcommits": "9.1.0",

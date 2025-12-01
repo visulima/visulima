@@ -23,6 +23,7 @@ overrides:
   prismjs@<1.30.0: '>=1.30.0'
   tar-fs@>=3.0.0 <3.1.1: '>=3.1.1'
   tmp@<=0.2.3: '>=0.2.5'
+  valibot@>=0.31.0 <1.2.0: '>=1.2.0'
   vite@<=5.4.19: '>=7.1.11'
   vite@>=7.1.0 <=7.1.4: '>=7.1.11'
 
@@ -407,7 +408,7 @@ importers:
         version: link:../colorize
       '@visulima/packem':
         specifier: 2.0.0-alpha.37
-        version: 2.0.0-alpha.37(2610705b3d0c32365a56c5eb3e720826)
+        version: 2.0.0-alpha.37(7064b1631cb6de20ee52fbc41ded3f30)
       '@visulima/path':
         specifier: 2.0.5
         version: link:../path
@@ -755,8 +756,8 @@ importers:
         specifier: 1.4.29
         version: link:../colorize
       '@visulima/packem':
-        specifier: 2.0.0-alpha.37
-        version: 2.0.0-alpha.37(2610705b3d0c32365a56c5eb3e720826)
+        specifier: 2.0.0-alpha.40
+        version: 2.0.0-alpha.40(2610705b3d0c32365a56c5eb3e720826)
       '@visulima/path':
         specifier: 2.0.5
         version: link:../path
@@ -854,8 +855,8 @@ importers:
         specifier: 24.10.1
         version: 24.10.1
       '@visulima/packem':
-        specifier: 2.0.0-alpha.37
-        version: 2.0.0-alpha.37(2610705b3d0c32365a56c5eb3e720826)
+        specifier: 2.0.0-alpha.40
+        version: 2.0.0-alpha.40(2610705b3d0c32365a56c5eb3e720826)
       '@vitest/coverage-v8':
         specifier: ^4.0.14
         version: 4.0.14(@vitest/browser@4.0.14(msw@2.12.3(@types/node@24.10.1)(typescript@5.9.3))(vite@7.2.6(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))(vitest@4.0.14))(vitest@4.0.14)
@@ -942,8 +943,8 @@ importers:
         specifier: 2.0.7
         version: link:../find-cache-dir
       '@visulima/packem':
-        specifier: 2.0.0-alpha.37
-        version: 2.0.0-alpha.37(2610705b3d0c32365a56c5eb3e720826)
+        specifier: 2.0.0-alpha.40
+        version: 2.0.0-alpha.40(2610705b3d0c32365a56c5eb3e720826)
       '@visulima/pail':
         specifier: 3.2.2
         version: link:../pail
@@ -1120,8 +1121,8 @@ importers:
         specifier: 24.10.1
         version: 24.10.1
       '@visulima/packem':
-        specifier: 2.0.0-alpha.37
-        version: 2.0.0-alpha.37(2610705b3d0c32365a56c5eb3e720826)
+        specifier: 2.0.0-alpha.40
+        version: 2.0.0-alpha.40(2610705b3d0c32365a56c5eb3e720826)
       '@vitest/coverage-v8':
         specifier: ^4.0.14
         version: 4.0.14(@vitest/browser@4.0.14(msw@2.12.3(@types/node@24.10.1)(typescript@5.9.3))(vite@7.2.6(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))(vitest@4.0.14))(vitest@4.0.14)
@@ -1255,8 +1256,8 @@ importers:
         specifier: 5.0.6
         version: link:../error
       '@visulima/packem':
-        specifier: 2.0.0-alpha.37
-        version: 2.0.0-alpha.37(2610705b3d0c32365a56c5eb3e720826)
+        specifier: 2.0.0-alpha.40
+        version: 2.0.0-alpha.40(2610705b3d0c32365a56c5eb3e720826)
       '@vitest/coverage-v8':
         specifier: ^4.0.14
         version: 4.0.14(@vitest/browser@4.0.14(msw@2.12.3(@types/node@24.10.1)(typescript@5.9.3))(vite@7.2.6(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))(vitest@4.0.14))(vitest@4.0.14)
@@ -1380,8 +1381,8 @@ importers:
         specifier: 24.10.1
         version: 24.10.1
       '@visulima/packem':
-        specifier: 2.0.0-alpha.37
-        version: 2.0.0-alpha.37(2610705b3d0c32365a56c5eb3e720826)
+        specifier: 2.0.0-alpha.40
+        version: 2.0.0-alpha.40(2610705b3d0c32365a56c5eb3e720826)
       '@vitest/coverage-v8':
         specifier: ^4.0.14
         version: 4.0.14(@vitest/browser@4.0.14(msw@2.12.3(@types/node@24.10.1)(typescript@5.9.3))(vite@7.2.6(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))(vitest@4.0.14))(vitest@4.0.14)
@@ -1585,8 +1586,8 @@ importers:
         specifier: 24.10.1
         version: 24.10.1
       '@visulima/packem':
-        specifier: 2.0.0-alpha.37
-        version: 2.0.0-alpha.37(2610705b3d0c32365a56c5eb3e720826)
+        specifier: 2.0.0-alpha.40
+        version: 2.0.0-alpha.40(2610705b3d0c32365a56c5eb3e720826)
       '@vitest/coverage-v8':
         specifier: ^4.0.14
         version: 4.0.14(@vitest/browser@4.0.14(msw@2.12.3(@types/node@24.10.1)(typescript@5.9.3))(vite@7.2.6(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))(vitest@4.0.14))(vitest@4.0.14)
@@ -1701,7 +1702,7 @@ importers:
         version: 24.10.1
       '@visulima/packem':
         specifier: 2.0.0-alpha.40
-        version: 2.0.0-alpha.40(7064b1631cb6de20ee52fbc41ded3f30)
+        version: 2.0.0-alpha.40(2610705b3d0c32365a56c5eb3e720826)
       '@visulima/tabular':
         specifier: workspace:*
         version: link:../tabular
@@ -1809,8 +1810,8 @@ importers:
         specifier: 4.1.0
         version: link:../fs
       '@visulima/packem':
-        specifier: 2.0.0-alpha.39
-        version: 2.0.0-alpha.39(7064b1631cb6de20ee52fbc41ded3f30)
+        specifier: 2.0.0-alpha.40
+        version: 2.0.0-alpha.40(2610705b3d0c32365a56c5eb3e720826)
       '@visulima/path':
         specifier: 2.0.5
         version: link:../path
@@ -1918,8 +1919,8 @@ importers:
         specifier: 24.10.1
         version: 24.10.1
       '@visulima/packem':
-        specifier: 2.0.0-alpha.37
-        version: 2.0.0-alpha.37(2610705b3d0c32365a56c5eb3e720826)
+        specifier: 2.0.0-alpha.40
+        version: 2.0.0-alpha.40(2610705b3d0c32365a56c5eb3e720826)
       '@visulima/path':
         specifier: 2.0.5
         version: link:../path
@@ -2012,8 +2013,8 @@ importers:
         specifier: 24.10.1
         version: 24.10.1
       '@visulima/packem':
-        specifier: 2.0.0-alpha.37
-        version: 2.0.0-alpha.37(2610705b3d0c32365a56c5eb3e720826)
+        specifier: 2.0.0-alpha.40
+        version: 2.0.0-alpha.40(2610705b3d0c32365a56c5eb3e720826)
       '@vitest/coverage-v8':
         specifier: ^4.0.14
         version: 4.0.14(@vitest/browser@4.0.14(msw@2.12.3(@types/node@24.10.1)(typescript@5.9.3))(vite@7.2.6(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))(vitest@4.0.14))(vitest@4.0.14)
@@ -2111,8 +2112,8 @@ importers:
         specifier: 4.1.0
         version: link:../fs
       '@visulima/packem':
-        specifier: 2.0.0-alpha.37
-        version: 2.0.0-alpha.37(2610705b3d0c32365a56c5eb3e720826)
+        specifier: 2.0.0-alpha.40
+        version: 2.0.0-alpha.40(2610705b3d0c32365a56c5eb3e720826)
       '@visulima/path':
         specifier: 2.0.5
         version: link:../path
@@ -2177,8 +2178,8 @@ importers:
         specifier: 24.10.1
         version: 24.10.1
       '@visulima/packem':
-        specifier: 2.0.0-alpha.37
-        version: 2.0.0-alpha.37(2610705b3d0c32365a56c5eb3e720826)
+        specifier: 2.0.0-alpha.40
+        version: 2.0.0-alpha.40(2610705b3d0c32365a56c5eb3e720826)
       '@vitest/coverage-v8':
         specifier: ^4.0.14
         version: 4.0.14(@vitest/browser@4.0.14(msw@2.12.3(@types/node@24.10.1)(typescript@5.9.3))(vite@7.2.6(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))(vitest@4.0.14))(vitest@4.0.14)
@@ -2247,8 +2248,8 @@ importers:
         specifier: 5.0.6
         version: link:../error
       '@visulima/packem':
-        specifier: 2.0.0-alpha.37
-        version: 2.0.0-alpha.37(2610705b3d0c32365a56c5eb3e720826)
+        specifier: 2.0.0-alpha.40
+        version: 2.0.0-alpha.40(2610705b3d0c32365a56c5eb3e720826)
       '@vitest/coverage-v8':
         specifier: ^4.0.14
         version: 4.0.14(@vitest/browser@4.0.14(msw@2.12.3(@types/node@24.10.1)(typescript@5.9.3))(vite@7.2.6(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))(vitest@4.0.14))(vitest@4.0.14)
@@ -2391,8 +2392,8 @@ importers:
         specifier: 24.10.1
         version: 24.10.1
       '@visulima/packem':
-        specifier: 2.0.0-alpha.37
-        version: 2.0.0-alpha.37(2610705b3d0c32365a56c5eb3e720826)
+        specifier: 2.0.0-alpha.40
+        version: 2.0.0-alpha.40(2610705b3d0c32365a56c5eb3e720826)
       '@vitest/coverage-v8':
         specifier: ^4.0.14
         version: 4.0.14(@vitest/browser@4.0.14(msw@2.12.3(@types/node@24.10.1)(typescript@5.9.3))(vite@7.2.6(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))(vitest@4.0.14))(vitest@4.0.14)
@@ -2496,8 +2497,8 @@ importers:
         specifier: 24.10.1
         version: 24.10.1
       '@visulima/packem':
-        specifier: 2.0.0-alpha.37
-        version: 2.0.0-alpha.37(2610705b3d0c32365a56c5eb3e720826)
+        specifier: 2.0.0-alpha.40
+        version: 2.0.0-alpha.40(2610705b3d0c32365a56c5eb3e720826)
       '@vitest/coverage-v8':
         specifier: ^4.0.14
         version: 4.0.14(@vitest/browser@4.0.14(msw@2.12.3(@types/node@24.10.1)(typescript@5.9.3))(vite@7.2.6(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))(vitest@4.0.14))(vitest@4.0.14)
@@ -2580,8 +2581,8 @@ importers:
         specifier: 1.4.29
         version: link:../colorize
       '@visulima/packem':
-        specifier: 2.0.0-alpha.37
-        version: 2.0.0-alpha.37(2610705b3d0c32365a56c5eb3e720826)
+        specifier: 2.0.0-alpha.40
+        version: 2.0.0-alpha.40(2610705b3d0c32365a56c5eb3e720826)
       '@vitest/browser':
         specifier: ^4.0.14
         version: 4.0.14(msw@2.12.3(@types/node@24.10.1)(typescript@5.9.3))(vite@7.2.6(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))(vitest@4.0.14)
@@ -2677,8 +2678,8 @@ importers:
         specifier: 24.10.1
         version: 24.10.1
       '@visulima/packem':
-        specifier: 2.0.0-alpha.37
-        version: 2.0.0-alpha.37(2610705b3d0c32365a56c5eb3e720826)
+        specifier: 2.0.0-alpha.40
+        version: 2.0.0-alpha.40(2610705b3d0c32365a56c5eb3e720826)
       '@vitest/coverage-v8':
         specifier: ^4.0.14
         version: 4.0.14(@vitest/browser@4.0.14(msw@2.12.3(@types/node@24.10.1)(typescript@5.9.3))(vite@7.2.6(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))(vitest@4.0.14))(vitest@4.0.14)
@@ -2842,7 +2843,7 @@ importers:
         version: 24.10.1
       '@visulima/packem':
         specifier: 2.0.0-alpha.37
-        version: 2.0.0-alpha.37(2610705b3d0c32365a56c5eb3e720826)
+        version: 2.0.0-alpha.37(7064b1631cb6de20ee52fbc41ded3f30)
       '@vitest/coverage-v8':
         specifier: ^4.0.14
         version: 4.0.14(@vitest/browser@4.0.14(msw@2.12.3(@types/node@24.10.1)(typescript@5.9.3))(vite@7.2.6(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))(vitest@4.0.14))(vitest@4.0.14)
@@ -2968,8 +2969,8 @@ importers:
         specifier: 24.10.1
         version: 24.10.1
       '@visulima/packem':
-        specifier: 2.0.0-alpha.37
-        version: 2.0.0-alpha.37(2610705b3d0c32365a56c5eb3e720826)
+        specifier: 2.0.0-alpha.40
+        version: 2.0.0-alpha.40(2610705b3d0c32365a56c5eb3e720826)
       '@visulima/path':
         specifier: 2.0.5
         version: link:../path
@@ -3130,7 +3131,7 @@ importers:
         version: 2.4.4
       '@visulima/packem':
         specifier: 2.0.0-alpha.37
-        version: 2.0.0-alpha.37(2610705b3d0c32365a56c5eb3e720826)
+        version: 2.0.0-alpha.37(7064b1631cb6de20ee52fbc41ded3f30)
       '@vitest/coverage-v8':
         specifier: ^4.0.14
         version: 4.0.14(@vitest/browser@4.0.14(msw@2.12.3(@types/node@24.10.1)(typescript@5.9.3))(vite@7.2.6(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))(vitest@4.0.14))(vitest@4.0.14)
@@ -3219,8 +3220,8 @@ importers:
         specifier: 24.10.1
         version: 24.10.1
       '@visulima/packem':
-        specifier: 2.0.0-alpha.37
-        version: 2.0.0-alpha.37(2610705b3d0c32365a56c5eb3e720826)
+        specifier: 2.0.0-alpha.40
+        version: 2.0.0-alpha.40(2610705b3d0c32365a56c5eb3e720826)
       '@vitest/coverage-v8':
         specifier: ^4.0.14
         version: 4.0.14(@vitest/browser@4.0.14(msw@2.12.3(@types/node@24.10.1)(typescript@5.9.3))(vite@7.2.6(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))(vitest@4.0.14))(vitest@4.0.14)
@@ -3492,8 +3493,8 @@ importers:
         specifier: ^24.10.1
         version: 24.10.1
       '@visulima/packem':
-        specifier: 2.0.0-alpha.37
-        version: 2.0.0-alpha.37(2610705b3d0c32365a56c5eb3e720826)
+        specifier: 2.0.0-alpha.40
+        version: 2.0.0-alpha.40(2610705b3d0c32365a56c5eb3e720826)
       '@vitest/coverage-v8':
         specifier: ^4.0.14
         version: 4.0.14(@vitest/browser@4.0.14(msw@2.12.3(@types/node@24.10.1)(typescript@5.9.3))(vite@7.2.6(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))(vitest@4.0.14))(vitest@4.0.14)
@@ -3589,8 +3590,8 @@ importers:
         specifier: 24.10.1
         version: 24.10.1
       '@visulima/packem':
-        specifier: 2.0.0-alpha.37
-        version: 2.0.0-alpha.37(2610705b3d0c32365a56c5eb3e720826)
+        specifier: 2.0.0-alpha.40
+        version: 2.0.0-alpha.40(2610705b3d0c32365a56c5eb3e720826)
       '@vitest/coverage-v8':
         specifier: 4.0.14
         version: 4.0.14(@vitest/browser@4.0.14(msw@2.12.3(@types/node@24.10.1)(typescript@5.9.3))(vite@7.2.6(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))(vitest@4.0.14))(vitest@4.0.14)
@@ -3662,8 +3663,8 @@ importers:
         specifier: 24.10.1
         version: 24.10.1
       '@visulima/packem':
-        specifier: 2.0.0-alpha.37
-        version: 2.0.0-alpha.37(2610705b3d0c32365a56c5eb3e720826)
+        specifier: 2.0.0-alpha.40
+        version: 2.0.0-alpha.40(2610705b3d0c32365a56c5eb3e720826)
       '@vitest/coverage-v8':
         specifier: ^4.0.14
         version: 4.0.14(@vitest/browser@4.0.14(msw@2.12.3(@types/node@24.10.1)(typescript@5.9.3))(vite@7.2.6(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))(vitest@4.0.14))(vitest@4.0.14)
@@ -3766,8 +3767,8 @@ importers:
         specifier: 24.10.1
         version: 24.10.1
       '@visulima/packem':
-        specifier: 2.0.0-alpha.37
-        version: 2.0.0-alpha.37(2610705b3d0c32365a56c5eb3e720826)
+        specifier: 2.0.0-alpha.40
+        version: 2.0.0-alpha.40(2610705b3d0c32365a56c5eb3e720826)
       '@visulima/path':
         specifier: 2.0.5
         version: link:../path
@@ -3914,8 +3915,8 @@ importers:
         specifier: workspace:*
         version: link:../humanizer
       '@visulima/packem':
-        specifier: 2.0.0-alpha.39
-        version: 2.0.0-alpha.39(7064b1631cb6de20ee52fbc41ded3f30)
+        specifier: 2.0.0-alpha.40
+        version: 2.0.0-alpha.40(2610705b3d0c32365a56c5eb3e720826)
       '@visulima/path':
         specifier: workspace:*
         version: link:../path
@@ -4058,8 +4059,8 @@ importers:
         specifier: ^19.2.7
         version: 19.2.7
       '@visulima/packem':
-        specifier: 2.0.0-alpha.39
-        version: 2.0.0-alpha.39(7064b1631cb6de20ee52fbc41ded3f30)
+        specifier: 2.0.0-alpha.40
+        version: 2.0.0-alpha.40(2610705b3d0c32365a56c5eb3e720826)
       '@vitest/coverage-v8':
         specifier: ^4.0.14
         version: 4.0.14(@vitest/browser@4.0.14(msw@2.12.3(@types/node@24.10.1)(typescript@5.9.3))(vite@7.2.6(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))(vitest@4.0.14))(vitest@4.0.14)
@@ -4927,8 +4928,8 @@ importers:
         specifier: 1.4.29
         version: link:../colorize
       '@visulima/packem':
-        specifier: 2.0.0-alpha.37
-        version: 2.0.0-alpha.37(2610705b3d0c32365a56c5eb3e720826)
+        specifier: 2.0.0-alpha.40
+        version: 2.0.0-alpha.40(2610705b3d0c32365a56c5eb3e720826)
       '@vitest/coverage-v8':
         specifier: 4.0.14
         version: 4.0.14(@vitest/browser@4.0.14(msw@2.12.3(@types/node@24.10.1)(typescript@5.9.3))(vite@7.2.6(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))(vitest@4.0.14))(vitest@4.0.14)
@@ -5071,8 +5072,8 @@ importers:
         specifier: 1.4.29
         version: link:../colorize
       '@visulima/packem':
-        specifier: 2.0.0-alpha.37
-        version: 2.0.0-alpha.37(2610705b3d0c32365a56c5eb3e720826)
+        specifier: 2.0.0-alpha.40
+        version: 2.0.0-alpha.40(2610705b3d0c32365a56c5eb3e720826)
       '@visulima/string':
         specifier: 2.0.6
         version: link:../string
@@ -5193,7 +5194,7 @@ importers:
         version: 24.10.1
       '@visulima/packem':
         specifier: 2.0.0-alpha.37
-        version: 2.0.0-alpha.37(2610705b3d0c32365a56c5eb3e720826)
+        version: 2.0.0-alpha.37(7064b1631cb6de20ee52fbc41ded3f30)
       '@vitest/coverage-v8':
         specifier: ^4.0.14
         version: 4.0.14(@vitest/browser@4.0.14(msw@2.12.3(@types/node@24.10.1)(typescript@5.9.3))(vite@7.2.6(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))(vitest@4.0.14))(vitest@4.0.14)
@@ -5347,8 +5348,8 @@ importers:
         specifier: 24.10.1
         version: 24.10.1
       '@visulima/packem':
-        specifier: 2.0.0-alpha.37
-        version: 2.0.0-alpha.37(2610705b3d0c32365a56c5eb3e720826)
+        specifier: 2.0.0-alpha.40
+        version: 2.0.0-alpha.40(2610705b3d0c32365a56c5eb3e720826)
       '@visulima/path':
         specifier: 2.0.5
         version: link:../path
@@ -12620,31 +12621,6 @@ packages:
       typescript:
         optional: true
 
-  '@visulima/packem-rollup@1.0.0-alpha.29':
-    resolution: {integrity: sha512-EJenO4l3AdkILbpffv3FN0P1SDAkzvHSYeZiahkWZxZx3Q4r2a1KeosFcvmxplIL/Q23YVaXwuJbpTEIMwE0ug==}
-    engines: {node: '>=20.19.* <=25.*'}
-    peerDependencies:
-      '@swc/core': '*'
-      esbuild: '>=0.25.11'
-      oxc-transform: '*'
-      p-queue: '*'
-      rollup: '>=4'
-      sucrase: '*'
-      typescript: '*'
-    peerDependenciesMeta:
-      '@swc/core':
-        optional: true
-      esbuild:
-        optional: true
-      oxc-transform:
-        optional: true
-      p-queue:
-        optional: true
-      sucrase:
-        optional: true
-      typescript:
-        optional: true
-
   '@visulima/packem-rollup@1.0.0-alpha.30':
     resolution: {integrity: sha512-WoG/Yu3+245ti9HZi87gYQyFFwKOkwdXLMRGBqISFVHrEcJfHSl6ljV6OHdK5dd3IisoqO9RIhNcnaLbvISeOg==}
     engines: {node: '>=20.19.* <=25.*'}
@@ -12684,95 +12660,6 @@ packages:
 
   '@visulima/packem@2.0.0-alpha.37':
     resolution: {integrity: sha512-q7vP0Cua7NaB0veHE6GXqt09EKdKyoRGpDPYx5ZYX0aoqDLqpRHPeQgLgUhvh7OmDp+YfhBUvL9zQFV9ly3XCg==}
-    engines: {node: '>=20.19 <=25.*'}
-    hasBin: true
-    peerDependencies:
-      '@arethetypeswrong/core': '>=0.18.2'
-      '@ckeditor/typedoc-plugins': '*'
-      '@swc/core': '>=1.11.29'
-      '@tailwindcss/node': ^4.1.17
-      '@tailwindcss/oxide': ^4.1.17
-      cssnano: '>=7.0.6'
-      esbuild: '>=0.25.11'
-      icss-utils: '>=5.1.0'
-      less: '>=4.2.0'
-      lightningcss: '>=1.27.0'
-      oxc-transform: '>=0.20.0'
-      package-manager-detector: ^1.5.0
-      postcss: '>=8.4.47'
-      postcss-load-config: '>=6.0.1'
-      postcss-modules-extract-imports: '>=3.1.0'
-      postcss-modules-local-by-default: '>=4.0.5'
-      postcss-modules-scope: '>=3.2.0'
-      postcss-modules-values: '>=4.0.0'
-      postcss-value-parser: '>=4.2.0'
-      sass: '>=1.43.4'
-      sass-embedded: '>=1.79.4'
-      stylus: '>=0.63.0'
-      sucrase: '>=3.35.0'
-      typedoc: '>=0.26.0'
-      typedoc-plugin-markdown: '>=4.2.0'
-      typedoc-plugin-rename-defaults: '>=0.7.0'
-      typescript: '>=4.5 || >=5.0'
-      which-pm-runs: '*'
-    peerDependenciesMeta:
-      '@arethetypeswrong/core':
-        optional: true
-      '@ckeditor/typedoc-plugins':
-        optional: true
-      '@swc/core':
-        optional: true
-      '@tailwindcss/node':
-        optional: true
-      '@tailwindcss/oxide':
-        optional: true
-      cssnano:
-        optional: true
-      esbuild:
-        optional: true
-      icss-utils:
-        optional: true
-      less:
-        optional: true
-      lightningcss:
-        optional: true
-      oxc-transform:
-        optional: true
-      postcss:
-        optional: true
-      postcss-load-config:
-        optional: true
-      postcss-modules-extract-imports:
-        optional: true
-      postcss-modules-local-by-default:
-        optional: true
-      postcss-modules-scope:
-        optional: true
-      postcss-modules-values:
-        optional: true
-      postcss-value-parser:
-        optional: true
-      sass:
-        optional: true
-      sass-embedded:
-        optional: true
-      stylus:
-        optional: true
-      sucrase:
-        optional: true
-      typedoc:
-        optional: true
-      typedoc-plugin-markdown:
-        optional: true
-      typedoc-plugin-rename-defaults:
-        optional: true
-      typescript:
-        optional: true
-      which-pm-runs:
-        optional: true
-
-  '@visulima/packem@2.0.0-alpha.39':
-    resolution: {integrity: sha512-BO+gZlqbGf2kDQ1K/xeJqDQku/XpGNlfJeG4VgLB4lbYKhibzeUGqNVCo+Uu0/p20XF85w6Dtx3E8ff5REqn/g==}
     engines: {node: '>=20.19 <=25.*'}
     hasBin: true
     peerDependencies:
@@ -13083,92 +12970,6 @@ packages:
       '@tailwindcss/node': '>=4.1.12'
       '@tailwindcss/oxide': '>=4.1.12'
       '@visulima/css-style-inject': 1.0.0-alpha.9
-      cssnano: '>=7.0.0'
-      esbuild: '*'
-      icss-utils: '>=5.1.0'
-      less: '>=4.0.0'
-      lightningcss: '>=1.0.0'
-      oxc-transform: '*'
-      postcss: '>=8.0.0'
-      postcss-load-config: '>=6.0.1'
-      postcss-modules-extract-imports: '>=3.1.0'
-      postcss-modules-local-by-default: '>=4.0.5'
-      postcss-modules-scope: '>=3.2.0'
-      postcss-modules-values: '>=4.0.0'
-      postcss-value-parser: '>=4.2.0'
-      rollup: '>=4.21.2'
-      sass: '>=1.0.0'
-      sass-embedded: '>=1.79.4'
-      stylus: '>=0.60.0'
-      sucrase: '*'
-      typedoc: '*'
-      typedoc-plugin-markdown: '*'
-      typedoc-plugin-rename-defaults: '*'
-      typescript: '*'
-    peerDependenciesMeta:
-      '@ckeditor/typedoc-plugins':
-        optional: true
-      '@swc/core':
-        optional: true
-      '@tailwindcss/node':
-        optional: true
-      '@tailwindcss/oxide':
-        optional: true
-      cssnano:
-        optional: true
-      esbuild:
-        optional: true
-      icss-utils:
-        optional: true
-      less:
-        optional: true
-      lightningcss:
-        optional: true
-      oxc-transform:
-        optional: true
-      postcss:
-        optional: true
-      postcss-load-config:
-        optional: true
-      postcss-modules-extract-imports:
-        optional: true
-      postcss-modules-local-by-default:
-        optional: true
-      postcss-modules-scope:
-        optional: true
-      postcss-modules-values:
-        optional: true
-      postcss-value-parser:
-        optional: true
-      sass:
-        optional: true
-      sass-embedded:
-        optional: true
-      stylus:
-        optional: true
-      sucrase:
-        optional: true
-      typedoc:
-        optional: true
-      typedoc-plugin-markdown:
-        optional: true
-      typedoc-plugin-rename-defaults:
-        optional: true
-      typescript:
-        optional: true
-
-  '@visulima/rollup-plugin-css@1.0.0-alpha.9':
-    resolution: {integrity: sha512-SWezU8jFRX8iSBsMuINVECZc5gMl8pYm6AXvcbK5zGysaTx1BrnfgSeAm4q1hNFzAtOJQ1BNSQfu4hUrHjouhg==}
-    engines: {node: '>=20.19 <=25.*'}
-    peerDependencies:
-      '@ckeditor/typedoc-plugins': '*'
-      '@csstools/css-parser-algorithms': '>=3.0.5'
-      '@csstools/css-tokenizer': '>=3.0.4'
-      '@csstools/postcss-slow-plugins': '>=2.0.0'
-      '@swc/core': '*'
-      '@tailwindcss/node': '>=4.1.12'
-      '@tailwindcss/oxide': '>=4.1.12'
-      '@visulima/css-style-inject': 1.0.0-alpha.10
       cssnano: '>=7.0.0'
       esbuild: '*'
       icss-utils: '>=5.1.0'
@@ -24710,8 +24511,8 @@ packages:
     resolution: {integrity: sha512-fcRLaS4H/hrZk9hYwbdRM35D0U8IYMfEClhXxCivOojl+yTRAZH3Zy2sSy6qVCiGbV9YAtPssP6jaChqC9vPCg==}
     engines: {node: '>= 10.13.0'}
 
-  valibot@1.1.0:
-    resolution: {integrity: sha512-Nk8lX30Qhu+9txPYTwM0cFlWLdPFsFr6LblzqIySfbZph9+BFsAHsNvHOymEviUepeIW6KFHzpX8TKhbptBXXw==}
+  valibot@1.2.0:
+    resolution: {integrity: sha512-mm1rxUsmOxzrwnX5arGS+U4T25RdvpPjPN4yR0u9pUBov9+zGVtO84tif1eY4r6zWxVxu3KzIyknJy3rxfRZZg==}
     peerDependencies:
       typescript: '>=5'
     peerDependenciesMeta:
@@ -29863,7 +29664,7 @@ snapshots:
       proper-lockfile: 4.1.2
       remeda: 2.21.3
       std-env: 3.9.0
-      valibot: 1.1.0(typescript@5.9.3)
+      valibot: 1.2.0(typescript@5.9.3)
       zeptomatch: 2.0.2
     transitivePeerDependencies:
       - typescript
@@ -34417,53 +34218,6 @@ snapshots:
       - rolldown
       - yaml
 
-  '@visulima/packem-rollup@1.0.0-alpha.29(@swc/core@1.13.5)(@types/node@24.10.1)(esbuild@0.27.0)(oxc-transform@0.96.0)(picomatch@4.0.3)(rolldown@1.0.0-beta.52)(rollup@4.53.3)(sucrase@3.35.0)(typescript@5.9.3)(yaml@2.8.2)':
-    dependencies:
-      '@babel/parser': 7.28.4
-      '@rollup/plugin-alias': 5.1.1(rollup@4.53.3)
-      '@rollup/plugin-commonjs': 29.0.0(rollup@4.53.3)
-      '@rollup/plugin-dynamic-import-vars': 2.1.5(rollup@4.53.3)
-      '@rollup/plugin-inject': 5.0.5(rollup@4.53.3)
-      '@rollup/plugin-json': 6.1.0(rollup@4.53.3)
-      '@rollup/plugin-node-resolve': 16.0.1(rollup@4.53.3)
-      '@rollup/plugin-replace': 6.0.2(rollup@4.53.3)
-      '@rollup/plugin-wasm': 6.2.2(rollup@4.53.3)
-      '@rollup/pluginutils': 5.3.0(rollup@4.53.3)
-      '@visulima/find-cache-dir': 2.0.4
-      '@visulima/fs': 4.0.4(yaml@2.8.2)
-      '@visulima/package': 4.1.4(@types/node@24.10.1)
-      '@visulima/packem-share': 1.0.0-alpha.14(@types/node@24.10.1)(rollup@4.53.3)(yaml@2.8.2)
-      '@visulima/path': 1.4.0
-      '@visulima/source-map': 2.0.3
-      cjs-module-lexer: 2.1.1
-      clean-css: 5.3.3
-      glob-parent: 6.0.2
-      html-minifier-next: 4.3.1
-      magic-string: 0.30.19
-      mlly: 1.8.0
-      oxc-parser: 0.99.0
-      oxc-resolver: 11.14.0
-      rollup: 4.53.3
-      rollup-plugin-dts: 6.2.3(rollup@4.53.3)(typescript@5.9.3)
-      rollup-plugin-license: 3.6.0(picomatch@4.0.3)(rollup@4.53.3)
-      rollup-plugin-polyfill-node: 0.13.0(rollup@4.53.3)
-      rollup-plugin-pure: 0.4.0(rollup@4.53.3)
-      rollup-plugin-visualizer: 6.0.3(rolldown@1.0.0-beta.52)(rollup@4.53.3)
-      rs-module-lexer: 2.6.0
-      semver: 7.7.2
-      tinyglobby: 0.2.15
-    optionalDependencies:
-      '@swc/core': 1.13.5
-      esbuild: 0.27.0
-      oxc-transform: 0.96.0
-      sucrase: 3.35.0
-      typescript: 5.9.3
-    transitivePeerDependencies:
-      - '@types/node'
-      - picomatch
-      - rolldown
-      - yaml
-
   '@visulima/packem-rollup@1.0.0-alpha.30(@swc/core@1.13.5)(@types/node@24.10.1)(esbuild@0.27.0)(oxc-transform@0.96.0)(picomatch@4.0.3)(rolldown@1.0.0-beta.52)(rollup@4.53.3)(sucrase@3.35.0)(typescript@5.9.3)(yaml@2.8.2)':
     dependencies:
       '@babel/parser': 7.28.4
@@ -34533,7 +34287,7 @@ snapshots:
       - '@types/node'
       - yaml
 
-  '@visulima/packem@2.0.0-alpha.37(2610705b3d0c32365a56c5eb3e720826)':
+  '@visulima/packem@2.0.0-alpha.37(7064b1631cb6de20ee52fbc41ded3f30)':
     dependencies:
       '@antfu/install-pkg': 1.1.0
       '@clack/prompts': 0.11.0
@@ -34681,81 +34435,7 @@ snapshots:
       - rotating-file-stream
       - yaml
 
-  '@visulima/packem@2.0.0-alpha.39(7064b1631cb6de20ee52fbc41ded3f30)':
-    dependencies:
-      '@antfu/install-pkg': 1.1.0
-      '@clack/prompts': 0.11.0
-      '@rollup/pluginutils': 5.3.0(rollup@4.53.3)
-      '@visulima/cerebro': 2.1.3(@bomb.sh/tab@0.0.9(cac@6.7.14)(citty@0.1.6)(commander@14.0.2))(@visulima/boxen@packages+boxen)(@visulima/find-cache-dir@2.0.4)(@visulima/pail@3.2.0(@opentelemetry/api@1.9.0)(rotating-file-stream@3.2.7))(github-slugger@2.0.0)
-      '@visulima/colorize': 1.4.27
-      '@visulima/find-cache-dir': 2.0.4
-      '@visulima/fs': 4.0.4(yaml@2.8.2)
-      '@visulima/humanizer': 2.0.3
-      '@visulima/package': 4.1.4(@types/node@24.10.1)
-      '@visulima/packem-rollup': 1.0.0-alpha.29(@swc/core@1.13.5)(@types/node@24.10.1)(esbuild@0.27.0)(oxc-transform@0.96.0)(picomatch@4.0.3)(rolldown@1.0.0-beta.52)(rollup@4.53.3)(sucrase@3.35.0)(typescript@5.9.3)(yaml@2.8.2)
-      '@visulima/packem-share': 1.0.0-alpha.14(@types/node@24.10.1)(rollup@4.53.3)(yaml@2.8.2)
-      '@visulima/pail': 3.2.0(@opentelemetry/api@1.9.0)(@visulima/redact@packages+redact)(rotating-file-stream@3.2.7)
-      '@visulima/path': 1.4.0
-      '@visulima/rollup-plugin-css': 1.0.0-alpha.9(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@csstools/postcss-slow-plugins@2.0.0(postcss@8.5.6))(@swc/core@1.13.5)(@tailwindcss/node@4.1.17)(@tailwindcss/oxide@4.1.17)(@types/node@24.10.1)(@visulima/css-style-inject@1.0.0-alpha.9)(cssnano@7.1.2(postcss@8.5.6))(esbuild@0.27.0)(icss-utils@5.1.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(oxc-transform@0.96.0)(postcss-load-config@6.0.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rollup@4.53.3)(sucrase@3.35.0)(typedoc-plugin-markdown@4.9.0(typedoc@0.28.15(typescript@5.9.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.15(typescript@5.9.3)))(typedoc@0.28.15(typescript@5.9.3))(typescript@5.9.3)(yaml@2.8.2)
-      '@visulima/source-map': 2.0.3
-      '@visulima/tabular': 3.1.3
-      '@visulima/tsconfig': 2.1.0(yaml@2.8.2)
-      browserslist: 4.26.2
-      cjs-module-lexer: 2.1.1
-      clean-css: 5.3.3
-      defu: 6.1.4
-      fastest-levenshtein: 1.0.16
-      hookable: 5.5.3
-      html-minifier-next: 4.3.1
-      jiti: 2.6.0
-      magic-string: 0.30.19
-      mlly: 1.8.0
-      package-manager-detector: 1.5.0
-      picomatch: 4.0.3
-      rollup: 4.53.3
-      semver: 7.7.2
-      tinyexec: 1.0.1
-      tinyglobby: 0.2.15
-    optionalDependencies:
-      '@arethetypeswrong/core': 0.18.2
-      '@swc/core': 1.13.5
-      '@tailwindcss/node': 4.1.17
-      '@tailwindcss/oxide': 4.1.17
-      cssnano: 7.1.2(postcss@8.5.6)
-      esbuild: 0.27.0
-      icss-utils: 5.1.0(postcss@8.5.6)
-      less: 4.4.2
-      lightningcss: 1.30.2
-      oxc-transform: 0.96.0
-      postcss: 8.5.6
-      postcss-load-config: 6.0.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
-      postcss-modules-extract-imports: 3.1.0(postcss@8.5.6)
-      postcss-modules-local-by-default: 4.2.0(postcss@8.5.6)
-      postcss-modules-scope: 3.2.1(postcss@8.5.6)
-      postcss-modules-values: 4.0.0(postcss@8.5.6)
-      postcss-value-parser: 4.2.0
-      sucrase: 3.35.0
-      typedoc: 0.28.15(typescript@5.9.3)
-      typedoc-plugin-markdown: 4.9.0(typedoc@0.28.15(typescript@5.9.3))
-      typedoc-plugin-rename-defaults: 0.7.3(typedoc@0.28.15(typescript@5.9.3))
-      typescript: 5.9.3
-    transitivePeerDependencies:
-      - '@bomb.sh/tab'
-      - '@csstools/css-parser-algorithms'
-      - '@csstools/css-tokenizer'
-      - '@csstools/postcss-slow-plugins'
-      - '@opentelemetry/api'
-      - '@types/node'
-      - '@visulima/boxen'
-      - '@visulima/css-style-inject'
-      - '@visulima/redact'
-      - github-slugger
-      - p-queue
-      - rolldown
-      - rotating-file-stream
-      - yaml
-
-  '@visulima/packem@2.0.0-alpha.40(7064b1631cb6de20ee52fbc41ded3f30)':
+  '@visulima/packem@2.0.0-alpha.40(2610705b3d0c32365a56c5eb3e720826)':
     dependencies:
       '@antfu/install-pkg': 1.1.0
       '@clack/prompts': 0.11.0
@@ -34901,48 +34581,6 @@ snapshots:
       '@visulima/path': 1.4.0
       mlly: 1.8.0
       oxc-resolver: 11.8.2
-      p-queue: 9.0.1
-      rollup: 4.53.3
-      source-map-js: 1.2.1
-    optionalDependencies:
-      '@swc/core': 1.13.5
-      '@tailwindcss/node': 4.1.17
-      '@tailwindcss/oxide': 4.1.17
-      cssnano: 7.1.2(postcss@8.5.6)
-      esbuild: 0.27.0
-      icss-utils: 5.1.0(postcss@8.5.6)
-      less: 4.4.2
-      lightningcss: 1.30.2
-      oxc-transform: 0.96.0
-      postcss: 8.5.6
-      postcss-load-config: 6.0.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
-      postcss-modules-extract-imports: 3.1.0(postcss@8.5.6)
-      postcss-modules-local-by-default: 4.2.0(postcss@8.5.6)
-      postcss-modules-scope: 3.2.1(postcss@8.5.6)
-      postcss-modules-values: 4.0.0(postcss@8.5.6)
-      postcss-value-parser: 4.2.0
-      sucrase: 3.35.0
-      typedoc: 0.28.15(typescript@5.9.3)
-      typedoc-plugin-markdown: 4.9.0(typedoc@0.28.15(typescript@5.9.3))
-      typedoc-plugin-rename-defaults: 0.7.3(typedoc@0.28.15(typescript@5.9.3))
-      typescript: 5.9.3
-    transitivePeerDependencies:
-      - '@types/node'
-      - yaml
-
-  '@visulima/rollup-plugin-css@1.0.0-alpha.9(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@csstools/postcss-slow-plugins@2.0.0(postcss@8.5.6))(@swc/core@1.13.5)(@tailwindcss/node@4.1.17)(@tailwindcss/oxide@4.1.17)(@types/node@24.10.1)(@visulima/css-style-inject@1.0.0-alpha.9)(cssnano@7.1.2(postcss@8.5.6))(esbuild@0.27.0)(icss-utils@5.1.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(oxc-transform@0.96.0)(postcss-load-config@6.0.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rollup@4.53.3)(sucrase@3.35.0)(typedoc-plugin-markdown@4.9.0(typedoc@0.28.15(typescript@5.9.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.15(typescript@5.9.3)))(typedoc@0.28.15(typescript@5.9.3))(typescript@5.9.3)(yaml@2.8.2)':
-    dependencies:
-      '@csstools/css-parser-algorithms': 3.0.5(@csstools/css-tokenizer@3.0.4)
-      '@csstools/css-tokenizer': 3.0.4
-      '@csstools/postcss-slow-plugins': 2.0.0(postcss@8.5.6)
-      '@rollup/pluginutils': 5.3.0(rollup@4.53.3)
-      '@visulima/css-style-inject': 1.0.0-alpha.9
-      '@visulima/fs': 4.0.4(yaml@2.8.2)
-      '@visulima/package': 4.1.4(@types/node@24.10.1)
-      '@visulima/packem-share': 1.0.0-alpha.14(@types/node@24.10.1)(rollup@4.53.3)(yaml@2.8.2)
-      '@visulima/path': 1.4.0
-      mlly: 1.8.0
-      oxc-resolver: 11.14.0
       p-queue: 9.0.1
       rollup: 4.53.3
       source-map-js: 1.2.1
@@ -38204,7 +37842,7 @@ snapshots:
       - eslint-import-resolver-webpack
       - supports-color
 
-  eslint-config-standard-jsx@11.0.0(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint@8.57.0):
+  eslint-config-standard-jsx@11.0.0(eslint-plugin-react@7.37.5(eslint@9.39.1(jiti@2.6.1)))(eslint@8.57.0):
     dependencies:
       eslint: 8.57.0
       eslint-plugin-react: 7.37.5(eslint@8.57.0)
@@ -47461,7 +47099,7 @@ snapshots:
     dependencies:
       eslint: 8.57.0
       eslint-config-standard: 17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.48.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3))(eslint@8.57.0))(eslint-plugin-n@15.7.0(eslint@8.57.0))(eslint-plugin-promise@6.4.0(eslint@8.57.0))(eslint@8.57.0)
-      eslint-config-standard-jsx: 11.0.0(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint@8.57.0)
+      eslint-config-standard-jsx: 11.0.0(eslint-plugin-react@7.37.5(eslint@9.39.1(jiti@2.6.1)))(eslint@8.57.0)
       eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.48.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.1(jiti@2.6.1))
       eslint-plugin-n: 15.7.0(eslint@8.57.0)
       eslint-plugin-promise: 6.4.0(eslint@8.57.0)
@@ -49316,7 +48954,7 @@ snapshots:
 
   v8flags@4.0.1: {}
 
-  valibot@1.1.0(typescript@5.9.3):
+  valibot@1.2.0(typescript@5.9.3):
     optionalDependencies:
       typescript: 5.9.3
     optional: true

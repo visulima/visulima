@@ -98,7 +98,7 @@
         "@total-typescript/ts-reset": "^0.6.1",
         "@types/node": "24.10.1",
         "@visulima/colorize": "1.4.29",
-        "@visulima/packem": "2.0.0-alpha.37",
+        "@visulima/packem": "2.0.0-alpha.40",
         "@vitest/browser": "^4.0.14",
         "@vitest/coverage-v8": "^4.0.14",
         "@vitest/ui": "^4.0.14",
