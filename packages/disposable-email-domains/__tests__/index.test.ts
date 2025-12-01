@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, expectTypeOf, it, vi } from "vitest";
 
 import {
-    batchCheckDomains,
-    batchCheckEmails,
+    areDisposableDomains,
+    areDisposableEmails,
     getAllDomains,
     getDomainCount,
     getDomainList,
@@ -303,12 +303,12 @@ describe(isDisposableDomain, () => {
         });
     });
 
-    describe(batchCheckDomains, () => {
+    describe(areDisposableDomains, () => {
         it("should check multiple domains", () => {
             expect.assertions(3);
 
             const domains = ["mailinator.com", "example.com", "trashmail.com"];
-            const results = batchCheckDomains(domains);
+            const results = areDisposableDomains(domains);
 
             expect(results.size).toBe(3);
             expect(results.get("mailinator.com")).toBe(true);
@@ -320,7 +320,7 @@ describe(isDisposableDomain, () => {
 
             const customDomains = new Set(["custom-disposable.com"]);
             const domains = ["custom-disposable.com", "example.com"];
-            const results = batchCheckDomains(domains, customDomains);
+            const results = areDisposableDomains(domains, customDomains);
 
             expect(results.get("custom-disposable.com")).toBe(true);
             expect(results.get("example.com")).toBe(false);
@@ -330,19 +330,19 @@ describe(isDisposableDomain, () => {
             expect.assertions(2);
 
             const domains = ["", "valid@domain.com"];
-            const results = batchCheckDomains(domains);
+            const results = areDisposableDomains(domains);
 
             expect(results.get("")).toBe(false);
             expect(results.get("valid@domain.com")).toBe(false);
         });
     });
 
-    describe(batchCheckEmails, () => {
+    describe(areDisposableEmails, () => {
         it("should check multiple emails", () => {
             expect.assertions(3);
 
             const emails = ["user@mailinator.com", "user@example.com", "test@trashmail.com"];
-            const results = batchCheckEmails(emails);
+            const results = areDisposableEmails(emails);
 
             expect(results.size).toBe(3);
             expect(results.get("user@mailinator.com")).toBe(true);
@@ -354,7 +354,7 @@ describe(isDisposableDomain, () => {
 
             const customDomains = new Set(["custom-disposable.com"]);
             const emails = ["user@custom-disposable.com", "user@example.com"];
-            const results = batchCheckEmails(emails, customDomains);
+            const results = areDisposableEmails(emails, customDomains);
 
             expect(results.get("user@custom-disposable.com")).toBe(true);
             expect(results.get("user@example.com")).toBe(false);
@@ -364,7 +364,7 @@ describe(isDisposableDomain, () => {
             expect.assertions(3);
 
             const emails = ["", "invalid", "@mailinator.com"];
-            const results = batchCheckEmails(emails);
+            const results = areDisposableEmails(emails);
 
             expect(results.get("")).toBe(false);
             expect(results.get("invalid")).toBe(false);

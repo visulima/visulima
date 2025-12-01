@@ -333,7 +333,7 @@ export const getStatistics = (): DomainStatistics => {
  * @param customDomains Optional set of additional disposable domains to check.
  * @returns Map of domain to boolean indicating if it's disposable.
  */
-export const batchCheckDomains = (domains: string[], customDomains?: Set<string>): Map<string, boolean> => {
+export const areDisposableDomains = (domains: string[], customDomains?: Set<string>): Map<string, boolean> => {
     const results = new Map<string, boolean>();
     const domainSet = getDomainSet();
 
@@ -365,7 +365,7 @@ export const batchCheckDomains = (domains: string[], customDomains?: Set<string>
  * @param customDomains Optional set of additional disposable domains to check.
  * @returns Map of email to boolean indicating if it's disposable.
  */
-export const batchCheckEmails = (emails: string[], customDomains?: Set<string>): Map<string, boolean> => {
+export const areDisposableEmails = (emails: string[], customDomains?: Set<string>): Map<string, boolean> => {
     const results = new Map<string, boolean>();
     const domainSet = getDomainSet();
 
