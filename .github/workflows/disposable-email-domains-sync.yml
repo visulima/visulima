@@ -1,0 +1,58 @@
+name: "Disposable Email Domains Sync"
+
+on: # yamllint disable-line rule:truthy
+    schedule:
+        - cron: "0 0 * * *" # At 00:00 UTC every day
+    workflow_dispatch: # yamllint disable-line rule:empty-values
+
+permissions:
+    contents: "read" # for checkout
+
+jobs:
+    sync-domains:
+        name: "Sync Disposable Email Domains"
+        if: "github.repository == 'visulima/visulima'"
+        runs-on: "ubuntu-latest"
+        permissions:
+            contents: "write"
+
+        steps:
+            - name: "Harden Runner"
+              uses: "step-security/harden-runner@f4a75cfd619ee5ce8d5b864b0d183aff3c69b55a" # v2.13.1
+              with:
+                  egress-policy: "audit"
+
+            - name: "Git checkout"
+              uses: "actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955" # v4.3.0
+              with:
+                  token: "${{ secrets.SEMANTIC_RELEASE_GITHUB_TOKEN }}"
+              env:
+                  GIT_COMMITTER_NAME: "GitHub Actions Shell"
+                  GIT_AUTHOR_NAME: "GitHub Actions Shell"
+                  EMAIL: "github-actions[bot]@users.noreply.github.com"
+
+            - name: "Setup resources and environment"
+              id: "setup"
+              uses: "anolilab/workflows/step/setup@main"
+              with:
+                  node-version: "22.x"
+                  cache-prefix: "disposable-email-domains-sync"
+                  install-packages: "true"
+
+            - name: "Generate domains"
+              if: "success()"
+              working-directory: "packages/disposable-email-domains"
+              run: "pnpm run --filter disposable-email-domains generate:domains"
+
+            - name: "Commit domain updates"
+              if: "success()"
+              uses: "stefanzweifel/git-auto-commit-action@b863ae1933cb653a53c021fe36dbb774e1fb9403" # v5.2.0
+              with:
+                  file_pattern: |
+                      packages/disposable-email-domains/dist/domains.json
+                      packages/disposable-email-domains/.last-updated.txt
+                  commit_message: "fix(disposable-email-domains): update disposable email domains"
+                  commit_user_name: "github-actions-shell"
+                  commit_user_email: "github-actions[bot]@users.noreply.github.com"
+                  commit_author: "github-actions-shell <github-actions[bot]@users.noreply.github.com>"
+                  skip_dirty_check: "true"
