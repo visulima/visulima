@@ -95,7 +95,7 @@
         "@secretlint/secretlint-rule-preset-recommend": "^11.2.5",
         "@types/ms": "^2.1.0",
         "@types/node": "24.10.1",
-        "@visulima/packem": "2.0.0-alpha.37",
+        "@visulima/packem": "2.0.0-alpha.40",
         "@vitest/coverage-v8": "^4.0.14",
         "@vitest/ui": "^4.0.14",
         "conventional-changelog-conventionalcommits": "9.1.0",

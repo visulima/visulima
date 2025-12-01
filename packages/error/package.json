@@ -125,7 +125,7 @@
         "@total-typescript/ts-reset": "^0.6.1",
         "@types/command-line-args": "^5.2.3",
         "@types/node": "24.10.1",
-        "@visulima/packem": "2.0.0-alpha.37",
+        "@visulima/packem": "2.0.0-alpha.40",
         "@visulima/path": "2.0.5",
         "@vitest/coverage-v8": "^4.0.14",
         "@vitest/ui": "^4.0.14",

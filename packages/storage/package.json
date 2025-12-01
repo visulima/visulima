@@ -239,7 +239,7 @@
         "@vercel/blob": "^2.0.0",
         "@visulima/fs": "workspace:*",
         "@visulima/humanizer": "workspace:*",
-        "@visulima/packem": "2.0.0-alpha.39",
+        "@visulima/packem": "2.0.0-alpha.40",
         "@visulima/path": "workspace:*",
         "@vitest/coverage-v8": "^4.0.14",
         "@vitest/ui": "^4.0.14",

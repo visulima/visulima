@@ -303,7 +303,7 @@
         "@types/node": "24.10.1",
         "@types/nodemailer": "^7.0.4",
         "@visulima/error": "5.0.6",
-        "@visulima/packem": "2.0.0-alpha.39",
+        "@visulima/packem": "2.0.0-alpha.40",
         "@vitest/coverage-v8": "^4.0.14",
         "@vitest/ui": "^4.0.14",
         "@vue-email/render": "0.0.9",
