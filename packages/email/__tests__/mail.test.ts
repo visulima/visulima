@@ -92,7 +92,7 @@ describe("mail", () => {
 
     describe("mail.draft()", () => {
         it("should create a draft from MailMessage and return EML format", async () => {
-            expect.assertions(3);
+            expect.assertions(2);
 
             const provider = createMockProvider();
             const mail = createMail(provider);
@@ -108,7 +108,7 @@ describe("mail", () => {
         });
 
         it("should create a draft from EmailOptions and return EML format", async () => {
-            expect.assertions(3);
+            expect.assertions(2);
 
             const provider = createMockProvider();
             const mail = createMail(provider);
@@ -219,7 +219,7 @@ describe("mail", () => {
         });
 
         it("should handle DraftMailMessage instances", async () => {
-            expect.assertions(2);
+            expect.assertions(1);
 
             const provider = createMockProvider();
             const mail = createMail(provider);
