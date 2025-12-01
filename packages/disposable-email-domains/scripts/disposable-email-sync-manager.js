@@ -1,7 +1,10 @@
 import { promises as fs } from "node:fs";
+import { createRequire } from "node:module";
 import { join } from "node:path";
 
 import Semaphore from "./semaphore.js";
+
+const require = createRequire(import.meta.url);
 
 /**
  * DisposableEmailSyncManager - A manager for downloading and synchronizing
@@ -400,17 +403,38 @@ ${repo.error ? `- **Error**: ${repo.error}` : ""}
      * Generates the main domains list file (JSON format only)
      */
     async generateDomainsList() {
-        // Generate JSON format with metadata
-        const domainsWithMetadata = [...this.domains.values()].map((entry) => {
-            return {
-                domain: entry.domain,
-                firstSeen: entry.firstSeen,
-                lastSeen: entry.lastSeen,
-                sources: [...entry.sources],
-            };
-        });
+        // Load common email providers as whitelist
+        let whitelist = new Set();
 
-        await fs.writeFile(join(this.syncOptions.outputPath, "domains.json"), JSON.stringify(domainsWithMetadata), "utf8");
+        try {
+            const commonProviders = require("email-providers/common.json");
+
+            if (Array.isArray(commonProviders)) {
+                whitelist = new Set(commonProviders.map((domain) => domain.toLowerCase().trim()));
+            }
+        } catch {
+            // If email-providers is not available, continue without whitelist
+        }
+
+        // Generate simple array of domain strings, excluding whitelisted domains
+        // BUT always include blacklist domains even if they're in the whitelist
+        const domainsArray = [...this.domains.entries()]
+            .filter(([domain, entry]) => {
+                const normalizedDomain = domain.toLowerCase().trim();
+                const isBlacklistDomain = entry.sources.has("blacklist.json");
+
+                // Always include blacklist domains, even if they're whitelisted
+                if (isBlacklistDomain) {
+                    return true;
+                }
+
+                // For non-blacklist domains, exclude if whitelisted
+                return !whitelist.has(normalizedDomain);
+            })
+            .map(([domain]) => domain)
+            .toSorted();
+
+        await fs.writeFile(join(this.syncOptions.outputPath, "domains.json"), JSON.stringify(domainsArray), "utf8");
     }
 
     /**
@@ -431,6 +455,7 @@ ${repo.error ? `- **Error**: ${repo.error}` : ""}
     // eslint-disable-next-line class-methods-use-this -- Factory method, doesn't need instance state
     initializeStats(repositoryCount) {
         return {
+            blacklistDomains: 0,
             duplicates: 0,
             failedDownloads: 0,
             lastSyncTimestamp: "",
@@ -463,6 +488,55 @@ ${repo.error ? `- **Error**: ${repo.error}` : ""}
     }
 
     /**
+     * Loads custom blacklist.json file if it exists and adds domains to the collection.
+     * @param {string} blacklistPath Path to the blacklist.json file.
+     * @returns {Promise<number>} Number of domains added from blacklist.
+     */
+    async loadBlacklist(blacklistPath) {
+        try {
+            const content = await fs.readFile(blacklistPath, "utf8");
+            const blacklistData = JSON.parse(content);
+
+            if (Array.isArray(blacklistData)) {
+                let addedCount = 0;
+
+                blacklistData.forEach((domain) => {
+                    if (typeof domain === "string" && domain) {
+                        const normalizedDomain = domain.trim().toLowerCase();
+
+                        if (normalizedDomain && this.isValidDomain(normalizedDomain)) {
+                            // Use a special source identifier for blacklist
+                            this.addDomain(normalizedDomain, "blacklist.json");
+                            addedCount += 1;
+                        }
+                    }
+                });
+
+                // eslint-disable-next-line no-console
+                console.log(`📋 Loaded ${addedCount} domains from blacklist.json`);
+
+                return addedCount;
+            }
+
+            // eslint-disable-next-line no-console
+            console.warn("⚠️  blacklist.json is not an array, skipping");
+
+            return 0;
+        } catch (error) {
+            if (error.code === "ENOENT") {
+                // File doesn't exist, which is fine - blacklist is optional
+                // eslint-disable-next-line no-console
+                console.log("ℹ️  No blacklist.json found, skipping custom blacklist");
+            } else {
+                // eslint-disable-next-line no-console
+                console.warn(`⚠️  Error loading blacklist.json: ${error.message}`);
+            }
+
+            return 0;
+        }
+    }
+
+    /**
      * Loads previous domain list for comparison
      */
     async loadPreviousDomains() {
@@ -471,11 +545,13 @@ ${repo.error ? `- **Error**: ${repo.error}` : ""}
             const content = await fs.readFile(filePath, "utf8");
             const domainsData = JSON.parse(content);
 
-            domainsData.forEach((entry) => {
-                if (entry.domain) {
-                    this.previousDomains.add(entry.domain.trim().toLowerCase());
-                }
-            });
+            if (Array.isArray(domainsData)) {
+                domainsData.forEach((domain) => {
+                    if (typeof domain === "string" && domain) {
+                        this.previousDomains.add(domain.trim().toLowerCase());
+                    }
+                });
+            }
         } catch {
             // File doesn't exist, which is fine for first run
         }
@@ -534,9 +610,10 @@ ${repo.error ? `- **Error**: ${repo.error}` : ""}
     /**
      * Main synchronization method that orchestrates the entire process.
      * @param {Array<object>} repositories Array of repository configurations.
+     * @param {string} [blacklistPath] Optional path to blacklist.json file.
      * @returns {Promise<object>} Sync result with domains, errors, and stats.
      */
-    async sync(repositories) {
+    async sync(repositories, blacklistPath) {
         const startTime = Date.now();
         const stats = this.initializeStats(repositories.length);
         const errors = [];
@@ -550,6 +627,11 @@ ${repo.error ? `- **Error**: ${repo.error}` : ""}
 
             // Process results and update stats
             this.processDownloadResults(downloadResults, stats);
+
+            // Load custom blacklist if provided
+            if (blacklistPath) {
+                stats.blacklistDomains = await this.loadBlacklist(blacklistPath);
+            }
 
             // Calculate final statistics
             this.calculateFinalStats(stats, startTime);
