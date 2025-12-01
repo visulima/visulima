@@ -43,28 +43,28 @@ pnpm add @visulima/disposable-email-domains
 
 <!-- START_PLACEHOLDER_CONTRIBUTING -->
 
-| Repository | Domains | Success | Performance |
-|------------|---------|---------|-------------|
-| kslr/disposable-email-domains | 112.551 | ✅ | 0.32s (1.7 MB) |
-| FGRibreau/mailchecker | 55.864 | ✅ | 0.38s (838.4 KB) |
-| wesbos/burner-email-providers | 27.284 | ✅ | 0.32s (388.1 KB) |
-| groundcat/disposable-email-domain-list | 27.120 | ✅ | 0.19s (401.7 KB) |
-| disposable/disposable-email-domains | 26.697 | ✅ | 0.25s (375.5 KB) |
-| sublime-security/static-files | 10.523 | ✅ | 0.22s (144.0 KB) |
-| 7c/fakefilter | 8.975 | ✅ | 0.34s (128.9 KB) |
-| disposable-email-domains/disposable-email-domains | 4.931 | ✅ | 0.23s (62.3 KB) |
-| willwhite/freemail | 4.462 | ✅ | 0.28s (61.8 KB) |
-| eser/sanitizer-svc | 3.855 | ✅ | 0.22s (48.9 KB) |
-| unkn0w/disposable-email-domain-list | 3.617 | ✅ | 0.15s (45.8 KB) |
-| MattKetmo/EmailChecker | 2.515 | ✅ | 0.21s (32.4 KB) |
-| GeroldSetz/emailondeck.com-domains | 1.121 | ✅ | 0.19s (15.4 KB) |
-| jespernissen/disposable-maildomain-list | 1.024 | ✅ | 0.14s (13.2 KB) |
-| TheDahoom/disposable-email | 18 | ✅ | 0.22s (234 B) |
+| Repository                                        | Domains | Success | Performance      |
+| ------------------------------------------------- | ------- | ------- | ---------------- |
+| kslr/disposable-email-domains                     | 112.551 | ✅      | 0.14s (1.7 MB)   |
+| FGRibreau/mailchecker                             | 55.864  | ✅      | 0.33s (838.4 KB) |
+| wesbos/burner-email-providers                     | 27.284  | ✅      | 0.20s (388.1 KB) |
+| groundcat/disposable-email-domain-list            | 27.120  | ✅      | 0.30s (401.7 KB) |
+| disposable/disposable-email-domains               | 26.697  | ✅      | 0.42s (375.5 KB) |
+| sublime-security/static-files                     | 10.523  | ✅      | 0.10s (144.0 KB) |
+| 7c/fakefilter                                     | 8.975   | ✅      | 0.04s (128.9 KB) |
+| disposable-email-domains/disposable-email-domains | 4.932   | ✅      | 0.10s (62.3 KB)  |
+| willwhite/freemail                                | 4.462   | ✅      | 0.04s (61.8 KB)  |
+| eser/sanitizer-svc                                | 3.855   | ✅      | 0.09s (48.9 KB)  |
+| unkn0w/disposable-email-domain-list               | 3.617   | ✅      | 0.03s (45.8 KB)  |
+| MattKetmo/EmailChecker                            | 2.515   | ✅      | 0.02s (32.4 KB)  |
+| GeroldSetz/emailondeck.com-domains                | 1.121   | ✅      | 0.09s (15.4 KB)  |
+| jespernissen/disposable-maildomain-list           | 1.024   | ✅      | 0.02s (13.2 KB)  |
+| TheDahoom/disposable-email                        | 18      | ✅      | 0.08s (234 B)    |
 
 <!-- END_PLACEHOLDER_CONTRIBUTING -->
 <!-- START_PLACEHOLDER_LAST_UPDATED -->
 
-_Last updated: 2025-12-01T08:12:35.185Z_
+_Last updated: 2025-12-01T11:40:49.150Z_
 
 <!-- END_PLACEHOLDER_LAST_UPDATED -->
 
@@ -73,25 +73,36 @@ _Last updated: 2025-12-01T08:12:35.185Z_
 ### Basic Usage
 
 ```typescript
-import { isDisposableEmail, isDisposableDomain, getDomainList, getDomainCount } from "@visulima/disposable-email-domains";
+import { isDisposableEmail, areDisposableEmails } from "@visulima/disposable-email-domains";
 
 // Check if an email is disposable
 if (isDisposableEmail("user@mailinator.com")) {
     console.log("Disposable email detected!");
 }
 
-// Check if a domain is disposable
-if (isDisposableDomain("mailinator.com")) {
-    console.log("Disposable domain detected!");
-}
+// Check multiple emails at once
+const emails = ["user@mailinator.com", "test@guerrillamail.com", "valid@example.com"];
+const results = areDisposableEmails(emails);
 
-// Get all domains as an array
-const domains = getDomainList();
-console.log(`Total domains: ${domains.length}`);
+results.forEach((isDisposable, email) => {
+    console.log(`${email}: ${isDisposable ? "disposable" : "valid"}`);
+});
+```
 
-// Get domain count
-const count = getDomainCount();
-console.log(`There are ${count} disposable email domains`);
+### Whitelist Protection
+
+This package automatically whitelists common email providers (like Gmail, Yahoo, Outlook, etc.) from the [email-providers](https://github.com/derhuerst/email-providers) package. This ensures that legitimate email providers are never incorrectly flagged as disposable, even if they appear in the disposable domains list.
+
+```typescript
+import { isDisposableEmail } from "@visulima/disposable-email-domains";
+
+// Common email providers are automatically whitelisted
+isDisposableEmail("user@gmail.com"); // false - whitelisted
+isDisposableEmail("user@yahoo.com"); // false - whitelisted
+isDisposableEmail("user@outlook.com"); // false - whitelisted
+
+// Disposable emails are still detected
+isDisposableEmail("user@mailinator.com"); // true - disposable
 ```
 
 ### Custom Domains
@@ -99,7 +110,7 @@ console.log(`There are ${count} disposable email domains`);
 You can provide custom disposable domains to check against:
 
 ```typescript
-import { isDisposableEmail, isDisposableDomain } from "@visulima/disposable-email-domains";
+import { isDisposableEmail, areDisposableEmails } from "@visulima/disposable-email-domains";
 
 const customDomains = new Set(["custom-disposable.com", "temp-mail.org"]);
 
@@ -108,112 +119,12 @@ if (isDisposableEmail("user@custom-disposable.com", customDomains)) {
     console.log("Custom disposable email detected!");
 }
 
-if (isDisposableDomain("temp-mail.org", customDomains)) {
-    console.log("Custom disposable domain detected!");
-}
-```
+// Batch check with custom domains
+const emails = ["user@custom-disposable.com", "user@example.com"];
+const results = areDisposableEmails(emails, customDomains);
 
-### Domain Metadata
-
-Get detailed information about a specific domain:
-
-```typescript
-import { getDomainMetadata } from "@visulima/disposable-email-domains";
-
-const metadata = getDomainMetadata("mailinator.com");
-
-if (metadata) {
-    console.log("Domain:", metadata.domain);
-    console.log("First seen:", metadata.firstSeen);
-    console.log("Last seen:", metadata.lastSeen);
-    console.log("Sources:", metadata.sources);
-}
-```
-
-### Search Domains
-
-Search for domains matching a pattern:
-
-```typescript
-import { searchDomains } from "@visulima/disposable-email-domains";
-
-// Find all domains containing "mail"
-const mailDomains = searchDomains("mail");
-
-console.log(`Found ${mailDomains.length} domains containing 'mail'`);
-mailDomains.forEach((entry) => {
-    console.log(`- ${entry.domain} (from ${entry.sources.length} sources)`);
-});
-```
-
-### Filter by Source
-
-Get domains from a specific repository source:
-
-```typescript
-import { getDomainsBySource } from "@visulima/disposable-email-domains";
-
-// Get domains from a specific repository (by name or URL)
-const domains = getDomainsBySource("Disposable Email Domains - Primary Source");
-
-console.log(`Found ${domains.length} domains from this source`);
-```
-
-### Batch Operations
-
-Check multiple emails or domains at once:
-
-```typescript
-import { areDisposableEmails, areDisposableDomains } from "@visulima/disposable-email-domains";
-
-// Check multiple emails
-const emails = ["user@mailinator.com", "test@guerrillamail.com", "valid@example.com"];
-
-const emailResults = areDisposableEmails(emails);
-
-emailResults.forEach((isDisposable, email) => {
+results.forEach((isDisposable, email) => {
     console.log(`${email}: ${isDisposable ? "disposable" : "valid"}`);
-});
-
-// Check multiple domains
-const domains = ["mailinator.com", "example.com", "trashmail.com"];
-const domainResults = areDisposableDomains(domains);
-
-domainResults.forEach((isDisposable, domain) => {
-    console.log(`${domain}: ${isDisposable ? "disposable" : "valid"}`);
-});
-```
-
-### Statistics
-
-Get statistics about the disposable email domains:
-
-```typescript
-import { getStatistics } from "@visulima/disposable-email-domains";
-
-const stats = getStatistics();
-
-console.log(`Total domains: ${stats.totalDomains}`);
-console.log(`Unique sources: ${stats.uniqueSources}`);
-console.log(`Date range: ${stats.dateRange.earliest} to ${stats.dateRange.latest}`);
-
-// Domains per source
-Object.entries(stats.domainsPerSource).forEach(([source, count]) => {
-    console.log(`${source}: ${count} domains`);
-});
-```
-
-### Get All Domains
-
-Retrieve all domain entries with full metadata:
-
-```typescript
-import { getAllDomains } from "@visulima/disposable-email-domains";
-
-const allDomains = getAllDomains();
-
-allDomains.forEach((entry) => {
-    console.log(`${entry.domain} - seen from ${entry.sources.length} sources`);
 });
 ```
 
@@ -223,127 +134,38 @@ allDomains.forEach((entry) => {
 
 #### `isDisposableEmail(email, customDomains?)`
 
-Checks if an email address is from a disposable email service.
+Checks if an email address is from a disposable email service. Common email providers (Gmail, Yahoo, Outlook, etc.) are automatically whitelisted and will never be flagged as disposable.
 
 - **Parameters:**
     - `email` (string): The email address to check
-    - `customDomains?` (Set<string>): Optional set of additional disposable domains
+    - `customDomains?` (Set<string>): Optional set of additional disposable domains to check
 - **Returns:** `boolean` - True if the email is from a disposable domain
-
-#### `isDisposableDomain(domain, customDomains?)`
-
-Checks if a domain is in the disposable email domains list.
-
-- **Parameters:**
-    - `domain` (string): The domain to check (case-insensitive)
-    - `customDomains?` (Set<string>): Optional set of additional disposable domains
-- **Returns:** `boolean` - True if the domain is disposable
-
-#### `getDomainList()`
-
-Gets all disposable email domains as a simple array of strings.
-
-- **Returns:** `string[]` - Array of domain strings
-
-#### `getDomainCount()`
-
-Gets the total count of disposable email domains.
-
-- **Returns:** `number` - Number of domains in the list
-
-#### `getDomainMetadata(domain)`
-
-Gets metadata for a specific domain.
-
-- **Parameters:**
-    - `domain` (string): The domain to look up (case-insensitive)
-- **Returns:** `DomainEntry | undefined` - Domain entry if found, undefined otherwise
-
-#### `getAllDomains()`
-
-Gets all domain entries with full metadata.
-
-- **Returns:** `DomainEntry[]` - Array of all domain entries
-
-#### `searchDomains(pattern)`
-
-Searches for domains matching a pattern.
-
-- **Parameters:**
-    - `pattern` (string): Search pattern (case-insensitive, supports partial matches)
-- **Returns:** `DomainEntry[]` - Array of matching domain entries
-
-#### `getDomainsBySource(source)`
-
-Gets domains that were seen from a specific source.
-
-- **Parameters:**
-    - `source` (RepositorySource): The source repository name or URL to filter by
-- **Returns:** `DomainEntry[]` - Array of domain entries from the specified source
+- **Features:**
+    - Case-insensitive matching
+    - Supports wildcard matching (e.g., `subdomain.33mail.com` matches `33mail.com`)
+    - Automatically whitelists common email providers
 
 #### `areDisposableEmails(emails, customDomains?)`
 
-Checks multiple email addresses at once.
+Checks multiple email addresses at once. Returns a Map for efficient lookups.
 
 - **Parameters:**
     - `emails` (string[]): Array of email addresses to check
-    - `customDomains?` (Set<string>): Optional set of additional disposable domains
+    - `customDomains?` (Set<string>): Optional set of additional disposable domains to check
 - **Returns:** `Map<string, boolean>` - Map of email to boolean indicating if it's disposable
+- **Features:**
+    - Batch processing for better performance
+    - Same whitelist protection as `isDisposableEmail`
 
-#### `areDisposableDomains(domains, customDomains?)`
+### How It Works
 
-Checks multiple domains at once.
+1. **Domain List**: The package maintains a regularly updated list of disposable email domains from multiple trusted sources (see Contributing Sources above).
 
-- **Parameters:**
-    - `domains` (string[]): Array of domains to check
-    - `customDomains?` (Set<string>): Optional set of additional disposable domains
-- **Returns:** `Map<string, boolean>` - Map of domain to boolean indicating if it's disposable
+2. **Whitelist Protection**: Common email providers from the [email-providers](https://github.com/derhuerst/email-providers) package are automatically whitelisted. This ensures legitimate providers like Gmail, Yahoo, and Outlook are never incorrectly flagged as disposable.
 
-#### `getStatistics()`
+3. **Wildcard Matching**: The package supports wildcard matching by checking parent domains. For example, `subdomain.33mail.com` will match `33mail.com` if it's in the disposable list.
 
-Gets statistics about the disposable email domains.
-
-- **Returns:** `DomainStatistics` - Statistics object with domain counts and metadata
-
-### Types
-
-#### `DomainEntry`
-
-```typescript
-interface DomainEntry {
-    domain: string;
-    firstSeen: string;
-    lastSeen: string;
-    sources: string[];
-}
-```
-
-#### `DomainStatistics`
-
-```typescript
-interface DomainStatistics {
-    dateRange: {
-        earliest: string | undefined;
-        latest: string | undefined;
-    };
-    domainsPerSource: Record<string, number>;
-    totalDomains: number;
-    uniqueSources: number;
-}
-```
-
-#### `RepositoryConfig`
-
-```typescript
-interface RepositoryConfig {
-    blocklist_files?: string[];
-    description?: string;
-    name: string;
-    priority?: number;
-    type: string;
-    url: string;
-}
-```
+4. **Custom Domains**: You can provide additional disposable domains to check against, useful for domain-specific blocklists.
 
 ## Related
 
