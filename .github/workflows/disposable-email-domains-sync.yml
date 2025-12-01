@@ -50,7 +50,7 @@ jobs:
               with:
                   file_pattern: |
                       packages/disposable-email-domains/dist/domains.json
-                      packages/disposable-email-domains/.last-updated.txt
+                      packages/disposable-email-domains/README.md
                   commit_message: "fix(disposable-email-domains): update disposable email domains"
                   commit_user_name: "github-actions-shell"
                   commit_user_email: "github-actions[bot]@users.noreply.github.com"

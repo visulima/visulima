@@ -12,4 +12,3 @@
  * ```
  */
 export * from "@visulima/disposable-email-domains";
-
