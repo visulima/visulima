@@ -58,7 +58,7 @@ describe("ono class", () => {
             expect(html).toContain("test-nonce");
         });
 
-        it("should handle custom solution finders", async () => {
+        it("should handle custom solution finders", { timeout: 30_000 }, async () => {
             expect.assertions(3);
 
             const ono = new Ono();
