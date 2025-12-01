@@ -5,7 +5,7 @@
         "test:bench": "vitest bench"
     },
     "dependencies": {
-        "@mfederczuk/deeptools": "2.1.0-indev01",
+        "@mfederczuk/deeptools": "2.1.0-rc01",
         "@ungap/structured-clone": "^1.3.0",
         "@visulima/deep-clone": "workspace:*",
         "clone-deep": "^4.0.1",
@@ -21,6 +21,6 @@
     "devDependencies": {
         "@types/lodash.clonedeep": "^4.5.9",
         "typescript": "5.9.3",
-        "vitest": "^4.0.13"
+        "vitest": "^4.0.14"
     }
 }
