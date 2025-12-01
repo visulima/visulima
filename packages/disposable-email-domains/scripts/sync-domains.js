@@ -55,6 +55,46 @@ const formatPerformance = (downloadTime, fileSize) => {
 };
 
 /**
+ * Updates the last updated timestamp in README.md only if domains were added or removed
+ * @param {string} packageRootPath - Path to package root
+ * @param {object} stats - Synchronization statistics
+ */
+const updateLastUpdatedTimestamp = async (packageRootPath, stats) => {
+    // Only update timestamp if domains were added or removed
+    if (stats.newDomains === 0 && stats.removedDomains === 0) {
+        // eslint-disable-next-line no-console
+        console.log("\n📝 No domain changes detected, skipping timestamp update");
+
+        return;
+    }
+
+    const readmePath = join(packageRootPath, "README.md");
+    let readmeContent = await fs.readFile(readmePath, "utf8");
+
+    const timestamp = new Date().toISOString();
+    const startPlaceholder = "<!-- START_PLACEHOLDER_LAST_UPDATED -->";
+    const endPlaceholder = "<!-- END_PLACEHOLDER_LAST_UPDATED -->";
+
+    const startIndex = readmeContent.indexOf(startPlaceholder);
+    const endIndex = readmeContent.indexOf(endPlaceholder);
+
+    if (startIndex !== -1 && endIndex !== -1) {
+        const before = readmeContent.slice(0, startIndex + startPlaceholder.length);
+        const after = readmeContent.slice(endIndex);
+
+        readmeContent = `${before}\n\n_Last updated: ${timestamp}_\n\n${after}`;
+
+        await fs.writeFile(readmePath, readmeContent, "utf8");
+
+        // eslint-disable-next-line no-console
+        console.log(`\n📝 Last updated timestamp written to README.md: ${timestamp}`);
+    } else {
+        // eslint-disable-next-line no-console
+        console.warn("\n⚠️  Could not find last updated placeholder comments in README.md");
+    }
+};
+
+/**
  * Updates the contributing sources table in README.md
  * @param {Array} repositories - Repository configurations
  * @param {object} stats - Synchronization statistics
@@ -74,7 +114,7 @@ const updateContributingSourcesTable = async (repositories, stats, packageRootPa
             const repoStat = statsByUrl.get(repo.url);
 
             if (!repoStat || !repoStat.success) {
-                return null;
+                return undefined;
             }
 
             const repoName = extractRepoName(repo.url);
@@ -83,23 +123,19 @@ const updateContributingSourcesTable = async (repositories, stats, packageRootPa
             const performance = formatPerformance(repoStat.downloadTime, repoStat.fileSize);
 
             return {
-                repoName,
                 domains,
-                success,
-                performance,
                 domainsCount: repoStat.domainsCount,
+                performance,
+                repoName,
+                success,
             };
         })
         .filter((row) => row !== null)
-        .sort((a, b) => b.domainsCount - a.domainsCount)
+        .toSorted((a, b) => b.domainsCount - a.domainsCount)
         .map((row) => `| ${row.repoName} | ${row.domains} | ${row.success} | ${row.performance} |`);
 
     // Build markdown table
-    const markdownTable = [
-        "| Repository | Domains | Success | Performance |",
-        "|------------|---------|---------|-------------|",
-        ...tableRows,
-    ].join("\n");
+    const markdownTable = ["| Repository | Domains | Success | Performance |", "|------------|---------|---------|-------------|", ...tableRows].join("\n");
 
     // Read README
     const readmePath = join(packageRootPath, "README.md");
@@ -210,18 +246,13 @@ const main = async () => {
             console.log(repoTable.toString());
         }
 
-        // Create last-updated timestamp file for semantic-release
-        const packageRootPath = join(dirnamePath, "..");
-        const lastUpdatedPath = join(packageRootPath, ".last-updated.txt");
-        const timestamp = new Date().toISOString();
-
-        await fs.writeFile(lastUpdatedPath, timestamp, "utf8");
-
-        // eslint-disable-next-line no-console
-        console.log(`\n📝 Last updated timestamp written to: ${lastUpdatedPath}`);
-
         // Generate and update contributing sources table in README
+        const packageRootPath = join(dirnamePath, "..");
+
         await updateContributingSourcesTable(repositories, result.stats, packageRootPath);
+
+        // Update last updated timestamp in README (only if domains changed)
+        await updateLastUpdatedTimestamp(packageRootPath, result.stats);
     } catch (error) {
         // eslint-disable-next-line no-console
         console.error("❌ Error during synchronization:", error);

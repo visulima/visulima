@@ -40,27 +40,33 @@ pnpm add @visulima/disposable-email-domains
 ```
 
 ## Contributing Sources
+
 <!-- START_PLACEHOLDER_CONTRIBUTING -->
 
-| Repository | Domains | Success | Performance |
-|------------|---------|---------|-------------|
-| kslr/disposable-email-domains | 112.482 | ✅ | 0.37s (1.7 MB) |
-| FGRibreau/mailchecker | 55.864 | ✅ | 0.37s (838.4 KB) |
-| wesbos/burner-email-providers | 27.284 | ✅ | 0.40s (388.1 KB) |
-| groundcat/disposable-email-domain-list | 27.120 | ✅ | 0.21s (401.7 KB) |
-| disposable/disposable-email-domains | 26.711 | ✅ | 0.27s (375.8 KB) |
-| sublime-security/static-files | 10.523 | ✅ | 0.21s (144.0 KB) |
-| 7c/fakefilter | 8.972 | ✅ | 0.16s (128.8 KB) |
-| disposable-email-domains/disposable-email-domains | 4.931 | ✅ | 0.22s (62.3 KB) |
-| willwhite/freemail | 4.462 | ✅ | 0.27s (61.8 KB) |
-| eser/sanitizer-svc | 3.855 | ✅ | 0.21s (48.9 KB) |
-| unkn0w/disposable-email-domain-list | 3.617 | ✅ | 0.15s (45.8 KB) |
-| MattKetmo/EmailChecker | 2.515 | ✅ | 0.14s (32.4 KB) |
-| GeroldSetz/emailondeck.com-domains | 1.121 | ✅ | 0.20s (15.4 KB) |
-| jespernissen/disposable-maildomain-list | 1.024 | ✅ | 0.14s (13.2 KB) |
-| TheDahoom/disposable-email | 18 | ✅ | 0.21s (234 B) |
+| Repository                                        | Domains | Success | Performance      |
+| ------------------------------------------------- | ------- | ------- | ---------------- |
+| kslr/disposable-email-domains                     | 112.551 | ✅      | 0.45s (1.7 MB)   |
+| FGRibreau/mailchecker                             | 55.864  | ✅      | 0.38s (838.4 KB) |
+| wesbos/burner-email-providers                     | 27.284  | ✅      | 0.21s (388.1 KB) |
+| groundcat/disposable-email-domain-list            | 27.120  | ✅      | 0.24s (401.7 KB) |
+| disposable/disposable-email-domains               | 26.697  | ✅      | 0.28s (375.5 KB) |
+| sublime-security/static-files                     | 10.523  | ✅      | 0.28s (144.0 KB) |
+| 7c/fakefilter                                     | 8.975   | ✅      | 0.17s (128.9 KB) |
+| disposable-email-domains/disposable-email-domains | 4.931   | ✅      | 0.24s (62.3 KB)  |
+| willwhite/freemail                                | 4.462   | ✅      | 0.31s (61.8 KB)  |
+| eser/sanitizer-svc                                | 3.855   | ✅      | 0.22s (48.9 KB)  |
+| unkn0w/disposable-email-domain-list               | 3.617   | ✅      | 0.18s (45.8 KB)  |
+| MattKetmo/EmailChecker                            | 2.515   | ✅      | 0.14s (32.4 KB)  |
+| GeroldSetz/emailondeck.com-domains                | 1.121   | ✅      | 0.20s (15.4 KB)  |
+| jespernissen/disposable-maildomain-list           | 1.024   | ✅      | 0.13s (13.2 KB)  |
+| TheDahoom/disposable-email                        | 18      | ✅      | 0.21s (234 B)    |
 
 <!-- END_PLACEHOLDER_CONTRIBUTING -->
+<!-- START_PLACEHOLDER_LAST_UPDATED -->
+
+_Last updated: 2025-12-01T07:54:18.406Z_
+
+<!-- END_PLACEHOLDER_LAST_UPDATED -->
 
 ## Usage
 
@@ -280,8 +286,8 @@ Gets domains that were seen from a specific source.
 Checks multiple email addresses at once.
 
 - **Parameters:**
-  - `emails` (string[]): Array of email addresses to check
-  - `customDomains?` (Set<string>): Optional set of additional disposable domains
+    - `emails` (string[]): Array of email addresses to check
+    - `customDomains?` (Set<string>): Optional set of additional disposable domains
 - **Returns:** `Map<string, boolean>` - Map of email to boolean indicating if it's disposable
 
 #### `areDisposableDomains(domains, customDomains?)`
@@ -289,8 +295,8 @@ Checks multiple email addresses at once.
 Checks multiple domains at once.
 
 - **Parameters:**
-  - `domains` (string[]): Array of domains to check
-  - `customDomains?` (Set<string>): Optional set of additional disposable domains
+    - `domains` (string[]): Array of domains to check
+    - `customDomains?` (Set<string>): Optional set of additional disposable domains
 - **Returns:** `Map<string, boolean>` - Map of domain to boolean indicating if it's disposable
 
 #### `getStatistics()`
