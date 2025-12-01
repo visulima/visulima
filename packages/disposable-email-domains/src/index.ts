@@ -53,6 +53,28 @@ const getDomainSet = (): Set<string> => {
 };
 
 /**
+ * Extracts and validates the domain from an email address.
+ * @param email The email address to extract domain from.
+ * @returns The normalized domain string, or undefined if invalid.
+ */
+const extractDomain = (email: string): string | undefined => {
+    if (!email || typeof email !== "string") {
+        return undefined;
+    }
+
+    const normalizedEmail = email.toLowerCase().trim();
+    const atIndex = normalizedEmail.indexOf("@");
+
+    if (atIndex === -1 || atIndex === 0 || atIndex === normalizedEmail.length - 1) {
+        return undefined;
+    }
+
+    const domain = normalizedEmail.slice(atIndex + 1);
+
+    return domain || undefined;
+};
+
+/**
  * Checks if a domain is in the disposable email domains list.
  * Supports wildcard matching by checking parent domains (e.g., subdomain.33mail.com matches 33mail.com).
  * @param domain The domain to check (case-insensitive).
@@ -67,7 +89,7 @@ const isDisposableDomain = (domain: string, customDomains?: Set<string>): boolea
     const normalizedDomain = domain.toLowerCase().trim();
     const domainParts = normalizedDomain.split(".");
 
-    if (customDomains && customDomains.has(normalizedDomain)) {
+    if (customDomains?.has(normalizedDomain)) {
         return true;
     }
 
@@ -98,18 +120,7 @@ const isDisposableDomain = (domain: string, customDomains?: Set<string>): boolea
  * @returns True if the email is from a disposable domain, false otherwise.
  */
 export const isDisposableEmail = (email: string, customDomains?: Set<string>): boolean => {
-    if (!email || typeof email !== "string") {
-        return false;
-    }
-
-    const normalizedEmail = email.toLowerCase().trim();
-    const atIndex = normalizedEmail.indexOf("@");
-
-    if (atIndex === -1 || atIndex === 0 || atIndex === normalizedEmail.length - 1) {
-        return false;
-    }
-
-    const domain = normalizedEmail.slice(atIndex + 1);
+    const domain = extractDomain(email);
 
     if (!domain) {
         return false;
@@ -128,32 +139,7 @@ export const areDisposableEmails = (emails: string[], customDomains?: Set<string
     const results = new Map<string, boolean>();
 
     for (const email of emails) {
-        if (!email || typeof email !== "string") {
-            results.set(email, false);
-
-            continue;
-        }
-
-        const normalizedEmail = email.toLowerCase().trim();
-        const atIndex = normalizedEmail.indexOf("@");
-
-        if (atIndex === -1 || atIndex === 0 || atIndex === normalizedEmail.length - 1) {
-            results.set(email, false);
-
-            continue;
-        }
-
-        const domain = normalizedEmail.slice(atIndex + 1);
-
-        if (!domain) {
-            results.set(email, false);
-
-            continue;
-        }
-
-        const isDisposable = isDisposableDomain(domain, customDomains);
-
-        results.set(email, isDisposable);
+        results.set(email, isDisposableEmail(email, customDomains));
     }
 
     return results;

@@ -1,9 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import {
-    areDisposableEmails,
-    isDisposableEmail,
-} from "../src/index";
+import { areDisposableEmails, isDisposableEmail } from "../src/index";
 
 describe(isDisposableEmail, () => {
     beforeEach(() => {
