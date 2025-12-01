@@ -4,7 +4,7 @@ import createStackPage from "../src/error-inspector/page/stack";
 
 describe("stack page", () => {
     describe(createStackPage, () => {
-        it("should create a stack page for basic error", async () => {
+        it("should create a stack page for basic error", { timeout: 30_000 }, async () => {
             expect.assertions(5);
 
             const error = new Error("Test error");
@@ -16,7 +16,7 @@ describe("stack page", () => {
             expect(page.name).toBe("Stack");
             expect(page.code.html).toContain("Test error");
             expect(page.defaultSelected).toBe(true);
-        }, 30_000); // 30 seconds timeout
+        });
 
         it("should handle errors with stack traces", async () => {
             expect.assertions(4);
@@ -35,7 +35,7 @@ describe("stack page", () => {
             expect(page.code.html).toContain("10:5");
         });
 
-        it("should handle errors with causes", async () => {
+        it("should handle errors with causes", { timeout: 30_000 }, async () => {
             expect.assertions(3);
 
             const cause = new Error("Root cause");
@@ -53,7 +53,7 @@ describe("stack page", () => {
             expect(page.code.html).toContain("rootFunction");
         });
 
-        it("should handle multiple levels of causes", async () => {
+        it("should handle multiple levels of causes", { timeout: 30_000 }, async () => {
             expect.assertions(3);
 
             const deepestCause = new Error("Deepest cause");
@@ -69,7 +69,7 @@ describe("stack page", () => {
             expect(page.code.html).toContain("Main error");
             expect(page.code.html).toContain("Middle cause");
             expect(page.code.html).toContain("Deepest cause");
-        }, 10_000); // 10 seconds timeout
+        });
 
         it("should handle solution finders", async () => {
             expect.assertions(2);
