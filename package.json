@@ -10,6 +10,12 @@
         "apps/*"
     ],
     "scripts": {
+        "lint:eslint:disposable-email-domains": "pnpm --filter \"disposable-email-domains\" run lint:eslint",
+        "lint:eslint:fix:disposable-email-domains": "pnpm --filter \"disposable-email-domains\" run lint:eslint:fix",
+        "lint:types:disposable-email-domains": "pnpm --filter \"disposable-email-domains\" run lint:types",
+        "test:disposable-email-domains": "pnpm --filter \"disposable-email-domains\" run test",
+        "test:coverage:disposable-email-domains": "pnpm --filter \"disposable-email-domains\" run test:coverage",
+        "test:ui:disposable-email-domains": "pnpm --filter \"disposable-email-domains\" run test:ui",
         "audit": "audit-ci --config ./audit-ci.jsonc",
         "bench:cerebro": "pnpm --filter \"cerebro-bench\" run test:bench",
         "bench:colorize": "pnpm --filter \"colorize-bench\" run test:bench",
@@ -289,7 +295,7 @@
         "typescript": "5.9.3",
         "vitest": "^4.0.13"
     },
-    "packageManager": "pnpm@10.23.0",
+    "packageManager": "pnpm@10.24.0",
     "engines": {
         "node": ">=20.19 <=25.x"
     }
