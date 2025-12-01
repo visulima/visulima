@@ -1115,20 +1115,12 @@ Template engines are optional peer dependencies and work where their underlying 
 
 ## Disposable Email Detection
 
-The package includes optional support for detecting disposable email addresses using the `disposable-domains` package.
-
-### Installation
-
-To use disposable email detection, install the optional peer dependency:
-
-```sh
-pnpm add disposable-domains
-```
+The package includes support for detecting disposable email addresses using the `@visulima/disposable-email-domains` package, which is included as a dependency.
 
 ### Usage
 
 ```typescript
-import { isDisposableEmail } from "@visulima/email/validation/is-disposable-email";
+import { isDisposableEmail } from "@visulima/email/validation/disposable-email-domains";
 
 // Check if an email is disposable
 if (isDisposableEmail("user@mailinator.com")) {
@@ -1142,7 +1134,7 @@ if (isDisposableEmail("user@my-disposable.com", customDomains)) {
 }
 ```
 
-**Note:** The `disposable-domains` package must be installed as a peer dependency. If it's not installed, the function will throw an error with installation instructions.
+**Note:** The `@visulima/disposable-email-domains` package is included as a dependency, so no additional installation is required.
 
 ## Email Verification
 

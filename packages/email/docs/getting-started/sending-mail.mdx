@@ -232,16 +232,10 @@ await mail.send(message);
 
 To prevent sending emails to disposable/temporary email addresses, use the disposable email detection utility:
 
-**First, install the optional dependency:**
-
-```bash
-pnpm add disposable-domains
-```
-
-**Then use it before sending:**
+**Use it before sending:**
 
 ```typescript
-import { isDisposableEmail } from "@visulima/email/validation/is-disposable-email";
+import { isDisposableEmail } from "@visulima/email/validation/disposable-email-domains";
 import { createMail, MailMessage } from "@visulima/email";
 import { resendProvider } from "@visulima/email/providers/resend";
 
@@ -264,7 +258,7 @@ const result = await mail.send(message);
 When sending to multiple recipients, validate all addresses:
 
 ```typescript
-import { isDisposableEmail } from "@visulima/email/validation/is-disposable-email";
+import { isDisposableEmail } from "@visulima/email/validation/disposable-email-domains";
 import { validateEmail } from "@visulima/email/validation/validate-email";
 import { MailMessage } from "@visulima/email";
 
@@ -289,7 +283,7 @@ await mail.send(message);
 You can also add custom disposable domains to check:
 
 ```typescript
-import { isDisposableEmail } from "@visulima/email/validation/is-disposable-email";
+import { isDisposableEmail } from "@visulima/email/validation/disposable-email-domains";
 
 const customDisposableDomains = new Set(["my-disposable.com", "test-temp.com"]);
 

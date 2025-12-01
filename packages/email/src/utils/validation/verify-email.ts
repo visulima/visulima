@@ -1,5 +1,5 @@
 import { checkMxRecords } from "./check-mx-records";
-import isDisposableEmail from "./is-disposable-email";
+import { isDisposableEmail } from "./disposable-email-domains";
 import { isRoleAccount } from "./role-accounts";
 import validateEmail from "./validate-email";
 import type { SmtpVerificationOptions } from "./verify-smtp";
@@ -92,7 +92,7 @@ export const verifyEmail = async (email: string, options: EmailVerificationOptio
                 warnings.push("Email is from a disposable email service");
             }
         } catch {
-            // disposable-domains not installed, skip check
+            // Error checking disposable email, skip check
         }
     }
 

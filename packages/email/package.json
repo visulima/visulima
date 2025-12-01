@@ -227,9 +227,9 @@
             "types": "./dist/utils/cache.d.ts",
             "default": "./dist/utils/cache.js"
         },
-        "./validation/is-disposable-email": {
-            "types": "./dist/utils/validation/is-disposable-email.d.ts",
-            "default": "./dist/utils/validation/is-disposable-email.js"
+        "./validation/disposable-email-domains": {
+            "types": "./dist/utils/validation/disposable-email-domains.d.ts",
+            "default": "./dist/utils/validation/disposable-email-domains.js"
         },
         "./validation/validate-email": {
             "types": "./dist/utils/validation/validate-email.d.ts",
