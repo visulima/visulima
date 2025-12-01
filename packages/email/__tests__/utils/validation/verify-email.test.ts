@@ -32,7 +32,7 @@ describe(verifyEmail, () => {
     it("should detect disposable emails when enabled", async () => {
         expect.assertions(3);
 
-        const result = await verifyEmail("user@mailinator.com", {
+        const result = await verifyEmail("user@trashmail.com", {
             checkDisposable: true,
             checkMx: false,
             checkRoleAccount: false,

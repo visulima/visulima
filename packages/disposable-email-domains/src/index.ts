@@ -1,36 +1,42 @@
 import { readFileSync } from "node:fs";
+import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import repositoriesConfig from "../scripts/config/repositories.json" with { type: "json" };
+const require = createRequire(import.meta.url);
 
 /**
  * Cached domains data to avoid repeated processing.
  */
-let cachedDomains: DomainEntry[] | undefined;
+let cachedDomains: string[] | undefined;
 
 /**
  * Cached Set of domain strings for O(1) lookup performance.
  */
 let cachedDomainSet: Set<string> | undefined;
 
+/**
+ * Cached Set of whitelisted common email provider domains.
+ */
+let whitelistedDomains: Set<string> | undefined;
+
 const filename = fileURLToPath(import.meta.url);
 const dirnamePath = dirname(filename);
 
 /**
- * Gets all domain entries from domains.json.
+ * Gets all domain strings from domains.json.
  * Caches the result for subsequent calls.
- * @returns Array of domain entries.
+ * @returns Array of domain strings.
  */
-const getDomains = (): DomainEntry[] => {
+const getDomains = (): string[] => {
     if (cachedDomains === undefined) {
         try {
             const domainsPath = join(dirnamePath, "..", "dist", "domains.json");
 
             const domainsContent = readFileSync(domainsPath, "utf8");
-            const parsed = JSON.parse(domainsContent) as DomainEntry[];
+            const parsed = JSON.parse(domainsContent);
 
-            cachedDomains = Array.isArray(parsed) ? parsed : [];
+            cachedDomains = Array.isArray(parsed) ? (parsed as string[]) : [];
         } catch {
             cachedDomains = [];
         }
@@ -48,107 +54,64 @@ const getDomainSet = (): Set<string> => {
     if (cachedDomainSet === undefined) {
         const domains = getDomains();
 
-        cachedDomainSet = new Set(domains.map((entry) => entry.domain));
+        cachedDomainSet = new Set(domains);
     }
 
     return cachedDomainSet;
 };
 
 /**
- * Repository configuration from repositories.json.
+ * Gets a Set of whitelisted common email provider domains.
+ * Caches the result for subsequent calls.
+ * @returns Set of whitelisted domain strings.
  */
-export interface RepositoryConfig {
-    /**
-     * Blocklist files to process.
-     */
-    blocklist_files?: string[];
+const getWhitelistedDomains = (): Set<string> => {
+    if (whitelistedDomains === undefined) {
+        try {
+            // eslint-disable-next-line import/no-extraneous-dependencies -- Dev dependency used at runtime
+            const commonProviders = require("email-providers/common.json") as string[];
 
-    /**
-     * Repository description.
-     */
-    description?: string;
+            whitelistedDomains = Array.isArray(commonProviders) ? new Set(commonProviders.map((domain) => domain.toLowerCase().trim())) : new Set();
+        } catch {
+            whitelistedDomains = new Set();
+        }
+    }
 
-    /**
-     * The repository name.
-     */
-    name: string;
-
-    /**
-     * Priority level (lower is higher priority).
-     */
-    priority?: number;
-
-    /**
-     * The repository type.
-     */
-    type: string;
-
-    /**
-     * The repository URL.
-     */
-    url: string;
-}
-
-/**
- * Domain entry structure from domains.json.
- */
-export interface DomainEntry {
-    /**
-     * The disposable email domain.
-     */
-    domain: string;
-
-    /**
-     * Date when the domain was first seen.
-     */
-    firstSeen: string;
-
-    /**
-     * Date when the domain was last seen.
-     */
-    lastSeen: string;
-
-    /**
-     * Array of source repository URLs that contributed this domain.
-     */
-    sources: string[];
-}
-
-/**
- * Type representing valid repository names from the config.
- */
-export type RepositoryName = (typeof repositoriesConfig)[number]["name"];
-
-/**
- * Type representing valid repository URLs from the config.
- */
-export type RepositoryUrl = (typeof repositoriesConfig)[number]["url"];
-
-/**
- * Type representing a valid source identifier (name or URL).
- */
-export type RepositorySource = RepositoryName | RepositoryUrl;
-
-/**
- * Gets all disposable email domains as a simple array of strings.
- * @returns Array of domain strings.
- */
-export const getDomainList = (): string[] => getDomains().map((entry) => entry.domain);
+    return whitelistedDomains;
+};
 
 /**
  * Checks if a domain is in the disposable email domains list.
+ * Supports wildcard matching by checking parent domains (e.g., subdomain.33mail.com matches 33mail.com).
+ * Common email providers are whitelisted and never considered disposable.
  * @param domain The domain to check (case-insensitive).
  * @param customDomains Optional set of additional disposable domains to check.
  * @returns True if the domain is disposable, false otherwise.
  */
-export const isDisposableDomain = (domain: string, customDomains?: Set<string>): boolean => {
+const isDisposableDomain = (domain: string, customDomains?: Set<string>): boolean => {
     if (!domain || typeof domain !== "string") {
         return false;
     }
 
     const normalizedDomain = domain.toLowerCase().trim();
+    const domainParts = normalizedDomain.split(".");
 
-    // Check custom domains first if provided
+    // Check whitelist first - common email providers are never disposable
+    const whitelist = getWhitelistedDomains();
+
+    if (whitelist.has(normalizedDomain)) {
+        return false;
+    }
+
+    // Check parent domains against whitelist
+    for (let i = 1; i < domainParts.length; i += 1) {
+        const parentDomain = domainParts.slice(i).join(".");
+
+        if (whitelist.has(parentDomain)) {
+            return false;
+        }
+    }
+
     if (customDomains && customDomains.has(normalizedDomain)) {
         return true;
     }
@@ -156,23 +119,65 @@ export const isDisposableDomain = (domain: string, customDomains?: Set<string>):
     // Use Set for O(1) lookup performance
     const domainSet = getDomainSet();
 
-    return domainSet.has(normalizedDomain);
+    // Check exact match first
+    if (domainSet.has(normalizedDomain)) {
+        return true;
+    }
+
+    // Check parent domains for wildcard matching (e.g., subdomain.33mail.com should match 33mail.com)
+    for (let i = 1; i < domainParts.length; i += 1) {
+        const parentDomain = domainParts.slice(i).join(".");
+
+        if (domainSet.has(parentDomain)) {
+            return true;
+        }
+    }
+
+    return false;
 };
 
 /**
- * Gets metadata for a specific domain.
- * @param domain The domain to look up (case-insensitive).
- * @returns Domain entry if found, undefined otherwise.
+ * Checks if a domain is whitelisted (common email provider).
+ * @param normalizedDomain The normalized domain to check.
+ * @param domainParts The domain parts array.
+ * @returns True if the domain is whitelisted.
  */
-export const getDomainMetadata = (domain: string): DomainEntry | undefined => {
-    if (!domain || typeof domain !== "string") {
-        return undefined;
+const isWhitelistedDomain = (normalizedDomain: string, domainParts: string[]): boolean => {
+    const whitelist = getWhitelistedDomains();
+
+    if (whitelist.has(normalizedDomain)) {
+        return true;
     }
 
-    const normalizedDomain = domain.toLowerCase().trim();
-    const domains = getDomains();
+    return domainParts.slice(1).some((_, index) => {
+        const parentDomain = domainParts.slice(index + 1).join(".");
 
-    return domains.find((entry) => entry.domain === normalizedDomain);
+        return whitelist.has(parentDomain);
+    });
+};
+
+/**
+ * Checks if a domain is in the disposable set (excluding whitelist).
+ * @param normalizedDomain The normalized domain to check.
+ * @param domainParts The domain parts array.
+ * @param domainSet The set of disposable domains.
+ * @param customDomains Optional set of additional disposable domains.
+ * @returns True if the domain is disposable.
+ */
+const checkDisposableDomain = (normalizedDomain: string, domainParts: string[], domainSet: Set<string>, customDomains?: Set<string>): boolean => {
+    if (customDomains && customDomains.has(normalizedDomain)) {
+        return true;
+    }
+
+    if (domainSet.has(normalizedDomain)) {
+        return true;
+    }
+
+    return domainParts.slice(1).some((_, index) => {
+        const parentDomain = domainParts.slice(index + 1).join(".");
+
+        return domainSet.has(parentDomain);
+    });
 };
 
 /**
@@ -181,7 +186,7 @@ export const getDomainMetadata = (domain: string): DomainEntry | undefined => {
  * @param customDomains Optional set of additional disposable domains to check.
  * @returns True if the email is from a disposable domain, false otherwise.
  */
-export const isDisposableEmail = (email: string, customDomains?: Set<string>): boolean => {
+const isDisposableEmail = (email: string, customDomains?: Set<string>): boolean => {
     if (!email || typeof email !== "string") {
         return false;
     }
@@ -203,169 +208,12 @@ export const isDisposableEmail = (email: string, customDomains?: Set<string>): b
 };
 
 /**
- * Searches for domains matching a pattern.
- * @param pattern Search pattern (case-insensitive, supports partial matches).
- * @returns Array of matching domain entries.
- */
-export const searchDomains = (pattern: string): DomainEntry[] => {
-    if (!pattern || typeof pattern !== "string") {
-        return [];
-    }
-
-    const normalizedPattern = pattern.toLowerCase().trim();
-    const domains = getDomains();
-
-    return domains.filter((entry) => entry.domain.includes(normalizedPattern));
-};
-
-/**
- * Gets the total count of disposable email domains.
- * @returns Number of domains in the list.
- */
-export const getDomainCount = (): number => getDomains().length;
-
-/**
- * Gets all domain entries with full metadata.
- * @returns Array of all domain entries.
- */
-export const getAllDomains = (): DomainEntry[] => [...getDomains()];
-
-/**
- * Gets domains that were seen from a specific source.
- * @param source The source repository name or URL to filter by.
- * @returns Array of domain entries from the specified source.
- */
-export const getDomainsBySource = (source: RepositorySource): DomainEntry[] => {
-    if (!source || typeof source !== "string") {
-        return [];
-    }
-
-    const normalizedSource = source.toLowerCase().trim();
-    const domains = getDomains();
-
-    // Find repository if source matches a repository name or URL
-    const repository = repositoriesConfig.find((repo) => repo.name.toLowerCase() === normalizedSource || repo.url.toLowerCase() === normalizedSource);
-
-    // If repository found, match against its URL (sources are stored as URLs)
-    // Otherwise, do a partial match for flexibility
-    if (repository) {
-        const searchUrl = repository.url.toLowerCase();
-
-        return domains.filter((entry) => entry.sources.some((s) => s.toLowerCase() === searchUrl));
-    }
-
-    return domains.filter((entry) => entry.sources.some((s) => s.toLowerCase().includes(normalizedSource)));
-};
-
-/**
- * Statistics about the disposable email domains.
- */
-export interface DomainStatistics {
-    /**
-     * Date range of when domains were first seen.
-     */
-    dateRange: {
-        /**
-         * Earliest first seen date.
-         */
-        earliest: string | undefined;
-
-        /**
-         * Latest first seen date.
-         */
-        latest: string | undefined;
-    };
-
-    /**
-     * Count of domains per source.
-     */
-    domainsPerSource: Record<string, number>;
-
-    /**
-     * Total number of domains.
-     */
-    totalDomains: number;
-
-    /**
-     * Number of unique sources.
-     */
-    uniqueSources: number;
-}
-
-/**
- * Gets statistics about the disposable email domains.
- * @returns Statistics object with domain counts and metadata.
- */
-export const getStatistics = (): DomainStatistics => {
-    const domains = getDomains();
-    const sourceCounts: Record<string, number> = {};
-    const firstSeenDates: string[] = [];
-
-    for (const entry of domains) {
-        // Count domains per source
-        for (const source of entry.sources) {
-            sourceCounts[source] = (sourceCounts[source] ?? 0) + 1;
-        }
-
-        // Collect first seen dates
-        if (entry.firstSeen) {
-            firstSeenDates.push(entry.firstSeen);
-        }
-    }
-
-    // Sort dates to find earliest and latest
-    const sortedDates = firstSeenDates.toSorted();
-
-    return {
-        dateRange: {
-            earliest: sortedDates[0],
-            latest: sortedDates[sortedDates.length - 1],
-        },
-        domainsPerSource: sourceCounts,
-        totalDomains: domains.length,
-        uniqueSources: Object.keys(sourceCounts).length,
-    };
-};
-
-/**
- * Checks multiple domains at once.
- * @param domains Array of domains to check.
- * @param customDomains Optional set of additional disposable domains to check.
- * @returns Map of domain to boolean indicating if it's disposable.
- */
-export const areDisposableDomains = (domains: string[], customDomains?: Set<string>): Map<string, boolean> => {
-    const results = new Map<string, boolean>();
-    const domainSet = getDomainSet();
-
-    for (const domain of domains) {
-        if (!domain || typeof domain !== "string") {
-            results.set(domain, false);
-
-            continue;
-        }
-
-        const normalizedDomain = domain.toLowerCase().trim();
-
-        // Check custom domains first if provided
-        if (customDomains && customDomains.has(normalizedDomain)) {
-            results.set(domain, true);
-
-            continue;
-        }
-
-        results.set(domain, domainSet.has(normalizedDomain));
-    }
-
-    return results;
-};
-
-/**
  * Checks multiple email addresses at once.
  * @param emails Array of email addresses to check.
  * @param customDomains Optional set of additional disposable domains to check.
  * @returns Map of email to boolean indicating if it's disposable.
  */
-export const areDisposableEmails = (emails: string[], customDomains?: Set<string>): Map<string, boolean> => {
+const areDisposableEmails = (emails: string[], customDomains?: Set<string>): Map<string, boolean> => {
     const results = new Map<string, boolean>();
     const domainSet = getDomainSet();
 
@@ -394,16 +242,21 @@ export const areDisposableEmails = (emails: string[], customDomains?: Set<string
         }
 
         const normalizedDomain = domain.toLowerCase().trim();
+        const domainParts = normalizedDomain.split(".");
 
-        // Check custom domains first if provided
-        if (customDomains && customDomains.has(normalizedDomain)) {
-            results.set(email, true);
+        // Check whitelist first - common email providers are never disposable
+        if (isWhitelistedDomain(normalizedDomain, domainParts)) {
+            results.set(email, false);
 
             continue;
         }
 
-        results.set(email, domainSet.has(normalizedDomain));
+        const isDisposable = checkDisposableDomain(normalizedDomain, domainParts, domainSet, customDomains);
+
+        results.set(email, isDisposable);
     }
 
     return results;
 };
+
+export { areDisposableEmails, isDisposableEmail };
