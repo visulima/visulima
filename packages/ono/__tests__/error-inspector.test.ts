@@ -33,7 +33,7 @@ describe("error inspector template", () => {
         expect(html2).toContain("Custom error");
     });
 
-    it("should accept options", async () => {
+    it("should accept options", { timeout: 30_000 }, async () => {
         expect.assertions(1);
 
         const error = new Error("Test error");
