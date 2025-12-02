@@ -138,7 +138,7 @@ jobs:
               run: |
                   files="${{ steps.files.outputs.all_changed_files }}";
 
-                  if [[ ${{ matrix.os }} == "ubuntu-latest" && ${{ matrix.node_version }} == 22 ]]; then
+                  if [[ ${{ matrix.os }} == "ubuntu-latest" && ${{ matrix.node_version }} == 22 && ${{ !matrix.deno_version }} && ${{ !matrix.bun_version }} ]]; then
                       pnpm run test:affected:coverage --files=${files//\\/\/}
                   else
                       pnpm run test:affected --files=${files//\\/\/}
@@ -146,13 +146,13 @@ jobs:
 
             - name: "Install playwright in the needed packages"
               shell: "bash"
-              if: "(matrix.os == 'ubuntu-latest' && matrix.node_version == 22) || (matrix.node_version == 22 && matrix.os == 'macos-latest')"
+              if: "((matrix.os == 'ubuntu-latest' && matrix.node_version == 22) || (matrix.node_version == 22 && matrix.os == 'macos-latest')) && !matrix.deno_version && !matrix.bun_version"
               run: |
                   pnpm --filter "inspector" exec playwright install
 
             - name: "Run chrome browser tests"
               shell: "bash"
-              if: "matrix.os == 'ubuntu-latest' && matrix.node_version == 22"
+              if: "matrix.os == 'ubuntu-latest' && matrix.node_version == 22 && !matrix.deno_version && !matrix.bun_version"
               run: |
                   files="${{ steps.files.outputs.all_changed_files }}";
 
@@ -160,7 +160,7 @@ jobs:
 
             - name: "Run firefox browser tests"
               shell: "bash"
-              if: "matrix.os == 'ubuntu-latest' && matrix.node_version == 22"
+              if: "matrix.os == 'ubuntu-latest' && matrix.node_version == 22 && !matrix.deno_version && !matrix.bun_version"
               run: |
                   files="${{ steps.files.outputs.all_changed_files }}";
 
@@ -168,7 +168,7 @@ jobs:
 
             - name: "Run webkit browser tests"
               shell: "bash"
-              if: "matrix.os == 'macos-latest' && matrix.node_version == 22"
+              if: "matrix.os == 'macos-latest' && matrix.node_version == 22 && !matrix.deno_version && !matrix.bun_version"
               run: |
                   files="${{ steps.files.outputs.all_changed_files }}";
 
@@ -179,7 +179,7 @@ jobs:
               run: "tar -cf - .nx/cache | lz4 > /tmp/nx_cache.tar.lz4" # compress nx cache
 
             - name: "Upload code coverage to codecov"
-              if: "matrix.os == 'ubuntu-latest' && matrix.node_version == 22"
+              if: "matrix.os == 'ubuntu-latest' && matrix.node_version == 22 && !matrix.deno_version && !matrix.bun_version"
               uses: "anolilab/workflows/step/codecov@main"
               with:
                   run-lint: "needs.files-changed.outputs.codecov == 'true'"
