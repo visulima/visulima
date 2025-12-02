@@ -1,14 +1,14 @@
-import { getVitestConfig } from "../../tools/get-vitest-config";
-
-// Polyfill localStorage BEFORE any modules are imported
-// This must run at config load time, before MSW imports
+// Polyfill localStorage for Node.js environments (required by MSW)
 // Node.js 25 has localStorage but it's incomplete - it doesn't have getItem method
+// We need to replace it with a proper polyfill before MSW imports
 const storage = new Map<string, string>();
 
+// Delete the incomplete implementation if it exists
 if (globalThis.localStorage) {
     delete (globalThis as { localStorage?: unknown }).localStorage;
 }
 
+// Set up proper localStorage polyfill
 globalThis.localStorage = {
     getItem: (key: string) => storage.get(key) ?? null,
     setItem: (key: string, value: string) => {
@@ -29,10 +29,3 @@ globalThis.localStorage = {
     },
 } as Storage;
 
-const config = getVitestConfig({
-    test: {
-        setupFiles: ["./__tests__/setup.ts"],
-    },
-});
-
-export default config;

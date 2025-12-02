@@ -1,6 +1,6 @@
 {
     "name": "@visulima/bytes",
-    "version": "2.0.5",
+    "version": "3.0.0-alpha.1",
     "description": "Utility functions to make dealing with Uint8Arrays easier",
     "keywords": [
         "visulima",
@@ -86,7 +86,7 @@
         "vitest": "^4.0.14"
     },
     "engines": {
-        "node": ">=20.19 <=25.x"
+        "node": ">=22.12 <=25.x"
     },
     "publishConfig": {
         "access": "public",

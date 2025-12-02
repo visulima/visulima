@@ -1,6 +1,6 @@
 {
     "name": "@visulima/storage",
-    "version": "0.0.0",
+    "version": "1.0.0-alpha.1",
     "exports": {
         ".": "./src/index.ts",
         "./provider/azure": "./src/storage/azure/index.ts",
