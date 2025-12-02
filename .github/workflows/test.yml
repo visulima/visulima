@@ -52,7 +52,7 @@ jobs:
 
     test:
         name: >-
-          Test (node-${{ matrix.node_version }}, ${{ matrix.os }}${{ matrix.deno_version && format(', deno %s', matrix.deno_version) || '' }}${{ matrix.bun_version && format(', bun %s', matrix.bun_version) || '' }})
+          Test (node-${{ matrix.node_version }}, ${{ matrix.os }}${{ matrix.deno_version && format(', deno {0}', matrix.deno_version) || '' }}${{ matrix.bun_version && format(', bun {0}', matrix.bun_version) || '' }})
         if: "needs.files-changed.outputs.packages == 'true'"
         needs: "files-changed"
         strategy:
