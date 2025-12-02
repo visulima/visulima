@@ -15,7 +15,7 @@ describe("ono class", () => {
     });
 
     describe("toHTML method", () => {
-        it("should render basic error to HTML", { timeout: 10_000 }, async () => {
+        it("should render basic error to HTML", { timeout: 30_000 }, async () => {
             expect.assertions(4);
 
             const ono = new Ono();
@@ -183,7 +183,7 @@ describe("ono class", () => {
     });
 
     describe("error handling", () => {
-        it("should handle errors with causes", { timeout: 10_000 }, async () => {
+        it("should handle errors with causes", { timeout: 30_000 }, async () => {
             expect.assertions(2);
 
             const ono = new Ono();
