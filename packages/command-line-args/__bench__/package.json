@@ -1,5 +1,5 @@
 {
-    "name": "@visulima/command-line-args-bench",
+    "name": "command-line-args-bench",
     "version": "0.0.0",
     "private": true,
     "description": "Benchmark suite for command-line-args",

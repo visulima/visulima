@@ -98,7 +98,7 @@
         "zeptomatch": "^2.1.0"
     },
     "engines": {
-        "node": ">=20.19 <=25.x"
+        "node": ">=22.12 <=25.x"
     },
     "os": [
         "darwin",

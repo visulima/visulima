@@ -161,7 +161,7 @@
         "vue": ">=3.0.0"
     },
     "engines": {
-        "node": ">=22.21 <=25.*"
+        "node": ">=22.21 <=25.x"
     },
     "publishConfig": {
         "access": "public",

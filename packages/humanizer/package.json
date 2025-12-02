@@ -112,7 +112,7 @@
         "vitest": "^4.0.14"
     },
     "engines": {
-        "node": ">=20.19 <=25.x"
+        "node": ">=22.12 <=25.x"
     },
     "publishConfig": {
         "access": "public",
