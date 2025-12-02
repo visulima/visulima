@@ -1,6 +1,6 @@
 {
     "name": "@visulima/email",
-    "version": "1.0.0-alpha.1",
+    "version": "1.0.0-alpha.2",
     "description": "A comprehensive email library with multi-provider support, crypto utilities, and template engines",
     "keywords": [
         "visulima",
@@ -280,7 +280,7 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@visulima/disposable-email-domains": "workspace:*",
+        "@visulima/disposable-email-domains": "1.0.0-alpha.1",
         "html-to-text": "^9.0.5",
         "ical-generator": "^9.0.0",
         "lru-cache": "^11.2.2",
