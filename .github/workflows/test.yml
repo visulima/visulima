@@ -66,6 +66,12 @@ jobs:
                       node_version: "22"
                     - os: "windows-latest"
                       node_version: "22"
+                    - os: "ubuntu-latest"
+                      node_version: "22"
+                      bun_version: "latest"
+                    - os: "ubuntu-latest"
+                      node_version: "22"
+                      deno_version: "lts"
             fail-fast: false
         runs-on: "${{ matrix.os }}"
         env:
@@ -99,7 +105,20 @@ jobs:
                   install-bun: "matrix.os == 'ubuntu-latest'"
                   skip-playwright: "(matrix.node_version != 22 && matrix.os != 'ubuntu-latest') || (matrix.node_version != 22 && matrix.os != 'macos-latest')"
 
-            # Temporary solution until Nx solve this https://github.com/nrwl/nx/issues/22259
+            - name: "Setup Deno"
+              if: "matrix.os == 'ubuntu-latest' && matrix.node_version == 22 && matrix.deno_version"
+              uses: "denoland/setup-deno@e95548e56dfa95d4e1a28d6f422fafe75c4c26fb" # v2.0.3
+              with:
+                  deno-version: "${{ matrix.deno_version }}"
+                  cache: true
+            
+            - name: "Setup Bun"
+              if: "matrix.os == 'ubuntu-latest' && matrix.node_version == 22 && matrix.bun_version"
+              uses: "oven-sh/setup-bun@735343b667d3e6f658f44d0eca948eb6282f2b76" # v2.0.2
+              with:
+                  bun-version: "${{ matrix.bun_version }}"
+
+                  # Temporary solution until Nx solve this https://github.com/nrwl/nx/issues/22259
             - name: "Get changed files"
               id: "files"
               uses: "tj-actions/changed-files@c65cd883420fd2eb864698a825fc4162dd94482c" # v44.5.7
@@ -169,132 +188,11 @@ jobs:
                   affected-files: "${{ steps.files.outputs.all_changed_files }}"
                   exclude-affected-projects: "pail-bench,redact-bench,colorize-bench,inspector-bench,docs,storybook"
 
-    test-deno:
-        name: "Test (deno)"
-        if: "needs.files-changed.outputs.packages == 'true'"
-        needs: "files-changed"
-        runs-on: "ubuntu-latest"
-        steps:
-            - name: "Harden Runner"
-              uses: "step-security/harden-runner@f4a75cfd619ee5ce8d5b864b0d183aff3c69b55a" # v2.13.1
-              with:
-                  egress-policy: "audit"
-
-            - name: "Git checkout ${{ env.HEAD_REPOSITORY }}:${{ env.HEAD_REF }}"
-              uses: "actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955" # v4.3.0
-              env:
-                  GIT_COMMITTER_NAME: "GitHub Actions Shell"
-                  GIT_AUTHOR_NAME: "GitHub Actions Shell"
-                  EMAIL: "github-actions[bot]@users.noreply.github.com"
-              with:
-                  fetch-depth: 0
-
-            - name: "Derive appropriate SHAs for base and head for `nx affected` commands"
-              id: "setSHAs"
-              uses: "nrwl/nx-set-shas@826660b82addbef3abff5fa871492ebad618c9e1" # v4
-
-            - name: "Setup Deno"
-              uses: "denoland/setup-deno@v1"
-              with:
-                  deno-version: "v2.x"
-
-            - name: "Setup pnpm"
-              uses: "pnpm/action-setup@v4"
-              with:
-                  version: 10
-
-            - name: "Setup Node.js"
-              uses: "actions/setup-node@v4"
-              with:
-                  node-version: "22"
-                  cache: "pnpm"
-
-            - name: "Get changed files"
-              id: "files"
-              uses: "tj-actions/changed-files@c65cd883420fd2eb864698a825fc4162dd94482c" # v44.5.7
-              with:
-                  files_ignore_from_source_file: ".github/ignore-files-for-nx-affected.yml"
-                  base_sha: "${{ steps.setSHAs.outputs.base }}"
-                  separator: ","
-
-            - name: "Install dependencies"
-              run: pnpm install
-
-            - name: "Build"
-              shell: "bash"
-              run: |
-                  files="${{ steps.files.outputs.all_changed_files }}";
-                  pnpm run build:affected:packages --files=${files//\\/\/}
-
-            - name: "Run tests with Deno"
-              shell: "bash"
-              run: |
-                  files="${{ steps.files.outputs.all_changed_files }}";
-                  # Run tests using Deno with Node.js compatibility mode
-                  DENO_NODE_COMPAT=1 deno run --allow-all --unstable --compat --node-modules-dir node_modules/.bin/pnpm run test:affected --files=${files//\\/\/} || pnpm run test:affected --files=${files//\\/\/}
-
-    test-bun:
-        name: "Test (bun)"
-        if: "needs.files-changed.outputs.packages == 'true'"
-        needs: "files-changed"
-        runs-on: "ubuntu-latest"
-        steps:
-            - name: "Harden Runner"
-              uses: "step-security/harden-runner@f4a75cfd619ee5ce8d5b864b0d183aff3c69b55a" # v2.13.1
-              with:
-                  egress-policy: "audit"
-
-            - name: "Git checkout ${{ env.HEAD_REPOSITORY }}:${{ env.HEAD_REF }}"
-              uses: "actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955" # v4.3.0
-              env:
-                  GIT_COMMITTER_NAME: "GitHub Actions Shell"
-                  GIT_AUTHOR_NAME: "GitHub Actions Shell"
-                  EMAIL: "github-actions[bot]@users.noreply.github.com"
-              with:
-                  fetch-depth: 0
-
-            - name: "Derive appropriate SHAs for base and head for `nx affected` commands"
-              id: "setSHAs"
-              uses: "nrwl/nx-set-shas@826660b82addbef3abff5fa871492ebad618c9e1" # v4
-
-            - name: "Setup Bun"
-              uses: "oven-sh/setup-bun@v2"
-              with:
-                  bun-version: "latest"
-
-            - name: "Setup pnpm"
-              uses: "pnpm/action-setup@v4"
-              with:
-                  version: 10
-
-            - name: "Get changed files"
-              id: "files"
-              uses: "tj-actions/changed-files@c65cd883420fd2eb864698a825fc4162dd94482c" # v44.5.7
-              with:
-                  files_ignore_from_source_file: ".github/ignore-files-for-nx-affected.yml"
-                  base_sha: "${{ steps.setSHAs.outputs.base }}"
-                  separator: ","
-
-            - name: "Install dependencies"
-              run: pnpm install
-
-            - name: "Build"
-              shell: "bash"
-              run: |
-                  files="${{ steps.files.outputs.all_changed_files }}";
-                  pnpm run build:affected:packages --files=${files//\\/\/}
-
-            - name: "Run tests with Bun"
-              shell: "bash"
-              run: |
-                  files="${{ steps.files.outputs.all_changed_files }}";
-                  bun run pnpm run test:affected --files=${files//\\/\/}
-
     # This check runs once all dependant jobs have passed
     # It symbolizes that all required checks have successfully passed (Or skipped)
     # This check is the only required GitHub check
     test-required-check:
-        needs: ["files-changed", "test", "test-deno", "test-bun"]
+        needs: ["files-changed", "test"]
         name: "Check Test Run"
         # This is necessary since a failed/skipped dependent job would cause this job to be skipped
         if: "always() && ((needs.test.result == 'success' || needs.test.result == 'skipped') && (needs.test-deno.result == 'success' || needs.test-deno.result == 'skipped') && (needs.test-bun.result == 'success' || needs.test-bun.result == 'skipped'))"
