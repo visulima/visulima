@@ -51,7 +51,8 @@ jobs:
                   filters: ".github/file-filters.yml"
 
     test:
-        name: "Test (node-${{ matrix.node_version }}, ${{ matrix.os }})"
+        name: >-
+          Test (node-${{ matrix.node_version }}, ${{ matrix.os }}${{ matrix.deno_version && format(', deno %s', matrix.deno_version) || '' }}${{ matrix.bun_version && format(', bun %s', matrix.bun_version) || '' }})
         if: "needs.files-changed.outputs.packages == 'true'"
         needs: "files-changed"
         strategy:
