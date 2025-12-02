@@ -99,6 +99,7 @@ onlyBuiltDependencies:
 
 overrides:
   '@eslint/plugin-kit@<0.3.4': '>=0.4.0'
+  '@modelcontextprotocol/sdk@<1.24.0': '>=1.24.0'
   axios@<1.12.0: '>=1.12.2'
   body-parser@>=2.2.0 <2.2.1: '>=2.2.1'
   chrono-node@<2.2.4: '>=2.9.0'
