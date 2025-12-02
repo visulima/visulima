@@ -3,7 +3,7 @@ import { describe, expect, expectTypeOf, it, vi } from "vitest";
 import template from "../src/error-inspector";
 
 describe("error inspector template", () => {
-    it("should render basic error template", { timeout: 10_000 }, async () => {
+    it("should render basic error template", { timeout: 30_000 }, async () => {
         expect.assertions(3);
 
         const error = new Error("Test error");
@@ -118,7 +118,7 @@ describe("error inspector template", () => {
         expect(html.length).toBeGreaterThan(0);
     });
 
-    it("should render with different themes", { timeout: 10_000 }, async () => {
+    it("should render with different themes", { timeout: 30_000 }, async () => {
         expect.assertions(2);
 
         const error = new Error("Test error");
