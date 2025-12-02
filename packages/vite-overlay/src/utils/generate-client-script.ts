@@ -1,12 +1,14 @@
 import { MESSAGE_TYPE } from "../constants";
+import type { BalloonConfig } from "../types";
 
 /**
  * Generates the client-side script for error interception and reporting.
  * @param mode The current Vite mode (development/production)
  * @param forwardedConsoleMethods Array of console method names to forward
+ * @param balloonConfig Balloon configuration options (optional)
  * @returns The client-side JavaScript code as a string
  */
-const generateClientScript = (mode: string, forwardedConsoleMethods: string[]): string => {
+const generateClientScript = (mode: string, forwardedConsoleMethods: string[], balloonConfig?: BalloonConfig): string => {
     const consoleInterceptors = forwardedConsoleMethods
         .map((method) => {
             const capitalizedMethod = method.charAt(0).toUpperCase() + method.slice(1);
@@ -156,7 +158,30 @@ window.addEventListener("unhandledrejection", function (evt) {
     sendError(evt.reason);
 });
 
-window.__flameSendError = sendError;
+// Expose overlay API for manual control
+window.__visulima_overlay__ = {
+    open: function() {
+        const overlay = globalThis.__v_o__current;
+        if (overlay && overlay.__elements?.root) {
+            overlay.__elements.root.classList.remove("hidden");
+            if (typeof overlay._saveBalloonState === "function") {
+                overlay._saveBalloonState("overlay", "open");
+            }
+        }
+    },
+    close: function() {
+        const overlay = globalThis.__v_o__current;
+        if (overlay && typeof overlay.close === "function") {
+            overlay.close();
+        }
+    },
+    // Get the current overlay instance if available
+    getInstance: function() {
+        return globalThis.__v_o__current || null;
+    },
+    // Send/report an error to the overlay
+    sendError: sendError
+};
 
 ${consoleInterceptors}
 `;
