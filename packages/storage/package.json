@@ -1,6 +1,6 @@
 {
     "name": "@visulima/storage",
-    "version": "0.0.0",
+    "version": "1.0.0-alpha.1",
     "description": "Visulima upload - Store files in a web-accessible location via a simplified API. Can automatically scale and rotate images. Includes S3, Azure, GCS and local filesystem-based backends with the most convenient features of each.",
     "keywords": [
         "anolilab",
@@ -205,7 +205,7 @@
     "dependencies": {
         "@remix-run/multipart-parser": "^0.14.0",
         "@sindresorhus/fnv1a": "3.1.0",
-        "@visulima/pagination": "workspace:*",
+        "@visulima/pagination": "4.0.5",
         "file-type": "21.1.1",
         "lru-cache": "^11.2.2",
         "mime": "^4.1.0",
@@ -237,10 +237,10 @@
         "@types/supertest": "^6.0.3",
         "@types/type-is": "^1.6.7",
         "@vercel/blob": "^2.0.0",
-        "@visulima/fs": "workspace:*",
-        "@visulima/humanizer": "workspace:*",
+        "@visulima/fs": "4.1.0",
+        "@visulima/humanizer": "2.0.5",
         "@visulima/packem": "2.0.0-alpha.40",
-        "@visulima/path": "workspace:*",
+        "@visulima/path": "2.0.5",
         "@vitest/coverage-v8": "^4.0.14",
         "@vitest/ui": "^4.0.14",
         "aws-crt": "^1.27.5",
