@@ -1,0 +1,359 @@
+{
+    "name": "@visulima/storage",
+    "version": "1.0.0-alpha.1",
+    "description": "Visulima upload - Store files in a web-accessible location via a simplified API. Can automatically scale and rotate images. Includes S3, Azure, GCS and local filesystem-based backends with the most convenient features of each.",
+    "keywords": [
+        "anolilab",
+        "visulima",
+        "express",
+        "upload",
+        "uploads",
+        "file",
+        "files",
+        "chunk",
+        "resumable",
+        "chunked-uploads",
+        "tus",
+        "form",
+        "post",
+        "multipart",
+        "form-data",
+        "formdata",
+        "middleware",
+        "better-upload",
+        "better-uploads",
+        "s3",
+        "azure",
+        "aws",
+        "gcs",
+        "google",
+        "storage",
+        "file-upload",
+        "cloudflare-r2",
+        "digitalocean-spaces",
+        "google-cloud-storage",
+        "minio",
+        "presigned-urls",
+        "nextjs",
+        "remix",
+        "sveltekit",
+        "nuxt",
+        "astro",
+        "react",
+        "aws-s3",
+        "typescript",
+        "hono",
+        "fastify",
+        "elysia",
+        "framework-agnostic",
+        "edge-runtime",
+        "cloudflare-workers",
+        "vercel-edge",
+        "serverless",
+        "universal",
+        "enterprise-security",
+        "multipart-upload",
+        "chunked-upload",
+        "upload-library",
+        "uploadthing"
+    ],
+    "homepage": "https://visulima.com/packages/uploads",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/visulima/visulima.git",
+        "directory": "packages/uploads"
+    },
+    "funding": [
+        {
+            "type": "github",
+            "url": "https://github.com/sponsors/prisis"
+        },
+        {
+            "type": "consulting",
+            "url": "https://anolilab.com/support"
+        }
+    ],
+    "license": "MIT",
+    "author": {
+        "name": "Daniel Bannert",
+        "email": "d.bannert@anolilab.de"
+    },
+    "sideEffects": false,
+    "type": "module",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js"
+        },
+        "./provider/azure": {
+            "types": "./dist/storage/azure/index.d.ts",
+            "import": "./dist/storage/azure/index.js"
+        },
+        "./provider/aws": {
+            "types": "./dist/storage/aws/index.d.ts",
+            "import": "./dist/storage/aws/index.js"
+        },
+        "./provider/aws/s3/clients": {
+            "types": "./dist/storage/aws/clients/index.d.ts",
+            "import": "./dist/storage/aws/clients/index.js"
+        },
+        "./provider/aws-light": {
+            "types": "./dist/storage/aws-light/index.d.ts",
+            "import": "./dist/storage/aws-light/index.js"
+        },
+        "./provider/gcs": {
+            "types": "./dist/storage/gcs/index.d.ts",
+            "import": "./dist/storage/gcs/index.js"
+        },
+        "./provider/vercel": {
+            "types": "./dist/storage/vercel-blob/index.d.ts",
+            "import": "./dist/storage/vercel-blob/index.js"
+        },
+        "./provider/netlify": {
+            "types": "./dist/storage/netlify-blob/index.d.ts",
+            "import": "./dist/storage/netlify-blob/index.js"
+        },
+        "./provider/local": {
+            "types": "./dist/storage/local/index.d.ts",
+            "import": "./dist/storage/local/index.js"
+        },
+        "./openapi": {
+            "types": "./dist/openapi/index.d.ts",
+            "import": "./dist/openapi/index.js"
+        },
+        "./handler/http/node": {
+            "types": "./dist/handler/http/node/index.d.ts",
+            "import": "./dist/handler/http/node/index.js"
+        },
+        "./handler/http/fetch": {
+            "types": "./dist/handler/http/fetch/index.d.ts",
+            "import": "./dist/handler/http/fetch/index.js"
+        },
+        "./handler/http/hono": {
+            "types": "./dist/handler/http/hono/index.d.ts",
+            "import": "./dist/handler/http/hono/index.js"
+        },
+        "./handler/http/bun": {
+            "types": "./dist/handler/http/fetch/index.d.ts",
+            "import": "./dist/handler/http/fetch/index.js"
+        },
+        "./handler/http/cloudflare": {
+            "types": "./dist/handler/http/fetch/index.d.ts",
+            "import": "./dist/handler/http/fetch/index.js"
+        },
+        "./handler/http/deno": {
+            "types": "./dist/handler/http/fetch/index.d.ts",
+            "import": "./dist/handler/http/fetch/index.js"
+        },
+        "./handler/http/nextjs": {
+            "types": "./dist/handler/http/nextjs/index.d.ts",
+            "import": "./dist/handler/http/nextjs/index.js"
+        },
+        "./handler/http/solid-start": {
+            "types": "./dist/handler/http/solid-start/index.d.ts",
+            "import": "./dist/handler/http/solid-start/index.js"
+        },
+        "./handler/http/edge": {
+            "types": "./dist/handler/http/fetch/index.d.ts",
+            "import": "./dist/handler/http/fetch/index.js"
+        },
+        "./transformer/audio": {
+            "types": "./dist/transformer/audio-transformer.d.ts",
+            "import": "./dist/transformer/audio-transformer.js"
+        },
+        "./transformer/video": {
+            "types": "./dist/transformer/video-transformer.d.ts",
+            "import": "./dist/transformer/video-transformer.js"
+        },
+        "./transformer/image": {
+            "types": "./dist/transformer/image-transformer.d.ts",
+            "import": "./dist/transformer/image-transformer.js"
+        },
+        "./transformer": {
+            "types": "./dist/transformer/index.d.ts",
+            "import": "./dist/transformer/index.js"
+        },
+        "./adapter/nuxt": {
+            "types": "./dist/adapter/nuxt/module.d.ts",
+            "import": "./dist/adapter/nuxt/module.js"
+        },
+        "./package.json": "./package.json"
+    },
+    "files": [
+        "dist/**",
+        "README.md",
+        "CHANGELOG.md",
+        "LICENSE.md"
+    ],
+    "scripts": {
+        "build": "packem build --development",
+        "build:prod": "packem build --production",
+        "clean": "rimraf node_modules dist .eslintcache",
+        "dev": "pnpm run build --watch",
+        "lint:attw": "attw --pack",
+        "lint:eslint": "eslint .",
+        "lint:eslint:fix": "eslint . --cache --concurrency auto --fix",
+        "lint:package-json": "publint --strict",
+        "lint:prettier": "prettier --config=.prettierrc.cjs --check .",
+        "lint:prettier:fix": "prettier --config=.prettierrc.cjs --write .",
+        "lint:types": "tsc --noEmit --project tsconfig.json",
+        "test": "vitest run",
+        "test:coverage": "vitest run --coverage",
+        "test:ui": "vitest --ui --coverage.enabled=true",
+        "test:watch": "vitest"
+    },
+    "dependencies": {
+        "@remix-run/multipart-parser": "^0.14.0",
+        "@sindresorhus/fnv1a": "3.1.0",
+        "@visulima/pagination": "4.0.5",
+        "file-type": "21.1.1",
+        "lru-cache": "^11.2.2",
+        "mime": "^4.1.0",
+        "nanoid": "5.1.6",
+        "path-to-regexp": "8.3.0",
+        "type-is": "^2.0.1"
+    },
+    "devDependencies": {
+        "@anolilab/eslint-config": "^16.4.4",
+        "@anolilab/prettier-config": "^6.0.8",
+        "@anolilab/semantic-release-pnpm": "3.1.0",
+        "@anolilab/semantic-release-preset": "12.0.1",
+        "@arethetypeswrong/cli": "^0.18.2",
+        "@aws-sdk/client-s3": "^3.940.0",
+        "@aws-sdk/credential-providers": "^3.940.0",
+        "@aws-sdk/s3-request-presigner": "^3.940.0",
+        "@aws-sdk/signature-v4-crt": "^3.940.0",
+        "@aws-sdk/types": "^3.936.0",
+        "@azure/storage-blob": "^12.29.1",
+        "@netlify/blobs": "^10.4.1",
+        "@nuxt/kit": "4.2.1",
+        "@opentelemetry/api": "^1.9.0",
+        "@remix-run/headers": "0.18.0",
+        "@solidjs/start": "^1.2.0",
+        "@types/etag": "^1.8.4",
+        "@types/express": "^5.0.5",
+        "@types/http-errors": "^2.0.5",
+        "@types/node": "^24.10.1",
+        "@types/supertest": "^6.0.3",
+        "@types/type-is": "^1.6.7",
+        "@vercel/blob": "^2.0.0",
+        "@visulima/fs": "4.1.0",
+        "@visulima/humanizer": "2.0.5",
+        "@visulima/packem": "2.0.0-alpha.40",
+        "@visulima/path": "2.0.5",
+        "@vitest/coverage-v8": "^4.0.14",
+        "@vitest/ui": "^4.0.14",
+        "aws-crt": "^1.27.5",
+        "aws-sdk-client-mock": "^4.1.0",
+        "aws4fetch": "^1.0.20",
+        "cross-fetch": "^4.1.0",
+        "esbuild": "0.27.0",
+        "eslint": "^9.39.1",
+        "etag": "^1.8.1",
+        "express": "^5.1.0",
+        "gaxios": "^7.1.3",
+        "google-auth-library": "^10.5.0",
+        "hono": "^4.10.7",
+        "http-errors": "^2.0.1",
+        "mediabunny": "^1.25.3",
+        "next": "^16.0.6",
+        "node-fetch": "^3.3.2",
+        "node-mocks-http": "^1.17.2",
+        "openapi-types": "^12.1.3",
+        "prettier": "^3.7.3",
+        "rimraf": "^6.1.2",
+        "semantic-release": "^25.0.2",
+        "sharp": "^0.34.5",
+        "supertest": "^7.1.4",
+        "tempy": "^3.1.0",
+        "typescript": "^5.9.3",
+        "vitest": "^4.0.14"
+    },
+    "peerDependencies": {
+        "@aws-sdk/client-s3": ">=3.901.0",
+        "@aws-sdk/credential-providers": ">=3.901.0",
+        "@aws-sdk/s3-request-presigner": ">=3.901.0",
+        "@aws-sdk/signature-v4-crt": ">=3.901.0",
+        "@aws-sdk/types": ">=3.930.0",
+        "@azure/storage-blob": ">=12.28.0",
+        "@netlify/blobs": ">=10.3.1",
+        "@nuxt/kit": ">=4.2.1",
+        "@opentelemetry/api": ">=1.9.0",
+        "@solidjs/start": ">=1.1.0",
+        "@vercel/blob": ">=2.0.0",
+        "aws-crt": ">=1.27.3",
+        "aws4fetch": ">=1.0.0",
+        "gaxios": ">=7.1.2",
+        "google-auth-library": ">=10.4.0",
+        "hono": ">=4.0.0",
+        "mediabunny": ">=1.23.0",
+        "next": ">=15",
+        "sharp": ">=0.33.5"
+    },
+    "peerDependenciesMeta": {
+        "@aws-sdk/client-s3": {
+            "optional": true
+        },
+        "@aws-sdk/credential-providers": {
+            "optional": true
+        },
+        "@aws-sdk/s3-request-presigner": {
+            "optional": true
+        },
+        "@aws-sdk/signature-v4-crt": {
+            "optional": true
+        },
+        "@aws-sdk/types": {
+            "optional": true
+        },
+        "@azure/storage-blob": {
+            "optional": true
+        },
+        "@netlify/blobs": {
+            "optional": true
+        },
+        "@nuxt/kit": {
+            "optional": true
+        },
+        "@opentelemetry/api": {
+            "optional": true
+        },
+        "@solidjs/start": {
+            "optional": true
+        },
+        "@vercel/blob": {
+            "optional": true
+        },
+        "aws-crt": {
+            "optional": true
+        },
+        "aws4fetch": {
+            "optional": true
+        },
+        "gaxios": {
+            "optional": true
+        },
+        "google-auth-library": {
+            "optional": true
+        },
+        "hono": {
+            "optional": true
+        },
+        "mediabunny": {
+            "optional": true
+        },
+        "next": {
+            "optional": true
+        },
+        "sharp": {
+            "optional": true
+        }
+    },
+    "engines": {
+        "node": ">=22.12 <=25.x"
+    },
+    "publishConfig": {
+        "access": "public",
+        "provenance": true
+    }
+}

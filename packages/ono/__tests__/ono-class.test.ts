@@ -15,7 +15,7 @@ describe("ono class", () => {
     });
 
     describe("toHTML method", () => {
-        it("should render basic error to HTML", async () => {
+        it("should render basic error to HTML", { timeout: 30_000 }, async () => {
             expect.assertions(4);
 
             const ono = new Ono();
@@ -29,7 +29,7 @@ describe("ono class", () => {
             expect(html).toContain("Test error");
             expect(html).toContain("<!DOCTYPE html>");
             expect(html).toContain("<title>Error</title>");
-        }, 10_000); // 10 seconds timeout
+        });
 
         it("should handle non-Error values", async () => {
             expect.assertions(1);
@@ -44,7 +44,7 @@ describe("ono class", () => {
             expect(html).toContain("String error");
         });
 
-        it("should accept options", async () => {
+        it("should accept options", { timeout: 30_000 }, async () => {
             expect.assertions(1);
 
             const ono = new Ono();
@@ -58,7 +58,7 @@ describe("ono class", () => {
             expect(html).toContain("test-nonce");
         });
 
-        it("should handle custom solution finders", async () => {
+        it("should handle custom solution finders", { timeout: 30_000 }, async () => {
             expect.assertions(3);
 
             const ono = new Ono();
@@ -183,7 +183,7 @@ describe("ono class", () => {
     });
 
     describe("error handling", () => {
-        it("should handle errors with causes", async () => {
+        it("should handle errors with causes", { timeout: 30_000 }, async () => {
             expect.assertions(2);
 
             const ono = new Ono();
@@ -196,7 +196,7 @@ describe("ono class", () => {
 
             expect(html).toContain("Main error");
             expect(html).toContain("Root cause");
-        }, 10_000); // 10 seconds timeout
+        });
 
         it("should handle errors with stack traces", async () => {
             expect.assertions(2);

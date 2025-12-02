@@ -1,0 +1,25 @@
+{
+    "name": "upload_example_express",
+    "version": "1.0.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "dev": "tsx index.ts"
+    },
+    "dependencies": {
+        "@visulima/storage": "workspace:*",
+        "cors": "2.8.5",
+        "copy-file": "^11.1.0",
+        "dotenv": "^17.2.3",
+        "express": "^5.1.0",
+        "sanitize-filename": "^1.6.3",
+        "swagger-ui-express": "^5.0.1",
+        "swagger-jsdoc": "^6.2.8"
+    },
+    "devDependencies": {
+        "tsx": "4.21.0",
+        "@types/swagger-ui-express": "^4.1.8",
+        "@types/cors": "^2.8.19",
+        "@types/express": "^5.0.5"
+    }
+}

@@ -1,0 +1,8 @@
+{
+    "name": "email",
+    "$schema": "../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "packages/email/src",
+    "projectType": "library",
+    "tags": ["email", "type:package"],
+    "implicitDependencies": ["fs", "path", "disposable-email-domains"]
+}

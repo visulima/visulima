@@ -6,7 +6,7 @@ import cssnanoMinifier from "@visulima/packem/css/minifier/cssnano";
 
 export default defineConfig({
     transformer,
-    isolatedDeclarationTransformer,
+    //isolatedDeclarationTransformer,
     runtime: "node",
     rollup: {
         css: {

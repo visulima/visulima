@@ -15,7 +15,7 @@
     },
     "devDependencies": {
         "@eslint/js": "^9.39.1",
-        "@types/react": "^19.2.6",
+        "@types/react": "^19.2.7",
         "@types/react-dom": "^19.2.3",
         "@visulima/vite-overlay": "workspace:*",
         "@vitejs/plugin-react": "^5.1.1",
@@ -24,7 +24,7 @@
         "eslint-plugin-react-refresh": "^0.4.24",
         "globals": "^16.5.0",
         "typescript": "~5.9.3",
-        "typescript-eslint": "^8.47.0",
+        "typescript-eslint": "^8.48.1",
         "vite": "npm:rolldown-vite@latest"
     }
 }

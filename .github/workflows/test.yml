@@ -51,21 +51,30 @@ jobs:
                   filters: ".github/file-filters.yml"
 
     test:
-        name: "Test (node-${{ matrix.node_version }}, ${{ matrix.os }})"
+        name: >-
+          Test (node-${{ matrix.node_version }}, ${{ matrix.os }}${{ matrix.deno_version && format(', deno {0}', matrix.deno_version) || '' }}${{ matrix.bun_version && format(', bun {0}', matrix.bun_version) || '' }})
         if: "needs.files-changed.outputs.packages == 'true'"
         needs: "files-changed"
         strategy:
             max-parallel: 4
             matrix:
-                os:
-                    - "ubuntu-latest"
-                node_version: ["20", "22", "23", "24", "25"]
-                # On the other platforms, we only test the lts node version
                 include:
+                    - os: "ubuntu-latest"
+                      node_version: "22"
+                    - os: "ubuntu-latest"
+                      node_version: "24"
+                    - os: "ubuntu-latest"
+                      node_version: "25"
                     - os: "macos-latest"
                       node_version: "22"
                     - os: "windows-latest"
                       node_version: "22"
+                    - os: "ubuntu-latest"
+                      node_version: "22"
+                      bun_version: "latest"
+                    - os: "ubuntu-latest"
+                      node_version: "22"
+                      deno_version: "lts"
             fail-fast: false
         runs-on: "${{ matrix.os }}"
         env:
@@ -97,9 +106,21 @@ jobs:
               with:
                   node-version: "${{ matrix.node_version }}"
                   install-bun: "matrix.os == 'ubuntu-latest'"
-                  skip-playwright: "(matrix.node_version != 20 && matrix.os != 'ubuntu-latest') || (matrix.node_version != 22 && matrix.os != 'macos-latest')"
+                  skip-playwright: "(matrix.node_version != 22 && matrix.os != 'ubuntu-latest') || (matrix.node_version != 22 && matrix.os != 'macos-latest')"
 
-            # Temporary solution until Nx solve this https://github.com/nrwl/nx/issues/22259
+            - name: "Setup Deno"
+              if: "matrix.os == 'ubuntu-latest' && matrix.node_version == 22 && matrix.deno_version"
+              uses: "denoland/setup-deno@e95548e56dfa95d4e1a28d6f422fafe75c4c26fb" # v2.0.3
+              with:
+                  deno-version: "${{ matrix.deno_version }}"
+                  cache: true
+            - name: "Setup Bun"
+              if: "matrix.os == 'ubuntu-latest' && matrix.node_version == 22 && matrix.bun_version"
+              uses: "oven-sh/setup-bun@735343b667d3e6f658f44d0eca948eb6282f2b76" # v2.0.2
+              with:
+                  bun-version: "${{ matrix.bun_version }}"
+
+                  # Temporary solution until Nx solve this https://github.com/nrwl/nx/issues/22259
             - name: "Get changed files"
               id: "files"
               uses: "tj-actions/changed-files@c65cd883420fd2eb864698a825fc4162dd94482c" # v44.5.7
@@ -119,7 +140,7 @@ jobs:
               run: |
                   files="${{ steps.files.outputs.all_changed_files }}";
 
-                  if [[ ${{ matrix.os }} == "ubuntu-latest" && ${{ matrix.node_version }} == 20 ]]; then
+                  if [[ ${{ matrix.os }} == "ubuntu-latest" && ${{ matrix.node_version }} == 22 && ${{ !matrix.deno_version }} && ${{ !matrix.bun_version }} ]]; then
                       pnpm run test:affected:coverage --files=${files//\\/\/}
                   else
                       pnpm run test:affected --files=${files//\\/\/}
@@ -127,13 +148,13 @@ jobs:
 
             - name: "Install playwright in the needed packages"
               shell: "bash"
-              if: "(matrix.os == 'ubuntu-latest' && matrix.node_version == 20) || (matrix.node_version == 22 && matrix.os == 'macos-latest')"
+              if: "((matrix.os == 'ubuntu-latest' && matrix.node_version == 22) || (matrix.node_version == 22 && matrix.os == 'macos-latest')) && !matrix.deno_version && !matrix.bun_version"
               run: |
                   pnpm --filter "inspector" exec playwright install
 
             - name: "Run chrome browser tests"
               shell: "bash"
-              if: "matrix.os == 'ubuntu-latest' && matrix.node_version == 20"
+              if: "matrix.os == 'ubuntu-latest' && matrix.node_version == 22 && !matrix.deno_version && !matrix.bun_version"
               run: |
                   files="${{ steps.files.outputs.all_changed_files }}";
 
@@ -141,7 +162,7 @@ jobs:
 
             - name: "Run firefox browser tests"
               shell: "bash"
-              if: "matrix.os == 'ubuntu-latest' && matrix.node_version == 20"
+              if: "matrix.os == 'ubuntu-latest' && matrix.node_version == 22 && !matrix.deno_version && !matrix.bun_version"
               run: |
                   files="${{ steps.files.outputs.all_changed_files }}";
 
@@ -149,7 +170,7 @@ jobs:
 
             - name: "Run webkit browser tests"
               shell: "bash"
-              if: "matrix.os == 'macos-latest' && matrix.node_version == 22"
+              if: "matrix.os == 'macos-latest' && matrix.node_version == 22 && !matrix.deno_version && !matrix.bun_version"
               run: |
                   files="${{ steps.files.outputs.all_changed_files }}";
 
@@ -160,7 +181,7 @@ jobs:
               run: "tar -cf - .nx/cache | lz4 > /tmp/nx_cache.tar.lz4" # compress nx cache
 
             - name: "Upload code coverage to codecov"
-              if: "matrix.os == 'ubuntu-latest' && matrix.node_version == 20"
+              if: "matrix.os == 'ubuntu-latest' && matrix.node_version == 22 && !matrix.deno_version && !matrix.bun_version"
               uses: "anolilab/workflows/step/codecov@main"
               with:
                   run-lint: "needs.files-changed.outputs.codecov == 'true'"

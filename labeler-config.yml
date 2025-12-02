@@ -28,6 +28,12 @@
 "package: deep-clone":
     - changed-files:
           - any-glob-to-any-file: "packages/deep-clone/**/*"
+"package: disposable-email-domains":
+    - changed-files:
+          - any-glob-to-any-file: "packages/disposable-email-domains/**/*"
+"package: email":
+    - changed-files:
+          - any-glob-to-any-file: "packages/email/**/*"
 "package: error":
     - changed-files:
           - any-glob-to-any-file: "packages/error/**/*"
@@ -85,6 +91,12 @@
 "package: source-map":
     - changed-files:
           - any-glob-to-any-file: "packages/source-map/**/*"
+"package: storage":
+    - changed-files:
+          - any-glob-to-any-file: "packages/storage/**/*"
+"package: storage-client":
+    - changed-files:
+          - any-glob-to-any-file: "packages/storage-client/**/*"
 "package: string":
     - changed-files:
           - any-glob-to-any-file: "packages/string/**/*"

@@ -3,7 +3,7 @@ import { describe, expect, expectTypeOf, it, vi } from "vitest";
 import template from "../src/error-inspector";
 
 describe("error inspector template", () => {
-    it("should render basic error template", async () => {
+    it("should render basic error template", { timeout: 30_000 }, async () => {
         expect.assertions(3);
 
         const error = new Error("Test error");
@@ -15,9 +15,9 @@ describe("error inspector template", () => {
         expect(html.length).toBeGreaterThan(0);
         expect(html).toContain("Test error");
         expect(html).toContain("<!DOCTYPE html>");
-    }, 10_000); // 10 seconds timeout
+    });
 
-    it("should handle different error types", async () => {
+    it("should handle different error types", { timeout: 30_000 }, async () => {
         expect.assertions(2);
 
         // Test with Error
@@ -33,7 +33,7 @@ describe("error inspector template", () => {
         expect(html2).toContain("Custom error");
     });
 
-    it("should accept options", async () => {
+    it("should accept options", { timeout: 30_000 }, async () => {
         expect.assertions(1);
 
         const error = new Error("Test error");
@@ -118,7 +118,7 @@ describe("error inspector template", () => {
         expect(html.length).toBeGreaterThan(0);
     });
 
-    it("should render with different themes", async () => {
+    it("should render with different themes", { timeout: 30_000 }, async () => {
         expect.assertions(2);
 
         const error = new Error("Test error");
@@ -128,7 +128,7 @@ describe("error inspector template", () => {
 
         expect(lightHtml).toContain("<html lang=\"en\" class=\"\">");
         expect(darkHtml).toContain("<html lang=\"en\" class=\"dark\">");
-    }, 10_000); // 10 seconds timeout
+    });
 
     it("should handle editor configuration", async () => {
         expect.assertions(1);

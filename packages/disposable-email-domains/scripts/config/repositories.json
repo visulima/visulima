@@ -1,0 +1,122 @@
+[
+    {
+        "name": "Disposable Email Domains - Primary Source",
+        "url": "https://github.com/disposable-email-domains/disposable-email-domains",
+        "type": "git",
+        "blocklist_files": ["/refs/heads/main/disposable_email_blocklist.conf"],
+        "description": "The most and actively maintained disposable email domains database",
+        "priority": 1
+    },
+    {
+        "name": "Disposable Domains - Community Maintained",
+        "url": "https://github.com/disposable/disposable-email-domains",
+        "type": "git",
+        "blocklist_files": ["/refs/heads/master/domains_strict.txt"],
+        "description": "Strict validation list of disposable email domains with community contributions",
+        "priority": 2
+    },
+    {
+        "name": "Disposable Email Detector by TheDahoom",
+        "url": "https://github.com/TheDahoom/disposable-email",
+        "type": "git",
+        "blocklist_files": ["/refs/heads/main/blacklist.txt"],
+        "description": "Specialized blacklist focusing on modern disposable email services",
+        "priority": 3
+    },
+    {
+        "name": "Sanitizer Service Blocklist",
+        "url": "https://github.com/eser/sanitizer-svc",
+        "type": "git",
+        "blocklist_files": ["/refs/heads/main/disposable_email_blocklist.conf"],
+        "description": "Enterprise-grade sanitizer service disposable email configuration",
+        "priority": 4
+    },
+    {
+        "name": "EmailOnDeck Domain Collection",
+        "url": "https://github.com/GeroldSetz/emailondeck.com-domains",
+        "type": "git",
+        "blocklist_files": ["/refs/heads/master/emailondeck.com_domains_from_bdea.cc.txt"],
+        "description": "Specialized collection of EmailOnDeck and related service domains",
+        "priority": 5
+    },
+    {
+        "name": "Groundcat Disposable Email List",
+        "url": "https://github.com/groundcat/disposable-email-domain-list",
+        "type": "git",
+        "blocklist_files": ["/refs/heads/master/domains.txt"],
+        "description": "Curated disposable email domain list with regular updates",
+        "priority": 3
+    },
+    {
+        "name": "Jesper Nissen's Disposable Mail List",
+        "url": "https://github.com/jespernissen/disposable-maildomain-list",
+        "type": "git",
+        "blocklist_files": ["/refs/heads/master/disposable-maildomain-list.txt"],
+        "description": "Danish-originated disposable mail domain collection",
+        "priority": 4
+    },
+    {
+        "name": "KSLR Disposable Email Database",
+        "url": "https://github.com/kslr/disposable-email-domains",
+        "type": "git",
+        "blocklist_files": ["/refs/heads/master/list.txt"],
+        "description": "Minimalist but effective disposable email domains list",
+        "priority": 5
+    },
+    {
+        "name": "MattKetmo EmailChecker Throwaway List",
+        "url": "https://github.com/MattKetmo/EmailChecker",
+        "type": "git",
+        "blocklist_files": ["/refs/heads/master/res/throwaway_domains.txt"],
+        "description": "PHP EmailChecker library's throwaway domains for Symfony applications",
+        "priority": 6
+    },
+    {
+        "name": "Unknown Disposable Email Domains",
+        "url": "https://github.com/unkn0w/disposable-email-domain-list",
+        "type": "git",
+        "blocklist_files": ["/refs/heads/main/domains.txt"],
+        "description": "Independent collection of disposable email domains with unique entries",
+        "priority": 4
+    },
+    {
+        "name": "FakeFilter Anti-Spam Data",
+        "url": "https://github.com/7c/fakefilter",
+        "type": "git",
+        "blocklist_files": ["/refs/heads/main/txt/data.txt"],
+        "description": "Advanced anti-spam filter with fake and temporary email providers",
+        "priority": 2
+    },
+    {
+        "name": "Wes Bos Burner Email Providers",
+        "url": "https://github.com/wesbos/burner-email-providers",
+        "type": "git",
+        "blocklist_files": ["/refs/heads/master/emails.txt"],
+        "description": "Popular web developer Wes Bos's curated burner email services list",
+        "priority": 2
+    },
+    {
+        "name": "FGRibreau MailChecker Database",
+        "url": "https://github.com/FGRibreau/mailchecker",
+        "type": "git",
+        "blocklist_files": ["/refs/heads/master/list.txt"],
+        "description": "Cross-platform temporary email detection with 20+ language support",
+        "priority": 1
+    },
+    {
+        "name": "Freemail Service Providers Database",
+        "url": "https://github.com/willwhite/freemail",
+        "type": "git",
+        "blocklist_files": ["/refs/heads/master/data/free.txt"],
+        "description": "free email providers list including disposable services",
+        "priority": 7
+    },
+    {
+        "name": "Sublime Security Threat Intelligence",
+        "url": "https://github.com/sublime-security/static-files",
+        "type": "git",
+        "blocklist_files": ["/refs/heads/master/disposable_email_providers.txt"],
+        "description": "Security-focused disposable email providers from threat intelligence",
+        "priority": 2
+    }
+]

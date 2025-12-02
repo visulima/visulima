@@ -1,0 +1,58 @@
+.app {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem;
+    text-align: center;
+}
+
+.upload-section {
+    margin: 2rem 0;
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    align-items: center;
+}
+
+.upload-section input[type="file"] {
+    padding: 0.5rem;
+}
+
+.upload-section button {
+    padding: 0.5rem 1rem;
+    background-color: #646cff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.upload-section button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+.progress-section {
+    margin: 2rem 0;
+}
+
+.progress-section progress {
+    width: 100%;
+    max-width: 400px;
+    height: 20px;
+}
+
+.error {
+    margin: 1rem 0;
+    padding: 1rem;
+    background-color: #fee;
+    color: #c33;
+    border-radius: 4px;
+}
+
+.success {
+    margin: 1rem 0;
+    padding: 1rem;
+    background-color: #efe;
+    color: #3c3;
+    border-radius: 4px;
+}

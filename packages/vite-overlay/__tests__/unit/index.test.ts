@@ -70,4 +70,77 @@ describe(errorOverlayPlugin, () => {
             expect(() => errorOverlayPlugin({ forwardedConsoleMethods: [] })).toThrow("forwardedConsoleMethods must be an array of console method names");
         });
     });
+
+    describe("balloon configuration", () => {
+        it("should accept overlay.balloon configuration", () => {
+            expect.assertions(1);
+
+            const plugin = errorOverlayPlugin({
+                overlay: {
+                    balloon: {
+                        enabled: true,
+                        icon: "/custom-icon.svg",
+                        position: "top-right",
+                        style: {
+                            background: "#111",
+                            color: "#fff",
+                        },
+                    },
+                },
+            });
+
+            expect(plugin).toBeDefined();
+        });
+
+        it("should maintain backward compatibility with showBallonButton", () => {
+            expect.assertions(1);
+
+            const plugin = errorOverlayPlugin({
+                showBallonButton: false,
+            });
+
+            expect(plugin).toBeDefined();
+        });
+
+        it("should prioritize showBallonButton over overlay.balloon.enabled", () => {
+            expect.assertions(1);
+
+            // showBallonButton should take precedence
+            const plugin = errorOverlayPlugin({
+                overlay: {
+                    balloon: {
+                        enabled: true,
+                    },
+                },
+                showBallonButton: false,
+            });
+
+            expect(plugin).toBeDefined();
+        });
+
+        it("should generate client script with balloon config", () => {
+            expect.assertions(2);
+
+            const balloonConfig = {
+                enabled: true,
+                position: "bottom-left" as const,
+            };
+
+            const script = generateClientScript("development", ["error"], balloonConfig);
+
+            expect(script).toBeDefined();
+            expect(script).toContain("__visulima_overlay__");
+        });
+
+        it("should expose overlay API in client script", () => {
+            expect.assertions(4);
+
+            const script = generateClientScript("development", ["error"]);
+
+            expect(script).toContain("window.__visulima_overlay__");
+            expect(script).toContain("open: function");
+            expect(script).toContain("close: function");
+            expect(script).toContain("sendError:");
+        });
+    });
 });

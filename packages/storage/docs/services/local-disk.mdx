@@ -1,0 +1,237 @@
+# Local Disk Storage
+
+## Overview
+
+Local disk storage provides file storage on the local filesystem. It's ideal for development, single-server deployments, and scenarios where cloud storage isn't needed.
+
+## Installation
+
+No additional dependencies required - uses Node.js built-in `fs` module.
+
+## Usage
+
+```typescript
+import { DiskStorage } from "@visulima/storage";
+
+const storage = new DiskStorage({
+    directory: "./uploads",
+});
+```
+
+## Basic Configuration
+
+```typescript
+const storage = new DiskStorage({
+    directory: "/var/uploads", // Upload directory
+});
+```
+
+## With Checksum Validation
+
+```typescript
+import { DiskStorageWithChecksum } from "@visulima/storage/provider/local";
+
+const storage = new DiskStorageWithChecksum({
+    checksum: "md5", // Enable MD5 checksum validation (md5 or sha1)
+    directory: "/var/uploads",
+});
+```
+
+## Advanced Configuration
+
+```typescript
+const storage = new DiskStorage({
+    assetFolder: "assets",
+    directory: "/var/uploads",
+    filename: (file, request) => `${Date.now()}-${file.originalName}`,
+    expiration: {
+        maxAge: "7d",
+        purgeInterval: "1h",
+    },
+    retryConfig: {
+        maxRetries: 3,
+    },
+    cache: new LRUCache({
+        max: 1000,
+        ttl: 3600000,
+    }),
+});
+```
+
+## Features
+
+- **Filesystem Storage**: Direct disk I/O operations
+- **Checksum Support**: MD5 and SHA1 validation
+- **Resumable Uploads**: Continue interrupted uploads
+- **Metadata Storage**: JSON-based metadata files
+- **Directory Management**: Automatic directory creation
+- **File Locking**: Concurrent access protection
+- **Cross-platform**: Works on Windows, macOS, Linux
+
+## TTL (Time-to-Live)
+
+Set expiration times for files:
+
+```typescript
+const storage = new DiskStorage({
+    directory: "./uploads",
+    expiration: {
+        maxAge: "30d", // Files expire in 30 days
+        purgeInterval: "1h", // Check for expired files every hour
+        rolling: true, // Extend expiration on access
+    },
+});
+```
+
+## File Naming
+
+Customize file naming strategy:
+
+```typescript
+const storage = new DiskStorage({
+    directory: "/var/uploads",
+    filename: (file, request) => {
+        const timestamp = Date.now();
+        const random = Math.random().toString(36).slice(2);
+        return `${timestamp}-${random}-${file.originalName}`;
+    },
+});
+```
+
+## Filename Validation
+
+DiskStorage automatically applies filesystem-safe filename validation by default, blocking characters that are incompatible with local filesystems (`"`, `*`, `:`, `<`, `>`, `?`, `\`, `|`, `../`, `\0`).
+
+### Default Validation
+
+```typescript
+// DiskStorage uses strict filesystem validation by default
+const storage = new DiskStorage({
+    directory: "/var/uploads",
+    // Automatically validates filenames for filesystem compatibility
+});
+```
+
+### Custom Validation
+
+Override the default validation with your own rules:
+
+```typescript
+import { defaultFilesystemFileNameValidation } from "@visulima/storage";
+
+const storage = new DiskStorage({
+    directory: "/var/uploads",
+    fileNameValidation: (name: string) => {
+        // Custom validation logic
+        // Return true if valid, false otherwise
+        if (name.length < 3 || name.length > 255) {
+            return false;
+        }
+
+        // Block specific patterns
+        if (name.includes("../") || name.includes("\0")) {
+            return false;
+        }
+
+        // Your custom rules here
+        return !name.includes("forbidden");
+    },
+});
+```
+
+### Cloud Storage Validation
+
+Cloud storage platforms (S3, Azure, GCS) use more permissive validation by default, only blocking dangerous patterns like path traversal (`../`) and null bytes (`\0`). They accept most special characters since cloud storage handles URL encoding automatically.
+
+```typescript
+import { S3Storage, defaultCloudStorageFileNameValidation } from "@visulima/storage";
+
+const storage = new S3Storage({
+    bucket: "my-bucket",
+    // Uses permissive validation by default
+    // Or explicitly set:
+    fileNameValidation: defaultCloudStorageFileNameValidation,
+});
+```
+
+## Directory Structure
+
+```typescript
+const storage = new DiskStorage({
+    assetFolder: "files", // Subfolder for uploaded files
+    directory: "/var/uploads",
+});
+
+// Files stored in: /var/uploads/files/
+// Metadata in: /var/uploads/.meta/
+```
+
+## Concurrent Access
+
+File locking prevents corruption during concurrent access:
+
+```typescript
+// Automatic locking during write operations
+await storage.write({
+    body: data,
+    contentLength: data.length,
+    id: file.id,
+    start: 0,
+});
+// File is locked during the operation
+```
+
+## Error Handling
+
+Local storage provides clear error messages:
+
+```typescript
+try {
+    await storage.get({ id: "nonexistent" });
+} catch (error) {
+    console.log(error.code); // 'ENOENT'
+    console.log(error.statusCode); // 404
+    console.log(error.message); // 'File not found'
+}
+```
+
+Common errors:
+
+- `ENOENT` (404): File not found
+- `EACCES` (403): Permission denied
+- `ENOSPC` (507): Disk full
+- `EMFILE` (503): Too many open files
+
+## Performance Optimization
+
+### Large File Handling
+
+```typescript
+const storage = new DiskStorage({
+    directory: "/var/uploads",
+    // Optimize for large files
+    highWaterMark: 64 * 1024, // 64KB buffer size
+});
+```
+
+### Directory Structure
+
+```typescript
+// Use prefixes to avoid too many files per directory
+const storage = new DiskStorage({
+    directory: "/var/uploads",
+    filename: (file) => {
+        // Distribute files across subdirectories
+        const hash = file.id.slice(0, 2);
+        return `${hash}/${file.id}`;
+    },
+});
+```
+
+## Best Practices
+
+1. **Set appropriate permissions** - Ensure directory is writable
+2. **Monitor disk space** - Implement disk space monitoring
+3. **Use checksums** - Enable checksum validation for critical files
+4. **Configure expiration** - Automatically clean up old files
+5. **Backup regularly** - Local storage requires manual backups

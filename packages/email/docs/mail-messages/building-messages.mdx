@@ -1,0 +1,263 @@
+---
+title: Building Messages
+description: Learn how to build email messages using the fluent API
+---
+
+# Building Messages
+
+The `MailMessage` class provides a fluent, chainable API for building email messages. This guide covers all available methods.
+
+## Basic Message
+
+```typescript
+import { createMail, MailMessage } from "@visulima/email";
+import { resendProvider } from "@visulima/email/providers/resend";
+
+const mail = createMail(resendProvider({ apiKey: "re_xxx" }));
+
+const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Hello").html("<h1>Hello World</h1>");
+
+const result = await mail.send(message);
+```
+
+## Setting Recipients
+
+### To Addresses
+
+```typescript
+// Single recipient (string)
+new MailMessage().to("user@example.com");
+
+// Single recipient (object)
+new MailMessage().to({ email: "user@example.com", name: "John Doe" });
+
+// Multiple recipients (array)
+new MailMessage().to(["user1@example.com", "user2@example.com"]);
+
+// Multiple recipients (array of objects)
+new MailMessage().to([
+    { email: "user1@example.com", name: "User 1" },
+    { email: "user2@example.com", name: "User 2" },
+]);
+```
+
+### CC and BCC
+
+```typescript
+new MailMessage().to("user@example.com").cc("cc@example.com").bcc("bcc@example.com");
+```
+
+### Reply-To
+
+```typescript
+new MailMessage().to("user@example.com").from("sender@example.com").replyTo("reply@example.com");
+```
+
+## Setting Content
+
+### Subject
+
+```typescript
+new MailMessage().subject("Welcome to our service!");
+```
+
+### HTML Content
+
+```typescript
+new MailMessage().html("<h1>Hello</h1><p>This is HTML content.</p>");
+```
+
+### Plain Text Content
+
+```typescript
+new MailMessage().text("Hello\n\nThis is plain text content.");
+```
+
+### Both HTML and Text
+
+```typescript
+new MailMessage().html("<h1>Hello</h1><p>This is HTML.</p>").text("Hello\n\nThis is plain text.");
+```
+
+## Custom Headers
+
+```typescript
+new MailMessage().header("X-Custom-Header", "value").header("X-Priority", "1");
+```
+
+Or set multiple headers at once:
+
+```typescript
+new MailMessage().setHeaders({
+    "X-Custom-Header": "value",
+    "X-Priority": "1",
+    "X-Mailer": "MyApp",
+});
+```
+
+## Attachments
+
+### Attach File from Path
+
+```typescript
+await message.attachFromPath("/path/to/file.pdf");
+```
+
+With options:
+
+```typescript
+await message.attachFromPath("/path/to/file.pdf", {
+    filename: "custom-name.pdf",
+    contentType: "application/pdf",
+});
+```
+
+### Attach Data
+
+```typescript
+message.attachData(Buffer.from("file content"), {
+    filename: "document.txt",
+    contentType: "text/plain",
+});
+```
+
+## Inline Attachments
+
+### Embed Image from Path
+
+```typescript
+const cid = await message.embedFromPath("/path/to/image.png");
+// Use cid in HTML: <img src="cid:${cid}" />
+```
+
+### Embed Image Data
+
+```typescript
+const cid = message.embedData(Buffer.from("image data"), {
+    filename: "logo.png",
+    contentType: "image/png",
+});
+// Use cid in HTML: <img src="cid:${cid}" />
+```
+
+## Using Templates
+
+### Handlebars Template
+
+```typescript
+import { renderHandlebars } from "@visulima/email/template/handlebars";
+
+await message.view(renderHandlebars, "<h1>Hello {{name}}!</h1>", { name: "John" });
+```
+
+### MJML Template
+
+```typescript
+import { renderMjml } from "@visulima/email/template/mjml";
+
+const mjmlTemplate = `
+<mjml>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-text>Hello World</mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>
+`;
+
+await message.view(renderMjml, mjmlTemplate);
+```
+
+### React Email
+
+```typescript
+import { renderReactEmail } from "@visulima/email/template/react-email";
+import { WelcomeEmail } from "./emails/WelcomeEmail";
+
+await message.view(renderReactEmail, <WelcomeEmail name="John" />);
+```
+
+### Vue Email
+
+```typescript
+import { renderVueEmail } from "@visulima/email/template/vue-email";
+import { MyTemplate } from "./emails/MyTemplate";
+
+// Render HTML
+await message.view(
+    renderVueEmail,
+    MyTemplate,
+    {
+        title: "some title",
+    },
+    {
+        pretty: true,
+    },
+);
+
+// Render plain text
+await message.view(
+    renderVueEmail,
+    MyTemplate,
+    {
+        title: "some title",
+    },
+    {
+        plainText: true,
+    },
+);
+```
+
+## Auto-Generate Text from HTML
+
+When using templates, text can be automatically generated from HTML:
+
+```typescript
+import { renderHandlebars } from "@visulima/email/template/handlebars";
+
+await message.view(
+    renderHandlebars,
+    "<h1>Hello {{name}}!</h1><p>Welcome to our service.</p>",
+    { name: "John" },
+    { autoText: true }, // Default: true
+);
+```
+
+## Building Without Sending
+
+You can build the email options without sending:
+
+```typescript
+const emailOptions = await message.build();
+// Use emailOptions with another provider or for testing
+```
+
+## Complete Example
+
+```typescript
+import { createMail, MailMessage } from "@visulima/email";
+import { resendProvider } from "@visulima/email/providers/resend";
+import { renderHandlebars } from "@visulima/email/template/handlebars";
+
+const mail = createMail(resendProvider({ apiKey: "re_xxx" }));
+
+const message = new MailMessage()
+    .to({ email: "user@example.com", name: "John Doe" })
+    .cc("cc@example.com")
+    .from({ email: "sender@example.com", name: "My App" })
+    .replyTo("support@example.com")
+    .subject("Welcome!")
+    .header("X-Priority", "1");
+
+await message.view(renderHandlebars, "<h1>Hello {{name}}!</h1>", { name: "John" });
+await message.attachFromPath("/path/to/welcome.pdf");
+
+const result = await mail.send(message);
+```
+
+## Next Steps
+
+- [Attachments](/docs/package/email/mail-messages/attachments) - Learn more about attachments
+- [Template Engines](/docs/package/email/templates/introduction) - Use template engines

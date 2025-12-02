@@ -1,0 +1,255 @@
+# Error Handling
+
+Visulima storage provides consistent error handling across all storage backends with standardized error codes and messages.
+
+## Error Types
+
+### Upload Errors
+
+```typescript
+import { ERRORS, isUploadError, throwErrorCode } from "@visulima/storage";
+
+try {
+    await storage.get({ id: "nonexistent" });
+} catch (error) {
+    if (isUploadError(error)) {
+        console.log("Error code:", error.UploadErrorCode);
+        console.log("Status:", error.statusCode);
+        console.log("Message:", error.message);
+    }
+}
+```
+
+### Standard Error Codes
+
+```typescript
+enum ERRORS {
+    BAD_REQUEST = "BadRequest",
+    CHECKSUM_MISMATCH = "ChecksumMismatch",
+    FILE_CONFLICT = "FileConflict",
+    FILE_ERROR = "FileError",
+    FILE_LOCKED = "FileLocked",
+    FILE_NOT_ALLOWED = "FileNotAllowed",
+    FILE_NOT_FOUND = "FileNotFound",
+    FORBIDDEN = "Forbidden",
+    GONE = "Gone",
+    INVALID_FILE_NAME = "InvalidFileName",
+    INVALID_FILE_SIZE = "InvalidFileSize",
+    INVALID_RANGE = "InvalidRange",
+    INVALID_TYPE = "Invalidtype",
+    METHOD_NOT_ALLOWED = "MethodNotAllowed",
+    REQUEST_ABORTED = "RequestAborted",
+    REQUEST_ENTITY_TOO_LARGE = "RequestEntityTooLarge",
+    STORAGE_BUSY = "StorageBusy",
+    STORAGE_ERROR = "StorageError",
+    TOO_MANY_REQUESTS = "TooManyRequests",
+    UNKNOWN_ERROR = "UnknownError",
+    UNPROCESSABLE_ENTITY = "UnprocessableEntity",
+    UNSUPPORTED_CHECKSUM_ALGORITHM = "UnsupportedChecksumAlgorithm",
+    UNSUPPORTED_MEDIA_TYPE = "UnsupportedMediaType",
+}
+```
+
+## Error Response Format
+
+All errors follow a consistent format:
+
+```typescript
+interface HttpError {
+    code: string; // Error code (e.g., "FileNotFound")
+    message: string; // Human-readable message
+    statusCode: number; // HTTP status code
+    name?: string; // Error name
+    body?: any; // Additional error details
+}
+```
+
+## Handling Common Errors
+
+### File Not Found
+
+```typescript
+try {
+    await storage.get({ id: "nonexistent" });
+} catch (error) {
+    if (isUploadError(error) && error.UploadErrorCode === ERRORS.FILE_NOT_FOUND) {
+        return res.status(404).json({ error: "File not found" });
+    }
+    throw error;
+}
+```
+
+### File Too Large
+
+```typescript
+try {
+    await storage.create({
+        contentType: "image/jpeg",
+        size: 100 * 1024 * 1024, // 100MB
+    });
+} catch (error) {
+    if (isUploadError(error) && error.UploadErrorCode === ERRORS.REQUEST_ENTITY_TOO_LARGE) {
+        return res.status(413).json({ error: "File too large" });
+    }
+    throw error;
+}
+```
+
+### Unsupported Media Type
+
+```typescript
+try {
+    await storage.create({
+        contentType: "application/x-executable",
+        size: 1024,
+    });
+} catch (error) {
+    if (isUploadError(error) && error.UploadErrorCode === ERRORS.UNSUPPORTED_MEDIA_TYPE) {
+        return res.status(415).json({ error: "Unsupported file type" });
+    }
+    throw error;
+}
+```
+
+### Checksum Mismatch
+
+```typescript
+try {
+    await storage.write({
+        id: "file-id",
+        body: stream,
+        checksum: "invalid-checksum",
+        checksumAlgorithm: "md5",
+    });
+} catch (error) {
+    if (isUploadError(error) && error.UploadErrorCode === ERRORS.CHECKSUM_MISMATCH) {
+        return res.status(460).json({ error: "Checksum mismatch" });
+    }
+    throw error;
+}
+```
+
+## Custom Error Handling
+
+### Custom Error Responses
+
+```typescript
+const storage = new DiskStorage({
+    directory: "./uploads",
+    onError: (error: HttpError) => {
+        // Customize error response
+        return {
+            body: {
+                error: {
+                    code: error.code,
+                    message: error.message,
+                    timestamp: new Date().toISOString(),
+                },
+            },
+            headers: {
+                "X-Error-Code": error.code,
+            },
+            statusCode: error.statusCode,
+        };
+    },
+});
+```
+
+### Error Logging
+
+```typescript
+const storage = new DiskStorage({
+    directory: "./uploads",
+    logger: {
+        error: (message, ...args) => {
+            console.error(`[Storage Error] ${message}`, ...args);
+            // Send to error tracking service
+            errorTracker.captureException(new Error(message));
+        },
+        debug: (message, ...args) => {
+            console.debug(`[Storage Debug] ${message}`, ...args);
+        },
+        info: (message, ...args) => {
+            console.info(`[Storage Info] ${message}`, ...args);
+        },
+    },
+});
+```
+
+## Storage-Specific Errors
+
+### AWS S3 Errors
+
+```typescript
+try {
+    await s3Storage.get({ id: "file-id" });
+} catch (error) {
+    // AWS SDK errors are normalized
+    if (error.$metadata) {
+        console.log("AWS Status:", error.$metadata.httpStatusCode);
+        console.log("AWS Code:", error.Code);
+    }
+}
+```
+
+### Azure Storage Errors
+
+```typescript
+try {
+    await azureStorage.get({ id: "file-id" });
+} catch (error) {
+    // Azure errors include statusCode
+    if (error.statusCode) {
+        console.log("Azure Status:", error.statusCode);
+    }
+}
+```
+
+## Error Middleware
+
+### Express Error Middleware
+
+```typescript
+app.use((error: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
+    if (isUploadError(error)) {
+        const statusCode = error.statusCode || 500;
+        return res.status(statusCode).json({
+            error: {
+                code: error.UploadErrorCode,
+                message: error.message,
+            },
+        });
+    }
+
+    // Handle other errors
+    res.status(500).json({ error: "Internal server error" });
+});
+```
+
+### Hono Error Handler
+
+```typescript
+app.onError((error, c) => {
+    if (isUploadError(error)) {
+        return c.json(
+            {
+                error: {
+                    code: error.UploadErrorCode,
+                    message: error.message,
+                },
+            },
+            error.statusCode || 500,
+        );
+    }
+
+    return c.json({ error: "Internal server error" }, 500);
+});
+```
+
+## Best Practices
+
+1. **Always check error types** - Use `isUploadError()` to identify upload errors
+2. **Handle specific error codes** - Provide user-friendly messages for common errors
+3. **Log errors appropriately** - Include context for debugging
+4. **Return appropriate status codes** - Use standard HTTP status codes
+5. **Don't expose internal details** - Sanitize error messages for production

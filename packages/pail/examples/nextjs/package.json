@@ -10,18 +10,18 @@
     },
     "dependencies": {
         "@visulima/pail": "workspace:*",
-        "next": "16.0.3",
+        "next": "16.0.6",
         "react": "19.2.0",
         "react-dom": "19.2.0"
     },
     "devDependencies": {
-        "@eslint/eslintrc": "^3.3.1",
+        "@eslint/eslintrc": "^3.3.3",
         "@tailwindcss/postcss": "^4.1.17",
         "@types/node": "^24",
-        "@types/react": "^19.2.6",
+        "@types/react": "^19.2.7",
         "@types/react-dom": "^19.2.3",
         "eslint": "^9",
-        "eslint-config-next": "16.0.3",
+        "eslint-config-next": "16.0.6",
         "tailwindcss": "^4.1.17",
         "typescript": "^5.9.3"
     }

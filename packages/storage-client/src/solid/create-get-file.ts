@@ -1,0 +1,126 @@
+import type { QueryClient } from "@tanstack/solid-query";
+import { createQuery } from "@tanstack/solid-query";
+import type { Accessor } from "solid-js";
+import { createEffect, createMemo } from "solid-js";
+
+import { buildUrl, extractFileMetaFromHeaders, storageQueryKeys } from "../core";
+import type { FileMeta } from "../react/types";
+
+export interface CreateGetFileOptions {
+    /** Whether to enable the query */
+    enabled?: Accessor<boolean> | boolean;
+    /** Base endpoint URL for file operations */
+    endpoint: string;
+    /** File ID to fetch */
+    id: Accessor<string> | string;
+    /** Callback when request fails */
+    onError?: (error: Error) => void;
+    /** Callback when request succeeds */
+    onSuccess?: (data: Blob, meta: FileMeta | undefined) => void;
+    /** Optional QueryClient to use */
+    queryClient?: QueryClient;
+    /** Transformation parameters for media files */
+    transform?: Accessor<Record<string, string | number | boolean> | undefined> | Record<string, string | number | boolean>;
+}
+
+export interface CreateGetFileReturn {
+    /** File data as Blob */
+    data: Accessor<Blob | undefined>;
+    /** Last request error, if any */
+    error: Accessor<Error | undefined>;
+    /** Whether a request is currently in progress */
+    isLoading: Accessor<boolean>;
+    /** File metadata from response headers */
+    meta: Accessor<FileMeta | undefined>;
+    /** Refetch the file */
+    refetch: () => void;
+}
+
+/**
+ * Solid.js primitive for fetching/downloading files using TanStack Query.
+ * Supports optional transformation parameters for media files.
+ * @param options Hook configuration options
+ * @returns File fetching functions and state signals
+ */
+export const createGetFile = (options: CreateGetFileOptions): CreateGetFileReturn => {
+    const { enabled = true, endpoint, id, onError, onSuccess, queryClient, transform } = options;
+
+    const idValue = typeof id === "function" ? id : () => id;
+    const transformValue = typeof transform === "function" ? transform : () => transform;
+    const enabledValue = typeof enabled === "function" ? enabled : () => enabled;
+
+    const query = createQuery(
+        () => {
+            const fileId = idValue();
+            const transformParams = transformValue();
+
+            return {
+                enabled: enabledValue() && !!fileId,
+                queryFn: async () => {
+                    const url = buildUrl(endpoint, fileId, transformParams);
+                    const response = await fetch(url, {
+                        method: "GET",
+                    });
+
+                    if (!response.ok) {
+                        const errorData = (await response.json().catch(() => {
+                            return {
+                                error: {
+                                    code: "RequestFailed",
+                                    message: response.statusText,
+                                },
+                            };
+                        })) as { error: { code: string; message: string } };
+
+                        throw new Error(errorData.error?.message || `Failed to get file: ${response.status} ${response.statusText}`);
+                    }
+
+                    const blob = await response.blob();
+                    const meta = extractFileMetaFromHeaders(fileId, response.headers);
+
+                    return { blob, meta };
+                },
+                queryKey: storageQueryKeys.files.detail(endpoint, fileId, transformParams),
+            };
+        },
+        queryClient ? () => queryClient : undefined,
+    );
+
+    // Extract metadata from response if available
+    const meta = createMemo(() => {
+        const { data } = query;
+
+        return data?.meta || undefined;
+    });
+
+    // Call callbacks when data or error changes
+    if (onSuccess) {
+        createEffect(() => {
+            const { data } = query;
+
+            if (data) {
+                onSuccess(data.blob, meta());
+            }
+        });
+    }
+
+    if (onError) {
+        createEffect(() => {
+            const { error } = query;
+
+            if (error) {
+                onError(error as Error);
+            }
+        });
+    }
+
+    return {
+        data: () => query.data?.blob,
+        error: () => (query.error as Error) || undefined,
+        isLoading: () => query.isLoading,
+        meta,
+        refetch: () => {
+            query.refetch();
+        },
+    };
+};

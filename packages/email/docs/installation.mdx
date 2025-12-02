@@ -1,0 +1,237 @@
+---
+title: Installation
+description: Install and set up @visulima/email in your project
+---
+
+# Installation
+
+@visulima/email is available as an npm package and can be installed using your preferred package manager.
+
+## Package Managers
+
+### npm
+
+```bash
+npm install @visulima/email
+```
+
+### yarn
+
+```bash
+yarn add @visulima/email
+```
+
+### pnpm
+
+```bash
+pnpm add @visulima/email
+```
+
+## Requirements
+
+- **Node.js**: 20.19 or higher, up to 25.x (for Node.js-specific providers)
+- **TypeScript**: Optional but recommended for full type safety
+
+## Runtime Support
+
+@visulima/email supports multiple JavaScript runtimes, but provider availability varies by runtime:
+
+### Universal Runtimes
+
+The following providers work in **Node.js**, **Deno**, **Bun**, and **Cloudflare Workers**:
+
+- **Resend** - Uses Fetch API
+- **Brevo** - Uses Fetch API
+- **Mailgun** - Uses Fetch API
+- **Mailjet** - Uses Fetch API
+- **MailerSend** - Uses Fetch API
+- **Mandrill** - Uses Fetch API
+- **MailPace** - Uses Fetch API
+- **Mailtrap** - Uses Fetch API
+- **Postal** - Uses Fetch API
+- **Postmark** - Uses Fetch API
+- **Azure** - Uses Fetch API (requires OAuth2 token or connection string)
+- **Infobip** - Uses Fetch API
+- **Scaleway** - Uses Fetch API
+- **AhaSend** - Uses Fetch API
+- **Mailomat** - Uses Fetch API
+- **Sweego** - Uses Fetch API
+- **SendGrid** - Uses Fetch API
+- **Zeptomail** - Uses Fetch API
+- **Plunk** - Uses Fetch API
+- **HTTP** - Uses Fetch API
+- **Mock** - In-memory provider
+- **Failover** - Works if all wrapped providers support the runtime
+- **Round Robin** - Works if all wrapped providers support the runtime
+- **OpenTelemetry** - Works if wrapped provider supports the runtime
+
+### Node.js Only
+
+The following providers require Node.js built-in modules (`node:crypto`, `node:net`, `node:tls`) and only work in **Node.js**:
+
+- **AWS SES** - Requires `node:crypto` for AWS Signature V4 signing
+- **SMTP** - Requires `node:net` and `node:tls` for SMTP connections
+- **MailCrab** - Wraps SMTP provider (requires Node.js)
+- **Nodemailer** - Requires the `nodemailer` package (Node.js only)
+
+### Runtime Compatibility Table
+
+| Provider      | Node.js | Deno | Bun  | Cloudflare Workers |
+| ------------- | ------- | ---- | ---- | ------------------ |
+| Resend        | ✅      | ✅   | ✅   | ✅                 |
+| Brevo         | ✅      | ✅   | ✅   | ✅                 |
+| Mailgun       | ✅      | ✅   | ✅   | ✅                 |
+| Mailjet       | ✅      | ✅   | ✅   | ✅                 |
+| MailerSend    | ✅      | ✅   | ✅   | ✅                 |
+| Mandrill      | ✅      | ✅   | ✅   | ✅                 |
+| MailPace      | ✅      | ✅   | ✅   | ✅                 |
+| Mailtrap      | ✅      | ✅   | ✅   | ✅                 |
+| Postal        | ✅      | ✅   | ✅   | ✅                 |
+| Postmark      | ✅      | ✅   | ✅   | ✅                 |
+| Azure         | ✅      | ✅   | ✅   | ✅                 |
+| Infobip       | ✅      | ✅   | ✅   | ✅                 |
+| Scaleway      | ✅      | ✅   | ✅   | ✅                 |
+| AhaSend       | ✅      | ✅   | ✅   | ✅                 |
+| Mailomat      | ✅      | ✅   | ✅   | ✅                 |
+| Sweego        | ✅      | ✅   | ✅   | ✅                 |
+| SendGrid      | ✅      | ✅   | ✅   | ✅                 |
+| Zeptomail     | ✅      | ✅   | ✅   | ✅                 |
+| Plunk         | ✅      | ✅   | ✅   | ✅                 |
+| HTTP          | ✅      | ✅   | ✅   | ✅                 |
+| Mock          | ✅      | ✅   | ✅   | ✅                 |
+| AWS SES       | ✅      | ❌   | ❌   | ❌                 |
+| SMTP          | ✅      | ❌   | ❌   | ❌                 |
+| MailCrab      | ✅      | ❌   | ❌   | ❌                 |
+| Nodemailer    | ✅      | ❌   | ❌   | ❌                 |
+| Failover      | ✅\*    | ✅\* | ✅\* | ✅\*               |
+| Round Robin   | ✅\*    | ✅\* | ✅\* | ✅\*               |
+| OpenTelemetry | ✅\*    | ✅\* | ✅\* | ✅\*               |
+
+\* Runtime support depends on the wrapped providers. Works if all wrapped providers support the runtime.
+
+## Provider Dependencies
+
+@visulima/email uses peer dependencies for providers. You only need to install the providers you plan to use. Most providers work out of the box with no additional dependencies - they use the native Fetch API.
+
+### Universal Providers (No Additional Dependencies)
+
+The following providers work without any additional dependencies:
+
+- **Resend** - Just configure with your API key
+- **Brevo** - Just configure with your API key
+- **Mailgun** - Just configure with your API key and domain
+- **Mailjet** - Just configure with your API key and secret
+- **MailerSend** - Just configure with your API key
+- **Mandrill** - Just configure with your API key
+- **MailPace** - Just configure with your API key
+- **Mailtrap** - Just configure with your API key
+- **Postal** - Just configure with your API key and server URL
+- **Postmark** - Just configure with your API key
+- **Azure** - Configure with OAuth2 token or connection string
+- **Infobip** - Just configure with your API key
+- **Scaleway** - Just configure with your API key
+- **AhaSend** - Just configure with your API key
+- **Mailomat** - Just configure with your API key
+- **Sweego** - Just configure with your API key
+- **SendGrid** - Just configure with your API key
+- **Zeptomail** - Just configure with your API key
+- **Plunk** - Just configure with your API key
+- **HTTP** - Configure with your custom HTTP endpoint
+- **Mock** - No configuration needed (for testing)
+
+### Node.js Only Providers
+
+- **AWS SES** - No additional dependencies needed, uses native fetch API and `node:crypto` for AWS Signature V4 signing
+- **SMTP** - No additional dependencies needed, uses native Node.js SMTP support (`node:net` and `node:tls`)
+- **Nodemailer** - Nodemailer is included as a dependency, no additional installation needed
+- **MailCrab** - No additional dependencies needed, wraps SMTP provider
+
+### Composite Providers
+
+- **Failover** - No additional dependencies, works with any providers
+- **Round Robin** - No additional dependencies, works with any providers
+- **OpenTelemetry** - Requires `@opentelemetry/api` package for observability features
+
+## Template Engine Dependencies
+
+Template engines are optional peer dependencies. Install only the ones you need:
+
+### Handlebars
+
+```bash
+npm install handlebars
+# or
+yarn add handlebars
+# or
+pnpm add handlebars
+```
+
+### MJML
+
+```bash
+npm install mjml
+# or
+yarn add mjml
+# or
+pnpm add mjml
+```
+
+### React Email
+
+```bash
+npm install @react-email/render
+# or
+yarn add @react-email/render
+# or
+pnpm add @react-email/render
+```
+
+### Vue Email
+
+```bash
+npm install @vue-email/render
+# or
+yarn add @vue-email/render
+# or
+pnpm add @vue-email/render
+```
+
+### HTML-to-Text
+
+```bash
+npm install html-to-text
+# or
+yarn add html-to-text
+# or
+pnpm add html-to-text
+```
+
+### Disposable Email Detection
+
+The disposable email detection utility is included by default using `@visulima/disposable-email-domains`. The `isDisposableEmail` utility function is available to detect temporary/disposable email addresses. See [Validating Email Addresses](/docs/package/email/getting-started/sending-mail#validating-email-addresses) for usage examples.
+
+## TypeScript Support
+
+@visulima/email is written in TypeScript and provides full type definitions. No additional type packages are required.
+
+```typescript
+import type { Mail, MailMessage, Provider } from "@visulima/email";
+```
+
+## Verify Installation
+
+After installation, verify that @visulima/email is working correctly:
+
+```typescript
+import { createMail } from "@visulima/email";
+import { resendProvider } from "@visulima/email/providers/resend";
+
+const mail = createMail(resendProvider({ apiKey: "test" }));
+console.log("@visulima/email is installed and ready!");
+```
+
+## Next Steps
+
+- [Getting Started](/docs/package/email/getting-started/introduction) - Learn how to use @visulima/email
+- [Configuration](/docs/package/email/getting-started/configuration) - Configure providers for your needs
+- [Sending Mail](/docs/package/email/getting-started/sending-mail) - Send your first email

@@ -1,0 +1,170 @@
+{
+    "name": "@visulima/storage-client",
+    "version": "1.0.0-alpha.1",
+    "description": "The upload client library. Simple and easy file uploads for React | Vue | Solid | .",
+    "keywords": [
+        "visulima",
+        "storage-client",
+        "file-upload",
+        "upload",
+        "upload-client",
+        "react",
+        "vue",
+        "solid",
+        "svelte",
+        "tus",
+        "resumable-upload",
+        "multipart-upload",
+        "chunked-upload",
+        "batch-upload",
+        "tanstack-query",
+        "react-query",
+        "vue-query",
+        "solid-query",
+        "svelte-query",
+        "file-management",
+        "progress-tracking",
+        "retry",
+        "abort-upload"
+    ],
+    "homepage": "https://visulima.com/packages/storage-client",
+    "bugs": {
+        "url": "https://github.com/visulima/visulima/issues"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/visulima/visulima.git",
+        "directory": "packages/storage-client"
+    },
+    "funding": [
+        {
+            "type": "github",
+            "url": "https://github.com/sponsors/prisis"
+        },
+        {
+            "type": "consulting",
+            "url": "https://anolilab.com/support"
+        }
+    ],
+    "license": "MIT",
+    "author": {
+        "name": "Daniel Bannert",
+        "email": "d.bannert@anolilab.de"
+    },
+    "sideEffects": false,
+    "type": "module",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "default": "./dist/index.js"
+        },
+        "./react": {
+            "types": "./dist/react/index.d.ts",
+            "default": "./dist/react/index.js"
+        },
+        "./vue": {
+            "types": "./dist/vue/index.d.ts",
+            "default": "./dist/vue/index.js"
+        },
+        "./solid": {
+            "types": "./dist/solid/index.d.ts",
+            "default": "./dist/solid/index.js"
+        },
+        "./svelte": {
+            "types": "./dist/svelte/index.d.ts",
+            "default": "./dist/svelte/index.js"
+        },
+        "./package.json": "./package.json"
+    },
+    "files": [
+        "dist",
+        "README.md",
+        "CHANGELOG.md"
+    ],
+    "scripts": {
+        "build": "packem build --development",
+        "build:prod": "packem build --production",
+        "clean": "rimraf node_modules dist .eslintcache",
+        "dev": "pnpm run build --watch",
+        "lint:attw": "attw --pack",
+        "lint:eslint": "eslint .",
+        "lint:eslint:fix": "eslint . --cache --concurrency auto --fix",
+        "lint:package-json": "publint --strict",
+        "lint:prettier": "prettier --config=.prettierrc.cjs --check .",
+        "lint:prettier:fix": "prettier --config=.prettierrc.cjs --write .",
+        "lint:types": "tsc --noEmit --project tsconfig.json",
+        "test": "vitest run",
+        "test:coverage": "vitest run --coverage",
+        "test:ui": "vitest --ui --coverage.enabled=true",
+        "test:watch": "vitest"
+    },
+    "devDependencies": {
+        "@anolilab/eslint-config": "^16.4.4",
+        "@anolilab/semantic-release-pnpm": "3.1.0",
+        "@anolilab/semantic-release-preset": "12.0.1",
+        "@arethetypeswrong/cli": "^0.18.2",
+        "@eslint-react/eslint-plugin": "2.3.9",
+        "@secretlint/secretlint-rule-preset-recommend": "^11.2.5",
+        "@sveltejs/vite-plugin-svelte": "^6.2.1",
+        "@tanstack/eslint-plugin-query": "5.91.2",
+        "@tanstack/react-query": ">=5.90.11",
+        "@tanstack/solid-query": ">=5.90.14",
+        "@tanstack/svelte-query": ">=6.0.9",
+        "@tanstack/vue-query": ">=5.92.0",
+        "@testing-library/react": "^16.3.0",
+        "@testing-library/svelte": "5.2.9",
+        "@testing-library/vue": "8.1.0",
+        "@total-typescript/ts-reset": "^0.6.1",
+        "@types/node": "24.10.1",
+        "@types/react": "^19.2.7",
+        "@visulima/packem": "2.0.0-alpha.40",
+        "@vitest/coverage-v8": "^4.0.14",
+        "@vitest/ui": "^4.0.14",
+        "conventional-changelog-conventionalcommits": "9.1.0",
+        "esbuild": "^0.27.0",
+        "eslint": "9.39.1",
+        "eslint-plugin-jsx-a11y": "^6.10.2",
+        "eslint-plugin-react": "7.37.5",
+        "eslint-plugin-react-hooks": "7.0.1",
+        "eslint-plugin-react-perf": "3.3.3",
+        "eslint-plugin-react-refresh": "^0.4.24",
+        "eslint-plugin-react-you-might-not-need-an-effect": "0.7.0",
+        "eslint-plugin-solid": "0.14.5",
+        "eslint-plugin-svelte": "3.13.0",
+        "eslint-plugin-testing-library": "^7.13.5",
+        "eslint-plugin-validate-jsx-nesting": "^0.1.1",
+        "eslint-plugin-vue": "10.6.2",
+        "happy-dom": "^20.0.11",
+        "prettier": "^3.7.3",
+        "publint": "^0.3.15",
+        "react": "^19.2.0",
+        "rimraf": "^6.1.2",
+        "secretlint": "11.2.5",
+        "semantic-release": "^25.0.2",
+        "solid-js": ">=1.9.10",
+        "svelte": ">=5.45.2",
+        "svelte-eslint-parser": "1.4.0",
+        "svelte-preprocess": "^6.0.3",
+        "typescript": "^5.9.3",
+        "vitest": "^4.0.14",
+        "vue": ">=3.5.25",
+        "vue-eslint-parser": "10.2.0"
+    },
+    "peerDependencies": {
+        "@tanstack/react-query": ">=5.90.10",
+        "@tanstack/solid-query": ">=5.90.13",
+        "@tanstack/svelte-query": ">=6.0.8",
+        "@tanstack/vue-query": ">=5.91.2",
+        "react": ">=18.0.0",
+        "solid-js": ">=1.0.0",
+        "svelte": ">=3.0.0",
+        "vue": ">=3.0.0"
+    },
+    "engines": {
+        "node": ">=22.21 <=25.x"
+    },
+    "publishConfig": {
+        "access": "public",
+        "provenance": true
+    }
+}

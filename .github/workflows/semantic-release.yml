@@ -48,7 +48,7 @@ jobs:
               uses: "actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955" # v4.3.0
               with:
                   fetch-depth: 0
-                  persist-credentials: false
+                  token: "${{ secrets.SEMANTIC_RELEASE_GITHUB_TOKEN }}"
               env:
                   GIT_COMMITTER_NAME: "GitHub Actions Shell"
                   GIT_AUTHOR_NAME: "GitHub Actions Shell"
@@ -84,7 +84,6 @@ jobs:
               if: "success()"
               env:
                   GITHUB_TOKEN: "${{ secrets.SEMANTIC_RELEASE_GITHUB_TOKEN }}"
-                  NPM_TOKEN: "${{ secrets.NPM_AUTH_TOKEN }}"
                   GIT_AUTHOR_NAME: "github-actions-shell"
                   GIT_AUTHOR_EMAIL: "github-actions[bot]@users.noreply.github.com"
                   GIT_COMMITTER_NAME: "github-actions-shell"
