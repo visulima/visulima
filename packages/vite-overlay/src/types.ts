@@ -1,5 +1,6 @@
 import type { ErrorLocation } from "@visulima/error/error";
 import type { Solution } from "@visulima/error/solution";
+import type { Properties as CSSProperties } from "csstype";
 
 export type ErrorLike = Error | { message?: string; name?: string; stack?: string };
 
@@ -104,3 +105,39 @@ export interface ErrorProcessingResult {
 }
 
 export type StackFrameValidator = (line: string) => boolean;
+
+/**
+ * Balloon position options
+ */
+export type BalloonPosition = "top-left" | "top-right" | "bottom-left" | "bottom-right";
+
+/**
+ * Custom style options for the balloon trigger
+ * Can be either a CSS string or a CSS.Properties object
+ */
+export type BalloonStyle = string | CSSProperties;
+
+/**
+ * Balloon configuration options
+ */
+export interface BalloonConfig {
+    readonly enabled?: boolean;
+    readonly icon?: string;
+    readonly position?: BalloonPosition;
+    readonly style?: BalloonStyle;
+}
+
+/**
+ * Overlay configuration options
+ */
+export interface OverlayConfig {
+    readonly balloon?: BalloonConfig;
+
+    /**
+     * Custom CSS to inject into the overlay for styling customization.
+     * This CSS will be injected into the shadow DOM and can be used to override
+     * the default styles of the overlay and button elements.
+     * Can be either a CSS string or a CSS.Properties object.
+     */
+    readonly customCSS?: string | CSSProperties;
+}
