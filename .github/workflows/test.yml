@@ -111,7 +111,6 @@ jobs:
               with:
                   deno-version: "${{ matrix.deno_version }}"
                   cache: true
-            
             - name: "Setup Bun"
               if: "matrix.os == 'ubuntu-latest' && matrix.node_version == 22 && matrix.bun_version"
               uses: "oven-sh/setup-bun@735343b667d3e6f658f44d0eca948eb6282f2b76" # v2.0.2
@@ -195,7 +194,7 @@ jobs:
         needs: ["files-changed", "test"]
         name: "Check Test Run"
         # This is necessary since a failed/skipped dependent job would cause this job to be skipped
-        if: "always() && ((needs.test.result == 'success' || needs.test.result == 'skipped') && (needs.test-deno.result == 'success' || needs.test-deno.result == 'skipped') && (needs.test-bun.result == 'success' || needs.test-bun.result == 'skipped'))"
+        if: "always() && (needs.test.result == 'success' || needs.test.result == 'skipped')"
         runs-on: "ubuntu-24.04"
         steps:
             # If any jobs we depend on fail, we will fail since this is a required check
