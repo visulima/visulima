@@ -32,12 +32,12 @@ jobs:
             codecov: "${{ steps.changes.outputs.codecov }}"
         steps:
             - name: "Harden Runner"
-              uses: "step-security/harden-runner@f4a75cfd619ee5ce8d5b864b0d183aff3c69b55a" # v2.13.1
+              uses: "step-security/harden-runner@95d9a5deda9de15063e7595e9719c11c38c90ae2" # v2.13.2
               with:
                   egress-policy: "audit"
 
             - name: "Git checkout"
-              uses: "actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955" # v4.3.0
+              uses: "actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5" # v4.3.1
               env:
                   GIT_COMMITTER_NAME: "GitHub Actions Shell"
                   GIT_AUTHOR_NAME: "GitHub Actions Shell"
@@ -72,12 +72,12 @@ jobs:
             NODE: "${{ matrix.node_version }}"
         steps:
             - name: "Harden Runner"
-              uses: "step-security/harden-runner@f4a75cfd619ee5ce8d5b864b0d183aff3c69b55a" # v2.13.1
+              uses: "step-security/harden-runner@95d9a5deda9de15063e7595e9719c11c38c90ae2" # v2.13.2
               with:
                   egress-policy: "audit"
 
             - name: "Git checkout ${{ env.HEAD_REPOSITORY }}:${{ env.HEAD_REF }}"
-              uses: "actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955" # v4.3.0
+              uses: "actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5" # v4.3.1
               env:
                   GIT_COMMITTER_NAME: "GitHub Actions Shell"
                   GIT_AUTHOR_NAME: "GitHub Actions Shell"
@@ -89,7 +89,7 @@ jobs:
 
             - name: "Derive appropriate SHAs for base and head for `nx affected` commands"
               id: "setSHAs"
-              uses: "nrwl/nx-set-shas@826660b82addbef3abff5fa871492ebad618c9e1" # v4
+              uses: "nrwl/nx-set-shas@3e9ad7370203c1e93d109be57f3b72eb0eb511b1" # v4
 
             - name: "Setup resources and environment"
               id: "setup"
@@ -182,7 +182,7 @@ jobs:
             # If any jobs we depend on fail, we will fail since this is a required check
             # NOTE: A timeout is considered a failure
             - name: "Harden Runner"
-              uses: "step-security/harden-runner@f4a75cfd619ee5ce8d5b864b0d183aff3c69b55a" # v2.13.1
+              uses: "step-security/harden-runner@95d9a5deda9de15063e7595e9719c11c38c90ae2" # v2.13.2
               with:
                   egress-policy: "audit"
 
