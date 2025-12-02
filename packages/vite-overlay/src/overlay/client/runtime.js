@@ -41,6 +41,8 @@ class ErrorOverlay extends HTMLElement {
     // Event listeners for cleanup
     __eventListeners = new Map();
 
+    __v_oBalloonDismissed = false;
+
     // Core state
     __v_oCurrentHistoryIndex = -1;
 
@@ -134,14 +136,14 @@ class ErrorOverlay extends HTMLElement {
         const editorSelect = this.root.querySelector("#editor-selector");
 
         if (editorSelect) {
-            const saved = localStorage.getItem("vo:editor");
+            const saved = localStorage.getItem("__v-o__editor");
 
             if (saved && editorSelect.value !== saved) {
                 editorSelect.value = saved;
             }
 
             editorSelect.addEventListener("change", function () {
-                localStorage.setItem("vo:editor", this.value || "");
+                localStorage.setItem("__v-o__editor", this.value || "");
             });
         }
 
@@ -275,6 +277,7 @@ class ErrorOverlay extends HTMLElement {
         this.__elements = {
             balloon: root.querySelector("#__v_o__balloon"),
             balloonCount: root.querySelector("#__v_o__balloon_count"),
+            balloonGroup: root.querySelector("#__v_o__balloon_group"),
             balloonText: root.querySelector("#__v_o__balloon_text"),
             fileButton: root.querySelector("button[class*=\"underline\"]"),
             heading: root.querySelector("#__v_o__heading"),
@@ -383,9 +386,9 @@ class ErrorOverlay extends HTMLElement {
      * @param {number} total - The total number of errors to display
      */
     _initializeBalloon(total) {
-        const { balloon, balloonCount, balloonText, root } = this.__elements || {};
+        const { balloon, balloonCount, balloonGroup, balloonText, root } = this.__elements || {};
 
-        if (!balloon || !balloonCount || !root) {
+        if (!balloonGroup || !balloonCount || !root) {
             return;
         }
 
@@ -398,19 +401,53 @@ class ErrorOverlay extends HTMLElement {
 
             this._restoreBalloonState();
 
-            balloon.classList.toggle("hidden", total <= 0);
+            // Show balloon if there are errors and it's not dismissed
+            if (total > 0 && !this.__v_oBalloonDismissed) {
+                balloonGroup.classList.add("inline-flex");
+                balloonGroup.classList.remove("hidden");
+            } else {
+                balloonGroup.classList.remove("inline-flex");
+                balloonGroup.classList.add("hidden");
+            }
 
             const clickHandler = (event) => {
+                // Don't toggle overlay if clicking the close button
+                if (event.target.closest("#__v_o__balloon_close")) {
+                    return;
+                }
+
                 event.preventDefault();
                 const isHidden = root.classList.contains("hidden");
 
                 root.classList.toggle("hidden");
+
                 this._saveBalloonState("overlay", isHidden ? "open" : "closed");
             };
 
-            this._makeBalloonDraggable(balloon);
-
             balloon.addEventListener("click", clickHandler);
+
+            // Handle close button click
+            const closeButton = this.root.querySelector("#__v_o__balloon_close");
+
+            if (closeButton) {
+                const closeHandler = (event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+
+                    // Hide the balloon and mark as dismissed
+                    balloonGroup.classList.add("hidden");
+                    balloonGroup.classList.remove("inline-flex");
+                    this.__v_oBalloonDismissed = true;
+                };
+
+                // Remove existing listener if any
+                const existingCloseButton = closeButton.cloneNode(true);
+
+                closeButton.parentNode.replaceChild(existingCloseButton, closeButton);
+                existingCloseButton.addEventListener("click", closeHandler);
+            }
+
+            this._makeBalloonDraggable(balloonGroup);
         } catch {
             // Fail silently if DOM is not available
         }
@@ -512,7 +549,7 @@ class ErrorOverlay extends HTMLElement {
      * @private
      */
     _initializeHistoryToggle() {
-        const toggleButton = this.__elements.historyToggle;
+        const toggleButton = this.__elements?.historyToggle;
 
         if (!toggleButton) {
             return;
@@ -572,7 +609,7 @@ class ErrorOverlay extends HTMLElement {
                         }
 
                         fileElement.textContent = isHttpLink ? fullPath : `.${displayPath}${line ? `:${line}` : ""}`;
-                        const editor = localStorage.getItem("vo:editor");
+                        const editor = localStorage.getItem("__v-o__editor");
 
                         // Remove any existing event listeners
                         const newFileElement = fileElement.cloneNode(true);
@@ -667,7 +704,7 @@ class ErrorOverlay extends HTMLElement {
                                 resolved = abs;
                             }
 
-                            const editor = localStorage.getItem("vo:editor");
+                            const editor = localStorage.getItem("__v-o__editor");
 
                             // injected by the hmr plugin when served
                             // eslint-disable-next-line no-undef
@@ -925,7 +962,7 @@ class ErrorOverlay extends HTMLElement {
 
         const isDark = currentTheme === "dark";
 
-        const rootElement = this.__elements.root;
+        const rootElement = this.__elements?.root;
         const darkButton = this.root.querySelector("[data-v-o-theme-click-value=\"dark\"]");
         const lightButton = this.root.querySelector("[data-v-o-theme-click-value=\"light\"]");
 
@@ -1108,8 +1145,8 @@ class ErrorOverlay extends HTMLElement {
         };
 
         const handleMouseDown = (event) => {
-            if (event.target.closest("#__v_o__balloon_count")) {
-                return; // Don't drag when clicking count
+            if (event.target.closest("#__v_o__balloon_count") || event.target.closest("#__v_o__balloon_close")) {
+                return; // Don't drag when clicking count or close button
             }
 
             isDragging = true;
@@ -1187,9 +1224,8 @@ class ErrorOverlay extends HTMLElement {
      */
     _restoreBalloonState() {
         try {
-            const balloonStates = JSON.parse(localStorage.getItem("v-o-balloon") || "{}");
-            const balloon = this.root.querySelector("#__v_o__balloon");
-            const rootElement = this.__elements.root;
+            const balloonStates = JSON.parse(localStorage.getItem("__v-o__balloon") || "{}");
+            const { root: rootElement, balloon } = this.__elements || {};
 
             if (balloon && rootElement) {
                 if (balloonStates.overlay === "open") {
@@ -1237,12 +1273,12 @@ class ErrorOverlay extends HTMLElement {
 
     _saveBalloonState(key, value) {
         try {
-            const item = localStorage.getItem("v-o-balloon");
+            const item = localStorage.getItem("__v-o__balloon");
             const balloonStates = item ? JSON.parse(item) : {};
 
             balloonStates[key] = value;
 
-            localStorage.setItem("v-o-balloon", JSON.stringify(balloonStates));
+            localStorage.setItem("__v-o__balloon", JSON.stringify(balloonStates));
         } catch {
             // Fail silently if localStorage is not available
         }
@@ -1305,7 +1341,7 @@ class ErrorOverlay extends HTMLElement {
                 historyLayerDepth.classList.add("opacity-0");
             }
 
-            const timeElement = this.__elements.historyTimestamp;
+            const timeElement = this.__elements?.historyTimestamp;
 
             if (timeElement) {
                 timeElement.classList.add("hidden");
@@ -1364,7 +1400,7 @@ class ErrorOverlay extends HTMLElement {
         const historyEntry = this.__v_oHistory[this.__v_oCurrentHistoryIndex];
 
         // Update timestamp on right notch
-        const timeElement = this.__elements.historyTimestamp;
+        const timeElement = this.__elements?.historyTimestamp;
 
         if (timeElement && historyEntry) {
             timeElement.classList.remove("hidden");
@@ -1409,8 +1445,6 @@ class ErrorOverlay extends HTMLElement {
 
             if (root && typeof root.classList?.add === "function") {
                 root.classList.add("hidden");
-
-                this._saveBalloonState("overlay", "closed");
             }
 
             // Don't remove the overlay - just hide it so it can be reopened
@@ -1431,6 +1465,16 @@ class ErrorOverlay extends HTMLElement {
             this.root.classList.remove("hidden");
 
             this._saveBalloonState("overlay", "open");
+        }
+
+        // Show balloon and clear dismissed state when new error occurs
+        const balloonGroup = this.__elements?.balloonGroup;
+
+        if (balloonGroup) {
+            // Clear dismissed state and show balloon for new errors
+            this.__v_oBalloonDismissed = false;
+            balloonGroup.classList.add("inline-flex");
+            balloonGroup.classList.remove("hidden");
         }
 
         // Update code frame
