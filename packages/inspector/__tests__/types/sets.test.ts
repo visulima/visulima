@@ -14,6 +14,7 @@ describe("sets", () => {
 
         const set = new Set();
 
+        // eslint-disable-next-line unicorn/no-immediate-mutation
         set.add({ a: 1 });
         set.add(["b"]);
 
@@ -26,9 +27,8 @@ describe("sets", () => {
         expect(inspect(new Set(), { indent: 2 }), "empty Set should show as empty (two)").toBe("Set (0) {}");
         expect(inspect(new Set(), { indent: "\t" }), "empty Set should show as empty (tabs)").toBe("Set (0) {}");
 
-        const nestedSet = new Set();
+        const nestedSet = new Set([set]);
 
-        nestedSet.add(set);
         nestedSet.add(nestedSet);
 
         const expectedNestedSpaces = ["Set (2) {", "  Set (2) {", "    {", "      a: 1", "    },", "    [ 'b' ]", "  },", "  [Circular]", "}"].join("\n");

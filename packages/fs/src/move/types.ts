@@ -1,5 +1,3 @@
-type FilePermissions = number;
-
 export type Options = {
     /**
      * The working directory to find source files.
@@ -14,7 +12,7 @@ export type Options = {
      * It has no effect on Windows.
      * @default 0o777
      */
-    readonly directoryMode?: FilePermissions;
+    readonly directoryMode?: number;
 
     /**
      * Overwrite existing destination file.

@@ -43,7 +43,6 @@ const writeJson = async (path: URL | string, data: unknown, options: WriteJsonOp
 
     if (await isAccessible(path, R_OK)) {
         try {
-            // eslint-disable-next-line security/detect-non-literal-fs-filename
             const file = await readFile(path, "utf8");
 
             if (detectIndent) {

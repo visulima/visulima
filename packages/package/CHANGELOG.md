@@ -1,3 +1,14 @@
+## @visulima/package [4.1.7](https://github.com/visulima/visulima/compare/@visulima/package@4.1.6...@visulima/package@4.1.7) (2025-11-19)
+
+### Miscellaneous Chores
+
+* **release:** update dependencies and versions across multiple packages ([39ad777](https://github.com/visulima/visulima/commit/39ad777e15aeb77d1ec4182763ab7473740ccbc4))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 4.1.0
+
 ## @visulima/package [4.1.6](https://github.com/visulima/visulima/compare/@visulima/package@4.1.5...@visulima/package@4.1.6) (2025-11-13)
 
 ### Bug Fixes

@@ -19,7 +19,6 @@ const globToRegExp = (glob: string): RegExp => {
         // eslint-disable-next-line unicorn/prefer-string-replace-all
         .replace(/\[!(.*?)\]/g, "[^$1]"); // Replace [!number-number] with [^number-number]
 
-    // eslint-disable-next-line @rushstack/security/no-unsafe-regexp,security/detect-non-literal-regexp
     return new RegExp(`^${reString}$`);
 };
 

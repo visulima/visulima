@@ -12,7 +12,7 @@ import { toPath } from "@visulima/path/utils";
 import WalkError from "../error/walk-error";
 import type { WalkEntry, WalkOptions } from "../types";
 import assertValidFileOrDirectoryPath from "../utils/assert-valid-file-or-directory-path";
-import globToRegExp from "./utils/glob-to-regex";
+import globToRegExp from "./utils/glob-to-regexp";
 import walkInclude from "./utils/walk-include";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
@@ -20,7 +20,7 @@ const _createWalkEntry = async (path: string): Promise<WalkEntry> => {
     const normalizePath: string = normalize(path as string);
 
     const name = basename(normalizePath);
-    // eslint-disable-next-line security/detect-non-literal-fs-filename
+
     const info: Stats = await stat(normalizePath);
 
     return {
@@ -36,6 +36,14 @@ const _createWalkEntry = async (path: string): Promise<WalkEntry> => {
  * Asynchronously walks the file tree rooted at `directory`, yielding each file or directory that matches the criteria specified in `options`.
  * @param directory The root directory to start walking from.
  * @param options Optional configuration to control the walking process. See {@link WalkOptions}.
+ * @param options.extensions List of file extensions used to filter entries.
+ * @param options.followSymlinks Indicates whether symlinks should be resolved or not.
+ * @param options.includeDirs Indicates whether directory entries should be included or not.
+ * @param options.includeFiles Indicates whether file entries should be included or not.
+ * @param options.includeSymlinks Indicates whether symlink entries should be included or not.
+ * @param options.match List of regular expression or glob patterns used to filter entries.
+ * @param options.maxDepth Maximum depth to walk. Defaults to infinity.
+ * @param options.skip List of regular expression or glob patterns used to skip entries.
  * @returns An async iterable iterator yielding {@link WalkEntry} objects for each matching file or directory.
  * @example
  * ```javascript
@@ -94,7 +102,6 @@ export default async function* walk(
     }
 
     try {
-        // eslint-disable-next-line security/detect-non-literal-fs-filename,no-loops/no-loops
         for await (const entry of await readdir(directory, {
             withFileTypes: true,
         })) {
@@ -102,7 +109,6 @@ export default async function* walk(
 
             if (entry.isSymbolicLink()) {
                 if (followSymlinks) {
-                    // eslint-disable-next-line security/detect-non-literal-fs-filename
                     path = await realpath(path);
                 } else if (includeSymlinks && walkInclude(path, extensions, mappedMatch, mappedSkip)) {
                     yield {

@@ -41,7 +41,6 @@ const collect = async (directory: string, options: WalkOptions = {}): Promise<st
 
     const entries: string[] = [];
 
-    // eslint-disable-next-line no-loops/no-loops
     for await (const entry of walk(directory, options)) {
         entries.push(entry.path);
     }

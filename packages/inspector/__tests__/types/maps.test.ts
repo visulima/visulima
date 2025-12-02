@@ -62,6 +62,7 @@ describe("maps", () => {
 
         const map = new Map();
 
+        // eslint-disable-next-line unicorn/no-immediate-mutation
         map.set({ a: 1 }, ["b"]);
         map.set(3, Number.NaN);
 

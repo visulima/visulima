@@ -1,6 +1,6 @@
 {
     "name": "@visulima/api-platform",
-    "version": "3.0.57",
+    "version": "3.0.59",
     "exports": {
         ".": "./src/index-server.ts",
         "./next": "./src/framework/next/index-server.ts",

@@ -12,7 +12,6 @@ const fixture = resolve(fileURLToPath(import.meta.url), "../../../../__fixtures_
 const getEntries = async (root: string, options?: WalkOptions): Promise<WalkEntry[]> => {
     const entries: WalkEntry[] = [];
 
-    // eslint-disable-next-line no-loops/no-loops
     for await (const entry of walk(root, options)) {
         entries.push(entry);
     }
@@ -38,7 +37,6 @@ describe(walk, () => {
 
         const root = resolve(fixture, "single_file");
 
-        // eslint-disable-next-line no-loops/no-loops
         for await (const entry of await walk(root)) {
             if (entry.isFile()) {
                 // eslint-disable-next-line vitest/no-conditional-expect
@@ -65,7 +63,6 @@ describe(walk, () => {
         // eslint-disable-next-line unicorn/prevent-abbreviations
         const emptyDir = resolve(fixture, "empty_dir");
 
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         await mkdir(emptyDir);
 
         try {

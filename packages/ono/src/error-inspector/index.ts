@@ -317,9 +317,7 @@ const template = async (error: ErrorType, solutionFinders: SolutionFinder[] = []
 
     const customPages = Array.isArray(sanitizedOptions.content) ? sanitizedOptions.content : [];
     const anyCustomSelected = customPages.some((p) => p.defaultSelected);
-    const tabsList: HeaderTab[] = [];
-
-    tabsList.push({ id: stackId, name: stackName, selected: !anyCustomSelected });
+    const tabsList: HeaderTab[] = [{ id: stackId, name: stackName, selected: !anyCustomSelected }];
 
     for (const page of customPages) {
         tabsList.push({ id: String(page.id), name: String(page.name), selected: Boolean(page.defaultSelected) });

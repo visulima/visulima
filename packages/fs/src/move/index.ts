@@ -46,7 +46,6 @@ export const move = async (sourcePath: string, destinationPath: string, options:
  * @param sourcePath The file you want to move.
  * @param destinationPath Where you want the file moved.
  * @param options Configuration options.
- * @returns Nothing is returned.
  * @example
  * ```
  * import { moveSync } from '@visulima/fs';
@@ -90,7 +89,6 @@ export const rename = async (source: string, destination: string, options?: Opti
  * @param source The file you want to rename.
  * @param destination The name of the renamed file.
  * @param options Configuration options.
- * @returns A `Promise` that resolves when the file has been renamed.
  * @example
  * ```
  * import { renameSync } from '@visulima/fs';

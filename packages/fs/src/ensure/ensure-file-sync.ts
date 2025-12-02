@@ -26,7 +26,7 @@ const ensureFileSync = (filePath: URL | string): void => {
 
     try {
         // if file exists
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
+
         const stat = lstatSync(filePath);
 
         if (!stat.isFile()) {
@@ -40,7 +40,7 @@ const ensureFileSync = (filePath: URL | string): void => {
             // ensure dir exists
             ensureDirSync(dirname(toPath(filePath)));
             // create file
-            // eslint-disable-next-line security/detect-non-literal-fs-filename
+
             writeFileSync(filePath, new Uint8Array());
 
             return;

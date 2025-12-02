@@ -8,6 +8,6 @@
     "devDependencies": {
         "@visulima/boxen": "workspace:*",
         "boxen": "8.0.1",
-        "vitest": "^4.0.8"
+        "vitest": "^4.0.13"
     }
 }

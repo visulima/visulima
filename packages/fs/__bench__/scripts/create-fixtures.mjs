@@ -28,23 +28,25 @@ async function main() {
         await writeFile(join(fixtures, "a/b/c/resolved.js"), "");
     }
 
-    for (const dir of up(start)) {
-        if (dir === fixtures)
-            break;
+    for await (const directory of up(start)) {
+        if (directory === fixtures) break;
 
         if (COUNT > 0) {
             const name = Math.random().toString(16).slice(4);
 
-            await Promise.all(Array.from({ length: COUNT }, (_, index) => writeFile(join(dir, `${name + index}.txt`), "")));
+            await Promise.all(Array.from({ length: COUNT }, (_, index) => writeFile(join(directory, `${name + index}.txt`), "")));
         }
 
-        const array = await readdir(dir);
+        const array = await readdir(directory);
 
-        console.log("> \"%s\" has %d file(s)", dir, array.length);
+        // eslint-disable-next-line no-console
+        console.log('> "%s" has %d file(s)', directory, array.length);
     }
 }
 
 main().catch((error) => {
+    // eslint-disable-next-line no-console
     console.error(error);
+    // eslint-disable-next-line unicorn/no-process-exit
     process.exit(1);
 });

@@ -145,7 +145,7 @@ class MockServerResponse {
     // eslint-disable-next-line @typescript-eslint/unified-signatures
     public end(data?: string | Buffer, encoding?: BufferEncoding, callback?: () => void): this;
     // @ts-expect-error TS6133: 'callback' is declared but its value is never read.
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
     public end(data?: string | Buffer, encoding?: BufferEncoding | (() => void), callback?: () => void): this {
         if (data) {
             this.body += data.toString();

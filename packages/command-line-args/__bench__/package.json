@@ -25,6 +25,6 @@
         "@types/minimist": "1.2.5",
         "@types/yargs-parser": "21.0.3",
         "typescript": "^5.9.3",
-        "vitest": "^4.0.8"
+        "vitest": "^4.0.13"
     }
 }

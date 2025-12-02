@@ -115,7 +115,7 @@ describe("objects", () => {
             },
         };
 
-        object[utilityInspect.custom] = function custom() {
+        object[utilityInspect.custom as unknown as keyof typeof object] = function custom() {
             return "symbol";
         };
 

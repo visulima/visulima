@@ -21,7 +21,6 @@ describe.each([
         distribution = temporaryDirectory();
         distributionFile = join(distribution, "file.txt");
 
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         await writeFile(distributionFile, fixtureFileContent, "utf8");
     });
 
@@ -36,7 +35,6 @@ describe.each([
 
         await function_(distributionFile, destination);
 
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         expect(readFileSync(destination, "utf8")).toBe(fixtureFileContent);
     });
 
@@ -58,7 +56,6 @@ describe.each([
 
             await function_(distributionFile, destination);
 
-            // eslint-disable-next-line security/detect-non-literal-fs-filename
             expect(readFileSync(destination, "utf8")).toBe(fixtureFileContent);
         } finally {
             fs.renameSync = originalRenameSync;
@@ -85,7 +82,6 @@ describe.each([
 
         const movedFile = resolve(destination, "unicorn-dir/unicorn.txt");
 
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         expect(readFileSync(movedFile, "utf8")).toBe(fixtureFileContent);
     });
 
@@ -101,10 +97,9 @@ describe.each([
         await function_(distributionFile, destination, { directoryMode });
 
         // Verify directory exists
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
+
         expect(existsSync(directory)).toBe(true);
 
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         const stat = statSync(directory);
 
         // eslint-disable-next-line no-bitwise
@@ -123,7 +118,6 @@ describe.each([
         distribution = temporaryDirectory();
         distributionFile = join(distribution, "file.txt");
 
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         await writeFile(distributionFile, fixtureFileContent, "utf8");
     });
 
@@ -140,7 +134,6 @@ describe.each([
 
         await function_(file, "unicorns.txt", { cwd: directory });
 
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         expect(readFileSync(renamedFile, "utf8")).toBe(fixtureFileContent);
     });
 

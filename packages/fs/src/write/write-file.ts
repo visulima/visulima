@@ -64,18 +64,15 @@ const writeFile = async (path: URL | string, content: ArrayBuffer | ArrayBufferV
             const directory = dirname(path);
 
             if (!await isAccessible(directory, F_OK)) {
-                // eslint-disable-next-line security/detect-non-literal-fs-filename
                 await mkdir(directory, { recursive: true });
             }
         }
 
         let stat: Stats | undefined;
 
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         await nodeWriteFile(temporaryPath, toUint8Array(content), { encoding: options.encoding, flag: options.flag });
 
         if (pathExists && !options.overwrite) {
-            // eslint-disable-next-line security/detect-non-literal-fs-filename
             stat = await nodeStat(path);
 
             if (options.chown === undefined) {
@@ -83,13 +80,11 @@ const writeFile = async (path: URL | string, content: ArrayBuffer | ArrayBufferV
                 options.chown = { gid: stat.gid, uid: stat.uid };
             }
 
-            // eslint-disable-next-line security/detect-non-literal-fs-filename
             await rename(path, `${path}.bak`);
         }
 
         if (options.chown) {
             try {
-                // eslint-disable-next-line security/detect-non-literal-fs-filename
                 await chown(temporaryPath, options.chown.uid, options.chown.gid);
             } catch {
                 // On linux permissionless filesystems like exfat and fat32 the entire filesystem is normally owned by root,
@@ -97,17 +92,14 @@ const writeFile = async (path: URL | string, content: ArrayBuffer | ArrayBufferV
             }
         }
 
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         await chmod(temporaryPath, stat && !options.mode ? stat.mode : options.mode ?? 0o666);
 
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         await rename(temporaryPath, path);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
         throw new Error(`Failed to write file at: ${path} - ${error.message}`, { cause: error });
     } finally {
         if (await isAccessible(temporaryPath)) {
-            // eslint-disable-next-line security/detect-non-literal-fs-filename
             await unlink(`${path}.tmp`);
         }
     }

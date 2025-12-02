@@ -95,9 +95,8 @@ const findUp = async (
 
     const statFunction = options.allowSymlinks ? stat : lstat;
 
-    // eslint-disable-next-line no-loops/no-loops
     while (directory && directory !== stopAt && directory !== root) {
-        // eslint-disable-next-line no-await-in-loop,no-loops/no-loops
+        // eslint-disable-next-line no-await-in-loop
         for await (let fileName of await getMatchers(directory)) {
             if (fileName === FIND_UP_STOP) {
                 return undefined;
@@ -108,8 +107,10 @@ const findUp = async (
             }
 
             if (Buffer.isBuffer(fileName)) {
+                // eslint-disable-next-line sonarjs/updated-loop-counter
                 fileName = fileName.toString();
             } else if (fileName instanceof URL) {
+                // eslint-disable-next-line sonarjs/updated-loop-counter
                 fileName = fileURLToPath(fileName as URL | string);
             }
 
