@@ -33,13 +33,15 @@ const { mockConfirm, mockInstallPackage } = vi.hoisted(() => {
     };
 });
 
-vi.mock(import("@inquirer/confirm"), () => {
+// eslint-disable-next-line vitest/prefer-import-in-mock
+vi.mock("@inquirer/confirm", () => {
     return {
         default: mockConfirm,
     };
 });
 
-vi.mock(import("@antfu/install-pkg"), () => {
+// eslint-disable-next-line vitest/prefer-import-in-mock
+vi.mock("@antfu/install-pkg", () => {
     return { installPackage: mockInstallPackage };
 });
 
