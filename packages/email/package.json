@@ -282,8 +282,8 @@
     "dependencies": {
         "@visulima/disposable-email-domains": "1.0.0-alpha.1",
         "html-to-text": "^9.0.5",
-        "ical-generator": "^9.0.0",
-        "lru-cache": "^11.2.2",
+        "ical-generator": "^10.0.0",
+        "lru-cache": "^11.2.4",
         "mime": "^4.1.0"
     },
     "devDependencies": {
