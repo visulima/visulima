@@ -1,0 +1,551 @@
+---
+title: API Reference
+description: Complete API documentation for all Boxen functions and types
+---
+
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Complete reference documentation for all Boxen APIs and type definitions.
+
+## Main Function
+
+### `boxen(text, options?)`
+
+Creates a box around the provided text with customizable styling options.
+
+**Parameters:**
+
+- `text` (string): The text content to display inside the box
+- `options` (Options, optional): Configuration object for styling the box
+
+**Returns:** `string` - The formatted box as a string ready for console output
+
+**Example:**
+
+```typescript
+import { boxen } from "@visulima/boxen";
+
+const box = boxen("Hello, World!", { padding: 1 });
+console.log(box);
+```
+
+## Options Interface
+
+### Core Options
+
+#### `borderStyle`
+
+**Type:** `string | BorderStyle`  
+**Default:** `"single"`  
+**Values:** `"single"` | `"double"` | `"round"` | `"bold"` | `"singleDouble"` | `"doubleSingle"` | `"classic"` | `"arrow"` | `"none"` | Custom `BorderStyle` object
+
+Defines the style of the box border.
+
+<Tabs items={['Predefined', 'Custom']}>
+  <Tab value="Predefined">
+    ```typescript
+    boxen("text", { borderStyle: "double" });
+    ```
+  </Tab>
+  <Tab value="Custom">
+    ```typescript
+    boxen("text", {
+        borderStyle: {
+            topLeft: "╔",
+            topRight: "╗",
+            bottomLeft: "╚",
+            bottomRight: "╝",
+            top: "═",
+            bottom: "═",
+            left: "║",
+            right: "║"
+        }
+    });
+    ```
+  </Tab>
+</Tabs>
+
+#### `borderColor`
+
+**Type:** `(border: string, position: BorderPosition, length: number) => string`  
+**Default:** `undefined`
+
+Function to colorize border characters. Receives the border character, its position, and the length of the border segment.
+
+**BorderPosition values:**
+- `"top"` - Top horizontal border
+- `"bottom"` - Bottom horizontal border
+- `"left"` - Left vertical border
+- `"right"` - Right vertical border
+- `"topLeft"` - Top-left corner
+- `"topRight"` - Top-right corner
+- `"bottomLeft"` - Bottom-left corner
+- `"bottomRight"` - Bottom-right corner
+- `"horizontal"` - Any horizontal line
+- `"vertical"` - Any vertical line
+
+**Example:**
+
+```typescript
+import { red, blue } from "@visulima/colorize";
+
+boxen("text", {
+    borderColor: (border, position) => {
+        return position.includes("top") ? red(border) : blue(border);
+    }
+});
+```
+
+#### `padding`
+
+**Type:** `number | Partial<Spacer>`  
+**Default:** `0`
+
+Space between the text and the box border.
+
+<Callout type="info">
+When using a number, the left/right padding is 3 times the top/bottom value for better visual proportion.
+</Callout>
+
+<Tabs items={['Number', 'Object', 'Partial']}>
+  <Tab value="Number">
+    ```typescript
+    boxen("text", { padding: 1 });
+    ```
+  </Tab>
+  <Tab value="Object">
+    ```typescript
+    boxen("text", {
+        padding: {
+            top: 2,
+            right: 4,
+            bottom: 2,
+            left: 4
+        }
+    });
+    ```
+  </Tab>
+  <Tab value="Partial">
+    ```typescript
+    boxen("text", {
+        padding: {
+            top: 1,
+            bottom: 1
+        }
+    });
+    ```
+  </Tab>
+</Tabs>
+
+#### `margin`
+
+**Type:** `number | Partial<Spacer>`  
+**Default:** `0`
+
+Space around the box.
+
+When using a number, the left/right margin is 3 times the top/bottom value.
+
+```typescript
+boxen("text", {
+    margin: {
+        top: 1,
+        right: 3,
+        bottom: 1,
+        left: 3
+    }
+});
+```
+
+#### `width`
+
+**Type:** `number`  
+**Default:** `undefined` (auto-calculated)
+
+Fixed width for the box in characters.
+
+<Callout type="warn">
+This disables terminal overflow handling. The box may appear broken if the terminal is too narrow.
+</Callout>
+
+```typescript
+boxen("text", { width: 50 });
+```
+
+#### `height`
+
+**Type:** `number`  
+**Default:** `undefined` (auto-calculated)
+
+Fixed height for the box in lines.
+
+<Callout type="warn">
+Content may be cropped if it exceeds the specified height.
+</Callout>
+
+```typescript
+boxen("text", { height: 10 });
+```
+
+#### `fullscreen`
+
+**Type:** `boolean | (width: number, height: number) => { columns: number; rows: number }`  
+**Default:** `false`
+
+Whether to fill the available terminal space.
+
+<Tabs items={['Boolean', 'Function']}>
+  <Tab value="Boolean">
+    ```typescript
+    boxen("text", { fullscreen: true });
+    ```
+  </Tab>
+  <Tab value="Function">
+    ```typescript
+    boxen("text", {
+        fullscreen: (width, height) => ({
+            columns: Math.floor(width * 0.8),
+            rows: Math.floor(height * 0.6)
+        })
+    });
+    ```
+  </Tab>
+</Tabs>
+
+#### `float`
+
+**Type:** `"left" | "center" | "right"`  
+**Default:** `"left"`
+
+Position the box within the available terminal space.
+
+```typescript
+boxen("text", { float: "center" });
+```
+
+### Text Options
+
+#### `textColor`
+
+**Type:** `(text: string) => string`  
+**Default:** `undefined`
+
+Function to colorize the text content.
+
+```typescript
+import { bold, red } from "@visulima/colorize";
+
+boxen("Error message", {
+    textColor: (text) => bold(red(text))
+});
+```
+
+#### `textAlignment`
+
+**Type:** `"left" | "center" | "right"`  
+**Default:** `"left"`
+
+Horizontal alignment of text within the box.
+
+```typescript
+boxen("Centered text", {
+    textAlignment: "center",
+    width: 40
+});
+```
+
+#### `transformTabToSpace`
+
+**Type:** `number | false`  
+**Default:** `4`
+
+Number of spaces to use for tab characters. Set to `false` to disable transformation.
+
+<Tabs items={['2 Spaces', '4 Spaces', 'Disabled']}>
+  <Tab value="2 Spaces">
+    ```typescript
+    boxen("Line 1\n\tIndented", {
+        transformTabToSpace: 2
+    });
+    ```
+  </Tab>
+  <Tab value="4 Spaces">
+    ```typescript
+    boxen("Line 1\n\tIndented", {
+        transformTabToSpace: 4
+    });
+    ```
+  </Tab>
+  <Tab value="Disabled">
+    ```typescript
+    boxen("Line 1\n\tIndented", {
+        transformTabToSpace: false
+    });
+    ```
+  </Tab>
+</Tabs>
+
+### Header Options
+
+#### `headerText`
+
+**Type:** `string`  
+**Default:** `undefined`
+
+Text to display in the top border of the box.
+
+```typescript
+boxen("Content", {
+    headerText: "Title"
+});
+```
+
+#### `headerAlignment`
+
+**Type:** `"left" | "center" | "right"`  
+**Default:** `"left"`
+
+Alignment of the header text.
+
+```typescript
+boxen("Content", {
+    headerText: "Centered Title",
+    headerAlignment: "center"
+});
+```
+
+#### `headerTextColor`
+
+**Type:** `(text: string) => string`  
+**Default:** `undefined`
+
+Function to colorize the header text.
+
+```typescript
+import { bold, blue } from "@visulima/colorize";
+
+boxen("Content", {
+    headerText: "Header",
+    headerTextColor: (text) => bold(blue(text))
+});
+```
+
+### Footer Options
+
+#### `footerText`
+
+**Type:** `string`  
+**Default:** `undefined`
+
+Text to display in the bottom border of the box.
+
+```typescript
+boxen("Content", {
+    footerText: "End"
+});
+```
+
+#### `footerAlignment`
+
+**Type:** `"left" | "center" | "right"`  
+**Default:** `"left"`
+
+Alignment of the footer text.
+
+```typescript
+boxen("Content", {
+    footerText: "Footer",
+    footerAlignment: "right"
+});
+```
+
+#### `footerTextColor`
+
+**Type:** `(text: string) => string`  
+**Default:** `undefined`
+
+Function to colorize the footer text.
+
+```typescript
+import { dim } from "@visulima/colorize";
+
+boxen("Content", {
+    footerText: "Press any key",
+    footerTextColor: (text) => dim(text)
+});
+```
+
+## Type Definitions
+
+### `Alignment`
+
+```typescript
+type Alignment = "left" | "center" | "right";
+```
+
+### `BorderPosition`
+
+```typescript
+type BorderPosition = 
+    | "top" 
+    | "bottom" 
+    | "left" 
+    | "right" 
+    | "topLeft" 
+    | "topRight" 
+    | "bottomLeft" 
+    | "bottomRight"
+    | "horizontal"
+    | "vertical";
+```
+
+### `BorderStyle`
+
+```typescript
+interface BorderStyle {
+    topLeft?: string;
+    topRight?: string;
+    bottomLeft?: string;
+    bottomRight?: string;
+    top?: string;
+    bottom?: string;
+    left?: string;
+    right?: string;
+    horizontal?: string;
+    vertical?: string;
+}
+```
+
+### `Spacer`
+
+```typescript
+interface Spacer {
+    top: number;
+    right: number;
+    bottom: number;
+    left: number;
+}
+```
+
+### `Options`
+
+```typescript
+interface Options {
+    borderStyle?: 
+        | "single"
+        | "double"
+        | "round"
+        | "bold"
+        | "singleDouble"
+        | "doubleSingle"
+        | "classic"
+        | "arrow"
+        | "none"
+        | BorderStyle;
+    borderColor?: (
+        border: string, 
+        position: BorderPosition, 
+        length: number
+    ) => string;
+    padding?: number | Partial<Spacer>;
+    margin?: number | Partial<Spacer>;
+    width?: number;
+    height?: number;
+    fullscreen?: boolean | ((
+        width: number, 
+        height: number
+    ) => { columns: number; rows: number });
+    float?: Alignment;
+    textColor?: (text: string) => string;
+    textAlignment?: Alignment;
+    transformTabToSpace?: number | false;
+    headerText?: string;
+    headerAlignment?: Alignment;
+    headerTextColor?: (text: string) => string;
+    footerText?: string;
+    footerAlignment?: Alignment;
+    footerTextColor?: (text: string) => string;
+}
+```
+
+## Complete Example
+
+```typescript
+import { boxen, type Options } from "@visulima/boxen";
+import { bold, red, blue, dim } from "@visulima/colorize";
+
+const options: Options = {
+    // Border
+    borderStyle: "double",
+    borderColor: (border, position) => {
+        return position.includes("top") ? red(border) : blue(border);
+    },
+    
+    // Spacing
+    padding: { top: 1, right: 3, bottom: 1, left: 3 },
+    margin: 1,
+    
+    // Dimensions
+    width: 60,
+    height: 10,
+    
+    // Text
+    textColor: (text) => bold(text),
+    textAlignment: "center",
+    transformTabToSpace: 4,
+    
+    // Header
+    headerText: "Important Notice",
+    headerAlignment: "center",
+    headerTextColor: (text) => bold(red(text)),
+    
+    // Footer
+    footerText: "Press any key to continue",
+    footerAlignment: "center",
+    footerTextColor: (text) => dim(text),
+    
+    // Position
+    float: "center"
+};
+
+const box = boxen("This is a fully configured box!", options);
+console.log(box);
+```
+
+## Migration from v1.x
+
+<Callout type="warn">
+If you're upgrading from version 1.x, note these breaking changes:
+</Callout>
+
+- `headerColor` renamed to `headerTextColor`
+- `footerColor` renamed to `footerTextColor`
+- Color functions now receive the text/border string as first parameter
+- Border color function signature changed to include position and length
+
+<Tabs items={['v1.x (Old)', 'v2.x (New)']}>
+  <Tab value="v1.x (Old)">
+    ```typescript
+    boxen("text", {
+        headerColor: red,
+        borderColor: blue
+    });
+    ```
+  </Tab>
+  <Tab value="v2.x (New)">
+    ```typescript
+    boxen("text", {
+        headerTextColor: (text) => red(text),
+        borderColor: (border) => blue(border)
+    });
+    ```
+  </Tab>
+</Tabs>
+
+## Browser and Environment Support
+
+- **Node.js**: 20.18 or higher (up to 24.x)
+- **Operating Systems**: macOS, Linux, Windows
+- **Module Systems**: ESM and CommonJS
+- **TypeScript**: Full type definitions included
