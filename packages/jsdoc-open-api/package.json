@@ -108,7 +108,7 @@
         "lodash.mergewith": "^4.6.2",
         "publint": "^0.3.15",
         "read-pkg-up": "^7.0.1",
-        "yaml": "^2.8.1"
+        "yaml": "^2.8.2"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "^16.4.4",
