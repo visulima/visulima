@@ -20,8 +20,7 @@ describe("color space", () => {
         vi.unstubAllGlobals();
     });
 
-    // TODO: Find out why vitest, check for deno on a dynamic import
-    it.skip(`should convert true-color to ANSI 16 color space`, async () => {
+    it(`should convert true-color to ANSI 16 color space`, async () => {
         expect.assertions(1);
 
         const { green, hex } = await import("../../dist/index.server");
