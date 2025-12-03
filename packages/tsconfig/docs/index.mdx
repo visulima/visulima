@@ -1,0 +1,84 @@
+---
+title: Introduction
+description: Find and parse TypeScript configuration files with ease
+---
+
+# @visulima/tsconfig
+
+A powerful and lightweight utility for finding, reading, and writing TypeScript configuration files. Built on top of modern tools and designed to be fully typed and TypeScript compiler compatible.
+
+## Overview
+
+`@visulima/tsconfig` provides a simple API to work with `tsconfig.json` files in your TypeScript projects. It handles the complexity of finding configuration files, resolving extends paths, parsing JSONC syntax, and ensuring compatibility with the TypeScript compiler.
+
+## Features
+
+- **TypeScript Compatible**: Tested against TypeScript for correctness and compatibility
+- **JSONC Support**: Supports comments and dangling commas in tsconfig.json
+- **Extends Resolution**: Automatically resolves and merges extended configurations
+- **Fully Typed**: Complete TypeScript type definitions for tsconfig.json
+- **Error Handling**: Validates and throws parsing errors with helpful messages
+- **Flexible API**: Both async and sync methods for all operations
+- **Caching Support**: Optional caching for improved performance
+- **Package Exports**: Resolves tsconfig from npm packages
+
+## Quick Start
+
+Install the package:
+
+```bash
+npm install @visulima/tsconfig
+```
+
+Find and read a tsconfig:
+
+```typescript
+import { findTsConfig } from "@visulima/tsconfig";
+
+const result = await findTsConfig();
+console.log(result.path); // /path/to/tsconfig.json
+console.log(result.config); // { compilerOptions: { ... } }
+```
+
+## Use Cases
+
+- **Build Tools**: Find and parse TypeScript configurations in build pipelines
+- **Code Generators**: Read compiler options to generate compatible code
+- **Linting Tools**: Access project configuration for custom rules
+- **Migration Scripts**: Programmatically update TypeScript configurations
+- **Monorepo Management**: Work with multiple tsconfig files across projects
+
+## Next Steps
+
+<Cards>
+  <Card title="Installation" href="/installation">
+    Learn how to install and set up the package
+  </Card>
+  <Card title="Getting Started" href="/getting-started">
+    Quick guide to using the main features
+  </Card>
+  <Card title="API Reference" href="/api-reference">
+    Complete API documentation
+  </Card>
+  <Card title="Examples" href="/examples">
+    Common usage patterns and recipes
+  </Card>
+</Cards>
+
+## Dependencies
+
+This package is built on top of:
+
+- [@visulima/fs](https://github.com/visulima/visulima/tree/main/packages/fs) - File system utilities
+- [@visulima/path](https://github.com/visulima/visulima/tree/main/packages/path) - Path manipulation
+- [jsonc-parser](https://github.com/microsoft/node-jsonc-parser) - JSON with comments parser
+- [resolve-pkg-maps](https://github.com/privatenumber/resolve-pkg-maps) - Package exports resolver
+
+## Support
+
+- **Node.js**: Version 18.0.0 or higher
+- **TypeScript**: Version 5.0 or higher
+
+## License
+
+MIT License - see [LICENSE.md](https://github.com/visulima/visulima/blob/main/packages/tsconfig/LICENSE.md) for details

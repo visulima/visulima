@@ -1,0 +1,518 @@
+---
+title: Examples
+description: Common usage patterns and recipes for @visulima/tsconfig
+---
+
+# Examples
+
+Practical examples and recipes for common use cases.
+
+## Basic Examples
+
+### Find and Display Configuration
+
+```typescript
+import { findTsConfig } from "@visulima/tsconfig";
+
+async function displayConfig() {
+  const result = await findTsConfig();
+
+  console.log("Configuration file:", result.path);
+  console.log("Target:", result.config.compilerOptions?.target);
+  console.log("Module:", result.config.compilerOptions?.module);
+  console.log("Strict mode:", result.config.compilerOptions?.strict);
+}
+
+displayConfig();
+```
+
+### Check if Strict Mode is Enabled
+
+```typescript
+import { findTsConfig } from "@visulima/tsconfig";
+
+async function isStrictMode() {
+  const result = await findTsConfig();
+  return result.config.compilerOptions?.strict === true;
+}
+
+const strict = await isStrictMode();
+console.log(`Strict mode: ${strict ? "enabled" : "disabled"}`);
+```
+
+### Get Include/Exclude Patterns
+
+```typescript
+import { findTsConfig } from "@visulima/tsconfig";
+
+async function getPatterns() {
+  const result = await findTsConfig();
+
+  return {
+    include: result.config.include || [],
+    exclude: result.config.exclude || [],
+    files: result.config.files || [],
+  };
+}
+
+const patterns = await getPatterns();
+console.log(patterns);
+```
+
+## Configuration Updates
+
+### Enable Strict Mode
+
+```typescript
+import { findTsConfig, writeTsConfig } from "@visulima/tsconfig";
+
+async function enableStrictMode() {
+  const result = await findTsConfig();
+
+  const updatedConfig = {
+    ...result.config,
+    compilerOptions: {
+      ...result.config.compilerOptions,
+      strict: true,
+    },
+  };
+
+  await writeTsConfig(updatedConfig);
+  console.log("Strict mode enabled");
+}
+
+enableStrictMode();
+```
+
+### Update Target Version
+
+```typescript
+import { findTsConfig, writeTsConfig } from "@visulima/tsconfig";
+
+async function updateTarget(target: string) {
+  const result = await findTsConfig();
+
+  const updatedConfig = {
+    ...result.config,
+    compilerOptions: {
+      ...result.config.compilerOptions,
+      target,
+    },
+  };
+
+  await writeTsConfig(updatedConfig);
+  console.log(`Target updated to ${target}`);
+}
+
+await updateTarget("ES2022");
+```
+
+### Add Path Mapping
+
+```typescript
+import { findTsConfig, writeTsConfig } from "@visulima/tsconfig";
+
+async function addPathAlias(alias: string, path: string) {
+  const result = await findTsConfig();
+
+  const updatedConfig = {
+    ...result.config,
+    compilerOptions: {
+      ...result.config.compilerOptions,
+      baseUrl: result.config.compilerOptions?.baseUrl || ".",
+      paths: {
+        ...result.config.compilerOptions?.paths,
+        [alias]: [path],
+      },
+    },
+  };
+
+  await writeTsConfig(updatedConfig);
+  console.log(`Added alias: ${alias} -> ${path}`);
+}
+
+await addPathAlias("@components/*", "./src/components/*");
+```
+
+## Build Tool Integration
+
+### Create Vite Configuration
+
+```typescript
+import { findTsConfig } from "@visulima/tsconfig";
+import { defineConfig } from "vite";
+import { resolve } from "node:path";
+
+export default defineConfig(async () => {
+  const tsconfig = await findTsConfig();
+  const paths = tsconfig.config.compilerOptions?.paths || {};
+
+  const alias = Object.entries(paths).reduce((acc, [key, [value]]) => {
+    const cleanKey = key.replace("/*", "");
+    const cleanValue = value.replace("/*", "");
+    acc[cleanKey] = resolve(cleanValue);
+    return acc;
+  }, {});
+
+  return {
+    resolve: { alias },
+  };
+});
+```
+
+### Generate Webpack Aliases
+
+```typescript
+import { findTsConfig } from "@visulima/tsconfig";
+import { resolve, dirname } from "node:path";
+
+async function generateWebpackAliases() {
+  const result = await findTsConfig();
+  const baseUrl = result.config.compilerOptions?.baseUrl;
+  const paths = result.config.compilerOptions?.paths || {};
+
+  const baseDir = dirname(result.path);
+  const base = baseUrl ? resolve(baseDir, baseUrl) : baseDir;
+
+  return Object.entries(paths).reduce((acc, [key, [value]]) => {
+    const cleanKey = key.replace("/*", "");
+    const cleanValue = value.replace("/*", "");
+    acc[cleanKey] = resolve(base, cleanValue);
+    return acc;
+  }, {});
+}
+
+const aliases = await generateWebpackAliases();
+console.log(aliases);
+```
+
+## Migration Scripts
+
+### Migrate to ESM
+
+```typescript
+import { findTsConfig, writeTsConfig } from "@visulima/tsconfig";
+
+async function migrateToESM() {
+  const result = await findTsConfig();
+
+  const updatedConfig = {
+    ...result.config,
+    compilerOptions: {
+      ...result.config.compilerOptions,
+      module: "ESNext",
+      moduleResolution: "bundler",
+      target: "ES2022",
+    },
+  };
+
+  await writeTsConfig(updatedConfig);
+  console.log("Migrated to ESM configuration");
+}
+
+migrateToESM();
+```
+
+### Add Recommended Settings
+
+```typescript
+import { findTsConfig, writeTsConfig } from "@visulima/tsconfig";
+
+async function addRecommendedSettings() {
+  const result = await findTsConfig();
+
+  const recommendedOptions = {
+    strict: true,
+    esModuleInterop: true,
+    skipLibCheck: true,
+    forceConsistentCasingInFileNames: true,
+    resolveJsonModule: true,
+    isolatedModules: true,
+    noEmit: true,
+  };
+
+  const updatedConfig = {
+    ...result.config,
+    compilerOptions: {
+      ...result.config.compilerOptions,
+      ...recommendedOptions,
+    },
+  };
+
+  await writeTsConfig(updatedConfig);
+  console.log("Added recommended settings");
+}
+
+addRecommendedSettings();
+```
+
+## Validation and Checking
+
+### Validate Configuration
+
+```typescript
+import { findTsConfig } from "@visulima/tsconfig";
+
+async function validateConfiguration() {
+  const result = await findTsConfig();
+  const { compilerOptions } = result.config;
+  const warnings = [];
+
+  if (!compilerOptions?.strict) {
+    warnings.push("Strict mode is not enabled");
+  }
+
+  if (!compilerOptions?.skipLibCheck) {
+    warnings.push("skipLibCheck is not enabled (slower compilation)");
+  }
+
+  if (compilerOptions?.target && compilerOptions.target < "ES2020") {
+    warnings.push(`Target ${compilerOptions.target} is outdated`);
+  }
+
+  if (!compilerOptions?.esModuleInterop) {
+    warnings.push("esModuleInterop is not enabled");
+  }
+
+  if (warnings.length > 0) {
+    console.warn("Configuration warnings:");
+    warnings.forEach((warning) => console.warn(`  - ${warning}`));
+  } else {
+    console.log("Configuration is optimal");
+  }
+
+  return warnings.length === 0;
+}
+
+validateConfiguration();
+```
+
+### Check Module Resolution
+
+```typescript
+import { findTsConfig } from "@visulima/tsconfig";
+
+async function checkModuleResolution() {
+  const result = await findTsConfig();
+  const { compilerOptions } = result.config;
+
+  console.log("Module:", compilerOptions?.module);
+  console.log("Module Resolution:", compilerOptions?.moduleResolution);
+  console.log("Base URL:", compilerOptions?.baseUrl);
+
+  const paths = compilerOptions?.paths;
+  if (paths) {
+    console.log("\nPath Mappings:");
+    Object.entries(paths).forEach(([key, values]) => {
+      console.log(`  ${key} -> ${values.join(", ")}`);
+    });
+  }
+}
+
+checkModuleResolution();
+```
+
+## Monorepo Management
+
+### Scan All Packages
+
+```typescript
+import { findTsConfig } from "@visulima/tsconfig";
+import { readdir } from "node:fs/promises";
+import { join } from "node:path";
+
+async function scanMonorepoConfigs() {
+  const packagesDir = join(process.cwd(), "packages");
+  const packages = await readdir(packagesDir);
+
+  const configs = [];
+
+  for (const pkg of packages) {
+    try {
+      const result = await findTsConfig(join(packagesDir, pkg));
+      configs.push({
+        package: pkg,
+        path: result.path,
+        target: result.config.compilerOptions?.target,
+        module: result.config.compilerOptions?.module,
+      });
+    } catch (error) {
+      console.warn(`No config found for ${pkg}`);
+    }
+  }
+
+  return configs;
+}
+
+const configs = await scanMonorepoConfigs();
+console.table(configs);
+```
+
+### Synchronize Package Configs
+
+```typescript
+import { findTsConfig, writeTsConfig } from "@visulima/tsconfig";
+import { readdir } from "node:fs/promises";
+import { join } from "node:path";
+
+async function synchronizeConfigs() {
+  const packagesDir = join(process.cwd(), "packages");
+  const packages = await readdir(packagesDir);
+
+  const baseConfig = {
+    compilerOptions: {
+      target: "ES2022",
+      module: "ESNext",
+      strict: true,
+      esModuleInterop: true,
+      skipLibCheck: true,
+    },
+  };
+
+  for (const pkg of packages) {
+    const pkgPath = join(packagesDir, pkg);
+    try {
+      const result = await findTsConfig(pkgPath);
+
+      const updatedConfig = {
+        ...result.config,
+        compilerOptions: {
+          ...baseConfig.compilerOptions,
+          ...result.config.compilerOptions,
+        },
+      };
+
+      await writeTsConfig(updatedConfig, { cwd: pkgPath });
+      console.log(`Updated ${pkg}`);
+    } catch (error) {
+      console.warn(`Skipped ${pkg}:`, error.message);
+    }
+  }
+}
+
+synchronizeConfigs();
+```
+
+## CLI Tool Examples
+
+### Configuration Inspector
+
+```typescript
+import { findTsConfig } from "@visulima/tsconfig";
+import { relative } from "node:path";
+
+async function inspectConfig() {
+  const result = await findTsConfig();
+  const { config } = result;
+
+  console.log("TypeScript Configuration");
+  console.log("========================\n");
+
+  console.log("File:", relative(process.cwd(), result.path));
+  console.log();
+
+  if (config.extends) {
+    console.log("Extends:", config.extends);
+    console.log();
+  }
+
+  if (config.compilerOptions) {
+    console.log("Compiler Options:");
+    Object.entries(config.compilerOptions)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .forEach(([key, value]) => {
+        console.log(`  ${key}:`, JSON.stringify(value));
+      });
+    console.log();
+  }
+
+  if (config.include) {
+    console.log("Include:", config.include.join(", "));
+  }
+
+  if (config.exclude) {
+    console.log("Exclude:", config.exclude.join(", "));
+  }
+}
+
+inspectConfig();
+```
+
+### Configuration Diff Tool
+
+```typescript
+import { readTsConfig } from "@visulima/tsconfig";
+
+function diffConfigs(path1: string, path2: string) {
+  const config1 = readTsConfig(path1);
+  const config2 = readTsConfig(path2);
+
+  const options1 = config1.compilerOptions || {};
+  const options2 = config2.compilerOptions || {};
+
+  const allKeys = new Set([
+    ...Object.keys(options1),
+    ...Object.keys(options2),
+  ]);
+
+  console.log("Configuration Differences");
+  console.log("=========================\n");
+
+  for (const key of allKeys) {
+    const val1 = options1[key];
+    const val2 = options2[key];
+
+    if (JSON.stringify(val1) !== JSON.stringify(val2)) {
+      console.log(`${key}:`);
+      console.log(`  ${path1}:`, JSON.stringify(val1));
+      console.log(`  ${path2}:`, JSON.stringify(val2));
+      console.log();
+    }
+  }
+}
+
+diffConfigs("./tsconfig.json", "./tsconfig.build.json");
+```
+
+## Testing Utilities
+
+### Mock Configuration for Tests
+
+```typescript
+import { writeTsConfig } from "@visulima/tsconfig";
+import { mkdtemp, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+
+async function createTestConfig() {
+  const tempDir = await mkdtemp(join(tmpdir(), "test-tsconfig-"));
+
+  const testConfig = {
+    compilerOptions: {
+      target: "ES2020",
+      module: "ESNext",
+      strict: true,
+    },
+  };
+
+  await writeTsConfig(testConfig, { cwd: tempDir });
+
+  return {
+    path: join(tempDir, "tsconfig.json"),
+    cleanup: () => rm(tempDir, { recursive: true }),
+  };
+}
+
+// Usage in tests
+const { path, cleanup } = await createTestConfig();
+try {
+  // Run tests with the config
+} finally {
+  await cleanup();
+}
+```
+
+## Next Steps
+
+- Learn about [Advanced Usage](/advanced-usage) for more complex scenarios
+- Review the [API Reference](/api-reference) for complete documentation
