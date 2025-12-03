@@ -1,6 +1,6 @@
 {
     "dependencies": {
-        "@koa/router": "^14.0.0",
+        "@koa/router": "^15.0.0",
         "koa": "^4.17.1"
     }
 }

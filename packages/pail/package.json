@@ -238,13 +238,13 @@
         "@visulima/packem": "2.0.0-alpha.37",
         "@visulima/redact": "2.0.5",
         "@visulima/string": "2.0.6",
-        "@vitest/coverage-v8": "^4.0.14",
-        "@vitest/ui": "^4.0.14",
+        "@vitest/coverage-v8": "^4.0.15",
+        "@vitest/ui": "^4.0.15",
         "cli-spinners": "3.3.0",
         "conventional-changelog-conventionalcommits": "9.1.0",
         "esbuild": "0.27.0",
         "eslint": "9.39.1",
-        "prettier": "^3.7.3",
+        "prettier": "^3.7.4",
         "publint": "^0.3.15",
         "rimraf": "6.1.2",
         "rotating-file-stream": "^3.2.7",
@@ -252,9 +252,9 @@
         "secretlint": "11.2.5",
         "semantic-release": "25.0.2",
         "terminal-size": "^4.0.0",
-        "type-fest": "^5.2.0",
+        "type-fest": "^5.3.0",
         "typescript": "5.9.3",
-        "vitest": "^4.0.14"
+        "vitest": "^4.0.15"
     },
     "peerDependencies": {
         "@opentelemetry/api": "^1.9",
