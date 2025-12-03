@@ -1,0 +1,279 @@
+{
+    "name": "@visulima/string",
+    "version": "2.0.6",
+    "description": "Functions for manipulating strings.",
+    "keywords": [
+        "visulima",
+        "align",
+        "align-text",
+        "align-text-left",
+        "align-text-center",
+        "align-text-right",
+        "align-text-justify",
+        "align-text-start",
+        "string",
+        "string-manipulation",
+        "unicode",
+        "text-processing",
+        "i18n",
+        "internationalization",
+        "cjk",
+        "east-asian-width",
+        "grapheme-splitter",
+        "ansi-styles",
+        "text-slicing",
+        "text-truncation",
+        "case-conversion",
+        "camelcase",
+        "pascalcase",
+        "snakecase",
+        "kebabcase",
+        "dotcase",
+        "pathcase",
+        "titlecase",
+        "sentencecase",
+        "constantcase",
+        "flatcase",
+        "capitalcase",
+        "nocase",
+        "uppercase",
+        "lowercase",
+        "string-splitting",
+        "typescript",
+        "type-safe",
+        "thai",
+        "romanization",
+        "transliteration",
+        "thai-romanization",
+        "slug",
+        "slugify",
+        "utf8",
+        "utf-8"
+    ],
+    "homepage": "https://visulima.com/packages/string",
+    "bugs": {
+        "url": "https://github.com/visulima/visulima/issues"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/visulima/visulima.git",
+        "directory": "packages/data-manipulation/string"
+    },
+    "funding": [
+        {
+            "type": "github",
+            "url": "https://github.com/sponsors/prisis"
+        },
+        {
+            "type": "consulting",
+            "url": "https://anolilab.com/support"
+        }
+    ],
+    "license": "MIT",
+    "author": {
+        "name": "Daniel Bannert",
+        "email": "d.bannert@anolilab.de"
+    },
+    "sideEffects": false,
+    "type": "module",
+    "exports": {
+        "./native-string-types": {
+            "types": "./dist/native-string-types.d.ts"
+        },
+        ".": {
+            "types": "./dist/index.d.ts",
+            "default": "./dist/index.js"
+        },
+        "./case": {
+            "types": "./dist/case/index.d.ts",
+            "default": "./dist/case/index.js"
+        },
+        "./case/camel-case": {
+            "types": "./dist/case/camel-case.d.ts",
+            "default": "./dist/case/camel-case.js"
+        },
+        "./case/capital-case": {
+            "types": "./dist/case/capital-case.d.ts",
+            "default": "./dist/case/capital-case.js"
+        },
+        "./case/constant-case": {
+            "types": "./dist/case/constant-case.d.ts",
+            "default": "./dist/case/constant-case.js"
+        },
+        "./case/dot-case": {
+            "types": "./dist/case/dot-case.d.ts",
+            "default": "./dist/case/dot-case.js"
+        },
+        "./case/flat-case": {
+            "types": "./dist/case/flat-case.d.ts",
+            "default": "./dist/case/flat-case.js"
+        },
+        "./case/flip-case": {
+            "types": "./dist/case/flip-case.d.ts",
+            "default": "./dist/case/flip-case.js"
+        },
+        "./case/identify-case": {
+            "types": "./dist/case/identify-case.d.ts",
+            "default": "./dist/case/identify-case.js"
+        },
+        "./case/kebab-case": {
+            "types": "./dist/case/kebab-case.d.ts",
+            "default": "./dist/case/kebab-case.js"
+        },
+        "./case/lower-first": {
+            "types": "./dist/case/lower-first.d.ts",
+            "default": "./dist/case/lower-first.js"
+        },
+        "./case/no-case": {
+            "types": "./dist/case/no-case.d.ts",
+            "default": "./dist/case/no-case.js"
+        },
+        "./case/pascal-case": {
+            "types": "./dist/case/pascal-case.d.ts",
+            "default": "./dist/case/pascal-case.js"
+        },
+        "./align-text": {
+            "types": "./dist/align-text.d.ts",
+            "default": "./dist/align-text.js"
+        },
+        "./word-wrap": {
+            "types": "./dist/word-wrap.d.ts",
+            "default": "./dist/word-wrap.js"
+        },
+        "./slice": {
+            "types": "./dist/slice.d.ts",
+            "default": "./dist/slice.js"
+        },
+        "./slugify": {
+            "types": "./dist/slugify.d.ts",
+            "default": "./dist/slugify.js"
+        },
+        "./truncate": {
+            "types": "./dist/truncate.d.ts",
+            "default": "./dist/truncate.js"
+        },
+        "./get-string-width": {
+            "types": "./dist/get-string-width.d.ts",
+            "default": "./dist/get-string-width.js"
+        },
+        "./get-string-truncated-width": {
+            "types": "./dist/get-string-truncated-width.d.ts",
+            "default": "./dist/get-string-truncated-width.js"
+        },
+        "./outdent": {
+            "types": "./dist/outdent.d.ts",
+            "default": "./dist/outdent.js"
+        },
+        "./case/pascal-snake-case": {
+            "types": "./dist/case/pascal-snake-case.d.ts",
+            "default": "./dist/case/pascal-snake-case.js"
+        },
+        "./case/path-case": {
+            "types": "./dist/case/path-case.d.ts",
+            "default": "./dist/case/path-case.js"
+        },
+        "./case/sentence-case": {
+            "types": "./dist/case/sentence-case.d.ts",
+            "default": "./dist/case/sentence-case.js"
+        },
+        "./case/snake-case": {
+            "types": "./dist/case/snake-case.d.ts",
+            "default": "./dist/case/snake-case.js"
+        },
+        "./case/split-by-case": {
+            "types": "./dist/case/split-by-case.d.ts",
+            "default": "./dist/case/split-by-case.js"
+        },
+        "./case/title-case": {
+            "types": "./dist/case/title-case.d.ts",
+            "default": "./dist/case/title-case.js"
+        },
+        "./case/train-case": {
+            "types": "./dist/case/train-case.d.ts",
+            "default": "./dist/case/train-case.js"
+        },
+        "./case/upper-first": {
+            "types": "./dist/case/upper-first.d.ts",
+            "default": "./dist/case/upper-first.js"
+        },
+        "./test/utils": {
+            "types": "./dist/test/utils.d.ts",
+            "default": "./dist/test/utils.js"
+        },
+        "./test/vitest": {
+            "types": "./dist/test/vitest.d.ts",
+            "default": "./dist/test/vitest.js"
+        },
+        "./utils": {
+            "types": "./dist/utilities.d.ts",
+            "default": "./dist/utilities.js"
+        },
+        "./closest-string": {
+            "types": "./dist/closest-string.d.ts",
+            "default": "./dist/closest-string.js"
+        },
+        "./compare-similarity": {
+            "types": "./dist/compare-similarity.d.ts",
+            "default": "./dist/compare-similarity.js"
+        },
+        "./word-similarity-sort": {
+            "types": "./dist/word-similarity-sort.d.ts",
+            "default": "./dist/word-similarity-sort.js"
+        },
+        "./package.json": "./package.json"
+    },
+    "files": [
+        "dist",
+        "README.md",
+        "CHANGELOG.md"
+    ],
+    "scripts": {
+        "build": "pnpm run generate:charmap && packem build --development",
+        "build:prod": "pnpm run generate:charmap && packem build --production",
+        "clean": "rimraf node_modules dist .eslintcache",
+        "dev": "pnpm run build --watch",
+        "generate:charmap": "node ./scripts/generate-charmap.mjs",
+        "lint:attw": "attw --pack",
+        "lint:eslint": "eslint . --cache --concurrency auto",
+        "lint:eslint:fix": "eslint . --cache --concurrency auto --fix",
+        "lint:package-json": "publint --strict",
+        "lint:types": "tsc --noEmit",
+        "test": "pnpm run generate:charmap && vitest run --typecheck",
+        "test:coverage": "pnpm run generate:charmap && vitest run --coverage",
+        "test:ui": "pnpm run generate:charmap && vitest --ui --coverage.enabled=true",
+        "test:watch": "pnpm run generate:charmap && vitest"
+    },
+    "devDependencies": {
+        "@anolilab/eslint-config": "16.4.4",
+        "@anolilab/semantic-release-pnpm": "3.1.0",
+        "@anolilab/semantic-release-preset": "12.0.1",
+        "@arethetypeswrong/cli": "0.18.2",
+        "@secretlint/secretlint-rule-preset-recommend": "11.2.5",
+        "@total-typescript/ts-reset": "0.6.1",
+        "@types/node": "24.10.1",
+        "@visulima/colorize": "1.4.29",
+        "@visulima/packem": "2.0.0-alpha.40",
+        "@vitest/coverage-v8": "4.0.15",
+        "@vitest/ui": "4.0.15",
+        "conventional-changelog-conventionalcommits": "9.1.0",
+        "emoji-regex-xs": "2.0.1",
+        "esbuild": "0.27.0",
+        "eslint": "9.39.1",
+        "eslint-plugin-you-dont-need-lodash-underscore": "6.14.0",
+        "fastest-levenshtein": "1.0.16",
+        "get-east-asian-width": "1.4.0",
+        "publint": "^0.3.15",
+        "rimraf": "6.1.2",
+        "secretlint": "11.2.5",
+        "semantic-release": "25.0.2",
+        "typescript": "5.9.3",
+        "vitest": "4.0.15"
+    },
+    "engines": {
+        "node": ">=22.12 <=25.x"
+    },
+    "publishConfig": {
+        "access": "public",
+        "provenance": true
+    }
+}

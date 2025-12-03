@@ -1,0 +1,13 @@
+{
+    "name": "command-line-args",
+    "$schema": "../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "packages/terminal/command-line-args/src",
+    "projectType": "library",
+    "tags": [
+        "command-line-args",
+        "type:package"
+    ],
+    "implicitDependencies": [
+        "error"
+    ]
+}

@@ -1,0 +1,13 @@
+{
+    "name": "boxen",
+    "$schema": "../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "packages/terminal/boxen/src",
+    "projectType": "library",
+    "tags": [
+        "type:package",
+        "boxen"
+    ],
+    "implicitDependencies": [
+        "path"
+    ]
+}

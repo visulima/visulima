@@ -41,7 +41,7 @@ jobs:
 
             - name: "Generate domains"
               if: "success()"
-              working-directory: "packages/disposable-email-domains"
+              working-directory: "packages/email/disposable-email-domains"
               run: "pnpm run --filter disposable-email-domains generate:domains"
 
             - name: "Commit domain updates"
@@ -49,8 +49,8 @@ jobs:
               uses: "stefanzweifel/git-auto-commit-action@b863ae1933cb653a53c021fe36dbb774e1fb9403" # v5.2.0
               with:
                   file_pattern: |
-                      packages/disposable-email-domains/dist/domains.json
-                      packages/disposable-email-domains/README.md
+                      packages/email/disposable-email-domains/dist/domains.json
+                      packages/email/disposable-email-domains/README.md
                   commit_message: "fix(disposable-email-domains): update disposable email domains"
                   commit_user_name: "github-actions-shell"
                   commit_user_email: "github-actions[bot]@users.noreply.github.com"

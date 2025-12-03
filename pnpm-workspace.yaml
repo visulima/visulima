@@ -1,46 +1,47 @@
 packages:
   - '!**/__test__/**'
   - '!**/__tests__/**'
-  - '!packages/api-platform/__fixtures__/**'
-  - '!packages/error/__fixtures__/**'
-  - '!packages/jsdoc-open-api/__fixtures__/**'
-  - '!packages/package/__fixtures__/package-json/**'
-  - '!packages/package/__fixtures__/read-tsconfig/**'
-  - '!packages/package/__fixtures__/which-package-manager/**'
-  - '!packages/package/__fixtures__/workspaces/**'
-  - '!packages/readdir/__fixtures__/**'
-  - '!packages/storage/src/adapter/nuxt'
+  - '!packages/api/api-platform/__fixtures__/**'
+  - '!packages/error-debugging/error/__fixtures__/**'
+  - '!packages/tooling/jsdoc-open-api/__fixtures__/**'
+  - '!packages/tooling/package/__fixtures__/package-json/**'
+  - '!packages/tooling/package/__fixtures__/read-tsconfig/**'
+  - '!packages/tooling/package/__fixtures__/which-package-manager/**'
+  - '!packages/tooling/package/__fixtures__/workspaces/**'
+  - '!packages/storage/storage/src/adapter/nuxt'
   - apps/**
   - examples/**
   - examples/uploads/**
   - packages/**
   - shared/**
-  - packages/boxen/__bench__
-  - packages/colorize/__bench__
-  - packages/deep-clone/__bench__
-  - packages/fmt/__bench__
-  - packages/inspector/__bench__
-  - packages/pail/__bench__
-  - packages/string/__bench__
-  - packages/tabular/__bench__
-  - packages/fs/__bench__
-  - packages/redact/__bench__
-  - packages/colorize/__fixtures__/package/cjs
-  - packages/colorize/__fixtures__/package/mjs
-  - packages/cerebro/__fixtures__/package/cjs
-  - packages/cerebro/__fixtures__/package/mjs
-  - packages/package/__fixtures__/package/cjs
-  - packages/package/__fixtures__/package/mjs
-  - packages/pail/__fixtures__/package/cjs
-  - packages/pail/__fixtures__/package/mjs
-  - packages/boxen/__fixtures__/package/cjs
-  - packages/boxen/__fixtures__/package/mjs
-  - packages/path/__fixtures__/package/cjs
-  - packages/path/__fixtures__/package/mjs
-  - packages/redact/__fixtures__/package/cjs
-  - packages/redact/__fixtures__/package/mjs
-  - packages/tsconfig/__fixtures__/package/cjs
-  - packages/tsconfig/__fixtures__/package/mjs
+  - packages/terminal/boxen/__bench__
+  - packages/terminal/colorize/__bench__
+  - packages/data-manipulation/deep-clone/__bench__
+  - packages/terminal/fmt/__bench__
+  - packages/error-debugging/inspector/__bench__
+  - packages/error-debugging/pail/__bench__
+  - packages/data-manipulation/string/__bench__
+  - packages/terminal/tabular/__bench__
+  - packages/filesystem/fs/__bench__
+  - packages/data-manipulation/redact/__bench__
+  - packages/terminal/command-line-args/__bench__
+  - packages/terminal/cerebro/__bench__
+  - packages/terminal/colorize/__fixtures__/package/cjs
+  - packages/terminal/colorize/__fixtures__/package/mjs
+  - packages/terminal/cerebro/__fixtures__/package/cjs
+  - packages/terminal/cerebro/__fixtures__/package/mjs
+  - packages/tooling/package/__fixtures__/package/cjs
+  - packages/tooling/package/__fixtures__/package/mjs
+  - packages/error-debugging/pail/__fixtures__/package/cjs
+  - packages/error-debugging/pail/__fixtures__/package/mjs
+  - packages/terminal/boxen/__fixtures__/package/cjs
+  - packages/terminal/boxen/__fixtures__/package/mjs
+  - packages/filesystem/path/__fixtures__/package/cjs
+  - packages/filesystem/path/__fixtures__/package/mjs
+  - packages/data-manipulation/redact/__fixtures__/package/cjs
+  - packages/data-manipulation/redact/__fixtures__/package/mjs
+  - packages/tooling/tsconfig/__fixtures__/package/cjs
+  - packages/tooling/tsconfig/__fixtures__/package/mjs
 
 dedupeInjectedDeps: true
 

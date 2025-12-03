@@ -1,0 +1,11 @@
+{
+    "name": "inspector",
+    "$schema": "../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "packages/error-debugging/inspector/src",
+    "projectType": "library",
+    "tags": [
+        "inspector",
+        "type:package"
+    ],
+    "implicitDependencies": []
+}

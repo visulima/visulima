@@ -1,0 +1,137 @@
+{
+    "name": "@visulima/vite-overlay",
+    "version": "1.3.7",
+    "description": "Improved vite overlay",
+    "keywords": [
+        "vite",
+        "vite-plugin",
+        "vite-overlay",
+        "vite-error-overlay",
+        "error-overlay",
+        "error-handling",
+        "source-map",
+        "typescript",
+        "react",
+        "vue",
+        "svelte",
+        "overlay",
+        "visulima"
+    ],
+    "homepage": "https://visulima.com/packages/vite-overlay",
+    "bugs": {
+        "url": "https://github.com/visulima/visulima/issues"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/visulima/visulima.git",
+        "directory": "packages/error-debugging/vite-overlay"
+    },
+    "funding": [
+        {
+            "type": "github",
+            "url": "https://github.com/sponsors/prisis"
+        },
+        {
+            "type": "consulting",
+            "url": "https://anolilab.com/support"
+        }
+    ],
+    "license": "MIT",
+    "author": {
+        "name": "Daniel Bannert",
+        "email": "d.bannert@anolilab.de"
+    },
+    "sideEffects": false,
+    "type": "module",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "default": "./dist/index.js"
+        },
+        "./package.json": "./package.json"
+    },
+    "files": [
+        "dist",
+        "README.md",
+        "CHANGELOG.md"
+    ],
+    "scripts": {
+        "build": "packem build --development",
+        "build:prod": "packem build --production",
+        "clean": "rimraf node_modules dist .eslintcache",
+        "dev": "pnpm run build --watch",
+        "lint:attw": "attw --pack",
+        "lint:eslint": "eslint . --cache --concurrency auto",
+        "lint:eslint:fix": "eslint . --cache --concurrency auto --fix",
+        "lint:package-json": "publint --strict",
+        "lint:prettier": "prettier --config=.prettierrc.cjs --check .",
+        "lint:prettier:fix": "prettier --config=.prettierrc.cjs --write .",
+        "lint:types": "tsc --noEmit",
+        "test": "vitest run",
+        "test:coverage": "vitest run --coverage",
+        "test:e2e": "playwright test",
+        "test:e2e:debug": "playwright test --debug",
+        "test:e2e:headed": "playwright test --headed",
+        "test:e2e:ui": "playwright test --ui",
+        "test:ui": "vitest --ui --coverage.enabled=true",
+        "test:watch": "vitest"
+    },
+    "dependencies": {
+        "@jridgewell/trace-mapping": "^0.3.31",
+        "@shikijs/cli": "3.19.0",
+        "@shikijs/langs": "3.19.0",
+        "@shikijs/themes": "3.19.0",
+        "@visulima/error": "5.0.6",
+        "fastest-levenshtein": "^1.0.16",
+        "shiki": "3.19.0"
+    },
+    "devDependencies": {
+        "@anolilab/eslint-config": "^16.4.4",
+        "@anolilab/prettier-config": "^6.0.8",
+        "@anolilab/semantic-release-pnpm": "3.1.0",
+        "@anolilab/semantic-release-preset": "^12.0.1",
+        "@arethetypeswrong/cli": "^0.18.2",
+        "@eslint/css": "0.14.1",
+        "@playwright/test": "^1.57.0",
+        "@secretlint/secretlint-rule-preset-recommend": "^11.2.5",
+        "@tailwindcss/forms": "^0.5.10",
+        "@tailwindcss/node": "^4.1.17",
+        "@tailwindcss/oxide": "^4.1.17",
+        "@tailwindcss/typography": "^0.5.19",
+        "@total-typescript/ts-reset": "^0.6.1",
+        "@types/hast": "3.0.4",
+        "@types/node": "24.10.1",
+        "@visulima/packem": "2.0.0-alpha.40",
+        "@visulima/path": "2.0.5",
+        "@vitest/coverage-v8": "^4.0.15",
+        "@vitest/ui": "^4.0.15",
+        "conventional-changelog-conventionalcommits": "9.1.0",
+        "cssnano": "7.1.2",
+        "csstype": "3.2.3",
+        "esbuild": "^0.27.0",
+        "eslint": "9.39.1",
+        "hast": "1.0.0",
+        "lucide-static": "^0.555.0",
+        "marked": "^17.0.1",
+        "prettier": "^3.7.4",
+        "prettier-plugin-tailwindcss": "0.7.2",
+        "publint": "^0.3.15",
+        "rimraf": "^6.1.2",
+        "secretlint": "11.2.5",
+        "semantic-release": "^25.0.2",
+        "tailwindcss": "4.1.17",
+        "typescript": "^5.9.3",
+        "vite": "^7.2.6",
+        "vitest": "^4.0.15"
+    },
+    "peerDependencies": {
+        "vite": "^6 || ^7 || ^8"
+    },
+    "engines": {
+        "node": ">=22.13 <=25.x"
+    },
+    "publishConfig": {
+        "access": "public",
+        "provenance": true
+    }
+}

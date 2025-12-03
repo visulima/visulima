@@ -1,0 +1,9 @@
+{
+    "$schema": "https://json.schemastore.org/tsconfig",
+    "extends": "../../../tsconfig.base.json",
+    "compilerOptions": {
+        "moduleResolution": "bundler",
+        "types": ["./src/native-string-types.d.ts", "./vitest.d.ts", "node"]
+    },
+    "include": ["src/**/*", "*.d.ts"]
+}

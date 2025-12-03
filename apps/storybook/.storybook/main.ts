@@ -22,7 +22,7 @@ const config: StorybookConfig = {
         options: {},
     },
     staticDirs: ["../public"],
-    stories: ["../packages/**/__stories__/**/*.stories.@(js|jsx|ts|tsx|mdx)"],
+    stories: ["../packages/**/**/__stories__/**/*.stories.@(js|jsx|ts|tsx|mdx)"],
 
     viteFinal: async (vConfig) => mergeConfig(vConfig, { plugins: [tsconfigPaths()] }),
 };

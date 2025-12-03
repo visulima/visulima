@@ -1,0 +1,15 @@
+{
+    "$schema": "https://json.schemastore.org/tsconfig",
+    "extends": "../../../tsconfig.base.json",
+    "compilerOptions": {
+        "jsx": "react-jsx",
+        "baseUrl": ".",
+        "moduleResolution": "bundler",
+        "paths": {
+            "zod": ["node_modules/zod"]
+        },
+        "types": ["node"],
+        "verbatimModuleSyntax": false
+    },
+    "include": ["src/**/*", "*.d.ts"]
+}

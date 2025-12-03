@@ -1,8 +1,0 @@
-{
-    "name": "storage-client",
-    "$schema": "../../node_modules/nx/schemas/project-schema.json",
-    "sourceRoot": "packages/storage-client/src",
-    "projectType": "library",
-    "tags": ["storage-client", "type:package"],
-    "implicitDependencies": []
-}

@@ -1,0 +1,192 @@
+{
+    "name": "@visulima/error-handler",
+    "version": "1.0.13",
+    "description": "Error handlers for use in development and production environments.",
+    "keywords": [
+        "visulima",
+        "error",
+        "exception",
+        "error-handlers",
+        "diagnostics",
+        "debugging",
+        "stacktrace",
+        "code-frame",
+        "codeframe",
+        "source-code-preview",
+        "content-negotiation",
+        "problem-json",
+        "rfc7807",
+        "jsonapi",
+        "json-api",
+        "jsonp",
+        "xml",
+        "html-error",
+        "cli",
+        "node",
+        "express",
+        "connect",
+        "middleware",
+        "http-errors",
+        "devtools",
+        "error-reporting",
+        "whoops",
+        "youch",
+        "anolilab",
+        "error-handler"
+    ],
+    "homepage": "https://visulima.com/packages/error-handler",
+    "bugs": {
+        "url": "https://github.com/visulima/visulima/issues"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/visulima/visulima.git",
+        "directory": "packages/error-debugging/error-handler"
+    },
+    "funding": [
+        {
+            "type": "github",
+            "url": "https://github.com/sponsors/prisis"
+        },
+        {
+            "type": "consulting",
+            "url": "https://anolilab.com/support"
+        }
+    ],
+    "license": "MIT",
+    "author": {
+        "name": "Daniel Bannert",
+        "email": "d.bannert@anolilab.de"
+    },
+    "sideEffects": false,
+    "type": "module",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "default": "./dist/index.js"
+        },
+        "./handler/cli": {
+            "types": "./dist/handler/cli-handler.d.ts",
+            "default": "./dist/handler/cli-handler.js"
+        },
+        "./handler/http/node": {
+            "types": "./dist/handler/http/node-handler.d.ts",
+            "default": "./dist/handler/http/node-handler.js"
+        },
+        "./handler/http/hono": {
+            "types": "./dist/handler/http/fetch-handler.d.ts",
+            "default": "./dist/handler/http/fetch-handler.js"
+        },
+        "./handler/http/bun": {
+            "types": "./dist/handler/http/fetch-handler.d.ts",
+            "default": "./dist/handler/http/fetch-handler.js"
+        },
+        "./handler/http/cloudflare": {
+            "types": "./dist/handler/http/fetch-handler.d.ts",
+            "default": "./dist/handler/http/fetch-handler.js"
+        },
+        "./handler/http/deno": {
+            "types": "./dist/handler/http/fetch-handler.d.ts",
+            "default": "./dist/handler/http/fetch-handler.js"
+        },
+        "./handler/http/edge": {
+            "types": "./dist/handler/http/fetch-handler.d.ts",
+            "default": "./dist/handler/http/fetch-handler.js"
+        },
+        "./handler/fetch": {
+            "types": "./dist/handler/http/fetch-handler.d.ts",
+            "default": "./dist/handler/http/fetch-handler.js"
+        },
+        "./error-handler/html": {
+            "types": "./dist/error-handler/html-error-handler.d.ts",
+            "default": "./dist/error-handler/html-error-handler.js"
+        },
+        "./error-handler/problem": {
+            "types": "./dist/error-handler/problem-error-handler.d.ts",
+            "default": "./dist/error-handler/problem-error-handler.js"
+        },
+        "./error-handler/jsonapi": {
+            "types": "./dist/error-handler/jsonapi-error-handler.d.ts",
+            "default": "./dist/error-handler/jsonapi-error-handler.js"
+        },
+        "./error-handler/text": {
+            "types": "./dist/error-handler/text-error-handler.d.ts",
+            "default": "./dist/error-handler/text-error-handler.js"
+        },
+        "./error-handler/json": {
+            "types": "./dist/error-handler/json-error-handler.d.ts",
+            "default": "./dist/error-handler/json-error-handler.js"
+        },
+        "./error-handler/jsonp": {
+            "types": "./dist/error-handler/jsonp-error-handler.d.ts",
+            "default": "./dist/error-handler/jsonp-error-handler.js"
+        },
+        "./error-handler/xml": {
+            "types": "./dist/error-handler/xml-error-handler.d.ts",
+            "default": "./dist/error-handler/xml-error-handler.js"
+        },
+        "./package.json": "./package.json"
+    },
+    "files": [
+        "dist",
+        "README.md",
+        "CHANGELOG.md"
+    ],
+    "scripts": {
+        "build": "packem build --development",
+        "build:prod": "packem build --production",
+        "clean": "rimraf node_modules dist .eslintcache",
+        "dev": "pnpm run build --watch",
+        "lint:attw": "attw --pack",
+        "lint:eslint": "eslint . --cache --concurrency auto",
+        "lint:eslint:fix": "eslint . --cache --concurrency auto --fix",
+        "lint:package-json": "publint --strict",
+        "lint:prettier": "prettier --config=.prettierrc.cjs --check .",
+        "lint:prettier:fix": "prettier --config=.prettierrc.cjs --write .",
+        "lint:types": "tsc --noEmit",
+        "test": "vitest run",
+        "test:coverage": "vitest run --coverage",
+        "test:ui": "vitest --ui --coverage.enabled=true",
+        "test:watch": "vitest"
+    },
+    "dependencies": {
+        "@tinyhttp/accepts": "^2.2.4",
+        "@visulima/boxen": "2.0.10",
+        "@visulima/error": "5.0.6",
+        "http-errors": "^2.0.1",
+        "http-status-codes": "^2.3.0",
+        "jstoxml": "^7.0.1",
+        "ts-japi": "^1.12.1"
+    },
+    "devDependencies": {
+        "@anolilab/eslint-config": "^16.4.4",
+        "@anolilab/semantic-release-pnpm": "3.1.0",
+        "@anolilab/semantic-release-preset": "^12.0.1",
+        "@arethetypeswrong/cli": "^0.18.2",
+        "@secretlint/secretlint-rule-preset-recommend": "^11.2.5",
+        "@total-typescript/ts-reset": "^0.6.1",
+        "@types/http-errors": "^2.0.5",
+        "@types/node": "24.10.1",
+        "@visulima/packem": "2.0.0-alpha.40",
+        "@vitest/coverage-v8": "^4.0.15",
+        "@vitest/ui": "^4.0.15",
+        "conventional-changelog-conventionalcommits": "9.1.0",
+        "esbuild": "^0.27.0",
+        "eslint": "9.39.1",
+        "node-mocks-http": "^1.17.2",
+        "prettier": "^3.7.4",
+        "publint": "^0.3.15",
+        "rimraf": "^6.1.2",
+        "secretlint": "11.2.5",
+        "semantic-release": "^25.0.2",
+        "typescript": "^5.9.3",
+        "vitest": "^4.0.15"
+    },
+    "engines": {
+        "node": ">=22.12 <=25.x"
+    },
+    "publishConfig": {
+        "access": "public",
+        "provenance": true
+    }
+}
