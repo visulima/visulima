@@ -114,12 +114,13 @@
     },
     "dependencies": {
         "@antfu/install-pkg": "^1.1.0",
-        "@inquirer/confirm": "^5.1.21",
+        "@inquirer/confirm": "^6.0.2",
         "@visulima/fs": "4.1.0",
         "@visulima/path": "2.0.5",
         "json5": "^2.2.3",
+        "type-fest": "^5.3.0",
         "normalize-package-data": "^8.0.0",
-        "yaml": "^2.8.1"
+        "yaml": "^2.8.2"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "^16.4.4",
@@ -148,7 +149,6 @@
         "rimraf": "6.1.2",
         "semantic-release": "25.0.2",
         "tempy": "^3.1.0",
-        "type-fest": "^5.3.0",
         "typescript": "5.9.3",
         "vitest": "^4.0.15",
         "yarn": "^1.22.22"
