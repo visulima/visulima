@@ -1,0 +1,386 @@
+---
+title: API Reference
+description: Complete API documentation for Ono
+---
+
+# API Reference
+
+Complete reference for all Ono APIs and configuration options.
+
+## Ono Class
+
+The main class for rendering errors in both HTML and ANSI formats.
+
+### Constructor
+
+```typescript
+const ono = new Ono();
+```
+
+Creates a new Ono instance. No configuration needed.
+
+### Methods
+
+#### `toHTML(error, options?)`
+
+Renders an error as an HTML page.
+
+**Parameters:**
+
+- `error` (unknown): The error to render
+- `options` (TemplateOptions, optional):
+  - `content` (ContentPage[]): Additional pages to display as tabs
+  - `cspNonce` (string): CSP nonce for inline scripts/styles
+  - `editor` (Editors): Default editor for "Open in editor" functionality
+  - `openInEditorUrl` (string): Server endpoint for opening files in editor
+  - `solutionFinders` (SolutionFinder[]): Custom solution finders
+  - `theme` ('dark' | 'light' | 'auto'): Theme preference (default: 'auto')
+
+**Returns:** `Promise<string>` - Complete HTML string for the error page
+
+**Example:**
+
+```typescript
+const html = await ono.toHTML(error, {
+  content: [contextPage],
+  cspNonce: "nonce-123",
+  theme: "dark",
+  openInEditorUrl: "/__open-in-editor",
+  editor: "code",
+  solutionFinders: [customFinder],
+});
+```
+
+#### `toANSI(error, options?)`
+
+Renders an error as ANSI terminal output.
+
+**Parameters:**
+
+- `error` (unknown): The error to render
+- `options` (CliOptions, optional):
+  - `solutionFinders` (SolutionFinder[]): Custom solution finders
+  - Additional options from `@visulima/error` renderError
+
+**Returns:** `Promise<{ errorAnsi: string; solutionBox?: string }>`
+
+- `errorAnsi`: The formatted error with ANSI colors
+- `solutionBox`: Optional formatted solution suggestions
+
+**Example:**
+
+```typescript
+const result = await ono.toANSI(error, {
+  solutionFinders: [customFinder],
+});
+
+console.log(result.errorAnsi);
+if (result.solutionBox) {
+  console.log("\n" + result.solutionBox);
+}
+```
+
+## Request Context Page
+
+### `createRequestContextPage(request, options)`
+
+Creates a context page with detailed request debugging information.
+
+**Parameters:**
+
+- `request` (Request): The HTTP request object (Web API Request or Node.js IncomingMessage)
+- `options` (ContextContentOptions):
+  - `context` (Record<string, unknown>): Additional context data
+  - `headerAllowlist` (string[]): Headers to include (default: all)
+  - `headerDenylist` (string[]): Headers to exclude
+  - `maskValue` (string): Mask for sensitive values (default: "[masked]")
+  - `previewBytes` (number): Maximum body preview size (default: 64000)
+
+**Returns:** `Promise<ContentPage | undefined>`
+
+**Example:**
+
+```typescript
+import createRequestContextPage from "@visulima/ono/page/context";
+
+const contextPage = await createRequestContextPage(request, {
+  context: {
+    request: {
+      method: request.method,
+      url: request.url,
+      headers: request.headers,
+    },
+    app: {
+      routing: {
+        route: "/api/users",
+        params: { id: "123" },
+        query: { page: "1" },
+      },
+    },
+    user: {
+      client: {
+        ip: "127.0.0.1",
+        userAgent: "Mozilla/5.0...",
+      },
+    },
+    database: {
+      connection: "active",
+      queries: ["SELECT * FROM users"],
+    },
+  },
+  headerAllowlist: ["content-type", "user-agent"],
+  maskValue: "[REDACTED]",
+});
+```
+
+### Context Data Structure
+
+The context object supports any structure. Built-in sections:
+
+- `app`: Application routing details
+  - `routing.route`: Current route path
+  - `routing.params`: Route parameters
+  - `routing.query`: Query parameters
+- `user`: Client information
+  - `client.ip`: Client IP address
+  - `client.userAgent`: User agent string
+  - `client.geo`: Geographic information
+- `git`: Repository status
+  - `branch`: Current branch
+  - `commit`: Commit hash
+  - `tag`: Tag name
+  - `dirty`: Whether working directory is dirty
+- `versions`: Package versions
+  - `node`: Node.js version
+  - Additional dependencies
+
+Any additional keys you provide are automatically rendered as sections with copy-to-clipboard functionality.
+
+## Editor Integration
+
+### `createNodeHttpHandler(options)`
+
+Creates an HTTP handler for opening files in editors.
+
+**Parameters:**
+
+- `options` (OpenInEditorOptions, optional):
+  - `projectRoot` (string): Project root directory (default: `process.cwd()`)
+  - `allowOutsideProject` (boolean): Allow opening files outside project (default: false)
+
+**Returns:** `(req, res) => void` - Express/Node.js compatible request handler
+
+**Example:**
+
+```typescript
+import { createNodeHttpHandler } from "@visulima/ono/server/open-in-editor";
+
+const handler = createNodeHttpHandler({
+  projectRoot: "/path/to/project",
+  allowOutsideProject: false,
+});
+
+// In your server
+if (url.pathname === "/__open-in-editor") {
+  return handler(request, response);
+}
+```
+
+### Supported Editors
+
+The following editors are supported (client-side URL schemes):
+
+- VS Code (`code`)
+- VS Code Insiders (`code-insiders`)
+- VSCodium (`codium`, `vscodium`)
+- Cursor (`cursor`)
+- Sublime Text (`sublime`)
+- Atom (`atom`)
+- Atom Beta (`atom-beta`)
+- WebStorm (`webstorm`)
+- PhpStorm (`phpstorm`)
+- PyCharm (`pycharm`)
+- IntelliJ IDEA (`idea`, `intellij`)
+- RubyMine (`rubymine`)
+- Rider (`rider`)
+- CLion (`clion`)
+- Android Studio (`android-studio`)
+- Xcode (`xcode`)
+- TextMate (`textmate`)
+- MacVim (`macvim`)
+- Emacs (`emacs`)
+- Vim (`vim`)
+- Brackets (`brackets`)
+- Notepad++ (`notepad++`)
+- Zed (`zed`)
+
+## Solution Finders
+
+### SolutionFinder Interface
+
+Custom solution finders implement this interface:
+
+```typescript
+interface SolutionFinder {
+  name: string;
+  priority: number; // Higher = checked first
+  handle: (
+    error: Error,
+    context: SolutionContext
+  ) => Promise<Solution | undefined>;
+}
+
+interface Solution {
+  header: string;
+  body: string; // Supports Markdown
+}
+```
+
+**Example:**
+
+```typescript
+const customFinder: SolutionFinder = {
+  name: "database-error-finder",
+  priority: 100,
+  handle: async (error, context) => {
+    if (error.message.includes("ECONNREFUSED")) {
+      return {
+        header: "Database Connection Failed",
+        body: `
+## Possible Solutions
+
+1. Check if the database server is running
+2. Verify connection credentials in your .env file
+3. Ensure the database port is accessible
+4. Check firewall settings
+
+\`\`\`bash
+# Start database server
+docker compose up -d database
+\`\`\`
+        `,
+      };
+    }
+    return undefined;
+  },
+};
+
+const html = await ono.toHTML(error, {
+  solutionFinders: [customFinder],
+});
+```
+
+### Built-in Solution Finders
+
+Ono includes solution finders for common issues:
+
+- **ESM/CJS Interop**: Module system mismatches
+- **Export Mismatch**: Missing or incorrect exports
+- **Port in Use**: Server port conflicts
+- **Missing Files**: File not found errors with case sensitivity hints
+- **TypeScript Path Mapping**: tsconfig paths configuration issues
+- **DNS/Connection**: Network connectivity problems
+- **React Hydration**: SSR hydration mismatches
+- **Undefined Property Access**: Common null/undefined errors
+
+## Types
+
+### ContentPage
+
+```typescript
+interface ContentPage {
+  id: string; // Unique identifier
+  name: string; // Tab label
+  code: {
+    html: string; // HTML content
+    script?: string; // Optional JavaScript
+  };
+}
+```
+
+### TemplateOptions
+
+```typescript
+interface TemplateOptions {
+  content?: ContentPage[];
+  cspNonce?: string;
+  editor?: Editors;
+  openInEditorUrl?: string;
+  solutionFinders?: SolutionFinder[];
+  theme?: "dark" | "light" | "auto";
+}
+```
+
+### ContextContentOptions
+
+```typescript
+interface ContextContentOptions {
+  context?: Record<string, unknown>;
+  headerAllowlist?: string[];
+  headerDenylist?: string[];
+  maskValue?: string;
+  previewBytes?: number;
+}
+```
+
+### CliOptions
+
+```typescript
+interface CliOptions {
+  solutionFinders?: SolutionFinder[];
+  // Additional options from @visulima/error
+}
+```
+
+## Error Extensions
+
+Extend the `VisulimaError` class for rich error information:
+
+```typescript
+import { VisulimaError } from "@visulima/error";
+
+class DatabaseError extends VisulimaError {
+  constructor(message: string, cause?: Error) {
+    super({
+      name: "DatabaseError",
+      message,
+      cause,
+    });
+
+    this.hint = "Check database connection and credentials";
+  }
+}
+
+throw new DatabaseError("Connection timeout", originalError);
+```
+
+## CSP (Content Security Policy)
+
+When using CSP, provide a nonce for inline styles and scripts:
+
+```typescript
+const nonce = generateNonce(); // Your nonce generation
+
+const html = await ono.toHTML(error, {
+  cspNonce: nonce,
+});
+
+// In your CSP header
+res.setHeader(
+  "Content-Security-Policy",
+  `script-src 'nonce-${nonce}'; style-src 'nonce-${nonce}'`
+);
+```
+
+## Keyboard Shortcuts
+
+The HTML error page includes these keyboard shortcuts:
+
+- **Shift+/** or **?**: Open shortcuts help dialog
+- **Escape**: Close dialogs
+- **Enter/Space**: Activate focused control
+- **Tab**: Navigate between interactive elements
+
+## Theme Persistence
+
+Theme selection is persisted in `localStorage` under the key `ono:theme`. The selected editor is stored under `ono:editor`.
