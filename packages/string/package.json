@@ -253,8 +253,8 @@
                 "@types/node": "24.10.1",
                 "@visulima/colorize": "1.4.29",
                 "@visulima/packem": "2.0.0-alpha.40",
-                "@vitest/coverage-v8": "4.0.14",
-                "@vitest/ui": "4.0.14",
+                "@vitest/coverage-v8": "4.0.15",
+                "@vitest/ui": "4.0.15",
                 "conventional-changelog-conventionalcommits": "9.1.0",
                 "emoji-regex-xs": "2.0.1",
                 "esbuild": "0.27.0",
@@ -267,7 +267,7 @@
                 "secretlint": "11.2.5",
                 "semantic-release": "25.0.2",
                 "typescript": "5.9.3",
-                "vitest": "4.0.14"
+                "vitest": "4.0.15"
         },
         "engines": {
                 "node": ">=22.12 <=25.x"
