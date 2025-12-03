@@ -1,0 +1,338 @@
+import { Callout } from "@visulima/nextra-theme-docs/components";
+
+Complete guide to using Colorize in web browsers.
+
+## Overview
+
+Colorize provides full support for styling console output in web browsers. The browser version uses the `%c` syntax for styling.
+
+**Key Features:**
+- Works in all modern browsers
+- Same API as Node.js version
+- Automatic browser detection
+- Nested styles support
+- Full color spectrum (TrueColor)
+
+## Installation
+
+Install Colorize as usual:
+
+```bash
+npm install @visulima/colorize
+```
+
+## Basic Usage
+
+### Importing
+
+Import from the browser-specific entry point:
+
+```typescript
+// ESM
+import { red, green, blue, bold } from '@visulima/colorize/browser';
+
+// Or default import
+import colorize from '@visulima/colorize/browser';
+```
+
+### Important: Spread Operator
+
+<Callout type="warning">
+The browser version returns arrays that must be spread into `console.log`:
+
+```typescript
+import { red, green } from '@visulima/colorize/browser';
+
+// Correct - use spread operator
+console.log(...red('Error message'));
+console.log(...green('Success'));
+
+// Incorrect - will log an array
+console.log(red('Error message')); // Wrong!
+```
+</Callout>
+
+### Why Arrays?
+
+Browser consoles use the `%c` syntax for styling:
+
+```typescript
+// What Colorize generates internally:
+console.log('%cError message', 'color: red');
+
+// Returns as:
+['%cError message', 'color: red']
+```
+
+## Browser API
+
+The browser version has the same API as Node.js, with one key difference:
+
+### Basic Colors
+
+```typescript
+import { red, green, blue, yellow } from '@visulima/colorize/browser';
+
+console.log(...red('Red text'));
+console.log(...green('Green text'));
+console.log(...blue('Blue text'));
+```
+
+### Text Styles
+
+```typescript
+import { bold, italic, underline } from '@visulima/colorize/browser';
+
+console.log(...bold('Bold text'));
+console.log(...italic('Italic text'));
+console.log(...underline('Underlined text'));
+```
+
+### Chained Styles
+
+```typescript
+import { red, bold, underline } from '@visulima/colorize/browser';
+
+console.log(...red.bold('Bold red text'));
+console.log(...red.bold.underline('Bold, underlined red text'));
+```
+
+### TrueColor
+
+```typescript
+import { hex, rgb, bgHex } from '@visulima/colorize/browser';
+
+// Hex colors
+console.log(...hex('#FF69B4')('Hot pink'));
+
+// RGB colors
+console.log(...rgb(255, 99, 71)('Tomato'));
+
+// Background hex
+console.log(...bgHex('#FF69B4')('Hot pink background'));
+```
+
+### Nested Styles
+
+```typescript
+import { red, blue, green, bold } from '@visulima/colorize/browser';
+
+console.log(...red`Error: ${blue.bold`file.js`} not found`);
+console.log(...green`Status: ${bold`OK`} - All tests passed`);
+```
+
+## Advanced Techniques
+
+### Logging Helper
+
+Create a wrapper to avoid spreading:
+
+```typescript
+import { red, green, yellow, blue } from '@visulima/colorize/browser';
+
+const log = {
+  error: (...args: any[]) => console.error(...red(args.join(' '))),
+  warn: (...args: any[]) => console.warn(...yellow(args.join(' '))),
+  info: (...args: any[]) => console.info(...blue(args.join(' '))),
+  success: (...args: any[]) => console.log(...green(args.join(' '))),
+};
+
+log.error('Connection failed');
+log.success('Data loaded');
+```
+
+### Logger Class
+
+Implement a comprehensive logging system:
+
+```typescript
+import { red, yellow, blue, green, gray, bold } from '@visulima/colorize/browser';
+
+class BrowserLogger {
+  private timestamp(): string {
+    return new Date().toISOString();
+  }
+
+  error(message: string, ...args: any[]) {
+    console.error(
+      ...gray(`[${this.timestamp()}]`),
+      ...red(bold('[ERROR]')),
+      message,
+      ...args
+    );
+  }
+
+  warn(message: string, ...args: any[]) {
+    console.warn(
+      ...gray(`[${this.timestamp()}]`),
+      ...yellow(bold('[WARN]')),
+      message,
+      ...args
+    );
+  }
+
+  info(message: string, ...args: any[]) {
+    console.info(
+      ...gray(`[${this.timestamp()}]`),
+      ...blue(bold('[INFO]')),
+      message,
+      ...args
+    );
+  }
+
+  success(message: string, ...args: any[]) {
+    console.log(
+      ...gray(`[${this.timestamp()}]`),
+      ...green(bold('[SUCCESS]')),
+      message,
+      ...args
+    );
+  }
+}
+
+const logger = new BrowserLogger();
+
+logger.info('Application started');
+logger.success('User logged in');
+```
+
+### Grouped Logs
+
+Use console groups with colors:
+
+```typescript
+import { cyan, green, red, bold } from '@visulima/colorize/browser';
+
+function logApiRequest(method: string, url: string, status: number, data: any) {
+  console.group(...cyan(bold(`${method} ${url}`)));
+  
+  const statusColor = status < 400 ? green : red;
+  console.log(...statusColor(`Status: ${status}`));
+  console.log('Response:', data);
+  
+  console.groupEnd();
+}
+
+logApiRequest('GET', '/api/users', 200, { users: [] });
+```
+
+## Browser Compatibility
+
+### Supported Browsers
+
+**Full Support (Native ANSI):**
+- Chrome 69+
+- Edge 79+
+- Opera 56+
+- All Chromium-based browsers
+
+**CSS Support (%c syntax):**
+- Firefox 31+
+- Safari 6.1+
+
+<Callout type="info">
+Different browsers may render styles slightly differently. Chrome/Chromium browsers have the best support.
+</Callout>
+
+## React Integration
+
+### Development Tools
+
+Use Colorize in React components:
+
+```typescript
+import { useEffect } from 'react';
+import { blue, green, bold } from '@visulima/colorize/browser';
+
+function MyComponent() {
+  useEffect(() => {
+    console.log(...blue(bold('Component mounted')));
+    
+    return () => {
+      console.log(...yellow(bold('Component unmounting')));
+    };
+  }, []);
+
+  return <div>My Component</div>;
+}
+```
+
+### Redux Logger
+
+Enhance Redux logs:
+
+```typescript
+import { cyan, green, yellow, bold } from '@visulima/colorize/browser';
+
+const loggerMiddleware = (store) => (next) => (action) => {
+  console.group(...cyan(bold(`Action: ${action.type}`)));
+  console.log(...yellow('Previous state:'), store.getState());
+  console.log(...green('Action:'), action);
+  
+  const result = next(action);
+  
+  console.log(...yellow('Next state:'), store.getState());
+  console.groupEnd();
+  
+  return result;
+};
+```
+
+## Limitations
+
+### Current Limitations
+
+1. **Spread Operator Required**: Must use spread operator with console methods
+2. **No Gradient Support**: Gradient functions are not available in browser version
+3. **Style Mixing**: Some style combinations may not render in all browsers
+
+<Callout type="warning">
+**Workaround for Spread Operator:**
+
+You can create a helper that wraps console methods, but note that this may affect file/line information in the console.
+</Callout>
+
+## Best Practices
+
+### Performance
+
+Minimize styling in production:
+
+```typescript
+const isProd = process.env.NODE_ENV === 'production';
+
+const log = isProd 
+  ? console.log.bind(console)
+  : (...args: any[]) => console.log(...args);
+```
+
+### Consistency
+
+Create a style guide:
+
+```typescript
+import { red, yellow, blue, green, bold } from '@visulima/colorize/browser';
+
+export const CONSOLE_STYLES = {
+  error: red.bold,
+  warn: yellow.bold,
+  info: blue,
+  success: green.bold,
+} as const;
+```
+
+### Debugging
+
+Use colors to differentiate log sources:
+
+```typescript
+import { cyan, magenta, yellow } from '@visulima/colorize/browser';
+
+const createLogger = (prefix: string, color: any) => ({
+  log: (...args: any[]) => console.log(...color(`[${prefix}]`), ...args)
+});
+
+const apiLogger = createLogger('API', cyan);
+const storeLogger = createLogger('Store', magenta);
+const routerLogger = createLogger('Router', yellow);
+```

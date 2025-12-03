@@ -1,0 +1,290 @@
+import { Callout } from "@visulima/nextra-theme-docs/components";
+
+Solutions to common issues when using Colorize.
+
+## Installation Issues
+
+### Package Not Found
+
+**Problem:** `npm ERR! 404 Not Found`
+
+**Solutions:**
+
+1. Check package name spelling:
+   ```bash
+   npm install @visulima/colorize
+   ```
+
+2. Clear npm cache:
+   ```bash
+   npm cache clean --force
+   npm install @visulima/colorize
+   ```
+
+3. Check npm registry:
+   ```bash
+   npm config get registry
+   # Should be: https://registry.npmjs.org/
+   ```
+
+## Colors Not Showing
+
+### Plain Text Instead of Colors
+
+**Diagnosis:**
+
+1. Check if output is TTY:
+   ```bash
+   node -e "console.log(process.stdout.isTTY)"
+   # Should output: true
+   ```
+
+2. Check environment variables:
+   ```bash
+   echo $NO_COLOR      # Should be empty
+   echo $TERM          # Should show terminal type
+   ```
+
+**Solutions:**
+
+1. Force colors:
+   ```bash
+   FORCE_COLOR=1 node app.js
+   ```
+
+2. Remove NO_COLOR:
+   ```bash
+   unset NO_COLOR
+   node app.js
+   ```
+
+3. Check terminal support:
+   ```bash
+   TERM=xterm-256color node app.js
+   ```
+
+### Colors Lost When Piping
+
+**Problem:** `node app.js | less` - Colors disappear
+
+**Solution:**
+
+Force colors when piping:
+```bash
+FORCE_COLOR=1 node app.js | less -R
+```
+
+### Colors in Log Files
+
+**Problem:** ANSI codes appear in log files
+
+**Solution:**
+
+Disable colors for file output:
+```bash
+NO_COLOR=1 node app.js > output.log
+```
+
+Or strip colors in code:
+```typescript
+import { strip, red } from '@visulima/colorize';
+
+const styled = red('Error');
+const plain = strip(styled);
+
+fs.writeFileSync('log.txt', plain);
+```
+
+## Wrong Colors
+
+### Colors Look Different
+
+**Diagnosis:**
+
+Check color depth:
+```bash
+echo $TERM
+echo $COLORTERM
+```
+
+**Solutions:**
+
+1. Force TrueColor:
+   ```bash
+   COLORTERM=truecolor FORCE_COLOR=3 node app.js
+   ```
+
+2. Use specific terminal:
+   ```bash
+   TERM=xterm-256color node app.js
+   ```
+
+## Import Errors
+
+### Cannot Find Module
+
+**Problem:** `Error: Cannot find module '@visulima/colorize'`
+
+**Solutions:**
+
+1. Verify installation:
+   ```bash
+   npm list @visulima/colorize
+   ```
+
+2. Reinstall package:
+   ```bash
+   npm install @visulima/colorize
+   ```
+
+3. Check import path:
+   ```typescript
+   // Correct
+   import { red } from '@visulima/colorize';
+   import template from '@visulima/colorize/template';
+   import { gradient } from '@visulima/colorize/gradient';
+   
+   // Wrong
+   import { red } from 'colorize';
+   import { red } from '@visulima/colorize/colors';
+   ```
+
+## TypeScript Issues
+
+### Type Errors
+
+**Problem:** `TS2307: Cannot find module '@visulima/colorize'`
+
+**Solutions:**
+
+1. Ensure TypeScript version is 4.5+:
+   ```bash
+   npm install -D typescript@latest
+   ```
+
+2. Check tsconfig.json:
+   ```json
+   {
+     "compilerOptions": {
+       "moduleResolution": "node",
+       "esModuleInterop": true,
+       "skipLibCheck": false
+     }
+   }
+   ```
+
+3. Clear TypeScript cache:
+   ```bash
+   rm -rf node_modules/.cache
+   ```
+
+## Browser Issues
+
+### Array Output in Console
+
+**Problem:** `console.log(red('Text'))` logs array
+
+**Solution:**
+
+Use spread operator:
+```typescript
+import { red } from '@visulima/colorize/browser';
+
+console.log(...red('Text')); // Correct
+```
+
+### Browser Colors Not Working
+
+**Solutions:**
+
+1. Check browser version (Chrome 69+, Firefox 31+, Safari 6.1+)
+2. Verify import path:
+   ```typescript
+   // Browser-specific import
+   import { red } from '@visulima/colorize/browser';
+   ```
+
+## Performance Issues
+
+### Slow Rendering
+
+**Solutions:**
+
+1. Cache styled strings:
+   ```typescript
+   import { red, bold } from '@visulima/colorize';
+   
+   // Cache frequently used styles
+   const ERROR = red.bold('[ERROR]');
+   const SUCCESS = green.bold('[SUCCESS]');
+   ```
+
+2. Disable colors in production:
+   ```bash
+   NODE_ENV=production NO_COLOR=1 node app.js
+   ```
+
+3. Use named imports:
+   ```typescript
+   // Good - tree-shakeable
+   import { red } from '@visulima/colorize';
+   
+   // Less optimal
+   import colorize from '@visulima/colorize';
+   ```
+
+## CI/CD Issues
+
+### Colors Not Working in CI
+
+**Solutions:**
+
+1. Force colors in CI:
+   ```yaml
+   # GitHub Actions
+   env:
+     FORCE_COLOR: 3
+   ```
+
+2. Verify CI supports colors (GitHub Actions, GitLab CI, Travis CI all support colors)
+
+### Docker Container Colors
+
+**Solutions:**
+
+1. Set environment in Dockerfile:
+   ```dockerfile
+   ENV FORCE_COLOR=3
+   ENV TERM=xterm-256color
+   ```
+
+2. Pass environment when running:
+   ```bash
+   docker run -e FORCE_COLOR=3 myimage
+   ```
+
+## Debug Checklist
+
+Use this to diagnose issues:
+
+```typescript
+// Debug information
+console.log('Node version:', process.version);
+console.log('Platform:', process.platform);
+console.log('TTY:', process.stdout.isTTY);
+console.log('TERM:', process.env.TERM);
+console.log('COLORTERM:', process.env.COLORTERM);
+console.log('NO_COLOR:', process.env.NO_COLOR);
+console.log('FORCE_COLOR:', process.env.FORCE_COLOR);
+
+// Test basic colors
+import { red, green, blue } from '@visulima/colorize';
+console.log('Test:', red('RED'), green('GREEN'), blue('BLUE'));
+```
+
+<Callout type="info">
+If your issue isn't covered here:
+- Check the [FAQ](/docs/package/colorize/faq)
+- Review the [API Reference](/docs/package/colorize/api-reference)
+- Report issues on [GitHub](https://github.com/visulima/visulima/issues)
+</Callout>

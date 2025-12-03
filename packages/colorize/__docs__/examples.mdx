@@ -1,0 +1,420 @@
+import { Callout } from "@visulima/nextra-theme-docs/components";
+
+Practical examples demonstrating real-world usage of Colorize.
+
+## CLI Applications
+
+### Help Command
+
+Create a colorful help menu for your CLI:
+
+```typescript
+import { bold, cyan, yellow, green, gray } from '@visulima/colorize';
+
+function showHelp() {
+  console.log();
+  console.log(bold(cyan('my-cli')) + gray(' v1.0.0'));
+  console.log();
+  console.log(bold('USAGE'));
+  console.log('  $ my-cli [COMMAND] [OPTIONS]');
+  console.log();
+  console.log(bold('COMMANDS'));
+  console.log(`  ${green('init')}      Initialize a new project`);
+  console.log(`  ${green('build')}     Build the project`);
+  console.log(`  ${green('dev')}       Start development server`);
+  console.log(`  ${green('test')}      Run tests`);
+  console.log();
+  console.log(bold('OPTIONS'));
+  console.log(`  ${yellow('-h, --help')}     Show this help message`);
+  console.log(`  ${yellow('-v, --version')}  Show version number`);
+  console.log(`  ${yellow('--verbose')}      Enable verbose logging`);
+}
+
+showHelp();
+```
+
+### Command Execution
+
+Show command execution status:
+
+```typescript
+import { bold, green, red, blue } from '@visulima/colorize';
+
+function executeCommand(command: string) {
+  console.log(blue('→'), `Executing ${bold(command)}...`);
+  
+  try {
+    // Execute command...
+    console.log(green('✓'), `${command} completed successfully`);
+  } catch (error) {
+    console.log(red('✗'), `${command} failed`);
+  }
+}
+
+executeCommand('npm install');
+executeCommand('npm run build');
+```
+
+## Logging Systems
+
+### Log Levels
+
+Implement a comprehensive logging system:
+
+```typescript
+import { red, yellow, blue, green, gray, bold } from '@visulima/colorize';
+
+class Logger {
+  private formatTimestamp(): string {
+    return new Date().toISOString();
+  }
+
+  error(message: string, ...args: any[]) {
+    console.error(
+      gray(`[${this.formatTimestamp()}]`),
+      red(bold('[ERROR]')),
+      message,
+      ...args
+    );
+  }
+
+  warn(message: string, ...args: any[]) {
+    console.warn(
+      gray(`[${this.formatTimestamp()}]`),
+      yellow(bold('[WARN]')),
+      message,
+      ...args
+    );
+  }
+
+  info(message: string, ...args: any[]) {
+    console.info(
+      gray(`[${this.formatTimestamp()}]`),
+      blue(bold('[INFO]')),
+      message,
+      ...args
+    );
+  }
+
+  success(message: string, ...args: any[]) {
+    console.log(
+      gray(`[${this.formatTimestamp()}]`),
+      green(bold('[SUCCESS]')),
+      message,
+      ...args
+    );
+  }
+}
+
+const logger = new Logger();
+
+logger.info('Application starting...');
+logger.success('Configuration loaded');
+logger.warn('Using deprecated API');
+logger.error('Connection failed');
+```
+
+## Build Tools
+
+### Build Progress
+
+Display build progress with colors:
+
+```typescript
+import { bold, green, blue, cyan, gray } from '@visulima/colorize';
+
+function buildProject() {
+  console.log(bold(blue('Building project...')));
+  console.log();
+
+  const steps = [
+    { name: 'Cleaning output directory', duration: 100 },
+    { name: 'Compiling TypeScript', duration: 2000 },
+    { name: 'Bundling assets', duration: 1500 },
+    { name: 'Optimizing images', duration: 800 },
+  ];
+
+  steps.forEach((step, index) => {
+    console.log(
+      green('✓'),
+      cyan(`[${index + 1}/${steps.length}]`),
+      step.name,
+      gray(`(${step.duration}ms)`)
+    );
+  });
+
+  console.log();
+  console.log(bold(green('✓ Build completed successfully!')));
+}
+```
+
+### Bundle Analysis
+
+Display bundle size information:
+
+```typescript
+import { bold, cyan, green, yellow, red, gray } from '@visulima/colorize';
+
+interface Bundle {
+  name: string;
+  size: number;
+  gzip: number;
+}
+
+function formatSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(2)} KB`;
+  return `${(bytes / 1024 / 1024).toFixed(2)} MB`;
+}
+
+function getSizeColor(size: number) {
+  if (size < 50000) return green;
+  if (size < 150000) return yellow;
+  return red;
+}
+
+function showBundleAnalysis(bundles: Bundle[]) {
+  console.log(bold('Bundle Analysis:'));
+  console.log();
+
+  bundles.forEach(bundle => {
+    const sizeColor = getSizeColor(bundle.size);
+    const size = formatSize(bundle.size);
+    const gzip = formatSize(bundle.gzip);
+
+    console.log(
+      cyan(bundle.name.padEnd(30)),
+      sizeColor(size.padEnd(12)),
+      gray(`(${gzip} gzip)`)
+    );
+  });
+}
+
+showBundleAnalysis([
+  { name: 'main.js', size: 145000, gzip: 48000 },
+  { name: 'vendor.js', size: 380000, gzip: 125000 },
+  { name: 'styles.css', size: 32000, gzip: 8500 },
+]);
+```
+
+## Testing Output
+
+### Test Results
+
+Display test results with colors:
+
+```typescript
+import { bold, green, red, yellow, cyan, gray } from '@visulima/colorize';
+
+interface TestResult {
+  suite: string;
+  name: string;
+  status: 'pass' | 'fail' | 'skip';
+  duration: number;
+  error?: string;
+}
+
+function displayTestResults(results: TestResult[]) {
+  const suites = new Map<string, TestResult[]>();
+
+  results.forEach(result => {
+    if (!suites.has(result.suite)) {
+      suites.set(result.suite, []);
+    }
+    suites.get(result.suite)!.push(result);
+  });
+
+  suites.forEach((tests, suite) => {
+    console.log();
+    console.log(bold(cyan(suite)));
+
+    tests.forEach(test => {
+      let icon: string;
+      let color: (text: string) => string;
+
+      switch (test.status) {
+        case 'pass':
+          icon = '✓';
+          color = green;
+          break;
+        case 'fail':
+          icon = '✗';
+          color = red;
+          break;
+        case 'skip':
+          icon = '○';
+          color = yellow;
+          break;
+      }
+
+      console.log(
+        color(`  ${icon}`),
+        test.name,
+        gray(`(${test.duration}ms)`)
+      );
+
+      if (test.error) {
+        console.log(red(`    ${test.error}`));
+      }
+    });
+  });
+
+  const passed = results.filter(r => r.status === 'pass').length;
+  const failed = results.filter(r => r.status === 'fail').length;
+  const total = results.length;
+
+  console.log();
+  console.log(bold('Test Summary:'));
+  console.log(`  ${green(`${passed} passed`)}`);
+  if (failed > 0) console.log(`  ${red(`${failed} failed`)}`);
+  console.log(`  ${cyan(`${total} total`)}`);
+}
+```
+
+## Progress Indicators
+
+### Progress Bar
+
+Create an animated progress bar:
+
+```typescript
+import { green, gray, yellow, bold } from '@visulima/colorize';
+
+function createProgressBar(current: number, total: number, width: number = 40): string {
+  const percentage = Math.round((current / total) * 100);
+  const filled = Math.round((width * current) / total);
+  const empty = width - filled;
+
+  const bar = green('█'.repeat(filled)) + gray('░'.repeat(empty));
+  const status = percentage === 100 ? green(bold('DONE')) : yellow(bold(`${percentage}%`));
+
+  return `[${bar}] ${status}`;
+}
+
+// Usage
+console.log('Downloading...');
+console.log(createProgressBar(75, 100));
+console.log(gray('75/100 items'));
+```
+
+## Error Handling
+
+### Detailed Error Display
+
+Show detailed error information:
+
+```typescript
+import { red, yellow, gray, bold, underline } from '@visulima/colorize';
+
+function displayError(error: Error) {
+  console.log();
+  console.log(red(bold('ERROR:')), error.message);
+  console.log();
+
+  if (error.stack) {
+    console.log(yellow('Stack Trace:'));
+    const stackLines = error.stack.split('\n').slice(1);
+    stackLines.forEach(line => {
+      console.log(gray('  ' + line.trim()));
+    });
+  }
+
+  console.log();
+  console.log(yellow('Need help?'));
+  console.log(`  Visit: ${underline('https://docs.example.com/errors')}`);
+  console.log(`  Or run: ${bold('my-cli help')}`);
+}
+```
+
+### Validation Errors
+
+Display validation errors clearly:
+
+```typescript
+import { red, yellow, cyan, bold } from '@visulima/colorize';
+
+interface ValidationError {
+  field: string;
+  message: string;
+  value?: any;
+}
+
+function displayValidationErrors(errors: ValidationError[]) {
+  console.log();
+  console.log(red(bold(`Found ${errors.length} validation error(s):`)));
+  console.log();
+
+  errors.forEach((error, index) => {
+    console.log(red(`  ${index + 1}.`), cyan(error.field), '-', error.message);
+    if (error.value !== undefined) {
+      console.log(yellow(`     Received: ${JSON.stringify(error.value)}`));
+    }
+  });
+
+  console.log();
+}
+```
+
+## Formatted Output
+
+### Tables
+
+Create colorful tables:
+
+```typescript
+import { bold, cyan, green, gray } from '@visulima/colorize';
+
+interface TableRow {
+  [key: string]: string | number;
+}
+
+function displayTable(headers: string[], rows: TableRow[]) {
+  // Header
+  console.log(
+    headers.map(header => bold(cyan(header.padEnd(20)))).join('')
+  );
+
+  console.log(gray('─'.repeat(headers.length * 20)));
+
+  // Rows
+  rows.forEach(row => {
+    console.log(
+      Object.values(row).map(value =>
+        String(value).padEnd(20)
+      ).join('')
+    );
+  });
+}
+```
+
+### Tree Structure
+
+Display hierarchical data:
+
+```typescript
+import { cyan, gray } from '@visulima/colorize';
+
+interface TreeNode {
+  name: string;
+  children?: TreeNode[];
+}
+
+function displayTree(node: TreeNode, prefix: string = '', isLast: boolean = true) {
+  const connector = isLast ? '└── ' : '├── ';
+  console.log(prefix + gray(connector) + cyan(node.name));
+
+  if (node.children) {
+    node.children.forEach((child, index) => {
+      const isLastChild = index === node.children!.length - 1;
+      const newPrefix = prefix + (isLast ? '    ' : '│   ');
+      displayTree(child, newPrefix, isLastChild);
+    });
+  }
+}
+```
+
+<Callout type="info">
+For more advanced examples, see:
+- [Advanced Features](/docs/package/colorize/advanced) - Gradients and templates
+- [Browser Usage](/docs/package/colorize/browser) - Browser-specific examples
+</Callout>

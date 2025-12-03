@@ -1,0 +1,305 @@
+import { Callout } from "@visulima/nextra-theme-docs/components";
+
+Guide to configuring Colorize behavior through environment variables and command-line arguments.
+
+## Overview
+
+Colorize automatically detects terminal capabilities and respects standard environment variables and CLI flags for controlling color output.
+
+## Environment Variables
+
+### NO_COLOR
+
+Disables all color output when set to any value.
+
+```bash
+# Disable colors
+NO_COLOR=1 node app.js
+NO_COLOR=true node app.js
+
+# Any value disables colors
+NO_COLOR= node app.js
+```
+
+<Callout type="info">
+**Standard:** [no-color.org](https://no-color.org/)
+</Callout>
+
+### FORCE_COLOR
+
+Forces color output regardless of terminal capabilities.
+
+```bash
+# Force colors
+FORCE_COLOR=1 node app.js  # 16 colors
+FORCE_COLOR=2 node app.js  # 256 colors
+FORCE_COLOR=3 node app.js  # TrueColor (16 million)
+```
+
+**Levels:**
+- `1`: Basic 16 colors
+- `2`: 256 colors
+- `3`: TrueColor (16 million colors)
+
+### TERM
+
+Terminal type indicator. Colorize uses this to detect color capabilities.
+
+```bash
+# Common values
+TERM=xterm-256color  # 256 color support
+TERM=xterm           # 16 color support
+TERM=dumb            # No color support
+```
+
+### COLORTERM
+
+Indicates truecolor support.
+
+```bash
+# TrueColor support
+COLORTERM=truecolor node app.js
+COLORTERM=24bit node app.js
+```
+
+## Command-Line Arguments
+
+### --no-color
+
+Disables color output via CLI flag.
+
+```bash
+node app.js --no-color
+npm test -- --no-color
+```
+
+### --color
+
+Forces color output via CLI flag.
+
+```bash
+node app.js --color
+npm test -- --color
+
+# With color level
+node app.js --color=256
+node app.js --color=16m  # 16 million (TrueColor)
+```
+
+## Color Support Detection
+
+Colorize automatically detects color support through multiple checks:
+
+1. Check `NO_COLOR` environment variable
+2. Check `FORCE_COLOR` environment variable
+3. Check CLI flags (`--no-color`, `--color`)
+4. Check if output is TTY
+5. Check `TERM` environment variable
+6. Check `COLORTERM` for TrueColor
+7. Check CI environment variables
+8. Fall back to safe default
+
+<Callout type="info">
+The appropriate color space is automatically selected:
+1. TrueColor (16 million colors)
+2. 256 colors
+3. 16 colors (basic ANSI)
+4. No colors (black and white)
+</Callout>
+
+## Force/Disable Colors
+
+### Forcing Colors
+
+Use when piping output but still want colors:
+
+```bash
+# Force colors when piping
+FORCE_COLOR=1 node app.js | less -R
+
+# Force colors in Docker
+docker run -e FORCE_COLOR=3 myimage
+
+# Force colors in CI
+CI=true FORCE_COLOR=3 npm test
+```
+
+### Disabling Colors
+
+Use when colors interfere with output:
+
+```bash
+# Disable for file output
+NO_COLOR=1 node app.js > output.log
+
+# Disable for parsing
+NO_COLOR=1 node app.js | grep "pattern"
+```
+
+## CI/CD Environments
+
+### Automatic CI Detection
+
+Colorize detects common CI environments:
+
+- GitHub Actions
+- GitLab CI
+- Travis CI
+- CircleCI
+- Jenkins
+- Azure Pipelines
+- And many more...
+
+### Enabling Colors in CI
+
+**GitHub Actions:**
+
+```yaml filename=".github/workflows/test.yml"
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run tests
+        run: npm test
+        env:
+          FORCE_COLOR: 3
+```
+
+**GitLab CI:**
+
+```yaml filename=".gitlab-ci.yml"
+test:
+  script:
+    - npm test
+  variables:
+    FORCE_COLOR: "3"
+```
+
+**Docker:**
+
+```dockerfile filename="Dockerfile"
+FROM node:18
+
+# Enable colors
+ENV FORCE_COLOR=3
+
+COPY . .
+RUN npm install
+
+CMD ["node", "app.js"]
+```
+
+## Configuration Priority
+
+Order of precedence (highest to lowest):
+
+1. `NO_COLOR` environment variable (always disables)
+2. `--no-color` CLI flag
+3. `FORCE_COLOR` environment variable
+4. `--color` CLI flag
+5. Automatic detection (TTY, TERM, etc.)
+
+<Callout type="warning">
+**Example:**
+
+```bash
+# NO_COLOR takes precedence
+FORCE_COLOR=3 NO_COLOR=1 node app.js
+# Result: No colors
+
+# CLI flag overrides environment
+FORCE_COLOR=0 node app.js --color
+# Result: Colors enabled
+```
+</Callout>
+
+## Practical Examples
+
+### Development vs Production
+
+```bash
+# Development (colors enabled)
+npm run dev
+
+# Production (colors disabled for logs)
+NODE_ENV=production NO_COLOR=1 npm start > app.log
+```
+
+### Testing
+
+```bash
+# Local testing (colors)
+npm test
+
+# CI testing (colors)
+FORCE_COLOR=3 npm test
+
+# Headless testing (no colors)
+NO_COLOR=1 npm test
+```
+
+### SSH Sessions
+
+```bash
+# Enable colors over SSH
+ssh user@server "FORCE_COLOR=1 node app.js"
+
+# Disable colors over SSH
+ssh user@server "NO_COLOR=1 node app.js"
+```
+
+## Troubleshooting
+
+### Colors Not Working
+
+```bash
+# Check if TTY
+node -p "process.stdout.isTTY"
+
+# Check TERM
+echo $TERM
+
+# Check environment
+env | grep -i color
+
+# Force colors
+FORCE_COLOR=3 node app.js
+```
+
+### Colors in Wrong Depth
+
+```bash
+# Check detected level
+TERM=xterm node app.js  # 16 colors
+TERM=xterm-256color node app.js  # 256 colors
+COLORTERM=truecolor node app.js  # TrueColor
+```
+
+## Best Practices
+
+### Respect User Preferences
+
+Always respect `NO_COLOR`:
+
+```typescript
+// Good - automatically respects NO_COLOR
+import { red } from '@visulima/colorize';
+console.log(red('Text'));
+
+// Bad - forcing colors
+process.env.FORCE_COLOR = '3';
+```
+
+### Document Behavior
+
+Document color behavior in your README:
+
+```markdown
+## Colors
+
+This tool supports colored output by default. You can control this behavior:
+
+- Disable colors: `--no-color` or `NO_COLOR=1`
+- Force colors: `--color` or `FORCE_COLOR=1`
+```
