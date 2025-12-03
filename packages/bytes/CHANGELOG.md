@@ -1,3 +1,27 @@
+## @visulima/bytes [3.0.0-alpha.1](https://github.com/visulima/visulima/compare/@visulima/bytes@2.0.5...@visulima/bytes@3.0.0-alpha.1) (2025-12-03)
+
+### ⚠ BREAKING CHANGES
+
+* Updated node version to min v22.12
+
+Co-authored-by: d.bannert <d.bannert@anolilab.de>
+Co-authored-by: Cursor Agent <cursoragent@cursor.com>
+
+### Bug Fixes
+
+* update node version and test runtimes ([#575](https://github.com/visulima/visulima/issues/575)) ([40a172c](https://github.com/visulima/visulima/commit/40a172c31ef84eb0fa2d732de864f36d92fc5c06))
+
+### Miscellaneous Chores
+
+* **release:** @visulima/bytes@3.0.0-alpha.1 [skip ci]\n\n## @visulima/bytes [3.0.0-alpha.1](https://github.com/visulima/visulima/compare/@visulima/bytes@2.0.5...@visulima/bytes@3.0.0-alpha.1) (2025-12-02) ([aedb01c](https://github.com/visulima/visulima/commit/aedb01c3f47bba87ecee5d2521bc2541a0b873ce)), closes [#575](https://github.com/visulima/visulima/issues/575)
+* **release:** update dependencies and versions across multiple packages ([39ad777](https://github.com/visulima/visulima/commit/39ad777e15aeb77d1ec4182763ab7473740ccbc4))
+* update @visulima/packem version to 2.0.0-alpha.40 across multiple packages ([9efec35](https://github.com/visulima/visulima/commit/9efec35f436d3e4bdd14085b939e5c7f0c2dc9b2))
+* update dependencies and versions across multiple packages ([43fc6a3](https://github.com/visulima/visulima/commit/43fc6a38be819454d8da18c57d9e7f77cdc99fd9))
+* update licenses and improve code formatting across multiple packages ([af3327f](https://github.com/visulima/visulima/commit/af3327fc4ea050921eeb34e4bb212fda9b5b6489))
+* update package dependencies and versions across multiple packages ([c24f41b](https://github.com/visulima/visulima/commit/c24f41b3531974cb75827254af0cf8ccf42ddbdb))
+* update package versions across multiple packages ([1703fe9](https://github.com/visulima/visulima/commit/1703fe91df740457b3e82d9c2ec13ddbd2457693))
+* update package versions and workflow configuration ([1e017a3](https://github.com/visulima/visulima/commit/1e017a339b486f744b923b714ed4d134f89099f8))
+
 ## @visulima/bytes [2.0.5](https://github.com/visulima/visulima/compare/@visulima/bytes@2.0.4...@visulima/bytes@2.0.5) (2025-11-13)
 
 ### Bug Fixes
