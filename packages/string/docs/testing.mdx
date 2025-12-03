@@ -1,0 +1,415 @@
+---
+title: Testing Utilities
+description: Specialized utilities for testing ANSI colored strings and terminal output.
+---
+
+# Testing Utilities
+
+@visulima/string provides specialized utilities for testing terminal output, ANSI colored strings, and formatted text.
+
+## Vitest Integration
+
+Custom matchers for testing ANSI strings in Vitest.
+
+### Setup
+
+```typescript
+import { expect, describe, it } from 'vitest';
+import { toEqualAnsi } from '@visulima/string/test/vitest';
+
+// Extend Vitest with custom matchers
+expect.extend({ toEqualAnsi });
+```
+
+### Basic Usage
+
+```typescript
+import { red, green, blue } from '@visulima/colorize';
+
+describe('colored output tests', () => {
+  it('should match identical ANSI strings', () => {
+    const actual = red('Error');
+    const expected = red('Error');
+    
+    expect(actual).toEqualAnsi(expected);
+  });
+  
+  it('should fail on different colors', () => {
+    const actual = red('Error');
+    const expected = blue('Error');
+    
+    // This will fail with detailed comparison
+    expect(actual).toEqualAnsi(expected);
+  });
+  
+  it('should match same text with different escape codes', () => {
+    // Both produce red text but may use different codes
+    const actual = '\x1b[31mError\x1b[39m';
+    const expected = '\x1b[91mError\x1b[0m';
+    
+    // Compare only visible text
+    expect(actual).toEqualAnsi(expected, { compareColors: false });
+  });
+});
+```
+
+### Error Messages
+
+When tests fail, `toEqualAnsi` provides detailed error messages:
+
+```
+Expected ANSI strings to match
+
+Expected (visible): "Error message"
+Actual (visible):   "Error message"
+
+Expected (ANSI): "\x1b[31mError message\x1b[39m"
+Actual (ANSI):   "\x1b[32mError message\x1b[39m"
+
+Difference:
+- Colors differ (red vs green)
+- Same visible content
+- Expected length: 22
+- Actual length: 22
+```
+
+## ANSI String Formatting
+
+Format ANSI strings for test output and debugging.
+
+### Format ANSI String
+
+```typescript
+import { formatAnsiString } from '@visulima/string/test/utils';
+import { red } from '@visulima/colorize';
+
+const coloredText = red('Error message');
+const formatted = formatAnsiString(coloredText);
+
+console.log(formatted);
+// {
+//   ansi: "\x1b[31mError message\x1b[39m",
+//   stripped: "Error message",
+//   visible: "\\x1b[31mError message\\x1b[39m",
+//   json: "\"\\u001b[31mError message\\u001b[39m\"",
+//   lengthDifference: 9
+// }
+```
+
+### Properties
+
+```typescript
+interface FormattedAnsiString {
+  // Original string with ANSI codes
+  ansi: string;
+  
+  // String with ANSI codes removed
+  stripped: string;
+  
+  // Escape codes shown as visible characters
+  visible: string;
+  
+  // JSON stringified version
+  json: string;
+  
+  // Difference between ANSI and stripped length
+  lengthDifference: number;
+}
+```
+
+### Usage in Tests
+
+```typescript
+import { formatAnsiString } from '@visulima/string/test/utils';
+
+it('should format colored output correctly', () => {
+  const output = getColoredOutput();
+  const formatted = formatAnsiString(output);
+  
+  // Test visible content
+  expect(formatted.stripped).toBe('Expected text');
+  
+  // Verify ANSI codes present
+  expect(formatted.lengthDifference).toBeGreaterThan(0);
+});
+```
+
+## Compare ANSI Strings
+
+Detailed comparison between two ANSI strings.
+
+### Basic Comparison
+
+```typescript
+import { compareAnsiStrings } from '@visulima/string/test/utils';
+import { red, blue } from '@visulima/colorize';
+
+const string1 = red('Error');
+const string2 = blue('Error');
+
+const result = compareAnsiStrings(string1, string2);
+
+console.log(result);
+// {
+//   ansiEqual: false,
+//   strippedEqual: true,
+//   summary: "Same text, different colors",
+//   actual: { ansi: "...", stripped: "Error", ... },
+//   expected: { ansi: "...", stripped: "Error", ... }
+// }
+```
+
+### Comparison Result
+
+```typescript
+interface AnsiComparisonResult {
+  // Whether ANSI strings are identical
+  ansiEqual: boolean;
+  
+  // Whether visible content is the same
+  strippedEqual: boolean;
+  
+  // Human-readable summary
+  summary: string;
+  
+  // Formatted actual string
+  actual: FormattedAnsiString;
+  
+  // Formatted expected string
+  expected: FormattedAnsiString;
+}
+```
+
+### Usage in Tests
+
+```typescript
+it('should compare ANSI strings', () => {
+  const actual = getActualOutput();
+  const expected = getExpectedOutput();
+  
+  const comparison = compareAnsiStrings(actual, expected);
+  
+  if (!comparison.strippedEqual) {
+    console.log(comparison.summary);
+    console.log('Actual:', comparison.actual.stripped);
+    console.log('Expected:', comparison.expected.stripped);
+  }
+});
+```
+
+## Testing Patterns
+
+### Snapshot Testing
+
+```typescript
+import { formatAnsiString } from '@visulima/string/test/utils';
+
+it('should match snapshot', () => {
+  const output = generateColoredOutput();
+  
+  // Test with ANSI codes
+  expect(output).toMatchSnapshot();
+  
+  // Test without ANSI codes
+  const formatted = formatAnsiString(output);
+  expect(formatted.stripped).toMatchSnapshot();
+});
+```
+
+### Testing Color Consistency
+
+```typescript
+describe('color consistency', () => {
+  it('should use consistent colors for errors', () => {
+    const error1 = formatError('First error');
+    const error2 = formatError('Second error');
+    
+    const fmt1 = formatAnsiString(error1);
+    const fmt2 = formatAnsiString(error2);
+    
+    // Compare ANSI codes pattern
+    const ansiPattern1 = fmt1.ansi.replace(/[^\\x1b\[0-9;m]/g, '');
+    const ansiPattern2 = fmt2.ansi.replace(/[^\\x1b\[0-9;m]/g, '');
+    
+    expect(ansiPattern1).toBe(ansiPattern2);
+  });
+});
+```
+
+### Testing Multi-line Output
+
+```typescript
+it('should format multi-line output correctly', () => {
+  const output = generateMultiLineOutput();
+  const lines = output.split('\n');
+  
+  lines.forEach(line => {
+    const formatted = formatAnsiString(line);
+    
+    // Each line should have balanced ANSI codes
+    expect(formatted.ansi).toMatch(/^\x1b\[[0-9;]+m.*\x1b\[0m$/);
+  });
+});
+```
+
+### Testing Terminal Width
+
+```typescript
+import { getStringWidth } from '@visulima/string';
+import { formatAnsiString } from '@visulima/string/test/utils';
+
+it('should fit within terminal width', () => {
+  const output = generateOutput();
+  const maxWidth = 80;
+  
+  const formatted = formatAnsiString(output);
+  const width = getStringWidth(formatted.stripped);
+  
+  expect(width).toBeLessThanOrEqual(maxWidth);
+});
+```
+
+### Testing Error Messages
+
+```typescript
+describe('error formatting', () => {
+  it('should format error messages correctly', () => {
+    const error = new Error('Test error');
+    const formatted = formatErrorMessage(error);
+    
+    expect(formatted).toEqualAnsi(red('Error: ') + 'Test error');
+  });
+  
+  it('should include stack trace with colors', () => {
+    const error = new Error('Test error');
+    const formatted = formatErrorWithStack(error);
+    
+    const fmt = formatAnsiString(formatted);
+    
+    expect(fmt.stripped).toContain('Error: Test error');
+    expect(fmt.stripped).toContain('at ');
+    expect(fmt.lengthDifference).toBeGreaterThan(0);
+  });
+});
+```
+
+### Testing Progress Bars
+
+```typescript
+import { getStringWidth } from '@visulima/string';
+
+describe('progress bar', () => {
+  it('should maintain consistent width', () => {
+    const bar1 = createProgressBar(0.0);
+    const bar2 = createProgressBar(0.5);
+    const bar3 = createProgressBar(1.0);
+    
+    const width1 = getStringWidth(formatAnsiString(bar1).stripped);
+    const width2 = getStringWidth(formatAnsiString(bar2).stripped);
+    const width3 = getStringWidth(formatAnsiString(bar3).stripped);
+    
+    expect(width1).toBe(width2);
+    expect(width2).toBe(width3);
+  });
+});
+```
+
+### Testing Color Schemes
+
+```typescript
+describe('color scheme', () => {
+  it('should apply consistent colors', () => {
+    const scheme = {
+      error: red,
+      warning: yellow,
+      success: green,
+      info: blue
+    };
+    
+    const messages = {
+      error: scheme.error('Error message'),
+      warning: scheme.warning('Warning message'),
+      success: scheme.success('Success message'),
+      info: scheme.info('Info message')
+    };
+    
+    // Each should have different ANSI codes
+    const formatted = Object.entries(messages).map(([key, msg]) => ({
+      type: key,
+      formatted: formatAnsiString(msg)
+    }));
+    
+    const ansiCodes = formatted.map(f => f.formatted.ansi);
+    const uniqueCodes = new Set(ansiCodes);
+    
+    expect(uniqueCodes.size).toBe(ansiCodes.length);
+  });
+});
+```
+
+## Best Practices
+
+1. Use `toEqualAnsi` for comparing colored output
+2. Test both with and without ANSI codes
+3. Verify visual width for terminal output
+4. Use snapshots for complex formatted output
+5. Test color consistency across similar messages
+6. Verify ANSI codes are properly closed
+7. Test with various terminal width constraints
+
+## Common Testing Scenarios
+
+### CLI Output
+
+```typescript
+it('should format CLI output correctly', () => {
+  const output = generateCLIOutput();
+  
+  const formatted = formatAnsiString(output);
+  
+  // Test visible content
+  expect(formatted.stripped).toContain('Expected text');
+  
+  // Verify colors are applied
+  expect(formatted.lengthDifference).toBeGreaterThan(0);
+  
+  // Check width
+  const width = getStringWidth(formatted.stripped);
+  expect(width).toBeLessThanOrEqual(80);
+});
+```
+
+### Log Messages
+
+```typescript
+it('should format log messages', () => {
+  const log = createLogMessage('info', 'Test message');
+  
+  expect(log).toEqualAnsi(
+    blue('[INFO]') + ' Test message'
+  );
+});
+```
+
+### Table Output
+
+```typescript
+it('should format table correctly', () => {
+  const table = generateTable();
+  const lines = table.split('\n');
+  
+  lines.forEach(line => {
+    const formatted = formatAnsiString(line);
+    const width = getStringWidth(formatted.stripped);
+    
+    // All lines should have same width
+    expect(width).toBe(expectedWidth);
+  });
+});
+```
+
+## Next Steps
+
+- [String Width](/docs/string-width) - Calculate visual width
+- [String Manipulation](/docs/string-manipulation) - Format strings
+- [API Reference](/docs/api/testing) - Complete testing API

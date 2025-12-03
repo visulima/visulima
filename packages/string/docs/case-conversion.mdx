@@ -1,0 +1,428 @@
+---
+title: Case Conversion
+description: Transform strings between different case styles with intelligent handling of acronyms and multi-language support.
+---
+
+# Case Conversion
+
+@visulima/string provides comprehensive case conversion utilities with intelligent handling of acronyms, multi-language support, and type-safe operations.
+
+## Available Case Styles
+
+### camelCase
+
+Converts strings to camelCase format.
+
+```typescript
+import { camelCase } from '@visulima/string';
+
+camelCase('foo bar');              // 'fooBar'
+camelCase('foo-bar');              // 'fooBar'
+camelCase('foo_bar');              // 'fooBar'
+camelCase('XMLHttpRequest');       // 'xmlHttpRequest'
+camelCase('AJAXRequest');          // 'ajaxRequest'
+camelCase('QueryXML123String');    // 'queryXml123String'
+```
+
+### PascalCase
+
+Converts strings to PascalCase format.
+
+```typescript
+import { pascalCase } from '@visulima/string';
+
+pascalCase('foo bar');              // 'FooBar'
+pascalCase('foo-bar');              // 'FooBar'
+pascalCase('foo_bar');              // 'FooBar'
+pascalCase('XMLHttpRequest');       // 'XmlHttpRequest'
+pascalCase('AJAXRequest');          // 'AjaxRequest'
+pascalCase('QueryXML123String');    // 'QueryXml123String'
+```
+
+### snake_case
+
+Converts strings to snake_case format.
+
+```typescript
+import { snakeCase } from '@visulima/string';
+
+snakeCase('fooBar');                // 'foo_bar'
+snakeCase('foo bar');               // 'foo_bar'
+snakeCase('foo-bar');               // 'foo_bar'
+snakeCase('XMLHttpRequest');        // 'xml_http_request'
+snakeCase('AJAXRequest');           // 'ajax_request'
+snakeCase('QueryXML123String');     // 'query_xml_123_string'
+```
+
+### kebab-case
+
+Converts strings to kebab-case format.
+
+```typescript
+import { kebabCase } from '@visulima/string';
+
+kebabCase('fooBar');                // 'foo-bar'
+kebabCase('foo bar');               // 'foo-bar'
+kebabCase('foo_bar');               // 'foo-bar'
+kebabCase('XMLHttpRequest');        // 'xml-http-request'
+kebabCase('AJAXRequest');           // 'ajax-request'
+kebabCase('QueryXML123String');     // 'query-xml-123-string'
+```
+
+### CONSTANT_CASE
+
+Converts strings to CONSTANT_CASE format.
+
+```typescript
+import { constantCase } from '@visulima/string';
+
+constantCase('foo bar');            // 'FOO_BAR'
+constantCase('foo-bar');            // 'FOO_BAR'
+constantCase('foo_bar');            // 'FOO_BAR'
+constantCase('XMLHttpRequest');     // 'XML_HTTP_REQUEST'
+constantCase('AJAXRequest');        // 'AJAX_REQUEST'
+constantCase('QueryXML123String');  // 'QUERY_XML_123_STRING'
+```
+
+### Other Case Styles
+
+#### dot.case
+
+```typescript
+import { dotCase } from '@visulima/string';
+
+dotCase('foo bar');                 // 'foo.bar'
+dotCase('XMLHttpRequest');          // 'xml.http.request'
+```
+
+#### path/case
+
+```typescript
+import { pathCase } from '@visulima/string';
+
+pathCase('foo bar');                // 'foo/bar'
+pathCase('XMLHttpRequest');         // 'xml/http/request'
+```
+
+#### Title Case
+
+```typescript
+import { titleCase } from '@visulima/string';
+
+titleCase('this-IS-aTitle');        // 'This is a Title'
+titleCase('XMLHttpRequest');        // 'XML Http Request'
+```
+
+#### Sentence case
+
+```typescript
+import { sentenceCase } from '@visulima/string';
+
+sentenceCase('foo bar');            // 'Foo bar'
+sentenceCase('XMLHttpRequest');     // 'Xml http request'
+```
+
+#### flatcase
+
+```typescript
+import { flatCase } from '@visulima/string';
+
+flatCase('foo bar');                // 'foobar'
+flatCase('foo-bar');                // 'foobar'
+```
+
+#### Capital Case
+
+```typescript
+import { capitalCase } from '@visulima/string';
+
+capitalCase('foo bar');             // 'Foo Bar'
+capitalCase('foo-bar');             // 'Foo Bar'
+```
+
+#### Train-Case
+
+```typescript
+import { trainCase } from '@visulima/string';
+
+trainCase('foo bar');               // 'Foo-Bar'
+trainCase('XMLHttpRequest');        // 'Xml-Http-Request'
+```
+
+#### Pascal_Snake_Case
+
+```typescript
+import { pascalSnakeCase } from '@visulima/string';
+
+pascalSnakeCase('foo bar');         // 'Foo_Bar'
+pascalSnakeCase('XMLHttpRequest');  // 'Xml_Http_Request'
+```
+
+## Configuration Options
+
+All case conversion functions accept common configuration options:
+
+```typescript
+import type { CaseOptions } from '@visulima/string';
+
+interface CaseOptions {
+  // Enable caching for better performance
+  cache?: boolean;
+  
+  // Maximum size of the cache (default: 1000)
+  cacheMaxSize?: number;
+  
+  // Custom cache store
+  cacheStore?: Map<string, string>;
+  
+  // Known acronyms to preserve
+  knownAcronyms?: ReadonlyArray<string>;
+  
+  // Locale for script-aware case conversion
+  locale?: string;
+}
+```
+
+### Example with Options
+
+```typescript
+import { camelCase } from '@visulima/string';
+
+const result = camelCase('API_RESPONSE_XML', {
+  knownAcronyms: ['API', 'XML'],
+  cache: true,
+  locale: 'en'
+});
+// Result: 'apiResponseXml'
+```
+
+## String Splitting
+
+The `splitByCase` function intelligently splits strings by case transitions:
+
+```typescript
+import { splitByCase } from '@visulima/string';
+
+// Basic case transitions
+splitByCase('camelCase');           // ['camel', 'Case']
+splitByCase('PascalCase');          // ['Pascal', 'Case']
+splitByCase('snake_case');          // ['snake', 'case']
+splitByCase('kebab-case');          // ['kebab', 'case']
+
+// Numbers and acronyms
+splitByCase('XMLHttpRequest');      // ['XML', 'Http', 'Request']
+splitByCase('iOS8');                // ['i', 'OS', '8']
+splitByCase('IPv6Address');         // ['IP', 'v6', 'Address']
+```
+
+### Multi-Language Support
+
+```typescript
+// Japanese
+splitByCase('ひらがなカタカナABC', { locale: 'ja' });
+// ['ひらがな', 'カタカナ', 'ABC']
+
+// Korean
+splitByCase('한글Text', { locale: 'ko' });
+// ['한글', 'Text']
+
+// Chinese
+splitByCase('中文Text', { locale: 'zh' });
+// ['中文', 'Text']
+
+// Cyrillic
+splitByCase('русскийText', { locale: 'ru' });
+// ['русский', 'Text']
+
+// Greek
+splitByCase('ελληνικάText', { locale: 'el' });
+// ['ελληνικά', 'Text']
+```
+
+### Split Options
+
+```typescript
+import type { SplitOptions } from '@visulima/string';
+
+interface SplitOptions {
+  // Locale for script-aware splitting
+  locale?: string;
+  
+  // Known acronyms to preserve
+  knownAcronyms?: ReadonlyArray<string>;
+  
+  // Handle ANSI escape sequences
+  handleAnsi?: boolean;
+  
+  // Handle emoji sequences
+  handleEmoji?: boolean;
+  
+  // Normalize case (convert all-upper tokens to title case)
+  normalize?: boolean;
+  
+  // Custom separators
+  separators?: ReadonlyArray<string> | RegExp;
+  
+  // Strip ANSI sequences
+  stripAnsi?: boolean;
+  
+  // Strip emoji sequences
+  stripEmoji?: boolean;
+}
+```
+
+### Advanced Split Examples
+
+```typescript
+import { splitByCase } from '@visulima/string';
+
+// With known acronyms
+splitByCase('MyXMLParser', {
+  knownAcronyms: ['XML'],
+  normalize: true,
+  locale: 'en'
+});
+// ['My', 'XML', 'Parser']
+
+// With emoji handling
+splitByCase('🎉HappyBirthday🎂', {
+  handleEmoji: true
+});
+// ['🎉', 'Happy', 'Birthday', '🎂']
+
+// With ANSI codes
+const coloredText = '\x1b[31mRedText\x1b[0m';
+splitByCase(coloredText, {
+  handleAnsi: true
+});
+// Preserves ANSI codes while splitting
+```
+
+## Helper Functions
+
+### lowerFirst
+
+Converts the first character to lowercase:
+
+```typescript
+import { lowerFirst } from '@visulima/string';
+
+lowerFirst('Hello');                // 'hello'
+lowerFirst('HELLO');                // 'hELLO'
+```
+
+### upperFirst
+
+Converts the first character to uppercase:
+
+```typescript
+import { upperFirst } from '@visulima/string';
+
+upperFirst('hello');                // 'Hello'
+upperFirst('hello world');          // 'Hello world'
+```
+
+### noCase
+
+Removes all case styling:
+
+```typescript
+import { noCase } from '@visulima/string';
+
+noCase('camelCase');                // 'camel case'
+noCase('PascalCase');               // 'pascal case'
+noCase('snake_case');               // 'snake case'
+```
+
+### flipCase
+
+Inverts the case of each character:
+
+```typescript
+import { flipCase } from '@visulima/string';
+
+flipCase('Hello World');            // 'hELLO wORLD'
+flipCase('XMLHttpRequest');         // 'xmlhTTPrEQUEST'
+```
+
+### identifyCase
+
+Identifies the case style of a string:
+
+```typescript
+import { identifyCase } from '@visulima/string';
+
+identifyCase('helloWorld');         // 'camel'
+identifyCase('HelloWorld');         // 'pascal'
+identifyCase('hello_world');        // 'snake'
+identifyCase('hello-world');        // 'kebab'
+identifyCase('HELLO_WORLD');        // 'constant'
+```
+
+## Performance Optimization
+
+### Caching
+
+Enable caching for frequently converted strings:
+
+```typescript
+import { camelCase } from '@visulima/string';
+
+// With caching enabled (default)
+const convert = (str: string) => camelCase(str, { cache: true });
+
+// Multiple calls use cached results
+convert('hello-world');  // Computed
+convert('hello-world');  // From cache
+```
+
+### Custom Cache Store
+
+Provide your own cache implementation:
+
+```typescript
+const cache = new Map<string, string>();
+
+camelCase('hello-world', {
+  cache: true,
+  cacheStore: cache,
+  cacheMaxSize: 500
+});
+```
+
+## TypeScript Support
+
+Full TypeScript support with type inference:
+
+```typescript
+import type {
+  CamelCase,
+  PascalCase,
+  SnakeCase,
+  KebabCase,
+  ConstantCase
+} from '@visulima/string';
+
+// Type-level case conversion
+type Input = 'hello-world';
+type Result = CamelCase<Input>;  // 'helloWorld'
+
+// Usage in functions
+function convertToCamel<T extends string>(input: T): CamelCase<T> {
+  return camelCase(input) as CamelCase<T>;
+}
+```
+
+## Best Practices
+
+1. Use specific case functions instead of generic conversion when possible
+2. Enable caching for frequently converted strings
+3. Specify known acronyms for consistent handling
+4. Use locale options for international text
+5. Leverage TypeScript types for compile-time safety
+
+## Next Steps
+
+- [String Manipulation](/docs/string-manipulation) - Learn about text formatting
+- [Slugification](/docs/slugification) - Create URL-friendly slugs
+- [API Reference](/docs/api/case) - Detailed API documentation
