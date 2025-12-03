@@ -1,0 +1,86 @@
+---
+title: Introduction
+description: A powerful and fast data redaction library for secure logging and public data output
+---
+
+# Visulima Redact
+
+Visulima Redact is a high-performance library for redacting sensitive information in objects, strings, and arrays. Built on top of [compromise](https://github.com/spencermountain/compromise) and [dot-prop](https://github.com/sindresorhus/dot-prop), it provides a comprehensive solution for secure logging and public data output.
+
+## Features
+
+- **Fast and Efficient**: Optimized for performance with minimal overhead
+- **Comprehensive Redaction**: Handles objects, strings, arrays, Errors, Maps, and Sets
+- **Deep Copy**: Does not modify input objects, always returns a new copy
+- **Circular Reference Handling**: Safely handles circular references in objects
+- **Smart Detection**: Automatically filters valid JSON strings and URL query parameters
+- **Built-in Rules**: Includes 40+ default rules for common sensitive data patterns
+- **NLP-Powered**: Anonymize text using Natural Language Processing for categories like emails, phone numbers, organizations, and people
+- **Customizable**: Define your own redaction rules and patterns
+- **TypeScript Support**: Full TypeScript type definitions included
+- **Framework Agnostic**: Works in Node.js and browser environments
+
+## Why Choose Visulima Redact?
+
+### Easy to Use
+Simple API that works out of the box with sensible defaults while remaining highly customizable.
+
+### Security First
+Designed with security in mind, it handles a wide variety of sensitive data patterns including:
+- API keys and tokens
+- Credit card numbers
+- Social security numbers
+- Email addresses and passwords
+- Bank account numbers
+- IP addresses and MAC addresses
+- And many more...
+
+### Type Safe
+Full TypeScript support with comprehensive type definitions for all APIs.
+
+### Production Ready
+Battle-tested with extensive test coverage and benchmarks. Used in production applications for secure logging.
+
+## Quick Example
+
+```typescript
+import { redact } from '@visulima/redact';
+
+const data = {
+  user: {
+    email: 'user@example.com',
+    password: 'secret123',
+    creditCard: '4532-1234-5678-9010'
+  },
+  apiKey: 'sk_live_1234567890abcdef'
+};
+
+const redacted = redact(data, ['password', 'user.email', 'apiKey']);
+
+console.log(redacted);
+// {
+//   user: {
+//     email: '<USER.EMAIL>',
+//     password: '<PASSWORD>',
+//     creditCard: '4532-1234-5678-9010'
+//   },
+//   apiKey: '<APIKEY>'
+// }
+```
+
+## Next Steps
+
+<Cards>
+  <Card title="Installation" href="/docs/installation">
+    Get started by installing the package
+  </Card>
+  <Card title="Getting Started" href="/docs/getting-started">
+    Learn the basics and start redacting data
+  </Card>
+  <Card title="API Reference" href="/docs/api">
+    Explore the complete API documentation
+  </Card>
+  <Card title="Examples" href="/docs/examples">
+    See practical examples and use cases
+  </Card>
+</Cards>

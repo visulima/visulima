@@ -1,0 +1,471 @@
+---
+title: API Reference
+description: Complete API documentation for Visulima Redact
+---
+
+# API Reference
+
+This page provides detailed documentation for all exported functions and types in Visulima Redact.
+
+## Functions
+
+### redact()
+
+The main function for redacting sensitive information from various data types.
+
+```typescript
+function redact<V, R>(
+  input: V,
+  rules: Rules,
+  options?: RedactOptions
+): R
+```
+
+#### Parameters
+
+##### input
+
+- **Type:** `any`
+- **Description:** The input value to redact. Can be an object, string, array, Error, Map, Set, or primitive value.
+
+##### rules
+
+- **Type:** `Rules`
+- **Description:** An array of rules defining what should be redacted.
+
+Rules can be specified in multiple formats:
+
+**String Rule**
+```typescript
+'password' // Redacts keys named 'password'
+```
+
+**Dot Notation**
+```typescript
+'user.email' // Redacts nested properties
+```
+
+**Wildcard Pattern**
+```typescript
+'*password' // Matches any key ending with 'password'
+'password*' // Matches any key starting with 'password'
+'*pass*' // Matches any key containing 'pass'
+```
+
+**Number Rule**
+```typescript
+1 // Redacts array index 1
+```
+
+**Object Rule**
+```typescript
+{
+  key: 'password',
+  replacement: '[HIDDEN]',
+  deep: true,
+  pattern: /secret/i
+}
+```
+
+##### options
+
+- **Type:** `RedactOptions`
+- **Description:** Optional configuration object.
+
+```typescript
+{
+  exclude?: (string | number)[];
+  logger?: {
+    debug: (message?: any, ...optionalParameters: any[]) => void;
+  };
+}
+```
+
+#### Returns
+
+Returns a deep copy of the input with specified values redacted. The original input is never modified.
+
+#### Examples
+
+**Basic Object Redaction**
+```typescript
+const data = {
+  username: 'john',
+  password: 'secret123'
+};
+
+const result = redact(data, ['password']);
+// { username: 'john', password: '<PASSWORD>' }
+```
+
+**Nested Object Redaction**
+```typescript
+const data = {
+  admin: {
+    user: {
+      email: 'admin@example.com',
+      password: '123456'
+    }
+  },
+  password: '123456',
+  user: {
+    email: 'user@example.com',
+    password: '123456'
+  }
+};
+
+const result = redact(data, [
+  'password',
+  'user.password',
+  'admin.user.password'
+]);
+
+// {
+//   admin: {
+//     user: {
+//       email: 'admin@example.com',
+//       password: '<ADMIN.USER.PASSWORD>'
+//     }
+//   },
+//   password: '<PASSWORD>',
+//   user: {
+//     email: 'user@example.com',
+//     password: '<USER.PASSWORD>'
+//   }
+// }
+```
+
+**Custom Replacement**
+```typescript
+const data = { apiKey: 'sk_live_123', secret: 'value' };
+
+const result = redact(data, [
+  { key: 'apiKey', replacement: '[REDACTED]' },
+  { key: 'secret', replacement: '***' }
+]);
+// { apiKey: '[REDACTED]', secret: '***' }
+```
+
+**Excluding Rules**
+```typescript
+const data = {
+  publicEmail: 'public@example.com',
+  privateEmail: 'private@example.com',
+  password: 'secret'
+};
+
+const result = redact(data, ['*email', 'password'], {
+  exclude: ['publicEmail']
+});
+// {
+//   publicEmail: 'public@example.com',
+//   privateEmail: '<PRIVATEEMAIL>',
+//   password: '<PASSWORD>'
+// }
+```
+
+---
+
+### stringAnonymize()
+
+Anonymizes natural language text using NLP and regex patterns to identify and redact sensitive information.
+
+```typescript
+function stringAnonymize(
+  input: string,
+  rules: Rules,
+  options?: RedactOptions
+): string
+```
+
+#### Parameters
+
+##### input
+
+- **Type:** `string`
+- **Description:** The text string to anonymize.
+
+##### rules
+
+- **Type:** `Rules`
+- **Description:** An array of rules defining what patterns to anonymize. Typically uses the `standardRules` or custom patterns.
+
+##### options
+
+- **Type:** `RedactOptions`
+- **Description:** Optional configuration object.
+
+#### Returns
+
+Returns a new string with sensitive information replaced by redaction markers.
+
+#### Examples
+
+**Basic Text Anonymization**
+```typescript
+import { stringAnonymize, standardRules } from '@visulima/redact';
+
+const text = 'John Doe will be 30 on 2024-06-10.';
+const result = stringAnonymize(text, standardRules);
+// '<FIRSTNAME> <LASTNAME> will be 30 on <DATE>.'
+```
+
+**Email and Phone Redaction**
+```typescript
+const text = 'Contact us at support@example.com or call 555-123-4567.';
+const result = stringAnonymize(text, standardRules);
+// 'Contact us at <EMAIL> or call <PHONENUMBER>.'
+```
+
+**Custom Pattern Redaction**
+```typescript
+const text = 'Transaction ID: TXN-123456789';
+
+const result = stringAnonymize(text, [
+  {
+    key: 'transaction',
+    pattern: /TXN-\d+/g,
+    replacement: '<TRANSACTION_ID>'
+  }
+]);
+// 'Transaction ID: <TRANSACTION_ID>'
+```
+
+---
+
+## Types
+
+### Rules
+
+```typescript
+type Rules = (Anonymize | StringAnonymize | number | string)[];
+```
+
+An array that can contain:
+- `string`: Simple key name or dot notation path
+- `number`: Array index to redact
+- `Anonymize`: Object with advanced configuration
+- `StringAnonymize`: Object with pattern matching
+
+---
+
+### Anonymize
+
+```typescript
+type Anonymize = {
+  key: string;
+  pattern?: RegExp | string;
+  replacement?: any;
+  deep?: boolean;
+};
+```
+
+#### Properties
+
+##### key
+
+- **Type:** `string`
+- **Required:** Yes
+- **Description:** The key name to match. Can include wildcards (`*`).
+
+##### pattern
+
+- **Type:** `RegExp | string`
+- **Required:** No
+- **Description:** A pattern to match against values. Used primarily with `stringAnonymize`.
+
+##### replacement
+
+- **Type:** `any`
+- **Required:** No
+- **Default:** `<KEY_NAME>`
+- **Description:** The value to replace matched items with.
+
+##### deep
+
+- **Type:** `boolean`
+- **Required:** No
+- **Default:** `false`
+- **Description:** Whether this rule should be applied deeply through nested structures.
+
+#### Example
+
+```typescript
+const rule: Anonymize = {
+  key: 'password',
+  replacement: '[HIDDEN]',
+  deep: true
+};
+```
+
+---
+
+### StringAnonymize
+
+```typescript
+type StringAnonymize = {
+  key: string;
+  pattern: RegExp | string;
+  replacement?: string;
+};
+```
+
+Similar to `Anonymize` but specifically designed for string pattern matching.
+
+#### Example
+
+```typescript
+const rule: StringAnonymize = {
+  key: 'email',
+  pattern: /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g,
+  replacement: '<EMAIL>'
+};
+```
+
+---
+
+### RedactOptions
+
+```typescript
+type RedactOptions = {
+  exclude?: (number | string)[];
+  logger?: {
+    debug: (message?: any, ...optionalParameters: any[]) => void;
+  };
+};
+```
+
+#### Properties
+
+##### exclude
+
+- **Type:** `(number | string)[]`
+- **Required:** No
+- **Description:** An array of rule keys or indices to exclude from redaction.
+
+**Example:**
+```typescript
+const options: RedactOptions = {
+  exclude: ['publicEmail', 'displayName']
+};
+```
+
+##### logger
+
+- **Type:** `object`
+- **Required:** No
+- **Description:** A logger object with a `debug` method for debugging purposes.
+
+**Example:**
+```typescript
+const options: RedactOptions = {
+  logger: {
+    debug: (message, ...args) => {
+      console.debug('[Redact Debug]:', message, ...args);
+    }
+  }
+};
+```
+
+---
+
+## Exports
+
+### standardRules
+
+A predefined set of 40+ rules for common sensitive data patterns.
+
+```typescript
+import { standardRules } from '@visulima/redact';
+```
+
+The standard rules include patterns for:
+
+- **Authentication:** `apikey`, `token`, `bearer`, `auth`, `password`
+- **Financial:** `creditcard`, `bankacc`, `bankcc`, `CVV`, `CVD`, `PAN`
+- **Personal:** `email`, `firstname`, `lastname`, `phonenumber`, `ssn`, `passport`
+- **Technical:** `ip`, `mac_address`, `url`, `domain`, `crypto`
+- **Identifiers:** `id`, `username`, `us_social_security`, `uk_nin`
+- **Temporal:** `date`, `time`
+- **Geographic:** `zip_code`
+- **Other:** `organization`, `money`, `isbn`, `awsid`, `awskey`
+
+#### Usage
+
+```typescript
+import { redact, standardRules } from '@visulima/redact';
+
+const data = {
+  email: 'user@example.com',
+  creditCard: '4532-1234-5678-9010',
+  apiKey: 'sk_live_1234567890abcdef'
+};
+
+const result = redact(data, standardRules);
+// All sensitive data automatically redacted
+```
+
+---
+
+## Type Guards and Utilities
+
+The package exports all necessary types for TypeScript usage:
+
+```typescript
+import type {
+  Anonymize,
+  RedactOptions,
+  Rules,
+  StringAnonymize
+} from '@visulima/redact';
+```
+
+## Function Overloads
+
+The `redact` function provides type-safe overloads for different input types:
+
+```typescript
+// For strings
+function redact<V = string, R = V>(
+  input: V,
+  rules: Rules,
+  options?: RedactOptions
+): R;
+
+// For errors
+function redact<V = Error, R = V>(
+  input: V,
+  rules: Rules,
+  options?: RedactOptions
+): R;
+
+// For objects
+function redact<V = Record<string, unknown>, R = V>(
+  input: V,
+  rules: Rules,
+  options?: RedactOptions
+): R;
+
+// For arrays
+function redact<V = unknown[], R = V>(
+  input: V,
+  rules: Rules,
+  options?: RedactOptions
+): R;
+
+// For Maps
+function redact<V = Map<unknown, unknown>, R = V>(
+  input: V,
+  rules: Rules,
+  options?: RedactOptions
+): R;
+
+// For Sets
+function redact<V = Set<unknown>, R = V>(
+  input: V,
+  rules: Rules,
+  options?: RedactOptions
+): R;
+```
+
+These overloads ensure proper type inference based on your input type.
