@@ -11,7 +11,8 @@ import { findPackageManager, findPackageManagerSync, generateMissingPackagesInst
 
 const whichPMFixturePath = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "__fixtures__", "which-package-manager");
 
-vi.mock(import("node:child_process"), () => {
+// eslint-disable-next-line vitest/prefer-import-in-mock
+vi.mock("node:child_process", () => {
     return {
         execSync: (command: string) => {
             if (command === "npm --version") {
