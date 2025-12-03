@@ -5,11 +5,11 @@
   </p>
 </div>
 
-<br />
+
 
 <div align="center">
 
-[![typescript-image]][typescript-url] [![npm-image]][npm-url] [![license-image]][license-url]
+[![TypeScript](https://img.shields.io/badge/Typescript-294E80.svg?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/) [![npm](https://img.shields.io/npm/v/@visulima/vite-overlay/latest.svg?style=for-the-badge&logo=npm)](https://www.npmjs.com/package/@visulima/vite-overlay/v/latest) [![license](https://img.shields.io/npm/l/@visulima/vite-overlay?color=blueviolet&style=for-the-badge)](https://github.com/visulima/visulima/blob/main/packages/vite-overlay/LICENSE.md)
 
 </div>
 
@@ -40,7 +40,7 @@
 - **Real-time Updates** - Hot Module Replacement (HMR) integration for instant error feedback
 - **Comprehensive Testing** - Extensive e2e test coverage for reliability
 
-## Installation
+## Install
 
 ```sh
 npm install @visulima/vite-overlay
@@ -460,11 +460,5 @@ pnpm install
 
 ## License
 
-This project is licensed under the MIT License - see the [MIT][license-url] file for details.
+This project is licensed under the MIT License - see the [MIT](https://github.com/visulima/visulima/blob/main/packages/vite-overlay/LICENSE.md) file for details.
 
-[typescript-image]: https://img.shields.io/badge/Typescript-294E80.svg?style=for-the-badge&logo=typescript
-[typescript-url]: https://www.typescriptlang.org/ "TypeScript"
-[license-image]: https://img.shields.io/npm/l/@visulima/vite-overlay?color=blueviolet&style=for-the-badge
-[license-url]: LICENSE.md "license"
-[npm-image]: https://img.shields.io/npm/v/@visulima/vite-overlay/latest.svg?style=for-the-badge&logo=npm
-[npm-url]: https://www.npmjs.com/package/@visulima/vite-overlay/v/latest "npm"
