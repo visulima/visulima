@@ -1,0 +1,11 @@
+{
+    "name": "redact",
+    "$schema": "../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "packages/data-manipulation/redact/src",
+    "projectType": "library",
+    "tags": [
+        "type:package",
+        "redact"
+    ],
+    "implicitDependencies": []
+}

@@ -1,0 +1,11 @@
+{
+    "name": "is-ansi-color-supported",
+    "$schema": "../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "packages/terminal/is-ansi-color-supported/src",
+    "projectType": "library",
+    "tags": [
+        "type:package",
+        "is-ansi-color-supported"
+    ],
+    "implicitDependencies": []
+}

@@ -10,10 +10,10 @@ indent_style = space
 insert_final_newline = true
 trim_trailing_whitespace = true
 
-[packages/string/__tests__/outdent.test.ts]
+[packages/data-manipulation/string/__tests__/outdent.test.ts]
 trim_trailing_whitespace = false
 
-[packages/tabular/__tests__/__snapshots__/*.snap]
+[packages/data-manipulation/tabular/__tests__/__snapshots__/*.snap]
 trim_trailing_whitespace = false
 
 [*.mdx]

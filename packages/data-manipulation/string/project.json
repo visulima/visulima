@@ -1,0 +1,11 @@
+{
+    "name": "string",
+    "$schema": "../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "packages/data-manipulation/string/src",
+    "projectType": "library",
+    "tags": [
+        "string",
+        "type:package"
+    ],
+    "implicitDependencies": []
+}

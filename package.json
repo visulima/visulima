@@ -6,7 +6,7 @@
     "sideEffects": false,
     "type": "module",
     "workspaces": [
-        "packages/*",
+        "packages/*/*",
         "apps/*"
     ],
     "scripts": {

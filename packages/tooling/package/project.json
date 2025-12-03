@@ -1,0 +1,8 @@
+{
+    "name": "package",
+    "$schema": "../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "packages/tooling/package/src",
+    "projectType": "library",
+    "tags": ["package", "type:package"],
+    "implicitDependencies": ["fs", "path"]
+}

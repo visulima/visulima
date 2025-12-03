@@ -1,0 +1,164 @@
+{
+    "name": "@visulima/error",
+    "version": "5.0.6",
+    "description": "Error with more than just a message, stacktrace parsing.",
+    "keywords": [
+        "anolilab",
+        "character",
+        "code-frame",
+        "codeframe",
+        "column number",
+        "column",
+        "coordinate",
+        "error",
+        "exception",
+        "index",
+        "line number",
+        "line",
+        "location",
+        "parser",
+        "position",
+        "stack",
+        "stack-trace",
+        "stacktrace",
+        "string",
+        "text",
+        "trace",
+        "v8",
+        "source",
+        "code",
+        "frame",
+        "callstack",
+        "call",
+        "source-code",
+        "pretty-error",
+        "pretty-exceptions",
+        "pretty",
+        "visulima"
+    ],
+    "homepage": "https://www.visulima.com/docs/package/error",
+    "bugs": {
+        "url": "https://github.com/visulima/visulima/issues"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/visulima/visulima.git",
+        "directory": "packages/error-debugging/error"
+    },
+    "funding": [
+        {
+            "type": "github",
+            "url": "https://github.com/sponsors/prisis"
+        },
+        {
+            "type": "consulting",
+            "url": "https://anolilab.com/support"
+        }
+    ],
+    "license": "MIT",
+    "author": {
+        "name": "Daniel Bannert",
+        "email": "d.bannert@anolilab.de"
+    },
+    "sideEffects": false,
+    "type": "module",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "default": "./dist/index.js"
+        },
+        "./code-frame": {
+            "types": "./dist/code-frame/index.d.ts",
+            "default": "./dist/code-frame/index.js"
+        },
+        "./error": {
+            "types": "./dist/error/index.d.ts",
+            "default": "./dist/error/index.js"
+        },
+        "./stacktrace": {
+            "types": "./dist/stacktrace/index.d.ts",
+            "default": "./dist/stacktrace/index.js"
+        },
+        "./solution": {
+            "types": "./dist/solution/index.d.ts",
+            "default": "./dist/solution/index.js"
+        },
+        "./solution/ai": {
+            "types": "./dist/solution/ai/index.d.ts",
+            "default": "./dist/solution/ai/index.js"
+        },
+        "./solution/ai/prompt": {
+            "types": "./dist/solution/ai/ai-prompt.d.ts",
+            "default": "./dist/solution/ai/ai-prompt.js"
+        },
+        "./package.json": "./package.json"
+    },
+    "files": [
+        "dist",
+        "README.md",
+        "CHANGELOG.md",
+        "LICENSE.md"
+    ],
+    "scripts": {
+        "build": "packem build --development",
+        "build:prod": "packem build --production",
+        "clean": "rimraf node_modules dist .eslintcache",
+        "dev": "pnpm run build --watch",
+        "lint:attw": "attw --pack",
+        "lint:eslint": "eslint .",
+        "lint:eslint:fix": "eslint . --cache --concurrency auto --fix",
+        "lint:package-json": "publint --strict",
+        "lint:prettier": "prettier --config=.prettierrc.cjs --check .",
+        "lint:prettier:fix": "prettier --config=.prettierrc.cjs --write .",
+        "lint:types": "tsc --noEmit --project tsconfig.json",
+        "test": "vitest run",
+        "test:coverage": "vitest run --coverage",
+        "test:ui": "vitest --ui --coverage.enabled=true",
+        "test:watch": "vitest"
+    },
+    "devDependencies": {
+        "@anolilab/eslint-config": "^16.4.4",
+        "@anolilab/prettier-config": "^6.0.8",
+        "@anolilab/semantic-release-pnpm": "^3.1.0",
+        "@anolilab/semantic-release-preset": "^12.0.1",
+        "@arethetypeswrong/cli": "^0.18.2",
+        "@total-typescript/ts-reset": "^0.6.1",
+        "@types/command-line-args": "^5.2.3",
+        "@types/node": "24.10.1",
+        "@visulima/packem": "2.0.0-alpha.40",
+        "@visulima/path": "2.0.5",
+        "@vitest/coverage-v8": "^4.0.15",
+        "@vitest/ui": "^4.0.15",
+        "ai": "^5.0.106",
+        "conventional-changelog-conventionalcommits": "9.1.0",
+        "esbuild": "0.27.0",
+        "eslint": "9.39.1",
+        "is-plain-obj": "^4.1.0",
+        "prettier": "^3.7.4",
+        "publint": "^0.3.15",
+        "rimraf": "6.1.2",
+        "semantic-release": "25.0.2",
+        "typescript": "5.9.3",
+        "vitest": "^4.0.15"
+    },
+    "peerDependencies": {
+        "ai": "^5.0.68"
+    },
+    "peerDependenciesMeta": {
+        "ai": {
+            "optional": true
+        }
+    },
+    "engines": {
+        "node": ">=22.12 <=25.x"
+    },
+    "os": [
+        "darwin",
+        "linux",
+        "win32"
+    ],
+    "publishConfig": {
+        "access": "public",
+        "provenance": true
+    }
+}

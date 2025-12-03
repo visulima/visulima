@@ -1,0 +1,8 @@
+{
+    "name": "tsconfig",
+    "$schema": "../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "packages/tooling/tsconfig/src",
+    "projectType": "library",
+    "tags": ["tsconfig", "type:package"],
+    "implicitDependencies": []
+}

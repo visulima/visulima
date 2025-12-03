@@ -1,8 +1,0 @@
-{
-    "name": "vite-overlay",
-    "$schema": "../../node_modules/nx/schemas/project-schema.json",
-    "sourceRoot": "packages/vite-overlay/src",
-    "projectType": "library",
-    "tags": ["vite-overlay", "type:package"],
-    "implicitDependencies": ["boxen", "path", "error"]
-}

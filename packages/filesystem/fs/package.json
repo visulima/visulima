@@ -1,0 +1,184 @@
+{
+    "name": "@visulima/fs",
+    "version": "4.1.0",
+    "description": "Human friendly file system utilities for Node.js",
+    "keywords": [
+        "anolilab",
+        "detect-newline",
+        "dir",
+        "directory",
+        "eol",
+        "empty-dir",
+        "ensure",
+        "ensure-file",
+        "ensure-dir",
+        "ensure-link",
+        "ensure-symlink",
+        "file",
+        "files",
+        "filesystem",
+        "find",
+        "find-up",
+        "findup",
+        "folder",
+        "fs",
+        "fs-safe",
+        "look",
+        "look-up",
+        "json",
+        "read-json",
+        "match",
+        "package",
+        "parent",
+        "parents",
+        "path",
+        "read",
+        "read-file",
+        "read-yaml",
+        "resolve",
+        "safe",
+        "search",
+        "std",
+        "standard",
+        "up",
+        "visulima",
+        "walk",
+        "walking",
+        "write",
+        "write-dir",
+        "write-file",
+        "write-safe",
+        "yaml",
+        "size",
+        "brotli",
+        "gzip"
+    ],
+    "homepage": "https://www.visulima.com/docs/package/fs",
+    "bugs": {
+        "url": "https://github.com/visulima/visulima/issues"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/visulima/visulima.git",
+        "directory": "packages/filesystem/fs"
+    },
+    "funding": [
+        {
+            "type": "github",
+            "url": "https://github.com/sponsors/prisis"
+        },
+        {
+            "type": "consulting",
+            "url": "https://anolilab.com/support"
+        }
+    ],
+    "license": "MIT",
+    "author": {
+        "name": "Daniel Bannert",
+        "email": "d.bannert@anolilab.de"
+    },
+    "sideEffects": false,
+    "type": "module",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "default": "./dist/index.js"
+        },
+        "./utils": {
+            "types": "./dist/utils.d.ts",
+            "default": "./dist/utils.js"
+        },
+        "./error": {
+            "types": "./dist/error.d.ts",
+            "default": "./dist/error.js"
+        },
+        "./yaml": {
+            "types": "./dist/yaml.d.ts",
+            "default": "./dist/yaml.js"
+        },
+        "./size": {
+            "types": "./dist/size.d.ts",
+            "default": "./dist/size.js"
+        },
+        "./eol": {
+            "types": "./dist/eol.d.ts",
+            "default": "./dist/eol.js"
+        },
+        "./package.json": "./package.json"
+    },
+    "files": [
+        "dist/**",
+        "README.md",
+        "CHANGELOG.md",
+        "LICENSE.md"
+    ],
+    "scripts": {
+        "build": "packem build --development",
+        "build:prod": "packem build --production",
+        "clean": "rimraf node_modules dist .eslintcache",
+        "dev": "pnpm run build --watch",
+        "lint:attw": "attw --pack",
+        "lint:eslint": "eslint . --cache --concurrency auto",
+        "lint:eslint:fix": "eslint . --cache --concurrency auto --fix",
+        "lint:package-json": "publint --strict",
+        "lint:prettier": "prettier --config=.prettierrc.cjs --check .",
+        "lint:prettier:fix": "prettier --config=.prettierrc.cjs --write .",
+        "lint:types": "tsc --noEmit",
+        "test": "vitest run",
+        "test:coverage": "vitest run --coverage",
+        "test:ui": "vitest --ui --coverage.enabled=true",
+        "test:watch": "vitest"
+    },
+    "dependencies": {
+        "type-fest": "^5.3.0",
+        "@visulima/path": "2.0.5"
+    },
+    "devDependencies": {
+        "@anolilab/eslint-config": "^16.4.4",
+        "@anolilab/prettier-config": "^6.0.8",
+        "@anolilab/semantic-release-pnpm": "^3.1.0",
+        "@anolilab/semantic-release-preset": "^12.0.1",
+        "@arethetypeswrong/cli": "^0.18.2",
+        "@types/node": "24.10.1",
+        "@visulima/error": "5.0.6",
+        "@visulima/packem": "2.0.0-alpha.40",
+        "@vitest/coverage-v8": "^4.0.15",
+        "@vitest/ui": "^4.0.15",
+        "conventional-changelog-conventionalcommits": "9.1.0",
+        "detect-indent": "^7.0.2",
+        "esbuild": "0.27.0",
+        "eslint": "9.39.1",
+        "fast-safe-stringify": "2.1.1",
+        "is-fs-case-sensitive": "^2.0.0",
+        "prettier": "^3.7.4",
+        "publint": "^0.3.15",
+        "redos-detector": "^6.1.2",
+        "rimraf": "6.1.2",
+        "safe-regex2": "^5.0.0",
+        "semantic-release": "25.0.2",
+        "tempy": "^3.1.0",
+        "typescript": "5.9.3",
+        "vitest": "^4.0.15",
+        "yaml": "^2.8.2"
+    },
+    "peerDependencies": {
+        "yaml": "^2.7.1"
+    },
+    "peerDependenciesMeta": {
+        "yaml": {
+            "optional": true
+        }
+    },
+    "engines": {
+        "node": ">=22.12 <=25.x"
+    },
+    "os": [
+        "darwin",
+        "linux",
+        "win32"
+    ],
+    "publishConfig": {
+        "access": "public",
+        "provenance": true
+    }
+}

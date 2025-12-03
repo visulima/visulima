@@ -1,0 +1,133 @@
+{
+    "name": "@visulima/prisma-dmmf-transformer",
+    "version": "2.0.37",
+    "description": "A generator for Prisma to generate a valid JSON Schema v7.",
+    "keywords": [
+        "anolilab",
+        "visulima",
+        "prisma",
+        "prisma2",
+        "prisma3",
+        "prisma4",
+        "prisma-schema",
+        "dmmf",
+        "transformer",
+        "json-schema"
+    ],
+    "homepage": "https://www.visulima.com/docs/package/prisma-dmmf-transformer",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/visulima/visulima.git",
+        "directory": "packages/tooling/prisma-dmmf-transformer"
+    },
+    "funding": [
+        {
+            "type": "github",
+            "url": "https://github.com/sponsors/prisis"
+        },
+        {
+            "type": "consulting",
+            "url": "https://anolilab.com/support"
+        }
+    ],
+    "license": "MIT",
+    "author": {
+        "name": "Daniel Bannert",
+        "email": "d.bannert@anolilab.de"
+    },
+    "sideEffects": false,
+    "exports": {
+        ".": {
+            "import": {
+                "types": "./dist/index.d.mts",
+                "default": "./dist/index.mjs"
+            },
+            "require": {
+                "types": "./dist/index.d.cts",
+                "default": "./dist/index.cjs"
+            }
+        },
+        "./package.json": "./package.json"
+    },
+    "main": "dist/index.cjs",
+    "module": "dist/index.mjs",
+    "source": "src/index.ts",
+    "types": "dist/index.d.ts",
+    "typesVersions": {
+        ">=5.0": {
+            ".": [
+                "./dist/index.d.ts"
+            ]
+        }
+    },
+    "files": [
+        "dist/**",
+        "README.md",
+        "CHANGELOG.md",
+        "LICENSE.md"
+    ],
+    "scripts": {
+        "build": "packem build --development",
+        "build:prod": "packem build --production",
+        "clean": "rimraf node_modules dist .eslintcache",
+        "dev": "pnpm run build --watch",
+        "lint:attw": "attw --pack",
+        "lint:eslint": "eslint . --cache --concurrency auto",
+        "lint:eslint:fix": "eslint . --cache --concurrency auto --fix",
+        "lint:package-json": "publint --strict",
+        "lint:prettier": "prettier --config=.prettierrc.cjs --check .",
+        "lint:prettier:fix": "prettier --config=.prettierrc.cjs --write .",
+        "lint:types": "tsc --noEmit",
+        "test": "vitest run",
+        "test:coverage": "vitest run --coverage",
+        "test:ui": "vitest --ui --coverage.enabled=true",
+        "test:watch": "vitest"
+    },
+    "dependencies": {
+        "@prisma/generator-helper": "6.19.0",
+        "type-fest": "5.2.0"
+    },
+    "devDependencies": {
+        "@anolilab/eslint-config": "^16.4.4",
+        "@anolilab/prettier-config": "^6.0.8",
+        "@anolilab/semantic-release-pnpm": "^3.1.0",
+        "@anolilab/semantic-release-preset": "^12.0.1",
+        "@arethetypeswrong/cli": "^0.18.2",
+        "@prisma/client": "6.19.0",
+        "@prisma/internals": "6.19.0",
+        "@types/json-schema": "7.0.15",
+        "@types/micromatch": "4.0.10",
+        "@types/node": "24.10.1",
+        "@visulima/packem": "2.0.0-alpha.40",
+        "@vitest/coverage-v8": "4.0.15",
+        "ajv": "8.17.1",
+        "ajv-formats": "3.0.1",
+        "conventional-changelog-conventionalcommits": "9.1.0",
+        "esbuild": "0.27.0",
+        "eslint": "9.39.1",
+        "json-schema": "0.4.0",
+        "prettier": "3.7.3",
+        "prisma": "6.19.0",
+        "publint": "^0.3.15",
+        "rimraf": "6.1.2",
+        "semantic-release": "25.0.2",
+        "typescript": "5.9.3",
+        "vitest": "4.0.15"
+    },
+    "peerDependencies": {
+        "@prisma/client": "3.* || 4.* || 5.* || 6.*",
+        "prisma": "3.* || 4.* || 5.* || 6.*"
+    },
+    "engines": {
+        "node": ">=22.12 <=25.x"
+    },
+    "os": [
+        "darwin",
+        "linux",
+        "win32"
+    ],
+    "publishConfig": {
+        "access": "public",
+        "provenance": true
+    }
+}

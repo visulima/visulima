@@ -1,0 +1,287 @@
+{
+    "name": "@visulima/pail",
+    "version": "3.2.2",
+    "description": "Highly configurable Logger for Node.js, Edge and Browser.",
+    "keywords": [
+        "ansi",
+        "anolilab",
+        "browser",
+        "browser-logger",
+        "callsite",
+        "callsites",
+        "cli",
+        "color",
+        "colorful",
+        "colorize",
+        "consola",
+        "console",
+        "console-logger",
+        "debug",
+        "error-logging",
+        "file-logger",
+        "file-logging",
+        "filesystem-logger",
+        "filter",
+        "fs-logger",
+        "handling exceptions",
+        "json",
+        "json-logger",
+        "json-logging",
+        "log level",
+        "log",
+        "log-cleaner",
+        "log-rotation",
+        "log4j",
+        "log4js",
+        "log4ts",
+        "logger",
+        "logging",
+        "node",
+        "stream",
+        "pretty",
+        "node-logger",
+        "pail",
+        "pino",
+        "pretty-error",
+        "pretty-log",
+        "print",
+        "progress",
+        "redact",
+        "rotating-log",
+        "show error",
+        "timer",
+        "universal",
+        "visulima",
+        "warning-logging",
+        "winston"
+    ],
+    "homepage": "https://www.visulima.com/docs/package/pail",
+    "bugs": {
+        "url": "https://github.com/visulima/visulima/issues"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/visulima/visulima.git",
+        "directory": "packages/error-debugging/pail"
+    },
+    "funding": [
+        {
+            "type": "github",
+            "url": "https://github.com/sponsors/prisis"
+        },
+        {
+            "type": "consulting",
+            "url": "https://anolilab.com/support"
+        }
+    ],
+    "license": "MIT",
+    "author": {
+        "name": "Daniel Bannert",
+        "email": "d.bannert@anolilab.de",
+        "url": "https://danielbannert.com"
+    },
+    "sideEffects": false,
+    "type": "module",
+    "exports": {
+        ".": {
+            "browser": "./dist/index.browser.js",
+            "import": {
+                "types": "./dist/index.server.d.ts",
+                "default": "./dist/index.server.js"
+            }
+        },
+        "./browser": {
+            "types": "./dist/index.browser.d.ts",
+            "default": "./dist/index.browser.js"
+        },
+        "./server": {
+            "types": "./dist/index.server.d.ts",
+            "default": "./dist/index.server.js"
+        },
+        "./processor/redact": {
+            "types": "./dist/processor/redact-processor.d.ts",
+            "default": "./dist/processor/redact-processor.js"
+        },
+        "./processor/message-formatter": {
+            "types": "./dist/processor/message-formatter-processor.d.ts",
+            "default": "./dist/processor/message-formatter-processor.js"
+        },
+        "./processor/caller": {
+            "types": "./dist/processor/caller/caller-processor.d.ts",
+            "default": "./dist/processor/caller/caller-processor.js"
+        },
+        "./processor/opentelemetry": {
+            "types": "./dist/processor/opentelemetry-processor.d.ts",
+            "default": "./dist/processor/opentelemetry-processor.js"
+        },
+        "./reporter/file": {
+            "types": "./dist/reporter/file/json-file-reporter.d.ts",
+            "default": "./dist/reporter/file/json-file-reporter.js"
+        },
+        "./server/reporter/json": {
+            "import": {
+                "types": "./dist/reporter/json/index.d.ts",
+                "default": "./dist/reporter/json/index.js"
+            }
+        },
+        "./browser/reporter/json": {
+            "import": {
+                "types": "./dist/reporter/json/index.browser.d.ts",
+                "default": "./dist/reporter/json/index.browser.js"
+            }
+        },
+        "./reporter/json": {
+            "browser": "./dist/reporter/json/index.browser.js",
+            "import": {
+                "types": "./dist/reporter/json/index.d.ts",
+                "default": "./dist/reporter/json/index.js"
+            }
+        },
+        "./server/reporter/pretty": {
+            "import": {
+                "types": "./dist/reporter/pretty/index.d.ts",
+                "default": "./dist/reporter/pretty/index.js"
+            }
+        },
+        "./browser/reporter/pretty": {
+            "import": {
+                "types": "./dist/reporter/pretty/index.browser.d.ts",
+                "default": "./dist/reporter/pretty/index.browser.js"
+            }
+        },
+        "./reporter/pretty": {
+            "browser": "./dist/reporter/pretty/index.browser.js",
+            "import": {
+                "types": "./dist/reporter/pretty/index.d.ts",
+                "default": "./dist/reporter/pretty/index.js"
+            }
+        },
+        "./reporter/simple": {
+            "types": "./dist/reporter/simple/simple-reporter.server.d.ts",
+            "default": "./dist/reporter/simple/simple-reporter.server.js"
+        },
+        "./reporter/abstract-http": {
+            "types": "./dist/reporter/http/abstract-http-reporter.d.ts",
+            "default": "./dist/reporter/http/abstract-http-reporter.js"
+        },
+        "./reporter/http": {
+            "edge-light": {
+                "types": "./dist/reporter/http/http-reporter.edge-light.d.ts",
+                "default": "./dist/reporter/http/http-reporter.edge-light.js"
+            },
+            "browser": {
+                "types": "./dist/reporter/http/http-reporter.d.ts",
+                "default": "./dist/reporter/http/http-reporter.js"
+            },
+            "import": {
+                "types": "./dist/reporter/http/http-reporter.d.ts",
+                "default": "./dist/reporter/http/http-reporter.js"
+            }
+        },
+        "./progress-bar": {
+            "types": "./dist/progress-bar.d.ts",
+            "default": "./dist/progress-bar.js"
+        },
+        "./spinner": {
+            "types": "./dist/spinner.d.ts",
+            "default": "./dist/spinner.js"
+        },
+        "./interactive": {
+            "types": "./dist/interactive/index.d.ts",
+            "default": "./dist/interactive/index.js"
+        },
+        "./object-tree": {
+            "types": "./dist/object-tree.d.ts",
+            "default": "./dist/object-tree.js"
+        },
+        "./package.json": "./package.json"
+    },
+    "files": [
+        "dist/**",
+        "README.md",
+        "CHANGELOG.md",
+        "LICENSE.md"
+    ],
+    "scripts": {
+        "build": "packem build --development",
+        "build:prod": "packem build --production",
+        "clean": "rimraf node_modules dist .eslintcache",
+        "dev": "pnpm run build --watch",
+        "lint:attw": "attw --pack",
+        "lint:eslint": "eslint . --cache --concurrency auto",
+        "lint:eslint:fix": "eslint . --cache --concurrency auto --fix",
+        "lint:package-json": "publint --strict",
+        "lint:prettier": "prettier --config=.prettierrc.cjs --check .",
+        "lint:prettier:fix": "prettier --config=.prettierrc.cjs --write .",
+        "lint:types": "tsc --noEmit || exit 0",
+        "test": "vitest run",
+        "test:coverage": "vitest run --coverage",
+        "test:ui": "vitest --ui --coverage.enabled=true",
+        "test:watch": "vitest"
+    },
+    "dependencies": {
+        "@visulima/colorize": "1.4.29"
+    },
+    "devDependencies": {
+        "@anolilab/eslint-config": "^16.4.4",
+        "@anolilab/prettier-config": "^6.0.8",
+        "@anolilab/semantic-release-pnpm": "^3.1.0",
+        "@anolilab/semantic-release-preset": "^12.0.1",
+        "@arethetypeswrong/cli": "^0.18.2",
+        "@opentelemetry/api": "^1.9",
+        "@secretlint/secretlint-rule-preset-recommend": "^11.2.5",
+        "@total-typescript/ts-reset": "^0.6.1",
+        "@types/node": "24.10.1",
+        "@visulima/error": "5.0.6",
+        "@visulima/fmt": "1.1.21",
+        "@visulima/inspector": "1.0.30",
+        "@visulima/packem": "2.0.0-alpha.37",
+        "@visulima/redact": "2.0.5",
+        "@visulima/string": "2.0.6",
+        "@vitest/coverage-v8": "^4.0.15",
+        "@vitest/ui": "^4.0.15",
+        "cli-spinners": "3.3.0",
+        "conventional-changelog-conventionalcommits": "9.1.0",
+        "esbuild": "0.27.0",
+        "eslint": "9.39.1",
+        "prettier": "^3.7.4",
+        "publint": "^0.3.15",
+        "rimraf": "6.1.2",
+        "rotating-file-stream": "^3.2.7",
+        "safe-stable-stringify": "^2.5.0",
+        "secretlint": "11.2.5",
+        "semantic-release": "25.0.2",
+        "terminal-size": "^4.0.0",
+        "type-fest": "^5.3.0",
+        "typescript": "5.9.3",
+        "vitest": "^4.0.15"
+    },
+    "peerDependencies": {
+        "@opentelemetry/api": "^1.9",
+        "@visulima/redact": "2.0.5",
+        "rotating-file-stream": "^3.2.7"
+    },
+    "peerDependenciesMeta": {
+        "@opentelemetry/api": {
+            "optional": true
+        },
+        "@visulima/redact": {
+            "optional": true
+        },
+        "rotating-file-stream": {
+            "optional": true
+        }
+    },
+    "engines": {
+        "node": ">=22.12 <=25.x"
+    },
+    "os": [
+        "darwin",
+        "linux",
+        "win32"
+    ],
+    "publishConfig": {
+        "access": "public",
+        "provenance": true
+    }
+}

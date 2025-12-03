@@ -1,0 +1,15 @@
+{
+    "name": "pail",
+    "$schema": "../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "packages/error-debugging/pail/src",
+    "projectType": "library",
+    "tags": [
+        "type:package",
+        "pail"
+    ],
+    "implicitDependencies": [
+        "fmt",
+        "colorize",
+        "is-ansi-color-supported"
+    ]
+}
