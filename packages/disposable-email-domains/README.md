@@ -45,26 +45,26 @@ pnpm add @visulima/disposable-email-domains
 
 | Repository | Domains | Success | Performance |
 |------------|---------|---------|-------------|
-| kslr/disposable-email-domains | 112.616 | ✅ | 0.31s (1.7 MB) |
-| FGRibreau/mailchecker | 55.864 | ✅ | 0.48s (838.4 KB) |
-| wesbos/burner-email-providers | 27.284 | ✅ | 0.44s (388.1 KB) |
-| groundcat/disposable-email-domain-list | 27.120 | ✅ | 0.20s (401.7 KB) |
-| disposable/disposable-email-domains | 26.643 | ✅ | 0.28s (374.6 KB) |
-| sublime-security/static-files | 10.523 | ✅ | 0.17s (144.0 KB) |
-| 7c/fakefilter | 8.988 | ✅ | 0.41s (128.9 KB) |
-| disposable-email-domains/disposable-email-domains | 4.932 | ✅ | 0.26s (62.3 KB) |
-| willwhite/freemail | 4.462 | ✅ | 0.27s (61.8 KB) |
-| eser/sanitizer-svc | 3.855 | ✅ | 0.22s (48.9 KB) |
-| unkn0w/disposable-email-domain-list | 3.617 | ✅ | 0.14s (45.8 KB) |
+| kslr/disposable-email-domains | 112.616 | ✅ | 0.44s (1.7 MB) |
+| FGRibreau/mailchecker | 55.864 | ✅ | 0.41s (838.4 KB) |
+| wesbos/burner-email-providers | 27.284 | ✅ | 0.22s (388.1 KB) |
+| groundcat/disposable-email-domain-list | 27.120 | ✅ | 0.22s (401.7 KB) |
+| disposable/disposable-email-domains | 26.643 | ✅ | 0.31s (374.6 KB) |
+| sublime-security/static-files | 10.523 | ✅ | 0.30s (144.0 KB) |
+| 7c/fakefilter | 8.988 | ✅ | 0.16s (128.9 KB) |
+| disposable-email-domains/disposable-email-domains | 4.932 | ✅ | 0.22s (62.3 KB) |
+| willwhite/freemail | 4.462 | ✅ | 0.32s (61.8 KB) |
+| eser/sanitizer-svc | 3.855 | ✅ | 0.20s (48.9 KB) |
+| unkn0w/disposable-email-domain-list | 3.617 | ✅ | 0.13s (45.8 KB) |
 | MattKetmo/EmailChecker | 2.515 | ✅ | 0.14s (32.4 KB) |
-| GeroldSetz/emailondeck.com-domains | 1.121 | ✅ | 0.21s (15.4 KB) |
-| jespernissen/disposable-maildomain-list | 1.024 | ✅ | 0.14s (13.2 KB) |
-| TheDahoom/disposable-email | 18 | ✅ | 0.21s (234 B) |
+| GeroldSetz/emailondeck.com-domains | 1.121 | ✅ | 0.20s (15.4 KB) |
+| jespernissen/disposable-maildomain-list | 1.024 | ✅ | 0.15s (13.2 KB) |
+| TheDahoom/disposable-email | 18 | ✅ | 0.18s (234 B) |
 
 <!-- END_PLACEHOLDER_CONTRIBUTING -->
 <!-- START_PLACEHOLDER_LAST_UPDATED -->
 
-_Last updated: 2025-12-03T08:21:06.318Z_
+_Last updated: 2025-12-03T08:51:28.774Z_
 
 <!-- END_PLACEHOLDER_LAST_UPDATED -->
 
