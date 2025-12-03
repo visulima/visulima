@@ -1,0 +1,748 @@
+---
+title: Examples
+description: Practical examples and real-world use cases
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
+
+Practical examples demonstrating common use cases for `@visulima/error`.
+
+This page demonstrates practical examples for common use cases.
+
+## Basic Error Handling
+
+### Simple Error with Hint
+
+```typescript
+import { VisulimaError } from "@visulima/error";
+
+function validateConfig(config: unknown) {
+    if (!config || typeof config !== "object") {
+        const error = new VisulimaError({
+            name: "ConfigValidationError",
+            message: "Configuration object is invalid or missing"
+        });
+        
+        error.hint = [
+            "Ensure your config file exports a valid object",
+            "Check for syntax errors in your configuration file",
+            "Verify the configuration file path is correct"
+        ];
+        
+        throw error;
+    }
+}
+```
+
+### Error with Cause Chain
+
+```typescript
+import { VisulimaError, getErrorCauses } from "@visulima/error";
+
+async function fetchUserData(userId: string) {
+    try {
+        const response = await fetch(`https://api.example.com/users/${userId}`);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        return await response.json();
+    } catch (networkError) {
+        const error = new VisulimaError({
+            name: "UserDataFetchError",
+            message: `Failed to fetch data for user ${userId}`,
+            cause: networkError
+        });
+        
+        error.hint = "Verify your internet connection and API endpoint";
+        
+        throw error;
+    }
+}
+
+// Usage
+try {
+    await fetchUserData("123");
+} catch (error) {
+    const causes = getErrorCauses(error);
+    console.log("Error chain:", causes.map(c => c.message));
+}
+```
+
+## Custom Error Classes
+
+### Domain-Specific Errors
+
+```typescript
+import { VisulimaError } from "@visulima/error";
+
+// Authentication Error
+class AuthenticationError extends VisulimaError {
+    public readonly code: string;
+    
+    constructor(message: string, code: string = "AUTH_FAILED") {
+        super({
+            name: "AuthenticationError",
+            message
+        });
+        this.code = code;
+    }
+}
+
+// Authorization Error
+class AuthorizationError extends VisulimaError {
+    public readonly requiredPermission: string;
+    public readonly userPermissions: string[];
+    
+    constructor(required: string, userPerms: string[]) {
+        super({
+            name: "AuthorizationError",
+            message: `Permission denied: ${required} required`
+        });
+        
+        this.requiredPermission = required;
+        this.userPermissions = userPerms;
+        this.hint = `Your permissions: ${userPerms.join(", ")}`;
+    }
+}
+
+// Usage
+function requireAdmin(user: { permissions: string[] }) {
+    if (!user.permissions.includes("admin")) {
+        throw new AuthorizationError("admin", user.permissions);
+    }
+}
+```
+
+### HTTP Error Class
+
+```typescript
+import { VisulimaError } from "@visulima/error";
+
+class HttpError extends VisulimaError {
+    public readonly statusCode: number;
+    public readonly statusText: string;
+    
+    constructor(statusCode: number, message?: string) {
+        const statusTexts: Record<number, string> = {
+            400: "Bad Request",
+            401: "Unauthorized",
+            403: "Forbidden",
+            404: "Not Found",
+            500: "Internal Server Error"
+        };
+        
+        const statusText = statusTexts[statusCode] || "Unknown Error";
+        
+        super({
+            name: "HttpError",
+            message: message || statusText
+        });
+        
+        this.statusCode = statusCode;
+        this.statusText = statusText;
+    }
+    
+    static badRequest(message?: string) {
+        return new HttpError(400, message);
+    }
+    
+    static unauthorized(message?: string) {
+        return new HttpError(401, message);
+    }
+    
+    static notFound(resource?: string) {
+        return new HttpError(404, resource ? `${resource} not found` : undefined);
+    }
+}
+
+// Usage
+throw HttpError.notFound("User");
+```
+
+## Error Serialization
+
+### Logging Errors as JSON
+
+```typescript
+import { serializeError } from "@visulima/error";
+import fs from "fs/promises";
+
+class ErrorLogger {
+    private logFile = "./errors.log";
+    
+    async log(error: unknown) {
+        const serialized = serializeError(error);
+        const logEntry = {
+            timestamp: new Date().toISOString(),
+            error: serialized
+        };
+        
+        await fs.appendFile(
+            this.logFile,
+            JSON.stringify(logEntry) + "\n"
+        );
+    }
+}
+
+// Usage
+const logger = new ErrorLogger();
+
+try {
+    throw new Error("Something went wrong");
+} catch (error) {
+    await logger.log(error);
+}
+```
+
+### Sending Errors to a Remote Service
+
+```typescript
+import { serializeError } from "@visulima/error";
+
+class ErrorReporter {
+    constructor(private apiUrl: string) {}
+    
+    async report(error: unknown, context?: Record<string, unknown>) {
+        const serialized = serializeError(error);
+        
+        await fetch(this.apiUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                error: serialized,
+                context,
+                timestamp: Date.now(),
+                userAgent: navigator.userAgent
+            })
+        });
+    }
+}
+
+// Usage
+const reporter = new ErrorReporter("https://errors.example.com/api/report");
+
+try {
+    // Application code
+} catch (error) {
+    await reporter.report(error, {
+        userId: "123",
+        route: "/dashboard"
+    });
+}
+```
+
+### Restoring Errors from Storage
+
+```typescript
+import { deserializeError, addKnownErrorConstructor } from "@visulima/error";
+import fs from "fs/promises";
+
+// Register custom error types
+class ApplicationError extends Error {
+    constructor(message: string) {
+        super(message);
+        this.name = "ApplicationError";
+    }
+}
+
+addKnownErrorConstructor(ApplicationError);
+
+// Restore errors
+async function loadErrorHistory() {
+    const content = await fs.readFile("./errors.log", "utf-8");
+    const lines = content.trim().split("\n");
+    
+    return lines.map(line => {
+        const { error } = JSON.parse(line);
+        return deserializeError(error);
+    });
+}
+```
+
+## Stack Trace Processing
+
+### Filtering Stack Frames
+
+```typescript
+import { parseStacktrace, formatStacktrace } from "@visulima/error";
+
+function getApplicationStack(error: Error) {
+    const frames = parseStacktrace(error, {
+        filter: (frame) => {
+            // Exclude node_modules
+            if (frame.file?.includes("node_modules")) return false;
+            
+            // Exclude Node.js internals
+            if (frame.type === "internal" || frame.type === "native") return false;
+            
+            return true;
+        }
+    });
+    
+    return formatStacktrace(frames, {
+        header: { name: error.name, message: error.message }
+    });
+}
+
+// Usage
+try {
+    throw new Error("Application error");
+} catch (error) {
+    console.log(getApplicationStack(error));
+}
+```
+
+### Custom Stack Formatter
+
+```typescript
+import { parseStacktrace } from "@visulima/error";
+
+function formatStackForSlack(error: Error): string {
+    const frames = parseStacktrace(error);
+    
+    let output = `*${error.name}*: ${error.message}\n\n`;
+    
+    for (const frame of frames.slice(0, 5)) {
+        const location = frame.file ? 
+            `\`${frame.file}:${frame.line}:${frame.column}\`` : 
+            "unknown location";
+        
+        output += `• ${frame.methodName || "anonymous"} at ${location}\n`;
+    }
+    
+    return output;
+}
+```
+
+## Pretty Error Rendering
+
+### Console Error Display
+
+```typescript
+import { renderError } from "@visulima/error";
+import { red, yellow, cyan, dim } from "@visulima/colorize";
+
+function displayError(error: Error) {
+    const rendered = renderError(error, {
+        color: {
+            title: red,
+            message: red,
+            hint: cyan,
+            marker: red,
+            method: yellow,
+            fileLine: dim
+        },
+        displayShortPath: true,
+        framesMaxLimit: 10,
+        hideErrorTitle: false
+    });
+    
+    console.error("\n" + rendered + "\n");
+}
+
+// Usage
+try {
+    throw new Error("Detailed error with context");
+} catch (error) {
+    displayError(error);
+}
+```
+
+### Error with Multiple Causes
+
+```typescript
+import { renderError, VisulimaError } from "@visulima/error";
+
+const databaseError = new Error("Connection timeout");
+const queryError = new VisulimaError({
+    name: "QueryError",
+    message: "Failed to execute query",
+    cause: databaseError
+});
+
+queryError.hint = "Check database connection settings";
+
+const appError = new VisulimaError({
+    name: "ApplicationError",
+    message: "Unable to fetch user data",
+    cause: queryError
+});
+
+console.log(renderError(appError));
+```
+
+## Solution Finders
+
+### Using Rule-Based Finder
+
+```typescript
+import { ruleBasedFinder, codeFrame } from "@visulima/error";
+
+async function analyzeError(error: Error, sourceCode: string, line: number) {
+    const snippet = codeFrame(sourceCode, {
+        start: { line, column: 1 }
+    });
+    
+    const solution = await ruleBasedFinder.handle(error, {
+        file: "/path/to/file.js",
+        line,
+        language: "js",
+        snippet
+    });
+    
+    if (solution) {
+        console.log(`\n${solution.header || "Suggested Solution"}:`);
+        console.log(solution.body);
+    }
+}
+```
+
+### Combining Multiple Finders
+
+```typescript
+import { ruleBasedFinder, errorHintFinder } from "@visulima/error";
+import type { SolutionFinder, SolutionFinderFile } from "@visulima/error";
+
+class CompositeErrorSolver {
+    private finders: SolutionFinder[] = [
+        errorHintFinder,
+        ruleBasedFinder
+    ];
+    
+    async solve(error: Error, file: SolutionFinderFile) {
+        for (const finder of this.finders) {
+            const solution = await finder.handle(error, file);
+            if (solution) {
+                return solution;
+            }
+        }
+        return undefined;
+    }
+}
+
+// Usage
+const solver = new CompositeErrorSolver();
+const solution = await solver.solve(error, fileContext);
+```
+
+### AI-Powered Error Resolution
+
+```typescript
+import { aiFinder } from "@visulima/error/solution/ai";
+import { createOpenAI } from "@ai-sdk/openai";
+import { renderError } from "@visulima/error";
+
+async function getAISolution(error: Error) {
+    const openai = createOpenAI({
+        apiKey: process.env.OPENAI_API_KEY
+    });
+    
+    const finder = aiFinder(openai("gpt-4"), {
+        temperature: 0
+    });
+    
+    const solution = await finder.handle(error, {
+        file: error.stack?.split("\n")[1] || "",
+        line: 0,
+        language: "typescript"
+    });
+    
+    if (solution) {
+        console.log(renderError(error));
+        console.log("\nAI Suggestion:");
+        console.log(solution.body);
+    }
+}
+```
+
+## Express.js Integration
+
+### Global Error Handler
+
+```typescript
+import express from "express";
+import { VisulimaError, renderError, serializeError } from "@visulima/error";
+import { red } from "@visulima/colorize";
+
+const app = express();
+
+// Custom error classes
+class ApiError extends VisulimaError {
+    constructor(
+        public statusCode: number,
+        message: string,
+        hint?: string
+    ) {
+        super({ name: "ApiError", message, hint });
+    }
+}
+
+// Error handling middleware
+app.use((error: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
+    // Log the error
+    console.error(renderError(error, {
+        color: { title: red, message: red }
+    }));
+    
+    // Determine status code
+    const statusCode = error instanceof ApiError ? error.statusCode : 500;
+    
+    // Send response
+    if (process.env.NODE_ENV === "production") {
+        res.status(statusCode).json({
+            error: {
+                message: error.message,
+                name: error.name
+            }
+        });
+    } else {
+        res.status(statusCode).json({
+            error: serializeError(error)
+        });
+    }
+});
+
+// Routes
+app.get("/users/:id", async (req, res, next) => {
+    try {
+        const user = await db.users.findById(req.params.id);
+        
+        if (!user) {
+            throw new ApiError(404, "User not found", "Check the user ID");
+        }
+        
+        res.json(user);
+    } catch (error) {
+        next(error);
+    }
+});
+
+app.listen(3000);
+```
+
+## Next.js Integration
+
+### Error Boundary Component
+
+```typescript
+// components/ErrorBoundary.tsx
+"use client";
+
+import { Component, ReactNode } from "react";
+import { VisulimaError, serializeError } from "@visulima/error";
+
+interface Props {
+    children: ReactNode;
+    fallback?: (error: Error) => ReactNode;
+}
+
+interface State {
+    error: Error | null;
+}
+
+export class ErrorBoundary extends Component<Props, State> {
+    state: State = { error: null };
+    
+    static getDerivedStateFromError(error: Error): State {
+        return { error };
+    }
+    
+    componentDidCatch(error: Error, errorInfo: unknown) {
+        // Log to error reporting service
+        console.error("Error caught:", serializeError(error));
+        console.error("Error info:", errorInfo);
+    }
+    
+    render() {
+        if (this.state.error) {
+            if (this.props.fallback) {
+                return this.props.fallback(this.state.error);
+            }
+            
+            return (
+                <div className="error-container">
+                    <h1>Something went wrong</h1>
+                    <p>{this.state.error.message}</p>
+                    {this.state.error instanceof VisulimaError && 
+                     this.state.error.hint && (
+                        <div className="hint">
+                            {Array.isArray(this.state.error.hint) 
+                                ? this.state.error.hint.map((h, i) => <p key={i}>{h}</p>)
+                                : <p>{this.state.error.hint}</p>
+                            }
+                        </div>
+                    )}
+                </div>
+            );
+        }
+        
+        return this.props.children;
+    }
+}
+```
+
+### API Route Error Handling
+
+```typescript
+// app/api/users/route.ts
+import { NextRequest, NextResponse } from "next/server";
+import { VisulimaError, serializeError } from "@visulima/error";
+
+export async function GET(request: NextRequest) {
+    try {
+        const users = await fetchUsers();
+        return NextResponse.json(users);
+    } catch (error) {
+        console.error(serializeError(error));
+        
+        if (error instanceof VisulimaError) {
+            return NextResponse.json(
+                { error: error.message, hint: error.hint },
+                { status: 400 }
+            );
+        }
+        
+        return NextResponse.json(
+            { error: "Internal server error" },
+            { status: 500 }
+        );
+    }
+}
+```
+
+## Database Error Handling
+
+### Prisma Integration
+
+```typescript
+import { PrismaClient } from "@prisma/client";
+import { VisulimaError } from "@visulima/error";
+
+const prisma = new PrismaClient();
+
+class DatabaseError extends VisulimaError {
+    constructor(message: string, cause?: unknown) {
+        super({
+            name: "DatabaseError",
+            message,
+            cause
+        });
+    }
+}
+
+async function createUser(email: string) {
+    try {
+        return await prisma.user.create({
+            data: { email }
+        });
+    } catch (error: any) {
+        if (error.code === "P2002") {
+            const dbError = new DatabaseError(
+                "User already exists with this email",
+                error
+            );
+            dbError.hint = "Try using a different email address";
+            throw dbError;
+        }
+        
+        throw new DatabaseError("Failed to create user", error);
+    }
+}
+```
+
+## API Client Errors
+
+### Fetch Wrapper with Error Handling
+
+```typescript
+import { VisulimaError, serializeError } from "@visulima/error";
+
+class ApiClient {
+    constructor(private baseUrl: string) {}
+    
+    async request<T>(path: string, options?: RequestInit): Promise<T> {
+        try {
+            const response = await fetch(`${this.baseUrl}${path}`, options);
+            
+            if (!response.ok) {
+                const error = new VisulimaError({
+                    name: "ApiRequestError",
+                    message: `Request failed: ${response.status} ${response.statusText}`
+                });
+                
+                error.hint = [
+                    `Endpoint: ${path}`,
+                    `Status: ${response.status}`,
+                    "Check API documentation for valid parameters"
+                ];
+                
+                throw error;
+            }
+            
+            return await response.json();
+        } catch (error) {
+            if (error instanceof VisulimaError) {
+                throw error;
+            }
+            
+            // Network or parsing error
+            throw new VisulimaError({
+                name: "NetworkError",
+                message: "Failed to connect to API",
+                cause: error
+            });
+        }
+    }
+}
+
+// Usage
+const client = new ApiClient("https://api.example.com");
+
+try {
+    const data = await client.request("/users");
+} catch (error) {
+    console.error(serializeError(error));
+}
+```
+
+## Testing with Errors
+
+### Testing Error Scenarios
+
+```typescript
+import { describe, it, expect } from "vitest";
+import { VisulimaError } from "@visulima/error";
+
+describe("User Service", () => {
+    it("should throw validation error for invalid email", () => {
+        expect(() => {
+            validateEmail("invalid");
+        }).toThrow(VisulimaError);
+    });
+    
+    it("should include helpful hint in error", () => {
+        try {
+            validateEmail("invalid");
+        } catch (error) {
+            expect(error).toBeInstanceOf(VisulimaError);
+            expect((error as VisulimaError).hint).toBeDefined();
+        }
+    });
+    
+    it("should preserve error cause chain", async () => {
+        const mockDb = {
+            query: () => Promise.reject(new Error("Connection failed"))
+        };
+        
+        try {
+            await fetchUser(mockDb, "123");
+        } catch (error) {
+            expect(error).toBeInstanceOf(VisulimaError);
+            expect((error as VisulimaError).cause).toBeInstanceOf(Error);
+        }
+    });
+});
+```

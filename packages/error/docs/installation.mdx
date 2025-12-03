@@ -1,0 +1,249 @@
+---
+title: Installation
+description: How to install and set up @visulima/error in your project
+---
+
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Steps, Step } from 'fumadocs-ui/components/steps';
+
+## Package Manager Installation
+
+Choose your preferred package manager:
+
+<Tabs items={['pnpm', 'npm', 'yarn', 'bun']}>
+  <Tab value="pnpm">
+    ```bash
+    pnpm add @visulima/error
+    ```
+  </Tab>
+  <Tab value="npm">
+    ```bash
+    npm install @visulima/error
+    ```
+  </Tab>
+  <Tab value="yarn">
+    ```bash
+    yarn add @visulima/error
+    ```
+  </Tab>
+  <Tab value="bun">
+    ```bash
+    bun add @visulima/error
+    ```
+  </Tab>
+</Tabs>
+
+## Optional Dependencies
+
+### AI Integration
+
+If you want to use AI-powered error solution generation, install the optional `ai` peer dependency:
+
+<Tabs items={['pnpm', 'npm', 'yarn']}>
+  <Tab value="pnpm">
+    ```bash
+    pnpm add ai
+    ```
+  </Tab>
+  <Tab value="npm">
+    ```bash
+    npm install ai
+    ```
+  </Tab>
+  <Tab value="yarn">
+    ```bash
+    yarn add ai
+    ```
+  </Tab>
+</Tabs>
+
+<Callout type="info">
+The AI integration requires an API key from a supported provider (OpenAI, Anthropic, etc.).
+</Callout>
+
+## Verifying Installation
+
+After installation, verify that the package is installed correctly:
+
+<Tabs items={['ESM', 'CommonJS']}>
+  <Tab value="ESM">
+    ```typescript
+    import { VisulimaError } from "@visulima/error";
+
+    console.log(VisulimaError.name); // Should output: "VisulimaError"
+    ```
+  </Tab>
+  <Tab value="CommonJS">
+    ```javascript
+    const { VisulimaError } = require("@visulima/error");
+
+    console.log(VisulimaError.name); // Should output: "VisulimaError"
+    ```
+  </Tab>
+</Tabs>
+
+## Module System Support
+
+`@visulima/error` supports both ESM (ES Modules) and CommonJS:
+
+### ESM (ES Modules)
+
+```typescript
+import { VisulimaError, renderError, parseStacktrace } from "@visulima/error";
+```
+
+### CommonJS
+
+```javascript
+const { VisulimaError, renderError, parseStacktrace } = require("@visulima/error");
+```
+
+## Subpath Imports
+
+The package provides several subpath exports for importing specific functionality:
+
+```typescript
+// Main export (includes all features)
+import { VisulimaError, renderError } from "@visulima/error";
+
+// Code frame utilities
+import { codeFrame } from "@visulima/error/code-frame";
+
+// Error utilities
+import { serializeError, deserializeError } from "@visulima/error/error";
+
+// Stack trace utilities
+import { parseStacktrace, formatStackFrameLine } from "@visulima/error/stacktrace";
+
+// Solution finders
+import { ruleBasedFinder, errorHintFinder } from "@visulima/error/solution";
+
+// AI integration
+import { aiPrompt, aiSolutionResponse } from "@visulima/error/solution/ai";
+```
+
+## TypeScript Configuration
+
+For TypeScript projects, ensure your `tsconfig.json` has the following settings:
+
+```json title="tsconfig.json"
+{
+  "compilerOptions": {
+    "moduleResolution": "bundler", // or "node16", "nodenext"
+    "esModuleInterop": true,
+    "skipLibCheck": true
+  }
+}
+```
+
+## System Requirements
+
+### Node.js Versions
+
+- **Minimum**: Node.js 18.0.0
+- **Maximum**: Node.js 24.x
+- **Recommended**: Node.js 20.x LTS or later
+
+### Supported Operating Systems
+
+- macOS (darwin)
+- Linux
+- Windows (win32)
+
+### Browser Support
+
+For stack trace parsing in browsers:
+
+- Firefox (latest)
+- Chrome (latest)
+- Safari/WebKit (latest)
+- Edge (latest)
+- Opera Chromium-based (latest)
+
+<Callout type="warn">
+Browsers older than 6 years are not supported.
+</Callout>
+
+## Development Setup
+
+If you're contributing to the package or running it from source:
+
+<Steps>
+  <Step>
+    Clone the repository
+    ```bash
+    git clone https://github.com/visulima/visulima.git
+    cd visulima/packages/error
+    ```
+  </Step>
+  <Step>
+    Install dependencies
+    ```bash
+    pnpm install
+    ```
+  </Step>
+  <Step>
+    Build the package
+    ```bash
+    pnpm run build
+    ```
+  </Step>
+  <Step>
+    Run tests
+    ```bash
+    pnpm test
+    ```
+  </Step>
+</Steps>
+
+## Troubleshooting
+
+### Module Not Found
+
+If you encounter "Cannot find module" errors:
+
+<Steps>
+  <Step>
+    Clear your package manager cache:
+    ```bash
+    # npm
+    npm cache clean --force
+
+    # pnpm
+    pnpm store prune
+
+    # yarn
+    yarn cache clean
+    ```
+  </Step>
+  <Step>
+    Delete `node_modules` and reinstall:
+    ```bash
+    rm -rf node_modules
+    pnpm install
+    ```
+  </Step>
+</Steps>
+
+### TypeScript Type Errors
+
+If TypeScript can't find type definitions:
+
+1. Ensure you're using TypeScript >= 5.0
+2. Add `skipLibCheck: true` to your `tsconfig.json`
+3. Try deleting `node_modules/@types` and reinstalling
+
+### AI Integration Issues
+
+If AI features aren't working:
+
+1. Verify the `ai` package is installed
+2. Check your API key configuration
+3. Ensure you're importing from the correct subpath: `@visulima/error/solution/ai`
+
+## Next Steps
+
+- [Quick Start Guide](/docs/error/quick-start) - Learn the basics
+- [API Reference](/docs/error/api-reference) - Explore all available features
+- [Examples](/docs/error/examples) - See practical examples
