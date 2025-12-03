@@ -1,0 +1,133 @@
+---
+title: Installation
+description: How to install @visulima/tabular in your project
+---
+
+# Installation
+
+Install `@visulima/tabular` using your preferred package manager.
+
+## Package Managers
+
+<Tabs items={['pnpm', 'npm', 'yarn', 'bun']}>
+<Tab value="pnpm">
+```bash
+pnpm add @visulima/tabular
+```
+</Tab>
+<Tab value="npm">
+```bash
+npm install @visulima/tabular
+```
+</Tab>
+<Tab value="yarn">
+```bash
+yarn add @visulima/tabular
+```
+</Tab>
+<Tab value="bun">
+```bash
+bun add @visulima/tabular
+```
+</Tab>
+</Tabs>
+
+## Requirements
+
+- **Node.js**: Version 18.0.0 or higher (up to 24.x)
+- **TypeScript**: Version 5.0 or higher (for TypeScript projects)
+
+## Module Support
+
+The package supports both ESM and CommonJS module systems:
+
+### ESM (Recommended)
+
+```typescript
+import { createTable, createGrid } from "@visulima/tabular";
+import { DEFAULT_BORDER, ROUNDED_BORDER } from "@visulima/tabular/style";
+```
+
+### CommonJS
+
+```javascript
+const { createTable, createGrid } = require("@visulima/tabular");
+const { DEFAULT_BORDER, ROUNDED_BORDER } = require("@visulima/tabular/style");
+```
+
+## Optional Dependencies
+
+For enhanced functionality, you may want to install these optional packages:
+
+### Color Support
+
+While `@visulima/tabular` works with any ANSI color library, we recommend `@visulima/colorize`:
+
+<Tabs items={['pnpm', 'npm', 'yarn', 'bun']}>
+<Tab value="pnpm">
+```bash
+pnpm add @visulima/colorize
+```
+</Tab>
+<Tab value="npm">
+```bash
+npm install @visulima/colorize
+```
+</Tab>
+<Tab value="yarn">
+```bash
+yarn add @visulima/colorize
+```
+</Tab>
+<Tab value="bun">
+```bash
+bun add @visulima/colorize
+```
+</Tab>
+</Tabs>
+
+## Verify Installation
+
+After installation, verify that the package is working correctly:
+
+```typescript title="verify-installation.ts"
+import { createTable } from "@visulima/tabular";
+
+const table = createTable();
+table.setHeaders(["Status"]);
+table.addRow(["Installed successfully"]);
+
+console.log(table.toString());
+```
+
+You should see a formatted table in your console:
+
+```
+┌────────────────────────┐
+│ Status                 │
+├────────────────────────┤
+│ Installed successfully │
+└────────────────────────┘
+```
+
+## TypeScript Configuration
+
+For TypeScript projects, ensure your `tsconfig.json` includes:
+
+```json
+{
+  "compilerOptions": {
+    "moduleResolution": "bundler", // or "node16", "nodenext"
+    "target": "ES2020",
+    "lib": ["ES2020"]
+  }
+}
+```
+
+## Next Steps
+
+Now that you have installed the package, you can:
+
+- [Get Started](./getting-started) with your first table
+- Explore the [API Reference](./api/table)
+- Check out [Examples](./examples)
