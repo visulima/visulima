@@ -87,7 +87,7 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "http-errors": "^2.0.0",
+        "http-errors": "^2.0.1",
         "regexparam": "^3.0.0"
     },
     "devDependencies": {
