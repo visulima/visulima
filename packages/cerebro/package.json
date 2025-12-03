@@ -140,19 +140,19 @@
         "@visulima/pail": "3.2.2",
         "@visulima/path": "2.0.5",
         "@visulima/string": "2.0.6",
-        "@vitest/coverage-v8": "^4.0.14",
+        "@vitest/coverage-v8": "^4.0.15",
         "ci-info": "^4.3.1",
         "commander": "14.0.2",
         "conventional-changelog-conventionalcommits": "9.1.0",
         "esbuild": "0.27.0",
         "eslint": "9.39.1",
         "github-slugger": "2.0.0",
-        "prettier": "^3.7.3",
+        "prettier": "^3.7.4",
         "publint": "^0.3.15",
         "rimraf": "6.1.2",
         "semantic-release": "25.0.2",
         "typescript": "5.9.3",
-        "vitest": "^4.0.14"
+        "vitest": "^4.0.15"
     },
     "peerDependencies": {
         "@bomb.sh/tab": "^0.0.7",

@@ -90,8 +90,8 @@
         "@visulima/colorize": "1.4.29",
         "@visulima/packem": "2.0.0-alpha.40",
         "@visulima/string": "2.0.6",
-        "@vitest/coverage-v8": "^4.0.14",
-        "@vitest/ui": "^4.0.14",
+        "@vitest/coverage-v8": "^4.0.15",
+        "@vitest/ui": "^4.0.15",
         "ansi-regex": "^6.2.2",
         "conventional-changelog-conventionalcommits": "9.1.0",
         "esbuild": "^0.27.0",
@@ -102,12 +102,12 @@
         "secretlint": "11.2.5",
         "semantic-release": "^25.0.2",
         "terminal-size": "4.0.0",
-        "type-fest": "^5.2.0",
+        "type-fest": "^5.3.0",
         "typedoc": "0.28.15",
         "typedoc-plugin-markdown": "4.9.0",
         "typedoc-plugin-rename-defaults": "0.7.3",
         "typescript": "^5.9.3",
-        "vitest": "^4.0.14"
+        "vitest": "^4.0.15"
     },
     "engines": {
         "node": ">=22.12 <=25.x"

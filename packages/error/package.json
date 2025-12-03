@@ -127,19 +127,19 @@
         "@types/node": "24.10.1",
         "@visulima/packem": "2.0.0-alpha.40",
         "@visulima/path": "2.0.5",
-        "@vitest/coverage-v8": "^4.0.14",
-        "@vitest/ui": "^4.0.14",
-        "ai": "^5.0.105",
+        "@vitest/coverage-v8": "^4.0.15",
+        "@vitest/ui": "^4.0.15",
+        "ai": "^5.0.106",
         "conventional-changelog-conventionalcommits": "9.1.0",
         "esbuild": "0.27.0",
         "eslint": "9.39.1",
         "is-plain-obj": "^4.1.0",
-        "prettier": "^3.7.3",
+        "prettier": "^3.7.4",
         "publint": "^0.3.15",
         "rimraf": "6.1.2",
         "semantic-release": "25.0.2",
         "typescript": "5.9.3",
-        "vitest": "^4.0.14"
+        "vitest": "^4.0.15"
     },
     "peerDependencies": {
         "ai": "^5.0.68"

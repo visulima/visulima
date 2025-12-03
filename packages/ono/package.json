@@ -114,7 +114,7 @@
         "@types/node": "24.10.1",
         "@visulima/packem": "2.0.0-alpha.40",
         "@visulima/path": "2.0.5",
-        "@vitest/coverage-v8": "^4.0.14",
+        "@vitest/coverage-v8": "^4.0.15",
         "cssnano": "7.1.2",
         "esbuild": "0.27.0",
         "eslint": "^9.39.1",
@@ -124,8 +124,8 @@
         "marked": "^17.0.1",
         "node-mocks-http": "^1.17.2",
         "openai": "6.9.1",
-        "prettier": "^3.7.3",
-        "prettier-plugin-tailwindcss": "0.7.1",
+        "prettier": "^3.7.4",
+        "prettier-plugin-tailwindcss": "0.7.2",
         "publint": "^0.3.15",
         "rimraf": "^6.1.2",
         "semantic-release": "^25.0.2",
@@ -133,7 +133,7 @@
         "tailwind-csstree": "0.1.4",
         "tailwindcss": "^4.1.17",
         "typescript": "^5.9.3",
-        "vitest": "^4.0.14"
+        "vitest": "^4.0.15"
     },
     "peerDependencies": {
         "@ai-sdk/anthropic": "^1.0.9",

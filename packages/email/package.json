@@ -304,8 +304,8 @@
         "@types/nodemailer": "^7.0.4",
         "@visulima/error": "5.0.6",
         "@visulima/packem": "2.0.0-alpha.40",
-        "@vitest/coverage-v8": "^4.0.14",
-        "@vitest/ui": "^4.0.14",
+        "@vitest/coverage-v8": "^4.0.15",
+        "@vitest/ui": "^4.0.15",
         "@vue-email/render": "0.0.9",
         "asn1js": "^3.0.6",
         "conventional-changelog-conventionalcommits": "9.1.0",
@@ -316,13 +316,13 @@
         "nodemailer": "^7.0.11",
         "@opentelemetry/api": "^1.9.0",
         "pkijs": "^3.3.3",
-        "prettier": "^3.7.3",
+        "prettier": "^3.7.4",
         "publint": "^0.3.15",
         "rimraf": "^6.1.2",
         "secretlint": "11.2.5",
         "semantic-release": "^25.0.2",
         "typescript": "^5.9.3",
-        "vitest": "^4.0.14"
+        "vitest": "^4.0.15"
     },
     "peerDependencies": {
         "@opentelemetry/api": "^1.0.0 || ^2.0.0",
