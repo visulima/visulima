@@ -1,7 +1,6 @@
 import { existsSync } from "node:fs";
 
 import { installPackage } from "@antfu/install-pkg";
-import confirm from "@inquirer/confirm";
 import type { FindUpOptions, WriteJsonOptions } from "@visulima/fs";
 import { findUp, findUpSync, readFile, readFileSync, readJson, readJsonSync, writeJson, writeJsonSync } from "@visulima/fs";
 import { NotFoundError } from "@visulima/fs/error";
@@ -17,6 +16,7 @@ import type { JsonObject, Paths } from "type-fest";
 
 import { readPnpmCatalogs, readPnpmCatalogsSync, resolveCatalogReferences } from "./pnpm";
 import type { Cache, EnsurePackagesOptions, NormalizedPackageJson, PackageJson } from "./types";
+import confirm from "./utils/confirm";
 import isNode from "./utils/is-node";
 
 const PackageJsonParseCache = new Map<string, NormalizedPackageJson>();
