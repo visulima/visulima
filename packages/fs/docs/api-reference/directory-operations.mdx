@@ -1,0 +1,489 @@
+---
+title: Directory Operations
+description: Create, ensure, and manage directories and file system links
+---
+
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# Directory Operations
+
+Functions for creating, ensuring, and managing directories and file system links.
+
+## ensureDir
+
+Asynchronously ensures that a directory exists. Creates the directory and any necessary parent directories if they don't exist.
+
+### Signature
+
+```typescript
+function ensureDir(path: URL | string): Promise<void>
+```
+
+### Parameters
+
+- `path` (`URL | string`) - Path to the directory
+
+### Returns
+
+`Promise<void>`
+
+### Examples
+
+```typescript
+import { ensureDir } from "@visulima/fs";
+
+// Create directory (and parents if needed)
+await ensureDir("./path/to/directory");
+
+// Using URL
+await ensureDir(new URL("file:///path/to/directory"));
+
+// Idempotent - safe to call multiple times
+await ensureDir("./my-dir");
+await ensureDir("./my-dir"); // No error, directory already exists
+```
+
+## ensureDirSync
+
+Synchronously ensures that a directory exists.
+
+### Signature
+
+```typescript
+function ensureDirSync(path: URL | string): void
+```
+
+### Parameters
+
+Same as `ensureDir`.
+
+### Returns
+
+`void`
+
+### Examples
+
+```typescript
+import { ensureDirSync } from "@visulima/fs";
+
+ensureDirSync("./path/to/directory");
+```
+
+## ensureFile
+
+Asynchronously ensures that a file exists. Creates the file and any necessary parent directories if they don't exist.
+
+### Signature
+
+```typescript
+function ensureFile(path: URL | string): Promise<void>
+```
+
+### Parameters
+
+- `path` (`URL | string`) - Path to the file
+
+### Returns
+
+`Promise<void>`
+
+### Examples
+
+```typescript
+import { ensureFile } from "@visulima/fs";
+
+// Create empty file (and parent directories if needed)
+await ensureFile("./path/to/file.txt");
+
+// Idempotent - doesn't overwrite existing files
+await ensureFile("./existing-file.txt"); // File unchanged if it exists
+```
+
+## ensureFileSync
+
+Synchronously ensures that a file exists.
+
+### Signature
+
+```typescript
+function ensureFileSync(path: URL | string): void
+```
+
+### Parameters
+
+Same as `ensureFile`.
+
+### Returns
+
+`void`
+
+### Examples
+
+```typescript
+import { ensureFileSync } from "@visulima/fs";
+
+ensureFileSync("./path/to/file.txt");
+```
+
+## ensureLink
+
+Asynchronously ensures that a hard link exists. Creates the link and any necessary parent directories if they don't exist.
+
+### Signature
+
+```typescript
+function ensureLink(
+    source: URL | string,
+    destination: URL | string
+): Promise<void>
+```
+
+### Parameters
+
+- `source` (`URL | string`) - Source file path
+- `destination` (`URL | string`) - Destination link path
+
+### Returns
+
+`Promise<void>`
+
+### Examples
+
+```typescript
+import { ensureLink } from "@visulima/fs";
+
+// Create hard link
+await ensureLink("./source-file.txt", "./link-to-file.txt");
+
+// Creates parent directories automatically
+await ensureLink("./source.txt", "./deep/path/link.txt");
+```
+
+### Notes
+
+- Hard links only work for files on the same file system
+- Hard links are not supported for directories
+- Changes to either the source or link affect both
+
+## ensureLinkSync
+
+Synchronously ensures that a hard link exists.
+
+### Signature
+
+```typescript
+function ensureLinkSync(
+    source: URL | string,
+    destination: URL | string
+): void
+```
+
+### Parameters
+
+Same as `ensureLink`.
+
+### Returns
+
+`void`
+
+### Examples
+
+```typescript
+import { ensureLinkSync } from "@visulima/fs";
+
+ensureLinkSync("./source-file.txt", "./link-to-file.txt");
+```
+
+## ensureSymlink
+
+Asynchronously ensures that a symbolic link exists. Creates the symlink and any necessary parent directories if they don't exist.
+
+### Signature
+
+```typescript
+function ensureSymlink(
+    source: URL | string,
+    destination: URL | string,
+    type?: "dir" | "file" | "junction"
+): Promise<void>
+```
+
+### Parameters
+
+- `source` (`URL | string`) - Source path
+- `destination` (`URL | string`) - Destination link path
+- `type` (`"dir" | "file" | "junction"`) - Type of symlink (Windows only, auto-detected on Unix)
+
+### Returns
+
+`Promise<void>`
+
+### Examples
+
+```typescript
+import { ensureSymlink } from "@visulima/fs";
+
+// Create symbolic link to file
+await ensureSymlink("./source-file.txt", "./link-to-file.txt");
+
+// Create symbolic link to directory
+await ensureSymlink("./source-dir", "./link-to-dir", "dir");
+
+// Windows junction (Windows only)
+await ensureSymlink("./source-dir", "./junction-link", "junction");
+
+// Relative paths work
+await ensureSymlink("../config.json", "./local-config.json");
+```
+
+### Notes
+
+- Symlinks can point to files or directories
+- Symlinks can span file systems
+- On Windows, creating symlinks may require administrator privileges
+- Junction type is Windows-specific
+
+## ensureSymlinkSync
+
+Synchronously ensures that a symbolic link exists.
+
+### Signature
+
+```typescript
+function ensureSymlinkSync(
+    source: URL | string,
+    destination: URL | string,
+    type?: "dir" | "file" | "junction"
+): void
+```
+
+### Parameters
+
+Same as `ensureSymlink`.
+
+### Returns
+
+`void`
+
+### Examples
+
+```typescript
+import { ensureSymlinkSync } from "@visulima/fs";
+
+ensureSymlinkSync("./source-file.txt", "./link-to-file.txt");
+ensureSymlinkSync("./source-dir", "./link-to-dir", "dir");
+```
+
+## emptyDir
+
+Asynchronously empties a directory. Removes all files and subdirectories but keeps the directory itself.
+
+### Signature
+
+```typescript
+function emptyDir(
+    path: URL | string,
+    options?: RetryOptions
+): Promise<void>
+```
+
+### Parameters
+
+- `path` (`URL | string`) - Path to the directory
+- `options` (`RetryOptions`) - Optional retry options
+  - `maxRetries` (`number`) - Maximum retry attempts (default: `0`)
+  - `retryDelay` (`number`) - Delay between retries in ms (default: `100`)
+
+### Returns
+
+`Promise<void>`
+
+### Examples
+
+```typescript
+import { emptyDir } from "@visulima/fs";
+
+// Empty directory contents
+await emptyDir("./temp");
+
+// With retry options (useful on Windows)
+await emptyDir("./cache", {
+    maxRetries: 3,
+    retryDelay: 100,
+});
+
+// Directory still exists after emptying
+// Only its contents are removed
+```
+
+### Notes
+
+- Creates the directory if it doesn't exist
+- Removes all contents recursively
+- The directory itself remains after emptying
+
+## emptyDirSync
+
+Synchronously empties a directory.
+
+### Signature
+
+```typescript
+function emptyDirSync(
+    path: URL | string,
+    options?: RetryOptions
+): void
+```
+
+### Parameters
+
+Same as `emptyDir`.
+
+### Returns
+
+`void`
+
+### Examples
+
+```typescript
+import { emptyDirSync } from "@visulima/fs";
+
+emptyDirSync("./temp");
+```
+
+## Common Patterns
+
+### Creating Project Structure
+
+```typescript
+import { ensureDir, ensureFile } from "@visulima/fs";
+
+async function createProjectStructure() {
+    // Create directory structure
+    await ensureDir("./src/components");
+    await ensureDir("./src/utils");
+    await ensureDir("./tests");
+    
+    // Create initial files
+    await ensureFile("./src/index.ts");
+    await ensureFile("./README.md");
+    await ensureFile("./.gitignore");
+}
+```
+
+### Cleaning Build Directory
+
+```typescript
+import { emptyDir, ensureDir } from "@visulima/fs";
+
+async function cleanBuild() {
+    // Empty and ensure the build directory exists
+    await emptyDir("./dist");
+    
+    // Create subdirectories
+    await ensureDir("./dist/assets");
+    await ensureDir("./dist/types");
+}
+```
+
+### Creating Symlinks for Development
+
+```typescript
+import { ensureSymlink } from "@visulima/fs";
+
+async function setupDevEnvironment() {
+    // Link shared configuration
+    await ensureSymlink(
+        "../shared/config.json",
+        "./config.json"
+    );
+    
+    // Link shared modules
+    await ensureSymlink(
+        "../shared/node_modules",
+        "./node_modules",
+        "dir"
+    );
+}
+```
+
+### Managing Temporary Directories
+
+```typescript
+import { ensureDir, emptyDir, remove } from "@visulima/fs";
+
+async function withTempDir(callback: (dir: string) => Promise<void>) {
+    const tempDir = "./temp-" + Date.now();
+    
+    try {
+        // Create temp directory
+        await ensureDir(tempDir);
+        
+        // Use temp directory
+        await callback(tempDir);
+    } finally {
+        // Clean up
+        await remove(tempDir);
+    }
+}
+
+// Usage
+await withTempDir(async (dir) => {
+    await writeFile(`${dir}/temp-file.txt`, "data");
+    // ... do work
+});
+```
+
+## Types
+
+### RetryOptions
+
+```typescript
+type RetryOptions = {
+    maxRetries?: number | undefined;
+    retryDelay?: number | undefined;
+};
+```
+
+## Error Handling
+
+```typescript
+import { ensureDir, ensureSymlink } from "@visulima/fs";
+import { DirectoryError, AlreadyExistsError } from "@visulima/fs/error";
+
+try {
+    await ensureDir("./my-directory");
+} catch (error) {
+    if (error instanceof DirectoryError) {
+        console.error("Failed to create directory:", error.message);
+    }
+}
+
+try {
+    await ensureSymlink("./source.txt", "./existing-link.txt");
+} catch (error) {
+    if (error instanceof AlreadyExistsError) {
+        console.error("Link already exists");
+    }
+}
+```
+
+## Platform Considerations
+
+### Windows
+
+- Creating symlinks requires administrator privileges or Developer Mode
+- Junction type is Windows-specific and doesn't require special privileges
+- Hard links work but have limitations
+
+### Unix/Linux/macOS
+
+- Symlinks work without special privileges
+- Hard links have same-filesystem restrictions
+- Junction type is ignored (treated as regular symlink)
+
+## Related
+
+- [File Operations](./file-operations.md)
+- [Error Types](./error-types.md)
