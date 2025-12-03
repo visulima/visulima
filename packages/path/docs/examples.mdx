@@ -1,0 +1,591 @@
+---
+title: Examples
+description: Real-world examples and common use cases for @visulima/path
+---
+
+This page provides real-world examples and common use cases for `@visulima/path`.
+
+## Table of Contents
+
+- [File System Operations](#file-system-operations)
+- [Module Resolution](#module-resolution)
+- [Build Tools Integration](#build-tools-integration)
+- [Path Aliasing](#path-aliasing)
+- [Cross-Platform Scripts](#cross-platform-scripts)
+- [File Processing](#file-processing)
+- [Configuration Management](#configuration-management)
+
+---
+
+## File System Operations
+
+### Reading Files with Resolved Paths
+
+```javascript
+import { readFileSync } from 'fs';
+import { resolve, join } from '@visulima/path';
+
+// Resolve path relative to current working directory
+const configPath = resolve('config', 'app.json');
+const config = JSON.parse(readFileSync(configPath, 'utf-8'));
+
+// Join paths from multiple sources
+const projectRoot = process.cwd();
+const dataPath = join(projectRoot, 'data', 'users.json');
+const users = JSON.parse(readFileSync(dataPath, 'utf-8'));
+```
+
+### Creating Directory Structures
+
+```javascript
+import { mkdirSync } from 'fs';
+import { join, dirname } from '@visulima/path';
+
+function ensureDirectory(filePath) {
+  const directory = dirname(filePath);
+  mkdirSync(directory, { recursive: true });
+}
+
+// Create nested directory structure
+const outputFile = join('dist', 'assets', 'images', 'logo.png');
+ensureDirectory(outputFile);
+```
+
+### Walking Directory Trees
+
+```javascript
+import { readdirSync, statSync } from 'fs';
+import { join, extname } from '@visulima/path';
+
+function* walkDirectory(dir, extension = null) {
+  const files = readdirSync(dir);
+  
+  for (const file of files) {
+    const filePath = join(dir, file);
+    const stat = statSync(filePath);
+    
+    if (stat.isDirectory()) {
+      yield* walkDirectory(filePath, extension);
+    } else if (!extension || extname(filePath) === extension) {
+      yield filePath;
+    }
+  }
+}
+
+// Find all TypeScript files
+for (const tsFile of walkDirectory('src', '.ts')) {
+  console.log(tsFile);
+}
+```
+
+---
+
+## Module Resolution
+
+### Dynamic Import Resolution
+
+```javascript
+import { resolve, join } from '@visulima/path';
+import { fileURLToPath } from 'url';
+import { dirname } from '@visulima/path';
+
+// Get current file's directory (ESM)
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+async function loadPlugin(pluginName) {
+  const pluginPath = resolve(__dirname, 'plugins', `${pluginName}.js`);
+  const plugin = await import(pluginPath);
+  return plugin;
+}
+
+// Load plugin dynamically
+const myPlugin = await loadPlugin('my-plugin');
+```
+
+### Require Path Resolution (CommonJS)
+
+```javascript
+const { resolve, join } = require('@visulima/path');
+
+function requireFromProject(modulePath) {
+  const projectRoot = process.cwd();
+  const fullPath = resolve(projectRoot, modulePath);
+  return require(fullPath);
+}
+
+// Load project module
+const config = requireFromProject('config/database.js');
+```
+
+### Package Entry Point Resolution
+
+```javascript
+import { readFileSync } from 'fs';
+import { join, resolve } from '@visulima/path';
+
+function resolvePackageMain(packagePath) {
+  const packageJsonPath = join(packagePath, 'package.json');
+  const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
+  
+  const mainFile = packageJson.main || 'index.js';
+  return resolve(packagePath, mainFile);
+}
+
+// Find package entry point
+const entryPoint = resolvePackageMain('./node_modules/some-package');
+```
+
+---
+
+## Build Tools Integration
+
+### Webpack Alias Configuration
+
+```javascript
+import { resolve } from '@visulima/path';
+import { normalizeAliases } from '@visulima/path/utils';
+
+// webpack.config.js
+export default {
+  resolve: {
+    alias: {
+      '@': resolve(__dirname, 'src'),
+      '@components': resolve(__dirname, 'src/components'),
+      '@utils': resolve(__dirname, 'src/utils'),
+      '@assets': resolve(__dirname, 'src/assets'),
+    }
+  }
+};
+```
+
+### Vite Configuration
+
+```javascript
+import { defineConfig } from 'vite';
+import { resolve } from '@visulima/path';
+
+export default defineConfig({
+  resolve: {
+    alias: {
+      '@': resolve(__dirname, './src'),
+      '@components': resolve(__dirname, './src/components'),
+      '@utils': resolve(__dirname, './src/utils'),
+    }
+  },
+  build: {
+    outDir: resolve(__dirname, 'dist'),
+    rollupOptions: {
+      input: {
+        main: resolve(__dirname, 'index.html'),
+        admin: resolve(__dirname, 'admin/index.html'),
+      }
+    }
+  }
+});
+```
+
+### Custom Build Script
+
+```javascript
+import { readFileSync, writeFileSync } from 'fs';
+import { join, basename, dirname, extname } from '@visulima/path';
+import { walkDirectory } from './walk-directory.js';
+
+// Build script that processes files
+async function buildProject(srcDir, outDir) {
+  for (const file of walkDirectory(srcDir)) {
+    const relativePath = relative(srcDir, file);
+    const outputPath = join(outDir, relativePath);
+    
+    // Ensure output directory exists
+    mkdirSync(dirname(outputPath), { recursive: true });
+    
+    // Transform based on file type
+    if (extname(file) === '.js') {
+      const content = await transformJS(readFileSync(file, 'utf-8'));
+      writeFileSync(outputPath, content);
+    } else {
+      copyFileSync(file, outputPath);
+    }
+    
+    console.log(`Built: ${relativePath}`);
+  }
+}
+
+buildProject('src', 'dist');
+```
+
+---
+
+## Path Aliasing
+
+### Project-Wide Path Aliases
+
+```javascript
+import { join } from '@visulima/path';
+import { 
+  normalizeAliases, 
+  resolveAlias, 
+  reverseResolveAlias 
+} from '@visulima/path/utils';
+
+// Define aliases for your project
+const aliases = normalizeAliases({
+  '@': join(process.cwd(), 'src'),
+  '@components': join(process.cwd(), 'src/components'),
+  '@utils': join(process.cwd(), 'src/utils'),
+  '@api': join(process.cwd(), 'src/api'),
+  '@styles': join(process.cwd(), 'src/styles'),
+  '@public': join(process.cwd(), 'public'),
+});
+
+// Resolve aliased imports
+function resolveImport(importPath) {
+  return resolveAlias(importPath, aliases);
+}
+
+// Usage in your code
+const buttonPath = resolveImport('@components/Button.tsx');
+console.log(buttonPath);
+// Output: /absolute/path/to/src/components/Button.tsx
+
+// Convert back for logging or display
+const displayPath = reverseResolveAlias(buttonPath, aliases);
+console.log(displayPath);
+// Output: @components/Button.tsx
+```
+
+### TypeScript Path Mapping
+
+```javascript
+import { resolve } from '@visulima/path';
+import { writeFileSync } from 'fs';
+
+// Generate tsconfig.json paths
+function generateTsConfigPaths(baseUrl, aliases) {
+  const paths = {};
+  
+  for (const [alias, target] of Object.entries(aliases)) {
+    const relativeTarget = relative(baseUrl, target);
+    paths[`${alias}/*`] = [`${relativeTarget}/*`];
+  }
+  
+  return paths;
+}
+
+const baseUrl = resolve(__dirname, 'src');
+const aliases = {
+  '@components': resolve(__dirname, 'src/components'),
+  '@utils': resolve(__dirname, 'src/utils'),
+  '@types': resolve(__dirname, 'src/types'),
+};
+
+const tsConfig = {
+  compilerOptions: {
+    baseUrl: './src',
+    paths: generateTsConfigPaths(baseUrl, aliases)
+  }
+};
+
+writeFileSync('tsconfig.json', JSON.stringify(tsConfig, null, 2));
+```
+
+---
+
+## Cross-Platform Scripts
+
+### File Copy Script
+
+```javascript
+import { copyFileSync, mkdirSync } from 'fs';
+import { join, dirname, relative } from '@visulima/path';
+
+function copyFiles(sourceDir, targetDir, files) {
+  for (const file of files) {
+    const sourcePath = join(sourceDir, file);
+    const targetPath = join(targetDir, file);
+    
+    // Create target directory if needed
+    mkdirSync(dirname(targetPath), { recursive: true });
+    
+    // Copy file
+    copyFileSync(sourcePath, targetPath);
+    console.log(`Copied: ${file}`);
+  }
+}
+
+// Works consistently on Windows, macOS, and Linux
+copyFiles('src/assets', 'dist/assets', [
+  'images/logo.png',
+  'fonts/Inter-Regular.woff2',
+  'styles/reset.css'
+]);
+```
+
+### Environment-Specific Configuration
+
+```javascript
+import { join, resolve } from '@visulima/path';
+import { isWindows } from '@visulima/path/utils';
+
+function getConfigPath(env) {
+  const configDir = resolve(__dirname, 'config');
+  const platform = isWindows() ? 'windows' : 'posix';
+  
+  return join(configDir, platform, `${env}.json`);
+}
+
+const configPath = getConfigPath(process.env.NODE_ENV || 'development');
+console.log(`Loading config from: ${configPath}`);
+```
+
+### Cross-Platform Shell Script Replacement
+
+```javascript
+import { execSync } from 'child_process';
+import { join, resolve } from '@visulima/path';
+import { isWindows } from '@visulima/path/utils';
+
+// Clean build directory (works on all platforms)
+function cleanBuild() {
+  const buildDir = resolve(__dirname, 'dist');
+  const command = isWindows() 
+    ? `if exist "${buildDir}" rmdir /s /q "${buildDir}"`
+    : `rm -rf "${buildDir}"`;
+  
+  execSync(command);
+  console.log('Build directory cleaned');
+}
+
+// Run build
+function build() {
+  cleanBuild();
+  
+  const outDir = resolve(__dirname, 'dist');
+  console.log(`Building to: ${outDir}`);
+  // ... build logic
+}
+
+build();
+```
+
+---
+
+## File Processing
+
+### Filtering Files by Type
+
+```javascript
+import { readdirSync } from 'fs';
+import { join, extname } from '@visulima/path';
+import { isBinaryPath } from '@visulima/path/utils';
+
+function getFilesByType(directory, type = 'text') {
+  const files = readdirSync(directory);
+  
+  return files
+    .map(file => join(directory, file))
+    .filter(file => {
+      const isBinary = isBinaryPath(file);
+      return type === 'binary' ? isBinary : !isBinary;
+    });
+}
+
+// Get all text files
+const textFiles = getFilesByType('src', 'text');
+console.log('Text files:', textFiles);
+
+// Get all binary files
+const binaryFiles = getFilesByType('assets', 'binary');
+console.log('Binary files:', binaryFiles);
+```
+
+### Batch File Renaming
+
+```javascript
+import { renameSync, readdirSync } from 'fs';
+import { join, basename, extname, dirname } from '@visulima/path';
+import { filename } from '@visulima/path/utils';
+
+function batchRename(directory, transform) {
+  const files = readdirSync(directory);
+  
+  for (const file of files) {
+    const oldPath = join(directory, file);
+    const name = filename(oldPath);
+    const ext = extname(oldPath);
+    const newName = transform(name) + ext;
+    const newPath = join(dirname(oldPath), newName);
+    
+    if (oldPath !== newPath) {
+      renameSync(oldPath, newPath);
+      console.log(`Renamed: ${file} -> ${newName}`);
+    }
+  }
+}
+
+// Convert filenames to kebab-case
+batchRename('src/components', (name) => 
+  name.replace(/([A-Z])/g, '-$1').toLowerCase().replace(/^-/, '')
+);
+```
+
+### File Content Processing
+
+```javascript
+import { readFileSync, writeFileSync } from 'fs';
+import { join, relative } from '@visulima/path';
+import { normalizeAliases, reverseResolveAlias } from '@visulima/path/utils';
+
+// Convert absolute imports to aliased imports in source files
+function convertImportsToAliases(sourceDir, aliases) {
+  const normalizedAliases = normalizeAliases(aliases);
+  
+  for (const file of walkDirectory(sourceDir, '.ts')) {
+    let content = readFileSync(file, 'utf-8');
+    let modified = false;
+    
+    // Find and replace absolute imports
+    content = content.replace(
+      /from ['"]([^'"]+)['"]/g, 
+      (match, importPath) => {
+        if (importPath.startsWith('.')) return match;
+        
+        const resolved = resolve(dirname(file), importPath);
+        const aliased = reverseResolveAlias(resolved, normalizedAliases);
+        
+        if (aliased !== resolved) {
+          modified = true;
+          return `from '${aliased}'`;
+        }
+        
+        return match;
+      }
+    );
+    
+    if (modified) {
+      writeFileSync(file, content);
+      console.log(`Updated: ${relative(sourceDir, file)}`);
+    }
+  }
+}
+
+const aliases = {
+  '@': join(process.cwd(), 'src'),
+  '@components': join(process.cwd(), 'src/components'),
+};
+
+convertImportsToAliases('src', aliases);
+```
+
+---
+
+## Configuration Management
+
+### Multi-Environment Config Loader
+
+```javascript
+import { readFileSync } from 'fs';
+import { join, resolve } from '@visulima/path';
+
+class ConfigLoader {
+  constructor(configDir) {
+    this.configDir = resolve(configDir);
+    this.cache = new Map();
+  }
+  
+  load(environment = 'development') {
+    if (this.cache.has(environment)) {
+      return this.cache.get(environment);
+    }
+    
+    // Load base config
+    const baseConfig = this.loadFile('base.json');
+    
+    // Load environment-specific config
+    const envConfig = this.loadFile(`${environment}.json`);
+    
+    // Merge configurations
+    const config = { ...baseConfig, ...envConfig };
+    
+    this.cache.set(environment, config);
+    return config;
+  }
+  
+  loadFile(filename) {
+    const filePath = join(this.configDir, filename);
+    try {
+      return JSON.parse(readFileSync(filePath, 'utf-8'));
+    } catch (error) {
+      return {};
+    }
+  }
+}
+
+// Usage
+const loader = new ConfigLoader('./config');
+const config = loader.load(process.env.NODE_ENV);
+```
+
+### Plugin System with Path Resolution
+
+```javascript
+import { join, resolve, basename } from '@visulima/path';
+import { readdirSync } from 'fs';
+import { filename } from '@visulima/path/utils';
+
+class PluginManager {
+  constructor(pluginDir) {
+    this.pluginDir = resolve(pluginDir);
+    this.plugins = new Map();
+  }
+  
+  async loadAll() {
+    const files = readdirSync(this.pluginDir);
+    
+    for (const file of files) {
+      if (!file.endsWith('.js')) continue;
+      
+      const pluginPath = join(this.pluginDir, file);
+      const pluginName = filename(pluginPath);
+      
+      try {
+        const plugin = await import(pluginPath);
+        this.plugins.set(pluginName, plugin.default || plugin);
+        console.log(`Loaded plugin: ${pluginName}`);
+      } catch (error) {
+        console.error(`Failed to load plugin ${pluginName}:`, error);
+      }
+    }
+  }
+  
+  get(name) {
+    return this.plugins.get(name);
+  }
+}
+
+// Usage
+const manager = new PluginManager('./plugins');
+await manager.loadAll();
+const myPlugin = manager.get('my-plugin');
+```
+
+---
+
+## See Also
+
+<Cards>
+  <Card title="API Reference" href="./api-reference">
+    Complete function reference
+  </Card>
+  <Card title="Utility Functions" href="./utility-functions">
+    Additional helper functions
+  </Card>
+  <Card title="Getting Started" href="./getting-started">
+    Basic usage guide
+  </Card>
+  <Card title="Migration Guide" href="./migration-guide">
+    Migrate from Node.js path
+  </Card>
+</Cards>

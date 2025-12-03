@@ -1,0 +1,540 @@
+---
+title: Utility Functions
+description: Additional helper functions that extend the standard path module
+---
+
+This page documents additional utility functions available in `@visulima/path/utils`. These functions extend the standard path module with commonly needed operations.
+
+## Importing Utilities
+
+<Tabs items={['ESM', 'CommonJS']}>
+  <Tab value="ESM">
+    ```typescript
+    import { 
+      filename, 
+      normalizeAliases,
+      resolveAlias,
+      reverseResolveAlias,
+      isRelative, 
+      isBinaryPath,
+      toPath,
+      isWindows
+    } from '@visulima/path/utils';
+    ```
+  </Tab>
+  <Tab value="CommonJS">
+    ```javascript
+    const { 
+      filename, 
+      normalizeAliases,
+      resolveAlias,
+      reverseResolveAlias,
+      isRelative, 
+      isBinaryPath,
+      toPath,
+      isWindows
+    } = require('@visulima/path/utils');
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## Functions
+
+### filename()
+
+Extracts the filename from a given path, excluding any directory paths and the file extension.
+
+**Signature:**
+
+```typescript
+filename(path: string): string
+```
+
+**Parameters:**
+
+- `path` (string): The full path of the file
+
+**Returns:** The filename without extension, or `undefined` if the filename cannot be extracted
+
+**Examples:**
+
+```javascript
+import { filename } from '@visulima/path/utils';
+
+filename('./myfile.html');
+// Returns: 'myfile'
+
+filename('/temp/myfile.html');
+// Returns: 'myfile'
+
+filename('C:\\temp\\myfile.html');
+// Returns: 'myfile'
+
+filename('test.html');
+// Returns: 'test'
+
+filename('C:\\temp\\');
+// Returns: undefined
+```
+
+<Callout>
+**Use Cases:**
+- Extracting module names from file paths
+- Generating identifiers from file paths
+- File processing where extension is not needed
+</Callout>
+
+---
+
+### isRelative()
+
+Determines whether a given path is relative.
+
+**Signature:**
+
+```typescript
+isRelative(path: string): boolean
+```
+
+**Parameters:**
+
+- `path` (string): The path to check
+
+**Returns:** `true` if the path is relative, `false` otherwise
+
+**Examples:**
+
+```javascript
+import { isRelative } from '@visulima/path/utils';
+
+isRelative('./example/path');
+// Returns: true
+
+isRelative('../example/path');
+// Returns: true
+
+isRelative('..');
+// Returns: true
+
+isRelative('/example/path');
+// Returns: false
+
+isRelative('C:\\example\\path');
+// Returns: false
+
+isRelative('example/path');
+// Returns: false (not explicitly relative)
+```
+
+**Notes:**
+- Returns `true` for paths starting with `./` or `../`
+- Returns `true` for the exact string `..`
+- Does not consider simple non-absolute paths as relative (e.g., `foo/bar` returns `false`)
+
+---
+
+### isBinaryPath()
+
+Determines whether a given path points to a binary file based on its extension.
+
+**Signature:**
+
+```typescript
+isBinaryPath(path: string): boolean
+```
+
+**Parameters:**
+
+- `path` (string): The file path to check
+
+**Returns:** `true` if the path has a binary file extension, `false` otherwise
+
+**Examples:**
+
+```javascript
+import { isBinaryPath } from '@visulima/path/utils';
+
+isBinaryPath('file.exe');
+// Returns: true
+
+isBinaryPath('file.dll');
+// Returns: true
+
+isBinaryPath('image.jpg');
+// Returns: true
+
+isBinaryPath('archive.zip');
+// Returns: true
+
+isBinaryPath('file.txt');
+// Returns: false
+
+isBinaryPath('script.js');
+// Returns: false
+
+isBinaryPath('FILE.EXE');
+// Returns: true (case-insensitive)
+
+isBinaryPath('file.tar.gz');
+// Returns: true
+```
+
+**Binary Extensions Detected:**
+
+The function checks against a comprehensive list of known binary file extensions including:
+- Executables: `.exe`, `.dll`, `.so`, `.dylib`
+- Images: `.jpg`, `.png`, `.gif`, `.bmp`, `.ico`, `.webp`
+- Archives: `.zip`, `.tar`, `.gz`, `.rar`, `.7z`
+- Media: `.mp3`, `.mp4`, `.avi`, `.mov`, `.wav`
+- Documents: `.pdf`, `.doc`, `.docx`, `.xls`, `.xlsx`
+- And many more...
+
+<Callout>
+**Use Cases:**
+- File upload validation
+- Build tool processing decisions
+- Git LFS configuration
+- Text editor file handling
+</Callout>
+
+---
+
+### normalizeAliases()
+
+Normalizes alias mappings, ensuring that more specific aliases are resolved before less specific ones. This prevents cyclic alias resolution.
+
+**Signature:**
+
+```typescript
+normalizeAliases(aliases: Record<string, string>): Record<string, string>
+```
+
+**Parameters:**
+
+- `aliases` (object): A set of alias mappings where each key is an alias and its value is the actual path
+
+**Returns:** A set of normalized alias mappings
+
+**Examples:**
+
+```javascript
+import { normalizeAliases } from '@visulima/path/utils';
+
+const aliases = normalizeAliases({
+  '@': '/root',
+  '@foo/bar': '@foo/bar/dist/index.mjs',
+  '@utils': '@/utils',
+  'bingpot': '@/bingpot/index.ts'
+});
+
+console.log(aliases);
+// Returns:
+// {
+//   '@': '/root',
+//   '@foo/bar': '@foo/bar/dist/index.mjs',
+//   '@utils': '/root/utils',
+//   'bingpot': '/root/bingpot/index.ts'
+// }
+```
+
+**Behavior:**
+- Sorts aliases from most specific to least specific
+- Resolves aliases that reference other aliases
+- Prevents circular references
+- Handles trailing slashes correctly
+
+**Use Cases:**
+- TypeScript path mapping configuration
+- Webpack alias setup
+- Module resolution configuration
+- Build tool configuration
+
+---
+
+### resolveAlias()
+
+Resolves a path string to its alias if applicable, otherwise returns the original path.
+
+**Signature:**
+
+```typescript
+resolveAlias(path: string, aliases: Record<string, string>): string
+```
+
+**Parameters:**
+
+- `path` (string): The path string to resolve
+- `aliases` (object): A set of alias mappings to use for resolution
+
+**Returns:** The resolved path string
+
+**Examples:**
+
+```javascript
+import { normalizeAliases, resolveAlias } from '@visulima/path/utils';
+
+const aliases = normalizeAliases({
+  '@': '/root',
+  '@components': '/root/src/components',
+  '@utils': '/root/src/utils',
+  '~': '/home/user',
+  '~/': '/home/user/project'
+});
+
+resolveAlias('@components/Button.tsx', aliases);
+// Returns: '/root/src/components/Button.tsx'
+
+resolveAlias('@utils/format.ts', aliases);
+// Returns: '/root/src/utils/format.ts'
+
+resolveAlias('~/src/index.ts', aliases);
+// Returns: '/home/user/project/src/index.ts'
+
+resolveAlias('no-alias/file.ts', aliases);
+// Returns: 'no-alias/file.ts' (unchanged)
+
+// Respects path separators
+resolveAlias('~assets/image.jpg', {
+  '~': '/root',
+  '~assets': '/root/some/dir'
+});
+// Returns: '/root/some/dir/image.jpg'
+```
+
+**Notes:**
+- Automatically normalizes Windows paths
+- Respects trailing slashes in alias definitions
+- Handles nested aliases correctly
+
+---
+
+### reverseResolveAlias()
+
+Converts an absolute path back to its aliased form. This is the reverse operation of `resolveAlias()`.
+
+**Signature:**
+
+```typescript
+reverseResolveAlias(path: string, aliases: Record<string, string>): string
+```
+
+**Parameters:**
+
+- `path` (string): The absolute path to convert
+- `aliases` (object): A set of alias mappings
+
+**Returns:** The aliased path string, or the original path if no alias matches
+
+**Examples:**
+
+```javascript
+import { normalizeAliases, reverseResolveAlias } from '@visulima/path/utils';
+
+const aliases = normalizeAliases({
+  '@': '/root',
+  '@components': '/root/src/components',
+  '~/': '/home/user/project'
+});
+
+reverseResolveAlias('/root/src/components/Button.tsx', aliases);
+// Returns: '@components/Button.tsx'
+
+reverseResolveAlias('/home/user/project/src/index.ts', aliases);
+// Returns: '~/src/index.ts'
+
+reverseResolveAlias('/other/path/file.ts', aliases);
+// Returns: '/other/path/file.ts' (no matching alias)
+
+// Respects path separators
+reverseResolveAlias('/root/some/assets/image.jpg', {
+  '~': '/root',
+  '~assets': '/root/some/assets'
+});
+// Returns: '~assets/image.jpg'
+```
+
+**Use Cases:**
+- Displaying shortened paths in logs
+- Converting absolute imports back to aliased imports
+- Path normalization in development tools
+- IDE path display
+
+---
+
+### toPath()
+
+Converts a URL or path string to a normalized path string.
+
+**Signature:**
+
+```typescript
+toPath(urlOrPath: URL | string): string
+```
+
+**Parameters:**
+
+- `urlOrPath` (URL | string): A URL object or path string to convert
+
+**Returns:** A normalized path string
+
+**Examples:**
+
+```javascript
+import { toPath } from '@visulima/path/utils';
+
+// Convert URL to path
+const url = new URL('file:///home/user/documents/file.txt');
+toPath(url);
+// Returns: '/home/user/documents/file.txt'
+
+// Normalize string path
+toPath('C:\\Users\\John\\file.txt');
+// Returns: 'C:/Users/John/file.txt'
+
+toPath('./relative/path');
+// Returns: './relative/path'
+
+// Import meta URL (in ESM)
+toPath(new URL('./config.json', import.meta.url));
+// Returns: absolute path to config.json
+```
+
+**Use Cases:**
+- Converting file:// URLs to file paths
+- Normalizing paths received from different sources
+- ESM module path resolution
+- Cross-platform path handling
+
+---
+
+### isWindows()
+
+Detects if the current platform uses Windows-style paths.
+
+**Signature:**
+
+```typescript
+isWindows(): boolean
+```
+
+**Returns:** `true` if running on Windows, `false` otherwise
+
+**Examples:**
+
+```javascript
+import { isWindows } from '@visulima/path/utils';
+
+if (isWindows()) {
+  console.log('Running on Windows');
+  // Handle Windows-specific behavior
+} else {
+  console.log('Running on POSIX system');
+  // Handle POSIX-specific behavior
+}
+```
+
+**Detection Logic:**
+
+Checks the following in order:
+1. `process.platform === 'win32'` or `process.platform === 'cygwin'`
+2. `process.env.OSTYPE` matches `msys` or `cygwin`
+
+**Use Cases:**
+- Conditional platform-specific code
+- Testing and debugging
+- System-dependent configuration
+- Platform detection in cross-platform applications
+
+**Note:** This function is automatically used by system-dependent functions prefixed with `sys` in future versions.
+
+---
+
+## Complete Example
+
+Here's a comprehensive example using multiple utility functions:
+
+```javascript
+import { join, resolve } from '@visulima/path';
+import { 
+  filename, 
+  isRelative, 
+  isBinaryPath,
+  normalizeAliases,
+  resolveAlias,
+  reverseResolveAlias,
+  toPath,
+  isWindows
+} from '@visulima/path/utils';
+
+// Setup project aliases
+const aliases = normalizeAliases({
+  '@': '/project/src',
+  '@components': '@/components',
+  '@utils': '@/utils',
+  '@assets': '@/assets'
+});
+
+// Process a file path
+const inputPath = '@components/Button/index.tsx';
+
+// Resolve the alias
+const absolutePath = resolveAlias(inputPath, aliases);
+console.log('Absolute:', absolutePath);
+// Output: /project/src/components/Button/index.tsx
+
+// Get filename without extension
+const name = filename(absolutePath);
+console.log('Filename:', name);
+// Output: index
+
+// Check if it's a binary file
+const isBinary = isBinaryPath(absolutePath);
+console.log('Is binary:', isBinary);
+// Output: false
+
+// Convert back to alias
+const aliased = reverseResolveAlias(absolutePath, aliases);
+console.log('Aliased:', aliased);
+// Output: @components/Button/index.tsx
+
+// Check platform
+if (isWindows()) {
+  console.log('Running on Windows');
+} else {
+  console.log('Running on POSIX system');
+}
+
+// Process multiple files
+const files = [
+  './relative/file.js',
+  '../parent/file.ts',
+  '/absolute/image.png',
+  '@utils/helper.js'
+];
+
+files.forEach(file => {
+  const resolved = isRelative(file) 
+    ? resolve(file)
+    : resolveAlias(file, aliases);
+    
+  console.log(`${file} -> ${resolved} (binary: ${isBinaryPath(file)})`);
+});
+```
+
+---
+
+## See Also
+
+<Cards>
+  <Card title="API Reference" href="./api-reference">
+    Core path module functions
+  </Card>
+  <Card title="Examples" href="./examples">
+    Real-world usage examples
+  </Card>
+  <Card title="Getting Started" href="./getting-started">
+    Basic usage guide and patterns
+  </Card>
+</Cards>
