@@ -23,7 +23,7 @@ describe("color space", () => {
     it(`should convert true-color to ANSI 16 color space`, async () => {
         expect.assertions(1);
 
-        const { green, hex } = await import("../../dist/index.server");
+        const { green, hex } = await import("../../dist/index.server.mjs");
 
         const received = hex("#00c200")`foo bar`;
         const expected = green`foo bar`;

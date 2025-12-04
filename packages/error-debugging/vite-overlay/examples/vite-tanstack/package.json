@@ -13,8 +13,8 @@
         "@tanstack/react-router": "^1.139.14",
         "@tanstack/react-router-devtools": "^1.139.14",
         "@tanstack/router-plugin": "^1.139.14",
-        "react": "^19.2.0",
-        "react-dom": "^19.2.0",
+        "react": "^19.2.1",
+        "react-dom": "^19.2.1",
         "tailwindcss": "^4.1.17"
     },
     "devDependencies": {
