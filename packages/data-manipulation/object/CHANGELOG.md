@@ -1,3 +1,18 @@
+## @visulima/object [3.0.0-alpha.1](https://github.com/visulima/visulima/compare/@visulima/object@2.0.4...@visulima/object@3.0.0-alpha.1) (2025-12-04)
+
+### ⚠ BREAKING CHANGES
+
+* change min node version to 22.13
+
+### Bug Fixes
+
+* update Node.js engine version requirement to >=22.13 in multiple package.json files for improved compatibility ([b828e9a](https://github.com/visulima/visulima/commit/b828e9aeaebfc798eecddccd90e6ec7560c6d36a))
+
+### Miscellaneous Chores
+
+* moved all packages into groups ([0615e9d](https://github.com/visulima/visulima/commit/0615e9d14a8a886e11da529ce150cf31ca973c10))
+* update dependencies across multiple packages to improve compatibility and performance, including upgrading `@anolilab/semantic-release-pnpm` and `@anolilab/semantic-release-preset` to versions 3.2.0 and 12.1.0 respectively, and updating `react`, `react-dom`, and `next` versions to 19.2.1 and 16.0.7 in various package.json files ([aee8fcd](https://github.com/visulima/visulima/commit/aee8fcd796ae9b8d055903260e7150996ea9f53d))
+
 ## @visulima/object [2.0.4](https://github.com/visulima/visulima/compare/@visulima/object@2.0.3...@visulima/object@2.0.4) (2025-11-13)
 
 ### Bug Fixes
