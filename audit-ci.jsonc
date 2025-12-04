@@ -5,14 +5,10 @@
     "package-manager": "pnpm",
     "report-type": "important",
     "allowlist": [
-        // This advisory is for a package that use the cnpm as a dev dependency for tests.
-        "GHSA-p8p7-x288-28g6|packages/package > cnpm@7.1.1 > *",
-        "GHSA-p6mc-m468-83gw|packages__redact____bench__>@qiwi/masker>@qiwi/masker-schema>lodash.set",
-        // This advisory is for a package that use the cnpm as a dev dependency for tests.
-        "GHSA-p6mc-m468-83gw|packages/redact/__bench__ > @qiwi/masker@2.0.1 > @qiwi/masker-schema@2.0.1 > lodash.set@4.3.2",
+        "GHSA-p6mc-m468-83gw|packages__data-manipulation__redact____bench__>@qiwi/masker>@qiwi/masker-schema>lodash.set",
         // This advisory is for a package that use the fast-redact as a dev dependency for tests.
-        "GHSA-ffrw-9mx8-89p8|packages__redact____bench__>fast-redact",
+        "GHSA-ffrw-9mx8-89p8|packages__data-manipulation__redact____bench__>fast-redact",
         // This advisory is for a package that use mjml. see https://github.com/mjmlio/mjml/issues/2589
-        "GHSA-pfq8-rq6v-vf5m|packages__email>mjml>mjml-cli>html-minifier"
+        "GHSA-pfq8-rq6v-vf5m|packages__email__email>mjml>mjml-cli>html-minifier"
     ]
 }
