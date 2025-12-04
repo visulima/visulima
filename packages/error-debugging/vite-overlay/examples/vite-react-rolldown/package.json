@@ -5,8 +5,8 @@
     "type": "module",
     "scripts": {
         "build": "tsc -b && vite build",
-        "lint": "eslint . --cache --concurrency auto",
         "dev": "vite",
+        "lint": "eslint . --cache --concurrency auto",
         "preview": "vite preview"
     },
     "dependencies": {

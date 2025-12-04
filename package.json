@@ -10,12 +10,6 @@
         "apps/*"
     ],
     "scripts": {
-        "lint:eslint:disposable-email-domains": "pnpm --filter \"disposable-email-domains\" run lint:eslint",
-        "lint:eslint:fix:disposable-email-domains": "pnpm --filter \"disposable-email-domains\" run lint:eslint:fix",
-        "lint:types:disposable-email-domains": "pnpm --filter \"disposable-email-domains\" run lint:types",
-        "test:disposable-email-domains": "pnpm --filter \"disposable-email-domains\" run test",
-        "test:coverage:disposable-email-domains": "pnpm --filter \"disposable-email-domains\" run test:coverage",
-        "test:ui:disposable-email-domains": "pnpm --filter \"disposable-email-domains\" run test:ui",
         "audit": "audit-ci --config ./audit-ci.jsonc",
         "bench:cerebro": "pnpm --filter \"cerebro-bench\" run test:bench",
         "bench:colorize": "pnpm --filter \"colorize-bench\" run test:bench",
@@ -58,6 +52,7 @@
         "lint:eslint:connect": "pnpm --filter \"connect\" run lint:eslint",
         "lint:eslint:crud": "pnpm --filter \"crud\" run lint:eslint",
         "lint:eslint:deep-clone": "pnpm --filter \"deep-clone\" run lint:eslint",
+        "lint:eslint:disposable-email-domains": "pnpm --filter \"disposable-email-domains\" run lint:eslint",
         "lint:eslint:error": "pnpm --filter \"error\" run lint:eslint",
         "lint:eslint:error-handler": "pnpm --filter \"error-handler\" run lint:eslint",
         "lint:eslint:fix": "nx graph --file=/tmp/discardgraph.json 2>/dev/null && nx run-many --target=lint:eslint:fix --all --parallel",
@@ -71,6 +66,7 @@
         "lint:eslint:fix:connect": "pnpm --filter \"connect\" run lint:eslint:fix",
         "lint:eslint:fix:crud": "pnpm --filter \"crud\" run lint:eslint:fix",
         "lint:eslint:fix:deep-clone": "pnpm --filter \"deep-clone\" run lint:eslint:fix",
+        "lint:eslint:fix:disposable-email-domains": "pnpm --filter \"disposable-email-domains\" run lint:eslint:fix",
         "lint:eslint:fix:error": "pnpm --filter \"error\" run lint:eslint:fix",
         "lint:eslint:fix:error-handler": "pnpm --filter \"error-handler\" run lint:eslint:fix",
         "lint:eslint:fix:fmt": "pnpm --filter \"fmt\" run lint:eslint:fix",
@@ -132,6 +128,7 @@
         "lint:types:connect": "pnpm --filter \"connect\" run lint:types",
         "lint:types:crud": "pnpm --filter \"crud\" run lint:types",
         "lint:types:deep-clone": "pnpm --filter \"deep-clone\" run lint:types",
+        "lint:types:disposable-email-domains": "pnpm --filter \"disposable-email-domains\" run lint:types",
         "lint:types:error": "pnpm --filter \"error\" run lint:types",
         "lint:types:error-handler": "pnpm --filter \"error-handler\" run lint:types",
         "lint:types:fmt": "pnpm --filter \"fmt\" run lint:types",
@@ -184,6 +181,7 @@
         "test:coverage:connect": "pnpm --filter \"connect\" run test:coverage",
         "test:coverage:crud": "pnpm --filter \"crud\" run test:coverage",
         "test:coverage:deep-clone": "pnpm --filter \"deep-clone\" run test:coverage",
+        "test:coverage:disposable-email-domains": "pnpm --filter \"disposable-email-domains\" run test:coverage",
         "test:coverage:error": "pnpm --filter \"error\" run test:coverage",
         "test:coverage:error-handler": "pnpm --filter \"error-handler\" run test:coverage",
         "test:coverage:fmt": "pnpm --filter \"fmt\" run test:coverage",
@@ -206,6 +204,7 @@
         "test:coverage:vite-overlay": "pnpm --filter \"vite-overlay\" run test:coverage",
         "test:crud": "pnpm --filter \"crud\" run test",
         "test:deep-clone": "pnpm --filter \"deep-clone\" run test",
+        "test:disposable-email-domains": "pnpm --filter \"disposable-email-domains\" run test",
         "test:error": "pnpm --filter \"error\" run test",
         "test:error-handler": "pnpm --filter \"error-handler\" run test",
         "test:fmt": "pnpm --filter \"fmt\" run test",
@@ -235,6 +234,7 @@
         "test:ui:connect": "pnpm --filter \"connect\" run test:ui",
         "test:ui:crud": "pnpm --filter \"crud\" run test:ui",
         "test:ui:deep-clone": "pnpm --filter \"deep-clone\" run test:ui",
+        "test:ui:disposable-email-domains": "pnpm --filter \"disposable-email-domains\" run test:ui",
         "test:ui:error": "pnpm --filter \"error\" run test:ui",
         "test:ui:error-handler": "pnpm --filter \"error-handler\" run test:ui",
         "test:ui:fmt": "pnpm --filter \"fmt\" run test:ui",
@@ -297,6 +297,6 @@
     },
     "packageManager": "pnpm@10.24.0",
     "engines": {
-        "node": ">=22.12 <=25.x"
+        "node": ">=22.13 <=25.x"
     }
 }

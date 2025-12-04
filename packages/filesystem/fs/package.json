@@ -130,8 +130,8 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "type-fest": "^5.3.0",
-        "@visulima/path": "2.0.5"
+        "@visulima/path": "2.0.5",
+        "type-fest": "^5.3.0"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "^16.4.4",
@@ -170,7 +170,7 @@
         }
     },
     "engines": {
-        "node": ">=22.12 <=25.x"
+        "node": ">=22.13 <=25.x"
     },
     "os": [
         "darwin",

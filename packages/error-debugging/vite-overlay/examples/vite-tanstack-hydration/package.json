@@ -4,8 +4,8 @@
     "sideEffects": false,
     "type": "module",
     "scripts": {
-        "dev": "vite dev",
         "build": "vite build && tsc --noEmit",
+        "dev": "vite dev",
         "start": "vite start"
     },
     "dependencies": {
