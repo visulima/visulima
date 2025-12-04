@@ -547,7 +547,7 @@ packages:
         it("should throw an error when resolveCatalogs is true but input is a JSON string", async () => {
             expect.assertions(2);
 
-            const packageFile = "{\"name\": \"test-package\", \"version\": \"1.0.0\"}";
+            const packageFile = `{"name": "test-package", "version": "1.0.0"}`;
 
             try {
                 await parsePackageJson(packageFile, { resolveCatalogs: true });
@@ -584,7 +584,7 @@ packages:
         it("should throw an error synchronously when resolveCatalogs is true but input is a JSON string", () => {
             expect.assertions(2);
 
-            const packageFile = "{\"name\": \"test-package\", \"version\": \"1.0.0\"}";
+            const packageFile = `{"name": "test-package", "version": "1.0.0"}`;
 
             try {
                 parsePackageJsonSync(packageFile, { resolveCatalogs: true });
@@ -896,6 +896,7 @@ packages:
                 argv: [],
                 env: { CI: false },
                 stdout: { isTTY: true },
+                versions: { ...process.versions },
             });
 
             const packageJson = {
@@ -923,6 +924,7 @@ packages:
                 argv: [],
                 env: { CI: false },
                 stdout: { isTTY: true },
+                versions: { ...process.versions },
             });
 
             const packageJson = {
@@ -954,6 +956,7 @@ packages:
                 argv: [],
                 env: { CI: false },
                 stdout: { isTTY: true },
+                versions: { ...process.versions },
             });
 
             const packageJson = {
@@ -981,6 +984,7 @@ packages:
                 argv: [],
                 env: { CI: true },
                 stdout: { isTTY: true },
+                versions: { ...process.versions },
             });
 
             const packageJson = {
@@ -1001,6 +1005,7 @@ packages:
                 argv: [],
                 env: { CI: false },
                 stdout: { isTTY: false },
+                versions: { ...process.versions },
             });
 
             const packageJson = {
@@ -1696,7 +1701,7 @@ version: 2.0.0`;
             it("should not cache JSON string inputs", async () => {
                 expect.assertions(3);
 
-                const packageJsonString = "{\"name\": \"test-package\", \"version\": \"1.0.0\"}";
+                const packageJsonString = `{"name": "test-package", "version": "1.0.0"}`;
 
                 const cache = new Map<string, NormalizedPackageJson>();
 

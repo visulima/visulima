@@ -22,8 +22,7 @@ describe("usage `@visulima/package` npm package", () => {
         });
     });
 
-    // TODO: Find out why vitest, check for deno on a dynamic import
-    it.todo(`should work as ESM package`, async () => {
+    it(`should work as ESM package`, async () => {
         expect.assertions(1);
 
         const filename = join(__dirname, "..", "..", "__fixtures__/package/mjs/test.mjs");
