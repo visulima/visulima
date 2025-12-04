@@ -207,7 +207,7 @@
         "secretlint": "11.2.5",
         "semantic-release": "25.0.2",
         "typescript": "5.9.3",
-        "vitest": "4.0.14"
+        "vitest": "4.0.15"
     },
     "engines": {
         "node": ">=22.12 <=25.x"

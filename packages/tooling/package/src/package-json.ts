@@ -541,7 +541,7 @@ export const hasPackageJsonAnyDependency = (packageJson: NormalizedPackageJson, 
     const devDependencies = getProperty(packageJson, "devDependencies", {});
     const peerDependencies = getProperty(packageJson, "peerDependencies", {});
 
-    const allDependencies = { ...dependencies, ...devDependencies, ...options?.peerDeps === false ? {} : peerDependencies };
+    const allDependencies = { ...dependencies, ...devDependencies, ...(options?.peerDeps === false ? {} : peerDependencies) };
 
     for (const argument of arguments_) {
         if (hasProperty(allDependencies, argument)) {
@@ -595,9 +595,9 @@ export const ensurePackages = async (
 
     for (const packageName of packages) {
         if (
-            (config.deps && hasProperty(dependencies, packageName))
-            || (config.devDeps && hasProperty(devDependencies, packageName))
-            || (config.peerDeps && hasProperty(peerDependencies, packageName))
+            (config.deps && hasProperty(dependencies, packageName)) ||
+            (config.devDeps && hasProperty(devDependencies, packageName)) ||
+            (config.peerDeps && hasProperty(peerDependencies, packageName))
         ) {
             continue;
         }

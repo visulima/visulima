@@ -13,6 +13,7 @@ describe("color space", () => {
     beforeEach(() => {
         vi.stubGlobal("process", {
             env: { FORCE_COLOR: "1" },
+            versions: { ...process.versions },
         });
     });
 
