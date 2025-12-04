@@ -7,5 +7,5 @@
         "storage",
         "type:package"
     ],
-    "implicitDependencies": ["pagination"]
+    "implicitDependencies": ["pagination", "humanizer", "path", "fs"]
 }
