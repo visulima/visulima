@@ -6,9 +6,14 @@
         "visulima",
         "disposable-email-domains"
     ],
-    "author": {
-        "name": "Daniel Bannert",
-        "email": "d.bannert@anolilab.de"
+    "homepage": "https://visulima.com/packages/disposable-email-domains",
+    "bugs": {
+        "url": "https://github.com/visulima/visulima/issues"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/visulima/visulima.git",
+        "directory": "packages/email/disposable-email-domains"
     },
     "funding": [
         {
@@ -20,8 +25,11 @@
             "url": "https://anolilab.com/support"
         }
     ],
-    "homepage": "https://visulima.com/packages/disposable-email-domains",
     "license": "MIT",
+    "author": {
+        "name": "Daniel Bannert",
+        "email": "d.bannert@anolilab.de"
+    },
     "sideEffects": false,
     "type": "module",
     "exports": {
@@ -39,20 +47,12 @@
         "README.md",
         "CHANGELOG.md"
     ],
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/visulima/visulima.git",
-        "directory": "packages/email/disposable-email-domains"
-    },
-    "bugs": {
-        "url": "https://github.com/visulima/visulima/issues"
-    },
     "scripts": {
         "build": "packem build --development && pnpm run generate:domains",
         "build:prod": "packem build --production && pnpm run generate:domains",
         "clean": "rimraf node_modules dist .eslintcache",
-        "generate:domains": "node ./scripts/sync-domains.js",
         "dev": "pnpm run build --watch",
+        "generate:domains": "node ./scripts/sync-domains.js",
         "lint:attw": "attw --pack",
         "lint:eslint": "eslint .",
         "lint:eslint:fix": "eslint . --cache --concurrency auto --fix",
@@ -90,7 +90,7 @@
         "vitest": "^4.0.15"
     },
     "engines": {
-        "node": ">=22.12 <=25.x"
+        "node": ">=22.13 <=25.x"
     },
     "publishConfig": {
         "access": "public",

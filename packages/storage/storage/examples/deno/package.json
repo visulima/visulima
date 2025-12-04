@@ -1,8 +1,8 @@
 {
     "name": "upload_example_deno",
     "version": "1.0.0",
-    "description": "Deno example showcasing Visulima Upload with fetch() method",
     "private": true,
+    "description": "Deno example showcasing Visulima Upload with fetch() method",
     "scripts": {
         "dev": "deno run --allow-net --allow-read --allow-write --allow-env index.ts",
         "start": "deno run --allow-net --allow-read --allow-write --allow-env index.ts"

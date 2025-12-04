@@ -1,13 +1,13 @@
 {
     "name": "vite_overlay_vite-svelte",
-    "private": true,
     "version": "0.0.0",
+    "private": true,
     "type": "module",
     "scripts": {
-        "dev": "vite",
         "build": "vite build",
-        "preview": "vite preview",
-        "check": "svelte-check --tsconfig ./tsconfig.app.json && tsc -p tsconfig.node.json"
+        "check": "svelte-check --tsconfig ./tsconfig.app.json && tsc -p tsconfig.node.json",
+        "dev": "vite",
+        "preview": "vite preview"
     },
     "devDependencies": {
         "@sveltejs/vite-plugin-svelte": "^6.2.1",

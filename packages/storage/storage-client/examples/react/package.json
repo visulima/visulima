@@ -5,8 +5,8 @@
     "type": "module",
     "scripts": {
         "build": "tsc && vite build",
-        "lint": "eslint .",
         "dev": "vite",
+        "lint": "eslint .",
         "preview": "vite preview"
     },
     "dependencies": {

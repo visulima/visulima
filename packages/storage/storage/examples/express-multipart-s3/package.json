@@ -14,8 +14,8 @@
         "@aws-sdk/types": "^3.936.0",
         "@visulima/storage": "workspace:*",
         "aws-crt": "^1.27.5",
-        "cors": "2.8.5",
         "copy-file": "^11.1.0",
+        "cors": "2.8.5",
         "dotenv": "^17.2.3",
         "express": "^5.2.1",
         "winston": "^3.18.3"
