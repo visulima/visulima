@@ -6,7 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { esc } from "../helpers";
 
-const testDir = dirname(fileURLToPath(import.meta.url));
+const testDirectory = dirname(fileURLToPath(import.meta.url));
 const require = createRequire(import.meta.url);
 
 describe("color space", () => {
@@ -35,8 +35,8 @@ describe("color space", () => {
     it(`should convert true-color to ANSI 256 color space (cjs)`, () => {
         expect.assertions(1);
 
-        const distPath = join(testDir, "../../dist/index.server.cjs");
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const distPath = join(testDirectory, "../../dist/index.server.cjs");
+        // eslint-disable-next-line import/no-dynamic-require
         const { ansi256: ansi256Cjs, hex: hexCjs } = require(distPath);
 
         const received = hexCjs("#00c200")`foo bar`;
