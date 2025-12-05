@@ -12,6 +12,23 @@
 
 * moved all packages into groups ([0615e9d](https://github.com/visulima/visulima/commit/0615e9d14a8a886e11da529ce150cf31ca973c10))
 * **release:** @visulima/storage-client@1.0.0-alpha.1 [skip ci]\n\n## @visulima/storage-client 1.0.0-alpha.1 (2025-12-04) ([d2baf1c](https://github.com/visulima/visulima/commit/d2baf1cb65b9c3bc2b892c91eb25f2097a8b52b9))
+* **release:** @visulima/storage-client@1.0.0-alpha.1 [skip ci]\n\n## @visulima/storage-client 1.0.0-alpha.1 (2025-12-05) ([719c655](https://github.com/visulima/visulima/commit/719c655552f3543f7cf787f676043efec314692a))
+* update dependencies across multiple packages to improve compatibility and performance, including upgrading `@anolilab/semantic-release-pnpm` and `@anolilab/semantic-release-preset` to versions 3.2.0 and 12.1.0 respectively, and updating `react`, `react-dom`, and `next` versions to 19.2.1 and 16.0.7 in various package.json files ([aee8fcd](https://github.com/visulima/visulima/commit/aee8fcd796ae9b8d055903260e7150996ea9f53d))
+
+## @visulima/storage-client 1.0.0-alpha.1 (2025-12-05)
+
+### ⚠ BREAKING CHANGES
+
+* change min node version to 22.13
+
+### Bug Fixes
+
+* update Node.js engine version requirement to >=22.13 in multiple package.json files for improved compatibility ([b828e9a](https://github.com/visulima/visulima/commit/b828e9aeaebfc798eecddccd90e6ec7560c6d36a))
+
+### Miscellaneous Chores
+
+* moved all packages into groups ([0615e9d](https://github.com/visulima/visulima/commit/0615e9d14a8a886e11da529ce150cf31ca973c10))
+* **release:** @visulima/storage-client@1.0.0-alpha.1 [skip ci]\n\n## @visulima/storage-client 1.0.0-alpha.1 (2025-12-04) ([d2baf1c](https://github.com/visulima/visulima/commit/d2baf1cb65b9c3bc2b892c91eb25f2097a8b52b9))
 * update dependencies across multiple packages to improve compatibility and performance, including upgrading `@anolilab/semantic-release-pnpm` and `@anolilab/semantic-release-preset` to versions 3.2.0 and 12.1.0 respectively, and updating `react`, `react-dom`, and `next` versions to 19.2.1 and 16.0.7 in various package.json files ([aee8fcd](https://github.com/visulima/visulima/commit/aee8fcd796ae9b8d055903260e7150996ea9f53d))
 
 ## @visulima/storage-client 1.0.0-alpha.1 (2025-12-04)
