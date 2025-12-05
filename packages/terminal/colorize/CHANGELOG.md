@@ -1,3 +1,23 @@
+## @visulima/colorize [2.0.0-alpha.1](https://github.com/visulima/visulima/compare/@visulima/colorize@1.4.29...@visulima/colorize@2.0.0-alpha.1) (2025-12-05)
+
+### ⚠ BREAKING CHANGES
+
+* change min node version to 22.13
+
+### Bug Fixes
+
+* update Node.js engine version requirement to >=22.13 in multiple package.json files for improved compatibility ([b828e9a](https://github.com/visulima/visulima/commit/b828e9aeaebfc798eecddccd90e6ec7560c6d36a))
+
+### Styles
+
+* cs fix ([3ec237b](https://github.com/visulima/visulima/commit/3ec237b85eb4f83801d2c3f73a19e7107778dd5d))
+
+### Miscellaneous Chores
+
+* moved all packages into groups ([0615e9d](https://github.com/visulima/visulima/commit/0615e9d14a8a886e11da529ce150cf31ca973c10))
+* update dependencies across multiple packages to improve compatibility and performance, including upgrading `@anolilab/semantic-release-pnpm` and `@anolilab/semantic-release-preset` to versions 3.2.0 and 12.1.0 respectively, and updating `react`, `react-dom`, and `next` versions to 19.2.1 and 16.0.7 in various package.json files ([aee8fcd](https://github.com/visulima/visulima/commit/aee8fcd796ae9b8d055903260e7150996ea9f53d))
+* upgrade `vitest` version to 4.0.15 in multiple package.json files and update lockfile for improved compatibility; adjust test cases for ESM package support in tooling tests ([0fba407](https://github.com/visulima/visulima/commit/0fba407e08283ba8c1c9488f99ca1f9ff676c4cf))
+
 ## @visulima/colorize [1.4.29](https://github.com/visulima/visulima/compare/@visulima/colorize@1.4.28...@visulima/colorize@1.4.29) (2025-11-13)
 
 ### Bug Fixes
