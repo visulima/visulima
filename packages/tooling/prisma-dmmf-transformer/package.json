@@ -1,6 +1,6 @@
 {
     "name": "@visulima/prisma-dmmf-transformer",
-    "version": "3.0.0-alpha.1",
+    "version": "3.0.0-alpha.2",
     "description": "A generator for Prisma to generate a valid JSON Schema v7.",
     "keywords": [
         "anolilab",
