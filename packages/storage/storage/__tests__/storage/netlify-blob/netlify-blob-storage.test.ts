@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, expectTypeOf, it, vi } from "vitest";
 
 import NetlifyBlobStorage from "../../../src/storage/netlify-blob/netlify-blob-storage";
 import type { NetlifyBlobStorageOptions } from "../../../src/storage/netlify-blob/types";
@@ -121,8 +121,8 @@ describe(NetlifyBlobStorage, () => {
             vi.spyOn(storage, "getMeta").mockResolvedValue({
                 ...metafile,
                 metadata: {
-                    name: "testfile.mp4",
                     mimeType: "video/mp4",
+                    name: "testfile.mp4",
                 },
             } as never);
 
@@ -146,7 +146,7 @@ describe(NetlifyBlobStorage, () => {
         });
 
         it("should handle TTL option and set expiration timestamp during update", async () => {
-            expect.assertions(4);
+            expect.assertions(3);
 
             // Mock getMeta to return existing file metadata
             vi.spyOn(storage, "getMeta").mockResolvedValue({
@@ -159,7 +159,8 @@ describe(NetlifyBlobStorage, () => {
             const updatedFile = await storage.update({ id: metafile.id }, { ttl: "2h" });
 
             expect(updatedFile.expiredAt).toBeDefined();
-            expect(typeof updatedFile.expiredAt).toBe("number");
+
+            expectTypeOf(updatedFile.expiredAt).toBeNumber();
 
             // TTL should be converted to expiredAt timestamp
             const expectedExpiry = Date.now() + 2 * 60 * 60 * 1000; // 2 hours in ms
@@ -172,6 +173,7 @@ describe(NetlifyBlobStorage, () => {
             expect.assertions(1);
 
             const onUpdateSpy = vi.fn();
+
             storage.onUpdate = onUpdateSpy;
 
             // Mock getMeta to return existing file metadata

@@ -37,7 +37,7 @@ export const findPackageRoot = async (cwd?: URL | string): Promise<string> => {
     }
 
     const gitConfig = await findUp(".git/config", {
-        ...(cwd && { cwd }),
+        ...cwd && { cwd },
         type: "file",
     });
 
@@ -46,7 +46,7 @@ export const findPackageRoot = async (cwd?: URL | string): Promise<string> => {
     }
 
     const filePath = await findUp(packageJsonMatcher, {
-        ...(cwd && { cwd }),
+        ...cwd && { cwd },
         type: "file",
     });
 
@@ -67,7 +67,7 @@ export const findPackageRootSync = (cwd?: URL | string): string => {
     }
 
     const gitConfig = findUpSync(".git/config", {
-        ...(cwd && { cwd }),
+        ...cwd && { cwd },
         type: "file",
     });
 
@@ -76,7 +76,7 @@ export const findPackageRootSync = (cwd?: URL | string): string => {
     }
 
     const filePath = findUpSync(packageJsonMatcher, {
-        ...(cwd && { cwd }),
+        ...cwd && { cwd },
         type: "file",
     });
 

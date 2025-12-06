@@ -1,15 +1,24 @@
-<div align="center">
-  <h3>Enhanced Error Overlay for Vite</h3>
-  <p>
-    A powerful development tool that provides rich error displays with source mapping, cause chain navigation, and intelligent solutions for Vite applications.
-  </p>
-</div>
+<!-- START_PACKAGE_OG_IMAGE_PLACEHOLDER -->
+
+<a href="https://www.anolilab.com/open-source" align="center">
+
+  <img src="__assets__/package-og.svg" alt="vite-overlay" />
+
+</a>
+
+<h3 align="center">Improved vite overlay</h3>
+
+<!-- END_PACKAGE_OG_IMAGE_PLACEHOLDER -->
 
 <br />
 
 <div align="center">
 
-[![typescript-image]][typescript-url] [![npm-image]][npm-url] [![license-image]][license-url]
+[![typescript-image][typescript-badge]][typescript-url]
+[![mit licence][license-badge]][license]
+[![npm downloads][npm-downloads-badge]][npm-downloads]
+[![Chat][chat-badge]][chat]
+[![PRs Welcome][prs-welcome-badge]][prs-welcome]
 
 </div>
 
@@ -129,19 +138,19 @@ export default defineConfig({
 
 #### Options
 
-| Option                    | Type               | Default     | Description                                                              |
-| ------------------------- | ------------------ | ----------- | ------------------------------------------------------------------------ |
-| `forwardConsole`          | `boolean`          | `true`      | Enable/disable client-side runtime error logging and overlay display     |
-| `forwardedConsoleMethods` | `string[]`         | `["error"]` | Array of console method names to intercept and forward to overlay        |
-| `reactPluginName`         | `string`           | `undefined` | Custom React plugin name for detection (useful for custom React plugins) |
-| `vuePluginName`           | `string`           | `undefined` | Custom Vue plugin name for detection (useful for custom Vue plugins)     |
-| `showBallonButton`        | `boolean`          | `true`      | Whether to show the floating balloon button for error navigation         |
-| `overlay`                 | `OverlayConfig`    | `undefined` | Overlay configuration options                                            |
-| `overlay.balloon`         | `BalloonConfig`    | `undefined` | Balloon button configuration                                             |
-| `overlay.balloon.style`  | `string \| CSS.Properties` | `undefined` | Balloon button styles (string or CSS.Properties object)                 |
+| Option                    | Type                       | Default     | Description                                                                      |
+| ------------------------- | -------------------------- | ----------- | -------------------------------------------------------------------------------- |
+| `forwardConsole`          | `boolean`                  | `true`      | Enable/disable client-side runtime error logging and overlay display             |
+| `forwardedConsoleMethods` | `string[]`                 | `["error"]` | Array of console method names to intercept and forward to overlay                |
+| `reactPluginName`         | `string`                   | `undefined` | Custom React plugin name for detection (useful for custom React plugins)         |
+| `vuePluginName`           | `string`                   | `undefined` | Custom Vue plugin name for detection (useful for custom Vue plugins)             |
+| `showBallonButton`        | `boolean`                  | `true`      | Whether to show the floating balloon button for error navigation                 |
+| `overlay`                 | `OverlayConfig`            | `undefined` | Overlay configuration options                                                    |
+| `overlay.balloon`         | `BalloonConfig`            | `undefined` | Balloon button configuration                                                     |
+| `overlay.balloon.style`   | `string \| CSS.Properties` | `undefined` | Balloon button styles (string or CSS.Properties object)                          |
 | `overlay.customCSS`       | `string \| CSS.Properties` | `undefined` | Custom CSS to inject for styling customization (string or CSS.Properties object) |
-| `solutionFinders`         | `SolutionFinder[]` | `[]`        | Array of custom solution finder functions for enhanced error analysis    |
-| `logClientRuntimeError`   | `boolean`          | `undefined` | **@deprecated** Use `forwardConsole` instead                             |
+| `solutionFinders`         | `SolutionFinder[]`         | `[]`        | Array of custom solution finder functions for enhanced error analysis            |
+| `logClientRuntimeError`   | `boolean`                  | `undefined` | **@deprecated** Use `forwardConsole` instead                                     |
 
 ## Error Handling
 
@@ -458,13 +467,10 @@ pnpm install
 - [Daniel Bannert](https://github.com/prisis)
 - [All Contributors](https://github.com/visulima/visulima/graphs/contributors)
 
+## Made with ❤️ at Anolilab
+
+This is an open source project and will always remain free to use. If you think it's cool, please star it 🌟. [Anolilab](https://www.anolilab.com/open-source) is a Development and AI Studio. Contact us at [hello@anolilab.com](mailto:hello@anolilab.com) if you need any help with these technologies or just want to say hi!
+
 ## License
 
 This project is licensed under the MIT License - see the [MIT][license-url] file for details.
-
-[typescript-image]: https://img.shields.io/badge/Typescript-294E80.svg?style=for-the-badge&logo=typescript
-[typescript-url]: https://www.typescriptlang.org/ "TypeScript"
-[license-image]: https://img.shields.io/npm/l/@visulima/vite-overlay?color=blueviolet&style=for-the-badge
-[license-url]: LICENSE.md "license"
-[npm-image]: https://img.shields.io/npm/v/@visulima/vite-overlay/latest.svg?style=for-the-badge&logo=npm
-[npm-url]: https://www.npmjs.com/package/@visulima/vite-overlay/v/latest "npm"

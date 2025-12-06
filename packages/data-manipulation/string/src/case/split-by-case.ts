@@ -423,13 +423,13 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
         let currentSegment = chars[0] as string;
 
         // Determine initial type (1=cyrillic, 2=latin, 0=other)
-        let previousType = RE_CYRILLIC.test(chars[0] as string) ? 1 : (RE_LATIN.test(chars[0] as string) ? 2 : 0);
+        let previousType = RE_CYRILLIC.test(chars[0] as string) ? 1 : RE_LATIN.test(chars[0] as string) ? 2 : 0;
         let previousIsUpper = (chars[0] as string) === (chars[0] as string).toLocaleUpperCase(locale);
 
         // eslint-disable-next-line no-plusplus
         for (let index = 1; index < width_; index++) {
             const char = chars[index] as string;
-            const currentType = RE_CYRILLIC.test(char) ? 1 : (RE_LATIN.test(char) ? 2 : 0);
+            const currentType = RE_CYRILLIC.test(char) ? 1 : RE_LATIN.test(char) ? 2 : 0;
             const isUpperCaseChar = char === char.toLocaleUpperCase(locale);
 
             // Split on script transitions or case changes within the same script
@@ -981,7 +981,7 @@ export const splitByCase = <T extends string = string>(input: T, options: SplitO
     }
 
     // Precompute the separator regex.
-    const separatorRegex = Array.isArray(separators) ? getSeparatorsRegex(separators as string[]) : (separators instanceof RegExp ? separators : RE_SEPARATORS);
+    const separatorRegex = Array.isArray(separators) ? getSeparatorsRegex(separators as string[]) : separators instanceof RegExp ? separators : RE_SEPARATORS;
 
     // First, split the input on explicit separators.
     const parts = cleanedInput.split(separatorRegex).filter(Boolean);

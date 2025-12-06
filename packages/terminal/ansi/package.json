@@ -170,6 +170,9 @@
         "test:ui": "vitest --ui --coverage.enabled=true",
         "test:watch": "vitest"
     },
+    "dependencies": {
+        "type-fest": "^5.3.0"
+    },
     "devDependencies": {
         "@anolilab/eslint-config": "16.4.4",
         "@anolilab/prettier-config": "^6.0.8",
@@ -180,7 +183,7 @@
         "@total-typescript/ts-reset": "^0.6.1",
         "@types/node": "24.10.1",
         "@visulima/colorize": "2.0.0-alpha.1",
-        "@visulima/packem": "2.0.0-alpha.37",
+        "@visulima/packem": "2.0.0-alpha.40",
         "@visulima/path": "3.0.0-alpha.1",
         "@vitest/coverage-v8": "^4.0.15",
         "@vitest/ui": "^4.0.15",
@@ -195,7 +198,6 @@
         "rimraf": "6.1.2",
         "secretlint": "11.2.5",
         "semantic-release": "^25.0.2",
-        "type-fest": "^5.3.0",
         "typescript": "5.9.3",
         "vitest": "^4.0.15"
     },

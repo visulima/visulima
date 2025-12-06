@@ -10,22 +10,22 @@ if (globalThis.localStorage) {
 
 // Set up proper localStorage polyfill
 globalThis.localStorage = {
-    getItem: (key: string) => storage.get(key) ?? null,
-    setItem: (key: string, value: string) => {
-        storage.set(key, value);
-    },
-    removeItem: (key: string) => {
-        storage.delete(key);
-    },
     clear: () => {
         storage.clear();
+    },
+    getItem: (key: string) => storage.get(key) ?? null,
+    key: (index: number) => {
+        const keys = [...storage.keys()];
+
+        return keys[index] ?? null;
     },
     get length() {
         return storage.size;
     },
-    key: (index: number) => {
-        const keys = Array.from(storage.keys());
-        return keys[index] ?? null;
+    removeItem: (key: string) => {
+        storage.delete(key);
+    },
+    setItem: (key: string, value: string) => {
+        storage.set(key, value);
     },
 } as Storage;
-

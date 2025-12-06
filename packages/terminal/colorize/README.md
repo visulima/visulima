@@ -1,20 +1,24 @@
-<div align="center">
-  <h3>Visulima Colorize</h3>
-  <p>
-  Terminal and Console string styling done right, powered by <a href="https://github.com/visulima/visulima/packages/is-ansi-color-supported">@visulima/is-ansi-color-supported</a>.
+<!-- START_PACKAGE_OG_IMAGE_PLACEHOLDER -->
 
-Colorize stands as a sleek, lightning-fast alternative to [Chalk][chalk], boasting a plethora of additional, valuable features.<br>
-Elevate your terminal experience by effortlessly adding vibrant colors to your output with its clean and straightforward syntax.<br>
-For instance, you can use `green` to make `` green`Hello World!` `` pop, `` red`Error!` `` to signify Errors, or `` black.bgYellow`Warning!` `` to highlight warnings.
+<a href="https://www.anolilab.com/open-source" align="center">
 
-  </p>
-</div>
+  <img src="__assets__/package-og.svg" alt="colorize" />
+
+</a>
+
+<h3 align="center">Terminal and Console string styling done right.</h3>
+
+<!-- END_PACKAGE_OG_IMAGE_PLACEHOLDER -->
 
 <br />
 
 <div align="center">
 
-[![typescript-image]][typescript-url] [![npm-image]][npm-url] [![license-image]][license-url]
+[![typescript-image][typescript-badge]][typescript-url]
+[![mit licence][license-badge]][license]
+[![npm downloads][npm-downloads-badge]][npm-downloads]
+[![Chat][chat-badge]][chat]
+[![PRs Welcome][prs-welcome-badge]][prs-welcome]
 
 </div>
 
@@ -919,25 +923,23 @@ Gradient:
 - [tinygradient](https://github.com/mistic100/tinygradient) - Easily generate color gradients with an unlimited number of color stops and steps.
 - [gradient-string](https://github.com/bokub/gradient-string) - Beautiful color gradients in terminal output
 
+## Made with ❤️ at Anolilab
+
+This is an open source project and will always remain free to use. If you think it's cool, please star it 🌟. [Anolilab](https://www.anolilab.com/open-source) is a Development and AI Studio. Contact us at [hello@anolilab.com](mailto:hello@anolilab.com) if you need any help with these technologies or just want to say hi!
+
 ## License
 
-The visulima colorize is open-sourced software licensed under the [MIT][license-url]
+The visulima colorize is open-sourced software licensed under the [MIT][license]
 
-[typescript-image]: https://img.shields.io/badge/Typescript-294E80.svg?style=for-the-badge&logo=typescript
+<!-- badges -->
 
-[typescript-url]: https://www.typescriptlang.org/ "TypeScript" "typescript"
-[license-image]: https://img.shields.io/npm/l/@visulima/colorize?color=blueviolet&style=for-the-badge
-[license-url]: LICENSE.md "license"
-[npm-image]: https://img.shields.io/npm/v/@visulima/colorize/latest.svg?style=for-the-badge&logo=npm
-[npm-url]: https://www.npmjs.com/package/@visulima/colorize/v/latest "npm"
-[colors.js]: https://github.com/Marak/colors.js
-[colorette]: https://github.com/jorgebucaran/colorette
-[picocolors]: https://github.com/alexeyraspopov/picocolors
-[cli-color]: https://github.com/medikoo/cli-color
-[colors-cli]: https://github.com/jaywcjlove/colors-cli
-[ansi-colors]: https://github.com/doowb/ansi-colors
-[kleur]: https://github.com/lukeed/kleur
-[chalk]: https://github.com/chalk/chalk
-[chalk-template]: https://github.com/chalk/chalk-template
-[ansis]: https://github.com/webdiscus/ansis
-[styleText]: https://nodejs.org/api/util.html#utilstyletextformat-text-options
+[license-badge]: https://img.shields.io/npm/l/@visulima/colorize?style=for-the-badge
+[license]: https://github.com/visulima/visulima/blob/main/LICENSE
+[npm-downloads-badge]: https://img.shields.io/npm/dm/@visulima/colorize?style=for-the-badge
+[npm-downloads]: https://www.npmjs.com/package/@visulima/colorize
+[prs-welcome-badge]: https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=for-the-badge
+[prs-welcome]: https://github.com/visulima/visulima/blob/main/.github/CONTRIBUTING.md
+[chat-badge]: https://img.shields.io/discord/932323359193186354.svg?style=for-the-badge
+[chat]: https://discord.gg/TtFJY8xkFK
+[typescript-badge]: https://img.shields.io/badge/Typescript-294E80.svg?style=for-the-badge&logo=typescript
+[typescript-url]: https://www.typescriptlang.org/

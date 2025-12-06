@@ -1,4 +1,3 @@
-/* eslint-disable n/no-unsupported-features/node-builtins */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import sendWithRetry from "../../../../../src/reporter/http/utils/retry";

@@ -673,8 +673,7 @@ export interface DurationPiece {
 
 export type ParseByteOptions = BytesOptions;
 export interface FormateByteOptions<ByteSize>
-    extends BytesOptions,
-    Omit<Intl.NumberFormatOptions, "currency" | "currencyDisplay" | "currencySign" | "style" | "unit" | "unitDisplay"> {
+    extends BytesOptions, Omit<Intl.NumberFormatOptions, "currency" | "currencyDisplay" | "currencySign" | "style" | "unit" | "unitDisplay"> {
     /**
      * Specify the number of decimals to include in the output.
      *

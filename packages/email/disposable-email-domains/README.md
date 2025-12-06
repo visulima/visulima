@@ -1,15 +1,24 @@
-<div align="center">
-  <h3>visulima disposable-email-domains</h3>
-  <p>
-  A regularly updated list of disposable and temporary email domains.
-  </p>
-</div>
+<!-- START_PACKAGE_OG_IMAGE_PLACEHOLDER -->
+
+<a href="https://www.anolilab.com/open-source" align="center">
+
+  <img src="__assets__/package-og.svg" alt="disposable-email-domains" />
+
+</a>
+
+<h3 align="center">A regularly updated list of disposable and temporary email domains.</h3>
+
+<!-- END_PACKAGE_OG_IMAGE_PLACEHOLDER -->
 
 <br />
 
 <div align="center">
 
-[![typescript-image]][typescript-url] [![npm-image]][npm-url] [![license-image]][license-url]
+[![typescript-image][typescript-badge]][typescript-url]
+[![mit licence][license-badge]][license]
+[![npm downloads][npm-downloads-badge]][npm-downloads]
+[![Chat][chat-badge]][chat]
+[![PRs Welcome][prs-welcome-badge]][prs-welcome]
 
 </div>
 
@@ -45,26 +54,26 @@ pnpm add @visulima/disposable-email-domains
 
 | Repository | Domains | Success | Performance |
 |------------|---------|---------|-------------|
-| kslr/disposable-email-domains | 112.638 | ✅ | 0.85s (1.7 MB) |
-| FGRibreau/mailchecker | 55.864 | ✅ | 0.41s (838.4 KB) |
-| wesbos/burner-email-providers | 27.284 | ✅ | 0.31s (388.1 KB) |
-| groundcat/disposable-email-domain-list | 27.120 | ✅ | 0.25s (401.7 KB) |
-| disposable/disposable-email-domains | 26.643 | ✅ | 0.33s (374.6 KB) |
-| sublime-security/static-files | 10.523 | ✅ | 0.15s (144.0 KB) |
-| 7c/fakefilter | 8.989 | ✅ | 0.18s (128.9 KB) |
-| disposable-email-domains/disposable-email-domains | 4.932 | ✅ | 0.28s (62.3 KB) |
-| willwhite/freemail | 4.462 | ✅ | 0.17s (61.8 KB) |
-| eser/sanitizer-svc | 3.855 | ✅ | 0.22s (48.9 KB) |
-| unkn0w/disposable-email-domain-list | 3.617 | ✅ | 0.16s (45.8 KB) |
-| MattKetmo/EmailChecker | 2.515 | ✅ | 0.16s (32.4 KB) |
-| GeroldSetz/emailondeck.com-domains | 1.121 | ✅ | 0.21s (15.4 KB) |
-| jespernissen/disposable-maildomain-list | 1.023 | ✅ | 0.15s (13.2 KB) |
-| TheDahoom/disposable-email | 18 | ✅ | 0.45s (234 B) |
+| kslr/disposable-email-domains | 112.669 | ✅ | 0.46s (1.7 MB) |
+| FGRibreau/mailchecker | 55.864 | ✅ | 0.22s (838.4 KB) |
+| wesbos/burner-email-providers | 27.284 | ✅ | 0.12s (388.1 KB) |
+| groundcat/disposable-email-domain-list | 27.120 | ✅ | 0.15s (401.7 KB) |
+| disposable/disposable-email-domains | 26.643 | ✅ | 0.16s (374.6 KB) |
+| sublime-security/static-files | 10.523 | ✅ | 0.08s (144.0 KB) |
+| 7c/fakefilter | 8.993 | ✅ | 0.09s (129.0 KB) |
+| disposable-email-domains/disposable-email-domains | 4.932 | ✅ | 0.15s (62.3 KB) |
+| willwhite/freemail | 4.462 | ✅ | 0.03s (61.8 KB) |
+| eser/sanitizer-svc | 3.855 | ✅ | 0.11s (48.9 KB) |
+| unkn0w/disposable-email-domain-list | 3.617 | ✅ | 0.09s (45.8 KB) |
+| MattKetmo/EmailChecker | 2.515 | ✅ | 0.09s (32.4 KB) |
+| GeroldSetz/emailondeck.com-domains | 1.121 | ✅ | 0.10s (15.4 KB) |
+| jespernissen/disposable-maildomain-list | 1.023 | ✅ | 0.03s (13.2 KB) |
+| TheDahoom/disposable-email | 18 | ✅ | 0.09s (234 B) |
 
 <!-- END_PLACEHOLDER_CONTRIBUTING -->
 <!-- START_PLACEHOLDER_LAST_UPDATED -->
 
-_Last updated: 2025-12-04T19:32:51.524Z_
+_Last updated: 2025-12-06T09:26:20.132Z_
 
 <!-- END_PLACEHOLDER_LAST_UPDATED -->
 
@@ -185,13 +194,23 @@ If you would like to help take a look at the [list of issues](https://github.com
 - [Daniel Bannert](https://github.com/prisis)
 - [All Contributors](https://github.com/visulima/visulima/graphs/contributors)
 
+## Made with ❤️ at Anolilab
+
+This is an open source project and will always remain free to use. If you think it's cool, please star it 🌟. [Anolilab](https://www.anolilab.com/open-source) is a Development and AI Studio. Contact us at [hello@anolilab.com](mailto:hello@anolilab.com) if you need any help with these technologies or just want to say hi!
+
 ## License
 
-The visulima disposable-email-domains is open-sourced software licensed under the [MIT][license-url]
+The visulima disposable-email-domains is open-sourced software licensed under the [MIT][license]
 
-[typescript-image]: https://img.shields.io/badge/Typescript-294E80.svg?style=for-the-badge&logo=typescript
-[typescript-url]: https://www.typescriptlang.org/ "TypeScript"
-[license-image]: https://img.shields.io/npm/l/@visulima/disposable-email-domains?color=blueviolet&style=for-the-badge
-[license-url]: LICENSE.md "license"
-[npm-image]: https://img.shields.io/npm/v/@visulima/disposable-email-domains/latest.svg?style=for-the-badge&logo=npm
-[npm-url]: https://www.npmjs.com/package/@visulima/disposable-email-domains/v/latest "npm"
+<!-- badges -->
+
+[license-badge]: https://img.shields.io/npm/l/@visulima/disposable-email-domains?style=for-the-badge
+[license]: https://github.com/visulima/visulima/blob/main/LICENSE
+[npm-downloads-badge]: https://img.shields.io/npm/dm/@visulima/disposable-email-domains?style=for-the-badge
+[npm-downloads]: https://www.npmjs.com/package/@visulima/disposable-email-domains
+[prs-welcome-badge]: https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=for-the-badge
+[prs-welcome]: https://github.com/visulima/visulima/blob/main/.github/CONTRIBUTING.md
+[chat-badge]: https://img.shields.io/discord/932323359193186354.svg?style=for-the-badge
+[chat]: https://discord.gg/TtFJY8xkFK
+[typescript-badge]: https://img.shields.io/badge/Typescript-294E80.svg?style=for-the-badge&logo=typescript
+[typescript-url]: https://www.typescriptlang.org/

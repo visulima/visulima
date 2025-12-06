@@ -1225,7 +1225,7 @@ class ErrorOverlay extends HTMLElement {
     _restoreBalloonState() {
         try {
             const balloonStates = JSON.parse(localStorage.getItem("__v-o__balloon") || "{}");
-            const { root: rootElement, balloon } = this.__elements || {};
+            const { balloon, root: rootElement } = this.__elements || {};
 
             if (balloon && rootElement) {
                 if (balloonStates.overlay === "open") {

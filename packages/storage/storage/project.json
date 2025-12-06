@@ -3,9 +3,6 @@
     "$schema": "../../node_modules/nx/schemas/project-schema.json",
     "sourceRoot": "packages/storage/storage/src",
     "projectType": "library",
-    "tags": [
-        "storage",
-        "type:package"
-    ],
+    "tags": ["storage", "type:package"],
     "implicitDependencies": ["pagination", "humanizer", "path", "fs"]
 }

@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable n/no-unsupported-features/node-builtins */
 
 /**
  * Calculates exponential backoff delay.

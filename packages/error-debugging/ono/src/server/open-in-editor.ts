@@ -3,7 +3,6 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { isAbsolute, normalize, relative, resolve as resolvePath, sep } from "@visulima/path";
-// eslint-disable-next-line import/no-extraneous-dependencies
 import launchEditorMiddleware from "launch-editor-middleware";
 
 import { getProcessPlatform } from "../utils/process";

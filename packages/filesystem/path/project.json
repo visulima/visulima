@@ -3,9 +3,6 @@
     "$schema": "../../node_modules/nx/schemas/project-schema.json",
     "sourceRoot": "packages/filesystem/path/src",
     "projectType": "library",
-    "tags": [
-        "path",
-        "type:package"
-    ],
+    "tags": ["path", "type:package"],
     "implicitDependencies": []
 }

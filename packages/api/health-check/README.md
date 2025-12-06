@@ -1,23 +1,24 @@
-<div align="center">
-  <h3>Visulima health-check</h3>
-  <p>
-  A library built to provide support for defining service health for node services. It allows you to register async health checks for your dependencies and the service itself, provides a health endpoint that exposes their status, and health metrics.
+<!-- START_PACKAGE_OG_IMAGE_PLACEHOLDER -->
 
-It’s built on top of
+<a href="https://www.anolilab.com/open-source" align="center">
 
-[pingman](https://github.com/dopecodez/pingman),
-[node:http](https://nodejs.org/api/http.html),
-[cacheable-lookup](https://github.com/szmarczak/cacheable-lookup),
-[node:process.env](https://nodejs.org/docs/latest/api/process.html#process_process_env)
+  <img src="__assets__/package-og.svg" alt="health-check" />
 
-  </p>
-</div>
+</a>
+
+<h3 align="center">A library built to provide support for defining service health for node services. It allows you to register async health checks for your dependencies and the service itself, provides a health endpoint that exposes their status, and health metrics.</h3>
+
+<!-- END_PACKAGE_OG_IMAGE_PLACEHOLDER -->
 
 <br />
 
 <div align="center">
 
-[![typescript-image]][typescript-url] [![npm-image]][npm-url] [![license-image]][license-url]
+[![typescript-image][typescript-badge]][typescript-url]
+[![mit licence][license-badge]][license]
+[![npm downloads][npm-downloads-badge]][npm-downloads]
+[![Chat][chat-badge]][chat]
+[![PRs Welcome][prs-welcome-badge]][prs-welcome]
 
 </div>
 
@@ -192,14 +193,23 @@ If you would like to help take a look at the [list of issues](https://github.com
 - [Daniel Bannert](https://github.com/prisis)
 - [All Contributors](https://github.com/visulima/visulima/graphs/contributors)
 
+## Made with ❤️ at Anolilab
+
+This is an open source project and will always remain free to use. If you think it's cool, please star it 🌟. [Anolilab](https://www.anolilab.com/open-source) is a Development and AI Studio. Contact us at [hello@anolilab.com](mailto:hello@anolilab.com) if you need any help with these technologies or just want to say hi!
+
 ## License
 
-The visulima health-check is open-sourced software licensed under the [MIT][license-url]
+The visulima health-check is open-sourced software licensed under the [MIT][license]
 
-[typescript-image]: https://img.shields.io/badge/Typescript-294E80.svg?style=for-the-badge&logo=typescript
+<!-- badges -->
 
-[typescript-url]: https://www.typescriptlang.org/ "TypeScript" "typescript"
-[license-image]: https://img.shields.io/npm/l/@visulima/health-check?color=blueviolet&style=for-the-badge
-[license-url]: LICENSE.md "license"
-[npm-image]: https://img.shields.io/npm/v/@visulima/health-check/latest.svg?style=for-the-badge&logo=npm
-[npm-url]: https://www.npmjs.com/package/@visulima/health-check/v/latest "npm"
+[license-badge]: https://img.shields.io/npm/l/@visulima/health-check?style=for-the-badge
+[license]: https://github.com/visulima/visulima/blob/main/LICENSE
+[npm-downloads-badge]: https://img.shields.io/npm/dm/@visulima/health-check?style=for-the-badge
+[npm-downloads]: https://www.npmjs.com/package/@visulima/health-check
+[prs-welcome-badge]: https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=for-the-badge
+[prs-welcome]: https://github.com/visulima/visulima/blob/main/.github/CONTRIBUTING.md
+[chat-badge]: https://img.shields.io/discord/932323359193186354.svg?style=for-the-badge
+[chat]: https://discord.gg/TtFJY8xkFK
+[typescript-badge]: https://img.shields.io/badge/Typescript-294E80.svg?style=for-the-badge&logo=typescript
+[typescript-url]: https://www.typescriptlang.org/
