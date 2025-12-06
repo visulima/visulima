@@ -1,6 +1,6 @@
 {
     "name": "@visulima/connect",
-    "version": "4.0.0-alpha.1",
+    "version": "4.0.0-alpha.2",
     "description": "The minimal router and middleware layer for Next.js, Micro, Vercel, or Node.js http/http2 with support for zod validation.",
     "keywords": [
         "visulima",
