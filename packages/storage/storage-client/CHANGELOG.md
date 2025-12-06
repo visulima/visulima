@@ -1,3 +1,16 @@
+## @visulima/storage-client [1.0.0-alpha.2](https://github.com/visulima/visulima/compare/@visulima/storage-client@1.0.0-alpha.1...@visulima/storage-client@1.0.0-alpha.2) (2025-12-06)
+
+### Bug Fixes
+
+* add new package image, fixed readme rendering on npm, fixed building of packages ([b790ba2](https://github.com/visulima/visulima/commit/b790ba253ea07fef83528fd822a678facf021b5f))
+
+### Miscellaneous Chores
+
+* **release:** @visulima/storage-client@1.0.0-alpha.1 [skip ci]\n\n## @visulima/storage-client 1.0.0-alpha.1 (2025-12-05) ([9145099](https://github.com/visulima/visulima/commit/9145099002a34b52837b39172507108ebe7a8756))
+* **release:** @visulima/storage-client@1.0.0-alpha.1 [skip ci]\n\n## @visulima/storage-client 1.0.0-alpha.1 (2025-12-05) ([719c655](https://github.com/visulima/visulima/commit/719c655552f3543f7cf787f676043efec314692a))
+* update @anolilab/semantic-release-pnpm and @anolilab/semantic-release-preset to versions 3.2.2 and 12.1.2 across multiple package.json files for improved compatibility ([3921626](https://github.com/visulima/visulima/commit/3921626141fe5da398749bf0ba675f1596f18afb))
+* update CHANGELOG.md to remove duplicate entries and streamline release notes for @visulima/storage-client ([3358ac0](https://github.com/visulima/visulima/commit/3358ac0199534efdebf5b86faa1852bd064f362f))
+
 ## @visulima/storage-client 1.0.0-alpha.1 (2025-12-05)
 
 ### ⚠ BREAKING CHANGES
