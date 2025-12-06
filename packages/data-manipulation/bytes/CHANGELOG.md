@@ -1,3 +1,15 @@
+## @visulima/bytes [3.0.0-alpha.2](https://github.com/visulima/visulima/compare/@visulima/bytes@3.0.0-alpha.1...@visulima/bytes@3.0.0-alpha.2) (2025-12-06)
+
+### Bug Fixes
+
+* add new package image, fixed readme rendering on npm, fixed building of packages ([b790ba2](https://github.com/visulima/visulima/commit/b790ba253ea07fef83528fd822a678facf021b5f))
+* update package.json description and keywords ([#578](https://github.com/visulima/visulima/issues/578)) ([154709c](https://github.com/visulima/visulima/commit/154709c05e71d1ffd3e360b27e12febd817912f0))
+
+### Miscellaneous Chores
+
+* **release:** @visulima/bytes@3.0.0-alpha.1 [skip ci]\n\n## @visulima/bytes [3.0.0-alpha.1](https://github.com/visulima/visulima/compare/@visulima/bytes@2.0.5...@visulima/bytes@3.0.0-alpha.1) (2025-12-04) ([232ad90](https://github.com/visulima/visulima/commit/232ad9054f90459296f3988a2bbb6bd0e7e9d722))
+* update @anolilab/semantic-release-pnpm and @anolilab/semantic-release-preset to versions 3.2.2 and 12.1.2 across multiple package.json files for improved compatibility ([3921626](https://github.com/visulima/visulima/commit/3921626141fe5da398749bf0ba675f1596f18afb))
+
 ## @visulima/bytes [3.0.0-alpha.1](https://github.com/visulima/visulima/compare/@visulima/bytes@2.0.5...@visulima/bytes@3.0.0-alpha.1) (2025-12-04)
 
 ### ⚠ BREAKING CHANGES
