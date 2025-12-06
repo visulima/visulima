@@ -6,7 +6,12 @@
         "visulima",
         "find-cache",
         "find-cache-directory",
-        "find-cache-dir"
+        "find-cache-dir",
+        "cache",
+        "cache-directory",
+        "cache-dir",
+        "os-cache-dir",
+        "cache-path"
     ],
     "homepage": "https://visulima.com/packages/find-cache-dir",
     "bugs": {

@@ -4,7 +4,18 @@
     "description": "A mature, feature-complete library to parse command-line options.",
     "keywords": [
         "visulima",
-        "command-line-args"
+        "command-line-args",
+        "cli",
+        "command-line",
+        "argv",
+        "args",
+        "options",
+        "flags",
+        "parser",
+        "argument-parser",
+        "minimist",
+        "commander",
+        "yargs"
     ],
     "homepage": "https://visulima.com/packages/command-line-args",
     "bugs": {

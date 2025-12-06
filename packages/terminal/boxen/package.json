@@ -1,7 +1,7 @@
 {
     "name": "@visulima/boxen",
     "version": "2.0.10",
-    "description": "Util.format-like string formatting utility.",
+    "Create beautiful boxes in the terminal with customizable borders, padding, and alignment.",
     "keywords": [
         "anolilab",
         "visulima",
