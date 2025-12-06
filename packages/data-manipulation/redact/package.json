@@ -1,6 +1,6 @@
 {
     "name": "@visulima/redact",
-    "version": "3.0.0-alpha.1",
+    "version": "3.0.0-alpha.2",
     "description": "A library for redacting and masking sensitive data from objects and strings, with support for GDPR compliance, custom rules, and deep object traversal.",
     "keywords": [
         "anolilab",
