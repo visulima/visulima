@@ -1,6 +1,6 @@
 {
     "name": "@visulima/path",
-    "version": "3.0.0-alpha.1",
+    "version": "3.0.0-alpha.2",
     "description": "Drop-in replacement of the Node.js path module.",
     "keywords": [
         "visulima",
