@@ -1,3 +1,13 @@
+## @visulima/fmt [2.0.0-alpha.2](https://github.com/visulima/visulima/compare/@visulima/fmt@2.0.0-alpha.1...@visulima/fmt@2.0.0-alpha.2) (2025-12-06)
+
+### Bug Fixes
+
+* add new package image, fixed readme rendering on npm, fixed building of packages ([b790ba2](https://github.com/visulima/visulima/commit/b790ba253ea07fef83528fd822a678facf021b5f))
+
+### Miscellaneous Chores
+
+* update @anolilab/semantic-release-pnpm and @anolilab/semantic-release-preset to versions 3.2.2 and 12.1.2 across multiple package.json files for improved compatibility ([3921626](https://github.com/visulima/visulima/commit/3921626141fe5da398749bf0ba675f1596f18afb))
+
 ## @visulima/fmt [2.0.0-alpha.1](https://github.com/visulima/visulima/compare/@visulima/fmt@1.1.21...@visulima/fmt@2.0.0-alpha.1) (2025-12-04)
 
 ### ⚠ BREAKING CHANGES
