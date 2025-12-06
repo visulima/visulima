@@ -1,6 +1,6 @@
 {
     "name": "@visulima/storage-client",
-    "version": "1.0.0-alpha.1",
+    "version": "1.0.0-alpha.2",
     "description": "The upload client library. Simple and easy file uploads for React | Vue | Solid | .",
     "keywords": [
         "visulima",
