@@ -4,9 +4,13 @@
     "description": "Simple Pagination for Node.",
     "keywords": [
         "anolilab",
+        "visulima",
         "pagination",
         "paginator",
-        "offset"
+        "offset",
+        "limit",
+        "page",
+        "paging"
     ],
     "homepage": "https://www.visulima.com/docs/package/pagination",
     "bugs": {

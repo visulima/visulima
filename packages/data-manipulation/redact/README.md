@@ -6,7 +6,7 @@
 
 </a>
 
-<h3 align="center">Detect whether a terminal or browser supports ansi colors.</h3>
+<h3 align="center">A library for redacting and masking sensitive data from objects and strings, with support for GDPR compliance, custom rules, and deep object traversal.</h3>
 
 <!-- END_PACKAGE_OG_IMAGE_PLACEHOLDER -->
 

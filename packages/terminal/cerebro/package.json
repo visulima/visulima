@@ -3,6 +3,7 @@
     "version": "2.1.5",
     "description": "A delightful toolkit for building cross-runtime CLIs for Node.js, Deno, and Bun.",
     "keywords": [
+        "visulima",
         "command",
         "line",
         "class",

@@ -4,7 +4,13 @@
     "description": "Utility functions to make dealing with Uint8Arrays easier",
     "keywords": [
         "visulima",
-        "bytes"
+        "bytes",
+        "uint8array",
+        "buffer",
+        "binary",
+        "data",
+        "array",
+        "typed-array"
     ],
     "homepage": "https://visulima.com/packages/bytes",
     "bugs": {
