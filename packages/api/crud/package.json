@@ -1,7 +1,7 @@
 {
     "name": "@visulima/crud",
     "version": "3.0.0-alpha.1",
-    "description": "visulima crud",
+    "description": "A comprehensive CRUD library for building RESTful APIs with Prisma, providing automatic CRUD operations, filtering, sorting, and pagination.",
     "keywords": [
         "anolilab",
         "visulima",

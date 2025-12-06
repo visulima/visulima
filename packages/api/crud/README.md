@@ -6,7 +6,7 @@
 
 </a>
 
-<h3 align="center">visulima crud</h3>
+<h3 align="center">A comprehensive CRUD library for building RESTful APIs with Prisma, providing automatic CRUD operations, filtering, sorting, and pagination.</h3>
 
 <!-- END_PACKAGE_OG_IMAGE_PLACEHOLDER -->
 

@@ -6,7 +6,7 @@
 
 </a>
 
-<h3 align="center">Util.format-like string formatting utility.</h3>
+<h3 align="center">Create beautiful boxes in the terminal with customizable borders, padding, and alignment.</h3>
 
 <!-- END_PACKAGE_OG_IMAGE_PLACEHOLDER -->
 
