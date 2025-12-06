@@ -3,9 +3,6 @@
     "$schema": "../../node_modules/nx/schemas/project-schema.json",
     "sourceRoot": "packages/data-manipulation/object/src",
     "projectType": "library",
-    "tags": [
-        "object",
-        "type:package"
-    ],
+    "tags": ["object", "type:package"],
     "implicitDependencies": []
 }

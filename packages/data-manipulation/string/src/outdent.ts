@@ -54,7 +54,7 @@ const internalOutdentArray = (strings: ReadonlyArray<string>, firstInterpolatedV
 
     // Build regex only once with the determined indentation level
 
-    const reSource = `(\\r\\n|\\r|\\n).{0,${indentationLevel}}`;
+    const reSource = String.raw`(\r\n|\r|\n).{0,${indentationLevel}}`;
     const reMatchIndent = new RegExp(reSource, "g");
 
     if (firstInterpolatedValueSetsIndentationLevel) {

@@ -3,9 +3,6 @@
     "$schema": "../../node_modules/nx/schemas/project-schema.json",
     "sourceRoot": "packages/data-manipulation/bytes/src",
     "projectType": "library",
-    "tags": [
-        "bytes",
-        "type:package"
-    ],
+    "tags": ["bytes", "type:package"],
     "implicitDependencies": []
 }

@@ -220,6 +220,7 @@
         "test:watch": "vitest"
     },
     "dependencies": {
+        "type-fest": "^5.3.0",
         "@visulima/colorize": "1.4.29"
     },
     "devDependencies": {
@@ -235,7 +236,7 @@
         "@visulima/error": "5.0.6",
         "@visulima/fmt": "1.1.21",
         "@visulima/inspector": "1.0.30",
-        "@visulima/packem": "2.0.0-alpha.37",
+        "@visulima/packem": "2.0.0-alpha.40",
         "@visulima/redact": "2.0.5",
         "@visulima/string": "2.0.6",
         "@vitest/coverage-v8": "^4.0.15",
@@ -252,7 +253,6 @@
         "secretlint": "11.2.5",
         "semantic-release": "25.0.2",
         "terminal-size": "^4.0.0",
-        "type-fest": "^5.3.0",
         "typescript": "5.9.3",
         "vitest": "^4.0.15"
     },

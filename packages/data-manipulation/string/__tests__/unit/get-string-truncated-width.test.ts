@@ -202,7 +202,6 @@ describe(getStringTruncatedWidth, () => {
         it("supports all basic emojis", async () => {
             expect.assertions(1);
 
-            // eslint-disable-next-line n/no-unsupported-features/node-builtins
             const response = await fetch("https://raw.githubusercontent.com/muan/unicode-emoji-json/main/data-by-group.json");
             const data = await response.json();
             // eslint-disable-next-line @typescript-eslint/no-shadow

@@ -1,26 +1,24 @@
-<div align="center">
-  <h3>Visulima Cerebro</h3>
-  <p>
-  Cerebro is a delightful toolkit for building cross-runtime command-line interfaces (CLIs) for Node.js, Deno, and Bun, built on top of
+<!-- START_PACKAGE_OG_IMAGE_PLACEHOLDER -->
 
-[@visulima/boxen](https://github.com/visulima/visulima/tree/main/packages/boxen),
-[@visulima/colorize](https://github.com/visulima/visulima/tree/main/packages/colorize),
-[@visulima/command-line-args](https://github.com/visulima/visulima/tree/main/packages/command-line-args),
-[@visulima/tabular](https://github.com/visulima/visulima/tree/main/packages/tabular) and
-[fastest-levenshtein](https://github.com/ka-weihe/fastest-levenshtein)
+<a href="https://www.anolilab.com/open-source" align="center">
 
-<br />
+  <img src="__assets__/package-og.svg" alt="cerebro" />
 
-I would recommend reading this [guide](https://clig.dev/) on how to make user-friendly command-line tools.
+</a>
 
-  </p>
-</div>
+<h3 align="center">A delightful toolkit for building cross-runtime CLIs for Node.js, Deno, and Bun.</h3>
+
+<!-- END_PACKAGE_OG_IMAGE_PLACEHOLDER -->
 
 <br />
 
 <div align="center">
 
-[![typescript-image]][typescript-url] [![npm-image]][npm-url] [![license-image]][license-url]
+[![typescript-image][typescript-badge]][typescript-url]
+[![mit licence][license-badge]][license]
+[![npm downloads][npm-downloads-badge]][npm-downloads]
+[![Chat][chat-badge]][chat]
+[![PRs Welcome][prs-welcome-badge]][prs-welcome]
 
 </div>
 
@@ -428,14 +426,23 @@ If you would like to help take a look at the [list of issues](https://github.com
 - [commander.js](https://github.com/tj/commander.js) - node.js command-line interfaces made easy
 - [yargs](https://www.npmjs.com/package/yargs) - yargs the modern, pirate-themed successor to optimist.
 
+## Made with ❤️ at Anolilab
+
+This is an open source project and will always remain free to use. If you think it's cool, please star it 🌟. [Anolilab](https://www.anolilab.com/open-source) is a Development and AI Studio. Contact us at [hello@anolilab.com](mailto:hello@anolilab.com) if you need any help with these technologies or just want to say hi!
+
 ## License
 
-The visulima package is open-sourced software licensed under the [MIT][license-url]
+The visulima package is open-sourced software licensed under the [MIT][license]
 
-[typescript-image]: https://img.shields.io/badge/Typescript-294E80.svg?style=for-the-badge&logo=typescript
+<!-- badges -->
 
-[typescript-url]: https://www.typescriptlang.org/ "TypeScript" "typescript"
-[license-image]: https://img.shields.io/npm/l/@visulima/cerebro?color=blueviolet&style=for-the-badge
-[license-url]: LICENSE.md "license"
-[npm-image]: https://img.shields.io/npm/v/@visulima/cerebro/latest.svg?style=for-the-badge&logo=npm
-[npm-url]: https://www.npmjs.com/package/@visulima/cerebro/v/latest "npm"
+[license-badge]: https://img.shields.io/npm/l/@visulima/cerebro?style=for-the-badge
+[license]: https://github.com/visulima/visulima/blob/main/LICENSE
+[npm-downloads-badge]: https://img.shields.io/npm/dm/@visulima/cerebro?style=for-the-badge
+[npm-downloads]: https://www.npmjs.com/package/@visulima/cerebro
+[prs-welcome-badge]: https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=for-the-badge
+[prs-welcome]: https://github.com/visulima/visulima/blob/main/.github/CONTRIBUTING.md
+[chat-badge]: https://img.shields.io/discord/932323359193186354.svg?style=for-the-badge
+[chat]: https://discord.gg/TtFJY8xkFK
+[typescript-badge]: https://img.shields.io/badge/Typescript-294E80.svg?style=for-the-badge&logo=typescript
+[typescript-url]: https://www.typescriptlang.org/

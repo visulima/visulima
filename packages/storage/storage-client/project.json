@@ -3,9 +3,6 @@
     "$schema": "../../node_modules/nx/schemas/project-schema.json",
     "sourceRoot": "packages/storage/storage-client/src",
     "projectType": "library",
-    "tags": [
-        "storage-client",
-        "type:package"
-    ],
+    "tags": ["storage-client", "type:package"],
     "implicitDependencies": ["storage"]
 }

@@ -17,6 +17,7 @@ export default createConfig(
             "playwright-setup.js",
             ".prettierrc.cjs",
             "README.md",
+            "src/overlay/client/index.css", // ignore till eslint fix
         ],
     },
     {

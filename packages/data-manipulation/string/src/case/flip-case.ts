@@ -87,7 +87,7 @@ export const flipCase = <T extends string = string>(value?: T, options?: FlipOpt
         const char = processedValue[index] as string;
         const lowerChar = options?.locale ? char.toLocaleLowerCase(options.locale) : char.toLowerCase();
 
-        result += char === lowerChar ? (options?.locale ? char.toLocaleUpperCase(options.locale) : char.toUpperCase()) : lowerChar;
+        result += char === lowerChar ? options?.locale ? char.toLocaleUpperCase(options.locale) : char.toUpperCase() : lowerChar;
 
         index += 1;
     }

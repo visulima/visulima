@@ -3,11 +3,6 @@
     "$schema": "../../node_modules/nx/schemas/project-schema.json",
     "sourceRoot": "packages/terminal/tabular/src",
     "projectType": "library",
-    "tags": [
-        "tabular",
-        "type:package"
-    ],
-    "implicitDependencies": [
-        "string"
-    ]
+    "tags": ["tabular", "type:package"],
+    "implicitDependencies": ["string"]
 }

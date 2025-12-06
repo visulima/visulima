@@ -12,7 +12,8 @@ export interface Toolbox<
     TLogger extends Console = Console,
     TOptions extends Record<string, unknown> = Options,
     TEnv extends Record<string, unknown> = Record<string, unknown>,
-> extends Cerebro.ExtensionOverrides {
+>
+    extends Cerebro.ExtensionOverrides {
     /**
      * The argument passed to the command.
      * For example, if you run `cerebro foo bar baz`, then this will be `["foo", "bar", "baz"]`.

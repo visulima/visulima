@@ -1,15 +1,24 @@
-<div align="center">
-  <h3>Visulima fs</h3>
-  <p>
-  Human friendly file system utilities for Node.js
-  </p>
-</div>
+<!-- START_PACKAGE_OG_IMAGE_PLACEHOLDER -->
+
+<a href="https://www.anolilab.com/open-source" align="center">
+
+  <img src="__assets__/package-og.svg" alt="fs" />
+
+</a>
+
+<h3 align="center">Human friendly file system utilities for Node.js</h3>
+
+<!-- END_PACKAGE_OG_IMAGE_PLACEHOLDER -->
 
 <br />
 
 <div align="center">
 
-[![typescript-image]][typescript-url] [![npm-image]][npm-url] [![license-image]][license-url]
+[![typescript-image][typescript-badge]][typescript-url]
+[![mit licence][license-badge]][license]
+[![npm downloads][npm-downloads-badge]][npm-downloads]
+[![Chat][chat-badge]][chat]
+[![PRs Welcome][prs-welcome-badge]][prs-welcome]
 
 </div>
 
@@ -6462,14 +6471,23 @@ If you would like to help take a look at the [list of issues](https://github.com
 - [find-up](https://github.com/sindresorhus/find-up) - Find a file or directory by walking up parent directories.
 - [walk](https://deno.land/std/fs/walk.ts) - Walk a directory recursively and yield all files and directories.
 
+## Made with ❤️ at Anolilab
+
+This is an open source project and will always remain free to use. If you think it's cool, please star it 🌟. [Anolilab](https://www.anolilab.com/open-source) is a Development and AI Studio. Contact us at [hello@anolilab.com](mailto:hello@anolilab.com) if you need any help with these technologies or just want to say hi!
+
 ## License
 
-The visulima fs is open-sourced software licensed under the [MIT][license-url]
+The visulima fs is open-sourced software licensed under the [MIT][license]
 
-[typescript-image]: https://img.shields.io/badge/Typescript-294E80.svg?style=for-the-badge&logo=typescript
+<!-- badges -->
 
-[typescript-url]: https://www.typescriptlang.org/ "TypeScript" "typescript"
-[license-image]: https://img.shields.io/npm/l/@visulima/fs?color=blueviolet&style=for-the-badge
-[license-url]: LICENSE.md "license"
-[npm-image]: https://img.shields.io/npm/v/@visulima/fs/latest.svg?style=for-the-badge&logo=npm
-[npm-url]: https://www.npmjs.com/package/@visulima/fs/v/latest "npm"
+[license-badge]: https://img.shields.io/npm/l/@visulima/fs?style=for-the-badge
+[license]: https://github.com/visulima/visulima/blob/main/LICENSE
+[npm-downloads-badge]: https://img.shields.io/npm/dm/@visulima/fs?style=for-the-badge
+[npm-downloads]: https://www.npmjs.com/package/@visulima/fs
+[prs-welcome-badge]: https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=for-the-badge
+[prs-welcome]: https://github.com/visulima/visulima/blob/main/.github/CONTRIBUTING.md
+[chat-badge]: https://img.shields.io/discord/932323359193186354.svg?style=for-the-badge
+[chat]: https://discord.gg/TtFJY8xkFK
+[typescript-badge]: https://img.shields.io/badge/Typescript-294E80.svg?style=for-the-badge&logo=typescript
+[typescript-url]: https://www.typescriptlang.org/

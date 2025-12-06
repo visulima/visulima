@@ -355,12 +355,12 @@ const processIntoStyledSegments = (input: string, options: SliceOptions): Styled
                     // Use the original input's order for consistency
                     if (input.indexOf("\u001B[39m") < input.indexOf("\u001B[49m")) {
                         // Remove fg/bg closings we've already added
-                        // eslint-disable-next-line sonarjs/no-gratuitous-expressions, sonarjs/no-nested-conditional, unicorn/no-nested-ternary
+                        // eslint-disable-next-line sonarjs/no-gratuitous-expressions, sonarjs/no-nested-conditional
                         closingParts.length -= needsForegroundClose && needsBackgroundClose ? 2 : needsForegroundClose || needsBackgroundClose ? 1 : 0;
                         closingParts.push("\u001B[39m", "\u001B[49m");
                     } else if (input.indexOf("\u001B[49m") < input.indexOf("\u001B[39m")) {
                         // Remove fg/bg closings we've already added
-                        // eslint-disable-next-line sonarjs/no-gratuitous-expressions, sonarjs/no-nested-conditional, unicorn/no-nested-ternary
+                        // eslint-disable-next-line sonarjs/no-gratuitous-expressions, sonarjs/no-nested-conditional
                         closingParts.length -= needsForegroundClose && needsBackgroundClose ? 2 : needsForegroundClose || needsBackgroundClose ? 1 : 0;
                         closingParts.push("\u001B[49m", "\u001B[39m");
                     }

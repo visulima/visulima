@@ -3,11 +3,6 @@
     "$schema": "../../node_modules/nx/schemas/project-schema.json",
     "sourceRoot": "packages/email/disposable-email-domains/src",
     "projectType": "library",
-    "tags": [
-        "disposable-email-domains",
-        "type:package"
-    ],
-    "implicitDependencies": [
-        "tabular"
-    ]
+    "tags": ["disposable-email-domains", "type:package"],
+    "implicitDependencies": ["tabular"]
 }

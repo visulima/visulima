@@ -1,24 +1,24 @@
-<div align="center">
-  <h3>Visulima package</h3>
-  <p>
-  A comprehensive package management utility that helps you find root directories, monorepos, package managers, and parse package.json, package.yaml, and package.json5 files with advanced features like catalog resolution and caching.
+<!-- START_PACKAGE_OG_IMAGE_PLACEHOLDER -->
 
-Built on top of
+<a href="https://www.anolilab.com/open-source" align="center">
 
-[@visulima/fs](https://github.com/visulima/visulima/tree/main/packages/fs),
-[@visulima/path](https://github.com/visulima/visulima/tree/main/packages/path),
-[normalize-package-data](https://github.com/npm/normalize-package-data),
-[pathe](https://github.com/unjs/pathe), and
-[type-fest](https://github.com/sindresorhus/type-fest)
+  <img src="__assets__/package-og.svg" alt="package" />
 
-  </p>
-</div>
+</a>
+
+<h3 align="center">A comprehensive package management utility that helps you find root directories, monorepos, package managers, and parse package.json, package.yaml, and package.json5 files with advanced features like catalog resolution.</h3>
+
+<!-- END_PACKAGE_OG_IMAGE_PLACEHOLDER -->
 
 <br />
 
 <div align="center">
 
-[![typescript-image]][typescript-url] [![npm-image]][npm-url] [![license-image]][license-url]
+[![typescript-image][typescript-badge]][typescript-url]
+[![mit licence][license-badge]][license]
+[![npm downloads][npm-downloads-badge]][npm-downloads]
+[![Chat][chat-badge]][chat]
+[![PRs Welcome][prs-welcome-badge]][prs-welcome]
 
 </div>
 
@@ -357,14 +357,23 @@ If you would like to help take a look at the [list of issues](https://github.com
 
 - [read-pkg](https://github.com/sindresorhus/read-pkg) - Read a package.json file.
 
+## Made with ❤️ at Anolilab
+
+This is an open source project and will always remain free to use. If you think it's cool, please star it 🌟. [Anolilab](https://www.anolilab.com/open-source) is a Development and AI Studio. Contact us at [hello@anolilab.com](mailto:hello@anolilab.com) if you need any help with these technologies or just want to say hi!
+
 ## License
 
-The visulima package is open-sourced software licensed under the [MIT][license-url]
+The visulima package is open-sourced software licensed under the [MIT][license]
 
-[typescript-image]: https://img.shields.io/badge/Typescript-294E80.svg?style=for-the-badge&logo=typescript
+<!-- badges -->
 
-[typescript-url]: https://www.typescriptlang.org/ "TypeScript" "typescript"
-[license-image]: https://img.shields.io/npm/l/@visulima/package?color=blueviolet&style=for-the-badge
-[license-url]: LICENSE.md "license"
-[npm-image]: https://img.shields.io/npm/v/@visulima/package/latest.svg?style=for-the-badge&logo=npm
-[npm-url]: https://www.npmjs.com/package/@visulima/package/v/latest "npm"
+[license-badge]: https://img.shields.io/npm/l/@visulima/package?style=for-the-badge
+[license]: https://github.com/visulima/visulima/blob/main/LICENSE
+[npm-downloads-badge]: https://img.shields.io/npm/dm/@visulima/package?style=for-the-badge
+[npm-downloads]: https://www.npmjs.com/package/@visulima/package
+[prs-welcome-badge]: https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=for-the-badge
+[prs-welcome]: https://github.com/visulima/visulima/blob/main/.github/CONTRIBUTING.md
+[chat-badge]: https://img.shields.io/discord/932323359193186354.svg?style=for-the-badge
+[chat]: https://discord.gg/TtFJY8xkFK
+[typescript-badge]: https://img.shields.io/badge/Typescript-294E80.svg?style=for-the-badge&logo=typescript
+[typescript-url]: https://www.typescriptlang.org/

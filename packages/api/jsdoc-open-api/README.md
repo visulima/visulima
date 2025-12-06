@@ -1,24 +1,24 @@
-<div align="center">
-  <h3>Visulima jsdoc-open-api</h3>
-  <p>
-    Generate OpenAPI (Swagger) specifications automatically from your JSDoc comments.
-    <br />
-    This package parses your existing code comments to create comprehensive API documentation, saving you time and effort.
-    <br />
-    It is designed for speed and minimal runtime overhead, building upon the foundations of JSDoc and Swagger standards.
-  </p>
-  <p>
-    <small>
-      <i>Note: This package originated as a fork of <a href="https://github.com/bee-travels/openapi-comment-parser" target="_blank" rel="noopener noreferrer">openapi-comment-parser</a> and <a href="https://github.com/Surnet/swagger-jsdoc" target="_blank" rel="noopener noreferrer">swagger-jsdoc</a>.</i>
-    </small>
-  </p>
-</div>
+<!-- START_PACKAGE_OG_IMAGE_PLACEHOLDER -->
+
+<a href="https://www.anolilab.com/open-source" align="center">
+
+  <img src="__assets__/package-og.svg" alt="jsdoc-open-api" />
+
+</a>
+
+<h3 align="center">Generates swagger doc based on JSDoc.</h3>
+
+<!-- END_PACKAGE_OG_IMAGE_PLACEHOLDER -->
 
 <br />
 
 <div align="center">
 
-[![typescript-image]][typescript-url] [![npm-image]][npm-url] [![license-image]][license-url]
+[![typescript-image][typescript-badge]][typescript-url]
+[![mit licence][license-badge]][license]
+[![npm downloads][npm-downloads-badge]][npm-downloads]
+[![Chat][chat-badge]][chat]
+[![PRs Welcome][prs-welcome-badge]][prs-welcome]
 
 </div>
 
@@ -525,15 +525,12 @@ Contributions are welcome! Please refer to the [Contribution Guidelines](../../.
 
 ---
 
+## Made with ❤️ at Anolilab
+
+This is an open source project and will always remain free to use. If you think it's cool, please star it 🌟. [Anolilab](https://www.anolilab.com/open-source) is a Development and AI Studio. Contact us at [hello@anolilab.com](mailto:hello@anolilab.com) if you need any help with these technologies or just want to say hi!
+
 ## License
 
 This project is licensed under the **MIT License**. See the [LICENSE.md](LICENSE.md) file for details.
 
 ---
-
-[typescript-image]: https://img.shields.io/badge/Typescript-294E80.svg?style=for-the-badge&logo=typescript
-[typescript-url]: https://www.typescriptlang.org/ "TypeScript"
-[license-image]: https://img.shields.io/npm/l/@visulima/jsdoc-open-api?color=blueviolet&style=for-the-badge
-[license-url]: LICENSE.md "license"
-[npm-image]: https://img.shields.io/npm/v/@visulima/jsdoc-open-api/latest.svg?style=for-the-badge&logo=npm
-[npm-url]: https://www.npmjs.com/package/@visulima/jsdoc-open-api/v/latest "npm"
