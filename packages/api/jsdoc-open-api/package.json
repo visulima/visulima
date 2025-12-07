@@ -1,6 +1,6 @@
 {
     "name": "@visulima/jsdoc-open-api",
-    "version": "2.0.95",
+    "version": "3.0.0-alpha.1",
     "description": "Generates swagger doc based on JSDoc.",
     "keywords": [
         "visulima",
@@ -120,7 +120,7 @@
         "@types/lodash.mergewith": "^4.6.9",
         "@types/node": "24.10.1",
         "@types/webpack": "^5.28.5",
-        "@visulima/fs": "4.1.0",
+        "@visulima/fs": "5.0.0-alpha.1",
         "@vitest/coverage-v8": "^4.0.15",
         "@vitest/ui": "^4.0.15",
         "cli-progress": "^3.12.0",
