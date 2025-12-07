@@ -10,6 +10,12 @@
         "apps/*"
     ],
     "scripts": {
+        "lint:eslint:html": "pnpm --filter \"html\" run lint:eslint",
+        "lint:eslint:fix:html": "pnpm --filter \"html\" run lint:eslint:fix",
+        "lint:types:html": "pnpm --filter \"html\" run lint:types",
+        "test:html": "pnpm --filter \"html\" run test",
+        "test:coverage:html": "pnpm --filter \"html\" run test:coverage",
+        "test:ui:html": "pnpm --filter \"html\" run test:ui",
         "audit": "audit-ci --config ./audit-ci.jsonc",
         "bench:cerebro": "pnpm --filter \"cerebro-bench\" run test:bench",
         "bench:colorize": "pnpm --filter \"colorize-bench\" run test:bench",

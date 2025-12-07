@@ -1,0 +1,8 @@
+{
+    "name": "html",
+    "$schema": "../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "packages/html/src",
+    "projectType": "library",
+    "tags": ["html", "type:package"],
+    "implicitDependencies": []
+}
