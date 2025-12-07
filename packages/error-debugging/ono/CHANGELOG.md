@@ -1,3 +1,19 @@
+## @visulima/ono [2.0.0-alpha.1](https://github.com/visulima/visulima/compare/@visulima/ono@1.0.12...@visulima/ono@2.0.0-alpha.1) (2025-12-07)
+
+### ⚠ BREAKING CHANGES
+
+* change min node version to 22.13
+
+### Bug Fixes
+
+* add new package image, fixed readme rendering on npm, fixed building of packages ([b790ba2](https://github.com/visulima/visulima/commit/b790ba253ea07fef83528fd822a678facf021b5f))
+* update Node.js engine version requirement to >=22.13 in multiple package.json files for improved compatibility ([b828e9a](https://github.com/visulima/visulima/commit/b828e9aeaebfc798eecddccd90e6ec7560c6d36a))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 6.0.0-alpha.1
+
 ## @visulima/ono [1.0.12](https://github.com/visulima/visulima/compare/@visulima/ono@1.0.11...@visulima/ono@1.0.12) (2025-11-13)
 
 ### Bug Fixes
