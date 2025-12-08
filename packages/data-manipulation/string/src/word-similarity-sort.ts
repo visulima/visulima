@@ -39,11 +39,7 @@ export interface WordSimilaritySortOptions {
  * @param options Options for the sort.
  * @returns A sorted copy of `possibleWords`.
  */
-export const wordSimilaritySort = (
-    givenWord: string,
-    possibleWords: ReadonlyArray<string>,
-    options?: WordSimilaritySortOptions,
-): string[] => {
+export const wordSimilaritySort = (givenWord: string, possibleWords: ReadonlyArray<string>, options?: WordSimilaritySortOptions): string[] => {
     const { caseSensitive = false, compareFunction = levenshteinDistance } = options ?? {};
 
     const processedGivenWord = caseSensitive ? givenWord : givenWord.toLowerCase();

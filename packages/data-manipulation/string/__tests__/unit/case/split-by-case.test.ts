@@ -1,6 +1,7 @@
 import { bgRed } from "@visulima/colorize";
 import { describe, expect, it } from "vitest";
 
+import type { NodeLocale } from "../../../src";
 import { splitByCase } from "../../../src/case/split-by-case";
 
 describe(splitByCase, () => {
@@ -73,14 +74,12 @@ describe(splitByCase, () => {
     });
 
     it("should handle path case", () => {
-        expect.assertions(2);
+        expect.assertions(4);
         expect(splitByCase("foo/bar/baz")).toStrictEqual(["foo", "bar", "baz"]);
         expect(splitByCase("some/mixed/Case/test")).toStrictEqual(["some", "mixed", "Case", "test"]);
 
-        // TODO: Fix this
-
-        // expect(splitByCase("../foo/bar")).toStrictEqual(["..", "foo", "bar"]);
-        // expect(splitByCase("foo/../../bar")).toStrictEqual(["foo", "..", "..", "bar"]);
+        expect(splitByCase("../foo/bar")).toStrictEqual(["..", "foo", "bar"]);
+        expect(splitByCase("foo/../../bar")).toStrictEqual(["foo", "..", "..", "bar"]);
     });
 
     it("should handle complex mixed cases", () => {
@@ -632,7 +631,7 @@ describe(splitByCase, () => {
         });
 
         describe("uzbek case handling", () => {
-            const options = { locale: "uz" };
+            const options = { locale: "uz" as NodeLocale };
 
             it("should handle Uzbek Latin script", () => {
                 expect.assertions(3);
@@ -644,6 +643,7 @@ describe(splitByCase, () => {
 
             it("should handle Uzbek Cyrillic script", () => {
                 expect.assertions(3);
+
                 expect(splitByCase("саломДунё", options)).toStrictEqual(["салом", "Дунё"]);
                 expect(splitByCase("ўзбекText", options)).toStrictEqual(["ўзбек", "Text"]);
                 expect(splitByCase("каттаҲарф", options)).toStrictEqual(["катта", "Ҳарф"]);
@@ -651,6 +651,7 @@ describe(splitByCase, () => {
 
             it("should handle mixed script cases", () => {
                 expect.assertions(2);
+
                 expect(splitByCase("oʻzbekЎзбек", options)).toStrictEqual(["oʻzbek", "Ўзбек"]);
                 expect(splitByCase("latinКирилText", options)).toStrictEqual(["latin", "Кирил", "Text"]);
             });
@@ -677,7 +678,7 @@ describe(splitByCase, () => {
         it("should handle Turkish specific cases", () => {
             expect.assertions(4);
 
-            const locale = "tr-TR";
+            const locale = "tr-TR" as NodeLocale;
 
             expect(splitByCase("İstanbulCity", { locale })).toStrictEqual(["İstanbul", "City"]);
             expect(splitByCase("izmirŞehir", { locale })).toStrictEqual(["izmir", "Şehir"]);
@@ -688,7 +689,7 @@ describe(splitByCase, () => {
         it("should handle Azerbaijani specific cases", () => {
             expect.assertions(3);
 
-            const locale = "az-AZ";
+            const locale = "az-AZ" as NodeLocale;
 
             expect(splitByCase("İlkinTest", { locale })).toStrictEqual(["İlkin", "Test"]);
             expect(splitByCase("bakıŞəhər", { locale })).toStrictEqual(["bakı", "Şəhər"]);
@@ -696,7 +697,7 @@ describe(splitByCase, () => {
         });
 
         describe("german case handling", () => {
-            const options = { locale: "de-DE" };
+            const options = { locale: "de-DE" as NodeLocale };
 
             it("should handle German specific cases", () => {
                 expect.assertions(6);

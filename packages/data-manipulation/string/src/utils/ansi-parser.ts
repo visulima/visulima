@@ -70,6 +70,7 @@ export const processAnsiString = (string: string, options: ProcessAnsiStringOpti
                     return;
                 }
 
+                // eslint-disable-next-line sonarjs/no-redundant-assignments
                 currentText = "";
             }
 
@@ -115,6 +116,7 @@ export const processAnsiString = (string: string, options: ProcessAnsiStringOpti
                     return;
                 }
 
+                // eslint-disable-next-line sonarjs/updated-loop-counter
                 index = urlEnd;
                 isInHyperlink = true;
                 isInsideEscape = false;
@@ -141,6 +143,7 @@ export const processAnsiString = (string: string, options: ProcessAnsiStringOpti
                 isInHyperlink = false;
                 currentUrl = "";
 
+                // eslint-disable-next-line sonarjs/updated-loop-counter
                 index += 1; // Skip the backslash
                 isInsideEscape = false;
                 escapeBuffer = "";

@@ -17,7 +17,7 @@ const formatReplaceOption = (option: OptionReplaceCombined): OptionReplaceArray 
 
     const replaceArray: OptionReplaceArray = [];
 
-    for (const key in option as OptionReplaceObject) {
+    for (const key of Object.keys(option as OptionReplaceObject)) {
         if (Object.prototype.hasOwnProperty.call(option, key)) {
             const value = (option as OptionReplaceObject)[key];
 
@@ -121,10 +121,7 @@ const transliterate = (source: string, options?: OptionsTransliterate): string =
 
         if (codePoint === undefined) {
             // Should not happen with valid strings if index is always valid.
-
             char = input[index] as string; // This might be undefined if index is out of bounds, handled by `result += s` later if s remains undefined
-            charLength = 1;
-            s = opt.unknown; // Directly assign if codePoint is undefined
         } else {
             char = String.fromCodePoint(codePoint);
             charLength = char.length; // Correctly 1 for BMP, 2 for astral (like emoji)
@@ -138,11 +135,7 @@ const transliterate = (source: string, options?: OptionsTransliterate): string =
 
         if (finalIgnoreRanges.length > 0) {
             // Advance currentIgnoreRangeIndex if current char `index` is past the current ignore range
-            while (
-                currentIgnoreRangeIndex < finalIgnoreRanges.length
-
-                && (finalIgnoreRanges[currentIgnoreRangeIndex] as Interval)[1] < index
-            ) {
+            while (currentIgnoreRangeIndex < finalIgnoreRanges.length && (finalIgnoreRanges[currentIgnoreRangeIndex] as Interval)[1] < index) {
                 currentIgnoreRangeIndex += 1;
             }
 

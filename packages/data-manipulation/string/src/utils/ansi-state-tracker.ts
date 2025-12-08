@@ -2,9 +2,9 @@
  * Tracks ANSI color state to ensure proper color continuation across text operations
  */
 class AnsiStateTracker {
-    private activeForeground: string | null = null;
+    private activeForeground: string | undefined = undefined;
 
-    private activeBackground: string | null = null;
+    private activeBackground: string | undefined = undefined;
 
     // Track other formatting (bold, italic, etc.)
     private activeFormatting: string[] = [];
@@ -16,7 +16,7 @@ class AnsiStateTracker {
 
     public processEscape(sequence: string): void {
         // Extract the numeric code from the sequence
-        // eslint-disable-next-line no-control-regex, unicorn/no-hex-escape
+        // eslint-disable-next-line no-control-regex, unicorn/no-hex-escape, sonarjs/no-control-regex
         const match = /\x1B\[(\d+)m/.exec(sequence);
 
         if (!match) {
@@ -29,19 +29,19 @@ class AnsiStateTracker {
         switch (code) {
             case 0: {
                 // Reset all states
-                this.activeForeground = null;
-                this.activeBackground = null;
+                this.activeForeground = undefined;
+                this.activeBackground = undefined;
                 this.activeFormatting = [];
                 break;
             }
             case 39: {
                 // Reset foreground color only
-                this.activeForeground = null;
+                this.activeForeground = undefined;
                 break;
             }
             case 49: {
                 // Reset background color only
-                this.activeBackground = null;
+                this.activeBackground = undefined;
                 break;
             }
             default: {
@@ -112,7 +112,7 @@ class AnsiStateTracker {
             };
 
             // Iterate in reverse for arguably better visual nesting behavior on reset
-            [...this.activeFormatting].reverse().forEach((formatCode) => {
+            [...this.activeFormatting].toReversed().forEach((formatCode) => {
                 const resetCode = formatResetMap[formatCode];
 
                 if (resetCode) {

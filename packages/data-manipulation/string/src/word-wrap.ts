@@ -1,8 +1,8 @@
 import { ANSI_ESCAPE_BELL, ANSI_SGR_TERMINATOR, ESCAPES, RE_ZERO_WIDTH } from "./constants";
 import { getStringWidth } from "./get-string-width";
 import { checkEscapeSequence, processAnsiString } from "./utils/ansi-parser";
-import preserveAnsi from "./utils/ansi-preserve";
 import AnsiStateTracker from "./utils/ansi-state-tracker";
+import preserveAnsi from "./utils/preserve-ansi";
 
 /**
  * Helper function to reset ANSI sequences at line breaks
@@ -80,8 +80,9 @@ const wrapWithBreakAtWidth = (string: string, width: number, trim: boolean): str
     let escapeBuffer = "";
 
     // For each character in the input string
-    // eslint-disable-next-line no-plusplus
-    for (let index = 0; index < string.length; index++) {
+    let index = 0;
+
+    while (index < string.length) {
         const char = string[index] as string;
 
         // Handle escape sequences
@@ -93,6 +94,7 @@ const wrapWithBreakAtWidth = (string: string, width: number, trim: boolean): str
             const escapeInfo = checkEscapeSequence([...string], index);
 
             isInsideLinkEscape = escapeInfo.isInsideLinkEscape;
+            index += 1;
 
             continue;
         }
@@ -111,6 +113,7 @@ const wrapWithBreakAtWidth = (string: string, width: number, trim: boolean): str
                 ansiTracker.processEscape(escapeBuffer);
             }
 
+            index += 1;
             continue;
         }
 
@@ -120,6 +123,7 @@ const wrapWithBreakAtWidth = (string: string, width: number, trim: boolean): str
         // Skip zero-width characters
         if (charWidth === 0) {
             currentLine += char;
+            index += 1;
 
             continue;
         }
@@ -139,20 +143,8 @@ const wrapWithBreakAtWidth = (string: string, width: number, trim: boolean): str
             // Handle spaces at wrap points
             if (isSpace && trim) {
                 // Skip all spaces when trim=true
-
                 while (index < string.length && string[index] === " ") {
                     index += 1;
-
-                    // Prevent infinite loop by breaking out if we've reached the end
-                    if (index >= string.length) {
-                        break;
-                    }
-                }
-
-                // Only adjust if we haven't reached the end of the string
-                if (index < string.length) {
-                    // eslint-disable-next-line no-plusplus
-                    index--;
                 }
 
                 continue;
@@ -178,10 +170,12 @@ const wrapWithBreakAtWidth = (string: string, width: number, trim: boolean): str
                 while (index < string.length && string[index] === " ") {
                     index += 1;
                 }
-                // eslint-disable-next-line no-plusplus
-                index--; // Adjust for the loop increment
+
+                continue;
             }
         }
+
+        index += 1;
     }
 
     // Add the final line if not empty
@@ -222,6 +216,7 @@ const wrapCharByChar = (string: string, width: number, trim: boolean): string[] 
     // Process string character by character
     processAnsiString(inputToProcess, {
         getWidth: getStringWidth,
+        // eslint-disable-next-line sonarjs/cognitive-complexity,sonarjs/no-invariant-returns
         onSegment: (segment, stateTracker: AnsiStateTracker) => {
             if (segment.isEscapeSequence) {
                 currentLine += segment.text;
@@ -403,15 +398,16 @@ const wrapAndBreakWords = (string: string, width: number, trim: boolean): string
 
         // If the token itself is wider than the line width
         if (tokenVisibleWidth > width) {
-            if (currentLine) { // Push any existing line before processing the long token
+            if (currentLine) {
+                // Push any existing line before processing the long token
                 rows.push(resetAnsiAtLineBreak(trim ? stringVisibleTrimSpacesRight(currentLine) : currentLine));
             }
 
             const brokenLines = wrapWithBreakAtWidth(token, width, trim);
 
             if (brokenLines.length > 0) {
-                for (let index_ = 0; index_ < brokenLines.length - 1; index_++) {
-                    rows.push(brokenLines[index_] as string);
+                for (let brokenLineIndex = 0; brokenLineIndex < brokenLines.length - 1; brokenLineIndex += 1) {
+                    rows.push(brokenLines[brokenLineIndex] as string);
                 }
 
                 currentLine = brokenLines[brokenLines.length - 1] as string;

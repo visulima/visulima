@@ -141,7 +141,7 @@ const templateCache = new WeakMap<TemplateStringsArray, string[]>();
 
 const createInstance = (options: Options): Outdent => {
     const enableCache = options.cache !== false;
-    const cache = enableCache ? options.cacheStore ?? templateCache : null;
+    const cache = enableCache ? options.cacheStore ?? templateCache : undefined;
     const hasNewlineOption = options.newline !== undefined;
 
     // Define the actual outdent function returned by the factory

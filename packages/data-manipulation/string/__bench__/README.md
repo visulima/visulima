@@ -95,13 +95,11 @@ Benchmarks compare against popular alternatives:
 The implementations are optimized for:
 
 1. Efficient Operations
-
     - Smart caching for repeated operations
     - Optimized string handling
     - Memory-efficient processing
 
 2. Special Cases
-
     - ANSI escape sequences
     - Unicode/emoji support
     - Multi-byte characters

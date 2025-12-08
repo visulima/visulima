@@ -1,3 +1,5 @@
+/* eslint-disable jsdoc/informative-docs */
+
 /**
  * Modified copy of https://github.com/sindresorhus/cli-truncate/blob/main/index.js
  *
@@ -6,6 +8,7 @@
  */
 import type { StringTruncatedWidthOptions } from "./get-string-truncated-width";
 import { getStringTruncatedWidth } from "./get-string-truncated-width";
+import { getStringWidth } from "./get-string-width";
 import { slice } from "./slice";
 
 // Predefined constants
@@ -14,25 +17,25 @@ const MAX_SPACE_SEARCH_DISTANCE = 3;
 
 /**
  * Find the index of the nearest space character within a specified distance
- * @param str The string to search in
- * @param startIndex The index to start searching from
+ * @param value The string to search in
+ * @param startIndex The string index to start searching from (must be a valid string index, not width-based)
  * @param searchRight Direction to search (true = right, false = left)
  * @returns The index of the nearest space or the original index if no space is found
  */
-const findNearestSpace = (string_: string, startIndex: number, searchRight = false): number => {
+const findNearestSpace = (value: string, startIndex: number, searchRight = false): number => {
     // Early return if already at a space
-    if (string_.charAt(startIndex) === " ") {
+    if (value.charAt(startIndex) === " ") {
         return startIndex;
     }
 
     const direction = searchRight ? 1 : -1;
-    const limit = Math.min(MAX_SPACE_SEARCH_DISTANCE, searchRight ? string_.length - startIndex : startIndex);
+    const limit = Math.min(MAX_SPACE_SEARCH_DISTANCE, searchRight ? value.length - startIndex : startIndex);
 
     // eslint-disable-next-line no-plusplus
     for (let offset = 1; offset <= limit; offset++) {
         const index = startIndex + offset * direction;
 
-        if (string_.charAt(index) === " ") {
+        if (value.charAt(index) === " ") {
             return index;
         }
     }
@@ -40,9 +43,37 @@ const findNearestSpace = (string_: string, startIndex: number, searchRight = fal
     return startIndex;
 };
 
+/**
+ * Converts a width-based position to a string index
+ * @param input The string to convert width for
+ * @param targetWidth The target width position
+ * @param widthOptions Width calculation options
+ * @returns The string index corresponding to the target width
+ */
+const widthToIndex = (input: string, targetWidth: number, widthOptions?: TruncateOptions["width"]): number => {
+    const result = getStringTruncatedWidth(input, {
+        ...widthOptions,
+        ellipsis: "",
+        ellipsisWidth: 0,
+        limit: targetWidth,
+    });
+
+    return result.index;
+};
+
+/**
+ * Converts a string index to a width position
+ * @param input The string to convert width for
+ * @param stringIndex The string index to convert
+ * @param widthOptions Width calculation options
+ * @returns The width position corresponding to the string index
+ */
+const indexToWidth = (input: string, stringIndex: number, widthOptions?: TruncateOptions["width"]): number =>
+    getStringWidth(input.slice(0, stringIndex), widthOptions);
+
 export type TruncateOptions = {
     /**
-     * String to append when truncation occurs
+     * Text appended to the string when it is truncated
      * @default '…'
      */
     ellipsis?: string;
@@ -145,10 +176,13 @@ export const truncate = (input: string, limit: number, options: TruncateOptions 
     switch (position) {
         case "end": {
             if (preferTruncationOnSpace) {
-                const nearestSpace = findNearestSpace(input, limit - 1);
+                const targetWidth = limit - ellipsisWidth;
+                const stringIndex = widthToIndex(input, targetWidth, options.width);
+                const nearestSpace = findNearestSpace(input, stringIndex);
+                const nearestSpaceWidth = indexToWidth(input, nearestSpace, options.width);
 
                 return (
-                    slice(input, 0, nearestSpace, {
+                    slice(input, 0, nearestSpaceWidth, {
                         width: options.width,
                     }) + ellipsis
                 );
@@ -163,20 +197,32 @@ export const truncate = (input: string, limit: number, options: TruncateOptions 
 
         case "middle": {
             const half = Math.floor(limit / 2);
+            const totalTextWidth = Math.max(0, limit - ellipsisWidth);
+            const leftWidth = Math.min(half, totalTextWidth);
+            const rightWidth = Math.max(0, totalTextWidth - leftWidth);
 
             if (preferTruncationOnSpace) {
-                const firstBreak = findNearestSpace(input, half);
-                const secondBreak = findNearestSpace(input, width - (limit - half) + 1, true);
+                const firstBreakIndex = widthToIndex(input, leftWidth, options.width);
+                const firstBreak = findNearestSpace(input, firstBreakIndex);
+                const firstBreakWidth = indexToWidth(input, firstBreak, options.width);
+                const secondBreakWidthTarget = width - rightWidth;
+                const secondBreakIndex = widthToIndex(input, secondBreakWidthTarget, options.width);
+                const secondBreak = findNearestSpace(input, secondBreakIndex, true);
+                const secondBreakWidthActual = indexToWidth(input, secondBreak, options.width);
 
-                return slice(input, 0, firstBreak) + ellipsis + slice(input, secondBreak, width).trim();
+                return (
+                    slice(input, 0, firstBreakWidth, { width: options.width })
+                    + ellipsis
+                    + slice(input, secondBreakWidthActual, width, { width: options.width }).trim()
+                );
             }
 
             return (
-                slice(input, 0, half, {
+                slice(input, 0, leftWidth, {
                     width: options.width,
                 })
                 + ellipsis
-                + slice(input, width - (limit - half) + ellipsisWidth, width, {
+                + slice(input, width - rightWidth, width, {
                     width: options.width,
                 })
             );
@@ -184,9 +230,12 @@ export const truncate = (input: string, limit: number, options: TruncateOptions 
 
         case "start": {
             if (preferTruncationOnSpace) {
-                const nearestSpace = findNearestSpace(input, width - limit + 1, true);
+                const targetWidth = width - limit + ellipsisWidth;
+                const stringIndex = widthToIndex(input, targetWidth, options.width);
+                const nearestSpace = findNearestSpace(input, stringIndex, true);
+                const nearestSpaceWidth = indexToWidth(input, nearestSpace, options.width);
 
-                return ellipsis + slice(input, nearestSpace, width).trim();
+                return ellipsis + slice(input, nearestSpaceWidth, width, { width: options.width }).trim();
             }
 
             return (

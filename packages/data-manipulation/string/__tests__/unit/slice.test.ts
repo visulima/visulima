@@ -62,6 +62,7 @@ describe(slice, () => {
         expect(slice(fixture, 10, 20)).toEqualAnsi(b);
         expect(slice(fixture, 3, 20)).toEqualAnsi(c);
 
+        // prettier-ignore
         const string
             = generate(1)
                 + generate(2)

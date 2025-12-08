@@ -1,3 +1,5 @@
+/* eslint-disable jsdoc/informative-docs */
+
 /**
  * This file is ported from https://github.com/nexdrew/ansi-align into typescript.
  *
@@ -21,7 +23,7 @@ export type AlignTextOptions = {
     align?: "center" | "left" | "right";
 
     /**
-     * The character to use for padding.
+     * Character used for padding when aligning text.
      * @default " "
      */
     pad?: string;
@@ -55,10 +57,7 @@ export type AlignTextOptions = {
  * @param options Options for controlling the alignment.
  * @returns The aligned string or array of strings, matching the input type.
  */
-export const alignText = (
-    text: string[] | string,
-    options: AlignTextOptions = {},
-): string[] | string => {
+export const alignText = (text: string[] | string, options: AlignTextOptions = {}): string[] | string => {
     const align = options.align ?? "center";
 
     // short-circuit `align: 'left'` as no-op

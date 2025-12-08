@@ -52,6 +52,7 @@ export const expectAnsiStrings = (actual: string, expected: string): Expectation
             // If the visible content is the same but ANSI codes differ
             const strippedEqual = actualFormatted.stripped === expectedFormatted.stripped;
 
+            // prettier-ignore
             return format(
                 "ANSI string comparison failed:\n\n"
                 + "Actual:\n"
