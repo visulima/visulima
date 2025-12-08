@@ -308,11 +308,11 @@ export type Length<T extends string> = IsStringLiteral<T> extends true ? Split<T
  * Type-level implementation of string.padEnd() functionality.
  * Adds padding to the end of a string type until it reaches a specified length.
  * @template T - The string type to pad
- * @template Times - The number of times to repeat the padding
+ * @template Times - Target total length of the padded string
  * @template Pad - The string to use as padding (defaults to space)
  * @returns A string type with the padding added to the end
  * @example
- * type Padded = PadEnd<'hello', 2, '_'> // type Padded = 'hello__'
+ * type Padded = PadEnd<'hello', 7, '_'> // type Padded = 'hello__'
  */
 export type PadEnd<T extends string, Times extends number = 0, Pad extends string = " ">
     = All<[IsStringLiteral<Pad | T>, IsNumberLiteral<Times>]> extends true
@@ -327,11 +327,11 @@ export type PadEnd<T extends string, Times extends number = 0, Pad extends strin
  * Type-level implementation of string.padStart() functionality.
  * Adds padding to the beginning of a string type until it reaches a specified length.
  * @template T - The string type to pad
- * @template Times - The number of times to repeat the padding
+ * @template Times - Target total length of the padded string
  * @template Pad - The string to use as padding (defaults to space)
  * @returns A string type with the padding added to the start
  * @example
- * type Padded = PadStart<'hello', 2, '_'> // type Padded = '__hello'
+ * type Padded = PadStart<'hello', 7, '_'> // type Padded = '__hello'
  */
 export type PadStart<T extends string, Times extends number = 0, Pad extends string = " ">
     = All<[IsStringLiteral<Pad | T>, IsNumberLiteral<Times>]> extends true
@@ -364,9 +364,9 @@ export type Repeat<T extends string, Times extends number = 0>
  * Type-level implementation of string.replaceAll() functionality.
  * Replaces all occurrences of a substring with another string.
  * @template Sentence - The string type to perform replacements on
- * @template Lookup - The string type to search for
+ * @template Lookup - The string or RegExp pattern to search for. When a RegExp is used, the result type widens to string.
  * @template Replacement - The string type to replace matches with
- * @returns A string type with all occurrences of Lookup replaced with Replacement
+ * @returns A string type with all occurrences of Lookup replaced with Replacement. When Lookup is a RegExp, returns string.
  * @example
  * type Replaced = ReplaceAll<'hello hello', 'hello', 'hi'> // type Replaced = 'hi hi'
  */
@@ -382,9 +382,9 @@ export type ReplaceAll<Sentence extends string, Lookup extends RegExp | string, 
  * Type-level implementation of string.replace() functionality.
  * Replaces the first occurrence of a substring with another string.
  * @template Sentence - The string type to perform replacement on
- * @template Lookup - The string type to search for
+ * @template Lookup - The string or RegExp pattern to search for. When a RegExp is used, the result type widens to string.
  * @template Replacement - The string type to replace the match with
- * @returns A string type with the first occurrence of Lookup replaced with Replacement
+ * @returns A string type with the first occurrence of Lookup replaced with Replacement. When Lookup is a RegExp, returns string.
  * @example
  * type Replaced = Replace<'hello hello', 'hello', 'hi'> // type Replaced = 'hi hello'
  */

@@ -68,7 +68,8 @@ const widthToIndex = (input: string, targetWidth: number, widthOptions?: Truncat
  * @param widthOptions Width calculation options
  * @returns The width position corresponding to the string index
  */
-const indexToWidth = (input: string, stringIndex: number, widthOptions?: TruncateOptions["width"]): number => getStringWidth(input.slice(0, stringIndex), widthOptions);
+const indexToWidth = (input: string, stringIndex: number, widthOptions?: TruncateOptions["width"]): number =>
+    getStringWidth(input.slice(0, stringIndex), widthOptions);
 
 export type TruncateOptions = {
     /**
@@ -196,13 +197,16 @@ export const truncate = (input: string, limit: number, options: TruncateOptions 
 
         case "middle": {
             const half = Math.floor(limit / 2);
+            const totalTextWidth = Math.max(0, limit - ellipsisWidth);
+            const leftWidth = Math.min(half, totalTextWidth);
+            const rightWidth = Math.max(0, totalTextWidth - leftWidth);
 
             if (preferTruncationOnSpace) {
-                const firstBreakIndex = widthToIndex(input, half, options.width);
+                const firstBreakIndex = widthToIndex(input, leftWidth, options.width);
                 const firstBreak = findNearestSpace(input, firstBreakIndex);
                 const firstBreakWidth = indexToWidth(input, firstBreak, options.width);
-                const secondBreakWidth = width - (limit - half) + ellipsisWidth;
-                const secondBreakIndex = widthToIndex(input, secondBreakWidth, options.width);
+                const secondBreakWidthTarget = width - rightWidth;
+                const secondBreakIndex = widthToIndex(input, secondBreakWidthTarget, options.width);
                 const secondBreak = findNearestSpace(input, secondBreakIndex, true);
                 const secondBreakWidthActual = indexToWidth(input, secondBreak, options.width);
 
@@ -214,11 +218,11 @@ export const truncate = (input: string, limit: number, options: TruncateOptions 
             }
 
             return (
-                slice(input, 0, half, {
+                slice(input, 0, leftWidth, {
                     width: options.width,
                 })
                 + ellipsis
-                + slice(input, width - (limit - half) + ellipsisWidth, width, {
+                + slice(input, width - rightWidth, width, {
                     width: options.width,
                 })
             );

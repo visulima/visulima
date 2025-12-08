@@ -203,6 +203,30 @@ const handleScriptTransitions = (
 };
 
 /**
+ * Internal helper: Detects and processes a known acronym at the current start position.
+ * @param s The string being processed.
+ * @param start The current start position.
+ * @param knownAcronyms A set of known acronyms to check.
+ * @param tokens The tokens array to append the acronym to.
+ * @returns The new start position after the acronym, or the original start if no acronym found.
+ */
+const detectAndProcessAcronym = (s: string, start: number, knownAcronyms: Set<string>, tokens: string[]): number => {
+    if (knownAcronyms.size === 0) {
+        return start;
+    }
+
+    for (const acronym of knownAcronyms) {
+        if (s.startsWith(acronym, start)) {
+            tokens.push(acronym);
+
+            return start + acronym.length;
+        }
+    }
+
+    return start;
+};
+
+/**
  * Internal helper: Splits a string by camelCase/PascalCase conventions using fast ASCII checks.
  * Optimized for strings primarily using ASCII characters. Handles known acronyms.
  * @param s The string to split.
@@ -227,25 +251,19 @@ const splitCamelCaseFast = (s: string, knownAcronyms: Set<string> = new Set()): 
 
     // eslint-disable-next-line no-plusplus
     for (let index = 1; index < width; index++) {
+        // Check for acronyms at the current start position
+        const newStart = detectAndProcessAcronym(s, start, knownAcronyms, tokens);
+
+        if (newStart !== start) {
+            // An acronym was found and processed, skip to the position after it
+            start = newStart;
+            /* eslint-disable-next-line sonarjs/updated-loop-counter, @typescript-eslint/no-loop-func */
+            index = start - 1; // Set to start-1 so next iteration (after index++) resumes at start
+            continue;
+        }
+
         const previousCode = s.codePointAt(index - 1);
         const currentCode = s.codePointAt(index);
-
-        if (knownAcronyms.size > 0) {
-            for (const acronym of knownAcronyms) {
-                if (s.startsWith(acronym, start)) {
-                    tokens.push(acronym);
-                    start += acronym.length;
-                    // eslint-disable-next-line sonarjs/updated-loop-counter
-                    index = start - 1; // Move past the acronym
-                    break; // Stop checking other acronyms
-                }
-            }
-
-            // Ensure we haven't already moved start forward
-            if (index < start) {
-                continue;
-            }
-        }
 
         const previousIsUpper = previousCode && previousCode < 128 && isUpper(previousCode);
 
@@ -854,6 +872,14 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
                 result.push(currentSegment, acronym);
                 acronymLength = acronym.length;
                 currentSegment = "";
+
+                // Keep case-tracking consistent by basing previousIsUpper on the acronym tail.
+                const lastAcronymChar = acronym[acronym.length - 1];
+
+                if (lastAcronymChar) {
+                    previousIsUpper = lastAcronymChar === lastAcronymChar.toLocaleUpperCase(locale);
+                }
+
                 break;
             }
         }
