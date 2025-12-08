@@ -1,3 +1,10 @@
+## @visulima/boxen [3.0.0-alpha.2](https://github.com/visulima/visulima/compare/@visulima/boxen@3.0.0-alpha.1...@visulima/boxen@3.0.0-alpha.2) (2025-12-08)
+
+
+### Dependencies
+
+* **@visulima/string:** upgraded to 3.0.0-alpha.2
+
 ## @visulima/boxen [3.0.0-alpha.1](https://github.com/visulima/visulima/compare/@visulima/boxen@2.0.10...@visulima/boxen@3.0.0-alpha.1) (2025-12-07)
 
 ### ⚠ BREAKING CHANGES
