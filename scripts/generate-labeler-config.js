@@ -7,8 +7,8 @@
  * Copyright (c) 2021-present Tanner Linsley
  */
 
-import { readdirSync, existsSync, writeFileSync } from "node:fs";
-import { resolve, join } from "node:path";
+import { readdirSync, existsSync, writeFileSync, statSync } from "node:fs";
+import { resolve, join, relative } from "node:path";
 import * as prettier from "prettier";
 
 /**
@@ -17,25 +17,81 @@ import * as prettier from "prettier";
  */
 
 /**
+ * Directories to exclude from package discovery
+ */
+const EXCLUDED_DIRS = new Set([
+    "node_modules",
+    ".git",
+    "dist",
+    "build",
+    ".next",
+    ".turbo",
+    "__fixtures__",
+    "examples",
+    "__tests__",
+    ".DS_Store",
+]);
+
+/**
+ * Recursively finds all package.json files in the packages directory
+ * @param {string} dir - Directory to search
+ * @param {string} baseDir - Base directory (packages/)
+ * @param {Array<string>} foundPackages - Array to collect found package paths
+ */
+function findPackages(dir, baseDir, foundPackages = []) {
+    try {
+        const entries = readdirSync(dir);
+
+        for (const entry of entries) {
+            // Skip excluded directories
+            if (EXCLUDED_DIRS.has(entry)) {
+                continue;
+            }
+
+            const fullPath = join(dir, entry);
+            const stat = statSync(fullPath);
+
+            if (stat.isDirectory()) {
+                // Check if this directory has a package.json
+                const packageJsonPath = join(fullPath, "package.json");
+                if (existsSync(packageJsonPath)) {
+                    // Get relative path from baseDir
+                    const relativePath = relative(baseDir, fullPath);
+                    foundPackages.push(relativePath);
+                }
+                // Always recurse to find nested packages (even if this directory is a package)
+                findPackages(fullPath, baseDir, foundPackages);
+            }
+        }
+    } catch (error) {
+        // Skip directories we can't read
+        console.warn(`Warning: Could not read directory ${dir}:`, error.message);
+    }
+
+    return foundPackages;
+}
+
+/**
  * @returns {Array<LabelerPair>} Pairs of package labels and their corresponding paths
  */
 function readPairsFromFs() {
-    const ignored = new Set([".DS_Store"]);
+    const packagesDir = resolve("packages");
+
+    if (!existsSync(packagesDir)) {
+        console.warn("packages directory not found");
+        return [];
+    }
+
+    // Find all packages recursively
+    const packagePaths = findPackages(packagesDir, packagesDir);
 
     /** @type {Array<LabelerPair>} */
-    const pairs = [];
-
-    // Add subfolders in the packages folder, i.e. packages/**
-    readdirSync(resolve("packages"))
-        .filter((folder) => !ignored.has(folder))
-        .forEach((folder) => {
-            // Check if package.json exists for the folder before adding it
-            if (existsSync(resolve(join("packages", folder, "package.json")))) {
-                pairs.push([`package: ${folder}`, `packages/${folder}/**/*`]);
-            } else {
-                console.info(`Skipping \`${folder}\` as it does not have a \`package.json\` file.`);
-            }
-        });
+    const pairs = packagePaths.map((packagePath) => {
+        // Create label from path (e.g., "email/email" -> "package: email/email")
+        const label = `package: ${packagePath}`;
+        const globPath = `packages/${packagePath}/**/*`;
+        return [label, globPath];
+    });
 
     // Sort by package name in alphabetical order
     pairs.sort((a, b) => a[0].localeCompare(b[0]));
