@@ -33,8 +33,6 @@ describe(closestString, () => {
     it("closestString() handles empty input", () => {
         expect.assertions(1);
 
-        expect(() => closestString("he", [])).toThrow(
-            "When using closestString(), the possibleWords array must contain at least one word",
-        );
+        expect(() => closestString("he", [])).toThrow("When using closestString(), the possibleWords array must contain at least one word");
     });
 });

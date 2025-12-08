@@ -10,12 +10,7 @@ describe(wordSimilaritySort, () => {
         const possibleWords = ["length", "size", "blah", "help"];
         const givenWord = "hep";
 
-        expect(wordSimilaritySort(givenWord, possibleWords)).toStrictEqual([
-            "help",
-            "blah",
-            "size",
-            "length",
-        ]);
+        expect(wordSimilaritySort(givenWord, possibleWords)).toStrictEqual(["help", "blah", "size", "length"]);
     });
 
     it("with case-sensitive sorting", () => {
@@ -24,9 +19,7 @@ describe(wordSimilaritySort, () => {
         const possibleWords = ["length", "Size", "blah", "HELP"];
         const givenWord = "hep";
 
-        expect(
-            wordSimilaritySort(givenWord, possibleWords, { caseSensitive: true }),
-        ).toStrictEqual(["blah", "HELP", "Size", "length"]);
+        expect(wordSimilaritySort(givenWord, possibleWords, { caseSensitive: true })).toStrictEqual(["blah", "HELP", "Size", "length"]);
     });
 
     it("handles empty string", () => {
@@ -35,13 +28,7 @@ describe(wordSimilaritySort, () => {
         const possibleWords = ["length", "size", "blah", "help", ""];
         const givenWord = "";
 
-        expect(wordSimilaritySort(givenWord, possibleWords)).toStrictEqual([
-            "",
-            "blah",
-            "help",
-            "size",
-            "length",
-        ]);
+        expect(wordSimilaritySort(givenWord, possibleWords)).toStrictEqual(["", "blah", "help", "size", "length"]);
     });
 
     it("handles empty array", () => {

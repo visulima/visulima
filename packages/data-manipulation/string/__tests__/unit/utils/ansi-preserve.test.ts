@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import preserveAnsi from "../../../src/utils/ansi-preserve";
+import preserveAnsi from "../../../src/utils/preserve-ansi";
 
 describe(preserveAnsi, () => {
     describe("basic functionality", () => {

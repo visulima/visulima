@@ -78,6 +78,39 @@ describe(truncate, () => {
             expect(truncate("unicorns rainbow dragons", 6, { position: "middle", preferTruncationOnSpace: true })).toBe("uni…ns");
             expect(truncate("unicorns partying with dragons", 20, { position: "middle", preferTruncationOnSpace: true })).toBe("unicorns…dragons");
         });
+
+        it("should correctly handle preferTruncationOnSpace with CJK characters (width-based positions)", () => {
+            expect.assertions(3);
+
+            // CJK characters have width 2, so "你好 世界" has width 9 (2+2+1+2+2)
+            // When truncating to width 5 with preferTruncationOnSpace, targetWidth = 4
+            // widthToIndex(4) returns index 2 (after "你好"), findNearestSpace finds space at index 2
+            // indexToWidth converts index 2 back to width 4, slice gives "你好" (width 4), plus ellipsis = width 5
+            expect(truncate("你好 世界", 5, { position: "end", preferTruncationOnSpace: true, width: { fullWidth: 2 } })).toBe("你好…");
+
+            // Test start position: "你好 世界" has width 9, truncate to 5
+            // targetWidth = 9 - 5 + 1 = 5, widthToIndex(5) finds position after space
+            expect(truncate("你好 世界", 5, { position: "start", preferTruncationOnSpace: true, width: { fullWidth: 2 } })).toBe("…世界");
+
+            // Test middle position: "你好 世界 测试" has width 11 (2+2+1+2+2+1+2+2), truncate to 7
+            // Verifies that width-to-index conversion works correctly for middle truncation
+            expect(truncate("你好 世界 测试", 7, { position: "middle", preferTruncationOnSpace: true, width: { fullWidth: 2 } })).toBe("你…测试");
+        });
+
+        it("should correctly handle preferTruncationOnSpace with emoji (width-based positions)", () => {
+            expect.assertions(3);
+
+            // "Hello  World" has width 11 (5+1+1+4) with emojiWidth: 2
+            // When truncating to width 8 with preferTruncationOnSpace, targetWidth = 7
+            // Finds nearest space and truncates accordingly
+            expect(truncate("Hello  World", 8, { position: "end", preferTruncationOnSpace: true, width: { emojiWidth: 2 } })).toBe("Hello …");
+
+            // Test start position: finds nearest space from the calculated start position
+            expect(truncate("Hello  World", 8, { position: "start", preferTruncationOnSpace: true, width: { emojiWidth: 2 } })).toBe("…World");
+
+            // Test with limit 9: targetWidth = 8, finds space after "Hello "
+            expect(truncate("Hello  World", 9, { position: "end", preferTruncationOnSpace: true, width: { emojiWidth: 2 } })).toBe("Hello …");
+        });
     });
 
     describe("custom ellipsis", () => {

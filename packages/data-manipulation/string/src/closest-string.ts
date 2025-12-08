@@ -38,15 +38,9 @@ export interface ClosestStringOptions {
  * @param options The options for the comparison.
  * @returns The closest string from `possibleWords`, or `undefined` if `possibleWords` is empty (though the function throws in this case).
  */
-export const closestString = (
-    givenWord: string,
-    possibleWords: ReadonlyArray<string>,
-    options?: ClosestStringOptions,
-): string | undefined => {
+export const closestString = (givenWord: string, possibleWords: ReadonlyArray<string>, options?: ClosestStringOptions): string | undefined => {
     if (possibleWords.length === 0) {
-        throw new TypeError(
-            "When using closestString(), the possibleWords array must contain at least one word",
-        );
+        throw new TypeError("When using closestString(), the possibleWords array must contain at least one word");
     }
 
     const { caseSensitive, compareFn: compareFunction = levenshteinDistance } = { ...options };
@@ -60,9 +54,7 @@ export const closestString = (
     let closestStringDistance = Infinity;
 
     for (const each of possibleWords) {
-        const distance = caseSensitive
-            ? compareFunction(givenWord, each)
-            : compareFunction(givenWord, each.toLowerCase());
+        const distance = caseSensitive ? compareFunction(givenWord, each) : compareFunction(givenWord, each.toLowerCase());
 
         if (distance < closestStringDistance) {
             nearestWord = each;

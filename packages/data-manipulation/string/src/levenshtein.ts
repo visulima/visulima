@@ -1,19 +1,24 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { distance } from "fastest-levenshtein";
 
 export { closest, distance } from "fastest-levenshtein";
 
-export const closestN = (string_: string, array: ReadonlyArray<string>, n: number): (string | null)[] => {
-    const distances = new Array(n).fill(Infinity);
-    const values = new Array(n).fill(null);
+export const closestN = (string_: string, array: ReadonlyArray<string>, n: number): (string | undefined)[] => {
+    const distances = Array.from({ length: n }, () => Infinity);
+    const values = Array.from({ length: n }, () => undefined as string | undefined);
 
-    for (let value of array) {
-        let distribution = distance(string_, value);
+    for (const candidateValue of array) {
+        let currentDistance = distance(string_, candidateValue);
+        let currentValue = candidateValue;
 
-        for (let index = 0; index < n; index++) {
-            if (distribution < distances[index]) {
-                [distribution, distances[index]] = [distances[index], distribution];
-                [value, values[index]] = [values[index], value];
+        for (let index = 0; index < n; index += 1) {
+            if (currentDistance < distances[index]) {
+                const temporaryDistance = distances[index];
+                const temporaryValue = values[index];
+
+                distances[index] = currentDistance;
+                values[index] = currentValue;
+                currentDistance = temporaryDistance;
+                currentValue = temporaryValue ?? "";
             }
         }
     }

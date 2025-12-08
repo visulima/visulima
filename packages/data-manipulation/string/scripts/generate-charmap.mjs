@@ -9,7 +9,7 @@ import UNICODE_MAP from "../data/transliteration.json" with { type: "json" };
  * @param {number} low - The Unicode code point of the character.
  * @returns {boolean} True if the character is Chinese, false otherwise.
  */
-const isChinese = (low) => (low >= 0x4E && low <= 0x9F) || (low >= 0xF9 && low <= 0xFA);
+const isChinese = (low) => (low >= 0x4e && low <= 0x9f) || (low >= 0xf9 && low <= 0xfa);
 
 const inputCharmapModulePath = "./src/charmap"; // Path for import
 const outputDirectory = "./src/charmap"; // Output directory relative to project root

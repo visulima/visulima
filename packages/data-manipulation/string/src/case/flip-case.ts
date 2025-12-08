@@ -9,7 +9,7 @@ const defaultCacheStore = new LRUCache<string, string>(1000);
 
 /**
  * Options specific to flip case operations.
- * @note handleEmoji is not needed as the function preserves emojis by default
+ * Note: handleEmoji is not needed as the function preserves emojis by default
  */
 export type FlipOptions = Omit<CaseOptions, "handleEmoji">;
 
@@ -87,7 +87,15 @@ export const flipCase = <T extends string = string>(value?: T, options?: FlipOpt
         const char = processedValue[index] as string;
         const lowerChar = options?.locale ? char.toLocaleLowerCase(options.locale) : char.toLowerCase();
 
-        result += char === lowerChar ? options?.locale ? char.toLocaleUpperCase(options.locale) : char.toUpperCase() : lowerChar;
+        let flippedChar: string;
+
+        if (char === lowerChar) {
+            flippedChar = options?.locale ? char.toLocaleUpperCase(options.locale) : char.toUpperCase();
+        } else {
+            flippedChar = lowerChar;
+        }
+
+        result += flippedChar;
 
         index += 1;
     }

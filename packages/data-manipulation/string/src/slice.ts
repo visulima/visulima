@@ -194,7 +194,7 @@ const processIntoStyledSegments = (input: string, options: SliceOptions): Styled
                             }
                         }
                     }
-                // Handle background color reset
+                    // Handle background color reset
                 } else if (code === "49") {
                     // Efficient removal of background color styles
                     for (const style of activeStylesSet) {
@@ -207,7 +207,7 @@ const processIntoStyledSegments = (input: string, options: SliceOptions): Styled
                             }
                         }
                     }
-                // Handle other style resets
+                    // Handle other style resets
                 } else if (FORMAT_RESET_CODES.has(code)) {
                     const targetCode = FORMAT_RESET_CODES.get(code);
 
@@ -517,8 +517,14 @@ export type SliceOptions = {
  * @param options Slicing options.
  * @returns The sliced string with ANSI codes preserved.
  */
-// eslint-disable-next-line sonarjs/cognitive-complexity
-export const slice: (inputString: string, startIndex?: number, endIndex?: number, options?: SliceOptions) => string = (inputString: string, startIndex = 0, endIndex = Number.MAX_SAFE_INTEGER, options: SliceOptions = {}): string => {
+
+export const slice: (inputString: string, startIndex?: number, endIndex?: number, options?: SliceOptions) => string = (
+    inputString: string,
+    startIndex = 0,
+    endIndex = Number.MAX_SAFE_INTEGER,
+    options: SliceOptions = {},
+    // eslint-disable-next-line sonarjs/cognitive-complexity
+): string => {
     const config = {
         segmenter: defaultSegmenter,
         ...options,
