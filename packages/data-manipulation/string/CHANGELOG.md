@@ -1,3 +1,9 @@
+## @visulima/string [3.0.0-alpha.2](https://github.com/visulima/visulima/compare/@visulima/string@3.0.0-alpha.1...@visulima/string@3.0.0-alpha.2) (2025-12-08)
+
+### Features
+
+* added new excerpt functions ([#582](https://github.com/visulima/visulima/issues/582)) ([1f2059f](https://github.com/visulima/visulima/commit/1f2059f79e8655d868cd9183d8645224c0af4fbb))
+
 ## @visulima/string [3.0.0-alpha.1](https://github.com/visulima/visulima/compare/@visulima/string@2.0.6...@visulima/string@3.0.0-alpha.1) (2025-12-07)
 
 ### ⚠ BREAKING CHANGES
