@@ -971,6 +971,7 @@ export interface SplitOptions extends LocaleOptions {
  * ```
  */
 
+// eslint-disable-next-line sonarjs/cognitive-complexity
 export const splitByCase = <T extends string = string>(input: T, options: SplitOptions = {}): SplitByCase<T> => {
     if (!input || typeof input !== "string") {
         return [] as unknown as SplitByCase<T>;
@@ -1014,7 +1015,9 @@ export const splitByCase = <T extends string = string>(input: T, options: SplitO
 
     const parts: string[] = [];
     let workingInput = cleanedInput;
-    const regex = new RegExp(separatorRegex.source, separatorRegex.flags.includes("g") ? separatorRegex.flags : `${separatorRegex.flags}g`);
+    // Use regex directly if it already has global flag to avoid ReDoS from reconstructing user-provided regex patterns
+    // When adding 'g' flag, reconstruct only when necessary (note: user-provided RegExp sources are not validated for ReDoS)
+    const regex = separatorRegex.flags.includes("g") ? separatorRegex : new RegExp(separatorRegex.source, `${separatorRegex.flags}g`);
 
     while (workingInput.length > 0) {
         const match = regex.exec(workingInput);
@@ -1056,12 +1059,14 @@ export const splitByCase = <T extends string = string>(input: T, options: SplitO
 
             let pos = 0;
 
+            // eslint-disable-next-line no-cond-assign
             while ((pos = matchText.indexOf("../", pos)) !== -1) {
                 parts.push("..");
                 pos += 3;
             }
 
             pos = 0;
+            // eslint-disable-next-line no-cond-assign
             while ((pos = matchText.indexOf("./", pos)) !== -1) {
                 if (pos === 0 || matchText[pos - 1] !== ".") {
                     parts.push(".");

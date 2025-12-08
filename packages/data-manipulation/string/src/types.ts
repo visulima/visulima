@@ -196,7 +196,7 @@ export type All<BoolArray extends boolean[]>
     = IsBooleanLiteral<BoolArray[number]> extends true
         ? BoolArray extends [infer Head extends boolean, ...infer Rest extends boolean[]]
             ? Head extends true
-                ? Any<Rest>
+                ? All<Rest>
                 : false // Found `false` in array
             : true // Empty array (or all elements have already passed test)
         : false; // Array/Tuple contains `boolean` type

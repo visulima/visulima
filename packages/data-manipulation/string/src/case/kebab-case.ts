@@ -26,6 +26,9 @@ export interface KebabCaseOptions extends CaseOptions {
 
 /**
  * Converts a string to kebab-case.
+ * @param value The string to convert to kebab-case.
+ * @param options Configuration options for kebab-case conversion.
+ * @returns The converted kebab-case string.
  * @example
  * ```typescript
  * kebabCase("fooBar") // => "foo-bar"

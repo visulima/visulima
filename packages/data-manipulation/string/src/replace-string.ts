@@ -188,7 +188,7 @@ const replaceString = (source: string, searches: OptionReplaceArray, ignoreRange
         return b.end - a.end;
     });
 
-    const sortedIgnores = [...ignoreRanges].toSorted((a, b) => a[0] - b[0]);
+    const sortedIgnores = ignoreRanges.toSorted((a, b) => a[0] - b[0]);
     const mergedIgnores = mergeIntervals(sortedIgnores);
 
     // eslint-disable-next-line unicorn/prefer-spread

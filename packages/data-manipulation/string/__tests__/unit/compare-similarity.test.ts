@@ -9,7 +9,7 @@ describe(compareSimilarity, () => {
         const baseWord = "eature";
         const wordsToSort = ["creature", "fixture", "future", "feather"];
         // Sort a copy of the array to avoid mutating the original
-        const sortedWords = [...wordsToSort].toSorted(compareSimilarity(baseWord));
+        const sortedWords = wordsToSort.toSorted(compareSimilarity(baseWord));
 
         expect(sortedWords).toStrictEqual(["creature", "future", "fixture", "feather"]);
     });
@@ -20,7 +20,7 @@ describe(compareSimilarity, () => {
         const baseWord = "hi";
         const wordsToSort = ["hi", "hello", "help", "HOWDY"];
         // Sort a copy of the array
-        const sortedWords = [...wordsToSort].toSorted(compareSimilarity(baseWord, { caseSensitive: true }));
+        const sortedWords = wordsToSort.toSorted(compareSimilarity(baseWord, { caseSensitive: true }));
 
         expect(sortedWords).toStrictEqual(["hi", "help", "hello", "HOWDY"]);
     });
