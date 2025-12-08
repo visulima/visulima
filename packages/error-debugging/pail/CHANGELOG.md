@@ -1,3 +1,10 @@
+## @visulima/pail [4.0.0-alpha.2](https://github.com/visulima/visulima/compare/@visulima/pail@4.0.0-alpha.1...@visulima/pail@4.0.0-alpha.2) (2025-12-08)
+
+
+### Dependencies
+
+* **@visulima/string:** upgraded to 3.0.0-alpha.2
+
 ## @visulima/pail [4.0.0-alpha.1](https://github.com/visulima/visulima/compare/@visulima/pail@3.2.2...@visulima/pail@4.0.0-alpha.1) (2025-12-07)
 
 ### ⚠ BREAKING CHANGES
