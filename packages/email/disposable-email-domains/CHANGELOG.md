@@ -1,3 +1,10 @@
+## @visulima/disposable-email-domains [1.0.0-alpha.3](https://github.com/visulima/visulima/compare/@visulima/disposable-email-domains@1.0.0-alpha.2...@visulima/disposable-email-domains@1.0.0-alpha.3) (2025-12-08)
+
+
+### Dependencies
+
+* **@visulima/tabular:** upgraded to 4.0.0-alpha.2
+
 ## @visulima/disposable-email-domains [1.0.0-alpha.2](https://github.com/visulima/visulima/compare/@visulima/disposable-email-domains@1.0.0-alpha.1...@visulima/disposable-email-domains@1.0.0-alpha.2) (2025-12-07)
 
 ### ⚠ BREAKING CHANGES
