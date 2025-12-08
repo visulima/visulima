@@ -235,6 +235,7 @@ const splitCamelCaseFast = (s: string, knownAcronyms: Set<string> = new Set()): 
                 if (s.startsWith(acronym, start)) {
                     tokens.push(acronym);
                     start += acronym.length;
+                    // eslint-disable-next-line sonarjs/updated-loop-counter
                     index = start - 1; // Move past the acronym
                     break; // Stop checking other acronyms
                 }
@@ -423,13 +424,32 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
         let currentSegment = chars[0] as string;
 
         // Determine initial type (1=cyrillic, 2=latin, 0=other)
-        let previousType = RE_CYRILLIC.test(chars[0] as string) ? 1 : RE_LATIN.test(chars[0] as string) ? 2 : 0;
-        let previousIsUpper = (chars[0] as string) === (chars[0] as string).toLocaleUpperCase(locale);
+        const firstChar = chars[0] as string;
+        let previousType: number;
+
+        if (RE_CYRILLIC.test(firstChar)) {
+            previousType = 1;
+        } else if (RE_LATIN.test(firstChar)) {
+            previousType = 2;
+        } else {
+            previousType = 0;
+        }
+
+        let previousIsUpper = firstChar === firstChar.toLocaleUpperCase(locale);
 
         // eslint-disable-next-line no-plusplus
         for (let index = 1; index < width_; index++) {
             const char = chars[index] as string;
-            const currentType = RE_CYRILLIC.test(char) ? 1 : RE_LATIN.test(char) ? 2 : 0;
+            let currentType: number;
+
+            if (RE_CYRILLIC.test(char)) {
+                currentType = 1;
+            } else if (RE_LATIN.test(char)) {
+                currentType = 2;
+            } else {
+                currentType = 0;
+            }
+
             const isUpperCaseChar = char === char.toLocaleUpperCase(locale);
 
             // Split on script transitions or case changes within the same script
@@ -458,15 +478,14 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
         for (let index = 0; index < result.length; index++) {
             if (
                 index < result.length - 1
-
                 && (result[index] as string).length === 1
-
                 && RE_LATIN.test(result[index] as string)
                 && RE_CYRILLIC.test((result[index + 1] as string)[0] as string)
             ) {
                 finalResult.push((result[index] as string) + (result[index + 1] as string));
-
-                index += 1; // Skip the next segment since we merged it
+                // Skip the next segment since we merged it by incrementing in the loop
+                // eslint-disable-next-line sonarjs/updated-loop-counter
+                index += 1;
             } else {
                 finalResult.push(result[index] as string);
             }
@@ -828,19 +847,21 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
         const isUpperCaseChar = char === char.toLocaleUpperCase(locale);
 
         // Check for acronyms at current position
-        let isAcronym = false;
+        let acronymLength = 0;
 
         for (const acronym of knownAcronyms) {
             if (s.startsWith(acronym, index)) {
                 result.push(currentSegment, acronym);
-                index += acronym.length - 1;
+                acronymLength = acronym.length;
                 currentSegment = "";
-                isAcronym = true;
                 break;
             }
         }
 
-        if (isAcronym) {
+        if (acronymLength > 0) {
+            // Adjust index to skip past the acronym (loop will increment by 1)
+            // eslint-disable-next-line sonarjs/updated-loop-counter
+            index += acronymLength - 1;
             continue;
         }
 
@@ -968,7 +989,7 @@ export const splitByCase = <T extends string = string>(input: T, options: SplitO
 
     // Sort acronyms by length (longest first) to prevent partial matches
     // Convert known acronyms to a Set.
-    const acronymSet = new Set<string>([...knownAcronyms].sort((a, b) => b.length - a.length));
+    const acronymSet = new Set<string>([...knownAcronyms].toSorted((a, b) => b.length - a.length));
 
     let cleanedInput = input;
 
@@ -981,10 +1002,106 @@ export const splitByCase = <T extends string = string>(input: T, options: SplitO
     }
 
     // Precompute the separator regex.
-    const separatorRegex = Array.isArray(separators) ? getSeparatorsRegex(separators as string[]) : separators instanceof RegExp ? separators : RE_SEPARATORS;
+    let separatorRegex: RegExp;
 
-    // First, split the input on explicit separators.
-    const parts = cleanedInput.split(separatorRegex).filter(Boolean);
+    if (Array.isArray(separators)) {
+        separatorRegex = getSeparatorsRegex(separators as string[]);
+    } else if (separators instanceof RegExp) {
+        separatorRegex = separators;
+    } else {
+        separatorRegex = RE_SEPARATORS;
+    }
+
+    const parts: string[] = [];
+    let workingInput = cleanedInput;
+    const regex = new RegExp(separatorRegex.source, separatorRegex.flags.includes("g") ? separatorRegex.flags : `${separatorRegex.flags}g`);
+
+    while (workingInput.length > 0) {
+        const match = regex.exec(workingInput);
+
+        if (!match) {
+            if (workingInput === "..") {
+                parts.push("..");
+            } else if (workingInput === ".") {
+                parts.push(".");
+            } else if (workingInput.length > 0) {
+                parts.push(workingInput);
+            }
+
+            break;
+        }
+
+        const matchIndex = match.index;
+        const matchText = match[0];
+        const matchLength = matchText.length;
+        const beforeMatch = workingInput.slice(0, matchIndex);
+        const afterMatch = workingInput.slice(matchIndex + matchLength);
+
+        if (matchText.startsWith("../")) {
+            parts.push("..");
+            workingInput = workingInput.slice(matchIndex + 3);
+        } else if (matchText.startsWith("./")) {
+            parts.push(".");
+            workingInput = workingInput.slice(matchIndex + 2);
+        } else if (matchIndex === 0 && matchText === "..") {
+            parts.push("..");
+            workingInput = workingInput.slice(2);
+        } else if (matchIndex === 0 && matchText === ".") {
+            parts.push(".");
+            workingInput = workingInput.slice(1);
+        } else {
+            if (beforeMatch.length > 0) {
+                parts.push(beforeMatch);
+            }
+
+            let pos = 0;
+
+            while ((pos = matchText.indexOf("../", pos)) !== -1) {
+                parts.push("..");
+                pos += 3;
+            }
+
+            pos = 0;
+            while ((pos = matchText.indexOf("./", pos)) !== -1) {
+                if (pos === 0 || matchText[pos - 1] !== ".") {
+                    parts.push(".");
+                }
+
+                pos += 2;
+            }
+
+            let remainingAfterMatch = afterMatch;
+
+            while (remainingAfterMatch.startsWith("../")) {
+                parts.push("..");
+                remainingAfterMatch = remainingAfterMatch.slice(3);
+            }
+
+            while (remainingAfterMatch.startsWith("./")) {
+                parts.push(".");
+                remainingAfterMatch = remainingAfterMatch.slice(2);
+            }
+
+            if (remainingAfterMatch === "..") {
+                parts.push("..");
+                break;
+            } else if (remainingAfterMatch === ".") {
+                parts.push(".");
+                break;
+            } else {
+                workingInput = remainingAfterMatch;
+            }
+        }
+
+        regex.lastIndex = 0;
+    }
+
+    if (parts.length === 0) {
+        const standardParts = cleanedInput.split(separatorRegex).filter(Boolean);
+
+        parts.push(...standardParts);
+    }
+
     let tokens: string[] = [];
 
     for (const part of parts) {

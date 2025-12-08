@@ -1,3 +1,5 @@
+/* eslint-disable jsdoc/informative-docs */
+
 import { RE_FAST_ANSI } from "../constants";
 import LRUCache from "../utils/lru-cache";
 import { splitByCase } from "./split-by-case";
@@ -10,7 +12,7 @@ const defaultCacheStore = new LRUCache<string, string>(1000);
 
 export interface KebabCaseOptions extends CaseOptions {
     /**
-     * The string to use as a joiner between words.
+     * String used to join words together in kebab case format.
      * @default "-"
      */
     joiner?: string;

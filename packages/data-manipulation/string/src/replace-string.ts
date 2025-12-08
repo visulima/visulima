@@ -17,13 +17,13 @@ interface PotentialMatch {
  * @internal
  */
 interface ProcessedChar {
-    appliedMatchId: number | null; // ID of the NON-ZERO-LENGTH match that covers this char
+    appliedMatchId: number | undefined; // ID of the NON-ZERO-LENGTH match that covers this char
     char: string;
     index: number;
-    insertBeforeReplacement: string | null; // For zero-length matches occurring BEFORE this index
+    insertBeforeReplacement: string | undefined; // For zero-length matches occurring BEFORE this index
     isIgnored: boolean;
     isMatchStart: boolean; // True if this is the first char of the applied non-zero-length match
-    matchReplacement: string | null; // Replacement string if isMatchStart
+    matchReplacement: string | undefined; // Replacement string if isMatchStart
 }
 
 /**
@@ -188,19 +188,19 @@ const replaceString = (source: string, searches: OptionReplaceArray, ignoreRange
         return b.end - a.end;
     });
 
-    const sortedIgnores = [...ignoreRanges].sort((a, b) => a[0] - b[0]);
+    const sortedIgnores = [...ignoreRanges].toSorted((a, b) => a[0] - b[0]);
     const mergedIgnores = mergeIntervals(sortedIgnores);
 
     // eslint-disable-next-line unicorn/prefer-spread
     const processedChars: ProcessedChar[] = source.split("").map((char, index) => {
         return {
-            appliedMatchId: null,
+            appliedMatchId: undefined,
             char,
             index,
-            insertBeforeReplacement: null,
+            insertBeforeReplacement: undefined,
             isIgnored: false,
             isMatchStart: false,
-            matchReplacement: null,
+            matchReplacement: undefined,
         };
     });
 
@@ -255,12 +255,9 @@ const replaceString = (source: string, searches: OptionReplaceArray, ignoreRange
         // eslint-disable-next-line no-plusplus
         for (let index = match.start; index <= match.end; index++) {
             if (
-
                 !processedChars[index] // Out of bounds
-
                 || (processedChars[index] as ProcessedChar).isIgnored // Overlaps ignore
-
-                || (processedChars[index] as ProcessedChar).appliedMatchId !== null // Overlaps higher-priority match
+                || (processedChars[index] as ProcessedChar).appliedMatchId !== undefined // Overlaps higher-priority match
             ) {
                 canApply = false;
                 break;
@@ -296,11 +293,11 @@ const replaceString = (source: string, searches: OptionReplaceArray, ignoreRange
         const pChar = processedChars[currentIndex] as ProcessedChar;
 
         // Append any zero-length replacements occurring before this character
-        if (pChar.insertBeforeReplacement !== null) {
+        if (pChar.insertBeforeReplacement !== undefined) {
             result += pChar.insertBeforeReplacement;
         }
 
-        if (pChar.isMatchStart && pChar.appliedMatchId !== null) {
+        if (pChar.isMatchStart && pChar.appliedMatchId !== undefined) {
             // Start of an applied non-zero-length match
             result += pChar.matchReplacement ?? "";
 
@@ -317,7 +314,7 @@ const replaceString = (source: string, searches: OptionReplaceArray, ignoreRange
             }
 
             currentIndex = matchEndIndex + 1; // Advance index past the entire match
-        } else if (pChar.appliedMatchId === null) {
+        } else if (pChar.appliedMatchId === undefined) {
             // Append character if not part of an applied match (includes ignored characters)
             result += pChar.char;
 

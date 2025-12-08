@@ -183,7 +183,7 @@ describe("transliterate function", () => {
             // Japanese
             ["げんまい茶", "genmaiCha"],
             // Unknown characters
-            [`\u0800\u1400${String.fromCodePoint(0xD8_40, 0xDD_00)}`, "\u{20100}"],
+            [`\u0800\u1400${String.fromCodePoint(0xd8_40, 0xdd_00)}`, "\u{20100}"],
             ["🚀", ""], // Expect empty if unknown is default ""
         ])("should transliterate %s to %s (charmap dependent)", async (string_, result) => {
             expect.assertions(1);

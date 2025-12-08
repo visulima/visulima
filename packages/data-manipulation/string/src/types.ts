@@ -1,3 +1,5 @@
+/* eslint-disable jsdoc/informative-docs */
+
 /**
  * Modified copy of types from
  * - https://github.com/gustavoguichard/string-ts/blob/v2.2.1/src/internal/internals.ts
@@ -222,7 +224,7 @@ export type IsStringLiteralArray<StringArray extends ReadonlyArray<string>> = Is
 /**
  * Type-safe utility to get the character at a specific index in a string literal type.
  * @template T - The string type to extract a character from
- * @template index - The numeric index of the desired character
+ * @template Index - The numeric index of the desired character
  * @returns The character type at the specified index, or never if the index is invalid
  * @example
  * type FirstChar = CharAt<'hello', 0> // type FirstChar = 'h'
@@ -279,7 +281,7 @@ export type Includes<T extends string, S extends string, P extends number = 0> =
  * Type-level implementation of Array.join() functionality for string tuples.
  * Combines string literal types in a tuple using a delimiter.
  * @template T - Tuple of string types to join
- * @template delimiter - The delimiter to insert between elements
+ * @template Delimiter - The delimiter to insert between elements
  * @returns A string type representing the joined result
  * @example
  * type Joined = Join<['a', 'b', 'c'], '.'> // type Joined = 'a.b.c'
@@ -306,8 +308,8 @@ export type Length<T extends string> = IsStringLiteral<T> extends true ? Split<T
  * Type-level implementation of string.padEnd() functionality.
  * Adds padding to the end of a string type until it reaches a specified length.
  * @template T - The string type to pad
- * @template times - The number of times to repeat the padding
- * @template pad - The string to use as padding (defaults to space)
+ * @template Times - The number of times to repeat the padding
+ * @template Pad - The string to use as padding (defaults to space)
  * @returns A string type with the padding added to the end
  * @example
  * type Padded = PadEnd<'hello', 2, '_'> // type Padded = 'hello__'
@@ -325,8 +327,8 @@ export type PadEnd<T extends string, Times extends number = 0, Pad extends strin
  * Type-level implementation of string.padStart() functionality.
  * Adds padding to the beginning of a string type until it reaches a specified length.
  * @template T - The string type to pad
- * @template times - The number of times to repeat the padding
- * @template pad - The string to use as padding (defaults to space)
+ * @template Times - The number of times to repeat the padding
+ * @template Pad - The string to use as padding (defaults to space)
  * @returns A string type with the padding added to the start
  * @example
  * type Padded = PadStart<'hello', 2, '_'> // type Padded = '__hello'
@@ -344,8 +346,8 @@ export type PadStart<T extends string, Times extends number = 0, Pad extends str
  * Type-level implementation of string.repeat() functionality.
  * Creates a new string type by repeating the input string a specified number of times.
  * @template T - The string type to repeat
- * @template N - The number of times to repeat the string
- * @returns A string type containing T repeated N times
+ * @template Times - The number of times to repeat the string
+ * @returns A string type containing T repeated Times times
  * @example
  * type Repeated = Repeat<'abc', 2> // type Repeated = 'abcabc'
  */
@@ -361,10 +363,10 @@ export type Repeat<T extends string, Times extends number = 0>
 /**
  * Type-level implementation of string.replaceAll() functionality.
  * Replaces all occurrences of a substring with another string.
- * @template sentence - The string type to perform replacements on
- * @template lookup - The string type to search for
- * @template replacement - The string type to replace matches with
- * @returns A string type with all occurrences of lookup replaced with replacement
+ * @template Sentence - The string type to perform replacements on
+ * @template Lookup - The string type to search for
+ * @template Replacement - The string type to replace matches with
+ * @returns A string type with all occurrences of Lookup replaced with Replacement
  * @example
  * type Replaced = ReplaceAll<'hello hello', 'hello', 'hi'> // type Replaced = 'hi hi'
  */
@@ -379,10 +381,10 @@ export type ReplaceAll<Sentence extends string, Lookup extends RegExp | string, 
 /**
  * Type-level implementation of string.replace() functionality.
  * Replaces the first occurrence of a substring with another string.
- * @template sentence - The string type to perform replacement on
- * @template lookup - The string type to search for
- * @template replacement - The string type to replace the match with
- * @returns A string type with the first occurrence of lookup replaced with replacement
+ * @template Sentence - The string type to perform replacement on
+ * @template Lookup - The string type to search for
+ * @template Replacement - The string type to replace the match with
+ * @returns A string type with the first occurrence of Lookup replaced with Replacement
  * @example
  * type Replaced = Replace<'hello hello', 'hello', 'hi'> // type Replaced = 'hi hello'
  */
@@ -413,7 +415,7 @@ export type Slice<T extends string, StartIndex extends number = 0, EndIndex exte
  * Type-level implementation of string.split() functionality.
  * Splits a string type into a tuple of string types based on a delimiter.
  * @template T - The string type to split
- * @template delimiter - The string type to use as a separator
+ * @template Delimiter - The string type to use as a separator
  * @returns A tuple type containing the split string parts
  * @example
  * type Parts = Split<'a,b,c', ','> // type Parts = ['a', 'b', 'c']
@@ -488,7 +490,6 @@ export type TrimStart<T extends string> = T extends ` ${infer Rest}` ? TrimStart
 export type Trim<T extends string> = TrimEnd<TrimStart<T>>;
 
 export type NodeLocale
-
     = | "af" // Afrikaans
         | "am" // Amharic
         | "ar" // Arabic
@@ -593,10 +594,10 @@ export type ToUpperCase<T extends string> = IsStringLiteral<T> extends true ? Up
 
 export type Interval = [number, number];
 
-/** Array of intervals */
+/** Array of intervals representing ranges */
 export type IntervalArray = Interval[];
 
-/** Array of OptionReplace */
+/** Array of replacement options as tuples */
 export type OptionReplaceArray = [RegExp | string, string | undefined][];
 
 /** OptionReplace object type */
@@ -650,7 +651,7 @@ export interface SlugifyOptions extends OptionsTransliterate {
     lowercase?: boolean;
 
     /**
-     * Custom separator string.
+     * Custom separator string used to join words in the slug.
      * @default "-"
      */
     separator?: string;

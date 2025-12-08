@@ -3,7 +3,7 @@ import { RE_FAST_ANSI } from "../../constants";
 /**
  * Joins segments with a joiner, handling ANSI sequences and emojis correctly
  * @param segments Array of segments to join
- * @param options Join options
+ * @param joiner String used to join segments together
  * @returns Joined string with proper handling of ANSI and emoji sequences
  */
 // eslint-disable-next-line sonarjs/cognitive-complexity

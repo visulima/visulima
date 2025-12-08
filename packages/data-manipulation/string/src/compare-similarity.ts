@@ -43,21 +43,15 @@ export interface CompareSimilarityOptions {
  * assert.deepStrictEqual(sortedWords, ["help", "hi", "hello"]);
  * ```
  */
-export const compareSimilarity = (
-    givenWord: string,
-    options?: CompareSimilarityOptions,
-): (a: string, b: string) => number => {
+export const compareSimilarity = (givenWord: string, options?: CompareSimilarityOptions): (a: string, b: string) => number => {
     const { compareFn: compareFunction = levenshteinDistance } = { ...options };
 
     if (options?.caseSensitive) {
-        return (a: string, b: string) =>
-            compareFunction(givenWord, a) - compareFunction(givenWord, b);
+        return (a: string, b: string) => compareFunction(givenWord, a) - compareFunction(givenWord, b);
     }
 
     // eslint-disable-next-line no-param-reassign
     givenWord = givenWord.toLowerCase();
 
-    return (a: string, b: string) =>
-        compareFunction(givenWord, a.toLowerCase())
-        - compareFunction(givenWord, b.toLowerCase());
+    return (a: string, b: string) => compareFunction(givenWord, a.toLowerCase()) - compareFunction(givenWord, b.toLowerCase());
 };

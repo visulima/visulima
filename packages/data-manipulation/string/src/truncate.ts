@@ -1,3 +1,5 @@
+/* eslint-disable jsdoc/informative-docs */
+
 /**
  * Modified copy of https://github.com/sindresorhus/cli-truncate/blob/main/index.js
  *
@@ -14,7 +16,7 @@ const MAX_SPACE_SEARCH_DISTANCE = 3;
 
 /**
  * Find the index of the nearest space character within a specified distance
- * @param str The string to search in
+ * @param string_ The string to search in
  * @param startIndex The index to start searching from
  * @param searchRight Direction to search (true = right, false = left)
  * @returns The index of the nearest space or the original index if no space is found
@@ -42,7 +44,7 @@ const findNearestSpace = (string_: string, startIndex: number, searchRight = fal
 
 export type TruncateOptions = {
     /**
-     * String to append when truncation occurs
+     * Text appended to the string when it is truncated
      * @default '…'
      */
     ellipsis?: string;

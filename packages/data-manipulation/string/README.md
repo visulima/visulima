@@ -133,6 +133,25 @@
 
 ---
 
+## Documentation
+
+Comprehensive documentation is available in the [`docs/`](./docs/) directory. The documentation includes:
+
+- **[Getting Started](./docs/index.mdx)** - Overview and quick start guide
+- **[Installation](./docs/installation.mdx)** - Installation instructions and setup
+- **[Case Conversion](./docs/case-conversion.mdx)** - Case conversion utilities (camelCase, PascalCase, etc.)
+- **[String Manipulation](./docs/string-manipulation.mdx)** - Text formatting, truncation, wrapping, and alignment
+- **[Slugification](./docs/slugification.mdx)** - URL slug generation and transliteration
+- **[String Width](./docs/string-width.mdx)** - Visual width calculation for Unicode strings
+- **[String Similarity](./docs/string-similarity.mdx)** - String comparison and similarity algorithms
+- **[Testing](./docs/testing.mdx)** - Testing utilities for ANSI strings
+- **[TypeScript](./docs/typescript.mdx)** - TypeScript support and type definitions
+- **[API Reference](./docs/api.mdx)** - Complete API reference
+
+The documentation follows the [fumadocs.dev](https://fumadocs.dev) markdown format and can be integrated into your documentation site.
+
+---
+
 ## Install
 
 ```sh
@@ -815,19 +834,16 @@ paddedStr.trimEnd<typeof paddedStr>(); // type: '  hello'
 These enhanced types provide several benefits:
 
 1. **Compile-Time Type Safety**:
-
     - Catch type errors before runtime
     - Get accurate type inference for method results
     - Validate string operations at compile time
 
 2. **Better IDE Support**:
-
     - Improved autocompletion
     - More accurate type hints
     - Better refactoring support
 
 3. **Type-Level String Manipulation**:
-
     - Perform string operations at the type level
     - Get literal type results for string operations
     - Chain operations with type safety
@@ -1072,7 +1088,7 @@ const alignedEmojiText = alignText(emojiText, {
     align: "center",
     split: "*",
     pad: "-",
-    stringWidthOptions: { emojiWidth: 2 } // Crucial for correct width calculation with emojis
+    stringWidthOptions: { emojiWidth: 2 }, // Crucial for correct width calculation with emojis
 });
 // alignedEmojiText (string output, exact padding depends on calculated widths):
 // "--Line1😊---\nWiderLine😊😊"
@@ -1082,10 +1098,10 @@ const alignedEmojiText = alignText(emojiText, {
 
 The `alignText` function accepts an `options` object of type `AlignTextOptions` with the following properties:
 
--   `align?: "center" | "left" | "right"`: Specifies the alignment direction. Defaults to `"center"`. Note: `left` alignment primarily ensures line splitting if `text` is a single string; it doesn't typically add padding on the left unless the string was not pre-split.
--   `pad?: string`: The character or string to use for padding. Defaults to `" "`.
--   `split?: string`: The character or string used to split the input `text` into multiple lines if it's provided as a single string. Defaults to `"\n"`.
--   `stringWidthOptions?: StringWidthOptions`: Options passed to an internal string width calculation function (similar to `getStringWidth`) for determining the visual width of each line. This is important for accurately handling ANSI escape codes, CJK characters, emojis, etc. Refer to the `getStringWidth` documentation for details on `StringWidthOptions`.
+- `align?: "center" | "left" | "right"`: Specifies the alignment direction. Defaults to `"center"`. Note: `left` alignment primarily ensures line splitting if `text` is a single string; it doesn't typically add padding on the left unless the string was not pre-split.
+- `pad?: string`: The character or string to use for padding. Defaults to `" "`.
+- `split?: string`: The character or string used to split the input `text` into multiple lines if it's provided as a single string. Defaults to `"\n"`.
+- `stringWidthOptions?: StringWidthOptions`: Options passed to an internal string width calculation function (similar to `getStringWidth`) for determining the visual width of each line. This is important for accurately handling ANSI escape codes, CJK characters, emojis, etc. Refer to the `getStringWidth` documentation for details on `StringWidthOptions`.
 
 ## Related
 
@@ -1132,22 +1148,12 @@ The visulima string is open-sourced software licensed under the [MIT][license]
 <!-- badges -->
 
 [license-badge]: https://img.shields.io/npm/l/@visulima/string?style=for-the-badge
-
 [license]: https://github.com/visulima/visulima/blob/main/LICENSE
-
 [npm-downloads-badge]: https://img.shields.io/npm/dm/@visulima/string?style=for-the-badge
-
 [npm-downloads]: https://www.npmjs.com/package/@visulima/string
-
 [prs-welcome-badge]: https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=for-the-badge
-
 [prs-welcome]: https://github.com/visulima/visulima/blob/main/.github/CONTRIBUTING.md
-
 [chat-badge]: https://img.shields.io/discord/932323359193186354.svg?style=for-the-badge
-
 [chat]: https://discord.gg/TtFJY8xkFK
-
 [typescript-badge]: https://img.shields.io/badge/Typescript-294E80.svg?style=for-the-badge&logo=typescript
-
 [typescript-url]: https://www.typescriptlang.org/
-

@@ -252,7 +252,6 @@ describe(outdent, () => {
 
         const outdentAsString = outdent.toString();
 
-        // eslint-disable-next-line unicorn/template-indent
         const result = outdent`non-whitespace
                               ${outdent}
                               Hello world!
