@@ -5,17 +5,14 @@
   </a>
 </p>
 
-<p align="center">
-  <a aria-label="Visulima logo" href="https://visulima.com">
-    <img src="https://img.shields.io/badge/MADE%20BY%20Visulima-000000.svg?style=for-the-badge&labelColor=000">
-  </a>
-  <a aria-label="License" href="https://github.com/visulima/visulima/blob/canary/license.md">
-    <img alt="" src="https://img.shields.io/github/license/visulima/visulima?style=for-the-badge&labelColor=000000">
-  </a>
-  <a aria-label="Join the community on GitHub" href="https://github.com/visulima/visulima/discussions">
-    <img alt="" src="https://img.shields.io/badge/Join%20the%20community-blueviolet.svg?style=for-the-badge&labelColor=000000&logoWidth=20">
-  </a>
-</p>
+<div align="center">
+
+[![typescript-image][typescript-badge]][typescript-url]
+[![mit licence][license-badge]][license]
+[![Chat][chat-badge]][chat]
+[![PRs Welcome][prs-welcome-badge]][prs-welcome]
+
+</div>
 
 ---
 
@@ -28,6 +25,93 @@
 </div>
 
 ---
+
+## Description
+
+Visulima is a comprehensive monorepo containing a collection of high-quality, production-ready TypeScript packages for modern web development. The packages cover a wide range of functionality including API development, data manipulation, email handling, error debugging, filesystem operations, storage solutions, and terminal utilities.
+
+Built with TypeScript and organized using Nx, Visulima provides modular, well-tested, and well-documented packages that can be used independently or together to build robust applications.
+
+## Featured Packages
+
+<!-- START_TABLE_PLACEHOLDER -->
+### API
+
+| Package | Version | Description |
+| ---------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [@visulima/api-platform](packages/api/api-platform/README.md) | [![npm](https://img.shields.io/npm/v/%40visulima%2Fapi-platform?style=flat-square&labelColor=292a44&color=663399&label=v)](https://www.npmjs.com/package/%40visulima%2Fapi-platform) | Visulima API platform is a set of tools to build and consume web APIs |
+| [@visulima/connect](packages/api/connect/README.md) | [![npm](https://img.shields.io/npm/v/%40visulima%2Fconnect?style=flat-square&labelColor=292a44&color=663399&label=v)](https://www.npmjs.com/package/%40visulima%2Fconnect) | The minimal router and middleware layer for Next.js, Micro, Vercel, or Node.js http/http2 with support for zod validation. |
+| [@visulima/crud](packages/api/crud/README.md) | [![npm](https://img.shields.io/npm/v/%40visulima%2Fcrud?style=flat-square&labelColor=292a44&color=663399&label=v)](https://www.npmjs.com/package/%40visulima%2Fcrud) | A comprehensive CRUD library for building RESTful APIs with Prisma, providing automatic CRUD operations, filtering, sorting, and pagination. |
+| [@visulima/health-check](packages/api/health-check/README.md) | [![npm](https://img.shields.io/npm/v/%40visulima%2Fhealth-check?style=flat-square&labelColor=292a44&color=663399&label=v)](https://www.npmjs.com/package/%40visulima%2Fhealth-check) | A library built to provide support for defining service health for node services. It allows you to register async health checks for your dependencies and the service itself, provides a health endpoint that exposes their status, and health metrics. |
+| [@visulima/jsdoc-open-api](packages/api/jsdoc-open-api/README.md) | [![npm](https://img.shields.io/npm/v/%40visulima%2Fjsdoc-open-api?style=flat-square&labelColor=292a44&color=663399&label=v)](https://www.npmjs.com/package/%40visulima%2Fjsdoc-open-api) | Generates swagger doc based on JSDoc. |
+| [@visulima/pagination](packages/api/pagination/README.md) | [![npm](https://img.shields.io/npm/v/%40visulima%2Fpagination?style=flat-square&labelColor=292a44&color=663399&label=v)](https://www.npmjs.com/package/%40visulima%2Fpagination) | Simple Pagination for Node. |
+
+### Data Manipulation
+
+| Package | Version | Description |
+| ---------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [@visulima/bytes](packages/data-manipulation/bytes/README.md) | [![npm](https://img.shields.io/npm/v/%40visulima%2Fbytes?style=flat-square&labelColor=292a44&color=663399&label=v)](https://www.npmjs.com/package/%40visulima%2Fbytes) | Utility functions to make dealing with Uint8Arrays easier |
+| [@visulima/deep-clone](packages/data-manipulation/deep-clone/README.md) | [![npm](https://img.shields.io/npm/v/%40visulima%2Fdeep-clone?style=flat-square&labelColor=292a44&color=663399&label=v)](https://www.npmjs.com/package/%40visulima%2Fdeep-clone) | Fastest deep clone implementation. |
+| [@visulima/humanizer](packages/data-manipulation/humanizer/README.md) | [![npm](https://img.shields.io/npm/v/%40visulima%2Fhumanizer?style=flat-square&labelColor=292a44&color=663399&label=v)](https://www.npmjs.com/package/%40visulima%2Fhumanizer) | Humanizer is a library for humanizing data in a human-readable form. |
+| [@visulima/object](packages/data-manipulation/object/README.md) | [![npm](https://img.shields.io/npm/v/%40visulima%2Fobject?style=flat-square&labelColor=292a44&color=663399&label=v)](https://www.npmjs.com/package/%40visulima%2Fobject) | Helper functions for working with objects and arrays. |
+| [@visulima/redact](packages/data-manipulation/redact/README.md) | [![npm](https://img.shields.io/npm/v/%40visulima%2Fredact?style=flat-square&labelColor=292a44&color=663399&label=v)](https://www.npmjs.com/package/%40visulima%2Fredact) | A library for redacting and masking sensitive data from objects and strings, with support for GDPR compliance, custom rules, and deep object traversal. |
+| [@visulima/string](packages/data-manipulation/string/README.md) | [![npm](https://img.shields.io/npm/v/%40visulima%2Fstring?style=flat-square&labelColor=292a44&color=663399&label=v)](https://www.npmjs.com/package/%40visulima%2Fstring) | Functions for manipulating strings. |
+
+### Email
+
+| Package | Version | Description |
+| ---------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [@visulima/disposable-email-domains](packages/email/disposable-email-domains/README.md) | [![npm](https://img.shields.io/npm/v/%40visulima%2Fdisposable-email-domains?style=flat-square&labelColor=292a44&color=663399&label=v)](https://www.npmjs.com/package/%40visulima%2Fdisposable-email-domains) | A regularly updated list of disposable and temporary email domains. |
+| [@visulima/email](packages/email/email/README.md) | [![npm](https://img.shields.io/npm/v/%40visulima%2Femail?style=flat-square&labelColor=292a44&color=663399&label=v)](https://www.npmjs.com/package/%40visulima%2Femail) | A comprehensive email library with multi-provider support, crypto utilities, and template engines |
+
+### Error Debugging
+
+| Package | Version | Description |
+| ---------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [@visulima/error](packages/error-debugging/error/README.md) | [![npm](https://img.shields.io/npm/v/%40visulima%2Ferror?style=flat-square&labelColor=292a44&color=663399&label=v)](https://www.npmjs.com/package/%40visulima%2Ferror) | Error with more than just a message, stacktrace parsing. |
+| [@visulima/error-handler](packages/error-debugging/error-handler/README.md) | [![npm](https://img.shields.io/npm/v/%40visulima%2Ferror-handler?style=flat-square&labelColor=292a44&color=663399&label=v)](https://www.npmjs.com/package/%40visulima%2Ferror-handler) | Error handlers for use in development and production environments. |
+| [@visulima/inspector](packages/error-debugging/inspector/README.md) | [![npm](https://img.shields.io/npm/v/%40visulima%2Finspector?style=flat-square&labelColor=292a44&color=663399&label=v)](https://www.npmjs.com/package/%40visulima%2Finspector) | Inspect utility for Node.js and Browsers. |
+| [@visulima/ono](packages/error-debugging/ono/README.md) | [![npm](https://img.shields.io/npm/v/%40visulima%2Fono?style=flat-square&labelColor=292a44&color=663399&label=v)](https://www.npmjs.com/package/%40visulima%2Fono) | Ono is an error-parsing library that pretty prints JavaScript errors on a web page or the terminal. |
+| [@visulima/pail](packages/error-debugging/pail/README.md) | [![npm](https://img.shields.io/npm/v/%40visulima%2Fpail?style=flat-square&labelColor=292a44&color=663399&label=v)](https://www.npmjs.com/package/%40visulima%2Fpail) | Highly configurable Logger for Node.js, Edge and Browser. |
+| [@visulima/source-map](packages/error-debugging/source-map/README.md) | [![npm](https://img.shields.io/npm/v/%40visulima%2Fsource-map?style=flat-square&labelColor=292a44&color=663399&label=v)](https://www.npmjs.com/package/%40visulima%2Fsource-map) | Provides functionality related to source maps. |
+| [@visulima/vite-overlay](packages/error-debugging/vite-overlay/README.md) | [![npm](https://img.shields.io/npm/v/%40visulima%2Fvite-overlay?style=flat-square&labelColor=292a44&color=663399&label=v)](https://www.npmjs.com/package/%40visulima%2Fvite-overlay) | Improved vite overlay |
+
+### Filesystem
+
+| Package | Version | Description |
+| ---------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [@visulima/find-cache-dir](packages/filesystem/find-cache-dir/README.md) | [![npm](https://img.shields.io/npm/v/%40visulima%2Ffind-cache-dir?style=flat-square&labelColor=292a44&color=663399&label=v)](https://www.npmjs.com/package/%40visulima%2Ffind-cache-dir) | Finds the common standard cache directory |
+| [@visulima/fs](packages/filesystem/fs/README.md) | [![npm](https://img.shields.io/npm/v/%40visulima%2Ffs?style=flat-square&labelColor=292a44&color=663399&label=v)](https://www.npmjs.com/package/%40visulima%2Ffs) | Human friendly file system utilities for Node.js |
+| [@visulima/path](packages/filesystem/path/README.md) | [![npm](https://img.shields.io/npm/v/%40visulima%2Fpath?style=flat-square&labelColor=292a44&color=663399&label=v)](https://www.npmjs.com/package/%40visulima%2Fpath) | Drop-in replacement of the Node.js path module. |
+
+### Storage
+
+| Package | Version | Description |
+| ---------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [@visulima/storage](packages/storage/storage/README.md) | [![npm](https://img.shields.io/npm/v/%40visulima%2Fstorage?style=flat-square&labelColor=292a44&color=663399&label=v)](https://www.npmjs.com/package/%40visulima%2Fstorage) | Visulima upload - Store files in a web-accessible location via a simplified API. Can automatically scale and rotate images. Includes S3, Azure, GCS and local filesystem-based backends with the most convenient features of each. |
+| [@visulima/storage-client](packages/storage/storage-client/README.md) | [![npm](https://img.shields.io/npm/v/%40visulima%2Fstorage-client?style=flat-square&labelColor=292a44&color=663399&label=v)](https://www.npmjs.com/package/%40visulima%2Fstorage-client) | The upload client library. Simple and easy file uploads for React \| Vue \| Solid \| . |
+
+### Terminal
+
+| Package | Version | Description |
+| ---------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [@visulima/ansi](packages/terminal/ansi/README.md) | [![npm](https://img.shields.io/npm/v/%40visulima%2Fansi?style=flat-square&labelColor=292a44&color=663399&label=v)](https://www.npmjs.com/package/%40visulima%2Fansi) | ANSI escape codes for some terminal swag. |
+| [@visulima/boxen](packages/terminal/boxen/README.md) | [![npm](https://img.shields.io/npm/v/%40visulima%2Fboxen?style=flat-square&labelColor=292a44&color=663399&label=v)](https://www.npmjs.com/package/%40visulima%2Fboxen) | Create beautiful boxes in the terminal with customizable borders, padding, and alignment. |
+| [@visulima/cerebro](packages/terminal/cerebro/README.md) | [![npm](https://img.shields.io/npm/v/%40visulima%2Fcerebro?style=flat-square&labelColor=292a44&color=663399&label=v)](https://www.npmjs.com/package/%40visulima%2Fcerebro) | A delightful toolkit for building cross-runtime CLIs for Node.js, Deno, and Bun. |
+| [@visulima/colorize](packages/terminal/colorize/README.md) | [![npm](https://img.shields.io/npm/v/%40visulima%2Fcolorize?style=flat-square&labelColor=292a44&color=663399&label=v)](https://www.npmjs.com/package/%40visulima%2Fcolorize) | Terminal and Console string styling done right. |
+| [@visulima/command-line-args](packages/terminal/command-line-args/README.md) | [![npm](https://img.shields.io/npm/v/%40visulima%2Fcommand-line-args?style=flat-square&labelColor=292a44&color=663399&label=v)](https://www.npmjs.com/package/%40visulima%2Fcommand-line-args) | A mature, feature-complete library to parse command-line options. |
+| [@visulima/fmt](packages/terminal/fmt/README.md) | [![npm](https://img.shields.io/npm/v/%40visulima%2Ffmt?style=flat-square&labelColor=292a44&color=663399&label=v)](https://www.npmjs.com/package/%40visulima%2Ffmt) | Util.format-like string formatting utility. |
+| [@visulima/is-ansi-color-supported](packages/terminal/is-ansi-color-supported/README.md) | [![npm](https://img.shields.io/npm/v/%40visulima%2Fis-ansi-color-supported?style=flat-square&labelColor=292a44&color=663399&label=v)](https://www.npmjs.com/package/%40visulima%2Fis-ansi-color-supported) | Detect whether a terminal or browser supports ansi colors. |
+| [@visulima/tabular](packages/terminal/tabular/README.md) | [![npm](https://img.shields.io/npm/v/%40visulima%2Ftabular?style=flat-square&labelColor=292a44&color=663399&label=v)](https://www.npmjs.com/package/%40visulima%2Ftabular) | Create beautiful ASCII tables and grids with customizable borders, padding, and alignment. Supports Unicode, colors, and ANSI escape codes. |
+
+### Tooling
+
+| Package | Version | Description |
+| ---------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [@visulima/package](packages/tooling/package/README.md) | [![npm](https://img.shields.io/npm/v/%40visulima%2Fpackage?style=flat-square&labelColor=292a44&color=663399&label=v)](https://www.npmjs.com/package/%40visulima%2Fpackage) | A comprehensive package management utility that helps you find root directories, monorepos, package managers, and parse package.json, package.yaml, and package.json5 files with advanced features like catalog resolution. |
+| [@visulima/prisma-dmmf-transformer](packages/tooling/prisma-dmmf-transformer/README.md) | [![npm](https://img.shields.io/npm/v/%40visulima%2Fprisma-dmmf-transformer?style=flat-square&labelColor=292a44&color=663399&label=v)](https://www.npmjs.com/package/%40visulima%2Fprisma-dmmf-transformer) | A generator for Prisma to generate a valid JSON Schema v7. |
+| [@visulima/tsconfig](packages/tooling/tsconfig/README.md) | [![npm](https://img.shields.io/npm/v/%40visulima%2Ftsconfig?style=flat-square&labelColor=292a44&color=663399&label=v)](https://www.npmjs.com/package/%40visulima%2Ftsconfig) | Find and/or parse the tsconfig.json file from a directory path. |
+<!-- END_TABLE_PLACEHOLDER -->
 
 ## Getting Started
 
@@ -52,3 +136,27 @@ Please see our [contributing.md](https://github.com/visulima/visulima/blob/main/
 ### Good First Issues
 
 We have a list of [good first issues](https://github.com/visulima/visulima/labels/good%20first%20issue) that contain bugs that have a relatively limited scope. This is a great place to get started, gain experience, and get familiar with our contribution process.
+
+---
+
+<div align="center">
+  <p>
+    <sub>Built with ❤️ by</sub>
+  </p>
+  <p>
+    <a href="https://anolilab.com">
+      <img src="./.github/assets/anolilab.svg" alt="Anolilab" width="400" />
+    </a>
+  </p>
+</div>
+
+<!-- badges -->
+
+[license-badge]: https://img.shields.io/npm/l/@visulima/tsconfig?style=for-the-badge
+[license]: https://github.com/visulima/visulima/blob/main/LICENSE
+[prs-welcome-badge]: https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=for-the-badge
+[prs-welcome]: https://github.com/visulima/visulima/blob/main/.github/CONTRIBUTING.md
+[chat-badge]: https://img.shields.io/discord/932323359193186354.svg?style=for-the-badge
+[chat]: https://discord.gg/TtFJY8xkFK
+[typescript-badge]: https://img.shields.io/badge/Typescript-294E80.svg?style=for-the-badge&logo=typescript
+[typescript-url]: https://www.typescriptlang.org/

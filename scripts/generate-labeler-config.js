@@ -19,18 +19,7 @@ import * as prettier from "prettier";
 /**
  * Directories to exclude from package discovery
  */
-const EXCLUDED_DIRS = new Set([
-    "node_modules",
-    ".git",
-    "dist",
-    "build",
-    ".next",
-    ".turbo",
-    "__fixtures__",
-    "examples",
-    "__tests__",
-    ".DS_Store",
-]);
+const EXCLUDED_DIRS = new Set(["node_modules", ".git", "dist", "build", ".next", ".turbo", "__fixtures__", "examples", "__tests__", ".DS_Store"]);
 
 /**
  * Recursively finds all package.json files in the packages directory
