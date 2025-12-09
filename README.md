@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://visulima.com">
-    <img src="./assets/visulima_logo.svg" width="200" />
+    <img src="./.github/assets/visulima_logo.svg" width="200" />
     <h1 align="center">Visulima</h1>
   </a>
 </p>
