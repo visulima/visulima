@@ -31,15 +31,43 @@ const roUnitMap: Record<string, keyof DurationUnitMeasures> = {
     zile: "d",
 } as const;
 
+/**
+ * Romanian uses "de" before the noun for numbers >= 20 (when not ending in 01-19).
+ * See: https://en.wikipedia.org/wiki/Romanian_numbers#Preposition_de
+ *
+ * @internal
+ * @param unit - [singular, plural, plural with "de"]
+ * @returns Function that returns the appropriate form based on counter
+ */
+const romanianUnit = (unit: [string, string, string]) => {
+    return (counter: number): string => {
+        if (counter === 1) {
+            return unit[0];
+        }
+
+        if (Math.floor(counter) !== counter || counter === 0) {
+            return unit[1];
+        }
+
+        const remainder = counter % 100;
+
+        if (remainder >= 1 && remainder <= 19) {
+            return unit[1];
+        }
+
+        return unit[2];
+    };
+};
+
 export const durationLanguage: DurationLanguage = createDurationLanguage(
-    (counter) => (counter === 1 ? "an" : "ani"),
-    (counter) => (counter === 1 ? "lună" : "luni"),
-    (counter) => (counter === 1 ? "săptămână" : "săptămâni"),
-    (counter) => (counter === 1 ? "zi" : "zile"),
-    (counter) => (counter === 1 ? "oră" : "ore"),
-    (counter) => (counter === 1 ? "minut" : "minute"),
-    (counter) => (counter === 1 ? "secundă" : "secunde"),
-    (counter) => (counter === 1 ? "milisecundă" : "milisecunde"),
+    romanianUnit(["an", "ani", "de ani"]),
+    romanianUnit(["lună", "luni", "de luni"]),
+    romanianUnit(["săptămână", "săptămâni", "de săptămâni"]),
+    romanianUnit(["zi", "zile", "de zile"]),
+    romanianUnit(["oră", "ore", "de ore"]),
+    romanianUnit(["minut", "minute", "de minute"]),
+    romanianUnit(["secundă", "secunde", "de secunde"]),
+    romanianUnit(["milisecundă", "milisecunde", "de milisecunde"]),
     "peste %s", // "in %s"
     "%s în urmă", // "%s ago"
     ",", // decimal separator in Romanian
