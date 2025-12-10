@@ -1,3 +1,9 @@
+## @visulima/humanizer [3.0.0-alpha.3](https://github.com/visulima/visulima/compare/@visulima/humanizer@3.0.0-alpha.2...@visulima/humanizer@3.0.0-alpha.3) (2025-12-10)
+
+### Bug Fixes
+
+* update Romanian duration translations and improve unit handling ([f553b09](https://github.com/visulima/visulima/commit/f553b09e0d001853a88223d456bcb1709415667d))
+
 ## @visulima/humanizer [3.0.0-alpha.2](https://github.com/visulima/visulima/compare/@visulima/humanizer@3.0.0-alpha.1...@visulima/humanizer@3.0.0-alpha.2) (2025-12-06)
 
 ### Bug Fixes
