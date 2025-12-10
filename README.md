@@ -152,7 +152,7 @@ We have a list of [good first issues](https://github.com/visulima/visulima/label
 
 <!-- badges -->
 
-[license-badge]: https://img.shields.io/npm/l/@visulima/tsconfig?style=for-the-badge
+[license-badge]: https://img.shields.io/npm/l/@visulima/visulima?style=for-the-badge
 [license]: https://github.com/visulima/visulima/blob/main/LICENSE
 [prs-welcome-badge]: https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=for-the-badge
 [prs-welcome]: https://github.com/visulima/visulima/blob/main/.github/CONTRIBUTING.md
