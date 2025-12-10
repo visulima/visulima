@@ -1,3 +1,10 @@
+## @visulima/storage [1.0.0-alpha.3](https://github.com/visulima/visulima/compare/@visulima/storage@1.0.0-alpha.2...@visulima/storage@1.0.0-alpha.3) (2025-12-10)
+
+
+### Dependencies
+
+* **@visulima/humanizer:** upgraded to 3.0.0-alpha.3
+
 ## @visulima/storage [1.0.0-alpha.2](https://github.com/visulima/visulima/compare/@visulima/storage@1.0.0-alpha.1...@visulima/storage@1.0.0-alpha.2) (2025-12-07)
 
 ### ⚠ BREAKING CHANGES
