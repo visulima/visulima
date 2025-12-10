@@ -1,3 +1,10 @@
+## @visulima/email [1.0.0-alpha.5](https://github.com/visulima/visulima/compare/@visulima/email@1.0.0-alpha.4...@visulima/email@1.0.0-alpha.5) (2025-12-10)
+
+
+### Dependencies
+
+* **@visulima/disposable-email-domains:** upgraded to 1.0.0-alpha.4
+
 ## @visulima/email [1.0.0-alpha.4](https://github.com/visulima/visulima/compare/@visulima/email@1.0.0-alpha.3...@visulima/email@1.0.0-alpha.4) (2025-12-08)
 
 
