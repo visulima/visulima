@@ -1,3 +1,9 @@
+## @visulima/disposable-email-domains [1.0.0-alpha.4](https://github.com/visulima/visulima/compare/@visulima/disposable-email-domains@1.0.0-alpha.3...@visulima/disposable-email-domains@1.0.0-alpha.4) (2025-12-10)
+
+### Bug Fixes
+
+* update README with new performance metrics and last updated timestamp ([01709e2](https://github.com/visulima/visulima/commit/01709e206df46d7cfd68c7721e3692d20838f37b))
+
 ## @visulima/disposable-email-domains [1.0.0-alpha.3](https://github.com/visulima/visulima/compare/@visulima/disposable-email-domains@1.0.0-alpha.2...@visulima/disposable-email-domains@1.0.0-alpha.3) (2025-12-08)
 
 
