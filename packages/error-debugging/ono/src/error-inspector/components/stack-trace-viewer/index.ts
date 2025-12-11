@@ -23,9 +23,24 @@ const stackTraceViewer = async (
 }> => {
     const uniqueKey = revisionHash(error.name + error.message + error.stack);
 
-    const highlighter = await getHighlighter();
-
     const traces = parseStacktrace(error);
+
+    // Initialize highlighter once (singleton, languages loaded on-demand)
+    const highlighter = await getHighlighter(["javascript"]);
+
+    // Escape HTML for plain text rendering
+    const escapeHtml = (text: string): string =>
+        text.replaceAll(/[&<>"']/g, (char) => {
+            const entities: Record<string, string> = {
+                "\"": "&quot;",
+                "&": "&amp;",
+                "'": "&#39;",
+                "<": "&lt;",
+                ">": "&gt;",
+            };
+
+            return entities[char] || char;
+        });
 
     const tabs: { html: string; type: GroupType }[] = [];
     const sourceCode: string[] = [];
@@ -52,14 +67,27 @@ const stackTraceViewer = async (
             )
             : defaultSource;
 
-        const code = highlighter.codeToHtml(sourceCodeFrame, {
-            lang: findLanguageBasedOnExtension(trace.file || ""),
-            themes: {
-                dark: "github-dark-default",
-                light: "github-light",
-            },
-        });
-        const safeCode = sanitizeHtml(code);
+        const lang = findLanguageBasedOnExtension(trace.file || "");
+
+        let safeCode: string;
+
+        // Skip shiki for text files - render as plain HTML
+        if (lang === "text") {
+            safeCode = `<pre class="shiki"><code>${escapeHtml(sourceCodeFrame)}</code></pre>`;
+        } else {
+            // Ensure language is loaded (loads on-demand if not already loaded)
+            await getHighlighter([lang]);
+
+            const code = highlighter.codeToHtml(sourceCodeFrame, {
+                lang,
+                themes: {
+                    dark: "github-dark-default",
+                    light: "github-light",
+                },
+            });
+
+            safeCode = sanitizeHtml(code);
+        }
 
         const filePath = `${trace.file}:${trace.line}:${trace.column}`;
         const absPathForEditor = (trace.file || "").replace(/^file:\/\//, "");

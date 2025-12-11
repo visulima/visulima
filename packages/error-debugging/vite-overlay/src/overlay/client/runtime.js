@@ -21,7 +21,6 @@ class ErrorOverlay extends HTMLElement {
     /**
      * @typedef {import('../types').VisulimaViteOverlayErrorPayload} VisulimaViteOverlayErrorPayload
      */
-
     static COPY_SUCCESS_DELAY = 2000;
 
     static DRAG_THRESHOLD = 5;

@@ -71,10 +71,10 @@ class ErrorOverlay {
     it("should handle empty or invalid input", () => {
         expect.assertions(3);
 
-        expect(() => patchOverlay("", true)).not.toThrow();
+        expect(() => patchOverlay("", true)).not.toThrowError();
         // patchOverlay expects a string, so null/undefined should cause an error
-        expect(() => patchOverlay(null as any, true)).toThrow();
-        expect(() => patchOverlay(undefined as any, true)).toThrow();
+        expect(() => patchOverlay(null as any, true)).toThrowError();
+        expect(() => patchOverlay(undefined as any, true)).toThrowError();
     });
 
     it("should preserve existing code structure when replacing", () => {

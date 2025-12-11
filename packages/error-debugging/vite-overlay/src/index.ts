@@ -312,7 +312,7 @@ const setupWebSocketInterception = (
 ): void => {
     const originalSend = server.ws.send.bind(server.ws);
 
-    // eslint-disable-next-line no-param-reassign, @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line no-param-reassign, @typescript-eslint/no-explicit-any, sonarjs/cognitive-complexity
     server.ws.send = async (data: any, client?: any): Promise<void> => {
         try {
             if (data && typeof data === "object" && data.type === "error" && data.err) {
@@ -388,7 +388,11 @@ const setupWebSocketInterception = (
         } catch (error) {
             logError(server, "[visulima:vite-overlay:server] ws.send intercept failed", error);
 
-            client.send(data, client);
+            if (client && typeof client.send === "function") {
+                client.send(data, client);
+            } else {
+                originalSend(data, client);
+            }
         }
     };
 };
@@ -488,7 +492,7 @@ const setupHMRHandler = (
                         "",
                         styleText("blue", `${mainError.originalFilePath}:${mainError.originalFileLine}:${mainError.originalFileColumn}`),
                         "",
-                        await codeToANSI(mainError.originalSnippet, (findLanguageBasedOnExtension(mainError.originalFilePath) || "text") as any, "nord"),
+                        await codeToANSI(mainError.originalSnippet, findLanguageBasedOnExtension(mainError.originalFilePath) as any, "nord"),
                         "",
                         "Raw stack trace:",
                         "",
