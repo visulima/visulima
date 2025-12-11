@@ -1,3 +1,21 @@
+## @visulima/tsconfig [3.0.0-alpha.2](https://github.com/visulima/visulima/compare/@visulima/tsconfig@3.0.0-alpha.1...@visulima/tsconfig@3.0.0-alpha.2) (2025-12-11)
+
+### Bug Fixes
+
+* update package OG images across multiple packages ([f08e4dd](https://github.com/visulima/visulima/commit/f08e4dd2b105ccb29c8412020a9c2be36d6c1e9e))
+
+### Miscellaneous Chores
+
+* update configuration files and add new package listing script ([3d918ef](https://github.com/visulima/visulima/commit/3d918efd53772430b53b026de6401bdedbe7ea3a))
+* update logo assets and README references ([a673e68](https://github.com/visulima/visulima/commit/a673e68c62937e61bd3231df7bb4cb01695aea71))
+* update package dependencies and improve configuration ([4ed22d6](https://github.com/visulima/visulima/commit/4ed22d6511aa8150dcd4ba7b9dccf05dbe2d6adc))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 5.0.0-alpha.2
+* **@visulima/path:** upgraded to 3.0.0-alpha.3
+
 ## @visulima/tsconfig [3.0.0-alpha.1](https://github.com/visulima/visulima/compare/@visulima/tsconfig@2.1.3...@visulima/tsconfig@3.0.0-alpha.1) (2025-12-07)
 
 ### ⚠ BREAKING CHANGES
