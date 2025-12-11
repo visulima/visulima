@@ -1,3 +1,22 @@
+## @visulima/cerebro [3.0.0-alpha.3](https://github.com/visulima/visulima/compare/@visulima/cerebro@3.0.0-alpha.2...@visulima/cerebro@3.0.0-alpha.3) (2025-12-11)
+
+### Bug Fixes
+
+* update package OG images across multiple packages ([f08e4dd](https://github.com/visulima/visulima/commit/f08e4dd2b105ccb29c8412020a9c2be36d6c1e9e))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 2.0.0-alpha.3
+* **@visulima/tabular:** upgraded to 4.0.0-alpha.3
+* **@visulima/boxen:** upgraded to 3.0.0-alpha.3
+* **@visulima/command-line-args:** upgraded to 2.0.0-alpha.2
+* **@visulima/error:** upgraded to 6.0.0-alpha.2
+* **@visulima/find-cache-dir:** upgraded to 3.0.0-alpha.2
+* **@visulima/pail:** upgraded to 4.0.0-alpha.3
+* **@visulima/path:** upgraded to 3.0.0-alpha.3
+* **@visulima/string:** upgraded to 3.0.0-alpha.3
+
 ## @visulima/cerebro [3.0.0-alpha.2](https://github.com/visulima/visulima/compare/@visulima/cerebro@3.0.0-alpha.1...@visulima/cerebro@3.0.0-alpha.2) (2025-12-08)
 
 
