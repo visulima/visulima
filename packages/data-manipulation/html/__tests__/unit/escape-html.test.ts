@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import escapeHtml from "../../src/escaping";
+import escapeHtml from "../../src/escape-html";
 
 describe(escapeHtml, () => {
     describe("content escaping", () => {

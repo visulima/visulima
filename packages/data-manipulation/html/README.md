@@ -42,6 +42,24 @@
 - **Minimal Allocations**: Efficient string escaping with minimal memory allocations
 - **Dual Mode**: Supports both content escaping and attribute escaping
 - **XSS Protection**: Escapes HTML special characters to prevent XSS attacks
+- **HTML Template Tag**: Template literal function for XSS-safe HTML strings
+- **TypeScript Support**: Full TypeScript definitions included
+
+### CSS & JavaScript Escaping
+
+- **CSS Escaping**: Escape strings for safe interpolation into CSS stylesheets, `<style>` elements, or CSS selectors
+- **CSS Template Tag**: Template literal function for CSS strings with optional escaping
+- **CSS Object Support**: Convert CSS objects (camelCase properties) to CSS strings with full TypeScript autocomplete
+- **JavaScript Escaping**: Escape JavaScript objects and data for safe interpolation inside `<script>` tags
+- **Injection Prevention**: Prevents CSS injection and JavaScript injection attacks
+- **Context-Aware**: Properly handles different escaping requirements for CSS and JavaScript contexts
+- **TypeScript Support**: Full TypeScript definitions included
+
+### Custom Element Validation
+
+- **Name Validation**: Check if a string is a valid custom element name per HTML specification
+- **Specification Compliant**: Follows the official HTML custom element naming rules
+- **Hyphen Requirement**: Validates that custom element names contain required hyphens
 - **TypeScript Support**: Full TypeScript definitions included
 
 ### HTML Entity Encoding & Decoding
@@ -74,6 +92,16 @@
 - **URL Validation**: Control allowed URL schemes (http, https, mailto, etc.)
 - **Iframe Support**: Safe embedding of content from trusted sources
 
+### HTML Tag Stripping
+
+- **No Parser Required**: Lightweight HTML tag stripping without a full HTML parser
+- **Plain Text Extraction**: Removes HTML tags to extract plain text content
+- **Prevents Concatenation**: Automatically adds spaces between text nodes to prevent accidental string concatenation
+- **Smart Bracket Detection**: Detects raw, legitimate brackets (like comparison operators) and preserves them
+- **Configurable Tag Removal**: Strip specific tags together with their contents (e.g., script, style, pre)
+- **Mixed Source Support**: Handles mixed HTML and plain text sources gracefully
+- **TypeScript Support**: Full TypeScript definitions included
+
 ---
 
 ## Install
@@ -92,6 +120,48 @@ pnpm add @visulima/html
 
 ## Usage
 
+### When to Use Escaping vs Sanitization vs Stripping
+
+Understanding when to use **escaping**, **sanitization**, or **stripping** is crucial for web security:
+
+**Use Escaping (`escapeHtml`) when:**
+
+- You're inserting **plain text** into HTML (text content or attribute values)
+- The content should be displayed as-is, without any HTML rendering
+- You want maximum performance and minimal processing overhead
+- You're building HTML strings manually (template literals, string concatenation)
+- The input is expected to be plain text (user names, comments, form inputs)
+
+**Example:** User comments, form field values, JSON data displayed in HTML
+
+**Use Sanitization (`sanitizeHtml`) when:**
+
+- Users are allowed to submit **HTML content** that should be rendered
+- You need to preserve some HTML tags while removing dangerous ones
+- You want to allow rich text formatting (bold, italic, links, etc.)
+- The content needs to be displayed as HTML, not as plain text
+- You need fine-grained control over which HTML elements and attributes are allowed
+
+**Example:** Rich text editors, blog post content, user-generated HTML content
+
+**Use Stripping (`stripHtml`) when:**
+
+- You need to extract **plain text** from HTML content
+- You want to completely remove all HTML structure and tags
+- You're preparing content for plain text display (emails, SMS, search indexes)
+- You need to prevent accidental string concatenation from adjacent text nodes
+- You want to preserve legitimate brackets (like comparison operators) while removing HTML tags
+
+**Example:** Email text versions, search result snippets, plain text previews, content summaries
+
+**Key Differences:**
+
+- **Escaping** converts special characters to entities (`<` → `&lt;`), preventing HTML interpretation
+- **Sanitization** removes or allows specific HTML tags, enabling safe HTML rendering
+- **Stripping** removes all HTML tags and extracts plain text content
+
+> **Security Note:** Never use sanitization on content that has already been escaped, and never render sanitized content without proper escaping in attributes or other contexts.
+
 ### HTML Escaping
 
 The `escapeHtml` function provides fast HTML escaping optimized for performance.
@@ -107,10 +177,6 @@ const escaped = escapeHtml('<script>alert("xss")</script>');
 
 // Escape HTML attributes (also escapes double quotes)
 const attrEscaped = escapeHtml('value="test"', true);
-// Result: 'value=&quot;test&quot;'
-
-// Or use boolean for backward compatibility
-const attrEscaped2 = escapeHtml('value="test"', true);
 // Result: 'value=&quot;test&quot;'
 ```
 
@@ -163,6 +229,268 @@ const safeAttr = escapeHtml(userInput, true);
 ```
 
 > **Note:** This function is based on Svelte's optimized escaping implementation. See the source file for copyright information.
+
+### HTML Template Tag
+
+The `html` function provides a convenient template tag for creating XSS-safe HTML strings, with optional escaping control.
+
+#### Template Tag Usage
+
+```typescript
+import { html } from "@visulima/html";
+
+// Template tag returns HTML as-is (XSS-safe for trusted content)
+const markup = html`<div class="container">Hello World</div>`;
+// Result: '<div class="container">Hello World</div>'
+
+// With template values
+const className = "test-class";
+const content = "Hello";
+const result = html`<div class="${className}">${content}</div>`;
+// Result: '<div class="test-class">Hello</div>'
+```
+
+#### Function Usage with Escaping Control
+
+```typescript
+import { html } from "@visulima/html";
+
+// Return HTML as-is (XSS-safe, no escaping)
+const safeHtml = html("<div></div>", false);
+// Result: '<div></div>'
+
+// Escape HTML for attributes (escapes &, <, and ")
+const escapedHtml = html('<script>alert("xss")</script>', true);
+// Result: '&lt;script>alert(&quot;xss&quot;)&lt;/script>'
+
+// Default behavior: return as-is (XSS-safe)
+const defaultHtml = html("<div>Content</div>");
+// Result: '<div>Content</div>'
+```
+
+#### Use Cases
+
+- **Template Literals**: Use the template tag when you trust the HTML content
+- **Dynamic Content**: Use the function with `escape: true` when escaping user-generated content
+- **Performance**: Template tag has minimal overhead, perfect for static HTML generation
+
+### CSS Escaping
+
+The `escapeCss` function escapes a string for safe interpolation into an external CSS style sheet, within a `<style>` element, or in a CSS selector. This helps prevent CSS injection vulnerabilities.
+
+#### Basic CSS Escaping
+
+```typescript
+import { escapeCss } from "@visulima/html";
+
+// Escape CSS content for safe interpolation
+const unsafeCss = "body { background-image: url('http://example.com/foo.jpg?</style><script>alert(1)</script>'); }";
+const safeCss = escapeCss(unsafeCss);
+// Result: Escaped CSS that prevents injection attacks
+
+// Use in style elements
+const html = `<style>${escapeCss(userCss)}</style>`;
+
+// Use in inline styles
+const inlineStyle = `background-image: url('${escapeCss(userUrl)}');`;
+```
+
+#### CSS Selector Escaping
+
+```typescript
+import { escapeCss } from "@visulima/html";
+
+// Escape CSS selector values
+const selector = escapeCss(userInput);
+const css = `.${selector} { color: red; }`;
+```
+
+> **Security Note:** Always use `escapeCss` when interpolating user-generated content into CSS contexts to prevent CSS injection attacks.
+
+### CSS Template Tag
+
+The `css` function provides a convenient template tag for creating CSS strings, with support for CSS objects and optional escaping.
+
+#### Template Tag Usage
+
+```typescript
+import { css } from "@visulima/html";
+
+// Template tag returns CSS as-is
+const styles = css`
+    :where(.UnderlineNav-actions ul) {
+        animation: 1ms rgh-selector-observer;
+    }
+`;
+// Result: CSS string with preserved formatting
+
+// With template values
+const selector = ".test-class";
+const color = "red";
+const result = css`
+    ${selector} {
+        color: ${color};
+    }
+`;
+```
+
+#### Function Usage with String Input
+
+```typescript
+import { css } from "@visulima/html";
+
+// Return CSS as-is (no escaping)
+const cssString = css(":where(.test) { color: red; }", false);
+// Result: ':where(.test) { color: red; }'
+
+// Escape CSS for safe interpolation
+const escapedCss = css(":where(.test) { color: red; }", true);
+// Result: Escaped CSS string
+
+// Default behavior: return as-is
+const defaultCss = css(":where(.test) { color: red; }");
+// Result: ':where(.test) { color: red; }'
+```
+
+#### Function Usage with CSS Object
+
+The `css` function accepts CSS objects with camelCase properties, providing full TypeScript autocomplete support via `csstype`:
+
+```typescript
+import { css } from "@visulima/html";
+
+// Convert CSS object to CSS string (no escaping)
+const styles = css({ padding: "1px", margin: "2px" }, false);
+// Result: 'padding: 1px; margin: 2px;'
+
+// With escaping
+const escapedStyles = css({ padding: "1px" }, true);
+// Result: Escaped CSS string
+
+// CamelCase properties are automatically converted to kebab-case
+const result = css({ paddingTop: "10px", marginBottom: "20px" }, false);
+// Result: 'padding-top: 10px; margin-bottom: 20px;'
+
+// Full TypeScript autocomplete for CSS properties
+const typedStyles = css(
+    {
+        padding: "1px",
+        margin: "2px",
+        color: "red",
+        display: "block",
+        // TypeScript will autocomplete all valid CSS properties!
+    },
+    false,
+);
+```
+
+#### TypeScript Autocomplete
+
+The `css` function uses `csstype` for full TypeScript autocomplete support:
+
+- **All CSS Properties**: Autocomplete for all standard CSS properties
+- **Type Safety**: TypeScript will validate CSS property names and values
+- **CamelCase Support**: Use camelCase property names (e.g., `paddingTop`) which are automatically converted to kebab-case
+
+#### Use Cases
+
+- **Template Literals**: Use the template tag for static CSS or CSS with template variables
+- **CSS Objects**: Use CSS objects when you need TypeScript autocomplete and type safety
+- **Dynamic Styles**: Convert JavaScript objects to CSS strings for dynamic styling
+- **Safe Interpolation**: Use `escape: true` when interpolating user-generated CSS
+
+### JavaScript Escaping
+
+The `escapeJs` function escapes a JavaScript object or other data for safe interpolation inside a `<script>` tag. This ensures that the data does not break the JavaScript context or introduce security risks.
+
+#### Basic JavaScript Escaping
+
+```typescript
+import { escapeJs } from "@visulima/html";
+
+// Escape JavaScript content for safe interpolation
+const unsafeJs = "console.log('Hello, world!');</script><script>alert('XSS');</script>";
+const safeJs = escapeJs(unsafeJs);
+// Result: Escaped JavaScript that prevents script injection
+
+// Use in script tags
+const html = `<script>const data = ${escapeJs(userData)};</script>`;
+
+// Escape JSON data for inline scripts
+const jsonData = { name: "John", value: "</script><script>alert(1)" };
+const safeJson = escapeJs(JSON.stringify(jsonData));
+const script = `<script>window.config = ${safeJson};</script>`;
+```
+
+#### Escaping JavaScript Objects
+
+```typescript
+import { escapeJs } from "@visulima/html";
+
+// Escape complex objects for safe interpolation
+const config = {
+    apiUrl: "https://api.example.com",
+    userInput: userProvidedValue,
+};
+
+const escapedConfig = escapeJs(JSON.stringify(config));
+const html = `<script>window.appConfig = ${escapedConfig};</script>`;
+```
+
+> **Security Note:** Always use `escapeJs` when interpolating user-generated content into JavaScript contexts to prevent XSS attacks and script injection.
+
+### Custom Element Name Validation
+
+The `isValidCustomElementName` function checks whether a given string is a valid custom element name according to the [HTML specification](https://html.spec.whatwg.org/multipage/custom-elements.html#valid-custom-element-name).
+
+#### Basic Validation
+
+```typescript
+import { isValidCustomElementName } from "@visulima/html";
+
+// Valid custom element names (must contain a hyphen)
+console.log(isValidCustomElementName("my-element")); // true
+console.log(isValidCustomElementName("my-custom-element")); // true
+console.log(isValidCustomElementName("app-header")); // true
+
+// Invalid custom element names
+console.log(isValidCustomElementName("MyElement")); // false (no hyphen)
+console.log(isValidCustomElementName("my_element")); // false (underscore not allowed)
+console.log(isValidCustomElementName("myelement")); // false (no hyphen)
+console.log(isValidCustomElementName("div")); // false (standard HTML tag)
+```
+
+#### Using with Custom Element Registration
+
+```typescript
+import { isValidCustomElementName } from "@visulima/html";
+
+function registerCustomElement(name: string, constructor: CustomElementConstructor) {
+    if (!isValidCustomElementName(name)) {
+        throw new Error(`Invalid custom element name: ${name}. Custom element names must contain a hyphen.`);
+    }
+
+    customElements.define(name, constructor);
+}
+
+// Valid usage
+registerCustomElement("my-component", class extends HTMLElement {});
+
+// Invalid usage - will throw error
+registerCustomElement("MyComponent", class extends HTMLElement {}); // Error!
+```
+
+#### Custom Element Name Rules
+
+According to the HTML specification, a valid custom element name must:
+
+- Contain a hyphen (`-`) to separate words
+- Start with an ASCII lowercase letter
+- Contain at least one hyphen
+- Not be a standard HTML tag name
+- Not start with certain reserved prefixes (like `html-`, `xml-`, etc.)
+
+> **Note:** Custom element names are case-sensitive and must follow the naming conventions defined in the HTML specification to ensure proper browser support.
 
 ### HTML Entity Encoding & Decoding
 
@@ -461,14 +789,132 @@ The default configuration includes:
 - **allowProtocolRelative**: `true`
 - **allowedIframeHostnames**: `['www.youtube.com', 'player.vimeo.com']`
 
+### HTML Tag Stripping
+
+The package exports `stripHtml` from `string-strip-html` for removing HTML tags and extracting plain text.
+
+#### Basic Stripping
+
+```typescript
+import { stripHtml } from "@visulima/html";
+
+// Strip HTML tags from string
+const result = stripHtml("Some text <b>and</b> text.");
+console.log(result.result); // 'Some text and text.'
+
+// Prevents accidental string concatenation
+const result2 = stripHtml("aaa<div>bbb</div>ccc");
+console.log(result2.result); // 'aaa bbb ccc'
+
+// Access the stripped text
+const plainText = stripHtml("<div>Hello <strong>World</strong></div>").result;
+// plainText: 'Hello World'
+```
+
+#### Tag Pairs with Content
+
+```typescript
+import { stripHtml } from "@visulima/html";
+
+// Strip tags together with their contents
+const result = stripHtml("a <pre><code>void a;</code></pre> b", {
+    stripTogetherWithTheirContents: ["script", "style", "xml", "pre"],
+});
+console.log(result.result); // 'a b'
+
+// Script and style tags are stripped by default
+const result2 = stripHtml("Text <script>alert('xss')</script> more text");
+console.log(result2.result); // 'Text more text'
+
+// Strip style tags with their content
+const result3 = stripHtml("Text <style>body { color: red; }</style> more text");
+console.log(result3.result); // 'Text more text'
+```
+
+#### Raw Bracket Detection
+
+```typescript
+import { stripHtml } from "@visulima/html";
+
+// Detects raw, legit brackets and preserves them
+const result = stripHtml("a < b and c > d");
+console.log(result.result); // 'a < b and c > d'
+
+// Handles comparison operators in text
+const result2 = stripHtml("5 < 10 and 20 > 15");
+console.log(result2.result); // '5 < 10 and 20 > 15'
+
+// Handles mixed HTML tags and comparison operators
+const result3 = stripHtml("Value <b>5</b> < 10");
+console.log(result3.result); // 'Value 5 < 10'
+```
+
+#### Advanced Options
+
+```typescript
+import { stripHtml } from "@visulima/html";
+
+// Custom tag stripping configuration
+const result = stripHtml(html, {
+    // Strip these tags together with their contents
+    stripTogetherWithTheirContents: ["script", "style", "xml", "pre", "code"],
+
+    // Other options available from string-strip-html
+    // See: https://codsen.com/os/string-strip-html/
+});
+
+// Access the stripped text
+const plainText = result.result;
+
+// The result object also contains other metadata
+// See: https://codsen.com/os/string-strip-html/ for full API
+```
+
+#### Edge Cases
+
+```typescript
+import { stripHtml } from "@visulima/html";
+
+// Handles empty strings
+const result1 = stripHtml("");
+console.log(result1.result); // ''
+
+// Handles strings with only HTML tags
+const result2 = stripHtml("<div><span></span></div>");
+console.log(result2.result); // ''
+
+// Handles strings with no HTML tags
+const result3 = stripHtml("Plain text without tags");
+console.log(result3.result); // 'Plain text without tags'
+
+// Handles nested HTML tags
+const result4 = stripHtml("<div><p>Text <b>bold</b></p></div>");
+console.log(result4.result); // 'Text bold'
+
+// Handles self-closing tags
+const result5 = stripHtml("Line 1<br/>Line 2<br />Line 3");
+console.log(result5.result); // 'Line 1 Line 2 Line 3'
+
+// Handles HTML entities (they are decoded)
+const result6 = stripHtml("<p>Hello &amp; World</p>");
+console.log(result6.result); // 'Hello & World'
+```
+
+**When to Use Stripping vs Sanitization:**
+
+- **Use `stripHtml`** when you need plain text output and want to completely remove HTML structure
+- **Use `sanitizeHtml`** when you need to preserve some HTML structure while removing dangerous elements
+
 ## Related
 
 - [sanitize-html](https://github.com/apostrophecms/sanitize-html) - HTML sanitizer with a clear API
+- [string-strip-html](https://github.com/codsen/codsen/tree/main/packages/string-strip-html) - Strip HTML tags from strings
 - [html-entities](https://github.com/mdevils/html-entities) - Fast HTML entity encoding/decoding
 - [html-tags](https://github.com/sindresorhus/html-tags) - List of standard HTML tags
-- [Svelte](https://github.com/sveltejs/svelte) - Cybernetically enhanced web apps (escapeHtml function source)
 - [DOMPurify](https://github.com/cure53/DOMPurify) - DOM-only, super-fast, uber-tolerant XSS sanitizer
 - [xss](https://github.com/leizongmin/js-xss) - XSS filter
+- [htmlnano](https://github.com/maltsev/htmlnano) - HTML minifier
+- [cssnano](https://github.com/cssnano/cssnano) - CSS minifier
 
 ## Supported Node.js Versions
 

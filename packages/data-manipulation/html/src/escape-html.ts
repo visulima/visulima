@@ -31,24 +31,6 @@ const CONTENT_REGEX = /[&<]/g;
  * Escapes HTML special characters in a string.
  * Optimized for performance with minimal allocations.
  * @param value The value to escape. Will be converted to string.
- * @param options Escaping options.
- * @returns The escaped string.
- * @example
- * escapeHtml('<script>alert("xss")</script>');
- * // => '&lt;script>alert("xss")&lt;/script>'
- * @example
- * escapeHtml('<div>', { isAttr: true });
- * // => '&lt;div>'
- * @example
- * escapeHtml('value="test"', { isAttr: true });
- * // => 'value=&quot;test&quot;'
- */
-function escapeHtml(value: unknown, options?: EscapeHtmlOptions): string;
-
-/**
- * Escapes HTML special characters in a string.
- * Optimized for performance with minimal allocations.
- * @param value The value to escape. Will be converted to string.
  * @param isAttribute If true, also escapes double quotes (for HTML attributes).
  * @returns The escaped string.
  * @example
