@@ -100,12 +100,12 @@
         "shiki": "^3.19.0"
     },
     "devDependencies": {
-        "@shikijs/themes": "^3.19.0",
         "@anolilab/eslint-config": "^17.0.0",
         "@anolilab/prettier-config": "^7.0.0",
         "@anolilab/semantic-release-preset": "^12.1.2",
         "@arethetypeswrong/cli": "^0.18.2",
         "@eslint/css": "0.14.1",
+        "@shikijs/themes": "^3.19.0",
         "@tailwindcss/forms": "^0.5.10",
         "@tailwindcss/node": "^4.1.17",
         "@tailwindcss/oxide": "^4.1.17",
