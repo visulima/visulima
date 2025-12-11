@@ -1,3 +1,23 @@
+## @visulima/pail [4.0.0-alpha.3](https://github.com/visulima/visulima/compare/@visulima/pail@4.0.0-alpha.2...@visulima/pail@4.0.0-alpha.3) (2025-12-11)
+
+### Bug Fixes
+
+* update package OG images across multiple packages ([f08e4dd](https://github.com/visulima/visulima/commit/f08e4dd2b105ccb29c8412020a9c2be36d6c1e9e))
+
+### Miscellaneous Chores
+
+* update package dependencies and improve configuration ([4ed22d6](https://github.com/visulima/visulima/commit/4ed22d6511aa8150dcd4ba7b9dccf05dbe2d6adc))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 2.0.0-alpha.3
+* **@visulima/error:** upgraded to 6.0.0-alpha.2
+* **@visulima/fmt:** upgraded to 2.0.0-alpha.3
+* **@visulima/inspector:** upgraded to 2.0.0-alpha.2
+* **@visulima/redact:** upgraded to 3.0.0-alpha.3
+* **@visulima/string:** upgraded to 3.0.0-alpha.3
+
 ## @visulima/pail [4.0.0-alpha.2](https://github.com/visulima/visulima/compare/@visulima/pail@4.0.0-alpha.1...@visulima/pail@4.0.0-alpha.2) (2025-12-08)
 
 
