@@ -23,11 +23,14 @@ SOFTWARE.
 <!-- DEPENDENCIES -->
 
 # Licenses of bundled dependencies
+
 The published @visulima/html artifact additionally contains code with the following licenses:
 MIT
 
 # Bundled dependencies:
+
 ## html-entities
+
 License: MIT
 By: Marat Dulin
 Repository: https://github.com/mdevils/html-entities.git
@@ -57,11 +60,14 @@ Repository: https://github.com/mdevils/html-entities.git
 <!-- TYPE_DEPENDENCIES -->
 
 # Licenses of bundled types
+
 The published @visulima/html artifact additionally contains code with the following licenses:
 MIT
 
 # Bundled types:
+
 ## html-entities
+
 License: MIT
 By: Marat Dulin
 Repository: https://github.com/mdevils/html-entities.git

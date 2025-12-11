@@ -1,4 +1,4 @@
-import { getVitestConfig } from "../../tools/get-vitest-config";
+import { getVitestConfig } from "../../../tools/get-vitest-config";
 
 const config = getVitestConfig();
 

@@ -67,6 +67,7 @@
     "devDependencies": {
         "@types/sanitize-html": "2.16.0",
         "html-entities": "2.6.0",
+        "html-tags": "^5.1.0",
         "@anolilab/eslint-config": "^16.4.4",
         "@anolilab/semantic-release-pnpm": "3.2.2",
         "@anolilab/semantic-release-preset": "12.1.2",
