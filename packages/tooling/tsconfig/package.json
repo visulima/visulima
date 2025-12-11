@@ -67,11 +67,11 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "type-fest": "^5.3.0",
         "@visulima/fs": "5.0.0-alpha.1",
         "@visulima/path": "3.0.0-alpha.2",
         "jsonc-parser": "^3.3.1",
-        "resolve-pkg-maps": "^1.0.0"
+        "resolve-pkg-maps": "^1.0.0",
+        "type-fest": "^5.3.0"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "^16.4.4",
