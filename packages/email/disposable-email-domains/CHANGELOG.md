@@ -1,3 +1,14 @@
+## @visulima/disposable-email-domains [1.0.0-alpha.5](https://github.com/visulima/visulima/compare/@visulima/disposable-email-domains@1.0.0-alpha.4...@visulima/disposable-email-domains@1.0.0-alpha.5) (2025-12-11)
+
+### Bug Fixes
+
+* update package OG images across multiple packages ([f08e4dd](https://github.com/visulima/visulima/commit/f08e4dd2b105ccb29c8412020a9c2be36d6c1e9e))
+
+
+### Dependencies
+
+* **@visulima/tabular:** upgraded to 4.0.0-alpha.3
+
 ## @visulima/disposable-email-domains [1.0.0-alpha.4](https://github.com/visulima/visulima/compare/@visulima/disposable-email-domains@1.0.0-alpha.3...@visulima/disposable-email-domains@1.0.0-alpha.4) (2025-12-10)
 
 ### Bug Fixes
