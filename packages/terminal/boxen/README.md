@@ -11,24 +11,6 @@
 <!-- END_PACKAGE_OG_IMAGE_PLACEHOLDER -->
 
 <div align="center">
-  <h3>Visulima boxen</h3>
-
-  <img src="./__assets__/boxen.png" width="100%" height="100%" alt="Boxen Examples">
-
-  <p>Create boxes in the terminal, built on top of
-
-[cli-boxes](https://www.npmjs.com/package/cli-boxes),
-[string-width](https://www.npmjs.com/package/string-width),
-[terminal-size](https://www.npmjs.com/package/terminal-size) and
-[wrap-ansi](https://www.npmjs.com/package/wrap-ansi)
-
-</p>
-
-</div>
-
-<br />
-
-<div align="center">
 
 [![typescript-image][typescript-badge]][typescript-url]
 [![mit licence][license-badge]][license]
@@ -50,6 +32,8 @@
 
 ---
 
+  <img src="./__assets__/boxen.png" width="100%" height="100%" alt="Boxen Examples">
+  
 ## Install
 
 ```sh

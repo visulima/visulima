@@ -34,8 +34,6 @@
 
 ---
 
-## Features
-
 ## Installation
 
 ```sh

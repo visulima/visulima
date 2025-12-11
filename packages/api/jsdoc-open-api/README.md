@@ -517,13 +517,10 @@ For detailed information on the short syntax tags and possibilities, please refe
 
 <!-- Add link to short syntax docs here if they exist -->
 
----
+## Credits
 
-## Contributing
-
-Contributions are welcome! Please refer to the [Contribution Guidelines](../../../.github/CONTRIBUTING.md) for details on how to submit pull requests, report issues, and suggest improvements.
-
----
+- [Daniel Bannert](https://github.com/prisis)
+- [All Contributors](https://github.com/visulima/visulima/graphs/contributors)
 
 ## Made with ❤️ at Anolilab
 
@@ -531,6 +528,17 @@ This is an open source project and will always remain free to use. If you think 
 
 ## License
 
-This project is licensed under the **MIT License**. See the [LICENSE.md](LICENSE.md) file for details.
+The visulima jsdoc-open-api is open-sourced software licensed under the [MIT][license]
 
----
+<!-- badges -->
+
+[license-badge]: https://img.shields.io/npm/l/@visulima/jsdoc-open-api?style=for-the-badge
+[license]: https://github.com/visulima/visulima/blob/main/LICENSE
+[npm-downloads-badge]: https://img.shields.io/npm/dm/@visulima/jsdoc-open-api?style=for-the-badge
+[npm-downloads]: https://www.npmjs.com/package/@visulima/jsdoc-open-api
+[prs-welcome-badge]: https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=for-the-badge
+[prs-welcome]: https://github.com/visulima/visulima/blob/main/.github/CONTRIBUTING.md
+[chat-badge]: https://img.shields.io/discord/932323359193186354.svg?style=for-the-badge
+[chat]: https://discord.gg/TtFJY8xkFK
+[typescript-badge]: https://img.shields.io/badge/Typescript-294E80.svg?style=for-the-badge&logo=typescript
+[typescript-url]: https://www.typescriptlang.org/

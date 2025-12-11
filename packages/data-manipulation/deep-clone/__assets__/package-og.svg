@@ -9,6 +9,6 @@
     dominant-baseline="hanging"
     style="text-shadow: 0 2px 8px rgba(0,0,0,0.5), 0 0 2px rgba(0,0,0,0.3);"
   >
-    <tspan x="65" y="117" dy="0">Deep Clone</tspan>
+    <tspan x="65" y="117">Deep Clone</tspan>
   </text>
 </svg>
