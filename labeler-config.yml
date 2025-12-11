@@ -25,6 +25,9 @@
 "package: data-manipulation/deep-clone/__bench__":
     - changed-files:
           - any-glob-to-any-file: "packages/data-manipulation/deep-clone/__bench__/**/*"
+"package: data-manipulation/html":
+    - changed-files:
+          - any-glob-to-any-file: "packages/data-manipulation/html/**/*"
 "package: data-manipulation/humanizer":
     - changed-files:
           - any-glob-to-any-file: "packages/data-manipulation/humanizer/**/*"
@@ -91,9 +94,6 @@
 "package: filesystem/path":
     - changed-files:
           - any-glob-to-any-file: "packages/filesystem/path/**/*"
-"package: html":
-    - changed-files:
-          - any-glob-to-any-file: "packages/html/**/*"
 "package: storage/storage":
     - changed-files:
           - any-glob-to-any-file: "packages/storage/storage/**/*"
