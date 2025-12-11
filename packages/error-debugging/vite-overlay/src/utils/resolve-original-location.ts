@@ -8,30 +8,34 @@ import { isHttpUrl } from "./normalize-id-candidates";
 const COLUMN_OFFSET = 1;
 
 /**
- * Estimates the original line and column when source maps are unavailable or fail
+ * Estimates the original line and column when source maps are unavailable or fail.
  */
 const estimateOriginalPosition = (fileLine: number, fileColumn: number) => {
-    let estimatedLine = fileLine;
-    let estimatedColumn = fileColumn;
+    // Handle edge cases: ensure line is at least 1
+    const validLine = Math.max(1, fileLine);
+    const validColumn = Math.max(0, fileColumn);
+
+    let estimatedLine = validLine;
+    let estimatedColumn = validColumn;
 
     // Estimate line number based on common patterns
-    if (fileLine >= 20) {
-        estimatedLine = Math.max(1, Math.round(fileLine * 0.5));
-    } else if (fileLine > 15) {
-        estimatedLine = Math.max(1, Math.round(fileLine * 0.6));
-    } else if (fileLine > 10) {
-        estimatedLine = Math.max(1, fileLine - 8);
+    if (validLine >= 20) {
+        estimatedLine = Math.max(1, Math.round(validLine * 0.5));
+    } else if (validLine > 15) {
+        estimatedLine = Math.max(1, Math.round(validLine * 0.6));
+    } else if (validLine > 10) {
+        estimatedLine = Math.max(1, validLine - 8);
     } else {
-        estimatedLine = Math.max(1, fileLine - 3);
+        estimatedLine = Math.max(1, validLine - 3);
     }
 
     // Estimate column
-    if (fileColumn >= 10) {
-        estimatedColumn = Math.max(0, fileColumn - 1);
-    } else if (fileColumn > 7) {
-        estimatedColumn = Math.max(0, fileColumn - 1);
-    } else if (fileColumn > 5) {
-        estimatedColumn = Math.max(0, fileColumn);
+    if (validColumn >= 10) {
+        estimatedColumn = Math.max(0, validColumn - 1);
+    } else if (validColumn > 7) {
+        estimatedColumn = Math.max(0, validColumn - 1);
+    } else if (validColumn > 5) {
+        estimatedColumn = Math.max(0, validColumn);
     }
 
     return { estimatedColumn, estimatedLine };
@@ -53,11 +57,16 @@ interface ViteModule {
 }
 
 /**
- * Resolves the original position using source maps
+ * Resolves the original position using source maps.
  */
 const resolveSourceMapPosition = (rawMap: any, fileLine: number, fileColumn: number) => {
     try {
         const traced = new TraceMap(rawMap);
+
+        // Validate input: line must be > 0 for source map lookups
+        if (fileLine <= 0) {
+            return undefined;
+        }
 
         // Try multiple approaches to find the correct mapping
         const attempts = [
@@ -77,7 +86,7 @@ const resolveSourceMapPosition = (rawMap: any, fileLine: number, fileColumn: num
                     line: fileLine,
                 };
             }),
-        ];
+        ].filter((attempt) => attempt.line > 0); // Filter out invalid line numbers
 
         for (const attempt of attempts) {
             const pos = originalPositionFor(traced, {
@@ -97,11 +106,11 @@ const resolveSourceMapPosition = (rawMap: any, fileLine: number, fileColumn: num
         console.warn("Source map processing failed:", error);
     }
 
-    return null;
+    return undefined;
 };
 
 /**
- * Resolves the source file path based on the original URL and source name
+ * Resolves the source file path based on the original URL and source name.
  */
 const resolveSourcePath = (originalPath: string, sourceName: string): string => {
     if (!sourceName) {
@@ -117,15 +126,15 @@ const resolveSourcePath = (originalPath: string, sourceName: string): string => 
 };
 
 /**
- * Resolves source path for HTTP URLs
+ * Resolves source path for HTTP URLs.
  */
 const resolveHttpSourcePath = (urlString: string, sourceName: string): string => {
     try {
         const url = new URL(urlString);
         const modulePath = (url.pathname || "").replace(/^\//, "");
-        const sourceDir = modulePath.includes("/") ? modulePath.slice(0, Math.max(0, modulePath.lastIndexOf("/"))) : "";
+        const sourceDirectory = modulePath.includes("/") ? modulePath.slice(0, Math.max(0, modulePath.lastIndexOf("/"))) : "";
 
-        return `${url.origin}/${sourceDir ? `${sourceDir}/` : ""}${sourceName}`;
+        return `${url.origin}/${sourceDirectory ? `${sourceDirectory}/` : ""}${sourceName}`;
     } catch (error) {
         console.warn("URL parsing failed for source path resolution:", error);
 
@@ -139,7 +148,7 @@ const resolveHttpSourcePath = (urlString: string, sourceName: string): string =>
  * Falls back to source code search for error messages when source maps are unreliable.
  * @param server The Vite dev server instance
  * @param module_ The Vite module containing transform result
- * @param filePath The original file path
+ * @param filePath
  * @param fileLine The line number in the compiled source
  * @param fileColumn The column number in the compiled source
  * @param errorMessage Optional error message to search for in source code
