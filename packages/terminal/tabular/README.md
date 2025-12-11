@@ -1,5 +1,3 @@
-# @visulima/tabular
-
 <!-- START_PACKAGE_OG_IMAGE_PLACEHOLDER -->
 
 <a href="https://www.anolilab.com/open-source" align="center">

@@ -58,18 +58,19 @@ function generatePackageSVG(packageName, imageDataUri) {
     const lineHeight = 60; // Space between lines
 
     // Replace hyphens with spaces, split by spaces, and capitalize each word
-    const nameParts = packageName
-        .replace(/-/g, " ")
+    let nameParts = packageName
+        .replaceAll(/-/g, " ")
         .trim()
-        .split(/\s+/)
-        .map((word) => capitalize(word.trim()))
-        .filter((word) => word.length > 0);
+        .split(/\s+/);
 
-    // Escape each part for HTML
-    const escapedParts = nameParts.map((part) => escapeHtml(part));
+    if (packageName !== "tsconfig") {
+        nameParts = nameParts.map((word) => capitalize(word.trim()));
+    }
+
+    const name = nameParts.filter((word) => word.length > 0).join(" ");
 
     // Generate tspan elements for each line
-    const tspanElements = escapedParts.map((part, index) => `    <tspan x="${textX}" y="${startY + index * lineHeight}">${part}</tspan>`).join("\n");
+    const tspanElements = `    <tspan x="${textX}" y="${startY}">${escapeHtml(name)}</tspan>`;
 
     return `<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
   <image href="${imageDataUri}" width="${width}" height="${height}" />

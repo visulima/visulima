@@ -564,14 +564,14 @@ This is an open source project and will always remain free to use. If you think 
 
 ## License
 
-The visulima uploads is open-sourced software licensed under the [MIT][license]
+The visulima storage is open-sourced software licensed under the [MIT][license]
 
 <!-- badges -->
 
-[license-badge]: https://img.shields.io/npm/l/@visulima/upload?style=for-the-badge
+[license-badge]: https://img.shields.io/npm/l/@visulima/storage?style=for-the-badge
 [license]: https://github.com/visulima/visulima/blob/main/LICENSE
-[npm-downloads-badge]: https://img.shields.io/npm/dm/@visulima/upload?style=for-the-badge
-[npm-downloads]: https://www.npmjs.com/package/@visulima/upload
+[npm-downloads-badge]: https://img.shields.io/npm/dm/@visulima/storage?style=for-the-badge
+[npm-downloads]: https://www.npmjs.com/package/@visulima/storage
 [prs-welcome-badge]: https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=for-the-badge
 [prs-welcome]: https://github.com/visulima/visulima/blob/main/.github/CONTRIBUTING.md
 [chat-badge]: https://img.shields.io/discord/932323359193186354.svg?style=for-the-badge
