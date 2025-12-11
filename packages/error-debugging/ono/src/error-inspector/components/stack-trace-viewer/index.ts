@@ -25,9 +25,6 @@ const stackTraceViewer = async (
 
     const traces = parseStacktrace(error);
 
-    // Initialize highlighter once (singleton, languages loaded on-demand)
-    const highlighter = await getHighlighter(["javascript"]);
-
     // Escape HTML for plain text rendering
     const escapeHtml = (text: string): string =>
         text.replaceAll(/[&<>"']/g, (char) => {
@@ -75,8 +72,7 @@ const stackTraceViewer = async (
         if (lang === "text") {
             safeCode = `<pre class="shiki"><code>${escapeHtml(sourceCodeFrame)}</code></pre>`;
         } else {
-            // Ensure language is loaded (loads on-demand if not already loaded)
-            await getHighlighter([lang]);
+            const highlighter = await getHighlighter([lang]);
 
             const code = highlighter.codeToHtml(sourceCodeFrame, {
                 lang,

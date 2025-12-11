@@ -100,12 +100,17 @@ describe(resolveOriginalLocation, () => {
     it("should handle transform request errors gracefully", async () => {
         expect.assertions(2);
 
+        // Suppress console.warn for this test since we're testing error handling
+        const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+
         mockServer.transformRequest.mockRejectedValue(new Error("Transform failed"));
 
         const result = await resolveOriginalLocation(mockServer, { id: "/src/App.tsx" }, "/src/App.tsx", 10, 5);
 
         expect(result).toBeDefined();
         expect(result.originalFilePath).toBe("/src/App.tsx");
+
+        consoleWarnSpy.mockRestore();
     });
 
     it("should handle edge cases with line/column values", async () => {
