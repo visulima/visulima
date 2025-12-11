@@ -64,7 +64,7 @@ This is an open source project and will always remain free to use. If you think 
 
 ## License
 
-The visulima html is open-sourced software licensed under the [MIT][license-url]
+The visulima source-map is open-sourced software licensed under the [MIT][license]
 
 <!-- badges -->
 

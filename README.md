@@ -84,6 +84,12 @@ Built with TypeScript and organized using Nx, Visulima provides modular, well-te
 | [@visulima/fs](packages/filesystem/fs/README.md) | [![npm](https://img.shields.io/npm/v/%40visulima%2Ffs?style=flat-square&labelColor=292a44&color=663399&label=v)](https://www.npmjs.com/package/%40visulima%2Ffs) | Human friendly file system utilities for Node.js |
 | [@visulima/path](packages/filesystem/path/README.md) | [![npm](https://img.shields.io/npm/v/%40visulima%2Fpath?style=flat-square&labelColor=292a44&color=663399&label=v)](https://www.npmjs.com/package/%40visulima%2Fpath) | Drop-in replacement of the Node.js path module. |
 
+### Html
+
+| Package | Version | Description |
+| ---------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [@visulima/html](packages/html/README.md) | [![npm](https://img.shields.io/npm/v/%40visulima%2Fhtml?style=flat-square&labelColor=292a44&color=663399&label=v)](https://www.npmjs.com/package/%40visulima%2Fhtml) | Functions for HTML, such as escaping or unescaping HTML entities |
+
 ### Storage
 
 | Package | Version | Description |
