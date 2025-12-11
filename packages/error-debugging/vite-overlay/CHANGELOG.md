@@ -1,3 +1,9 @@
+## @visulima/vite-overlay [2.0.0-alpha.2](https://github.com/visulima/visulima/compare/@visulima/vite-overlay@2.0.0-alpha.1...@visulima/vite-overlay@2.0.0-alpha.2) (2025-12-11)
+
+### Bug Fixes
+
+* update dependencies and improve error handling in error-debugging packages ([b95fea4](https://github.com/visulima/visulima/commit/b95fea4ef0e0a6777b3dd465603b1dd3c40aa4e8))
+
 ## @visulima/vite-overlay [2.0.0-alpha.1](https://github.com/visulima/visulima/compare/@visulima/vite-overlay@1.3.7...@visulima/vite-overlay@2.0.0-alpha.1) (2025-12-07)
 
 ### ⚠ BREAKING CHANGES
