@@ -83,8 +83,8 @@ describe(findModuleForPath, () => {
         expect.assertions(2);
 
         // These should throw because we can't access moduleGraph on null/undefined
-        expect(() => findModuleForPath(null as any, ["/src/App.tsx"])).toThrow();
-        expect(() => findModuleForPath(undefined as any, ["/src/App.tsx"])).toThrow();
+        expect(() => findModuleForPath(null as any, ["/src/App.tsx"])).toThrowError();
+        expect(() => findModuleForPath(undefined as any, ["/src/App.tsx"])).toThrowError();
     });
 
     describe("module scoring and prioritization", () => {

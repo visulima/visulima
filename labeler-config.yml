@@ -49,9 +49,6 @@
 "package: email/email":
     - changed-files:
           - any-glob-to-any-file: "packages/email/email/**/*"
-"package: error-debugging/devtools":
-    - changed-files:
-          - any-glob-to-any-file: "packages/error-debugging/devtools/**/*"
 "package: error-debugging/error":
     - changed-files:
           - any-glob-to-any-file: "packages/error-debugging/error/**/*"

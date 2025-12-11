@@ -67,7 +67,7 @@ describe(errorOverlayPlugin, () => {
         it("should handle empty forwardedConsoleMethods array", () => {
             expect.assertions(1);
 
-            expect(() => errorOverlayPlugin({ forwardedConsoleMethods: [] })).toThrow("forwardedConsoleMethods must be an array of console method names");
+            expect(() => errorOverlayPlugin({ forwardedConsoleMethods: [] })).toThrowError("forwardedConsoleMethods must be an array of console method names");
         });
     });
 

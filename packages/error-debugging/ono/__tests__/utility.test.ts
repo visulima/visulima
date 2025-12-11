@@ -220,7 +220,7 @@ describe("utilities", () => {
         it("should throw error for non-string input", () => {
             expect.assertions(1);
 
-            expect(() => revisionHash(123 as any)).toThrow(TypeError);
+            expect(() => revisionHash(123 as any)).toThrowError(TypeError);
         });
 
         it("should return 16 character hex string", () => {

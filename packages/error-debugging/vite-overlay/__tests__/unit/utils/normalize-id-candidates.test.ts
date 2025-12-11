@@ -100,8 +100,8 @@ describe(normalizeIdCandidates, () => {
     it("should handle edge cases", () => {
         expect.assertions(3);
 
-        expect(() => normalizeIdCandidates(null as any)).not.toThrow();
-        expect(() => normalizeIdCandidates(undefined as any)).not.toThrow();
+        expect(() => normalizeIdCandidates(null as any)).not.toThrowError();
+        expect(() => normalizeIdCandidates(undefined as any)).not.toThrowError();
         expect(normalizeIdCandidates("")).toStrictEqual([]);
     });
 });

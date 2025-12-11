@@ -361,8 +361,8 @@ const createRequestContext = async (request: RequestLike, options: ContextConten
     };
 
     const curl = buildCurl();
-    const highlighter = await getHighlighter();
-    const curlHtmlRaw = await highlighter.codeToHtml(curl, {
+    const highlighter = await getHighlighter(["bash"]);
+    const curlHtmlRaw = highlighter.codeToHtml(curl, {
         lang: "bash",
         themes: {
             dark: "github-dark-default",

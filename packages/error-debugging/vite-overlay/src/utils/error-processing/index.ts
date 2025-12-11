@@ -1,6 +1,5 @@
 import { codeFrame, formatStacktrace, parseStacktrace } from "@visulima/error";
 import aiPrompt from "@visulima/error/solution/ai/prompt";
-import type { LanguageInput } from "shiki";
 import type { ViteDevServer } from "vite";
 
 import findLanguageBasedOnExtension from "../../../../../../shared/utils/find-language-based-on-extension";
@@ -206,21 +205,38 @@ const generateSyntaxHighlightedFrames = async (
     let originalCodeFrameContent: string | undefined;
     let compiledCodeFrameContent: string | undefined;
 
-    const hlLangOriginal = findLanguageBasedOnExtension(originalFilePath) || "text";
+    const hlLangOriginal = findLanguageBasedOnExtension(originalFilePath);
     const hlLangCompiled = findLanguageBasedOnExtension(compiledFilePath) || hlLangOriginal;
 
-    const langs: LanguageInput[] = [];
-    const requiredLangs = new Set([hlLangCompiled, hlLangOriginal]);
+    // Escape HTML for plain text rendering
+    const escapeHtml = (text: string): string =>
+        text.replaceAll(/[&<>"']/g, (char) => {
+            const entities: Record<string, string> = {
+                "\"": "&quot;",
+                "&": "&amp;",
+                "'": "&#39;",
+                "<": "&lt;",
+                ">": "&gt;",
+            };
 
-    if (requiredLangs.has("svelte")) {
-        langs.push(import("@shikijs/langs/svelte"));
+            return entities[char] || char;
+        });
+
+    // Handle plain text files - skip shiki and return plain HTML
+    if (hlLangOriginal === "text" && originalSnippet && originalSnippet.trim()) {
+        originalCodeFrameContent = `<pre class="shiki"><code>${escapeHtml(originalSnippet)}</code></pre>`;
     }
 
-    if (requiredLangs.has("vue")) {
-        langs.push(import("@shikijs/langs/vue"));
+    if (hlLangCompiled === "text" && compiledSnippet && compiledSnippet.trim()) {
+        compiledCodeFrameContent = `<pre class="shiki"><code>${escapeHtml(compiledSnippet)}</code></pre>`;
     }
 
-    const highlighter = await getHighlighter(langs);
+    // If both are text, return early
+    if (hlLangOriginal === "text" && hlLangCompiled === "text") {
+        return { compiledCodeFrameContent, originalCodeFrameContent };
+    }
+
+    const highlighter = await getHighlighter([hlLangCompiled, hlLangOriginal]);
     const highlightOptions = {
         themes: { dark: "github-dark-default", light: "github-light" },
     };
@@ -345,7 +361,46 @@ const buildExtendedErrorData = async (
         const diffContent = processHydrationDiff(error);
 
         if (diffContent) {
-            const highlighter = await getHighlighter();
+            const langName = compiledFilePath ? findLanguageBasedOnExtension(compiledFilePath) : "javascript";
+
+            // Skip shiki for text files
+            if (langName === "text") {
+                const escapeHtml = (text: string): string =>
+                    text.replaceAll(/[&<>"']/g, (char) => {
+                        const entities: Record<string, string> = {
+                            "\"": "&quot;",
+                            "&": "&amp;",
+                            "'": "&#39;",
+                            "<": "&lt;",
+                            ">": "&gt;",
+                        };
+
+                        return entities[char] || char;
+                    });
+
+                return {
+                    errorCount: 1,
+                    fixPrompt: aiPrompt({
+                        applicationType: undefined,
+                        error: primaryError,
+                        file: {
+                            file: compiledFilePath,
+                            language: "jsx",
+                            line: compiledLine,
+                            snippet: diffContent,
+                        },
+                    }),
+                    message: primaryError.message,
+                    originalCodeFrameContent: `<pre class="shiki"><code>${escapeHtml(diffContent as string)}</code></pre>`,
+                    originalFileColumn: compiledColumn,
+                    originalFileLine: compiledLine,
+                    originalFilePath: compiledFilePath,
+                    originalSnippet: diffContent as string,
+                    originalStack: primaryError.stack || "",
+                } as const;
+            }
+
+            const highlighter = await getHighlighter([langName]);
 
             return {
                 errorCount: 1,
@@ -361,7 +416,7 @@ const buildExtendedErrorData = async (
                 }),
                 message: primaryError.message,
                 originalCodeFrameContent: highlighter.codeToHtml(diffContent as string, {
-                    lang: compiledFilePath ? findLanguageBasedOnExtension(compiledFilePath) : "text",
+                    lang: langName,
                     themes: { dark: "github-dark-default", light: "github-light" },
                     transformers: [shikiDiffTransformer()],
                 }),
