@@ -1,3 +1,24 @@
+## @visulima/vite-overlay [2.0.0-alpha.3](https://github.com/visulima/visulima/compare/@visulima/vite-overlay@2.0.0-alpha.2...@visulima/vite-overlay@2.0.0-alpha.3) (2025-12-11)
+
+### Bug Fixes
+
+* update license information and add badges in README files ([340af5d](https://github.com/visulima/visulima/commit/340af5d227b3450a86da7861eeea5fee63ab4446))
+* update package OG images across multiple packages ([f08e4dd](https://github.com/visulima/visulima/commit/f08e4dd2b105ccb29c8412020a9c2be36d6c1e9e))
+
+### Miscellaneous Chores
+
+* update package dependencies and improve configuration ([4ed22d6](https://github.com/visulima/visulima/commit/4ed22d6511aa8150dcd4ba7b9dccf05dbe2d6adc))
+
+### Code Refactoring
+
+* improve stack trace viewer and resolve original location utilities ([c6ff5c8](https://github.com/visulima/visulima/commit/c6ff5c85714944f34cd3f758eb4fc1d16271f5b6))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 6.0.0-alpha.2
+* **@visulima/path:** upgraded to 3.0.0-alpha.3
+
 ## @visulima/vite-overlay [2.0.0-alpha.2](https://github.com/visulima/visulima/compare/@visulima/vite-overlay@2.0.0-alpha.1...@visulima/vite-overlay@2.0.0-alpha.2) (2025-12-11)
 
 ### Bug Fixes

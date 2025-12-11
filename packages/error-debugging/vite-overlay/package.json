@@ -1,6 +1,6 @@
 {
     "name": "@visulima/vite-overlay",
-    "version": "2.0.0-alpha.2",
+    "version": "2.0.0-alpha.3",
     "description": "Improved vite overlay",
     "keywords": [
         "vite",
@@ -79,7 +79,7 @@
     "dependencies": {
         "@shikijs/cli": "3.19.0",
         "@shikijs/langs": "3.19.0",
-        "@visulima/error": "6.0.0-alpha.1",
+        "@visulima/error": "6.0.0-alpha.2",
         "fastest-levenshtein": "^1.0.16",
         "shiki": "3.19.0"
     },
@@ -102,7 +102,7 @@
         "@types/hast": "3.0.4",
         "@types/node": "25.0.0",
         "@visulima/packem": "2.0.0-alpha.40",
-        "@visulima/path": "3.0.0-alpha.2",
+        "@visulima/path": "3.0.0-alpha.3",
         "@vitest/coverage-v8": "^4.0.15",
         "@vitest/ui": "^4.0.15",
         "conventional-changelog-conventionalcommits": "9.1.0",
