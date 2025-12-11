@@ -3,11 +3,19 @@ import { escapeCss } from "@std/html/unstable-escape-css";
 import type { Properties } from "csstype";
 
 /**
+ * Flexible CSS properties type that allows autocomplete for property names
+ * while accepting string, number, null, or undefined values.
+ */
+type FlexibleCSSProperties = {
+    [K in keyof Properties]?: Properties[K] | string | number | null | undefined;
+};
+
+/**
  * Converts a CSS object to a CSS string.
  * @param cssObject The CSS object with camelCase properties
  * @returns The CSS string representation
  */
-const cssObjectToString = (cssObject: Properties): string => {
+const cssObjectToString = (cssObject: FlexibleCSSProperties | Properties): string => {
     const styles: string[] = [];
 
     Object.entries(cssObject).forEach(([key, value]) => {
@@ -42,10 +50,12 @@ function css(strings: TemplateStringsArray, ...values: unknown[]): string;
  * css(':where(.UnderlineNav-actions ul) { animation: 1ms rgh-selector-observer; }', true)
  * @example
  * css({ padding: "1px" }, true)
+ * @example
+ * css({ margin: 20, padding: 10 }, false)
  */
-function css(value: string | Properties, escape?: boolean): string;
+function css(value: string | FlexibleCSSProperties | Properties, escape?: boolean): string;
 
-function css(stringsOrValue: TemplateStringsArray | string | Properties, ...valuesOrEscape: unknown[]): string {
+function css(stringsOrValue: TemplateStringsArray | string | FlexibleCSSProperties | Properties, ...valuesOrEscape: unknown[]): string {
     // Template tag call: css`...`
     if (Array.isArray(stringsOrValue) && "raw" in stringsOrValue) {
         const strings = stringsOrValue as TemplateStringsArray;
@@ -60,7 +70,7 @@ function css(stringsOrValue: TemplateStringsArray | string | Properties, ...valu
     }
 
     // Function call: css(value, escape)
-    const value = stringsOrValue as string | Properties;
+    const value = stringsOrValue as string | FlexibleCSSProperties | Properties;
     const escape = valuesOrEscape[0] as boolean | undefined;
 
     // Convert object to CSS string if needed
