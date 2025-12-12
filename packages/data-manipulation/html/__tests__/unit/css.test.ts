@@ -13,9 +13,7 @@ describe(css, () => {
                 }
             `;
 
-            expect(result).toBe(
-                "\n                :where(.UnderlineNav-actions ul) {\n                    animation: 1ms rgh-selector-observer;\n                }\n            ",
-            );
+            expect(result).toBe(":where(.UnderlineNav-actions ul) { animation: 1ms rgh-selector-observer; }");
         });
 
         it("should handle template literal with values", () => {
@@ -28,7 +26,7 @@ describe(css, () => {
                 }
             `;
 
-            expect(result).toBe("\n                .test-class {\n                    color: red;\n                }\n            ");
+            expect(result).toBe("\\.test-class { color: red; }");
         });
 
         it("should handle multiple template literal values", () => {
@@ -42,7 +40,7 @@ describe(css, () => {
                 }
             `;
 
-            expect(result).toBe("\n                .test {\n                    color: blue;\n                }\n            ");
+            expect(result).toBe(".test { color: blue; }");
         });
 
         it("should handle empty template literal", () => {
@@ -60,12 +58,12 @@ describe(css, () => {
                 .test {
                     color: ${null};
                 }
-            `).toBe("\n                .test {\n                    color: ;\n                }\n            ");
+            `).toBe(".test { color: ; }");
             expect(css`
                 .test {
                     color: ${undefined};
                 }
-            `).toBe("\n                .test {\n                    color: ;\n                }\n            ");
+            `).toBe(".test { color: ; }");
         });
 
         it("should handle empty string interpolation", () => {
@@ -77,7 +75,7 @@ describe(css, () => {
                 }
             `;
 
-            expect(result).toBe("\n                .test {\n                    color: ;\n                }\n            ");
+            expect(result).toBe(".test { color: ; }");
         });
 
         it("should handle zero value", () => {
@@ -89,7 +87,7 @@ describe(css, () => {
                 }
             `;
 
-            expect(result).toBe("\n                .test {\n                    margin: 0px;\n                }\n            ");
+            expect(result).toBe(".test { margin: \\30 px; }");
         });
 
         it("should handle negative numbers", () => {
@@ -101,7 +99,7 @@ describe(css, () => {
                 }
             `;
 
-            expect(result).toBe("\n                .test {\n                    margin: -10px;\n                }\n            ");
+            expect(result).toBe(".test { margin: -\\31 0px; }");
         });
 
         it("should handle decimal numbers", () => {
@@ -113,7 +111,7 @@ describe(css, () => {
                 }
             `;
 
-            expect(result).toBe("\n                .test {\n                    opacity: 0.5;\n                }\n            ");
+            expect(result).toBe(".test { opacity: \\30 \\.5; }");
         });
 
         it("should handle template literal with only interpolation", () => {
@@ -124,7 +122,7 @@ describe(css, () => {
                 ${value}
             `;
 
-            expect(result).toBe("color: red;");
+            expect(result).toBe("color\\:\\ red\\;");
         });
 
         it("should handle template literal starting with interpolation", () => {
@@ -137,7 +135,7 @@ describe(css, () => {
                 }
             `;
 
-            expect(result).toBe(".test { color: red; }");
+            expect(result).toBe("\\.test { color: red; }");
         });
 
         it("should handle template literal ending with interpolation", () => {
@@ -165,7 +163,7 @@ describe(css, () => {
                 }
             `;
 
-            expect(result).toBe("\n                .test {\n                    color: red;\n                }\n            ");
+            expect(result).toBe(".test { color: red; }");
         });
 
         it("should handle array interpolation", () => {
@@ -178,7 +176,7 @@ describe(css, () => {
                 }
             `;
 
-            expect(result).toBe("\n                .test {\n                    margin: 1,2,3;\n                }\n            ");
+            expect(result).toBe(".test { margin: \\31 \\,2\\,3; }");
         });
 
         it("should handle boolean values", () => {
@@ -191,7 +189,7 @@ describe(css, () => {
                 }
             `;
 
-            expect(result).toBe("\n                .test {\n                    display: true;\n                }\n            ");
+            expect(result).toBe(".test { display: true; }");
         });
     });
 
@@ -321,6 +319,40 @@ describe(css, () => {
             const result = css({ padding: "1px" });
 
             expect(result).toBe("padding: 1px;");
+        });
+
+        it("should preserve CSS custom properties verbatim", () => {
+            expect.assertions(2);
+
+            const result = css({ "--myVar": "10px", "--another-property": "red" }, false);
+
+            expect(result).toContain("--myVar: 10px;");
+            expect(result).toContain("--another-property: red;");
+        });
+
+        it("should not transform CSS custom properties with camelCase", () => {
+            expect.assertions(1);
+
+            const result = css({ "--myCustomVar": "20px" }, false);
+
+            expect(result).toContain("--myCustomVar: 20px;");
+        });
+
+        it("should handle CSS custom properties alongside regular properties", () => {
+            expect.assertions(3);
+
+            const result = css(
+                {
+                    "--primary-color": "blue",
+                    marginTop: "10px",
+                    "--secondary-color": "green",
+                },
+                false,
+            );
+
+            expect(result).toContain("--primary-color: blue;");
+            expect(result).toContain("--secondary-color: green;");
+            expect(result).toContain("margin-top: 10px;");
         });
     });
 });

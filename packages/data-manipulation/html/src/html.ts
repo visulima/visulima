@@ -30,23 +30,18 @@ function html(strings: TemplateStringsArray, ...values: unknown[]): string;
 function html(value: string, shouldEscape?: boolean): string;
 
 function html(stringsOrValue: TemplateStringsArray | string, ...valuesOrEscape: unknown[]): string {
-    // Template tag call: html`...`
     if (Array.isArray(stringsOrValue) && "raw" in stringsOrValue) {
         const strings = stringsOrValue as TemplateStringsArray;
         let result = strings[0] ?? "";
 
         for (const [i, element] of valuesOrEscape.entries()) {
-            // Escape interpolations by default to prevent XSS
-            // Use attribute escaping (escapes &, <, and ") for maximum safety
-            // since interpolated values may be used in attributes
-            result += escapeHtml(String(element ?? ""), false);
+            result += escapeHtml(String(element ?? ""), true);
             result += strings[i + 1] ?? "";
         }
 
         return result;
     }
 
-    // Function call: html(value, shouldEscape)
     const value = stringsOrValue as string;
     const shouldEscape = valuesOrEscape[0] as boolean | undefined;
 
@@ -55,11 +50,9 @@ function html(stringsOrValue: TemplateStringsArray | string, ...valuesOrEscape: 
     }
 
     if (shouldEscape === true) {
-        // Escape for attributes (escapes &, <, and ")
         return escapeHtml(value, true);
     }
 
-    // Default: return as-is (unsafe for untrusted input)
     return value;
 }
 

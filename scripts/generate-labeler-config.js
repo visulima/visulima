@@ -41,11 +41,6 @@ function findPackages(dir, baseDir, foundPackages = []) {
             const stat = statSync(fullPath);
 
             if (stat.isDirectory()) {
-                // Skip __bench__ directories even if they have package.json
-                if (entry === "__bench__") {
-                    continue;
-                }
-                
                 // Check if this directory has a package.json
                 const packageJsonPath = join(fullPath, "package.json");
                 if (existsSync(packageJsonPath)) {

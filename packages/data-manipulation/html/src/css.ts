@@ -20,8 +20,13 @@ const cssObjectToString = (cssObject: FlexibleCSSProperties | Properties): strin
 
     Object.entries(cssObject).forEach(([key, value]) => {
         if (value !== undefined && value !== null) {
-            const kebab = key.replaceAll(/([A-Z])/g, "-$1").toLowerCase();
-            const cssKey = kebab.startsWith("ms-") ? `-ms-${kebab.slice(3)}` : kebab;
+            const cssKey = key.startsWith("--")
+                ? key
+                : (() => {
+                    const kebab = key.replaceAll(/([A-Z])/g, "-$1").toLowerCase();
+
+                    return kebab.startsWith("ms-") ? `-ms-${kebab.slice(3)}` : kebab;
+                })();
 
             styles.push(`${cssKey}: ${String(value)};`);
         }
@@ -31,14 +36,15 @@ const cssObjectToString = (cssObject: FlexibleCSSProperties | Properties): strin
 };
 
 /**
- * Template tag function for CSS that returns the CSS as-is.
- * Template strings and interpolated values are used as-is without escaping.
- * Use the function call with `shouldEscape: true` if you need CSS escaping.
+ * Template tag function for CSS that returns a minified one-line CSS string.
+ * Template strings are used as-is, but interpolated values are escaped by default.
+ * All whitespace and newlines are collapsed into single spaces.
  * @param strings Template literal strings
- * @param values Template literal values (used as-is)
- * @returns The CSS string as-is
+ * @param values Template literal values (escaped by default)
+ * @returns A minified one-line CSS string
  * @example
  * css`:where(.UnderlineNav-actions ul) { animation: 1ms rgh-selector-observer; }`
+ * // Returns: ":where(.UnderlineNav-actions ul) { animation: 1ms rgh-selector-observer; }"
  */
 function css(strings: TemplateStringsArray, ...values: unknown[]): string;
 
@@ -58,33 +64,30 @@ function css(strings: TemplateStringsArray, ...values: unknown[]): string;
 function css(value: string | FlexibleCSSProperties | Properties, shouldEscape?: boolean): string;
 
 function css(stringsOrValue: TemplateStringsArray | string | FlexibleCSSProperties | Properties, ...valuesOrEscape: unknown[]): string {
-    // Template tag call: css`...`
     if (Array.isArray(stringsOrValue) && "raw" in stringsOrValue) {
         const strings = stringsOrValue as TemplateStringsArray;
+
         let result = strings[0] ?? "";
 
         for (const [i, element] of valuesOrEscape.entries()) {
-            // Template strings are trusted, interpolated values are used as-is
-            result += String(element ?? "");
+            result += escapeCss(String(element ?? ""));
             result += strings[i + 1] ?? "";
         }
 
-        // Return CSS as-is (no escaping) for template tag
+        result = result.trim().replaceAll(/\s+/g, " ");
+
         return result;
     }
 
-    // Function call: css(value, shouldEscape)
     const value = stringsOrValue as string | FlexibleCSSProperties | Properties;
     const shouldEscape = valuesOrEscape[0] as boolean | undefined;
 
-    // Convert object to CSS string if needed
     const cssString = typeof value === "string" ? value : cssObjectToString(value);
 
     if (shouldEscape === true) {
         return escapeCss(cssString);
     }
 
-    // Default: return as-is
     return cssString;
 }
 
