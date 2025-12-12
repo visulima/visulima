@@ -44,7 +44,7 @@ function css(strings: TemplateStringsArray, ...values: unknown[]): string;
  * Function overload for CSS with escaping control.
  * Supports both string and object inputs.
  * @param value The CSS string or object to process
- * @param escape If true, escapes CSS. If false, returns CSS as-is.
+ * @param shouldEscape If true, escapes CSS. If false, returns CSS as-is.
  * @returns The processed CSS string
  * @example
  * css(':where(.UnderlineNav-actions ul) { animation: 1ms rgh-selector-observer; }', true)
@@ -53,7 +53,7 @@ function css(strings: TemplateStringsArray, ...values: unknown[]): string;
  * @example
  * css({ margin: 20, padding: 10 }, false)
  */
-function css(value: string | FlexibleCSSProperties | Properties, escape?: boolean): string;
+function css(value: string | FlexibleCSSProperties | Properties, shouldEscape?: boolean): string;
 
 function css(stringsOrValue: TemplateStringsArray | string | FlexibleCSSProperties | Properties, ...valuesOrEscape: unknown[]): string {
     // Template tag call: css`...`
@@ -71,12 +71,12 @@ function css(stringsOrValue: TemplateStringsArray | string | FlexibleCSSProperti
 
     // Function call: css(value, escape)
     const value = stringsOrValue as string | FlexibleCSSProperties | Properties;
-    const escape = valuesOrEscape[0] as boolean | undefined;
+    const shouldEscape = valuesOrEscape[0] as boolean | undefined;
 
     // Convert object to CSS string if needed
     const cssString = typeof value === "string" ? value : cssObjectToString(value);
 
-    if (escape === true) {
+    if (shouldEscape === true) {
         return escapeCss(cssString);
     }
 

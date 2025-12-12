@@ -15,7 +15,7 @@ function html(strings: TemplateStringsArray, ...values: unknown[]): string;
 /**
  * Function overload for HTML with escaping control.
  * @param value The HTML string to process
- * @param escape If false, returns HTML as-is (XSS-safe). If true, escapes HTML.
+ * @param shouldEscape If false, returns HTML as-is (XSS-safe). If true, escapes HTML.
  * @returns The processed HTML string
  * @example
  * html('<div></div>', false)
@@ -24,7 +24,7 @@ function html(strings: TemplateStringsArray, ...values: unknown[]): string;
  * html('<script>alert("xss")</script>', true)
  * // => '&lt;script>alert("xss")&lt;/script>'
  */
-function html(value: string, escape?: boolean): string;
+function html(value: string, shouldEscape?: boolean): string;
 
 function html(stringsOrValue: TemplateStringsArray | string, ...valuesOrEscape: unknown[]): string {
     // Template tag call: html`...`
@@ -40,15 +40,15 @@ function html(stringsOrValue: TemplateStringsArray | string, ...valuesOrEscape: 
         return result;
     }
 
-    // Function call: html(value, escape)
+    // Function call: html(value, shouldEscape)
     const value = stringsOrValue as string;
-    const escape = valuesOrEscape[0] as boolean | undefined;
+    const shouldEscape = valuesOrEscape[0] as boolean | undefined;
 
-    if (escape === false) {
+    if (shouldEscape === false) {
         return value;
     }
 
-    if (escape === true) {
+    if (shouldEscape === true) {
         // Escape for attributes (escapes &, <, and ")
         return escapeHtml(value, true);
     }
