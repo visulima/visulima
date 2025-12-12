@@ -1,8 +1,11 @@
 {
-    "name": "find-cache-dir",
-    "$schema": "../../node_modules/nx/schemas/project-schema.json",
+    "name": "filesystem/find-cache-dir",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
     "sourceRoot": "packages/filesystem/find-cache-dir/src",
     "projectType": "library",
-    "tags": ["find-cache-dir", "type:package"],
+    "tags": [
+        "find-cache-dir",
+        "type:package"
+    ],
     "implicitDependencies": []
 }

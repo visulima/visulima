@@ -1,8 +1,11 @@
 {
-    "name": "source-map",
-    "$schema": "../../node_modules/nx/schemas/project-schema.json",
+    "name": "error-debugging/source-map",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
     "sourceRoot": "packages/error-debugging/source-map/src",
     "projectType": "library",
-    "tags": ["source-map", "type:package"],
+    "tags": [
+        "source-map",
+        "type:package"
+    ],
     "implicitDependencies": []
 }

@@ -1,8 +1,13 @@
 {
-    "name": "jsdoc-open-api",
-    "$schema": "../../node_modules/nx/schemas/project-schema.json",
+    "name": "api/jsdoc-open-api",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
     "sourceRoot": "packages/api/jsdoc-open-api/src",
     "projectType": "library",
-    "tags": ["type:package", "jsdoc-open-api"],
-    "implicitDependencies": ["fs"]
+    "tags": [
+        "type:package",
+        "jsdoc-open-api"
+    ],
+    "implicitDependencies": [
+        "filesystem/fs"
+    ]
 }

@@ -54,26 +54,26 @@ pnpm add @visulima/disposable-email-domains
 
 | Repository | Domains | Success | Performance |
 |------------|---------|---------|-------------|
-| kslr/disposable-email-domains | 112.779 | ✅ | 0.43s (1.7 MB) |
-| FGRibreau/mailchecker | 55.864 | ✅ | 0.47s (838.4 KB) |
-| wesbos/burner-email-providers | 27.284 | ✅ | 0.46s (388.1 KB) |
+| kslr/disposable-email-domains | 112.869 | ✅ | 0.38s (1.7 MB) |
+| FGRibreau/mailchecker | 55.864 | ✅ | 0.44s (838.4 KB) |
+| wesbos/burner-email-providers | 27.284 | ✅ | 0.45s (388.1 KB) |
 | groundcat/disposable-email-domain-list | 27.120 | ✅ | 0.23s (401.7 KB) |
-| disposable/disposable-email-domains | 26.506 | ✅ | 0.31s (372.3 KB) |
-| sublime-security/static-files | 10.523 | ✅ | 0.25s (144.0 KB) |
-| 7c/fakefilter | 9.011 | ✅ | 0.19s (129.2 KB) |
-| disposable-email-domains/disposable-email-domains | 4.939 | ✅ | 0.29s (62.4 KB) |
+| disposable/disposable-email-domains | 26.507 | ✅ | 2.08s (372.2 KB) |
+| sublime-security/static-files | 10.523 | ✅ | 0.26s (144.0 KB) |
+| 7c/fakefilter | 9.034 | ✅ | 0.16s (129.5 KB) |
+| disposable-email-domains/disposable-email-domains | 4.941 | ✅ | 2.06s (62.4 KB) |
 | willwhite/freemail | 4.462 | ✅ | 0.30s (61.8 KB) |
-| eser/sanitizer-svc | 3.855 | ✅ | 0.24s (48.9 KB) |
-| unkn0w/disposable-email-domain-list | 3.617 | ✅ | 0.16s (45.8 KB) |
-| MattKetmo/EmailChecker | 2.515 | ✅ | 0.15s (32.4 KB) |
-| GeroldSetz/emailondeck.com-domains | 1.121 | ✅ | 0.21s (15.4 KB) |
-| jespernissen/disposable-maildomain-list | 1.022 | ✅ | 0.16s (13.2 KB) |
-| TheDahoom/disposable-email | 18 | ✅ | 0.23s (234 B) |
+| eser/sanitizer-svc | 3.855 | ✅ | 2.00s (48.9 KB) |
+| unkn0w/disposable-email-domain-list | 3.617 | ✅ | 0.14s (45.8 KB) |
+| MattKetmo/EmailChecker | 2.515 | ✅ | 0.14s (32.4 KB) |
+| GeroldSetz/emailondeck.com-domains | 1.121 | ✅ | 1.99s (15.4 KB) |
+| jespernissen/disposable-maildomain-list | 1.017 | ✅ | 0.14s (13.1 KB) |
+| TheDahoom/disposable-email | 18 | ✅ | 1.99s (234 B) |
 
 <!-- END_PLACEHOLDER_CONTRIBUTING -->
 <!-- START_PLACEHOLDER_LAST_UPDATED -->
 
-_Last updated: 2025-12-09T23:48:48.589Z_
+_Last updated: 2025-12-12T09:32:53.908Z_
 
 <!-- END_PLACEHOLDER_LAST_UPDATED -->
 
