@@ -59,6 +59,10 @@
     - Handles template literals and string inputs
     - Normalizes newlines across platforms
     - Configurable trimming behavior
+- **String Analysis**:
+    - `countOccurrences`: Count occurrences of a substring in a string
+    - `direction`: Detect text direction (left-to-right, right-to-left, or neutral)
+    - Unicode-aware and handles multi-byte characters
 - **String Width Calculation**:
     - `getStringWidth`: Calculate visual width of strings with Unicode support
     - `getStringTruncatedWidth`: Width calculation with smart truncation
@@ -390,6 +394,42 @@ splitByCase("🎉HappyBirthday🎂", {
     handleEmoji: true, // Handle emoji boundaries
 });
 // ['🎉', 'Happy', 'Birthday', '🎂']
+```
+
+### String Analysis
+
+The `countOccurrences` function counts how many times a substring appears in a string, with full Unicode support:
+
+```typescript
+import { countOccurrences } from "@visulima/string";
+
+// Basic counting
+countOccurrences("foo", "o"); // 2
+countOccurrences("fo fooo fo", "o"); // 5
+
+// Unicode support
+countOccurrences("a🤔b🤔c", "🤔"); // 2
+
+// Empty string handling
+countOccurrences("", "f"); // 0
+```
+
+The `direction` function detects text direction for internationalization:
+
+```typescript
+import { direction } from "@visulima/string";
+
+// Left-to-right languages
+direction("english"); // 'ltr'
+direction("Hello World"); // 'ltr'
+
+// Right-to-left languages
+direction("الجملة"); // 'rtl' (Arabic)
+direction("נ"); // 'rtl' (Hebrew)
+
+// Neutral (numbers, symbols, empty)
+direction("123"); // 'neutral'
+direction(""); // 'neutral'
 ```
 
 ### Case Conversion Functions

@@ -50,6 +50,8 @@ export type { ClosestStringOptions } from "./closest-string";
 export { closestString } from "./closest-string";
 export type { CompareSimilarityOptions } from "./compare-similarity";
 export { compareSimilarity } from "./compare-similarity";
+export { countOccurrences } from "./count-occurrences";
+export { direction } from "./direction";
 export type { ExcerptOptions } from "./excerpt";
 export { excerpt } from "./excerpt";
 export type { StringTruncatedWidthOptions, StringTruncatedWidthResult } from "./get-string-truncated-width";

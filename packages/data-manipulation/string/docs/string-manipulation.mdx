@@ -511,6 +511,51 @@ getStringTruncatedWidth("hello world", {
 
 ## Utility Functions
 
+### countOccurrences
+
+Counts occurrences of a substring in a string. Handles Unicode characters correctly and prevents infinite loops.
+
+```typescript
+import { countOccurrences } from "@visulima/string";
+
+// Basic usage
+countOccurrences("foo", "o"); // 2
+countOccurrences("fo fooo fo", "o"); // 5
+
+// Unicode support
+countOccurrences("a🤔b🤔c", "🤔"); // 2
+
+// Empty string handling
+countOccurrences("", "f"); // 0
+
+// Throws error for empty substring
+countOccurrences("test", ""); // TypeError: Expected non-empty substring
+```
+
+### direction
+
+Detects the direction of text: left-to-right, right-to-left, or neutral. Uses Unicode character ranges to identify RTL and LTR scripts.
+
+```typescript
+import { direction } from "@visulima/string";
+
+// Left-to-right languages
+direction("english"); // 'ltr'
+direction("Hello World"); // 'ltr'
+direction("Français"); // 'ltr'
+
+// Right-to-left languages
+direction("الجملة"); // 'rtl' (Arabic)
+direction("נ"); // 'rtl' (Hebrew)
+direction("الانجليزية"); // 'rtl'
+
+// Neutral (numbers, symbols, empty)
+direction("123"); // 'neutral'
+direction("!@#"); // 'neutral'
+direction(""); // 'neutral'
+direction(" "); // 'neutral'
+```
+
 ### escapeRegExp
 
 Escapes special regex characters for safe use in regular expressions.

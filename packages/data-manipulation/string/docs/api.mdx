@@ -485,6 +485,58 @@ excerpt("<div>Content</div>", 7);
 
 ---
 
+### countOccurrences
+
+Counts occurrences of a substring in a string.
+
+```typescript
+function countOccurrences(value: string, substring: string): number;
+```
+
+**Parameters:**
+
+- `value`: Content to search in
+- `substring`: Substring to look for (must be non-empty)
+
+**Returns:** Count of `substring`s in `value`
+
+**Throws:** `TypeError` when substring is not a string or is empty
+
+**Example:**
+
+```typescript
+countOccurrences("foo", "o"); // 2
+countOccurrences("fo fooo fo", "o"); // 5
+countOccurrences("a🤔b🤔c", "🤔"); // 2
+```
+
+---
+
+### direction
+
+Detects the direction of text: left-to-right, right-to-left, or neutral.
+
+```typescript
+function direction(value: string): "rtl" | "ltr" | "neutral";
+```
+
+**Parameters:**
+
+- `value`: The string to analyze
+
+**Returns:** The text direction: `'rtl'` for right-to-left, `'ltr'` for left-to-right, or `'neutral'` for neutral
+
+**Example:**
+
+```typescript
+direction("english"); // 'ltr'
+direction("الجملة"); // 'rtl'
+direction("123"); // 'neutral'
+direction(""); // 'neutral'
+```
+
+---
+
 ## String Width
 
 ### getStringWidth
