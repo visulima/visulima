@@ -66,7 +66,7 @@ function css(stringsOrValue: TemplateStringsArray | string | FlexibleCSSProperti
             result += strings[i + 1] ?? "";
         }
 
-        return result;
+        return escapeCss(result);
     }
 
     // Function call: css(value, escape)

@@ -1,14 +1,17 @@
 import escapeHtml from "./escape-html";
 
 /**
- * Template tag function for HTML that returns the HTML as-is (XSS-safe).
- * Use this when you trust the HTML content from template literals.
+ * Template tag function for HTML that escapes interpolated values to prevent XSS.
+ * Template strings are used as-is, but all interpolated values are HTML-escaped.
  * @param strings Template literal strings
- * @param values Template literal values
- * @returns The HTML string as-is
+ * @param values Template literal values (will be escaped)
+ * @returns The HTML string with interpolated values escaped
  * @example
  * html`<div>Hello</div>`
  * // => '<div>Hello</div>'
+ * @example
+ * html`<div>${'<script>alert("xss")</script>'}</div>`
+ * // => '<div>&lt;script>alert("xss")&lt;/script></div>'
  */
 function html(strings: TemplateStringsArray, ...values: unknown[]): string;
 
@@ -33,7 +36,8 @@ function html(stringsOrValue: TemplateStringsArray | string, ...valuesOrEscape: 
         let result = strings[0] ?? "";
 
         for (const [i, element] of valuesOrEscape.entries()) {
-            result += String(element ?? "");
+            // Escape interpolations by default to prevent XSS
+            result += escapeHtml(element ?? "", false);
             result += strings[i + 1] ?? "";
         }
 

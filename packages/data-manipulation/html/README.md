@@ -42,7 +42,7 @@
 - **Minimal Allocations**: Efficient string escaping with minimal memory allocations
 - **Dual Mode**: Supports both content escaping and attribute escaping
 - **XSS Protection**: Escapes HTML special characters to prevent XSS attacks
-- **HTML Template Tag**: Template literal function for XSS-safe HTML strings
+- **HTML Template Tag**: Template literal function for HTML strings with automatic escaping of interpolated values
 - **TypeScript Support**: Full TypeScript definitions included
 
 ### CSS & JavaScript Escaping
@@ -232,22 +232,27 @@ const safeAttr = escapeHtml(userInput, true);
 
 ### HTML Template Tag
 
-The `html` function provides a convenient template tag for creating XSS-safe HTML strings, with optional escaping control.
+The `html` function provides a convenient template tag for creating XSS-safe HTML strings. Template strings are used as-is, but all interpolated values are automatically HTML-escaped to prevent XSS attacks.
 
 #### Template Tag Usage
 
 ```typescript
 import { html } from "@visulima/html";
 
-// Template tag returns HTML as-is (XSS-safe for trusted content)
+// Template tag returns HTML as-is (template strings are trusted)
 const markup = html`<div class="container">Hello World</div>`;
 // Result: '<div class="container">Hello World</div>'
 
-// With template values
+// With template values - interpolations are automatically escaped
 const className = "test-class";
 const content = "Hello";
 const result = html`<div class="${className}">${content}</div>`;
 // Result: '<div class="test-class">Hello</div>'
+
+// XSS protection: interpolated values are escaped
+const userInput = '<script>alert("xss")</script>';
+const safe = html`<div>${userInput}</div>`;
+// Result: '<div>&lt;script>alert("xss")&lt;/script></div>'
 ```
 
 #### Function Usage with Escaping Control
@@ -270,9 +275,10 @@ const defaultHtml = html("<div>Content</div>");
 
 #### Use Cases
 
-- **Template Literals**: Use the template tag when you trust the HTML content
-- **Dynamic Content**: Use the function with `escape: true` when escaping user-generated content
-- **Performance**: Template tag has minimal overhead, perfect for static HTML generation
+- **Template Literals**: Use the template tag for HTML with automatic escaping of interpolated values
+- **Dynamic Content**: Interpolated values are automatically escaped, making it safe for user-generated content
+- **Trusted HTML**: Use the function with `false` when you need to insert trusted HTML without escaping
+- **Performance**: Template tag has minimal overhead, perfect for HTML generation with automatic XSS protection
 
 ### CSS Escaping
 
