@@ -15,13 +15,12 @@ export type { Properties as CSSProperties } from "csstype";
 export * from "html-entities";
 // eslint-disable-next-line import/no-extraneous-dependencies
 export { default as htmlTags, voidHtmlTags } from "html-tags";
+export { default as sanitizeHtml } from "sanitize-html";
 // TODO: Check this tickets
 // - https://github.com/codsen/codsen/issues/84
 // - https://github.com/codsen/codsen/issues/97
 // - https://github.com/codsen/codsen/issues/98
 // - https://github.com/codsen/codsen/issues/104
-// @ts-expect-error the bundler will transform it correctly
-export * as sanitizeHtml from "sanitize-html";
 export type {
     Attribute as StripHtmlAttribute,
     CbObj as StripHtmlCbObj,
