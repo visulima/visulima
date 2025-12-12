@@ -8,7 +8,7 @@
  */
 
 import { readdirSync, existsSync, writeFileSync, statSync } from "node:fs";
-import { resolve, join, relative } from "node:path";
+import { resolve, join, relative, basename } from "node:path";
 import * as prettier from "prettier";
 
 /**
@@ -19,7 +19,7 @@ import * as prettier from "prettier";
 /**
  * Directories to exclude from package discovery
  */
-const EXCLUDED_DIRS = new Set(["node_modules", ".git", "dist", "build", ".next", ".turbo", "__fixtures__", "examples", "__tests__", ".DS_Store"]);
+const EXCLUDED_DIRS = new Set(["node_modules", ".git", "dist", "build", ".next", ".turbo", "__fixtures__", "examples", "__tests__", "__bench__", ".DS_Store"]);
 
 /**
  * Recursively finds all package.json files in the packages directory
@@ -76,8 +76,10 @@ function readPairsFromFs() {
 
     /** @type {Array<LabelerPair>} */
     const pairs = packagePaths.map((packagePath) => {
-        // Create label from path (e.g., "email/email" -> "package: email/email")
-        const label = `package: ${packagePath}`;
+        // Extract just the package name (skip group folder)
+        // e.g., "api/api-platform" -> "api-platform"
+        const packageName = basename(packagePath);
+        const label = `package: ${packageName}`;
         const globPath = `packages/${packagePath}/**/*`;
         return [label, globPath];
     });

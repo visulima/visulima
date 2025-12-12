@@ -1,153 +1,120 @@
-"package: api/api-platform":
-    - changed-files:
-          - any-glob-to-any-file: "packages/api/api-platform/**/*"
-"package: api/connect":
-    - changed-files:
-          - any-glob-to-any-file: "packages/api/connect/**/*"
-"package: api/crud":
-    - changed-files:
-          - any-glob-to-any-file: "packages/api/crud/**/*"
-"package: api/health-check":
-    - changed-files:
-          - any-glob-to-any-file: "packages/api/health-check/**/*"
-"package: api/jsdoc-open-api":
-    - changed-files:
-          - any-glob-to-any-file: "packages/api/jsdoc-open-api/**/*"
-"package: api/pagination":
-    - changed-files:
-          - any-glob-to-any-file: "packages/api/pagination/**/*"
-"package: data-manipulation/bytes":
-    - changed-files:
-          - any-glob-to-any-file: "packages/data-manipulation/bytes/**/*"
-"package: data-manipulation/deep-clone":
-    - changed-files:
-          - any-glob-to-any-file: "packages/data-manipulation/deep-clone/**/*"
-"package: data-manipulation/deep-clone/__bench__":
-    - changed-files:
-          - any-glob-to-any-file: "packages/data-manipulation/deep-clone/__bench__/**/*"
-"package: data-manipulation/humanizer":
-    - changed-files:
-          - any-glob-to-any-file: "packages/data-manipulation/humanizer/**/*"
-"package: data-manipulation/object":
-    - changed-files:
-          - any-glob-to-any-file: "packages/data-manipulation/object/**/*"
-"package: data-manipulation/redact":
-    - changed-files:
-          - any-glob-to-any-file: "packages/data-manipulation/redact/**/*"
-"package: data-manipulation/redact/__bench__":
-    - changed-files:
-          - any-glob-to-any-file: "packages/data-manipulation/redact/__bench__/**/*"
-"package: data-manipulation/string":
-    - changed-files:
-          - any-glob-to-any-file: "packages/data-manipulation/string/**/*"
-"package: data-manipulation/string/__bench__":
-    - changed-files:
-          - any-glob-to-any-file: "packages/data-manipulation/string/__bench__/**/*"
-"package: email/disposable-email-domains":
-    - changed-files:
-          - any-glob-to-any-file: "packages/email/disposable-email-domains/**/*"
-"package: email/email":
-    - changed-files:
-          - any-glob-to-any-file: "packages/email/email/**/*"
-"package: error-debugging/error":
-    - changed-files:
-          - any-glob-to-any-file: "packages/error-debugging/error/**/*"
-"package: error-debugging/error-handler":
-    - changed-files:
-          - any-glob-to-any-file: "packages/error-debugging/error-handler/**/*"
-"package: error-debugging/inspector":
-    - changed-files:
-          - any-glob-to-any-file: "packages/error-debugging/inspector/**/*"
-"package: error-debugging/inspector/__bench__":
-    - changed-files:
-          - any-glob-to-any-file: "packages/error-debugging/inspector/__bench__/**/*"
-"package: error-debugging/ono":
-    - changed-files:
-          - any-glob-to-any-file: "packages/error-debugging/ono/**/*"
-"package: error-debugging/pail":
-    - changed-files:
-          - any-glob-to-any-file: "packages/error-debugging/pail/**/*"
-"package: error-debugging/pail/__bench__":
-    - changed-files:
-          - any-glob-to-any-file: "packages/error-debugging/pail/__bench__/**/*"
-"package: error-debugging/source-map":
-    - changed-files:
-          - any-glob-to-any-file: "packages/error-debugging/source-map/**/*"
-"package: error-debugging/vite-overlay":
-    - changed-files:
-          - any-glob-to-any-file: "packages/error-debugging/vite-overlay/**/*"
-"package: filesystem/find-cache-dir":
-    - changed-files:
-          - any-glob-to-any-file: "packages/filesystem/find-cache-dir/**/*"
-"package: filesystem/fs":
-    - changed-files:
-          - any-glob-to-any-file: "packages/filesystem/fs/**/*"
-"package: filesystem/fs/__bench__":
-    - changed-files:
-          - any-glob-to-any-file: "packages/filesystem/fs/__bench__/**/*"
-"package: filesystem/fs/__bench__/fixtures/a/b":
-    - changed-files:
-          - any-glob-to-any-file: "packages/filesystem/fs/__bench__/fixtures/a/b/**/*"
-"package: filesystem/path":
-    - changed-files:
-          - any-glob-to-any-file: "packages/filesystem/path/**/*"
-"package: storage/storage":
-    - changed-files:
-          - any-glob-to-any-file: "packages/storage/storage/**/*"
-"package: storage/storage-client":
-    - changed-files:
-          - any-glob-to-any-file: "packages/storage/storage-client/**/*"
-"package: storage/storage/src/adapter/nuxt":
-    - changed-files:
-          - any-glob-to-any-file: "packages/storage/storage/src/adapter/nuxt/**/*"
-"package: terminal/ansi":
+"package: ansi":
     - changed-files:
           - any-glob-to-any-file: "packages/terminal/ansi/**/*"
-"package: terminal/boxen":
+"package: api-platform":
+    - changed-files:
+          - any-glob-to-any-file: "packages/api/api-platform/**/*"
+"package: boxen":
     - changed-files:
           - any-glob-to-any-file: "packages/terminal/boxen/**/*"
-"package: terminal/boxen/__bench__":
+"package: bytes":
     - changed-files:
-          - any-glob-to-any-file: "packages/terminal/boxen/__bench__/**/*"
-"package: terminal/cerebro":
+          - any-glob-to-any-file: "packages/data-manipulation/bytes/**/*"
+"package: cerebro":
     - changed-files:
           - any-glob-to-any-file: "packages/terminal/cerebro/**/*"
-"package: terminal/cerebro/__bench__":
-    - changed-files:
-          - any-glob-to-any-file: "packages/terminal/cerebro/__bench__/**/*"
-"package: terminal/colorize":
+"package: colorize":
     - changed-files:
           - any-glob-to-any-file: "packages/terminal/colorize/**/*"
-"package: terminal/colorize/__bench__":
-    - changed-files:
-          - any-glob-to-any-file: "packages/terminal/colorize/__bench__/**/*"
-"package: terminal/command-line-args":
+"package: command-line-args":
     - changed-files:
           - any-glob-to-any-file: "packages/terminal/command-line-args/**/*"
-"package: terminal/command-line-args/__bench__":
+"package: connect":
     - changed-files:
-          - any-glob-to-any-file: "packages/terminal/command-line-args/__bench__/**/*"
-"package: terminal/fmt":
+          - any-glob-to-any-file: "packages/api/connect/**/*"
+"package: crud":
+    - changed-files:
+          - any-glob-to-any-file: "packages/api/crud/**/*"
+"package: deep-clone":
+    - changed-files:
+          - any-glob-to-any-file: "packages/data-manipulation/deep-clone/**/*"
+"package: disposable-email-domains":
+    - changed-files:
+          - any-glob-to-any-file: "packages/email/disposable-email-domains/**/*"
+"package: email":
+    - changed-files:
+          - any-glob-to-any-file: "packages/email/email/**/*"
+"package: error":
+    - changed-files:
+          - any-glob-to-any-file: "packages/error-debugging/error/**/*"
+"package: error-handler":
+    - changed-files:
+          - any-glob-to-any-file: "packages/error-debugging/error-handler/**/*"
+"package: find-cache-dir":
+    - changed-files:
+          - any-glob-to-any-file: "packages/filesystem/find-cache-dir/**/*"
+"package: fmt":
     - changed-files:
           - any-glob-to-any-file: "packages/terminal/fmt/**/*"
-"package: terminal/is-ansi-color-supported":
+"package: fs":
+    - changed-files:
+          - any-glob-to-any-file: "packages/filesystem/fs/**/*"
+"package: health-check":
+    - changed-files:
+          - any-glob-to-any-file: "packages/api/health-check/**/*"
+"package: html":
+    - changed-files:
+          - any-glob-to-any-file: "packages/data-manipulation/html/**/*"
+"package: humanizer":
+    - changed-files:
+          - any-glob-to-any-file: "packages/data-manipulation/humanizer/**/*"
+"package: inspector":
+    - changed-files:
+          - any-glob-to-any-file: "packages/error-debugging/inspector/**/*"
+"package: is-ansi-color-supported":
     - changed-files:
           - any-glob-to-any-file: "packages/terminal/is-ansi-color-supported/**/*"
-"package: terminal/tabular":
+"package: jsdoc-open-api":
     - changed-files:
-          - any-glob-to-any-file: "packages/terminal/tabular/**/*"
-"package: terminal/tabular/__bench__":
+          - any-glob-to-any-file: "packages/api/jsdoc-open-api/**/*"
+"package: nuxt":
     - changed-files:
-          - any-glob-to-any-file: "packages/terminal/tabular/__bench__/**/*"
-"package: tooling/package":
+          - any-glob-to-any-file: "packages/storage/storage/src/adapter/nuxt/**/*"
+"package: object":
+    - changed-files:
+          - any-glob-to-any-file: "packages/data-manipulation/object/**/*"
+"package: ono":
+    - changed-files:
+          - any-glob-to-any-file: "packages/error-debugging/ono/**/*"
+"package: package":
     - changed-files:
           - any-glob-to-any-file: "packages/tooling/package/**/*"
-"package: tooling/prisma-dmmf-transformer":
+"package: pagination":
+    - changed-files:
+          - any-glob-to-any-file: "packages/api/pagination/**/*"
+"package: pail":
+    - changed-files:
+          - any-glob-to-any-file: "packages/error-debugging/pail/**/*"
+"package: path":
+    - changed-files:
+          - any-glob-to-any-file: "packages/filesystem/path/**/*"
+"package: prisma-dmmf-transformer":
     - changed-files:
           - any-glob-to-any-file: "packages/tooling/prisma-dmmf-transformer/**/*"
-"package: tooling/tsconfig":
+"package: redact":
+    - changed-files:
+          - any-glob-to-any-file: "packages/data-manipulation/redact/**/*"
+"package: source-map":
+    - changed-files:
+          - any-glob-to-any-file: "packages/error-debugging/source-map/**/*"
+"package: storage":
+    - changed-files:
+          - any-glob-to-any-file: "packages/storage/storage/**/*"
+"package: storage-client":
+    - changed-files:
+          - any-glob-to-any-file: "packages/storage/storage-client/**/*"
+"package: string":
+    - changed-files:
+          - any-glob-to-any-file: "packages/data-manipulation/string/**/*"
+"package: tabular":
+    - changed-files:
+          - any-glob-to-any-file: "packages/terminal/tabular/**/*"
+"package: tsconfig":
     - changed-files:
           - any-glob-to-any-file: "packages/tooling/tsconfig/**/*"
+"package: vite-overlay":
+    - changed-files:
+          - any-glob-to-any-file: "packages/error-debugging/vite-overlay/**/*"
 "documentation":
     - changed-files:
           - any-glob-to-any-file: "docs/**/*"
