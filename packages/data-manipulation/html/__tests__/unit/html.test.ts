@@ -12,7 +12,7 @@ describe(html, () => {
             expect(result).toBe("<div></div>");
         });
 
-        it("should handle template literal with values", () => {
+        it("should escape interpolated values by default", () => {
             expect.assertions(1);
 
             const className = "test-class";
@@ -21,7 +21,7 @@ describe(html, () => {
             expect(result).toBe("<div class=\"test-class\">Hello</div>");
         });
 
-        it("should handle multiple template literal values", () => {
+        it("should escape multiple interpolated values", () => {
             expect.assertions(1);
 
             const id = "test-id";
@@ -29,6 +29,37 @@ describe(html, () => {
             const result = html`<div id="${id}">${content}</div>`;
 
             expect(result).toBe("<div id=\"test-id\">Hello World</div>");
+        });
+
+        it("should escape XSS attempts in interpolated values", () => {
+            expect.assertions(3);
+
+            // Script tag injection
+            const malicious = "<script>alert('xss')</script>";
+            const result1 = html`<div>${malicious}</div>`;
+            expect(result1).toBe("<div>&lt;script>alert('xss')&lt;/script></div>");
+
+            // HTML entity injection
+            const htmlContent = "<img src=x onerror=alert(1)>";
+            const result2 = html`<div>${htmlContent}</div>`;
+            expect(result2).toBe("<div>&lt;img src=x onerror=alert(1)></div>");
+
+            // Attribute injection
+            const attrValue = "\" onclick=\"alert('xss')\"";
+            const result3 = html`<div class="${attrValue}">Content</div>`;
+            expect(result3).toBe("<div class=\"&quot; onclick=&quot;alert('xss')&quot;\">Content</div>");
+        });
+
+        it("should escape special characters in interpolated values", () => {
+            expect.assertions(2);
+
+            const content = "Hello & World";
+            const result1 = html`<div>${content}</div>`;
+            expect(result1).toBe("<div>Hello &amp; World</div>");
+
+            const quoteContent = 'He said "Hello"';
+            const result2 = html`<div class="${quoteContent}">Test</div>`;
+            expect(result2).toBe("<div class=\"He said &quot;Hello&quot;\">Test</div>");
         });
 
         it("should handle empty template literal", () => {
@@ -44,6 +75,112 @@ describe(html, () => {
 
             expect(html`<div>${null}</div>`).toBe("<div></div>");
             expect(html`<div>${undefined}</div>`).toBe("<div></div>");
+        });
+
+        it("should escape numeric values", () => {
+            expect.assertions(1);
+
+            const number = 42;
+            const result = html`<div>${number}</div>`;
+
+            expect(result).toBe("<div>42</div>");
+        });
+
+        it("should escape boolean values", () => {
+            expect.assertions(1);
+
+            const bool = true;
+            const result = html`<div>${bool}</div>`;
+
+            expect(result).toBe("<div>true</div>");
+        });
+
+        it("should handle empty string interpolation", () => {
+            expect.assertions(1);
+
+            const result = html`<div>${""}</div>`;
+
+            expect(result).toBe("<div></div>");
+        });
+
+        it("should handle zero value", () => {
+            expect.assertions(1);
+
+            const result = html`<div>${0}</div>`;
+
+            expect(result).toBe("<div>0</div>");
+        });
+
+        it("should handle negative numbers", () => {
+            expect.assertions(1);
+
+            const result = html`<div>${-5}</div>`;
+
+            expect(result).toBe("<div>-5</div>");
+        });
+
+        it("should handle decimal numbers", () => {
+            expect.assertions(1);
+
+            const result = html`<div>${3.14}</div>`;
+
+            expect(result).toBe("<div>3.14</div>");
+        });
+
+        it("should handle template literal with only interpolation", () => {
+            expect.assertions(1);
+
+            const value = "test";
+            const result = html`${value}`;
+
+            expect(result).toBe("test");
+        });
+
+        it("should handle template literal starting with interpolation", () => {
+            expect.assertions(1);
+
+            const value = "Hello";
+            const result = html`${value} World`;
+
+            expect(result).toBe("Hello World");
+        });
+
+        it("should handle template literal ending with interpolation", () => {
+            expect.assertions(1);
+
+            const value = "World";
+            const result = html`Hello ${value}`;
+
+            expect(result).toBe("Hello World");
+        });
+
+        it("should handle object with toString method", () => {
+            expect.assertions(1);
+
+            const obj = {
+                toString: () => "<script>alert('xss')</script>",
+            };
+            const result = html`<div>${obj}</div>`;
+
+            expect(result).toBe("<div>&lt;script>alert('xss')&lt;/script></div>");
+        });
+
+        it("should handle array interpolation", () => {
+            expect.assertions(1);
+
+            const arr = [1, 2, 3];
+            const result = html`<div>${arr}</div>`;
+
+            expect(result).toBe("<div>1,2,3</div>");
+        });
+
+        it("should handle unicode characters", () => {
+            expect.assertions(1);
+
+            const unicode = "Hello 世界 🌍";
+            const result = html`<div>${unicode}</div>`;
+
+            expect(result).toBe("<div>Hello 世界 🌍</div>");
         });
     });
 

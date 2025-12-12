@@ -149,3 +149,4 @@ describe(stripHtml, () => {
         });
     });
 });
+

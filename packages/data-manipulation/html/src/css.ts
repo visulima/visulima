@@ -32,8 +32,10 @@ const cssObjectToString = (cssObject: FlexibleCSSProperties | Properties): strin
 
 /**
  * Template tag function for CSS that returns the CSS as-is.
+ * Template strings and interpolated values are used as-is without escaping.
+ * Use the function call with `shouldEscape: true` if you need CSS escaping.
  * @param strings Template literal strings
- * @param values Template literal values
+ * @param values Template literal values (used as-is)
  * @returns The CSS string as-is
  * @example
  * css`:where(.UnderlineNav-actions ul) { animation: 1ms rgh-selector-observer; }`
@@ -62,11 +64,13 @@ function css(stringsOrValue: TemplateStringsArray | string | FlexibleCSSProperti
         let result = strings[0] ?? "";
 
         for (const [i, element] of valuesOrEscape.entries()) {
+            // Template strings are trusted, interpolated values are used as-is
             result += String(element ?? "");
             result += strings[i + 1] ?? "";
         }
 
-        return escapeCss(result);
+        // Return CSS as-is (no escaping) for template tag
+        return result;
     }
 
     // Function call: css(value, escape)

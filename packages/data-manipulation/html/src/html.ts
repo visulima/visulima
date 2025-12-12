@@ -37,7 +37,9 @@ function html(stringsOrValue: TemplateStringsArray | string, ...valuesOrEscape: 
 
         for (const [i, element] of valuesOrEscape.entries()) {
             // Escape interpolations by default to prevent XSS
-            result += escapeHtml(element ?? "", false);
+            // Use attribute escaping (escapes &, <, and ") for maximum safety
+            // since interpolated values may be used in attributes
+            result += escapeHtml(element ?? "", true);
             result += strings[i + 1] ?? "";
         }
 

@@ -67,6 +67,122 @@ describe(css, () => {
                 }
             `).toBe("\n                .test {\n                    color: ;\n                }\n            ");
         });
+
+        it("should handle empty string interpolation", () => {
+            expect.assertions(1);
+
+            const result = css`
+                .test {
+                    color: ${""};
+                }
+            `;
+
+            expect(result).toBe("\n                .test {\n                    color: ;\n                }\n            ");
+        });
+
+        it("should handle zero value", () => {
+            expect.assertions(1);
+
+            const result = css`
+                .test {
+                    margin: ${0}px;
+                }
+            `;
+
+            expect(result).toBe("\n                .test {\n                    margin: 0px;\n                }\n            ");
+        });
+
+        it("should handle negative numbers", () => {
+            expect.assertions(1);
+
+            const result = css`
+                .test {
+                    margin: ${-10}px;
+                }
+            `;
+
+            expect(result).toBe("\n                .test {\n                    margin: -10px;\n                }\n            ");
+        });
+
+        it("should handle decimal numbers", () => {
+            expect.assertions(1);
+
+            const result = css`
+                .test {
+                    opacity: ${0.5};
+                }
+            `;
+
+            expect(result).toBe("\n                .test {\n                    opacity: 0.5;\n                }\n            ");
+        });
+
+        it("should handle template literal with only interpolation", () => {
+            expect.assertions(1);
+
+            const value = "color: red;";
+            const result = css`${value}`;
+
+            expect(result).toBe("color: red;");
+        });
+
+        it("should handle template literal starting with interpolation", () => {
+            expect.assertions(1);
+
+            const selector = ".test";
+            const result = css`${selector} { color: red; }`;
+
+            expect(result).toBe(".test { color: red; }");
+        });
+
+        it("should handle template literal ending with interpolation", () => {
+            expect.assertions(1);
+
+            const value = "red";
+            const result = css`.test { color: ${value}; }`;
+
+            expect(result).toBe(".test { color: red; }");
+        });
+
+        it("should handle object with toString method", () => {
+            expect.assertions(1);
+
+            const obj = {
+                toString: () => "red",
+            };
+            const result = css`
+                .test {
+                    color: ${obj};
+                }
+            `;
+
+            expect(result).toBe("\n                .test {\n                    color: red;\n                }\n            ");
+        });
+
+        it("should handle array interpolation", () => {
+            expect.assertions(1);
+
+            const arr = [1, 2, 3];
+            const result = css`
+                .test {
+                    margin: ${arr};
+                }
+            `;
+
+            expect(result).toBe("\n                .test {\n                    margin: 1,2,3;\n                }\n            ");
+        });
+
+        it("should handle boolean values", () => {
+            expect.assertions(1);
+
+            const bool = true;
+            const result = css`
+                .test {
+                    display: ${bool};
+                }
+            `;
+
+            expect(result).toBe("\n                .test {\n                    display: true;\n                }\n            ");
+        });
     });
 
     describe("function call with string input", () => {
