@@ -18,8 +18,8 @@ reviews:
             - "DO NOT MERGE"
         drafts: false
         base_branches:
-            - main
-            - alpha
+            - "main"
+            - "alpha"
 
     # Review profile: "chill" (default) or "assertive" (more detailed)
     profile: "chill"
