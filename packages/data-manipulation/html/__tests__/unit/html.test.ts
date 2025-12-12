@@ -37,16 +37,19 @@ describe(html, () => {
             // Script tag injection
             const malicious = "<script>alert('xss')</script>";
             const result1 = html`<div>${malicious}</div>`;
+
             expect(result1).toBe("<div>&lt;script>alert('xss')&lt;/script></div>");
 
             // HTML entity injection
             const htmlContent = "<img src=x onerror=alert(1)>";
             const result2 = html`<div>${htmlContent}</div>`;
+
             expect(result2).toBe("<div>&lt;img src=x onerror=alert(1)></div>");
 
             // Attribute injection
-            const attrValue = "\" onclick=\"alert('xss')\"";
-            const result3 = html`<div class="${attrValue}">Content</div>`;
+            const attributeValue = "\" onclick=\"alert('xss')\"";
+            const result3 = html`<div class="${attributeValue}">Content</div>`;
+
             expect(result3).toBe("<div class=\"&quot; onclick=&quot;alert('xss')&quot;\">Content</div>");
         });
 
@@ -55,10 +58,12 @@ describe(html, () => {
 
             const content = "Hello & World";
             const result1 = html`<div>${content}</div>`;
+
             expect(result1).toBe("<div>Hello &amp; World</div>");
 
-            const quoteContent = 'He said "Hello"';
+            const quoteContent = "He said \"Hello\"";
             const result2 = html`<div class="${quoteContent}">Test</div>`;
+
             expect(result2).toBe("<div class=\"He said &quot;Hello&quot;\">Test</div>");
         });
 
@@ -131,6 +136,7 @@ describe(html, () => {
             expect.assertions(1);
 
             const value = "test";
+            // eslint-disable-next-line no-restricted-syntax
             const result = html`${value}`;
 
             expect(result).toBe("test");
@@ -157,10 +163,10 @@ describe(html, () => {
         it("should handle object with toString method", () => {
             expect.assertions(1);
 
-            const obj = {
+            const object = {
                 toString: () => "<script>alert('xss')</script>",
             };
-            const result = html`<div>${obj}</div>`;
+            const result = html`<div>${object}</div>`;
 
             expect(result).toBe("<div>&lt;script>alert('xss')&lt;/script></div>");
         });
@@ -168,8 +174,8 @@ describe(html, () => {
         it("should handle array interpolation", () => {
             expect.assertions(1);
 
-            const arr = [1, 2, 3];
-            const result = html`<div>${arr}</div>`;
+            const array = [1, 2, 3];
+            const result = html`<div>${array}</div>`;
 
             expect(result).toBe("<div>1,2,3</div>");
         });

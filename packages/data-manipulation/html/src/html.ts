@@ -18,7 +18,7 @@ function html(strings: TemplateStringsArray, ...values: unknown[]): string;
 /**
  * Function overload for HTML with escaping control.
  * @param value The HTML string to process
- * @param shouldEscape If false, returns HTML as-is (XSS-safe). If true, escapes HTML.
+ * @param shouldEscape If false/undefined, returns HTML as-is (unsafe for untrusted input). If true, escapes HTML.
  * @returns The processed HTML string
  * @example
  * html('<div></div>', false)
@@ -39,7 +39,7 @@ function html(stringsOrValue: TemplateStringsArray | string, ...valuesOrEscape: 
             // Escape interpolations by default to prevent XSS
             // Use attribute escaping (escapes &, <, and ") for maximum safety
             // since interpolated values may be used in attributes
-            result += escapeHtml(element ?? "", true);
+            result += escapeHtml(String(element ?? ""), false);
             result += strings[i + 1] ?? "";
         }
 
@@ -59,7 +59,7 @@ function html(stringsOrValue: TemplateStringsArray | string, ...valuesOrEscape: 
         return escapeHtml(value, true);
     }
 
-    // Default: return as-is (XSS-safe)
+    // Default: return as-is (unsafe for untrusted input)
     return value;
 }
 

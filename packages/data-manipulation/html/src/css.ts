@@ -20,8 +20,8 @@ const cssObjectToString = (cssObject: FlexibleCSSProperties | Properties): strin
 
     Object.entries(cssObject).forEach(([key, value]) => {
         if (value !== undefined && value !== null) {
-            // Convert camelCase to kebab-case for CSS properties
-            const cssKey = key.replaceAll(/([A-Z])/g, "-$1").toLowerCase();
+            const kebab = key.replaceAll(/([A-Z])/g, "-$1").toLowerCase();
+            const cssKey = kebab.startsWith("ms-") ? `-ms-${kebab.slice(3)}` : kebab;
 
             styles.push(`${cssKey}: ${String(value)};`);
         }
@@ -73,7 +73,7 @@ function css(stringsOrValue: TemplateStringsArray | string | FlexibleCSSProperti
         return result;
     }
 
-    // Function call: css(value, escape)
+    // Function call: css(value, shouldEscape)
     const value = stringsOrValue as string | FlexibleCSSProperties | Properties;
     const shouldEscape = valuesOrEscape[0] as boolean | undefined;
 

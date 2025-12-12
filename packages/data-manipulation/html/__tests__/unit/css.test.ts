@@ -120,7 +120,9 @@ describe(css, () => {
             expect.assertions(1);
 
             const value = "color: red;";
-            const result = css`${value}`;
+            const result = css`
+                ${value}
+            `;
 
             expect(result).toBe("color: red;");
         });
@@ -129,7 +131,11 @@ describe(css, () => {
             expect.assertions(1);
 
             const selector = ".test";
-            const result = css`${selector} { color: red; }`;
+            const result = css`
+                ${selector} {
+                    color: red;
+                }
+            `;
 
             expect(result).toBe(".test { color: red; }");
         });
@@ -138,7 +144,11 @@ describe(css, () => {
             expect.assertions(1);
 
             const value = "red";
-            const result = css`.test { color: ${value}; }`;
+            const result = css`
+                .test {
+                    color: ${value};
+                }
+            `;
 
             expect(result).toBe(".test { color: red; }");
         });
@@ -146,12 +156,12 @@ describe(css, () => {
         it("should handle object with toString method", () => {
             expect.assertions(1);
 
-            const obj = {
+            const object = {
                 toString: () => "red",
             };
             const result = css`
                 .test {
-                    color: ${obj};
+                    color: ${object};
                 }
             `;
 
@@ -161,10 +171,10 @@ describe(css, () => {
         it("should handle array interpolation", () => {
             expect.assertions(1);
 
-            const arr = [1, 2, 3];
+            const array = [1, 2, 3];
             const result = css`
                 .test {
-                    margin: ${arr};
+                    margin: ${array};
                 }
             `;
 

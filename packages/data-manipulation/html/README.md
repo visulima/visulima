@@ -608,9 +608,9 @@ decode("&lt &gt", { scope: "strict" });
 
 - `level`: `'all'` (alias to `'html5'`) | `'html5'` (default) | `'html4'` | `'xml'` - Specifies the standard to use for named character references
 - `scope`: `'body'` (default) | `'attribute'` | `'strict'` - Controls how entities without semicolons are handled
-  - `'body'`: Emulates browser behavior when parsing tag bodies - entities without semicolon are also replaced
-  - `'attribute'`: Emulates browser behavior when parsing tag attributes - entities without semicolon are replaced when not followed by equality sign `=`
-  - `'strict'`: Ignores entities without semicolon
+    - `'body'`: Emulates browser behavior when parsing tag bodies - entities without semicolon are also replaced
+    - `'attribute'`: Emulates browser behavior when parsing tag attributes - entities without semicolon are replaced when not followed by equality sign `=`
+    - `'strict'`: Ignores entities without semicolon
 
 #### Decode Single Entity
 
