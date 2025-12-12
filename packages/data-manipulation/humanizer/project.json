@@ -1,8 +1,13 @@
 {
-    "name": "humanizer",
-    "$schema": "../../node_modules/nx/schemas/project-schema.json",
+    "name": "data-manipulation/humanizer",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
     "sourceRoot": "packages/data-manipulation/humanizer/src",
     "projectType": "library",
-    "tags": ["humanizer", "type:package"],
-    "implicitDependencies": ["path"]
+    "tags": [
+        "humanizer",
+        "type:package"
+    ],
+    "implicitDependencies": [
+        "filesystem/path"
+    ]
 }

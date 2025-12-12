@@ -1,8 +1,11 @@
 {
-    "name": "pagination",
-    "$schema": "../../node_modules/nx/schemas/project-schema.json",
+    "name": "api/pagination",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
     "sourceRoot": "packages/api/pagination/src",
     "projectType": "library",
-    "tags": ["type:package", "pagination"],
+    "tags": [
+        "type:package",
+        "pagination"
+    ],
     "implicitDependencies": []
 }

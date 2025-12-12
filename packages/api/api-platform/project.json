@@ -1,8 +1,17 @@
 {
-    "name": "api-platform",
-    "$schema": "../../node_modules/nx/schemas/project-schema.json",
+    "name": "api/api-platform",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
     "sourceRoot": "packages/api/api-platform/src",
     "projectType": "library",
-    "tags": ["type:package", "api-platform"],
-    "implicitDependencies": ["connect", "crud", "jsdoc-open-api", "fs", "path"]
+    "tags": [
+        "type:package",
+        "api-platform"
+    ],
+    "implicitDependencies": [
+        "api/connect",
+        "api/crud",
+        "api/jsdoc-open-api",
+        "filesystem/fs",
+        "filesystem/path"
+    ]
 }

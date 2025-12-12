@@ -1,8 +1,15 @@
 {
-    "name": "vite-overlay",
-    "$schema": "../../node_modules/nx/schemas/project-schema.json",
+    "name": "error-debugging/vite-overlay",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
     "sourceRoot": "packages/error-debugging/vite-overlay/src",
     "projectType": "library",
-    "tags": ["vite-overlay", "type:package"],
-    "implicitDependencies": ["boxen", "path", "error"]
+    "tags": [
+        "vite-overlay",
+        "type:package"
+    ],
+    "implicitDependencies": [
+        "terminal/boxen",
+        "filesystem/path",
+        "error-debugging/error"
+    ]
 }
