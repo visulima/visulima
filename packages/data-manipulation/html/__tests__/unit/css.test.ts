@@ -26,7 +26,7 @@ describe(css, () => {
                 }
             `;
 
-            expect(result).toBe("\\.test-class { color: red; }");
+            expect(result).toBe(String.raw`\.test-class { color: red; }`);
         });
 
         it("should handle multiple template literal values", () => {
@@ -87,7 +87,7 @@ describe(css, () => {
                 }
             `;
 
-            expect(result).toBe(".test { margin: \\30 px; }");
+            expect(result).toBe(String.raw`.test { margin: \30 px; }`);
         });
 
         it("should handle negative numbers", () => {
@@ -99,7 +99,7 @@ describe(css, () => {
                 }
             `;
 
-            expect(result).toBe(".test { margin: -\\31 0px; }");
+            expect(result).toBe(String.raw`.test { margin: -\31 0px; }`);
         });
 
         it("should handle decimal numbers", () => {
@@ -111,7 +111,7 @@ describe(css, () => {
                 }
             `;
 
-            expect(result).toBe(".test { opacity: \\30 \\.5; }");
+            expect(result).toBe(String.raw`.test { opacity: \30 \.5; }`);
         });
 
         it("should handle template literal with only interpolation", () => {
@@ -122,7 +122,7 @@ describe(css, () => {
                 ${value}
             `;
 
-            expect(result).toBe("color\\:\\ red\\;");
+            expect(result).toBe(String.raw`color\:\ red\;`);
         });
 
         it("should handle template literal starting with interpolation", () => {
@@ -135,7 +135,7 @@ describe(css, () => {
                 }
             `;
 
-            expect(result).toBe("\\.test { color: red; }");
+            expect(result).toBe(String.raw`\.test { color: red; }`);
         });
 
         it("should handle template literal ending with interpolation", () => {
@@ -176,7 +176,7 @@ describe(css, () => {
                 }
             `;
 
-            expect(result).toBe(".test { margin: \\31 \\,2\\,3; }");
+            expect(result).toBe(String.raw`.test { margin: \31 \,2\,3; }`);
         });
 
         it("should handle boolean values", () => {
@@ -324,7 +324,7 @@ describe(css, () => {
         it("should preserve CSS custom properties verbatim", () => {
             expect.assertions(2);
 
-            const result = css({ "--myVar": "10px", "--another-property": "red" }, false);
+            const result = css({ "--another-property": "red", "--myVar": "10px" }, false);
 
             expect(result).toContain("--myVar: 10px;");
             expect(result).toContain("--another-property: red;");
@@ -344,8 +344,8 @@ describe(css, () => {
             const result = css(
                 {
                     "--primary-color": "blue",
-                    marginTop: "10px",
                     "--secondary-color": "green",
+                    marginTop: "10px",
                 },
                 false,
             );
