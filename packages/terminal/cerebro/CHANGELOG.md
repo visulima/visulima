@@ -1,3 +1,17 @@
+## @visulima/cerebro [3.0.0-alpha.4](https://github.com/visulima/visulima/compare/@visulima/cerebro@3.0.0-alpha.3...@visulima/cerebro@3.0.0-alpha.4) (2025-12-13)
+
+### Miscellaneous Chores
+
+* fixed project.json names and schema path ([964722f](https://github.com/visulima/visulima/commit/964722f691db205c7edb9aa6db29e849a647500b))
+
+
+### Dependencies
+
+* **@visulima/tabular:** upgraded to 4.0.0-alpha.4
+* **@visulima/boxen:** upgraded to 3.0.0-alpha.4
+* **@visulima/pail:** upgraded to 4.0.0-alpha.4
+* **@visulima/string:** upgraded to 3.0.0-alpha.4
+
 ## @visulima/cerebro [3.0.0-alpha.3](https://github.com/visulima/visulima/compare/@visulima/cerebro@3.0.0-alpha.2...@visulima/cerebro@3.0.0-alpha.3) (2025-12-11)
 
 ### Bug Fixes
