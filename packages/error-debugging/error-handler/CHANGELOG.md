@@ -1,3 +1,14 @@
+## @visulima/error-handler [2.0.0-alpha.4](https://github.com/visulima/visulima/compare/@visulima/error-handler@2.0.0-alpha.3...@visulima/error-handler@2.0.0-alpha.4) (2025-12-13)
+
+### Miscellaneous Chores
+
+* fixed project.json names and schema path ([964722f](https://github.com/visulima/visulima/commit/964722f691db205c7edb9aa6db29e849a647500b))
+
+
+### Dependencies
+
+* **@visulima/boxen:** upgraded to 3.0.0-alpha.4
+
 ## @visulima/error-handler [2.0.0-alpha.3](https://github.com/visulima/visulima/compare/@visulima/error-handler@2.0.0-alpha.2...@visulima/error-handler@2.0.0-alpha.3) (2025-12-11)
 
 ### Bug Fixes
