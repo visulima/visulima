@@ -106,41 +106,41 @@
         "@apidevtools/swagger-parser": "^12.1.0",
         "comment-parser": "^1.4.1",
         "lodash.mergewith": "^4.6.2",
-        "publint": "^0.3.15",
         "read-pkg-up": "^7.0.1",
         "yaml": "^2.8.2"
     },
     "devDependencies": {
-        "@anolilab/eslint-config": "^16.4.4",
-        "@anolilab/prettier-config": "^6.0.8",
+        "publint": "^0.3.16",
+        "@anolilab/eslint-config": "^18.0.0",
+        "@anolilab/prettier-config": "^8.0.0",
         "@anolilab/semantic-release-pnpm": "^3.2.2",
         "@anolilab/semantic-release-preset": "^12.1.2",
         "@types/cli-progress": "^3.11.6",
         "@types/http-errors": "^2.0.5",
         "@types/lodash.mergewith": "^4.6.9",
-        "@types/node": "24.10.1",
+        "@types/node": "25.0.3",
         "@types/webpack": "^5.28.5",
         "@visulima/fs": "5.0.0-alpha.2",
-        "@vitest/coverage-v8": "^4.0.15",
-        "@vitest/ui": "^4.0.15",
+        "@vitest/coverage-v8": "^4.0.16",
+        "@vitest/ui": "^4.0.16",
         "cli-progress": "^3.12.0",
         "commander": "^14.0.2",
         "conventional-changelog-conventionalcommits": "9.1.0",
         "cross-env": "^10.1.0",
-        "eslint": "9.39.1",
+        "eslint": "9.39.2",
         "openapi-types": "^12.1.3",
         "prettier": "^3.7.4",
         "rimraf": "6.1.2",
         "semantic-release": "25.0.2",
         "tsup": "^8.5.1",
         "typescript": "5.9.3",
-        "vitest": "^4.0.15",
-        "webpack": "^5.103.0"
+        "vitest": "^4.0.16",
+        "webpack": "^5.104.1"
     },
     "optionalDependencies": {
         "cli-progress": "^3.12.0",
         "commander": "^14.0.2",
-        "webpack": "^5.103.0"
+        "webpack": "^5.104.1"
     },
     "engines": {
         "node": ">=22.13 <=25.x"
