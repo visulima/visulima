@@ -27,6 +27,9 @@ export default defineConfig({
             hoisted: {
                 exclude: ["@jsr/std__html"],
             },
+            unused: {
+                exclude: ["csstype"]
+            }
         },
     },
     transformer,
