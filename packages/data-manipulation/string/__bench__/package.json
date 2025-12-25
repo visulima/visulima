@@ -8,7 +8,7 @@
     "dependencies": {
         "@arcanis/slice-ansi": "2.0.1",
         "@sindresorhus/slugify": "^3.0.0",
-        "@sindresorhus/transliterate": "2.2.0",
+        "@sindresorhus/transliterate": "2.3.0",
         "@visulima/colorize": "workspace:*",
         "@visulima/string": "workspace:*",
         "ansi-truncate": "1.4.0",
@@ -23,9 +23,9 @@
         "slugify": "1.6.6",
         "string-ts": "2.3.1",
         "string-width": "8.1.0",
-        "transliteration": "2.3.5",
+        "transliteration": "2.6.0",
         "typescript": "5.9.3",
-        "vitest": "^4.0.15",
+        "vitest": "^4.0.16",
         "wrap-ansi": "9.0.2"
     }
 }
