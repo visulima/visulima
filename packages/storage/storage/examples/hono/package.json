@@ -7,15 +7,15 @@
         "dev": "tsx index.ts"
     },
     "dependencies": {
-        "@hono/node-server": "^1.19.6",
+        "@hono/node-server": "^1.19.7",
         "@hono/swagger-ui": "^0.5.2",
-        "@hono/zod-openapi": "^1.1.5",
+        "@hono/zod-openapi": "^1.2.0",
         "@visulima/storage": "workspace:*",
-        "hono": "^4.10.7",
+        "hono": "^4.11.1",
         "sharp": "^0.34.5"
     },
     "devDependencies": {
-        "@types/node": "^24.10.1",
+        "@types/node": "^25.0.3",
         "tsx": "^4.21.0"
     }
 }

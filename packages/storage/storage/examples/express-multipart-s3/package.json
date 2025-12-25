@@ -8,17 +8,17 @@
     },
     "dependencies": {
         "@aws-sdk/abort-controller": "^3.374.0",
-        "@aws-sdk/client-s3": "^3.946.0",
-        "@aws-sdk/credential-providers": "^3.946.0",
-        "@aws-sdk/s3-request-presigner": "^3.946.0",
-        "@aws-sdk/types": "^3.936.0",
+        "@aws-sdk/client-s3": "^3.958.0",
+        "@aws-sdk/credential-providers": "^3.958.0",
+        "@aws-sdk/s3-request-presigner": "^3.958.0",
+        "@aws-sdk/types": "^3.957.0",
         "@visulima/storage": "workspace:*",
-        "aws-crt": "^1.27.5",
+        "aws-crt": "^1.28.1",
         "copy-file": "^11.1.0",
         "cors": "2.8.5",
         "dotenv": "^17.2.3",
         "express": "^5.2.1",
-        "winston": "^3.18.3"
+        "winston": "^3.19.0"
     },
     "devDependencies": {
         "@types/cors": "^2.8.19",
