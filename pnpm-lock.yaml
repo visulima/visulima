@@ -52,7 +52,7 @@ importers:
         version: 8.0.0(prettier@3.7.4)
       '@anolilab/textlint-config':
         specifier: ^11.0.0
-        version: 11.0.0(textlint@15.5.0(hono@4.11.1))
+        version: 11.0.0(textlint@15.5.0(hono@4.11.2))
       '@commitlint/cli':
         specifier: ^20.2.0
         version: 20.2.0(@types/node@25.0.3)(typescript@5.9.3)
@@ -124,7 +124,7 @@ importers:
         version: 19.9.2
       textlint:
         specifier: ^15.5.0
-        version: 15.5.0(hono@4.11.1)
+        version: 15.5.0(hono@4.11.2)
       tsup:
         specifier: ^8.5.1
         version: 8.5.1(@swc/core@1.13.5)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
@@ -2216,13 +2216,13 @@ importers:
     dependencies:
       '@hono/node-server':
         specifier: ^1.19.7
-        version: 1.19.7(hono@4.11.1)
+        version: 1.19.7(hono@4.11.2)
       '@visulima/error-handler':
         specifier: workspace:*
         version: link:../..
       hono:
-        specifier: ^4.11.1
-        version: 4.11.1
+        specifier: ^4.11.2
+        version: 4.11.2
 
   packages/error-debugging/error-handler/examples/node:
     dependencies:
@@ -2492,13 +2492,13 @@ importers:
     dependencies:
       '@hono/node-server':
         specifier: ^1.19.7
-        version: 1.19.7(hono@4.11.1)
+        version: 1.19.7(hono@4.11.2)
       '@visulima/ono':
         specifier: workspace:*
         version: link:../..
       hono:
-        specifier: ^4.11.1
-        version: 4.11.1
+        specifier: ^4.11.2
+        version: 4.11.2
 
   packages/error-debugging/ono/examples/node:
     dependencies:
@@ -3763,8 +3763,8 @@ importers:
         specifier: ^10.5.0
         version: 10.5.0
       hono:
-        specifier: ^4.11.1
-        version: 4.11.1
+        specifier: ^4.11.2
+        version: 4.11.2
       http-errors:
         specifier: ^2.0.1
         version: 2.0.1
@@ -3850,8 +3850,8 @@ importers:
         specifier: ^16.3.1
         version: 16.3.1(@testing-library/dom@10.4.1)(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       '@testing-library/svelte':
-        specifier: 5.3.0
-        version: 5.3.0(svelte@5.46.1)(vite@7.3.0(@types/node@25.0.3)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))(vitest@4.0.16)
+        specifier: 5.3.1
+        version: 5.3.1(svelte@5.46.1)(vite@7.3.0(@types/node@25.0.3)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))(vitest@4.0.16)
       '@testing-library/vue':
         specifier: 8.1.0
         version: 8.1.0(@vue/compiler-sfc@3.5.26)(vue@3.5.26(typescript@5.9.3))
@@ -4670,19 +4670,19 @@ importers:
     dependencies:
       '@hono/node-server':
         specifier: ^1.19.7
-        version: 1.19.7(hono@4.11.1)
+        version: 1.19.7(hono@4.11.2)
       '@hono/swagger-ui':
-        specifier: ^0.5.2
-        version: 0.5.2(hono@4.11.1)
+        specifier: ^0.5.3
+        version: 0.5.3(hono@4.11.2)
       '@hono/zod-openapi':
         specifier: ^1.2.0
-        version: 1.2.0(hono@4.11.1)(zod@4.2.1)
+        version: 1.2.0(hono@4.11.2)(zod@4.2.1)
       '@visulima/storage':
         specifier: workspace:*
         version: link:../..
       hono:
-        specifier: ^4.11.1
-        version: 4.11.1
+        specifier: ^4.11.2
+        version: 4.11.2
       sharp:
         specifier: ^0.34.5
         version: 0.34.5
@@ -7736,8 +7736,8 @@ packages:
     peerDependencies:
       hono: '>=4.10.2'
 
-  '@hono/swagger-ui@0.5.2':
-    resolution: {integrity: sha512-7wxLKdb8h7JTdZ+K8DJNE3KXQMIpJejkBTQjrYlUWF28Z1PGOKw6kUykARe5NTfueIN37jbyG/sBYsbzXzG53A==}
+  '@hono/swagger-ui@0.5.3':
+    resolution: {integrity: sha512-Hn90DOOJ62ICJQplQvCDVpi9Jcn6EhtRaiffyJIS53wA5RmRLtMCDQGVc0bor8vQD7JIwpkweWjs+3cycp+IvA==}
     peerDependencies:
       hono: '>=4.10.2'
 
@@ -11442,8 +11442,8 @@ packages:
     peerDependencies:
       svelte: ^3 || ^4 || ^5 || ^5.0.0-next.0
 
-  '@testing-library/svelte@5.3.0':
-    resolution: {integrity: sha512-N1b+OAZNF34iMmtTbj5TyE0Ff+NJ/Mp6E483qOIeyzRUKOTcj2N5jEEl56RJeNq5jeQ4kZp/oMA0hCybXydrtQ==}
+  '@testing-library/svelte@5.3.1':
+    resolution: {integrity: sha512-8Ez7ZOqW5geRf9PF5rkuopODe5RGy3I9XR+kc7zHh26gBiktLaxTfKmhlGaSHYUOTQE7wFsLMN9xCJVCszw47w==}
     engines: {node: '>= 10'}
     peerDependencies:
       svelte: ^3 || ^4 || ^5 || ^5.0.0-next.0
@@ -17018,8 +17018,8 @@ packages:
     resolution: {integrity: sha512-BIdolzGpDO9MQ4nu3AUuDwHZZ+KViNm+EZ75Ae55eMXMqLVhDFqEMXxtUe9Qh8hjL+pIna/frs2j6Y2yD5Ua/g==}
     engines: {node: '>=16.9.0'}
 
-  hono@4.11.1:
-    resolution: {integrity: sha512-KsFcH0xxHes0J4zaQgWbYwmz3UPOOskdqZmItstUG93+Wk1ePBLkLGwbP9zlmh1BFUiL8Qp+Xfu9P7feJWpGNg==}
+  hono@4.11.2:
+    resolution: {integrity: sha512-o+avdUAD1v94oHkjGBhiMhBV4WBHxhbu0+CUVH78hhphKy/OKQLxtKjkmmNcrMlbYAhAbsM/9F+l3KnYxyD3Lg==}
     engines: {node: '>=16.9.0'}
 
   hook-std@4.0.0:
@@ -19643,7 +19643,7 @@ packages:
     resolution: {integrity: sha512-cAg3J2ZboQnzSWGo6EH54BQwlrXbcJ3eDF70dy2T4tfXui0Cb+ryBr+5R6n5gqB5e1i6mbsfsqXq1LI6eMm3GQ==}
     engines: {node: ^20.18.0 || >=22.12.0}
     peerDependencies:
-      next: '>=16.0.9'
+      next: '>=16.0.7'
 
   next-tick@1.1.0:
     resolution: {integrity: sha512-CXdUiJembsNjuToQvxayPZF9Vqht7hewsvy2sOWafLvi2awflj9mOC6bHIg50orX8IJvWKY9wYQ/zB2kogPslQ==}
@@ -25364,25 +25364,25 @@ snapshots:
       - supports-color
       - yaml
 
-  '@anolilab/textlint-config@11.0.0(textlint@15.5.0(hono@4.11.1))':
+  '@anolilab/textlint-config@11.0.0(textlint@15.5.0(hono@4.11.2))':
     dependencies:
       '@textlint-rule/textlint-rule-no-invalid-control-character': 3.0.0
       '@textlint-rule/textlint-rule-no-unmatched-pair': 2.0.4
       '@textlint-rule/textlint-rule-preset-google': 0.1.2
       '@textlint/ast-node-types': 15.5.0
       '@textlint/types': 15.5.0
-      textlint: 15.5.0(hono@4.11.1)
-      textlint-filter-rule-comments: 1.2.2(textlint@15.5.0(hono@4.11.1))
+      textlint: 15.5.0(hono@4.11.2)
+      textlint-filter-rule-comments: 1.2.2(textlint@15.5.0(hono@4.11.2))
       textlint-rule-abbr-within-parentheses: 1.0.2
       textlint-rule-alex: 5.0.0
       textlint-rule-apostrophe: 3.0.0
       textlint-rule-common-misspellings: 1.0.1
       textlint-rule-date-weekday-mismatch: 1.1.1
-      textlint-rule-diacritics: 2.1.4(textlint@15.5.0(hono@4.11.1))
+      textlint-rule-diacritics: 2.1.4(textlint@15.5.0(hono@4.11.2))
       textlint-rule-en-capitalization: 2.0.3
       textlint-rule-footnote-order: 1.0.3
       textlint-rule-helper: 2.5.0
-      textlint-rule-no-dead-link: 6.1.0(textlint@15.5.0(hono@4.11.1))
+      textlint-rule-no-dead-link: 6.1.0(textlint@15.5.0(hono@4.11.2))
       textlint-rule-no-empty-section: 1.1.0
       textlint-rule-no-todo: 2.0.1
       textlint-rule-terminology: 5.2.16
@@ -27777,25 +27777,25 @@ snapshots:
       hono: 4.10.6
     optional: true
 
-  '@hono/node-server@1.19.7(hono@4.11.1)':
+  '@hono/node-server@1.19.7(hono@4.11.2)':
     dependencies:
-      hono: 4.11.1
+      hono: 4.11.2
 
-  '@hono/swagger-ui@0.5.2(hono@4.11.1)':
+  '@hono/swagger-ui@0.5.3(hono@4.11.2)':
     dependencies:
-      hono: 4.11.1
+      hono: 4.11.2
 
-  '@hono/zod-openapi@1.2.0(hono@4.11.1)(zod@4.2.1)':
+  '@hono/zod-openapi@1.2.0(hono@4.11.2)(zod@4.2.1)':
     dependencies:
       '@asteasolutions/zod-to-openapi': 8.1.0(zod@4.2.1)
-      '@hono/zod-validator': 0.7.6(hono@4.11.1)(zod@4.2.1)
-      hono: 4.11.1
+      '@hono/zod-validator': 0.7.6(hono@4.11.2)(zod@4.2.1)
+      hono: 4.11.2
       openapi3-ts: 4.5.0
       zod: 4.2.1
 
-  '@hono/zod-validator@0.7.6(hono@4.11.1)(zod@4.2.1)':
+  '@hono/zod-validator@0.7.6(hono@4.11.2)(zod@4.2.1)':
     dependencies:
-      hono: 4.11.1
+      hono: 4.11.2
       zod: 4.2.1
 
   '@html-eslint/eslint-plugin@0.52.0(eslint@9.39.2(jiti@2.6.1))(jiti@2.6.1)':
@@ -28342,9 +28342,9 @@ snapshots:
 
   '@mfederczuk/deeptools@2.1.0-rc01': {}
 
-  '@modelcontextprotocol/sdk@1.25.1(hono@4.11.1)(zod@3.25.76)':
+  '@modelcontextprotocol/sdk@1.25.1(hono@4.11.2)(zod@3.25.76)':
     dependencies:
-      '@hono/node-server': 1.19.7(hono@4.11.1)
+      '@hono/node-server': 1.19.7(hono@4.11.2)
       ajv: 8.17.1
       ajv-formats: 3.0.1(ajv@8.17.1)
       content-type: 1.0.5
@@ -32488,7 +32488,7 @@ snapshots:
     dependencies:
       svelte: 5.46.1
 
-  '@testing-library/svelte@5.3.0(svelte@5.46.1)(vite@7.3.0(@types/node@25.0.3)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))(vitest@4.0.16)':
+  '@testing-library/svelte@5.3.1(svelte@5.46.1)(vite@7.3.0(@types/node@25.0.3)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))(vitest@4.0.16)':
     dependencies:
       '@testing-library/dom': 10.4.1
       '@testing-library/svelte-core': 1.0.0(svelte@5.46.1)
@@ -39502,7 +39502,7 @@ snapshots:
   hono@4.10.6:
     optional: true
 
-  hono@4.11.1: {}
+  hono@4.11.2: {}
 
   hook-std@4.0.0: {}
 
@@ -47313,9 +47313,9 @@ snapshots:
     dependencies:
       editions: 6.22.0
 
-  textlint-filter-rule-comments@1.2.2(textlint@15.5.0(hono@4.11.1)):
+  textlint-filter-rule-comments@1.2.2(textlint@15.5.0(hono@4.11.2)):
     dependencies:
-      textlint: 15.5.0(hono@4.11.1)
+      textlint: 15.5.0(hono@4.11.2)
 
   textlint-rule-abbr-within-parentheses@1.0.2:
     dependencies:
@@ -47343,11 +47343,11 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  textlint-rule-diacritics@2.1.4(textlint@15.5.0(hono@4.11.1)):
+  textlint-rule-diacritics@2.1.4(textlint@15.5.0(hono@4.11.2)):
     dependencies:
       match-casing: 2.0.1
       strip-json-comments: 5.0.3
-      textlint: 15.5.0(hono@4.11.1)
+      textlint: 15.5.0(hono@4.11.2)
 
   textlint-rule-en-capitalization@2.0.3:
     dependencies:
@@ -47367,14 +47367,14 @@ snapshots:
       structured-source: 4.0.0
       unist-util-visit: 2.0.3
 
-  textlint-rule-no-dead-link@6.1.0(textlint@15.5.0(hono@4.11.1)):
+  textlint-rule-no-dead-link@6.1.0(textlint@15.5.0(hono@4.11.2)):
     dependencies:
       minimatch: 10.1.1
       p-memoize: 8.0.0
       p-queue: 8.1.1
       textlint-rule-helper: 2.5.0
     optionalDependencies:
-      textlint: 15.5.0(hono@4.11.1)
+      textlint: 15.5.0(hono@4.11.2)
 
   textlint-rule-no-empty-section@1.1.0:
     dependencies:
@@ -47414,9 +47414,9 @@ snapshots:
       object-assign: 4.1.1
       structured-source: 3.0.2
 
-  textlint@15.5.0(hono@4.11.1):
+  textlint@15.5.0(hono@4.11.2):
     dependencies:
-      '@modelcontextprotocol/sdk': 1.25.1(hono@4.11.1)(zod@3.25.76)
+      '@modelcontextprotocol/sdk': 1.25.1(hono@4.11.2)(zod@3.25.76)
       '@textlint/ast-node-types': 15.5.0
       '@textlint/ast-traverse': 15.5.0
       '@textlint/config-loader': 15.5.0
