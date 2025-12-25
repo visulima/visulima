@@ -13,7 +13,7 @@
         "dotenv": "^17.2.3",
         "express": "^5.2.1",
         "google-auth-library": "^10.5.0",
-        "winston": "^3.18.3"
+        "winston": "^3.19.0"
     },
     "devDependencies": {
         "@types/cors": "^2.8.19",
