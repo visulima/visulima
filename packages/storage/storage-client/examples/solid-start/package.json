@@ -12,10 +12,10 @@
     "dependencies": {
         "@solidjs/meta": "^0.29.4",
         "@solidjs/router": "^0.15.4",
-        "@solidjs/start": "^1.2.0",
+        "@solidjs/start": "^1.2.1",
         "@visulima/storage": "workspace:*",
         "@visulima/storage-client": "workspace:*",
         "solid-js": "^1.9.10",
-        "vinxi": "^0.5.8"
+        "vinxi": "^0.5.10"
     }
 }
