@@ -1,3 +1,14 @@
+## @visulima/string [3.0.0-alpha.5](https://github.com/visulima/visulima/compare/@visulima/string@3.0.0-alpha.4...@visulima/string@3.0.0-alpha.5) (2025-12-27)
+
+### Bug Fixes
+
+* **string:** update package files ([ca22f2e](https://github.com/visulima/visulima/commit/ca22f2efdd044ae20d421f729d185e1e93747cd8))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 2.0.0-alpha.4
+
 ## @visulima/string [3.0.0-alpha.4](https://github.com/visulima/visulima/compare/@visulima/string@3.0.0-alpha.3...@visulima/string@3.0.0-alpha.4) (2025-12-13)
 
 ### Features
