@@ -1,3 +1,23 @@
+## @visulima/storage [1.0.0-alpha.5](https://github.com/visulima/visulima/compare/@visulima/storage@1.0.0-alpha.4...@visulima/storage@1.0.0-alpha.5) (2025-12-27)
+
+### Bug Fixes
+
+* **dependencies:** update hono and related packages to version 4.11.2 and update @hono/swagger-ui to version 0.5.3 ([5d3eed5](https://github.com/visulima/visulima/commit/5d3eed57d30d8216bf91484f35d39678938651fb))
+* **storage:** update package files ([5ef0060](https://github.com/visulima/visulima/commit/5ef0060c39b4457395583a828eb2f72fc3949496))
+
+### Miscellaneous Chores
+
+* **dependencies:** update file-type to version 21.2.0, hono to version 4.11.3, and improve README for storage-client with detailed usage examples ([90bebfa](https://github.com/visulima/visulima/commit/90bebfa9b732afd8d80c133ca0636192b8496801))
+* fixed project.json names and schema path ([964722f](https://github.com/visulima/visulima/commit/964722f691db205c7edb9aa6db29e849a647500b))
+
+
+### Dependencies
+
+* **@visulima/pagination:** upgraded to 5.0.0-alpha.4
+* **@visulima/fs:** upgraded to 5.0.0-alpha.3
+* **@visulima/humanizer:** upgraded to 3.0.0-alpha.5
+* **@visulima/path:** upgraded to 3.0.0-alpha.4
+
 ## @visulima/storage [1.0.0-alpha.4](https://github.com/visulima/visulima/compare/@visulima/storage@1.0.0-alpha.3...@visulima/storage@1.0.0-alpha.4) (2025-12-11)
 
 ### Bug Fixes
