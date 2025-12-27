@@ -1,3 +1,17 @@
+## @visulima/email [1.0.0-alpha.8](https://github.com/visulima/visulima/compare/@visulima/email@1.0.0-alpha.7...@visulima/email@1.0.0-alpha.8) (2025-12-27)
+
+### Bug Fixes
+
+* **email:** update package files ([3e215cf](https://github.com/visulima/visulima/commit/3e215cf0ae366591dd1747a96a7275524e3f5501))
+
+
+### Dependencies
+
+* **@visulima/disposable-email-domains:** upgraded to 1.0.0-alpha.7
+* **@visulima/error:** upgraded to 6.0.0-alpha.3
+* **@visulima/fs:** upgraded to 5.0.0-alpha.3
+* **@visulima/path:** upgraded to 3.0.0-alpha.4
+
 ## @visulima/email [1.0.0-alpha.7](https://github.com/visulima/visulima/compare/@visulima/email@1.0.0-alpha.6...@visulima/email@1.0.0-alpha.7) (2025-12-13)
 
 ### Miscellaneous Chores
