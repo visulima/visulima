@@ -1,3 +1,13 @@
+## @visulima/connect [4.0.0-alpha.4](https://github.com/visulima/visulima/compare/@visulima/connect@4.0.0-alpha.3...@visulima/connect@4.0.0-alpha.4) (2025-12-27)
+
+### Bug Fixes
+
+* **connect:** update package files ([f5594b5](https://github.com/visulima/visulima/commit/f5594b54b2e9dc440fa3ea09efa361ca2030b125))
+
+### Miscellaneous Chores
+
+* fixed project.json names and schema path ([964722f](https://github.com/visulima/visulima/commit/964722f691db205c7edb9aa6db29e849a647500b))
+
 ## @visulima/connect [4.0.0-alpha.3](https://github.com/visulima/visulima/compare/@visulima/connect@4.0.0-alpha.2...@visulima/connect@4.0.0-alpha.3) (2025-12-11)
 
 ### Bug Fixes
