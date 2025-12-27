@@ -200,7 +200,7 @@ const rootElement = (
 
     <details id="__v_o__stacktrace" class="relative -mt-5 pt-5 w-full max-w-(--ono-v-dialog-max-width) rounded-b-(--ono-v-dialog-radius) bg-(--ono-v-surface-muted) shadow-(--ono-v-elevation-2)">
         <summary class="cursor-pointer px-4 py-3 text-xs font-mono text-(--ono-v-text-muted) hover:text-(--ono-v-text) transition-colors duration-200 list-none flex items-center gap-2 font-medium">
-            <span class="dui w-4 h-4" style="-webkit-mask-image: url('${chevronRightIcon}'); mask-image: url('${chevronRightIcon}')"></span>
+            <span class="dui size-4" style="-webkit-mask-image: url('${chevronRightIcon}'); mask-image: url('${chevronRightIcon}')"></span>
             Raw stack trace
         </summary>
         <div class="px-4 py-3 text-(--ono-v-text) text-xs rounded-b-(--ono-v-dialog-radius) font-mono leading-5 overflow-auto space-y-0.5 max-h-[140px] bg-(--ono-v-surface) border-t border-(--ono-v-border)"></div>
@@ -272,18 +272,18 @@ const generateBalloonButton = (balloonConfig?: BalloonConfig): string => {
     const position = balloonConfig?.position || "bottom-right";
     const customStyle = generateStyles(balloonConfig?.style);
     const positionStyle = position ? getPositionStyles(position) : getPositionStyles("bottom-right");
-    const iconHtml = balloonConfig?.icon ? `<img src="${balloonConfig.icon}" alt="" class="w-4 h-4" />` : "";
+    const iconHtml = balloonConfig?.icon ? `<img src="${balloonConfig.icon}" alt="" class="size-4" />` : "";
 
     // Build the button HTML with optional icon
     const buttonContent = iconHtml
-        ? `${iconHtml}\n    <span id="__v_o__balloon_count" class="inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-white/20 text-white font-bold">0</span>\n    <span id="__v_o__balloon_text">Errors</span>`
-        : `<span id="__v_o__balloon_count" class="inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-white/20 text-white font-bold">0</span>\n    <span id="__v_o__balloon_text">Errors</span>`;
+        ? `${iconHtml}\n    <span id="__v_o__balloon_count" class="inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-white/20 text-white font-bold" style="--num: 0"></span>\n    <span id="__v_o__balloon_text">Errors</span>`
+        : `<span id="__v_o__balloon_count" class="inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-white/20 text-white font-bold" style="--num: 0"></span>\n    <span id="__v_o__balloon_text">Errors</span>`;
 
     return `<div id="__v_o__balloon_group" class="fixed z-2147483647 inline-flex items-center px-2.5 py-1.5 rounded-full bg-(--ono-v-red-orange) text-white font-sans text-xs leading-none shadow-lg cursor-pointer transition-all duration-200 hover:brightness-105" data-balloon-position="${position}" style="${customStyle} ${positionStyle}">
     <button type="button" id="__v_o__balloon" title="Toggle error overlay" aria-label="Toggle error overlay" class="w-full flex items-center gap-2">
         ${buttonContent}
     </button>
-    <button type="button" id="__v_o__balloon_close" title="Dismiss balloon" aria-label="Dismiss balloon" class="ml-2 inline-flex items-center justify-center w-4 h-4 rounded-full hover:bg-white/20 transition-colors border">
+    <button type="button" id="__v_o__balloon_close" title="Dismiss balloon" aria-label="Dismiss balloon" class="ml-2 inline-flex items-center justify-center size-4 rounded-full hover:bg-white/20 transition-colors border" style="padding:1px;">
         <span class="dui" style="-webkit-mask-image: url('${closeIcon}'); mask-image: url('${closeIcon}')"></span>
     </button>
 </div>`;

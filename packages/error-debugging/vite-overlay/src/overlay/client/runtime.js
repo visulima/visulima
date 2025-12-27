@@ -120,7 +120,7 @@ class ErrorOverlay extends HTMLElement {
         this._cacheElements();
 
         this._initializeThemeToggle();
-        this._initializeBalloon(this.__v_oPayload.errors.length);
+        this._initializeBalloon();
         this._restoreBalloonState();
         this._initializeCopyError();
         this._initializePagination();
@@ -238,6 +238,9 @@ class ErrorOverlay extends HTMLElement {
         if (this.__v_oHistory.length > ErrorOverlay.HISTORY_LIMIT) {
             this.__v_oHistory = this.__v_oHistory.slice(0, ErrorOverlay.HISTORY_LIMIT);
         }
+
+        // Update balloon count with animation
+        this._updateBalloonCount(true);
     }
 
     /**
@@ -379,35 +382,84 @@ class ErrorOverlay extends HTMLElement {
     }
 
     /**
-     * Initializes the floating balloon button that shows the error count
-     * and toggles the overlay open/close when clicked.
+     * Updates the balloon count to show the total number of errors in history.
      * @private
-     * @param {number} total - The total number of errors to display
+     * @param {boolean} animate - Whether to animate the count change
      */
-    _initializeBalloon(total) {
-        const { balloon, balloonCount, balloonGroup, balloonText, root } = this.__elements || {};
+    _updateBalloonCount(animate = false) {
+        const { balloonCount, balloonText, balloonGroup } = this.__elements || {};
 
-        if (!balloonGroup || !balloonCount || !root) {
+        if (!balloonCount) {
             return;
         }
 
-        try {
-            balloonCount.textContent = total.toString();
+        const totalErrors = this.__v_oHistory.length;
+        const currentNum = Number.parseInt(balloonCount.style.getPropertyValue("--num") || "0", 10);
 
-            if (balloonText) {
-                balloonText.textContent = total === 1 ? "Error" : "Errors";
-            }
+        // Animate if count increased and animation is requested
+        if (animate && totalErrors > currentNum && currentNum > 0) {
+            // Set start and end values for animation
+            balloonCount.style.setProperty("--num-start", currentNum.toString());
+            balloonCount.style.setProperty("--num-end", totalErrors.toString());
 
-            this._restoreBalloonState();
+            // Remove animation class to reset
+            balloonCount.classList.remove("animate-count-up");
 
-            // Show balloon if there are errors and it's not dismissed
-            if (total > 0 && !this.__v_oBalloonDismissed) {
+            // Force reflow to ensure animation restarts
+            void balloonCount.offsetWidth;
+
+            // Trigger animation
+            balloonCount.classList.add("animate-count-up");
+
+            // Clean up after animation completes
+            balloonCount.addEventListener(
+                "animationend",
+                () => {
+                    balloonCount.style.setProperty("--num", totalErrors.toString());
+                    balloonCount.style.removeProperty("--num-start");
+                    balloonCount.style.removeProperty("--num-end");
+                    balloonCount.classList.remove("animate-count-up");
+                },
+                { once: true },
+            );
+        } else {
+            // No animation, just update the number directly
+            balloonCount.style.setProperty("--num", totalErrors.toString());
+        }
+
+        if (balloonText) {
+            balloonText.textContent = totalErrors === 1 ? "Error" : "Errors";
+        }
+
+        // Show balloon if there are errors and it's not dismissed
+        if (balloonGroup) {
+            if (totalErrors > 0 && !this.__v_oBalloonDismissed) {
                 balloonGroup.classList.add("inline-flex");
                 balloonGroup.classList.remove("hidden");
             } else {
                 balloonGroup.classList.remove("inline-flex");
                 balloonGroup.classList.add("hidden");
             }
+        }
+    }
+
+    /**
+     * Initializes the floating balloon button that shows the error count
+     * and toggles the overlay open/close when clicked.
+     * @private
+     */
+    _initializeBalloon() {
+        const { balloon, balloonGroup, root } = this.__elements || {};
+
+        if (!balloonGroup || !root) {
+            return;
+        }
+
+        try {
+            // Initialize with current history count
+            this._updateBalloonCount(false);
+
+            this._restoreBalloonState();
 
             const clickHandler = (event) => {
                 // Don't toggle overlay if clicking the close button
@@ -1509,6 +1561,9 @@ class ErrorOverlay extends HTMLElement {
         if (this.__v_oHistory.length > ErrorOverlay.HISTORY_LIMIT) {
             this.__v_oHistory.length = ErrorOverlay.HISTORY_LIMIT;
         }
+
+        // Update balloon count with animation
+        this._updateBalloonCount(true);
 
         this._updateHistoryToggleVisibility();
     }
