@@ -1,3 +1,13 @@
+## @visulima/pagination [5.0.0-alpha.4](https://github.com/visulima/visulima/compare/@visulima/pagination@5.0.0-alpha.3...@visulima/pagination@5.0.0-alpha.4) (2025-12-27)
+
+### Bug Fixes
+
+* **pagination:** update package files ([008ea06](https://github.com/visulima/visulima/commit/008ea06ff573a61eaabbc913f9dbe436b4943d67))
+
+### Miscellaneous Chores
+
+* fixed project.json names and schema path ([964722f](https://github.com/visulima/visulima/commit/964722f691db205c7edb9aa6db29e849a647500b))
+
 ## @visulima/pagination [5.0.0-alpha.3](https://github.com/visulima/visulima/compare/@visulima/pagination@5.0.0-alpha.2...@visulima/pagination@5.0.0-alpha.3) (2025-12-11)
 
 ### Bug Fixes
