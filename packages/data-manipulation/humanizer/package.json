@@ -1,6 +1,6 @@
 {
     "name": "@visulima/humanizer",
-    "version": "3.0.0-alpha.4",
+    "version": "3.0.0-alpha.5",
     "description": "Humanizer is a library for humanizing data in a human-readable form.",
     "keywords": [
         "visulima",
