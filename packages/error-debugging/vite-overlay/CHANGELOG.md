@@ -1,3 +1,24 @@
+## @visulima/vite-overlay [2.0.0-alpha.4](https://github.com/visulima/visulima/compare/@visulima/vite-overlay@2.0.0-alpha.3...@visulima/vite-overlay@2.0.0-alpha.4) (2025-12-27)
+
+### Bug Fixes
+
+* **vite-overlay:** update package files ([fd8f5c1](https://github.com/visulima/visulima/commit/fd8f5c13f384d945f3597b00cfdfaf615e100de9))
+
+### Miscellaneous Chores
+
+* **dependencies:** update msw to version 2.12.6, jsdom to version 27.4.0, and [@tanstack](https://github.com/tanstack) packages to version 1.144.0 in package.json files ([1aa0236](https://github.com/visulima/visulima/commit/1aa0236e1f8190eecf7526cf2dc0f369cac02d87))
+* fixed project.json names and schema path ([964722f](https://github.com/visulima/visulima/commit/964722f691db205c7edb9aa6db29e849a647500b))
+
+### Code Refactoring
+
+* **overlay:** improve balloon count display with animation and update styles for consistency ([146c2a7](https://github.com/visulima/visulima/commit/146c2a77b96ce9c61f6ae2d3fb85990fc73eab6b))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 6.0.0-alpha.3
+* **@visulima/path:** upgraded to 3.0.0-alpha.4
+
 ## @visulima/vite-overlay [2.0.0-alpha.3](https://github.com/visulima/visulima/compare/@visulima/vite-overlay@2.0.0-alpha.2...@visulima/vite-overlay@2.0.0-alpha.3) (2025-12-11)
 
 ### Bug Fixes
