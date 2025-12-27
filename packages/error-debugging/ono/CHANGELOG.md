@@ -1,3 +1,17 @@
+## @visulima/ono [2.0.0-alpha.4](https://github.com/visulima/visulima/compare/@visulima/ono@2.0.0-alpha.3...@visulima/ono@2.0.0-alpha.4) (2025-12-27)
+
+### Bug Fixes
+
+* **dependencies:** update hono and isomorphic-dompurify to versions 4.11.3 and 2.35.0 in package.json files ([0169fa9](https://github.com/visulima/visulima/commit/0169fa94d187c5e6a22e2ed48353124953996aee))
+* **dependencies:** update hono and related packages to version 4.11.2 and update @hono/swagger-ui to version 0.5.3 ([5d3eed5](https://github.com/visulima/visulima/commit/5d3eed57d30d8216bf91484f35d39678938651fb))
+* **ono:** update package files ([2e8a1dd](https://github.com/visulima/visulima/commit/2e8a1dd987c061f57e9e60c64a40245c499f8c98))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 6.0.0-alpha.3
+* **@visulima/path:** upgraded to 3.0.0-alpha.4
+
 ## @visulima/ono [2.0.0-alpha.3](https://github.com/visulima/visulima/compare/@visulima/ono@2.0.0-alpha.2...@visulima/ono@2.0.0-alpha.3) (2025-12-11)
 
 ### Bug Fixes
