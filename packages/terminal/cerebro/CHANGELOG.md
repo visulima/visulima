@@ -1,3 +1,23 @@
+## @visulima/cerebro [3.0.0-alpha.5](https://github.com/visulima/visulima/compare/@visulima/cerebro@3.0.0-alpha.4...@visulima/cerebro@3.0.0-alpha.5) (2025-12-27)
+
+### Bug Fixes
+
+* **cerebro:** update package files ([5161bbd](https://github.com/visulima/visulima/commit/5161bbd0abf7f5feb71c1d01b06ba48ec31545b4))
+* **dependencies:** update [@bomb](https://github.com/bomb).sh/tab to version 0.0.11 in package.json files ([9d50ce3](https://github.com/visulima/visulima/commit/9d50ce3bb1ae8209ce56173edbf7bd86837438ce))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 2.0.0-alpha.4
+* **@visulima/tabular:** upgraded to 4.0.0-alpha.5
+* **@visulima/boxen:** upgraded to 3.0.0-alpha.5
+* **@visulima/command-line-args:** upgraded to 2.0.0-alpha.3
+* **@visulima/error:** upgraded to 6.0.0-alpha.3
+* **@visulima/find-cache-dir:** upgraded to 3.0.0-alpha.3
+* **@visulima/pail:** upgraded to 4.0.0-alpha.5
+* **@visulima/path:** upgraded to 3.0.0-alpha.4
+* **@visulima/string:** upgraded to 3.0.0-alpha.5
+
 ## @visulima/cerebro [3.0.0-alpha.4](https://github.com/visulima/visulima/compare/@visulima/cerebro@3.0.0-alpha.3...@visulima/cerebro@3.0.0-alpha.4) (2025-12-13)
 
 ### Miscellaneous Chores
