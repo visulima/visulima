@@ -1,3 +1,19 @@
+## @visulima/find-cache-dir [3.0.0-alpha.3](https://github.com/visulima/visulima/compare/@visulima/find-cache-dir@3.0.0-alpha.2...@visulima/find-cache-dir@3.0.0-alpha.3) (2025-12-27)
+
+### Bug Fixes
+
+* **find-cache-dir:** update package files ([5361624](https://github.com/visulima/visulima/commit/53616242673b8c4edfd79645494bc27f18b70516))
+
+### Miscellaneous Chores
+
+* fixed project.json names and schema path ([964722f](https://github.com/visulima/visulima/commit/964722f691db205c7edb9aa6db29e849a647500b))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 5.0.0-alpha.3
+* **@visulima/path:** upgraded to 3.0.0-alpha.4
+
 ## @visulima/find-cache-dir [3.0.0-alpha.2](https://github.com/visulima/visulima/compare/@visulima/find-cache-dir@3.0.0-alpha.1...@visulima/find-cache-dir@3.0.0-alpha.2) (2025-12-11)
 
 ### Bug Fixes
