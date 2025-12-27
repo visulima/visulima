@@ -1,3 +1,20 @@
+## @visulima/error-handler [2.0.0-alpha.5](https://github.com/visulima/visulima/compare/@visulima/error-handler@2.0.0-alpha.4...@visulima/error-handler@2.0.0-alpha.5) (2025-12-27)
+
+### Bug Fixes
+
+* **dependencies:** update hono and related packages to version 4.11.2 and update @hono/swagger-ui to version 0.5.3 ([5d3eed5](https://github.com/visulima/visulima/commit/5d3eed57d30d8216bf91484f35d39678938651fb))
+* **error-handler:** update package files ([a059109](https://github.com/visulima/visulima/commit/a059109774f5b961326ab917083db91cff641667))
+
+### Miscellaneous Chores
+
+* **dependencies:** update msw to version 2.12.6, jsdom to version 27.4.0, and [@tanstack](https://github.com/tanstack) packages to version 1.144.0 in package.json files ([1aa0236](https://github.com/visulima/visulima/commit/1aa0236e1f8190eecf7526cf2dc0f369cac02d87))
+
+
+### Dependencies
+
+* **@visulima/boxen:** upgraded to 3.0.0-alpha.5
+* **@visulima/error:** upgraded to 6.0.0-alpha.3
+
 ## @visulima/error-handler [2.0.0-alpha.4](https://github.com/visulima/visulima/compare/@visulima/error-handler@2.0.0-alpha.3...@visulima/error-handler@2.0.0-alpha.4) (2025-12-13)
 
 ### Miscellaneous Chores
