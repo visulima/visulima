@@ -1,3 +1,13 @@
+## @visulima/path [3.0.0-alpha.4](https://github.com/visulima/visulima/compare/@visulima/path@3.0.0-alpha.3...@visulima/path@3.0.0-alpha.4) (2025-12-27)
+
+### Bug Fixes
+
+* **path:** update package files ([ec317d7](https://github.com/visulima/visulima/commit/ec317d77f3e54a320875130682c3db84f778448f))
+
+### Miscellaneous Chores
+
+* fixed project.json names and schema path ([964722f](https://github.com/visulima/visulima/commit/964722f691db205c7edb9aa6db29e849a647500b))
+
 ## @visulima/path [3.0.0-alpha.3](https://github.com/visulima/visulima/compare/@visulima/path@3.0.0-alpha.2...@visulima/path@3.0.0-alpha.3) (2025-12-11)
 
 ### Bug Fixes
