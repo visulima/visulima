@@ -11,7 +11,7 @@
         "@hono/swagger-ui": "^0.5.3",
         "@hono/zod-openapi": "^1.2.0",
         "@visulima/storage": "workspace:*",
-        "hono": "^4.11.2",
+        "hono": "^4.11.3",
         "sharp": "^0.34.5"
     },
     "devDependencies": {
