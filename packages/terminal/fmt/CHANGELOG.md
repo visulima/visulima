@@ -1,3 +1,13 @@
+## @visulima/fmt [2.0.0-alpha.4](https://github.com/visulima/visulima/compare/@visulima/fmt@2.0.0-alpha.3...@visulima/fmt@2.0.0-alpha.4) (2025-12-27)
+
+### Bug Fixes
+
+* **fmt:** update package files ([d8a3655](https://github.com/visulima/visulima/commit/d8a36557d4a7ad72645d8ad96118ee0bd09ddd39))
+
+### Miscellaneous Chores
+
+* fixed project.json names and schema path ([964722f](https://github.com/visulima/visulima/commit/964722f691db205c7edb9aa6db29e849a647500b))
+
 ## @visulima/fmt [2.0.0-alpha.3](https://github.com/visulima/visulima/compare/@visulima/fmt@2.0.0-alpha.2...@visulima/fmt@2.0.0-alpha.3) (2025-12-11)
 
 ### Bug Fixes
