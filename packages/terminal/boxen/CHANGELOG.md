@@ -1,3 +1,16 @@
+## @visulima/boxen [3.0.0-alpha.5](https://github.com/visulima/visulima/compare/@visulima/boxen@3.0.0-alpha.4...@visulima/boxen@3.0.0-alpha.5) (2025-12-27)
+
+### Bug Fixes
+
+* **boxen:** update package files ([173adef](https://github.com/visulima/visulima/commit/173adef0a39db7e4773bff77d08a7d2371ce83b8))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 2.0.0-alpha.4
+* **@visulima/path:** upgraded to 3.0.0-alpha.4
+* **@visulima/string:** upgraded to 3.0.0-alpha.5
+
 ## @visulima/boxen [3.0.0-alpha.4](https://github.com/visulima/visulima/compare/@visulima/boxen@3.0.0-alpha.3...@visulima/boxen@3.0.0-alpha.4) (2025-12-13)
 
 ### Miscellaneous Chores
