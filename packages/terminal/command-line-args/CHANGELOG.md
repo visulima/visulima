@@ -1,3 +1,18 @@
+## @visulima/command-line-args [2.0.0-alpha.3](https://github.com/visulima/visulima/compare/@visulima/command-line-args@2.0.0-alpha.2...@visulima/command-line-args@2.0.0-alpha.3) (2025-12-27)
+
+### Bug Fixes
+
+* **command-line-args:** update package files ([de998ec](https://github.com/visulima/visulima/commit/de998ec2f22b5776f3e250f9ead9da6870fa6a15))
+
+### Miscellaneous Chores
+
+* fixed project.json names and schema path ([964722f](https://github.com/visulima/visulima/commit/964722f691db205c7edb9aa6db29e849a647500b))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 6.0.0-alpha.3
+
 ## @visulima/command-line-args [2.0.0-alpha.2](https://github.com/visulima/visulima/compare/@visulima/command-line-args@2.0.0-alpha.1...@visulima/command-line-args@2.0.0-alpha.2) (2025-12-11)
 
 ### Bug Fixes
