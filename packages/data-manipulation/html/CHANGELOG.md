@@ -1,3 +1,13 @@
+## @visulima/html [1.0.0-alpha.3](https://github.com/visulima/visulima/compare/@visulima/html@1.0.0-alpha.2...@visulima/html@1.0.0-alpha.3) (2025-12-27)
+
+### Bug Fixes
+
+* **html:** update package files ([6b8982d](https://github.com/visulima/visulima/commit/6b8982d2eb7f3c6998a33f7c70a828ac1d3d85ab))
+
+### Styles
+
+* cs fix ([dbe0cfd](https://github.com/visulima/visulima/commit/dbe0cfd27507cd145d4635482533bec2bbc42a32))
+
 ## @visulima/html [1.0.0-alpha.2](https://github.com/visulima/visulima/compare/@visulima/html@1.0.0-alpha.1...@visulima/html@1.0.0-alpha.2) (2025-12-12)
 
 ### Features
