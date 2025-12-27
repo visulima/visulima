@@ -1,3 +1,15 @@
+## @visulima/storage-client [1.0.0-alpha.4](https://github.com/visulima/visulima/compare/@visulima/storage-client@1.0.0-alpha.3...@visulima/storage-client@1.0.0-alpha.4) (2025-12-27)
+
+### Bug Fixes
+
+* **storage-client:** update @testing-library/svelte to version 5.3.1 and improve README for Svelte support ([43e8ea5](https://github.com/visulima/visulima/commit/43e8ea5b01399d5dd0f98882629bceedd411e710))
+* **storage-client:** update package files ([ba9d079](https://github.com/visulima/visulima/commit/ba9d079a5b25169e88836fd23af13796250452b1))
+
+### Miscellaneous Chores
+
+* **dependencies:** update file-type to version 21.2.0, hono to version 4.11.3, and improve README for storage-client with detailed usage examples ([90bebfa](https://github.com/visulima/visulima/commit/90bebfa9b732afd8d80c133ca0636192b8496801))
+* fixed project.json names and schema path ([964722f](https://github.com/visulima/visulima/commit/964722f691db205c7edb9aa6db29e849a647500b))
+
 ## @visulima/storage-client [1.0.0-alpha.3](https://github.com/visulima/visulima/compare/@visulima/storage-client@1.0.0-alpha.2...@visulima/storage-client@1.0.0-alpha.3) (2025-12-11)
 
 ### Bug Fixes
