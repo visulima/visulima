@@ -1,3 +1,18 @@
+## @visulima/colorize [2.0.0-alpha.4](https://github.com/visulima/visulima/compare/@visulima/colorize@2.0.0-alpha.3...@visulima/colorize@2.0.0-alpha.4) (2025-12-27)
+
+### Bug Fixes
+
+* **colorize:** update package files ([84c87a3](https://github.com/visulima/visulima/commit/84c87a3383cf370c94280319ac79ac106aaca3ec))
+
+### Miscellaneous Chores
+
+* fixed project.json names and schema path ([964722f](https://github.com/visulima/visulima/commit/964722f691db205c7edb9aa6db29e849a647500b))
+
+
+### Dependencies
+
+* **@visulima/is-ansi-color-supported:** upgraded to 3.0.0-alpha.4
+
 ## @visulima/colorize [2.0.0-alpha.3](https://github.com/visulima/visulima/compare/@visulima/colorize@2.0.0-alpha.2...@visulima/colorize@2.0.0-alpha.3) (2025-12-11)
 
 ### Bug Fixes
