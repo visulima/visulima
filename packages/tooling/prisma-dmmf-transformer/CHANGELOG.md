@@ -1,3 +1,13 @@
+## @visulima/prisma-dmmf-transformer [3.0.0-alpha.4](https://github.com/visulima/visulima/compare/@visulima/prisma-dmmf-transformer@3.0.0-alpha.3...@visulima/prisma-dmmf-transformer@3.0.0-alpha.4) (2025-12-27)
+
+### Bug Fixes
+
+* **prisma-dmmf-transformer:** update package files ([997673b](https://github.com/visulima/visulima/commit/997673bfc116148ba3d1f5ac6d6d0210fb576c45))
+
+### Miscellaneous Chores
+
+* fixed project.json names and schema path ([964722f](https://github.com/visulima/visulima/commit/964722f691db205c7edb9aa6db29e849a647500b))
+
 ## @visulima/prisma-dmmf-transformer [3.0.0-alpha.3](https://github.com/visulima/visulima/compare/@visulima/prisma-dmmf-transformer@3.0.0-alpha.2...@visulima/prisma-dmmf-transformer@3.0.0-alpha.3) (2025-12-11)
 
 ### Bug Fixes
