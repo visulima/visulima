@@ -1,3 +1,13 @@
+## @visulima/redact [3.0.0-alpha.4](https://github.com/visulima/visulima/compare/@visulima/redact@3.0.0-alpha.3...@visulima/redact@3.0.0-alpha.4) (2025-12-27)
+
+### Bug Fixes
+
+* **redact:** update package files ([59139b1](https://github.com/visulima/visulima/commit/59139b186ca11b60a6c14a53684a190d4bdb2954))
+
+### Miscellaneous Chores
+
+* fixed project.json names and schema path ([964722f](https://github.com/visulima/visulima/commit/964722f691db205c7edb9aa6db29e849a647500b))
+
 ## @visulima/redact [3.0.0-alpha.3](https://github.com/visulima/visulima/compare/@visulima/redact@3.0.0-alpha.2...@visulima/redact@3.0.0-alpha.3) (2025-12-11)
 
 ### Bug Fixes
