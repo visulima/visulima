@@ -1,3 +1,13 @@
+## @visulima/bytes [3.0.0-alpha.4](https://github.com/visulima/visulima/compare/@visulima/bytes@3.0.0-alpha.3...@visulima/bytes@3.0.0-alpha.4) (2025-12-27)
+
+### Bug Fixes
+
+* **bytes:** update package files ([546cc78](https://github.com/visulima/visulima/commit/546cc780cc19968962d633e2a38fe5c6fa58b497))
+
+### Miscellaneous Chores
+
+* fixed project.json names and schema path ([964722f](https://github.com/visulima/visulima/commit/964722f691db205c7edb9aa6db29e849a647500b))
+
 ## @visulima/bytes [3.0.0-alpha.3](https://github.com/visulima/visulima/compare/@visulima/bytes@3.0.0-alpha.2...@visulima/bytes@3.0.0-alpha.3) (2025-12-11)
 
 ### Bug Fixes
