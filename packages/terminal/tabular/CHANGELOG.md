@@ -1,3 +1,15 @@
+## @visulima/tabular [4.0.0-alpha.5](https://github.com/visulima/visulima/compare/@visulima/tabular@4.0.0-alpha.4...@visulima/tabular@4.0.0-alpha.5) (2025-12-27)
+
+### Bug Fixes
+
+* **tabular:** update package files ([1a263de](https://github.com/visulima/visulima/commit/1a263de3a3bbb34fc0ea088630383fef1a2d3ea7))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 2.0.0-alpha.4
+* **@visulima/string:** upgraded to 3.0.0-alpha.5
+
 ## @visulima/tabular [4.0.0-alpha.4](https://github.com/visulima/visulima/compare/@visulima/tabular@4.0.0-alpha.3...@visulima/tabular@4.0.0-alpha.4) (2025-12-13)
 
 ### Miscellaneous Chores
