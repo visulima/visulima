@@ -1,3 +1,14 @@
+## @visulima/deep-clone [4.0.0-alpha.5](https://github.com/visulima/visulima/compare/@visulima/deep-clone@4.0.0-alpha.4...@visulima/deep-clone@4.0.0-alpha.5) (2025-12-27)
+
+### Bug Fixes
+
+* **deep-clone:** update package files ([f0bf0bc](https://github.com/visulima/visulima/commit/f0bf0bce894b569ca80c7e2338937f4c2d110960))
+
+### Miscellaneous Chores
+
+* **dependencies:** update msw to version 2.12.6, jsdom to version 27.4.0, and [@tanstack](https://github.com/tanstack) packages to version 1.144.0 in package.json files ([1aa0236](https://github.com/visulima/visulima/commit/1aa0236e1f8190eecf7526cf2dc0f369cac02d87))
+* fixed project.json names and schema path ([964722f](https://github.com/visulima/visulima/commit/964722f691db205c7edb9aa6db29e849a647500b))
+
 ## @visulima/deep-clone [4.0.0-alpha.4](https://github.com/visulima/visulima/compare/@visulima/deep-clone@4.0.0-alpha.3...@visulima/deep-clone@4.0.0-alpha.4) (2025-12-12)
 
 ### Features
