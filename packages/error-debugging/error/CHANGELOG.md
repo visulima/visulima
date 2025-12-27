@@ -1,3 +1,18 @@
+## @visulima/error [6.0.0-alpha.3](https://github.com/visulima/visulima/compare/@visulima/error@6.0.0-alpha.2...@visulima/error@6.0.0-alpha.3) (2025-12-27)
+
+### Bug Fixes
+
+* **error:** update package files ([ea9d556](https://github.com/visulima/visulima/commit/ea9d55669d1f3e0d7902d931a82e0acd39081ea7))
+
+### Miscellaneous Chores
+
+* fixed project.json names and schema path ([964722f](https://github.com/visulima/visulima/commit/964722f691db205c7edb9aa6db29e849a647500b))
+
+
+### Dependencies
+
+* **@visulima/path:** upgraded to 3.0.0-alpha.4
+
 ## @visulima/error [6.0.0-alpha.2](https://github.com/visulima/visulima/compare/@visulima/error@6.0.0-alpha.1...@visulima/error@6.0.0-alpha.2) (2025-12-11)
 
 ### Bug Fixes
