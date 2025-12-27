@@ -1,3 +1,19 @@
+## @visulima/ansi [4.0.0-alpha.4](https://github.com/visulima/visulima/compare/@visulima/ansi@4.0.0-alpha.3...@visulima/ansi@4.0.0-alpha.4) (2025-12-27)
+
+### Bug Fixes
+
+* **ansi:** update package files ([13d5a39](https://github.com/visulima/visulima/commit/13d5a390e4286bbaa887dbbb989d29f1ee4090db))
+
+### Miscellaneous Chores
+
+* fixed project.json names and schema path ([964722f](https://github.com/visulima/visulima/commit/964722f691db205c7edb9aa6db29e849a647500b))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 2.0.0-alpha.4
+* **@visulima/path:** upgraded to 3.0.0-alpha.4
+
 ## @visulima/ansi [4.0.0-alpha.3](https://github.com/visulima/visulima/compare/@visulima/ansi@4.0.0-alpha.2...@visulima/ansi@4.0.0-alpha.3) (2025-12-11)
 
 ### Bug Fixes
