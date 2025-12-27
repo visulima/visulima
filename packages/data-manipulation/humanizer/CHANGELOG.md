@@ -1,3 +1,13 @@
+## @visulima/humanizer [3.0.0-alpha.5](https://github.com/visulima/visulima/compare/@visulima/humanizer@3.0.0-alpha.4...@visulima/humanizer@3.0.0-alpha.5) (2025-12-27)
+
+### Bug Fixes
+
+* **humanizer:** update package files ([f370cff](https://github.com/visulima/visulima/commit/f370cff64a0c065ca66f87ffbbd5f7d20cc41a8f))
+
+### Miscellaneous Chores
+
+* fixed project.json names and schema path ([964722f](https://github.com/visulima/visulima/commit/964722f691db205c7edb9aa6db29e849a647500b))
+
 ## @visulima/humanizer [3.0.0-alpha.4](https://github.com/visulima/visulima/compare/@visulima/humanizer@3.0.0-alpha.3...@visulima/humanizer@3.0.0-alpha.4) (2025-12-11)
 
 ### Bug Fixes
