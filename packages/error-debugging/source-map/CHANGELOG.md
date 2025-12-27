@@ -1,3 +1,18 @@
+## @visulima/source-map [3.0.0-alpha.3](https://github.com/visulima/visulima/compare/@visulima/source-map@3.0.0-alpha.2...@visulima/source-map@3.0.0-alpha.3) (2025-12-27)
+
+### Bug Fixes
+
+* **source-map:** update package files ([781c52c](https://github.com/visulima/visulima/commit/781c52c6b6de73115fa6186e9e3169642a683d96))
+
+### Miscellaneous Chores
+
+* fixed project.json names and schema path ([964722f](https://github.com/visulima/visulima/commit/964722f691db205c7edb9aa6db29e849a647500b))
+
+
+### Dependencies
+
+* **@visulima/path:** upgraded to 3.0.0-alpha.4
+
 ## @visulima/source-map [3.0.0-alpha.2](https://github.com/visulima/visulima/compare/@visulima/source-map@3.0.0-alpha.1...@visulima/source-map@3.0.0-alpha.2) (2025-12-11)
 
 ### Bug Fixes
