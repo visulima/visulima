@@ -1,3 +1,18 @@
+## @visulima/inspector [2.0.0-alpha.3](https://github.com/visulima/visulima/compare/@visulima/inspector@2.0.0-alpha.2...@visulima/inspector@2.0.0-alpha.3) (2025-12-27)
+
+### Bug Fixes
+
+* **inspector:** update package files ([50905c0](https://github.com/visulima/visulima/commit/50905c0e18ada9dba01d4f00a16e56f9197d1872))
+
+### Miscellaneous Chores
+
+* fixed project.json names and schema path ([964722f](https://github.com/visulima/visulima/commit/964722f691db205c7edb9aa6db29e849a647500b))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 2.0.0-alpha.4
+
 ## @visulima/inspector [2.0.0-alpha.2](https://github.com/visulima/visulima/compare/@visulima/inspector@2.0.0-alpha.1...@visulima/inspector@2.0.0-alpha.2) (2025-12-11)
 
 ### Bug Fixes
