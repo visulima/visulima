@@ -1,3 +1,19 @@
+## @visulima/tsconfig [3.0.0-alpha.3](https://github.com/visulima/visulima/compare/@visulima/tsconfig@3.0.0-alpha.2...@visulima/tsconfig@3.0.0-alpha.3) (2025-12-27)
+
+### Bug Fixes
+
+* **tsconfig:** update package files ([f1bb598](https://github.com/visulima/visulima/commit/f1bb5982e370fac9caffd76a73645e51c6ab1704))
+
+### Miscellaneous Chores
+
+* fixed project.json names and schema path ([964722f](https://github.com/visulima/visulima/commit/964722f691db205c7edb9aa6db29e849a647500b))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 5.0.0-alpha.3
+* **@visulima/path:** upgraded to 3.0.0-alpha.4
+
 ## @visulima/tsconfig [3.0.0-alpha.2](https://github.com/visulima/visulima/compare/@visulima/tsconfig@3.0.0-alpha.1...@visulima/tsconfig@3.0.0-alpha.2) (2025-12-11)
 
 ### Bug Fixes
