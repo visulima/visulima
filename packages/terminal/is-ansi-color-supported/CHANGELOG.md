@@ -1,3 +1,13 @@
+## @visulima/is-ansi-color-supported [3.0.0-alpha.4](https://github.com/visulima/visulima/compare/@visulima/is-ansi-color-supported@3.0.0-alpha.3...@visulima/is-ansi-color-supported@3.0.0-alpha.4) (2025-12-27)
+
+### Bug Fixes
+
+* **is-ansi-color-supported:** update package files ([83a7a52](https://github.com/visulima/visulima/commit/83a7a52760135c66ea5275df5b5de05841f094bb))
+
+### Miscellaneous Chores
+
+* fixed project.json names and schema path ([964722f](https://github.com/visulima/visulima/commit/964722f691db205c7edb9aa6db29e849a647500b))
+
 ## @visulima/is-ansi-color-supported [3.0.0-alpha.3](https://github.com/visulima/visulima/compare/@visulima/is-ansi-color-supported@3.0.0-alpha.2...@visulima/is-ansi-color-supported@3.0.0-alpha.3) (2025-12-11)
 
 ### Bug Fixes
