@@ -35,6 +35,21 @@ export default function (plop) {
         description: `Generates a package`,
         prompts: [
             {
+                type: "list",
+                name: "category",
+                message: `Select package category:`,
+                choices: [
+                    { name: "API", value: "api" },
+                    { name: "Terminal", value: "terminal" },
+                    { name: "Filesystem", value: "filesystem" },
+                    { name: "Error & Debugging", value: "error-debugging" },
+                    { name: "Data Manipulation", value: "data-manipulation" },
+                    { name: "Storage", value: "storage" },
+                    { name: "Email", value: "email" },
+                    { name: "Tooling", value: "tooling" },
+                ],
+            },
+            {
                 type: "input",
                 name: `packageName`,
                 message: `Enter package name:`,
@@ -72,11 +87,12 @@ export default function (plop) {
                 return actions;
             }
 
-            const { description, outDir } = answers;
+            const { description, category, outDir } = answers;
             const generatorName = answers[`packageName`] ?? "";
 
             const data = {
                 [`packageName`]: generatorName,
+                category,
                 description,
                 outDir,
             };
@@ -84,7 +100,7 @@ export default function (plop) {
             actions.push({
                 type: "addMany",
                 templateFiles: `plop/package/**`,
-                destination: `./packages/{{dashCase packageName}}`,
+                destination: `./packages/{{category}}/{{dashCase packageName}}`,
                 base: `plop/package`,
                 globOptions: { dot: true },
                 data,
