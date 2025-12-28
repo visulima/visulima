@@ -1,0 +1,57 @@
+import type { ToolbarSettings } from '../types/toolbar.js';
+import { DEFAULT_TOOLBAR_SETTINGS } from '../types/toolbar.js';
+
+const SETTINGS_STORAGE_KEY = '__VISULIMA_DEVTOOLS_SETTINGS__';
+
+/**
+ * Load settings from localStorage
+ * @returns Toolbar settings
+ */
+export const loadSettings = (): ToolbarSettings => {
+  if (typeof window === 'undefined') {
+    return { ...DEFAULT_TOOLBAR_SETTINGS };
+  }
+
+  try {
+    const stored = localStorage.getItem(SETTINGS_STORAGE_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored) as Partial<ToolbarSettings>;
+      return {
+        ...DEFAULT_TOOLBAR_SETTINGS,
+        ...parsed,
+      };
+    }
+  } catch (error) {
+    console.warn('[dev-toolbar] Failed to load settings:', error);
+  }
+
+  return { ...DEFAULT_TOOLBAR_SETTINGS };
+};
+
+/**
+ * Save settings to localStorage
+ * @param settings - Toolbar settings to save
+ */
+export const saveSettings = (settings: ToolbarSettings): void => {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  try {
+    localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(settings));
+  } catch (error) {
+    console.warn('[dev-toolbar] Failed to save settings:', error);
+  }
+};
+
+/**
+ * Update settings (merge with existing)
+ * @param updates - Partial settings to update
+ * @returns Updated settings
+ */
+export const updateSettings = (updates: Partial<ToolbarSettings>): ToolbarSettings => {
+  const current = loadSettings();
+  const updated = { ...current, ...updates };
+  saveSettings(updated);
+  return updated;
+};

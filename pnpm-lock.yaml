@@ -2203,6 +2203,10 @@ importers:
         version: 5.9.3
 
   packages/error-debugging/dev-toolbar:
+    dependencies:
+      vite:
+        specifier: '>=7.1.11'
+        version: 7.3.0(@types/node@25.0.3)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2)
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^18.0.0
@@ -2216,9 +2220,24 @@ importers:
       '@arethetypeswrong/cli':
         specifier: ^0.18.2
         version: 0.18.2
+      '@babel/core':
+        specifier: ^7.28.5
+        version: 7.28.5
+      '@babel/preset-react':
+        specifier: ^7.28.5
+        version: 7.28.5(@babel/core@7.28.5)
       '@secretlint/secretlint-rule-preset-recommend':
         specifier: ^11.2.5
         version: 11.2.5
+      '@tailwindcss/forms':
+        specifier: ^0.5.11
+        version: 0.5.11(tailwindcss@4.1.18)
+      '@tailwindcss/node':
+        specifier: ^4.1.18
+        version: 4.1.18
+      '@tailwindcss/oxide':
+        specifier: ^4.1.18
+        version: 4.1.18
       '@total-typescript/ts-reset':
         specifier: ^0.6.1
         version: 0.6.1
@@ -2226,23 +2245,32 @@ importers:
         specifier: 25.0.3
         version: 25.0.3
       '@visulima/packem':
-        specifier: 2.0.0-alpha.47
-        version: 2.0.0-alpha.47(b2d034aa0658e77054a9523857394be4)
+        specifier: 2.0.0-alpha.48
+        version: 2.0.0-alpha.48(b2d034aa0658e77054a9523857394be4)
       '@vitest/coverage-v8':
         specifier: ^4.0.16
         version: 4.0.16(@vitest/browser@4.0.16(msw@2.12.6(@types/node@25.0.3)(typescript@5.9.3))(vite@7.3.0(@types/node@25.0.3)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))(vitest@4.0.16))(vitest@4.0.16)
       '@vitest/ui':
         specifier: ^4.0.16
         version: 4.0.16(vitest@4.0.16)
+      babel-plugin-transform-hook-names:
+        specifier: ^1.0.2
+        version: 1.0.2(@babel/core@7.28.5)
       conventional-changelog-conventionalcommits:
         specifier: 9.1.0
         version: 9.1.0
+      cssnano:
+        specifier: 7.1.2
+        version: 7.1.2(postcss@8.5.6)
       esbuild:
         specifier: ^0.27.2
         version: 0.27.2
       eslint:
         specifier: 9.39.2
         version: 9.39.2(jiti@2.6.1)
+      preact:
+        specifier: ^10.28.1
+        version: 10.28.1
       prettier:
         specifier: ^3.7.4
         version: 3.7.4
@@ -2258,12 +2286,27 @@ importers:
       semantic-release:
         specifier: ^25.0.2
         version: 25.0.2(typescript@5.9.3)
+      tailwindcss:
+        specifier: 4.1.18
+        version: 4.1.18
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
       vitest:
         specifier: ^4.0.16
         version: 4.0.16(@opentelemetry/api@1.9.0)(@types/node@25.0.3)(@vitest/ui@4.0.16)(happy-dom@20.0.11)(jiti@2.6.1)(jsdom@27.4.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.6(@types/node@25.0.3)(typescript@5.9.3))(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2)
+
+  packages/error-debugging/dev-toolbar/examples/vite:
+    devDependencies:
+      '@visulima/dev-toolbar':
+        specifier: workspace:*
+        version: link:../..
+      typescript:
+        specifier: ~5.9.3
+        version: 5.9.3
+      vite:
+        specifier: ^7.3.0
+        version: 7.3.0(@types/node@25.0.3)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2)
 
   packages/error-debugging/error:
     devDependencies:
@@ -3762,6 +3805,8 @@ importers:
       vitest:
         specifier: ^4.0.18
         version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.2.3)(@vitest/ui@4.0.18)(happy-dom@20.6.1)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.10(@types/node@25.2.3)(typescript@5.9.3))(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2)
+
+  packages/filesystem/fs/__bench__/fixtures/a/b: {}
 
   packages/filesystem/fs/__fixtures__/find-up: {}
 
@@ -7025,6 +7070,12 @@ packages:
     peerDependencies:
       '@babel/core': ^7.0.0-0
 
+  '@babel/plugin-transform-react-display-name@7.28.0':
+    resolution: {integrity: sha512-D6Eujc2zMxKjfa4Zxl4GHMsmhKKZ9VpcqIchJLvwTxad9zWIYulwYItBovpDOoNLISpcZSXoDJ5gaGbQUDqViA==}
+    engines: {node: '>=6.9.0'}
+    peerDependencies:
+      '@babel/core': ^7.0.0-0
+
   '@babel/plugin-transform-react-jsx-development@7.27.1':
     resolution: {integrity: sha512-ykDdF5yI4f1WrAolLqeF3hmYU12j9ntLQl/AOG1HAS21jxyg1Q0/J/tpREuYLfatGdGmXp/3yS0ZA76kOlVq9Q==}
     engines: {node: '>=6.9.0'}
@@ -7049,8 +7100,25 @@ packages:
     peerDependencies:
       '@babel/core': ^7.0.0-0
 
+<<<<<<< HEAD
   '@babel/plugin-transform-typescript@7.28.6':
     resolution: {integrity: sha512-0YWL2RFxOqEm9Efk5PvreamxPME8OyY0wM5wh5lHjF+VtVhdneCWGzZeSqzOfiobVqQaNCd2z0tQvnI9DaPWPw==}
+=======
+  '@babel/plugin-transform-react-pure-annotations@7.27.1':
+    resolution: {integrity: sha512-JfuinvDOsD9FVMTHpzA/pBLisxpv1aSf+OIV8lgH3MuWrks19R27e6a6DipIg4aX1Zm9Wpb04p8wljfKrVSnPA==}
+    engines: {node: '>=6.9.0'}
+    peerDependencies:
+      '@babel/core': ^7.0.0-0
+
+  '@babel/plugin-transform-typescript@7.28.5':
+    resolution: {integrity: sha512-x2Qa+v/CuEoX7Dr31iAfr0IhInrVOWZU/2vJMJ00FOR/2nM0BcBEclpaf9sWCDc+v5e9dMrhSH8/atq/kX7+bA==}
+>>>>>>> fbf5de86d (feat(dev-toolbar): enhance dev-toolbar with Vite integration and new features)
+    engines: {node: '>=6.9.0'}
+    peerDependencies:
+      '@babel/core': ^7.0.0-0
+
+  '@babel/preset-react@7.28.5':
+    resolution: {integrity: sha512-Z3J8vhRq7CeLjdC58jLv4lnZ5RKFUJWqH5emvxmv9Hv3BD1T9R/Im713R4MTKwvFaV74ejZ3sM01LyEKk4ugNQ==}
     engines: {node: '>=6.9.0'}
     peerDependencies:
       '@babel/core': ^7.0.0-0
@@ -13571,12 +13639,17 @@ packages:
         optional: true
 
 <<<<<<< HEAD
+<<<<<<< HEAD
   '@visulima/packem-rollup@1.0.0-alpha.36':
     resolution: {integrity: sha512-yENj73OoE3S4jrg9hHISV+4ndy+GuYwTAeq/XiKletWc10P+FasJJt0A11fz7jauD5oI4+5BD+3sowoizMAgVQ==}
 =======
   '@visulima/packem-rollup@1.0.0-alpha.35':
     resolution: {integrity: sha512-kIEUT4kYvNQzbYPBWNZTzdbvcizIMJSdERbzxhgwQuQVNRm/ZC82DYKuvW023rjLz6XMyFmqu0QgQ070IYq/sw==}
 >>>>>>> 0bc977b44 (feat(dev-toolbar): add dev-toolbar package configuration and scripts)
+=======
+  '@visulima/packem-rollup@1.0.0-alpha.36':
+    resolution: {integrity: sha512-yENj73OoE3S4jrg9hHISV+4ndy+GuYwTAeq/XiKletWc10P+FasJJt0A11fz7jauD5oI4+5BD+3sowoizMAgVQ==}
+>>>>>>> fbf5de86d (feat(dev-toolbar): enhance dev-toolbar with Vite integration and new features)
     engines: {node: '>=20.19.* <=25.*'}
     peerDependencies:
       '@babel/core': '*'
@@ -13815,12 +13888,17 @@ packages:
         optional: true
 
 <<<<<<< HEAD
+<<<<<<< HEAD
   '@visulima/packem@2.0.0-alpha.48':
     resolution: {integrity: sha512-0xJ9lSE2X4mTHmVpfWnV6f4XeFUa5hBw6umO4vBQTi2IXS2qfFaofAbe11j4Wc4YGooOJ5NGYqgxl1KdjvnUTg==}
 =======
   '@visulima/packem@2.0.0-alpha.47':
     resolution: {integrity: sha512-ZUuEqHI8AhRNqddQ1jKVCdIZTSA7yG//D+NaG/bWrGElt8g2L8nvsZ1n+JBXFeKd5Ba/MtmUaiayRhWWOTv2sg==}
 >>>>>>> 0bc977b44 (feat(dev-toolbar): add dev-toolbar package configuration and scripts)
+=======
+  '@visulima/packem@2.0.0-alpha.48':
+    resolution: {integrity: sha512-0xJ9lSE2X4mTHmVpfWnV6f4XeFUa5hBw6umO4vBQTi2IXS2qfFaofAbe11j4Wc4YGooOJ5NGYqgxl1KdjvnUTg==}
+>>>>>>> fbf5de86d (feat(dev-toolbar): enhance dev-toolbar with Vite integration and new features)
     engines: {node: '>=20.19 <=25.*'}
     hasBin: true
     peerDependencies:
@@ -14141,12 +14219,17 @@ packages:
         optional: true
 
 <<<<<<< HEAD
+<<<<<<< HEAD
   '@visulima/rollup-plugin-css@1.0.0-alpha.16':
     resolution: {integrity: sha512-MB+dRhdNX48tdMmSi8yJZHAmuYhl9kjR+pmXj/wF+YyHsXeVWgkjQfwdinHhiPXhfzbrijtT7ybE7DSohvXu9A==}
 =======
   '@visulima/rollup-plugin-css@1.0.0-alpha.15':
     resolution: {integrity: sha512-TgWqdmP6wcOsd+QnWbEvhOHYSCSzyqLgiCY2NuIVN0jD3qJZc5pTbGcrqxnh4WTNQ395vk0rc8GrMgT/ecbU9w==}
 >>>>>>> 0bc977b44 (feat(dev-toolbar): add dev-toolbar package configuration and scripts)
+=======
+  '@visulima/rollup-plugin-css@1.0.0-alpha.16':
+    resolution: {integrity: sha512-MB+dRhdNX48tdMmSi8yJZHAmuYhl9kjR+pmXj/wF+YyHsXeVWgkjQfwdinHhiPXhfzbrijtT7ybE7DSohvXu9A==}
+>>>>>>> fbf5de86d (feat(dev-toolbar): enhance dev-toolbar with Vite integration and new features)
     engines: {node: '>=20.19 <=25.*'}
     peerDependencies:
       '@ckeditor/typedoc-plugins': '*'
@@ -28353,7 +28436,16 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+<<<<<<< HEAD
   '@babel/plugin-transform-react-jsx-development@7.27.1(@babel/core@7.29.0)':
+=======
+  '@babel/plugin-transform-react-display-name@7.28.0(@babel/core@7.28.5)':
+    dependencies:
+      '@babel/core': 7.28.5
+      '@babel/helper-plugin-utils': 7.27.1
+
+  '@babel/plugin-transform-react-jsx-development@7.27.1(@babel/core@7.28.5)':
+>>>>>>> fbf5de86d (feat(dev-toolbar): enhance dev-toolbar with Vite integration and new features)
     dependencies:
       '@babel/core': 7.29.0
       '@babel/plugin-transform-react-jsx': 7.27.1(@babel/core@7.29.0)
@@ -28381,7 +28473,17 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+<<<<<<< HEAD
   '@babel/plugin-transform-typescript@7.28.6(@babel/core@7.29.0)':
+=======
+  '@babel/plugin-transform-react-pure-annotations@7.27.1(@babel/core@7.28.5)':
+    dependencies:
+      '@babel/core': 7.28.5
+      '@babel/helper-annotate-as-pure': 7.27.3
+      '@babel/helper-plugin-utils': 7.27.1
+
+  '@babel/plugin-transform-typescript@7.28.5(@babel/core@7.28.5)':
+>>>>>>> fbf5de86d (feat(dev-toolbar): enhance dev-toolbar with Vite integration and new features)
     dependencies:
       '@babel/core': 7.29.0
       '@babel/helper-annotate-as-pure': 7.27.3
@@ -28392,7 +28494,23 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+<<<<<<< HEAD
   '@babel/preset-typescript@7.27.1(@babel/core@7.29.0)':
+=======
+  '@babel/preset-react@7.28.5(@babel/core@7.28.5)':
+    dependencies:
+      '@babel/core': 7.28.5
+      '@babel/helper-plugin-utils': 7.27.1
+      '@babel/helper-validator-option': 7.27.1
+      '@babel/plugin-transform-react-display-name': 7.28.0(@babel/core@7.28.5)
+      '@babel/plugin-transform-react-jsx': 7.27.1(@babel/core@7.28.5)
+      '@babel/plugin-transform-react-jsx-development': 7.27.1(@babel/core@7.28.5)
+      '@babel/plugin-transform-react-pure-annotations': 7.27.1(@babel/core@7.28.5)
+    transitivePeerDependencies:
+      - supports-color
+
+  '@babel/preset-typescript@7.27.1(@babel/core@7.28.5)':
+>>>>>>> fbf5de86d (feat(dev-toolbar): enhance dev-toolbar with Vite integration and new features)
     dependencies:
       '@babel/core': 7.29.0
       '@babel/helper-plugin-utils': 7.28.6
@@ -35839,6 +35957,7 @@ snapshots:
       - yaml
 
 <<<<<<< HEAD
+<<<<<<< HEAD
   '@visulima/packem-rollup@1.0.0-alpha.34(@babel/core@7.29.0)(@swc/core@1.15.11)(@types/node@25.2.3)(esbuild@0.27.3)(oxc-transform@0.112.0)(picomatch@4.0.3)(rolldown@1.0.0-beta.53)(rollup@4.57.1)(sucrase@3.35.0)(typescript@5.9.3)(yaml@2.8.2)':
     dependencies:
       '@babel/parser': 7.28.4
@@ -35891,6 +36010,9 @@ snapshots:
 =======
   '@visulima/packem-rollup@1.0.0-alpha.35(@babel/core@7.28.5)(@swc/core@1.13.5)(@types/node@25.0.3)(esbuild@0.27.2)(oxc-transform@0.102.0)(picomatch@4.0.3)(rolldown@1.0.0-beta.53)(rollup@4.54.0)(sucrase@3.35.0)(typescript@5.9.3)(yaml@2.8.2)':
 >>>>>>> 0bc977b44 (feat(dev-toolbar): add dev-toolbar package configuration and scripts)
+=======
+  '@visulima/packem-rollup@1.0.0-alpha.36(@babel/core@7.28.5)(@swc/core@1.13.5)(@types/node@25.0.3)(esbuild@0.27.2)(oxc-transform@0.102.0)(picomatch@4.0.3)(rolldown@1.0.0-beta.53)(rollup@4.54.0)(sucrase@3.35.0)(typescript@5.9.3)(yaml@2.8.2)':
+>>>>>>> fbf5de86d (feat(dev-toolbar): enhance dev-toolbar with Vite integration and new features)
     dependencies:
       '@babel/parser': 7.28.5
       '@rollup/plugin-alias': 6.0.0(rollup@4.54.0)
@@ -36156,6 +36278,7 @@ snapshots:
       - yaml
 
 <<<<<<< HEAD
+<<<<<<< HEAD
   '@visulima/packem@2.0.0-alpha.46(e9f815d71b3488fba1deaba91aa34d41)':
     dependencies:
       '@antfu/install-pkg': 1.1.0
@@ -36235,6 +36358,9 @@ snapshots:
 =======
   '@visulima/packem@2.0.0-alpha.47(b2d034aa0658e77054a9523857394be4)':
 >>>>>>> 0bc977b44 (feat(dev-toolbar): add dev-toolbar package configuration and scripts)
+=======
+  '@visulima/packem@2.0.0-alpha.48(b2d034aa0658e77054a9523857394be4)':
+>>>>>>> fbf5de86d (feat(dev-toolbar): enhance dev-toolbar with Vite integration and new features)
     dependencies:
       '@antfu/install-pkg': 1.1.0
       '@clack/prompts': 0.11.0
@@ -36257,12 +36383,16 @@ snapshots:
       '@visulima/rollup-plugin-css': 1.0.0-alpha.16(@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.0))(@csstools/css-tokenizer@4.0.0)(@csstools/postcss-slow-plugins@2.0.0(postcss@8.5.6))(@swc/core@1.15.11)(@tailwindcss/node@4.1.18)(@tailwindcss/oxide@4.1.18)(@types/node@25.2.3)(@visulima/css-style-inject@1.0.0-alpha.9)(cssnano@7.1.2(postcss@8.5.6))(esbuild@0.27.3)(icss-utils@5.1.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(oxc-transform@0.112.0)(postcss-load-config@6.0.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rollup@4.54.0)(sucrase@3.35.0)(typedoc-plugin-markdown@4.10.0(typedoc@0.28.17(typescript@5.9.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.17(typescript@5.9.3)))(typedoc@0.28.17(typescript@5.9.3))(typescript@5.9.3)(yaml@2.8.2)
 =======
       '@visulima/package': 4.1.7(@types/node@25.0.3)
-      '@visulima/packem-rollup': 1.0.0-alpha.35(@babel/core@7.28.5)(@swc/core@1.13.5)(@types/node@25.0.3)(esbuild@0.27.2)(oxc-transform@0.102.0)(picomatch@4.0.3)(rolldown@1.0.0-beta.53)(rollup@4.54.0)(sucrase@3.35.0)(typescript@5.9.3)(yaml@2.8.2)
+      '@visulima/packem-rollup': 1.0.0-alpha.36(@babel/core@7.28.5)(@swc/core@1.13.5)(@types/node@25.0.3)(esbuild@0.27.2)(oxc-transform@0.102.0)(picomatch@4.0.3)(rolldown@1.0.0-beta.53)(rollup@4.54.0)(sucrase@3.35.0)(typescript@5.9.3)(yaml@2.8.2)
       '@visulima/packem-share': 1.0.0-alpha.18(@types/node@25.0.3)(rollup@4.54.0)(yaml@2.8.2)
       '@visulima/pail': 3.2.2(@opentelemetry/api@1.9.0)(@visulima/redact@2.0.5)(rotating-file-stream@3.2.7)
       '@visulima/path': 2.0.5
+<<<<<<< HEAD
       '@visulima/rollup-plugin-css': 1.0.0-alpha.15(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@csstools/postcss-slow-plugins@2.0.0(postcss@8.5.6))(@swc/core@1.13.5)(@tailwindcss/node@4.1.18)(@tailwindcss/oxide@4.1.18)(@types/node@25.0.3)(@visulima/css-style-inject@1.0.0-alpha.9)(cssnano@7.1.2(postcss@8.5.6))(esbuild@0.27.2)(icss-utils@5.1.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(oxc-transform@0.102.0)(postcss-load-config@6.0.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rollup@4.54.0)(sucrase@3.35.0)(typedoc-plugin-markdown@4.9.0(typedoc@0.28.15(typescript@5.9.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.15(typescript@5.9.3)))(typedoc@0.28.15(typescript@5.9.3))(typescript@5.9.3)(yaml@2.8.2)
 >>>>>>> 0bc977b44 (feat(dev-toolbar): add dev-toolbar package configuration and scripts)
+=======
+      '@visulima/rollup-plugin-css': 1.0.0-alpha.16(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@csstools/postcss-slow-plugins@2.0.0(postcss@8.5.6))(@swc/core@1.13.5)(@tailwindcss/node@4.1.18)(@tailwindcss/oxide@4.1.18)(@types/node@25.0.3)(@visulima/css-style-inject@1.0.0-alpha.9)(cssnano@7.1.2(postcss@8.5.6))(esbuild@0.27.2)(icss-utils@5.1.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(oxc-transform@0.102.0)(postcss-load-config@6.0.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rollup@4.54.0)(sucrase@3.35.0)(typedoc-plugin-markdown@4.9.0(typedoc@0.28.15(typescript@5.9.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.15(typescript@5.9.3)))(typedoc@0.28.15(typescript@5.9.3))(typescript@5.9.3)(yaml@2.8.2)
+>>>>>>> fbf5de86d (feat(dev-toolbar): enhance dev-toolbar with Vite integration and new features)
       '@visulima/source-map': 2.0.5
       '@visulima/tabular': 3.1.3
       '@visulima/tsconfig': 2.1.3(yaml@2.8.2)
@@ -36503,7 +36633,7 @@ snapshots:
       - '@types/node'
       - yaml
 
-  '@visulima/rollup-plugin-css@1.0.0-alpha.15(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@csstools/postcss-slow-plugins@2.0.0(postcss@8.5.6))(@swc/core@1.13.5)(@tailwindcss/node@4.1.18)(@tailwindcss/oxide@4.1.18)(@types/node@25.0.3)(@visulima/css-style-inject@1.0.0-alpha.9)(cssnano@7.1.2(postcss@8.5.6))(esbuild@0.27.2)(icss-utils@5.1.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(oxc-transform@0.102.0)(postcss-load-config@6.0.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rollup@4.54.0)(sucrase@3.35.0)(typedoc-plugin-markdown@4.9.0(typedoc@0.28.15(typescript@5.9.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.15(typescript@5.9.3)))(typedoc@0.28.15(typescript@5.9.3))(typescript@5.9.3)(yaml@2.8.2)':
+  '@visulima/rollup-plugin-css@1.0.0-alpha.16(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)(@csstools/postcss-slow-plugins@2.0.0(postcss@8.5.6))(@swc/core@1.13.5)(@tailwindcss/node@4.1.18)(@tailwindcss/oxide@4.1.18)(@types/node@25.0.3)(@visulima/css-style-inject@1.0.0-alpha.9)(cssnano@7.1.2(postcss@8.5.6))(esbuild@0.27.2)(icss-utils@5.1.0(postcss@8.5.6))(less@4.4.2)(lightningcss@1.30.2)(oxc-transform@0.102.0)(postcss-load-config@6.0.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2))(postcss-modules-extract-imports@3.1.0(postcss@8.5.6))(postcss-modules-local-by-default@4.2.0(postcss@8.5.6))(postcss-modules-scope@3.2.1(postcss@8.5.6))(postcss-modules-values@4.0.0(postcss@8.5.6))(postcss-value-parser@4.2.0)(postcss@8.5.6)(rollup@4.54.0)(sucrase@3.35.0)(typedoc-plugin-markdown@4.9.0(typedoc@0.28.15(typescript@5.9.3)))(typedoc-plugin-rename-defaults@0.7.3(typedoc@0.28.15(typescript@5.9.3)))(typedoc@0.28.15(typescript@5.9.3))(typescript@5.9.3)(yaml@2.8.2)':
     dependencies:
       '@csstools/css-parser-algorithms': 3.0.5(@csstools/css-tokenizer@3.0.4)
       '@csstools/css-tokenizer': 3.0.4
@@ -39738,7 +39868,11 @@ snapshots:
       eslint: 8.57.0
       eslint-plugin-react: 7.37.5(eslint@8.57.0)
 
+<<<<<<< HEAD
   eslint-config-standard@17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.55.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(eslint@8.57.0))(eslint-plugin-n@15.7.0(eslint@8.57.0))(eslint-plugin-promise@6.4.0(eslint@8.57.0))(eslint@8.57.0):
+=======
+  eslint-config-standard@17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.50.1(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3))(eslint@8.57.0))(eslint-plugin-n@15.7.0(eslint@9.39.2(jiti@2.6.1)))(eslint-plugin-promise@6.4.0(eslint@9.39.2(jiti@2.6.1)))(eslint@8.57.0):
+>>>>>>> fbf5de86d (feat(dev-toolbar): enhance dev-toolbar with Vite integration and new features)
     dependencies:
       eslint: 8.57.0
       eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.55.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(eslint@10.0.0(jiti@2.6.1))
@@ -49294,11 +49428,15 @@ snapshots:
     dependencies:
       eslint: 8.57.0
 <<<<<<< HEAD
+<<<<<<< HEAD
       eslint-config-standard: 17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.55.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(eslint@8.57.0))(eslint-plugin-n@15.7.0(eslint@8.57.0))(eslint-plugin-promise@6.4.0(eslint@8.57.0))(eslint@8.57.0)
       eslint-config-standard-jsx: 11.0.0(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint@8.57.0)
       eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.55.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(eslint@10.0.0(jiti@2.6.1))
 =======
       eslint-config-standard: 17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.50.1(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3))(eslint@8.57.0))(eslint-plugin-n@15.7.0(eslint@8.57.0))(eslint-plugin-promise@6.4.0(eslint@8.57.0))(eslint@8.57.0)
+=======
+      eslint-config-standard: 17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.50.1(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3))(eslint@8.57.0))(eslint-plugin-n@15.7.0(eslint@9.39.2(jiti@2.6.1)))(eslint-plugin-promise@6.4.0(eslint@9.39.2(jiti@2.6.1)))(eslint@8.57.0)
+>>>>>>> fbf5de86d (feat(dev-toolbar): enhance dev-toolbar with Vite integration and new features)
       eslint-config-standard-jsx: 11.0.0(eslint-plugin-react@7.37.5(eslint@9.39.2(jiti@2.6.1)))(eslint@8.57.0)
       eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.50.1(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.2(jiti@2.6.1))
 >>>>>>> 0bc977b44 (feat(dev-toolbar): add dev-toolbar package configuration and scripts)
