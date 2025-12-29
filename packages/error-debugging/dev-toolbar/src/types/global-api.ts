@@ -1,111 +1,111 @@
-import type { DevToolbarApp, ToolbarSettings } from './app.js';
-import type { ServerFunctions } from './rpc.js';
-import type { DevToolbarHook } from './hooks.js';
+import type { DevToolbarApp, ToolbarSettings } from "./app";
+import type { DevToolbarHook } from "./hooks";
+import type { ServerFunctions } from "./rpc";
 
 /**
  * Global DevTools API interface
  * Exposed as window.__VISULIMA_DEVTOOLS__
  */
 export interface VisulimaDevTools {
-  /**
-   * Show the toolbar
-   */
-  show(): void;
+    /**
+     * Clear notification for an app
+     * @param appId App ID
+     */
+    clearNotification: (appId: string) => void;
 
-  /**
-   * Hide the toolbar
-   */
-  hide(): void;
+    /**
+     * Close the currently active app
+     */
+    closeApp: () => Promise<void>;
 
-  /**
-   * Toggle toolbar visibility
-   */
-  toggle(): void;
+    /**
+     * Get the currently active app ID
+     * @returns Active app ID or null
+     */
+    getActiveApp: () => string | null;
 
-  /**
-   * Open an app
-   * @param appId - App ID to open
-   */
-  openApp(appId: string): Promise<void>;
+    /**
+     * Get all registered apps
+     * @returns Array of app definitions
+     */
+    getApps: () => DevToolbarApp[];
 
-  /**
-   * Close the currently active app
-   */
-  closeApp(): Promise<void>;
+    /**
+     * Get current toolbar settings
+     * @returns Toolbar settings
+     */
+    getSettings: () => ToolbarSettings;
 
-  /**
-   * Get the currently active app ID
-   * @returns Active app ID or null
-   */
-  getActiveApp(): string | null;
+    /**
+     * Hide the toolbar
+     */
+    hide: () => void;
 
-  /**
-   * Register a custom app
-   * @param app - App definition
-   */
-  registerApp(app: DevToolbarApp): void;
+    /**
+     * Hook instance for event subscriptions
+     */
+    hook: DevToolbarHook;
 
-  /**
-   * Unregister an app
-   * @param appId - App ID to unregister
-   */
-  unregisterApp(appId: string): void;
+    /**
+     * Show a notification for an app
+     * @param appId App ID
+     * @param level Notification level
+     */
+    notify: (appId: string, level: "info" | "warning" | "error") => void;
 
-  /**
-   * Get all registered apps
-   * @returns Array of app definitions
-   */
-  getApps(): DevToolbarApp[];
+    /**
+     * Open an app
+     * @param appId App ID to open
+     */
+    openApp: (appId: string) => Promise<void>;
 
-  /**
-   * Show a notification for an app
-   * @param appId - App ID
-   * @param level - Notification level
-   */
-  notify(appId: string, level: 'info' | 'warning' | 'error'): void;
+    /**
+     * Register a custom app
+     * @param app App definition
+     */
+    registerApp: (app: DevToolbarApp) => void;
 
-  /**
-   * Clear notification for an app
-   * @param appId - App ID
-   */
-  clearNotification(appId: string): void;
+    /**
+     * RPC client for calling server functions
+     */
+    rpc: ServerFunctions;
 
-  /**
-   * Get current toolbar settings
-   * @returns Toolbar settings
-   */
-  getSettings(): ToolbarSettings;
+    /**
+     * Show the toolbar
+     */
+    show: () => void;
 
-  /**
-   * Update toolbar settings
-   * @param settings - Partial settings to update
-   */
-  updateSettings(settings: Partial<ToolbarSettings>): void;
+    /**
+     * Toggle toolbar visibility
+     */
+    toggle: () => void;
 
-  /**
-   * RPC client for calling server functions
-   */
-  rpc: ServerFunctions;
+    /**
+     * Unregister an app
+     * @param appId App ID to unregister
+     */
+    unregisterApp: (appId: string) => void;
 
-  /**
-   * Hook instance for event subscriptions
-   */
-  hook: DevToolbarHook;
+    /**
+     * Update toolbar settings
+     * @param settings Partial settings to update
+     */
+    updateSettings: (settings: Partial<ToolbarSettings>) => void;
 
-  /**
-   * Package version
-   */
-  version: string;
+    /**
+     * Package version
+     */
+    version: string;
 }
 
 /**
  * Global API declaration
  */
 declare global {
-  interface Window {
-    /**
-     * Visulima DevTools global API
-     */
-    __VISULIMA_DEVTOOLS__?: VisulimaDevTools;
-  }
+    interface Window {
+        /**
+         * Visulima DevTools global API
+         */
+        __VISULIMA_DEVTOOLS__?: VisulimaDevTools;
+    }
 }

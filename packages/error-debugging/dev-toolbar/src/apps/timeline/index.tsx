@@ -3,19 +3,20 @@
  * This is a placeholder - will be implemented with Preact components
  */
 
-import type { DevToolbarApp } from '../../types/app.js';
-import { TIMELINE_ICON } from '../../ui/icons/index.js';
+import type { DevToolbarApp } from "../../types/app";
+import { TIMELINE_ICON } from "../../ui/icons/index";
 
 export const timelineApp: DevToolbarApp = {
-  id: 'dev-toolbar:timeline',
-  name: 'Timeline',
-  icon: TIMELINE_ICON,
-  init(canvas, eventTarget, helpers) {
-    // TODO: Implement timeline viewer with Preact
-    const content = document.createElement('div');
-    content.innerHTML = '<h2>Timeline</h2><p>Timeline viewer coming soon...</p>';
-    content.style.padding = '16px';
-    content.style.color = 'white';
-    canvas.appendChild(content);
-  },
+    icon: TIMELINE_ICON,
+    id: "dev-toolbar:timeline",
+    init(canvas, eventTarget, helpers) {
+        // Tailwind styles are already injected by the toolbar
+        // TODO: Implement timeline viewer with Preact
+        const content = document.createElement("div");
+
+        content.className = "p-4 text-white";
+        content.innerHTML = "<h2 class=\"text-xl font-semibold mb-2\">Timeline</h2><p class=\"text-sm text-gray-300\">Timeline viewer coming soon...</p>";
+        canvas.append(content);
+    },
+    name: "Timeline",
 };

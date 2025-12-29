@@ -1,435 +1,436 @@
-import type { DevToolbarApp, DevToolbarAppState, ToolbarPlacement } from '../types/index.js';
-import { AppManager } from './app-manager.js';
-import { loadSettings, updateSettings } from './settings.js';
-import { createGlobalAPI, setupGlobalAPI } from './global-api.js';
-import { setupGlobalHook } from '../hooks/index.js';
-import { getTimelineStore } from '../timeline/index.js';
+/* eslint-disable import/exports-last, max-classes-per-file, import/prefer-default-export */
+import { setupGlobalHook } from "../hooks/index";
+import { getTimelineStore } from "../timeline/index";
+import type { DevToolbarApp, DevToolbarAppState, ToolbarPlacement } from "../types/index";
+import toolbarStylesRaw from "../ui/styles/main.css" with { type: "css" };
+import cn from "../utils/cn";
+import { AppManager } from "./app-manager";
+import { createGlobalAPI, setupGlobalAPI } from "./global-api";
+import { createServerHelpers } from "./helpers";
+import { loadSettings } from "./settings";
 
 const HOVER_DELAY = 2000; // 2 seconds
 const DEVBAR_HITBOX_ABOVE = 42;
+
+// CSS imports are inlined as strings by packem with mode: "inline"
+const toolbarStyles = toolbarStylesRaw as string;
+
+/**
+ * Shared stylesheet for all shadow roots.
+ * Created once and reused across all shadow roots to avoid CSS duplication.
+ */
+const createSharedStylesheet = (): CSSStyleSheet | undefined => {
+    if (globalThis.window === undefined) {
+        return undefined;
+    }
+
+    const sheet = new CSSStyleSheet();
+
+    sheet.replaceSync(toolbarStyles);
+
+    return sheet;
+};
+
+const sharedToolbarStylesheet = createSharedStylesheet();
 
 /**
  * Dev Toolbar Web Component
  */
 export class DevToolbar extends HTMLElement {
-  private shadowRoot: ShadowRoot;
-  private appManager: AppManager;
-  private delayedHideTimeout: number | undefined;
-  private devToolbarContainer: HTMLDivElement | undefined;
-  private hasBeenInitialized = false;
-  private customAppsToShow = 3;
+    private override shadowRoot: ShadowRoot;
 
-  constructor() {
-    super();
-    this.shadowRoot = this.attachShadow({ mode: 'open' });
-    this.appManager = new AppManager();
-  }
+    private appManager: AppManager;
 
-  /**
-   * Initialize the toolbar
-   */
-  init(): void {
-    if (this.hasBeenInitialized) {
-      return;
+    private delayedHideTimeout: number | undefined;
+
+    private devToolbarContainer: HTMLDivElement | undefined;
+
+    private hasBeenInitialized = false;
+
+    private customAppsToShow = 3;
+
+    public constructor() {
+        super();
+        this.shadowRoot = this.attachShadow({ mode: "open" });
+        this.appManager = new AppManager();
     }
 
-    this.hasBeenInitialized = true;
+    /**
+     * Initialize the toolbar.
+     */
+    public init(): void {
+        if (this.hasBeenInitialized) {
+            return;
+        }
 
-    // Register built-in apps (will be imported dynamically)
-    // For now, apps are registered externally via the plugin
+        this.hasBeenInitialized = true;
 
-    // Setup global hook
-    const hook = setupGlobalHook(
-      (app) => {
-        this.appManager.registerApp(app);
+        // Register built-in apps (will be imported dynamically)
+        // For now, apps are registered externally via the plugin
+
+        // Setup global hook
+        const hook = setupGlobalHook(
+            (app) => {
+                this.appManager.registerApp(app);
+                this.render();
+            },
+            (groupId, event) => {
+                const timelineStore = getTimelineStore();
+
+                timelineStore.addEvent(groupId, event);
+            },
+        );
+
+        // Setup global API
+        const api = createGlobalAPI(
+            {
+                clearNotification: (id) => {
+                    this.appManager.clearNotification(id);
+                    this.render();
+                },
+                getActiveApp: () => this.appManager.getActiveApp(),
+                getApps: () => this.appManager.getAllApps(),
+                registerApp: (app) => {
+                    this.appManager.registerApp(app);
+                    this.render();
+                },
+                setNotification: (id, state, level) => {
+                    this.appManager.setNotification(id, state, level);
+                    this.render();
+                },
+                toggleApp: (id) => this.appManager.toggleApp(id),
+                unregisterApp: (id) => {
+                    this.appManager.unregisterApp(id);
+                    this.render();
+                },
+            },
+            {
+                hide: () => this.setToolbarVisible(false),
+                show: () => this.setToolbarVisible(true),
+                toggle: () => {
+                    const isHidden = this.isHidden();
+
+                    this.setToolbarVisible(!isHidden);
+                },
+            },
+        );
+
+        setupGlobalAPI(api);
+
+        // Emit init event
+        hook.emit("devtools:init");
+
+        // Render initial UI
         this.render();
-      },
-      (groupId, event) => {
-        const timelineStore = getTimelineStore();
-        timelineStore.addEvent(groupId, event);
-      },
-    );
 
-    // Setup global API
-    const api = createGlobalAPI(
-      {
-        getApps: () => this.appManager.getAllApps(),
-        getActiveApp: () => this.appManager.getActiveApp(),
-        toggleApp: (id) => this.appManager.toggleApp(id),
-        registerApp: (app) => {
-          this.appManager.registerApp(app);
-          this.render();
-        },
-        unregisterApp: (id) => {
-          this.appManager.unregisterApp(id);
-          this.render();
-        },
-        setNotification: (id, state, level) => {
-          this.appManager.setNotification(id, state, level);
-          this.render();
-        },
-        clearNotification: (id) => {
-          this.appManager.clearNotification(id);
-          this.render();
-        },
-      },
-      {
-        show: () => this.setToolbarVisible(true),
-        hide: () => this.setToolbarVisible(false),
-        toggle: () => {
-          const isHidden = this.isHidden();
-          this.setToolbarVisible(!isHidden);
-        },
-      },
-    );
+        // Setup event listeners
+        this.setupEventListeners();
 
-    setupGlobalAPI(api);
+        // Load settings and apply
+        const settings = loadSettings();
 
-    // Emit init event
-    hook.emit('devtools:init');
+        this.setToolbarPlacement(settings.placement);
 
-    // Render initial UI
-    this.render();
-
-    // Setup event listeners
-    this.setupEventListeners();
-
-    // Load settings and apply
-    const settings = loadSettings();
-    this.setToolbarPlacement(settings.placement);
-    if (settings.defaultVisible) {
-      this.setToolbarVisible(true);
+        if (settings.defaultVisible) {
+            this.setToolbarVisible(true);
+        }
     }
-  }
 
-  /**
-   * Render the toolbar UI
-   */
-  private render(): void {
-    const apps = this.appManager.getAllApps();
-    const builtInApps = apps.filter((app) => app.builtIn);
-    const customApps = apps.filter((app) => !app.builtIn);
-    const visibleApps = [...builtInApps, ...customApps.slice(0, this.customAppsToShow)];
-    const overflowApps = customApps.slice(this.customAppsToShow);
+    /**
+     * Check if toolbar is hidden.
+     */
+    public isHidden(): boolean {
+        return this.devToolbarContainer?.hasAttribute("data-hidden") ?? true;
+    }
 
-    this.shadowRoot.innerHTML = `
+    /**
+     * Set toolbar visibility.
+     */
+    public setToolbarVisible(visible: boolean): void {
+        if (visible) {
+            this.devToolbarContainer?.removeAttribute("data-hidden");
+        } else {
+            this.devToolbarContainer?.setAttribute("data-hidden", "");
+        }
+    }
+
+    /**
+     * Register an app.
+     */
+    public registerApp(app: DevToolbarApp, builtIn = false): void {
+        this.appManager.registerApp(app, builtIn);
+        this.render();
+    }
+
+    /**
+     * Get app manager (for external access).
+     */
+    public getAppManager(): AppManager {
+        return this.appManager;
+    }
+
+    /**
+     * Render the toolbar UI
+     */
+    private render(): void {
+        const apps = this.appManager.getAllApps();
+        const builtInApps = apps.filter((app) => app.builtIn);
+        const customApps = apps.filter((app) => !app.builtIn);
+        const visibleApps = [...builtInApps, ...customApps.slice(0, this.customAppsToShow)];
+        const overflowApps = customApps.slice(this.customAppsToShow);
+
+        const settings = loadSettings();
+        const placement = this.devToolbarContainer?.dataset.placement || settings.placement || "bottom-center";
+        const isHidden = this.isHidden();
+
+        // Adopt shared stylesheet for Tailwind CSS
+        if (sharedToolbarStylesheet) {
+            this.shadowRoot.adoptedStyleSheets = [sharedToolbarStylesheet];
+        }
+
+        this.shadowRoot.innerHTML = `
       <style>
         :host {
           all: initial;
           z-index: 999999;
           display: contents;
         }
-
         @media print {
           :host {
             display: none;
           }
         }
-
-        #dev-toolbar-root {
-          position: fixed;
-          bottom: 0px;
-          z-index: 2000000010;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          transition: bottom 0.35s cubic-bezier(0.485, -0.050, 0.285, 1.505);
-          pointer-events: none;
-        }
-
-        #dev-toolbar-root[data-hidden] {
-          bottom: -40px;
-        }
-
-        #dev-toolbar-root[data-placement="bottom-left"] {
-          left: 16px;
-        }
-        #dev-toolbar-root[data-placement="bottom-center"] {
-          left: 50%;
-          transform: translateX(-50%);
-        }
-        #dev-toolbar-root[data-placement="bottom-right"] {
-          right: 16px;
-        }
-
-        #dev-bar-hitbox-above,
-        #dev-bar-hitbox-below {
-          width: 100%;
-          pointer-events: auto;
-        }
-        #dev-bar-hitbox-above {
-          height: ${DEVBAR_HITBOX_ABOVE}px;
-        }
-        #dev-bar-hitbox-below {
-          height: 16px;
-        }
-
-        #dev-bar {
-          height: 40px;
-          overflow: hidden;
-          pointer-events: auto;
-          background: linear-gradient(180deg, #13151A 0%, rgba(19, 21, 26, 0.88) 100%);
-          border: 1px solid #343841;
-          border-radius: 9999px;
-          box-shadow: 0px 0px 0px 0px rgba(19, 21, 26, 0.30), 0px 1px 2px 0px rgba(19, 21, 26, 0.29), 0px 4px 4px 0px rgba(19, 21, 26, 0.26), 0px 10px 6px 0px rgba(19, 21, 26, 0.15), 0px 17px 7px 0px rgba(19, 21, 26, 0.04), 0px 26px 7px 0px rgba(19, 21, 26, 0.01);
-        }
-
-        #dev-bar .item {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          width: 44px;
-          border: 0;
-          background: transparent;
-          color: white;
-          font-family: system-ui, sans-serif;
-          font-size: 1rem;
-          line-height: 1.2;
-          white-space: nowrap;
-          text-decoration: none;
-          padding: 0;
-          margin: 0;
-          overflow: hidden;
-          transition: opacity 0.2s ease-out 0s;
-          cursor: pointer;
-        }
-
-        #dev-bar .item:hover,
-        #dev-bar .item:focus-visible {
-          background: rgba(255, 255, 255, 0.125);
-          outline-offset: -3px;
-        }
-
-        #dev-bar .item.active {
-          background: rgba(71, 78, 94, 1);
-        }
-
-        #dev-bar .item .icon {
-          position: relative;
-          max-width: 20px;
-          max-height: 20px;
-          user-select: none;
-        }
-
-        #dev-bar .item .icon > svg {
-          width: 20px;
-          height: 20px;
-          display: block;
-          margin: auto;
-        }
-
-        #dev-bar .item .notification {
-          display: none;
-          position: absolute;
-          top: -4px;
-          right: -6px;
-          width: 10px;
-          height: 10px;
-          border-radius: 50%;
-          background: #EF4444;
-        }
-
-        #dev-bar .item .notification[data-active] {
-          display: block;
-        }
-
-        #dev-bar #bar-container {
-          height: 100%;
-          display: flex;
-        }
       </style>
-      <div id="dev-toolbar-root" data-placement="bottom-center">
-        <div id="dev-bar-hitbox-above"></div>
-        <div id="dev-bar">
-          <div id="bar-container">
-            ${visibleApps.map((app) => this.getAppTemplate(app)).join('')}
-            ${overflowApps.length > 0 ? this.getMoreAppTemplate() : ''}
+      <div
+        id="dev-toolbar-root"
+        data-placement="${placement}"
+        ${isHidden ? "data-hidden" : ""}
+        class="${cn(
+            "fixed bottom-0 z-[2000000010] flex flex-col items-center transition-all duration-350 ease-[cubic-bezier(0.485,-0.050,0.285,1.505)] pointer-events-none",
+            placement === "bottom-left" && "left-4",
+            placement === "bottom-center" && "left-1/2 -translate-x-1/2",
+            placement === "bottom-right" && "right-4",
+            isHidden && "-bottom-10",
+        )}"
+      >
+        <div
+          id="dev-bar-hitbox-above"
+          class="w-full pointer-events-auto"
+          style="height: ${DEVBAR_HITBOX_ABOVE}px"
+        ></div>
+        <div
+          id="dev-bar"
+          class="h-10 overflow-hidden pointer-events-auto border border-[#343841] rounded-lg"
+        >
+          <div id="bar-container" class="h-full flex">
+            ${visibleApps.map((app) => this.getAppTemplate(app)).join("")}
+            ${overflowApps.length > 0 ? this.getMoreAppTemplate() : ""}
           </div>
         </div>
-        <div id="dev-bar-hitbox-below"></div>
+        <div id="dev-bar-hitbox-below" class="w-full h-4 pointer-events-auto"></div>
       </div>
-      ${apps.map((app) => this.getAppCanvasTemplate(app)).join('')}
+      ${apps.map((app) => this.getAppCanvasTemplate(app)).join("")}
     `;
 
-    this.devToolbarContainer = this.shadowRoot.querySelector<HTMLDivElement>('#dev-toolbar-root')!;
+        this.devToolbarContainer = this.shadowRoot.querySelector<HTMLDivElement>("#dev-toolbar-root")!;
 
-    // Setup app button click handlers
-    for (const app of apps) {
-      const button = this.shadowRoot.querySelector(`[data-app-id="${app.id}"]`);
-      if (button) {
-        button.addEventListener('click', () => {
-          this.appManager.toggleApp(app.id).then(() => {
-            this.render();
-          });
-        });
-      }
+        // Setup app button click handlers and canvases
+        for (const app of apps) {
+            const button = this.shadowRoot.querySelector(`[data-app-id="${app.id}"]`);
 
-      // Setup app canvas with shadow root
-      const canvas = this.shadowRoot.querySelector(`dev-toolbar-app-canvas[data-app-id="${app.id}"]`);
-      if (canvas && !(canvas as any).shadowRoot) {
-        const shadowRoot = (canvas as HTMLElement).attachShadow({ mode: 'open' });
-        // Store shadow root reference for app initialization
-        (this.appManager as any).setAppCanvas(app.id, { shadowRoot, element: canvas });
-      }
+            if (button) {
+                button.addEventListener("click", () => {
+                    this.appManager.toggleApp(app.id).then(() => {
+                        this.render();
+                    });
+                });
+            }
+
+            // Setup app canvas reference - the custom element already has a shadow root
+            const canvas = this.shadowRoot.querySelector(`dev-toolbar-app-canvas[data-app-id="${app.id}"]`) as HTMLElement | null;
+
+            if (canvas && canvas.shadowRoot) {
+                // Store shadow root reference for app initialization
+                this.appManager.setAppCanvas(app.id, { element: canvas, shadowRoot: canvas.shadowRoot });
+
+                // Initialize app if it's active
+                // Note: We must reinitialize on every render since innerHTML destroys previous content
+                if (app.active) {
+                    this.initializeApp(app.id, canvas.shadowRoot);
+                }
+            }
+        }
     }
-  }
 
-  /**
-   * Get app button template
-   */
-  private getAppTemplate(app: DevToolbarAppState): string {
-    const activeClass = app.active ? 'active' : '';
-    const notificationBadge = app.notification.state
-      ? `<span class="notification" data-active data-level="${app.notification.level || 'info'}"></span>`
-      : '';
+    /**
+     * Initialize an app's content in its canvas.
+     */
+    private async initializeApp(appId: string, shadowRoot: ShadowRoot): Promise<void> {
+        const app = this.appManager.getApp(appId);
 
-    return `
-      <button class="item ${activeClass}" data-app-id="${app.id}">
-        <div class="icon">
-          ${app.icon}
+        if (!app || !app.init) {
+            return;
+        }
+
+        try {
+            // Clear previous content (since render() recreates elements)
+            shadowRoot.innerHTML = "";
+
+            // Adopt shared stylesheet for Tailwind CSS
+            if (sharedToolbarStylesheet) {
+                shadowRoot.adoptedStyleSheets = [sharedToolbarStylesheet];
+            }
+
+            const helpers = createServerHelpers();
+
+            await app.init(shadowRoot, app.eventTarget, helpers);
+            this.appManager.markAppInitialized(appId);
+        } catch (error) {
+            console.error(`[dev-toolbar] Failed to init app ${appId}:`, error);
+        }
+    }
+
+    /**
+     * Get app button template
+     */
+    // eslint-disable-next-line class-methods-use-this
+    private getAppTemplate(app: DevToolbarAppState): string {
+        const notificationBadge = app.notification.state
+            ? `<span class="absolute -top-1 -right-1.5 w-2.5 h-2.5 rounded-full bg-red-500 ${app.notification.state ? "block" : "hidden"}" data-level="${app.notification.level || "info"}"></span>`
+            : "";
+
+        return `
+      <button
+        class="${cn(
+            "flex justify-center items-center w-11 border-0 bg-transparent text-white font-sans text-base leading-tight whitespace-nowrap no-underline p-0 m-0 overflow-hidden transition-opacity duration-200 ease-out cursor-pointer",
+            "hover:bg-white/12.5 focus-visible:bg-white/12.5 focus-visible:-outline-offset-3",
+            app.active && "bg-[rgba(71,78,94,1)]",
+        )}"
+        data-app-id="${app.id}"
+      >
+        <div class="relative max-w-5 max-h-5 select-none">
+          <div class="w-5 h-5 block m-auto">${app.icon}</div>
           ${notificationBadge}
         </div>
       </button>
     `;
-  }
+    }
 
-  /**
-   * Get "more apps" button template
-   */
-  private getMoreAppTemplate(): string {
-    return `
-      <button class="item" data-app-id="dev-toolbar:more">
-        <div class="icon">⋯</div>
+    /**
+     * Get "more apps" button template
+     */
+    // eslint-disable-next-line class-methods-use-this
+    private getMoreAppTemplate(): string {
+        return `
+      <button
+        class="flex justify-center items-center w-11 border-0 bg-transparent text-white font-sans text-base leading-tight whitespace-nowrap no-underline p-0 m-0 overflow-hidden transition-opacity duration-200 ease-out cursor-pointer hover:bg-white/12.5 focus-visible:bg-white/12.5 focus-visible:-outline-offset-3"
+        data-app-id="dev-toolbar:more"
+      >
+        <div class="relative max-w-5 max-h-5 select-none">⋯</div>
       </button>
     `;
-  }
+    }
 
-  /**
-   * Get app canvas template
-   */
-  private getAppCanvasTemplate(app: DevToolbarAppState): string {
-    const displayStyle = app.active ? 'block' : 'none';
-    // Create shadow DOM for app isolation
-    return `
-      <dev-toolbar-app-canvas data-app-id="${app.id}" style="display: ${displayStyle}; position: fixed; bottom: 60px; left: 50%; transform: translateX(-50%); z-index: 2000000009; background: rgba(19, 21, 26, 0.95); border: 1px solid #343841; border-radius: 8px; padding: 16px; min-width: 300px; max-width: 600px; max-height: 400px; overflow: auto;"></dev-toolbar-app-canvas>
+    /**
+     * Get app canvas template.
+     */
+    // eslint-disable-next-line class-methods-use-this
+    private getAppCanvasTemplate(app: DevToolbarAppState): string {
+        return `
+      <dev-toolbar-app-canvas
+        data-app-id="${app.id}"
+        class="${cn(
+            "fixed bottom-[60px] left-1/2 -translate-x-1/2 z-[2000000009] bg-[rgba(19,21,26,0.95)] border border-[#343841] rounded-lg p-4 min-w-[300px] max-w-[600px] max-h-[400px] overflow-auto",
+            app.active ? "block" : "hidden",
+        )}"
+      ></dev-toolbar-app-canvas>
     `;
-  }
+    }
 
-  /**
-   * Setup event listeners
-   */
-  private setupEventListeners(): void {
-    // Auto-hide on mouse leave
-    if (this.devToolbarContainer) {
-      this.devToolbarContainer.addEventListener('mouseenter', () => {
-        this.clearDelayedHide();
-      });
+    /**
+     * Setup event listeners.
+     */
+    private setupEventListeners(): void {
+        // Auto-hide on mouse leave
+        if (this.devToolbarContainer) {
+            this.devToolbarContainer.addEventListener("mouseenter", () => {
+                this.clearDelayedHide();
+            });
 
-      this.devToolbarContainer.addEventListener('mouseleave', () => {
-        if (!this.appManager.getActiveApp() && !this.isHidden()) {
-          this.triggerDelayedHide();
+            this.devToolbarContainer.addEventListener("mouseleave", () => {
+                if (!this.appManager.getActiveApp() && !this.isHidden()) {
+                    this.triggerDelayedHide();
+                }
+            });
         }
-      });
-    }
 
-    // Keyboard shortcuts
-    document.addEventListener('keyup', (event) => {
-      if (event.key !== 'Escape') {
-        return;
-      }
-      if (this.isHidden()) {
-        return;
-      }
+        // Keyboard shortcuts
+        document.addEventListener("keyup", (event) => {
+            if (event.key !== "Escape") {
+                return;
+            }
 
-      const activeApp = this.appManager.getActiveApp();
-      if (activeApp) {
-        this.appManager.toggleApp(activeApp.id).then(() => {
-          this.render();
+            if (this.isHidden()) {
+                return;
+            }
+
+            const activeApp = this.appManager.getActiveApp();
+
+            if (activeApp) {
+                this.appManager.toggleApp(activeApp.id).then(() => {
+                    this.render();
+                });
+            } else {
+                this.setToolbarVisible(false);
+            }
         });
-      } else {
-        this.setToolbarVisible(false);
-      }
-    });
-  }
-
-  /**
-   * Check if toolbar is hidden
-   */
-  isHidden(): boolean {
-    return this.devToolbarContainer?.hasAttribute('data-hidden') ?? true;
-  }
-
-  /**
-   * Set toolbar visibility
-   */
-  setToolbarVisible(visible: boolean): void {
-    if (visible) {
-      this.devToolbarContainer?.removeAttribute('data-hidden');
-    } else {
-      this.devToolbarContainer?.setAttribute('data-hidden', '');
     }
-  }
 
-  /**
-   * Set toolbar placement
-   */
-  setToolbarPlacement(placement: ToolbarPlacement): void {
-    this.devToolbarContainer?.setAttribute('data-placement', placement);
-  }
-
-  /**
-   * Clear delayed hide timeout
-   */
-  private clearDelayedHide(): void {
-    if (this.delayedHideTimeout !== undefined) {
-      window.clearTimeout(this.delayedHideTimeout);
-      this.delayedHideTimeout = undefined;
+    /**
+     * Set toolbar placement.
+     */
+    private setToolbarPlacement(placement: ToolbarPlacement): void {
+        this.devToolbarContainer?.setAttribute("data-placement", placement);
     }
-  }
 
-  /**
-   * Trigger delayed hide
-   */
-  private triggerDelayedHide(): void {
-    this.clearDelayedHide();
-    this.delayedHideTimeout = window.setTimeout(() => {
-      this.setToolbarVisible(false);
-      this.delayedHideTimeout = undefined;
-    }, HOVER_DELAY);
-  }
+    /**
+     * Clear delayed hide timeout
+     */
+    private clearDelayedHide(): void {
+        if (this.delayedHideTimeout !== undefined) {
+            globalThis.clearTimeout(this.delayedHideTimeout);
+            this.delayedHideTimeout = undefined;
+        }
+    }
 
-  /**
-   * Register an app
-   */
-  registerApp(app: DevToolbarApp, builtIn = false): void {
-    this.appManager.registerApp(app, builtIn);
-    this.render();
-  }
-
-  /**
-   * Get app manager (for external access)
-   */
-  getAppManager(): AppManager {
-    return this.appManager;
-  }
+    /**
+     * Trigger delayed hide.
+     */
+    private triggerDelayedHide(): void {
+        this.clearDelayedHide();
+        this.delayedHideTimeout = globalThis.setTimeout(() => {
+            this.setToolbarVisible(false);
+            this.delayedHideTimeout = undefined;
+        }, HOVER_DELAY);
+    }
 }
 
 // Register custom elements
-if (typeof window !== 'undefined') {
-  if (!customElements.get('dev-toolbar')) {
-    customElements.define('dev-toolbar', DevToolbar);
-  }
-
-  // Register app canvas custom element
-  if (!customElements.get('dev-toolbar-app-canvas')) {
-    class DevToolbarAppCanvas extends HTMLElement {
-      shadowRoot: ShadowRoot;
-
-      constructor() {
-        super();
-        this.shadowRoot = this.attachShadow({ mode: 'open' });
-      }
+if (globalThis.window !== undefined) {
+    if (!customElements.get("dev-toolbar")) {
+        customElements.define("dev-toolbar", DevToolbar);
     }
-    customElements.define('dev-toolbar-app-canvas', DevToolbarAppCanvas);
-  }
+
+    // Register app canvas custom element
+    if (!customElements.get("dev-toolbar-app-canvas")) {
+        class DevToolbarAppCanvas extends HTMLElement {
+            shadowRoot: ShadowRoot;
+
+            constructor() {
+                super();
+                this.shadowRoot = this.attachShadow({ mode: "open" });
+            }
+        }
+        customElements.define("dev-toolbar-app-canvas", DevToolbarAppCanvas);
+    }
 }

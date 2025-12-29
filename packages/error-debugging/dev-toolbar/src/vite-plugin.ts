@@ -1,192 +1,199 @@
-import type { Plugin, ResolvedConfig } from 'vite';
-import type { DevToolbarApp, ServerFunctions } from './types/index.js';
-import { createServerRPCContext } from './rpc/server.js';
-import fs from 'node:fs';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { normalizePath } from 'vite';
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+import type { Plugin, ResolvedConfig } from "vite";
+import { normalizePath } from "vite";
+
+import { createServerRPCContext } from "./rpc/server";
+import type { DevToolbarApp, ServerFunctions } from "./types/index";
 
 /**
  * Dev toolbar plugin options
  */
 export interface DevToolbarOptions {
-  /**
-   * append an import to the module id ending with `appendTo` instead of adding a script into body
-   * useful for projects that do not use html file as an entry
-   *
-   * WARNING: only set this if you know exactly what it does.
-   * @default ''
-   */
-  appendTo?: string | RegExp;
+    /**
+     * append an import to the module id ending with `appendTo` instead of adding a script into body
+     * useful for projects that do not use html file as an entry
+     *
+     * WARNING: only set this if you know exactly what it does.
+     * @default ''
+     */
+    appendTo?: string | RegExp;
 
-  /**
-   * Built-in apps to enable
-   */
-  apps?: {
-    settings?: boolean;
-    timeline?: boolean;
-    [key: string]: boolean | undefined;
-  };
+    /**
+     * Built-in apps to enable
+     */
+    apps?: {
+        [key: string]: boolean | undefined;
+        settings?: boolean;
+        timeline?: boolean;
+    };
 
-  /**
-   * Custom apps to register
-   */
-  customApps?: DevToolbarApp[];
+    /**
+     * Custom apps to register
+     */
+    customApps?: DevToolbarApp[];
 
-  /**
-   * Toolbar placement
-   */
-  placement?: 'bottom-left' | 'bottom-center' | 'bottom-right';
+    /**
+     * Whether toolbar is visible by default
+     */
+    defaultVisible?: boolean;
 
-  /**
-   * Whether toolbar is visible by default
-   */
-  defaultVisible?: boolean;
+    /**
+     * Toolbar placement
+     */
+    placement?: "bottom-left" | "bottom-center" | "bottom-right";
 
-  /**
-   * Custom server RPC functions
-   */
-  serverFunctions?: Partial<ServerFunctions>;
+    /**
+     * Custom server RPC functions
+     */
+    serverFunctions?: Partial<ServerFunctions>;
 }
 
 /**
- * Get the path to the dev-toolbar source/dist directory
- * Similar to Vue DevTools: handles both /dist and /src paths
+ * Get the path to the dev-toolbar dist directory
+ * Always use dist folder - Vite should never access src
  */
-function getDevToolbarPath(): string {
-  const pluginPath = normalizePath(path.dirname(fileURLToPath(import.meta.url)));
-  // Replace /dist$ with /src for development
-  return pluginPath.replace(/\/dist$/, '/src');
-}
+const getDevToolbarPath = (): string => {
+    const pluginPath = normalizePath(path.dirname(fileURLToPath(import.meta.url)));
+
+    // import.meta.url points to dist when loaded from the built package
+    return pluginPath;
+};
 
 /**
  * Remove URL query string from a path
- * Similar to Vue DevTools' removeUrlQuery utility
  */
-function removeUrlQuery(url: string): string {
-  return url.replace(/\?.*$/, '');
-}
+const removeUrlQuery = (url: string): string => url.replace(/\?.*$/, "");
 
 // Query marker for dev-toolbar resources
 // Why use query instead of vite virtual module on devtools resource?
 // Devtools resource will import other packages, which vite cannot analyze correctly on virtual module.
 // So we should use absolute path + `query` to mark the resource as devtools resource.
-const devToolbarResourceSymbol = '?__visulima-dev-toolbar-resource';
+const devToolbarResourceSymbol = "?__visulima-dev-toolbar-resource";
 
 // Virtual module IDs
-const VIRTUAL_OPTIONS = 'virtual:visulima-dev-toolbar-options';
+const VIRTUAL_OPTIONS = "virtual:visulima-dev-toolbar-options";
 const RESOLVED_OPTIONS = `\0${VIRTUAL_OPTIONS}`;
-const VIRTUAL_PATH_PREFIX = 'virtual:visulima-dev-toolbar-path:';
+const VIRTUAL_PATH_PREFIX = "virtual:visulima-dev-toolbar-path:";
 
 /**
  * Dev toolbar Vite plugin
  */
 export const devToolbar = (options: DevToolbarOptions = {}): Plugin => {
-  const devToolbarPath = getDevToolbarPath();
-  let config: ResolvedConfig;
+    const devToolbarPath = getDevToolbarPath();
+    let config: ResolvedConfig;
 
-  return {
-    name: '@visulima/dev-toolbar',
-    enforce: 'pre',
-    apply: 'serve',
+    return {
+        apply: "serve",
 
-    configResolved(resolvedConfig) {
-      config = resolvedConfig;
-    },
+        configResolved(resolvedConfig) {
+            config = resolvedConfig;
+        },
 
-    configureServer(srv) {
-      // Setup RPC context
-      createServerRPCContext(srv, options.serverFunctions);
+        configureServer(srv) {
+            // Setup RPC context
+            createServerRPCContext(srv, options.serverFunctions);
 
-      // Send init event to clients on connection
-      srv.ws.on('connection', () => {
-        srv.ws.send({
-          type: 'custom',
-          event: 'dev-toolbar:init',
-        });
-      });
-    },
+            // Send init event to clients on connection
+            srv.ws.on("connection", () => {
+                srv.ws.send({
+                    event: "dev-toolbar:init",
+                    type: "custom",
+                });
+            });
+        },
 
-    async resolveId(importee: string) {
-      if (importee === VIRTUAL_OPTIONS) {
-        return RESOLVED_OPTIONS;
-      }
-      // Handle path-based virtual modules
-      // Similar to Vue DevTools: use actual file paths with query string
-      if (importee.startsWith(VIRTUAL_PATH_PREFIX)) {
-        const resolved = importee.replace(VIRTUAL_PATH_PREFIX, `${devToolbarPath}/`);
-        return `${resolved}${devToolbarResourceSymbol}`;
-      }
-      return null;
-    },
+        enforce: "pre",
 
-    async load(id) {
-      if (id === RESOLVED_OPTIONS) {
-        return `export default ${JSON.stringify({
-          base: config.base,
-          apps: {
-            settings: options.apps?.settings ?? true,
-            timeline: options.apps?.timeline ?? true,
-          },
-          placement: options.placement ?? 'bottom-center',
-          defaultVisible: options.defaultVisible ?? true,
-        })};`;
-      }
-      // Load files directly to bypass Vite's fs.allow check
-      if (id.endsWith(devToolbarResourceSymbol)) {
-        const filename = removeUrlQuery(id);
-        try {
-          return await fs.promises.readFile(filename, 'utf-8');
-        } catch (error) {
-          console.error(`[dev-toolbar] Failed to read file: ${filename}`, error);
-          return null;
-        }
-      }
-      return null;
-    },
+        async load(id) {
+            if (id === RESOLVED_OPTIONS) {
+                return `export default ${JSON.stringify({
+                    apps: {
+                        settings: options.apps?.settings ?? true,
+                        timeline: options.apps?.timeline ?? true,
+                    },
+                    base: config.base,
+                    defaultVisible: options.defaultVisible ?? true,
+                    placement: options.placement ?? "bottom-center",
+                })};`;
+            }
 
-    transform(code, id, transformOptions) {
-      // Skip SSR transforms
-      if (transformOptions?.ssr) {
-        return;
-      }
+            // Load dev-toolbar resources by reading file directly
+            // This bypasses Vite's fs.allow check (same pattern as Vue DevTools)
+            if (id.endsWith(devToolbarResourceSymbol)) {
+                const filename = removeUrlQuery(id);
 
-      const { appendTo } = options;
-      const filename = id.split('?', 2)[0];
+                return await fs.promises.readFile(filename, "utf8");
+            }
 
-      // Support appendTo option like Vue DevTools
-      if (appendTo && filename && (
-        (typeof appendTo === 'string' && filename.endsWith(appendTo)) ||
-        (appendTo instanceof RegExp && appendTo.test(filename))
-      )) {
-        return `import '${VIRTUAL_PATH_PREFIX}client/overlay.js';\n${code}`;
-      }
+            return undefined;
+        },
 
-      return code;
-    },
+        name: "@visulima/dev-toolbar",
 
-    transformIndexHtml() {
-      // Skip if appendTo is set
-      if (options.appendTo) {
-        return;
-      }
+        resolveId(importee: string) {
+            if (importee === VIRTUAL_OPTIONS) {
+                return RESOLVED_OPTIONS;
+            }
 
-      const base = config.base || '/';
-      return {
-        html: '',
-        tags: [
-          {
-            tag: 'script',
-            injectTo: 'head-prepend' as const,
-            attrs: {
-              type: 'module',
-              src: `${base}@id/${VIRTUAL_PATH_PREFIX}client/overlay.js`,
-            },
-          },
-        ],
-      };
-    },
-  };
+            // Handle path-based virtual modules
+            // Use absolute path + query to mark as devtools resource
+            // This allows imports like: virtual:visulima-dev-toolbar-path:client/overlay.js
+            if (importee.startsWith(VIRTUAL_PATH_PREFIX)) {
+                const resolved = importee.replace(VIRTUAL_PATH_PREFIX, `${devToolbarPath}/`);
+
+                return `${resolved}${devToolbarResourceSymbol}`;
+            }
+
+            return undefined;
+        },
+
+        transform(code, id, transformOptions) {
+            // Skip SSR transforms
+            if (transformOptions?.ssr) {
+                return undefined;
+            }
+
+            const { appendTo } = options;
+            const filename = id.split("?", 2)[0];
+
+            // Support appendTo option like Vue DevTools
+            if (
+                appendTo
+                && filename
+                && ((typeof appendTo === "string" && filename.endsWith(appendTo)) || (appendTo instanceof RegExp && appendTo.test(filename)))
+            ) {
+                return `import '${VIRTUAL_PATH_PREFIX}client/overlay.js';\n${code}`;
+            }
+
+            return undefined;
+        },
+
+        transformIndexHtml() {
+            // Skip if appendTo is set
+            if (options.appendTo) {
+                return undefined;
+            }
+
+            const base = config.base || "/";
+
+            return {
+                html: "",
+                tags: [
+                    {
+                        attrs: {
+                            src: `${base}@id/${VIRTUAL_PATH_PREFIX}client/overlay.js`,
+                            type: "module",
+                        },
+                        injectTo: "head-prepend" as const,
+                        tag: "script",
+                    },
+                ],
+            };
+        },
+    };
 };
 
 export default devToolbar;

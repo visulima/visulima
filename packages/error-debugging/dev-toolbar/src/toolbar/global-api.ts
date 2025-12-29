@@ -1,100 +1,109 @@
-import type { VisulimaDevTools } from '../types/global-api.js';
-import type { DevToolbarApp, ToolbarSettings } from '../types/index.js';
-import type { ServerFunctions } from '../types/rpc.js';
-import type { DevToolbarHook } from '../types/hooks.js';
-import { loadSettings, updateSettings } from './settings.js';
-import { createClientRPCContext } from '../rpc/client.js';
-import { getGlobalHook } from '../hooks/index.js';
+import { getGlobalHook } from "../hooks/index";
+import { createClientRPCContext } from "../rpc/client";
+import type { VisulimaDevTools } from "../types/global-api";
+import type { DevToolbarApp, ToolbarSettings } from "../types/index";
+import type { ServerFunctions } from "../types/rpc";
+import { loadSettings, updateSettings } from "./settings";
 
 /**
- * Global DevTools API implementation
+ * Global DevTools API implementation.
  */
 export const createGlobalAPI = (
-  appManager: { getApps: () => DevToolbarApp[]; getActiveApp: () => DevToolbarApp | undefined; toggleApp: (id: string) => Promise<boolean>; registerApp: (app: DevToolbarApp) => void; unregisterApp: (id: string) => void; setNotification: (id: string, state: boolean, level?: 'info' | 'warning' | 'error') => void; clearNotification: (id: string) => void },
-  toolbar: { show: () => void; hide: () => void; toggle: () => void },
+    appManager: {
+        clearNotification: (id: string) => void;
+        getActiveApp: () => DevToolbarApp | undefined;
+        getApps: () => DevToolbarApp[];
+        registerApp: (app: DevToolbarApp) => void;
+        setNotification: (id: string, state: boolean, level?: "info" | "warning" | "error") => void;
+        toggleApp: (id: string) => Promise<boolean>;
+        unregisterApp: (id: string) => void;
+    },
+    toolbar: { hide: () => void; show: () => void; toggle: () => void },
 ): VisulimaDevTools => {
-  const rpcContext = createClientRPCContext();
-  const hook = getGlobalHook();
+    const rpcContext = createClientRPCContext();
+    const hook = getGlobalHook();
 
-  if (!hook) {
-    throw new Error('Global hook not initialized');
-  }
+    if (!hook) {
+        throw new Error("Global hook not initialized");
+    }
 
-  return {
-    show(): void {
-      toolbar.show();
-    },
+    return {
+        clearNotification(appId: string): void {
+            appManager.clearNotification(appId);
+        },
 
-    hide(): void {
-      toolbar.hide();
-    },
+        async closeApp(): Promise<void> {
+            const activeApp = appManager.getActiveApp();
 
-    toggle(): void {
-      toolbar.toggle();
-    },
+            if (activeApp) {
+                await appManager.toggleApp(activeApp.id);
+            }
+        },
 
-    async openApp(appId: string): Promise<void> {
-      await appManager.toggleApp(appId);
-    },
+        getActiveApp(): string | null {
+            const activeApp = appManager.getActiveApp();
 
-    async closeApp(): Promise<void> {
-      const activeApp = appManager.getActiveApp();
-      if (activeApp) {
-        await appManager.toggleApp(activeApp.id);
-      }
-    },
+            return activeApp?.id || null;
+        },
 
-    getActiveApp(): string | null {
-      const activeApp = appManager.getActiveApp();
-      return activeApp?.id || null;
-    },
+        getApps(): DevToolbarApp[] {
+            return appManager.getApps();
+        },
 
-    registerApp(app: DevToolbarApp): void {
-      appManager.registerApp(app);
-    },
+        getSettings(): ToolbarSettings {
+            return loadSettings();
+        },
 
-    unregisterApp(appId: string): void {
-      appManager.unregisterApp(appId);
-    },
+        hide(): void {
+            toolbar.hide();
+        },
 
-    getApps(): DevToolbarApp[] {
-      return appManager.getApps();
-    },
+        hook,
 
-    notify(appId: string, level: 'info' | 'warning' | 'error'): void {
-      appManager.setNotification(appId, true, level);
-    },
+        notify(appId: string, level: "info" | "warning" | "error"): void {
+            appManager.setNotification(appId, true, level);
+        },
 
-    clearNotification(appId: string): void {
-      appManager.clearNotification(appId);
-    },
+        async openApp(appId: string): Promise<void> {
+            await appManager.toggleApp(appId);
+        },
 
-    getSettings(): ToolbarSettings {
-      return loadSettings();
-    },
+        registerApp(app: DevToolbarApp): void {
+            appManager.registerApp(app);
+        },
 
-    updateSettings(settings: Partial<ToolbarSettings>): void {
-      updateSettings(settings);
-    },
+        rpc: new Proxy({} as ServerFunctions, {
+            get(_target, prop: string) {
+                return (...args: any[]) => rpcContext.callServer(prop as any, ...args);
+            },
+        }),
 
-    rpc: new Proxy({} as ServerFunctions, {
-      get(_target, prop: string) {
-        return (...args: any[]) => rpcContext.callServer(prop as any, ...args);
-      },
-    }),
+        show(): void {
+            toolbar.show();
+        },
 
-    hook,
+        toggle(): void {
+            toolbar.toggle();
+        },
 
-    version: '0.0.0', // Will be replaced with actual version from package.json
-  };
+        unregisterApp(appId: string): void {
+            appManager.unregisterApp(appId);
+        },
+
+        updateSettings(settings: Partial<ToolbarSettings>): void {
+            updateSettings(settings);
+        },
+
+        version: "0.0.0", // Will be replaced with actual version from package.json
+    };
 };
 
 /**
  * Setup global API on window object
- * @param api - API instance
+ * @param api API instance
  */
 export const setupGlobalAPI = (api: VisulimaDevTools): void => {
-  if (typeof window !== 'undefined') {
-    window.__VISULIMA_DEVTOOLS__ = api;
-  }
+    if (globalThis.window !== undefined) {
+        globalThis.__VISULIMA_DEVTOOLS__ = api;
+    }
 };

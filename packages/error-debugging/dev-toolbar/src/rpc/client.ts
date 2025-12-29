@@ -1,92 +1,91 @@
-import type { ClientFunctions, ClientRPCContext, ServerFunctions } from '../types/rpc.js';
+import type { ClientFunctions, ClientRPCContext, ServerFunctions } from "../types/rpc";
 
 /**
  * Creates client-side RPC context
- * @param customFunctions - Custom client functions to register
+ * @param customFunctions Custom client functions to register
  * @returns Client RPC context
  */
 export const createClientRPCContext = (customFunctions?: Partial<ClientFunctions>): ClientRPCContext => {
-  const functions: ClientFunctions = {
-    onModuleUpdate: () => {
-      // Default implementation
-    },
-    onConfigChange: () => {
-      // Default implementation
-    },
-    onHMRUpdate: () => {
-      // Default implementation
-    },
-    ...customFunctions,
-  } as ClientFunctions;
+    const functions: ClientFunctions = {
+        onConfigChange: () => {
+            // Default implementation
+        },
+        onHMRUpdate: () => {
+            // Default implementation
+        },
+        onModuleUpdate: () => {
+            // Default implementation
+        },
+        ...customFunctions,
+    } as ClientFunctions;
 
-  // Pending RPC requests map
-  const pendingRequests = new Map<string, { resolve: (value: any) => void; reject: (error: any) => void }>();
+    // Pending RPC requests map
+    const pendingRequests = new Map<string, { reject: (error: any) => void; resolve: (value: any) => void }>();
 
-  // Setup HMR listener for RPC responses
-  if (typeof window !== 'undefined' && import.meta.hot) {
-    import.meta.hot.on('dev-toolbar:rpc:response', (data: { id: string; result: any }) => {
-      const request = pendingRequests.get(data.id);
-      if (request) {
-        pendingRequests.delete(data.id);
-        request.resolve(data.result);
-      }
-    });
+    // Setup HMR listener for RPC responses
+    if (globalThis.window !== undefined && import.meta.hot) {
+        import.meta.hot.on("dev-toolbar:rpc:response", (data: { id: string; result: any }) => {
+            const request = pendingRequests.get(data.id);
 
-    import.meta.hot.on('dev-toolbar:rpc:error', (data: { id: string; error: string }) => {
-      const request = pendingRequests.get(data.id);
-      if (request) {
-        pendingRequests.delete(data.id);
-        request.reject(new Error(data.error));
-      }
-    });
-
-    // Listen for server-initiated client function calls
-    import.meta.hot.on('dev-toolbar:client', (data: { method: string; args: any[] }) => {
-      const { method, args } = data;
-      const fn = functions[method];
-
-      if (fn) {
-        try {
-          fn(...args);
-        } catch (error) {
-          console.error(`[dev-toolbar] Error calling client function ${method}:`, error);
-        }
-      }
-    });
-  }
-
-  return {
-    async callServer<K extends keyof ServerFunctions>(
-      name: K,
-      ...args: Parameters<ServerFunctions[K]>
-    ): Promise<ReturnType<ServerFunctions[K]>> {
-      if (typeof window === 'undefined' || !import.meta.hot) {
-        throw new Error('RPC calls can only be made in browser environment with HMR');
-      }
-
-      const id = `${Date.now()}-${Math.random().toString(36).substring(7)}`;
-
-      return new Promise<ReturnType<ServerFunctions[K]>>((resolve, reject) => {
-        pendingRequests.set(id, { resolve, reject });
-
-        // Set timeout for request
-        setTimeout(() => {
-          if (pendingRequests.has(id)) {
-            pendingRequests.delete(id);
-            reject(new Error(`RPC call timeout: ${name}`));
-          }
-        }, 30_000); // 30 second timeout
-
-        // Send RPC request
-        import.meta.hot!.send('dev-toolbar:rpc', {
-          method: name,
-          args,
-          id,
+            if (request) {
+                pendingRequests.delete(data.id);
+                request.resolve(data.result);
+            }
         });
-      });
-    },
-    registerFunction<K extends keyof ClientFunctions>(name: K, fn: ClientFunctions[K]): void {
-      functions[name] = fn;
-    },
-  };
+
+        import.meta.hot.on("dev-toolbar:rpc:error", (data: { error: string; id: string }) => {
+            const request = pendingRequests.get(data.id);
+
+            if (request) {
+                pendingRequests.delete(data.id);
+                request.reject(new Error(data.error));
+            }
+        });
+
+        // Listen for server-initiated client function calls
+        import.meta.hot.on("dev-toolbar:client", (data: { args: any[]; method: string }) => {
+            const { args, method } = data;
+            const function_ = functions[method];
+
+            if (function_) {
+                try {
+                    function_(...args);
+                } catch (error) {
+                    console.error(`[dev-toolbar] Error calling client function ${method}:`, error);
+                }
+            }
+        });
+    }
+
+    return {
+        async callServer<K extends keyof ServerFunctions>(name: K, ...args: Parameters<ServerFunctions[K]>): Promise<ReturnType<ServerFunctions[K]>> {
+            if (globalThis.window === undefined || !import.meta.hot) {
+                throw new Error("RPC calls can only be made in browser environment with HMR");
+            }
+
+            const id = `${Date.now()}-${Math.random().toString(36).slice(7)}`;
+
+            return new Promise<ReturnType<ServerFunctions[K]>>((resolve, reject) => {
+                pendingRequests.set(id, { reject, resolve });
+
+                // Set timeout for request
+                setTimeout(() => {
+                    if (pendingRequests.has(id)) {
+                        pendingRequests.delete(id);
+                        reject(new Error(`RPC call timeout: ${name}`));
+                    }
+                }, 30_000); // 30 second timeout
+
+                // Send RPC request
+                import.meta.hot!.send("dev-toolbar:rpc", {
+                    args,
+                    id,
+                    method: name,
+                });
+            });
+        },
+        registerFunction<K extends keyof ClientFunctions>(name: K, function_: ClientFunctions[K]): void {
+            functions[name] = function_;
+        },
+    };
 };

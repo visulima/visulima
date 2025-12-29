@@ -42,8 +42,8 @@ export default defineConfig({
                 settings: true,
                 timeline: true,
             },
-            placement: "bottom-center",
             defaultVisible: true,
+            placement: "bottom-center",
         }),
     ],
 });
@@ -55,20 +55,20 @@ The dev toolbar exposes a global API on `window.__VISULIMA_DEVTOOLS__`:
 
 ```typescript
 // Show/hide toolbar
-window.__VISULIMA_DEVTOOLS__.show();
-window.__VISULIMA_DEVTOOLS__.hide();
+globalThis.__VISULIMA_DEVTOOLS__.show();
+globalThis.__VISULIMA_DEVTOOLS__.hide();
 
 // Open an app
-window.__VISULIMA_DEVTOOLS__.openApp('dev-toolbar:settings');
+globalThis.__VISULIMA_DEVTOOLS__.openApp("dev-toolbar:settings");
 
 // Register a custom app
-window.__VISULIMA_DEVTOOLS__.registerApp({
-    id: 'my-app',
-    name: 'My App',
-    icon: '<svg>...</svg>',
+globalThis.__VISULIMA_DEVTOOLS__.registerApp({
+    icon: "<svg>...</svg>",
+    id: "my-app",
     init(canvas, eventTarget, helpers) {
         // Initialize your app UI here
     },
+    name: "My App",
 });
 ```
 
@@ -77,12 +77,12 @@ window.__VISULIMA_DEVTOOLS__.registerApp({
 Subscribe to dev toolbar events:
 
 ```typescript
-if (window.__DEV_TOOLBAR_HOOK__) {
-    window.__DEV_TOOLBAR_HOOK__.on('devtools:init', () => {
-        console.log('Dev Tools initialized!');
+if (globalThis.__DEV_TOOLBAR_HOOK__) {
+    globalThis.__DEV_TOOLBAR_HOOK__.on("devtools:init", () => {
+        console.log("Dev Tools initialized!");
     });
 
-    window.__DEV_TOOLBAR_HOOK__.on('devtools:open', (appId) => {
+    globalThis.__DEV_TOOLBAR_HOOK__.on("devtools:open", (appId) => {
         console.log(`App opened: ${appId}`);
     });
 }
@@ -96,7 +96,8 @@ Call server functions from your apps:
 // In your app's init function
 const config = await helpers.rpc.getViteConfig();
 const moduleGraph = await helpers.rpc.getModuleGraph();
-await helpers.rpc.openInEditor('src/App.ts', 10, 5);
+
+await helpers.rpc.openInEditor("src/App.ts", 10, 5);
 ```
 
 ### Timeline Events
@@ -104,13 +105,13 @@ await helpers.rpc.openInEditor('src/App.ts', 10, 5);
 Add events to the timeline:
 
 ```typescript
-if (window.__DEV_TOOLBAR_HOOK__) {
-    window.__DEV_TOOLBAR_HOOK__.addTimelineEvent('custom', {
-        id: 'event-1',
-        title: 'My Event',
+if (globalThis.__DEV_TOOLBAR_HOOK__) {
+    globalThis.__DEV_TOOLBAR_HOOK__.addTimelineEvent("custom", {
+        data: { custom: "data" },
+        id: "event-1",
+        level: "info",
         time: Date.now(),
-        level: 'info',
-        data: { custom: 'data' },
+        title: "My Event",
     });
 }
 ```

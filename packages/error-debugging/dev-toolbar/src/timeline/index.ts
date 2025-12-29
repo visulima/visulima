@@ -2,6 +2,6 @@
  * Timeline system exports
  */
 
-export { TimelineStore, getTimelineStore } from './store.js';
-export type { TimelineEvent, TimelineGroup, TimelineEventLevel } from '../types/timeline.js';
-export { DEFAULT_TIMELINE_GROUPS } from '../types/timeline.js';
+export type { TimelineEvent, TimelineEventLevel, TimelineGroup } from "../types/timeline";
+export { DEFAULT_TIMELINE_GROUPS } from "../types/timeline";
+export { getTimelineStore, TimelineStore } from "./store";

@@ -1,5 +1,4 @@
-export const App = (): string => {
-    return `
+export const App = (): string => `
         <div style="padding: 2rem; max-width: 800px; margin: 0 auto;">
             <h1>Vite + Dev Toolbar Example</h1>
             <p>This example demonstrates the @visulima/dev-toolbar plugin.</p>
@@ -49,4 +48,3 @@ await window.__VISULIMA_DEVTOOLS__.rpc.getViteConfig();
             </div>
         </div>
     `;
-};

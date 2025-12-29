@@ -1,31 +1,31 @@
-import type { DevToolbarHook } from '../types/hooks.js';
-import type { DevToolbarApp } from '../types/app.js';
-import type { TimelineEvent } from '../types/timeline.js';
-import { createDevToolbarHook } from './create-hook.js';
+import type { DevToolbarApp } from "../types/app";
+import type { DevToolbarHook } from "../types/hooks";
+import type { TimelineEvent } from "../types/timeline";
+import { createDevToolbarHook } from "./create-hook";
 
 let globalHookInstance: DevToolbarHook | undefined;
 
 /**
  * Setup global hook on window object
- * @param onRegisterApp - Callback when app is registered
- * @param onTimelineEvent - Callback when timeline event is added
+ * @param onRegisterApp Callback when app is registered
+ * @param onTimelineEvent Callback when timeline event is added
  * @returns Hook instance
  */
 export const setupGlobalHook = (
-  onRegisterApp?: (app: DevToolbarApp) => void,
-  onTimelineEvent?: (groupId: string, event: TimelineEvent) => void,
+    onRegisterApp?: (app: DevToolbarApp) => void,
+    onTimelineEvent?: (groupId: string, event: TimelineEvent) => void,
 ): DevToolbarHook => {
-  if (globalHookInstance) {
+    if (globalHookInstance) {
+        return globalHookInstance;
+    }
+
+    globalHookInstance = createDevToolbarHook(onRegisterApp, onTimelineEvent);
+
+    if (globalThis.window !== undefined) {
+        globalThis.__DEV_TOOLBAR_HOOK__ = globalHookInstance;
+    }
+
     return globalHookInstance;
-  }
-
-  globalHookInstance = createDevToolbarHook(onRegisterApp, onTimelineEvent);
-
-  if (typeof window !== 'undefined') {
-    window.__DEV_TOOLBAR_HOOK__ = globalHookInstance;
-  }
-
-  return globalHookInstance;
 };
 
 /**
@@ -33,8 +33,9 @@ export const setupGlobalHook = (
  * @returns Hook instance or undefined
  */
 export const getGlobalHook = (): DevToolbarHook | undefined => {
-  if (typeof window !== 'undefined' && window.__DEV_TOOLBAR_HOOK__) {
-    return window.__DEV_TOOLBAR_HOOK__;
-  }
-  return globalHookInstance;
+    if (globalThis.window !== undefined && globalThis.__DEV_TOOLBAR_HOOK__) {
+        return globalThis.__DEV_TOOLBAR_HOOK__;
+    }
+
+    return globalHookInstance;
 };

@@ -1,5 +1,7 @@
 import "./style.css";
 
+import type { DevToolbarApp } from "@visulima/dev-toolbar";
+
 import { App } from "./App.js";
 
 const app = document.querySelector<HTMLDivElement>("#app")!;
@@ -11,12 +13,12 @@ if (typeof window !== "undefined" && window.__VISULIMA_DEVTOOLS__) {
     console.log("Dev Tools API available:", window.__VISULIMA_DEVTOOLS__);
 
     // Example: Register a custom app
-    window.__VISULIMA_DEVTOOLS__.registerApp({
+    const exampleApp: DevToolbarApp = {
+        icon: "<svg width=\"20\" height=\"20\" viewBox=\"0 0 20 20\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\"><circle cx=\"10\" cy=\"10\" r=\"8\" stroke=\"currentColor\" stroke-width=\"2\"/></svg>",
         id: "example-app",
-        name: "Example",
-        icon: '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="2"/></svg>',
         init(canvas, eventTarget, helpers) {
             const content = document.createElement("div");
+
             content.innerHTML = `
                 <div style="padding: 16px; color: white;">
                     <h2>Example App</h2>
@@ -27,7 +29,7 @@ if (typeof window !== "undefined" && window.__VISULIMA_DEVTOOLS__) {
                     <pre id="rpc-result" style="margin-top: 8px; padding: 8px; background: rgba(0,0,0,0.3); border-radius: 4px; overflow: auto;"></pre>
                 </div>
             `;
-            canvas.appendChild(content);
+            canvas.append(content);
 
             const button = content.querySelector("#test-rpc");
             const result = content.querySelector("#rpc-result");
@@ -35,8 +37,10 @@ if (typeof window !== "undefined" && window.__VISULIMA_DEVTOOLS__) {
             button?.addEventListener("click", async () => {
                 if (result) {
                     result.textContent = "Loading...";
+
                     try {
                         const config = await helpers.rpc.getViteConfig();
+
                         result.textContent = JSON.stringify(config, null, 2);
                     } catch (error) {
                         result.textContent = `Error: ${error instanceof Error ? error.message : String(error)}`;
@@ -44,7 +48,10 @@ if (typeof window !== "undefined" && window.__VISULIMA_DEVTOOLS__) {
                 }
             });
         },
-    });
+        name: "Example",
+    };
+
+    window.__VISULIMA_DEVTOOLS__.registerApp(exampleApp);
 }
 
 // Example: Using the hook system
@@ -55,7 +62,7 @@ if (typeof window !== "undefined" && window.__DEV_TOOLBAR_HOOK__) {
         console.log("Dev Tools initialized!");
     });
 
-    hook.on("devtools:open", (appId) => {
+    hook.on("devtools:open", (appId: string) => {
         console.log(`App opened: ${appId}`);
     });
 
@@ -65,10 +72,10 @@ if (typeof window !== "undefined" && window.__DEV_TOOLBAR_HOOK__) {
 
     // Add a timeline event
     hook.addTimelineEvent("custom", {
-        id: "example-1",
-        title: "Example Event",
-        time: Date.now(),
-        level: "info",
         data: { message: "Hello from example!" },
+        id: "example-1",
+        level: "info",
+        time: Date.now(),
+        title: "Example Event",
     });
 }

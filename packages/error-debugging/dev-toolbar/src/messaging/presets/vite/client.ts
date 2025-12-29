@@ -1,37 +1,37 @@
-import type { MessageChannel } from '../../../types/messaging.js';
-import type { MessageHandlers } from '../../types.js';
-import { createMessageChannel, handleMessage } from '../../create-channel.js';
-import type { ViteHMREvents } from './context.js';
+import type { MessageChannel } from "../../../types/messaging";
+import { createMessageChannel, handleMessage } from "../../create-channel";
+import type { MessageHandlers } from "../../types";
+import type { ViteHMREvents } from "./context";
 
 /**
  * Creates a Vite HMR client-side message channel
- * @param handlers - Shared handlers map
+ * @param handlers Shared handlers map
  * @returns Message channel instance
  */
 export const createViteHMRClient = (handlers: MessageHandlers): MessageChannel<ViteHMREvents> => {
-  // Listen for messages from server via HMR
-  if (typeof window !== 'undefined' && import.meta.hot) {
-    import.meta.hot.on('dev-toolbar:server', (data: { event: string; data?: any; id?: string }) => {
-      handleMessage(handlers, {
-        id: data.id,
-        event: data.event,
-        data: data.data,
-        timestamp: Date.now(),
-      });
-    });
-  }
-
-  // Create channel with send function
-  const sendMessage = (event: string, ...args: any[]): void => {
-    if (typeof window === 'undefined' || !import.meta.hot) {
-      return;
+    // Listen for messages from server via HMR
+    if (globalThis.window !== undefined && import.meta.hot) {
+        import.meta.hot.on("dev-toolbar:server", (data: { data?: any; event: string; id?: string }) => {
+            handleMessage(handlers, {
+                data: data.data,
+                event: data.event,
+                id: data.id,
+                timestamp: Date.now(),
+            });
+        });
     }
 
-    import.meta.hot.send('dev-toolbar:client', {
-      event,
-      data: args,
-    });
-  };
+    // Create channel with send function
+    const sendMessage = (event: string, ...args: any[]): void => {
+        if (globalThis.window === undefined || !import.meta.hot) {
+            return;
+        }
 
-  return createMessageChannel<ViteHMREvents>(handlers, sendMessage);
+        import.meta.hot.send("dev-toolbar:client", {
+            data: args,
+            event,
+        });
+    };
+
+    return createMessageChannel<ViteHMREvents>(handlers, sendMessage);
 };

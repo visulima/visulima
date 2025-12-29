@@ -1,3 +1,5 @@
+import cssnanoMinifier from "@visulima/packem/css/minifier/cssnano";
+import tailwindcssLoader from "@visulima/packem/css/loader/tailwindcss";
 import type { BuildConfig } from "@visulima/packem/config";
 import isolatedDeclarationTransformer from "@visulima/packem/dts/isolated/transformer/typescript";
 import { defineConfig } from "@visulima/packem/config";
@@ -10,6 +12,11 @@ export default defineConfig({
     preset: createPreactPreset(),
     isolatedDeclarationTransformer,
     rollup: {
+        css: {
+            mode: "inline",
+            minifier: cssnanoMinifier,
+            loaders: [tailwindcssLoader],
+        },
         license: {
             path: "./LICENSE.md",
         },

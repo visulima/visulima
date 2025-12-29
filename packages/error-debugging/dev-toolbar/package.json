@@ -33,9 +33,9 @@
             "types": "./dist/vite-plugin.d.ts",
             "default": "./dist/vite-plugin.js"
         },
-        "./client/entrypoint": {
-            "types": "./dist/client/entrypoint.d.ts",
-            "default": "./dist/client/entrypoint.js"
+        "./client/overlay": {
+            "types": "./dist/client/overlay.d.ts",
+            "default": "./dist/client/overlay.js"
         },
         "./apps": {
             "types": "./dist/apps/index.d.ts",
@@ -77,15 +77,18 @@
         "test:ui": "vitest --ui --coverage.enabled=true",
         "test:watch": "vitest"
     },
+    "dependencies": {
+        "clsx": "^2.1.1",
+        "tailwind-merge": "^2.5.5"
+    },
     "devDependencies": {
-        "preact": "^10.28.1",
-        "@babel/core": "^7.28.5",
-        "@babel/preset-react": "^7.28.5",
-        "babel-plugin-transform-hook-names": "^1.0.2",
         "@anolilab/eslint-config": "^18.0.0",
         "@anolilab/semantic-release-pnpm": "3.2.2",
         "@anolilab/semantic-release-preset": "12.1.2",
         "@arethetypeswrong/cli": "^0.18.2",
+        "@babel/core": "^7.28.5",
+        "@babel/preset-react": "^7.28.5",
+        "@eslint/css": "0.14.1",
         "@secretlint/secretlint-rule-preset-recommend": "^11.2.5",
         "@tailwindcss/forms": "^0.5.11",
         "@tailwindcss/node": "^4.1.18",
@@ -95,15 +98,18 @@
         "@visulima/packem": "2.0.0-alpha.48",
         "@vitest/coverage-v8": "^4.0.16",
         "@vitest/ui": "^4.0.16",
+        "babel-plugin-transform-hook-names": "^1.0.2",
         "conventional-changelog-conventionalcommits": "9.1.0",
         "cssnano": "7.1.2",
         "esbuild": "^0.27.2",
         "eslint": "9.39.2",
+        "preact": "^10.28.1",
         "prettier": "^3.7.4",
         "publint": "^0.3.16",
         "rimraf": "^6.1.2",
         "secretlint": "11.2.5",
         "semantic-release": "^25.0.2",
+        "tailwind-csstree": "0.1.4",
         "tailwindcss": "4.1.18",
         "typescript": "^5.9.3",
         "vitest": "^4.0.16"

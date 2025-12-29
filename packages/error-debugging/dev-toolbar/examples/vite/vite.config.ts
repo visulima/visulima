@@ -9,8 +9,8 @@ export default defineConfig({
                 settings: true,
                 timeline: true,
             },
-            placement: "bottom-center",
             defaultVisible: true,
+            placement: "bottom-center",
         }),
     ],
 });

@@ -2,9 +2,8 @@
  * RPC layer exports
  */
 
-export { createServerRPCContext } from './server.js';
-export { createClientRPCContext } from './client.js';
-
-export { getViteConfig } from './functions/vite-config.js';
-export { getModuleGraph } from './functions/module-graph.js';
-export { openInEditor } from './functions/open-in-editor.js';
+export { createClientRPCContext } from "./client";
+export { getModuleGraph } from "./functions/module-graph";
+export { openInEditor } from "./functions/open-in-editor";
+export { getViteConfig } from "./functions/vite-config";
+export { createServerRPCContext } from "./server";

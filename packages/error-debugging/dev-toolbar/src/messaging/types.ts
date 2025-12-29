@@ -6,25 +6,25 @@
  * Message envelope for transport
  */
 export interface MessageEnvelope<T = any> {
-  /**
-   * Message ID for request/response correlation
-   */
-  id?: string;
+    /**
+     * Message data
+     */
+    data?: T;
 
-  /**
-   * Event/method name
-   */
-  event: string;
+    /**
+     * Event/method name
+     */
+    event: string;
 
-  /**
-   * Message data
-   */
-  data?: T;
+    /**
+     * Message ID for request/response correlation
+     */
+    id?: string;
 
-  /**
-   * Timestamp
-   */
-  timestamp?: number;
+    /**
+     * Timestamp
+     */
+    timestamp?: number;
 }
 
 /**
