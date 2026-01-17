@@ -1,0 +1,684 @@
+---
+title: API Reference
+description: Complete API reference for @visulima/iso-locale functions and types.
+---
+
+# API Reference
+
+Complete reference for all functions, types, and utilities provided by @visulima/iso-locale.
+
+## Countries
+
+### getByAlpha2
+
+Get country by ISO 3166-1 alpha-2 code.
+
+```typescript
+function getByAlpha2(code: string): Country | undefined;
+```
+
+**Parameters:**
+
+- `code`: 2-letter country code (e.g., "US")
+
+**Returns:** Country object or undefined
+
+**Example:**
+
+```typescript
+getByAlpha2("US"); // { name: "United States", alpha2: "US", ... }
+```
+
+---
+
+### getByAlpha3
+
+Get country by ISO 3166-1 alpha-3 code.
+
+```typescript
+function getByAlpha3(code: string): Country | undefined;
+```
+
+**Parameters:**
+
+- `code`: 3-letter country code (e.g., "USA")
+
+**Returns:** Country object or undefined
+
+---
+
+### getByNumeric
+
+Get country by ISO 3166-1 numeric code.
+
+```typescript
+function getByNumeric(code: string | number): Country | undefined;
+```
+
+**Parameters:**
+
+- `code`: 3-digit numeric code (e.g., "840" or 840)
+
+**Returns:** Country object or undefined
+
+---
+
+### getCountryByName
+
+Get country by exact name (case-insensitive).
+
+```typescript
+function getCountryByName(name: string): Country | undefined;
+```
+
+**Parameters:**
+
+- `name`: Country name (e.g., "United States")
+
+**Returns:** Country object or undefined
+
+---
+
+### searchCountries
+
+Search countries by partial name (case-insensitive).
+
+```typescript
+function searchCountries(query: string): Country[];
+```
+
+**Parameters:**
+
+- `query`: Search query (e.g., "united")
+
+**Returns:** Array of matching Country objects
+
+---
+
+### getEmoji
+
+Get flag emoji for a country.
+
+```typescript
+function getEmoji(countryCode: string | number): string | undefined;
+```
+
+**Parameters:**
+
+- `countryCode`: ISO 3166-1 alpha-2, alpha-3, or numeric code
+
+**Returns:** Flag emoji or undefined
+
+---
+
+### getCallingCode
+
+Get first country calling code (phone prefix).
+
+```typescript
+function getCallingCode(countryCode: string | number): string | undefined;
+```
+
+**Parameters:**
+
+- `countryCode`: ISO 3166-1 alpha-2, alpha-3, or numeric code
+
+**Returns:** First calling code (e.g., "+1") or undefined
+
+---
+
+### getCallingCodes
+
+Get all country calling codes.
+
+```typescript
+function getCallingCodes(countryCode: string | number): string[];
+```
+
+**Returns:** Array of calling codes
+
+---
+
+### getLanguages
+
+Get languages for a country.
+
+```typescript
+function getLanguages(countryCode: string | number): string[];
+```
+
+**Returns:** Array of ISO 639-3 language codes
+
+---
+
+### getIOC
+
+Get International Olympic Committee code.
+
+```typescript
+function getIOC(countryCode: string | number): string | undefined;
+```
+
+**Returns:** IOC code (e.g., "USA") or undefined
+
+---
+
+### Code Conversion Functions
+
+```typescript
+alpha2ToAlpha3(alpha2: string): string | undefined;
+alpha3ToAlpha2(alpha3: string): string | undefined;
+alpha2ToNumeric(alpha2: string): string | undefined;
+alpha3ToNumeric(alpha3: string): string | undefined;
+numericToAlpha2(numeric: string | number): string | undefined;
+numericToAlpha3(numeric: string | number): string | undefined;
+```
+
+---
+
+### isValidCountry
+
+Validate country code.
+
+```typescript
+function isValidCountry(code: string | number): boolean;
+```
+
+**Parameters:**
+
+- `code`: Country code in any format (alpha-2, alpha-3, or numeric)
+
+**Returns:** true if valid, false otherwise
+
+---
+
+## Currencies
+
+### getByCode
+
+Get currency by ISO 4217 alphabetic code.
+
+```typescript
+function getByCode(code: string): Currency | undefined;
+```
+
+**Parameters:**
+
+- `code`: 3-letter currency code (e.g., "USD")
+
+**Returns:** Currency object or undefined
+
+---
+
+### getByNumber
+
+Get currency by ISO 4217 numeric code.
+
+```typescript
+function getByNumber(number: string | number): Currency | undefined;
+```
+
+**Parameters:**
+
+- `number`: 3-digit numeric code (e.g., "840")
+
+**Returns:** Currency object or undefined
+
+---
+
+### getByCountry
+
+Get currencies used by a country.
+
+```typescript
+function getByCountry(countryCode: string): Currency[];
+```
+
+**Parameters:**
+
+- `countryCode`: ISO 3166-1 alpha-2 country code
+
+**Returns:** Array of Currency objects
+
+---
+
+### getCountriesByCurrency
+
+Get all countries using a specific currency.
+
+```typescript
+function getCountriesByCurrency(currencyCode: string): string[];
+```
+
+**Parameters:**
+
+- `currencyCode`: ISO 4217 currency code (e.g., "EUR")
+
+**Returns:** Array of ISO 3166-1 alpha-2 country codes
+
+---
+
+### getSymbol
+
+Get currency symbol.
+
+```typescript
+function getSymbol(currencyCode: string): string;
+```
+
+**Parameters:**
+
+- `currencyCode`: ISO 4217 currency code
+
+**Returns:** Currency symbol or the code itself if symbol not found
+
+---
+
+### getName
+
+Get currency name.
+
+```typescript
+function getName(currencyCode: string): string | undefined;
+```
+
+**Returns:** Currency name or undefined
+
+---
+
+### getCurrencyByName
+
+Get currency by exact name (case-insensitive).
+
+```typescript
+function getCurrencyByName(name: string): Currency | undefined;
+```
+
+---
+
+### searchCurrencies
+
+Search currencies by partial name (case-insensitive).
+
+```typescript
+function searchCurrencies(query: string): Currency[];
+```
+
+---
+
+### isValidCurrency
+
+Validate currency code.
+
+```typescript
+function isValidCurrency(code: string | number): boolean;
+```
+
+**Parameters:**
+
+- `code`: Currency code (alphabetic or numeric)
+
+**Returns:** true if valid, false otherwise
+
+---
+
+## Regions
+
+### getRegionsForCountry
+
+Get region information for a country.
+
+```typescript
+function getRegionsForCountry(countryCode: string): Region | undefined;
+```
+
+**Returns:** Region object with continent, intermediary, and subregion
+
+---
+
+### getCountriesInContinent
+
+Get all countries in a continental region.
+
+```typescript
+function getCountriesInContinent(continent: string): string[];
+```
+
+**Parameters:**
+
+- `continent`: Continental region (e.g., "Africa", "Americas", "Asia", "Europe", "Oceania", "Antarctica")
+
+**Returns:** Array of ISO 3166-1 alpha-2 country codes
+
+---
+
+### getCountriesInSubregion
+
+Get all countries in a geographical subregion.
+
+```typescript
+function getCountriesInSubregion(subregion: string): string[];
+```
+
+**Parameters:**
+
+- `subregion`: Geographical subregion (e.g., "Northern Africa", "Western Europe")
+
+**Returns:** Array of ISO 3166-1 alpha-2 country codes
+
+---
+
+### getCountriesInIntermediary
+
+Get all countries in an intermediary region.
+
+```typescript
+function getCountriesInIntermediary(intermediary: string): string[];
+```
+
+**Parameters:**
+
+- `intermediary`: Intermediary region (e.g., "Sub-Saharan Africa", "Latin America and the Caribbean")
+
+**Returns:** Array of ISO 3166-1 alpha-2 country codes
+
+---
+
+### getContinents
+
+Get all available continental regions.
+
+```typescript
+function getContinents(): string[];
+```
+
+**Returns:** Sorted array of continent names
+
+---
+
+### getSubregions
+
+Get all available geographical subregions.
+
+```typescript
+function getSubregions(continent?: string): string[];
+```
+
+**Parameters:**
+
+- `continent`: Optional filter by continent
+
+**Returns:** Sorted array of subregion names
+
+---
+
+### getIntermediaryRegions
+
+Get all available intermediary regions.
+
+```typescript
+function getIntermediaryRegions(continent?: string): string[];
+```
+
+**Parameters:**
+
+- `continent`: Optional filter by continent
+
+**Returns:** Sorted array of intermediary region names
+
+---
+
+## Timezones
+
+### getTimezonesByCountry
+
+Get all timezones for a country.
+
+```typescript
+function getTimezonesByCountry(countryCode: string): string[];
+```
+
+**Parameters:**
+
+- `countryCode`: ISO 3166-1 alpha-2 country code
+
+**Returns:** Array of IANA timezone identifiers
+
+---
+
+### getCountriesForTimezone
+
+Get all countries using a specific timezone.
+
+```typescript
+function getCountriesForTimezone(timezone: string): string[];
+```
+
+**Parameters:**
+
+- `timezone`: IANA timezone identifier (e.g., "Europe/London")
+
+**Returns:** Array of ISO 3166-1 alpha-2 country codes
+
+---
+
+### all (timezones)
+
+Get all available timezones.
+
+```typescript
+function all(): string[];
+```
+
+**Returns:** Sorted array of all IANA timezone identifiers
+
+---
+
+### getPrimaryTimezone
+
+Get primary timezone for a country (first timezone in the list).
+
+```typescript
+function getPrimaryTimezone(countryCode: string): string | undefined;
+```
+
+**Returns:** Primary IANA timezone identifier or undefined
+
+---
+
+### isValidTimezone
+
+Check if a timezone is valid (exists in our data).
+
+```typescript
+function isValidTimezone(timezone: string): boolean;
+```
+
+**Returns:** true if timezone exists, false otherwise
+
+---
+
+## Locale & BCP 47
+
+### getCurrency
+
+Get currency code from locale or country code.
+
+```typescript
+function getCurrency(locale: string): string | undefined;
+```
+
+**Parameters:**
+
+- `locale`: Locale string (BCP 47, underscore format, or country code)
+
+**Returns:** ISO 4217 currency code or undefined
+
+**Supports:**
+
+- BCP 47 tags: `"en-US"`, `"pt-BR"`
+- Underscore format: `"en_US"`, `"pt_BR"`
+- Country codes: `"US"`, `"GB"`
+
+---
+
+### getLocales
+
+Get all country codes (alpha-2) that use a specific currency.
+
+```typescript
+function getLocales(currencyCode: string): string[];
+```
+
+**Parameters:**
+
+- `currencyCode`: ISO 4217 currency code (e.g., "EUR")
+
+**Returns:** Array of ISO 3166-1 alpha-2 country codes
+
+---
+
+### parseBCP47Tag
+
+Parse a BCP 47 language tag into its components.
+
+```typescript
+function parseBCP47Tag(tag: string): { language: string; country?: string; script?: string } | undefined;
+```
+
+**Parameters:**
+
+- `tag`: BCP 47 language tag (e.g., "en-US", "zh-Hant-TW")
+
+**Returns:** Parsed components or undefined if invalid
+
+---
+
+### generateBCP47Tag
+
+Generate a BCP 47 language tag from language and country codes.
+
+```typescript
+function generateBCP47Tag(languageCode: string, countryCode: string, script?: string): string;
+```
+
+**Parameters:**
+
+- `languageCode`: ISO 639-1 language code (e.g., "en")
+- `countryCode`: ISO 3166-1 alpha-2 country code (e.g., "US")
+- `script`: Optional script code (e.g., "Latn", "Hant")
+
+**Returns:** BCP 47 tag (e.g., "en-US", "zh-Hant-TW")
+
+---
+
+### getBCP47Tags
+
+Get all BCP 47 language tags for a country.
+
+```typescript
+function getBCP47Tags(countryCode: string): string[];
+```
+
+**Parameters:**
+
+- `countryCode`: ISO 3166-1 alpha-2 country code
+
+**Returns:** Array of BCP 47 tags (e.g., ["en-US"])
+
+---
+
+### isValidBCP47Tag
+
+Validate a BCP 47 language tag format.
+
+```typescript
+function isValidBCP47Tag(tag: string): boolean;
+```
+
+**Returns:** true if format is valid, false otherwise
+
+---
+
+### iso6393To6391
+
+Convert ISO 639-3 (3-letter) code to ISO 639-1 (2-letter) code.
+
+```typescript
+function iso6393To6391(iso6393: string): string | undefined;
+```
+
+**Parameters:**
+
+- `iso6393`: ISO 639-3 language code (e.g., "eng")
+
+**Returns:** ISO 639-1 code (e.g., "en") or undefined if not found
+
+---
+
+### convert6393To6391
+
+Get all ISO 639-1 codes from ISO 639-3 codes.
+
+```typescript
+function convert6393To6391(iso6393Codes: string[]): string[];
+```
+
+**Parameters:**
+
+- `iso6393Codes`: Array of ISO 639-3 codes
+
+**Returns:** Array of ISO 639-1 codes (filtered to only valid mappings)
+
+---
+
+## Type Definitions
+
+### Country
+
+```typescript
+interface Country {
+    alpha2: string;
+    alpha3: string;
+    numeric?: string;
+    countryCallingCodes?: string[];
+    currencies: string[];
+    emoji?: string;
+    ioc?: string;
+    languages: string[];
+    name: string;
+    status?: string;
+}
+```
+
+### Currency
+
+```typescript
+interface Currency {
+    code: string;
+    decimals: number;
+    name: string;
+    number: string;
+    symbol?: string;
+}
+```
+
+### Region
+
+```typescript
+interface Region {
+    continent: string;
+    intermediary?: string;
+    subregion: string;
+}
+```
+
+---
+
+## Next Steps
+
+- [Countries](/docs/countries) - Countries guide
+- [Currencies](/docs/currencies) - Currencies guide
+- [Regions](/docs/regions) - Regions guide
+- [Timezones](/docs/timezones) - Timezones guide
+- [Locale & BCP 47](/docs/locale) - Locale guide

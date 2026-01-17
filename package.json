@@ -10,6 +10,13 @@
         "apps/*"
     ],
     "scripts": {
+        "lint:eslint:iso": "pnpm --filter \"iso\" run lint:eslint",
+        "lint:eslint:fix:iso": "pnpm --filter \"iso\" run lint:eslint:fix",
+        "lint:types:iso": "pnpm --filter \"iso\" run lint:types",
+        "test:iso": "pnpm --filter \"iso\" run test",
+        "test:coverage:iso": "pnpm --filter \"iso\" run test:coverage",
+        "test:ui:iso": "pnpm --filter \"iso\" run test:ui",
+
         "audit": "audit-ci --config ./audit-ci.jsonc",
         "bench:cerebro": "pnpm --filter \"cerebro-bench\" run test:bench",
         "bench:colorize": "pnpm --filter \"colorize-bench\" run test:bench",

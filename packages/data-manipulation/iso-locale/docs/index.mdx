@@ -1,0 +1,175 @@
+---
+title: Getting Started
+description: Comprehensive ISO 3166 (countries) and ISO 4217 (currencies) data library with regions, timezones, and BCP 47 locale support.
+---
+
+# Getting Started
+
+@visulima/iso-locale is a comprehensive TypeScript library providing ISO 3166 country codes, ISO 4217 currency codes, UN geoscheme regions, IANA timezones, and BCP 47 locale utilities.
+
+## Key Features
+
+### Countries (ISO 3166-1)
+
+Complete country data with multiple code formats and utilities:
+
+- **Code Formats**: Alpha-2 (US), Alpha-3 (USA), and Numeric (840) codes
+- **Code Conversion**: Convert between any code format
+- **Country Data**: Names, calling codes, languages, IOC codes, flag emojis
+- **Search**: Find countries by name (exact or partial match)
+- **Validation**: Validate country codes in any format
+
+### Currencies (ISO 4217)
+
+Complete currency data with symbols and formatting:
+
+- **Currency Codes**: Alphabetic (USD) and numeric (840) codes
+- **Currency Data**: Names, symbols, decimal places, country associations
+- **Search**: Find currencies by name (exact or partial match)
+- **Validation**: Validate currency codes
+- **Symbols**: Currency symbols for display
+
+### Regions (UN Geoscheme)
+
+Geographical regional data based on UN geoscheme:
+
+- **Continents**: Africa, Americas, Asia, Europe, Oceania, Antarctica
+- **Subregions**: Detailed geographical subregions (e.g., Western Europe, Eastern Asia)
+- **Intermediary Regions**: Regional groupings (e.g., Sub-Saharan Africa, Latin America)
+- **Lookups**: Find countries by region or regions by country
+
+### Timezones (IANA)
+
+Complete IANA timezone database:
+
+- **Country to Timezones**: Get all timezones for a country
+- **Timezone to Countries**: Find countries using a specific timezone
+- **Validation**: Validate IANA timezone identifiers
+- **Primary Timezone**: Get the primary timezone for a country
+
+### Locale & BCP 47
+
+Enhanced locale and BCP 47 language tag support:
+
+- **Locale to Currency**: Get currency from locale/country code
+- **BCP 47 Parsing**: Parse BCP 47 tags into components
+- **BCP 47 Generation**: Generate BCP 47 tags from language and country
+- **Country Tags**: Get all BCP 47 tags for a country
+- **ISO 639 Mapping**: Convert ISO 639-3 to ISO 639-1 codes
+
+## Quick Start
+
+### Installation
+
+<Tabs items={["pnpm", "npm", "yarn"]}>
+    <Tab value="pnpm">```bash pnpm add @visulima/iso-locale ```</Tab>
+    <Tab value="npm">```bash npm install @visulima/iso-locale ```</Tab>
+    <Tab value="yarn">```bash yarn add @visulima/iso-locale ```</Tab>
+</Tabs>
+
+### Basic Usage
+
+```typescript
+import {
+    // Countries
+    getByAlpha2,
+    getCountryByName,
+    getEmoji,
+    getCallingCode,
+
+    // Currencies
+    getByCode,
+    getSymbol,
+    getByCountry,
+
+    // Regions
+    getRegionsForCountry,
+    getCountriesInContinent,
+
+    // Timezones
+    getTimezonesByCountry,
+    getPrimaryTimezone,
+
+    // Locale
+    getCurrency,
+    getBCP47Tags,
+} from "@visulima/iso-locale";
+
+// Get country data
+const country = getByAlpha2("US");
+console.log(country.name); // "United States"
+console.log(getEmoji("US")); // "🇺🇸"
+console.log(getCallingCode("US")); // "+1"
+
+// Get currency data
+const currency = getByCode("USD");
+console.log(currency.name); // "United States dollar"
+console.log(getSymbol("USD")); // "$"
+
+// Get regions
+const region = getRegionsForCountry("US");
+console.log(region.continent); // "Americas"
+console.log(region.subregion); // "Northern America"
+
+// Get timezones
+const timezones = getTimezonesByCountry("US");
+console.log(timezones); // ["America/New_York", "America/Los_Angeles", ...]
+
+// Get locale data
+console.log(getCurrency("en-US")); // "USD"
+console.log(getBCP47Tags("US")); // ["en-US"]
+```
+
+## Next Steps
+
+<Cards>
+    <Card title="Installation" href="/docs/installation">
+        Learn how to install and configure @visulima/iso-locale
+    </Card>
+    <Card title="Countries" href="/docs/countries">
+        Working with ISO 3166 country codes and data
+    </Card>
+    <Card title="Currencies" href="/docs/currencies">
+        Working with ISO 4217 currency codes and data
+    </Card>
+    <Card title="Regions" href="/docs/regions">
+        Working with UN geoscheme regions
+    </Card>
+    <Card title="Timezones" href="/docs/timezones">
+        Working with IANA timezones
+    </Card>
+    <Card title="Locale & BCP 47" href="/docs/locale">
+        Working with locales and BCP 47 language tags
+    </Card>
+    <Card title="API Reference" href="/docs/api">
+        Complete API documentation
+    </Card>
+</Cards>
+
+## TypeScript Support
+
+The library is written in TypeScript and provides comprehensive type definitions:
+
+```typescript
+import type { Country, Currency, Region } from "@visulima/iso-locale";
+
+const country: Country = getByAlpha2("US");
+const currency: Currency = getByCode("USD");
+const region: Region = getRegionsForCountry("US");
+```
+
+## Data Sources
+
+- **ISO 3166-1**: Official ISO standard for country codes
+- **ISO 4217**: Official ISO standard for currency codes
+- **UN Geoscheme**: United Nations geoscheme for regions
+- **IANA Timezone Database**: Official IANA timezone identifiers
+- **BCP 47**: IETF BCP 47 language tags standard
+
+## Browser and Node.js Support
+
+Works seamlessly in both environments:
+
+- Node.js >= 22.21.0 <= 25.x
+- All modern browsers
+- TypeScript >= 5.0

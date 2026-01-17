@@ -1,0 +1,8 @@
+{
+    "name": "data-manipulation/iso",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "packages/data-manipulation/iso/src",
+    "projectType": "library",
+    "tags": ["iso", "type:package"],
+    "implicitDependencies": []
+}
