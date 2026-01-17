@@ -45,9 +45,14 @@
         "emoji",
         "flag-emoji"
     ],
-    "author": {
-        "name": "Daniel Bannert",
-        "email": "d.bannert@anolilab.de"
+    "homepage": "https://visulima.com/packages/iso-locale",
+    "bugs": {
+        "url": "https://github.com/visulima/visulima/issues"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/visulima/visulima.git",
+        "directory": "packages/data-manipulation/iso-locale"
     },
     "funding": [
         {
@@ -59,8 +64,11 @@
             "url": "https://anolilab.com/support"
         }
     ],
-    "homepage": "https://visulima.com/packages/iso-locale",
     "license": "MIT",
+    "author": {
+        "name": "Daniel Bannert",
+        "email": "d.bannert@anolilab.de"
+    },
     "sideEffects": false,
     "type": "module",
     "exports": {
@@ -99,14 +107,6 @@
         "README.md",
         "CHANGELOG.md"
     ],
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/visulima/visulima.git",
-        "directory": "packages/data-manipulation/iso-locale"
-    },
-    "bugs": {
-        "url": "https://github.com/visulima/visulima/issues"
-    },
     "scripts": {
         "build": "packem build --development",
         "build:prod": "packem build --production",

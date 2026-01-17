@@ -1,4 +1,14 @@
-<!-- START_PACKAGE_OG_IMAGE_PLACEHOLDER --><!-- END_PACKAGE_OG_IMAGE_PLACEHOLDER -->
+<!-- START_PACKAGE_OG_IMAGE_PLACEHOLDER -->
+
+<a href="https://www.anolilab.com/open-source" align="center">
+
+  <img src="__assets__/package-og.svg" alt="iso-locale" />
+
+</a>
+
+<h3 align="center">ISO data for countries, currencies, regions, timezones, and BCP 47 locale support.</h3>
+
+<!-- END_PACKAGE_OG_IMAGE_PLACEHOLDER -->
 
 <br />
 
