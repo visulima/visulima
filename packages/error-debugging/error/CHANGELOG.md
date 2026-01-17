@@ -1,3 +1,17 @@
+## @visulima/error [6.0.0-alpha.4](https://github.com/visulima/visulima/compare/@visulima/error@6.0.0-alpha.3...@visulima/error@6.0.0-alpha.4) (2026-01-17)
+
+### ⚠ BREAKING CHANGES
+
+* **serialize:** Serialized errors now have all properties explicitly enumerable, which may affect code relying on property enumerability checks. ErrorProto properties are now non-enumerable.
+
+### Bug Fixes
+
+* **serialize:** improve error serialization enumerability and circular reference handling ([41e2f0b](https://github.com/visulima/visulima/commit/41e2f0b2dd43b75ec4c44dda0bad3200319cd489))
+
+### Miscellaneous Chores
+
+* **error:** update dependencies ([8dcc42c](https://github.com/visulima/visulima/commit/8dcc42cc1cbe6f3acceecb3360cb8dce0b99deb7))
+
 ## @visulima/error [6.0.0-alpha.3](https://github.com/visulima/visulima/compare/@visulima/error@6.0.0-alpha.2...@visulima/error@6.0.0-alpha.3) (2025-12-27)
 
 ### Bug Fixes
