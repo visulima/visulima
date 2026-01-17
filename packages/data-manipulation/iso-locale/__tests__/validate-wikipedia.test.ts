@@ -385,6 +385,8 @@ describe("wikipedia Validation", () => {
     });
 
     it("should validate currency symbols against Wikipedia", () => {
+        expect.hasAssertions();
+
         // eslint-disable-next-line vitest/no-conditional-in-test
         if (wikipediaCurrencySymbols.length === 0) {
             // eslint-disable-next-line no-console
