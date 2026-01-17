@@ -1,0 +1,204 @@
+---
+title: Countries
+description: Working with ISO 3166 country codes and data.
+---
+
+# Countries
+
+@visulima/iso-locale provides comprehensive ISO 3166-1 country data with support for multiple code formats, conversions, and utilities.
+
+## Country Data Structure
+
+Each country includes:
+
+- **name**: English name of the country
+- **alpha2**: ISO 3166-1 alpha-2 code (2-letter, e.g., "US")
+- **alpha3**: ISO 3166-1 alpha-3 code (3-letter, e.g., "USA")
+- **numeric**: ISO 3166-1 numeric code (3-digit, e.g., "840")
+- **currencies**: Array of ISO 4217 currency codes used in the country
+- **languages**: Array of ISO 639-3 language codes
+- **countryCallingCodes**: International call prefixes (e.g., ["+1"])
+- **emoji**: Flag emoji (e.g., "🇺🇸")
+- **ioc**: International Olympic Committee code (e.g., "USA")
+- **status**: ISO status (e.g., "assigned", "reserved", "deleted")
+
+## Getting Country Data
+
+### By Code
+
+```typescript
+import { getByAlpha2, getByAlpha3, getByNumeric } from "@visulima/iso-locale";
+
+// Get by alpha-2 code
+const country = getByAlpha2("US");
+console.log(country.name); // "United States"
+
+// Get by alpha-3 code
+const country2 = getByAlpha3("USA");
+console.log(country2.name); // "United States"
+
+// Get by numeric code
+const country3 = getByNumeric("840");
+console.log(country3.name); // "United States"
+```
+
+### By Name
+
+```typescript
+import { getCountryByName, searchCountries } from "@visulima/iso-locale";
+
+// Exact match
+const country = getCountryByName("United States");
+console.log(country?.alpha2); // "US"
+
+// Partial search
+const results = searchCountries("united");
+console.log(results.length); // Multiple countries with "united" in name
+```
+
+## Code Conversion
+
+Convert between different code formats:
+
+```typescript
+import { alpha2ToAlpha3, alpha3ToAlpha2, alpha2ToNumeric, numericToAlpha2, numericToAlpha3 } from "@visulima/iso-locale";
+
+// Alpha-2 to Alpha-3
+alpha2ToAlpha3("US"); // "USA"
+
+// Alpha-3 to Alpha-2
+alpha3ToAlpha2("USA"); // "US"
+
+// Alpha-2 to Numeric
+alpha2ToNumeric("US"); // "840"
+
+// Numeric to Alpha-2
+numericToAlpha2("840"); // "US"
+
+// Numeric to Alpha-3
+numericToAlpha3("840"); // "USA"
+```
+
+## Country Utilities
+
+### Flag Emoji
+
+```typescript
+import { getEmoji } from "@visulima/iso-locale";
+
+getEmoji("US"); // "🇺🇸"
+getEmoji("GB"); // "🇬🇧"
+getEmoji("FR"); // "🇫🇷"
+```
+
+### Calling Codes
+
+```typescript
+import { getCallingCode, getCallingCodes } from "@visulima/iso-locale";
+
+// Get first calling code
+getCallingCode("US"); // "+1"
+
+// Get all calling codes
+getCallingCodes("US"); // ["+1"]
+```
+
+### Languages
+
+```typescript
+import { getLanguages } from "@visulima/iso-locale";
+
+getLanguages("US"); // ["eng"]
+getLanguages("CA"); // ["eng", "fra"]
+```
+
+### IOC Code
+
+```typescript
+import { getIOC } from "@visulima/iso-locale";
+
+getIOC("US"); // "USA"
+getIOC("GB"); // "GBR"
+```
+
+## Validation
+
+```typescript
+import { isValidCountry } from "@visulima/iso-locale";
+
+isValidCountry("US"); // true
+isValidCountry("USA"); // true
+isValidCountry("840"); // true
+isValidCountry("XX"); // false
+```
+
+## Indexed Access
+
+For fast lookups, use the indexed maps:
+
+```typescript
+import { byAlpha2, byAlpha3, byNumeric } from "@visulima/iso-locale";
+
+const country = byAlpha2["US"];
+const country2 = byAlpha3["USA"];
+const country3 = byNumeric["840"];
+```
+
+## All Countries
+
+Get all countries as an array:
+
+```typescript
+import { countriesAll } from "@visulima/iso-locale";
+
+const allCountries = countriesAll;
+console.log(allCountries.length); // ~250+ countries
+```
+
+## Examples
+
+### Find Country by User Input
+
+```typescript
+import { getByAlpha2, getCountryByName, searchCountries } from "@visulima/iso-locale";
+
+function findCountry(input: string) {
+    // Try as code first
+    if (input.length === 2) {
+        return getByAlpha2(input);
+    }
+    if (input.length === 3) {
+        return getByAlpha3(input);
+    }
+
+    // Try exact name match
+    const exact = getCountryByName(input);
+    if (exact) return exact;
+
+    // Try partial search
+    const results = searchCountries(input);
+    return results[0];
+}
+```
+
+### Display Country Information
+
+```typescript
+import { getByAlpha2, getEmoji, getCallingCode, getLanguages } from "@visulima/iso-locale";
+
+function displayCountryInfo(code: string) {
+    const country = getByAlpha2(code);
+    if (!country) return;
+
+    console.log(`${getEmoji(code)} ${country.name}`);
+    console.log(`Calling Code: ${getCallingCode(code)}`);
+    console.log(`Languages: ${getLanguages(code).join(", ")}`);
+    console.log(`Currencies: ${country.currencies.join(", ")}`);
+}
+```
+
+## Next Steps
+
+- [Currencies](/docs/currencies) - Working with currency data
+- [Regions](/docs/regions) - Working with regional data
+- [API Reference](/docs/api) - Complete API documentation
