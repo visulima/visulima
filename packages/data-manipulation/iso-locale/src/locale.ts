@@ -93,7 +93,17 @@ export const parseBCP47Tag = (tag: string): { country?: string; language: string
         }
     }
 
-    return { country, language, script };
+    const result: { country?: string; language: string; script?: string } = { language };
+
+    if (country) {
+        result.country = country;
+    }
+
+    if (script) {
+        result.script = script;
+    }
+
+    return result;
 };
 
 /**
