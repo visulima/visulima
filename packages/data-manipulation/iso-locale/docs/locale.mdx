@@ -1,0 +1,179 @@
+---
+title: Locale & BCP 47
+description: Working with locales, BCP 47 language tags, and currency mapping.
+---
+
+# Locale & BCP 47
+
+@visulima/iso-locale provides enhanced locale support with BCP 47 language tag parsing, generation, and currency mapping.
+
+## Currency from Locale
+
+Get currency code from locale or country code:
+
+```typescript
+import { getCurrency } from "@visulima/iso-locale";
+
+// BCP 47 format
+getCurrency("en-US"); // "USD"
+getCurrency("pt-BR"); // "BRL"
+getCurrency("zh-Hant-TW"); // "TWD"
+
+// Underscore format
+getCurrency("en_US"); // "USD"
+getCurrency("pt_BR"); // "BRL"
+
+// Direct country code
+getCurrency("US"); // "USD"
+getCurrency("GB"); // "GBP"
+```
+
+## BCP 47 Language Tags
+
+### Parse BCP 47 Tags
+
+```typescript
+import { parseBCP47Tag } from "@visulima/iso-locale";
+
+const parsed = parseBCP47Tag("en-US");
+console.log(parsed);
+// { language: "en", country: "US" }
+
+const parsed2 = parseBCP47Tag("zh-Hant-TW");
+console.log(parsed2);
+// { language: "zh", script: "Hant", country: "TW" }
+```
+
+### Generate BCP 47 Tags
+
+```typescript
+import { generateBCP47Tag } from "@visulima/iso-locale";
+
+generateBCP47Tag("en", "US"); // "en-US"
+generateBCP47Tag("fr", "FR"); // "fr-FR"
+generateBCP47Tag("zh", "TW", "Hant"); // "zh-Hant-TW"
+```
+
+### Get BCP 47 Tags for Country
+
+```typescript
+import { getBCP47Tags } from "@visulima/iso-locale";
+
+// Single language country
+getBCP47Tags("US"); // ["en-US"]
+
+// Multi-language country
+getBCP47Tags("CA"); // ["en-CA", "fr-CA"]
+getBCP47Tags("CH"); // ["de-CH", "fr-CH", "it-CH", "rm-CH"]
+```
+
+### Validate BCP 47 Tags
+
+```typescript
+import { isValidBCP47Tag } from "@visulima/iso-locale";
+
+isValidBCP47Tag("en-US"); // true
+isValidBCP47Tag("zh-Hant-TW"); // true
+isValidBCP47Tag("invalid"); // false
+```
+
+## ISO 639 Language Code Conversion
+
+Convert between ISO 639-3 (3-letter) and ISO 639-1 (2-letter) codes:
+
+```typescript
+import { iso6393To6391, convert6393To6391 } from "@visulima/iso-locale";
+
+// Single conversion
+iso6393To6391("eng"); // "en"
+iso6393To6391("fra"); // "fr"
+iso6393To6391("spa"); // "es"
+
+// Array conversion
+convert6393To6391(["eng", "fra", "spa"]); // ["en", "fr", "es"]
+```
+
+## Get Locales for Currency
+
+Find all countries using a specific currency:
+
+```typescript
+import { getLocales } from "@visulima/iso-locale";
+
+getLocales("EUR"); // ["FR", "DE", "ES", "IT", ...]
+getLocales("USD"); // ["US", ...]
+```
+
+## Examples
+
+### Build Locale-Aware Currency Formatter
+
+```typescript
+import { getCurrency, getSymbol, getByCode } from "@visulima/iso-locale";
+
+function formatCurrencyByLocale(amount: number, locale: string): string {
+    const currencyCode = getCurrency(locale);
+    if (!currencyCode) return `${amount}`;
+
+    const currency = getByCode(currencyCode);
+    const symbol = getSymbol(currencyCode);
+    const decimals = currency?.decimals ?? 2;
+
+    return `${symbol}${amount.toFixed(decimals)}`;
+}
+
+formatCurrencyByLocale(100, "en-US"); // "$100.00"
+formatCurrencyByLocale(100, "en-GB"); // "£100.00"
+formatCurrencyByLocale(100, "fr-FR"); // "€100.00"
+```
+
+### Generate Locale Options for Select
+
+```typescript
+import { getBCP47Tags, getByAlpha2 } from "@visulima/iso-locale";
+
+function getLocaleOptions(countryCode: string) {
+    const tags = getBCP47Tags(countryCode);
+    const country = getByAlpha2(countryCode);
+
+    return tags.map((tag) => ({
+        value: tag,
+        label: `${tag} - ${country?.name}`,
+    }));
+}
+
+getLocaleOptions("CA");
+// [
+//   { value: "en-CA", label: "en-CA - Canada" },
+//   { value: "fr-CA", label: "fr-CA - Canada" }
+// ]
+```
+
+### Parse User Locale Input
+
+```typescript
+import { parseBCP47Tag, getCurrency } from "@visulima/iso-locale";
+
+function parseUserLocale(locale: string) {
+    const parsed = parseBCP47Tag(locale);
+    if (!parsed) {
+        throw new Error(`Invalid locale: ${locale}`);
+    }
+
+    return {
+        language: parsed.language,
+        country: parsed.country,
+        script: parsed.script,
+        currency: parsed.country ? getCurrency(locale) : undefined,
+    };
+}
+
+parseUserLocale("en-US");
+// { language: "en", country: "US", currency: "USD" }
+```
+
+## Next Steps
+
+- [Countries](/docs/countries) - Working with country data
+- [Currencies](/docs/currencies) - Working with currency data
+- [API Reference](/docs/api) - Complete API documentation

@@ -64,6 +64,9 @@
 "package: is-ansi-color-supported":
     - changed-files:
           - any-glob-to-any-file: "packages/terminal/is-ansi-color-supported/**/*"
+"package: iso-locale":
+    - changed-files:
+          - any-glob-to-any-file: "packages/data-manipulation/iso-locale/**/*"
 "package: jsdoc-open-api":
     - changed-files:
           - any-glob-to-any-file: "packages/api/jsdoc-open-api/**/*"

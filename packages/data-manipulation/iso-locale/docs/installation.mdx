@@ -1,0 +1,122 @@
+---
+title: Installation
+description: Learn how to install and configure @visulima/iso-locale in your project.
+---
+
+# Installation
+
+## Package Manager
+
+Install @visulima/iso-locale using your preferred package manager:
+
+<Tabs items={["pnpm", "npm", "yarn"]}>
+    <Tab value="pnpm">
+```bash
+pnpm add @visulima/iso-locale
+```
+    </Tab>
+    <Tab value="npm">
+```bash
+npm install @visulima/iso-locale
+```
+    </Tab>
+    <Tab value="yarn">
+```bash
+yarn add @visulima/iso-locale
+```
+    </Tab>
+</Tabs>
+
+## Requirements
+
+- Node.js >= 22.21.0 <= 25.x
+- TypeScript >= 5.0 (for TypeScript projects)
+
+## TypeScript Configuration
+
+The library works out of the box with TypeScript. Import functions as needed:
+
+```typescript
+import { getByAlpha2, getByCode, getRegionsForCountry, getTimezonesByCountry } from "@visulima/iso-locale";
+```
+
+## Module Imports
+
+### Full Import
+
+Import all functions from the main entry point:
+
+```typescript
+import {
+    // Countries
+    getByAlpha2,
+    getCountryByName,
+    getEmoji,
+
+    // Currencies
+    getByCode,
+    getSymbol,
+
+    // Regions
+    getRegionsForCountry,
+
+    // Timezones
+    getTimezonesByCountry,
+
+    // Locale
+    getCurrency,
+    getBCP47Tags,
+} from "@visulima/iso-locale";
+```
+
+### Type Imports
+
+Import TypeScript types:
+
+```typescript
+import type { Country, Currency, Region } from "@visulima/iso-locale";
+```
+
+## ESM and CommonJS
+
+The package supports both ESM and CommonJS:
+
+### ESM (Recommended)
+
+```typescript
+import { getByAlpha2, getByCode } from "@visulima/iso-locale";
+```
+
+### CommonJS
+
+```javascript
+const { getByAlpha2, getByCode } = require("@visulima/iso-locale");
+```
+
+## Bundle Size
+
+The library is designed for optimal bundle size:
+
+- Tree-shakeable exports
+- Zero dependencies
+- Efficient implementations
+- Only import what you need
+
+## Verification
+
+Verify the installation by running a simple test:
+
+```typescript
+import { getByAlpha2, getByCode } from "@visulima/iso-locale";
+
+console.log(getByAlpha2("US")?.name); // "United States"
+console.log(getByCode("USD")?.name); // "United States dollar"
+```
+
+## Next Steps
+
+- [Countries](/docs/countries) - Learn about country data and utilities
+- [Currencies](/docs/currencies) - Explore currency data and utilities
+- [Regions](/docs/regions) - Working with regional data
+- [Timezones](/docs/timezones) - Working with timezone data
+- [API Reference](/docs/api) - Browse the complete API documentation

@@ -1,0 +1,180 @@
+---
+title: Currencies
+description: Working with ISO 4217 currency codes and data.
+---
+
+# Currencies
+
+@visulima/iso-locale provides comprehensive ISO 4217 currency data with symbols, decimal places, and country associations.
+
+## Currency Data Structure
+
+Each currency includes:
+
+- **code**: ISO 4217 alphabetic code (3-letter, e.g., "USD")
+- **number**: ISO 4217 numeric code (3-digit, e.g., "840")
+- **name**: Full currency name (e.g., "United States dollar")
+- **decimals**: Number of decimal digits typically used (e.g., 2)
+- **symbol**: Currency symbol (e.g., "$")
+
+## Getting Currency Data
+
+### By Code
+
+```typescript
+import { getByCode, getByNumber } from "@visulima/iso-locale";
+
+// Get by alphabetic code
+const currency = getByCode("USD");
+console.log(currency.name); // "United States dollar"
+console.log(currency.symbol); // "$"
+console.log(currency.decimals); // 2
+
+// Get by numeric code
+const currency2 = getByNumber("840");
+console.log(currency2.code); // "USD"
+```
+
+### By Name
+
+```typescript
+import { getCurrencyByName, searchCurrencies } from "@visulima/iso-locale";
+
+// Exact match
+const currency = getCurrencyByName("United States dollar");
+console.log(currency?.code); // "USD"
+
+// Partial search
+const results = searchCurrencies("dollar");
+console.log(results.length); // Multiple currencies with "dollar" in name
+```
+
+### By Country
+
+```typescript
+import { getByCountry } from "@visulima/iso-locale";
+
+// Get currencies used in a country
+const currencies = getByCountry("US");
+console.log(currencies[0].code); // "USD"
+
+// Get currencies for a country
+const caCurrencies = getByCountry("CA");
+console.log(caCurrencies.map((c) => c.code)); // ["CAD"]
+```
+
+## Currency Utilities
+
+### Get Symbol
+
+```typescript
+import { getSymbol } from "@visulima/iso-locale";
+
+getSymbol("USD"); // "$"
+getSymbol("EUR"); // "€"
+getSymbol("GBP"); // "£"
+getSymbol("JPY"); // "¥"
+```
+
+### Get Name
+
+```typescript
+import { getName } from "@visulima/iso-locale";
+
+getName("USD"); // "United States dollar"
+getName("EUR"); // "Euro"
+```
+
+### Get Countries Using Currency
+
+```typescript
+import { getCountriesByCurrency } from "@visulima/iso-locale";
+
+// Get all countries using EUR
+const countries = getCountriesByCurrency("EUR");
+console.log(countries); // ["FR", "DE", "ES", "IT", ...]
+```
+
+## Validation
+
+```typescript
+import { isValidCurrency } from "@visulima/iso-locale";
+
+isValidCurrency("USD"); // true
+isValidCurrency("840"); // true
+isValidCurrency("XXX"); // false
+```
+
+## Indexed Access
+
+For fast lookups, use the indexed maps:
+
+```typescript
+import { byCode, byNumber } from "@visulima/iso-locale";
+
+const currency = byCode["USD"];
+const currency2 = byNumber["840"];
+```
+
+## All Currencies
+
+Get all currencies as an array:
+
+```typescript
+import { currenciesAll } from "@visulima/iso-locale";
+
+const allCurrencies = currenciesAll;
+console.log(allCurrencies.length); // ~180+ currencies
+```
+
+## Examples
+
+### Format Currency Amount
+
+```typescript
+import { getByCode, getSymbol } from "@visulima/iso-locale";
+
+function formatCurrency(amount: number, currencyCode: string): string {
+    const currency = getByCode(currencyCode);
+    if (!currency) return `${amount} ${currencyCode}`;
+
+    const symbol = getSymbol(currencyCode);
+    const decimals = currency.decimals;
+
+    return `${symbol}${amount.toFixed(decimals)}`;
+}
+
+formatCurrency(100, "USD"); // "$100.00"
+formatCurrency(1000, "JPY"); // "¥1000" (0 decimals)
+```
+
+### Find Currency by Country
+
+```typescript
+import { getByCountry } from "@visulima/iso-locale";
+
+function getPrimaryCurrency(countryCode: string) {
+    const currencies = getByCountry(countryCode);
+    return currencies[0]?.code;
+}
+
+getPrimaryCurrency("US"); // "USD"
+getPrimaryCurrency("GB"); // "GBP"
+```
+
+### Search Currencies
+
+```typescript
+import { searchCurrencies } from "@visulima/iso-locale";
+
+// Find all dollar currencies
+const dollars = searchCurrencies("dollar");
+console.log(dollars.map((c) => c.code));
+// ["USD", "CAD", "AUD", "NZD", ...]
+```
+
+## Next Steps
+
+- [Countries](/docs/countries) - Working with country data
+- [Regions](/docs/regions) - Working with regional data
+- [API Reference](/docs/api) - Complete API documentation
