@@ -1,5 +1,5 @@
-import countriesData from "./data/countries.js";
-import type { Country } from "./types.js";
+import countriesData from "./data/countries";
+import type { Country } from "./types";
 
 /**
  * Countries data indexed by alpha-2 code
