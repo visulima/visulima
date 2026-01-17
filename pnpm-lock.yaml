@@ -394,7 +394,7 @@ importers:
         specifier: 5.0.0-alpha.3
         version: link:../../filesystem/fs
       '@visulima/jsdoc-open-api':
-        specifier: 3.0.0-alpha.3
+        specifier: 3.0.0-alpha.4
         version: link:../jsdoc-open-api
       '@visulima/path':
         specifier: 3.0.0-alpha.4
@@ -509,7 +509,7 @@ importers:
         specifier: ^5.28.5
         version: 5.28.5(@swc/core@1.13.5)(esbuild@0.27.2)
       '@visulima/crud':
-        specifier: 3.0.0-alpha.4
+        specifier: 3.0.0-alpha.5
         version: link:../crud
       '@vitest/coverage-v8':
         specifier: ^4.0.17
@@ -729,7 +729,7 @@ importers:
   packages/api/crud:
     dependencies:
       '@visulima/pagination':
-        specifier: 5.0.0-alpha.4
+        specifier: 5.0.0-alpha.5
         version: link:../pagination
       '@visulima/prisma-dmmf-transformer':
         specifier: 3.0.0-alpha.4
@@ -1967,7 +1967,7 @@ importers:
   packages/email/email:
     dependencies:
       '@visulima/disposable-email-domains':
-        specifier: 1.0.0-alpha.7
+        specifier: 1.0.0-alpha.8
         version: link:../disposable-email-domains
       html-to-text:
         specifier: ^9.0.5
@@ -3694,7 +3694,7 @@ importers:
         specifier: 3.1.0
         version: 3.1.0
       '@visulima/pagination':
-        specifier: 5.0.0-alpha.4
+        specifier: 5.0.0-alpha.5
         version: link:../../api/pagination
       file-type:
         specifier: 21.3.0
@@ -20365,7 +20365,7 @@ packages:
     resolution: {integrity: sha512-cAg3J2ZboQnzSWGo6EH54BQwlrXbcJ3eDF70dy2T4tfXui0Cb+ryBr+5R6n5gqB5e1i6mbsfsqXq1LI6eMm3GQ==}
     engines: {node: ^20.18.0 || >=22.12.0}
     peerDependencies:
-      next: '>=16.0.7'
+      next: '>=16.0.9'
 
   next-tick@1.1.0:
     resolution: {integrity: sha512-CXdUiJembsNjuToQvxayPZF9Vqht7hewsvy2sOWafLvi2awflj9mOC6bHIg50orX8IJvWKY9wYQ/zB2kogPslQ==}
