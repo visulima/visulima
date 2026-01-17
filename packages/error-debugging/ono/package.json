@@ -1,6 +1,6 @@
 {
     "name": "@visulima/ono",
-    "version": "2.0.0-alpha.4",
+    "version": "2.0.0-alpha.5",
     "description": "Ono is an error-parsing library that pretty prints JavaScript errors on a web page or the terminal.",
     "keywords": [
         "visulima",
@@ -94,7 +94,7 @@
     },
     "dependencies": {
         "@shikijs/langs": "^3.21.0",
-        "@visulima/error": "6.0.0-alpha.3",
+        "@visulima/error": "6.0.0-alpha.4",
         "isomorphic-dompurify": "^2.35.0",
         "launch-editor-middleware": "2.12.0",
         "shiki": "^3.21.0"
