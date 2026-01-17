@@ -1,3 +1,14 @@
+## @visulima/error-handler [2.0.0-alpha.6](https://github.com/visulima/visulima/compare/@visulima/error-handler@2.0.0-alpha.5...@visulima/error-handler@2.0.0-alpha.6) (2026-01-17)
+
+### Miscellaneous Chores
+
+* **error-handler:** update dependencies ([e84d234](https://github.com/visulima/visulima/commit/e84d234a98400af596aecc265b7121ef607237dd))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 6.0.0-alpha.4
+
 ## @visulima/error-handler [2.0.0-alpha.5](https://github.com/visulima/visulima/compare/@visulima/error-handler@2.0.0-alpha.4...@visulima/error-handler@2.0.0-alpha.5) (2025-12-27)
 
 ### Bug Fixes
