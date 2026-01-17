@@ -6,7 +6,7 @@
 
 </a>
 
-<h3 align="center">The upload client library. Simple and easy file uploads for React | Vue | Solid | Svelte</h3>
+<h3 align="center">The upload client library. Simple and easy file uploads for React | Vue | Solid | Svelte.</h3>
 
 <!-- END_PACKAGE_OG_IMAGE_PLACEHOLDER -->
 
