@@ -1,3 +1,13 @@
+## @visulima/storage-client [1.0.0-alpha.5](https://github.com/visulima/visulima/compare/@visulima/storage-client@1.0.0-alpha.4...@visulima/storage-client@1.0.0-alpha.5) (2026-01-17)
+
+### Bug Fixes
+
+* added removed Svelte ([d78857a](https://github.com/visulima/visulima/commit/d78857a4b62020a38db38db568ebe54fc9bf7b05))
+
+### Miscellaneous Chores
+
+* **storage-client:** update dependencies ([733b7b3](https://github.com/visulima/visulima/commit/733b7b3f929114e769436633ceb9b4923a289257))
+
 ## @visulima/storage-client [1.0.0-alpha.4](https://github.com/visulima/visulima/compare/@visulima/storage-client@1.0.0-alpha.3...@visulima/storage-client@1.0.0-alpha.4) (2025-12-27)
 
 ### Bug Fixes
