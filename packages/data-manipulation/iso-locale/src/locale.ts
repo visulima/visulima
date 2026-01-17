@@ -68,6 +68,12 @@ export const parseBCP47Tag = (tag: string): { country?: string; language: string
     }
 
     const language = (parts[0] ?? "").toLowerCase();
+
+    // Validate language code format (2-3 letters, ISO 639-1 or ISO 639-2)
+    if (!/^[a-z]{2,3}$/.test(language)) {
+        return undefined;
+    }
+
     let country: string | undefined;
     let script: string | undefined;
 

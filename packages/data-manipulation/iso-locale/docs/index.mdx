@@ -155,7 +155,7 @@ import type { Country, Currency, Region } from "@visulima/iso-locale";
 
 const country: Country = getByAlpha2("US");
 const currency: Currency = getByCode("USD");
-const region: Region = getRegionsForCountry("US");
+const region: Region | undefined = getRegionsForCountry("US");
 ```
 
 ## Data Sources

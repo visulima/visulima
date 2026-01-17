@@ -58,7 +58,7 @@ import { getByCountry } from "@visulima/iso-locale";
 const currencies = getByCountry("US");
 console.log(currencies[0].code); // "USD"
 
-// Countries with multiple currencies
+// Get currencies for a country
 const caCurrencies = getByCountry("CA");
 console.log(caCurrencies.map((c) => c.code)); // ["CAD"]
 ```
@@ -151,7 +151,7 @@ formatCurrency(1000, "JPY"); // "¥1000" (0 decimals)
 ### Find Currency by Country
 
 ```typescript
-import { getByCountry, getPrimaryTimezone } from "@visulima/iso-locale";
+import { getByCountry } from "@visulima/iso-locale";
 
 function getPrimaryCurrency(countryCode: string) {
     const currencies = getByCountry(countryCode);
