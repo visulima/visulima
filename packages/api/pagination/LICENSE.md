@@ -29,7 +29,7 @@ BSD-3-Clause
 # Bundled dependencies:
 ## qs-esm
 License: BSD-3-Clause
-By: Jordan Harband
+By: Payload, Jordan Harband
 Repository: https://github.com/payloadcms/qs-esm.git
 
 > BSD 3-Clause License

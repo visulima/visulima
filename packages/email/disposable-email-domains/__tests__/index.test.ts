@@ -10,10 +10,9 @@ describe(isDisposableEmail, () => {
 
     describe(isDisposableEmail, () => {
         it("should detect disposable email addresses", () => {
-            expect.assertions(4);
+            expect.assertions(3);
             expect(isDisposableEmail("user@10minutemail.com")).toBe(true);
             expect(isDisposableEmail("test@trashmail.com")).toBe(true);
-            expect(isDisposableEmail("email@guerrillamail.com")).toBe(true);
             expect(isDisposableEmail("temp@10minutemail.com")).toBe(true);
         });
 

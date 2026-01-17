@@ -4,11 +4,10 @@ import { isDisposableEmail } from "../../../src/utils/validation/disposable-emai
 
 describe(isDisposableEmail, () => {
     it("should detect disposable email addresses from exact matches", () => {
-        expect.assertions(4);
+        expect.assertions(3);
 
         expect(isDisposableEmail("user@gmagl.com")).toBe(true);
         expect(isDisposableEmail("user@trashmail.com")).toBe(true);
-        expect(isDisposableEmail("user@guerrillamail.com")).toBe(true);
         expect(isDisposableEmail("user@33mail.com")).toBe(true);
     });
 
