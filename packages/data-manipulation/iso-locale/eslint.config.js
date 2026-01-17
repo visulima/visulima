@@ -16,4 +16,9 @@ export default createConfig({
         "research.md",
         ".prettierrc.cjs",
     ],
+}, {
+    files: ["src/data/*.ts"],
+    rules: {
+        "sonarjs/file-name-differ-from-class": "off",
+    },
 });

@@ -136,14 +136,14 @@ const iso6393To6391Map: Record<string, string> = {
 } as const;
 
 /**
- * Convert ISO 639-3 (3-letter) code to ISO 639-1 (2-letter) code
+ * Converts ISO 639-3 (3-letter) code to ISO 639-1 (2-letter) code.
  * @param iso6393 ISO 639-3 language code (e.g., "eng")
  * @returns ISO 639-1 code (e.g., "en") or undefined if not found
  */
 export const iso6393To6391 = (iso6393: string): string | undefined => iso6393To6391Map[iso6393.toLowerCase()];
 
 /**
- * Get all ISO 639-1 codes from ISO 639-3 codes
+ * Gets all ISO 639-1 codes from ISO 639-3 codes.
  * @param iso6393Codes Array of ISO 639-3 codes
  * @returns Array of ISO 639-1 codes (filtered to only valid mappings)
  */

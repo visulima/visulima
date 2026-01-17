@@ -237,24 +237,20 @@ const currencySymbolMap: CurrencySymbolEntry[] = [
     { code: "ZWL", name: "Zimbabwean Dollar", number: "", symbol: "$" },
 ];
 
-function getSymbolFromCurrency(currencyCode: string): string | undefined {
+const getSymbolFromCurrency = (currencyCode: string): string | undefined => {
     const symbol = currencySymbolMap.find((x) => x.code === currencyCode.toUpperCase())?.symbol;
 
     return symbol ?? undefined;
-}
+};
 
-function getSafeSymbolFromCurrency(currencyCode: string): string {
-    return getSymbolFromCurrency(currencyCode) ?? currencyCode;
-}
+const getSafeSymbolFromCurrency = (currencyCode: string): string => getSymbolFromCurrency(currencyCode) ?? currencyCode;
 
-function getNameFromCurrency(currencyCode: string): string | undefined {
+const getNameFromCurrency = (currencyCode: string): string | undefined => {
     const name = currencySymbolMap.find((x) => x.code === currencyCode.toUpperCase())?.name;
 
     return name ?? undefined;
-}
+};
 
-function getSafeNameFromCurrency(currencyCode: string): string {
-    return getNameFromCurrency(currencyCode) ?? currencyCode;
-}
+const getSafeNameFromCurrency = (currencyCode: string): string => getNameFromCurrency(currencyCode) ?? currencyCode;
 
 export { currencySymbolMap, getNameFromCurrency, getSafeNameFromCurrency, getSafeSymbolFromCurrency, getSymbolFromCurrency };

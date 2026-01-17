@@ -32,7 +32,7 @@ export const all = (): string[] => {
         tzList.forEach((tz) => timezones.add(tz));
     });
 
-    return timezones.toSorted();
+    return [...timezones].toSorted();
 };
 
 /**
