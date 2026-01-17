@@ -7,8 +7,8 @@
         "dev": "node index.js"
     },
     "dependencies": {
-        "@hono/node-server": "^1.19.7",
+        "@hono/node-server": "^1.19.9",
         "@visulima/ono": "workspace:*",
-        "hono": "^4.11.3"
+        "hono": "^4.11.4"
     }
 }
