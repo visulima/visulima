@@ -11,6 +11,11 @@ export default defineConfig({
     runtime: "node",
     preset: createPreactPreset(),
     isolatedDeclarationTransformer,
+    externals: [
+        "virtual:visulima-dev-toolbar-options",
+        "virtual:visulima-dev-toolbar-path:apps/index.js",
+        "virtual:visulima-dev-toolbar-path:toolbar/index.js",
+    ],
     rollup: {
         css: {
             mode: "inline",
@@ -22,6 +27,16 @@ export default defineConfig({
         },
         requireCJS: {
             builtinNodeModules: true,
+        },
+    },
+    validation: {
+        dependencies: {
+            unused: {
+                exclude: ["@base-ui/react", "tw-animate-css", "class-variance-authority"]
+            },
+            hoisted: {
+                exclude: ["virtual:visulima-dev-toolbar-options", "virtual:visulima-dev-toolbar-path:toolbar", "virtual:visulima-dev-toolbar-path:apps"],
+            },
         },
     },
     transformer,

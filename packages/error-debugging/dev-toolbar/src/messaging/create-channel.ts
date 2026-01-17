@@ -10,64 +10,65 @@ import type { MessageEnvelope, MessageHandler, MessageHandlers } from "./types";
 export const createMessageChannel = <TEvents extends Record<string, (...args: any[]) => void>>(
     handlers: MessageHandlers,
     sendFunction: (event: string, ...args: any[]) => void,
-): MessageChannel<TEvents> => ({
-    off<K extends keyof TEvents>(event: K, handler?: TEvents[K]): void {
-        const eventName = String(event);
-        const eventHandlers = handlers.get(eventName);
-
-        if (!eventHandlers) {
-            return;
-        }
-
-        if (handler) {
-            eventHandlers.delete(handler as MessageHandler);
-
-            if (eventHandlers.size === 0) {
-                handlers.delete(eventName);
-            }
-        } else {
-            // Remove all handlers for this event
-            handlers.delete(eventName);
-        }
-    },
-
-    on<K extends keyof TEvents>(event: K, handler: TEvents[K]): () => void {
-        const eventName = String(event);
-
-        if (!handlers.has(eventName)) {
-            handlers.set(eventName, new Set());
-        }
-
-        handlers.get(eventName)!.add(handler as MessageHandler);
-
-        // Return unsubscribe function
-        return () => {
+): MessageChannel<TEvents> =>
+    ({
+        off<K extends keyof TEvents>(event: K, handler?: TEvents[K]): void {
+            const eventName = String(event);
             const eventHandlers = handlers.get(eventName);
 
-            if (eventHandlers) {
+            if (!eventHandlers) {
+                return;
+            }
+
+            if (handler) {
                 eventHandlers.delete(handler as MessageHandler);
 
                 if (eventHandlers.size === 0) {
                     handlers.delete(eventName);
                 }
+            } else {
+                // Remove all handlers for this event
+                handlers.delete(eventName);
             }
-        };
-    },
+        },
 
-    once<K extends keyof TEvents>(event: K, handler: TEvents[K]): void {
-        const eventName = String(event);
-        const onceHandler = ((...args: Parameters<TEvents[K]>) => {
-            handler(...args);
-            this.off(event, onceHandler as TEvents[K]);
-        }) as TEvents[K];
+        on<K extends keyof TEvents>(event: K, handler: TEvents[K]): () => void {
+            const eventName = String(event);
 
-        this.on(event, onceHandler);
-    },
+            if (!handlers.has(eventName)) {
+                handlers.set(eventName, new Set());
+            }
 
-    send<K extends keyof TEvents>(event: K, ...args: Parameters<TEvents[K]>): void {
-        sendFunction(String(event), ...args);
-    },
-} as MessageChannel<TEvents>);
+            handlers.get(eventName)!.add(handler as MessageHandler);
+
+            // Return unsubscribe function
+            return () => {
+                const eventHandlers = handlers.get(eventName);
+
+                if (eventHandlers) {
+                    eventHandlers.delete(handler as MessageHandler);
+
+                    if (eventHandlers.size === 0) {
+                        handlers.delete(eventName);
+                    }
+                }
+            };
+        },
+
+        once<K extends keyof TEvents>(event: K, handler: TEvents[K]): void {
+            const eventName = String(event);
+            const onceHandler = ((...args: Parameters<TEvents[K]>) => {
+                handler(...args);
+                this.off(event, onceHandler as TEvents[K]);
+            }) as TEvents[K];
+
+            this.on(event, onceHandler);
+        },
+
+        send<K extends keyof TEvents>(event: K, ...args: Parameters<TEvents[K]>): void {
+            sendFunction(String(event), ...args);
+        },
+    }) as MessageChannel<TEvents>;
 
 /**
  * Handles incoming messages

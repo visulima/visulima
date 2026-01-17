@@ -1,7 +1,3 @@
-/**
- * Built-in apps exports
- */
-
-export { moreApp } from "./more/index";
-export { settingsApp } from "./settings/index";
-export { timelineApp } from "./timeline/index";
+export { default as moreApp } from "./more/index";
+export { default as settingsApp } from "./settings/index";
+export { default as timelineApp } from "./timeline/index";

@@ -1,3 +1,5 @@
+import type { ComponentType } from "preact";
+
 import type { NotificationLevel } from "./toolbar";
 
 /**
@@ -25,24 +27,39 @@ export interface ToolbarAppEventTarget extends EventTarget {
 /**
  * App view configuration
  */
-export type AppView
-    = | {
-        /**
-         * Render app inline in shadow DOM (default)
-         */
-        type: "inline";
-    }
+export type AppView =
     | {
-        /**
-         * URL to load in iframe
-         */
-        src: string;
+          /**
+           * Render app inline in shadow DOM (default)
+           */
+          type: "inline";
+      }
+    | {
+          /**
+           * URL to load in iframe
+           */
+          src: string;
 
-        /**
-         * Render app in iframe for isolation
-         */
-        type: "iframe";
-    };
+          /**
+           * Render app in iframe for isolation
+           */
+          type: "iframe";
+      };
+
+/**
+ * Props passed to Preact component apps
+ */
+export interface AppComponentProps {
+    /**
+     * Event target for app communication
+     */
+    eventTarget: ToolbarAppEventTarget;
+
+    /**
+     * Server helpers (RPC, etc.)
+     */
+    helpers: ServerHelpers;
+}
 
 /**
  * Dev toolbar app definition
@@ -57,6 +74,12 @@ export interface DevToolbarApp {
     beforeTogglingOff?: (canvas: ShadowRoot) => boolean | Promise<boolean>;
 
     /**
+     * Preact component for rendering (alternative to init)
+     * If provided, this will be used instead of init
+     */
+    component?: ComponentType<AppComponentProps>;
+
+    /**
      * Icon HTML string (SVG)
      */
     icon: string;
@@ -67,7 +90,7 @@ export interface DevToolbarApp {
     id: string;
 
     /**
-     * Initialize the app when opened
+     * Initialize the app when opened (vanilla JS/CSS/HTML)
      * @param canvas Shadow root to render into
      * @param eventTarget Event target for app communication
      * @param helpers Server helpers (RPC, etc.)

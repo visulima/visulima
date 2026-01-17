@@ -1,0 +1,586 @@
+import type { RefObject } from "preact";
+import { useCallback, useEffect, useMemo, useRef, useState } from "preact/hooks";
+
+import { clamp, pixelToNumber } from "../utils/index";
+import { useFrameState, type DevToolsFrameState } from "./use-frame-state";
+
+/**
+ * Snap to key points (0, 50, 100) like Vue DevTools
+ */
+const snapToPoints = (value: number): number => {
+    const SNAP_THRESHOLD = 2;
+
+    if (value < 5) {
+        return 0;
+    }
+
+    if (value > 95) {
+        return 100;
+    }
+
+    if (Math.abs(value - 50) < SNAP_THRESHOLD) {
+        return 50;
+    }
+
+    return value;
+};
+
+/**
+ * Get safe area insets from CSS env variables
+ */
+const getSafeAreaInsets = (): { bottom: number; left: number; right: number; top: number } => {
+    if (globalThis.window === undefined) {
+        return { bottom: 0, left: 0, right: 0, top: 0 };
+    }
+
+    const style = getComputedStyle(document.documentElement);
+
+    return {
+        bottom: pixelToNumber(style.getPropertyValue("env(safe-area-inset-bottom)") || "0"),
+        left: pixelToNumber(style.getPropertyValue("env(safe-area-inset-left)") || "0"),
+        right: pixelToNumber(style.getPropertyValue("env(safe-area-inset-right)") || "0"),
+        top: pixelToNumber(style.getPropertyValue("env(safe-area-inset-top)") || "0"),
+    };
+};
+
+/**
+ * Hook for window size tracking
+ */
+const useWindowSize = () => {
+    const [size, setSize] = useState(() => ({
+        height: globalThis.window?.innerHeight ?? 1080,
+        width: globalThis.window?.innerWidth ?? 1920,
+    }));
+
+    useEffect(() => {
+        const updateSize = (): void => {
+            setSize({
+                height: globalThis.window?.innerHeight ?? 1080,
+                width: globalThis.window?.innerWidth ?? 1920,
+            });
+        };
+
+        updateSize();
+        globalThis.window?.addEventListener("resize", updateSize);
+
+        return () => {
+            globalThis.window?.removeEventListener("resize", updateSize);
+        };
+    }, []);
+
+    return size;
+};
+
+/**
+ * Return type for usePosition hook
+ */
+export interface UsePositionReturn {
+    anchorStyle: { left: string; top: string };
+    bringUp: () => void;
+    iframeStyle: Record<string, string>;
+    isDragging: boolean;
+    isHidden: boolean;
+    isVertical: boolean;
+    onPointerDown: (e: PointerEvent) => void;
+    panelStyle: Record<string, string>;
+}
+
+/**
+ * Hook for position management - converted from Vue DevTools usePosition
+ * @see https://github.com/vuejs/devtools/blob/main/packages/overlay/src/composables/position.ts
+ */
+export const usePosition = (panelEl: RefObject<HTMLElement>): UsePositionReturn => {
+    const { state, updateState } = useFrameState();
+    const { height: windowHeight, width: windowWidth } = useWindowSize();
+    const [isHovering, setIsHovering] = useState(false);
+    const [isDragging, setIsDragging] = useState(false);
+    const draggingOffsetRef = useRef({ x: 0, y: 0 });
+    const mousePositionRef = useRef({ x: 0, y: 0 });
+    const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const capturedPointerIdRef = useRef<number | null>(null);
+    const isDraggingRef = useRef(false);
+    const windowWidthRef = useRef(windowWidth);
+    const windowHeightRef = useRef(windowHeight);
+    const updateStateRef = useRef(updateState);
+
+    // Keep refs in sync
+    useEffect(() => {
+        windowWidthRef.current = windowWidth;
+        windowHeightRef.current = windowHeight;
+    }, [windowWidth, windowHeight]);
+
+    useEffect(() => {
+        updateStateRef.current = updateState;
+    }, [updateState]);
+    const [panelMargins, setPanelMargins] = useState(() => ({
+        bottom: 10,
+        left: 10,
+        right: 10,
+        top: 10,
+    }));
+
+    // Update panel margins with safe area
+    useEffect(() => {
+        const safeArea = getSafeAreaInsets();
+
+        setPanelMargins({
+            bottom: safeArea.bottom + 10,
+            left: safeArea.left + 10,
+            right: safeArea.right + 10,
+            top: safeArea.top + 10,
+        });
+    }, []);
+
+    /**
+     * Handle pointer down - start dragging
+     */
+    const onPointerDown = useCallback((e: PointerEvent) => {
+        // Prevent default to avoid text selection and other default behaviors
+        e.preventDefault();
+        e.stopPropagation();
+
+        setIsDragging(true);
+        isDraggingRef.current = true;
+
+        const panel = panelEl.current;
+
+        if (panel) {
+            const { height, left, top, width } = panel.getBoundingClientRect();
+
+            draggingOffsetRef.current = {
+                x: e.clientX - left - width / 2,
+                y: e.clientY - top - height / 2,
+            };
+
+            // Capture pointer on the element that received the event (not necessarily the panel)
+            // This ensures we continue receiving events even when pointer leaves the window
+            const target = e.target as HTMLElement;
+            try {
+                if (target && target.setPointerCapture) {
+                    target.setPointerCapture(e.pointerId);
+                    capturedPointerIdRef.current = e.pointerId;
+                } else if (panel.setPointerCapture) {
+                    // Fallback to panel if target doesn't support capture
+                    panel.setPointerCapture(e.pointerId);
+                    capturedPointerIdRef.current = e.pointerId;
+                }
+            } catch (err) {
+                // setPointerCapture may fail in some browsers, continue without it
+                console.warn("Failed to capture pointer:", err);
+            }
+
+            // Add cursor style to document body for dragging
+            document.body.style.cursor = "grabbing";
+            document.body.style.userSelect = "none";
+        }
+    }, [panelEl]);
+
+    /**
+     * Bring up panel (set hovering and start timer)
+     */
+    const bringUp = useCallback(() => {
+        setIsHovering(true);
+
+        if (state.minimizePanelInactive < 0) {
+            return;
+        }
+
+        if (timerRef.current) {
+            clearTimeout(timerRef.current);
+        }
+
+        timerRef.current = setTimeout(() => {
+            setIsHovering(false);
+        }, state.minimizePanelInactive || 0);
+    }, [state.minimizePanelInactive]);
+
+    // Call bringUp on mount
+    useEffect(() => {
+        bringUp();
+    }, [bringUp]);
+
+    // Handle pointer events - use global listeners to track pointer even when it leaves window
+    // Set up listeners once and keep them active - use refs to access current values
+    useEffect(() => {
+        const handlePointerUp = (_e: PointerEvent): void => {
+            if (!isDraggingRef.current) {
+                return;
+            }
+
+            setIsDragging(false);
+            isDraggingRef.current = false;
+
+            // Restore cursor and user select
+            document.body.style.cursor = "";
+            document.body.style.userSelect = "";
+
+            // Release pointer capture - try to release on any element that might have captured it
+            if (capturedPointerIdRef.current !== null) {
+                try {
+                    const panel = panelEl.current;
+                    if (panel && capturedPointerIdRef.current !== null) {
+                        panel.releasePointerCapture(capturedPointerIdRef.current);
+                    }
+                } catch {
+                    // Ignore errors when releasing capture
+                }
+                capturedPointerIdRef.current = null;
+            }
+        };
+
+        const handlePointerCancel = (_e: PointerEvent): void => {
+            if (!isDraggingRef.current) {
+                return;
+            }
+
+            setIsDragging(false);
+            isDraggingRef.current = false;
+
+            // Restore cursor and user select
+            document.body.style.cursor = "";
+            document.body.style.userSelect = "";
+
+            // Release pointer capture
+            if (capturedPointerIdRef.current !== null) {
+                try {
+                    const panel = panelEl.current;
+                    if (panel && capturedPointerIdRef.current !== null) {
+                        panel.releasePointerCapture(capturedPointerIdRef.current);
+                    }
+                } catch {
+                    // Ignore errors when releasing capture
+                }
+                capturedPointerIdRef.current = null;
+            }
+        };
+
+        const handleLostPointerCapture = (): void => {
+            // If we lose capture unexpectedly, stop dragging
+            if (isDraggingRef.current) {
+                setIsDragging(false);
+                isDraggingRef.current = false;
+                capturedPointerIdRef.current = null;
+
+                // Restore cursor and user select
+                document.body.style.cursor = "";
+                document.body.style.userSelect = "";
+            }
+        };
+
+        const handlePointerMove = (e: PointerEvent): void => {
+            // Use ref to check dragging state to avoid stale closure issues
+            if (!isDraggingRef.current) {
+                return;
+            }
+
+            // Prevent default to avoid text selection during drag
+            e.preventDefault();
+
+            // Use refs for window dimensions to avoid stale closures
+            const currentWidth = windowWidthRef.current;
+            const currentHeight = windowHeightRef.current;
+
+            const centerX = currentWidth / 2;
+            const centerY = currentHeight / 2;
+
+            // Don't clamp coordinates - allow dragging even when pointer is outside window
+            // The browser will still send events with pointer capture
+            const mouseX = e.clientX;
+            const mouseY = e.clientY;
+
+            // Calculate panel center position (where panel should be)
+            const x = mouseX - draggingOffsetRef.current.x;
+            const y = mouseY - draggingOffsetRef.current.y;
+
+            mousePositionRef.current = { x, y };
+
+            // Clamp mouse position for angle detection to window bounds
+            // This prevents invalid angle calculations when pointer is far outside window
+            const clampedMouseX = Math.max(0, Math.min(mouseX, currentWidth));
+            const clampedMouseY = Math.max(0, Math.min(mouseY, currentHeight));
+
+            // Use clamped mouse position for angle detection
+            // This matches Vue DevTools behavior - angle is based on where mouse is, not panel center
+            const deg = Math.atan2(clampedMouseY - centerY, clampedMouseX - centerX);
+            const HORIZONTAL_MARGIN = 70;
+            const TL = Math.atan2(0 - centerY + HORIZONTAL_MARGIN, 0 - centerX);
+            const TR = Math.atan2(0 - centerY + HORIZONTAL_MARGIN, currentWidth - centerX);
+            const BL = Math.atan2(currentHeight - HORIZONTAL_MARGIN - centerY, 0 - centerX);
+            const BR = Math.atan2(currentHeight - HORIZONTAL_MARGIN - centerY, currentWidth - centerX);
+
+            // Determine position based on angle ranges - matches Vue DevTools exactly
+            // Using mouse position for angle detection (more responsive than panel center)
+            // Vue DevTools ternary chain: (deg >= TL && deg <= TR) ? 'top' : (deg >= TR && deg <= BR) ? 'right' : (deg >= BR && deg <= BL) ? 'bottom' : 'left'
+            const newPosition: "top" | "bottom" | "left" | "right" = (deg >= TL && deg <= TR)
+                ? "top"
+                : (deg >= TR && deg <= BR)
+                    ? "right"
+                    : (deg >= BR && deg <= BL)
+                        ? "bottom"
+                        : "left";
+
+            // Clamp position percentages to valid range
+            const clampedLeft = Math.max(0, Math.min(100, (x / currentWidth) * 100));
+            const clampedTop = Math.max(0, Math.min(100, (y / currentHeight) * 100));
+
+            // Use ref to call updateState to avoid stale closure
+            updateStateRef.current({
+                left: snapToPoints(clampedLeft),
+                position: newPosition,
+                top: snapToPoints(clampedTop),
+            });
+        };
+
+        // Use global listeners to track pointer even when it leaves the window
+        // Capture phase ensures we get events even when pointer is outside
+        // Set passive: false so we can call preventDefault
+        document.addEventListener("pointermove", handlePointerMove, { capture: true, passive: false });
+        document.addEventListener("pointerup", handlePointerUp, { capture: true });
+        document.addEventListener("pointercancel", handlePointerCancel, { capture: true });
+
+        // Listen for lost capture events on document (not just panel)
+        document.addEventListener("lostpointercapture", handleLostPointerCapture, { capture: true });
+
+        return () => {
+            document.removeEventListener("pointermove", handlePointerMove, { capture: true });
+            document.removeEventListener("pointerup", handlePointerUp, { capture: true });
+            document.removeEventListener("pointercancel", handlePointerCancel, { capture: true });
+            document.removeEventListener("lostpointercapture", handleLostPointerCapture, { capture: true });
+        };
+    }, []); // Empty deps - listeners stay active, use refs for current values
+
+    // Computed: isVertical
+    const isVertical = useMemo(
+        () => state.position === "left" || state.position === "right",
+        [state.position],
+    );
+
+    // Computed: isHidden
+    const isHidden = useMemo(() => {
+        if (state.minimizePanelInactive < 0) {
+            return false;
+        }
+
+        if (state.minimizePanelInactive === 0) {
+            return true;
+        }
+
+        // Check for touch device
+        // @ts-expect-error - compatibility
+        const isTouchDevice = globalThis.window !== undefined && (
+            "ontouchstart" in globalThis.window ||
+            (globalThis.navigator?.maxTouchPoints ?? 0) > 0 ||
+            (globalThis.navigator?.msMaxTouchPoints ?? 0) > 0
+        );
+
+        return !isDragging
+            && !state.open
+            && !isHovering
+            && !isTouchDevice
+            && state.minimizePanelInactive > 0;
+    }, [isDragging, state.open, state.minimizePanelInactive, isHovering]);
+
+    // Computed: anchorPos
+    const anchorPos = useMemo(() => {
+        const panel = panelEl.current;
+        const halfWidth = (panel?.clientWidth ?? 0) / 2;
+        const halfHeight = (panel?.clientHeight ?? 0) / 2;
+
+        const left = (state.left * windowWidth) / 100;
+        const top = (state.top * windowHeight) / 100;
+
+        switch (state.position) {
+            case "top": {
+                return {
+                    left: clamp(left, halfWidth + panelMargins.left, windowWidth - halfWidth - panelMargins.right),
+                    top: panelMargins.top + halfHeight,
+                };
+            }
+
+            case "right": {
+                return {
+                    left: windowWidth - panelMargins.right - halfHeight,
+                    top: clamp(top, halfWidth + panelMargins.top, windowHeight - halfWidth - panelMargins.bottom),
+                };
+            }
+
+            case "left": {
+                return {
+                    left: panelMargins.left + halfHeight,
+                    top: clamp(top, halfWidth + panelMargins.top, windowHeight - halfWidth - panelMargins.bottom),
+                };
+            }
+
+            case "bottom":
+            default: {
+                return {
+                    left: clamp(left, halfWidth + panelMargins.left, windowWidth - halfWidth - panelMargins.right),
+                    top: windowHeight - panelMargins.bottom - halfHeight,
+                };
+            }
+        }
+    }, [state.left, state.position, state.top, windowHeight, windowWidth, panelMargins, panelEl]);
+
+    // Computed: anchorStyle with smooth transitions
+    const anchorStyle = useMemo(
+        () => ({
+            left: `${anchorPos.left}px`,
+            top: `${anchorPos.top}px`,
+        }),
+        [anchorPos],
+    );
+
+    // Computed: iframeStyle
+    const iframeStyle = useMemo(() => {
+        // Access mousePosition to ensure it's tracked
+        mousePositionRef.current.x;
+        mousePositionRef.current.y;
+
+        const panel = panelEl.current;
+        const halfHeight = (panel?.clientHeight ?? 0) / 2;
+
+        const frameMargin = {
+            bottom: panelMargins.bottom + halfHeight,
+            left: panelMargins.left + halfHeight,
+            right: panelMargins.right + halfHeight,
+            top: panelMargins.top + halfHeight,
+        };
+
+        const marginHorizontal = frameMargin.left + frameMargin.right;
+        const marginVertical = frameMargin.top + frameMargin.bottom;
+
+        const maxWidth = windowWidth - marginHorizontal;
+        const maxHeight = windowHeight - marginVertical;
+
+        const style: Record<string, string> = {
+            height: `min(${state.height}vh, calc(100vh - ${marginVertical}px))`,
+            pointerEvents: isDragging ? "none" : "auto",
+            width: `min(${state.width}vw, calc(100vw - ${marginHorizontal}px))`,
+            zIndex: "-1",
+        };
+
+        const anchor = anchorPos;
+        const width = Math.min(maxWidth, (state.width * windowWidth) / 100);
+        const height = Math.min(maxHeight, (state.height * windowHeight) / 100);
+
+        const anchorX = anchor?.left ?? 0;
+        const anchorY = anchor?.top ?? 0;
+
+        switch (state.position) {
+            case "top":
+            case "bottom": {
+                style.left = "0";
+                style.transform = "translate(-50%, 0)";
+
+                if ((anchorX - frameMargin.left) < width / 2) {
+                    style.left = `${width / 2 - anchorX + frameMargin.left}px`;
+                } else if ((windowWidth - anchorX - frameMargin.right) < width / 2) {
+                    style.left = `${windowWidth - anchorX - width / 2 - frameMargin.right}px`;
+                }
+
+                break;
+            }
+
+            case "right":
+            case "left": {
+                style.top = "0";
+                style.transform = "translate(0, -50%)";
+
+                if ((anchorY - frameMargin.top) < height / 2) {
+                    style.top = `${height / 2 - anchorY + frameMargin.top}px`;
+                } else if ((windowHeight - anchorY - frameMargin.bottom) < height / 2) {
+                    style.top = `${windowHeight - anchorY - height / 2 - frameMargin.bottom}px`;
+                }
+
+                break;
+            }
+        }
+
+        switch (state.position) {
+            case "top": {
+                style.top = "0";
+
+                break;
+            }
+
+            case "right": {
+                style.right = "0";
+
+                break;
+            }
+
+            case "left": {
+                style.left = "0";
+
+                break;
+            }
+
+            case "bottom":
+            default: {
+                style.bottom = "0";
+
+                break;
+            }
+        }
+
+        return style;
+    }, [anchorPos, isDragging, panelMargins, state.height, state.position, state.width, windowHeight, windowWidth, panelEl]);
+
+    // Computed: panelStyle
+    const panelStyle = useMemo(() => {
+        const style: Record<string, string> = {};
+
+        if (isVertical) {
+            const hideOffset = isHidden ? ` ${state.position === "right" ? "+" : "-"} 15px` : "";
+
+            style.transform = `translate(${hideOffset ? `calc(-50%${hideOffset})` : "-50%"}, -50%) rotate(90deg)`;
+        } else {
+            const hideOffset = isHidden ? ` ${state.position === "top" ? "-" : "+"} 15px` : "";
+
+            style.transform = `translate(-50%, ${hideOffset ? `calc(-50%${hideOffset}))` : "-50%"}`;
+        }
+
+        if (isHidden) {
+            switch (state.position) {
+                case "right":
+                case "top": {
+                    style.borderTopLeftRadius = "0";
+                    style.borderTopRightRadius = "0";
+
+                    break;
+                }
+
+                case "bottom":
+                case "left": {
+                    style.borderBottomLeftRadius = "0";
+                    style.borderBottomRightRadius = "0";
+
+                    break;
+                }
+            }
+        }
+
+        // Disable transitions only during dragging for immediate response
+        if (isDragging) {
+            style.transition = "none !important";
+        } else {
+            // Smooth transitions when not dragging
+            style.transition = "transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), border-radius 0.2s cubic-bezier(0.4, 0, 0.2, 1)";
+        }
+
+        return style;
+    }, [isVertical, isHidden, state.position, isDragging]);
+
+    const result: UsePositionReturn = {
+        anchorStyle,
+        bringUp,
+        iframeStyle,
+        isDragging,
+        isHidden,
+        isVertical,
+        onPointerDown,
+        panelStyle,
+    };
+
+    return result;
+};

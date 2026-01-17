@@ -55,7 +55,6 @@ function generatePackageSVG(packageName, imageDataUri) {
 
     const textX = 65;
     const startY = 117;
-    const lineHeight = 60; // Space between lines
 
     // Replace hyphens with spaces, split by spaces, and capitalize each word
     let nameParts = packageName

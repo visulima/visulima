@@ -65,7 +65,7 @@ const initToolbar = async () => {
         globalThis.__VISULIMA_DEVTOOLS_INITIALIZED__ = false;
         console.error("[dev-toolbar] Failed to initialize:", error);
     }
-}
+};
 
 // Initialize when DOM is ready
 if (document.readyState === "loading") {

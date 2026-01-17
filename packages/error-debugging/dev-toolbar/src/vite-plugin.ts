@@ -9,6 +9,33 @@ import { createServerRPCContext } from "./rpc/server";
 import type { DevToolbarApp, ServerFunctions } from "./types/index";
 
 /**
+ * Get the path to the dev-toolbar dist directory
+ * Always use dist folder - Vite should never access src
+ */
+const getDevToolbarPath = (): string => {
+    const pluginPath = normalizePath(path.dirname(fileURLToPath(import.meta.url)));
+
+    // import.meta.url points to dist when loaded from the built package
+    return pluginPath;
+};
+
+/**
+ * Remove URL query string from a path
+ */
+const removeUrlQuery = (url: string): string => url.replace(/\?.*$/, "");
+
+// Query marker for dev-toolbar resources
+// Why use query instead of vite virtual module on devtools resource?
+// Devtools resource will import other packages, which vite cannot analyze correctly on virtual module.
+// So we should use absolute path + `query` to mark the resource as devtools resource.
+const devToolbarResourceSymbol = "?__visulima-dev-toolbar-resource";
+
+// Virtual module IDs
+const VIRTUAL_OPTIONS = "virtual:visulima-dev-toolbar-options";
+const RESOLVED_OPTIONS = `\0${VIRTUAL_OPTIONS}`;
+const VIRTUAL_PATH_PREFIX = "virtual:visulima-dev-toolbar-path:";
+
+/**
  * Dev toolbar plugin options
  */
 export interface DevToolbarOptions {
@@ -50,33 +77,6 @@ export interface DevToolbarOptions {
      */
     serverFunctions?: Partial<ServerFunctions>;
 }
-
-/**
- * Get the path to the dev-toolbar dist directory
- * Always use dist folder - Vite should never access src
- */
-const getDevToolbarPath = (): string => {
-    const pluginPath = normalizePath(path.dirname(fileURLToPath(import.meta.url)));
-
-    // import.meta.url points to dist when loaded from the built package
-    return pluginPath;
-};
-
-/**
- * Remove URL query string from a path
- */
-const removeUrlQuery = (url: string): string => url.replace(/\?.*$/, "");
-
-// Query marker for dev-toolbar resources
-// Why use query instead of vite virtual module on devtools resource?
-// Devtools resource will import other packages, which vite cannot analyze correctly on virtual module.
-// So we should use absolute path + `query` to mark the resource as devtools resource.
-const devToolbarResourceSymbol = "?__visulima-dev-toolbar-resource";
-
-// Virtual module IDs
-const VIRTUAL_OPTIONS = "virtual:visulima-dev-toolbar-options";
-const RESOLVED_OPTIONS = `\0${VIRTUAL_OPTIONS}`;
-const VIRTUAL_PATH_PREFIX = "virtual:visulima-dev-toolbar-path:";
 
 /**
  * Dev toolbar Vite plugin
@@ -161,9 +161,9 @@ export const devToolbar = (options: DevToolbarOptions = {}): Plugin => {
 
             // Support appendTo option like Vue DevTools
             if (
-                appendTo
-                && filename
-                && ((typeof appendTo === "string" && filename.endsWith(appendTo)) || (appendTo instanceof RegExp && appendTo.test(filename)))
+                appendTo &&
+                filename &&
+                ((typeof appendTo === "string" && filename.endsWith(appendTo)) || (appendTo instanceof RegExp && appendTo.test(filename)))
             ) {
                 return `import '${VIRTUAL_PATH_PREFIX}client/overlay.js';\n${code}`;
             }
@@ -195,5 +195,3 @@ export const devToolbar = (options: DevToolbarOptions = {}): Plugin => {
         },
     };
 };
-
-export default devToolbar;

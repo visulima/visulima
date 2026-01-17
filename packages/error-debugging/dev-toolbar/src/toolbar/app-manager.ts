@@ -138,7 +138,13 @@ export class AppManager {
                 if (canvas) {
                     const helpers = createServerHelpers();
 
-                    await app.init(canvas.shadowRoot, app.eventTarget, helpers);
+                    // app.init can return void or Promise<void>
+                    const initResult = app.init(canvas.shadowRoot, app.eventTarget, helpers);
+
+                    if (initResult && typeof initResult.then === "function") {
+                        await initResult;
+                    }
+
                     this.markAppInitialized(appId);
                     app.status = "ready";
                 } else {
@@ -146,6 +152,7 @@ export class AppManager {
                     app.status = "pending";
                 }
             } catch (error) {
+                // eslint-disable-next-line no-console
                 console.error(`[dev-toolbar] Failed to init app ${appId}:`, error);
                 app.status = "error";
                 app.active = false;
@@ -177,7 +184,9 @@ export class AppManager {
             const canvas = this.getAppCanvas(appId);
 
             if (canvas) {
-                const shouldClose = await app.beforeTogglingOff(canvas.shadowRoot);
+                const result = app.beforeTogglingOff(canvas.shadowRoot);
+                // beforeTogglingOff can return boolean or Promise<boolean>
+                const shouldClose = result && typeof (result as Promise<boolean>).then === "function" ? await result : result;
 
                 if (!shouldClose) {
                     return false;
