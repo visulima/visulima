@@ -7,9 +7,9 @@ describe("solution/error-hint-finder", () => {
         expect.assertions(1);
 
         const error = new Error("x") as Error & { hint?: unknown };
-        const res = await errorHintFinder.handle(error, { file: "f", line: 1 });
+        const result = await errorHintFinder.handle(error, { file: "f", line: 1 });
 
-        expect(res).toBeUndefined();
+        expect(result).toBeUndefined();
     });
 
     it("returns body for string hint", async () => {
@@ -18,9 +18,9 @@ describe("solution/error-hint-finder", () => {
         const error = new Error("x") as Error & { hint?: unknown };
 
         error.hint = "Try this";
-        const res = await errorHintFinder.handle(error, { file: "f", line: 1 });
+        const result = await errorHintFinder.handle(error, { file: "f", line: 1 });
 
-        expect(res?.body).toBe("Try this");
+        expect(result?.body).toBe("Try this");
     });
 
     it("returns solution when hint is solution object", async () => {
@@ -29,10 +29,10 @@ describe("solution/error-hint-finder", () => {
         const error = new Error("x") as Error & { hint?: unknown };
 
         error.hint = { body: "Fix it", header: "Header" };
-        const res = await errorHintFinder.handle(error, { file: "f", line: 1 });
+        const result = await errorHintFinder.handle(error, { file: "f", line: 1 });
 
-        expect(res?.body).toBe("Fix it");
-        expect(res?.header).toBe("Header");
+        expect(result?.body).toBe("Fix it");
+        expect(result?.header).toBe("Header");
     });
 
     it("joins array hint", async () => {
@@ -41,8 +41,8 @@ describe("solution/error-hint-finder", () => {
         const error = new Error("x") as Error & { hint?: unknown };
 
         error.hint = ["a", "b"];
-        const res = await errorHintFinder.handle(error, { file: "f", line: 1 });
+        const result = await errorHintFinder.handle(error, { file: "f", line: 1 });
 
-        expect(res?.body).toBe("a\nb");
+        expect(result?.body).toBe("a\nb");
     });
 });

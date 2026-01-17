@@ -112,7 +112,21 @@ const reconstructError = (serialized: Record<string, unknown>, options: Deserial
  */
 const deserializeValue = (value: unknown, options: DeserializeOptionsType, depth: number): unknown => {
     if (isPlainObject(value)) {
-        return deserializePlainObject(value, options, depth);
+        // Check if it looks like a serialized error
+        if (isErrorLike(value)) {
+            return deserializePlainObject(value, options, depth);
+        }
+
+        // For nested plain objects that aren't error-like, preserve them as plain objects
+        // and recursively deserialize their properties
+        const result: Record<string, unknown> = {};
+
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        for (const [key, value_] of Object.entries(value)) {
+            result[key] = deserializeValue(value_, options, depth + 1);
+        }
+
+        return result;
     }
 
     if (Array.isArray(value)) {
