@@ -20,14 +20,28 @@ type ExtendedYAMLError = YAMLError & { annotation?: string };
 
 const tagsToObjects = (specs: Spec[], verbose?: boolean) =>
     specs.map((spec: Spec) => {
-        if ((spec.tag === "openapi" || spec.tag === "swagger" || spec.tag === "asyncapi") && spec.description !== "") {
-            const parsed = yaml.parseDocument(spec.description);
+        // Check if we have content to parse (description or name that should be combined)
+        const hasContent = spec.description !== "" || (spec.name !== undefined && (spec.name.startsWith("/") || spec.name.endsWith(":")));
+        
+        if ((spec.tag === "openapi" || spec.tag === "swagger" || spec.tag === "asyncapi") && hasContent) {
+            // Combine name and description if name is a path (starts with "/") or a top-level property (ends with ":")
+            let yamlContent = spec.description;
+            if (spec.name !== undefined && (spec.name.startsWith("/") || spec.name.endsWith(":"))) {
+                // If description starts with newlines, preserve them; otherwise add one newline
+                if (yamlContent.trim() === "") {
+                    yamlContent = spec.name;
+                } else {
+                    yamlContent = `${spec.name}\n${yamlContent}`;
+                }
+            }
+
+            const parsed = yaml.parseDocument(yamlContent);
 
             if (parsed.errors.length > 0) {
                 parsed.errors.map<ExtendedYAMLError>((error) => {
                     const newError: ExtendedYAMLError = error;
 
-                    newError.annotation = spec.description;
+                    newError.annotation = yamlContent;
 
                     return newError as ExtendedYAMLError;
                 });
