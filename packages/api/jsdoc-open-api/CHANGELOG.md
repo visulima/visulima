@@ -1,3 +1,9 @@
+## @visulima/jsdoc-open-api [3.0.0-alpha.4](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@3.0.0-alpha.3...@visulima/jsdoc-open-api@3.0.0-alpha.4) (2026-01-17)
+
+### Bug Fixes
+
+* **jsdoc-open-api:** combine name and description for path-based YAML parsing ([68e7d23](https://github.com/visulima/visulima/commit/68e7d2395ab97de3221892afe03da27688df7569))
+
 ## @visulima/jsdoc-open-api [3.0.0-alpha.3](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@3.0.0-alpha.2...@visulima/jsdoc-open-api@3.0.0-alpha.3) (2025-12-27)
 
 ### Bug Fixes
