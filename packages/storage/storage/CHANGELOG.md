@@ -1,3 +1,14 @@
+## @visulima/storage [1.0.0-alpha.6](https://github.com/visulima/visulima/compare/@visulima/storage@1.0.0-alpha.5...@visulima/storage@1.0.0-alpha.6) (2026-01-17)
+
+### Miscellaneous Chores
+
+* **storage:** update dependencies ([b2450d8](https://github.com/visulima/visulima/commit/b2450d8f096991389ceed4bf4def2f99363daf6f))
+
+
+### Dependencies
+
+* **@visulima/pagination:** upgraded to 5.0.0-alpha.5
+
 ## @visulima/storage [1.0.0-alpha.5](https://github.com/visulima/visulima/compare/@visulima/storage@1.0.0-alpha.4...@visulima/storage@1.0.0-alpha.5) (2025-12-27)
 
 ### Bug Fixes
