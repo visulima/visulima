@@ -1,3 +1,14 @@
+## @visulima/crud [3.0.0-alpha.5](https://github.com/visulima/visulima/compare/@visulima/crud@3.0.0-alpha.4...@visulima/crud@3.0.0-alpha.5) (2026-01-17)
+
+### Miscellaneous Chores
+
+* **crud:** update dependencies ([39f272d](https://github.com/visulima/visulima/commit/39f272de3a46acd657b9f8327387c013ef626ab3))
+
+
+### Dependencies
+
+* **@visulima/pagination:** upgraded to 5.0.0-alpha.5
+
 ## @visulima/crud [3.0.0-alpha.4](https://github.com/visulima/visulima/compare/@visulima/crud@3.0.0-alpha.3...@visulima/crud@3.0.0-alpha.4) (2025-12-27)
 
 ### Bug Fixes
