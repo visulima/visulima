@@ -7,7 +7,7 @@
         "dev": "tsx index.ts"
     },
     "dependencies": {
-        "@azure/storage-blob": "^12.29.1",
+        "@azure/storage-blob": "^12.30.0",
         "@visulima/storage": "workspace:*",
         "copy-file": "^11.1.0",
         "cors": "2.8.5",
