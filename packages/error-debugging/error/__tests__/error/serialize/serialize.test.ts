@@ -196,7 +196,6 @@ describe("error serializer", () => {
         const foo = new Error("foo");
         const bar = new Error("bar");
 
-        // eslint-disable-next-line no-loops/no-loops
         for (const aggregate of [
             // @ts-expect-error -- Web API
             new AggregateError([foo, bar], "aggregated message"),
@@ -444,6 +443,7 @@ describe("error serializer", () => {
 
         const serialized = serializeError(error, { useToJSON: true });
 
+        // eslint-disable-next-line unused-imports/no-unused-vars
         const { stack, ...rest } = serialized;
 
         expect(rest).toStrictEqual({
@@ -477,6 +477,7 @@ describe("error serializer", () => {
 
         const serialized = serializeError(error, { useToJSON: true });
 
+        // eslint-disable-next-line unused-imports/no-unused-vars
         const { stack, ...rest } = serialized;
 
         expect(rest).toStrictEqual({
@@ -504,6 +505,7 @@ describe("error serializer", () => {
         const error = Object.preventExtensions(new CustomError());
         const serialized = serializeError(error, { useToJSON: true });
 
+        // eslint-disable-next-line unused-imports/no-unused-vars
         const { stack, ...rest } = serialized;
 
         expect(rest).toStrictEqual({
@@ -518,12 +520,14 @@ describe("error serializer", () => {
         class CustomError extends Error {
             private readonly value: number;
 
+            // eslint-disable-next-line sonarjs/no-identical-functions
             public constructor() {
                 super("foo");
                 this.name = this.constructor.name;
                 this.value = 10;
             }
 
+            // eslint-disable-next-line sonarjs/no-identical-functions
             public toJSON() {
                 return {
                     amount: `$${this.value}`,
@@ -567,6 +571,41 @@ describe("error serializer", () => {
         const levelThree = serializeError(error, { maxDepth: 3 });
 
         expect(levelThree).toStrictEqual({ message, name, one: { two: { three: {} } }, stack });
+    });
+
+    it("should handle maxDepth consistently across sibling properties", () => {
+        expect.assertions(6);
+
+        const error = new Error("test") as Error & {
+            a: { deep: { value: string } };
+            b: { deep: { value: string } };
+            c: { deep: { value: string } };
+        };
+
+        error.a = { deep: { value: "a" } };
+        error.b = { deep: { value: "b" } };
+        error.c = { deep: { value: "c" } };
+
+        const serialized = serializeError(error, { maxDepth: 3 });
+
+        expect(serialized.a.deep.value).toBe("a");
+        expect(serialized.b.deep.value).toBe("b");
+        expect(serialized.c.deep.value).toBe("c");
+
+        const deserialized = deserializeError(
+            {
+                a: { deep: { value: "a" } },
+                b: { deep: { value: "b" } },
+                c: { deep: { value: "c" } },
+                message: "test",
+                name: "Error",
+            },
+            { maxDepth: 3 },
+        );
+
+        expect((deserialized as Error & { a: { deep: { value: string } } }).a.deep.value).toBe("a");
+        expect((deserialized as Error & { b: { deep: { value: string } } }).b.deep.value).toBe("b");
+        expect((deserialized as Error & { c: { deep: { value: string } } }).c.deep.value).toBe("c");
     });
 
     it.runIf("DOMException" in globalThis)("should serialize DOMException", () => {
@@ -616,7 +655,7 @@ describe("error serializer", () => {
         });
         error.object = object;
 
-        expect(() => serializeError(error)).not.toThrow();
+        expect(() => serializeError(error)).not.toThrowError();
     });
 
     it.runIf("DOMException" in globalThis)("should deep clone DOMException when it is in the cause property", () => {
@@ -636,6 +675,123 @@ describe("error serializer", () => {
         // Should be a deep clone, not the same reference
         expect(serialized.cause).not.toBe(domException);
         expect(serialized.cause instanceof DOMException).toBe(false);
+    });
+
+    it("should serialize BigInt values as string with 'n' suffix", () => {
+        expect.assertions(3);
+
+        const error = new Error("foo") as Error & { bigIntValue: bigint; negativeBigInt: bigint; zeroBigInt: bigint };
+
+        error.bigIntValue = 123n;
+        error.negativeBigInt = -456n;
+        error.zeroBigInt = 0n;
+
+        const serialized = serializeError(error);
+
+        expect(serialized.bigIntValue).toBe("123n");
+        expect(serialized.negativeBigInt).toBe("-456n");
+        expect(serialized.zeroBigInt).toBe("0n");
+    });
+
+    it("should serialize BigInt as string and allow JSON.stringify", () => {
+        expect.assertions(2);
+
+        const error = new Error("test") as Error & { bigNumber: bigint };
+
+        error.bigNumber = 123_456_789_012_345_678_901n;
+
+        const serialized = serializeError(error);
+
+        expect(serialized.bigNumber).toBe("123456789012345678901n");
+        expect(() => JSON.stringify(serialized)).not.toThrowError();
+    });
+
+    it("should serialize nested BigInt values", () => {
+        expect.assertions(2);
+
+        const error = new Error("foo") as Error & { nested: { bigInt: bigint } };
+
+        error.nested = { bigInt: 999n };
+
+        const serialized = serializeError(error);
+
+        expect(serialized.nested).toBeDefined();
+        expect((serialized.nested as { bigInt: string }).bigInt).toBe("999n");
+    });
+
+    it("should set error properties with correct enumerability", () => {
+        expect.assertions(7);
+
+        const innerError = new Error("inner");
+        const error = new Error("foo") as Error & { code: string; customProp: string };
+
+        error.code = "ERR_TEST";
+        error.cause = innerError;
+        error.customProp = "custom";
+
+        const serialized = serializeError(error);
+
+        // Serialized errors are plain objects, so all properties should be enumerable
+        const nameDescriptor = Object.getOwnPropertyDescriptor(serialized, "name");
+
+        expect(nameDescriptor?.enumerable).toBe(true);
+
+        const messageDescriptor = Object.getOwnPropertyDescriptor(serialized, "message");
+
+        expect(messageDescriptor?.enumerable).toBe(true);
+
+        const stackDescriptor = Object.getOwnPropertyDescriptor(serialized, "stack");
+
+        expect(stackDescriptor?.enumerable).toBe(true);
+
+        const causeDescriptor = Object.getOwnPropertyDescriptor(serialized, "cause");
+
+        expect(causeDescriptor?.enumerable).toBe(true);
+
+        // Check that code property is enumerable
+        const codeDescriptor = Object.getOwnPropertyDescriptor(serialized, "code");
+
+        expect(codeDescriptor?.enumerable).toBe(true);
+        expect(codeDescriptor?.value).toBe("ERR_TEST");
+
+        // Check that custom properties are enumerable
+        const customPropDescriptor = Object.getOwnPropertyDescriptor(serialized, "customProp");
+
+        expect(customPropDescriptor?.enumerable).toBe(true);
+    });
+
+    it("should set errors property as enumerable for AggregateError", () => {
+        expect.assertions(2);
+
+        const error1 = new Error("error1");
+        const error2 = new Error("error2");
+        const aggregateError = new AggregateError([error1, error2], "aggregate");
+
+        const serialized = serializeError(aggregateError);
+
+        const errorsDescriptor = Object.getOwnPropertyDescriptor(serialized, "errors");
+
+        expect(errorsDescriptor?.enumerable).toBe(true);
+        expect(Array.isArray(errorsDescriptor?.value)).toBe(true);
+    });
+
+    it("should verify enumerability in Object.keys() and Object.getOwnPropertyNames()", () => {
+        expect.assertions(4);
+
+        const error = new Error("foo") as Error & { code: string; customProp: string };
+
+        error.code = "ERR_TEST";
+        error.customProp = "custom";
+
+        const serialized = serializeError(error);
+
+        // Object.keys() should include all enumerable properties (serialized errors are plain objects)
+        const keys = Object.keys(serialized);
+
+        expect(keys).toContain("code");
+        expect(keys).toContain("name");
+        expect(keys).toContain("message");
+        expect(keys).toContain("stack");
     });
 
     // Deserialization tests
@@ -881,9 +1037,12 @@ describe("error serializer", () => {
             expect((deserialized as any).numberValue).toBe(42);
             expect((deserialized as any).booleanValue).toBe(true);
 
-            // Plain objects should be wrapped in NonError during deserialization (expected behavior)
-            expect((deserialized as any).nestedObject).toBeInstanceOf(NonError);
-            expect(((deserialized as any).nestedObject as NonError).message).toBe("{\"key\":\"value\"}");
+            // Plain objects should be preserved as plain objects during deserialization
+            expect((deserialized as any).nestedObject).toStrictEqual({ key: "value" });
+
+            expectTypeOf((deserialized as any).nestedObject).toBeObject();
+
+            expect((deserialized as any).nestedObject).not.toBeInstanceOf(NonError);
         });
 
         it("should demonstrate round-trip serialization preserving serialized values", () => {
@@ -971,6 +1130,7 @@ describe("error serializer", () => {
         it("should throw error for incompatible constructor", () => {
             expect.assertions(1);
 
+            // eslint-disable-next-line @typescript-eslint/no-extraneous-class
             class BadError {
                 public constructor() {
                     throw new Error("incompatible");
@@ -979,7 +1139,7 @@ describe("error serializer", () => {
 
             expect(() => {
                 addKnownErrorConstructor(BadError as any);
-            }).toThrow("The error constructor \"BadError\" is not compatible");
+            }).toThrowError("The error constructor \"BadError\" is not compatible");
         });
 
         it("should throw error for already known constructor", () => {
@@ -987,7 +1147,7 @@ describe("error serializer", () => {
 
             expect(() => {
                 addKnownErrorConstructor(Error);
-            }).toThrow("The error constructor \"Error\" is already known.");
+            }).toThrowError("The error constructor \"Error\" is already known.");
         });
 
         it("should validate constructor works without arguments and use instance.name over constructor.name", () => {
@@ -1038,7 +1198,7 @@ describe("error serializer", () => {
 
             expect(() => {
                 addKnownErrorConstructor(RequiresArgumentsError);
-            }).toThrow("The error constructor \"RequiresArgumentsError\" is not compatible");
+            }).toThrowError("The error constructor \"RequiresArgumentsError\" is not compatible");
         });
 
         it("should throw error when constructor throws in constructor", () => {
@@ -1054,7 +1214,7 @@ describe("error serializer", () => {
 
             expect(() => {
                 addKnownErrorConstructor(ThrowsInConstructorError);
-            }).toThrow("The error constructor \"ThrowsInConstructorError\" is not compatible");
+            }).toThrowError("The error constructor \"ThrowsInConstructorError\" is not compatible");
         });
 
         it("should handle minified constructor names correctly", () => {
@@ -1101,7 +1261,7 @@ describe("error serializer", () => {
 
             expect(() => {
                 addKnownErrorConstructor(IncompatibleError);
-            }).toThrow("The error constructor \"IncompatibleError\" is not compatible");
+            }).toThrowError("The error constructor \"IncompatibleError\" is not compatible");
         });
 
         it("should allow specifying custom name to override instance.name", () => {

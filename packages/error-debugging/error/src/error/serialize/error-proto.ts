@@ -2,7 +2,7 @@ export const ErrorProto = Object.create(
     {},
     {
         cause: {
-            enumerable: true,
+            enumerable: false,
             value: undefined,
             writable: true,
         },
@@ -12,22 +12,22 @@ export const ErrorProto = Object.create(
             writable: true,
         },
         errors: {
-            enumerable: true,
+            enumerable: false,
             value: undefined,
             writable: true,
         },
         message: {
-            enumerable: true,
+            enumerable: false,
             value: undefined,
             writable: true,
         },
         name: {
-            enumerable: true,
+            enumerable: false,
             value: undefined,
             writable: true,
         },
         stack: {
-            enumerable: true,
+            enumerable: false,
             value: undefined,
             writable: true,
         },

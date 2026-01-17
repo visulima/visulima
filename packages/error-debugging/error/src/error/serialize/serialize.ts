@@ -15,6 +15,39 @@ interface JsonError extends Error {
 
 const toJsonWasCalled = new WeakSet();
 
+/**
+ * Make all properties of an object enumerable recursively.
+ * This is needed when toJSON() returns a serialized error that will be used in object spreads.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const makePropertiesEnumerable = (object: any): void => {
+    if (!object || typeof object !== "object") {
+        return;
+    }
+
+    const props = Object.getOwnPropertyNames(object);
+
+    for (const prop of props) {
+        const descriptor = Object.getOwnPropertyDescriptor(object, prop);
+
+        if (descriptor) {
+            // Make the property enumerable
+            if (!descriptor.enumerable) {
+                Object.defineProperty(object, prop, {
+                    ...descriptor,
+                    enumerable: true,
+                });
+            }
+
+            // Recursively process nested objects (but not arrays or special types)
+            if (descriptor.value && typeof descriptor.value === "object" && !Array.isArray(descriptor.value) // Check if it's a plain object (not Error, Date, etc.)
+                && (Object.getPrototypeOf(descriptor.value) === Object.prototype || Object.getPrototypeOf(descriptor.value) === null)) {
+                makePropertiesEnumerable(descriptor.value);
+            }
+        }
+    }
+};
+
 const toJSON = (from: JsonError) => {
     toJsonWasCalled.add(from);
 
@@ -22,11 +55,21 @@ const toJSON = (from: JsonError) => {
 
     toJsonWasCalled.delete(from);
 
+    // If toJSON returns an object, make all its properties enumerable
+    // so they can be used in object spreads and JSON.stringify
+    // However, if the object is non-extensible (like when toJSON returns 'this'),
+    // preserve the original enumerability to match Error prototype behavior
+    if (json && typeof json === "object" // Only make properties enumerable if the object is extensible
+        // Non-extensible objects (like when toJSON returns 'this') should preserve original enumerability
+        && Object.isExtensible(json)) {
+        makePropertiesEnumerable(json);
+    }
+
     return json;
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any,sonarjs/cognitive-complexity
-const serializeValue = (value: any, seen: Error[], depth: number, options: Options): any => {
+const serializeValue = (value: any, seen: Set<Error>, depth: number, options: Options): any => {
     if (value && value instanceof Uint8Array && value.constructor.name === "Buffer") {
         return "[object Buffer]";
     }
@@ -36,7 +79,7 @@ const serializeValue = (value: any, seen: Error[], depth: number, options: Optio
     }
 
     if (value instanceof Error) {
-        if (seen.includes(value)) {
+        if (seen.has(value)) {
             return "[Circular]";
         }
 
@@ -59,13 +102,19 @@ const serializeValue = (value: any, seen: Error[], depth: number, options: Optio
         return `[Function: ${value.name || "anonymous"}]`;
     }
 
-    if (isPlainObject(value)) {
-        // eslint-disable-next-line no-param-reassign
-        depth += 1;
+    if (typeof value === "bigint") {
+        return `${value}n`;
+    }
 
-        if (options.maxDepth && depth >= options.maxDepth) {
+    if (isPlainObject(value)) {
+        // Check if we would exceed maxDepth after incrementing
+        // If depth + 1 >= maxDepth, return empty object (we serialize the object itself but not its contents)
+        if (options.maxDepth !== undefined && options.maxDepth !== Number.POSITIVE_INFINITY && depth + 1 >= options.maxDepth) {
             return {};
         }
+
+        // eslint-disable-next-line no-param-reassign
+        depth += 1;
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const plainObject: Record<any, any> = {};
@@ -91,11 +140,11 @@ const serializeValue = (value: any, seen: Error[], depth: number, options: Optio
 const _serialize = (
     error: AggregateError | Error | JsonError,
     options: Options,
-    seen: Error[],
+    seen: Set<Error>,
     depth: number,
     // eslint-disable-next-line sonarjs/cognitive-complexity
 ): SerializedError => {
-    seen.push(error);
+    seen.add(error);
 
     if (options.maxDepth === 0) {
         return {} as SerializedError;
@@ -107,9 +156,27 @@ const _serialize = (
 
     const protoError = Object.create(ErrorProto as object) as SerializedError;
 
-    protoError.name = Object.prototype.toString.call(error.constructor) === "[object Function]" ? error.constructor.name : error.name;
-    protoError.message = error.message;
-    protoError.stack = error.stack;
+    // Set error properties with correct enumerability
+    // Serialized errors are plain objects, so all properties should be enumerable
+    // for JSON serialization, object spreading, and toStrictEqual comparisons
+    Object.defineProperty(protoError, "name", {
+        configurable: true,
+        enumerable: true,
+        value: Object.prototype.toString.call(error.constructor) === "[object Function]" ? error.constructor.name : error.name,
+        writable: true,
+    });
+    Object.defineProperty(protoError, "message", {
+        configurable: true,
+        enumerable: true,
+        value: error.message,
+        writable: true,
+    });
+    Object.defineProperty(protoError, "stack", {
+        configurable: true,
+        enumerable: true,
+        value: error.stack,
+        writable: true,
+    });
 
     if (Array.isArray((error as AggregateError).errors)) {
         const aggregateErrors: SerializedError[] = [];
@@ -119,8 +186,13 @@ const _serialize = (
                 throw new TypeError("All errors in the 'errors' property must be instances of Error");
             }
 
-            if (seen.includes(aggregateError)) {
-                protoError.errors = [];
+            if (seen.has(aggregateError)) {
+                Object.defineProperty(protoError, "errors", {
+                    configurable: true,
+                    enumerable: true,
+                    value: [],
+                    writable: true,
+                });
 
                 return protoError;
             }
@@ -128,23 +200,63 @@ const _serialize = (
             aggregateErrors.push(_serialize(aggregateError, options, seen, depth));
         }
 
-        protoError.errors = aggregateErrors;
+        Object.defineProperty(protoError, "errors", {
+            configurable: true,
+            enumerable: true,
+            value: aggregateErrors,
+            writable: true,
+        });
     }
 
-    // Handle aggregate errors
+    // Handle cause property
+    if ((error as CauseError).cause !== undefined && (error as CauseError).cause !== null) {
+        if ((error as CauseError).cause instanceof Error) {
+            if (seen.has((error as CauseError).cause)) {
+                Object.defineProperty(protoError, "cause", {
+                    configurable: true,
+                    enumerable: true,
+                    value: "[Circular]",
+                    writable: true,
+                });
+            } else {
+                Object.defineProperty(protoError, "cause", {
+                    configurable: true,
+                    enumerable: true,
+                    value: _serialize((error as CauseError).cause, options, seen, depth),
+                    writable: true,
+                });
+            }
+        } else {
+            // Non-Error cause - serialize it as a regular value
+            const serializedCause = serializeValue((error as CauseError).cause, seen, depth, options);
 
-    if ((error as CauseError).cause instanceof Error && !seen.includes((error as CauseError).cause)) {
-        protoError.cause = _serialize((error as CauseError).cause, options, seen, depth);
+            Object.defineProperty(protoError, "cause", {
+                configurable: true,
+                enumerable: true,
+                value: serializedCause,
+                writable: true,
+            });
+        }
     }
 
     // eslint-disable-next-line no-restricted-syntax
     for (const key in error) {
-        if (protoError[key] === undefined) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const value = error[key as keyof Error] as any;
-
-            protoError[key] = serializeValue(value, seen, depth, options);
+        // Skip properties we've already explicitly set
+        if (key === "name" || key === "message" || key === "stack" || key === "cause" || key === "errors") {
+            continue;
         }
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const value = error[key as keyof Error] as any;
+        const serializedValue = serializeValue(value, seen, depth, options);
+
+        // All properties should be enumerable for serialized errors (plain objects)
+        Object.defineProperty(protoError, key, {
+            configurable: true,
+            enumerable: true,
+            value: serializedValue,
+            writable: true,
+        });
     }
 
     if (Array.isArray(options.exclude) && options.exclude.length > 0) {
@@ -178,6 +290,6 @@ export const serialize = (error: AggregateError | Error | JsonError, options: Op
             maxDepth: options.maxDepth ?? Number.POSITIVE_INFINITY,
             useToJSON: options.useToJSON ?? false,
         },
-        [],
+        new Set(),
         0,
     );

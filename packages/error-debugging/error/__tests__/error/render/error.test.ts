@@ -5,6 +5,7 @@ import { renderError } from "../../../src/error/render/error";
 
 const hoisted = vi.hoisted(() => {
     return {
+        // eslint-disable-next-line vitest/require-mock-type-parameters
         existsSync: vi.fn().mockReturnValue(true),
     };
 });
