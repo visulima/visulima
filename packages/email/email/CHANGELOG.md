@@ -1,3 +1,14 @@
+## @visulima/email [1.0.0-alpha.9](https://github.com/visulima/visulima/compare/@visulima/email@1.0.0-alpha.8...@visulima/email@1.0.0-alpha.9) (2026-01-17)
+
+### Bug Fixes
+
+* **jsdoc-open-api:** combine name and description for path-based YAML parsing ([68e7d23](https://github.com/visulima/visulima/commit/68e7d2395ab97de3221892afe03da27688df7569))
+
+
+### Dependencies
+
+* **@visulima/disposable-email-domains:** upgraded to 1.0.0-alpha.8
+
 ## @visulima/email [1.0.0-alpha.8](https://github.com/visulima/visulima/compare/@visulima/email@1.0.0-alpha.7...@visulima/email@1.0.0-alpha.8) (2025-12-27)
 
 ### Bug Fixes
