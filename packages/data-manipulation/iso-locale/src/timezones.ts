@@ -1,4 +1,4 @@
-import countryTimezonesData from "./data/timezones.js";
+import countryTimezonesData from "./data/timezones";
 
 /**
  * Get all timezones for a country.

@@ -21,11 +21,11 @@ export {
     numericToAlpha2,
     numericToAlpha3,
     searchCountries,
-} from "./countries.js";
+} from "./countries";
 
 // Re-export for convenience (original names)
-export { all as countries } from "./countries.js";
-export { isValid } from "./countries.js";
+export { all as countries } from "./countries";
+export { isValid } from "./countries";
 // Currencies
 export {
     byCode,
@@ -40,14 +40,14 @@ export {
     getSymbol,
     isValid as isValidCurrency,
     searchCurrencies,
-} from "./currencies.js";
-export { all as currencies } from "./currencies.js";
+} from "./currencies";
+export { all as currencies } from "./currencies";
 
 // ISO 639 mapping utilities
-export { convert6393To6391, iso6393To6391 } from "./data/iso-639-mapping.js";
+export { convert6393To6391, iso6393To6391 } from "./data/iso-639-mapping";
 
 // Locale utilities
-export { generateBCP47Tag, getBCP47Tags, getCurrency, getLocales, isValidBCP47Tag, parseBCP47Tag } from "./locale.js";
+export { generateBCP47Tag, getBCP47Tags, getCurrency, getLocales, isValidBCP47Tag, parseBCP47Tag } from "./locale";
 
 // Regions
 export {
@@ -59,7 +59,7 @@ export {
     getRegionsForCountry,
     getSubregions,
     all as regions,
-} from "./regions.js";
+} from "./regions";
 
 // Timezones
 export {
@@ -70,7 +70,7 @@ export {
     isValidTimezone,
     all as timezonesAll,
     byCountry as timezonesByCountry,
-} from "./timezones.js";
+} from "./timezones";
 
 // Types
-export type { Country, Currency, CurrencySymbolEntry, Region } from "./types.js";
+export type { Country, Currency, CurrencySymbolEntry, Region } from "./types";

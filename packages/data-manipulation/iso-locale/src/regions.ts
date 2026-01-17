@@ -1,5 +1,5 @@
-import countryRegionsData from "./data/regions.js";
-import type { Region } from "./types.js";
+import countryRegionsData from "./data/regions";
+import type { Region } from "./types";
 
 /**
  * Get region information for a country.

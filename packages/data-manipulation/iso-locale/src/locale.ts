@@ -1,6 +1,6 @@
-import { getByAlpha2, getLanguages } from "./countries.js";
-import { getByCountry, getCountriesByCurrency } from "./currencies.js";
-import { convert6393To6391 } from "./data/iso-639-mapping.js";
+import { getByAlpha2, getLanguages } from "./countries";
+import { getByCountry, getCountriesByCurrency } from "./currencies";
+import { convert6393To6391 } from "./data/iso-639-mapping";
 
 /**
  * Get currency code from locale or country code.

@@ -1,7 +1,7 @@
-import { all as countriesAll } from "./countries.js";
-import currenciesData from "./data/currencies.js";
-import { currencySymbolMap } from "./data/currency-symbol.js";
-import type { Currency } from "./types.js";
+import { all as countriesAll } from "./countries";
+import currenciesData from "./data/currencies";
+import { currencySymbolMap } from "./data/currency-symbol";
+import type { Currency } from "./types";
 
 /**
  * Currency symbol map

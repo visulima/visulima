@@ -73,3 +73,5 @@ dist
 .github/instructions/nx.instructions.md
 
 data/
+
+!packages/data-manipulation/iso-locale/src/data/
