@@ -1,3 +1,14 @@
+## @visulima/iso-locale [1.0.0-alpha.2](https://github.com/visulima/visulima/compare/@visulima/iso-locale@1.0.0-alpha.1...@visulima/iso-locale@1.0.0-alpha.2) (2026-01-17)
+
+### Bug Fixes
+
+* added missing og image ([7712247](https://github.com/visulima/visulima/commit/771224739f29e977d5684849dcf015486c75ff00))
+
+### Miscellaneous Chores
+
+* fixed changelog ([6ebdc5b](https://github.com/visulima/visulima/commit/6ebdc5b56e94054f4ac88d2bc2235a2c14d3d608))
+* sorting package.json ([430ed68](https://github.com/visulima/visulima/commit/430ed683d3e38e4c5c5530f787ca832f083b17e4))
+
 ## @visulima/iso-locale 1.0.0-alpha.1 (2026-01-17)
 
 ### Features
