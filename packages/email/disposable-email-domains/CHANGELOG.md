@@ -1,3 +1,9 @@
+## @visulima/disposable-email-domains [1.0.0-alpha.8](https://github.com/visulima/visulima/compare/@visulima/disposable-email-domains@1.0.0-alpha.7...@visulima/disposable-email-domains@1.0.0-alpha.8) (2026-01-17)
+
+### Bug Fixes
+
+* **jsdoc-open-api:** combine name and description for path-based YAML parsing ([68e7d23](https://github.com/visulima/visulima/commit/68e7d2395ab97de3221892afe03da27688df7569))
+
 ## @visulima/disposable-email-domains [1.0.0-alpha.7](https://github.com/visulima/visulima/compare/@visulima/disposable-email-domains@1.0.0-alpha.6...@visulima/disposable-email-domains@1.0.0-alpha.7) (2025-12-27)
 
 ### Bug Fixes
