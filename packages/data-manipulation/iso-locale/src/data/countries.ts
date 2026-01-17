@@ -3139,4 +3139,5 @@ const countriesData = [
         status: "assigned",
     },
 ] as const;
+
 export default countriesData;

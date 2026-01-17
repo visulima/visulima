@@ -1122,4 +1122,5 @@ const currenciesData = [
         number: "233",
     },
 ] as const;
+
 export default currenciesData;

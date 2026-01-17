@@ -2,7 +2,7 @@
  * Country to timezone mapping
  * Maps ISO 3166-1 alpha-2 country codes to IANA timezone identifiers
  */
-const countryTimezones: Record<string, readonly string[]> = {
+const countryTimezones: Record<string, ReadonlyArray<string>> = {
     AD: ["Europe/Andorra"],
     AE: ["Asia/Dubai"],
     AF: ["Asia/Kabul"],
