@@ -68,6 +68,30 @@
             "types": "./dist/index.d.ts",
             "default": "./dist/index.js"
         },
+        "./countries": {
+            "types": "./dist/countries.d.ts",
+            "default": "./dist/countries.js"
+        },
+        "./currencies": {
+            "types": "./dist/currencies.d.ts",
+            "default": "./dist/currencies.js"
+        },
+        "./locale": {
+            "types": "./dist/locale.d.ts",
+            "default": "./dist/locale.js"
+        },
+        "./regions": {
+            "types": "./dist/regions.d.ts",
+            "default": "./dist/regions.js"
+        },
+        "./timezones": {
+            "types": "./dist/timezones.d.ts",
+            "default": "./dist/timezones.js"
+        },
+        "./types": {
+            "types": "./dist/types.d.ts",
+            "default": "./dist/types.js"
+        },
         "./package.json": "./package.json"
     },
     "files": [
