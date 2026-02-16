@@ -1,18 +1,10 @@
-import { describe, it, expect, beforeAll, beforeEach } from "vitest";
+import { describe, it, expect } from "vitest";
 
 import { BANNED_WORDS } from "../src/banned-words";
 import { checkBannedWords } from "../src/checker";
 
-// NOTE: Regex cache is now built eagerly on module load (not lazily on first call).
-// This means the cache is automatically warm before any tests run.
-beforeAll(() => {
-    // Cache is already built, but we call this anyway to verify it works
-    checkBannedWords("warmup");
-}, 30000); // 30 second timeout for regex cache initialization
-
-beforeEach(() => {
-    // No setup needed - cache is immutable and shared across all tests
-});
+// NOTE: Regex patterns are built eagerly on module load and split into 5 geographic/script
+// groups for faster compilation. Some tests may take longer due to V8 JIT optimization.
 
 describe("checkBannedWords", () => {
     describe("empty / clean input", () => {
