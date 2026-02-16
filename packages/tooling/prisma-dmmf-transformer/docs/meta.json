@@ -1,0 +1,29 @@
+{
+  "title": "@visulima/prisma-dmmf-transformer",
+  "pages": [
+    "index",
+    "installation",
+    "quick-start",
+    "---Concepts---",
+    {
+      "title": "Prisma DMMF",
+      "href": "/concepts/dmmf"
+    },
+    {
+      "title": "JSON Schema",
+      "href": "/concepts/json-schema"
+    },
+    "---Usage---",
+    {
+      "title": "Options",
+      "href": "/usage/options"
+    },
+    "---API Reference---",
+    {
+      "title": "API Documentation",
+      "href": "/api"
+    },
+    "configuration",
+    "troubleshooting"
+  ]
+}

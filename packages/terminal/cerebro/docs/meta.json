@@ -1,0 +1,37 @@
+{
+  "title": "@visulima/cerebro",
+  "pages": [
+    "index",
+    "installation",
+    "quick-start",
+    "---Concepts---",
+    {
+      "title": "Architecture",
+      "href": "/concepts/architecture"
+    },
+    {
+      "title": "Commands",
+      "href": "/concepts/commands"
+    },
+    {
+      "title": "Plugins",
+      "href": "/concepts/plugins"
+    },
+    "---Guides---",
+    {
+      "title": "Building a CLI",
+      "href": "/guides/building-cli"
+    },
+    {
+      "title": "Using Plugins",
+      "href": "/guides/using-plugins"
+    },
+    "---API Reference---",
+    {
+      "title": "API Documentation",
+      "href": "/api"
+    },
+    "configuration",
+    "troubleshooting"
+  ]
+}
