@@ -1,0 +1,533 @@
+---
+title: "Usage Guide"
+description: "Learn how to use all path methods and utilities in @visulima/path."
+---
+
+# Usage Guide
+
+Complete guide to using **@visulima/path** for cross-platform path manipulation.
+
+## Standard Path Methods
+
+All standard Node.js `path` methods are available with consistent cross-platform behavior.
+
+### Join Paths
+
+Combine path segments into a single path:
+
+```typescript
+import { join } from "@visulima/path";
+
+join("src", "components", "Button.tsx");
+// Result: 'src/components/Button.tsx'
+
+join("/home", "user", "documents", "file.txt");
+// Result: '/home/user/documents/file.txt'
+
+join("C:", "Users", "John", "Desktop");
+// Result: 'C:/Users/John/Desktop' (forward slashes on ALL platforms)
+
+// Handles edge cases
+join(""); // Result: '.'
+join("/foo", "bar", "", "baz");
+// Result: '/foo/bar/baz'
+```
+
+### Resolve Absolute Paths
+
+Convert relative paths to absolute paths:
+
+```typescript
+import { resolve } from "@visulima/path";
+
+// Resolve from current directory
+resolve("src", "index.ts");
+// Result: '/current/working/directory/src/index.ts'
+
+// With absolute path
+resolve("/home/user", "documents", "file.txt");
+// Result: '/home/user/documents/file.txt'
+
+// Multiple relative segments
+resolve("docs", "../src", "config.json");
+// Result: '/current/working/directory/src/config.json'
+
+// No arguments returns cwd
+resolve();
+// Result: '/current/working/directory'
+```
+
+### Get Directory Name
+
+Extract the directory portion of a path:
+
+```typescript
+import { dirname } from "@visulima/path";
+
+dirname("/home/user/documents/file.txt");
+// Result: '/home/user/documents'
+
+dirname("src/components/Button.tsx");
+// Result: 'src/components'
+
+dirname("/foo/bar/");
+// Result: '/foo/bar'
+
+dirname("file.txt");
+// Result: '.'
+
+dirname("/");
+// Result: '/'
+```
+
+### Get Base Name
+
+Extract the last portion of a path:
+
+```typescript
+import { basename } from "@visulima/path";
+
+basename("/home/user/documents/file.txt");
+// Result: 'file.txt'
+
+basename("/home/user/documents/");
+// Result: 'documents'
+
+// With extension removal
+basename("/home/user/document.pdf", ".pdf");
+// Result: 'document'
+
+basename("src/components/Button.tsx", ".tsx");
+// Result: 'Button'
+```
+
+### Get File Extension
+
+Extract the file extension:
+
+```typescript
+import { extname } from "@visulima/path";
+
+extname("file.txt");
+// Result: '.txt'
+
+extname("document.pdf");
+// Result: '.pdf'
+
+extname("archive.tar.gz");
+// Result: '.gz'
+
+extname("README");
+// Result: ''
+
+extname(".gitignore");
+// Result: ''
+```
+
+### Normalize Path
+
+Clean up path by resolving `.` and `..`:
+
+```typescript
+import { normalize } from "@visulima/path";
+
+normalize("/foo/bar//baz/asdf/quux/..");
+// Result: '/foo/bar/baz/asdf'
+
+normalize("src/../dist/./index.js");
+// Result: 'dist/index.js'
+
+normalize("C:\\Users\\..\\John");
+// Result: 'C:/John' (normalized to forward slashes)
+
+// Preserves trailing slash
+normalize("/foo/bar/");
+// Result: '/foo/bar/'
+```
+
+### Check Absolute Path
+
+Determine if a path is absolute:
+
+```typescript
+import { isAbsolute } from "@visulima/path";
+
+isAbsolute("/home/user");
+// Result: true
+
+isAbsolute("C:/Users/John");
+// Result: true
+
+isAbsolute("src/index.ts");
+// Result: false
+
+isAbsolute("../config.json");
+// Result: false
+```
+
+### Get Relative Path
+
+Get the relative path from one location to another:
+
+```typescript
+import { relative } from "@visulima/path";
+
+relative("/home/user/docs", "/home/user/docs/file.txt");
+// Result: 'file.txt'
+
+relative("/home/user/docs", "/home/user/pictures/image.png");
+// Result: '../pictures/image.png'
+
+relative("/src", "/dist");
+// Result: '../dist'
+
+// Same path
+relative("/foo/bar", "/foo/bar");
+// Result: ''
+```
+
+### Parse Path
+
+Parse a path into its components:
+
+```typescript
+import { parse } from "@visulima/path";
+
+const parsed = parse("/home/user/documents/file.txt");
+// Result: {
+//   root: '/',
+//   dir: '/home/user/documents',
+//   base: 'file.txt',
+//   ext: '.txt',
+//   name: 'file'
+// }
+
+const windowsParsed = parse("C:/Users/John/document.pdf");
+// Result: {
+//   root: 'C:/',
+//   dir: 'C:/Users/John',
+//   base: 'document.pdf',
+//   ext: '.pdf',
+//   name: 'document'
+// }
+```
+
+### Format Path
+
+Build a path from components:
+
+```typescript
+import { format } from "@visulima/path";
+
+format({
+    root: "/",
+    dir: "/home/user",
+    base: "file.txt",
+});
+// Result: '/home/user/file.txt'
+
+format({
+    dir: "/home/user/documents",
+    name: "report",
+    ext: ".pdf",
+});
+// Result: '/home/user/documents/report.pdf'
+
+// base takes precedence over name + ext
+format({
+    dir: "/foo",
+    base: "file.txt",
+    name: "ignored",
+    ext: ".ignored",
+});
+// Result: '/foo/file.txt'
+```
+
+### Match Glob Pattern
+
+Check if a path matches a glob pattern:
+
+```typescript
+import { matchesGlob } from "@visulima/path";
+
+matchesGlob("src/index.ts", "src/**/*.ts");
+// Result: true
+
+matchesGlob("test/unit/user.test.js", "**/*.test.js");
+// Result: true
+
+matchesGlob("README.md", "*.txt");
+// Result: false
+```
+
+### Constants
+
+Path separator constants:
+
+```typescript
+import { sep, delimiter } from "@visulima/path";
+
+// Path segment separator (always '/')
+console.log(sep);
+// Result: '/'
+
+// PATH environment variable delimiter
+console.log(delimiter);
+// Result: ':' (or ';' on original Windows, but normalized)
+```
+
+## Extra Utilities
+
+Import extra utilities from `@visulima/path/utils`:
+
+### Get Filename Without Extension
+
+```typescript
+import { filename } from "@visulima/path/utils";
+
+filename("/home/user/document.pdf");
+// Result: 'document'
+
+filename("src/components/Button.tsx");
+// Result: 'Button'
+
+filename("archive.tar.gz");
+// Result: 'archive.tar'
+```
+
+### Normalize Path Aliases
+
+Prepare alias mappings for resolution:
+
+```typescript
+import { normalizeAliases } from "@visulima/path/utils";
+
+const aliases = normalizeAliases({
+    "@/*": "./src/*",
+    "@components/*": "./src/components/*",
+    "@utils/*": "./src/utils/*",
+});
+
+// Aliases are sorted from specific to general
+// and resolved relative to each other
+```
+
+### Resolve Path Aliases
+
+Resolve TypeScript/Webpack-style path aliases:
+
+```typescript
+import { resolveAlias, normalizeAliases } from "@visulima/path/utils";
+
+const aliases = normalizeAliases({
+    "@/*": "./src/*",
+    "@components/*": "./src/components/*",
+});
+
+resolveAlias("@/config/app", aliases);
+// Result: './src/config/app'
+
+resolveAlias("@components/Button", aliases);
+// Result: './src/components/Button'
+
+// Non-matching paths return unchanged
+resolveAlias("./local/file", aliases);
+// Result: './local/file'
+```
+
+### Reverse Resolve Aliases
+
+Convert absolute paths back to alias format:
+
+```typescript
+import { reverseResolveAlias, normalizeAliases } from "@visulima/path/utils";
+
+const aliases = normalizeAliases({
+    "@/*": "./src/*",
+});
+
+reverseResolveAlias("./src/config/app", aliases);
+// Result: '@/config/app'
+
+reverseResolveAlias("./dist/bundle.js", aliases);
+// Result: './dist/bundle.js' (no matching alias)
+```
+
+### Check if Path is Relative
+
+```typescript
+import { isRelative } from "@visulima/path/utils";
+
+isRelative("./src/index.ts");
+// Result: true
+
+isRelative("../config.json");
+// Result: true
+
+isRelative("/home/user/file.txt");
+// Result: false
+
+isRelative("C:/Users/file.txt");
+// Result: false
+```
+
+### Check if Path is Binary
+
+Detect if a file path points to a binary file:
+
+```typescript
+import { isBinaryPath } from "@visulima/path/utils";
+
+isBinaryPath("image.png");
+// Result: true
+
+isBinaryPath("document.pdf");
+// Result: true
+
+isBinaryPath("video.mp4");
+// Result: true
+
+isBinaryPath("script.js");
+// Result: false
+
+isBinaryPath("data.json");
+// Result: false
+```
+
+### Convert File URL to Path
+
+```typescript
+import { toPath } from "@visulima/path/utils";
+
+toPath("file:///home/user/documents/file.txt");
+// Result: '/home/user/documents/file.txt'
+
+toPath("file:///C:/Users/John/document.pdf");
+// Result: 'C:/Users/John/document.pdf'
+
+// Regular paths pass through
+toPath("/home/user/file.txt");
+// Result: '/home/user/file.txt'
+```
+
+### Check if Running on Windows
+
+```typescript
+import { isWindows } from "@visulima/path/utils";
+
+if (isWindows()) {
+    console.log("Running on Windows");
+} else {
+    console.log("Running on POSIX system");
+}
+```
+
+## Common Patterns
+
+### Build Configuration Paths
+
+```typescript
+import { resolve, join, dirname } from "@visulima/path";
+import { fileURLToPath } from "node:url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+export const paths = {
+    root: resolve(__dirname, ".."),
+    src: resolve(__dirname, "../src"),
+    dist: resolve(__dirname, "../dist"),
+    public: resolve(__dirname, "../public"),
+    config: join(__dirname, "../config"),
+};
+```
+
+### File Operations with Consistent Paths
+
+```typescript
+import { join, extname, basename } from "@visulima/path";
+import { readdir } from "node:fs/promises";
+
+async function findTypeScriptFiles(dir: string): Promise<string[]> {
+    const entries = await readdir(dir, { withFileTypes: true });
+    const files: string[] = [];
+
+    for (const entry of entries) {
+        const fullPath = join(dir, entry.name);
+
+        if (entry.isDirectory()) {
+            files.push(...(await findTypeScriptFiles(fullPath)));
+        } else if (extname(entry.name) === ".ts") {
+            files.push(fullPath);
+        }
+    }
+
+    return files;
+}
+```
+
+### Alias Resolution System
+
+```typescript
+import { resolveAlias, normalizeAliases, join } from "@visulima/path";
+
+class ModuleResolver {
+    private aliases: Record<string, string>;
+
+    constructor(aliasConfig: Record<string, string>) {
+        this.aliases = normalizeAliases(aliasConfig);
+    }
+
+    resolve(importPath: string, fromFile: string): string {
+        // Resolve alias
+        const resolved = resolveAlias(importPath, this.aliases);
+
+        // If relative, resolve from importing file
+        if (resolved.startsWith(".")) {
+            return join(dirname(fromFile), resolved);
+        }
+
+        return resolved;
+    }
+}
+
+// Usage
+const resolver = new ModuleResolver({
+    "@/*": "./src/*",
+    "@components/*": "./src/components/*",
+});
+
+const modulePath = resolver.resolve("@/utils/helper", "src/index.ts");
+// Result: './src/utils/helper'
+```
+
+### Cross-Platform Script Paths
+
+```typescript
+import { join, resolve, normalize } from "@visulima/path";
+
+// Always use forward slashes - works everywhere
+const config = {
+    entry: join("src", "index.ts"),
+    output: join("dist", "bundle.js"),
+    assets: join("public", "assets"),
+};
+
+// Resolve to absolute paths
+const absolute = {
+    entry: resolve(config.entry),
+    output: resolve(config.output),
+    assets: resolve(config.assets),
+};
+
+console.log(absolute);
+// All paths use forward slashes regardless of OS
+```
+
+## Next Steps
+
+<Cards>
+    <Card title="API Reference" href="/api">
+        Complete API documentation with all method signatures
+    </Card>
+</Cards>
