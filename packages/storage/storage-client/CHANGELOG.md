@@ -1,3 +1,14 @@
+## @visulima/storage-client [1.0.0-alpha.6](https://github.com/visulima/visulima/compare/@visulima/storage-client@1.0.0-alpha.5...@visulima/storage-client@1.0.0-alpha.6) (2026-02-16)
+
+### Bug Fixes
+
+* **storage-client:** prevent state updates after component unmount in useTusUpload ([e40716e](https://github.com/visulima/visulima/commit/e40716e3389c63c609b9f0464e1fad6959d69e20))
+
+### Miscellaneous Chores
+
+* **storage:** update dependencies ([f591768](https://github.com/visulima/visulima/commit/f591768de337c1b201191e4b78dd7e3fb79ca42b))
+* update lock file maintenance ([d83e716](https://github.com/visulima/visulima/commit/d83e71697b75d24704185b66bb521a934d2db02d))
+
 ## @visulima/storage-client [1.0.0-alpha.5](https://github.com/visulima/visulima/compare/@visulima/storage-client@1.0.0-alpha.4...@visulima/storage-client@1.0.0-alpha.5) (2026-01-17)
 
 ### Bug Fixes
