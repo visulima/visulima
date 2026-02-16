@@ -12,10 +12,10 @@
     },
     "dependencies": {
         "@visulima/email": "workspace:*",
-        "nodemailer": "^8.0.0"
+        "nodemailer": "^8.0.1"
     },
     "devDependencies": {
-        "@types/node": "25.2.0",
+        "@types/node": "25.2.3",
         "tsx": "^4.21.0",
         "typescript": "5.9.3"
     }
