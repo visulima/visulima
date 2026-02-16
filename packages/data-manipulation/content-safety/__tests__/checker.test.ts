@@ -8,7 +8,7 @@ import { checkBannedWords } from "../src/checker";
 beforeAll(() => {
     // Cache is already built, but we call this anyway to verify it works
     checkBannedWords("warmup");
-});
+}, 30000); // 30 second timeout for regex cache initialization
 
 beforeEach(() => {
     // No setup needed - cache is immutable and shared across all tests
