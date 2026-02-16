@@ -69,25 +69,62 @@ const escapeRegExp = (str: string): string => {
 };
 
 /**
- * Builds an optimized regex pattern and language mapping from the banned words dictionary.
+ * Language groups for splitting regex compilation.
+ * Grouping by geographic/script similarity for better performance.
+ * @internal
+ */
+const LANGUAGE_GROUPS = {
+    western: new Set(["en", "de", "es", "fr", "nl", "pt", "it", "sv", "ga"]),
+    eastern: new Set(["pl", "ru"]),
+    middleEast: new Set(["ar", "fa", "tr", "az"]),
+    southAsian: new Set(["hi"]),
+    cjk: new Set(["zh", "ja", "ko"]),
+} as const;
+
+/**
+ * Builds optimized regex patterns split by language groups for better performance.
  *
  * @remarks
  * This function:
+ * - Splits patterns into 5 geographic/script groups to reduce regex size
  * - Normalizes all words to NFC Unicode form
- * - Handles CJK scripts (no word boundaries needed)
- * - Uses Unicode-aware word boundaries for other scripts
  * - Sorts patterns by length (longest first) to match phrases before individual words
  * - Creates a language lookup map for match attribution
+ * - Produces smaller, faster-compiling regexes than a single giant pattern
  *
- * @returns Object containing the compiled regex and word-to-language mapping
+ * @returns Object containing compiled regexes and word-to-language mapping
  *
  * @internal
  */
-const buildRegexAndMap = (): { regex: RegExp; wordToLanguage: Map<string, string> } => {
+const buildRegexGroups = (): {
+    regexGroups: Array<{ name: string; regex: RegExp }>;
+    wordToLanguage: Map<string, string>;
+} => {
     const wordToLanguage = new Map<string, string>();
-    const patterns: string[] = [];
+    const groupPatterns: Record<string, string[]> = {
+        western: [],
+        eastern: [],
+        middleEast: [],
+        southAsian: [],
+        cjk: [],
+    };
 
     for (const [lang, words] of Object.entries(BANNED_WORDS)) {
+        // Determine which group this language belongs to
+        let groupName = "";
+        for (const [group, langs] of Object.entries(LANGUAGE_GROUPS)) {
+            if (langs.has(lang)) {
+                groupName = group;
+                break;
+            }
+        }
+
+        if (!groupName) {
+            continue; // Skip unknown languages
+        }
+
+        const isCjk = LANGUAGE_GROUPS.cjk.has(lang);
+
         for (const word of words) {
             const normalized = word.normalize("NFC").toLowerCase();
 
@@ -96,33 +133,40 @@ const buildRegexAndMap = (): { regex: RegExp; wordToLanguage: Map<string, string
                 wordToLanguage.set(normalized, lang);
 
                 const escaped = escapeRegExp(normalized);
-                // CJK characters: no boundary needed (they don't use spaces)
-                // All other scripts: use Unicode-aware word boundaries via \p{L}/\p{N}
-                // (JS \b only treats [a-zA-Z0-9_] as word chars, which breaks
-                // accented Latin, Cyrillic, Arabic, Hindi, etc.)
-                const hasCJK = /[\u3000-\u9fff\uac00-\ud7af\uff00-\uffef]/.test(normalized);
 
-                if (hasCJK) {
-                    patterns.push(escaped);
+                if (isCjk) {
+                    // CJK: no word boundaries needed (characters don't use spaces)
+                    groupPatterns[groupName]?.push(escaped);
                 } else {
-                    patterns.push(`(?<![\\p{L}\\p{N}])${escaped}(?![\\p{L}\\p{N}])`);
+                    // Non-CJK: use Unicode-aware word boundaries
+                    // \p{L}/\p{N} handles accented Latin, Cyrillic, Arabic, Hindi, etc.
+                    groupPatterns[groupName]?.push(`(?<![\\p{L}\\p{N}])${escaped}(?![\\p{L}\\p{N}])`);
                 }
             }
         }
     }
 
-    // Sort by length descending so longer phrases match first (e.g., "white trash" before "white")
-    patterns.sort((a, b) => b.length - a.length);
+    // Build regexes for each group
+    const regexGroups: Array<{ name: string; regex: RegExp }> = [];
 
-    const regex = new RegExp(patterns.join("|"), "giu");
+    for (const [groupName, patterns] of Object.entries(groupPatterns)) {
+        if (patterns.length > 0) {
+            // Sort by length descending so longer phrases match first
+            patterns.sort((a, b) => b.length - a.length);
+            regexGroups.push({
+                name: groupName,
+                regex: new RegExp(patterns.join("|"), "giu"),
+            });
+        }
+    }
 
-    return { regex, wordToLanguage };
+    return { regexGroups, wordToLanguage };
 };
 
-// PERFORMANCE FIX: Build regex cache EAGERLY on module load instead of lazily on first use
-// This prevents 3+ second lag on first send button click
-// Lazy init caused UI jank because it blocked the click handler
-const { regex: cachedRegex, wordToLanguage: cachedWordToLanguage } = buildRegexAndMap();
+// PERFORMANCE OPTIMIZATION: Split regex into 5 geographic/script groups for faster compilation
+// Building separate smaller regexes is significantly faster than one giant regex with thousands of patterns
+// This reduces module load time and initial JIT compilation overhead
+const { regexGroups, wordToLanguage: cachedWordToLanguage } = buildRegexGroups();
 
 /**
  * Checks text for banned words across all configured languages.
@@ -137,10 +181,12 @@ const { regex: cachedRegex, wordToLanguage: cachedWordToLanguage } = buildRegexA
  * - Normalizes text to NFC Unicode form for consistent matching
  * - Handles multi-word phrases
  * - Respects word boundaries (except for CJK scripts)
- * - Uses a pre-compiled regex for optimal performance
+ * - Uses pre-compiled regexes split by script type for optimal performance
  * - Returns empty results for empty or whitespace-only input
  *
- * The regex cache is built eagerly on module load to prevent first-call lag.
+ * For performance, the implementation splits patterns into 5 geographic/script groups
+ * (Western, Eastern European, Middle Eastern, South Asian, CJK), significantly
+ * reducing regex compilation time and JIT overhead.
  *
  * @example
  * Basic usage:
@@ -189,23 +235,24 @@ export const checkBannedWords = (text: string): BannedWordsResult => {
     }
 
     const normalized = text.normalize("NFC");
-
-    // Reset lastIndex since we reuse the cached regex
-    cachedRegex.lastIndex = 0;
-
     const matches: BannedWordMatch[] = [];
-    let match: RegExpExecArray | null;
 
-    while ((match = cachedRegex.exec(normalized)) !== null) {
-        const matchedText = match[0].toLowerCase();
-        const language = cachedWordToLanguage.get(matchedText) ?? "unknown";
+    // Check against all regex groups (Western, Eastern, Middle East, South Asian, CJK)
+    for (const { regex } of regexGroups) {
+        regex.lastIndex = 0;
+        let match: RegExpExecArray | null;
 
-        matches.push({
-            word: match[0],
-            startIndex: match.index,
-            endIndex: match.index + match[0].length,
-            language,
-        });
+        while ((match = regex.exec(normalized)) !== null) {
+            const matchedText = match[0].toLowerCase();
+            const language = cachedWordToLanguage.get(matchedText) ?? "unknown";
+
+            matches.push({
+                word: match[0],
+                startIndex: match.index,
+                endIndex: match.index + match[0].length,
+                language,
+            });
+        }
     }
 
     return {
