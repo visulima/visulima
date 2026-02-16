@@ -16,16 +16,16 @@
         "change-case": "5.4.4",
         "cli-truncate": "5.1.1",
         "fast-string-truncated-width": "3.0.3",
-        "lodash": "4.17.21",
+        "lodash": "4.17.23",
         "scule": "1.3.0",
         "slice-ansi": "7.1.2",
         "slug": "11.0.1",
         "slugify": "1.6.6",
         "string-ts": "2.3.1",
-        "string-width": "8.1.0",
-        "transliteration": "2.6.0",
+        "string-width": "8.1.1",
+        "transliteration": "2.6.1",
         "typescript": "5.9.3",
-        "vitest": "^4.0.17",
+        "vitest": "^4.0.18",
         "wrap-ansi": "9.0.2"
     }
 }

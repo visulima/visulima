@@ -9,7 +9,7 @@
     "dependencies": {
         "@azure/storage-blob": "^12.30.0",
         "@visulima/storage": "workspace:*",
-        "cors": "2.8.5",
+        "cors": "2.8.6",
         "express": "^5.2.1"
     },
     "devDependencies": {
