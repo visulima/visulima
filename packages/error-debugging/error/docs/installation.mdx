@@ -1,0 +1,36 @@
+---
+title: "Installation"
+---
+
+# Installation
+
+```bash npm2yarn
+npm install @visulima/error
+```
+
+## Optional: AI Integration
+
+For AI-powered solution suggestions:
+
+```bash npm2yarn
+npm install ai
+```
+
+## Import
+
+```typescript
+// Main exports
+import { VisulimaError, getErrorCauses } from "@visulima/error";
+
+// Code frames
+import { codeFrame } from "@visulima/error/code-frame";
+
+// Stacktrace parsing
+import { parseStacktrace } from "@visulima/error/stacktrace";
+
+// Solutions
+import { addSolution } from "@visulima/error/solution";
+
+// AI solutions (requires 'ai' package)
+import { generateAISolution } from "@visulima/error/solution/ai";
+```
