@@ -1,0 +1,93 @@
+{
+    "name": "@visulima/content-safety",
+    "version": "0.0.0",
+    "description": "Content safety filtering with multi-language banned word detection. Supports 17 languages with word-boundary matching, match position reporting, and both browser and server runtime compatibility.",
+    "keywords": [
+        "visulima",
+        "content-safety"
+    ],
+    "author": {
+        "name": "Daniel Bannert",
+        "email": "d.bannert@anolilab.de"
+    },
+    "funding": [
+        {
+            "type": "github",
+            "url": "https://github.com/sponsors/prisis"
+        },
+        {
+            "type": "consulting",
+            "url": "https://anolilab.com/support"
+        }
+    ],
+    "homepage": "https://visulima.com/packages/content-safety",
+    "license": "MIT",
+    "sideEffects": false,
+    "type": "module",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "default": "./dist/index.js"
+        },
+        "./package.json": "./package.json"
+    },
+    "files": [
+        "dist",
+        "README.md",
+        "CHANGELOG.md"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/visulima/visulima.git",
+        "directory": "packages/data-manipulation/content-safety"
+    },
+    "bugs": {
+        "url": "https://github.com/visulima/visulima/issues"
+    },
+    "scripts": {
+        "build": "packem build --development",
+        "build:prod": "packem build --production",
+        "clean": "rimraf node_modules dist .eslintcache",
+        "dev": "pnpm run build --watch",
+        "lint:attw": "attw --pack",
+        "lint:eslint": "eslint .",
+        "lint:eslint:fix": "eslint . --cache --concurrency auto --fix",
+        "lint:package-json": "publint --strict",
+        "lint:prettier": "prettier --config=.prettierrc.cjs --check .",
+        "lint:prettier:fix": "prettier --config=.prettierrc.cjs --write .",
+        "lint:types": "tsc --noEmit --project tsconfig.json",
+        "test": "vitest run",
+        "test:coverage": "vitest run --coverage",
+        "test:ui": "vitest --ui --coverage.enabled=true",
+        "test:watch": "vitest"
+    },
+    "devDependencies": {
+        "@anolilab/eslint-config": "^21.0.0",
+        "@anolilab/semantic-release-pnpm": "5.0.0",
+        "@anolilab/semantic-release-preset": "13.1.1",
+        "@arethetypeswrong/cli": "^0.18.2",
+        "@secretlint/secretlint-rule-preset-recommend": "^11.3.1",
+        "@total-typescript/ts-reset": "^0.6.1",
+        "@types/node": "25.2.3",
+        "@visulima/packem": "2.0.0-alpha.40",
+        "@vitest/coverage-v8": "^4.0.18",
+        "@vitest/ui": "^4.0.18",
+        "conventional-changelog-conventionalcommits": "9.1.0",
+        "esbuild": "^0.27.3",
+        "eslint": "10.0.0",
+        "prettier": "^3.8.1",
+        "publint": "^0.3.17",
+        "rimraf": "^6.1.3",
+        "secretlint": "11.3.1",
+        "semantic-release": "^25.0.3",
+        "typescript": "^5.9.3",
+        "vitest": "^4.0.18"
+    },
+    "engines": {
+        "node": ">=22.21 <=25.*"
+    },
+    "publishConfig": {
+        "access": "public",
+        "provenance": true
+    }
+}

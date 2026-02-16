@@ -1,0 +1,323 @@
+---
+title: Installation
+description: How to install and set up @visulima/content-safety in your project.
+---
+
+# Installation
+
+## Package Managers
+
+Install @visulima/content-safety using your preferred package manager:
+
+### npm
+
+```bash
+npm install @visulima/content-safety
+```
+
+### yarn
+
+```bash
+yarn add @visulima/content-safety
+```
+
+### pnpm
+
+```bash
+pnpm add @visulima/content-safety
+```
+
+### bun
+
+```bash
+bun add @visulima/content-safety
+```
+
+## Requirements
+
+### Runtime Support
+
+@visulima/content-safety works in all modern JavaScript environments:
+
+- **Node.js**: 18.x or higher
+- **Browsers**: All modern browsers with ES2020+ support
+    - Chrome 80+
+    - Firefox 72+
+    - Safari 14+
+    - Edge 80+
+- **Deno**: 1.x or higher
+- **Bun**: 1.x or higher
+
+### TypeScript Support
+
+The library is written in TypeScript and includes full type definitions:
+
+- **TypeScript**: 5.0 or higher (recommended)
+- Types are included in the package (no separate @types package needed)
+
+## Import Methods
+
+### ES Modules (Recommended)
+
+```typescript
+import { checkBannedWords, BANNED_WORDS } from "@visulima/content-safety";
+import type { BannedWordMatch, BannedWordsResult } from "@visulima/content-safety";
+```
+
+### CommonJS
+
+```javascript
+const { checkBannedWords, BANNED_WORDS } = require("@visulima/content-safety");
+```
+
+### Named Imports
+
+Import only what you need for optimal tree-shaking:
+
+```typescript
+// Import just the checker function
+import { checkBannedWords } from "@visulima/content-safety";
+
+// Import just the word list
+import { BANNED_WORDS } from "@visulima/content-safety";
+
+// Import types
+import type { BannedWordMatch, BannedWordsResult } from "@visulima/content-safety";
+```
+
+## Verification
+
+Verify your installation by running a simple check:
+
+```typescript
+import { checkBannedWords } from "@visulima/content-safety";
+
+const result = checkBannedWords("Hello world");
+console.log(result);
+// { hasBannedWords: false, matches: [] }
+```
+
+## Build Tools
+
+### Webpack
+
+Works out of the box with Webpack 5:
+
+```javascript
+// No special configuration needed
+import { checkBannedWords } from "@visulima/content-safety";
+```
+
+### Vite
+
+Works seamlessly with Vite:
+
+```typescript
+import { checkBannedWords } from "@visulima/content-safety";
+```
+
+### Rollup
+
+Compatible with Rollup:
+
+```javascript
+import { checkBannedWords } from "@visulima/content-safety";
+```
+
+### esbuild
+
+Works with esbuild:
+
+```typescript
+import { checkBannedWords } from "@visulima/content-safety";
+```
+
+## Framework Integration
+
+### React
+
+```tsx
+import { useState } from "react";
+import { checkBannedWords } from "@visulima/content-safety";
+
+function CommentForm() {
+    const [text, setText] = useState("");
+    const [error, setError] = useState("");
+
+    const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+        const value = e.target.value;
+        setText(value);
+
+        const result = checkBannedWords(value);
+        if (result.hasBannedWords) {
+            setError("Content contains inappropriate language");
+        } else {
+            setError("");
+        }
+    };
+
+    return (
+        <div>
+            <textarea value={text} onChange={handleChange} />
+            {error && <p className="error">{error}</p>}
+        </div>
+    );
+}
+```
+
+### Vue
+
+```vue
+<script setup lang="ts">
+import { ref, computed } from "vue";
+import { checkBannedWords } from "@visulima/content-safety";
+
+const text = ref("");
+
+const result = computed(() => checkBannedWords(text.value));
+const hasError = computed(() => result.value.hasBannedWords);
+</script>
+
+<template>
+    <div>
+        <textarea v-model="text" />
+        <p v-if="hasError" class="error">Content contains inappropriate language</p>
+    </div>
+</template>
+```
+
+### Next.js
+
+Works in both client and server components:
+
+```typescript
+// app/api/moderate/route.ts
+import { checkBannedWords } from "@visulima/content-safety";
+
+export async function POST(request: Request) {
+    const { text } = await request.json();
+    const result = checkBannedWords(text);
+
+    return Response.json({
+        allowed: !result.hasBannedWords,
+        matches: result.matches,
+    });
+}
+```
+
+### Svelte
+
+```svelte
+<script lang="ts">
+  import { checkBannedWords } from '@visulima/content-safety';
+
+  let text = '';
+
+  $: result = checkBannedWords(text);
+  $: hasError = result.hasBannedWords;
+</script>
+
+<textarea bind:value={text} />
+{#if hasError}
+  <p class="error">Content contains inappropriate language</p>
+{/if}
+```
+
+## Edge Runtime Support
+
+### Vercel Edge Functions
+
+```typescript
+import { checkBannedWords } from "@visulima/content-safety";
+
+export const config = {
+    runtime: "edge",
+};
+
+export default async function handler(request: Request) {
+    const { text } = await request.json();
+    const result = checkBannedWords(text);
+
+    return new Response(JSON.stringify(result), {
+        headers: { "content-type": "application/json" },
+    });
+}
+```
+
+### Cloudflare Workers
+
+```typescript
+import { checkBannedWords } from "@visulima/content-safety";
+
+export default {
+    async fetch(request: Request) {
+        const { text } = await request.json();
+        const result = checkBannedWords(text);
+
+        return new Response(JSON.stringify(result), {
+            headers: { "content-type": "application/json" },
+        });
+    },
+};
+```
+
+## Troubleshooting
+
+### Module Not Found
+
+If you encounter module resolution issues:
+
+1. Clear your package manager cache:
+
+    ```bash
+    npm cache clean --force
+    # or
+    yarn cache clean
+    # or
+    pnpm store prune
+    ```
+
+2. Delete `node_modules` and reinstall:
+    ```bash
+    rm -rf node_modules
+    npm install
+    ```
+
+### TypeScript Errors
+
+If TypeScript can't find types:
+
+1. Ensure `moduleResolution` is set to `"bundler"` or `"node16"` in `tsconfig.json`:
+
+    ```json
+    {
+        "compilerOptions": {
+            "moduleResolution": "bundler"
+        }
+    }
+    ```
+
+2. Check that your TypeScript version is 5.0+:
+    ```bash
+    npx tsc --version
+    ```
+
+### Build Errors
+
+If you encounter build errors in older browsers:
+
+1. Ensure your bundler is configured to transpile `node_modules`:
+    ```javascript
+    // vite.config.js
+    export default {
+        build: {
+            target: "es2020",
+        },
+    };
+    ```
+
+## Next Steps
+
+- [Usage Guide](/docs/usage) - Learn how to use the library
+- [API Reference](/docs/api) - Detailed API documentation
+- [Supported Languages](/docs/languages) - View language support

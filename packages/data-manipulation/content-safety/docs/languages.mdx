@@ -1,0 +1,319 @@
+---
+title: Supported Languages
+description: Complete list of languages supported by @visulima/content-safety for banned word detection.
+---
+
+# Supported Languages
+
+@visulima/content-safety includes banned word lists for **19 languages**, covering major languages from around the world. All languages are checked simultaneously when analyzing text.
+
+## Language Coverage
+
+### European Languages
+
+#### English (en)
+
+- **Script**: Latin
+- **Coverage**: Comprehensive profanity, slurs, hate speech
+- **Variants**: Includes leet-speak (b1tch, etc.)
+- **Multi-word phrases**: Yes (e.g., "white trash")
+
+#### German (de)
+
+- **Script**: Latin (with umlauts)
+- **Coverage**: German profanity and slurs
+- **Regional variants**: Standard German
+
+#### Spanish (es)
+
+- **Script**: Latin (with diacritics)
+- **Coverage**: Spanish profanity and slurs
+- **Regional variants**: Multiple Spanish-speaking regions
+
+#### French (fr)
+
+- **Script**: Latin (with diacritics)
+- **Coverage**: French profanity and slurs
+- **Regional variants**: European French
+
+#### Italian (it)
+
+- **Script**: Latin
+- **Coverage**: Italian profanity and slurs
+
+#### Dutch (nl)
+
+- **Script**: Latin
+- **Coverage**: Dutch profanity and slurs
+
+#### Polish (pl)
+
+- **Script**: Latin (with Polish diacritics)
+- **Coverage**: Polish profanity and slurs
+
+#### Portuguese (pt)
+
+- **Script**: Latin (with diacritics)
+- **Coverage**: Portuguese profanity and slurs
+- **Regional variants**: Both European and Brazilian Portuguese
+
+#### Swedish (sv)
+
+- **Script**: Latin (with Swedish characters)
+- **Coverage**: Swedish profanity and slurs
+
+#### Russian (ru)
+
+- **Script**: Cyrillic
+- **Coverage**: Russian profanity and slurs
+- **Unicode support**: Full Cyrillic character handling
+
+#### Irish (ga)
+
+- **Script**: Latin
+- **Coverage**: Irish profanity and slurs
+
+### Middle Eastern Languages
+
+#### Arabic (ar)
+
+- **Script**: Arabic (RTL)
+- **Coverage**: Arabic profanity and slurs
+- **Script features**: Right-to-left text support
+- **Regional variants**: Modern Standard Arabic
+
+#### Persian/Farsi (fa)
+
+- **Script**: Perso-Arabic (RTL)
+- **Coverage**: Persian profanity and slurs
+- **Script features**: Right-to-left text support
+
+#### Turkish (tr)
+
+- **Script**: Latin (with Turkish-specific letters)
+- **Coverage**: Turkish profanity and slurs
+
+#### Azerbaijani (az)
+
+- **Script**: Latin
+- **Coverage**: Azerbaijani profanity and slurs
+
+### Asian Languages
+
+#### Japanese (ja)
+
+- **Script**: Mixed (Hiragana, Katakana, Kanji)
+- **Coverage**: Japanese profanity and slurs
+- **Word boundaries**: No word boundaries (CJK handling)
+
+#### Korean (ko)
+
+- **Script**: Hangul
+- **Coverage**: Korean profanity and slurs
+- **Word boundaries**: No word boundaries (CJK handling)
+
+#### Chinese (zh)
+
+- **Script**: Simplified and Traditional Chinese
+- **Coverage**: Chinese profanity and slurs
+- **Word boundaries**: No word boundaries (CJK handling)
+
+#### Hindi (hi)
+
+- **Script**: Devanagari
+- **Coverage**: Hindi profanity and slurs
+- **Script features**: Complex script support
+
+## Language Detection
+
+### Automatic Multi-Language Checking
+
+The library automatically checks all languages simultaneously:
+
+```typescript
+import { checkBannedWords } from "@visulima/content-safety";
+
+// Mixed language text - all languages checked
+const result = checkBannedWords(`
+  English bad word
+  German bad word
+  Japanese bad word
+`);
+
+// All languages will be detected
+console.log(result.matches.map((m) => m.language));
+// ['en', 'de', 'ja']
+```
+
+### Language Attribution
+
+Each match includes the language code it was detected from:
+
+```typescript
+const result = checkBannedWords("text with badword");
+
+result.matches.forEach((match) => {
+    console.log(`Found "${match.word}" from language: ${match.language}`);
+});
+```
+
+## Script Support
+
+### Latin Scripts
+
+Standard Latin alphabet with full diacritic support:
+
+- English, Spanish, French, Portuguese, etc.
+- Accents: é, ñ, ü, ø, etc.
+
+### Cyrillic
+
+Full support for Cyrillic script:
+
+- Russian (Ru): А-Я, а-я
+- Unicode-aware word boundaries
+
+### Arabic Script
+
+Right-to-left (RTL) text support:
+
+- Arabic (ar): ا-ي
+- Persian (fa): Perso-Arabic extensions
+- Proper handling of RTL text direction
+
+### CJK (Chinese, Japanese, Korean)
+
+Special handling for CJK scripts:
+
+- No word boundaries required (continuous text)
+- Character-level matching
+- Support for mixed Hiragana, Katakana, Kanji, Hangul
+
+### Complex Scripts
+
+Support for complex scripts with combining characters:
+
+- Devanagari (Hindi)
+- Thai
+- Other Indic scripts
+
+## Unicode Normalization
+
+All text is normalized to NFC (Canonical Composition) form for consistent matching:
+
+```typescript
+// Both forms will match identically
+checkBannedWords("café"); // NFC form
+checkBannedWords("café"); // NFD form (combining accent)
+```
+
+This ensures:
+
+- Consistent matching across different Unicode representations
+- Proper handling of accented characters
+- Correct detection regardless of input normalization
+
+## Word Boundary Handling
+
+### Western Scripts (Latin, Cyrillic, Arabic, etc.)
+
+Uses Unicode-aware word boundaries:
+
+- `\p{L}` - Unicode letter property
+- `\p{N}` - Unicode number property
+- Respects word boundaries in all scripts
+
+```typescript
+// Matches (standalone word)
+checkBannedWords("badword here"); // ✓ detected
+
+// May not match (part of compound word)
+checkBannedWords("notabadwordhere"); // depends on word list
+```
+
+### CJK Scripts
+
+No word boundaries applied:
+
+- Characters can appear anywhere in continuous text
+- More sensitive matching for CJK content
+
+```typescript
+// CJK example
+checkBannedWords("前badword後"); // ✓ detected
+```
+
+## Data Sources
+
+The banned word lists are curated from multiple sources:
+
+- **Manual curation**: Carefully reviewed lists
+- [google-profanity-words](https://github.com/coffee-and-fun/google-profanity-words): Community-maintained lists
+- [safetext](https://github.com/viddexa/safetext): Multi-language profanity database
+
+## Adding Custom Words
+
+While the library doesn't support runtime customization, you can access the word lists:
+
+```typescript
+import { BANNED_WORDS } from "@visulima/content-safety";
+
+// View all languages
+console.log(Object.keys(BANNED_WORDS));
+// ['ar', 'az', 'de', 'en', 'es', 'fa', 'fr', 'ga', 'hi', 'it', 'ja', 'ko', 'nl', 'pl', 'pt', 'ru', 'sv', 'tr', 'zh']
+
+// View English words (sensitive content - be careful)
+console.log(BANNED_WORDS.en);
+```
+
+## Language Codes (ISO 639-1)
+
+| Code | Language    | Native Name  |
+| ---- | ----------- | ------------ |
+| ar   | Arabic      | العربية      |
+| az   | Azerbaijani | Azərbaycanca |
+| de   | German      | Deutsch      |
+| en   | English     | English      |
+| es   | Spanish     | Español      |
+| fa   | Persian     | فارسی        |
+| fr   | French      | Français     |
+| ga   | Irish       | Gaeilge      |
+| hi   | Hindi       | हिन्दी       |
+| it   | Italian     | Italiano     |
+| ja   | Japanese    | 日本語       |
+| ko   | Korean      | 한국어       |
+| nl   | Dutch       | Nederlands   |
+| pl   | Polish      | Polski       |
+| pt   | Portuguese  | Português    |
+| ru   | Russian     | Русский      |
+| sv   | Swedish     | Svenska      |
+| tr   | Turkish     | Türkçe       |
+| zh   | Chinese     | 中文         |
+
+## Contributing Languages
+
+To add support for additional languages:
+
+1. Create a new file: `src/words/{language-code}.ts`
+2. Export an array of banned words:
+    ```typescript
+    const words: readonly string[] = [
+        // word list here
+    ];
+    export default words;
+    ```
+3. Add to `src/banned-words.ts`:
+    ```typescript
+    import newLang from "./words/new-lang";
+    export const BANNED_WORDS = {
+        // ...
+        "new-lang": newLang,
+    };
+    ```
+4. Submit a pull request to [visulima/visulima](https://github.com/visulima/visulima)
+
+## Next Steps
+
+- [Usage Guide](/docs/usage) - Learn how to use the library
+- [API Reference](/docs/api) - Complete API documentation
+- [Installation](/docs/installation) - Setup instructions
