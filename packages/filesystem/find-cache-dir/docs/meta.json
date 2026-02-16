@@ -1,0 +1,17 @@
+{
+  "title": "@visulima/find-cache-dir",
+  "pages": [
+    "index",
+    "installation",
+    "---Getting Started---",
+    {
+      "title": "Usage Guide",
+      "href": "/usage"
+    },
+    "---API Reference---",
+    {
+      "title": "API Documentation",
+      "href": "/api"
+    }
+  ]
+}
