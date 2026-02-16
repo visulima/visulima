@@ -1,0 +1,20 @@
+{
+  "title": "@visulima/jsdoc-open-api",
+  "pages": [
+    "index",
+    "installation",
+    "quick-start",
+    "---Concepts---",
+    {
+      "title": "JSDoc Syntax",
+      "href": "/concepts/syntax"
+    },
+    "---API Reference---",
+    {
+      "title": "API Documentation",
+      "href": "/api"
+    },
+    "configuration",
+    "troubleshooting"
+  ]
+}
