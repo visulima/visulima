@@ -12,8 +12,8 @@
     "dependencies": {
         "@visulima/storage": "workspace:*",
         "@visulima/storage-client": "workspace:*",
-        "nuxt": "^4.3.0",
-        "vue": "^3.5.27"
+        "nuxt": "^4.3.1",
+        "vue": "^3.5.28"
     },
     "devDependencies": {
         "typescript": "^5.9.3"
