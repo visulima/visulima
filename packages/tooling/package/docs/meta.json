@@ -1,9 +1,8 @@
 {
-    "title": "@visulima/iso-locale",
+    "title": "@visulima/package",
     "pages": [
         "index",
         "installation",
-        "quick-start",
         "---Getting Started---",
         { "title": "Usage", "href": "/usage" },
         "---API Reference---",

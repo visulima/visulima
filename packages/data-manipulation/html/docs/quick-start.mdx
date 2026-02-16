@@ -1,0 +1,235 @@
+---
+title: "Quick Start"
+---
+
+# Quick Start
+
+Get started with @visulima/html in under 5 minutes. Learn the essential operations for HTML escaping, sanitization, and processing.
+
+## Escape HTML
+
+Prevent XSS attacks by escaping user input:
+
+```typescript
+import { escapeHtml } from "@visulima/html";
+
+// Escape HTML content
+const userInput = '<script>alert("xss")</script>';
+const safe = escapeHtml(userInput);
+console.log(safe);
+// => '&lt;script>alert("xss")&lt;/script>'
+
+// Escape for HTML attributes
+const attrValue = 'value="test"';
+const safeAttr = escapeHtml(attrValue, true);
+console.log(safeAttr);
+// => 'value=&quot;test&quot;'
+```
+
+## HTML Template Tags
+
+Create XSS-safe HTML with automatic escaping:
+
+```typescript
+import { html } from "@visulima/html";
+
+const username = "Alice";
+const comment = '<script>alert("xss")</script>';
+
+// Template literals automatically escape interpolated values
+const markup = html`
+    <div class="comment">
+        <strong>${username}</strong>
+        <p>${comment}</p>
+    </div>
+`;
+
+console.log(markup);
+// Interpolated values are escaped:
+// <div class="comment">
+//     <strong>Alice</strong>
+//     <p>&lt;script&gt;alert("xss")&lt;/script&gt;</p>
+// </div>
+```
+
+## Sanitize HTML
+
+Clean user-submitted HTML while preserving safe elements:
+
+```typescript
+import { sanitizeHtml } from "@visulima/html";
+
+const userHtml = `
+    <p>Hello <b>World</b></p>
+    <script>alert("xss")</script>
+    <a href="javascript:void(0)">Bad Link</a>
+`;
+
+const clean = sanitizeHtml(userHtml);
+console.log(clean);
+// => '<p>Hello <b>World</b></p>\n<a>Bad Link</a>'
+// Script removed, javascript: URL removed
+```
+
+## Encode HTML Entities
+
+Convert characters to HTML entities:
+
+```typescript
+import { encode, decode } from "@visulima/html";
+
+// Encode special characters
+const text = "< > \" ' & ©";
+const encoded = encode(text);
+console.log(encoded);
+// => '&lt; &gt; &quot; &apos; &amp; ©'
+
+// Decode entities
+const html = "&lt; &gt; &copy;";
+const decoded = decode(html);
+console.log(decoded);
+// => '< > ©'
+```
+
+## Strip HTML Tags
+
+Extract plain text from HTML:
+
+```typescript
+import { stripHtml } from "@visulima/html";
+
+const html = "<div>Hello <b>World</b></div>";
+const plainText = stripHtml(html).result;
+console.log(plainText);
+// => 'Hello World'
+
+// Strip specific tags with their content
+const withScripts = "Text <script>alert('bad')</script> more text";
+const stripped = stripHtml(withScripts, {
+    stripTogetherWithTheirContents: ["script", "style"],
+}).result;
+console.log(stripped);
+// => 'Text more text'
+```
+
+## CSS and JavaScript Escaping
+
+Prevent injection in styles and scripts:
+
+```typescript
+import { escapeCss, escapeJs, css } from "@visulima/html";
+
+// CSS escaping
+const userColor = "red; } body { display: none; ";
+const safeCss = css`
+    .user-theme {
+        color: ${escapeCss(userColor)};
+    }
+`;
+
+// JavaScript escaping
+const userData = { name: "</script><script>alert(1)</script>" };
+const safeJs = escapeJs(JSON.stringify(userData));
+const script = `<script>window.config = ${safeJs};</script>`;
+```
+
+## Validate Custom Elements
+
+Check if a string is a valid custom element name:
+
+```typescript
+import { isValidCustomElementName } from "@visulima/html";
+
+console.log(isValidCustomElementName("my-element"));
+// => true
+
+console.log(isValidCustomElementName("myElement"));
+// => false (no hyphen)
+```
+
+## Common Patterns
+
+### Render User Comments
+
+```typescript
+import { escapeHtml, html } from "@visulima/html";
+
+interface Comment {
+    author: string;
+    text: string;
+    timestamp: Date;
+}
+
+function renderComment(comment: Comment): string {
+    return html`
+        <div class="comment">
+            <div class="comment-header">
+                <strong>${escapeHtml(comment.author)}</strong>
+                <time>${comment.timestamp.toISOString()}</time>
+            </div>
+            <p>${escapeHtml(comment.text)}</p>
+        </div>
+    `;
+}
+```
+
+### Rich Text Editor Output
+
+```typescript
+import { sanitizeHtml } from "@visulima/html";
+
+function saveEditorContent(htmlContent: string): string {
+    return sanitizeHtml(htmlContent, {
+        allowedTags: ["p", "br", "strong", "em", "a", "ul", "ol", "li"],
+        allowedAttributes: {
+            a: ["href", "title"],
+        },
+        allowedSchemes: ["http", "https", "mailto"],
+    });
+}
+```
+
+### Email Preview
+
+```typescript
+import { stripHtml } from "@visulima/html";
+
+function generatePreview(htmlEmail: string, maxLength: number = 100): string {
+    const plainText = stripHtml(htmlEmail).result;
+    return plainText.substring(0, maxLength).trim() + "...";
+}
+```
+
+### Dynamic Styles
+
+```typescript
+import { css } from "@visulima/html";
+
+function generateThemeStyles(primaryColor: string, fontSize: string): string {
+    return css({
+        color: primaryColor,
+        fontSize: fontSize,
+        fontWeight: "bold",
+        padding: "10px",
+    });
+    // => 'color: red; font-size: 16px; font-weight: bold; padding: 10px;'
+}
+```
+
+## Security Checklist
+
+- ✅ **Always escape user input** before inserting into HTML
+- ✅ **Use sanitization** for user-submitted HTML content
+- ✅ **Validate custom element names** before registration
+- ✅ **Escape CSS and JS** when interpolating user data
+- ✅ **Strip HTML** when plain text is needed
+- ✅ **Use template tags** for automatic XSS protection
+- ❌ **Never trust client-side validation** alone
+- ❌ **Never render raw user input** without processing
+
+## Next Steps
+
+- Learn about [all HTML utilities](/usage) in the usage guide
+- Explore [advanced sanitization options](/usage#html-sanitization)
+- Check [entity encoding modes](/usage#html-entity-encoding)
+- Review [API reference](/api) for complete documentation

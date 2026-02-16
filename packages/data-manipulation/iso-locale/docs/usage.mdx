@@ -1,0 +1,48 @@
+---
+title: "Usage"
+---
+
+# Usage Guide
+
+## Countries
+
+```typescript
+import { getByAlpha2, getAllCountries, getEmoji } from "@visulima/iso-locale";
+
+// Get by code
+const country = getByAlpha2("DE");
+
+// Get all
+const all = getAllCountries();
+
+// Get flag
+console.log(getEmoji("FR")); // "🇫🇷"
+```
+
+## Currencies
+
+```typescript
+import { getByCode, getSymbol, getByCountry } from "@visulima/iso-locale";
+
+const usd = getByCode("USD");
+console.log(getSymbol("GBP")); // "£"
+const currencies = getByCountry("US");
+```
+
+## Regions
+
+```typescript
+import { getRegionsForCountry, getCountriesInContinent } from "@visulima/iso-locale";
+
+const region = getRegionsForCountry("BR");
+const europe = getCountriesInContinent("Europe");
+```
+
+## Timezones
+
+```typescript
+import { getTimezonesByCountry, getPrimaryTimezone } from "@visulima/iso-locale";
+
+const zones = getTimezonesByCountry("CA");
+const primary = getPrimaryTimezone("GB"); // "Europe/London"
+```
