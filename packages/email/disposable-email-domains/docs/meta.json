@@ -1,0 +1,11 @@
+{
+    "title": "@visulima/disposable-email-domains",
+    "pages": [
+        "index",
+        "installation",
+        "---Getting Started---",
+        { "title": "Usage", "href": "/usage" },
+        "---API Reference---",
+        { "title": "API", "href": "/api" }
+    ]
+}
