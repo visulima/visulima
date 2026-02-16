@@ -1,0 +1,25 @@
+---
+title: "API"
+---
+
+# API Reference
+
+## `inspect(value, options?)`
+
+Inspect and format a value.
+
+**Options:**
+- `depth` (number): Max depth
+- `colors` (boolean): Enable colors
+- `showHidden` (boolean): Show hidden properties
+
+**Returns:** Formatted string
+
+**Example:**
+```typescript
+inspect(obj, {
+    depth: 3,
+    colors: true,
+    showHidden: false,
+});
+```

@@ -1,0 +1,29 @@
+---
+title: "Usage"
+---
+
+# Usage
+
+## Depth Control
+
+```typescript
+import { inspect } from "@visulima/inspector";
+
+inspect(deepObject, { depth: 2 });
+inspect(deepObject, { depth: Infinity });
+```
+
+## Colors
+
+```typescript
+inspect(object, { colors: true });
+```
+
+## Circular References
+
+```typescript
+const obj = { name: "test" };
+obj.self = obj;
+
+inspect(obj); // Handles circular reference
+```

@@ -1,0 +1,12 @@
+{
+    "title": "@visulima/error-handler",
+    "pages": [
+        "index",
+        "installation",
+        "quick-start",
+        "---Getting Started---",
+        { "title": "Usage", "href": "/usage" },
+        "---API Reference---",
+        { "title": "API", "href": "/api" }
+    ]
+}
