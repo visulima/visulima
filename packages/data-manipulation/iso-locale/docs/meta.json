@@ -1,3 +1,12 @@
 {
-    "pages": ["index", "installation", "countries", "currencies", "regions", "timezones", "locale", "api"]
+    "title": "@visulima/iso-locale",
+    "pages": [
+        "index",
+        "installation",
+        "quick-start",
+        "---Getting Started---",
+        { "title": "Usage", "href": "/usage" },
+        "---API Reference---",
+        { "title": "API", "href": "/api" }
+    ]
 }

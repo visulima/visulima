@@ -1,0 +1,42 @@
+---
+title: "Quick Start"
+---
+
+# Quick Start
+
+## Countries
+
+```typescript
+import { getByAlpha2, getEmoji } from "@visulima/iso-locale";
+
+const us = getByAlpha2("US");
+console.log(us.name); // "United States"
+console.log(getEmoji("US")); // "🇺🇸"
+```
+
+## Currencies
+
+```typescript
+import { getByCode, getSymbol } from "@visulima/iso-locale";
+
+console.log(getSymbol("USD")); // "$"
+console.log(getSymbol("EUR")); // "€"
+```
+
+## Timezones
+
+```typescript
+import { getTimezonesByCountry } from "@visulima/iso-locale";
+
+console.log(getTimezonesByCountry("US"));
+// ["America/New_York", "America/Los_Angeles", ...]
+```
+
+## BCP 47
+
+```typescript
+import { parseBCP47Tag } from "@visulima/iso-locale";
+
+const tag = parseBCP47Tag("en-US");
+console.log(tag); // { language: "en", country: "US" }
+```
