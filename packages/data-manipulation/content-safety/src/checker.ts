@@ -120,7 +120,7 @@ const buildRegexGroups = (): {
         }
 
         if (!groupName) {
-            continue; // Skip unknown languages
+            continue;
         }
 
         const isCjk = LANGUAGE_GROUPS.cjk.has(lang);
@@ -128,30 +128,24 @@ const buildRegexGroups = (): {
         for (const word of words) {
             const normalized = word.normalize("NFC").toLowerCase();
 
-            // Only add each word once (first language wins)
             if (!wordToLanguage.has(normalized)) {
                 wordToLanguage.set(normalized, lang);
 
                 const escaped = escapeRegExp(normalized);
 
                 if (isCjk) {
-                    // CJK: no word boundaries needed (characters don't use spaces)
                     groupPatterns[groupName]?.push(escaped);
                 } else {
-                    // Non-CJK: use Unicode-aware word boundaries
-                    // \p{L}/\p{N} handles accented Latin, Cyrillic, Arabic, Hindi, etc.
                     groupPatterns[groupName]?.push(`(?<![\\p{L}\\p{N}])${escaped}(?![\\p{L}\\p{N}])`);
                 }
             }
         }
     }
 
-    // Build regexes for each group
     const regexGroups: Array<{ name: string; regex: RegExp }> = [];
 
     for (const [groupName, patterns] of Object.entries(groupPatterns)) {
         if (patterns.length > 0) {
-            // Sort by length descending so longer phrases match first
             patterns.sort((a, b) => b.length - a.length);
             regexGroups.push({
                 name: groupName,
@@ -163,9 +157,6 @@ const buildRegexGroups = (): {
     return { regexGroups, wordToLanguage };
 };
 
-// PERFORMANCE OPTIMIZATION: Split regex into 5 geographic/script groups for faster compilation
-// Building separate smaller regexes is significantly faster than one giant regex with thousands of patterns
-// This reduces module load time and initial JIT compilation overhead
 const { regexGroups, wordToLanguage: cachedWordToLanguage } = buildRegexGroups();
 
 /**
@@ -237,7 +228,6 @@ export const checkBannedWords = (text: string): BannedWordsResult => {
     const normalized = text.normalize("NFC");
     const matches: BannedWordMatch[] = [];
 
-    // Check against all regex groups (Western, Eastern, Middle East, South Asian, CJK)
     for (const { regex } of regexGroups) {
         regex.lastIndex = 0;
         let match: RegExpExecArray | null;

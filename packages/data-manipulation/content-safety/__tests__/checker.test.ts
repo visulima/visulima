@@ -3,9 +3,6 @@ import { describe, it, expect } from "vitest";
 import { BANNED_WORDS } from "../src/banned-words";
 import { checkBannedWords } from "../src/checker";
 
-// NOTE: Regex patterns are built eagerly on module load and split into 5 geographic/script
-// groups for faster compilation. Some tests may take longer due to V8 JIT optimization.
-
 describe("checkBannedWords", () => {
     describe("empty / clean input", () => {
         it("returns no matches for empty string", () => {
