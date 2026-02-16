@@ -3,7 +3,7 @@
  * This module provides internal utilities for the storage package to handle complex headers.
  */
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { Accept, ContentDisposition, ContentType, SuperHeaders } from "@remix-run/headers";
+import { Accept, ContentDisposition, ContentType } from "@remix-run/headers";
 
 import type { Headers as UploadHeaders } from "./types";
 
@@ -176,12 +176,12 @@ export const HeaderUtilities = {
     },
 
     /**
-     * Convert our Headers type to EnhancedHeaders from remix-run/headers.
+     * Convert our Headers type to native Headers object.
      * @param headers Headers in array or object format
-     * @returns SuperHeaders instance with converted header values
+     * @returns Headers instance with converted header values
      */
-    fromHeaders(headers: UploadHeaders): SuperHeaders {
-        const enhanced = new SuperHeaders();
+    fromHeaders(headers: UploadHeaders): Headers {
+        const enhanced = new Headers();
 
         if (Array.isArray(headers)) {
             headers.forEach(([name, value]) => {
