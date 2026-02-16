@@ -22,6 +22,9 @@
 "package: connect":
     - changed-files:
           - any-glob-to-any-file: "packages/api/connect/**/*"
+"package: content-safety":
+    - changed-files:
+          - any-glob-to-any-file: "packages/data-manipulation/content-safety/**/*"
 "package: crud":
     - changed-files:
           - any-glob-to-any-file: "packages/api/crud/**/*"

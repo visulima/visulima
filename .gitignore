@@ -75,3 +75,5 @@ dist
 data/
 
 !packages/data-manipulation/iso-locale/src/data/
+
+.claude/settings.local.json
