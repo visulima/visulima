@@ -1,10 +1,8 @@
-import { useCallback } from "preact/hooks";
-
 import { useToolbarContext } from "../context/index";
 import type { ToolbarPlacement } from "../../types/index";
 
 /**
- * Hook for toolbar visibility and placement
+ * Hook for toolbar visibility and placement - exposes context methods directly
  */
 export const useToolbar = (): {
     hide: () => void;
@@ -18,33 +16,14 @@ export const useToolbar = (): {
 } => {
     const context = useToolbarContext();
 
-    const show = useCallback(() => {
-        context.setVisible(true);
-    }, [context]);
-
-    const hide = useCallback(() => {
-        context.setVisible(false);
-    }, [context]);
-
-    const toggle = useCallback(() => {
-        context.setVisible(!context.isVisible);
-    }, [context]);
-
-    const setPlacement = useCallback(
-        (placement: ToolbarPlacement) => {
-            context.setPlacement(placement);
-        },
-        [context],
-    );
-
     return {
+        hide: () => context.setVisible(false),
         isDragging: context.isDragging,
         isVisible: context.isVisible,
         placement: context.placement,
         setDragging: context.setDragging,
-        setPlacement,
-        hide,
-        show,
-        toggle,
+        setPlacement: context.setPlacement,
+        show: () => context.setVisible(true),
+        toggle: () => context.setVisible(!context.isVisible),
     };
 };

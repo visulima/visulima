@@ -9,7 +9,7 @@ import { SETTINGS_ICON } from "../../ui/icons/index";
 const settingsApp: DevToolbarApp = {
     icon: SETTINGS_ICON,
     id: "dev-toolbar:settings",
-    init(canvas, eventTarget, helpers) {
+    init(canvas, _eventTarget, _helpers) {
         // Tailwind styles are already injected by the toolbar
         // TODO: Implement settings UI with Preact
         const content = document.createElement("div");

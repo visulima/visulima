@@ -1,101 +1,131 @@
-@import "tailwindcss" source("../../../");
+@import "tailwindcss";
 @import "tw-animate-css";
 
+/* Scan source files for Tailwind classes */
+@source "../../**";
+
+/* Custom dark mode variant */
 @custom-variant dark (&:is(.dark *));
 
-@source "../../../src/**";
-
+/* Plugins */
 @plugin "@tailwindcss/forms";
 
 @theme inline {
+    /* Animations */
     --animate-skeleton: skeleton 2s -1s infinite linear;
-    --color-warning-foreground: var(--warning-foreground);
-    --color-warning: var(--warning);
-    --color-success-foreground: var(--success-foreground);
-    --color-success: var(--success);
-    --color-secondary-foreground: var(--secondary-foreground);
-    --color-secondary: var(--secondary);
-    --color-ring: var(--ring);
-    --color-primary-foreground: var(--primary-foreground);
-    --color-primary: var(--primary);
-    --color-popover-foreground: var(--popover-foreground);
-    --color-popover: var(--popover);
-    --color-muted-foreground: var(--muted-foreground);
-    --color-muted: var(--muted);
-    --color-input: var(--input);
-    --color-info-foreground: var(--info-foreground);
-    --color-info: var(--info);
-    --color-foreground: var(--foreground);
-    --color-destructive-foreground: var(--destructive-foreground);
-    --color-destructive: var(--destructive);
-    --color-card-foreground: var(--card-foreground);
-    --color-card: var(--card);
-    --color-border: var(--border);
-    --color-background: var(--background);
+    --animate-slide-in: slide-in 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --animate-slide-out: slide-out 0.2s cubic-bezier(0.4, 0, 1, 1);
+
+    /* Color mappings for Tailwind utilities */
     --color-accent-foreground: var(--accent-foreground);
     --color-accent: var(--accent);
-    
+    --color-background: var(--background);
+    --color-border: var(--border);
+    --color-card-foreground: var(--card-foreground);
+    --color-card: var(--card);
+    --color-destructive-foreground: var(--destructive-foreground);
+    --color-destructive: var(--destructive);
+    --color-foreground: var(--foreground);
+    --color-info-foreground: var(--info-foreground);
+    --color-info: var(--info);
+    --color-input: var(--input);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-muted: var(--muted);
+    --color-popover-foreground: var(--popover-foreground);
+    --color-popover: var(--popover);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-primary: var(--primary);
+    --color-ring: var(--ring);
+    --color-secondary-foreground: var(--secondary-foreground);
+    --color-secondary: var(--secondary);
+    --color-success-foreground: var(--success-foreground);
+    --color-success: var(--success);
+    --color-warning-foreground: var(--warning-foreground);
+    --color-warning: var(--warning);
+
     @keyframes skeleton {
         to {
             background-position: -200% 0;
         }
     }
+
+    @keyframes slide-in {
+        from {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    @keyframes slide-out {
+        from {
+            opacity: 1;
+            transform: scale(1);
+        }
+        to {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+    }
 }
 
 :root {
-    --accent: --alpha(var(--color-black) / 4%);
-    --accent-foreground: var(--color-zinc-800);
-    --background: var(--color-white);
-    --border: --alpha(var(--color-black) / 12%);
-    --card: var(--color-white);
-    --card-foreground: var(--color-zinc-800);
-    --destructive: var(--color-red-500);
-    --destructive-foreground: var(--color-red-700);
-    --foreground: var(--color-zinc-800);
-    --info: var(--color-blue-500);
-    --info-foreground: var(--color-blue-700);
-    --input: --alpha(var(--color-black) / 12%);
-    --muted: --alpha(var(--color-black) / 4%);
-    --muted-foreground: color-mix(in srgb, var(--color-zinc-500) 90%, var(--color-black));
-    --popover: var(--color-white);
-    --popover-foreground: var(--color-zinc-800);
-    --primary: var(--color-zinc-800);
-    --primary-foreground: var(--color-zinc-50);
-    --ring: var(--color-zinc-400);
-    --secondary: --alpha(var(--color-black) / 4%);
-    --secondary-foreground: var(--color-zinc-800);
-    --success: var(--color-emerald-500);
-    --success-foreground: var(--color-emerald-700);
-    --warning: var(--color-amber-500);
-    --warning-foreground: var(--color-amber-700);
+    --accent: oklch(96% 0.01 264);
+    --accent-foreground: oklch(39% 0.02 264);
+    --background: oklch(100% 0 0);
+    --border: oklch(91% 0.01 264);
+    --card: oklch(100% 0 0);
+    --card-foreground: oklch(39% 0.02 264);
+    --destructive: oklch(58% 0.22 27);
+    --destructive-foreground: oklch(45% 0.22 27);
+    --foreground: oklch(39% 0.02 264);
+    --info: oklch(58% 0.18 240);
+    --info-foreground: oklch(45% 0.18 240);
+    --input: oklch(91% 0.01 264);
+    --muted: oklch(96% 0.01 264);
+    --muted-foreground: oklch(55% 0.02 264);
+    --popover: oklch(100% 0 0);
+    --popover-foreground: oklch(39% 0.02 264);
+    --primary: oklch(39% 0.02 264);
+    --primary-foreground: oklch(98% 0.01 264);
+    --ring: oklch(65% 0.02 264);
+    --secondary: oklch(96% 0.01 264);
+    --secondary-foreground: oklch(39% 0.02 264);
+    --success: oklch(65% 0.15 155);
+    --success-foreground: oklch(50% 0.15 155);
+    --warning: oklch(75% 0.15 85);
+    --warning-foreground: oklch(55% 0.15 85);
 }
 
 .dark {
-    --accent: --alpha(var(--color-white) / 6%);
-    --accent-foreground: var(--color-zinc-200);
-    --background: color-mix(in srgb, var(--color-zinc-950) 98%, var(--color-white));
-    --border: --alpha(var(--color-white) / 12%);
-    --card: color-mix(in srgb, var(--background) 98%, var(--color-white));
-    --card-foreground: var(--color-zinc-200);
-    --destructive: var(--color-red-500);
-    --destructive-foreground: var(--color-red-400);
-    --foreground: var(--color-zinc-200);
-    --info: var(--color-blue-500);
-    --info-foreground: var(--color-blue-400);
-    --input: --alpha(var(--color-white) / 12%);
-    --muted: --alpha(var(--color-white) / 6%);
-    --muted-foreground: color-mix(in srgb, var(--color-zinc-500) 90%, var(--color-white));
-    --popover: color-mix(in srgb, var(--background) 96%, var(--color-white));
-    --popover-foreground: var(--color-zinc-200);
-    --primary: var(--color-zinc-200);
-    --primary-foreground: var(--color-zinc-800);
-    --ring: var(--color-zinc-500);
-    --secondary: --alpha(var(--color-white) / 6%);
-    --secondary-foreground: var(--color-zinc-200);
-    --success: var(--color-emerald-500);
-    --success-foreground: var(--color-emerald-400);
-    --warning: var(--color-amber-500);
-    --warning-foreground: var(--color-amber-400);
+    --accent: oklch(22% 0.02 264);
+    --accent-foreground: oklch(83% 0.02 264);
+    --background: oklch(14.5% 0.025 264);
+    --border: oklch(22% 0.02 264);
+    --card: oklch(14.5% 0.025 264);
+    --card-foreground: oklch(83% 0.02 264);
+    --destructive: oklch(58% 0.22 27);
+    --destructive-foreground: oklch(70% 0.18 27);
+    --foreground: oklch(83% 0.02 264);
+    --info: oklch(58% 0.18 240);
+    --info-foreground: oklch(70% 0.15 240);
+    --input: oklch(22% 0.02 264);
+    --muted: oklch(22% 0.02 264);
+    --muted-foreground: oklch(65% 0.02 264);
+    --popover: oklch(14.5% 0.025 264);
+    --popover-foreground: oklch(83% 0.02 264);
+    --primary: oklch(83% 0.02 264);
+    --primary-foreground: oklch(14.5% 0.025 264);
+    --ring: oklch(46% 0.02 264);
+    --secondary: oklch(22% 0.02 264);
+    --secondary-foreground: oklch(83% 0.02 264);
+    --success: oklch(65% 0.15 155);
+    --success-foreground: oklch(75% 0.13 155);
+    --warning: oklch(75% 0.15 85);
+    --warning-foreground: oklch(80% 0.13 85);
 }
 
 @layer base {
@@ -108,36 +138,145 @@
 }
 
 @layer theme {
-    /* Dev Toolbar Base Styles */
-    #dev-bar {
-        background: linear-gradient(180deg, #13151a 0%, rgba(19, 21, 26, 0.88) 100%);
-        box-shadow:
-            0px 0px 0px 0px rgba(19, 21, 26, 0.3),
-            0px 1px 2px 0px rgba(19, 21, 26, 0.29),
-            0px 4px 4px 0px rgba(19, 21, 26, 0.26),
-            0px 10px 6px 0px rgba(19, 21, 26, 0.15),
-            0px 17px 7px 0px rgba(19, 21, 26, 0.04),
-            0px 26px 7px 0px rgba(19, 21, 26, 0.01);
+    /* Vue DevTools Anchor - Root container */
+    .vue-devtools__anchor {
+        transform-origin: center center;
+        transform: rotate(0);
+        /* Smooth transition for position changes (peek in/out effect) */
+        transition: left 0.3s ease, top 0.3s ease;
     }
 
-    /* Ensure hitbox has proper height/width */
-    #dev-bar-hitbox-above {
+    /* Disable transitions when dragging for immediate response */
+    .vue-devtools__anchor[data-dragging] {
+        transition: none !important;
+    }
+
+    .vue-devtools__anchor.reduce-motion {
+        transition: none !important;
+        animation: none !important;
+    }
+
+    .vue-devtools__anchor.reduce-motion * {
+        transition: none !important;
+        animation: none !important;
+    }
+
+    /* Dev Toolbar Base Styles */
+    #dev-bar {
+        background: rgba(255, 255, 255, 0.95);
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+        backdrop-filter: blur(16px) saturate(180%);
+        -webkit-backdrop-filter: blur(16px) saturate(180%);
+    }
+
+    .dark #dev-bar {
+        background: rgba(24, 24, 27, 0.9);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+    }
+
+    /* Bar Container - adapts based on toolbar position */
+    #bar-container {
+        display: flex;
+        align-items: center;
+    }
+
+    /* All positions use flex-row (horizontal layout) */
+    /* For left/right, the rotation makes it appear vertical */
+    [data-placement*="left"] #bar-container,
+    [data-placement*="right"] #bar-container,
+    [data-placement*="top"] #bar-container,
+    [data-placement*="bottom"] #bar-container {
+        flex-direction: row;
+    }
+
+    /* App Canvas - popover-style positioning and animations */
+    dev-toolbar-app-canvas {
+        box-shadow:
+            0 20px 25px -5px rgba(0, 0, 0, 0.1),
+            0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+    }
+
+    .dark dev-toolbar-app-canvas {
+        box-shadow:
+            0 20px 25px -5px rgba(0, 0, 0, 0.5),
+            0 10px 10px -5px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Popover entry animations using @starting-style */
+    @starting-style {
+        dev-toolbar-app-canvas[role="dialog"] {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+    }
+
+    /* Ensure proper max dimensions based on available space */
+    [data-placement*="bottom"] dev-toolbar-app-canvas {
+        max-height: calc(100vh - 100px); /* Account for bottom toolbar */
+    }
+
+    [data-placement*="top"] dev-toolbar-app-canvas {
+        max-height: calc(100vh - 100px); /* Account for top toolbar */
+    }
+
+    [data-placement*="left"] dev-toolbar-app-canvas,
+    [data-placement*="right"] dev-toolbar-app-canvas {
+        max-width: calc(100vw - 100px); /* Account for side toolbar */
+        max-height: calc(100vh - 32px); /* Full height minus margin */
+    }
+
+    /* Smooth scrollbar for canvas content */
+    dev-toolbar-app-canvas::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+
+    dev-toolbar-app-canvas::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    dev-toolbar-app-canvas::-webkit-scrollbar-thumb {
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 4px;
+    }
+
+    .dark dev-toolbar-app-canvas::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.2);
+    }
+
+    dev-toolbar-app-canvas::-webkit-scrollbar-thumb:hover {
+        background: rgba(0, 0, 0, 0.3);
+    }
+
+    .dark dev-toolbar-app-canvas::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.3);
+    }
+
+    /* Hitbox dimensions are handled by Tailwind classes in the Hitbox component */
+    /* These rules ensure consistent sizing across placements */
+
+    /* Top/bottom placement: horizontal hitboxes */
+    [data-placement*="top"] #dev-bar-hitbox-above,
+    [data-placement*="bottom"] #dev-bar-hitbox-above {
         height: 42px;
     }
 
-    /* For right-side placement, hitbox should be horizontal */
+    /* Left/right placement: vertical hitboxes */
+    [data-placement*="left"] #dev-bar-hitbox-above,
     [data-placement*="right"] #dev-bar-hitbox-above {
         height: auto;
         width: 42px;
     }
 
+    [data-placement*="left"] #dev-bar-hitbox-below,
     [data-placement*="right"] #dev-bar-hitbox-below {
         height: auto;
         width: 16px;
     }
-
-    /* Toolbar visibility transitions - now handled by Tailwind classes */
-    /* Hidden state and dragging state are now in component classes */
 
     /* FrameBox panel animations */
     [data-frame-box] {
@@ -152,18 +291,260 @@
     [data-frame-box][data-resizing] {
         transition: none !important;
     }
+
+    /* Toggle button styles - highly visible */
+    .dev-toolbar-toggle {
+        background: rgba(255, 255, 255, 1) !important;
+        border: 1px solid rgba(0, 0, 0, 0.12) !important;
+        box-shadow:
+            0 4px 16px rgba(0, 0, 0, 0.15),
+            0 2px 8px rgba(0, 0, 0, 0.1),
+            inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
+        backdrop-filter: blur(12px) saturate(180%);
+        -webkit-backdrop-filter: blur(12px) saturate(180%);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        z-index: 10;
+    }
+
+    .dev-toolbar-toggle:hover {
+        transform: scale(1.05);
+        box-shadow:
+            0 6px 24px rgba(0, 0, 0, 0.2),
+            0 4px 12px rgba(0, 0, 0, 0.15),
+            inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+    }
+
+    .dark .dev-toolbar-toggle {
+        background: rgba(24, 24, 27, 1) !important;
+        border: 1px solid rgba(255, 255, 255, 0.15) !important;
+        box-shadow:
+            0 4px 20px rgba(0, 0, 0, 0.7),
+            0 2px 10px rgba(0, 0, 0, 0.5),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+    }
+
+    .dark .dev-toolbar-toggle:hover {
+        box-shadow:
+            0 6px 28px rgba(0, 0, 0, 0.8),
+            0 4px 14px rgba(0, 0, 0, 0.6),
+            inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
+    }
+
+    /* Panel - Vue DevTools style */
+    .dev-toolbar__panel {
+        background: var(--color-background) !important;
+        border: 1px solid var(--color-border) !important;
+        box-shadow: 2px 2px 8px var(--color-background) !important;
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        transform: translate(-50%, -50%);
+        /* Vue DevTools transitions */
+        transition:
+            max-width 0.4s ease,
+            max-height 0.4s ease,
+            width 0.4s ease,
+            height 0.4s ease,
+            padding 0.5s ease,
+            transform 0.3s ease,
+            all 0.4s ease !important;
+    }
+
+    /* Vertical panel rotation - Vue DevTools pattern */
+    [data-placement*="left"] .dev-toolbar__panel,
+    [data-placement*="right"] .dev-toolbar__panel {
+        transform: translate(-50%, -50%) rotate(90deg);
+        box-shadow: 2px -2px 8px var(--color-background) !important;
+    }
+
+    /* Counter-rotate buttons in vertical panels to keep them upright */
+    [data-placement*="left"] .dev-toolbar__panel button,
+    [data-placement*="right"] .dev-toolbar__panel button {
+        transform: rotate(-90deg);
+    }
+
+    /* Hidden state - shrink to icon only (Vue DevTools pattern) */
+    .dev-toolbar__panel[data-hidden="true"] {
+        max-width: 32px !important;
+        padding: 2px 0 !important;
+    }
+
+    /* Panel content fades when hidden */
+    .dev-toolbar__panel[data-hidden="true"] .dev-toolbar__panel-content {
+        opacity: 0;
+    }
+
+    .dev-toolbar__panel-content {
+        transition: opacity 0.4s ease;
+    }
+
+    /* Glowing effect - Vue DevTools style */
+    .vue-devtools__anchor--glowing {
+        position: absolute;
+        left: 0;
+        top: 0;
+        transform: translate(-50%, -50%);
+        width: 160px;
+        height: 160px;
+        opacity: 0;
+        transition: all 1s ease;
+        pointer-events: none;
+        z-index: -1;
+        border-radius: 9999px;
+        background-image: linear-gradient(45deg, #00dc82, #36e4da, #0047e1);
+        filter: blur(60px);
+    }
+
+    #dev-toolbar-root:hover .vue-devtools__anchor--glowing {
+        opacity: 0.6;
+    }
 }
 
-/* Vue DevTools overlay styles - minimal remaining styles */
+/* Dev toolbar overlay styles - minimal remaining styles */
 /* Most styles have been converted to Tailwind classes in components */
 
 /* Panel class - needed for dynamic style overrides and conditional selectors */
-.vue-devtools__panel {
-  /* Base styles are in Tailwind, this is just for selector compatibility */
+.dev-toolbar__panel {
+    /* Base styles are in Tailwind, this is just for selector compatibility */
+}
+
+/* Ensure maximum z-index for toolbar visibility */
+#dev-toolbar-root {
+    z-index: 2147483647 !important;
+    pointer-events: auto !important;
+}
+
+
+/* Subtle pulse animation for discoverability when hidden */
+[data-hidden] .dev-toolbar-toggle {
+    animation: subtle-pulse 3s ease-in-out infinite;
+}
+
+@keyframes subtle-pulse {
+    0%, 100% {
+        box-shadow:
+            0 4px 16px rgba(0, 0, 0, 0.15),
+            0 2px 8px rgba(0, 0, 0, 0.1),
+            inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    }
+    50% {
+        box-shadow:
+            0 4px 20px rgba(0, 0, 0, 0.2),
+            0 2px 10px rgba(0, 0, 0, 0.15),
+            inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    }
+}
+
+.dark [data-hidden] .dev-toolbar-toggle {
+    animation: subtle-pulse-dark 3s ease-in-out infinite;
+}
+
+@keyframes subtle-pulse-dark {
+    0%, 100% {
+        box-shadow:
+            0 4px 20px rgba(0, 0, 0, 0.7),
+            0 2px 10px rgba(0, 0, 0, 0.5),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    }
+    50% {
+        box-shadow:
+            0 4px 24px rgba(0, 0, 0, 0.8),
+            0 2px 12px rgba(0, 0, 0, 0.6),
+            inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    }
+}
+
+/* Component-specific styles (instead of Tailwind classes in HTML) */
+
+/* App Button */
+.dev-toolbar-app-button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border: 0;
+    background: transparent;
+    color: var(--foreground);
+    opacity: 0.7;
+    border-radius: 0.5rem;
+    white-space: nowrap;
+    text-decoration: none;
+    padding: 0;
+    margin: 0;
+    overflow: hidden;
+    transition: all 0.2s ease-out;
+    cursor: pointer;
+}
+
+.dev-toolbar-app-button:hover {
+    background: rgba(0, 0, 0, 0.05);
+    opacity: 1;
+}
+
+.dark .dev-toolbar-app-button:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.dev-toolbar-app-button:active {
+    background: rgba(0, 0, 0, 0.08);
+    transform: scale(0.95);
+}
+
+.dark .dev-toolbar-app-button:active {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.dev-toolbar-app-button.active {
+    background: rgba(0, 0, 0, 0.08);
+    opacity: 1;
+}
+
+.dark .dev-toolbar-app-button.active {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+/* Icon container */
+.dev-toolbar-icon {
+    position: relative;
+    width: 1.25rem;
+    height: 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+}
+
+.dev-toolbar-icon svg {
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+/* Notification badge */
+.dev-toolbar-badge {
+    position: absolute;
+    top: -0.25rem;
+    right: -0.375rem;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    ring: 2px solid var(--background);
+}
+
+.dev-toolbar-badge.info {
+    background: var(--info);
+}
+
+.dev-toolbar-badge.warning {
+    background: var(--warning);
+}
+
+.dev-toolbar-badge.error {
+    background: var(--destructive);
 }
 
 @media print {
-  #dev-toolbar-root {
-    display: none;
-  }
+    #dev-toolbar-root {
+        display: none;
+    }
 }

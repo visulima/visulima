@@ -8,9 +8,12 @@ import type { ViteDevServer } from "vite";
  * @param column Column number (1-based)
  */
 export const openInEditor = async (server: ViteDevServer, file: string, line?: number, column?: number): Promise<void> => {
-    // Use Vite's built-in openInEditor if available
-    if (server.openInEditor) {
-        await server.openInEditor(file, { column, line });
+    // Use Vite's built-in openInEditor if available (unofficial API)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const serverAny = server as any;
+
+    if (serverAny.openInEditor) {
+        await serverAny.openInEditor(file, { column, line });
 
         return;
     }

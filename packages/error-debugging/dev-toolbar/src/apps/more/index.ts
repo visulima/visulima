@@ -9,7 +9,7 @@ import { MORE_ICON } from "../../ui/icons/index";
 const moreApp: DevToolbarApp = {
     icon: MORE_ICON,
     id: "dev-toolbar:more",
-    init(canvas, eventTarget, helpers) {
+    init(canvas, _eventTarget, _helpers) {
         // Tailwind styles are already injected by the toolbar
         // TODO: Implement more apps dropdown with Preact
         const content = document.createElement("div");

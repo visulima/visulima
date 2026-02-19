@@ -6,38 +6,35 @@ import { useApps } from "../hooks/index";
 import AppButton from "./app-button";
 
 /**
- * More apps button component
+ * Overflow "more apps" button
  */
-const MoreButton = ({ isHorizontal }: { isHorizontal: boolean }): ComponentChildren => {
+const MoreButton = (): ComponentChildren => {
     const { toggleApp } = useApps();
-
-    const handleClick = (): void => {
-        toggleApp("dev-toolbar:more").catch((error) => {
-            console.error("[dev-toolbar] Failed to toggle more app:", error);
-        });
-    };
 
     return (
         <button
             class={cn(
-                isHorizontal ? "flex justify-center items-center h-11 w-10" : "flex justify-center items-center w-11 h-10",
-                "border-0 bg-transparent text-white font-sans text-base leading-tight whitespace-nowrap no-underline p-0 m-0 overflow-hidden transition-opacity duration-200 ease-out cursor-pointer hover:bg-white/12.5 focus-visible:bg-white/12.5 focus-visible:-outline-offset-3",
+                "flex justify-center items-center w-10 h-10",
+                "border-0 bg-transparent text-foreground/70 font-medium text-sm",
+                "whitespace-nowrap no-underline p-0 m-0 overflow-hidden rounded-lg",
+                "transition-all duration-200 ease-out cursor-pointer",
+                "hover:bg-black/5 dark:hover:bg-white/8 hover:text-foreground",
+                "active:bg-black/8 dark:active:bg-white/12 active:scale-95",
             )}
             data-app-id="dev-toolbar:more"
-            onClick={handleClick}
+            onClick={() => {
+                toggleApp("dev-toolbar:more").catch((error) => {
+                    console.error("[dev-toolbar] Failed to toggle more app:", error);
+                });
+            }}
             type="button"
         >
-            <div class="relative max-w-5 max-h-5 select-none">⋯</div>
+            <div class="relative w-5 h-5 flex items-center justify-center select-none">⋯</div>
         </button>
     );
 };
 
 interface ToolbarBarProps {
-    /**
-     * Whether toolbar is on right side (horizontal layout)
-     */
-    isRightSide?: boolean;
-
     /**
      * Number of custom apps to show before "more" button
      */
@@ -45,9 +42,11 @@ interface ToolbarBarProps {
 }
 
 /**
- * Toolbar bar component with app buttons
+ * Toolbar bar component with app buttons.
+ * All positions use flex-row; left/right positions rotate the pill 90deg via CSS
+ * so the row appears vertical on screen.
  */
-const ToolbarBar = ({ isRightSide = false, customAppsToShow = 3 }: ToolbarBarProps): ComponentChildren => {
+const ToolbarBar = ({ customAppsToShow = 3 }: ToolbarBarProps): ComponentChildren => {
     const { apps } = useApps();
 
     const builtInApps = apps.filter((app) => app.builtIn);
@@ -55,16 +54,13 @@ const ToolbarBar = ({ isRightSide = false, customAppsToShow = 3 }: ToolbarBarPro
     const visibleApps = [...builtInApps, ...customApps.slice(0, customAppsToShow)];
     const overflowApps = customApps.slice(customAppsToShow);
 
-    const containerClasses = isRightSide ? "h-full flex-col" : "h-full flex";
-    const barClasses = isRightSide ? "w-10 h-auto" : "h-10 w-auto";
-
     return (
-        <div id="dev-bar" class={cn(barClasses, "overflow-hidden pointer-events-auto border border-[#343841] rounded-lg")}>
-            <div id="bar-container" class={containerClasses}>
+        <div class="flex items-center justify-center overflow-visible pointer-events-auto rounded-xl" id="dev-bar">
+            <div class="flex flex-row items-center justify-start gap-0.5" id="bar-container">
                 {visibleApps.map((app) => (
-                    <AppButton key={app.id} app={app} isHorizontal={isRightSide} />
+                    <AppButton key={app.id} app={app} />
                 ))}
-                {overflowApps.length > 0 && <MoreButton isHorizontal={isRightSide} />}
+                {overflowApps.length > 0 && <MoreButton />}
             </div>
         </div>
     );

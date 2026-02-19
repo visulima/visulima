@@ -7,7 +7,8 @@
 import devToolbarOptions from "virtual:visulima-dev-toolbar-options";
 
 // Set up globals for dev toolbar
-globalThis.__VISULIMA_DEV_TOOLBAR_OPTIONS__ = devToolbarOptions;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+(globalThis as any).__VISULIMA_DEV_TOOLBAR_OPTIONS__ = devToolbarOptions;
 
 /**
  * Initialize the dev toolbar.
@@ -19,11 +20,13 @@ const initToolbar = async () => {
 
     // Prevent double initialization (race condition protection)
     // Set flag immediately before async operations
-    if (globalThis.__VISULIMA_DEVTOOLS_INITIALIZED__) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if ((globalThis as any).__VISULIMA_DEVTOOLS_INITIALIZED__) {
         return;
     }
 
-    globalThis.__VISULIMA_DEVTOOLS_INITIALIZED__ = true;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (globalThis as any).__VISULIMA_DEVTOOLS_INITIALIZED__ = true;
 
     try {
         // Import the toolbar module (registers the custom element)
@@ -34,7 +37,8 @@ const initToolbar = async () => {
         const { moreApp, settingsApp, timelineApp } = await import("virtual:visulima-dev-toolbar-path:apps/index.js");
 
         // Create toolbar element
-        const toolbar = document.createElement("dev-toolbar");
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const toolbar = document.createElement("dev-toolbar") as any;
 
         document.body.append(toolbar);
 
@@ -62,7 +66,8 @@ const initToolbar = async () => {
         console.log("[dev-toolbar] Initialized successfully");
     } catch (error) {
         // Reset flag on error so retry is possible
-        globalThis.__VISULIMA_DEVTOOLS_INITIALIZED__ = false;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (globalThis as any).__VISULIMA_DEVTOOLS_INITIALIZED__ = false;
         console.error("[dev-toolbar] Failed to initialize:", error);
     }
 };

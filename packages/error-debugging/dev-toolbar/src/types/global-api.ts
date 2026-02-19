@@ -1,4 +1,5 @@
-import type { DevToolbarApp, ToolbarSettings } from "./app";
+import type { DevToolbarApp } from "./app";
+import type { ToolbarSettings } from "./toolbar";
 import type { DevToolbarHook } from "./hooks";
 import type { ServerFunctions } from "./rpc";
 

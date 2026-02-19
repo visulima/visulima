@@ -2,7 +2,7 @@ import type { RefObject } from "preact";
 import { useCallback, useEffect, useMemo, useRef, useState } from "preact/hooks";
 
 import { clamp, pixelToNumber } from "../utils/index";
-import { useFrameState, type DevToolsFrameState } from "./use-frame-state";
+import { useFrameState } from "./use-frame-state";
 
 /**
  * Snap to key points (0, 50, 100) like Vue DevTools
@@ -176,22 +176,26 @@ export const usePosition = (panelEl: RefObject<HTMLElement>): UsePositionReturn 
     }, [panelEl]);
 
     /**
-     * Bring up panel (set hovering and start timer)
+     * Bring up panel (set hovering and start timer to auto-hide)
      */
     const bringUp = useCallback(() => {
+        // Set hovering to true immediately to show full toolbar
         setIsHovering(true);
 
+        // If minimization is disabled, don't set timeout
         if (state.minimizePanelInactive < 0) {
             return;
         }
 
+        // Clear existing timeout
         if (timerRef.current) {
             clearTimeout(timerRef.current);
         }
 
+        // Set new timeout to hide after inactivity
         timerRef.current = setTimeout(() => {
             setIsHovering(false);
-        }, state.minimizePanelInactive || 0);
+        }, state.minimizePanelInactive || 5000);
     }, [state.minimizePanelInactive]);
 
     // Call bringUp on mount
@@ -355,24 +359,30 @@ export const usePosition = (panelEl: RefObject<HTMLElement>): UsePositionReturn 
         [state.position],
     );
 
-    // Computed: isHidden
+    // Computed: isHidden (minimize when inactive) - Vue DevTools pattern
     const isHidden = useMemo(() => {
+        // Never minimize
         if (state.minimizePanelInactive < 0) {
             return false;
         }
 
+        // Always minimize
         if (state.minimizePanelInactive === 0) {
             return true;
         }
 
-        // Check for touch device
-        // @ts-expect-error - compatibility
+        // Check for touch device - don't auto-hide on touch devices
         const isTouchDevice = globalThis.window !== undefined && (
             "ontouchstart" in globalThis.window ||
-            (globalThis.navigator?.maxTouchPoints ?? 0) > 0 ||
-            (globalThis.navigator?.msMaxTouchPoints ?? 0) > 0
+            (globalThis.navigator?.maxTouchPoints ?? 0) > 0
         );
 
+        // Hide when:
+        // - Not dragging
+        // - Panel is CLOSED (!state.open) - Vue DevTools pattern
+        // - Not hovering
+        // - Not a touch device
+        // - minimizePanelInactive is set to a positive value
         return !isDragging
             && !state.open
             && !isHovering
@@ -383,31 +393,40 @@ export const usePosition = (panelEl: RefObject<HTMLElement>): UsePositionReturn 
     // Computed: anchorPos
     const anchorPos = useMemo(() => {
         const panel = panelEl.current;
-        const halfWidth = (panel?.clientWidth ?? 0) / 2;
-        const halfHeight = (panel?.clientHeight ?? 0) / 2;
+        const panelHalfWidth = (panel?.clientWidth ?? 0) / 2;
+        const panelHalfHeight = (panel?.clientHeight ?? 0) / 2;
+
+        // Vue DevTools: When rotated 90deg, dimensions are swapped for positioning
+        // Use halfHeight for horizontal positioning, halfWidth for vertical positioning
+        const halfWidth = isVertical ? panelHalfHeight : panelHalfWidth;
+        const halfHeight = isVertical ? panelHalfWidth : panelHalfHeight;
 
         const left = (state.left * windowWidth) / 100;
         const top = (state.top * windowHeight) / 100;
+
+        // When hidden, offset by half the button size to show 50% outside viewport
+        // Button is ~30px, so offset by 15px
+        const hideOffset = isHidden ? 15 : 0;
 
         switch (state.position) {
             case "top": {
                 return {
                     left: clamp(left, halfWidth + panelMargins.left, windowWidth - halfWidth - panelMargins.right),
-                    top: panelMargins.top + halfHeight,
+                    top: panelMargins.top + halfHeight - hideOffset,
                 };
             }
 
             case "right": {
                 return {
-                    left: windowWidth - panelMargins.right - halfHeight,
-                    top: clamp(top, halfWidth + panelMargins.top, windowHeight - halfWidth - panelMargins.bottom),
+                    left: windowWidth - panelMargins.right - halfWidth + hideOffset,
+                    top: clamp(top, halfHeight + panelMargins.top, windowHeight - halfHeight - panelMargins.bottom),
                 };
             }
 
             case "left": {
                 return {
-                    left: panelMargins.left + halfHeight,
-                    top: clamp(top, halfWidth + panelMargins.top, windowHeight - halfWidth - panelMargins.bottom),
+                    left: panelMargins.left + halfWidth - hideOffset,
+                    top: clamp(top, halfHeight + panelMargins.top, windowHeight - halfHeight - panelMargins.bottom),
                 };
             }
 
@@ -415,19 +434,22 @@ export const usePosition = (panelEl: RefObject<HTMLElement>): UsePositionReturn 
             default: {
                 return {
                     left: clamp(left, halfWidth + panelMargins.left, windowWidth - halfWidth - panelMargins.right),
-                    top: windowHeight - panelMargins.bottom - halfHeight,
+                    top: windowHeight - panelMargins.bottom - halfHeight + hideOffset,
                 };
             }
         }
-    }, [state.left, state.position, state.top, windowHeight, windowWidth, panelMargins, panelEl]);
+    }, [state.left, state.position, state.top, windowHeight, windowWidth, panelMargins, panelEl, isHidden, isVertical]);
 
     // Computed: anchorStyle with smooth transitions
     const anchorStyle = useMemo(
         () => ({
             left: `${anchorPos.left}px`,
             top: `${anchorPos.top}px`,
+            // Add smooth transition for the slide in/out effect
+            // Disable during dragging for immediate response
+            transition: isDragging ? "none" : "left 0.3s ease, top 0.3s ease",
         }),
-        [anchorPos],
+        [anchorPos, isDragging],
     );
 
     // Computed: iframeStyle
@@ -437,12 +459,17 @@ export const usePosition = (panelEl: RefObject<HTMLElement>): UsePositionReturn 
         mousePositionRef.current.y;
 
         const panel = panelEl.current;
-        const halfHeight = (panel?.clientHeight ?? 0) / 2;
+        const panelHalfWidth = (panel?.clientWidth ?? 0) / 2;
+        const panelHalfHeight = (panel?.clientHeight ?? 0) / 2;
+
+        // Vue DevTools: When rotated, dimensions are swapped
+        const halfWidth = isVertical ? panelHalfHeight : panelHalfWidth;
+        const halfHeight = isVertical ? panelHalfWidth : panelHalfHeight;
 
         const frameMargin = {
             bottom: panelMargins.bottom + halfHeight,
-            left: panelMargins.left + halfHeight,
-            right: panelMargins.right + halfHeight,
+            left: panelMargins.left + halfWidth,
+            right: panelMargins.right + halfWidth,
             top: panelMargins.top + halfHeight,
         };
 
@@ -524,52 +551,26 @@ export const usePosition = (panelEl: RefObject<HTMLElement>): UsePositionReturn 
         }
 
         return style;
-    }, [anchorPos, isDragging, panelMargins, state.height, state.position, state.width, windowHeight, windowWidth, panelEl]);
+    }, [anchorPos, isDragging, panelMargins, state.height, state.position, state.width, windowHeight, windowWidth, panelEl, isVertical]);
 
-    // Computed: panelStyle
+    // Computed: panelStyle - Vue DevTools pattern
     const panelStyle = useMemo(() => {
         const style: Record<string, string> = {};
 
+        // Vue DevTools: Rotate 90deg for vertical positions
         if (isVertical) {
-            const hideOffset = isHidden ? ` ${state.position === "right" ? "+" : "-"} 15px` : "";
-
-            style.transform = `translate(${hideOffset ? `calc(-50%${hideOffset})` : "-50%"}, -50%) rotate(90deg)`;
+            style.transform = "translate(-50%, -50%) rotate(90deg)";
         } else {
-            const hideOffset = isHidden ? ` ${state.position === "top" ? "-" : "+"} 15px` : "";
-
-            style.transform = `translate(-50%, ${hideOffset ? `calc(-50%${hideOffset}))` : "-50%"}`;
-        }
-
-        if (isHidden) {
-            switch (state.position) {
-                case "right":
-                case "top": {
-                    style.borderTopLeftRadius = "0";
-                    style.borderTopRightRadius = "0";
-
-                    break;
-                }
-
-                case "bottom":
-                case "left": {
-                    style.borderBottomLeftRadius = "0";
-                    style.borderBottomRightRadius = "0";
-
-                    break;
-                }
-            }
+            style.transform = "translate(-50%, -50%)";
         }
 
         // Disable transitions only during dragging for immediate response
         if (isDragging) {
             style.transition = "none !important";
-        } else {
-            // Smooth transitions when not dragging
-            style.transition = "transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), border-radius 0.2s cubic-bezier(0.4, 0, 0.2, 1)";
         }
 
         return style;
-    }, [isVertical, isHidden, state.position, isDragging]);
+    }, [isDragging, isVertical]);
 
     const result: UsePositionReturn = {
         anchorStyle,

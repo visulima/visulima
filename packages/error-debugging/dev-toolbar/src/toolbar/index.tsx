@@ -134,7 +134,8 @@ export class DevToolbar extends HTMLElement {
      * Check if toolbar is hidden.
      */
     public isHidden(): boolean {
-        const root = this.shadowRoot.querySelector<HTMLDivElement>("#dev-toolbar-root");
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        const root = this.shadowRoot!.querySelector<HTMLDivElement>("#dev-toolbar-root");
 
         return root?.hasAttribute("data-hidden") ?? true;
     }
@@ -144,7 +145,8 @@ export class DevToolbar extends HTMLElement {
      */
     public setToolbarVisible(visible: boolean): void {
         // Update the data-hidden attribute directly for immediate feedback
-        const root = this.shadowRoot.querySelector<HTMLDivElement>("#dev-toolbar-root");
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        const root = this.shadowRoot!.querySelector<HTMLDivElement>("#dev-toolbar-root");
 
         if (root) {
             if (visible) {
@@ -178,15 +180,17 @@ export class DevToolbar extends HTMLElement {
      */
     private render(): void {
         const apps = this.appManager.getAllApps();
-        const isVisible = !this.isHidden();
 
         // Adopt shared stylesheet for Tailwind CSS
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        const shadowRoot = this.shadowRoot!;
+
         if (sharedToolbarStylesheet) {
-            this.shadowRoot.adoptedStyleSheets = [sharedToolbarStylesheet];
+            shadowRoot.adoptedStyleSheets = [sharedToolbarStylesheet];
         }
 
         // Create style element for :host styles
-        let styleElement = this.shadowRoot.querySelector("style");
+        let styleElement = shadowRoot.querySelector("style");
 
         if (!styleElement) {
             styleElement = document.createElement("style");
@@ -202,13 +206,13 @@ export class DevToolbar extends HTMLElement {
           }
         }
       `;
-            this.shadowRoot.appendChild(styleElement);
+            shadowRoot.appendChild(styleElement);
         }
 
         // Create render root if it doesn't exist
         if (!this.renderRoot) {
             this.renderRoot = document.createElement("div");
-            this.shadowRoot.appendChild(this.renderRoot);
+            shadowRoot.appendChild(this.renderRoot);
         }
 
         const activeApp = this.appManager.getActiveApp();
@@ -220,7 +224,6 @@ export class DevToolbar extends HTMLElement {
                 activeAppId={activeAppId}
                 apps={apps}
                 customAppsToShow={this.customAppsToShow}
-                initialVisible={isVisible}
                 onClearNotification={(appId) => {
                     this.appManager.clearNotification(appId);
                     this.render();

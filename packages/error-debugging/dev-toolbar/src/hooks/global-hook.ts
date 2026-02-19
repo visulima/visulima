@@ -22,7 +22,8 @@ export const setupGlobalHook = (
     globalHookInstance = createDevToolbarHook(onRegisterApp, onTimelineEvent);
 
     if (globalThis.window !== undefined) {
-        globalThis.__DEV_TOOLBAR_HOOK__ = globalHookInstance;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (globalThis as any).__DEV_TOOLBAR_HOOK__ = globalHookInstance;
     }
 
     return globalHookInstance;
@@ -33,8 +34,11 @@ export const setupGlobalHook = (
  * @returns Hook instance or undefined
  */
 export const getGlobalHook = (): DevToolbarHook | undefined => {
-    if (globalThis.window !== undefined && globalThis.__DEV_TOOLBAR_HOOK__) {
-        return globalThis.__DEV_TOOLBAR_HOOK__;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const g = globalThis as any;
+
+    if (globalThis.window !== undefined && g.__DEV_TOOLBAR_HOOK__) {
+        return g.__DEV_TOOLBAR_HOOK__;
     }
 
     return globalHookInstance;

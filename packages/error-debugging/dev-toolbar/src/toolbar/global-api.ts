@@ -104,6 +104,7 @@ export const createGlobalAPI = (
  */
 export const setupGlobalAPI = (api: VisulimaDevTools): void => {
     if (globalThis.window !== undefined) {
-        globalThis.__VISULIMA_DEVTOOLS__ = api;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (globalThis as any).__VISULIMA_DEVTOOLS__ = api;
     }
 };

@@ -13,7 +13,7 @@ import type { ViteHMREvents } from "./context";
  */
 export const createViteHMRServer = (server: ViteDevServer, handlers: MessageHandlers): MessageChannel<ViteHMREvents> => {
     // Listen for messages from client via WebSocket
-    server.ws.on("dev-toolbar:client", (data: { data?: any; event: string }, client: WebSocketClient) => {
+    server.ws.on("dev-toolbar:client", (data: { data?: any; event: string }, _client: WebSocketClient) => {
         handleMessage(handlers, {
             data: data.data,
             event: data.event,

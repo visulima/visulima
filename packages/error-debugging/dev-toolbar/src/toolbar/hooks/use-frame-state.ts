@@ -1,13 +1,13 @@
-import { useEffect, useMemo, useState } from "preact/hooks";
+import { useEffect, useState } from "preact/hooks";
 
 /**
  * Frame state interface - matches Vue DevTools exactly
  */
 export interface DevToolsFrameState {
     /**
-     * Panel width as viewport width percentage
+     * Close panel on outside click
      */
-    width: number;
+    closeOnOutsideClick: boolean;
 
     /**
      * Panel height as viewport height percentage
@@ -15,9 +15,9 @@ export interface DevToolsFrameState {
     height: number;
 
     /**
-     * Vertical position as percentage (0-100)
+     * Whether this is first visit
      */
-    top: number;
+    isFirstVisit: boolean;
 
     /**
      * Horizontal position as percentage (0-100)
@@ -25,34 +25,19 @@ export interface DevToolsFrameState {
     left: number;
 
     /**
+     * Auto-hide timeout in milliseconds (-1 = never hide, 0 = always hide when inactive)
+     */
+    minimizePanelInactive: number;
+
+    /**
      * Whether panel is open
      */
     open: boolean;
 
     /**
-     * Current route
-     */
-    route: string;
-
-    /**
      * Position anchor
      */
     position: "top" | "bottom" | "left" | "right";
-
-    /**
-     * Whether this is first visit
-     */
-    isFirstVisit: boolean;
-
-    /**
-     * Close panel on outside click
-     */
-    closeOnOutsideClick: boolean;
-
-    /**
-     * Auto-hide timeout in milliseconds (-1 = never hide, 0 = always hide when inactive)
-     */
-    minimizePanelInactive: number;
 
     /**
      * Prefer showing floating panel
@@ -63,6 +48,21 @@ export interface DevToolsFrameState {
      * Reduce motion for accessibility
      */
     reduceMotion: boolean;
+
+    /**
+     * Current route
+     */
+    route: string;
+
+    /**
+     * Vertical position as percentage (0-100)
+     */
+    top: number;
+
+    /**
+     * Panel width as viewport width percentage
+     */
+    width: number;
 }
 
 const STORAGE_KEY = "__VISULIMA_DEVTOOLS_FRAME_STATE__";
@@ -102,6 +102,9 @@ const loadState = (): DevToolsFrameState => {
             return {
                 ...DEFAULT_STATE,
                 ...parsed,
+                // Never restore open state - panel always starts closed on page load
+                // so the canvas doesn't appear unexpectedly.
+                open: false,
             };
         }
     } catch {
@@ -126,6 +129,25 @@ const saveState = (state: DevToolsFrameState): void => {
     }
 };
 
+// ---------------------------------------------------------------------------
+// Module-level singleton store
+//
+// Multiple hooks (usePosition, usePanelVisible, toolbar-container) all call
+// useFrameState(). Without shared state, each gets its own useState copy.
+// When one instance updates (e.g. position during drag), others keep stale
+// values and can overwrite localStorage with the old data when THEY update.
+// A singleton store ensures every caller always reads/writes the same state.
+// ---------------------------------------------------------------------------
+
+let sharedState: DevToolsFrameState = loadState();
+const listeners = new Set<() => void>();
+
+const notifyListeners = (): void => {
+    for (const listener of listeners) {
+        listener();
+    }
+};
+
 /**
  * Return type for useFrameState hook
  */
@@ -142,33 +164,37 @@ export interface UseFrameStateReturn {
 }
 
 /**
- * Hook for frame state management - matches Vue DevTools useFrameState
+ * Singleton shared state update - writes to localStorage and notifies all subscribers
+ */
+const updateSharedState = (value: Partial<DevToolsFrameState>): void => {
+    sharedState = { ...sharedState, ...value };
+    saveState(sharedState);
+    notifyListeners();
+};
+
+/**
+ * Hook for frame state management.
+ * All callers share the same module-level state so position, open, and other
+ * fields stay in sync regardless of how many times the hook is called.
  */
 export const useFrameState = (): UseFrameStateReturn => {
-    const [state, setState] = useState<DevToolsFrameState>(() => loadState());
+    // Local counter used only to trigger re-renders when shared state changes
+    const [, forceUpdate] = useState(0);
 
-    // Save state when it changes
     useEffect(() => {
-        saveState(state);
-    }, [state]);
+        const listener = (): void => {
+            forceUpdate((n) => n + 1);
+        };
 
-    /**
-     * Update state with partial values
-     */
-    const updateState = (value: Partial<DevToolsFrameState>): void => {
-        setState((previous) => ({
-            ...previous,
-            ...value,
-        }));
+        listeners.add(listener);
+
+        return () => {
+            listeners.delete(listener);
+        };
+    }, []);
+
+    return {
+        state: sharedState,
+        updateState: updateSharedState,
     };
-
-    // Return readonly state and update function
-    const memoizedState: DevToolsFrameState = useMemo(() => state, [state]);
-
-    const result: UseFrameStateReturn = {
-        state: memoizedState,
-        updateState,
-    };
-
-    return result;
 };

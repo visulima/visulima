@@ -32,7 +32,7 @@ export default defineConfig({
     validation: {
         dependencies: {
             unused: {
-                exclude: ["@base-ui/react", "tw-animate-css", "class-variance-authority"]
+                exclude: ["tw-animate-css"]
             },
             hoisted: {
                 exclude: ["virtual:visulima-dev-toolbar-options", "virtual:visulima-dev-toolbar-path:toolbar", "virtual:visulima-dev-toolbar-path:apps"],

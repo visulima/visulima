@@ -56,7 +56,6 @@ export const createMessageChannel = <TEvents extends Record<string, (...args: an
         },
 
         once<K extends keyof TEvents>(event: K, handler: TEvents[K]): void {
-            const eventName = String(event);
             const onceHandler = ((...args: Parameters<TEvents[K]>) => {
                 handler(...args);
                 this.off(event, onceHandler as TEvents[K]);

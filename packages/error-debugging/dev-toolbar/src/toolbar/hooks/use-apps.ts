@@ -1,10 +1,8 @@
-import { useCallback } from "preact/hooks";
-
 import type { DevToolbarAppState } from "../../types/index";
 import { useToolbarContext } from "../context/index";
 
 /**
- * Hook for app management
+ * Hook for app management - exposes context app methods directly
  */
 export const useApps = (): {
     activeAppId: string | null;
@@ -17,48 +15,13 @@ export const useApps = (): {
 } => {
     const context = useToolbarContext();
 
-    const registerApp = useCallback(
-        (app: DevToolbarAppState) => {
-            context.registerApp(app);
-        },
-        [context],
-    );
-
-    const unregisterApp = useCallback(
-        (appId: string) => {
-            context.unregisterApp(appId);
-        },
-        [context],
-    );
-
-    const toggleApp = useCallback(
-        async (appId: string) => {
-            await context.toggleApp(appId);
-        },
-        [context],
-    );
-
-    const setNotification = useCallback(
-        (appId: string, state: boolean, level?: "info" | "warning" | "error") => {
-            context.setNotification(appId, state, level);
-        },
-        [context],
-    );
-
-    const clearNotification = useCallback(
-        (appId: string) => {
-            context.clearNotification(appId);
-        },
-        [context],
-    );
-
     return {
-        apps: context.apps,
         activeAppId: context.activeAppId,
-        registerApp,
-        unregisterApp,
-        toggleApp,
-        setNotification,
-        clearNotification,
+        apps: context.apps,
+        clearNotification: context.clearNotification,
+        registerApp: context.registerApp,
+        setNotification: context.setNotification,
+        toggleApp: context.toggleApp,
+        unregisterApp: context.unregisterApp,
     };
 };

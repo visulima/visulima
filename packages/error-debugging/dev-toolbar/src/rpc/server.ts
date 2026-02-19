@@ -12,8 +12,8 @@ const createDefaultServerFunctions = (server: ViteDevServer): Partial<ServerFunc
     return {
         getModuleGraph: async () => getModuleGraph(server),
         getViteConfig: async () => getViteConfig(server),
-        openInEditor: async (_server: ViteDevServer, file: string, line?: number, column?: number) => openInEditor(server, file, line, column),
-        readFile: async (_server: ViteDevServer, path: string) => {
+        openInEditor: async (file: string, line?: number, column?: number) => openInEditor(server, file, line, column),
+        readFile: async (path: string) => {
             const { readFile } = await import("node:fs/promises");
             const filePath = path.startsWith("/") ? path : `${server.config.root}/${path}`;
 
