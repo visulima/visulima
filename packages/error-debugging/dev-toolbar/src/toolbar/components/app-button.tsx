@@ -31,23 +31,16 @@ const AppButton = ({ app }: AppButtonProps): ComponentChildren => {
         <button
             aria-label={app.name}
             class={cn(
-                "relative flex justify-center items-center w-8 h-8",
-                "border-0",
+                "relative flex justify-center items-center w-9 h-9",
+                "border-0 rounded-full",
                 "whitespace-nowrap no-underline p-0 m-0",
                 "cursor-pointer overflow-visible",
-                // Base: faded when inactive
-                "text-foreground/60",
-                "transition-[background,opacity,color,transform,border-radius] duration-150",
-                "hover:bg-foreground/[0.06] hover:text-foreground",
-                "active:scale-[0.92]",
-                // Shape: rounded-full when active, rounded-xl otherwise
-                app.active ? "rounded-full" : "rounded-xl",
-                // Active: indigo primary chip
-                app.active && [
-                    "opacity-100!",
-                    "bg-primary text-primary-foreground",
-                    "hover:bg-primary/90! hover:text-primary-foreground!",
-                ],
+                "bg-transparent text-zinc-400 dark:text-zinc-500",
+                "transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)]",
+                "hover:bg-zinc-900/5 hover:text-zinc-900 dark:hover:bg-zinc-50/10 dark:hover:text-zinc-50",
+                "active:scale-[0.94]",
+                // Active: dark circle in light mode, light circle in dark mode (mirrors logo button)
+                app.active && ["bg-zinc-900 text-zinc-50 dark:bg-zinc-100 dark:text-zinc-900", "shadow-sm opacity-100!"],
                 // Counter-rotate when pill is in vertical mode
                 "group-data-[vertical]/panel:rotate-[-90deg]",
             )}
@@ -58,15 +51,15 @@ const AppButton = ({ app }: AppButtonProps): ComponentChildren => {
             type="button"
         >
             {/* Icon + notification badge */}
-            <div class="relative w-4 h-4 select-none flex items-center justify-center">
+            <div class="relative w-4.5 h-4.5 select-none flex items-center justify-center">
                 <div
-                    class="w-4 h-4 block m-auto [&_svg]:w-4 [&_svg]:h-4"
+                    class="w-4.5 h-4.5 block m-auto [&_svg]:w-4.5 [&_svg]:h-4.5 transition-transform duration-300"
                     dangerouslySetInnerHTML={{ __html: app.icon }}
                 />
                 {app.notification.state && (
                     <span
                         class={cn(
-                            "absolute -top-1 -right-1.5 w-1.5 h-1.5 rounded-full ring-1 ring-background",
+                            "absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full border-2 border-pill",
                             app.notification.level === "error" && "bg-destructive",
                             app.notification.level === "warning" && "bg-warning",
                             (!app.notification.level || app.notification.level === "info") && "bg-info",
@@ -76,16 +69,16 @@ const AppButton = ({ app }: AppButtonProps): ComponentChildren => {
                 )}
             </div>
 
-            {/* Tooltip — light pill, no arrow */}
+            {/* Tooltip — clean pill at top, matching image */}
             <div
                 class={cn(
-                    "absolute bottom-[calc(100%+0.5rem)] left-1/2 -translate-x-1/2",
+                    "absolute bottom-[calc(100%+0.8rem)] left-1/2 -translate-x-1/2",
                     "pointer-events-none z-10",
-                    "transition-[opacity,transform] duration-[140ms] ease-out",
-                    showTooltip ? "opacity-100 translate-y-0" : "opacity-0 translate-y-1",
+                    "transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)]",
+                    showTooltip ? "opacity-100 translate-y-0 scale-100" : "opacity-0 translate-y-1 scale-95",
                 )}
             >
-                <div class="whitespace-nowrap text-[0.6875rem] font-medium font-sans bg-background text-foreground px-2.5 py-1 rounded-full border border-border shadow-md">
+                <div class="whitespace-nowrap text-[0.7rem] font-medium font-sans bg-pill text-foreground/80 px-3 py-1 rounded-full border border-pill-border shadow-sm backdrop-blur-sm">
                     {app.name}
                 </div>
             </div>

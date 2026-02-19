@@ -160,9 +160,13 @@ const ToolbarContainer = ({
         isVisible: panelVisible,
         placement,
         registerApp: onRegisterApp,
-        setDragging: () => { /* managed internally by usePosition */ },
+        setDragging: () => {
+            /* managed internally by usePosition */
+        },
         setNotification: onSetNotification,
-        setPlacement: () => { /* managed internally by usePosition */ },
+        setPlacement: () => {
+            /* managed internally by usePosition */
+        },
         setVisible: (visible) => updateState({ open: visible }),
         toggleApp,
         unregisterApp: onUnregisterApp,
@@ -178,10 +182,7 @@ const ToolbarContainer = ({
             {/* display:contents wrapper so the dark class is inherited by both the
                 anchor and the DevPanel (which is a sibling) without creating
                 a CSS containing block that would break fixed positioning */}
-            <div
-                class={cn(resolvedTheme === "dark" && "dark")}
-                style={{ display: "contents" }}
-            >
+            <div class={cn(resolvedTheme === "dark" && "dark")} style={{ display: "contents" }}>
                 {/* Anchor — positioned via JS; transitions left/top smoothly */}
                 <div
                     ref={anchorRef}
@@ -205,42 +206,37 @@ const ToolbarContainer = ({
                         class={cn(
                             // Named group so descendant buttons can detect vertical orientation
                             "group/panel",
-                            // NOTE: do NOT add translate/rotate Tailwind classes here.
-                            // panelStyle (inline) sets transform: translate(-50%,-50%) [rotate(90deg)].
-                            // In Tailwind v4, translate/rotate utilities use CSS individual transform
-                            // properties that COMPOSE with the inline transform, causing double offset.
                             "absolute left-0 top-0",
                             "flex flex-row justify-start items-center",
-                            "h-10",
+                            "h-12",
                             "box-border overflow-visible",
-                            "rounded-[1.25rem]",
+                            "rounded-[2rem]",
                             "text-foreground select-none",
                             isDragging ? "cursor-grabbing" : "cursor-grab",
                             // Background/border/backdrop always present; only shadow differs in vertical mode
-                            "bg-[var(--pill-bg)] border border-[var(--pill-border)]",
-                            isVertical
-                                ? "shadow-[2px_-2px_8px_var(--color-background)]!"
-                                : "shadow-[var(--pill-shadow)] hover:shadow-[var(--pill-shadow-hover)]",
+                            "bg-pill border border-pill-border",
+                            isVertical ? "shadow-pill-vertical!" : "shadow-pill hover:shadow-pill-hover",
                             // Hidden: shrink to logo-only
-                            isHidden ? "max-w-10! p-1!" : "px-1.5",
-                            "transition-[var(--pill-transition)]",
+                            isHidden ? "max-w-12! p-1!" : "px-2",
+                            "transition-pill",
                         )}
                         data-vertical={isVertical || undefined}
                         onPointerDown={onPointerDown}
                         style={panelStyle}
                     >
-                        {/* Logo toggle button */}
+                        {/* Logo toggle button — black circle in light mode, white in dark */}
                         <button
                             aria-label="Toggle devtools panel"
                             class={cn(
-                                "rounded-full w-8 h-8 flex justify-center items-center flex-shrink-0",
-                                "cursor-pointer p-0 m-0 border-0 bg-transparent",
-                                "transition-[background_0.18s_ease,box-shadow_0.18s_ease,transform_0.18s_cubic-bezier(0.34,1.56,0.64,1)]",
-                                "hover:scale-[1.08] active:scale-[0.94]",
+                                "rounded-full w-9 h-9 flex justify-center items-center flex-shrink-0",
+                                "cursor-pointer p-0 m-0 border-0",
+                                "bg-zinc-950 text-white dark:bg-white dark:text-zinc-950",
+                                "transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)]",
+                                "hover:scale-[1.05] active:scale-[0.95]",
                                 // Rotate counter when pill is rotated 90deg
                                 "group-data-[vertical]/panel:rotate-[-90deg]",
                                 // Active: glowing accent ring
-                                panelVisible && "bg-[var(--toolbar-accent-dim)]! shadow-[0_0_0_1.5px_var(--toolbar-accent),0_0_8px_var(--toolbar-accent-glow)]",
+                                panelVisible && "shadow-logo-open",
                             )}
                             onClick={(e) => {
                                 e.stopPropagation();
@@ -248,19 +244,17 @@ const ToolbarContainer = ({
                             }}
                             type="button"
                         >
-                            <img alt="Visulima" class="w-5 h-5" src={visulimaLogo} />
+                            <img alt="Visulima" class="w-5 h-5 invert dark:invert-0" src={visulimaLogo} />
                         </button>
 
                         {/* App buttons — hidden when pill is minimized */}
                         <div
                             class={cn(
-                                "flex items-center",
+                                "flex items-center ml-1",
                                 "transition-opacity duration-[350ms] ease-[cubic-bezier(0.4,0,0.2,1)]",
                                 isHidden && "opacity-0 pointer-events-none",
                             )}
                         >
-                            {/* Separator between logo and app buttons */}
-                            <div class="w-px h-4 bg-border/60 flex-shrink-0 mx-0.5" />
                             <ToolbarBar customAppsToShow={customAppsToShow} />
                         </div>
                     </div>

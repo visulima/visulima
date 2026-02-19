@@ -113,7 +113,7 @@ const AppContent = ({ app }: { app: DevToolbarAppState }): ComponentChildren => 
 const getPanelPositionClasses = (position: DevPanelProps["position"]): string => {
     switch (position) {
         case "bottom": {
-            return "bottom-12 left-4 right-4 top-4";
+            return "bottom-6 left-4 right-4";
         }
 
         case "left": {
@@ -125,11 +125,11 @@ const getPanelPositionClasses = (position: DevPanelProps["position"]): string =>
         }
 
         case "top": {
-            return "top-12 left-4 right-4 bottom-4";
+            return "top-6 left-4 right-4 bottom-4";
         }
 
         default: {
-            return "bottom-12 left-4 right-4 top-4";
+            return "bottom-6 left-4 right-4 top-4";
         }
     }
 };
@@ -186,24 +186,17 @@ const getVisibilityClasses = (position: DevPanelProps["position"], isVisible: bo
  */
 const getConstraintClasses = (position: DevPanelProps["position"]): string => {
     if (position === "left" || position === "right") {
-        return "max-w-[calc(100vw-80px)] max-h-[calc(100vh-32px)]";
+        return "w-[calc(100vw-80px)] h-[calc(100vh-32px)]";
     }
 
-    return "max-h-[calc(100vh-72px)]";
+    return "h-[calc(100vh-72px)]";
 };
 
 /**
  * Unified DevTools panel — sidebar navigation + content area.
  * Inspired by Vue DevTools / browser DevTools layout.
  */
-const DevPanel = ({
-    activeAppId,
-    apps,
-    onClose,
-    onToggleApp,
-    panelVisible,
-    position,
-}: DevPanelProps): ComponentChildren => {
+const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, position }: DevPanelProps): ComponentChildren => {
     // Two-phase mount: isRendered keeps DOM alive during exit animation;
     // isVisible drives the CSS transition class.
     const [isRendered, setIsRendered] = useState(false);
@@ -255,7 +248,7 @@ const DevPanel = ({
             <div
                 aria-hidden="true"
                 class={cn(
-                    "fixed inset-0 z-[2000000008]",
+                    "fixed inset-0 z-2000000008",
                     "transition-opacity duration-200",
                     isVisible ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none",
                 )}
@@ -268,46 +261,45 @@ const DevPanel = ({
                 aria-label="DevTools panel"
                 aria-modal="true"
                 class={cn(
-                    "fixed z-[2000000009]",
+                    "fixed z-2000000009",
                     getPanelPositionClasses(position),
                     getConstraintClasses(position),
                     // Panel chrome
-                    "bg-background border border-border rounded-2xl overflow-hidden",
-                    "shadow-[var(--panel-shadow)]",
+                    "border border-border rounded-lg overflow-hidden",
+                    "shadow-panel",
                     // Animation
-                    "transition-[var(--panel-transition)]",
+                    "transition-panel",
                     getOriginClass(position),
                     getVisibilityClasses(position, isVisible),
                     "flex flex-row",
                 )}
                 role="dialog"
             >
-                {/* Left sidebar — collapsible icon/label navigation */}
+                {/* Left sidebar — collapsible navigation */}
                 <nav
                     aria-label="DevTools apps"
                     class={cn(
-                        "flex flex-col flex-shrink-0",
-                        "transition-[width] duration-200 ease-out",
-                        "bg-muted/40 dark:bg-muted/20",
-                        sidebarCollapsed ? "w-12" : "w-40",
+                        "flex flex-col shrink-0 overflow-hidden",
+                        "transition-[width] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]",
+                        "bg-muted dark:bg-muted/60",
+                        sidebarCollapsed ? "w-14" : "w-56",
                     )}
                 >
-                    {/* App buttons */}
-                    <div class="flex flex-col gap-0.5 flex-1 py-2 px-1.5">
+                    {/* App list */}
+                    <div class="flex flex-col flex-1 p-2 gap-0.5">
                         {apps.map((app) => (
                             <div class="relative group/nav-item" key={app.id}>
                                 <button
                                     aria-label={app.name}
                                     aria-pressed={activeAppId === app.id}
                                     class={cn(
-                                                        "relative flex items-center w-full h-9 rounded-lg",
+                                        "relative flex items-center w-full h-9 rounded-lg",
                                         "border-0 cursor-pointer",
-                                        "transition-[background,color,opacity,transform] duration-150",
-                                        "active:scale-[0.97]",
-                                        sidebarCollapsed ? "justify-center" : "gap-2.5 px-2.5",
+                                        "transition-all duration-150",
+                                        sidebarCollapsed ? "justify-center" : "gap-2.5 px-3",
                                         activeAppId === app.id
-                                            ? "bg-primary/[0.08] text-primary opacity-100"
-                                            : "bg-transparent text-muted-foreground opacity-60 hover:bg-foreground/[0.05] hover:text-foreground hover:opacity-90",
+                                            ? "bg-background shadow-sm text-foreground"
+                                            : "bg-transparent text-muted-foreground hover:bg-background/70 hover:text-foreground",
                                     )}
                                     onClick={() => {
                                         if (app.id === activeAppId) {
@@ -321,22 +313,21 @@ const DevPanel = ({
                                     {/* Icon */}
                                     {app.icon ? (
                                         <span
-                                            class="w-4 h-4 flex-shrink-0 flex items-center justify-center [&_svg]:w-4 [&_svg]:h-4"
+                                            class={cn(
+                                                "w-4 h-4 shrink-0 flex items-center justify-center [&_svg]:w-4 [&_svg]:h-4",
+                                                activeAppId === app.id ? "opacity-100" : "opacity-60 group-hover/nav-item:opacity-100",
+                                            )}
                                             // eslint-disable-next-line react/no-danger
                                             dangerouslySetInnerHTML={{ __html: app.icon }}
                                         />
                                     ) : (
-                                        <span class="w-4 h-4 flex-shrink-0 flex items-center justify-center text-[0.625rem] font-bold uppercase select-none">
+                                        <span class="w-4 h-4 shrink-0 flex items-center justify-center text-[0.7rem] font-bold uppercase select-none">
                                             {app.name.slice(0, 2)}
                                         </span>
                                     )}
 
                                     {/* Label — visible only when expanded */}
-                                    {!sidebarCollapsed && (
-                                        <span class="text-xs font-medium truncate leading-none">
-                                            {app.name}
-                                        </span>
-                                    )}
+                                    {!sidebarCollapsed && <span class="text-sm font-medium truncate leading-none">{app.name}</span>}
                                 </button>
 
                                 {/* Notification badge */}
@@ -344,14 +335,14 @@ const DevPanel = ({
                                     <span
                                         aria-hidden="true"
                                         class={cn(
-                                            "pointer-events-none absolute top-0.5 rounded-full ring-1 ring-background",
-                                            sidebarCollapsed ? "right-0.5" : "right-2",
-                                            "w-1.5 h-1.5",
+                                            "pointer-events-none absolute top-1 rounded-full border-2 border-muted",
+                                            sidebarCollapsed ? "right-1" : "right-2",
+                                            "w-2 h-2",
                                             app.notification.level === "error"
                                                 ? "bg-destructive"
                                                 : app.notification.level === "warning"
-                                                    ? "bg-warning"
-                                                    : "bg-info",
+                                                  ? "bg-warning"
+                                                  : "bg-info",
                                         )}
                                     />
                                 )}
@@ -360,13 +351,13 @@ const DevPanel = ({
                                 {sidebarCollapsed && (
                                     <div
                                         class={cn(
-                                            "absolute left-[calc(100%+6px)] top-1/2 -translate-y-1/2",
+                                            "absolute left-[calc(100%+10px)] top-1/2 -translate-y-1/2",
                                             "pointer-events-none z-50 whitespace-nowrap",
-                                            "opacity-0 -translate-x-1 group-hover/nav-item:opacity-100 group-hover/nav-item:translate-x-0",
-                                            "transition-[opacity,transform] duration-[140ms] ease-out",
+                                            "opacity-0 -translate-x-2 group-hover/nav-item:opacity-100 group-hover/nav-item:translate-x-0",
+                                            "transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)]",
                                         )}
                                     >
-                                        <div class="text-[0.6875rem] font-medium font-sans bg-background text-foreground px-2.5 py-1 rounded-full border border-border shadow-md">
+                                        <div class="text-[0.7rem] font-medium bg-pill text-foreground px-3 py-1 rounded-full border border-pill-border shadow-md">
                                             {app.name}
                                         </div>
                                     </div>
@@ -374,123 +365,92 @@ const DevPanel = ({
                             </div>
                         ))}
                     </div>
-
-                    {/* Collapse / expand toggle */}
-                    <div class="border-t border-border/50 px-1.5 py-1.5">
-                        <button
-                            aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-                            class={cn(
-                                "flex items-center h-7 w-full rounded-lg",
-                                "border-0 cursor-pointer bg-transparent",
-                                "text-muted-foreground/35 hover:text-muted-foreground hover:bg-foreground/[0.05]",
-                                "transition-[background,color] duration-150",
-                                sidebarCollapsed ? "justify-center" : "gap-1.5 px-2",
-                            )}
-                            onClick={() => setSidebarCollapsed((c) => !c)}
-                            type="button"
-                        >
-                            <svg
-                                aria-hidden="true"
-                                class={cn(
-                                    "w-3.5 h-3.5 flex-shrink-0 transition-transform duration-200 ease-out",
-                                    !sidebarCollapsed && "rotate-180",
-                                )}
-                                fill="none"
-                                viewBox="0 0 14 14"
-                            >
-                                <path
-                                    d="M5 2.5L9.5 7L5 11.5"
-                                    stroke="currentColor"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="1.5"
-                                />
-                            </svg>
-                            {!sidebarCollapsed && (
-                                <span class="text-[0.6875rem]">Collapse</span>
-                            )}
-                        </button>
-                    </div>
                 </nav>
 
-                {/* Sidebar / content divider */}
-                <div aria-orientation="vertical" class="w-px flex-shrink-0 bg-border self-stretch" role="separator" />
-
                 {/* Content area */}
-                <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
-                    {/* Header — app name + close button */}
-                    <div class="flex items-center justify-between gap-2 px-3 py-2.5 border-b border-border flex-shrink-0 bg-background">
-                        <div class="flex items-center gap-2 min-w-0">
-                            {activeApp?.icon && (
-                                <span
-                                    class="w-4 h-4 flex items-center justify-center [&_svg]:w-4 [&_svg]:h-4 flex-shrink-0 text-primary/70"
-                                    // eslint-disable-next-line react/no-danger
-                                    dangerouslySetInnerHTML={{ __html: activeApp.icon }}
-                                />
-                            )}
-                            <span class="font-sans text-[0.8125rem] font-medium text-foreground truncate">
-                                {activeApp?.name ?? "DevTools"}
-                            </span>
+                <div class="py-2 pr-2 flex-1 flex flex-col min-w-0 overflow-hidden bg-muted dark:bg-muted/60">
+                    <div class=" bg-background h-full rounded-lg">
+                        {/* Header — app name + close button */}
+                        <div class="flex items-center justify-between gap-2 p-2 border-b border-border/40 shrink-0">
+                            <div class="flex items-center gap-3.5 min-w-0">
+                                <button
+                                    aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+                                    class={cn(
+                                        "flex items-center justify-center w-6 h-6 rounded-md shrink-0",
+                                        "border-0 cursor-pointer bg-transparent",
+                                        "text-muted-foreground/40 hover:text-muted-foreground hover:bg-foreground/[0.07]",
+                                        "transition-colors duration-150",
+                                    )}
+                                    onClick={() => setSidebarCollapsed((c) => !c)}
+                                    type="button"
+                                >
+                                    <svg
+                                        aria-hidden="true"
+                                        class={cn("w-3.5 h-3.5 shrink-0 transition-transform duration-300", !sidebarCollapsed && "rotate-180")}
+                                        fill="none"
+                                        viewBox="0 0 14 14"
+                                    >
+                                        <path d="M5 2.5L9.5 7L5 11.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
+                                    </svg>
+                                </button>
+                                {activeApp?.icon && (
+                                    <span
+                                        class="w-5.5 h-5.5 flex items-center justify-center [&_svg]:w-5.5 [&_svg]:h-5.5 shrink-0 text-foreground"
+                                        dangerouslySetInnerHTML={{ __html: activeApp.icon }}
+                                    />
+                                )}
+                                <span class="text-[1rem] font-bold text-foreground truncate tracking-tight">{activeApp?.name ?? "DevTools"}</span>
+                            </div>
+
+                            <button
+                                aria-label="Close DevTools panel"
+                                class={cn(
+                                    "flex items-center justify-center w-9 h-9 rounded-2xl shrink-0",
+                                    "cursor-pointer border-0 bg-transparent",
+                                    "text-foreground/20 hover:text-foreground hover:bg-foreground/[0.05]",
+                                    "transition-all duration-300",
+                                    "active:scale-90",
+                                )}
+                                onClick={onClose}
+                                title="Close (Esc)"
+                                type="button"
+                            >
+                                <svg aria-hidden="true" fill="none" height="14" viewBox="0 0 14 14" width="14">
+                                    <path d="M1 1L13 13M13 1L1 13" stroke="currentColor" stroke-linecap="round" stroke-width="2.5" />
+                                </svg>
+                            </button>
                         </div>
 
-                        <button
-                            aria-label="Close DevTools panel"
-                            class={cn(
-                                "flex items-center justify-center w-7 h-7 rounded-lg flex-shrink-0",
-                                "cursor-pointer border-0 bg-transparent",
-                                "text-foreground/40 hover:text-foreground hover:bg-foreground/[0.06]",
-                                "transition-[background,color,transform] duration-[120ms]",
-                                "active:scale-90",
-                            )}
-                            onClick={onClose}
-                            title="Close (Esc)"
-                            type="button"
-                        >
-                            <svg aria-hidden="true" fill="none" height="10" viewBox="0 0 14 14" width="10">
-                                <path
-                                    d="M1 1L13 13M13 1L1 13"
-                                    stroke="currentColor"
-                                    stroke-linecap="round"
-                                    stroke-width="2.5"
-                                />
-                            </svg>
-                        </button>
-                    </div>
-
-                    {/* Scrollable app content — class kept for ::-webkit-scrollbar targeting */}
-                    <div class="devtools-content-scroll [scrollbar-width:thin] [scrollbar-color:var(--border)_transparent] flex-1 overflow-auto min-h-0">
-                        {activeApp ? (
-                            <AppContent app={activeApp} key={activeApp.id} />
-                        ) : (
-                            <div class="flex flex-col items-center justify-center min-h-48 h-full gap-2">
-                                <div class="w-8 h-8 rounded-xl bg-muted/60 flex items-center justify-center">
-                                    <svg
-                                        class="text-muted-foreground/50"
-                                        fill="none"
-                                        height="16"
-                                        viewBox="0 0 24 24"
-                                        width="16"
-                                    >
-                                        <path
-                                            d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
-                                            stroke="currentColor"
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                            stroke-width="1.5"
-                                        />
-                                    </svg>
+                        {/* Scrollable app content — class kept for ::-webkit-scrollbar targeting */}
+                        <div class="devtools-content-scroll scrollbar-thin-border flex-1 overflow-auto min-h-0 bg-transparent">
+                            {activeApp ? (
+                                <AppContent app={activeApp} key={activeApp.id} />
+                            ) : (
+                                <div class="flex flex-col items-center justify-center min-h-48 h-full gap-5">
+                                    <div class="w-14 h-14 rounded-3xl bg-muted/30 flex items-center justify-center shadow-inner">
+                                        <svg class="text-muted-foreground/20" fill="none" height="28" viewBox="0 0 24 24" width="28">
+                                            <path
+                                                d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
+                                                stroke="currentColor"
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                stroke-width="1.5"
+                                            />
+                                        </svg>
+                                    </div>
+                                    <span class="text-[0.9rem] font-bold text-muted-foreground/30 uppercase tracking-widest">Select an app</span>
                                 </div>
-                                <span class="text-xs text-muted-foreground/60">Select an app</span>
-                            </div>
-                        )}
-                    </div>
+                            )}
+                        </div>
 
-                    {/* Footer — keyboard hint */}
-                    <div class="flex items-center gap-1.5 px-3 py-1 border-t border-border flex-shrink-0">
-                        <kbd class="font-mono text-[0.625rem] bg-background border border-border border-b-2 rounded px-1.5 leading-[1.125rem] text-foreground/50 shadow-[0_1px_0_rgba(0,0,0,0.04)] dark:bg-accent dark:shadow-[0_1px_0_rgba(0,0,0,0.25)]">
-                            Esc
-                        </kbd>
-                        <span class="text-[0.6875rem] text-muted-foreground/45">to close</span>
+                        {/* Footer — keyboard hint */}
+                        <div class="flex items-center justify-end gap-2.5 px-6 py-3.5 border-t border-border/40 shrink-0 bg-muted/5">
+                            <span class="text-[0.75rem] font-bold text-muted-foreground/30 uppercase tracking-wider">Press</span>
+                            <kbd class="text-[0.7rem] font-bold bg-background border border-border border-b-[3px] rounded-lg px-2.5 py-0.5 text-foreground/50 shadow-sm">
+                                Esc
+                            </kbd>
+                            <span class="text-[0.75rem] font-bold text-muted-foreground/30 uppercase tracking-wider">to close</span>
+                        </div>
                     </div>
                 </div>
             </div>

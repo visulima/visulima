@@ -134,46 +134,49 @@ export const usePosition = (panelEl: RefObject<HTMLElement>): UsePositionReturn 
     /**
      * Handle pointer down - start dragging
      */
-    const onPointerDown = useCallback((e: PointerEvent) => {
-        // Prevent default to avoid text selection and other default behaviors
-        e.preventDefault();
-        e.stopPropagation();
+    const onPointerDown = useCallback(
+        (e: PointerEvent) => {
+            // Prevent default to avoid text selection and other default behaviors
+            e.preventDefault();
+            e.stopPropagation();
 
-        setIsDragging(true);
-        isDraggingRef.current = true;
+            setIsDragging(true);
+            isDraggingRef.current = true;
 
-        const panel = panelEl.current;
+            const panel = panelEl.current;
 
-        if (panel) {
-            const { height, left, top, width } = panel.getBoundingClientRect();
+            if (panel) {
+                const { height, left, top, width } = panel.getBoundingClientRect();
 
-            draggingOffsetRef.current = {
-                x: e.clientX - left - width / 2,
-                y: e.clientY - top - height / 2,
-            };
+                draggingOffsetRef.current = {
+                    x: e.clientX - left - width / 2,
+                    y: e.clientY - top - height / 2,
+                };
 
-            // Capture pointer on the element that received the event (not necessarily the panel)
-            // This ensures we continue receiving events even when pointer leaves the window
-            const target = e.target as HTMLElement;
-            try {
-                if (target && target.setPointerCapture) {
-                    target.setPointerCapture(e.pointerId);
-                    capturedPointerIdRef.current = e.pointerId;
-                } else if (panel.setPointerCapture) {
-                    // Fallback to panel if target doesn't support capture
-                    panel.setPointerCapture(e.pointerId);
-                    capturedPointerIdRef.current = e.pointerId;
+                // Capture pointer on the element that received the event (not necessarily the panel)
+                // This ensures we continue receiving events even when pointer leaves the window
+                const target = e.target as HTMLElement;
+                try {
+                    if (target && target.setPointerCapture) {
+                        target.setPointerCapture(e.pointerId);
+                        capturedPointerIdRef.current = e.pointerId;
+                    } else if (panel.setPointerCapture) {
+                        // Fallback to panel if target doesn't support capture
+                        panel.setPointerCapture(e.pointerId);
+                        capturedPointerIdRef.current = e.pointerId;
+                    }
+                } catch (err) {
+                    // setPointerCapture may fail in some browsers, continue without it
+                    console.warn("Failed to capture pointer:", err);
                 }
-            } catch (err) {
-                // setPointerCapture may fail in some browsers, continue without it
-                console.warn("Failed to capture pointer:", err);
-            }
 
-            // Add cursor style to document body for dragging
-            document.body.style.cursor = "grabbing";
-            document.body.style.userSelect = "none";
-        }
-    }, [panelEl]);
+                // Add cursor style to document body for dragging
+                document.body.style.cursor = "grabbing";
+                document.body.style.userSelect = "none";
+            }
+        },
+        [panelEl],
+    );
 
     /**
      * Bring up panel (set hovering and start timer to auto-hide)
@@ -315,13 +318,8 @@ export const usePosition = (panelEl: RefObject<HTMLElement>): UsePositionReturn 
             // Determine position based on angle ranges - matches Vue DevTools exactly
             // Using mouse position for angle detection (more responsive than panel center)
             // Vue DevTools ternary chain: (deg >= TL && deg <= TR) ? 'top' : (deg >= TR && deg <= BR) ? 'right' : (deg >= BR && deg <= BL) ? 'bottom' : 'left'
-            const newPosition: "top" | "bottom" | "left" | "right" = (deg >= TL && deg <= TR)
-                ? "top"
-                : (deg >= TR && deg <= BR)
-                    ? "right"
-                    : (deg >= BR && deg <= BL)
-                        ? "bottom"
-                        : "left";
+            const newPosition: "top" | "bottom" | "left" | "right" =
+                deg >= TL && deg <= TR ? "top" : deg >= TR && deg <= BR ? "right" : deg >= BR && deg <= BL ? "bottom" : "left";
 
             // Clamp position percentages to valid range
             const clampedLeft = Math.max(0, Math.min(100, (x / currentWidth) * 100));
@@ -354,10 +352,7 @@ export const usePosition = (panelEl: RefObject<HTMLElement>): UsePositionReturn 
     }, []); // Empty deps - listeners stay active, use refs for current values
 
     // Computed: isVertical
-    const isVertical = useMemo(
-        () => state.position === "left" || state.position === "right",
-        [state.position],
-    );
+    const isVertical = useMemo(() => state.position === "left" || state.position === "right", [state.position]);
 
     // Computed: isHidden (minimize when inactive) - Vue DevTools pattern
     const isHidden = useMemo(() => {
@@ -372,10 +367,7 @@ export const usePosition = (panelEl: RefObject<HTMLElement>): UsePositionReturn 
         }
 
         // Check for touch device - don't auto-hide on touch devices
-        const isTouchDevice = globalThis.window !== undefined && (
-            "ontouchstart" in globalThis.window ||
-            (globalThis.navigator?.maxTouchPoints ?? 0) > 0
-        );
+        const isTouchDevice = globalThis.window !== undefined && ("ontouchstart" in globalThis.window || (globalThis.navigator?.maxTouchPoints ?? 0) > 0);
 
         // Hide when:
         // - Not dragging
@@ -383,11 +375,7 @@ export const usePosition = (panelEl: RefObject<HTMLElement>): UsePositionReturn 
         // - Not hovering
         // - Not a touch device
         // - minimizePanelInactive is set to a positive value
-        return !isDragging
-            && !state.open
-            && !isHovering
-            && !isTouchDevice
-            && state.minimizePanelInactive > 0;
+        return !isDragging && !state.open && !isHovering && !isTouchDevice && state.minimizePanelInactive > 0;
     }, [isDragging, state.open, state.minimizePanelInactive, isHovering]);
 
     // Computed: anchorPos
@@ -499,9 +487,9 @@ export const usePosition = (panelEl: RefObject<HTMLElement>): UsePositionReturn 
                 style.left = "0";
                 style.transform = "translate(-50%, 0)";
 
-                if ((anchorX - frameMargin.left) < width / 2) {
+                if (anchorX - frameMargin.left < width / 2) {
                     style.left = `${width / 2 - anchorX + frameMargin.left}px`;
-                } else if ((windowWidth - anchorX - frameMargin.right) < width / 2) {
+                } else if (windowWidth - anchorX - frameMargin.right < width / 2) {
                     style.left = `${windowWidth - anchorX - width / 2 - frameMargin.right}px`;
                 }
 
@@ -513,9 +501,9 @@ export const usePosition = (panelEl: RefObject<HTMLElement>): UsePositionReturn 
                 style.top = "0";
                 style.transform = "translate(0, -50%)";
 
-                if ((anchorY - frameMargin.top) < height / 2) {
+                if (anchorY - frameMargin.top < height / 2) {
                     style.top = `${height / 2 - anchorY + frameMargin.top}px`;
-                } else if ((windowHeight - anchorY - frameMargin.bottom) < height / 2) {
+                } else if (windowHeight - anchorY - frameMargin.bottom < height / 2) {
                     style.top = `${windowHeight - anchorY - height / 2 - frameMargin.bottom}px`;
                 }
 
