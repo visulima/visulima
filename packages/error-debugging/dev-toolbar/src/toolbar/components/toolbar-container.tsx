@@ -7,7 +7,6 @@ import type { DevToolbarAppState, ToolbarPlacement } from "../../types/index";
 import cn from "../../utils/cn";
 import { ToolbarContext, type ToolbarContextState } from "../context/index";
 import { useFrameState, usePanelVisible, usePosition, useTheme } from "../hooks/index";
-import { checkIsSafari } from "../utils/index";
 import DevPanel from "./app-canvas";
 import ToolbarBar from "./toolbar-bar";
 
@@ -200,21 +199,6 @@ const ToolbarContainer = ({
                     onMouseMove={bringUp}
                     style={anchorStyle}
                 >
-                    {/* Glowing ambient effect (disabled on Safari due to backdrop-filter conflicts) */}
-                    {!checkIsSafari() && (
-                        <div
-                            class={cn(
-                                "absolute left-0 top-0 -translate-x-1/2 -translate-y-1/2",
-                                "w-[220px] h-[220px] rounded-full",
-                                "pointer-events-none -z-[1]",
-                                "bg-[radial-gradient(ellipse_at_center,rgba(100,60,255,0.22)_0%,rgba(220,60,180,0.14)_40%,transparent_70%)]",
-                                "blur-[20px]",
-                                "transition-opacity duration-[800ms] ease-out",
-                                isDragging ? "opacity-60" : "opacity-0 group-hover:opacity-100",
-                            )}
-                        />
-                    )}
-
                     {/* Draggable toolbar pill */}
                     <div
                         ref={panelRef}
@@ -227,18 +211,18 @@ const ToolbarContainer = ({
                             // properties that COMPOSE with the inline transform, causing double offset.
                             "absolute left-0 top-0",
                             "flex flex-row justify-start items-center",
-                            "h-[44px]",
+                            "h-10",
                             "box-border overflow-visible",
-                            "rounded-[22px]",
+                            "rounded-[1.25rem]",
                             "text-foreground select-none",
                             isDragging ? "cursor-grabbing" : "cursor-grab",
                             // Background/border/backdrop always present; only shadow differs in vertical mode
-                            "bg-[var(--pill-bg)] border border-[var(--pill-border)] backdrop-blur-[24px] backdrop-saturate-200",
+                            "bg-[var(--pill-bg)] border border-[var(--pill-border)]",
                             isVertical
                                 ? "shadow-[2px_-2px_8px_var(--color-background)]!"
                                 : "shadow-[var(--pill-shadow)] hover:shadow-[var(--pill-shadow-hover)]",
                             // Hidden: shrink to logo-only
-                            isHidden ? "max-w-[44px]! p-1!" : "px-1.5",
+                            isHidden ? "max-w-10! p-1!" : "px-1.5",
                             "transition-[var(--pill-transition)]",
                         )}
                         data-vertical={isVertical || undefined}
@@ -249,7 +233,7 @@ const ToolbarContainer = ({
                         <button
                             aria-label="Toggle devtools panel"
                             class={cn(
-                                "rounded-full w-9 h-9 flex justify-center items-center flex-shrink-0",
+                                "rounded-full w-8 h-8 flex justify-center items-center flex-shrink-0",
                                 "cursor-pointer p-0 m-0 border-0 bg-transparent",
                                 "transition-[background_0.18s_ease,box-shadow_0.18s_ease,transform_0.18s_cubic-bezier(0.34,1.56,0.64,1)]",
                                 "hover:scale-[1.08] active:scale-[0.94]",
@@ -264,7 +248,7 @@ const ToolbarContainer = ({
                             }}
                             type="button"
                         >
-                            <img alt="Visulima" class="w-[22px] h-[22px]" src={visulimaLogo} />
+                            <img alt="Visulima" class="w-5 h-5" src={visulimaLogo} />
                         </button>
 
                         {/* App buttons — hidden when pill is minimized */}
@@ -276,7 +260,7 @@ const ToolbarContainer = ({
                             )}
                         >
                             {/* Separator between logo and app buttons */}
-                            <div class="w-px h-5 bg-border/70 flex-shrink-0 mx-1" />
+                            <div class="w-px h-4 bg-border/60 flex-shrink-0 mx-0.5" />
                             <ToolbarBar customAppsToShow={customAppsToShow} />
                         </div>
                     </div>

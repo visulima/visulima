@@ -208,6 +208,7 @@ const DevPanel = ({
     // isVisible drives the CSS transition class.
     const [isRendered, setIsRendered] = useState(false);
     const [isVisible, setIsVisible] = useState(false);
+    const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
     useEffect(() => {
         if (panelVisible) {
@@ -271,7 +272,7 @@ const DevPanel = ({
                     getPanelPositionClasses(position),
                     getConstraintClasses(position),
                     // Panel chrome
-                    "bg-background border border-border rounded-[10px]",
+                    "bg-background border border-border rounded-2xl overflow-hidden",
                     "shadow-[var(--panel-shadow)]",
                     // Animation
                     "transition-[var(--panel-transition)]",
@@ -281,46 +282,59 @@ const DevPanel = ({
                 )}
                 role="dialog"
             >
-                {/* Left sidebar — icon navigation */}
+                {/* Left sidebar — collapsible icon/label navigation */}
                 <nav
                     aria-label="DevTools apps"
-                    class="flex flex-col w-[52px] flex-shrink-0 py-2 overflow-y-auto bg-muted dark:bg-[oklch(10%_0.015_264)]"
+                    class={cn(
+                        "flex flex-col flex-shrink-0",
+                        "transition-[width] duration-200 ease-out",
+                        "bg-muted/40 dark:bg-muted/20",
+                        sidebarCollapsed ? "w-12" : "w-40",
+                    )}
                 >
-                    <div class="flex flex-col items-center gap-1 px-1.5">
+                    {/* App buttons */}
+                    <div class="flex flex-col gap-0.5 flex-1 py-2 px-1.5">
                         {apps.map((app) => (
-                            <div class="relative w-full" key={app.id}>
+                            <div class="relative group/nav-item" key={app.id}>
                                 <button
                                     aria-label={app.name}
                                     aria-pressed={activeAppId === app.id}
                                     class={cn(
-                                        "relative flex items-center justify-center w-full h-9 rounded-md",
+                                                        "relative flex items-center w-full h-9 rounded-lg",
                                         "border-0 cursor-pointer",
                                         "transition-[background,color,opacity,transform] duration-150",
-                                        "active:scale-[0.93]",
+                                        "active:scale-[0.97]",
+                                        sidebarCollapsed ? "justify-center" : "gap-2.5 px-2.5",
                                         activeAppId === app.id
-                                            ? "bg-[oklch(13%_0.01_264)] text-[oklch(98%_0_0)] opacity-100 dark:bg-[oklch(30%_0.02_264)] dark:text-[oklch(94%_0.01_264)]"
-                                            : "bg-transparent text-muted-foreground opacity-60 hover:bg-black/5 hover:text-foreground hover:opacity-90 dark:hover:bg-white/[0.07]",
+                                            ? "bg-primary/[0.08] text-primary opacity-100"
+                                            : "bg-transparent text-muted-foreground opacity-60 hover:bg-foreground/[0.05] hover:text-foreground hover:opacity-90",
                                     )}
                                     onClick={() => {
-                                        // Clicking the already-active app does nothing
                                         if (app.id === activeAppId) {
                                             return;
                                         }
 
                                         onToggleApp(app.id).catch(console.error);
                                     }}
-                                    title={app.name}
                                     type="button"
                                 >
+                                    {/* Icon */}
                                     {app.icon ? (
                                         <span
-                                            class="w-[18px] h-[18px] flex items-center justify-center [&_svg]:w-[18px] [&_svg]:h-[18px]"
+                                            class="w-4 h-4 flex-shrink-0 flex items-center justify-center [&_svg]:w-4 [&_svg]:h-4"
                                             // eslint-disable-next-line react/no-danger
                                             dangerouslySetInnerHTML={{ __html: app.icon }}
                                         />
                                     ) : (
-                                        <span class="text-xs font-semibold uppercase select-none">
+                                        <span class="w-4 h-4 flex-shrink-0 flex items-center justify-center text-[0.625rem] font-bold uppercase select-none">
                                             {app.name.slice(0, 2)}
+                                        </span>
+                                    )}
+
+                                    {/* Label — visible only when expanded */}
+                                    {!sidebarCollapsed && (
+                                        <span class="text-xs font-medium truncate leading-none">
+                                            {app.name}
                                         </span>
                                     )}
                                 </button>
@@ -330,8 +344,9 @@ const DevPanel = ({
                                     <span
                                         aria-hidden="true"
                                         class={cn(
-                                            "pointer-events-none absolute top-0.5 right-0.5",
-                                            "w-[7px] h-[7px] rounded-full ring-[1.5px] ring-background",
+                                            "pointer-events-none absolute top-0.5 rounded-full ring-1 ring-background",
+                                            sidebarCollapsed ? "right-0.5" : "right-2",
+                                            "w-1.5 h-1.5",
                                             app.notification.level === "error"
                                                 ? "bg-destructive"
                                                 : app.notification.level === "warning"
@@ -340,8 +355,61 @@ const DevPanel = ({
                                         )}
                                     />
                                 )}
+
+                                {/* Tooltip — shown only in collapsed mode */}
+                                {sidebarCollapsed && (
+                                    <div
+                                        class={cn(
+                                            "absolute left-[calc(100%+6px)] top-1/2 -translate-y-1/2",
+                                            "pointer-events-none z-50 whitespace-nowrap",
+                                            "opacity-0 -translate-x-1 group-hover/nav-item:opacity-100 group-hover/nav-item:translate-x-0",
+                                            "transition-[opacity,transform] duration-[140ms] ease-out",
+                                        )}
+                                    >
+                                        <div class="text-[0.6875rem] font-medium font-sans bg-background text-foreground px-2.5 py-1 rounded-full border border-border shadow-md">
+                                            {app.name}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         ))}
+                    </div>
+
+                    {/* Collapse / expand toggle */}
+                    <div class="border-t border-border/50 px-1.5 py-1.5">
+                        <button
+                            aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+                            class={cn(
+                                "flex items-center h-7 w-full rounded-lg",
+                                "border-0 cursor-pointer bg-transparent",
+                                "text-muted-foreground/35 hover:text-muted-foreground hover:bg-foreground/[0.05]",
+                                "transition-[background,color] duration-150",
+                                sidebarCollapsed ? "justify-center" : "gap-1.5 px-2",
+                            )}
+                            onClick={() => setSidebarCollapsed((c) => !c)}
+                            type="button"
+                        >
+                            <svg
+                                aria-hidden="true"
+                                class={cn(
+                                    "w-3.5 h-3.5 flex-shrink-0 transition-transform duration-200 ease-out",
+                                    !sidebarCollapsed && "rotate-180",
+                                )}
+                                fill="none"
+                                viewBox="0 0 14 14"
+                            >
+                                <path
+                                    d="M5 2.5L9.5 7L5 11.5"
+                                    stroke="currentColor"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="1.5"
+                                />
+                            </svg>
+                            {!sidebarCollapsed && (
+                                <span class="text-[0.6875rem]">Collapse</span>
+                            )}
+                        </button>
                     </div>
                 </nav>
 
@@ -351,16 +419,16 @@ const DevPanel = ({
                 {/* Content area */}
                 <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
                     {/* Header — app name + close button */}
-                    <div class="flex items-center justify-between gap-2 px-3 py-2 border-b border-border flex-shrink-0 bg-background">
+                    <div class="flex items-center justify-between gap-2 px-3 py-2.5 border-b border-border flex-shrink-0 bg-background">
                         <div class="flex items-center gap-2 min-w-0">
                             {activeApp?.icon && (
                                 <span
-                                    class="w-4 h-4 flex items-center justify-center [&_svg]:w-4 [&_svg]:h-4 flex-shrink-0 text-muted-foreground/70"
+                                    class="w-4 h-4 flex items-center justify-center [&_svg]:w-4 [&_svg]:h-4 flex-shrink-0 text-primary/70"
                                     // eslint-disable-next-line react/no-danger
                                     dangerouslySetInnerHTML={{ __html: activeApp.icon }}
                                 />
                             )}
-                            <span class="font-sans text-[13px] font-medium text-foreground truncate">
+                            <span class="font-sans text-[0.8125rem] font-medium text-foreground truncate">
                                 {activeApp?.name ?? "DevTools"}
                             </span>
                         </div>
@@ -368,11 +436,11 @@ const DevPanel = ({
                         <button
                             aria-label="Close DevTools panel"
                             class={cn(
-                                "flex items-center justify-center w-7 h-7 rounded-md flex-shrink-0",
+                                "flex items-center justify-center w-7 h-7 rounded-lg flex-shrink-0",
                                 "cursor-pointer border-0 bg-transparent",
-                                "text-foreground/50 hover:text-foreground hover:bg-accent/80",
+                                "text-foreground/40 hover:text-foreground hover:bg-foreground/[0.06]",
                                 "transition-[background,color,transform] duration-[120ms]",
-                                "hover:scale-110 active:scale-90",
+                                "active:scale-90",
                             )}
                             onClick={onClose}
                             title="Close (Esc)"
@@ -394,36 +462,35 @@ const DevPanel = ({
                         {activeApp ? (
                             <AppContent app={activeApp} key={activeApp.id} />
                         ) : (
-                            <div class="flex flex-col items-center justify-center min-h-[200px] h-full gap-3">
-                                <svg
-                                    class="text-muted-foreground opacity-25"
-                                    fill="none"
-                                    height="32"
-                                    viewBox="0 0 24 24"
-                                    width="32"
-                                >
-                                    <path
-                                        d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
-                                        stroke="currentColor"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        stroke-width="1.5"
-                                    />
-                                </svg>
-                                <span class="text-sm text-muted-foreground">Select an app from the sidebar</span>
+                            <div class="flex flex-col items-center justify-center min-h-48 h-full gap-2">
+                                <div class="w-8 h-8 rounded-xl bg-muted/60 flex items-center justify-center">
+                                    <svg
+                                        class="text-muted-foreground/50"
+                                        fill="none"
+                                        height="16"
+                                        viewBox="0 0 24 24"
+                                        width="16"
+                                    >
+                                        <path
+                                            d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
+                                            stroke="currentColor"
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="1.5"
+                                        />
+                                    </svg>
+                                </div>
+                                <span class="text-xs text-muted-foreground/60">Select an app</span>
                             </div>
                         )}
                     </div>
 
-                    {/* Footer — keyboard hint + branding */}
-                    <div class="flex items-center justify-between px-3 py-1.5 border-t border-border flex-shrink-0 bg-muted dark:bg-[oklch(10%_0.015_264)]">
-                        <div class="flex items-center gap-1 text-[11px] text-muted-foreground/55">
-                            <kbd class="font-mono text-[10px] bg-background border border-border border-b-2 rounded px-[5px] leading-[18px] text-foreground shadow-[0_1px_0_rgba(0,0,0,0.04)] dark:bg-accent dark:shadow-[0_1px_0_rgba(0,0,0,0.25)]">
-                                Esc
-                            </kbd>
-                            <span>close</span>
-                        </div>
-                        <span class="text-[10px] tracking-[0.08em] uppercase font-medium text-muted-foreground/35">Visulima</span>
+                    {/* Footer — keyboard hint */}
+                    <div class="flex items-center gap-1.5 px-3 py-1 border-t border-border flex-shrink-0">
+                        <kbd class="font-mono text-[0.625rem] bg-background border border-border border-b-2 rounded px-1.5 leading-[1.125rem] text-foreground/50 shadow-[0_1px_0_rgba(0,0,0,0.04)] dark:bg-accent dark:shadow-[0_1px_0_rgba(0,0,0,0.25)]">
+                            Esc
+                        </kbd>
+                        <span class="text-[0.6875rem] text-muted-foreground/45">to close</span>
                     </div>
                 </div>
             </div>

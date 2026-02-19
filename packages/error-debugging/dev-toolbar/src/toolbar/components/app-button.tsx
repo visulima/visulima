@@ -31,22 +31,22 @@ const AppButton = ({ app }: AppButtonProps): ComponentChildren => {
         <button
             aria-label={app.name}
             class={cn(
-                "relative flex justify-center items-center w-9 h-9",
-                "border-0 rounded-lg",
+                "relative flex justify-center items-center w-8 h-8",
+                "border-0",
                 "whitespace-nowrap no-underline p-0 m-0",
                 "cursor-pointer overflow-visible",
                 // Base: faded when inactive
-                "text-foreground opacity-50",
-                "transition-[background,opacity,color,transform] duration-150",
-                "hover:bg-black/[6%] hover:opacity-85 dark:hover:bg-white/[9%]",
-                "active:opacity-70 active:scale-[0.92]",
-                // Active: dark chip (Figma/Excalidraw style — inverts icon to white)
+                "text-foreground/60",
+                "transition-[background,opacity,color,transform,border-radius] duration-150",
+                "hover:bg-foreground/[0.06] hover:text-foreground",
+                "active:scale-[0.92]",
+                // Shape: rounded-full when active, rounded-xl otherwise
+                app.active ? "rounded-full" : "rounded-xl",
+                // Active: indigo primary chip
                 app.active && [
                     "opacity-100!",
-                    "bg-[oklch(13%_0.01_264)] text-[oklch(98%_0_0)]",
-                    "hover:bg-[oklch(22%_0.01_264)]! hover:opacity-100!",
-                    "dark:bg-[oklch(30%_0.02_264)] dark:text-[oklch(94%_0.01_264)]",
-                    "dark:hover:bg-[oklch(36%_0.02_264)]!",
+                    "bg-primary text-primary-foreground",
+                    "hover:bg-primary/90! hover:text-primary-foreground!",
                 ],
                 // Counter-rotate when pill is in vertical mode
                 "group-data-[vertical]/panel:rotate-[-90deg]",
@@ -58,15 +58,15 @@ const AppButton = ({ app }: AppButtonProps): ComponentChildren => {
             type="button"
         >
             {/* Icon + notification badge */}
-            <div class="relative w-[18px] h-[18px] select-none flex items-center justify-center">
+            <div class="relative w-4 h-4 select-none flex items-center justify-center">
                 <div
-                    class="w-[18px] h-[18px] block m-auto [&_svg]:w-[18px] [&_svg]:h-[18px]"
+                    class="w-4 h-4 block m-auto [&_svg]:w-4 [&_svg]:h-4"
                     dangerouslySetInnerHTML={{ __html: app.icon }}
                 />
                 {app.notification.state && (
                     <span
                         class={cn(
-                            "absolute -top-1 -right-1.5 w-[7px] h-[7px] rounded-full ring-[1.5px] ring-background",
+                            "absolute -top-1 -right-1.5 w-1.5 h-1.5 rounded-full ring-1 ring-background",
                             app.notification.level === "error" && "bg-destructive",
                             app.notification.level === "warning" && "bg-warning",
                             (!app.notification.level || app.notification.level === "info") && "bg-info",
@@ -76,20 +76,18 @@ const AppButton = ({ app }: AppButtonProps): ComponentChildren => {
                 )}
             </div>
 
-            {/* Tooltip label + arrow — always mounted, toggled via opacity/translate */}
+            {/* Tooltip — light pill, no arrow */}
             <div
                 class={cn(
-                    "absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2",
-                    "flex flex-col items-center pointer-events-none z-10",
+                    "absolute bottom-[calc(100%+0.5rem)] left-1/2 -translate-x-1/2",
+                    "pointer-events-none z-10",
                     "transition-[opacity,transform] duration-[140ms] ease-out",
                     showTooltip ? "opacity-100 translate-y-0" : "opacity-0 translate-y-1",
                 )}
             >
-                <div class="whitespace-nowrap text-[11px] font-medium tracking-[0.01em] font-sans bg-[oklch(13%_0.01_264)] text-[oklch(96%_0_0)] px-[9px] py-[3px] rounded-md dark:bg-[oklch(88%_0.01_264)] dark:text-[oklch(13%_0.01_264)]">
+                <div class="whitespace-nowrap text-[0.6875rem] font-medium font-sans bg-background text-foreground px-2.5 py-1 rounded-full border border-border shadow-md">
                     {app.name}
                 </div>
-                {/* Downward-pointing arrow triangle */}
-                <div class="w-0 h-0 border-solid border-l-[4px] border-l-transparent border-r-[4px] border-r-transparent border-t-[4px] border-t-[oklch(13%_0.01_264)] border-b-0 dark:border-t-[oklch(88%_0.01_264)]" />
             </div>
         </button>
     );

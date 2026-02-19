@@ -16,14 +16,14 @@ const MoreButton = (): ComponentChildren => {
     return (
         <button
             class={cn(
-                "relative flex justify-center items-center w-9 h-9",
-                "border-0 rounded-lg",
+                "relative flex justify-center items-center w-8 h-8",
+                "border-0 rounded-xl",
                 "whitespace-nowrap no-underline p-0 m-0",
                 "cursor-pointer overflow-visible",
-                "text-foreground opacity-50",
+                "text-foreground/60",
                 "transition-[background,opacity,color,transform] duration-150",
-                "hover:bg-black/[6%] hover:opacity-85 dark:hover:bg-white/[9%]",
-                "active:opacity-70 active:scale-[0.92]",
+                "hover:bg-foreground/[0.06] hover:text-foreground",
+                "active:scale-[0.92]",
                 "group-data-[vertical]/panel:rotate-[-90deg]",
             )}
             data-app-id="dev-toolbar:more"
@@ -37,7 +37,7 @@ const MoreButton = (): ComponentChildren => {
             title="More apps"
             type="button"
         >
-            <div class="relative w-[18px] h-[18px] flex items-center justify-center select-none">
+            <div class="relative w-4 h-4 flex items-center justify-center select-none">
                 <svg fill="currentColor" height="16" viewBox="0 0 16 16" width="16">
                     <circle cx="3" cy="8" r="1.5" />
                     <circle cx="8" cy="8" r="1.5" />
@@ -45,19 +45,18 @@ const MoreButton = (): ComponentChildren => {
                 </svg>
             </div>
 
-            {/* Tooltip */}
+            {/* Tooltip — light pill, no arrow */}
             <div
                 class={cn(
-                    "absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2",
-                    "flex flex-col items-center pointer-events-none z-10",
+                    "absolute bottom-[calc(100%+0.5rem)] left-1/2 -translate-x-1/2",
+                    "pointer-events-none z-10",
                     "transition-[opacity,transform] duration-[140ms] ease-out",
                     showTooltip ? "opacity-100 translate-y-0" : "opacity-0 translate-y-1",
                 )}
             >
-                <div class="whitespace-nowrap text-[11px] font-medium tracking-[0.01em] font-sans bg-[oklch(13%_0.01_264)] text-[oklch(96%_0_0)] px-[9px] py-[3px] rounded-md dark:bg-[oklch(88%_0.01_264)] dark:text-[oklch(13%_0.01_264)]">
+                <div class="whitespace-nowrap text-[0.6875rem] font-medium font-sans bg-background text-foreground px-2.5 py-1 rounded-full border border-border shadow-md">
                     More apps
                 </div>
-                <div class="w-0 h-0 border-solid border-l-[4px] border-l-transparent border-r-[4px] border-r-transparent border-t-[4px] border-t-[oklch(13%_0.01_264)] border-b-0 dark:border-t-[oklch(88%_0.01_264)]" />
             </div>
         </button>
     );
