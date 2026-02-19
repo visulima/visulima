@@ -183,27 +183,35 @@ const ToolbarContainer = ({
                 class={cn(resolvedTheme === "dark" && "dark")}
                 style={{ display: "contents" }}
             >
+                {/* Anchor — positioned via JS; transitions left/top smoothly */}
                 <div
                     ref={anchorRef}
                     class={cn(
-                        "vue-devtools__anchor",
                         "fixed z-[2147483645]",
-                        isVertical && "vue-devtools__anchor--vertical",
-                        isHidden && "vue-devtools__anchor--hide",
-                        state.reduceMotion && "reduce-motion",
+                        "origin-center",
+                        "transition-[left_0.3s_cubic-bezier(0.4,0,0.2,1),top_0.3s_cubic-bezier(0.4,0,0.2,1)]",
+                        "data-[dragging]:transition-none!",
+                        "group",
+                        state.reduceMotion && "transition-none! animate-none! [&_*]:transition-none! [&_*]:animate-none!",
                     )}
                     data-dragging={isDragging ? "" : undefined}
-                    data-hidden={isHidden ? "" : undefined}
                     data-placement={placement}
                     id="dev-toolbar-root"
                     onMouseMove={bringUp}
                     style={anchorStyle}
                 >
-                    {/* Glowing effect - Vue DevTools style (not Safari) */}
+                    {/* Glowing ambient effect (disabled on Safari due to backdrop-filter conflicts) */}
                     {!checkIsSafari() && (
                         <div
-                            class="vue-devtools__anchor--glowing"
-                            style={isDragging ? { opacity: "0.6 !important" } : undefined}
+                            class={cn(
+                                "absolute left-0 top-0 -translate-x-1/2 -translate-y-1/2",
+                                "w-[220px] h-[220px] rounded-full",
+                                "pointer-events-none -z-[1]",
+                                "bg-[radial-gradient(ellipse_at_center,rgba(100,60,255,0.22)_0%,rgba(220,60,180,0.14)_40%,transparent_70%)]",
+                                "blur-[20px]",
+                                "transition-opacity duration-[800ms] ease-out",
+                                isDragging ? "opacity-60" : "opacity-0 group-hover:opacity-100",
+                            )}
                         />
                     )}
 
@@ -211,43 +219,64 @@ const ToolbarContainer = ({
                     <div
                         ref={panelRef}
                         class={cn(
-                            "dev-toolbar__panel",
+                            // Named group so descendant buttons can detect vertical orientation
+                            "group/panel",
+                            // NOTE: do NOT add translate/rotate Tailwind classes here.
+                            // panelStyle (inline) sets transform: translate(-50%,-50%) [rotate(90deg)].
+                            // In Tailwind v4, translate/rotate utilities use CSS individual transform
+                            // properties that COMPOSE with the inline transform, causing double offset.
                             "absolute left-0 top-0",
-                            "flex flex-row justify-start items-center gap-0.5",
-                            "h-[30px]",
-                            "px-1 py-1",
-                            "box-border overflow-hidden",
-                            "rounded-[20px]",
-                            "text-foreground",
-                            "select-none",
+                            "flex flex-row justify-start items-center",
+                            "h-[44px]",
+                            "box-border overflow-visible",
+                            "rounded-[22px]",
+                            "text-foreground select-none",
                             isDragging ? "cursor-grabbing" : "cursor-grab",
-                            "max-w-[150px]",
+                            // Background/border/backdrop always present; only shadow differs in vertical mode
+                            "bg-[var(--pill-bg)] border border-[var(--pill-border)] backdrop-blur-[24px] backdrop-saturate-200",
+                            isVertical
+                                ? "shadow-[2px_-2px_8px_var(--color-background)]!"
+                                : "shadow-[var(--pill-shadow)] hover:shadow-[var(--pill-shadow-hover)]",
+                            // Hidden: shrink to logo-only
+                            isHidden ? "max-w-[44px]! p-1!" : "px-1.5",
+                            "transition-[var(--pill-transition)]",
                         )}
-                        data-hidden={isHidden}
+                        data-vertical={isVertical || undefined}
                         onPointerDown={onPointerDown}
                         style={panelStyle}
                     >
-                        {/* Toggle button */}
+                        {/* Logo toggle button */}
                         <button
                             aria-label="Toggle devtools panel"
                             class={cn(
-                                "panel-entry-btn",
-                                "rounded-full w-[30px] h-[30px] flex justify-center items-center flex-shrink-0",
+                                "rounded-full w-9 h-9 flex justify-center items-center flex-shrink-0",
                                 "cursor-pointer p-0 m-0 border-0 bg-transparent",
-                                "opacity-80 hover:opacity-100",
-                                "transition-opacity duration-200 ease-in-out",
+                                "transition-[background_0.18s_ease,box-shadow_0.18s_ease,transform_0.18s_cubic-bezier(0.34,1.56,0.64,1)]",
+                                "hover:scale-[1.08] active:scale-[0.94]",
+                                // Rotate counter when pill is rotated 90deg
+                                "group-data-[vertical]/panel:rotate-[-90deg]",
+                                // Active: glowing accent ring
+                                panelVisible && "bg-[var(--toolbar-accent-dim)]! shadow-[0_0_0_1.5px_var(--toolbar-accent),0_0_8px_var(--toolbar-accent-glow)]",
                             )}
                             onClick={(e) => {
                                 e.stopPropagation();
                                 togglePanelVisible();
                             }}
-                            title="Toggle devtools panel"
                             type="button"
                         >
-                            <img alt="Visulima" class="w-5 h-5" src={visulimaLogo} />
+                            <img alt="Visulima" class="w-[22px] h-[22px]" src={visulimaLogo} />
                         </button>
 
-                        <div class="dev-toolbar__panel-content">
+                        {/* App buttons — hidden when pill is minimized */}
+                        <div
+                            class={cn(
+                                "flex items-center",
+                                "transition-opacity duration-[350ms] ease-[cubic-bezier(0.4,0,0.2,1)]",
+                                isHidden && "opacity-0 pointer-events-none",
+                            )}
+                        >
+                            {/* Separator between logo and app buttons */}
+                            <div class="w-px h-5 bg-border/70 flex-shrink-0 mx-1" />
                             <ToolbarBar customAppsToShow={customAppsToShow} />
                         </div>
                     </div>
