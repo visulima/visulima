@@ -215,7 +215,7 @@ const ToolbarContainer = ({
                             isDragging ? "cursor-grabbing" : "cursor-grab",
                             // Background/border/backdrop always present; only shadow differs in vertical mode
                             "bg-pill border border-pill-border",
-                            isVertical ? "shadow-pill-vertical!" : "shadow-pill hover:shadow-pill-hover",
+                            isVertical ? "shadow-pill-vertical!" : "shadow-lg hover:shadow-xl",
                             // Hidden: shrink to logo-only
                             isHidden ? "max-w-12! p-1!" : "px-2",
                             "transition-pill",
@@ -248,13 +248,7 @@ const ToolbarContainer = ({
                         </button>
 
                         {/* App buttons — hidden when pill is minimized */}
-                        <div
-                            class={cn(
-                                "flex items-center ml-1",
-                                "transition-opacity duration-[350ms] ease-[cubic-bezier(0.4,0,0.2,1)]",
-                                isHidden && "opacity-0 pointer-events-none",
-                            )}
-                        >
+                        <div class={cn("flex items-center", "transition-opacity duration-[350ms] ease-[cubic-bezier(0.4,0,0.2,1)]", isHidden && "hidden")}>
                             <ToolbarBar customAppsToShow={customAppsToShow} />
                         </div>
                     </div>

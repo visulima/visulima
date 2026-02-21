@@ -266,7 +266,7 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                     getConstraintClasses(position),
                     // Panel chrome
                     "border border-border rounded-lg overflow-hidden",
-                    "shadow-panel",
+                    "shadow-2xl",
                     // Animation
                     "transition-panel",
                     getOriginClass(position),
@@ -281,7 +281,7 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                     class={cn(
                         "flex flex-col shrink-0 overflow-hidden",
                         "transition-[width] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]",
-                        "bg-muted dark:bg-muted/60",
+                        "bg-muted dark:bg-background",
                         sidebarCollapsed ? "w-14" : "w-56",
                     )}
                 >
@@ -368,7 +368,7 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                 </nav>
 
                 {/* Content area */}
-                <div class="py-2 pr-2 flex-1 flex flex-col min-w-0 overflow-hidden bg-muted dark:bg-muted/60">
+                <div class="py-2 pr-2 flex-1 flex flex-col min-w-0 overflow-hidden bg-muted dark:bg-background">
                     <div class=" bg-background h-full rounded-lg">
                         {/* Header — app name + close button */}
                         <div class="flex items-center justify-between gap-2 p-2 border-b border-border/40 shrink-0">
