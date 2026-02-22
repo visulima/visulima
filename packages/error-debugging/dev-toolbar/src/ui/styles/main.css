@@ -25,9 +25,9 @@
     --animate-slide-in: slide-in 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     --animate-slide-out: slide-out 0.2s cubic-bezier(0.4, 0, 1, 1);
 
-    /* Shadows that embed @theme color vars — must use @theme inline */
-    --shadow-pill-vertical: 2px -2px 8px var(--color-background);
-    --shadow-logo-open: 0 0 0 1.5px var(--color-toolbar-accent), 0 0 12px var(--color-toolbar-accent-glow);
+    /* Toolbar shadows — exact Nuxt DevTools values, directional by position */
+    --shadow-toolbar: 2px 2px 8px var(--color-toolbar-shadow);
+    --shadow-pill-vertical: 2px -2px 8px var(--color-toolbar-shadow);
 
     @keyframes skeleton {
         to {
@@ -71,16 +71,16 @@
     --color-popover-foreground: oklch(0.145 0.006 285);
     --color-primary: oklch(0.21 0.006 285);
     --color-primary-foreground: oklch(0.985 0 0);
-    --color-secondary: oklch(0.967 0.001 286);
+    --color-secondary: oklch(0.967 0 0);
     --color-secondary-foreground: oklch(0.21 0.006 285);
-    --color-muted: oklch(0.967 0.001 286);
-    --color-muted-foreground: oklch(0.556 0.023 264);
-    --color-accent: oklch(0.967 0.001 286);
+    --color-muted: oklch(0.967 0 0);
+    --color-muted-foreground: oklch(0.556 0 0);
+    --color-accent: oklch(0.967 0 0);
     --color-accent-foreground: oklch(0.21 0.006 285);
     --color-destructive: oklch(0.627 0.249 25);
     --color-destructive-foreground: oklch(0.985 0 0);
-    --color-border: oklch(0.922 0.004 286);
-    --color-input: oklch(0.922 0.004 286);
+    --color-border: oklch(0.52 0 0 / 0.2);
+    --color-input: oklch(0.52 0 0 / 0.2);
     --color-ring: oklch(0.21 0.006 285);
 
     /* Semantic status colors */
@@ -92,8 +92,9 @@
     --color-warning-foreground: oklch(0.55 0.15 85);
 
     /* Toolbar pill colors — bg-pill, border-pill-border */
+    /* Light: #fff bg + #efefef border (exact Nuxt DevTools light values) */
     --color-pill: oklch(1 0 0);
-    --color-pill-border: oklch(0 0 0 / 0.06);
+    --color-pill-border: oklch(0.937 0 0);
 
     /* Toolbar accent colors — bg-toolbar-accent, bg-toolbar-accent-dim, etc. */
     --color-toolbar-accent: oklch(0.21 0.006 285);
@@ -108,6 +109,9 @@
 :host {
     --radius: 0.75rem;
 
+    /* Toolbar shadow — Nuxt DevTools exact value: 2px 2px 8px with this color */
+    --color-toolbar-shadow: rgba(128, 128, 128, 0.1);
+
     /* Multi-property transition values — used by @utility transition-pill/panel */
     --pill-transition:
         box-shadow 0.4s cubic-bezier(0.23, 1, 0.32, 1), background 0.4s cubic-bezier(0.23, 1, 0.32, 1), max-width 0.5s cubic-bezier(0.23, 1, 0.32, 1),
@@ -116,37 +120,42 @@
 }
 
 /* ─── Dark mode overrides ─────────────────────────────────────────────────── */
+/* Neutral dark palette matching Nuxt DevTools (#111 base, no color tint).   */
 .dark {
     /* Base UI colors */
-    --color-background: oklch(0.145 0.006 285);
+    --color-background: oklch(0.072 0 0);        /* ≈ #111 — exact Nuxt DevTools dark bg */
     --color-foreground: oklch(0.985 0 0);
-    --color-card: oklch(0.145 0.006 285);
+    --color-card: oklch(0.072 0 0);
     --color-card-foreground: oklch(0.985 0 0);
-    --color-popover: oklch(0.145 0.006 285);
+    --color-popover: oklch(0.072 0 0);
     --color-popover-foreground: oklch(0.985 0 0);
     --color-primary: oklch(0.985 0 0);
-    --color-primary-foreground: oklch(0.145 0.006 285);
-    --color-secondary: oklch(0.21 0.006 285);
+    --color-primary-foreground: oklch(0.072 0 0);
+    --color-secondary: oklch(0.175 0 0);         /* ≈ #1f1f1f — neutral hover bg */
     --color-secondary-foreground: oklch(0.985 0 0);
-    --color-muted: oklch(0.21 0.006 285);
-    --color-muted-foreground: oklch(0.708 0.01 261);
-    --color-accent: oklch(0.21 0.006 285);
+    --color-muted: oklch(0.175 0 0);             /* ≈ #1f1f1f — same neutral hover bg */
+    --color-muted-foreground: oklch(0.55 0 0);   /* neutral mid-gray */
+    --color-accent: oklch(0.175 0 0);
     --color-accent-foreground: oklch(0.985 0 0);
     --color-destructive: oklch(0.36 0.12 25);
     --color-destructive-foreground: oklch(0.985 0 0);
-    --color-border: oklch(0.269 0.008 286);
-    --color-input: oklch(0.269 0.008 286);
-    --color-ring: oklch(0.876 0.006 286);
+    /* Uniform rgba(125,125,125,0.2) — matches Nuxt DevTools panel border */
+    --color-border: oklch(0.52 0 0 / 0.2);
+    --color-input: oklch(0.52 0 0 / 0.2);
+    --color-ring: oklch(0.876 0 0);
 
     /* Toolbar pill colors */
-    --color-pill: oklch(0.145 0.006 285);
-    --color-pill-border: oklch(0.269 0.008 286);
+    /* Dark: #111 bg + rgba(51,51,51,0.4) border (exact Nuxt DevTools dark values) */
+    --color-pill: oklch(0.072 0 0);
+    --color-pill-border: oklch(0.216 0 0 / 0.4);
 
     /* Toolbar accent colors */
     --color-toolbar-accent: oklch(0.985 0 0);
     --color-toolbar-accent-dim: oklch(0.985 0 0 / 0.1);
     --color-toolbar-accent-glow: oklch(0.985 0 0 / 0.2);
 
+    /* Toolbar shadow — Nuxt DevTools dark exact value */
+    --color-toolbar-shadow: rgba(0, 0, 0, 0.3);
 }
 
 @layer base {

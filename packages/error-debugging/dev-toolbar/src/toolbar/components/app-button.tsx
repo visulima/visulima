@@ -31,16 +31,18 @@ const AppButton = ({ app }: AppButtonProps): ComponentChildren => {
         <button
             aria-label={app.name}
             class={cn(
-                "relative flex justify-center items-center w-9 h-9",
+                // 26px = Nuxt DevTools icon-button size inside 30px pill (2px padding each side)
+                "relative flex justify-center items-center w-[26px] h-[26px]",
                 "border-0 rounded-full",
                 "whitespace-nowrap no-underline p-0 m-0",
                 "cursor-pointer overflow-visible",
-                "bg-transparent text-zinc-400 dark:text-zinc-500",
-                "transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)]",
-                "hover:bg-zinc-900/5 hover:text-zinc-900 dark:hover:bg-zinc-50/10 dark:hover:text-zinc-50",
+                "bg-transparent text-foreground/50",
+                "transition-all duration-200 ease-[cubic-bezier(0.23,1,0.32,1)]",
+                // Nuxt DevTools: opacity 0.8 default, 1.0 on hover
+                "opacity-80 hover:opacity-100 hover:bg-foreground/[0.05] hover:text-foreground",
                 "active:scale-[0.94]",
-                // Active: dark circle in light mode, light circle in dark mode (mirrors logo button)
-                app.active && ["bg-zinc-900 text-zinc-50 dark:bg-zinc-100 dark:text-zinc-900", "shadow-sm opacity-100!"],
+                // Active: subtle fill (Nuxt DevTools style — no bold dark/white circle)
+                app.active && "bg-foreground/[0.07] text-foreground opacity-100",
                 // Counter-rotate when pill is in vertical mode
                 "group-data-[vertical]/panel:rotate-[-90deg]",
             )}
@@ -51,15 +53,15 @@ const AppButton = ({ app }: AppButtonProps): ComponentChildren => {
             type="button"
         >
             {/* Icon + notification badge */}
-            <div class="relative w-4.5 h-4.5 select-none flex items-center justify-center">
+            <div class="relative w-[14px] h-[14px] select-none flex items-center justify-center">
                 <div
-                    class="w-4.5 h-4.5 block m-auto [&_svg]:w-4.5 [&_svg]:h-4.5 transition-transform duration-300"
+                    class="w-[14px] h-[14px] block m-auto [&_svg]:w-[14px] [&_svg]:h-[14px] transition-transform duration-300"
                     dangerouslySetInnerHTML={{ __html: app.icon }}
                 />
                 {app.notification.state && (
                     <span
                         class={cn(
-                            "absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full border-2 border-pill",
+                            "absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full border border-background",
                             app.notification.level === "error" && "bg-destructive",
                             app.notification.level === "warning" && "bg-warning",
                             (!app.notification.level || app.notification.level === "info") && "bg-info",
@@ -69,16 +71,16 @@ const AppButton = ({ app }: AppButtonProps): ComponentChildren => {
                 )}
             </div>
 
-            {/* Tooltip — clean pill at top, matching image */}
+            {/* Tooltip — Nuxt DevTools style: rounded-md, uniform rgba border, glass bg */}
             <div
                 class={cn(
-                    "absolute bottom-[calc(100%+0.8rem)] left-1/2 -translate-x-1/2",
+                    "absolute bottom-[calc(100%+0.6rem)] left-1/2 -translate-x-1/2",
                     "pointer-events-none z-10",
-                    "transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)]",
+                    "transition-all duration-200 ease-[cubic-bezier(0.23,1,0.32,1)]",
                     showTooltip ? "opacity-100 translate-y-0 scale-100" : "opacity-0 translate-y-1 scale-95",
                 )}
             >
-                <div class="whitespace-nowrap text-[0.7rem] font-medium font-sans bg-pill text-foreground/80 px-3 py-1 rounded-full border border-pill-border shadow-sm backdrop-blur-sm">
+                <div class="whitespace-nowrap text-[0.7rem] font-medium font-sans bg-background/90 backdrop-blur-[10px] text-foreground/80 px-2.5 py-1 rounded-md border border-[rgba(125,125,125,0.2)] shadow-md">
                     {app.name}
                 </div>
             </div>

@@ -16,13 +16,14 @@ const MoreButton = (): ComponentChildren => {
     return (
         <button
             class={cn(
-                "relative flex justify-center items-center w-9 h-9",
+                // 26px matches AppButton size in 30px pill
+                "relative flex justify-center items-center w-[26px] h-[26px]",
                 "border-0 rounded-full",
                 "whitespace-nowrap no-underline p-0 m-0",
                 "cursor-pointer overflow-visible",
-                "text-foreground/40",
-                "transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)]",
-                "hover:bg-foreground/[0.05] hover:text-foreground",
+                "text-foreground/50",
+                "transition-all duration-200 ease-[cubic-bezier(0.23,1,0.32,1)]",
+                "opacity-80 hover:opacity-100 hover:bg-foreground/[0.05] hover:text-foreground",
                 "active:scale-[0.94]",
                 "group-data-[vertical]/panel:rotate-[-90deg]",
             )}
@@ -37,24 +38,24 @@ const MoreButton = (): ComponentChildren => {
             title="More apps"
             type="button"
         >
-            <div class="relative w-4.5 h-4.5 flex items-center justify-center select-none">
-                <svg fill="currentColor" height="18" viewBox="0 0 16 16" width="18">
+            <div class="relative w-[14px] h-[14px] flex items-center justify-center select-none">
+                <svg fill="currentColor" height="14" viewBox="0 0 16 16" width="14">
                     <circle cx="3" cy="8" r="1.5" />
                     <circle cx="8" cy="8" r="1.5" />
                     <circle cx="13" cy="8" r="1.5" />
                 </svg>
             </div>
 
-            {/* Tooltip — clean pill style */}
+            {/* Tooltip — Nuxt DevTools style */}
             <div
                 class={cn(
-                    "absolute bottom-[calc(100%+0.8rem)] left-1/2 -translate-x-1/2",
+                    "absolute bottom-[calc(100%+0.6rem)] left-1/2 -translate-x-1/2",
                     "pointer-events-none z-10",
-                    "transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)]",
+                    "transition-all duration-200 ease-[cubic-bezier(0.23,1,0.32,1)]",
                     showTooltip ? "opacity-100 translate-y-0 scale-100" : "opacity-0 translate-y-1 scale-95",
                 )}
             >
-                <div class="whitespace-nowrap text-[0.7rem] font-medium font-sans bg-pill text-foreground/80 px-3 py-1 rounded-full border border-pill-border shadow-sm backdrop-blur-sm">
+                <div class="whitespace-nowrap text-[0.7rem] font-medium font-sans bg-background/90 backdrop-blur-[10px] text-foreground/80 px-2.5 py-1 rounded-md border border-[rgba(125,125,125,0.2)] shadow-md">
                     More apps
                 </div>
             </div>

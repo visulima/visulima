@@ -200,43 +200,55 @@ const ToolbarContainer = ({
                     onMouseMove={bringUp}
                     style={anchorStyle}
                 >
-                    {/* Draggable toolbar pill */}
+                    {/* Green ambient glow — fades in on hover, matches Nuxt DevTools glow effect */}
+                    <div
+                        aria-hidden="true"
+                        class="absolute left-0 top-0 -translate-x-1/2 -translate-y-1/2 w-40 h-40 rounded-full pointer-events-none opacity-0 group-hover:opacity-60 transition-opacity duration-1000"
+                        style={{ background: "linear-gradient(45deg, #00dc82, #00dc82)", filter: "blur(60px)" }}
+                    />
+
+                    {/* Draggable toolbar pill — exact Nuxt DevTools dimensions and styling */}
                     <div
                         ref={panelRef}
                         class={cn(
                             // Named group so descendant buttons can detect vertical orientation
                             "group/panel",
                             "absolute left-0 top-0",
-                            "flex flex-row justify-start items-center",
-                            "h-12",
+                            "flex flex-row justify-start items-center gap-0.5",
+                            // Nuxt DevTools exact height: 30px
+                            "h-[30px]",
                             "box-border overflow-visible",
-                            "rounded-[2rem]",
+                            // Nuxt DevTools: border-radius 100px (fully rounded pill)
+                            "rounded-[100px]",
                             "text-foreground select-none",
                             isDragging ? "cursor-grabbing" : "cursor-grab",
-                            // Background/border/backdrop always present; only shadow differs in vertical mode
-                            "bg-pill border border-pill-border",
-                            isVertical ? "shadow-pill-vertical!" : "shadow-lg hover:shadow-xl",
-                            // Hidden: shrink to logo-only
-                            isHidden ? "max-w-12! p-1!" : "px-2",
+                            // Nuxt DevTools: opaque bg + blur(10px) + exact border per mode
+                            "bg-background backdrop-blur-[10px]",
+                            "border border-pill-border",
+                            // Nuxt DevTools: directional 2px 2px 8px shadow
+                            isVertical ? "shadow-pill-vertical!" : "shadow-toolbar",
+                            // Hidden: shrink to logo-only (26px button + 2px padding × 2 = 30px)
+                            "p-0.5",
+                            isHidden ? "max-w-[30px]!" : "",
                             "transition-pill",
                         )}
                         data-vertical={isVertical || undefined}
                         onPointerDown={onPointerDown}
                         style={panelStyle}
                     >
-                        {/* Logo toggle button — black circle in light mode, white in dark */}
+                        {/* Logo toggle button — 26px circle, opacity 0.8 default (Nuxt DevTools icon-button style) */}
                         <button
                             aria-label="Toggle devtools panel"
                             class={cn(
-                                "rounded-full w-9 h-9 flex justify-center items-center flex-shrink-0",
+                                "rounded-full w-[26px] h-[26px] flex justify-center items-center flex-shrink-0",
                                 "cursor-pointer p-0 m-0 border-0",
                                 "bg-zinc-950 text-white dark:bg-white dark:text-zinc-950",
-                                "transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)]",
-                                "hover:scale-[1.05] active:scale-[0.95]",
+                                "transition-all duration-200 ease-[cubic-bezier(0.23,1,0.32,1)]",
+                                "hover:opacity-100 active:scale-[0.95]",
                                 // Rotate counter when pill is rotated 90deg
                                 "group-data-[vertical]/panel:rotate-[-90deg]",
-                                // Active: glowing accent ring
-                                panelVisible && "shadow-logo-open",
+                                // Open: full opacity; closed: 80% (mirrors Nuxt's saturate(0) default)
+                                panelVisible ? "opacity-100" : "opacity-80",
                             )}
                             onClick={(e) => {
                                 e.stopPropagation();
@@ -244,8 +256,11 @@ const ToolbarContainer = ({
                             }}
                             type="button"
                         >
-                            <img alt="Visulima" class="w-5 h-5 invert dark:invert-0" src={visulimaLogo} />
+                            <img alt="Visulima" class="w-[18px] h-[18px] invert dark:invert-0" src={visulimaLogo} />
                         </button>
+
+                        {/* Divider between logo and app buttons — matches Nuxt's border-left separator */}
+                        {!isHidden && <div aria-hidden="true" class="w-px h-2.5 bg-foreground/20 shrink-0" />}
 
                         {/* App buttons — hidden when pill is minimized */}
                         <div class={cn("flex items-center", "transition-opacity duration-[350ms] ease-[cubic-bezier(0.4,0,0.2,1)]", isHidden && "hidden")}>
