@@ -214,10 +214,12 @@ const ToolbarContainer = ({
                             // Named group so descendant buttons can detect vertical orientation
                             "group/panel",
                             "absolute left-0 top-0",
-                            "flex flex-row justify-start items-center gap-0.5",
-                            // Nuxt DevTools exact height: 30px
-                            "h-[30px]",
-                            "box-border overflow-visible",
+                            "flex flex-row justify-start items-center",
+                            // Nuxt DevTools exact height: 30px, gap: 2px
+                            "h-[30px] gap-0.5",
+                            "box-border",
+                            // Nuxt DevTools: overflow:hidden clips button hover bgs at pill edge
+                            "overflow-hidden",
                             // Nuxt DevTools: border-radius 100px (fully rounded pill)
                             "rounded-[100px]",
                             "text-foreground select-none",
@@ -227,23 +229,26 @@ const ToolbarContainer = ({
                             "border border-pill-border",
                             // Nuxt DevTools: directional 2px 2px 8px shadow
                             isVertical ? "shadow-pill-vertical!" : "shadow-toolbar",
-                            // Hidden: shrink to logo-only (26px button + 2px padding × 2 = 30px)
-                            "p-0.5",
-                            isHidden ? "max-w-[30px]!" : "",
+                            // Nuxt DevTools: padding: 2px 2px 2px 2.5px
+                            "py-[2px] pr-[2px] pl-[2.5px]",
+                            // Hidden: max-width:32px + no h-padding (Nuxt exact)
+                            isHidden ? "max-w-[32px]! px-0!" : "",
                             "transition-pill",
                         )}
                         data-vertical={isVertical || undefined}
                         onPointerDown={onPointerDown}
                         style={panelStyle}
                     >
-                        {/* Logo toggle button — 26px circle, opacity 0.8 default (Nuxt DevTools icon-button style) */}
+                        {/* Logo toggle button — 30px circle, no bg, opacity 0.8 default (exact Nuxt DevTools icon-button) */}
                         <button
                             aria-label="Toggle devtools panel"
                             class={cn(
-                                "rounded-full w-[26px] h-[26px] flex justify-center items-center flex-shrink-0",
+                                // 30px = Nuxt DevTools icon-button exact size
+                                "rounded-full w-[30px] h-[30px] flex justify-center items-center flex-shrink-0",
                                 "cursor-pointer p-0 m-0 border-0",
-                                "bg-zinc-950 text-white dark:bg-white dark:text-zinc-950",
-                                "transition-all duration-200 ease-[cubic-bezier(0.23,1,0.32,1)]",
+                                "bg-transparent",
+                                // Nuxt: opacity 0.2s ease-in-out, no bg transition
+                                "transition-opacity duration-200 ease-in-out",
                                 "hover:opacity-100 active:scale-[0.95]",
                                 // Rotate counter when pill is rotated 90deg
                                 "group-data-[vertical]/panel:rotate-[-90deg]",
@@ -254,9 +259,11 @@ const ToolbarContainer = ({
                                 e.stopPropagation();
                                 togglePanelVisible();
                             }}
+                            title="Toggle devtools panel"
                             type="button"
                         >
-                            <img alt="Visulima" class="w-[18px] h-[18px] invert dark:invert-0" src={visulimaLogo} />
+                            {/* dark:invert makes logo white on dark bg; light mode shows original dark logo */}
+                            <img alt="Visulima" class="w-[18px] h-[18px] dark:invert" src={visulimaLogo} />
                         </button>
 
                         {/* Divider between logo and app buttons — matches Nuxt's border-left separator */}

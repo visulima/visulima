@@ -112,10 +112,13 @@
     /* Toolbar shadow — Nuxt DevTools exact value: 2px 2px 8px with this color */
     --color-toolbar-shadow: rgba(128, 128, 128, 0.1);
 
-    /* Multi-property transition values — used by @utility transition-pill/panel */
+    /* Multi-property transition values — matches Nuxt DevTools exactly */
     --pill-transition:
-        box-shadow 0.4s cubic-bezier(0.23, 1, 0.32, 1), background 0.4s cubic-bezier(0.23, 1, 0.32, 1), max-width 0.5s cubic-bezier(0.23, 1, 0.32, 1),
-        max-height 0.5s cubic-bezier(0.23, 1, 0.32, 1), padding 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+        all 0.6s ease,
+        max-width 0.6s ease,
+        padding 0.5s ease,
+        transform 0.4s ease,
+        opacity 0.2s ease;
     --panel-transition: opacity 0.4s cubic-bezier(0.23, 1, 0.32, 1), transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
 }
 
@@ -124,7 +127,7 @@
 .dark {
     /* Base UI colors */
     --color-background: oklch(0.072 0 0);        /* ≈ #111 — exact Nuxt DevTools dark bg */
-    --color-foreground: oklch(0.985 0 0);
+    --color-foreground: oklch(0.961 0 0);        /* ≈ #F5F5F5 — exact Nuxt DevTools dark fg */
     --color-card: oklch(0.072 0 0);
     --color-card-foreground: oklch(0.985 0 0);
     --color-popover: oklch(0.072 0 0);
@@ -187,8 +190,16 @@
 
 /* ─── Global overrides ────────────────────────────────────────────────────── */
 #dev-toolbar-root {
+    /* Nuxt DevTools: Arial, 15px, box-sizing: border-box */
+    font-family: Arial, Helvetica, sans-serif !important;
+    font-size: 15px !important;
+    box-sizing: border-box;
     z-index: 2147483647 !important;
     pointer-events: auto !important;
+}
+
+#dev-toolbar-root * {
+    box-sizing: border-box;
 }
 
 @media print {
