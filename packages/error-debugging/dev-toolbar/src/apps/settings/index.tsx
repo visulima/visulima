@@ -4,6 +4,7 @@ import SettingsApp from "./settings-app";
 
 const settingsApp: DevToolbarApp = {
     component: SettingsApp,
+    defaultOpen: true,
     icon: SETTINGS_ICON,
     id: "dev-toolbar:settings",
     name: "Settings",
