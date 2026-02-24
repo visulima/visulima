@@ -4,10 +4,6 @@
 /* Scan source files for Tailwind classes */
 @source "../../**";
 
-/* Plugins */
-@plugin "@tailwindcss/typography";
-@plugin "@tailwindcss/forms";
-
 /* Custom dark mode variant — zero-specificity, targets .dark itself and all descendants */
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -49,166 +45,94 @@
     --tw-ring-offset-shadow: 0 0 #0000;
     --tw-blur: initial;
     --tw-brightness: initial;
-    --tw-contrast: initial: ;
+    --tw-contrast: initial;
 }
 
-/* ─── Non-color Tailwind tokens ─────────────────────────────────────────── */
-/* @theme inline keeps var() references intact so runtime --radius changes   */
-/* are reflected without a rebuild. Also used for shadows that reference      */
-/* @theme color vars (var() can't appear in regular @theme blocks).          */
-@theme inline {
-    /* Border-radius scale derived from --radius base token */
-    --radius-sm: calc(var(--radius) - 4px);
-    --radius-md: calc(var(--radius) - 2px);
-    --radius-lg: var(--radius);
-    --radius-xl: calc(var(--radius) + 4px);
-    --radius-2xl: calc(var(--radius) + 8px);
-    --radius-3xl: calc(var(--radius) + 16px);
-
-    /* Animation tokens */
-    --animate-skeleton: skeleton 2s -1s infinite linear;
-    --animate-slide-in: slide-in 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    --animate-slide-out: slide-out 0.2s cubic-bezier(0.4, 0, 1, 1);
-
-    /* Toolbar shadows — exact Nuxt DevTools values, directional by position */
-    --shadow-toolbar: 2px 2px 8px var(--color-toolbar-shadow);
-    --shadow-pill-vertical: 2px -2px 8px var(--color-toolbar-shadow);
-
-    @keyframes skeleton {
-        to {
-            background-position: -200% 0;
-        }
-    }
-
-    @keyframes slide-in {
-        from {
-            opacity: 0;
-            transform: scale(0.95);
-        }
-        to {
-            opacity: 1;
-            transform: scale(1);
-        }
-    }
-
-    @keyframes slide-out {
-        from {
-            opacity: 1;
-            transform: scale(1);
-        }
-        to {
-            opacity: 0;
-            transform: scale(0.95);
-        }
-    }
-}
-
-/* ─── Color & shadow tokens — light mode defaults ────────────────────────── */
-/* All tokens defined here with static values (no var() references).         */
-/* Dark mode overrides in .dark below.                                        */
-@theme {
-    /* Base UI colors */
-    --color-background: oklch(1 0 0);
-    --color-foreground: oklch(0.145 0.006 285);
-    --color-card: oklch(1 0 0);
-    --color-card-foreground: oklch(0.145 0.006 285);
-    --color-popover: oklch(1 0 0);
-    --color-popover-foreground: oklch(0.145 0.006 285);
-    --color-primary: oklch(0.21 0.006 285);
-    --color-primary-foreground: oklch(0.985 0 0);
-    --color-secondary: oklch(0.967 0 0);
-    --color-secondary-foreground: oklch(0.21 0.006 285);
-    --color-muted: oklch(0.967 0 0);
-    --color-muted-foreground: oklch(0.556 0 0);
-    --color-accent: oklch(0.967 0 0);
-    --color-accent-foreground: oklch(0.21 0.006 285);
-    --color-destructive: oklch(0.627 0.249 25);
-    --color-destructive-foreground: oklch(0.985 0 0);
-    --color-border: oklch(0.52 0 0 / 0.2);
-    --color-input: oklch(0.52 0 0 / 0.2);
-    --color-ring: oklch(0.21 0.006 285);
-
-    /* Semantic status colors */
-    --color-info: oklch(0.58 0.18 240);
-    --color-info-foreground: oklch(0.45 0.18 240);
-    --color-success: oklch(0.65 0.15 155);
-    --color-success-foreground: oklch(0.5 0.15 155);
-    --color-warning: oklch(0.75 0.15 85);
-    --color-warning-foreground: oklch(0.55 0.15 85);
-
-    /* Toolbar pill colors — bg-pill, border-pill-border */
-    /* Light: #fff bg + #efefef border (exact Nuxt DevTools light values) */
-    --color-pill: oklch(1 0 0);
-    --color-pill-border: oklch(0.937 0 0);
-
-    /* Toolbar accent colors — bg-toolbar-accent, bg-toolbar-accent-dim, etc. */
-    --color-toolbar-accent: oklch(0.21 0.006 285);
-    --color-toolbar-accent-dim: oklch(0.21 0.006 285 / 0.05);
-    --color-toolbar-accent-glow: oklch(0.21 0.006 285 / 0.12);
-}
-
-/* ─── Runtime tokens (not Tailwind utilities) ────────────────────────────── */
-/* :host targets the shadow host from within adopted shadow stylesheets.      */
-/* :root covers regular document context. Both are needed for shadow DOM.     */
+/* ─── Brand palette ──────────────────────────────────────────────────────── */
+/* Reference-only — not used directly by Tailwind utilities.                 */
 :root,
 :host {
-    --radius: 0.75rem;
+    --brand-lime: #caff00;
+    --brand-chartreuse: #baea01;
+    --brand-white: #ffffff;
+    --brand-frost: #f2f2f2;
+    --brand-silver: #d8d8d8;
+    --brand-cloud: #cccccc;
+    --brand-steel: #c2c2c2;
+    --brand-graphite: #6b6b6b;
+    --brand-iron: #3c3c3c;
+    --brand-charcoal: #212121;
+    --brand-obsidian: #191919;
+    --brand-black: #000000;
+}
 
-    /* Toolbar shadow — Nuxt DevTools exact value: 2px 2px 8px with this color */
-    --color-toolbar-shadow: rgba(128, 128, 128, 0.1);
+/* ─── Color tokens — light mode ──────────────────────────────────────────── */
+/* Static values in @theme so Tailwind generates all bg-*, text-*, etc.      */
+/* Dark mode overrides --color-* directly in .dark below.                    */
+@theme {
+    --color-background: #f2f2f2;
+    --color-foreground: #191919;
+    --color-card: #ffffff;
+    --color-card-foreground: #191919;
+    --color-popover: #ffffff;
+    --color-popover-foreground: #191919;
+    --color-primary: #caff00;
+    --color-primary-foreground: #191919;
+    --color-secondary: #f2f2f2;
+    --color-secondary-foreground: #191919;
+    --color-muted: #f2f2f2;
+    --color-muted-foreground: #6b6b6b;
+    --color-accent: #f2f2f2;
+    --color-accent-foreground: #191919;
+    --color-destructive: oklch(0.55 0.22 25);
+    --color-destructive-foreground: oklch(0.98 0.01 25);
+    --color-border: #d8d8d8;
+    --color-input: #d8d8d8;
+    --color-ring: #6b6b6b;
 
-    /* Multi-property transition values — matches Nuxt DevTools exactly */
-    --pill-transition: all 0.6s ease, max-width 0.6s ease, padding 0.5s ease, transform 0.4s ease, opacity 0.2s ease;
-    --panel-transition: opacity 0.4s cubic-bezier(0.23, 1, 0.32, 1), transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+    /* Semantic status colors */
+    --color-info: oklch(0.55 0.2 240);
+    --color-info-foreground: oklch(0.4 0.2 240);
+    --color-success: oklch(0.6 0.17 155);
+    --color-success-foreground: oklch(0.45 0.17 155);
+    --color-warning: oklch(0.7 0.18 65);
+    --color-warning-foreground: oklch(0.5 0.16 65);
+
+    --shadow-complex: 0 10px 10px -5px #17171705, 0 6px 6px -3px #1717170a, 0 3px 3px -1.5px #1717170a, 0 1px 1px -0.5px #1717170a, 0 0 0 1px #17171705;
 }
 
 /* ─── Dark mode overrides ─────────────────────────────────────────────────── */
-/* Deep charcoal depth system — soft, rich dark with clear surface hierarchy. */
-/* Inspired by high-end dev tools: sidebar darker than content, barely-there  */
-/* borders, non-harsh charcoal replacing flat black.                          */
 .dark {
-    /* Base UI colors */
-    --color-background: oklch(0.135 0 0); /* ≈ #1d1d1d — main content surfaces */
-    --color-foreground: oklch(0.965 0 0); /* ≈ #f7f7f7 — crisp near-white text */
-    --color-card: oklch(0.102 0 0); /* ≈ #161616 — sidebar, deepest surface */
-    --color-card-foreground: oklch(0.965 0 0);
-    --color-popover: oklch(0.102 0 0);
-    --color-popover-foreground: oklch(0.965 0 0);
-    --color-primary: oklch(0.965 0 0);
-    --color-primary-foreground: oklch(0.102 0 0);
-    --color-secondary: oklch(0.205 0 0); /* ≈ #2e2e2e — hover/active backgrounds */
-    --color-secondary-foreground: oklch(0.965 0 0);
-    --color-muted: oklch(0.168 0 0); /* ≈ #252525 — elevated surfaces */
-    --color-muted-foreground: oklch(0.5 0 0); /* ≈ #757575 — secondary/dimmed text */
-    --color-accent: oklch(0.168 0 0);
-    --color-accent-foreground: oklch(0.965 0 0);
-    --color-destructive: oklch(0.36 0.12 25);
-    --color-destructive-foreground: oklch(0.965 0 0);
-    /* Barely-visible borders — refined depth separation, not harsh lines */
-    --color-border: oklch(1 0 0 / 0.07);
-    --color-input: oklch(1 0 0 / 0.07);
-    --color-ring: oklch(0.876 0 0);
-
-    /* Toolbar pill — dark base with prominent metallic rim */
-    --color-pill: oklch(0.12 0 0);               /* ≈ #1a1a1a — pill bg, deeper than card */
-    --color-pill-border: oklch(0.58 0 0 / 0.38); /* medium-gray metallic rim, clearly visible */
-
-    /* Toolbar accent colors */
-    --color-toolbar-accent: oklch(0.965 0 0);
-    --color-toolbar-accent-dim: oklch(0.965 0 0 / 0.08);
-    --color-toolbar-accent-glow: oklch(0.965 0 0 / 0.15);
-
-    /* Toolbar shadow — soft depth, not harsh */
-    --color-toolbar-shadow: rgba(0, 0, 0, 0.4);
+    --color-background: #212121;
+    --color-foreground: #f2f2f2;
+    --color-card: #212121;
+    --color-card-foreground: #f2f2f2;
+    --color-popover: #212121;
+    --color-popover-foreground: #f2f2f2;
+    --color-primary: #caff00;
+    --color-primary-foreground: #191919;
+    --color-secondary: #3c3c3c;
+    --color-secondary-foreground: #f2f2f2;
+    --color-muted: #3c3c3c;
+    --color-muted-foreground: #c2c2c2;
+    --color-accent: #3c3c3c;
+    --color-accent-foreground: #f2f2f2;
+    --color-destructive: oklch(0.65 0.2 25);
+    --color-destructive-foreground: oklch(0.98 0.01 25);
+    --color-border: oklch(1 0 0 / 6%);
+    --color-input: oklch(1 0 0 / 12%);
+    --color-ring: #6b6b6b;
+    --color-info: oklch(0.55 0.2 240);
+    --color-info-foreground: oklch(0.7 0.18 240);
+    --color-success: oklch(0.6 0.17 155);
+    --color-success-foreground: oklch(0.75 0.15 155);
+    --color-warning: oklch(0.75 0.16 65);
+    --color-warning-foreground: oklch(0.85 0.15 65);
 }
 
 @layer base {
     * {
         @apply border-border outline-ring/50;
-    }
-
-    body {
-        @apply bg-background text-foreground;
     }
 }
 
@@ -216,11 +140,11 @@
 /* Multi-property transitions can't be expressed as @theme tokens; @utility   */
 /* wraps them as first-class Tailwind classes (transition-pill, transition-panel). */
 @utility transition-pill {
-    transition: var(--pill-transition);
+    transition: all 0.6s ease, max-width 0.6s ease, padding 0.5s ease, transform 0.4s ease, opacity 0.2s ease;
 }
 
 @utility transition-panel {
-    transition: var(--panel-transition);
+    transition: opacity 0.4s cubic-bezier(0.23, 1, 0.32, 1), transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 /* Thin scrollbar matching the border color token */

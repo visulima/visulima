@@ -266,7 +266,7 @@ const ToolbarContainer = ({
                         </button>
 
                         {/* App buttons group — bg-muted zone so active tiles pop against it */}
-                        <div class={cn("bg-accent-foreground rounded-md py-1", isHidden && "hidden")}>
+                        <div class={cn("bg-muted-foreground dark:bg-black rounded-md p-1", isHidden && "hidden")}>
                             <ToolbarBar customAppsToShow={customAppsToShow} />
                         </div>
                     </div>

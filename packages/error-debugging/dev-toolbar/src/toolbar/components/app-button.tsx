@@ -40,7 +40,7 @@ const AppButton = ({ app }: AppButtonProps): ComponentChildren => {
                 "hover:bg-foreground/[0.08] hover:text-foreground",
                 "active:scale-[0.94]",
                 // Active: large brightness jump — unmissable against the muted group bg
-                app.active && "bg-foreground/[0.20] text-foreground",
+                app.active && "bg-foreground/[0.20] text-accent-foreground",
                 "group-data-[vertical]/panel:rotate-[-90deg]",
             )}
             data-app-id={app.id}
@@ -50,11 +50,11 @@ const AppButton = ({ app }: AppButtonProps): ComponentChildren => {
         >
             {/* Icon + notification badge */}
             <div class="relative size-6 select-none flex items-center justify-center">
-                <div class="size-6 block m-auto [&_svg]:w-[20px] [&_svg]:h-[20px]" dangerouslySetInnerHTML={{ __html: app.icon }} />
+                <div class="size-6 flex items-center justify-center [&_svg]:size-4.5" dangerouslySetInnerHTML={{ __html: app.icon }} />
                 {app.notification.state && (
                     <span
                         class={cn(
-                            "absolute -top-1 -right-1 w-1.5 h-1.5 rounded-full border border-background",
+                            "absolute -top-1 -right-1 size-1.5 rounded-full border border-background",
                             app.notification.level === "error" && "bg-destructive",
                             app.notification.level === "warning" && "bg-warning",
                             (!app.notification.level || app.notification.level === "info") && "bg-info",

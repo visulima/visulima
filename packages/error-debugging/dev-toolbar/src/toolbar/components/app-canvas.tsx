@@ -323,7 +323,7 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                         {position !== "top" && (
                             <div
                                 aria-hidden="true"
-                                class="absolute left-1.5 right-1.5 top-0 h-2.5 -mt-1 cursor-ns-resize z-10 hover:bg-foreground/10 transition-colors rounded-t"
+                                class="absolute left-1.5 right-1.5 top-0 h-2.5 -mt-1 cursor-ns-resize z-10 hover:bg-foreground/10 transition-colors rounded-t-md"
                                 onMouseDown={startResize({ top: true })}
                             />
                         )}
@@ -332,7 +332,7 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                         {position === "top" && (
                             <div
                                 aria-hidden="true"
-                                class="absolute left-1.5 right-1.5 bottom-0 h-2.5 -mb-1 cursor-ns-resize z-10 hover:bg-foreground/10 transition-colors rounded-b"
+                                class="absolute left-1.5 right-1.5 bottom-0 h-2.5 -mb-1 cursor-ns-resize z-10 hover:bg-foreground/10 transition-colors rounded-b-md"
                                 onMouseDown={startResize({ bottom: true })}
                             />
                         )}
@@ -341,7 +341,7 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                         {position === "left" && (
                             <div
                                 aria-hidden="true"
-                                class="absolute top-1.5 bottom-1.5 right-0 w-2.5 -mr-1 cursor-ew-resize z-10 hover:bg-foreground/10 transition-colors rounded-r"
+                                class="absolute top-1.5 bottom-1.5 right-0 w-2.5 -mr-1 cursor-ew-resize z-10 hover:bg-foreground/10 transition-colors rounded-r-md"
                                 onMouseDown={startResize({ right: true })}
                             />
                         )}
@@ -350,7 +350,7 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                         {position === "right" && (
                             <div
                                 aria-hidden="true"
-                                class="absolute top-1.5 bottom-1.5 left-0 w-2.5 -ml-1 cursor-ew-resize z-10 hover:bg-foreground/10 transition-colors rounded-l"
+                                class="absolute top-1.5 bottom-1.5 left-0 w-2.5 -ml-1 cursor-ew-resize z-10 hover:bg-foreground/10 transition-colors rounded-l-md"
                                 onMouseDown={startResize({ left: true })}
                             />
                         )}
@@ -364,7 +364,7 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                         "flex flex-col shrink-0 overflow-hidden",
                         "transition-[width] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]",
                         "bg-accent",
-                        sidebarCollapsed ? "w-[50px]" : "w-[250px]",
+                        sidebarCollapsed ? "w-12.5" : "w-62.5",
                     )}
                 >
                     <div class="flex flex-col flex-1 p-2 gap-1">
@@ -394,7 +394,7 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                                     {app.icon ? (
                                         <span
                                             class={cn(
-                                                "w-[18px] h-[18px] shrink-0 flex items-center justify-center [&_svg]:w-[18px] [&_svg]:h-[18px]",
+                                                "size-4.5 shrink-0 flex items-center justify-center [&_svg]:size-4.5",
                                                 activeAppId === app.id ? "opacity-100" : "opacity-50 group-hover/nav-item:opacity-80",
                                             )}
                                             // eslint-disable-next-line react/no-danger
@@ -415,7 +415,7 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                                         class={cn(
                                             "pointer-events-none absolute top-1.5 rounded-full",
                                             sidebarCollapsed ? "right-1.5" : "right-2.5",
-                                            "w-1.5 h-1.5",
+                                            "size-1.5",
                                             app.notification.level === "error"
                                                 ? "bg-destructive"
                                                 : app.notification.level === "warning"
@@ -428,13 +428,13 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                                 {sidebarCollapsed && (
                                     <div
                                         class={cn(
-                                            "absolute left-[calc(100%+8px)] top-1/2 -translate-y-1/2",
+                                            "absolute left-[calc(100%+0.5rem)] top-1/2 -translate-y-1/2",
                                             "pointer-events-none z-50 whitespace-nowrap",
                                             "opacity-0 -translate-x-1 group-hover/nav-item:opacity-100 group-hover/nav-item:translate-x-0",
                                             "transition-all duration-200 ease-[cubic-bezier(0.23,1,0.32,1)]",
                                         )}
                                     >
-                                        <div class="text-[0.7rem] font-medium bg-card/95 backdrop-blur-[10px] text-foreground/80 px-2.5 py-1 rounded-md border border-border shadow-md">
+                                        <div class="text-[0.7rem] font-medium bg-card/95 backdrop-blur-[0.625rem] text-foreground/80 px-2.5 py-1 rounded-md border border-border shadow-md">
                                             {app.name}
                                         </div>
                                     </div>
@@ -452,7 +452,7 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                             <button
                                 aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
                                 class={cn(
-                                    "flex items-center justify-center w-7 h-7 rounded-md shrink-0",
+                                    "flex items-center justify-center size-7 rounded-md shrink-0",
                                     "border-0 cursor-pointer bg-transparent",
                                     "text-muted-foreground/50 hover:text-foreground hover:bg-foreground/[0.07]",
                                     "transition-colors duration-150",
@@ -462,7 +462,7 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                             >
                                 <svg
                                     aria-hidden="true"
-                                    class={cn("w-3.5 h-3.5 shrink-0 transition-transform duration-300", !sidebarCollapsed && "rotate-180")}
+                                    class={cn("size-3.5 shrink-0 transition-transform duration-300", !sidebarCollapsed && "rotate-180")}
                                     fill="none"
                                     viewBox="0 0 14 14"
                                 >
@@ -471,7 +471,7 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                             </button>
                             {activeApp?.icon && (
                                 <span
-                                    class="w-5 h-5 flex items-center justify-center [&_svg]:w-5 [&_svg]:h-5 shrink-0 text-foreground opacity-80"
+                                    class="size-5 flex items-center justify-center [&_svg]:size-5 shrink-0 text-foreground opacity-80"
                                     dangerouslySetInnerHTML={{ __html: activeApp.icon }}
                                 />
                             )}
@@ -483,7 +483,7 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                             <button
                                 aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
                                 class={cn(
-                                    "flex items-center justify-center w-8 h-8 rounded-lg",
+                                    "flex items-center justify-center size-8 rounded-md",
                                     "cursor-pointer border-0 bg-transparent",
                                     "text-foreground/30 hover:text-foreground hover:bg-foreground/[0.07]",
                                     "transition-all duration-200 active:scale-90",
@@ -499,7 +499,7 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                             <button
                                 aria-label="Close DevTools panel"
                                 class={cn(
-                                    "flex items-center justify-center w-8 h-8 rounded-lg",
+                                    "flex items-center justify-center size-8 rounded-md",
                                     "cursor-pointer border-0 bg-transparent",
                                     "text-foreground/30 hover:text-foreground hover:bg-foreground/[0.07]",
                                     "transition-all duration-200 active:scale-90",
@@ -521,7 +521,7 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                             <AppContent app={activeApp} key={activeApp.id} />
                         ) : (
                             <div class="flex flex-col items-center justify-center min-h-48 h-full gap-4">
-                                <div class="w-12 h-12 rounded-xl bg-foreground/[0.04] flex items-center justify-center">
+                                <div class="size-12 rounded-md bg-foreground/[0.04] flex items-center justify-center">
                                     <svg class="text-foreground/20" fill="none" height="24" viewBox="0 0 24 24" width="24">
                                         <path
                                             d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
@@ -535,15 +535,6 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                                 <span class="text-xs font-semibold text-foreground/30 uppercase tracking-widest">Select an app</span>
                             </div>
                         )}
-                    </div>
-
-                    {/* Footer */}
-                    <div class="flex items-center justify-end gap-2 px-4 py-2.5 shrink-0 bg-background">
-                        <span class="text-[0.68rem] text-foreground/30 tracking-wide">Press</span>
-                        <kbd class="text-[0.65rem] font-medium bg-foreground/[0.04] border border-border rounded px-1.5 py-0.5 text-foreground/40 leading-none">
-                            Esc
-                        </kbd>
-                        <span class="text-[0.68rem] text-foreground/30 tracking-wide">to close</span>
                     </div>
                 </div>
             </div>

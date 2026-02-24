@@ -392,28 +392,24 @@ export const usePosition = (panelEl: RefObject<HTMLElement>): UsePositionReturn 
         const left = (state.left * windowWidth) / 100;
         const top = (state.top * windowHeight) / 100;
 
-        // When hidden, offset by half the button size to show 50% outside viewport
-        // Button is ~30px, so offset by 15px
-        const hideOffset = isHidden ? 15 : 0;
-
         switch (state.position) {
             case "top": {
                 return {
                     left: clamp(left, halfWidth + panelMargins.left, windowWidth - halfWidth - panelMargins.right),
-                    top: panelMargins.top + halfHeight - hideOffset,
+                    top: panelMargins.top + halfHeight - (isHidden ? 30 : 0),
                 };
             }
 
             case "right": {
                 return {
-                    left: windowWidth - panelMargins.right - halfWidth + hideOffset - (isHidden ? 0 : 10),
+                    left: windowWidth - panelMargins.right - halfWidth + (isHidden ? 15 : 0) - (isHidden ? 0 : 10),
                     top: clamp(top, halfHeight + panelMargins.top, windowHeight - halfHeight - panelMargins.bottom),
                 };
             }
 
             case "left": {
                 return {
-                    left: panelMargins.left + halfWidth - (isHidden ? hideOffset : 0),
+                    left: panelMargins.left + halfWidth - (isHidden ? 30 : 0),
                     top: clamp(top, halfHeight + panelMargins.top, windowHeight - halfHeight - panelMargins.bottom),
                 };
             }
@@ -422,7 +418,7 @@ export const usePosition = (panelEl: RefObject<HTMLElement>): UsePositionReturn 
             default: {
                 return {
                     left: clamp(left, halfWidth + panelMargins.left, windowWidth - halfWidth - panelMargins.right),
-                    top: windowHeight - panelMargins.bottom - halfHeight + hideOffset,
+                    top: windowHeight - panelMargins.bottom - halfHeight + (isHidden ? 30 : 0),
                 };
             }
         }
