@@ -207,53 +207,51 @@ const ToolbarContainer = ({
                         style={{ background: "linear-gradient(45deg, #00dc82, #00dc82)", filter: "blur(60px)" }}
                     />
 
-                    {/* Draggable toolbar pill — exact Nuxt DevTools dimensions and styling */}
+                    {/* Draggable toolbar pill — raised tile-button design */}
                     <div
                         ref={panelRef}
                         class={cn(
-                            // Named group so descendant buttons can detect vertical orientation
                             "group/panel",
                             "absolute left-0 top-0",
                             "flex flex-row justify-start items-center",
-                            // Nuxt DevTools exact height: 30px, gap: 2px
-                            "h-[30px] gap-0.5",
+                            // Taller pill with gap between individual button tiles
+                            "h-[50px] gap-[3px]",
                             "box-border",
-                            // Nuxt DevTools: overflow:hidden clips button hover bgs at pill edge
+                            // overflow-hidden lets the pill clip tile corners at the edges
                             "overflow-hidden",
-                            // Nuxt DevTools: border-radius 100px (fully rounded pill)
-                            "rounded-[100px]",
+                            // Rounded-rectangle shape (not a full pill) — matches reference image
+                            "rounded-[18px]",
                             "text-foreground select-none",
                             isDragging ? "cursor-grabbing" : "cursor-grab",
-                            // Nuxt DevTools: opaque bg + blur(10px) + exact border per mode
-                            "bg-background backdrop-blur-[10px]",
+                            // Dark pill base — button tiles sit above this
+                            "bg-pill",
+                            // Prominent metallic border rim
                             "border border-pill-border",
-                            // Nuxt DevTools: directional 2px 2px 8px shadow
-                            isVertical ? "shadow-pill-vertical!" : "shadow-toolbar",
-                            // Nuxt DevTools: padding: 2px 2px 2px 2.5px
-                            "py-[2px] pr-[2px] pl-[2.5px]",
-                            // Hidden: max-width:32px + no h-padding (Nuxt exact)
-                            isHidden ? "max-w-[32px]! px-0!" : "",
+                            // Soft depth shadow
+                            isVertical ? "shadow-pill-vertical!" : "shadow-[0_6px_28px_rgba(0,0,0,0.55)]",
+                            // Even padding — 4px inset for tile placement
+                            "p-[4px]",
+                            // Hidden: collapse to just the logo tile (40px tile + 8px padding = 48px)
+                            isHidden ? "max-w-[48px]!" : "",
                             "transition-pill",
                         )}
                         data-vertical={isVertical || undefined}
                         onPointerDown={onPointerDown}
                         style={panelStyle}
                     >
-                        {/* Logo toggle button — 30px circle, no bg, opacity 0.8 default (exact Nuxt DevTools icon-button) */}
+                        {/* Logo toggle button — raised tile, rounded-square shape */}
                         <button
                             aria-label="Toggle devtools panel"
                             class={cn(
-                                // 30px = Nuxt DevTools icon-button exact size
-                                "rounded-full w-[30px] h-[30px] flex justify-center items-center flex-shrink-0",
+                                // 40px tile — matches the height of app tiles, rounded-square shape
+                                "rounded-[12px] w-[40px] h-[40px] flex justify-center items-center flex-shrink-0",
                                 "cursor-pointer p-0 m-0 border-0",
-                                "bg-transparent",
-                                // Nuxt: opacity 0.2s ease-in-out, no bg transition
-                                "transition-opacity duration-200 ease-in-out",
-                                "hover:opacity-100 active:scale-[0.95]",
-                                // Rotate counter when pill is rotated 90deg
+                                // Tile background — slightly lifted above pill base
+                                "bg-muted",
+                                "transition-all duration-150",
+                                "hover:bg-secondary active:scale-[0.95]",
                                 "group-data-[vertical]/panel:rotate-[-90deg]",
-                                // Open: full opacity; closed: 80% (mirrors Nuxt's saturate(0) default)
-                                panelVisible ? "opacity-100" : "opacity-80",
+                                panelVisible ? "opacity-100" : "opacity-70",
                             )}
                             onClick={(e) => {
                                 e.stopPropagation();
@@ -262,15 +260,16 @@ const ToolbarContainer = ({
                             title="Toggle devtools panel"
                             type="button"
                         >
-                            {/* dark:invert makes logo white on dark bg; light mode shows original dark logo */}
-                            <img alt="Visulima" class="w-[18px] h-[18px] dark:invert" src={visulimaLogo} />
+                            <img alt="Visulima" class="w-[20px] h-[20px] dark:invert" src={visulimaLogo} />
                         </button>
 
-                        {/* Divider between logo and app buttons — matches Nuxt's border-left separator */}
-                        {!isHidden && <div aria-hidden="true" class="w-px h-2.5 bg-foreground/20 shrink-0" />}
-
-                        {/* App buttons — hidden when pill is minimized */}
-                        <div class={cn("flex items-center", "transition-opacity duration-[350ms] ease-[cubic-bezier(0.4,0,0.2,1)]", isHidden && "hidden")}>
+                        {/* App buttons group — bg-muted zone so active tiles pop against it */}
+                        <div
+                            class={cn(
+                                "bg-muted rounded-[14px] p-[2px]",
+                                isHidden && "hidden",
+                            )}
+                        >
                             <ToolbarBar customAppsToShow={customAppsToShow} />
                         </div>
                     </div>

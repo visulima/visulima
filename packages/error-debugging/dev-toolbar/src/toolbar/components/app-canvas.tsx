@@ -264,9 +264,9 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                     "fixed z-2000000009",
                     getPanelPositionClasses(position),
                     getConstraintClasses(position),
-                    // Panel chrome — Nuxt DevTools: rounded-[10px] + rgba(125,125,125,0.2) border
-                    "bg-background rounded-[10px] overflow-hidden",
-                    "border border-[rgba(125,125,125,0.2)]",
+                    // Panel chrome — deep charcoal with refined border
+                    "bg-background rounded-[12px] overflow-hidden",
+                    "border border-border",
                     "shadow-2xl",
                     // Animation
                     "transition-panel",
@@ -282,13 +282,13 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                     class={cn(
                         "flex flex-col shrink-0 overflow-hidden",
                         "transition-[width] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]",
-                        "bg-background",
-                        "border-r border-[rgba(125,125,125,0.2)]",
+                        "bg-card",
+                        "border-r border-border",
                         sidebarCollapsed ? "w-[50px]" : "w-[250px]",
                     )}
                 >
                     {/* App list */}
-                    <div class="flex flex-col flex-1 p-1.5 gap-0.5">
+                    <div class="flex flex-col flex-1 p-2 gap-1">
                         {apps.map((app) => (
                             <div class="relative group/nav-item" key={app.id}>
                                 <button
@@ -301,8 +301,8 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                                         "transition-all duration-150",
                                         sidebarCollapsed ? "justify-center px-0" : "gap-2.5 px-3",
                                         activeAppId === app.id
-                                            ? "bg-foreground/[0.07] text-foreground"
-                                            : "bg-transparent text-muted-foreground hover:bg-foreground/[0.05] hover:text-foreground",
+                                            ? "bg-foreground/[0.10] text-foreground"
+                                            : "bg-transparent text-muted-foreground hover:bg-foreground/[0.06] hover:text-foreground",
                                     )}
                                     onClick={() => {
                                         if (app.id === activeAppId) {
@@ -330,7 +330,7 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                                     )}
 
                                     {/* Label — visible only when expanded */}
-                                    {!sidebarCollapsed && <span class="text-sm font-medium truncate leading-none">{app.name}</span>}
+                                    {!sidebarCollapsed && <span class="text-[0.8125rem] font-medium truncate leading-none tracking-[-0.01em]">{app.name}</span>}
                                 </button>
 
                                 {/* Notification badge */}
@@ -360,7 +360,7 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                                             "transition-all duration-200 ease-[cubic-bezier(0.23,1,0.32,1)]",
                                         )}
                                     >
-                                        <div class="text-[0.7rem] font-medium bg-background/90 backdrop-blur-[10px] text-foreground/80 px-2.5 py-1 rounded-md border border-[rgba(125,125,125,0.2)] shadow-md">
+                                        <div class="text-[0.7rem] font-medium bg-card/95 backdrop-blur-[10px] text-foreground/80 px-2.5 py-1 rounded-md border border-border shadow-md">
                                             {app.name}
                                         </div>
                                     </div>
@@ -372,8 +372,8 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
 
                 {/* Content area — uniform bg, no inner wrapper (matches Nuxt's flat layout) */}
                 <div class="flex-1 flex flex-col min-w-0 overflow-hidden bg-background">
-                    {/* Header — app name + close button, min-h-[49px] matches Nuxt toolbar height */}
-                    <div class="flex items-center justify-between gap-2 px-4 min-h-[49px] border-b border-[rgba(125,125,125,0.2)] shrink-0">
+                    {/* Header — app name + close button */}
+                    <div class="flex items-center justify-between gap-2 px-4 min-h-[49px] border-b border-border shrink-0">
                         <div class="flex items-center gap-3 min-w-0">
                             <button
                                 aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
@@ -401,7 +401,7 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                                     dangerouslySetInnerHTML={{ __html: activeApp.icon }}
                                 />
                             )}
-                            <span class="text-sm font-semibold text-foreground truncate">{activeApp?.name ?? "DevTools"}</span>
+                            <span class="text-[0.8125rem] font-semibold text-foreground truncate tracking-[-0.01em]">{activeApp?.name ?? "DevTools"}</span>
                         </div>
 
                         <button
@@ -446,12 +446,12 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                     </div>
 
                     {/* Footer — keyboard hint */}
-                    <div class="flex items-center justify-end gap-2 px-4 py-2.5 border-t border-[rgba(125,125,125,0.2)] shrink-0">
-                        <span class="text-[0.7rem] text-foreground/30 uppercase tracking-wider">Press</span>
-                        <kbd class="text-[0.65rem] font-medium bg-foreground/[0.04] border border-[rgba(125,125,125,0.2)] rounded-md px-2 py-0.5 text-foreground/50">
+                    <div class="flex items-center justify-end gap-2 px-4 py-2.5 border-t border-border shrink-0">
+                        <span class="text-[0.68rem] text-foreground/30 tracking-wide">Press</span>
+                        <kbd class="text-[0.65rem] font-medium bg-foreground/[0.04] border border-border rounded px-1.5 py-0.5 text-foreground/40 leading-none">
                             Esc
                         </kbd>
-                        <span class="text-[0.7rem] text-foreground/30 uppercase tracking-wider">to close</span>
+                        <span class="text-[0.68rem] text-foreground/30 tracking-wide">to close</span>
                     </div>
                 </div>
             </div>

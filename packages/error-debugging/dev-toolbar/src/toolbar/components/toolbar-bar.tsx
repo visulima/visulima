@@ -15,14 +15,15 @@ const MoreButton = (): ComponentChildren => {
     return (
         <button
             class={cn(
-                // 30px = Nuxt DevTools icon-button exact size
-                "relative flex justify-center items-center w-[30px] h-[30px]",
-                "border-0 rounded-full",
+                // 40px tile inside the bg-muted group container
+                "relative flex justify-center items-center w-[40px] h-[40px]",
+                "border-0 rounded-[10px]",
                 "whitespace-nowrap no-underline p-0 m-0",
                 "cursor-pointer",
-                "text-foreground/50",
-                "transition-opacity duration-200 ease-in-out",
-                "opacity-80 hover:opacity-100 hover:bg-foreground/[0.05] hover:text-foreground",
+                // Transparent default — flush on the bg-muted group
+                "bg-transparent text-muted-foreground",
+                "transition-all duration-150",
+                "hover:bg-foreground/[0.08] hover:text-foreground",
                 "active:scale-[0.94]",
                 "group-data-[vertical]/panel:rotate-[-90deg]",
             )}
@@ -35,9 +36,8 @@ const MoreButton = (): ComponentChildren => {
             title="More apps"
             type="button"
         >
-            {/* 18px = 1.2em at Nuxt's 15px base font */}
-            <div class="relative w-[18px] h-[18px] flex items-center justify-center select-none">
-                <svg fill="currentColor" height="18" viewBox="0 0 16 16" width="18">
+            <div class="relative w-[20px] h-[20px] flex items-center justify-center select-none">
+                <svg fill="currentColor" height="20" viewBox="0 0 16 16" width="20">
                     <circle cx="3" cy="8" r="1.5" />
                     <circle cx="8" cy="8" r="1.5" />
                     <circle cx="13" cy="8" r="1.5" />
@@ -69,7 +69,7 @@ const ToolbarBar = ({ customAppsToShow = 3 }: ToolbarBarProps): ComponentChildre
 
     return (
         <div class="flex items-center pointer-events-auto" id="dev-bar">
-            <div class="flex flex-row items-center justify-start gap-0.5" id="bar-container">
+            <div class="flex flex-row items-center justify-start gap-[3px]" id="bar-container">
                 {visibleApps.map((app) => (
                     <AppButton key={app.id} app={app} />
                 ))}

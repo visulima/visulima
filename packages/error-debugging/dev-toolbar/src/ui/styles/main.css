@@ -4,8 +4,53 @@
 /* Scan source files for Tailwind classes */
 @source "../../**";
 
+/* Plugins */
+@plugin "@tailwindcss/typography";
+@plugin "@tailwindcss/forms";
+
 /* Custom dark mode variant — zero-specificity, targets .dark itself and all descendants */
 @custom-variant dark (&:where(.dark, .dark *));
+
+/* workaround for tailwindcss shadowdom support @see https://github.com/tailwindlabs/tailwindcss/issues/15005 */
+:host {
+    --tw-divide-y-reverse: 0;
+    --tw-border-style: solid;
+    --tw-font-weight: initial;
+    --tw-tracking: initial;
+    --tw-translate-x: 0;
+    --tw-translate-y: 0;
+    --tw-translate-z: 0;
+    --tw-rotate-x: rotateX(0);
+    --tw-rotate-y: rotateY(0);
+    --tw-rotate-z: rotateZ(0);
+    --tw-skew-x: skewX(0);
+    --tw-skew-y: skewY(0);
+    --tw-space-x-reverse: 0;
+    --tw-gradient-position: initial;
+    --tw-gradient-from: #0000;
+    --tw-gradient-via: #0000;
+    --tw-gradient-to: #0000;
+    --tw-gradient-stops: initial;
+    --tw-gradient-via-stops: initial;
+    --tw-gradient-from-position: 0%;
+    --tw-gradient-via-position: 50%;
+    --tw-gradient-to-position: 100%;
+    --tw-shadow: 0 0 #0000;
+    --tw-shadow-color: initial;
+    --tw-inset-shadow: 0 0 #0000;
+    --tw-inset-shadow-color: initial;
+    --tw-ring-color: initial;
+    --tw-ring-shadow: 0 0 #0000;
+    --tw-inset-ring-color: initial;
+    --tw-inset-ring-shadow: 0 0 #0000;
+    --tw-ring-inset: initial;
+    --tw-ring-offset-width: 0px;
+    --tw-ring-offset-color: #fff;
+    --tw-ring-offset-shadow: 0 0 #0000;
+    --tw-blur: initial;
+    --tw-brightness: initial;
+    --tw-contrast: initial: ;
+}
 
 /* ─── Non-color Tailwind tokens ─────────────────────────────────────────── */
 /* @theme inline keeps var() references intact so runtime --radius changes   */
@@ -113,52 +158,48 @@
     --color-toolbar-shadow: rgba(128, 128, 128, 0.1);
 
     /* Multi-property transition values — matches Nuxt DevTools exactly */
-    --pill-transition:
-        all 0.6s ease,
-        max-width 0.6s ease,
-        padding 0.5s ease,
-        transform 0.4s ease,
-        opacity 0.2s ease;
+    --pill-transition: all 0.6s ease, max-width 0.6s ease, padding 0.5s ease, transform 0.4s ease, opacity 0.2s ease;
     --panel-transition: opacity 0.4s cubic-bezier(0.23, 1, 0.32, 1), transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 /* ─── Dark mode overrides ─────────────────────────────────────────────────── */
-/* Neutral dark palette matching Nuxt DevTools (#111 base, no color tint).   */
+/* Deep charcoal depth system — soft, rich dark with clear surface hierarchy. */
+/* Inspired by high-end dev tools: sidebar darker than content, barely-there  */
+/* borders, non-harsh charcoal replacing flat black.                          */
 .dark {
     /* Base UI colors */
-    --color-background: oklch(0.072 0 0);        /* ≈ #111 — exact Nuxt DevTools dark bg */
-    --color-foreground: oklch(0.961 0 0);        /* ≈ #F5F5F5 — exact Nuxt DevTools dark fg */
-    --color-card: oklch(0.072 0 0);
-    --color-card-foreground: oklch(0.985 0 0);
-    --color-popover: oklch(0.072 0 0);
-    --color-popover-foreground: oklch(0.985 0 0);
-    --color-primary: oklch(0.985 0 0);
-    --color-primary-foreground: oklch(0.072 0 0);
-    --color-secondary: oklch(0.175 0 0);         /* ≈ #1f1f1f — neutral hover bg */
-    --color-secondary-foreground: oklch(0.985 0 0);
-    --color-muted: oklch(0.175 0 0);             /* ≈ #1f1f1f — same neutral hover bg */
-    --color-muted-foreground: oklch(0.55 0 0);   /* neutral mid-gray */
-    --color-accent: oklch(0.175 0 0);
-    --color-accent-foreground: oklch(0.985 0 0);
+    --color-background: oklch(0.135 0 0); /* ≈ #1d1d1d — main content surfaces */
+    --color-foreground: oklch(0.965 0 0); /* ≈ #f7f7f7 — crisp near-white text */
+    --color-card: oklch(0.102 0 0); /* ≈ #161616 — sidebar, deepest surface */
+    --color-card-foreground: oklch(0.965 0 0);
+    --color-popover: oklch(0.102 0 0);
+    --color-popover-foreground: oklch(0.965 0 0);
+    --color-primary: oklch(0.965 0 0);
+    --color-primary-foreground: oklch(0.102 0 0);
+    --color-secondary: oklch(0.205 0 0); /* ≈ #2e2e2e — hover/active backgrounds */
+    --color-secondary-foreground: oklch(0.965 0 0);
+    --color-muted: oklch(0.168 0 0); /* ≈ #252525 — elevated surfaces */
+    --color-muted-foreground: oklch(0.5 0 0); /* ≈ #757575 — secondary/dimmed text */
+    --color-accent: oklch(0.168 0 0);
+    --color-accent-foreground: oklch(0.965 0 0);
     --color-destructive: oklch(0.36 0.12 25);
-    --color-destructive-foreground: oklch(0.985 0 0);
-    /* Uniform rgba(125,125,125,0.2) — matches Nuxt DevTools panel border */
-    --color-border: oklch(0.52 0 0 / 0.2);
-    --color-input: oklch(0.52 0 0 / 0.2);
+    --color-destructive-foreground: oklch(0.965 0 0);
+    /* Barely-visible borders — refined depth separation, not harsh lines */
+    --color-border: oklch(1 0 0 / 0.07);
+    --color-input: oklch(1 0 0 / 0.07);
     --color-ring: oklch(0.876 0 0);
 
-    /* Toolbar pill colors */
-    /* Dark: #111 bg + rgba(51,51,51,0.4) border (exact Nuxt DevTools dark values) */
-    --color-pill: oklch(0.072 0 0);
-    --color-pill-border: oklch(0.216 0 0 / 0.4);
+    /* Toolbar pill — dark base with prominent metallic rim */
+    --color-pill: oklch(0.12 0 0);               /* ≈ #1a1a1a — pill bg, deeper than card */
+    --color-pill-border: oklch(0.58 0 0 / 0.38); /* medium-gray metallic rim, clearly visible */
 
     /* Toolbar accent colors */
-    --color-toolbar-accent: oklch(0.985 0 0);
-    --color-toolbar-accent-dim: oklch(0.985 0 0 / 0.1);
-    --color-toolbar-accent-glow: oklch(0.985 0 0 / 0.2);
+    --color-toolbar-accent: oklch(0.965 0 0);
+    --color-toolbar-accent-dim: oklch(0.965 0 0 / 0.08);
+    --color-toolbar-accent-glow: oklch(0.965 0 0 / 0.15);
 
-    /* Toolbar shadow — Nuxt DevTools dark exact value */
-    --color-toolbar-shadow: rgba(0, 0, 0, 0.3);
+    /* Toolbar shadow — soft depth, not harsh */
+    --color-toolbar-shadow: rgba(0, 0, 0, 0.4);
 }
 
 @layer base {
@@ -190,9 +231,11 @@
 
 /* ─── Global overrides ────────────────────────────────────────────────────── */
 #dev-toolbar-root {
-    /* Nuxt DevTools: Arial, 15px, box-sizing: border-box */
-    font-family: Arial, Helvetica, sans-serif !important;
+    /* Modern system font stack — SF Pro on Mac, Segoe UI Variable on Windows */
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", ui-sans-serif, system-ui, "Segoe UI Variable", "Segoe UI", sans-serif !important;
     font-size: 15px !important;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
     box-sizing: border-box;
     z-index: 2147483647 !important;
     pointer-events: auto !important;

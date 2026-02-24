@@ -30,20 +30,18 @@ const AppButton = ({ app }: AppButtonProps): ComponentChildren => {
         <button
             aria-label={app.name}
             class={cn(
-                // 30px = Nuxt DevTools icon-button exact size (fills the 30px pill height)
-                "relative flex justify-center items-center w-[30px] h-[30px]",
-                "border-0 rounded-full",
+                // 40px tile inside the bg-muted group container
+                "relative flex justify-center items-center w-[40px] h-[40px]",
+                "border-0 rounded-[10px]",
                 "whitespace-nowrap no-underline p-0 m-0",
                 "cursor-pointer",
-                "bg-transparent text-foreground/50",
-                // Nuxt DevTools: opacity 0.2s ease-in-out transition
-                "transition-opacity duration-200 ease-in-out",
-                // Nuxt DevTools: opacity 0.8 default, 1.0 on hover
-                "opacity-80 hover:opacity-100 hover:bg-foreground/[0.05] hover:text-foreground",
+                // Transparent default — tiles sit flush on the bg-muted group
+                "bg-transparent text-muted-foreground",
+                "transition-all duration-150",
+                "hover:bg-foreground/[0.08] hover:text-foreground",
                 "active:scale-[0.94]",
-                // Active: subtle fill (Nuxt DevTools style)
-                app.active && "bg-foreground/[0.07] text-foreground opacity-100",
-                // Counter-rotate when pill is in vertical mode
+                // Active: large brightness jump — unmissable against the muted group bg
+                app.active && "bg-foreground/[0.20] text-foreground",
                 "group-data-[vertical]/panel:rotate-[-90deg]",
             )}
             data-app-id={app.id}
@@ -51,10 +49,10 @@ const AppButton = ({ app }: AppButtonProps): ComponentChildren => {
             title={app.name}
             type="button"
         >
-            {/* Icon + notification badge — 18px = 1.2em at Nuxt's 15px base font */}
-            <div class="relative w-[18px] h-[18px] select-none flex items-center justify-center">
+            {/* Icon + notification badge */}
+            <div class="relative w-[20px] h-[20px] select-none flex items-center justify-center">
                 <div
-                    class="w-[18px] h-[18px] block m-auto [&_svg]:w-[18px] [&_svg]:h-[18px]"
+                    class="w-[20px] h-[20px] block m-auto [&_svg]:w-[20px] [&_svg]:h-[20px]"
                     dangerouslySetInnerHTML={{ __html: app.icon }}
                 />
                 {app.notification.state && (
