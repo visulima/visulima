@@ -6,43 +6,18 @@ import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import type { DevToolbarAppState } from "../../types/index";
 import cn from "../../utils/cn";
 import { createServerHelpers } from "../helpers";
+import { useFrameState } from "../hooks/use-frame-state";
 import { sharedToolbarStylesheet } from "../stylesheet";
 
 interface DevPanelProps {
-    /**
-     * Currently active app ID
-     */
     activeAppId: string | null;
-
-    /**
-     * All registered apps
-     */
     apps: DevToolbarAppState[];
-
-    /**
-     * Close the panel
-     */
     onClose: () => void;
-
-    /**
-     * Toggle a specific app
-     */
     onToggleApp: (appId: string) => Promise<void>;
-
-    /**
-     * Whether the panel is visible (toolbar open)
-     */
     panelVisible: boolean;
-
-    /**
-     * Toolbar position - used to place the panel on the opposite side
-     */
     position: "bottom" | "left" | "right" | "top";
 }
 
-/**
- * App content renderer - mounts app's component into shadow DOM
- */
 const AppContent = ({ app }: { app: DevToolbarAppState }): ComponentChildren => {
     const contentRef = useRef<HTMLDivElement>(null);
     const initializedRef = useRef(false);
@@ -67,7 +42,6 @@ const AppContent = ({ app }: { app: DevToolbarAppState }): ComponentChildren => 
         }
 
         if (app.init) {
-            // For vanilla apps we create a shadow root on a host element
             const host = document.createElement("div");
 
             host.style.cssText = "width:100%;height:100%;";
@@ -106,66 +80,46 @@ const AppContent = ({ app }: { app: DevToolbarAppState }): ComponentChildren => 
     return <div class="w-full h-full" ref={contentRef} />;
 };
 
+// ─── Panel size constraints ───────────────────────────────────────────────────
+const PANEL_MIN_PERCENT = 20;
+const PANEL_MAX_PERCENT = 95;
+
+const clamp = (value: number, min: number, max: number): number => Math.min(Math.max(value, min), max);
+
 /**
- * Panel inset-position classes based on toolbar side.
- * The panel fills the remaining screen space on the opposite side of the toolbar.
+ * Panel inset-position classes — only anchors, no dimension constraints.
+ * Dimensions come from inline style computed from state.
  */
 const getPanelPositionClasses = (position: DevPanelProps["position"]): string => {
     switch (position) {
-        case "bottom": {
+        case "bottom":
             return "bottom-6 left-4 right-4";
-        }
-
-        case "left": {
-            return "left-12 top-4 bottom-4 right-4";
-        }
-
-        case "right": {
-            return "right-12 top-4 bottom-4 left-4";
-        }
-
-        case "top": {
-            return "top-6 left-4 right-4 bottom-4";
-        }
-
-        default: {
-            return "bottom-6 left-4 right-4 top-4";
-        }
+        case "left":
+            return "left-12 top-4 bottom-4";
+        case "right":
+            return "right-12 top-4 bottom-4";
+        case "top":
+            return "top-6 left-4 right-4";
+        default:
+            return "bottom-6 left-4 right-4";
     }
 };
 
-/**
- * Returns the Tailwind transform-origin class for direction-aware entrance animation.
- * e.g. toolbar at bottom → panel scales from below → origin-[bottom_center]
- */
 const getOriginClass = (position: DevPanelProps["position"]): string => {
     switch (position) {
-        case "bottom": {
+        case "bottom":
             return "origin-[bottom_center]";
-        }
-
-        case "left": {
+        case "left":
             return "origin-[left_center]";
-        }
-
-        case "right": {
+        case "right":
             return "origin-[right_center]";
-        }
-
-        case "top": {
+        case "top":
             return "origin-[top_center]";
-        }
-
-        default: {
+        default:
             return "origin-[bottom_center]";
-        }
     }
 };
 
-/**
- * Returns visibility + entrance-direction transform classes.
- * When hidden: slides 8px toward the toolbar + scales down slightly.
- */
 const getVisibilityClasses = (position: DevPanelProps["position"], isVisible: boolean): string => {
     if (isVisible) {
         return "opacity-100 scale-100";
@@ -181,45 +135,123 @@ const getVisibilityClasses = (position: DevPanelProps["position"], isVisible: bo
     return cn("opacity-0 pointer-events-none scale-[0.99]", directionTranslate[position] ?? "translate-y-2");
 };
 
-/**
- * Returns max-dimension constraint classes based on toolbar position.
- */
-const getConstraintClasses = (position: DevPanelProps["position"]): string => {
-    if (position === "left" || position === "right") {
-        return "w-[calc(100vw-80px)] h-[calc(100vh-32px)]";
-    }
+const FullscreenIcon = ({ isFullscreen }: { isFullscreen: boolean }): ComponentChildren =>
+    isFullscreen ? (
+        <svg aria-hidden="true" fill="none" height="13" viewBox="0 0 14 14" width="13">
+            <path
+                d="M5 9H1M5 9V13M5 9L1 13M9 9H13M9 9V13M9 9L13 13M5 5H1M5 5V1M5 5L1 1M9 5H13M9 5V1M9 5L13 1"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="1.5"
+            />
+        </svg>
+    ) : (
+        <svg aria-hidden="true" fill="none" height="13" viewBox="0 0 14 14" width="13">
+            <path d="M1 5V1h4M9 1h4v4M13 9v4H9M5 13H1V9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" />
+        </svg>
+    );
 
-    return "h-[calc(100vh-72px)]";
-};
-
-/**
- * Unified DevTools panel — sidebar navigation + content area.
- * Inspired by Vue DevTools / browser DevTools layout.
- */
 const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, position }: DevPanelProps): ComponentChildren => {
-    // Two-phase mount: isRendered keeps DOM alive during exit animation;
-    // isVisible drives the CSS transition class.
     const [isRendered, setIsRendered] = useState(false);
     const [isVisible, setIsVisible] = useState(false);
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+    const [, rerender] = useState(0);
 
+    const { state, updateState } = useFrameState();
+
+    const panelDivRef = useRef<HTMLDivElement>(null);
+    const isResizingRef = useRef<{ bottom?: boolean; left?: boolean; right?: boolean; top?: boolean } | false>(false);
+    const dimensionsRef = useRef({ height: state.height, width: state.width });
+
+    const isFullscreen = state.viewMode === "fullscreen";
+
+    // ─── Compute inline panel size ────────────────────────────────────────────
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const panelSizeStyle = useMemo(() => {
+        if (isFullscreen) {
+            return {};
+        }
+
+        const ww = globalThis.window?.innerWidth ?? 1920;
+        const wh = globalThis.window?.innerHeight ?? 1080;
+
+        switch (position) {
+            case "bottom":
+            case "top":
+                return { height: `${(dimensionsRef.current.height / 100) * wh}px` };
+            case "left":
+            case "right":
+                return { width: `${(dimensionsRef.current.width / 100) * ww}px` };
+            default:
+                return { height: `${(dimensionsRef.current.height / 100) * wh}px` };
+        }
+    // rerender counter triggers recompute on each drag step
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isFullscreen, position, rerender]);
+
+    // ─── Resize event handlers ────────────────────────────────────────────────
+    useEffect(() => {
+        const handleMouseMove = (e: MouseEvent): void => {
+            if (!isResizingRef.current || !panelDivRef.current) {
+                return;
+            }
+
+            const box = panelDivRef.current.getBoundingClientRect();
+            const ww = window.innerWidth;
+            const wh = window.innerHeight;
+            const current = { ...dimensionsRef.current };
+
+            if (isResizingRef.current.top) {
+                const heightPx = Math.abs(box.bottom - e.clientY);
+                current.height = clamp((heightPx / wh) * 100, PANEL_MIN_PERCENT, PANEL_MAX_PERCENT);
+            } else if (isResizingRef.current.bottom) {
+                const heightPx = Math.abs(e.clientY - box.top);
+                current.height = clamp((heightPx / wh) * 100, PANEL_MIN_PERCENT, PANEL_MAX_PERCENT);
+            } else if (isResizingRef.current.right) {
+                const widthPx = Math.abs(e.clientX - box.left);
+                current.width = clamp((widthPx / ww) * 100, PANEL_MIN_PERCENT, PANEL_MAX_PERCENT);
+            } else if (isResizingRef.current.left) {
+                const widthPx = Math.abs(box.right - e.clientX);
+                current.width = clamp((widthPx / ww) * 100, PANEL_MIN_PERCENT, PANEL_MAX_PERCENT);
+            }
+
+            dimensionsRef.current = current;
+            rerender((n) => n + 1);
+        };
+
+        const handleMouseUp = (): void => {
+            if (isResizingRef.current) {
+                updateState({ height: dimensionsRef.current.height, width: dimensionsRef.current.width });
+                isResizingRef.current = false;
+            }
+        };
+
+        window.addEventListener("mousemove", handleMouseMove);
+        window.addEventListener("mouseup", handleMouseUp);
+
+        return () => {
+            window.removeEventListener("mousemove", handleMouseMove);
+            window.removeEventListener("mouseup", handleMouseUp);
+        };
+    }, [updateState]);
+
+    // ─── Two-phase mount/unmount ──────────────────────────────────────────────
     useEffect(() => {
         if (panelVisible) {
             setIsRendered(true);
-            // Paint the hidden state first (one frame), then transition to visible
             const timerId = setTimeout(() => setIsVisible(true), 16);
 
             return () => clearTimeout(timerId);
         }
 
-        // Start exit transition, then unmount after it completes
         setIsVisible(false);
         const timer = setTimeout(() => setIsRendered(false), 220);
 
         return () => clearTimeout(timer);
     }, [panelVisible]);
 
-    // Escape key closes the panel
+    // ─── Escape key ───────────────────────────────────────────────────────────
     useEffect(() => {
         if (!panelVisible) {
             return undefined;
@@ -242,41 +274,88 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
         return null;
     }
 
+    const startResize =
+        (direction: { bottom?: boolean; left?: boolean; right?: boolean; top?: boolean }) =>
+        (e: MouseEvent): void => {
+            e.preventDefault();
+            isResizingRef.current = direction;
+        };
+
     return (
         <>
-            {/* Backdrop — clicking outside closes the panel */}
+            {/* Backdrop — respects closeOnOutsideClick setting */}
             <div
                 aria-hidden="true"
                 class={cn(
                     "fixed inset-0 z-2000000008",
                     "transition-opacity duration-200",
-                    isVisible ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none",
+                    isVisible && !isFullscreen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none",
                 )}
-                onClick={onClose}
+                onClick={state.closeOnOutsideClick ? onClose : undefined}
                 role="presentation"
             />
 
-            {/* Unified DevTools panel — Nuxt DevTools exact dimensions and styling */}
+            {/* Unified DevTools panel */}
             <div
+                ref={panelDivRef}
                 aria-label="DevTools panel"
                 aria-modal="true"
                 class={cn(
                     "fixed z-2000000009",
-                    getPanelPositionClasses(position),
-                    getConstraintClasses(position),
-                    // Panel chrome — deep charcoal with refined border
-                    "bg-background rounded-[12px] overflow-hidden",
-                    "border border-border",
+                    isFullscreen ? "inset-0" : getPanelPositionClasses(position),
+                    "bg-background overflow-hidden",
+                    isFullscreen ? "rounded-none border-0" : "rounded-[12px] border border-border",
                     "shadow-2xl",
-                    // Animation
                     "transition-panel",
-                    getOriginClass(position),
+                    !isFullscreen && getOriginClass(position),
                     getVisibilityClasses(position, isVisible),
                     "flex flex-row",
                 )}
                 role="dialog"
+                style={panelSizeStyle}
             >
-                {/* Left sidebar — collapsible navigation, 50px / 250px (Nuxt DevTools exact) */}
+                {/* ── Resize handles (hidden in fullscreen) ───────────────── */}
+                {!isFullscreen && (
+                    <>
+                        {/* Top handle — resize taller (bottom/left/right docked) */}
+                        {position !== "top" && (
+                            <div
+                                aria-hidden="true"
+                                class="absolute left-1.5 right-1.5 top-0 h-2.5 -mt-1 cursor-ns-resize z-10 hover:bg-foreground/10 transition-colors rounded-t"
+                                onMouseDown={startResize({ top: true })}
+                            />
+                        )}
+
+                        {/* Bottom handle — resize taller (top docked) */}
+                        {position === "top" && (
+                            <div
+                                aria-hidden="true"
+                                class="absolute left-1.5 right-1.5 bottom-0 h-2.5 -mb-1 cursor-ns-resize z-10 hover:bg-foreground/10 transition-colors rounded-b"
+                                onMouseDown={startResize({ bottom: true })}
+                            />
+                        )}
+
+                        {/* Right handle — resize wider (left docked) */}
+                        {position === "left" && (
+                            <div
+                                aria-hidden="true"
+                                class="absolute top-1.5 bottom-1.5 right-0 w-2.5 -mr-1 cursor-ew-resize z-10 hover:bg-foreground/10 transition-colors rounded-r"
+                                onMouseDown={startResize({ right: true })}
+                            />
+                        )}
+
+                        {/* Left handle — resize wider (right docked) */}
+                        {position === "right" && (
+                            <div
+                                aria-hidden="true"
+                                class="absolute top-1.5 bottom-1.5 left-0 w-2.5 -ml-1 cursor-ew-resize z-10 hover:bg-foreground/10 transition-colors rounded-l"
+                                onMouseDown={startResize({ left: true })}
+                            />
+                        )}
+                    </>
+                )}
+
+                {/* Left sidebar — collapsible navigation */}
                 <nav
                     aria-label="DevTools apps"
                     class={cn(
@@ -287,7 +366,6 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                         sidebarCollapsed ? "w-[50px]" : "w-[250px]",
                     )}
                 >
-                    {/* App list */}
                     <div class="flex flex-col flex-1 p-2 gap-1">
                         {apps.map((app) => (
                             <div class="relative group/nav-item" key={app.id}>
@@ -295,7 +373,6 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                                     aria-label={app.name}
                                     aria-pressed={activeAppId === app.id}
                                     class={cn(
-                                        // h-10 = 40px (Nuxt DevTools nav item height), rounded-md
                                         "relative flex items-center w-full h-10 rounded-md",
                                         "border-0 cursor-pointer",
                                         "transition-all duration-150",
@@ -313,7 +390,6 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                                     }}
                                     type="button"
                                 >
-                                    {/* Icon — 18px, matches Nuxt sidebar icon scale */}
                                     {app.icon ? (
                                         <span
                                             class={cn(
@@ -329,11 +405,9 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                                         </span>
                                     )}
 
-                                    {/* Label — visible only when expanded */}
                                     {!sidebarCollapsed && <span class="text-[0.8125rem] font-medium truncate leading-none tracking-[-0.01em]">{app.name}</span>}
                                 </button>
 
-                                {/* Notification badge */}
                                 {app.notification.state && (
                                     <span
                                         aria-hidden="true"
@@ -350,7 +424,6 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                                     />
                                 )}
 
-                                {/* Tooltip — shown only in collapsed mode */}
                                 {sidebarCollapsed && (
                                     <div
                                         class={cn(
@@ -370,9 +443,9 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                     </div>
                 </nav>
 
-                {/* Content area — uniform bg, no inner wrapper (matches Nuxt's flat layout) */}
+                {/* Content area */}
                 <div class="flex-1 flex flex-col min-w-0 overflow-hidden bg-background">
-                    {/* Header — app name + close button */}
+                    {/* Header */}
                     <div class="flex items-center justify-between gap-2 px-4 min-h-[49px] border-b border-border shrink-0">
                         <div class="flex items-center gap-3 min-w-0">
                             <button
@@ -404,26 +477,44 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                             <span class="text-[0.8125rem] font-semibold text-foreground truncate tracking-[-0.01em]">{activeApp?.name ?? "DevTools"}</span>
                         </div>
 
-                        <button
-                            aria-label="Close DevTools panel"
-                            class={cn(
-                                "flex items-center justify-center w-8 h-8 rounded-lg shrink-0",
-                                "cursor-pointer border-0 bg-transparent",
-                                "text-foreground/30 hover:text-foreground hover:bg-foreground/[0.07]",
-                                "transition-all duration-200",
-                                "active:scale-90",
-                            )}
-                            onClick={onClose}
-                            title="Close (Esc)"
-                            type="button"
-                        >
-                            <svg aria-hidden="true" fill="none" height="12" viewBox="0 0 14 14" width="12">
-                                <path d="M1 1L13 13M13 1L1 13" stroke="currentColor" stroke-linecap="round" stroke-width="2" />
-                            </svg>
-                        </button>
+                        <div class="flex items-center gap-1 shrink-0">
+                            {/* Fullscreen toggle */}
+                            <button
+                                aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+                                class={cn(
+                                    "flex items-center justify-center w-8 h-8 rounded-lg",
+                                    "cursor-pointer border-0 bg-transparent",
+                                    "text-foreground/30 hover:text-foreground hover:bg-foreground/[0.07]",
+                                    "transition-all duration-200 active:scale-90",
+                                )}
+                                onClick={() => updateState({ viewMode: isFullscreen ? "default" : "fullscreen" })}
+                                title={isFullscreen ? "Exit fullscreen" : "Fullscreen"}
+                                type="button"
+                            >
+                                <FullscreenIcon isFullscreen={isFullscreen} />
+                            </button>
+
+                            {/* Close */}
+                            <button
+                                aria-label="Close DevTools panel"
+                                class={cn(
+                                    "flex items-center justify-center w-8 h-8 rounded-lg",
+                                    "cursor-pointer border-0 bg-transparent",
+                                    "text-foreground/30 hover:text-foreground hover:bg-foreground/[0.07]",
+                                    "transition-all duration-200 active:scale-90",
+                                )}
+                                onClick={onClose}
+                                title="Close (Esc)"
+                                type="button"
+                            >
+                                <svg aria-hidden="true" fill="none" height="12" viewBox="0 0 14 14" width="12">
+                                    <path d="M1 1L13 13M13 1L1 13" stroke="currentColor" stroke-linecap="round" stroke-width="2" />
+                                </svg>
+                            </button>
+                        </div>
                     </div>
 
-                    {/* Scrollable app content — class kept for ::-webkit-scrollbar targeting */}
+                    {/* Scrollable content */}
                     <div class="devtools-content-scroll scrollbar-thin-border flex-1 overflow-auto min-h-0">
                         {activeApp ? (
                             <AppContent app={activeApp} key={activeApp.id} />
@@ -445,7 +536,7 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                         )}
                     </div>
 
-                    {/* Footer — keyboard hint */}
+                    {/* Footer */}
                     <div class="flex items-center justify-end gap-2 px-4 py-2.5 border-t border-border shrink-0">
                         <span class="text-[0.68rem] text-foreground/30 tracking-wide">Press</span>
                         <kbd class="text-[0.65rem] font-medium bg-foreground/[0.04] border border-border rounded px-1.5 py-0.5 text-foreground/40 leading-none">

@@ -60,6 +60,11 @@ export interface DevToolsFrameState {
     top: number;
 
     /**
+     * Panel view mode
+     */
+    viewMode: "default" | "fullscreen";
+
+    /**
      * Panel width as viewport width percentage
      */
     width: number;
@@ -71,7 +76,7 @@ const STORAGE_KEY = "__VISULIMA_DEVTOOLS_FRAME_STATE__";
  * Default frame state - matches Vue DevTools exactly
  */
 const DEFAULT_STATE: DevToolsFrameState = {
-    closeOnOutsideClick: false,
+    closeOnOutsideClick: true,
     height: 60,
     isFirstVisit: true,
     left: 50,
@@ -82,6 +87,7 @@ const DEFAULT_STATE: DevToolsFrameState = {
     reduceMotion: false,
     route: "/",
     top: 0,
+    viewMode: "default",
     width: 80,
 };
 
