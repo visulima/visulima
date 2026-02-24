@@ -11,10 +11,30 @@ import devToolbarOptions from "virtual:visulima-dev-toolbar-options";
 (globalThis as any).__VISULIMA_DEV_TOOLBAR_OPTIONS__ = devToolbarOptions;
 
 /**
+ * Check whether the URL contains the required activation flag.
+ * Returns true when the toolbar is allowed to initialize.
+ */
+const isUrlFlagPresent = (): boolean => {
+    if (!devToolbarOptions.requireUrlFlag) {
+        return true;
+    }
+
+    const flagName = devToolbarOptions.urlFlagName ?? "devtools";
+    const params = new URLSearchParams(globalThis.window?.location.search);
+
+    return params.get(flagName) === "true";
+};
+
+/**
  * Initialize the dev toolbar.
  */
 const initToolbar = async () => {
     if (globalThis.window === undefined) {
+        return;
+    }
+
+    // Bail out when URL flag is required but not present in the current URL
+    if (!isUrlFlagPresent()) {
         return;
     }
 

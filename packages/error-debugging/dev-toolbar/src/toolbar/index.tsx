@@ -119,6 +119,15 @@ export class DevToolbar extends HTMLElement {
         // Load settings and apply
         const settings = loadSettings();
 
+        // Activate the first app that has defaultOpen: true (if none is already active)
+        const defaultApp = this.appManager.getAllApps().find((a) => a.defaultOpen);
+
+        if (defaultApp && !this.appManager.getActiveApp()) {
+            this.appManager.openApp(defaultApp.id).catch((error) => {
+                console.error(`[dev-toolbar] Failed to auto-open defaultOpen app ${defaultApp.id}:`, error);
+            });
+        }
+
         // Render initial UI
         this.render();
 

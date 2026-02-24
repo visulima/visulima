@@ -36,7 +36,29 @@ export class AppManager {
      * @param appId App ID
      */
     unregisterApp(appId: string): void {
+        const app = this.apps.get(appId);
+
+        if (app?.destroy && this.initializedApps.has(appId)) {
+            const canvas = this.appCanvases.get(appId);
+
+            if (canvas) {
+                try {
+                    const result = app.destroy(canvas.shadowRoot);
+
+                    if (result && typeof result.then === "function") {
+                        result.catch((error: unknown) => {
+                            console.error(`[dev-toolbar] destroy() failed for app ${appId}:`, error);
+                        });
+                    }
+                } catch (error) {
+                    console.error(`[dev-toolbar] destroy() threw for app ${appId}:`, error);
+                }
+            }
+        }
+
         this.apps.delete(appId);
+        this.initializedApps.delete(appId);
+        this.appCanvases.delete(appId);
 
         if (this.activeAppId === appId) {
             this.activeAppId = null;

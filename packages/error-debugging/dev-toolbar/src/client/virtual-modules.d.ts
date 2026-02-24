@@ -11,6 +11,10 @@ declare module "virtual:visulima-dev-toolbar-options" {
         base: string;
         defaultVisible: boolean;
         placement: "bottom-left" | "bottom-center" | "bottom-right";
+        /** Only show toolbar when URL contains ?{urlFlagName}=true */
+        requireUrlFlag: boolean;
+        /** URL query parameter name for requireUrlFlag. Default: 'devtools' */
+        urlFlagName: string;
     }
     const options: DevToolbarVirtualOptions;
 

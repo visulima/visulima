@@ -73,9 +73,23 @@ export interface DevToolbarOptions {
     placement?: "bottom-left" | "bottom-center" | "bottom-right";
 
     /**
+     * Only activate the toolbar when the URL contains a specific query parameter.
+     * Useful for staging/production environments where you want opt-in debugging.
+     * @example requireUrlFlag: true, urlFlagName: 'debug' → toolbar only shows when URL has ?debug=true
+     * @default false
+     */
+    requireUrlFlag?: boolean;
+
+    /**
      * Custom server RPC functions
      */
     serverFunctions?: Partial<ServerFunctions>;
+
+    /**
+     * The URL query parameter name used when requireUrlFlag is true.
+     * @default 'devtools'
+     */
+    urlFlagName?: string;
 }
 
 /**
@@ -117,6 +131,8 @@ export const devToolbar = (options: DevToolbarOptions = {}): Plugin => {
                     base: config.base,
                     defaultVisible: options.defaultVisible ?? true,
                     placement: options.placement ?? "bottom-center",
+                    requireUrlFlag: options.requireUrlFlag ?? false,
+                    urlFlagName: options.urlFlagName ?? "devtools",
                 })};`;
             }
 

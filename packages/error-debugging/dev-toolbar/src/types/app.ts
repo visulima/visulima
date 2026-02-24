@@ -74,6 +74,21 @@ export interface DevToolbarApp {
     beforeTogglingOff?: (canvas: ShadowRoot) => boolean | Promise<boolean>;
 
     /**
+     * Called when the app is unregistered / removed from the toolbar.
+     * Use this for final cleanup (event listeners, timers, subscriptions).
+     * @param canvas Shadow root of the app
+     */
+    destroy?: (canvas: ShadowRoot) => Promise<void> | void;
+
+    /**
+     * When true, this app is automatically activated when the toolbar opens for
+     * the first time (or when no other app has been activated yet).
+     * Only the first registered app with defaultOpen: true is used.
+     * @default false
+     */
+    defaultOpen?: boolean;
+
+    /**
      * Preact component for rendering (alternative to init)
      * If provided, this will be used instead of init
      */
