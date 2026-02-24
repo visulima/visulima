@@ -34,13 +34,13 @@ const AppButton = ({ app }: AppButtonProps): ComponentChildren => {
                 "border-0 rounded-md",
                 "whitespace-nowrap no-underline p-0 m-0",
                 "cursor-pointer",
-                // Transparent default — tiles sit flush on the bg-muted group
+                // Transparent default — tiles sit flush on the bg-secondary group
                 "bg-transparent text-muted-foreground",
                 "transition-all duration-150",
-                "hover:bg-foreground/[0.08] hover:text-foreground",
+                "hover:bg-foreground/[0.10] hover:text-foreground",
                 "active:scale-[0.94]",
-                // Active: large brightness jump — unmissable against the muted group bg
-                app.active && "bg-foreground/[0.20] text-accent-foreground",
+                // Active: clear highlight — unmissable against the secondary group bg
+                app.active && "bg-foreground/[0.18] text-foreground",
                 "group-data-[vertical]/panel:rotate-[-90deg]",
             )}
             data-app-id={app.id}

@@ -229,12 +229,12 @@ const ToolbarContainer = ({
                             "rounded-md",
                             "text-foreground select-none",
                             isDragging ? "cursor-grabbing" : "cursor-grab",
-                            // Dark pill base — button tiles sit above this
+                            // Pill base — adapts to light/dark via tokens
                             "bg-background",
-                            // Prominent metallic border rim
-                            "border border-accent",
-                            // Soft depth shadow
-                            isVertical ? "shadow-pill-vertical!" : "shadow-[0_6px_28px_rgba(0,0,0,0.55)]",
+                            // Visible border that works in both modes
+                            "border border-border",
+                            // Theme-aware shadow: subtle in light, dramatic in dark
+                            isVertical ? "shadow-pill-vertical!" : "shadow-pill",
                             isHidden ? "max-w-12!" : "",
                             "transition-pill",
                         )}
@@ -265,8 +265,8 @@ const ToolbarContainer = ({
                             <img alt="Visulima" class="size-6" src={visulimaLogo} />
                         </button>
 
-                        {/* App buttons group — bg-muted zone so active tiles pop against it */}
-                        <div class={cn("bg-muted-foreground dark:bg-black rounded-md p-1", isHidden && "hidden")}>
+                        {/* App buttons group — bg-secondary zone so active tiles pop against it */}
+                        <div class={cn("bg-secondary rounded-md p-1", isHidden && "hidden")}>
                             <ToolbarBar customAppsToShow={customAppsToShow} />
                         </div>
                     </div>

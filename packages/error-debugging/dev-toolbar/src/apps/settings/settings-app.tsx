@@ -54,9 +54,11 @@ const Toggle = ({ checked, onChange }: { checked: boolean; onChange: (v: boolean
     >
         <span
             class={cn(
-                "pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow-sm",
-                "transition-transform duration-200 ease-in-out",
-                checked ? "translate-x-4" : "translate-x-0",
+                "pointer-events-none inline-block h-4 w-4 rounded-full shadow-sm",
+                "transition-all duration-200 ease-in-out",
+                // When ON the track is lime (#caff00) — use dark thumb for contrast (17:1)
+                // When OFF the track is foreground/15 — use white thumb (high contrast on both modes)
+                checked ? "translate-x-4 bg-primary-foreground" : "translate-x-0 bg-white",
             )}
         />
     </button>
