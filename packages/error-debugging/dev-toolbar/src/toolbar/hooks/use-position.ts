@@ -406,14 +406,14 @@ export const usePosition = (panelEl: RefObject<HTMLElement>): UsePositionReturn 
 
             case "right": {
                 return {
-                    left: windowWidth - panelMargins.right - halfWidth + hideOffset,
+                    left: windowWidth - panelMargins.right - halfWidth + hideOffset - (isHidden ? 0 : 10),
                     top: clamp(top, halfHeight + panelMargins.top, windowHeight - halfHeight - panelMargins.bottom),
                 };
             }
 
             case "left": {
                 return {
-                    left: panelMargins.left + halfWidth - hideOffset,
+                    left: panelMargins.left + halfWidth - (isHidden ? hideOffset : 0),
                     top: clamp(top, halfHeight + panelMargins.top, windowHeight - halfHeight - panelMargins.bottom),
                 };
             }
@@ -426,7 +426,7 @@ export const usePosition = (panelEl: RefObject<HTMLElement>): UsePositionReturn 
                 };
             }
         }
-    }, [state.left, state.position, state.top, windowHeight, windowWidth, panelMargins, panelEl, isHidden, isVertical]);
+    }, [state.left, state.open, state.position, state.top, windowHeight, windowWidth, panelMargins, panelEl, isHidden, isVertical]);
 
     // Computed: anchorStyle with smooth transitions
     const anchorStyle = useMemo(

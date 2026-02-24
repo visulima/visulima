@@ -30,9 +30,8 @@ const AppButton = ({ app }: AppButtonProps): ComponentChildren => {
         <button
             aria-label={app.name}
             class={cn(
-                // 40px tile inside the bg-muted group container
-                "relative flex justify-center items-center w-[40px] h-[40px]",
-                "border-0 rounded-[10px]",
+                "relative flex justify-center items-center",
+                "border-0 rounded-md",
                 "whitespace-nowrap no-underline p-0 m-0",
                 "cursor-pointer",
                 // Transparent default — tiles sit flush on the bg-muted group
@@ -50,11 +49,8 @@ const AppButton = ({ app }: AppButtonProps): ComponentChildren => {
             type="button"
         >
             {/* Icon + notification badge */}
-            <div class="relative w-[20px] h-[20px] select-none flex items-center justify-center">
-                <div
-                    class="w-[20px] h-[20px] block m-auto [&_svg]:w-[20px] [&_svg]:h-[20px]"
-                    dangerouslySetInnerHTML={{ __html: app.icon }}
-                />
+            <div class="relative size-6 select-none flex items-center justify-center">
+                <div class="size-6 block m-auto [&_svg]:w-[20px] [&_svg]:h-[20px]" dangerouslySetInnerHTML={{ __html: app.icon }} />
                 {app.notification.state && (
                     <span
                         class={cn(

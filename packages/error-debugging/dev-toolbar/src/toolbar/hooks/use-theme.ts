@@ -57,71 +57,74 @@ export interface UseThemeReturn {
     toggleTheme: () => void;
 }
 
-/**
- * Hook for managing theme (light/dark mode)
- */
-export const useTheme = (): UseThemeReturn => {
-    const [theme, setThemeState] = useState<Theme>(loadTheme);
-    const [resolvedTheme, setResolvedTheme] = useState<"light" | "dark">(() => {
-        const initial = loadTheme();
-        return initial === "system" ? getSystemTheme() : initial;
-    });
+// ---------------------------------------------------------------------------
+// Module-level singleton — same pattern as useFrameState so all callers
+// (ToolbarContainer, SettingsApp, etc.) share one theme value.
+// ---------------------------------------------------------------------------
 
-    // Update resolved theme when theme changes or system preference changes
-    useEffect(() => {
-        const updateResolvedTheme = (): void => {
-            const resolved = theme === "system" ? getSystemTheme() : theme;
-            setResolvedTheme(resolved);
-        };
+let sharedTheme: Theme = loadTheme();
+let sharedResolvedTheme: "light" | "dark" = sharedTheme === "system" ? getSystemTheme() : sharedTheme;
+const themeListeners = new Set<() => void>();
 
-        updateResolvedTheme();
+const notifyThemeListeners = (): void => {
+    for (const listener of themeListeners) {
+        listener();
+    }
+};
 
-        // Listen for system theme changes
-        if (globalThis.window !== undefined) {
-            const mediaQuery = globalThis.window.matchMedia("(prefers-color-scheme: dark)");
-            const handleChange = (): void => {
-                if (theme === "system") {
-                    updateResolvedTheme();
-                }
-            };
+const setSharedTheme = (newTheme: Theme): void => {
+    sharedTheme = newTheme;
+    sharedResolvedTheme = newTheme === "system" ? getSystemTheme() : newTheme;
+    saveTheme(newTheme);
+    notifyThemeListeners();
+};
 
-            // Modern browsers
-            if (mediaQuery.addEventListener) {
-                mediaQuery.addEventListener("change", handleChange);
-                return () => {
-                    mediaQuery.removeEventListener("change", handleChange);
-                };
-            }
-            // Safari < 14
-            if (mediaQuery.addListener) {
-                mediaQuery.addListener(handleChange);
-                return () => {
-                    mediaQuery.removeListener(handleChange);
-                };
-            }
+// Keep resolved theme in sync with system preference
+if (globalThis.window !== undefined) {
+    const mediaQuery = globalThis.window.matchMedia("(prefers-color-scheme: dark)");
+    const handleSystemChange = (): void => {
+        if (sharedTheme === "system") {
+            sharedResolvedTheme = getSystemTheme();
+            notifyThemeListeners();
         }
-
-        return undefined;
-    }, [theme]);
-
-    const setTheme = (newTheme: Theme): void => {
-        setThemeState(newTheme);
-        saveTheme(newTheme);
     };
 
+    if (mediaQuery.addEventListener) {
+        mediaQuery.addEventListener("change", handleSystemChange);
+    } else if (mediaQuery.addListener) {
+        // Safari < 14
+        mediaQuery.addListener(handleSystemChange);
+    }
+}
+
+/**
+ * Hook for managing theme (light/dark mode).
+ * All callers share the same module-level state so theme changes propagate
+ * to every component (ToolbarContainer, SettingsApp, etc.) immediately.
+ */
+export const useTheme = (): UseThemeReturn => {
+    const [, forceUpdate] = useState(0);
+
+    useEffect(() => {
+        const listener = (): void => {
+            forceUpdate((n) => n + 1);
+        };
+
+        themeListeners.add(listener);
+
+        return () => {
+            themeListeners.delete(listener);
+        };
+    }, []);
+
     const toggleTheme = (): void => {
-        // Toggle between light and dark (system stays as system)
-        if (theme === "system") {
-            setTheme(resolvedTheme === "dark" ? "light" : "dark");
-        } else {
-            setTheme(resolvedTheme === "dark" ? "light" : "dark");
-        }
+        setSharedTheme(sharedResolvedTheme === "dark" ? "light" : "dark");
     };
 
     return {
-        resolvedTheme,
-        setTheme,
-        theme,
+        resolvedTheme: sharedResolvedTheme,
+        setTheme: setSharedTheme,
+        theme: sharedTheme,
         toggleTheme,
     };
 };

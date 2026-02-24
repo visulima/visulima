@@ -126,6 +126,14 @@ const ToolbarContainer = ({
     const { panelVisible, togglePanelVisible, closePanel } = usePanelVisible();
     const { anchorStyle, bringUp, isDragging, isHidden, isVertical, onPointerDown, panelStyle } = usePosition(panelRef);
 
+    // Refs so toggleApp always reads the freshest values, avoiding stale-closure issues
+    const panelVisibleRef = useRef(panelVisible);
+    panelVisibleRef.current = panelVisible;
+    const activeAppIdRef = useRef(activeAppId);
+    activeAppIdRef.current = activeAppId;
+    const onToggleAppRef = useRef(onToggleApp);
+    onToggleAppRef.current = onToggleApp;
+
     const placement = useMemo(() => {
         const windowWidth = globalThis.window?.innerWidth ?? 1920;
         const windowHeight = globalThis.window?.innerHeight ?? 1080;
@@ -135,21 +143,29 @@ const ToolbarContainer = ({
 
     const toggleApp = useCallback(
         async (appId: string) => {
-            // Capture state before the toggle resolves
-            const isCurrentlyActive = appId === activeAppId && panelVisible;
+            const currentPanelVisible = panelVisibleRef.current;
+            const currentActiveAppId = activeAppIdRef.current;
 
-            await onToggleApp(appId);
-
-            if (isCurrentlyActive) {
-                // Clicking the already-active app while panel is open → close panel
-                closePanel();
-            } else if (!panelVisible) {
-                // Panel is closed → open it
-                togglePanelVisible(undefined, true);
+            if (appId === currentActiveAppId && currentPanelVisible) {
+                // Clicking the active app while panel is open → deactivate app + close panel
+                await onToggleAppRef.current(appId);
+                updateState({ open: false, viewMode: "default" });
+                return;
             }
-            // Panel open + different app clicked → just switch apps, keep panel open
+
+            // Switch to a different app if needed (while panel is open or closed)
+            if (appId !== currentActiveAppId) {
+                await onToggleAppRef.current(appId);
+            }
+
+            // Open panel if not already open
+            if (!currentPanelVisible) {
+                updateState({ open: true });
+            }
         },
-        [onToggleApp, activeAppId, panelVisible, closePanel, togglePanelVisible],
+        // updateState is module-level (stable) — callback created once, stale closures impossible
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [updateState],
     );
 
     const contextValue: ToolbarContextState = {
@@ -200,13 +216,6 @@ const ToolbarContainer = ({
                     onMouseMove={bringUp}
                     style={anchorStyle}
                 >
-                    {/* Green ambient glow — fades in on hover, matches Nuxt DevTools glow effect */}
-                    <div
-                        aria-hidden="true"
-                        class="absolute left-0 top-0 -translate-x-1/2 -translate-y-1/2 w-40 h-40 rounded-full pointer-events-none opacity-0 group-hover:opacity-60 transition-opacity duration-1000"
-                        style={{ background: "linear-gradient(45deg, #00dc82, #00dc82)", filter: "blur(60px)" }}
-                    />
-
                     {/* Draggable toolbar pill — raised tile-button design */}
                     <div
                         ref={panelRef}
@@ -214,25 +223,19 @@ const ToolbarContainer = ({
                             "group/panel",
                             "absolute left-0 top-0",
                             "flex flex-row justify-start items-center",
-                            // Taller pill with gap between individual button tiles
-                            "h-[50px] gap-[3px]",
+                            "gap-1 p-1",
                             "box-border",
-                            // overflow-hidden lets the pill clip tile corners at the edges
                             "overflow-hidden",
-                            // Rounded-rectangle shape (not a full pill) — matches reference image
-                            "rounded-[18px]",
+                            "rounded-md",
                             "text-foreground select-none",
                             isDragging ? "cursor-grabbing" : "cursor-grab",
                             // Dark pill base — button tiles sit above this
-                            "bg-pill",
+                            "bg-background",
                             // Prominent metallic border rim
-                            "border border-pill-border",
+                            "border border-accent",
                             // Soft depth shadow
                             isVertical ? "shadow-pill-vertical!" : "shadow-[0_6px_28px_rgba(0,0,0,0.55)]",
-                            // Even padding — 4px inset for tile placement
-                            "p-[4px]",
-                            // Hidden: collapse to just the logo tile (40px tile + 8px padding = 48px)
-                            isHidden ? "max-w-[48px]!" : "",
+                            isHidden ? "max-w-12!" : "",
                             "transition-pill",
                         )}
                         data-vertical={isVertical || undefined}
@@ -243,8 +246,7 @@ const ToolbarContainer = ({
                         <button
                             aria-label="Toggle devtools panel"
                             class={cn(
-                                // 40px tile — matches the height of app tiles, rounded-square shape
-                                "rounded-[12px] w-[40px] h-[40px] flex justify-center items-center flex-shrink-0",
+                                "rounded-md size-8 flex justify-center items-center shrink-0",
                                 "cursor-pointer p-0 m-0 border-0",
                                 // Tile background — slightly lifted above pill base
                                 "bg-muted",
@@ -260,16 +262,11 @@ const ToolbarContainer = ({
                             title="Toggle devtools panel"
                             type="button"
                         >
-                            <img alt="Visulima" class="w-[20px] h-[20px] dark:invert" src={visulimaLogo} />
+                            <img alt="Visulima" class="size-6" src={visulimaLogo} />
                         </button>
 
                         {/* App buttons group — bg-muted zone so active tiles pop against it */}
-                        <div
-                            class={cn(
-                                "bg-muted rounded-[14px] p-[2px]",
-                                isHidden && "hidden",
-                            )}
-                        >
+                        <div class={cn("bg-accent-foreground rounded-md py-1", isHidden && "hidden")}>
                             <ToolbarBar customAppsToShow={customAppsToShow} />
                         </div>
                     </div>

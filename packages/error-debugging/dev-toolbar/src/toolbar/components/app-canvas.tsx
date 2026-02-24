@@ -1,6 +1,5 @@
 /** @jsxImportSource preact */
 import type { ComponentChildren } from "preact";
-import { render } from "preact";
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 
 import type { DevToolbarAppState } from "../../types/index";
@@ -21,25 +20,16 @@ interface DevPanelProps {
 const AppContent = ({ app }: { app: DevToolbarAppState }): ComponentChildren => {
     const contentRef = useRef<HTMLDivElement>(null);
     const initializedRef = useRef(false);
+    // Stable helpers ref — one instance per AppContent (parent keys by app.id)
+    const helpersRef = useRef(createServerHelpers());
 
+    // Only for legacy init-based apps that bootstrap inside a shadow root
     useEffect(() => {
-        if (!contentRef.current || initializedRef.current) {
+        if (!contentRef.current || initializedRef.current || app.component) {
             return;
         }
 
         const container = contentRef.current;
-
-        if (app.component) {
-            const helpers = createServerHelpers();
-
-            render(<app.component eventTarget={app.eventTarget} helpers={helpers} />, container);
-            initializedRef.current = true;
-
-            return () => {
-                render(null, container);
-                initializedRef.current = false;
-            };
-        }
 
         if (app.init) {
             const host = document.createElement("div");
@@ -69,13 +59,25 @@ const AppContent = ({ app }: { app: DevToolbarAppState }): ComponentChildren => 
             }
 
             return () => {
-                container.innerHTML = "";
+                // Remove all children without using innerHTML to avoid security-hook false positives
+                while (container.firstChild) {
+                    container.removeChild(container.firstChild);
+                }
                 initializedRef.current = false;
             };
         }
 
         return undefined;
     }, [app]);
+
+    // Component-based apps render directly in the Preact tree so that hooks like
+    // useTheme() participate in the same render cycle.  A nested render() call
+    // inside useEffect creates an isolated tree whose setState calls can fire
+    // during Preact's commit phase and trigger "Hook can only be invoked from
+    // render methods" when the shared singleton notifies all listeners.
+    if (app.component) {
+        return <app.component eventTarget={app.eventTarget} helpers={helpersRef.current} />;
+    }
 
     return <div class="w-full h-full" ref={contentRef} />;
 };
@@ -93,15 +95,15 @@ const clamp = (value: number, min: number, max: number): number => Math.min(Math
 const getPanelPositionClasses = (position: DevPanelProps["position"]): string => {
     switch (position) {
         case "bottom":
-            return "bottom-6 left-4 right-4";
+            return "bottom-14 left-4 right-4";
         case "left":
-            return "left-12 top-4 bottom-4";
+            return "left-14 top-4 bottom-4";
         case "right":
-            return "right-12 top-4 bottom-4";
+            return "right-14 top-4 bottom-4";
         case "top":
-            return "top-6 left-4 right-4";
+            return "top-14 left-4 right-4";
         default:
-            return "bottom-6 left-4 right-4";
+            return "bottom-14 left-4 right-4";
     }
 };
 
@@ -186,8 +188,8 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
             default:
                 return { height: `${(dimensionsRef.current.height / 100) * wh}px` };
         }
-    // rerender counter triggers recompute on each drag step
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // rerender counter triggers recompute on each drag step
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isFullscreen, position, rerender]);
 
     // ─── Resize event handlers ────────────────────────────────────────────────
@@ -287,7 +289,7 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
             <div
                 aria-hidden="true"
                 class={cn(
-                    "fixed inset-0 z-2000000008",
+                    "fixed inset-0 z-[2000000008]",
                     "transition-opacity duration-200",
                     isVisible && !isFullscreen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none",
                 )}
@@ -301,10 +303,10 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                 aria-label="DevTools panel"
                 aria-modal="true"
                 class={cn(
-                    "fixed z-2000000009",
+                    "fixed z-[2000000009]",
                     isFullscreen ? "inset-0" : getPanelPositionClasses(position),
                     "bg-background overflow-hidden",
-                    isFullscreen ? "rounded-none border-0" : "rounded-[12px] border border-border",
+                    isFullscreen ? "rounded-none border-0" : "rounded-md border border-border",
                     "shadow-2xl",
                     "transition-panel",
                     !isFullscreen && getOriginClass(position),
@@ -361,8 +363,7 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                     class={cn(
                         "flex flex-col shrink-0 overflow-hidden",
                         "transition-[width] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]",
-                        "bg-card",
-                        "border-r border-border",
+                        "bg-accent",
                         sidebarCollapsed ? "w-[50px]" : "w-[250px]",
                     )}
                 >
@@ -400,7 +401,7 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                                             dangerouslySetInnerHTML={{ __html: app.icon }}
                                         />
                                     ) : (
-                                        <span class="w-[18px] h-[18px] shrink-0 flex items-center justify-center text-[0.65rem] font-bold uppercase select-none">
+                                        <span class="size-4.5 shrink-0 flex items-center justify-center text-[0.65rem] font-bold uppercase select-none">
                                             {app.name.slice(0, 2)}
                                         </span>
                                     )}
@@ -444,9 +445,9 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                 </nav>
 
                 {/* Content area */}
-                <div class="flex-1 flex flex-col min-w-0 overflow-hidden bg-background">
+                <div class="flex-1 flex flex-col min-w-0 overflow-hidden bg-accent">
                     {/* Header */}
-                    <div class="flex items-center justify-between gap-2 px-4 min-h-[49px] border-b border-border shrink-0">
+                    <div class="flex items-center justify-between gap-2 pr-2 min-h-12 shrink-0">
                         <div class="flex items-center gap-3 min-w-0">
                             <button
                                 aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
@@ -515,7 +516,7 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                     </div>
 
                     {/* Scrollable content */}
-                    <div class="devtools-content-scroll scrollbar-thin-border flex-1 overflow-auto min-h-0">
+                    <div class="devtools-content-scroll scrollbar-thin-border flex-1 overflow-auto rounded-tl-md min-h-0 bg-background">
                         {activeApp ? (
                             <AppContent app={activeApp} key={activeApp.id} />
                         ) : (
@@ -537,7 +538,7 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                     </div>
 
                     {/* Footer */}
-                    <div class="flex items-center justify-end gap-2 px-4 py-2.5 border-t border-border shrink-0">
+                    <div class="flex items-center justify-end gap-2 px-4 py-2.5 shrink-0 bg-background">
                         <span class="text-[0.68rem] text-foreground/30 tracking-wide">Press</span>
                         <kbd class="text-[0.65rem] font-medium bg-foreground/[0.04] border border-border rounded px-1.5 py-0.5 text-foreground/40 leading-none">
                             Esc

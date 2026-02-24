@@ -16,7 +16,7 @@ const MoreButton = (): ComponentChildren => {
         <button
             class={cn(
                 // 40px tile inside the bg-muted group container
-                "relative flex justify-center items-center w-[40px] h-[40px]",
+                "relative flex justify-center items-center size-6",
                 "border-0 rounded-[10px]",
                 "whitespace-nowrap no-underline p-0 m-0",
                 "cursor-pointer",
@@ -36,7 +36,7 @@ const MoreButton = (): ComponentChildren => {
             title="More apps"
             type="button"
         >
-            <div class="relative w-[20px] h-[20px] flex items-center justify-center select-none">
+            <div class="relative size-6 flex items-center justify-center select-none">
                 <svg fill="currentColor" height="20" viewBox="0 0 16 16" width="20">
                     <circle cx="3" cy="8" r="1.5" />
                     <circle cx="8" cy="8" r="1.5" />
@@ -69,7 +69,7 @@ const ToolbarBar = ({ customAppsToShow = 3 }: ToolbarBarProps): ComponentChildre
 
     return (
         <div class="flex items-center pointer-events-auto" id="dev-bar">
-            <div class="flex flex-row items-center justify-start gap-[3px]" id="bar-container">
+            <div class="flex flex-row items-center justify-start gap-1" id="bar-container">
                 {visibleApps.map((app) => (
                     <AppButton key={app.id} app={app} />
                 ))}

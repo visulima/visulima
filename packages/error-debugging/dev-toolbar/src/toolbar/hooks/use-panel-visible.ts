@@ -32,8 +32,12 @@ export const usePanelVisible = (): UsePanelVisibleReturn => {
      * Toggle panel visibility
      */
     const togglePanelVisible = (_?: unknown, newState?: boolean): void => {
+        const willOpen = newState ?? !state.open;
+
         updateState({
-            open: newState ?? !state.open,
+            open: willOpen,
+            // Exit fullscreen when closing so the panel re-opens in normal mode
+            ...(willOpen ? {} : { viewMode: "default" }),
         });
     };
 
@@ -47,6 +51,7 @@ export const usePanelVisible = (): UsePanelVisibleReturn => {
 
         updateState({
             open: false,
+            viewMode: "default",
         });
     };
 
