@@ -64,6 +64,10 @@ export class DevToolbar extends HTMLElement {
 
         this.hasBeenInitialized = true;
 
+        // Inject Geist font into document.head so @font-face registers globally
+        // (CSSStyleSheet.replaceSync strips @import, so fonts must live in <head>)
+        DevToolbar.injectFont();
+
         // Setup global hook
         const hook = setupGlobalHook(
             (app) => {
@@ -182,6 +186,41 @@ export class DevToolbar extends HTMLElement {
      */
     public getAppManager(): AppManager {
         return this.appManager;
+    }
+
+    /**
+     * Inject Geist font into document.head once.
+     * @font-face declared in the document is part of the global font registry and
+     * is accessible from within shadow DOM roots — no duplication needed.
+     */
+    private static injectFont(): void {
+        const id = "__visulima-dt-font";
+
+        if (document.getElementById(id)) {
+            return;
+        }
+
+        // Preconnect hints reduce first-byte latency for the font CDN
+        const preconnect1 = document.createElement("link");
+
+        preconnect1.rel = "preconnect";
+        preconnect1.href = "https://fonts.googleapis.com";
+        document.head.append(preconnect1);
+
+        const preconnect2 = document.createElement("link");
+
+        preconnect2.rel = "preconnect";
+        preconnect2.href = "https://fonts.gstatic.com";
+        preconnect2.crossOrigin = "anonymous";
+        document.head.append(preconnect2);
+
+        const stylesheet = document.createElement("link");
+
+        stylesheet.id = id;
+        stylesheet.rel = "stylesheet";
+        // Geist — Vercel's font, designed for developer UIs; variable weight range
+        stylesheet.href = "https://fonts.googleapis.com/css2?family=Geist:wght@300..700&display=swap";
+        document.head.append(stylesheet);
     }
 
     /**

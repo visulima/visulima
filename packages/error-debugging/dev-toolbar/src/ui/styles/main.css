@@ -164,12 +164,14 @@
 
 /* ─── Global overrides ────────────────────────────────────────────────────── */
 #dev-toolbar-root {
-    /* Modern system font stack — SF Pro on Mac, Segoe UI Variable on Windows, Segoe on older Win */
-    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", ui-sans-serif, system-ui, "Segoe UI Variable", "Segoe UI", sans-serif !important;
-    font-size: 14px !important;
+    /* Geist (injected via <head>) → SF Pro → Segoe UI Variable → system-ui */
+    /* Geist is Vercel's font built for developer UIs — clean, crisp at small sizes */
+    font-family: "Geist", -apple-system, BlinkMacSystemFont, "SF Pro Text", ui-sans-serif, system-ui, "Segoe UI Variable", "Segoe UI", sans-serif !important;
+    font-size: 15px !important;
     line-height: 1.5 !important;
-    /* Enable contextual alternates and kerning for crisper rendering */
+    /* Contextual alternates + kerning for crisper character rendering */
     font-feature-settings: "kern" 1, "liga" 1, "calt" 1 !important;
+    font-optical-sizing: auto !important;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     box-sizing: border-box;
