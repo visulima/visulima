@@ -31,16 +31,15 @@ const AppButton = ({ app }: AppButtonProps): ComponentChildren => {
             aria-label={app.name}
             class={cn(
                 "relative flex justify-center items-center",
-                "border-0 rounded-md",
+                "border-0",
                 "whitespace-nowrap no-underline p-0 m-0",
                 "cursor-pointer",
-                // Transparent default — tiles sit flush on the bg-secondary group
                 "bg-transparent text-muted-foreground",
                 "transition-all duration-150",
-                "hover:bg-foreground/[0.10] hover:text-foreground",
+                "hover:bg-primary/[0.08] hover:text-primary",
                 "active:scale-[0.94]",
-                // Active: clear highlight — unmissable against the secondary group bg
-                app.active && "bg-foreground/[0.18] text-foreground",
+                // Active: lime highlight — terminal active indicator
+                app.active && "bg-primary/[0.12] text-primary",
                 "group-data-[vertical]/panel:rotate-[-90deg]",
             )}
             data-app-id={app.id}

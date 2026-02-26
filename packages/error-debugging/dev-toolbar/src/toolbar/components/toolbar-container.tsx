@@ -195,9 +195,8 @@ const ToolbarContainer = ({
 
     return (
         <ToolbarContext.Provider value={contextValue}>
-            {/* display:contents wrapper so the dark class is inherited by both the
-                anchor and the DevPanel (which is a sibling) without creating
-                a CSS containing block that would break fixed positioning */}
+            {/* display:contents wrapper — dark class inherited by both pill and panel
+                without creating a CSS containing block that would break fixed positioning */}
             <div class={cn(resolvedTheme === "dark" && "dark")} style={{ display: "contents" }}>
                 {/* Anchor — positioned via JS; transitions left/top smoothly */}
                 <div
@@ -216,7 +215,7 @@ const ToolbarContainer = ({
                     onMouseMove={bringUp}
                     style={anchorStyle}
                 >
-                    {/* Draggable toolbar pill — raised tile-button design */}
+                    {/* Draggable toolbar pill */}
                     <div
                         ref={panelRef}
                         class={cn(
@@ -226,14 +225,10 @@ const ToolbarContainer = ({
                             "gap-1 p-1",
                             "box-border",
                             "overflow-hidden",
-                            "rounded-md",
+                            "rounded-none",
                             "text-foreground select-none",
                             isDragging ? "cursor-grabbing" : "cursor-grab",
-                            // Pill base — adapts to light/dark via tokens
-                            "bg-background",
-                            // Visible border that works in both modes
-                            "border border-border",
-                            // Theme-aware shadow: subtle in light, dramatic in dark
+                            "bg-background border-0",
                             isVertical ? "shadow-pill-vertical!" : "shadow-pill",
                             isHidden ? "max-w-12!" : "",
                             "transition-pill",
@@ -242,18 +237,17 @@ const ToolbarContainer = ({
                         onPointerDown={onPointerDown}
                         style={panelStyle}
                     >
-                        {/* Logo toggle button — raised tile, rounded-square shape */}
+                        {/* Logo toggle button */}
                         <button
                             aria-label="Toggle devtools panel"
                             class={cn(
-                                "rounded-md size-8 flex justify-center items-center shrink-0",
+                                "size-8 flex justify-center items-center shrink-0",
                                 "cursor-pointer p-0 m-0 border-0",
-                                // Tile background — slightly lifted above pill base
-                                "bg-muted",
+                                "bg-transparent",
                                 "transition-all duration-150",
-                                "hover:bg-secondary active:scale-[0.95]",
+                                "hover:bg-primary/[0.08] active:scale-[0.95]",
                                 "group-data-[vertical]/panel:rotate-[-90deg]",
-                                panelVisible ? "opacity-100" : "opacity-70",
+                                panelVisible ? "opacity-100" : "opacity-60",
                             )}
                             onClick={(e) => {
                                 e.stopPropagation();
@@ -265,8 +259,11 @@ const ToolbarContainer = ({
                             <img alt="Visulima" class="size-6" src={visulimaLogo} />
                         </button>
 
-                        {/* App buttons group — bg-secondary zone so active tiles pop against it */}
-                        <div class={cn("bg-secondary rounded-md p-1", isHidden && "hidden")}>
+                        {/* Thin vertical divider */}
+                        <div aria-hidden="true" class={cn("w-px h-5 bg-primary/20 shrink-0", isHidden && "hidden")} />
+
+                        {/* App buttons group */}
+                        <div class={cn("px-0.5", isHidden && "hidden")}>
                             <ToolbarBar customAppsToShow={customAppsToShow} />
                         </div>
                     </div>

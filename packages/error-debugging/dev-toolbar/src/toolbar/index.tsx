@@ -218,8 +218,8 @@ export class DevToolbar extends HTMLElement {
 
         stylesheet.id = id;
         stylesheet.rel = "stylesheet";
-        // Geist — Vercel's font, designed for developer UIs; variable weight range
-        stylesheet.href = "https://fonts.googleapis.com/css2?family=Geist:wght@300..700&display=swap";
+        // JetBrains Mono — monospace font designed for developers; terminal HUD aesthetic
+        stylesheet.href = "https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap";
         document.head.append(stylesheet);
     }
 

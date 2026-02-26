@@ -52,17 +52,14 @@
 /* Reference-only — not used directly by Tailwind utilities.                 */
 :root,
 :host {
-    --brand-lime: #caff00;
-    --brand-chartreuse: #baea01;
+    --brand-violet: #7c3aed;
+    --brand-violet-light: #c4b5fd;
     --brand-white: #ffffff;
     --brand-frost: #f2f2f2;
     --brand-silver: #d8d8d8;
-    --brand-cloud: #cccccc;
-    --brand-steel: #c2c2c2;
     --brand-graphite: #6b6b6b;
     --brand-iron: #3c3c3c;
     --brand-charcoal: #212121;
-    --brand-obsidian: #191919;
     --brand-black: #000000;
 }
 
@@ -77,8 +74,8 @@
     --color-card-foreground: #18181b;
     --color-popover: #ffffff;
     --color-popover-foreground: #18181b;
-    --color-primary: #caff00;              /* brand lime */
-    --color-primary-foreground: #18181b;
+    --color-primary: #7c3aed;              /* violet-600 — 5.6:1 on white ✅ WCAG AA */
+    --color-primary-foreground: #ffffff;   /* white on violet — 5.6:1 ✅ WCAG AA */
     --color-secondary: #e4e4e7;            /* zinc-200 */
     --color-secondary-foreground: #18181b;
     --color-muted: #e4e4e7;                /* zinc-200 */
@@ -99,10 +96,8 @@
     --color-warning: oklch(0.58 0.18 65);
     --color-warning-foreground: oklch(0.45 0.16 65);
 
-    --shadow-complex: 0 10px 10px -5px #18181b05, 0 6px 6px -3px #18181b0a, 0 3px 3px -1.5px #18181b0a, 0 1px 1px -0.5px #18181b0a, 0 0 0 1px #18181b05;
-
-    /* Toolbar pill shadow — light mode: soft, unobtrusive */
-    --shadow-pill: 0 4px 20px rgba(0, 0, 0, 0.14), 0 1px 4px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.05);
+    /* Toolbar pill shadow — light mode: flat border precision */
+    --shadow-pill: 0 4px 20px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.08);
 }
 
 /* ─── Dark mode overrides ─────────────────────────────────────────────────── */
@@ -115,8 +110,8 @@
     --color-card-foreground: #fafafa;
     --color-popover: #18181b;
     --color-popover-foreground: #fafafa;
-    --color-primary: #caff00;
-    --color-primary-foreground: #09090b;
+    --color-primary: #c4b5fd;              /* violet-300 — 5.7:1 on #212121 ✅ WCAG AA */
+    --color-primary-foreground: #09090b;   /* near-black on light violet — 11:1 ✅ WCAG AAA */
     --color-secondary: #27272a;            /* zinc-800 */
     --color-secondary-foreground: #fafafa;
     --color-muted: #27272a;                /* zinc-800 */
@@ -135,8 +130,8 @@
     --color-warning: oklch(0.78 0.16 65);
     --color-warning-foreground: oklch(0.88 0.15 65);
 
-    /* Toolbar pill shadow — dark mode: dramatic depth */
-    --shadow-pill: 0 6px 28px rgba(0, 0, 0, 0.6), 0 2px 8px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.06);
+    /* Toolbar pill shadow — dark mode: depth only, no ring */
+    --shadow-pill: 0 6px 24px rgba(0, 0, 0, 0.7), 0 2px 8px rgba(0, 0, 0, 0.5);
 }
 
 @layer base {
@@ -156,6 +151,17 @@
     transition: opacity 0.4s cubic-bezier(0.23, 1, 0.32, 1), transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
 }
 
+/* Subtle CRT scan-line texture — terminal HUD atmosphere */
+@utility scanlines {
+    background-image: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 3px,
+        rgba(0, 0, 0, 0.025) 3px,
+        rgba(0, 0, 0, 0.025) 4px
+    );
+}
+
 /* Thin scrollbar matching the border color token */
 @utility scrollbar-thin-border {
     scrollbar-width: thin;
@@ -164,13 +170,13 @@
 
 /* ─── Global overrides ────────────────────────────────────────────────────── */
 #dev-toolbar-root {
-    /* Geist (injected via <head>) → SF Pro → Segoe UI Variable → system-ui */
-    /* Geist is Vercel's font built for developer UIs — clean, crisp at small sizes */
-    font-family: "Geist", -apple-system, BlinkMacSystemFont, "SF Pro Text", ui-sans-serif, system-ui, "Segoe UI Variable", "Segoe UI", sans-serif !important;
-    font-size: 15px !important;
-    line-height: 1.5 !important;
-    /* Contextual alternates + kerning for crisper character rendering */
-    font-feature-settings: "kern" 1, "liga" 1, "calt" 1 !important;
+    /* JetBrains Mono (injected via <head>) → Geist Mono → system monospace */
+    /* JetBrains Mono — developer-grade monospace, crisp at small sizes */
+    font-family: "JetBrains Mono", "Geist Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace !important;
+    font-size: 13px !important;
+    line-height: 1.6 !important;
+    /* Contextual alternates + kerning + programming ligatures */
+    font-feature-settings: "kern" 1, "liga" 1, "calt" 1, "zero" 1 !important;
     font-optical-sizing: auto !important;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;

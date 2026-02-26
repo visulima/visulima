@@ -16,7 +16,7 @@ const MoreButton = (): ComponentChildren => {
         <button
             class={cn(
                 "relative flex justify-center items-center size-6",
-                "border-0 rounded-md",
+                "border-0",
                 "whitespace-nowrap no-underline p-0 m-0",
                 "cursor-pointer",
                 // Transparent default — flush on the bg-muted group

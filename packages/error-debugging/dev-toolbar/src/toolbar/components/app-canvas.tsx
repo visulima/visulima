@@ -303,10 +303,10 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                 aria-label="DevTools panel"
                 aria-modal="true"
                 class={cn(
-                    "fixed z-[2000000009]",
+                    "fixed z-[2000000009] antialiased font-mono",
                     isFullscreen ? "inset-0" : getPanelPositionClasses(position),
                     "bg-background overflow-hidden",
-                    isFullscreen ? "rounded-none border-0" : "rounded-md border border-border",
+                    isFullscreen ? "rounded-none border-0" : "rounded-none border border-border",
                     "shadow-2xl",
                     "transition-panel",
                     !isFullscreen && getOriginClass(position),
@@ -316,14 +316,14 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                 role="dialog"
                 style={panelSizeStyle}
             >
-                {/* ── Resize handles (hidden in fullscreen) ───────────────── */}
+{/* ── Resize handles (hidden in fullscreen) ───────────────── */}
                 {!isFullscreen && (
                     <>
                         {/* Top handle — resize taller (bottom/left/right docked) */}
                         {position !== "top" && (
                             <div
                                 aria-hidden="true"
-                                class="absolute left-1.5 right-1.5 top-0 h-2.5 -mt-1 cursor-ns-resize z-10 hover:bg-foreground/10 transition-colors rounded-t-md"
+                                class="absolute left-1.5 right-1.5 top-0 h-2.5 -mt-1 cursor-ns-resize z-10 hover:bg-foreground/10 transition-colors"
                                 onMouseDown={startResize({ top: true })}
                             />
                         )}
@@ -332,7 +332,7 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                         {position === "top" && (
                             <div
                                 aria-hidden="true"
-                                class="absolute left-1.5 right-1.5 bottom-0 h-2.5 -mb-1 cursor-ns-resize z-10 hover:bg-foreground/10 transition-colors rounded-b-md"
+                                class="absolute left-1.5 right-1.5 bottom-0 h-2.5 -mb-1 cursor-ns-resize z-10 hover:bg-foreground/10 transition-colors"
                                 onMouseDown={startResize({ bottom: true })}
                             />
                         )}
@@ -341,7 +341,7 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                         {position === "left" && (
                             <div
                                 aria-hidden="true"
-                                class="absolute top-1.5 bottom-1.5 right-0 w-2.5 -mr-1 cursor-ew-resize z-10 hover:bg-foreground/10 transition-colors rounded-r-md"
+                                class="absolute top-1.5 bottom-1.5 right-0 w-2.5 -mr-1 cursor-ew-resize z-10 hover:bg-foreground/10 transition-colors"
                                 onMouseDown={startResize({ right: true })}
                             />
                         )}
@@ -350,7 +350,7 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                         {position === "right" && (
                             <div
                                 aria-hidden="true"
-                                class="absolute top-1.5 bottom-1.5 left-0 w-2.5 -ml-1 cursor-ew-resize z-10 hover:bg-foreground/10 transition-colors rounded-l-md"
+                                class="absolute top-1.5 bottom-1.5 left-0 w-2.5 -ml-1 cursor-ew-resize z-10 hover:bg-foreground/10 transition-colors"
                                 onMouseDown={startResize({ left: true })}
                             />
                         )}
@@ -374,13 +374,13 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                                     aria-label={app.name}
                                     aria-pressed={activeAppId === app.id}
                                     class={cn(
-                                        "relative flex items-center w-full h-10 rounded-md",
-                                        "border-0 cursor-pointer",
+                                        "relative flex items-center w-full h-10",
+                                        "border-0 border-l-2 cursor-pointer",
                                         "transition-all duration-150",
                                         sidebarCollapsed ? "justify-center px-0" : "gap-2.5 px-3",
                                         activeAppId === app.id
-                                            ? "bg-foreground/[0.10] text-foreground"
-                                            : "bg-transparent text-muted-foreground hover:bg-foreground/[0.06] hover:text-foreground",
+                                            ? "border-primary bg-primary/[0.08] text-foreground"
+                                            : "border-transparent bg-transparent text-muted-foreground hover:bg-foreground/[0.06] hover:text-foreground",
                                     )}
                                     onClick={() => {
                                         if (app.id === activeAppId) {
@@ -395,7 +395,7 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                                         <span
                                             class={cn(
                                                 "size-4.5 shrink-0 flex items-center justify-center [&_svg]:size-4.5",
-                                                activeAppId === app.id ? "opacity-100" : "opacity-50 group-hover/nav-item:opacity-80",
+                                                activeAppId === app.id ? "opacity-100" : "opacity-65 group-hover/nav-item:opacity-100",
                                             )}
                                             // eslint-disable-next-line react/no-danger
                                             dangerouslySetInnerHTML={{ __html: app.icon }}
@@ -434,7 +434,7 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                                             "transition-all duration-200 ease-[cubic-bezier(0.23,1,0.32,1)]",
                                         )}
                                     >
-                                        <div class="text-[0.7rem] font-medium bg-card/95 backdrop-blur-[0.625rem] text-foreground/80 px-2.5 py-1 rounded-md border border-border shadow-md">
+                                        <div class="text-[0.7rem] font-medium bg-card/95 backdrop-blur-[0.625rem] text-foreground/80 px-2.5 py-1 border border-border shadow-md">
                                             {app.name}
                                         </div>
                                     </div>
@@ -452,7 +452,7 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                             <button
                                 aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
                                 class={cn(
-                                    "flex items-center justify-center size-7 rounded-md shrink-0",
+                                    "flex items-center justify-center size-7 shrink-0",
                                     "border-0 cursor-pointer bg-transparent",
                                     "text-muted-foreground/50 hover:text-foreground hover:bg-foreground/[0.07]",
                                     "transition-colors duration-150",
@@ -475,7 +475,11 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                                     dangerouslySetInnerHTML={{ __html: activeApp.icon }}
                                 />
                             )}
-                            <span class="text-[0.8125rem] font-semibold text-foreground truncate tracking-[-0.01em]">{activeApp?.name ?? "DevTools"}</span>
+                            <span class="flex items-center gap-1 text-[0.7rem] font-bold uppercase tracking-[0.06em] text-foreground truncate">
+                                <span aria-hidden="true" class="text-primary/50 shrink-0">[</span>
+                                {activeApp?.name ?? "DevTools"}
+                                <span aria-hidden="true" class="text-primary/50 shrink-0">]</span>
+                            </span>
                         </div>
 
                         <div class="flex items-center gap-1 shrink-0">
@@ -483,7 +487,7 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                             <button
                                 aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
                                 class={cn(
-                                    "flex items-center justify-center size-8 rounded-md",
+                                    "flex items-center justify-center size-8",
                                     "cursor-pointer border-0 bg-transparent",
                                     "text-foreground/30 hover:text-foreground hover:bg-foreground/[0.07]",
                                     "transition-all duration-200 active:scale-90",
@@ -499,7 +503,7 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                             <button
                                 aria-label="Close DevTools panel"
                                 class={cn(
-                                    "flex items-center justify-center size-8 rounded-md",
+                                    "flex items-center justify-center size-8",
                                     "cursor-pointer border-0 bg-transparent",
                                     "text-foreground/30 hover:text-foreground hover:bg-foreground/[0.07]",
                                     "transition-all duration-200 active:scale-90",
@@ -516,12 +520,12 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                     </div>
 
                     {/* Scrollable content */}
-                    <div class="devtools-content-scroll scrollbar-thin-border flex-1 overflow-auto rounded-tl-md min-h-0 bg-background">
+                    <div class="devtools-content-scroll scrollbar-thin-border flex-1 overflow-auto min-h-0 bg-background">
                         {activeApp ? (
                             <AppContent app={activeApp} key={activeApp.id} />
                         ) : (
                             <div class="flex flex-col items-center justify-center min-h-48 h-full gap-4">
-                                <div class="size-12 rounded-md bg-foreground/[0.04] flex items-center justify-center">
+                                <div class="size-12 bg-foreground/[0.04] flex items-center justify-center border border-border/50">
                                     <svg class="text-foreground/20" fill="none" height="24" viewBox="0 0 24 24" width="24">
                                         <path
                                             d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
@@ -532,7 +536,7 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                                         />
                                     </svg>
                                 </div>
-                                <span class="text-xs font-semibold text-foreground/30 uppercase tracking-widest">Select an app</span>
+                                <span class="text-[0.65rem] font-bold text-foreground/30 uppercase tracking-[0.15em]">// select an app</span>
                             </div>
                         )}
                     </div>

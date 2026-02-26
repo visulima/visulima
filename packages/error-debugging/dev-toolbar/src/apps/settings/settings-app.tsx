@@ -31,8 +31,11 @@ const SettingRow = ({
 /** Section with title and divider */
 const Section = ({ title, children }: { title: string; children: ComponentChildren }): ComponentChildren => (
     <section>
-        <h3 class="text-[0.65rem] font-semibold uppercase tracking-[0.08em] text-muted-foreground mb-1 px-1">{title}</h3>
-        <div class="rounded-lg border border-border bg-card divide-y divide-border overflow-hidden">
+        <h3 class="text-[0.65rem] font-bold uppercase tracking-[0.1em] text-muted-foreground mb-2 px-1 flex items-center gap-1.5">
+        <span aria-hidden="true" class="text-primary/50">//</span>
+        {title}
+    </h3>
+        <div class="rounded-none border border-border bg-card divide-y divide-border overflow-hidden border-l-2 border-l-primary/20">
             <div class="px-4">{children}</div>
         </div>
     </section>
@@ -43,7 +46,7 @@ const Toggle = ({ checked, onChange }: { checked: boolean; onChange: (v: boolean
     <button
         aria-checked={checked}
         class={cn(
-            "relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent",
+            "relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-none border-2 border-transparent",
             "transition-colors duration-200 ease-in-out",
             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
             checked ? "bg-primary" : "bg-foreground/15",
@@ -54,7 +57,7 @@ const Toggle = ({ checked, onChange }: { checked: boolean; onChange: (v: boolean
     >
         <span
             class={cn(
-                "pointer-events-none inline-block h-4 w-4 rounded-full shadow-sm",
+                "pointer-events-none inline-block h-4 w-4 shadow-sm",
                 "transition-all duration-200 ease-in-out",
                 // When ON the track is lime (#caff00) — use dark thumb for contrast (17:1)
                 // When OFF the track is foreground/15 — use white thumb (high contrast on both modes)
@@ -110,13 +113,13 @@ const ThemeControl = ({ value, onChange }: { value: Theme; onChange: (v: Theme) 
     ];
 
     return (
-        <div class="flex items-center gap-0.5 bg-foreground/[0.06] rounded-lg p-0.5">
+        <div class="flex items-center gap-0.5 bg-foreground/[0.06] p-0.5">
             {options.map((opt) => (
                 <button
                     key={opt.value}
                     aria-pressed={value === opt.value}
                     class={cn(
-                        "flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-[0.75rem] font-medium",
+                        "flex items-center gap-1.5 px-2.5 py-1.5 text-[0.75rem] font-medium",
                         "transition-all duration-150 cursor-pointer border-0",
                         value === opt.value
                             ? "bg-background text-foreground shadow-sm"
@@ -146,7 +149,7 @@ const HIDE_OPTIONS: { label: string; value: number }[] = [
 const HideDelayControl = ({ value, onChange }: { value: number; onChange: (v: number) => void }): ComponentChildren => (
     <select
         class={cn(
-            "bg-foreground/[0.06] border border-border rounded-md",
+            "bg-foreground/[0.06] border border-border",
             "text-[0.775rem] font-medium text-foreground",
             "px-2.5 py-1.5 cursor-pointer",
             "focus:outline-none focus:ring-1 focus:ring-ring",
