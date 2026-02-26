@@ -154,12 +154,17 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
     const [isVisible, setIsVisible] = useState(false);
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [, rerender] = useState(0);
+    const [fsClipPath, setFsClipPath] = useState<string | null>(null);
+    const [isFsAnimating, setIsFsAnimating] = useState(false);
 
     const { state, updateState } = useFrameState();
 
     const panelDivRef = useRef<HTMLDivElement>(null);
     const isResizingRef = useRef<{ bottom?: boolean; left?: boolean; right?: boolean; top?: boolean } | false>(false);
     const dimensionsRef = useRef({ height: state.height, width: state.width });
+    const enteringFromRectRef = useRef<DOMRect | null>(null);
+    const prevIsFullscreenRef = useRef(false);
+    const fsTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const isFullscreen = state.viewMode === "fullscreen";
     const isWide = state.viewMode === "wide";
@@ -251,6 +256,66 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
         };
     }, [updateState]);
 
+    // ─── Fullscreen expand animation ─────────────────────────────────────────
+    // Entry: suppress transition-panel (prevents transform/translate slide),
+    // clip the panel to its pre-fullscreen bounds, then animate clip-path to
+    // inset(0) so it expands into every corner.
+    // Exit: also suppress transition-panel for one frame so the snap-back to
+    // the docked position does not produce a transform slide.
+    useEffect(() => {
+        const wasFullscreen = prevIsFullscreenRef.current;
+
+        prevIsFullscreenRef.current = isFullscreen;
+
+        // Clear any pending timer from a previous transition
+        if (fsTimerRef.current !== null) {
+            clearTimeout(fsTimerRef.current);
+            fsTimerRef.current = null;
+        }
+
+        if (isFullscreen && !wasFullscreen && enteringFromRectRef.current) {
+            // ── Entering fullscreen ──────────────────────────────────────────
+            const rect = enteringFromRectRef.current;
+
+            enteringFromRectRef.current = null;
+
+            const ww = globalThis.window?.innerWidth ?? 0;
+            const wh = globalThis.window?.innerHeight ?? 0;
+
+            // Suppress all panel transitions; set initial clip to panel bounds.
+            setIsFsAnimating(true);
+            setFsClipPath(`inset(${rect.top}px ${ww - rect.right}px ${wh - rect.bottom}px ${rect.left}px)`);
+
+            // Two rAFs: first ensures the suppressed-transition + clip frame is
+            // painted, second starts the clip-path expansion transition.
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    setFsClipPath("inset(0px 0px 0px 0px)");
+
+                    // After the 0.35s clip-path transition finishes, remove the
+                    // clip entirely and restore transition-panel.
+                    fsTimerRef.current = setTimeout(() => {
+                        setFsClipPath(null);
+                        setIsFsAnimating(false);
+                        fsTimerRef.current = null;
+                    }, 380);
+                });
+            });
+        } else if (!isFullscreen && wasFullscreen) {
+            // ── Exiting fullscreen ───────────────────────────────────────────
+            // Suppress transition-panel for two frames so the docked position
+            // snaps back without the transform/translate slide.
+            setFsClipPath(null);
+            setIsFsAnimating(true);
+
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    setIsFsAnimating(false);
+                });
+            });
+        }
+    }, [isFullscreen]);
+
     // ─── Two-phase mount/unmount ──────────────────────────────────────────────
     useEffect(() => {
         if (panelVisible) {
@@ -302,7 +367,7 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
             <div
                 aria-hidden="true"
                 class={cn(
-                    "fixed inset-0 z-[2000000008]",
+                    "fixed inset-0 z-[2147483647]",
                     "transition-opacity duration-200",
                     isVisible && !isFullscreen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none",
                 )}
@@ -316,20 +381,26 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                 aria-label="DevTools panel"
                 aria-modal="true"
                 class={cn(
-                    "fixed z-[2000000009] antialiased font-mono",
+                    "fixed z-[2147483647] pointer-events-auto antialiased font-mono",
                     isFullscreen ? "inset-0" : getPanelPositionClasses(position),
                     "bg-background overflow-hidden",
                     isFullscreen ? "rounded-none border-0" : "rounded-none border border-border",
                     "shadow-2xl",
-                    "transition-panel",
+                    // Suppress all panel transitions during fullscreen switch so
+                    // transform/translate don't produce a slide — only clip-path animates.
+                    !isFsAnimating && "transition-panel",
                     !isFullscreen && getOriginClass(position),
                     getVisibilityClasses(position, isVisible),
                     "flex flex-row",
                 )}
                 role="dialog"
-                style={panelSizeStyle}
+                style={{
+                    ...panelSizeStyle,
+                    ...(isFsAnimating && isFullscreen ? { transition: "clip-path 0.35s cubic-bezier(0.4, 0, 0.2, 1)" } : {}),
+                    ...(fsClipPath !== null ? { clipPath: fsClipPath } : {}),
+                }}
             >
-{/* ── Resize handles (hidden in fullscreen) ───────────────── */}
+                {/* ── Resize handles (hidden in fullscreen) ───────────────── */}
                 {!isFullscreen && (
                     <>
                         {/* Top handle — resize taller (bottom/left/right docked) */}
@@ -407,7 +478,7 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                                     {app.icon ? (
                                         <span
                                             class={cn(
-                                                "size-4.5 shrink-0 flex items-center justify-center [&_svg]:size-4.5",
+                                                "size-4 shrink-0 flex items-center justify-center [&_svg]:size-4",
                                                 activeAppId === app.id ? "opacity-100" : "opacity-65 group-hover/nav-item:opacity-100",
                                             )}
                                             // eslint-disable-next-line react/no-danger
@@ -486,9 +557,13 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                                 />
                             )}
                             <span class="flex items-center gap-1 text-[0.7rem] font-bold uppercase tracking-[0.06em] text-foreground truncate">
-                                <span aria-hidden="true" class="text-primary/50 shrink-0">[</span>
+                                <span aria-hidden="true" class="text-primary/50 shrink-0">
+                                    [
+                                </span>
                                 {activeApp?.name ?? "DevTools"}
-                                <span aria-hidden="true" class="text-primary/50 shrink-0">]</span>
+                                <span aria-hidden="true" class="text-primary/50 shrink-0">
+                                    ]
+                                </span>
                             </span>
                         </div>
 
@@ -520,7 +595,13 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                                     "text-foreground/30 hover:text-foreground hover:bg-foreground/[0.07]",
                                     "transition-all duration-200 active:scale-90",
                                 )}
-                                onClick={() => updateState({ viewMode: isFullscreen ? "default" : "fullscreen" })}
+                                onClick={() => {
+                                    if (!isFullscreen && panelDivRef.current) {
+                                        enteringFromRectRef.current = panelDivRef.current.getBoundingClientRect();
+                                    }
+
+                                    updateState({ viewMode: isFullscreen ? "default" : "fullscreen" });
+                                }}
                                 title={isFullscreen ? "Exit fullscreen" : "Fullscreen"}
                                 type="button"
                             >

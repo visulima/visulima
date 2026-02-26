@@ -2,7 +2,7 @@ import { useEffect, useState } from "preact/hooks";
 
 export type Theme = "light" | "dark" | "system";
 
-const THEME_STORAGE_KEY = "__VISULIMA_DEVTOOLS_THEME__";
+const THEME_STORAGE_KEY = "__v_dt__theme";
 
 /**
  * Get the system color scheme preference
@@ -72,10 +72,35 @@ const notifyThemeListeners = (): void => {
     }
 };
 
+/**
+ * Sync the resolved theme to vite-overlay so both UIs stay in lock-step.
+ * Writes to localStorage and applies/removes the `dark` class on the live
+ * overlay root element if the overlay is currently mounted.
+ */
+const syncViteOverlayTheme = (resolved: "light" | "dark"): void => {
+    try {
+        localStorage.setItem("__v-o__theme", resolved);
+    } catch {
+        // localStorage unavailable — skip
+    }
+
+    const overlay = (globalThis as any).__v_o__current as { shadowRoot?: ShadowRoot } | undefined;
+    const rootEl = overlay?.shadowRoot?.querySelector("#__v_o__root");
+
+    if (rootEl) {
+        if (resolved === "dark") {
+            rootEl.classList.add("dark");
+        } else {
+            rootEl.classList.remove("dark");
+        }
+    }
+};
+
 const setSharedTheme = (newTheme: Theme): void => {
     sharedTheme = newTheme;
     sharedResolvedTheme = newTheme === "system" ? getSystemTheme() : newTheme;
     saveTheme(newTheme);
+    syncViteOverlayTheme(sharedResolvedTheme);
     notifyThemeListeners();
 };
 
@@ -85,6 +110,7 @@ if (globalThis.window !== undefined) {
     const handleSystemChange = (): void => {
         if (sharedTheme === "system") {
             sharedResolvedTheme = getSystemTheme();
+            syncViteOverlayTheme(sharedResolvedTheme);
             notifyThemeListeners();
         }
     };

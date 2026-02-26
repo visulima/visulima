@@ -70,7 +70,7 @@ export interface DevToolsFrameState {
     width: number;
 }
 
-const STORAGE_KEY = "__VISULIMA_DEVTOOLS_FRAME_STATE__";
+const STORAGE_KEY = "__v_dt__frame_state";
 
 /**
  * Default frame state - matches Vue DevTools exactly

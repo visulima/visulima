@@ -203,16 +203,18 @@ const ToolbarContainer = ({
                 <div
                     ref={anchorRef}
                     class={cn(
-                        "fixed z-[2147483645]",
+                        "fixed z-[2147483647]",
+                        "pointer-events-auto",
                         "origin-center",
                         "transition-[left_0.3s_cubic-bezier(0.4,0,0.2,1),top_0.3s_cubic-bezier(0.4,0,0.2,1)]",
                         "data-[dragging]:transition-none!",
                         "group",
+                        "toolbar-font text-[13px]! leading-[1.6]! antialiased box-border [&_*]:box-border print:hidden",
                         state.reduceMotion && "transition-none! animate-none! [&_*]:transition-none! [&_*]:animate-none!",
                     )}
                     data-dragging={isDragging ? "" : undefined}
                     data-placement={placement}
-                    id="dev-toolbar-root"
+                    id="__v_dt__root"
                     onMouseMove={bringUp}
                     style={anchorStyle}
                 >
@@ -282,12 +284,7 @@ const ToolbarContainer = ({
                     </div>
 
                     {/* First-visit onboarding hint — sibling of pill so it escapes overflow:hidden */}
-                    {state.isFirstVisit && (
-                        <FirstVisitHint
-                            onDismiss={() => updateState({ isFirstVisit: false })}
-                            position={state.position}
-                        />
-                    )}
+                    {state.isFirstVisit && <FirstVisitHint onDismiss={() => updateState({ isFirstVisit: false })} position={state.position} />}
                 </div>
 
                 {/* DevPanel is outside the anchor div to avoid the CSS transform

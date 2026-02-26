@@ -148,7 +148,7 @@ export class DevToolbar extends HTMLElement {
      */
     public isHidden(): boolean {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        const root = this.shadowRoot!.querySelector<HTMLDivElement>("#dev-toolbar-root");
+        const root = this.shadowRoot!.querySelector<HTMLDivElement>("#__v_dt__root");
 
         return root?.hasAttribute("data-hidden") ?? true;
     }
@@ -159,7 +159,7 @@ export class DevToolbar extends HTMLElement {
     public setToolbarVisible(visible: boolean): void {
         // Update the data-hidden attribute directly for immediate feedback
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        const root = this.shadowRoot!.querySelector<HTMLDivElement>("#dev-toolbar-root");
+        const root = this.shadowRoot!.querySelector<HTMLDivElement>("#__v_dt__root");
 
         if (root) {
             if (visible) {
@@ -194,7 +194,7 @@ export class DevToolbar extends HTMLElement {
      * is accessible from within shadow DOM roots — no duplication needed.
      */
     private static injectFont(): void {
-        const id = "__visulima-dt-font";
+        const id = "__v_dt__font";
 
         if (document.getElementById(id)) {
             return;
@@ -245,8 +245,16 @@ export class DevToolbar extends HTMLElement {
             styleElement.textContent = `
         :host {
           all: initial;
-          z-index: 999999;
-          display: contents;
+          /* Cover the full viewport so the host establishes a stacking context
+             above vite-overlay (#__v_o__root uses z-[2147483647]). display:contents
+             would suppress z-index entirely, so we use position:fixed instead.
+             pointer-events:none passes all clicks through to the page;
+             interactive toolbar children restore pointer-events:auto. */
+          position: fixed;
+          inset: 0;
+          z-index: 2147483647;
+          pointer-events: none;
+          overflow: visible;
         }
         @media print {
           :host {

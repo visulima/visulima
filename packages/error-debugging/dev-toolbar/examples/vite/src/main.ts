@@ -4,49 +4,65 @@ import type { DevToolbarApp } from "@visulima/dev-toolbar";
 
 import { App } from "./App.js";
 
-const app = document.querySelector<HTMLDivElement>("#app")!;
+// eslint-disable-next-line no-unsanitized/property -- static, developer-controlled HTML; not user input
+document.querySelector<HTMLDivElement>("#app")!.innerHTML = App();
 
-app.innerHTML = App();
+// ── Error trigger buttons ─────────────────────────────────────────────────────
 
-// Example: Using the global DevTools API
+document.getElementById("btn-throw-error")?.addEventListener("click", () => {
+    // Throw inside setTimeout so it escapes the click handler's call stack and
+    // reaches window.onerror, which @visulima/vite-overlay intercepts.
+    setTimeout(() => {
+        const cause = new TypeError("Cannot read properties of undefined (reading 'name')");
+        const err = new Error("Example client error thrown from the dev-toolbar demo page");
+
+        err.cause = cause;
+        throw err;
+    }, 0);
+});
+
+document.getElementById("btn-unhandled-rejection")?.addEventListener("click", () => {
+    // Unhandled Promise rejection — intercepted by vite-overlay's
+    // window.addEventListener("unhandledrejection", ...) handler.
+    void Promise.reject(new Error("Example unhandled Promise rejection from the dev-toolbar demo page"));
+});
+
+// ── Global DevTools API ───────────────────────────────────────────────────────
+
 if (typeof window !== "undefined" && window.__VISULIMA_DEVTOOLS__) {
-    console.log("Dev Tools API available:", window.__VISULIMA_DEVTOOLS__);
-
-    // Example: Register a custom app
     const exampleApp: DevToolbarApp = {
         icon: '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="2"/></svg>',
         id: "example-app",
         init(canvas, _, helpers) {
             const content = document.createElement("div");
+            const pre = document.createElement("pre");
+            const btn = document.createElement("button");
 
-            content.innerHTML = `
-                <div style="padding: 16px; color: white;">
-                    <h2>Example App</h2>
-                    <p>This is a custom app registered via the global API!</p>
-                    <button id="test-rpc" style="padding: 8px 16px; margin-top: 8px; cursor: pointer;">
-                        Test RPC (Get Vite Config)
-                    </button>
-                    <pre id="rpc-result" style="margin-top: 8px; padding: 8px; background: rgba(0,0,0,0.3); border-radius: 4px; overflow: auto;"></pre>
-                </div>
-            `;
-            canvas.append(content);
+            pre.id = "rpc-result";
+            pre.style.cssText = "margin-top:8px;padding:8px;background:rgba(0,0,0,.3);border-radius:4px;overflow:auto;";
 
-            const button = content.querySelector("#test-rpc");
-            const result = content.querySelector("#rpc-result");
+            btn.id = "test-rpc";
+            btn.textContent = "Test RPC (Get Vite Config)";
+            btn.style.cssText = "padding:8px 16px;margin-top:8px;cursor:pointer;";
+            btn.addEventListener("click", async () => {
+                pre.textContent = "Loading...";
+                try {
+                    const cfg = await helpers.rpc.getViteConfig();
 
-            button?.addEventListener("click", async () => {
-                if (result) {
-                    result.textContent = "Loading...";
-
-                    try {
-                        const config = await helpers.rpc.getViteConfig();
-
-                        result.textContent = JSON.stringify(config, null, 2);
-                    } catch (error) {
-                        result.textContent = `Error: ${error instanceof Error ? error.message : String(error)}`;
-                    }
+                    pre.textContent = JSON.stringify(cfg, null, 2);
+                } catch (error) {
+                    pre.textContent = `Error: ${error instanceof Error ? error.message : String(error)}`;
                 }
             });
+
+            const wrapper = document.createElement("div");
+
+            wrapper.style.cssText = "padding:16px;color:white;";
+            wrapper.append(Object.assign(document.createElement("h2"), { textContent: "Example App" }));
+            wrapper.append(Object.assign(document.createElement("p"), { textContent: "Custom app registered via the global API." }));
+            wrapper.append(btn, pre);
+            content.append(wrapper);
+            canvas.append(content);
         },
         name: "Example",
     };
@@ -54,7 +70,8 @@ if (typeof window !== "undefined" && window.__VISULIMA_DEVTOOLS__) {
     window.__VISULIMA_DEVTOOLS__.registerApp(exampleApp);
 }
 
-// Example: Using the hook system
+// ── Hook system ───────────────────────────────────────────────────────────────
+
 if (typeof window !== "undefined" && window.__DEV_TOOLBAR_HOOK__) {
     const hook = window.__DEV_TOOLBAR_HOOK__;
 
@@ -70,7 +87,6 @@ if (typeof window !== "undefined" && window.__DEV_TOOLBAR_HOOK__) {
         console.log("Dev Tools closed");
     });
 
-    // Add a timeline event
     hook.addTimelineEvent("custom", {
         data: { message: "Hello from example!" },
         id: "example-1",

@@ -94,6 +94,7 @@ export const usePosition = (panelEl: RefObject<HTMLElement>): UsePositionReturn 
     const { height: windowHeight, width: windowWidth } = useWindowSize();
     const [isHovering, setIsHovering] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
+    const [isViteOverlayOpen, setIsViteOverlayOpen] = useState(false);
     const draggingOffsetRef = useRef({ x: 0, y: 0 });
     const mousePositionRef = useRef({ x: 0, y: 0 });
     const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -129,6 +130,28 @@ export const usePosition = (panelEl: RefObject<HTMLElement>): UsePositionReturn 
             right: safeArea.right + 10,
             top: safeArea.top + 10,
         });
+    }, []);
+
+    // Keep toolbar visible while the @visulima/vite-overlay dialog is open
+    useEffect(() => {
+        const check = (): void => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const overlay = (globalThis as any).__v_o__current as { parentNode?: Node; shadowRoot?: ShadowRoot } | undefined;
+
+            if (overlay?.parentNode) {
+                const rootEl = overlay.shadowRoot?.querySelector("#__v_o__root") as HTMLElement | null;
+
+                setIsViteOverlayOpen(!!rootEl && !rootEl.classList.contains("hidden"));
+            } else {
+                setIsViteOverlayOpen(false);
+            }
+        };
+
+        const id = setInterval(check, 300);
+
+        check();
+
+        return () => clearInterval(id);
     }, []);
 
     /**
@@ -375,8 +398,9 @@ export const usePosition = (panelEl: RefObject<HTMLElement>): UsePositionReturn 
         // - Not hovering
         // - Not a touch device
         // - minimizePanelInactive is set to a positive value
-        return !isDragging && !state.open && !isHovering && !isTouchDevice && state.minimizePanelInactive > 0;
-    }, [isDragging, state.open, state.minimizePanelInactive, isHovering]);
+        // - vite-overlay dialog is not open (keep toolbar visible alongside the overlay)
+        return !isDragging && !state.open && !isHovering && !isTouchDevice && state.minimizePanelInactive > 0 && !isViteOverlayOpen;
+    }, [isDragging, state.open, state.minimizePanelInactive, isHovering, isViteOverlayOpen]);
 
     // Computed: anchorPos
     const anchorPos = useMemo(() => {

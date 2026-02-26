@@ -1,7 +1,7 @@
 import type { ToolbarSettings } from "../types/toolbar";
 import { DEFAULT_TOOLBAR_SETTINGS } from "../types/toolbar";
 
-const SETTINGS_STORAGE_KEY = "__VISULIMA_DEVTOOLS_SETTINGS__";
+const SETTINGS_STORAGE_KEY = "__v_dt__settings";
 
 /**
  * Load settings from localStorage

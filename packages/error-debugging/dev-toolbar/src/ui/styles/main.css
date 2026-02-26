@@ -150,12 +150,14 @@
 @utility transition-panel {
     /* opacity + transform for inline-style centering; translate+scale for Tailwind v4 individual props */
     /* width animates the container↔wide toggle — same easing as material motion */
+    /* clip-path animates the fullscreen expand/collapse */
     transition:
         opacity 0.4s cubic-bezier(0.23, 1, 0.32, 1),
         transform 0.4s cubic-bezier(0.23, 1, 0.32, 1),
         translate 0.4s cubic-bezier(0.23, 1, 0.32, 1),
         scale 0.4s cubic-bezier(0.23, 1, 0.32, 1),
-        width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        width 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+        clip-path 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Subtle CRT scan-line texture — terminal HUD atmosphere */
@@ -175,31 +177,13 @@
     scrollbar-color: var(--color-border) transparent;
 }
 
-/* ─── Global overrides ────────────────────────────────────────────────────── */
-#dev-toolbar-root {
+/* JetBrains Mono font stack + programming ligatures — too complex for a single Tailwind class */
+@utility toolbar-font {
     /* JetBrains Mono (injected via <head>) → Geist Mono → system monospace */
-    /* JetBrains Mono — developer-grade monospace, crisp at small sizes */
-    font-family: "JetBrains Mono", "Geist Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace !important;
-    font-size: 13px !important;
-    line-height: 1.6 !important;
+    font-family: "JetBrains Mono", "Geist Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace;
     /* Contextual alternates + kerning + programming ligatures */
-    font-feature-settings: "kern" 1, "liga" 1, "calt" 1, "zero" 1 !important;
-    font-optical-sizing: auto !important;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    box-sizing: border-box;
-    z-index: 2147483647 !important;
-    pointer-events: auto !important;
-}
-
-#dev-toolbar-root * {
-    box-sizing: border-box;
-}
-
-@media print {
-    #dev-toolbar-root {
-        display: none;
-    }
+    font-feature-settings: "kern" 1, "liga" 1, "calt" 1, "zero" 1;
+    font-optical-sizing: auto;
 }
 
 /* ─── Scrollbar — requires ::pseudo-elements, impossible in Tailwind ─────── */

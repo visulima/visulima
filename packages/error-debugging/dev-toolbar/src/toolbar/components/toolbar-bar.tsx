@@ -7,6 +7,7 @@ import Icon from "../../ui/components/icon";
 import cn from "../../utils/cn";
 import { useApps } from "../hooks/index";
 import AppButton from "./app-button";
+import ViteOverlayButton from "./vite-overlay-button";
 
 /**
  * Overflow "more apps" button — same visual style as AppButton.
@@ -66,12 +67,13 @@ const ToolbarBar = ({ customAppsToShow = 3 }: ToolbarBarProps): ComponentChildre
     const overflowApps = customApps.slice(customAppsToShow);
 
     return (
-        <div class="flex items-center pointer-events-auto" id="dev-bar">
-            <div class="flex flex-row items-center justify-start gap-1" id="bar-container">
+        <div class="flex items-center pointer-events-auto" id="__v_dt__bar">
+            <div class="flex flex-row items-center justify-start gap-1" id="__v_dt__bar_container">
                 {visibleApps.map((app) => (
                     <AppButton key={app.id} app={app} />
                 ))}
                 {overflowApps.length > 0 && <MoreButton />}
+                <ViteOverlayButton />
             </div>
         </div>
     );
