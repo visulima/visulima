@@ -62,7 +62,7 @@ export interface DevToolsFrameState {
     /**
      * Panel view mode
      */
-    viewMode: "default" | "fullscreen";
+    viewMode: "default" | "fullscreen" | "wide";
 
     /**
      * Panel width as viewport width percentage

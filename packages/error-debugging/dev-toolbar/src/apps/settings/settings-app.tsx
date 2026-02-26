@@ -1,7 +1,12 @@
 /** @jsxImportSource preact */
 import type { ComponentChildren } from "preact";
 
+import monitorIcon from "lucide-static/icons/monitor.svg?data-uri&encoding=css";
+import moonIcon from "lucide-static/icons/moon.svg?data-uri&encoding=css";
+import sunIcon from "lucide-static/icons/sun.svg?data-uri&encoding=css";
+
 import type { AppComponentProps } from "../../types/app";
+import Icon from "../../ui/components/icon";
 import cn from "../../utils/cn";
 import { useFrameState } from "../../toolbar/hooks/use-frame-state";
 import { useTheme } from "../../toolbar/hooks/use-theme";
@@ -73,42 +78,17 @@ const ThemeControl = ({ value, onChange }: { value: Theme; onChange: (v: Theme) 
         {
             label: "Light",
             value: "light",
-            icon: (
-                <svg aria-hidden="true" fill="none" height="13" viewBox="0 0 14 14" width="13">
-                    <circle cx="7" cy="7" r="3" stroke="currentColor" stroke-width="1.5" />
-                    <path
-                        d="M7 1v1M7 12v1M1 7h1M12 7h1M2.93 2.93l.7.7M10.37 10.37l.7.7M10.37 3.63l-.7.7M3.63 10.37l-.7.7"
-                        stroke="currentColor"
-                        stroke-linecap="round"
-                        stroke-width="1.5"
-                    />
-                </svg>
-            ),
+            icon: <Icon size={13} src={sunIcon} />,
         },
         {
             label: "Dark",
             value: "dark",
-            icon: (
-                <svg aria-hidden="true" fill="none" height="13" viewBox="0 0 14 14" width="13">
-                    <path
-                        d="M12 8.3A5.5 5.5 0 0 1 5.7 2a5.5 5.5 0 1 0 6.3 6.3Z"
-                        stroke="currentColor"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="1.5"
-                    />
-                </svg>
-            ),
+            icon: <Icon size={13} src={moonIcon} />,
         },
         {
             label: "System",
             value: "system",
-            icon: (
-                <svg aria-hidden="true" fill="none" height="13" viewBox="0 0 14 14" width="13">
-                    <rect height="9" rx="1.5" stroke="currentColor" stroke-width="1.5" width="12" x="1" y="2" />
-                    <path d="M5 11h4M7 11v2" stroke="currentColor" stroke-linecap="round" stroke-width="1.5" />
-                </svg>
-            ),
+            icon: <Icon size={13} src={monitorIcon} />,
         },
     ];
 

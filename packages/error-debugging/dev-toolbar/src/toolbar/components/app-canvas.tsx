@@ -2,7 +2,16 @@
 import type { ComponentChildren } from "preact";
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 
+import chevronRightIcon from "lucide-static/icons/chevron-right.svg?data-uri&encoding=css";
+import layersIcon from "lucide-static/icons/layers.svg?data-uri&encoding=css";
+import maximize2Icon from "lucide-static/icons/maximize-2.svg?data-uri&encoding=css";
+import maximizeIcon from "lucide-static/icons/maximize.svg?data-uri&encoding=css";
+import minimize2Icon from "lucide-static/icons/minimize-2.svg?data-uri&encoding=css";
+import minimizeIcon from "lucide-static/icons/minimize.svg?data-uri&encoding=css";
+import xIcon from "lucide-static/icons/x.svg?data-uri&encoding=css";
+
 import type { DevToolbarAppState } from "../../types/index";
+import Icon from "../../ui/components/icon";
 import cn from "../../utils/cn";
 import { createServerHelpers } from "../helpers";
 import { useFrameState } from "../hooks/use-frame-state";
@@ -91,19 +100,22 @@ const clamp = (value: number, min: number, max: number): number => Math.min(Math
 /**
  * Panel inset-position classes — only anchors, no dimension constraints.
  * Dimensions come from inline style computed from state.
+ * Both wide and container modes use the same centering technique (left:50% +
+ * translateX(-50%)) so only width needs to change when toggling — enabling a
+ * smooth CSS width transition.
  */
 const getPanelPositionClasses = (position: DevPanelProps["position"]): string => {
     switch (position) {
         case "bottom":
-            return "bottom-14 left-4 right-4";
+            return "bottom-14";
         case "left":
             return "left-14 top-4 bottom-4";
         case "right":
             return "right-14 top-4 bottom-4";
         case "top":
-            return "top-14 left-4 right-4";
+            return "top-14";
         default:
-            return "bottom-14 left-4 right-4";
+            return "bottom-14";
     }
 };
 
@@ -137,23 +149,6 @@ const getVisibilityClasses = (position: DevPanelProps["position"], isVisible: bo
     return cn("opacity-0 pointer-events-none scale-[0.99]", directionTranslate[position] ?? "translate-y-2");
 };
 
-const FullscreenIcon = ({ isFullscreen }: { isFullscreen: boolean }): ComponentChildren =>
-    isFullscreen ? (
-        <svg aria-hidden="true" fill="none" height="13" viewBox="0 0 14 14" width="13">
-            <path
-                d="M5 9H1M5 9V13M5 9L1 13M9 9H13M9 9V13M9 9L13 13M5 5H1M5 5V1M5 5L1 1M9 5H13M9 5V1M9 5L13 1"
-                stroke="currentColor"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="1.5"
-            />
-        </svg>
-    ) : (
-        <svg aria-hidden="true" fill="none" height="13" viewBox="0 0 14 14" width="13">
-            <path d="M1 5V1h4M9 1h4v4M13 9v4H9M5 13H1V9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" />
-        </svg>
-    );
-
 const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, position }: DevPanelProps): ComponentChildren => {
     const [isRendered, setIsRendered] = useState(false);
     const [isVisible, setIsVisible] = useState(false);
@@ -167,6 +162,7 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
     const dimensionsRef = useRef({ height: state.height, width: state.width });
 
     const isFullscreen = state.viewMode === "fullscreen";
+    const isWide = state.viewMode === "wide";
 
     // ─── Compute inline panel size ────────────────────────────────────────────
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -178,19 +174,36 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
         const ww = globalThis.window?.innerWidth ?? 1920;
         const wh = globalThis.window?.innerHeight ?? 1080;
 
+        const h = `${(dimensionsRef.current.height / 100) * wh}px`;
+
         switch (position) {
             case "bottom":
             case "top":
-                return { height: `${(dimensionsRef.current.height / 100) * wh}px` };
+                // Both wide and container use left:50% + translateX(-50%) so that
+                // only `width` changes between modes — CSS can then transition it
+                // smoothly without any positional jump.
+                return {
+                    height: h,
+                    left: "50%",
+                    transform: "translateX(-50%)",
+                    // min() embeds the 1280px cap into the computed width value so
+                    // CSS width-transition works (both sides are pixel values).
+                    width: isWide ? "calc(100vw - 2rem)" : "min(calc(100vw - 2rem), 1280px)",
+                };
             case "left":
             case "right":
                 return { width: `${(dimensionsRef.current.width / 100) * ww}px` };
             default:
-                return { height: `${(dimensionsRef.current.height / 100) * wh}px` };
+                return {
+                    height: h,
+                    left: "50%",
+                    transform: "translateX(-50%)",
+                    width: isWide ? "calc(100vw - 2rem)" : "min(calc(100vw - 2rem), 1280px)",
+                };
         }
         // rerender counter triggers recompute on each drag step
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isFullscreen, position, rerender]);
+    }, [isFullscreen, isWide, position, rerender]);
 
     // ─── Resize event handlers ────────────────────────────────────────────────
     useEffect(() => {
@@ -460,14 +473,11 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                                 onClick={() => setSidebarCollapsed((c) => !c)}
                                 type="button"
                             >
-                                <svg
-                                    aria-hidden="true"
-                                    class={cn("size-3.5 shrink-0 transition-transform duration-300", !sidebarCollapsed && "rotate-180")}
-                                    fill="none"
-                                    viewBox="0 0 14 14"
-                                >
-                                    <path d="M5 2.5L9.5 7L5 11.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
-                                </svg>
+                                <Icon
+                                    class={cn("size-3.5 transition-transform duration-300", !sidebarCollapsed && "rotate-180")}
+                                    size={14}
+                                    src={chevronRightIcon}
+                                />
                             </button>
                             {activeApp?.icon && (
                                 <span
@@ -483,6 +493,24 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                         </div>
 
                         <div class="flex items-center gap-1 shrink-0">
+                            {/* Wide / container width toggle — only meaningful for bottom/top docked panels */}
+                            {(position === "bottom" || position === "top") && !isFullscreen && (
+                                <button
+                                    aria-label={isWide ? "Switch to container width" : "Expand to full width"}
+                                    class={cn(
+                                        "flex items-center justify-center size-8",
+                                        "cursor-pointer border-0 bg-transparent",
+                                        "text-foreground/30 hover:text-foreground hover:bg-foreground/[0.07]",
+                                        "transition-all duration-200 active:scale-90",
+                                    )}
+                                    onClick={() => updateState({ viewMode: isWide ? "default" : "wide" })}
+                                    title={isWide ? "Container width" : "Full width"}
+                                    type="button"
+                                >
+                                    <Icon size={13} src={isWide ? minimize2Icon : maximize2Icon} />
+                                </button>
+                            )}
+
                             {/* Fullscreen toggle */}
                             <button
                                 aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
@@ -496,7 +524,7 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                                 title={isFullscreen ? "Exit fullscreen" : "Fullscreen"}
                                 type="button"
                             >
-                                <FullscreenIcon isFullscreen={isFullscreen} />
+                                <Icon size={13} src={isFullscreen ? minimizeIcon : maximizeIcon} />
                             </button>
 
                             {/* Close */}
@@ -512,9 +540,7 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                                 title="Close (Esc)"
                                 type="button"
                             >
-                                <svg aria-hidden="true" fill="none" height="12" viewBox="0 0 14 14" width="12">
-                                    <path d="M1 1L13 13M13 1L1 13" stroke="currentColor" stroke-linecap="round" stroke-width="2" />
-                                </svg>
+                                <Icon size={12} src={xIcon} />
                             </button>
                         </div>
                     </div>
@@ -526,15 +552,7 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                         ) : (
                             <div class="flex flex-col items-center justify-center min-h-48 h-full gap-4">
                                 <div class="size-12 bg-foreground/[0.04] flex items-center justify-center border border-border/50">
-                                    <svg class="text-foreground/20" fill="none" height="24" viewBox="0 0 24 24" width="24">
-                                        <path
-                                            d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
-                                            stroke="currentColor"
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                            stroke-width="1.5"
-                                        />
-                                    </svg>
+                                    <Icon class="text-foreground/20" size={24} src={layersIcon} />
                                 </div>
                                 <span class="text-[0.65rem] font-bold text-foreground/30 uppercase tracking-[0.15em]">// select an app</span>
                             </div>

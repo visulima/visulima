@@ -32,7 +32,7 @@ export default defineConfig({
     validation: {
         dependencies: {
             unused: {
-                exclude: ["tw-animate-css", "@tailwindcss/forms", "@tailwindcss/typography"],
+                exclude: ["tw-animate-css", "@tailwindcss/forms", "@tailwindcss/typography", "lucide-static"],
             },
             hoisted: {
                 exclude: ["virtual:visulima-dev-toolbar-options", "virtual:visulima-dev-toolbar-path:toolbar", "virtual:visulima-dev-toolbar-path:apps"],

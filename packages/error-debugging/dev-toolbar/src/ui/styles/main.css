@@ -148,7 +148,14 @@
 }
 
 @utility transition-panel {
-    transition: opacity 0.4s cubic-bezier(0.23, 1, 0.32, 1), transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+    /* opacity + transform for inline-style centering; translate+scale for Tailwind v4 individual props */
+    /* width animates the container↔wide toggle — same easing as material motion */
+    transition:
+        opacity 0.4s cubic-bezier(0.23, 1, 0.32, 1),
+        transform 0.4s cubic-bezier(0.23, 1, 0.32, 1),
+        translate 0.4s cubic-bezier(0.23, 1, 0.32, 1),
+        scale 0.4s cubic-bezier(0.23, 1, 0.32, 1),
+        width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Subtle CRT scan-line texture — terminal HUD atmosphere */

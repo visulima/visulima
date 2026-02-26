@@ -141,6 +141,10 @@ export const devToolbar = (options: DevToolbarOptions = {}): Plugin => {
             if (id.endsWith(devToolbarResourceSymbol)) {
                 const filename = removeUrlQuery(id);
 
+                // Watch the file so Vite invalidates this module when it changes on disk
+                // (e.g. after `pnpm build` rebuilds the dist)
+                this.addWatchFile(filename);
+
                 return await fs.promises.readFile(filename, "utf8");
             }
 

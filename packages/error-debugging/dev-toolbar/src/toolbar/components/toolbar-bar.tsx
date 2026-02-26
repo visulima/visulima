@@ -1,6 +1,9 @@
 /** @jsxImportSource preact */
 import type { ComponentChildren } from "preact";
 
+import moreHorizontalIcon from "lucide-static/icons/more-horizontal.svg?data-uri&encoding=css";
+
+import Icon from "../../ui/components/icon";
 import cn from "../../utils/cn";
 import { useApps } from "../hooks/index";
 import AppButton from "./app-button";
@@ -36,11 +39,7 @@ const MoreButton = (): ComponentChildren => {
             type="button"
         >
             <div class="relative size-6 flex items-center justify-center select-none">
-                <svg fill="currentColor" height="20" viewBox="0 0 16 16" width="20">
-                    <circle cx="3" cy="8" r="1.5" />
-                    <circle cx="8" cy="8" r="1.5" />
-                    <circle cx="13" cy="8" r="1.5" />
-                </svg>
+                <Icon size={16} src={moreHorizontalIcon} />
             </div>
         </button>
     );
