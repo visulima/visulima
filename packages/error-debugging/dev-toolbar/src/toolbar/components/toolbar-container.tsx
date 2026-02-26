@@ -8,6 +8,7 @@ import cn from "../../utils/cn";
 import { ToolbarContext, type ToolbarContextState } from "../context/index";
 import { useFrameState, usePanelVisible, usePosition, useTheme } from "../hooks/index";
 import DevPanel from "./app-canvas";
+import FirstVisitHint from "./first-visit-hint";
 import ToolbarBar from "./toolbar-bar";
 
 interface ToolbarContainerProps {
@@ -234,7 +235,14 @@ const ToolbarContainer = ({
                             "transition-pill",
                         )}
                         data-vertical={isVertical || undefined}
-                        onPointerDown={onPointerDown}
+                        onPointerDown={(e) => {
+                            // Dismiss hint on first drag
+                            if (state.isFirstVisit) {
+                                updateState({ isFirstVisit: false });
+                            }
+
+                            onPointerDown(e);
+                        }}
                         style={panelStyle}
                     >
                         {/* Logo toggle button */}
@@ -251,6 +259,11 @@ const ToolbarContainer = ({
                             )}
                             onClick={(e) => {
                                 e.stopPropagation();
+                                // Dismiss hint on first logo click
+                                if (state.isFirstVisit) {
+                                    updateState({ isFirstVisit: false });
+                                }
+
                                 togglePanelVisible();
                             }}
                             title="Toggle devtools panel"
@@ -267,6 +280,14 @@ const ToolbarContainer = ({
                             <ToolbarBar customAppsToShow={customAppsToShow} />
                         </div>
                     </div>
+
+                    {/* First-visit onboarding hint — sibling of pill so it escapes overflow:hidden */}
+                    {state.isFirstVisit && (
+                        <FirstVisitHint
+                            onDismiss={() => updateState({ isFirstVisit: false })}
+                            position={state.position}
+                        />
+                    )}
                 </div>
 
                 {/* DevPanel is outside the anchor div to avoid the CSS transform

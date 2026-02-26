@@ -1,7 +1,7 @@
 import { useEffect, useState } from "preact/hooks";
 
 /**
- * Frame state interface - matches Vue DevTools exactly
+ * Frame state interface
  */
 export interface DevToolsFrameState {
     /**
@@ -15,7 +15,7 @@ export interface DevToolsFrameState {
     height: number;
 
     /**
-     * Whether this is first visit
+     * Whether this is the first visit (used to show onboarding hint)
      */
     isFirstVisit: boolean;
 

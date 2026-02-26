@@ -1,5 +1,4 @@
 export { useApps } from "./use-apps";
-export { useDelayedHide } from "./use-delayed-hide";
 export { useFrameState } from "./use-frame-state";
 export type { DevToolsFrameState, UseFrameStateReturn } from "./use-frame-state";
 export { usePanelVisible } from "./use-panel-visible";
