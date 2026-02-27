@@ -10,6 +10,7 @@ interface ModuleEntry {
     url: string;
     ext: string;
     importers: number;
+    importerUrls: string[];
 }
 
 const EXT_COLORS: Record<string, string> = {
@@ -53,7 +54,8 @@ const ModuleGraphApp = ({ helpers }: AppComponentProps): ComponentChildren => {
                 id: m.id ?? m.url ?? "",
                 url: m.url ?? m.id ?? "",
                 ext: getExt(m.url ?? m.id ?? ""),
-                importers: m.importers?.size ?? m.importerCount ?? 0,
+                importers: m.importerCount ?? 0,
+                importerUrls: Array.isArray(m.importerUrls) ? m.importerUrls : [],
             }));
             setModules(entries);
             setLoading(false);
@@ -82,8 +84,7 @@ const ModuleGraphApp = ({ helpers }: AppComponentProps): ComponentChildren => {
             return;
         }
         setSelectedId(mod.id);
-        // importers list from the raw data isn't available after transform — show count
-        setImportersList([]);
+        setImportersList(mod.importerUrls);
     };
 
     if (loading) {

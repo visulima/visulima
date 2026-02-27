@@ -1,10 +1,11 @@
+import moreHorizontalIcon from "lucide-static/icons/more-horizontal.svg?raw";
+
 import type { DevToolbarApp } from "../../types/app";
-import { MORE_ICON } from "../../ui/icons/index";
 import MoreApp from "./more-app";
 
 const moreApp: DevToolbarApp = {
     component: MoreApp,
-    icon: MORE_ICON,
+    icon: moreHorizontalIcon,
     id: "dev-toolbar:more",
     name: "More",
 };
