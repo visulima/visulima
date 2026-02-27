@@ -53,6 +53,7 @@ export interface DevToolbarOptions {
      */
     apps?: {
         [key: string]: boolean | undefined;
+        a11y?: boolean;
         moduleGraph?: boolean;
         performance?: boolean;
         seo?: boolean;
@@ -182,6 +183,7 @@ export const devToolbar = (options: DevToolbarOptions = {}): Plugin => {
             if (id === RESOLVED_OPTIONS) {
                 return `export default ${JSON.stringify({
                     apps: {
+                        a11y: options.apps?.a11y ?? true,
                         moduleGraph: options.apps?.moduleGraph ?? true,
                         performance: options.apps?.performance ?? true,
                         seo: options.apps?.seo ?? true,

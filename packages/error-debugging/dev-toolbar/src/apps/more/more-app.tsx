@@ -20,7 +20,7 @@ const MoreApp = (_props: AppComponentProps): ComponentChildren => {
         // Filter to only non-core apps (overflow apps registered by users)
         const customApps = allApps.filter(
             (a: DevToolbarApp) =>
-                !["dev-toolbar:settings", "dev-toolbar:timeline", "dev-toolbar:more",
+                !["dev-toolbar:a11y", "dev-toolbar:settings", "dev-toolbar:timeline", "dev-toolbar:more",
                   "dev-toolbar:vite-config", "dev-toolbar:module-graph", "dev-toolbar:seo",
                   "dev-toolbar:performance"].includes(a.id),
         );

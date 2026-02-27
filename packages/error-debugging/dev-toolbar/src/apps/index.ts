@@ -1,3 +1,4 @@
+export { default as a11yApp } from "./a11y/index";
 export { default as moduleGraphApp } from "./module-graph/index";
 export { default as moreApp } from "./more/index";
 export { default as performanceApp } from "./performance/index";

@@ -54,7 +54,9 @@ const initToolbar = async () => {
         await import("virtual:visulima-dev-toolbar-path:toolbar/index.js");
 
         // Import apps
-        const { moduleGraphApp, moreApp, performanceApp, seoApp, settingsApp, timelineApp, viteConfigApp } = await import("virtual:visulima-dev-toolbar-path:apps/index.js");
+        const { a11yApp, moduleGraphApp, moreApp, performanceApp, seoApp, settingsApp, timelineApp, viteConfigApp } = await import(
+            "virtual:visulima-dev-toolbar-path:apps/index.js"
+        );
 
         // Create toolbar element
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -88,6 +90,10 @@ const initToolbar = async () => {
 
             if (apps.performance) {
                 toolbar.registerApp(performanceApp, true);
+            }
+
+            if (apps.a11y) {
+                toolbar.registerApp(a11yApp, true);
             }
 
             // Always register more app
