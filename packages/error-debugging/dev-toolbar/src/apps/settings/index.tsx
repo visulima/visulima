@@ -1,11 +1,12 @@
+import settingsIcon from "lucide-static/icons/settings.svg?raw";
+
 import type { DevToolbarApp } from "../../types/app";
-import { SETTINGS_ICON } from "../../ui/icons/index";
 import SettingsApp from "./settings-app";
 
 const settingsApp: DevToolbarApp = {
     component: SettingsApp,
     defaultOpen: true,
-    icon: SETTINGS_ICON,
+    icon: settingsIcon,
     id: "dev-toolbar:settings",
     name: "Settings",
 };

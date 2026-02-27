@@ -4,6 +4,20 @@ import { useContext } from "preact/hooks";
 import type { DevToolbarAppState, ToolbarPlacement } from "../../types/index";
 
 /**
+ * A tooltip that has been pinned by the user — stays visible until unpinned.
+ */
+export interface PinnedTooltip {
+    /** The app whose tooltip is shown */
+    app: DevToolbarAppState;
+    /** Unique instance identifier (appId + timestamp) */
+    id: string;
+    /** Initial left position (viewport px) */
+    initialX: number;
+    /** Initial top position (viewport px) */
+    initialY: number;
+}
+
+/**
  * Toolbar context state
  */
 export interface ToolbarContextState {
@@ -71,6 +85,37 @@ export interface ToolbarContextState {
      * Clear app notification
      */
     clearNotification: (appId: string) => void;
+
+    /**
+     * Currently hovered app (has a tooltip component)
+     */
+    hoveredApp: DevToolbarAppState | null;
+
+    /**
+     * Viewport rect of the hovered app button (for tooltip positioning)
+     */
+    hoveredAppRect: DOMRect | null;
+
+    /**
+     * Set/clear the hovered app. Pass null to start the leave debounce.
+     */
+    setHoveredApp: (app: DevToolbarAppState | null, rect?: DOMRect | null) => void;
+
+    /**
+     * Currently pinned tooltip cards
+     */
+    pinnedTooltips: PinnedTooltip[];
+
+    /**
+     * Pin a tooltip at the given viewport position.
+     * Multiple pins from the same app are allowed (each gets a unique id).
+     */
+    pinTooltip: (app: DevToolbarAppState, x: number, y: number) => void;
+
+    /**
+     * Remove a pinned tooltip by its instance id.
+     */
+    unpinTooltip: (id: string) => void;
 }
 
 /**

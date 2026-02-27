@@ -21,7 +21,8 @@ const MoreApp = (_props: AppComponentProps): ComponentChildren => {
         const customApps = allApps.filter(
             (a: DevToolbarApp) =>
                 !["dev-toolbar:settings", "dev-toolbar:timeline", "dev-toolbar:more",
-                  "dev-toolbar:vite-config", "dev-toolbar:module-graph", "dev-toolbar:seo"].includes(a.id),
+                  "dev-toolbar:vite-config", "dev-toolbar:module-graph", "dev-toolbar:seo",
+                  "dev-toolbar:performance"].includes(a.id),
         );
 
         setApps(customApps);

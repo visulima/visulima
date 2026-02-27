@@ -1,14 +1,16 @@
 /** @jsxImportSource preact */
 import type { ComponentChildren } from "preact";
-import { useCallback, useMemo, useRef } from "preact/hooks";
+import { useCallback, useEffect, useMemo, useRef, useState } from "preact/hooks";
 
 import visulimaLogo from "../../assets/visulima-logo.svg";
 import type { DevToolbarAppState, ToolbarPlacement } from "../../types/index";
 import cn from "../../utils/cn";
-import { ToolbarContext, type ToolbarContextState } from "../context/index";
+import { type PinnedTooltip, ToolbarContext, type ToolbarContextState } from "../context/index";
 import { useFrameState, usePanelVisible, usePosition, useTheme } from "../hooks/index";
 import DevPanel from "./app-canvas";
+import AppTooltipOverlay from "./app-tooltip-overlay";
 import FirstVisitHint from "./first-visit-hint";
+import PinnedTooltipCard from "./pinned-tooltip-card";
 import ToolbarBar from "./toolbar-bar";
 
 interface ToolbarContainerProps {
@@ -121,11 +123,147 @@ const ToolbarContainer = ({
 }: ToolbarContainerProps): ComponentChildren => {
     const anchorRef = useRef<HTMLDivElement>(null);
     const panelRef = useRef<HTMLDivElement>(null);
+    const leaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const { resolvedTheme } = useTheme();
     const { state, updateState } = useFrameState();
     const { panelVisible, togglePanelVisible, closePanel } = usePanelVisible();
     const { anchorStyle, bringUp, isDragging, isHidden, isVertical, onPointerDown, panelStyle } = usePosition(panelRef);
+
+    // ─── Tooltip hover state ──────────────────────────────────────────────────
+    const [hoveredApp, setHoveredAppState] = useState<DevToolbarAppState | null>(null);
+    const [hoveredAppRect, setHoveredAppRect] = useState<DOMRect | null>(null);
+
+    // ─── Pinned tooltips + localStorage persistence ───────────────────────────
+    const PINNED_KEY = "__v_dt__pinned_tooltips";
+
+    // Latest dragged positions per pin id — updated by card on drag-end.
+    // Using a ref avoids stale closures without re-renders.
+    const pinPositionsRef = useRef<Map<string, { x: number; y: number }>>(new Map());
+
+    const savePins = useCallback((pins: PinnedTooltip[]): void => {
+        try {
+            const data = pins.map((p) => {
+                const pos = pinPositionsRef.current.get(p.id);
+
+                return { appId: p.app.id, x: pos?.x ?? p.initialX, y: pos?.y ?? p.initialY };
+            });
+
+            localStorage.setItem(PINNED_KEY, JSON.stringify(data));
+        } catch {
+            // localStorage unavailable (private browsing, storage quota, etc.)
+        }
+    }, [PINNED_KEY]);
+
+    const [pinnedTooltips, setPinnedTooltips] = useState<PinnedTooltip[]>([]);
+
+    const pinTooltip = useCallback((app: DevToolbarAppState, x: number, y: number): void => {
+        const id = `${app.id}-${Date.now()}`;
+
+        setPinnedTooltips((prev) => {
+            const next = [...prev, { app, id, initialX: x, initialY: y }];
+
+            savePins(next);
+
+            return next;
+        });
+    }, [savePins]);
+
+    const unpinTooltip = useCallback((id: string): void => {
+        setPinnedTooltips((prev) => {
+            const next = prev.filter((p) => p.id !== id);
+
+            pinPositionsRef.current.delete(id);
+            savePins(next);
+
+            return next;
+        });
+    }, [savePins]);
+
+    // Called by PinnedTooltipCard when a drag ends — record final position and save
+    const handlePinMove = useCallback((id: string, x: number, y: number): void => {
+        pinPositionsRef.current.set(id, { x, y });
+        setPinnedTooltips((prev) => {
+            savePins(prev);
+
+            return prev;
+        });
+    }, [savePins]);
+
+    // Restore pinned tooltips from localStorage.
+    // Apps register one-by-one (registerApp → render), so we must re-check on
+    // every apps change rather than assuming all apps are present on first run.
+    // storedPinsRef caches the parsed localStorage data so we only JSON.parse once.
+    // restoredAppIdsRef prevents restoring the same appId twice across renders.
+    const storedPinsRef = useRef<Array<{ appId: string; x: number; y: number }> | null>(null);
+    const restoredAppIdsRef = useRef(new Set<string>());
+
+    useEffect(() => {
+        if (apps.length === 0) {
+            return;
+        }
+
+        // Parse localStorage exactly once
+        if (storedPinsRef.current === null) {
+            try {
+                const raw = localStorage.getItem(PINNED_KEY);
+
+                storedPinsRef.current = raw ? (JSON.parse(raw) as Array<{ appId: string; x: number; y: number }>) : [];
+            } catch {
+                storedPinsRef.current = [];
+            }
+        }
+
+        const stored = storedPinsRef.current;
+
+        if (stored.length === 0) {
+            return;
+        }
+
+        const newPins: PinnedTooltip[] = [];
+
+        for (const entry of stored) {
+            // Skip appIds that have already been restored in a previous run
+            if (restoredAppIdsRef.current.has(entry.appId)) {
+                continue;
+            }
+
+            const app = apps.find((a) => a.id === entry.appId && a.tooltip);
+
+            if (app) {
+                restoredAppIdsRef.current.add(entry.appId);
+                newPins.push({
+                    app,
+                    id: `${app.id}-restored-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+                    initialX: entry.x,
+                    initialY: entry.y,
+                });
+            }
+        }
+
+        if (newPins.length > 0) {
+            setPinnedTooltips((prev) => [...prev, ...newPins]);
+        }
+    }, [apps, PINNED_KEY]);
+
+    const handleSetHoveredApp = useCallback((app: DevToolbarAppState | null, rect?: DOMRect | null): void => {
+        if (leaveTimerRef.current !== null) {
+            clearTimeout(leaveTimerRef.current);
+            leaveTimerRef.current = null;
+        }
+
+        if (app) {
+            setHoveredAppState(app);
+            setHoveredAppRect(rect ?? null);
+        } else {
+            // Short debounce so moving mouse from button → tooltip doesn't flicker
+            leaveTimerRef.current = setTimeout(() => {
+                setHoveredAppState(null);
+                setHoveredAppRect(null);
+                leaveTimerRef.current = null;
+            }, 180);
+        }
+    }, []);
 
     // Refs so toggleApp always reads the freshest values, avoiding stale-closure issues
     const panelVisibleRef = useRef(panelVisible);
@@ -173,19 +311,25 @@ const ToolbarContainer = ({
         activeAppId,
         apps,
         clearNotification: onClearNotification,
+        hoveredApp,
+        hoveredAppRect,
         isDragging,
         isVisible: panelVisible,
+        pinTooltip,
+        pinnedTooltips,
         placement,
         registerApp: onRegisterApp,
         setDragging: () => {
             /* managed internally by usePosition */
         },
+        setHoveredApp: handleSetHoveredApp,
         setNotification: onSetNotification,
         setPlacement: () => {
             /* managed internally by usePosition */
         },
         setVisible: (visible) => updateState({ open: visible }),
         toggleApp,
+        unpinTooltip,
         unregisterApp: onUnregisterApp,
     };
 
@@ -298,6 +442,14 @@ const ToolbarContainer = ({
                     panelVisible={panelVisible}
                     position={state.position}
                 />
+
+                {/* App tooltip overlay — floats near the hovered toolbar button */}
+                <AppTooltipOverlay position={state.position} />
+
+                {/* Pinned tooltip cards — persistent, draggable, until unpinned */}
+                {pinnedTooltips.map((pinned) => (
+                    <PinnedTooltipCard key={pinned.id} onMove={handlePinMove} onUnpin={unpinTooltip} pinned={pinned} />
+                ))}
             </div>
         </ToolbarContext.Provider>
     );

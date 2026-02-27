@@ -15,6 +15,17 @@ export interface ServerHelpers {
 }
 
 /**
+ * Props passed to app tooltip (hover mini-canvas) components.
+ * Keep compact — tooltip components should be lightweight.
+ */
+export interface AppTooltipProps {
+    /**
+     * Server helpers (RPC, etc.)
+     */
+    helpers: ServerHelpers;
+}
+
+/**
  * Event target for app communication
  */
 export interface ToolbarAppEventTarget extends EventTarget {
@@ -93,6 +104,14 @@ export interface DevToolbarApp {
      * If provided, this will be used instead of init
      */
     component?: ComponentType<AppComponentProps>;
+
+    /**
+     * Optional hover tooltip component — renders a compact live preview when the
+     * user hovers over this app's button in the toolbar pill.
+     * The component should be small (≤280px wide) and self-contained.
+     * If omitted, hovering shows the native title tooltip only.
+     */
+    tooltip?: ComponentType<AppTooltipProps>;
 
     /**
      * Icon HTML string (SVG)

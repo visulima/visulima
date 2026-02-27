@@ -1,8 +1,10 @@
 /** @jsxImportSource preact */
 import type { ComponentChildren } from "preact";
+import { useRef } from "preact/hooks";
 
 import type { DevToolbarAppState } from "../../types/index";
 import cn from "../../utils/cn";
+import { useToolbarContext } from "../context/index";
 import { useApps } from "../hooks/index";
 
 interface AppButtonProps {
@@ -14,11 +16,13 @@ interface AppButtonProps {
 
 /**
  * App button component — shown in the toolbar pill.
- * Matches Nuxt DevTools exactly: 30px circle, opacity 0.8 default, no bg.
- * Pill has overflow:hidden so no custom tooltip needed — uses native title.
+ * When an app declares a `tooltip` component, hovering the button shows a live
+ * mini-canvas via AppTooltipOverlay (rendered outside overflow:hidden pill).
  */
 const AppButton = ({ app }: AppButtonProps): ComponentChildren => {
     const { toggleApp } = useApps();
+    const { isVisible, setHoveredApp } = useToolbarContext();
+    const buttonRef = useRef<HTMLButtonElement>(null);
 
     const handleClick = (): void => {
         toggleApp(app.id).catch((error) => {
@@ -26,8 +30,26 @@ const AppButton = ({ app }: AppButtonProps): ComponentChildren => {
         });
     };
 
+    const handleMouseEnter = (): void => {
+        // Don't show hover tooltip when the canvas panel is open
+        if (!app.tooltip || isVisible) {
+            return;
+        }
+
+        setHoveredApp(app, buttonRef.current?.getBoundingClientRect() ?? null);
+    };
+
+    const handleMouseLeave = (): void => {
+        if (!app.tooltip) {
+            return;
+        }
+
+        setHoveredApp(null);
+    };
+
     return (
         <button
+            ref={buttonRef}
             aria-label={app.name}
             class={cn(
                 "relative flex justify-center items-center",
@@ -38,17 +60,22 @@ const AppButton = ({ app }: AppButtonProps): ComponentChildren => {
                 "transition-all duration-150",
                 "hover:bg-primary/[0.08] hover:text-primary",
                 "active:scale-[0.94]",
-                // Active: lime highlight — terminal active indicator
+                // Active: primary highlight
                 app.active && "bg-primary/[0.12] text-primary",
                 "group-data-[vertical]/panel:rotate-[-90deg]",
             )}
             data-app-id={app.id}
             onClick={handleClick}
-            title={app.name}
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+            // Suppress native tooltip when the app provides its own rich tooltip
+            title={app.tooltip ? undefined : app.name}
             type="button"
         >
             {/* Icon + notification badge */}
             <div class="relative size-6 select-none flex items-center justify-center">
+                {/* App SVG icon — content comes from the app's own icon string (trusted developer-authored SVG) */}
+                {/* eslint-disable-next-line react/no-danger */}
                 <div class="size-6 flex items-center justify-center [&_svg]:size-4.5" dangerouslySetInnerHTML={{ __html: app.icon }} />
                 {app.notification.state && (
                     <span

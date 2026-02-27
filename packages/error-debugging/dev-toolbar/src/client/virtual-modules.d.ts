@@ -6,6 +6,7 @@ declare module "virtual:visulima-dev-toolbar-options" {
     interface DevToolbarVirtualOptions {
         apps: {
             moduleGraph: boolean;
+            performance: boolean;
             seo: boolean;
             settings: boolean;
             timeline: boolean;
@@ -41,6 +42,8 @@ declare module "virtual:visulima-dev-toolbar-path:*" {
     export const moduleGraphApp: any;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     export const moreApp: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    export const performanceApp: any;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     export const seoApp: any;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
