@@ -26,7 +26,7 @@ const MoreButton = (): ComponentChildren => {
                 // Transparent default — flush on the bg-muted group
                 "bg-transparent text-muted-foreground",
                 "transition-all duration-150",
-                "hover:bg-foreground/[0.08] hover:text-foreground",
+                "hover:bg-foreground/8 hover:text-foreground",
                 "active:scale-[0.94]",
                 "group-data-[vertical]/panel:rotate-[-90deg]",
             )}

@@ -25,7 +25,7 @@ const SEVERITY_COLOR: Record<Severity, string> = {
 
 const SEVERITY_BG: Record<Severity, string> = {
     critical: "bg-destructive/10 border-destructive/30",
-    minor: "bg-foreground/[0.04] border-border",
+    minor: "bg-foreground/4 border-border",
     moderate: "bg-warning/10 border-warning/30",
     serious: "bg-warning/10 border-warning/30",
 };
@@ -53,7 +53,7 @@ const SeverityBucket = ({
     <button
         class={cn(
             "flex flex-col items-center gap-1 px-3 py-2.5 border cursor-pointer transition-colors",
-            isActive ? "ring-1 ring-inset ring-primary/40" : "hover:bg-foreground/[0.06]",
+            isActive ? "ring-1 ring-inset ring-primary/40" : "hover:bg-foreground/6",
             SEVERITY_BG[severity],
         )}
         onClick={onClick}
@@ -76,7 +76,7 @@ const IssueCard = ({ isSelected, issue, onClick, onDisable }: IssueCardProps): C
     <div
         class={cn(
             "p-3 border cursor-pointer transition-colors",
-            isSelected ? "bg-foreground/[0.06] border-primary/30" : "border-border hover:bg-foreground/[0.03]",
+            isSelected ? "bg-foreground/6 border-primary/30" : "border-border hover:bg-foreground/3",
         )}
         onClick={onClick}
     >
@@ -84,9 +84,7 @@ const IssueCard = ({ isSelected, issue, onClick, onDisable }: IssueCardProps): C
         <div class="flex items-start gap-2 mb-1.5">
             <span class={cn("mt-1 size-2 rounded-full shrink-0", SEVERITY_DOT[issue.impact])} />
             <span class="text-[0.75rem] font-semibold text-foreground flex-1 leading-snug">{issue.id}</span>
-            <span class={cn("text-[0.6rem] font-bold uppercase tracking-wide shrink-0", SEVERITY_COLOR[issue.impact])}>
-                {SEVERITY_LABEL[issue.impact]}
-            </span>
+            <span class={cn("text-[0.6rem] font-bold uppercase tracking-wide shrink-0", SEVERITY_COLOR[issue.impact])}>{SEVERITY_LABEL[issue.impact]}</span>
         </div>
         {/* Message */}
         <p class="text-[0.7rem] text-muted-foreground leading-relaxed mb-2 ml-4">{issue.message}</p>
@@ -95,7 +93,7 @@ const IssueCard = ({ isSelected, issue, onClick, onDisable }: IssueCardProps): C
             <div class="mb-2 ml-4 space-y-0.5">
                 {issue.nodes.slice(0, 3).map((node, i) => (
                     // eslint-disable-next-line react/no-array-index-key
-                    <code key={i} class="block text-[0.65rem] text-foreground/70 font-mono bg-foreground/[0.05] px-2 py-1 truncate">
+                    <code key={i} class="block text-[0.65rem] text-foreground/70 font-mono bg-foreground/5 px-2 py-1 truncate">
                         {node.selector}
                     </code>
                 ))}
@@ -109,7 +107,7 @@ const IssueCard = ({ isSelected, issue, onClick, onDisable }: IssueCardProps): C
         {/* Footer */}
         <div class="flex items-center gap-2 flex-wrap ml-4">
             {issue.wcagTags.slice(0, 3).map((tag) => (
-                <span key={tag} class="text-[0.58rem] font-mono uppercase bg-primary/[0.08] text-primary/70 border border-primary/20 px-1.5 py-0.5">
+                <span key={tag} class="text-[0.58rem] font-mono uppercase bg-primary/8 text-primary/70 border border-primary/20 px-1.5 py-0.5">
                     {tag}
                 </span>
             ))}
@@ -201,13 +199,13 @@ const A11yApp = (_props: AppComponentProps): ComponentChildren => {
     return (
         <div class="flex flex-col h-full">
             {/* Toolbar */}
-            <div class="shrink-0 flex items-center gap-2 px-4 py-2.5 border-b border-border bg-foreground/[0.02] flex-wrap">
+            <div class="shrink-0 flex items-center gap-2 px-4 py-2.5 border-b border-border bg-foreground/2 flex-wrap">
                 <button
                     class={cn(
                         "px-3 py-1.5 text-[0.7rem] font-medium border transition-colors cursor-pointer",
                         isScanning
-                            ? "border-primary/30 text-primary/50 bg-primary/[0.05] cursor-not-allowed"
-                            : "border-border text-foreground bg-transparent hover:bg-foreground/[0.05]",
+                            ? "border-primary/30 text-primary/50 bg-primary/5 cursor-not-allowed"
+                            : "border-border text-foreground bg-transparent hover:bg-foreground/5",
                     )}
                     disabled={isScanning}
                     onClick={handleScan}
@@ -254,7 +252,7 @@ const A11yApp = (_props: AppComponentProps): ComponentChildren => {
                     class={cn(
                         "px-2.5 py-1.5 text-[0.7rem] border transition-colors cursor-pointer",
                         showOverlays
-                            ? "border-primary/30 text-primary bg-primary/[0.08]"
+                            ? "border-primary/30 text-primary bg-primary/8"
                             : "border-border text-muted-foreground bg-transparent hover:text-foreground",
                     )}
                     onClick={() => a11yStore.setShowOverlays(!showOverlays)}
@@ -289,7 +287,9 @@ const A11yApp = (_props: AppComponentProps): ComponentChildren => {
                                 const header = ["Rule ID", "Severity", "Message", "Selector", "HTML", "WCAG Tags"].join(",");
                                 const rows = issues.flatMap((issue) =>
                                     issue.nodes.map((node) =>
-                                        [q(issue.id), q(issue.impact), q(issue.message), q(node.selector), q(node.html), q(issue.wcagTags.join("; "))].join(","),
+                                        [q(issue.id), q(issue.impact), q(issue.message), q(node.selector), q(node.html), q(issue.wcagTags.join("; "))].join(
+                                            ",",
+                                        ),
                                     ),
                                 );
                                 const blob = new Blob([[header, ...rows].join("\n")], { type: "text/csv" });
@@ -325,7 +325,7 @@ const A11yApp = (_props: AppComponentProps): ComponentChildren => {
                             Run an accessibility audit using axe-core to detect WCAG violations on this page.
                         </p>
                         <button
-                            class="px-4 py-2 text-[0.75rem] font-medium border border-border text-foreground bg-transparent hover:bg-foreground/[0.05] transition-colors cursor-pointer"
+                            class="px-4 py-2 text-[0.75rem] font-medium border border-border text-foreground bg-transparent hover:bg-foreground/5 transition-colors cursor-pointer"
                             onClick={handleScan}
                             type="button"
                         >
@@ -363,16 +363,16 @@ const A11yApp = (_props: AppComponentProps): ComponentChildren => {
                                     {issues.length === 0 ? "No violations found!" : "No issues match the current filters."}
                                 </p>
                                 {issues.length === 0 && (
-                                    <p class="mt-1 text-[0.7rem] text-muted-foreground">
-                                        Great — the page passes all rules for the selected standard.
-                                    </p>
+                                    <p class="mt-1 text-[0.7rem] text-muted-foreground">Great — the page passes all rules for the selected standard.</p>
                                 )}
                             </div>
                         ) : (
                             <section>
                                 <div class="flex items-center gap-2 mb-2">
                                     <span class="text-[0.65rem] font-bold uppercase tracking-[0.1em] text-muted-foreground">
-                                        <span aria-hidden="true" class="text-primary/50">//</span>{" "}
+                                        <span aria-hidden="true" class="text-primary/50">
+                                            //
+                                        </span>{" "}
                                         {displayedIssues.length} issue{displayedIssues.length !== 1 ? "s" : ""}
                                         {filterSeverity ? ` · ${SEVERITY_LABEL[filterSeverity]} only` : ""}
                                     </span>

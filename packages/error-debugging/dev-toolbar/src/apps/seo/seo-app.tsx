@@ -145,7 +145,7 @@ const SocialPreview = ({ platform, meta }: { platform: PlatformConfig; meta: Met
     return (
         <div class={cn("border bg-card overflow-hidden", platform.accentClass)}>
             {/* Platform label */}
-            <div class="flex items-center justify-between gap-2 px-3 py-2 border-b border-border/50 bg-foreground/[0.02]">
+            <div class="flex items-center justify-between gap-2 px-3 py-2 border-b border-border/50 bg-foreground/2">
                 <span class="text-[0.65rem] font-bold uppercase tracking-wider text-muted-foreground">{platform.name}</span>
                 {missing.length > 0 && (
                     <span class="text-[0.6rem] px-1.5 py-0.5 bg-warning/10 text-warning border border-warning/20 font-medium">
@@ -157,7 +157,7 @@ const SocialPreview = ({ platform, meta }: { platform: PlatformConfig; meta: Met
             {/* Preview card */}
             <div class="p-3">
                 {/* Image area */}
-                <div class="w-full aspect-[1200/630] bg-foreground/[0.06] border border-border/50 mb-2.5 overflow-hidden relative">
+                <div class="w-full aspect-[1200/630] bg-foreground/6 border border-border/50 mb-2.5 overflow-hidden relative">
                     {image ? (
                         <img
                             alt="OG image preview"

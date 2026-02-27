@@ -79,7 +79,7 @@ const EventDetail = ({ event, onClose }: EventDetailProps): ComponentChildren =>
             {event.data && Object.keys(event.data).length > 0 && (
                 <div class="space-y-1">
                     <div class="text-[0.65rem] uppercase tracking-wider text-muted-foreground font-medium">Data</div>
-                    <pre class="text-[0.7rem] font-mono text-foreground/80 bg-foreground/[0.04] p-3 overflow-auto border border-border/50 whitespace-pre-wrap break-all">
+                    <pre class="text-[0.7rem] font-mono text-foreground/80 bg-foreground/4 p-3 overflow-auto border border-border/50 whitespace-pre-wrap break-all">
                         {JSON.stringify(event.data, null, 2)}
                     </pre>
                 </div>
@@ -178,7 +178,7 @@ const TimelineApp = (_props: AppComponentProps): ComponentChildren => {
                 <div class="flex-1 overflow-auto">
                     {visibleEvents.length === 0 ? (
                         <div class="flex flex-col items-center justify-center h-full gap-4 p-8 text-center select-none">
-                            <div class="size-12 border border-border/50 bg-foreground/[0.02] flex items-center justify-center">
+                            <div class="size-12 border border-border/50 bg-foreground/2 flex items-center justify-center">
                                 <svg aria-hidden="true" class="size-5 text-muted-foreground/40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
                                     <path d="M12 6v6h4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" stroke-linecap="round" stroke-linejoin="round" />
                                 </svg>
@@ -200,8 +200,8 @@ const TimelineApp = (_props: AppComponentProps): ComponentChildren => {
                                         key={event.id}
                                         class={cn(
                                             "w-full flex items-start gap-3 px-4 py-3 text-left border-0 bg-transparent cursor-pointer",
-                                            "hover:bg-foreground/[0.04] transition-colors duration-100",
-                                            selectedEvent?.id === event.id && "bg-primary/[0.06]",
+                                            "hover:bg-foreground/4 transition-colors duration-100",
+                                            selectedEvent?.id === event.id && "bg-primary/6",
                                         )}
                                         onClick={() => setSelectedEvent(selectedEvent?.id === event.id ? null : event)}
                                         type="button"

@@ -73,9 +73,9 @@ const MemoryBar = ({ memory }: { memory: MemoryInfo }): ComponentChildren => {
     return (
         <div class="space-y-1.5">
             {/* Track */}
-            <div class="relative h-2 bg-foreground/[0.08] rounded-full overflow-hidden">
+            <div class="relative h-2 bg-foreground/8 rounded-full overflow-hidden">
                 {/* Total allocated */}
-                <div class="absolute left-0 top-0 h-full bg-foreground/[0.12] rounded-full" style={{ width: `${totalPct}%` }} />
+                <div class="absolute left-0 top-0 h-full bg-foreground/12 rounded-full" style={{ width: `${totalPct}%` }} />
                 {/* Used */}
                 <div class={cn("absolute left-0 top-0 h-full rounded-full", barColor)} style={{ width: `${usedPct}%` }} />
             </div>
@@ -107,7 +107,7 @@ interface CwvMetric {
 const CwvCard = ({ label, metric, unit, value }: CwvMetric): ComponentChildren => {
     if (value === null) {
         return (
-            <div class="flex flex-col items-center gap-1 p-3 border border-border bg-foreground/[0.02] min-w-0">
+            <div class="flex flex-col items-center gap-1 p-3 border border-border bg-foreground/2 min-w-0">
                 <span class="text-[0.6rem] text-muted-foreground uppercase tracking-wider font-semibold truncate w-full text-center">{label}</span>
                 <span class="text-[0.7rem] text-muted-foreground/50">—</span>
             </div>
@@ -132,7 +132,7 @@ const CwvCard = ({ label, metric, unit, value }: CwvMetric): ComponentChildren =
 const LongTaskRow = ({ task }: { task: LongTask }): ComponentChildren => (
     <div class="flex items-center gap-3 px-3 py-2 border-b border-border/50 last:border-0 text-[0.7rem]">
         <span class="text-muted-foreground tabular-nums w-20 shrink-0">{task.startTime.toLocaleString()} ms</span>
-        <div class="flex-1 bg-foreground/[0.06] rounded-sm overflow-hidden h-2">
+        <div class="flex-1 bg-foreground/6 rounded-sm overflow-hidden h-2">
             <div
                 class="h-full bg-warning"
                 style={{ width: `${Math.min(100, (task.duration / 200) * 100)}%` }}
@@ -155,7 +155,7 @@ const Section = ({
     action?: ComponentChildren;
 }): ComponentChildren => (
     <section class="border border-border">
-        <div class="flex items-center justify-between px-4 py-2.5 bg-foreground/[0.03] border-b border-border">
+        <div class="flex items-center justify-between px-4 py-2.5 bg-foreground/3 border-b border-border">
             <span class="text-[0.7rem] font-semibold text-foreground uppercase tracking-wide">{title}</span>
             {action}
         </div>

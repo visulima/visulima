@@ -30,7 +30,7 @@ const getExt = (url: string): string => {
 };
 
 const ExtBadge = ({ ext }: { ext: string }): ComponentChildren => (
-    <span class={cn("inline-flex px-1.5 py-0.5 text-[0.6rem] font-mono font-bold uppercase border", EXT_COLORS[ext] ?? "bg-foreground/[0.06] text-muted-foreground border-border")}>
+    <span class={cn("inline-flex px-1.5 py-0.5 text-[0.6rem] font-mono font-bold uppercase border", EXT_COLORS[ext] ?? "bg-foreground/6 text-muted-foreground border-border")}>
         {ext}
     </span>
 );
@@ -122,7 +122,7 @@ const ModuleGraphApp = ({ helpers }: AppComponentProps): ComponentChildren => {
                 <input
                     ref={searchRef}
                     class={cn(
-                        "flex-1 bg-foreground/[0.04] border border-border px-3 py-1.5",
+                        "flex-1 bg-foreground/4 border border-border px-3 py-1.5",
                         "text-[0.8rem] font-mono text-foreground placeholder:text-muted-foreground/50",
                         "focus:outline-none focus:border-primary/50 transition-colors",
                     )}
@@ -154,8 +154,8 @@ const ModuleGraphApp = ({ helpers }: AppComponentProps): ComponentChildren => {
                                 key={mod.id}
                                 class={cn(
                                     "w-full flex items-center gap-3 px-4 py-2.5 text-left border-0 bg-transparent cursor-pointer",
-                                    "hover:bg-foreground/[0.04] transition-colors duration-100",
-                                    selectedId === mod.id && "bg-primary/[0.06]",
+                                    "hover:bg-foreground/4 transition-colors duration-100",
+                                    selectedId === mod.id && "bg-primary/6",
                                 )}
                                 onClick={() => showImporters(mod)}
                                 type="button"
@@ -163,7 +163,7 @@ const ModuleGraphApp = ({ helpers }: AppComponentProps): ComponentChildren => {
                                 <ExtBadge ext={mod.ext} />
                                 <span class="flex-1 text-[0.775rem] font-mono text-foreground/80 truncate min-w-0">{mod.url}</span>
                                 {mod.importers > 0 && (
-                                    <span class="shrink-0 text-[0.65rem] text-muted-foreground px-1.5 py-0.5 bg-foreground/[0.06] border border-border/50">
+                                    <span class="shrink-0 text-[0.65rem] text-muted-foreground px-1.5 py-0.5 bg-foreground/6 border border-border/50">
                                         {mod.importers}↑
                                     </span>
                                 )}

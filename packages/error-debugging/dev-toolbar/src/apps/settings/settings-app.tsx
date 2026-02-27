@@ -94,7 +94,7 @@ const ThemeControl = ({ value, onChange }: { value: Theme; onChange: (v: Theme) 
     ];
 
     return (
-        <div class="flex items-center gap-0.5 bg-foreground/[0.06] p-0.5">
+        <div class="flex items-center gap-0.5 bg-foreground/6 p-0.5">
             {options.map((opt) => (
                 <button
                     key={opt.value}
@@ -130,7 +130,7 @@ const HIDE_OPTIONS: { label: string; value: number }[] = [
 const HideDelayControl = ({ value, onChange }: { value: number; onChange: (v: number) => void }): ComponentChildren => (
     <select
         class={cn(
-            "bg-foreground/[0.06] border border-border",
+            "bg-foreground/6 border border-border",
             "text-[0.775rem] font-medium text-foreground",
             "px-2.5 py-1.5 cursor-pointer",
             "focus:outline-none focus:ring-1 focus:ring-ring",
@@ -152,7 +152,7 @@ const HideDelayControl = ({ value, onChange }: { value: number; onChange: (v: nu
 const formatBinding = (binding: string): string[] => binding.split("+");
 
 const KeyBadge = ({ part }: { part: string }): ComponentChildren => (
-    <span class="inline-flex items-center px-1.5 py-0.5 text-[0.65rem] font-mono font-medium bg-foreground/[0.08] border border-border text-foreground">
+    <span class="inline-flex items-center px-1.5 py-0.5 text-[0.65rem] font-mono font-medium bg-foreground/8 border border-border text-foreground">
         {part}
     </span>
 );
@@ -213,7 +213,7 @@ const KeyCapture = ({
                 class={cn(
                     "px-2 py-0.5 text-[0.7rem] font-medium border cursor-pointer transition-colors",
                     capturing
-                        ? "border-primary text-primary bg-primary/[0.08] animate-pulse"
+                        ? "border-primary text-primary bg-primary/8 animate-pulse"
                         : "border-border text-muted-foreground hover:text-foreground bg-transparent",
                 )}
                 onClick={() => setCapturing((c) => !c)}

@@ -56,9 +56,9 @@ const SEVERITY_OUTLINE_COLOR: Record<Severity, string> = {
 
 const RULE_SET_TAGS: Record<Standard, string[]> = {
     "best-practice": ["best-practice"],
-    "wcag21aa": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"],
-    "wcag22aa": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22a", "wcag22aa"],
-    "wcag2a": ["wcag2a"],
+    wcag21aa: ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"],
+    wcag22aa: ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22a", "wcag22aa"],
+    wcag2a: ["wcag2a"],
 };
 
 // ─── Persistence ─────────────────────────────────────────────────────────────

@@ -58,10 +58,10 @@ const AppButton = ({ app }: AppButtonProps): ComponentChildren => {
                 "cursor-pointer",
                 "bg-transparent text-muted-foreground",
                 "transition-all duration-150",
-                "hover:bg-primary/[0.08] hover:text-primary",
+                "hover:bg-primary/8 hover:text-primary",
                 "active:scale-[0.94]",
                 // Active: primary highlight
-                app.active && "bg-primary/[0.12] text-primary",
+                app.active && "bg-primary/12 text-primary",
                 "group-data-[vertical]/panel:rotate-[-90deg]",
             )}
             data-app-id={app.id}

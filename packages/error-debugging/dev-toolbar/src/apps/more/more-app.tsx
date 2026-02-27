@@ -36,7 +36,7 @@ const MoreApp = (_props: AppComponentProps): ComponentChildren => {
     if (apps.length === 0) {
         return (
             <div class="p-8 flex flex-col items-center justify-center min-h-48 gap-5 text-center select-none">
-                <div class="size-14 bg-primary/[0.05] border border-primary/20 flex items-center justify-center">
+                <div class="size-14 bg-primary/5 border border-primary/20 flex items-center justify-center">
                     <svg aria-hidden="true" class="size-6 text-primary/40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
                         <path d="M12 6v6m0 0v6m0-6h6m-6 0H6" stroke-linecap="round" stroke-linejoin="round" />
                     </svg>
@@ -44,7 +44,7 @@ const MoreApp = (_props: AppComponentProps): ComponentChildren => {
                 <div class="space-y-1.5">
                     <p class="text-[0.8125rem] font-medium text-foreground/70">No additional apps registered</p>
                     <p class="text-[0.725rem] text-muted-foreground">Register a custom app to see it here</p>
-                    <pre class="mt-3 text-[0.65rem] font-mono text-primary/70 bg-primary/[0.05] border border-primary/15 px-3 py-2 text-left">
+                    <pre class="mt-3 text-[0.65rem] font-mono text-primary/70 bg-primary/5 border border-primary/15 px-3 py-2 text-left">
 {`window.__VISULIMA_DEVTOOLS__
   .registerApp({ id, name, icon })`}</pre>
                 </div>
@@ -64,14 +64,14 @@ const MoreApp = (_props: AppComponentProps): ComponentChildren => {
                         key={app.id}
                         class={cn(
                             "flex items-center gap-3 p-3",
-                            "border border-border bg-card hover:bg-foreground/[0.04]",
+                            "border border-border bg-card hover:bg-foreground/4",
                             "text-left cursor-pointer transition-colors duration-150",
                         )}
                         onClick={() => openApp(app.id)}
                         title={app.name}
                         type="button"
                     >
-                        <span class="size-5 shrink-0 flex items-center justify-center text-[0.65rem] font-bold uppercase bg-foreground/[0.08] text-foreground/70">
+                        <span class="size-5 shrink-0 flex items-center justify-center text-[0.65rem] font-bold uppercase bg-foreground/8 text-foreground/70">
                             {app.name.slice(0, 2)}
                         </span>
                         <span class="text-[0.8125rem] font-medium text-foreground truncate">{app.name}</span>

@@ -73,9 +73,7 @@ const A11yTooltip = (_props: AppTooltipProps): ComponentChildren => {
                     <div class="grid grid-cols-4 gap-1.5">
                         {SEVERITY_ORDER.map((sev) => (
                             <div key={sev} class="flex flex-col items-center gap-0.5">
-                                <span class={cn("text-[0.85rem] font-bold tabular-nums leading-none", SEVERITY_COLOR[sev])}>
-                                    {countBy(sev)}
-                                </span>
+                                <span class={cn("text-[0.85rem] font-bold tabular-nums leading-none", SEVERITY_COLOR[sev])}>{countBy(sev)}</span>
                                 <span class="text-[0.55rem] uppercase tracking-wide text-muted-foreground/70">{SEVERITY_SHORT[sev]}</span>
                             </div>
                         ))}
@@ -96,8 +94,8 @@ const A11yTooltip = (_props: AppTooltipProps): ComponentChildren => {
                     class={cn(
                         "flex-1 px-2.5 py-1.5 text-[0.7rem] font-medium border transition-colors cursor-pointer",
                         isScanning
-                            ? "border-primary/30 text-primary/50 bg-primary/[0.05] cursor-not-allowed"
-                            : "border-border text-foreground bg-transparent hover:bg-foreground/[0.05]",
+                            ? "border-primary/30 text-primary/50 bg-primary/5 cursor-not-allowed"
+                            : "border-border text-foreground bg-transparent hover:bg-foreground/5",
                     )}
                     disabled={isScanning}
                     onClick={() => void a11yStore.scan()}
@@ -110,7 +108,7 @@ const A11yTooltip = (_props: AppTooltipProps): ComponentChildren => {
                     class={cn(
                         "px-2.5 py-1.5 text-[0.7rem] border transition-colors cursor-pointer",
                         showOverlays
-                            ? "border-primary/30 text-primary bg-primary/[0.08]"
+                            ? "border-primary/30 text-primary bg-primary/8"
                             : "border-border text-muted-foreground bg-transparent hover:text-foreground",
                     )}
                     disabled={issues.length === 0}

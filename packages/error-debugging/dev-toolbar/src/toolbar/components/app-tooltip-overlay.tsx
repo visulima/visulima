@@ -132,7 +132,7 @@ const AppTooltipOverlay = ({ position }: AppTooltipOverlayProps): ComponentChild
             style={tooltipStyle}
         >
             {/* Header strip — app name + pin button */}
-            <div class="flex items-center justify-between gap-2 px-3 py-2 border-b border-border/60 bg-foreground/[0.03]">
+            <div class="flex items-center justify-between gap-2 px-3 py-2 border-b border-border/60 bg-foreground/3">
                 <div class="flex items-center gap-2 min-w-0">
                     <span class="size-1.5 rounded-full bg-primary shrink-0" aria-hidden="true" />
                     <span class="text-[0.6rem] font-bold uppercase tracking-[0.1em] text-muted-foreground truncate">

@@ -87,7 +87,7 @@ const ViteOverlayButton = (): ComponentChildren => {
                     "cursor-pointer",
                     "bg-transparent text-destructive",
                     "transition-all duration-150",
-                    "hover:bg-destructive/[0.08]",
+                    "hover:bg-destructive/8",
                     "active:scale-[0.94]",
                     "group-data-[vertical]/panel:rotate-[-90deg]",
                 )}

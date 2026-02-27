@@ -49,7 +49,7 @@ const MiniMemoryBar = ({ memory }: { memory: MemoryInfo }): ComponentChildren =>
 
     return (
         <div class="flex items-center gap-2">
-            <div class="flex-1 h-1.5 bg-foreground/[0.08] rounded-full overflow-hidden">
+            <div class="flex-1 h-1.5 bg-foreground/8 rounded-full overflow-hidden">
                 <div class={cn("h-full rounded-full", barColor)} style={{ width: `${usedPct}%` }} />
             </div>
             <span class="text-[0.65rem] tabular-nums text-muted-foreground shrink-0">

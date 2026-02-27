@@ -399,7 +399,7 @@ const ToolbarContainer = ({
                                 "cursor-pointer p-0 m-0 border-0",
                                 "bg-transparent",
                                 "transition-all duration-150",
-                                "hover:bg-primary/[0.08] active:scale-[0.95]",
+                                "hover:bg-primary/8 active:scale-[0.95]",
                                 "group-data-[vertical]/panel:rotate-[-90deg]",
                                 panelVisible ? "opacity-100" : "opacity-60",
                             )}

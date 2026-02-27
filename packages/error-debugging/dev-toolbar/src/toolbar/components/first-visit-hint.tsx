@@ -110,9 +110,9 @@ const FirstVisitHint = ({ onDismiss, position }: FirstVisitHintProps): Component
             <button
                 class={cn(
                     "w-full h-6 text-[0.6rem] font-bold uppercase tracking-[0.1em]",
-                    "border border-primary/30 bg-primary/[0.06]",
+                    "border border-primary/30 bg-primary/6",
                     "text-primary cursor-pointer",
-                    "hover:bg-primary/[0.12] hover:border-primary/50",
+                    "hover:bg-primary/12 hover:border-primary/50",
                     "transition-all duration-150 active:scale-[0.98]",
                 )}
                 onClick={dismiss}

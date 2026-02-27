@@ -163,7 +163,7 @@ const PinnedTooltipCard = ({ onMove, onUnpin, pinned }: PinnedTooltipCardProps):
                 ref={headerRef}
                 class={cn(
                     "flex items-center justify-between gap-2 px-3 py-2",
-                    "border-b border-primary/20 bg-primary/[0.04]",
+                    "border-b border-primary/20 bg-primary/4",
                     "select-none cursor-grab",
                 )}
                 onMouseDown={handleDragStart}

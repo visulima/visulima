@@ -22,7 +22,7 @@ const CopyButton = ({ text }: { text: string }): ComponentChildren => {
             class={cn(
                 "px-2 py-0.5 text-[0.65rem] font-medium border cursor-pointer transition-colors duration-150",
                 copied
-                    ? "border-primary/40 text-primary bg-primary/[0.08]"
+                    ? "border-primary/40 text-primary bg-primary/8"
                     : "border-border text-muted-foreground hover:text-foreground hover:border-foreground/30 bg-transparent",
             )}
             onClick={copy}
@@ -49,7 +49,7 @@ const Section = ({
     return (
         <section class="border border-border">
             <button
-                class="w-full flex items-center justify-between gap-2 px-4 py-3 bg-foreground/[0.03] hover:bg-foreground/[0.06] transition-colors cursor-pointer border-0 text-left"
+                class="w-full flex items-center justify-between gap-2 px-4 py-3 bg-foreground/3 hover:bg-foreground/6 transition-colors cursor-pointer border-0 text-left"
                 onClick={() => setOpen((o) => !o)}
                 type="button"
             >
@@ -128,17 +128,17 @@ const ViteConfigApp = ({ helpers }: AppComponentProps): ComponentChildren => {
             {/* Header badges */}
             <div class="flex items-center gap-2 flex-wrap">
                 {config.mode && (
-                    <span class="inline-flex items-center px-2.5 py-1 text-[0.7rem] font-bold uppercase tracking-wider bg-primary/[0.1] text-primary border border-primary/20">
+                    <span class="inline-flex items-center px-2.5 py-1 text-[0.7rem] font-bold uppercase tracking-wider bg-primary/10 text-primary border border-primary/20">
                         {config.mode}
                     </span>
                 )}
                 {config.root && (
-                    <code class="text-[0.7rem] font-mono text-muted-foreground bg-foreground/[0.05] px-2 py-1 border border-border/50">
+                    <code class="text-[0.7rem] font-mono text-muted-foreground bg-foreground/5 px-2 py-1 border border-border/50">
                         {config.root}
                     </code>
                 )}
                 {config.base && config.base !== "/" && (
-                    <code class="text-[0.7rem] font-mono text-muted-foreground bg-foreground/[0.05] px-2 py-1 border border-border/50">
+                    <code class="text-[0.7rem] font-mono text-muted-foreground bg-foreground/5 px-2 py-1 border border-border/50">
                         base: {config.base}
                     </code>
                 )}

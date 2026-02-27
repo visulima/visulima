@@ -544,8 +544,8 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                                         "transition-all duration-150",
                                         sidebarCollapsed ? "justify-center px-0" : "gap-2.5 px-3",
                                         activeAppId === app.id
-                                            ? "border-primary bg-primary/[0.08] text-foreground"
-                                            : "border-transparent bg-transparent text-muted-foreground hover:bg-foreground/[0.06] hover:text-foreground",
+                                            ? "border-primary bg-primary/8 text-foreground"
+                                            : "border-transparent bg-transparent text-muted-foreground hover:bg-foreground/6 hover:text-foreground",
                                     )}
                                     onClick={() => {
                                         if (app.id === activeAppId) {
@@ -627,7 +627,7 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                                 class={cn(
                                     "flex items-center justify-center size-7 shrink-0",
                                     "border-0 cursor-pointer bg-transparent",
-                                    "text-muted-foreground hover:text-foreground hover:bg-foreground/[0.07]",
+                                    "text-muted-foreground hover:text-foreground hover:bg-foreground/7",
                                     "transition-colors duration-150",
                                 )}
                                 onClick={() => setSidebarCollapsed((c) => !c)}
@@ -664,7 +664,7 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                                     class={cn(
                                         "flex items-center justify-center size-8",
                                         "cursor-pointer border-0 bg-transparent",
-                                        "text-muted-foreground hover:text-foreground hover:bg-foreground/[0.07]",
+                                        "text-muted-foreground hover:text-foreground hover:bg-foreground/7",
                                         "transition-all duration-200 active:scale-90",
                                     )}
                                     onClick={() => updateState({ viewMode: isWide ? "default" : "wide" })}
@@ -681,7 +681,7 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                                 class={cn(
                                     "flex items-center justify-center size-8",
                                     "cursor-pointer border-0 bg-transparent",
-                                    "text-muted-foreground hover:text-foreground hover:bg-foreground/[0.07]",
+                                    "text-muted-foreground hover:text-foreground hover:bg-foreground/7",
                                     "transition-all duration-200 active:scale-90",
                                 )}
                                 onClick={() => {
@@ -749,8 +749,8 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                                         "flex items-center justify-center size-8",
                                         "cursor-pointer border-0 bg-transparent",
                                         state.isPip
-                                            ? "text-primary hover:bg-primary/[0.07]"
-                                            : "text-muted-foreground hover:text-foreground hover:bg-foreground/[0.07]",
+                                            ? "text-primary hover:bg-primary/7"
+                                            : "text-muted-foreground hover:text-foreground hover:bg-foreground/7",
                                         "transition-all duration-200 active:scale-90",
                                     )}
                                     onClick={() => {
@@ -769,7 +769,7 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                                 class={cn(
                                     "flex items-center justify-center size-8",
                                     "cursor-pointer border-0 bg-transparent",
-                                    "text-muted-foreground hover:text-foreground hover:bg-foreground/[0.07]",
+                                    "text-muted-foreground hover:text-foreground hover:bg-foreground/7",
                                     "transition-all duration-200 active:scale-90",
                                 )}
                                 onClick={onClose}
@@ -789,7 +789,7 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                             <div class="flex flex-col items-center justify-center h-full gap-7 p-8 select-none">
                                 {/* Hero icon */}
                                 <div class="flex flex-col items-center gap-3">
-                                    <div class="size-14 border border-primary/25 bg-primary/[0.05] flex items-center justify-center">
+                                    <div class="size-14 border border-primary/25 bg-primary/5 flex items-center justify-center">
                                         <Icon class="text-primary/45" size={26} src={layersIcon} />
                                     </div>
                                     <div class="text-center space-y-1">
@@ -811,7 +811,7 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                                                     class={cn(
                                                         "flex items-center gap-2.5 px-3 py-2",
                                                         "border border-border/40 bg-card/50",
-                                                        "hover:border-primary/30 hover:bg-primary/[0.04]",
+                                                        "hover:border-primary/30 hover:bg-primary/4",
                                                         "cursor-pointer transition-all duration-150 text-left",
                                                     )}
                                                     onClick={() => onToggleApp(a.id).catch(console.error)}
