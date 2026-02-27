@@ -1,5 +1,6 @@
 /** @jsxImportSource preact */
 import type { ComponentChildren } from "preact";
+import { useEffect, useRef, useState } from "preact/hooks";
 
 import monitorIcon from "lucide-static/icons/monitor.svg?data-uri&encoding=css";
 import moonIcon from "lucide-static/icons/moon.svg?data-uri&encoding=css";
@@ -8,7 +9,7 @@ import sunIcon from "lucide-static/icons/sun.svg?data-uri&encoding=css";
 import type { AppComponentProps } from "../../types/app";
 import Icon from "../../ui/components/icon";
 import cn from "../../utils/cn";
-import { useFrameState } from "../../toolbar/hooks/use-frame-state";
+import { DEFAULT_KEYBINDINGS, useFrameState } from "../../toolbar/hooks/use-frame-state";
 import { useTheme } from "../../toolbar/hooks/use-theme";
 import type { Theme } from "../../toolbar/hooks/use-theme";
 
@@ -146,6 +147,94 @@ const HideDelayControl = ({ value, onChange }: { value: number; onChange: (v: nu
     </select>
 );
 
+// ─── Keyboard shortcut capture ────────────────────────────────────────────────
+
+const formatBinding = (binding: string): string[] => binding.split("+");
+
+const KeyBadge = ({ part }: { part: string }): ComponentChildren => (
+    <span class="inline-flex items-center px-1.5 py-0.5 text-[0.65rem] font-mono font-medium bg-foreground/[0.08] border border-border text-foreground">
+        {part}
+    </span>
+);
+
+const KeyCapture = ({
+    value,
+    onChange,
+}: {
+    value: string;
+    onChange: (v: string) => void;
+}): ComponentChildren => {
+    const [capturing, setCapturing] = useState(false);
+    const buttonRef = useRef<HTMLButtonElement>(null);
+
+    useEffect(() => {
+        if (!capturing) {
+            return undefined;
+        }
+
+        const handleKeyDown = (e: KeyboardEvent): void => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            // Ignore lone modifier keys
+            if (["Alt", "Shift", "Control", "Meta"].includes(e.key)) {
+                return;
+            }
+
+            const parts: string[] = [];
+
+            if (e.altKey) parts.push("Alt");
+            if (e.ctrlKey) parts.push("Control");
+            if (e.metaKey) parts.push("Meta");
+            if (e.shiftKey) parts.push("Shift");
+            parts.push(e.key);
+
+            onChange(parts.join("+"));
+            setCapturing(false);
+        };
+
+        window.addEventListener("keydown", handleKeyDown, true);
+
+        return () => window.removeEventListener("keydown", handleKeyDown, true);
+    }, [capturing, onChange]);
+
+    return (
+        <div class="flex items-center gap-2">
+            <div class="flex items-center gap-0.5">
+                {formatBinding(value).map((part, i) => (
+                    <span key={i} class="flex items-center gap-0.5">
+                        {i > 0 && <span class="text-muted-foreground/40 text-[0.6rem] mx-0.5">+</span>}
+                        <KeyBadge part={part} />
+                    </span>
+                ))}
+            </div>
+            <button
+                ref={buttonRef}
+                class={cn(
+                    "px-2 py-0.5 text-[0.7rem] font-medium border cursor-pointer transition-colors",
+                    capturing
+                        ? "border-primary text-primary bg-primary/[0.08] animate-pulse"
+                        : "border-border text-muted-foreground hover:text-foreground bg-transparent",
+                )}
+                onClick={() => setCapturing((c) => !c)}
+                type="button"
+            >
+                {capturing ? "Press keys…" : "Record"}
+            </button>
+            <button
+                class="px-2 py-0.5 text-[0.7rem] font-medium border border-border/50 text-muted-foreground/60 hover:text-foreground bg-transparent cursor-pointer transition-colors"
+                onClick={() => {
+                    setCapturing(false);
+                }}
+                title="Cancel"
+                type="button"
+            >
+                ✕
+            </button>
+        </div>
+    );
+};
+
 // ─── Settings app ─────────────────────────────────────────────────────────────
 
 const SettingsApp = (_props: AppComponentProps): ComponentChildren => {
@@ -188,6 +277,52 @@ const SettingsApp = (_props: AppComponentProps): ComponentChildren => {
                     label="Close on outside click"
                     description="Close the DevTools panel when clicking outside of it."
                     control={<Toggle checked={state.closeOnOutsideClick} onChange={(v) => updateState({ closeOnOutsideClick: v })} />}
+                />
+            </Section>
+
+            {/* Keyboard Shortcuts */}
+            <Section title="Keyboard Shortcuts">
+                <SettingRow
+                    label="Toggle toolbar"
+                    description="Open or close the DevTools panel."
+                    control={
+                        <div class="flex items-center gap-2">
+                            <KeyCapture
+                                value={state.keybindings?.toggle ?? DEFAULT_KEYBINDINGS.toggle}
+                                onChange={(v) => updateState({ keybindings: { ...(state.keybindings ?? DEFAULT_KEYBINDINGS), toggle: v } })}
+                            />
+                            {state.keybindings?.toggle !== DEFAULT_KEYBINDINGS.toggle && (
+                                <button
+                                    class="text-[0.65rem] text-muted-foreground/50 hover:text-foreground underline cursor-pointer border-0 bg-transparent"
+                                    onClick={() => updateState({ keybindings: { ...(state.keybindings ?? DEFAULT_KEYBINDINGS), toggle: DEFAULT_KEYBINDINGS.toggle } })}
+                                    type="button"
+                                >
+                                    Reset
+                                </button>
+                            )}
+                        </div>
+                    }
+                />
+                <SettingRow
+                    label="Close panel"
+                    description="Dismiss the active app or close the panel."
+                    control={
+                        <div class="flex items-center gap-2">
+                            <KeyCapture
+                                value={state.keybindings?.close ?? DEFAULT_KEYBINDINGS.close}
+                                onChange={(v) => updateState({ keybindings: { ...(state.keybindings ?? DEFAULT_KEYBINDINGS), close: v } })}
+                            />
+                            {state.keybindings?.close !== DEFAULT_KEYBINDINGS.close && (
+                                <button
+                                    class="text-[0.65rem] text-muted-foreground/50 hover:text-foreground underline cursor-pointer border-0 bg-transparent"
+                                    onClick={() => updateState({ keybindings: { ...(state.keybindings ?? DEFAULT_KEYBINDINGS), close: DEFAULT_KEYBINDINGS.close } })}
+                                    type="button"
+                                >
+                                    Reset
+                                </button>
+                            )}
+                        </div>
+                    }
                 />
             </Section>
         </div>

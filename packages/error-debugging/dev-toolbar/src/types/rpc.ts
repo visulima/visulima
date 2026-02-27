@@ -1,4 +1,6 @@
-import type { ModuleNode, ViteDevServer } from "vite";
+import type { ViteDevServer } from "vite";
+
+import type { SerializableModuleNode } from "../rpc/functions/module-graph";
 
 /**
  * Server-side RPC functions
@@ -13,7 +15,7 @@ export interface ServerFunctions {
     /**
      * Get module dependency graph
      */
-    getModuleGraph: () => Promise<ModuleNode[]>;
+    getModuleGraph: () => Promise<SerializableModuleNode[]>;
 
     /**
      * Get Vite configuration
@@ -61,7 +63,7 @@ export interface ClientFunctions {
      * Notify client of module update
      * @param module Updated module node
      */
-    onModuleUpdate: (module: ModuleNode) => void;
+    onModuleUpdate: (module: SerializableModuleNode) => void;
 }
 
 /**

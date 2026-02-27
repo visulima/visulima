@@ -53,9 +53,18 @@ export interface DevToolbarOptions {
      */
     apps?: {
         [key: string]: boolean | undefined;
+        moduleGraph?: boolean;
+        seo?: boolean;
         settings?: boolean;
         timeline?: boolean;
+        viteConfig?: boolean;
     };
+
+    /**
+     * Whether clicking outside the DevTools panel closes it.
+     * @default true
+     */
+    closeOnOutsideClick?: boolean;
 
     /**
      * Custom apps to register
@@ -68,9 +77,49 @@ export interface DevToolbarOptions {
     defaultVisible?: boolean;
 
     /**
-     * Toolbar placement
+     * Initial panel height as a percentage of the viewport height (20–95).
+     * @default 60
+     */
+    height?: number;
+
+    /**
+     * Keyboard shortcut bindings.
+     * These are project-level defaults; users can still override them via the
+     * Settings app (stored in localStorage).
+     */
+    keybindings?: {
+        /** Close active app / panel. @default "Escape" */
+        close?: string;
+        /** Toggle the DevTools panel open/closed. @default "Alt+Shift+D" */
+        toggle?: string;
+    };
+
+    /**
+     * Auto-hide the toolbar pill after this many milliseconds of inactivity.
+     * Set to -1 to never auto-hide.
+     * @default 5000
+     */
+    minimizePanelInactive?: number;
+
+    /**
+     * Toolbar placement (coarse shorthand — sets the edge and rough horizontal
+     * alignment of the toolbar pill).
+     * @default "bottom-center"
      */
     placement?: "bottom-left" | "bottom-center" | "bottom-right";
+
+    /**
+     * Which edge of the viewport the toolbar pill is anchored to.
+     * Takes precedence over the edge implied by `placement`.
+     * @default "bottom"
+     */
+    position?: "bottom" | "left" | "right" | "top";
+
+    /**
+     * Reduce motion for accessibility (disables all CSS animations).
+     * @default false
+     */
+    reduceMotion?: boolean;
 
     /**
      * Only activate the toolbar when the URL contains a specific query parameter.
@@ -90,6 +139,13 @@ export interface DevToolbarOptions {
      * @default 'devtools'
      */
     urlFlagName?: string;
+
+    /**
+     * Initial panel width as a percentage of the viewport width (20–95).
+     * Applies when position is "left" or "right".
+     * @default 80
+     */
+    width?: number;
 }
 
 /**
@@ -125,14 +181,24 @@ export const devToolbar = (options: DevToolbarOptions = {}): Plugin => {
             if (id === RESOLVED_OPTIONS) {
                 return `export default ${JSON.stringify({
                     apps: {
+                        moduleGraph: options.apps?.moduleGraph ?? true,
+                        seo: options.apps?.seo ?? true,
                         settings: options.apps?.settings ?? true,
                         timeline: options.apps?.timeline ?? true,
+                        viteConfig: options.apps?.viteConfig ?? true,
                     },
                     base: config.base,
+                    closeOnOutsideClick: options.closeOnOutsideClick ?? true,
                     defaultVisible: options.defaultVisible ?? true,
+                    height: options.height ?? 60,
+                    keybindings: options.keybindings ?? {},
+                    minimizePanelInactive: options.minimizePanelInactive ?? 5000,
                     placement: options.placement ?? "bottom-center",
+                    position: options.position ?? "bottom",
+                    reduceMotion: options.reduceMotion ?? false,
                     requireUrlFlag: options.requireUrlFlag ?? false,
                     urlFlagName: options.urlFlagName ?? "devtools",
+                    width: options.width ?? 80,
                 })};`;
             }
 

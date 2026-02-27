@@ -1,6 +1,7 @@
 /** @jsxImportSource preact */
 import type { ComponentChildren } from "preact";
-import { useEffect, useMemo, useRef, useState } from "preact/hooks";
+import { render as preactRender } from "preact";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "preact/hooks";
 
 import chevronRightIcon from "lucide-static/icons/chevron-right.svg?data-uri&encoding=css";
 import layersIcon from "lucide-static/icons/layers.svg?data-uri&encoding=css";
@@ -8,6 +9,7 @@ import maximize2Icon from "lucide-static/icons/maximize-2.svg?data-uri&encoding=
 import maximizeIcon from "lucide-static/icons/maximize.svg?data-uri&encoding=css";
 import minimize2Icon from "lucide-static/icons/minimize-2.svg?data-uri&encoding=css";
 import minimizeIcon from "lucide-static/icons/minimize.svg?data-uri&encoding=css";
+import pictureInPicture2Icon from "lucide-static/icons/picture-in-picture-2.svg?data-uri&encoding=css";
 import xIcon from "lucide-static/icons/x.svg?data-uri&encoding=css";
 
 import type { DevToolbarAppState } from "../../types/index";
@@ -15,6 +17,7 @@ import Icon from "../../ui/components/icon";
 import cn from "../../utils/cn";
 import { createServerHelpers } from "../helpers";
 import { useFrameState } from "../hooks/use-frame-state";
+import { useTheme } from "../hooks/use-theme";
 import { sharedToolbarStylesheet } from "../stylesheet";
 
 interface DevPanelProps {
@@ -154,20 +157,23 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
     const [isVisible, setIsVisible] = useState(false);
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [, rerender] = useState(0);
-    const [fsClipPath, setFsClipPath] = useState<string | null>(null);
-    const [isFsAnimating, setIsFsAnimating] = useState(false);
 
     const { state, updateState } = useFrameState();
+    const { resolvedTheme } = useTheme();
 
     const panelDivRef = useRef<HTMLDivElement>(null);
     const isResizingRef = useRef<{ bottom?: boolean; left?: boolean; right?: boolean; top?: boolean } | false>(false);
     const dimensionsRef = useRef({ height: state.height, width: state.width });
     const enteringFromRectRef = useRef<DOMRect | null>(null);
+    const lastDockedRectRef = useRef<DOMRect | null>(null);
     const prevIsFullscreenRef = useRef(false);
+    const isExitAnimatingRef = useRef(false);
     const fsTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const isFullscreen = state.viewMode === "fullscreen";
     const isWide = state.viewMode === "wide";
+    const isPipSupported = typeof (globalThis.window as any)?.documentPictureInPicture !== "undefined";
+    const pipWindowRef = useRef<Window | null>(null);
 
     // ─── Compute inline panel size ────────────────────────────────────────────
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -256,21 +262,28 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
         };
     }, [updateState]);
 
-    // ─── Fullscreen expand animation ─────────────────────────────────────────
-    // Entry: suppress transition-panel (prevents transform/translate slide),
-    // clip the panel to its pre-fullscreen bounds, then animate clip-path to
-    // inset(0) so it expands into every corner.
-    // Exit: also suppress transition-panel for one frame so the snap-back to
-    // the docked position does not produce a transform slide.
-    useEffect(() => {
+    // ─── Fullscreen expand / collapse animation ───────────────────────────────
+    // useLayoutEffect runs synchronously after the DOM mutation but BEFORE the
+    // browser paints, so inline style overrides land in the same frame as the
+    // class changes — zero slide frames visible.
+    //
+    // Entry: freeze all transitions, clip the element to its pre-fullscreen
+    // bounds, then let only clip-path animate to inset(0) in the next rAF.
+    // Exit: freeze transitions for two frames so the snap-back is instant.
+    useLayoutEffect(() => {
         const wasFullscreen = prevIsFullscreenRef.current;
 
         prevIsFullscreenRef.current = isFullscreen;
 
-        // Clear any pending timer from a previous transition
         if (fsTimerRef.current !== null) {
             clearTimeout(fsTimerRef.current);
             fsTimerRef.current = null;
+        }
+
+        const el = panelDivRef.current;
+
+        if (!el) {
+            return;
         }
 
         if (isFullscreen && !wasFullscreen && enteringFromRectRef.current) {
@@ -282,37 +295,35 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
             const ww = globalThis.window?.innerWidth ?? 0;
             const wh = globalThis.window?.innerHeight ?? 0;
 
-            // Suppress all panel transitions; set initial clip to panel bounds.
-            setIsFsAnimating(true);
-            setFsClipPath(`inset(${rect.top}px ${ww - rect.right}px ${wh - rect.bottom}px ${rect.left}px)`);
+            // Override transition to clip-path only and clip to old bounds —
+            // both applied before paint, so no slide is ever shown.
+            el.style.transition = "clip-path 0.35s cubic-bezier(0.4, 0, 0.2, 1)";
+            el.style.clipPath = `inset(${rect.top}px ${ww - rect.right}px ${wh - rect.bottom}px ${rect.left}px)`;
 
-            // Two rAFs: first ensures the suppressed-transition + clip frame is
-            // painted, second starts the clip-path expansion transition.
+            // Next rAF: the clipped frame has been painted; start expanding.
             requestAnimationFrame(() => {
-                requestAnimationFrame(() => {
-                    setFsClipPath("inset(0px 0px 0px 0px)");
+                el.style.clipPath = "inset(0px 0px 0px 0px)";
 
-                    // After the 0.35s clip-path transition finishes, remove the
-                    // clip entirely and restore transition-panel.
-                    fsTimerRef.current = setTimeout(() => {
-                        setFsClipPath(null);
-                        setIsFsAnimating(false);
-                        fsTimerRef.current = null;
-                    }, 380);
-                });
+                // After transition, clear overrides so normal transitions resume.
+                fsTimerRef.current = setTimeout(() => {
+                    el.style.clipPath = "";
+                    el.style.transition = "";
+                    fsTimerRef.current = null;
+                }, 380);
             });
         } else if (!isFullscreen && wasFullscreen) {
             // ── Exiting fullscreen ───────────────────────────────────────────
-            // Suppress transition-panel for two frames so the docked position
-            // snaps back without the transform/translate slide.
-            setFsClipPath(null);
-            setIsFsAnimating(true);
+            // If the animated exit is in progress, the onClick handler owns the
+            // element styles — don't fight it. Only run instant snap for non-
+            // animated exits (e.g. programmatic viewMode changes).
+            if (!isExitAnimatingRef.current) {
+                el.style.transition = "none";
+                el.style.clipPath = "";
 
-            requestAnimationFrame(() => {
                 requestAnimationFrame(() => {
-                    setIsFsAnimating(false);
+                    el.style.transition = "";
                 });
-            });
+            }
         }
     }, [isFullscreen]);
 
@@ -330,6 +341,68 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
 
         return () => clearTimeout(timer);
     }, [panelVisible]);
+
+    // ─── PiP activation ───────────────────────────────────────────────────────
+    const activatePip = async (): Promise<void> => {
+        const pipApi = (globalThis.window as any)?.documentPictureInPicture;
+
+        if (!pipApi) {
+            return;
+        }
+
+        try {
+            const pipWin: Window = await pipApi.requestWindow({ height: 600, width: 900 });
+
+            pipWindowRef.current = pipWin;
+
+            // Inject toolbar CSS as a <style> element.
+            // `adoptedStyleSheets` cannot cross the PiP window's realm boundary —
+            // Chrome creates a fresh JS realm for the PiP document, so a
+            // CSSStyleSheet constructed in the main window is rejected.
+            // Serialising cssRules back to text and injecting a <style> tag is
+            // the approach recommended in the Chrome documentPictureInPicture docs.
+            if (sharedToolbarStylesheet) {
+                const styleEl = pipWin.document.createElement("style");
+
+                styleEl.textContent = [...sharedToolbarStylesheet.cssRules]
+                    .map((r) => r.cssText)
+                    .join("\n");
+                pipWin.document.head.append(styleEl);
+            }
+
+            // Container — apply toolbar dark/light theme via the same .dark class
+            // the ToolbarContainer uses. Do NOT copy document.documentElement.className
+            // (main page theme) — the toolbar manages its own theme independently.
+            const container = pipWin.document.createElement("div");
+
+            container.style.cssText = "width:100%;height:100%;overflow:auto;";
+            // Apply dark/light theme at the document level so :root CSS variables
+            // (--color-background etc.) are overridden by the .dark block correctly.
+            if (resolvedTheme === "dark") {
+                pipWin.document.documentElement.classList.add("dark");
+                container.classList.add("dark");
+            }
+            pipWin.document.body.style.cssText = "margin:0;padding:0;";
+            pipWin.document.body.append(container);
+
+            // Render the active app content into PiP window
+            const activeApp = apps.find((a) => a.id === activeAppId);
+
+            if (activeApp?.component) {
+                const helpers = createServerHelpers();
+                preactRender(<activeApp.component eventTarget={activeApp.eventTarget} helpers={helpers} />, container);
+            }
+
+            updateState({ isPip: true });
+
+            pipWin.addEventListener("pagehide", () => {
+                updateState({ isPip: false });
+                pipWindowRef.current = null;
+            });
+        } catch (err) {
+            console.error("[dev-toolbar] PiP activation failed:", err);
+        }
+    };
 
     // ─── Escape key ───────────────────────────────────────────────────────────
     useEffect(() => {
@@ -367,7 +440,7 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
             <div
                 aria-hidden="true"
                 class={cn(
-                    "fixed inset-0 z-[2147483647]",
+                    "fixed inset-0 z-[2147483646]",
                     "transition-opacity duration-200",
                     isVisible && !isFullscreen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none",
                 )}
@@ -386,19 +459,13 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                     "bg-background overflow-hidden",
                     isFullscreen ? "rounded-none border-0" : "rounded-none border border-border",
                     "shadow-2xl",
-                    // Suppress all panel transitions during fullscreen switch so
-                    // transform/translate don't produce a slide — only clip-path animates.
-                    !isFsAnimating && "transition-panel",
+                    "transition-panel",
                     !isFullscreen && getOriginClass(position),
                     getVisibilityClasses(position, isVisible),
                     "flex flex-row",
                 )}
                 role="dialog"
-                style={{
-                    ...panelSizeStyle,
-                    ...(isFsAnimating && isFullscreen ? { transition: "clip-path 0.35s cubic-bezier(0.4, 0, 0.2, 1)" } : {}),
-                    ...(fsClipPath !== null ? { clipPath: fsClipPath } : {}),
-                }}
+                style={panelSizeStyle}
             >
                 {/* ── Resize handles (hidden in fullscreen) ───────────────── */}
                 {!isFullscreen && (
@@ -447,11 +514,25 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                     class={cn(
                         "flex flex-col shrink-0 overflow-hidden",
                         "transition-[width] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]",
-                        "bg-accent",
+                        "bg-accent border-r border-border/60",
                         sidebarCollapsed ? "w-12.5" : "w-62.5",
                     )}
                 >
-                    <div class="flex flex-col flex-1 p-2 gap-1">
+                    {/* Sidebar header */}
+                    <div class={cn(
+                        "flex items-center shrink-0 border-b border-border/50 h-12",
+                        sidebarCollapsed ? "justify-center px-2" : "px-3"
+                    )}>
+                        {sidebarCollapsed ? (
+                            <span aria-hidden="true" class="text-primary font-black text-[0.8rem] select-none">V</span>
+                        ) : (
+                            <span class="text-[0.6rem] font-bold uppercase tracking-[0.14em] text-muted-foreground select-none">
+                                <span aria-hidden="true" class="text-primary/60 mr-1">//</span>
+                                DevTools
+                            </span>
+                        )}
+                    </div>
+                    <div class="flex flex-col flex-1 overflow-y-auto p-2 gap-1 scrollbar-thin-border">
                         {apps.map((app) => (
                             <div class="relative group/nav-item" key={app.id}>
                                 <button
@@ -526,6 +607,14 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                             </div>
                         ))}
                     </div>
+                    {/* Sidebar footer — keyboard hint */}
+                    {!sidebarCollapsed && (
+                        <div class="px-3 py-2.5 border-t border-border/40 shrink-0">
+                            <span class="text-[0.58rem] text-muted-foreground/50 leading-none select-none">
+                                {state.keybindings?.toggle ?? "Alt+Shift+D"} to toggle
+                            </span>
+                        </div>
+                    )}
                 </nav>
 
                 {/* Content area */}
@@ -538,7 +627,7 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                                 class={cn(
                                     "flex items-center justify-center size-7 shrink-0",
                                     "border-0 cursor-pointer bg-transparent",
-                                    "text-muted-foreground/50 hover:text-foreground hover:bg-foreground/[0.07]",
+                                    "text-muted-foreground hover:text-foreground hover:bg-foreground/[0.07]",
                                     "transition-colors duration-150",
                                 )}
                                 onClick={() => setSidebarCollapsed((c) => !c)}
@@ -575,7 +664,7 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                                     class={cn(
                                         "flex items-center justify-center size-8",
                                         "cursor-pointer border-0 bg-transparent",
-                                        "text-foreground/30 hover:text-foreground hover:bg-foreground/[0.07]",
+                                        "text-muted-foreground hover:text-foreground hover:bg-foreground/[0.07]",
                                         "transition-all duration-200 active:scale-90",
                                     )}
                                     onClick={() => updateState({ viewMode: isWide ? "default" : "wide" })}
@@ -592,15 +681,59 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                                 class={cn(
                                     "flex items-center justify-center size-8",
                                     "cursor-pointer border-0 bg-transparent",
-                                    "text-foreground/30 hover:text-foreground hover:bg-foreground/[0.07]",
+                                    "text-muted-foreground hover:text-foreground hover:bg-foreground/[0.07]",
                                     "transition-all duration-200 active:scale-90",
                                 )}
                                 onClick={() => {
-                                    if (!isFullscreen && panelDivRef.current) {
-                                        enteringFromRectRef.current = panelDivRef.current.getBoundingClientRect();
-                                    }
+                                    if (isFullscreen) {
+                                        // ── Exit fullscreen — reverse clip-path collapse ──────────
+                                        const el = panelDivRef.current;
+                                        const rect = lastDockedRectRef.current;
 
-                                    updateState({ viewMode: isFullscreen ? "default" : "fullscreen" });
+                                        if (el && rect) {
+                                            const ww = globalThis.window?.innerWidth ?? 0;
+                                            const wh = globalThis.window?.innerHeight ?? 0;
+                                            const targetClip = `inset(${rect.top}px ${ww - rect.right}px ${wh - rect.bottom}px ${rect.left}px)`;
+
+                                            if (fsTimerRef.current !== null) {
+                                                clearTimeout(fsTimerRef.current);
+                                                fsTimerRef.current = null;
+                                            }
+
+                                            isExitAnimatingRef.current = true;
+
+                                            // Start fully expanded (no-op visually), then animate to docked bounds.
+                                            el.style.transition = "clip-path 0.35s cubic-bezier(0.4, 0, 0.2, 1)";
+                                            el.style.clipPath = "inset(0px 0px 0px 0px)";
+
+                                            requestAnimationFrame(() => {
+                                                el.style.clipPath = targetClip;
+
+                                                fsTimerRef.current = setTimeout(() => {
+                                                    el.style.clipPath = "";
+                                                    el.style.transition = "";
+                                                    isExitAnimatingRef.current = false;
+                                                    fsTimerRef.current = null;
+                                                    // State change after animation — useLayoutEffect will
+                                                    // see the exit branch but isExitAnimatingRef is now
+                                                    // false so it'll do the instant class-swap freeze.
+                                                    updateState({ viewMode: "default" });
+                                                }, 380);
+                                            });
+                                        } else {
+                                            updateState({ viewMode: "default" });
+                                        }
+                                    } else {
+                                        // ── Enter fullscreen — capture docked rect for both directions ──
+                                        if (panelDivRef.current) {
+                                            const rect = panelDivRef.current.getBoundingClientRect();
+
+                                            enteringFromRectRef.current = rect;
+                                            lastDockedRectRef.current = rect;
+                                        }
+
+                                        updateState({ viewMode: "fullscreen" });
+                                    }
                                 }}
                                 title={isFullscreen ? "Exit fullscreen" : "Fullscreen"}
                                 type="button"
@@ -608,13 +741,35 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                                 <Icon size={13} src={isFullscreen ? minimizeIcon : maximizeIcon} />
                             </button>
 
+                            {/* Picture-in-Picture toggle — Chrome 116+ only */}
+                            {isPipSupported && !isFullscreen && (
+                                <button
+                                    aria-label="Open in Picture-in-Picture window"
+                                    class={cn(
+                                        "flex items-center justify-center size-8",
+                                        "cursor-pointer border-0 bg-transparent",
+                                        state.isPip
+                                            ? "text-primary hover:bg-primary/[0.07]"
+                                            : "text-muted-foreground hover:text-foreground hover:bg-foreground/[0.07]",
+                                        "transition-all duration-200 active:scale-90",
+                                    )}
+                                    onClick={() => {
+                                        activatePip().then(() => onClose()).catch(console.error);
+                                    }}
+                                    title="Open in floating window (PiP)"
+                                    type="button"
+                                >
+                                    <Icon size={13} src={pictureInPicture2Icon} />
+                                </button>
+                            )}
+
                             {/* Close */}
                             <button
                                 aria-label="Close DevTools panel"
                                 class={cn(
                                     "flex items-center justify-center size-8",
                                     "cursor-pointer border-0 bg-transparent",
-                                    "text-foreground/30 hover:text-foreground hover:bg-foreground/[0.07]",
+                                    "text-muted-foreground hover:text-foreground hover:bg-foreground/[0.07]",
                                     "transition-all duration-200 active:scale-90",
                                 )}
                                 onClick={onClose}
@@ -631,11 +786,52 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                         {activeApp ? (
                             <AppContent app={activeApp} key={activeApp.id} />
                         ) : (
-                            <div class="flex flex-col items-center justify-center min-h-48 h-full gap-4">
-                                <div class="size-12 bg-foreground/[0.04] flex items-center justify-center border border-border/50">
-                                    <Icon class="text-foreground/20" size={24} src={layersIcon} />
+                            <div class="flex flex-col items-center justify-center h-full gap-7 p-8 select-none">
+                                {/* Hero icon */}
+                                <div class="flex flex-col items-center gap-3">
+                                    <div class="size-14 border border-primary/25 bg-primary/[0.05] flex items-center justify-center">
+                                        <Icon class="text-primary/45" size={26} src={layersIcon} />
+                                    </div>
+                                    <div class="text-center space-y-1">
+                                        <p class="text-[0.8rem] font-medium text-foreground/65">No tool selected</p>
+                                        <p class="text-[0.7rem] text-muted-foreground">Choose a tool from the sidebar to get started</p>
+                                    </div>
                                 </div>
-                                <span class="text-[0.65rem] font-bold text-foreground/30 uppercase tracking-[0.15em]">// select an app</span>
+
+                                {/* Quick-launch list */}
+                                {apps.length > 0 && (
+                                    <div class="w-full max-w-[220px]">
+                                        <p class="text-[0.58rem] font-bold uppercase tracking-[0.12em] text-muted-foreground/60 mb-1.5">
+                                            <span class="text-primary/50">// </span>available
+                                        </p>
+                                        <div class="flex flex-col gap-0.5">
+                                            {apps.map((a) => (
+                                                <button
+                                                    key={a.id}
+                                                    class={cn(
+                                                        "flex items-center gap-2.5 px-3 py-2",
+                                                        "border border-border/40 bg-card/50",
+                                                        "hover:border-primary/30 hover:bg-primary/[0.04]",
+                                                        "cursor-pointer transition-all duration-150 text-left",
+                                                    )}
+                                                    onClick={() => onToggleApp(a.id).catch(console.error)}
+                                                    type="button"
+                                                >
+                                                    {a.icon ? (
+                                                        <span
+                                                            class="size-3.5 shrink-0 flex items-center justify-center [&_svg]:size-3.5 text-muted-foreground"
+                                                            // eslint-disable-next-line react/no-danger
+                                                            dangerouslySetInnerHTML={{ __html: a.icon }}
+                                                        />
+                                                    ) : (
+                                                        <span class="size-3.5 text-[0.5rem] font-bold text-muted-foreground shrink-0 text-center">{a.name.slice(0, 2).toUpperCase()}</span>
+                                                    )}
+                                                    <span class="text-[0.75rem] font-medium text-muted-foreground">{a.name}</span>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         )}
                     </div>

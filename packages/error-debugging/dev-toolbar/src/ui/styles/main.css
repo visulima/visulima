@@ -8,6 +8,8 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* workaround for tailwindcss shadowdom support @see https://github.com/tailwindlabs/tailwindcss/issues/15005 */
+/* `:root` is also included so these vars are available in PiP windows (regular document, no :host) */
+:root,
 :host {
     --tw-divide-y-reverse: 0;
     --tw-border-style: solid;

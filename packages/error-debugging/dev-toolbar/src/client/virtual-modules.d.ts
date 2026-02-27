@@ -5,16 +5,24 @@
 declare module "virtual:visulima-dev-toolbar-options" {
     interface DevToolbarVirtualOptions {
         apps: {
+            moduleGraph: boolean;
+            seo: boolean;
             settings: boolean;
             timeline: boolean;
+            viteConfig: boolean;
         };
         base: string;
+        closeOnOutsideClick: boolean;
         defaultVisible: boolean;
+        height: number;
+        keybindings: { close?: string; toggle?: string };
+        minimizePanelInactive: number;
         placement: "bottom-left" | "bottom-center" | "bottom-right";
-        /** Only show toolbar when URL contains ?{urlFlagName}=true */
+        position: "bottom" | "left" | "right" | "top";
+        reduceMotion: boolean;
         requireUrlFlag: boolean;
-        /** URL query parameter name for requireUrlFlag. Default: 'devtools' */
         urlFlagName: string;
+        width: number;
     }
     const options: DevToolbarVirtualOptions;
 
@@ -30,11 +38,17 @@ declare module "virtual:visulima-dev-toolbar-path:*" {
 
     export default content;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    export const moduleGraphApp: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     export const moreApp: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    export const seoApp: any;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     export const settingsApp: any;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     export const timelineApp: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    export const viteConfigApp: any;
 }
 
 declare global {

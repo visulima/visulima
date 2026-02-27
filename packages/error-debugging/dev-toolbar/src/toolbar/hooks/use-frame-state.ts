@@ -1,6 +1,21 @@
 import { useEffect, useState } from "preact/hooks";
 
 /**
+ * Keyboard shortcut bindings
+ */
+export interface KeyBindings {
+    /** Toggle toolbar panel open/closed */
+    toggle: string;
+    /** Close active app / panel */
+    close: string;
+}
+
+export const DEFAULT_KEYBINDINGS: KeyBindings = {
+    toggle: "Alt+Shift+D",
+    close: "Escape",
+};
+
+/**
  * Frame state interface
  */
 export interface DevToolsFrameState {
@@ -15,9 +30,19 @@ export interface DevToolsFrameState {
     height: number;
 
     /**
+     * Whether DevTools panel is open in a Picture-in-Picture window
+     */
+    isPip: boolean;
+
+    /**
      * Whether this is the first visit (used to show onboarding hint)
      */
     isFirstVisit: boolean;
+
+    /**
+     * Keyboard shortcut bindings
+     */
+    keybindings: KeyBindings;
 
     /**
      * Horizontal position as percentage (0-100)
@@ -78,7 +103,9 @@ const STORAGE_KEY = "__v_dt__frame_state";
 const DEFAULT_STATE: DevToolsFrameState = {
     closeOnOutsideClick: true,
     height: 60,
+    isPip: false,
     isFirstVisit: true,
+    keybindings: DEFAULT_KEYBINDINGS,
     left: 50,
     minimizePanelInactive: 5000,
     open: false,
@@ -92,11 +119,40 @@ const DEFAULT_STATE: DevToolsFrameState = {
 };
 
 /**
+ * Build effective defaults by layering plugin options on top of hardcoded defaults.
+ * Plugin options act as project-level defaults; localStorage values override them.
+ */
+const buildEffectiveDefaults = (): DevToolsFrameState => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const pluginOptions = (globalThis as any).__VISULIMA_DEV_TOOLBAR_OPTIONS__ as Record<string, any> | undefined;
+
+    if (!pluginOptions) {
+        return { ...DEFAULT_STATE };
+    }
+
+    return {
+        ...DEFAULT_STATE,
+        closeOnOutsideClick: pluginOptions["closeOnOutsideClick"] ?? DEFAULT_STATE.closeOnOutsideClick,
+        height: pluginOptions["height"] ?? DEFAULT_STATE.height,
+        keybindings: {
+            ...DEFAULT_KEYBINDINGS,
+            ...pluginOptions["keybindings"],
+        },
+        minimizePanelInactive: pluginOptions["minimizePanelInactive"] ?? DEFAULT_STATE.minimizePanelInactive,
+        position: pluginOptions["position"] ?? DEFAULT_STATE.position,
+        reduceMotion: pluginOptions["reduceMotion"] ?? DEFAULT_STATE.reduceMotion,
+        width: pluginOptions["width"] ?? DEFAULT_STATE.width,
+    };
+};
+
+/**
  * Load state from localStorage
  */
 const loadState = (): DevToolsFrameState => {
+    const effectiveDefaults = buildEffectiveDefaults();
+
     if (globalThis.window === undefined) {
-        return { ...DEFAULT_STATE };
+        return effectiveDefaults;
     }
 
     try {
@@ -106,8 +162,10 @@ const loadState = (): DevToolsFrameState => {
             const parsed = JSON.parse(stored) as Partial<DevToolsFrameState>;
 
             return {
-                ...DEFAULT_STATE,
+                ...effectiveDefaults,
                 ...parsed,
+                // Merge keybindings with defaults so new bindings added later still have defaults
+                keybindings: { ...effectiveDefaults.keybindings, ...parsed.keybindings },
                 // Never restore open state - panel always starts closed on page load
                 // so the canvas doesn't appear unexpectedly.
                 open: false,
@@ -117,7 +175,7 @@ const loadState = (): DevToolsFrameState => {
         // Ignore errors
     }
 
-    return { ...DEFAULT_STATE };
+    return effectiveDefaults;
 };
 
 /**

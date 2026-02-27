@@ -41,16 +41,10 @@ export const createServerRPCContext = (server: ViteDevServer, customFunctions?: 
         const function_ = functions[method];
 
         if (!function_) {
-            client.send(
-                JSON.stringify({
-                    data: {
-                        error: `Unknown RPC method: ${method}`,
-                        id,
-                    },
-                    event: "dev-toolbar:rpc:error",
-                    type: "custom",
-                }),
-            );
+            client.send("dev-toolbar:rpc:error", {
+                error: `Unknown RPC method: ${method}`,
+                id,
+            });
 
             return;
         }
@@ -59,27 +53,12 @@ export const createServerRPCContext = (server: ViteDevServer, customFunctions?: 
             // Call function (server is already bound in default functions)
             const result = await function_(server, ...args);
 
-            client.send(
-                JSON.stringify({
-                    data: {
-                        id,
-                        result,
-                    },
-                    event: "dev-toolbar:rpc:response",
-                    type: "custom",
-                }),
-            );
+            client.send("dev-toolbar:rpc:response", { id, result });
         } catch (error) {
-            client.send(
-                JSON.stringify({
-                    data: {
-                        error: error instanceof Error ? error.message : String(error),
-                        id,
-                    },
-                    event: "dev-toolbar:rpc:error",
-                    type: "custom",
-                }),
-            );
+            client.send("dev-toolbar:rpc:error", {
+                error: error instanceof Error ? error.message : String(error),
+                id,
+            });
         }
     });
 
