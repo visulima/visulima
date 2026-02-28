@@ -36,8 +36,7 @@ declare module "virtual:visulima-dev-toolbar-options" {
  * Each app module has a default export (the DevToolbarApp object).
  */
 declare module "virtual:visulima-dev-toolbar-path:*" {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const content: any;
+    const content: unknown;
 
     export default content;
 }

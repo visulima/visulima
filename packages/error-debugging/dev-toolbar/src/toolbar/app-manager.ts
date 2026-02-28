@@ -19,6 +19,18 @@ export class AppManager {
      * @param builtIn Whether this is a built-in app
      */
     registerApp(app: DevToolbarApp, builtIn = false): void {
+        if (this.apps.has(app.id)) {
+            // Clean up the previous registration so lifecycle state stays consistent.
+            // Calling unregisterApp asynchronously is not feasible here (synchronous
+            // API), so we perform the bookkeeping inline without invoking destroy().
+            this.initializedApps.delete(app.id);
+            this.appCanvases.delete(app.id);
+
+            if (this.activeAppId === app.id) {
+                this.activeAppId = null;
+            }
+        }
+
         const eventTarget = new EventTarget() as ToolbarAppEventTarget;
 
         const appState: DevToolbarAppState = {

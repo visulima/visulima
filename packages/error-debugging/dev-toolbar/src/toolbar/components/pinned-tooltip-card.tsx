@@ -1,6 +1,6 @@
 /** @jsxImportSource preact */
 import type { ComponentChildren } from "preact";
-import { useEffect, useRef } from "preact/hooks";
+import { useEffect, useMemo, useRef } from "preact/hooks";
 
 import pinOffIcon from "lucide-static/icons/pin-off.svg?data-uri&encoding=css";
 
@@ -34,7 +34,8 @@ const PinnedTooltipCard = ({ onMove, onUnpin, pinned }: PinnedTooltipCardProps):
     const headerRef = useRef<HTMLDivElement>(null);
     const posRef = useRef({ x: pinned.initialX, y: pinned.initialY });
     const dragRef = useRef<{ cardH: number; cardW: number; origX: number; origY: number; startX: number; startY: number } | null>(null);
-    const helpersRef = useRef(createServerHelpers());
+    const helpers = useMemo(() => createServerHelpers(), []);
+    const helpersRef = useRef(helpers);
     // Keep latest prop values accessible inside the empty-dep useEffect to avoid stale closures
     const onMoveRef = useRef(onMove);
     const pinnedIdRef = useRef(pinned.id);

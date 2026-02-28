@@ -177,10 +177,8 @@ devToolbar({
     },
 })
 
-// Call from your app component (cast rpc to your server function types)
-type ServerFunctions = { getRoutes(): Promise<string[]> };
-const rpc = helpers.rpc as unknown as ServerFunctions;
-const routes = await rpc.getRoutes();
+// Call from your app component
+const routes = await helpers.rpc.getRoutes();
 ```
 
 Built-in RPC functions: `getViteConfig()`, `getModuleGraph()`, `openInEditor(file, line, col)`.

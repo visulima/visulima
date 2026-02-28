@@ -76,6 +76,29 @@ describe("AppManager", () => {
 
             expect(manager.getAllApps()).toHaveLength(2);
         });
+
+        it("re-registers an app with the same id without throwing", () => {
+            manager.registerApp(makeApp({ name: "Old Name" }));
+            manager.registerApp(makeApp({ name: "New Name" }));
+
+            expect(manager.getApp("test-app")!.name).toBe("New Name");
+        });
+
+        it("resets initialized state when re-registering an existing app id", () => {
+            manager.registerApp(makeApp());
+            manager.markAppInitialized("test-app");
+            manager.registerApp(makeApp());
+
+            expect(manager.isAppInitialized("test-app")).toBe(false);
+        });
+
+        it("clears activeAppId when re-registering the active app", async () => {
+            manager.registerApp(makeApp());
+            await manager.openApp("test-app");
+            manager.registerApp(makeApp());
+
+            expect(manager.getActiveApp()).toBeUndefined();
+        });
     });
 
     describe("getApp", () => {

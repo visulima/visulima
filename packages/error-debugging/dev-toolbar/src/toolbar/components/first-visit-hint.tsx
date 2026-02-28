@@ -1,6 +1,6 @@
 /** @jsxImportSource preact */
 import type { CSSProperties, ComponentChildren } from "preact";
-import { useEffect, useState } from "preact/hooks";
+import { useEffect, useRef, useState } from "preact/hooks";
 
 import cn from "../../utils/cn";
 
@@ -77,6 +77,7 @@ const TIPS = [
  */
 const FirstVisitHint = ({ onDismiss, position }: FirstVisitHintProps): ComponentChildren => {
     const [visible, setVisible] = useState(false);
+    const dismissTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     // Delay appearance so the pill animates in first
     useEffect(() => {
@@ -85,9 +86,20 @@ const FirstVisitHint = ({ onDismiss, position }: FirstVisitHintProps): Component
         return () => clearTimeout(t);
     }, []);
 
-    const dismiss = (): void => {
+    // Clear any pending dismiss timeout on unmount to prevent calling onDismiss
+    // after the component has been removed from the tree.
+    useEffect(() => {
+        return () => {
+            if (dismissTimeoutRef.current !== null) {
+                clearTimeout(dismissTimeoutRef.current);
+                dismissTimeoutRef.current = null;
+            }
+        };
+    }, []);
+
+    const handleDismiss = (): void => {
         setVisible(false);
-        setTimeout(onDismiss, 180);
+        dismissTimeoutRef.current = setTimeout(onDismiss, 180);
     };
 
     return (
@@ -133,7 +145,8 @@ const FirstVisitHint = ({ onDismiss, position }: FirstVisitHintProps): Component
                     "hover:bg-primary/12 hover:border-primary/50",
                     "transition-all duration-150 active:scale-[0.98]",
                 )}
-                onClick={dismiss}
+                onClick={handleDismiss}
+                tabIndex={!visible ? -1 : undefined}
                 type="button"
             >
                 Got it

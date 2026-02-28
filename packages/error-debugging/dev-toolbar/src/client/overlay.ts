@@ -136,15 +136,27 @@ const initToolbar = async () => {
 };
 
 // Initialize when DOM is ready
-if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", initToolbar);
-} else {
-    initToolbar();
+if (typeof document !== "undefined") {
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initToolbar);
+    } else {
+        initToolbar();
+    }
 }
 
 // Listen for HMR events
 if (import.meta.hot) {
     import.meta.hot.on("dev-toolbar:init", () => {
+        // Remove any existing toolbar element and reset the init flag so that
+        // initToolbar() can perform a clean re-initialization on HMR updates.
+        const existingToolbar = document.querySelector("dev-toolbar");
+
+        if (existingToolbar) {
+            existingToolbar.remove();
+        }
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (globalThis as any).__VISULIMA_DEVTOOLS_INITIALIZED__ = false;
         initToolbar();
     });
 }
