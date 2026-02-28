@@ -1,0 +1,354 @@
+/* eslint-disable import/exports-last, max-classes-per-file, import/prefer-default-export */
+/** @jsxImportSource preact */
+import { render } from "preact";
+
+import { setupGlobalHook } from "../hooks/index";
+import { getTimelineStore } from "../timeline/index";
+import type { DevToolbarApp } from "../types/index";
+import { AppManager } from "./app-manager";
+import { ToolbarContainer } from "./components/index";
+import { createGlobalAPI, setupGlobalAPI } from "./global-api";
+import { loadSettings } from "./settings";
+import { sharedToolbarStylesheet } from "./stylesheet";
+
+/**
+ * Dev Toolbar Web Component
+ */
+export class DevToolbar extends HTMLElement {
+    private appManager: AppManager;
+
+    private hasBeenInitialized = false;
+
+    private customAppsToShow = 3;
+
+    private renderRoot: HTMLElement | null = null;
+
+    public constructor() {
+        super();
+        // Attach shadow root in constructor (before connectedCallback)
+        this.attachShadow({ mode: "open" });
+        this.appManager = new AppManager();
+    }
+
+    /**
+     * Called when element is inserted into the DOM
+     * According to Preact docs, rendering should happen here or after connection
+     */
+    public connectedCallback(): void {
+        // If init() was called before connection, ensure render happens
+        // Otherwise, init() will be called externally and will handle rendering
+        if (this.hasBeenInitialized && this.shadowRoot && !this.renderRoot) {
+            this.render();
+        }
+    }
+
+    /**
+     * Called when element is removed from the DOM
+     * Clean up Preact component to prevent memory leaks
+     */
+    public disconnectedCallback(): void {
+        // Unmount Preact component when element is removed
+        if (this.renderRoot) {
+            render(null, this.renderRoot);
+            this.renderRoot = null;
+        }
+    }
+
+    /**
+     * Initialize the toolbar.
+     */
+    public init(): void {
+        if (this.hasBeenInitialized) {
+            return;
+        }
+
+        this.hasBeenInitialized = true;
+
+        // Inject Geist font into document.head so @font-face registers globally
+        // (CSSStyleSheet.replaceSync strips @import, so fonts must live in <head>)
+        DevToolbar.injectFont();
+
+        // Setup global hook
+        const hook = setupGlobalHook(
+            (app) => {
+                this.appManager.registerApp(app);
+                this.render();
+            },
+            (groupId, event) => {
+                const timelineStore = getTimelineStore();
+
+                timelineStore.addEvent(groupId, event);
+            },
+        );
+
+        // Setup global API
+        const api = createGlobalAPI(
+            {
+                clearNotification: (id) => {
+                    this.appManager.clearNotification(id);
+                    this.render();
+                },
+                getActiveApp: () => this.appManager.getActiveApp(),
+                getApps: () => this.appManager.getAllApps(),
+                registerApp: (app) => {
+                    this.appManager.registerApp(app);
+                    this.render();
+                },
+                setNotification: (id, state, level) => {
+                    this.appManager.setNotification(id, state, level);
+                    this.render();
+                },
+                toggleApp: (id) => this.appManager.toggleApp(id),
+                unregisterApp: (id) => {
+                    this.appManager.unregisterApp(id);
+                    this.render();
+                },
+            },
+            {
+                hide: () => this.setToolbarVisible(false),
+                show: () => this.setToolbarVisible(true),
+                toggle: () => {
+                    const isHidden = this.isHidden();
+
+                    this.setToolbarVisible(!isHidden);
+                },
+            },
+        );
+
+        setupGlobalAPI(api);
+
+        // Emit init event
+        hook.emit("devtools:init");
+
+        // Load settings and apply
+        const settings = loadSettings();
+
+        // Activate the first app that has defaultOpen: true (if none is already active)
+        const defaultApp = this.appManager.getAllApps().find((a) => a.defaultOpen);
+
+        if (defaultApp && !this.appManager.getActiveApp()) {
+            this.appManager.openApp(defaultApp.id).catch((error) => {
+                console.error(`[dev-toolbar] Failed to auto-open defaultOpen app ${defaultApp.id}:`, error);
+            });
+        }
+
+        // Render initial UI
+        this.render();
+
+        // Setup event listeners
+        this.setupEventListeners();
+
+        if (settings.defaultVisible) {
+            this.setToolbarVisible(true);
+        }
+    }
+
+    /**
+     * Check if toolbar is hidden.
+     */
+    public isHidden(): boolean {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        const root = this.shadowRoot!.querySelector<HTMLDivElement>("#__v_dt__root");
+
+        return root?.hasAttribute("data-hidden") ?? true;
+    }
+
+    /**
+     * Set toolbar visibility.
+     */
+    public setToolbarVisible(visible: boolean): void {
+        // Update the data-hidden attribute directly for immediate feedback
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        const root = this.shadowRoot!.querySelector<HTMLDivElement>("#__v_dt__root");
+
+        if (root) {
+            if (visible) {
+                root.removeAttribute("data-hidden");
+            } else {
+                root.setAttribute("data-hidden", "");
+            }
+        }
+
+        // Trigger re-render to sync Preact state
+        this.render();
+    }
+
+    /**
+     * Register an app.
+     */
+    public registerApp(app: DevToolbarApp, builtIn = false): void {
+        this.appManager.registerApp(app, builtIn);
+        this.render();
+    }
+
+    /**
+     * Get app manager (for external access).
+     */
+    public getAppManager(): AppManager {
+        return this.appManager;
+    }
+
+    /**
+     * Inject Geist font into document.head once.
+     * @font-face declared in the document is part of the global font registry and
+     * is accessible from within shadow DOM roots — no duplication needed.
+     */
+    private static injectFont(): void {
+        const id = "__v_dt__font";
+
+        if (document.getElementById(id)) {
+            return;
+        }
+
+        // Preconnect hints reduce first-byte latency for the font CDN
+        const preconnect1 = document.createElement("link");
+
+        preconnect1.rel = "preconnect";
+        preconnect1.href = "https://fonts.googleapis.com";
+        document.head.append(preconnect1);
+
+        const preconnect2 = document.createElement("link");
+
+        preconnect2.rel = "preconnect";
+        preconnect2.href = "https://fonts.gstatic.com";
+        preconnect2.crossOrigin = "anonymous";
+        document.head.append(preconnect2);
+
+        const stylesheet = document.createElement("link");
+
+        stylesheet.id = id;
+        stylesheet.rel = "stylesheet";
+        // JetBrains Mono — monospace font designed for developers; terminal HUD aesthetic
+        stylesheet.href = "https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap";
+        document.head.append(stylesheet);
+    }
+
+    /**
+     * Render the toolbar UI using Preact
+     */
+    private render(): void {
+        const apps = this.appManager.getAllApps();
+
+        // Adopt shared stylesheet for Tailwind CSS
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        const shadowRoot = this.shadowRoot!;
+
+        if (sharedToolbarStylesheet) {
+            shadowRoot.adoptedStyleSheets = [sharedToolbarStylesheet];
+        }
+
+        // Create style element for :host styles
+        let styleElement = shadowRoot.querySelector("style");
+
+        if (!styleElement) {
+            styleElement = document.createElement("style");
+            styleElement.textContent = `
+        :host {
+          all: initial;
+          /* Cover the full viewport so the host establishes a stacking context
+             above vite-overlay (#__v_o__root uses z-[2147483647]). display:contents
+             would suppress z-index entirely, so we use position:fixed instead.
+             pointer-events:none passes all clicks through to the page;
+             interactive toolbar children restore pointer-events:auto. */
+          position: fixed;
+          inset: 0;
+          z-index: 2147483647;
+          pointer-events: none;
+          overflow: visible;
+        }
+        @media print {
+          :host {
+            display: none;
+          }
+        }
+      `;
+            shadowRoot.appendChild(styleElement);
+        }
+
+        // Create render root if it doesn't exist
+        if (!this.renderRoot) {
+            this.renderRoot = document.createElement("div");
+            shadowRoot.appendChild(this.renderRoot);
+        }
+
+        const activeApp = this.appManager.getActiveApp();
+        const activeAppId = activeApp?.id || null;
+
+        // Render Preact component
+        render(
+            <ToolbarContainer
+                activeAppId={activeAppId}
+                apps={apps}
+                customAppsToShow={this.customAppsToShow}
+                onClearNotification={(appId) => {
+                    this.appManager.clearNotification(appId);
+                    this.render();
+                }}
+                onRegisterApp={(_app) => {
+                    // App is already registered in AppManager, just trigger render
+                    this.render();
+                }}
+                onSetNotification={(appId, state, level) => {
+                    this.appManager.setNotification(appId, state, level);
+                    this.render();
+                }}
+                onToggleApp={async (appId) => {
+                    await this.appManager.toggleApp(appId);
+                    this.render();
+                }}
+                onUnregisterApp={(appId) => {
+                    this.appManager.unregisterApp(appId);
+                    this.render();
+                }}
+            />,
+            this.renderRoot,
+        );
+    }
+
+    /**
+     * Setup event listeners.
+     */
+    private setupEventListeners(): void {
+        // Keyboard shortcuts
+        document.addEventListener("keyup", (event) => {
+            if (event.key !== "Escape") {
+                return;
+            }
+
+            if (this.isHidden()) {
+                return;
+            }
+
+            const activeApp = this.appManager.getActiveApp();
+
+            if (activeApp) {
+                this.appManager.toggleApp(activeApp.id).then(() => {
+                    this.render();
+                });
+            } else {
+                this.setToolbarVisible(false);
+            }
+        });
+    }
+}
+
+// Export shared stylesheet for use in components
+export { sharedToolbarStylesheet };
+
+// Register custom elements
+if (globalThis.window !== undefined) {
+    if (!customElements.get("dev-toolbar")) {
+        customElements.define("dev-toolbar", DevToolbar);
+    }
+
+    // Register app canvas custom element
+    if (!customElements.get("dev-toolbar-app-canvas")) {
+        class DevToolbarAppCanvas extends HTMLElement {
+            public constructor() {
+                super();
+                this.attachShadow({ mode: "open" });
+            }
+        }
+        customElements.define("dev-toolbar-app-canvas", DevToolbarAppCanvas);
+    }
+}

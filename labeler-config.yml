@@ -31,6 +31,9 @@
 "package: deep-clone":
     - changed-files:
           - any-glob-to-any-file: "packages/data-manipulation/deep-clone/**/*"
+"package: dev-toolbar":
+    - changed-files:
+          - any-glob-to-any-file: "packages/error-debugging/dev-toolbar/**/*"
 "package: disposable-email-domains":
     - changed-files:
           - any-glob-to-any-file: "packages/email/disposable-email-domains/**/*"

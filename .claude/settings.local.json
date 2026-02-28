@@ -7,7 +7,15 @@
       "Bash(git reset:*)",
       "Bash(test:*)",
       "Bash(wc:*)",
-      "Bash(pnpm --filter @visulima/content-safety test:coverage:*)"
+      "Bash(pnpm --filter @visulima/content-safety test:coverage:*)",
+      "Bash(pnpm run build:prod:*)",
+      "Bash(grep:*)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebSearch",
+      "WebFetch(domain:github.com)",
+      "Bash(curl:*)",
+      "Bash(pnpm build:*)",
+      "WebFetch(domain:api.github.com)"
     ]
   }
 }

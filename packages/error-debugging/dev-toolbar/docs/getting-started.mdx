@@ -1,0 +1,187 @@
+---
+title: Getting Started
+description: Install and configure the Visulima Dev Toolbar in your Vite project in under two minutes.
+---
+
+import { Callout } from "fumadocs-ui/components/callout";
+import { Step, Steps } from "fumadocs-ui/components/steps";
+import { Tab, Tabs } from "fumadocs-ui/components/tabs";
+
+<Steps>
+
+<Step>
+
+## Install
+
+<Tabs items={["npm", "pnpm", "yarn", "bun"]}>
+    <Tab value="npm">
+        ```bash
+        npm install -D @visulima/dev-toolbar
+        ```
+    </Tab>
+    <Tab value="pnpm">
+        ```bash
+        pnpm add -D @visulima/dev-toolbar
+        ```
+    </Tab>
+    <Tab value="yarn">
+        ```bash
+        yarn add -D @visulima/dev-toolbar
+        ```
+    </Tab>
+    <Tab value="bun">
+        ```bash
+        bun add -d @visulima/dev-toolbar
+        ```
+    </Tab>
+</Tabs>
+
+<Callout type="info">
+    The package is a development-only tool. It is automatically excluded from production builds — the Vite plugin no-ops when `command !== 'serve'`.
+</Callout>
+
+</Step>
+
+<Step>
+
+## Add the Vite Plugin
+
+Open your `vite.config.ts` and add the `devToolbar` plugin:
+
+```ts title="vite.config.ts"
+import { defineConfig } from "vite";
+import { devToolbar } from "@visulima/dev-toolbar/vite";
+
+export default defineConfig({
+    plugins: [
+        devToolbar(),
+    ],
+});
+```
+
+That's it. Start your dev server and press **`Alt`+`Shift`+`D`** to open the toolbar.
+
+</Step>
+
+<Step>
+
+## Open the Toolbar
+
+A small pill appears at the bottom-center of your page. Click any app icon to open its panel, or use the keyboard shortcut:
+
+| Action | Shortcut |
+|---|---|
+| Toggle toolbar open/close | `Alt`+`Shift`+`D` |
+| Close active app / panel | `Escape` |
+
+</Step>
+
+</Steps>
+
+## Minimal Configuration
+
+All built-in apps are enabled by default. To selectively disable apps or change the toolbar position:
+
+```ts title="vite.config.ts"
+import { defineConfig } from "vite";
+import { devToolbar } from "@visulima/dev-toolbar/vite";
+
+export default defineConfig({
+    plugins: [
+        devToolbar({
+            // Toolbar placement
+            placement: "bottom-right",
+
+            // Disable specific built-in apps
+            apps: {
+                performance: false,
+                seo: false,
+            },
+
+            // Change the default keyboard shortcuts
+            keybindings: {
+                toggle: "Alt+Shift+D",
+                close: "Escape",
+            },
+        }),
+    ],
+});
+```
+
+## Using with Non-HTML Entry Points
+
+If your project does not use an HTML file as the entry point (e.g. a custom server-side rendering setup), use the `appendTo` option to inject the toolbar into a specific module instead:
+
+```ts title="vite.config.ts"
+devToolbar({
+    appendTo: "src/main.ts",
+})
+```
+
+This appends the toolbar import to the end of `src/main.ts` at transform time, bypassing the HTML injection step.
+
+## Framework Examples
+
+<Tabs items={["React", "Vue", "Svelte", "Vanilla"]}>
+    <Tab value="React">
+        ```ts title="vite.config.ts"
+        import { defineConfig } from "vite";
+        import react from "@vitejs/plugin-react";
+        import { devToolbar } from "@visulima/dev-toolbar/vite";
+
+        export default defineConfig({
+            plugins: [
+                react(),
+                devToolbar(),
+            ],
+        });
+        ```
+    </Tab>
+    <Tab value="Vue">
+        ```ts title="vite.config.ts"
+        import { defineConfig } from "vite";
+        import vue from "@vitejs/plugin-vue";
+        import { devToolbar } from "@visulima/dev-toolbar/vite";
+
+        export default defineConfig({
+            plugins: [
+                vue(),
+                devToolbar(),
+            ],
+        });
+        ```
+    </Tab>
+    <Tab value="Svelte">
+        ```ts title="vite.config.ts"
+        import { defineConfig } from "vite";
+        import { svelte } from "@sveltejs/vite-plugin-svelte";
+        import { devToolbar } from "@visulima/dev-toolbar/vite";
+
+        export default defineConfig({
+            plugins: [
+                svelte(),
+                devToolbar(),
+            ],
+        });
+        ```
+    </Tab>
+    <Tab value="Vanilla">
+        ```ts title="vite.config.ts"
+        import { defineConfig } from "vite";
+        import { devToolbar } from "@visulima/dev-toolbar/vite";
+
+        export default defineConfig({
+            plugins: [
+                devToolbar(),
+            ],
+        });
+        ```
+    </Tab>
+</Tabs>
+
+## Next Steps
+
+- [Full configuration reference](/docs/dev-toolbar/configuration) — every plugin option explained
+- [Built-in apps](/docs/dev-toolbar/built-in-apps/accessibility) — learn what each app does
+- [Creating custom apps](/docs/dev-toolbar/custom-apps/creating-apps) — build your own devtools panel
+- [Library integration](/docs/dev-toolbar/integrations/library-integration) — add devtools support to your library

@@ -1,0 +1,12 @@
+{
+    "title": "Built-in Apps",
+    "pages": [
+        "accessibility",
+        "performance",
+        "seo",
+        "timeline",
+        "module-graph",
+        "vite-config",
+        "settings"
+    ]
+}

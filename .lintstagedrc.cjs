@@ -1,5 +1,3 @@
-const config = require("@anolilab/lint-staged-config");
+const { defineConfig } = require("@anolilab/lint-staged-config");
 
-module.exports = {
-    ...config,
-};
+module.exports = defineConfig();

@@ -46,5 +46,5 @@
         "skipLibCheck": true,
         "forceConsistentCasingInFileNames": true
     },
-    "exclude": ["dist/**/*", "node_modules/**/*", "build/**/*", "scripts/**/*", "verify-node-version.cjs", "examples/**", "**/coverage/**", "vitest.config.ts"]
+    "exclude": ["**/dist/**", "**/node_modules/**", "**/build/**", "scripts/**/*", "verify-node-version.cjs", "examples/**", "**/coverage/**", "vitest.config.ts", "**/__fixtures__/**"]
 }
