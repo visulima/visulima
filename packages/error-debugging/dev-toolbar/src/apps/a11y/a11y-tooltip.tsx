@@ -130,7 +130,6 @@ const A11yTooltip = (_props: AppTooltipProps): ComponentChildren => {
                 </button>
 
                 <button
-                    aria-disabled={issues.length === 0}
                     class={cn(
                         "px-2.5 py-1.5 text-[0.7rem] border transition-colors",
                         issues.length === 0
@@ -143,7 +142,7 @@ const A11yTooltip = (_props: AppTooltipProps): ComponentChildren => {
                             ),
                     )}
                     disabled={issues.length === 0}
-                    onClick={() => issues.length > 0 && a11yStore.setShowOverlays(!showOverlays)}
+                    onClick={() => a11yStore.setShowOverlays(!showOverlays)}
                     title="Toggle visual highlights on affected elements"
                     type="button"
                 >

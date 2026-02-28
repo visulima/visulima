@@ -92,6 +92,7 @@ const FirstVisitHint = ({ onDismiss, position }: FirstVisitHintProps): Component
 
     return (
         <div
+            aria-hidden={!visible}
             aria-label="DevTools quick start"
             class={cn(
                 "absolute pointer-events-auto",
@@ -103,7 +104,6 @@ const FirstVisitHint = ({ onDismiss, position }: FirstVisitHintProps): Component
                 "transition-all duration-200",
                 visible ? "opacity-100 scale-100" : "opacity-0 scale-95 pointer-events-none",
             )}
-            role="tooltip"
             style={getHintStyle(position)}
         >
             <Arrow position={position} />
@@ -136,7 +136,7 @@ const FirstVisitHint = ({ onDismiss, position }: FirstVisitHintProps): Component
                 onClick={dismiss}
                 type="button"
             >
-                // got it
+                Got it
             </button>
         </div>
     );

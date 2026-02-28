@@ -22,6 +22,11 @@ interface PinnedTooltipCardProps {
  * Position is updated via direct DOM style mutations during drag so that
  * Preact never re-renders the component on mousemove — drag is silky smooth
  * regardless of how expensive the tooltip content component is.
+ * @param props Component props
+ * @param props.onMove Called with the pin ID and final (x, y) coordinates when a drag ends
+ * @param props.onUnpin Called with the pin ID when the user clicks the unpin button
+ * @param props.pinned Pinned tooltip descriptor — contains the app reference and initial position
+ * @returns Rendered draggable pinned card, or null if the app has no tooltip component
  */
 const PinnedTooltipCard = ({ onMove, onUnpin, pinned }: PinnedTooltipCardProps): ComponentChildren => {
     // Refs for direct DOM access — no state means zero re-renders during drag

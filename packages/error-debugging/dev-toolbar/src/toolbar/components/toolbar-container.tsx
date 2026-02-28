@@ -268,6 +268,15 @@ const ToolbarContainer = ({
         }
     }, [apps]);
 
+    // Clear any pending leave timer on unmount to prevent post-unmount state updates
+    useEffect(() => {
+        return () => {
+            if (leaveTimerRef.current !== null) {
+                clearTimeout(leaveTimerRef.current);
+            }
+        };
+    }, []);
+
     const handleSetHoveredApp = useCallback((app: DevToolbarAppState | null, rect?: DOMRect | null): void => {
         if (leaveTimerRef.current !== null) {
             clearTimeout(leaveTimerRef.current);

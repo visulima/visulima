@@ -48,72 +48,72 @@ const initToolbar = async () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (globalThis as any).__VISULIMA_DEVTOOLS_INITIALIZED__ = true;
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let toolbar: any = null;
+
     try {
         // Import the toolbar module (registers the custom element)
         // Use .js extension - we're loading from dist
         await import("virtual:visulima-dev-toolbar-path:toolbar/index.js");
 
-        // Import each app individually — no barrel file needed
+        // Only import enabled apps — conditional dynamic imports avoid loading unused modules
+        const { apps: appConfig } = devToolbarOptions;
         const [
-            { default: settingsApp },
-            { default: timelineApp },
-            { default: viteConfigApp },
-            { default: moduleGraphApp },
-            { default: seoApp },
-            { default: performanceApp },
-            { default: a11yApp },
-            { default: moreApp },
+            settingsModule,
+            timelineModule,
+            viteConfigModule,
+            moduleGraphModule,
+            seoModule,
+            performanceModule,
+            a11yModule,
+            moreModule,
         ] = await Promise.all([
-            import("virtual:visulima-dev-toolbar-path:apps/settings/index.js"),
-            import("virtual:visulima-dev-toolbar-path:apps/timeline/index.js"),
-            import("virtual:visulima-dev-toolbar-path:apps/vite-config/index.js"),
-            import("virtual:visulima-dev-toolbar-path:apps/module-graph/index.js"),
-            import("virtual:visulima-dev-toolbar-path:apps/seo/index.js"),
-            import("virtual:visulima-dev-toolbar-path:apps/performance/index.js"),
-            import("virtual:visulima-dev-toolbar-path:apps/a11y/index.js"),
+            appConfig.settings ? import("virtual:visulima-dev-toolbar-path:apps/settings/index.js") : null,
+            appConfig.timeline ? import("virtual:visulima-dev-toolbar-path:apps/timeline/index.js") : null,
+            appConfig.viteConfig ? import("virtual:visulima-dev-toolbar-path:apps/vite-config/index.js") : null,
+            appConfig.moduleGraph ? import("virtual:visulima-dev-toolbar-path:apps/module-graph/index.js") : null,
+            appConfig.seo ? import("virtual:visulima-dev-toolbar-path:apps/seo/index.js") : null,
+            appConfig.performance ? import("virtual:visulima-dev-toolbar-path:apps/performance/index.js") : null,
+            appConfig.a11y ? import("virtual:visulima-dev-toolbar-path:apps/a11y/index.js") : null,
             import("virtual:visulima-dev-toolbar-path:apps/more/index.js"),
         ]);
 
         // Create toolbar element
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const toolbar = document.createElement("dev-toolbar") as any;
-
+        toolbar = document.createElement("dev-toolbar");
         document.body.append(toolbar);
 
         // Register built-in apps
         if (toolbar.registerApp) {
-            const { apps } = devToolbarOptions;
-
-            if (apps.settings) {
-                toolbar.registerApp(settingsApp, true);
+            if (settingsModule) {
+                toolbar.registerApp(settingsModule.default, true);
             }
 
-            if (apps.timeline) {
-                toolbar.registerApp(timelineApp, true);
+            if (timelineModule) {
+                toolbar.registerApp(timelineModule.default, true);
             }
 
-            if (apps.viteConfig) {
-                toolbar.registerApp(viteConfigApp, true);
+            if (viteConfigModule) {
+                toolbar.registerApp(viteConfigModule.default, true);
             }
 
-            if (apps.moduleGraph) {
-                toolbar.registerApp(moduleGraphApp, true);
+            if (moduleGraphModule) {
+                toolbar.registerApp(moduleGraphModule.default, true);
             }
 
-            if (apps.seo) {
-                toolbar.registerApp(seoApp, true);
+            if (seoModule) {
+                toolbar.registerApp(seoModule.default, true);
             }
 
-            if (apps.performance) {
-                toolbar.registerApp(performanceApp, true);
+            if (performanceModule) {
+                toolbar.registerApp(performanceModule.default, true);
             }
 
-            if (apps.a11y) {
-                toolbar.registerApp(a11yApp, true);
+            if (a11yModule) {
+                toolbar.registerApp(a11yModule.default, true);
             }
 
             // Always register more app
-            toolbar.registerApp(moreApp, true);
+            toolbar.registerApp(moreModule.default, true);
         }
 
         // Initialize toolbar
@@ -123,6 +123,11 @@ const initToolbar = async () => {
 
         console.log("[dev-toolbar] Initialized successfully");
     } catch (error) {
+        // Remove any partially-mounted toolbar element to avoid a dangling custom element in the DOM
+        if (toolbar?.isConnected) {
+            toolbar.remove();
+        }
+
         // Reset flag on error so retry is possible
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (globalThis as any).__VISULIMA_DEVTOOLS_INITIALIZED__ = false;

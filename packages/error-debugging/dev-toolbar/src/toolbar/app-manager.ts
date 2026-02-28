@@ -39,7 +39,7 @@ export class AppManager {
      * Unregister an app
      * @param appId App ID
      */
-    unregisterApp(appId: string): void {
+    async unregisterApp(appId: string): Promise<void> {
         const app = this.apps.get(appId);
 
         if (app?.destroy && this.initializedApps.has(appId)) {
@@ -47,15 +47,9 @@ export class AppManager {
 
             if (canvas) {
                 try {
-                    const result = app.destroy(canvas.shadowRoot);
-
-                    if (result && typeof result.then === "function") {
-                        result.catch((error: unknown) => {
-                            console.error(`[dev-toolbar] destroy() failed for app ${appId}:`, error);
-                        });
-                    }
+                    await app.destroy(canvas.shadowRoot);
                 } catch (error) {
-                    console.error(`[dev-toolbar] destroy() threw for app ${appId}:`, error);
+                    console.error(`[dev-toolbar] destroy() failed for app ${appId}:`, error);
                 }
             }
         }
@@ -130,6 +124,7 @@ export class AppManager {
 
     /**
      * Check if an app has been initialized
+     * @returns True when the app's init() has already been called
      */
     isAppInitialized(appId: string): boolean {
         return this.initializedApps.has(appId);
@@ -137,6 +132,7 @@ export class AppManager {
 
     /**
      * Mark an app as initialized
+     * @returns void
      */
     markAppInitialized(appId: string): void {
         this.initializedApps.add(appId);
@@ -212,12 +208,17 @@ export class AppManager {
             const canvas = this.getAppCanvas(appId);
 
             if (canvas) {
-                const result = app.beforeTogglingOff(canvas.shadowRoot);
-                // beforeTogglingOff can return boolean or Promise<boolean>
-                const shouldClose = result && typeof (result as Promise<boolean>).then === "function" ? await result : result;
+                try {
+                    const result = app.beforeTogglingOff(canvas.shadowRoot);
+                    // beforeTogglingOff can return boolean or Promise<boolean>
+                    const shouldClose = result && typeof (result as Promise<boolean>).then === "function" ? await result : result;
 
-                if (!shouldClose) {
-                    return false;
+                    if (!shouldClose) {
+                        return false;
+                    }
+                } catch (error) {
+                    // Allow close on error — better to close than to leave the app permanently stuck open
+                    console.error(`[dev-toolbar] beforeTogglingOff() threw for app ${appId}:`, error);
                 }
             }
         }

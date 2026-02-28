@@ -6,7 +6,7 @@ import { defineConfig } from "@visulima/packem/config";
 import transformer from "@visulima/packem/transformer/esbuild";
 import { createPreactPreset } from "@visulima/packem/config/preset/preact";
 
-// eslint-disable-next-line import/no-unused-modules
+// eslint-disable-next-line import/no-unused-modules -- consumed by packem CLI, not imported by other modules
 export default defineConfig({
     runtime: "node",
     preset: createPreactPreset(),
