@@ -53,10 +53,26 @@ const initToolbar = async () => {
         // Use .js extension - we're loading from dist
         await import("virtual:visulima-dev-toolbar-path:toolbar/index.js");
 
-        // Import apps
-        const { a11yApp, moduleGraphApp, moreApp, performanceApp, seoApp, settingsApp, timelineApp, viteConfigApp } = await import(
-            "virtual:visulima-dev-toolbar-path:apps/index.js"
-        );
+        // Import each app individually — no barrel file needed
+        const [
+            { default: settingsApp },
+            { default: timelineApp },
+            { default: viteConfigApp },
+            { default: moduleGraphApp },
+            { default: seoApp },
+            { default: performanceApp },
+            { default: a11yApp },
+            { default: moreApp },
+        ] = await Promise.all([
+            import("virtual:visulima-dev-toolbar-path:apps/settings/index.js"),
+            import("virtual:visulima-dev-toolbar-path:apps/timeline/index.js"),
+            import("virtual:visulima-dev-toolbar-path:apps/vite-config/index.js"),
+            import("virtual:visulima-dev-toolbar-path:apps/module-graph/index.js"),
+            import("virtual:visulima-dev-toolbar-path:apps/seo/index.js"),
+            import("virtual:visulima-dev-toolbar-path:apps/performance/index.js"),
+            import("virtual:visulima-dev-toolbar-path:apps/a11y/index.js"),
+            import("virtual:visulima-dev-toolbar-path:apps/more/index.js"),
+        ]);
 
         // Create toolbar element
         // eslint-disable-next-line @typescript-eslint/no-explicit-any

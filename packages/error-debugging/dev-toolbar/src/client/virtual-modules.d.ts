@@ -32,29 +32,14 @@ declare module "virtual:visulima-dev-toolbar-options" {
 }
 
 /**
- * Path-based virtual modules - resolved to actual dist files
+ * Path-based virtual modules - resolved to actual dist files.
+ * Each app module has a default export (the DevToolbarApp object).
  */
 declare module "virtual:visulima-dev-toolbar-path:*" {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const content: any;
 
     export default content;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    export const a11yApp: any;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    export const moduleGraphApp: any;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    export const moreApp: any;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    export const performanceApp: any;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    export const seoApp: any;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    export const settingsApp: any;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    export const timelineApp: any;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    export const viteConfigApp: any;
 }
 
 declare global {

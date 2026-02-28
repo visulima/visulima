@@ -45,9 +45,37 @@
             "types": "./dist/client/overlay.d.ts",
             "default": "./dist/client/overlay.js"
         },
-        "./apps": {
-            "types": "./dist/apps/index.d.ts",
-            "default": "./dist/apps/index.js"
+        "./apps/a11y": {
+            "types": "./dist/apps/a11y/index.d.ts",
+            "default": "./dist/apps/a11y/index.js"
+        },
+        "./apps/module-graph": {
+            "types": "./dist/apps/module-graph/index.d.ts",
+            "default": "./dist/apps/module-graph/index.js"
+        },
+        "./apps/more": {
+            "types": "./dist/apps/more/index.d.ts",
+            "default": "./dist/apps/more/index.js"
+        },
+        "./apps/performance": {
+            "types": "./dist/apps/performance/index.d.ts",
+            "default": "./dist/apps/performance/index.js"
+        },
+        "./apps/seo": {
+            "types": "./dist/apps/seo/index.d.ts",
+            "default": "./dist/apps/seo/index.js"
+        },
+        "./apps/settings": {
+            "types": "./dist/apps/settings/index.d.ts",
+            "default": "./dist/apps/settings/index.js"
+        },
+        "./apps/timeline": {
+            "types": "./dist/apps/timeline/index.d.ts",
+            "default": "./dist/apps/timeline/index.js"
+        },
+        "./apps/vite-config": {
+            "types": "./dist/apps/vite-config/index.d.ts",
+            "default": "./dist/apps/vite-config/index.js"
         },
         "./toolbar": {
             "types": "./dist/toolbar/index.d.ts",

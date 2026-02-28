@@ -13,8 +13,7 @@ export default defineConfig({
     isolatedDeclarationTransformer,
     externals: [
         "virtual:visulima-dev-toolbar-options",
-        "virtual:visulima-dev-toolbar-path:apps/index.js",
-        "virtual:visulima-dev-toolbar-path:toolbar/index.js",
+        /^virtual:visulima-dev-toolbar-path:/,
     ],
     rollup: {
         css: {
@@ -35,7 +34,7 @@ export default defineConfig({
                 exclude: ["tw-animate-css", "@tailwindcss/forms", "@tailwindcss/typography", "lucide-static"],
             },
             hoisted: {
-                exclude: ["virtual:visulima-dev-toolbar-options", "virtual:visulima-dev-toolbar-path:toolbar/index.js", "virtual:visulima-dev-toolbar-path:apps/index.js"],
+                exclude: ["virtual:visulima-dev-toolbar-path:toolbar", "virtual:visulima-dev-toolbar-path:apps", "virtual:visulima-dev-toolbar-options"],
             },
         },
     },
