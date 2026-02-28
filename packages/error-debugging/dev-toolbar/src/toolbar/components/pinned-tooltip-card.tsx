@@ -121,7 +121,11 @@ const PinnedTooltipCard = ({ onMove, onUnpin, pinned }: PinnedTooltipCardProps):
         };
     }, []);
 
-    const TooltipComponent = pinned.app.tooltip!;
+    const TooltipComponent = pinned.app.tooltip;
+
+    if (!TooltipComponent) {
+        return null;
+    }
 
     const handleDragStart = (e: MouseEvent): void => {
         if (e.button !== 0) {

@@ -32,11 +32,18 @@ export const getModuleGraph = async (server: ViteDevServer): Promise<Serializabl
             }
         });
 
+        const id = module.id ?? module.url;
+        const url = module.url ?? module.id;
+
+        if (!id || !url) {
+            return;
+        }
+
         modules.push({
-            id: module.id ?? module.url ?? "",
+            id,
             importerCount: module.importers.size,
             importerUrls,
-            url: module.url ?? module.id ?? "",
+            url,
         });
     });
 

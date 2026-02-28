@@ -209,7 +209,7 @@ interface HookEvents {
     "app:error": (error: Error, appId?: string) => void;
 
     /** Fired when a timeline event is added */
-    "timeline:event": (groupId: string, event: TimelineEvent) => void;
+    "timeline:event": (event: TimelineEvent) => void;
 
     /** Custom events — any string key is valid */
     [key: string]: (...args: any[]) => void;

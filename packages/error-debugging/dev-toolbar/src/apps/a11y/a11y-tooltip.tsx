@@ -47,6 +47,12 @@ const formatElapsed = (isoDate: string): string => {
 
 // ─── Main tooltip component ──────────────────────────────────────────────────
 
+/**
+ * Hover tooltip for the Accessibility app button.
+ * Shows a summary of scan results and quick action buttons.
+ * @param _props - Tooltip props (unused; reads from a11yStore directly)
+ * @returns Rendered tooltip component
+ */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const A11yTooltip = (_props: AppTooltipProps): ComponentChildren => {
     const [state, setState] = useState<Readonly<A11yStoreState>>(() => a11yStore.getState());

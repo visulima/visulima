@@ -32,7 +32,7 @@ pnpm preview
 
 ```typescript
 // vite.config.ts
-import { devToolbar } from "@visulima/dev-toolbar";
+import { devToolbar } from "@visulima/dev-toolbar/vite";
 import { defineConfig } from "vite";
 
 export default defineConfig({

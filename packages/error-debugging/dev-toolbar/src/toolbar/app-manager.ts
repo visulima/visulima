@@ -113,7 +113,11 @@ export class AppManager {
 
         // Close current active app
         if (this.activeAppId) {
-            await this.closeApp(this.activeAppId);
+            const closed = await this.closeApp(this.activeAppId);
+
+            if (!closed) {
+                return false;
+            }
         }
 
         // Open new app

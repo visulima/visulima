@@ -57,6 +57,14 @@ const TIPS = [
     { icon: "⌨", text: "Alt+Shift+D to toggle" },
 ] as const;
 
+/**
+ * First-visit hint overlay showing keyboard and interaction tips.
+ * Appears ~600 ms after mount to let the toolbar pill animate in first.
+ * @param props - Component props
+ * @param props.onDismiss - Called after the dismiss animation completes
+ * @param props.position - Current toolbar position (controls hint placement)
+ * @returns Rendered hint component
+ */
 const FirstVisitHint = ({ onDismiss, position }: FirstVisitHintProps): ComponentChildren => {
     const [visible, setVisible] = useState(false);
 

@@ -66,7 +66,7 @@ const ViteOverlayButton = (): ComponentChildren => {
         if (rootEl?.classList.contains("hidden")) {
             rootEl.classList.remove("hidden");
             setIsOverlayOpen(true);
-        } else {
+        } else if (typeof overlay.close === "function") {
             overlay.close();
             setIsOverlayOpen(false);
         }

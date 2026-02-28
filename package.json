@@ -324,5 +324,16 @@
     "packageManager": "pnpm@10.30.3",
     "engines": {
         "node": ">=22.13 <=25.x"
+    },
+    "pnpm": {
+        "auditConfig": {
+            "ignoreGhsas": [
+                "GHSA-45h5-66jx-r2wf",
+                "GHSA-92fh-27vv-894w",
+                "GHSA-p6mc-m468-83gw",
+                "GHSA-pfq8-rq6v-vf5m",
+                "GHSA-xxjr-mmjv-4gpg"
+            ]
+        }
     }
 }

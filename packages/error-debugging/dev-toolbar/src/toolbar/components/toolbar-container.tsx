@@ -156,6 +156,9 @@ const ToolbarContainer = ({
     }, [PINNED_KEY]);
 
     const [pinnedTooltips, setPinnedTooltips] = useState<PinnedTooltip[]>([]);
+    const pinnedTooltipsRef = useRef<PinnedTooltip[]>([]);
+
+    pinnedTooltipsRef.current = pinnedTooltips;
 
     const pinTooltip = useCallback((app: DevToolbarAppState, x: number, y: number): void => {
         const id = `${app.id}-${Date.now()}`;
@@ -183,11 +186,7 @@ const ToolbarContainer = ({
     // Called by PinnedTooltipCard when a drag ends — record final position and save
     const handlePinMove = useCallback((id: string, x: number, y: number): void => {
         pinPositionsRef.current.set(id, { x, y });
-        setPinnedTooltips((prev) => {
-            savePins(prev);
-
-            return prev;
-        });
+        savePins(pinnedTooltipsRef.current);
     }, [savePins]);
 
     // Restore pinned tooltips from localStorage.

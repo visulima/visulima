@@ -127,14 +127,27 @@ devToolbar({
 ```
 
 ```tsx title="my-app.tsx"
+/** @jsxImportSource preact */
+import { useEffect, useState } from "preact/hooks";
+import type { AppComponentProps } from "@visulima/dev-toolbar";
 import type { MyServerFunctions } from "./rpc-types";
 
 const MyApp = ({ helpers }: AppComponentProps) => {
+    const [routes, setRoutes] = useState<string[]>([]);
     const rpc = helpers.rpc as unknown as MyServerFunctions;
 
     useEffect(() => {
         rpc.listRoutes().then(setRoutes); // fully typed!
     }, []);
+
+    return (
+        <ul class="p-4 space-y-1">
+            {routes.map((route) => (
+                <li key={route} class="text-sm font-mono text-foreground/80">{route}</li>
+            ))}
+        </ul>
+    );
+};
 ```
 
 ## How RPC Works

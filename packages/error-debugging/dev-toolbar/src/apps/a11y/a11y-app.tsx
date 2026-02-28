@@ -371,7 +371,7 @@ const A11yApp = (_props: AppComponentProps): ComponentChildren => {
                                 <div class="flex items-center gap-2 mb-2">
                                     <span class="text-[0.65rem] font-bold uppercase tracking-[0.1em] text-muted-foreground">
                                         <span aria-hidden="true" class="text-primary/50">
-                                            //
+                                            {"//"}
                                         </span>{" "}
                                         {displayedIssues.length} issue{displayedIssues.length !== 1 ? "s" : ""}
                                         {filterSeverity ? ` · ${SEVERITY_LABEL[filterSeverity]} only` : ""}
