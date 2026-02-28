@@ -2217,6 +2217,9 @@ importers:
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
+      preact:
+        specifier: ^10.28.4
+        version: 10.28.4
       tailwind-merge:
         specifier: ^3.5.0
         version: 3.5.0
@@ -2290,9 +2293,6 @@ importers:
       lucide-static:
         specifier: ^0.575.0
         version: 0.575.0
-      preact:
-        specifier: ^10.28.4
-        version: 10.28.4
       prettier:
         specifier: ^3.8.1
         version: 3.8.1
@@ -8119,7 +8119,7 @@ packages:
     resolution: {integrity: sha512-vHL6w3ecZsky+8P5MD+eFfaGTyCeOHUIFYMGpQGbrBTSmNNoxv0if69rEZ5giu36weC5saFuznL411gRX7bJDw==}
     engines: {node: '>=18.14.1'}
     peerDependencies:
-      hono: '>=4.11.10'
+      hono: '>=4.10.2'
 
   '@hono/swagger-ui@0.5.3':
     resolution: {integrity: sha512-Hn90DOOJ62ICJQplQvCDVpi9Jcn6EhtRaiffyJIS53wA5RmRLtMCDQGVc0bor8vQD7JIwpkweWjs+3cycp+IvA==}
@@ -11761,7 +11761,7 @@ packages:
     resolution: {integrity: sha512-ou/d51QSdTyN26D7h6dSpusAKaZkAiGM55/AKYi+9AGZw7q85hElbjK3kEyzXHhLSnRISHOYzVge6x0jRZ7DXA==}
     engines: {node: ^20.19 || ^22.12 || >=24}
     peerDependencies:
-      svelte: '>=5.53.5'
+      svelte: '>=5.51.5'
       vite: '>=7.1.11'
 
   '@swagger-api/apidom-ast@1.0.0-beta.50':
@@ -24749,7 +24749,7 @@ packages:
     engines: {node: '>= 18.0.0'}
     hasBin: true
     peerDependencies:
-      svelte: '>=5.53.5'
+      svelte: '>=5.51.5'
       typescript: '>=5.0.0'
 
   svelte-eslint-parser@1.4.1:
@@ -40859,12 +40859,12 @@ snapshots:
       - eslint-import-resolver-webpack
       - supports-color
 
-  eslint-config-standard-jsx@11.0.0(eslint-plugin-react@7.37.5(eslint@10.0.0(jiti@2.6.1)))(eslint@8.57.0):
+  eslint-config-standard-jsx@11.0.0(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint@8.57.0):
     dependencies:
       eslint: 8.57.0
       eslint-plugin-react: 7.37.5(eslint@8.57.0)
 
-  eslint-config-standard@17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.56.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(eslint@8.57.0))(eslint-plugin-n@15.7.0(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-promise@6.4.0(eslint@10.0.0(jiti@2.6.1)))(eslint@8.57.0):
+  eslint-config-standard@17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.56.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(eslint@8.57.0))(eslint-plugin-n@15.7.0(eslint@8.57.0))(eslint-plugin-promise@6.4.0(eslint@8.57.0))(eslint@8.57.0):
     dependencies:
       eslint: 8.57.0
       eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.56.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(eslint@10.0.0(jiti@2.6.1))
@@ -42214,7 +42214,7 @@ snapshots:
       '@humanwhocodes/module-importer': 1.0.1
       '@humanwhocodes/retry': 0.4.2
       '@types/estree': 1.0.8
-      ajv: 8.18.0
+      ajv: 6.14.0
       cross-spawn: 7.0.6
       debug: 4.4.3(supports-color@8.1.1)
       escape-string-regexp: 4.0.0
@@ -50983,8 +50983,8 @@ snapshots:
   standard@17.1.2(@typescript-eslint/parser@8.56.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)):
     dependencies:
       eslint: 8.57.0
-      eslint-config-standard: 17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.56.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(eslint@8.57.0))(eslint-plugin-n@15.7.0(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-promise@6.4.0(eslint@10.0.0(jiti@2.6.1)))(eslint@8.57.0)
-      eslint-config-standard-jsx: 11.0.0(eslint-plugin-react@7.37.5(eslint@10.0.0(jiti@2.6.1)))(eslint@8.57.0)
+      eslint-config-standard: 17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.56.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(eslint@8.57.0))(eslint-plugin-n@15.7.0(eslint@8.57.0))(eslint-plugin-promise@6.4.0(eslint@8.57.0))(eslint@8.57.0)
+      eslint-config-standard-jsx: 11.0.0(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint@8.57.0)
       eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.56.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(eslint@10.0.0(jiti@2.6.1))
       eslint-plugin-n: 15.7.0(eslint@8.57.0)
       eslint-plugin-promise: 6.4.0(eslint@8.57.0)
