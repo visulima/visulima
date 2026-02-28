@@ -1,3 +1,18 @@
+## @visulima/vite-overlay [2.0.0-alpha.6](https://github.com/visulima/visulima/compare/@visulima/vite-overlay@2.0.0-alpha.5...@visulima/vite-overlay@2.0.0-alpha.6) (2026-02-28)
+
+### Features
+
+* **dev-toolbar:** initialize dev-toolbar package  ([#586](https://github.com/visulima/visulima/issues/586)) ([a3ab9d6](https://github.com/visulima/visulima/commit/a3ab9d6e6c768853854b95fa8eee908b95235ea5))
+
+### Documentation
+
+* **error,error-handler,ono,inspector,source-map,vite-overlay:** add comprehensive Fumadocs documentation ([a0c8c92](https://github.com/visulima/visulima/commit/a0c8c92949cff2730fc6122f717fe344c030f366))
+
+### Miscellaneous Chores
+
+* **error-debugging:** update dependencies ([6002ece](https://github.com/visulima/visulima/commit/6002ece1803b2ba8261cff42a362dd6e8ddcc3ee))
+* update lock file maintenance ([d83e716](https://github.com/visulima/visulima/commit/d83e71697b75d24704185b66bb521a934d2db02d))
+
 ## @visulima/vite-overlay [2.0.0-alpha.5](https://github.com/visulima/visulima/compare/@visulima/vite-overlay@2.0.0-alpha.4...@visulima/vite-overlay@2.0.0-alpha.5) (2026-01-17)
 
 ### Miscellaneous Chores
