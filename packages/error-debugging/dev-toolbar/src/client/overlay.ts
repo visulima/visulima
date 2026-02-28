@@ -1,0 +1,162 @@
+/**
+ * Dev toolbar overlay loader
+ * This file is loaded via virtual module and injects the toolbar into the page
+ *
+ * Similar to Vue DevTools overlay.js pattern
+ */
+import devToolbarOptions from "virtual:visulima-dev-toolbar-options";
+
+// Set up globals for dev toolbar
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+(globalThis as any).__VISULIMA_DEV_TOOLBAR_OPTIONS__ = devToolbarOptions;
+
+/**
+ * Check whether the URL contains the required activation flag.
+ * Returns true when the toolbar is allowed to initialize.
+ */
+const isUrlFlagPresent = (): boolean => {
+    if (!devToolbarOptions.requireUrlFlag) {
+        return true;
+    }
+
+    const flagName = devToolbarOptions.urlFlagName ?? "devtools";
+    const params = new URLSearchParams(globalThis.window?.location.search);
+
+    return params.get(flagName) === "true";
+};
+
+/**
+ * Initialize the dev toolbar.
+ */
+const initToolbar = async () => {
+    if (globalThis.window === undefined) {
+        return;
+    }
+
+    // Bail out when URL flag is required but not present in the current URL
+    if (!isUrlFlagPresent()) {
+        return;
+    }
+
+    // Prevent double initialization (race condition protection)
+    // Set flag immediately before async operations
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if ((globalThis as any).__VISULIMA_DEVTOOLS_INITIALIZED__) {
+        return;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (globalThis as any).__VISULIMA_DEVTOOLS_INITIALIZED__ = true;
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let toolbar: any = null;
+
+    try {
+        // Import the toolbar module (registers the custom element)
+        // Use .js extension - we're loading from dist
+        await import("virtual:visulima-dev-toolbar-path:toolbar/index.js");
+
+        // Only import enabled apps — conditional dynamic imports avoid loading unused modules
+        const { apps: appConfig } = devToolbarOptions;
+        const [
+            settingsModule,
+            timelineModule,
+            viteConfigModule,
+            moduleGraphModule,
+            seoModule,
+            performanceModule,
+            a11yModule,
+            moreModule,
+        ] = await Promise.all([
+            appConfig.settings ? import("virtual:visulima-dev-toolbar-path:apps/settings/index.js") : null,
+            appConfig.timeline ? import("virtual:visulima-dev-toolbar-path:apps/timeline/index.js") : null,
+            appConfig.viteConfig ? import("virtual:visulima-dev-toolbar-path:apps/vite-config/index.js") : null,
+            appConfig.moduleGraph ? import("virtual:visulima-dev-toolbar-path:apps/module-graph/index.js") : null,
+            appConfig.seo ? import("virtual:visulima-dev-toolbar-path:apps/seo/index.js") : null,
+            appConfig.performance ? import("virtual:visulima-dev-toolbar-path:apps/performance/index.js") : null,
+            appConfig.a11y ? import("virtual:visulima-dev-toolbar-path:apps/a11y/index.js") : null,
+            import("virtual:visulima-dev-toolbar-path:apps/more/index.js"),
+        ]);
+
+        // Create toolbar element
+        toolbar = document.createElement("dev-toolbar");
+        document.body.append(toolbar);
+
+        // Register built-in apps
+        if (toolbar.registerApp) {
+            if (settingsModule) {
+                toolbar.registerApp(settingsModule.default, true);
+            }
+
+            if (timelineModule) {
+                toolbar.registerApp(timelineModule.default, true);
+            }
+
+            if (viteConfigModule) {
+                toolbar.registerApp(viteConfigModule.default, true);
+            }
+
+            if (moduleGraphModule) {
+                toolbar.registerApp(moduleGraphModule.default, true);
+            }
+
+            if (seoModule) {
+                toolbar.registerApp(seoModule.default, true);
+            }
+
+            if (performanceModule) {
+                toolbar.registerApp(performanceModule.default, true);
+            }
+
+            if (a11yModule) {
+                toolbar.registerApp(a11yModule.default, true);
+            }
+
+            // Always register more app
+            toolbar.registerApp(moreModule.default, true);
+        }
+
+        // Initialize toolbar
+        if (toolbar.init) {
+            toolbar.init();
+        }
+
+        console.log("[dev-toolbar] Initialized successfully");
+    } catch (error) {
+        // Remove any partially-mounted toolbar element to avoid a dangling custom element in the DOM
+        if (toolbar?.isConnected) {
+            toolbar.remove();
+        }
+
+        // Reset flag on error so retry is possible
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (globalThis as any).__VISULIMA_DEVTOOLS_INITIALIZED__ = false;
+        console.error("[dev-toolbar] Failed to initialize:", error);
+    }
+};
+
+// Initialize when DOM is ready
+if (typeof document !== "undefined") {
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initToolbar);
+    } else {
+        initToolbar();
+    }
+}
+
+// Listen for HMR events
+if (import.meta.hot) {
+    import.meta.hot.on("dev-toolbar:init", () => {
+        // Remove any existing toolbar element and reset the init flag so that
+        // initToolbar() can perform a clean re-initialization on HMR updates.
+        const existingToolbar = document.querySelector("dev-toolbar");
+
+        if (existingToolbar) {
+            existingToolbar.remove();
+        }
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (globalThis as any).__VISULIMA_DEVTOOLS_INITIALIZED__ = false;
+        initToolbar();
+    });
+}

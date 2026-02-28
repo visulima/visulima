@@ -84,7 +84,7 @@ const rootElement = (
     rootId: string,
     editorOptions: string,
     hideRightNavigation: boolean = false,
-) => `<div id="${rootId}" class="fixed inset-0 z-[2147483647] flex flex-col items-center pt-[10vh] px-[15px] shadow-[--ono-v-elevation-2] hidden">
+) => `<div id="${rootId}" class="fixed inset-0 z-[2147483646] flex flex-col items-center pt-[10vh] px-[15px] shadow-[--ono-v-elevation-2] hidden">
     <div id="__v_o__backdrop" class="fixed inset-0 -z-1 bg-black/60 backdrop-blur-sm md:backdrop-blur pointer-events-auto"></div>
     <div id="__v_o__notch" class="relative z-2 flex w-full max-w-(--ono-v-dialog-max-width) items-end justify-between outline-none translate-x-(--ono-v-dialog-border-width) translate-y-(--ono-v-dialog-border-width)" style="--stroke-color: var(--ono-v-border); --background-color: var(--ono-v-surface);">
         <div class="error-overlay-notch relative text-(--ono-v-text) translate-x-[calc(var(--ono-v-dialog-border-width)*-1)] h-(--ono-v-dialog-notch-height) p-3 pr-0 bg-(--background-color) border border-(--stroke-color) border-b-0 rounded-tl-(--ono-v-dialog-radius)" data-side="left">
@@ -279,7 +279,7 @@ const generateBalloonButton = (balloonConfig?: BalloonConfig): string => {
         ? `${iconHtml}\n    <span id="__v_o__balloon_count" class="inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-white/20 text-white font-bold" style="--num: 0"></span>\n    <span id="__v_o__balloon_text">Errors</span>`
         : `<span id="__v_o__balloon_count" class="inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-white/20 text-white font-bold" style="--num: 0"></span>\n    <span id="__v_o__balloon_text">Errors</span>`;
 
-    return `<div id="__v_o__balloon_group" class="fixed z-2147483647 inline-flex items-center px-2.5 py-1.5 rounded-full bg-(--ono-v-red-orange) text-white font-sans text-xs leading-none shadow-lg cursor-pointer transition-all duration-200 hover:brightness-105" data-balloon-position="${position}" style="${customStyle} ${positionStyle}">
+    return `<div id="__v_o__balloon_group" class="fixed z-2147483646 inline-flex items-center px-2.5 py-1.5 rounded-full bg-(--ono-v-red-orange) text-white font-sans text-xs leading-none shadow-lg cursor-pointer transition-all duration-200 hover:brightness-105" data-balloon-position="${position}" style="${customStyle} ${positionStyle}">
     <button type="button" id="__v_o__balloon" title="Toggle error overlay" aria-label="Toggle error overlay" class="w-full flex items-center gap-2">
         ${buttonContent}
     </button>
