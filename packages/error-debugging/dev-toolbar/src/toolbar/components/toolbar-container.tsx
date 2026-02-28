@@ -55,8 +55,20 @@ interface ToolbarContainerProps {
     onUnregisterApp: (appId: string) => void;
 }
 
+/** localStorage key for persisted pinned tooltip positions */
+const PINNED_KEY = "__v_dt__pinned_tooltips";
+
 /**
- * Compute placement from position and state (for backward compatibility)
+ * Derives the toolbar placement quadrant from a legacy percentage-based position.
+ * Converts `left`/`top` percentages to pixels using current viewport dimensions,
+ * then maps the result to one of the named `ToolbarPlacement` corners or centres.
+ * Used for backward compatibility when restoring toolbar position from saved state.
+ * @param position Edge the toolbar is pinned to ("top" | "bottom" | "left" | "right")
+ * @param left Horizontal position as a percentage of window width (0–100)
+ * @param top Vertical position as a percentage of window height (0–100)
+ * @param windowWidth Current viewport width in pixels
+ * @param windowHeight Current viewport height in pixels
+ * @returns ToolbarPlacement string (e.g. "bottom-center", "top-left")
  */
 const computePlacement = (
     position: "top" | "bottom" | "left" | "right",
@@ -109,7 +121,20 @@ const computePlacement = (
 };
 
 /**
- * Root toolbar container component
+ * Root toolbar container component — orchestrates the toolbar pill, app panel,
+ * tooltip overlays, pinned cards, and first-visit hint.
+ * Manages active app state, hover tooltips, pinned tooltip persistence (localStorage),
+ * and delegates app lifecycle events to the parent via callbacks.
+ * @param props Component props
+ * @param props.activeAppId ID of the currently open app, or null if no app is open
+ * @param props.apps Initial array of registered app states
+ * @param props.customAppsToShow Maximum number of custom apps to show in the pill (default: 3)
+ * @param props.onClearNotification Called when an app's notification badge should be cleared
+ * @param props.onRegisterApp Called when a new app is dynamically registered
+ * @param props.onSetNotification Called when an app requests a notification badge update
+ * @param props.onToggleApp Called when the user clicks an app button to open/close it
+ * @param props.onUnregisterApp Called when an app is dynamically unregistered
+ * @returns Rendered toolbar component tree
  */
 const ToolbarContainer = ({
     activeAppId,
@@ -135,8 +160,6 @@ const ToolbarContainer = ({
     const [hoveredAppRect, setHoveredAppRect] = useState<DOMRect | null>(null);
 
     // ─── Pinned tooltips + localStorage persistence ───────────────────────────
-    const PINNED_KEY = "__v_dt__pinned_tooltips";
-
     // Latest dragged positions per pin id — updated by card on drag-end.
     // Using a ref avoids stale closures without re-renders.
     const pinPositionsRef = useRef<Map<string, { x: number; y: number }>>(new Map());
@@ -153,7 +176,7 @@ const ToolbarContainer = ({
         } catch {
             // localStorage unavailable (private browsing, storage quota, etc.)
         }
-    }, [PINNED_KEY]);
+    }, []);
 
     const [pinnedTooltips, setPinnedTooltips] = useState<PinnedTooltip[]>([]);
     const pinnedTooltipsRef = useRef<PinnedTooltip[]>([]);
@@ -243,7 +266,7 @@ const ToolbarContainer = ({
         if (newPins.length > 0) {
             setPinnedTooltips((prev) => [...prev, ...newPins]);
         }
-    }, [apps, PINNED_KEY]);
+    }, [apps]);
 
     const handleSetHoveredApp = useCallback((app: DevToolbarAppState | null, rect?: DOMRect | null): void => {
         if (leaveTimerRef.current !== null) {

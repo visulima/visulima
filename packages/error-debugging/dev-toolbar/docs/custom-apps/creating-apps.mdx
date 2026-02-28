@@ -38,7 +38,7 @@ export default defineConfig({
         devToolbar({
             customApps: [
                 {
-                    id: "my-app",
+                    id: "my-package:my-app",
                     name: "My App",
                     icon: myIconSvg,     // raw SVG string
                     component: MyApp,
@@ -50,7 +50,7 @@ export default defineConfig({
 ```
 
 <Callout type="info">
-    App components are Preact components rendered inside the Shadow DOM. The JSX pragma `/** @jsxImportSource preact */` is required in every `.tsx` file.
+    App components are Preact components rendered inside the Shadow DOM. The JSX pragma `/** @jsxImportSource preact */` can be added per `.tsx` file, or set globally in `tsconfig.json` via `"jsxImportSource": "preact"`.
 </Callout>
 
 ## Step-by-Step Guide
@@ -141,7 +141,7 @@ export default defineConfig({
         devToolbar({
             customApps: [
                 {
-                    id: "my-app",          // must be unique
+                    id: "my-package:my-app",   // must be unique
                     name: "My App",        // shown in tooltip and panel header
                     icon: myIconSvg,       // raw SVG string
                     component: MyApp,
@@ -236,7 +236,7 @@ const api = (window as any).__VISULIMA_DEVTOOLS__;
 
 if (api) {
     api.registerApp({
-        id: "dynamic-app",
+        id: "my-package:dynamic-app",
         name: "Dynamic App",
         icon: svgString,
         component: MyDynamicApp,

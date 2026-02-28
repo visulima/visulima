@@ -12,6 +12,11 @@ interface FirstVisitHintProps {
 // Anchor origin = pill center (absolute left-0 top-0 with translate(-50%,-50%) on pill).
 // So (0,0) local coords here = pill visual center.
 // Offsets use ~24px to clear pill half-height (~20px) + 4px gap.
+/**
+ * Computes inline CSS positioning for the hint bubble relative to the pill center.
+ * @param position Current toolbar edge ("top" | "bottom" | "left" | "right")
+ * @returns CSSProperties object that places the hint clear of the pill
+ */
 const getHintStyle = (position: FirstVisitHintProps["position"]): CSSProperties => {
     switch (position) {
         case "top":
@@ -30,7 +35,12 @@ const getHintStyle = (position: FirstVisitHintProps["position"]): CSSProperties 
     }
 };
 
-// A small rotated-square arrow pointing toward the pill
+/**
+ * Renders a small rotated-square arrow that points from the hint bubble toward the toolbar pill.
+ * @param props Component props
+ * @param props.position Current toolbar edge used to determine arrow orientation
+ * @returns Arrow element
+ */
 const Arrow = ({ position }: { position: FirstVisitHintProps["position"] }): ComponentChildren => {
     const base = "absolute w-2.5 h-2.5 bg-card border-border";
 

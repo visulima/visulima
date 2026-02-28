@@ -170,7 +170,7 @@ RPC calls return promises. If the server function throws, the promise rejects wi
 try {
     const config = await (helpers.rpc as any).getViteConfig();
 } catch (err) {
-    console.error("RPC failed:", err.message);
+    console.error("RPC failed:", err instanceof Error ? err.message : String(err));
 }
 ```
 
@@ -183,8 +183,8 @@ const load = async (): Promise<void> => {
     try {
         const data = await (helpers.rpc as any).myFunction();
         setData(data);
-    } catch (err: any) {
-        setError(err.message ?? "Failed to load");
+    } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to load");
     }
 };
 

@@ -25,8 +25,19 @@ const SEVERITY_SHORT: Record<Severity, string> = {
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
+/**
+ * Returns a human-readable elapsed time string for an ISO timestamp.
+ * @param isoDate ISO 8601 date string to compare against the current time
+ * @returns Localized relative string such as "just now", "5s ago", or "2 hr ago"
+ */
 const formatElapsed = (isoDate: string): string => {
-    const diffSec = Math.floor((Date.now() - new Date(isoDate).getTime()) / 1000);
+    const ts = new Date(isoDate).getTime();
+
+    if (Number.isNaN(ts)) {
+        return "unknown";
+    }
+
+    const diffSec = Math.max(0, Math.floor((Date.now() - ts) / 1000));
 
     if (diffSec < 10) {
         return "just now";
@@ -62,7 +73,15 @@ const A11yTooltip = (_props: AppTooltipProps): ComponentChildren => {
     const { isScanning, issues, lastScan, showOverlays } = state;
 
     const total = issues.length;
-    const countBy = (sev: Severity): number => issues.filter((i) => i.impact === sev).length;
+    const severityCounts = issues.reduce<Record<Severity, number>>(
+        (acc, issue) => {
+            acc[issue.impact] = (acc[issue.impact] ?? 0) + 1;
+
+            return acc;
+        },
+        { critical: 0, minor: 0, moderate: 0, serious: 0 },
+    );
+    const countBy = (sev: Severity): number => severityCounts[sev];
 
     return (
         <div class="space-y-3 min-w-[200px]">
@@ -111,14 +130,20 @@ const A11yTooltip = (_props: AppTooltipProps): ComponentChildren => {
                 </button>
 
                 <button
+                    aria-disabled={issues.length === 0}
                     class={cn(
-                        "px-2.5 py-1.5 text-[0.7rem] border transition-colors cursor-pointer",
-                        showOverlays
-                            ? "border-primary/30 text-primary bg-primary/8"
-                            : "border-border text-muted-foreground bg-transparent hover:text-foreground",
+                        "px-2.5 py-1.5 text-[0.7rem] border transition-colors",
+                        issues.length === 0
+                            ? "border-border/50 text-muted-foreground/40 bg-transparent cursor-not-allowed"
+                            : cn(
+                                "cursor-pointer",
+                                showOverlays
+                                    ? "border-primary/30 text-primary bg-primary/8"
+                                    : "border-border text-muted-foreground bg-transparent hover:text-foreground",
+                            ),
                     )}
                     disabled={issues.length === 0}
-                    onClick={() => a11yStore.setShowOverlays(!showOverlays)}
+                    onClick={() => issues.length > 0 && a11yStore.setShowOverlays(!showOverlays)}
                     title="Toggle visual highlights on affected elements"
                     type="button"
                 >

@@ -30,6 +30,12 @@ const PinnedTooltipCard = ({ onMove, onUnpin, pinned }: PinnedTooltipCardProps):
     const posRef = useRef({ x: pinned.initialX, y: pinned.initialY });
     const dragRef = useRef<{ cardH: number; cardW: number; origX: number; origY: number; startX: number; startY: number } | null>(null);
     const helpersRef = useRef(createServerHelpers());
+    // Keep latest prop values accessible inside the empty-dep useEffect to avoid stale closures
+    const onMoveRef = useRef(onMove);
+    const pinnedIdRef = useRef(pinned.id);
+
+    onMoveRef.current = onMove;
+    pinnedIdRef.current = pinned.id;
 
     useEffect(() => {
         const SNAP_RADIUS = 28;
@@ -109,7 +115,7 @@ const PinnedTooltipCard = ({ onMove, onUnpin, pinned }: PinnedTooltipCardProps):
             }
 
             // Notify parent with the final resting position so it can persist
-            onMove(pinned.id, posRef.current.x, posRef.current.y);
+            onMoveRef.current(pinnedIdRef.current, posRef.current.x, posRef.current.y);
         };
 
         document.addEventListener("mousemove", handleMove);

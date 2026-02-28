@@ -9,6 +9,10 @@ export class AppManager {
 
     private activeAppId: string | null = null;
 
+    private initializedApps = new Set<string>();
+
+    private appCanvases = new Map<string, { element: HTMLElement; shadowRoot: ShadowRoot }>();
+
     /**
      * Register an app
      * @param app App definition
@@ -123,8 +127,6 @@ export class AppManager {
         // Open new app
         return await this.openApp(appId);
     }
-
-    private initializedApps = new Set<string>();
 
     /**
      * Check if an app has been initialized
@@ -254,8 +256,6 @@ export class AppManager {
             app.notification = { state: false };
         }
     }
-
-    private appCanvases = new Map<string, { element: HTMLElement; shadowRoot: ShadowRoot }>();
 
     /**
      * Get app canvas element

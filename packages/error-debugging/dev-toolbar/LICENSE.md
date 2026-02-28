@@ -75,7 +75,7 @@ Repository: https://github.com/lucide-icons/lucide.git
 
 ## preact
 License: MIT
-Repository: preactjs/preact
+Repository: https://github.com/preactjs/preact
 
 > The MIT License (MIT)
 >
