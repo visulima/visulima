@@ -10,7 +10,6 @@
         "apps/*"
     ],
     "scripts": {
-        "audit": "audit-ci --config ./audit-ci.jsonc",
         "bench:cerebro": "pnpm --filter \"cerebro-bench\" run test:bench",
         "bench:colorize": "pnpm --filter \"colorize-bench\" run test:bench",
         "bench:deep-clone": "pnpm --filter \"deep-clone\" run test:bench",
@@ -298,7 +297,6 @@
         "@octokit/rest": "^22.0.1",
         "@secretlint/secretlint-rule-preset-recommend": "^11.3.1",
         "@types/node": "25.3.2",
-        "audit-ci": "^7.1.0",
         "browserslist-config-anolilab": "^8.0.0",
         "commitizen": "^4.3.1",
         "core-js": "^3.48.0",
