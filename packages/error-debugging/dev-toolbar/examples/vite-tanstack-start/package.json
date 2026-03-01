@@ -1,0 +1,34 @@
+{
+    "name": "dev_toolbar_vite-tanstack-start",
+    "private": true,
+    "sideEffects": false,
+    "type": "module",
+    "scripts": {
+        "build": "vite build && tsc --noEmit",
+        "dev": "vite dev",
+        "start": "vite start"
+    },
+    "dependencies": {
+        "@tanstack/react-router": "1.133.35",
+        "@tanstack/react-router-devtools": "1.133.35",
+        "@tanstack/react-start": "1.133.35",
+        "react": "^19.2.4",
+        "react-dom": "^19.2.4",
+        "redaxios": "^0.5.1",
+        "tailwind-merge": "^3.4.1"
+    },
+    "devDependencies": {
+        "@types/node": "^25.2.3",
+        "@types/react": "^19.2.14",
+        "@types/react-dom": "^19.2.3",
+        "@visulima/dev-toolbar": "workspace:*",
+        "@visulima/vite-overlay": "workspace:*",
+        "@vitejs/plugin-react": "^5.1.4",
+        "autoprefixer": "^10.4.24",
+        "postcss": "^8.5.6",
+        "tailwindcss": "^4.1.18",
+        "typescript": "^5.9.3",
+        "vite": "^7.3.1",
+        "vite-tsconfig-paths": "^6.1.1"
+    }
+}
