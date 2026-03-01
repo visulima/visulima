@@ -160,8 +160,17 @@ const convertViolations = (violations: AxeViolation[], disabledRules: string[]):
 const runAxeScan = async (standard: Standard): Promise<{ violations: AxeViolation[] }> => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const axeModule: any = await import("axe-core");
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const axe = axeModule.default ?? axeModule;
+    // axe-core is a CJS-only package; ESM interop shape varies by bundler:
+    //   Vite ESM interop  → { default: <axe api> }  (.default.run exists)
+    //   esbuild CJS→ESM   → named exports on the ns  (.run exists directly)
+    // Check which shape we got before calling .run.
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+    const axe = typeof axeModule.default?.run === "function" ? axeModule.default : axeModule;
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    if (typeof axe.run !== "function") {
+        throw new Error("axe-core could not be loaded — .run is not available");
+    }
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     return axe.run(document, {
