@@ -40,7 +40,6 @@
         "lint:affected:package-json": "nx affected --target=lint:package-json --parallel --exclude=*-bench,storybook --nxBail",
         "lint:affected:types": "nx affected --target=lint:types --parallel --exclude=*-bench,storybook --nxBail",
         "lint:attw": "nx graph --file=/tmp/discardgraph.json 2>/dev/null && nx run-many --target=lint:attw --all --parallel",
-        "lint:dedupe": "pnpm dedupe --check",
         "lint:eslint": "nx graph --file=/tmp/discardgraph.json 2>/dev/null && nx run-many --target=lint:eslint --all --parallel",
         "lint:eslint:ansi": "pnpm --filter \"ansi\" run lint:eslint",
         "lint:eslint:api-platform": "pnpm --filter \"api-platform\" run lint:eslint",
