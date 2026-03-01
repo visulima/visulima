@@ -28,6 +28,9 @@ const AppButton = ({ app }: AppButtonProps): ComponentChildren => {
     const buttonRef = useRef<HTMLButtonElement>(null);
 
     const handleClick = (): void => {
+        // Dismiss the hover tooltip immediately — mouseLeave may not fire when
+        // the user clicks without moving the cursor off the button first.
+        setHoveredApp(null);
         toggleApp(app.id).catch((error) => {
             console.error(`[dev-toolbar] Failed to toggle app ${app.id}:`, error);
         });
