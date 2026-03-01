@@ -19,6 +19,9 @@ export default defineConfig({
         }),
         viteReact(),
         devToolbar({
+            // TanStack Start SSR renders HTML server-side, bypassing Vite's
+            // transformIndexHtml. Use appendTo to inject via the module graph instead.
+            appendTo: /router\.tsx$/,
             apps: {
                 settings: true,
                 timeline: true,
