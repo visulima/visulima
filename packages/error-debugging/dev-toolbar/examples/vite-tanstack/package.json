@@ -1,0 +1,29 @@
+{
+    "name": "dev_toolbar_vite-tanstack",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "build": "vite build && tsc",
+        "dev": "vite",
+        "preview": "vite preview"
+    },
+    "dependencies": {
+        "@tailwindcss/vite": "^4.2.1",
+        "@tanstack/react-router": "^1.163.3",
+        "@tanstack/react-router-devtools": "^1.163.3",
+        "@tanstack/router-plugin": "^1.164.0",
+        "react": "^19.2.4",
+        "react-dom": "^19.2.4",
+        "tailwindcss": "^4.2.1"
+    },
+    "devDependencies": {
+        "@types/react": "^19.2.14",
+        "@types/react-dom": "^19.2.3",
+        "@visulima/dev-toolbar": "workspace:*",
+        "@visulima/vite-overlay": "workspace:*",
+        "@vitejs/plugin-react": "^5.1.4",
+        "typescript": "^5.9.3",
+        "vite": "^7.3.1",
+        "web-vitals": "^5.1.0"
+    }
+}
