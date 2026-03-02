@@ -3,6 +3,7 @@ import type { ViteDevServer, WebSocketClient } from "vite";
 import type { ServerFunctions, ServerRPCContext } from "../types/rpc";
 import { getModuleGraph } from "./functions/module-graph";
 import { openInEditor } from "./functions/open-in-editor";
+import { getTailwindConfig } from "./functions/tailwind-config";
 import { getViteConfig } from "./functions/vite-config";
 
 /**
@@ -11,6 +12,7 @@ import { getViteConfig } from "./functions/vite-config";
 const createDefaultServerFunctions = (server: ViteDevServer): Partial<ServerFunctions> => {
     return {
         getModuleGraph: async () => getModuleGraph(server),
+        getTailwindConfig: async () => getTailwindConfig(server),
         getViteConfig: async () => getViteConfig(server),
         openInEditor: async (file: string, line?: number, column?: number) => openInEditor(server, file, line, column),
         readFile: async (path: string) => {

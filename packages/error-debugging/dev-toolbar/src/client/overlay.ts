@@ -66,6 +66,8 @@ const initToolbar = async () => {
             seoModule,
             performanceModule,
             a11yModule,
+            inspectorModule,
+            tailwindModule,
             moreModule,
         ] = await Promise.all([
             appConfig.settings ? import("virtual:visulima-dev-toolbar-path:apps/settings/index.js") : null,
@@ -75,6 +77,8 @@ const initToolbar = async () => {
             appConfig.seo ? import("virtual:visulima-dev-toolbar-path:apps/seo/index.js") : null,
             appConfig.performance ? import("virtual:visulima-dev-toolbar-path:apps/performance/index.js") : null,
             appConfig.a11y ? import("virtual:visulima-dev-toolbar-path:apps/a11y/index.js") : null,
+            appConfig.inspector ? import("virtual:visulima-dev-toolbar-path:apps/inspector/index.js") : null,
+            appConfig.tailwind ? import("virtual:visulima-dev-toolbar-path:apps/tailwind/index.js") : null,
             import("virtual:visulima-dev-toolbar-path:apps/more/index.js"),
         ]);
 
@@ -110,6 +114,14 @@ const initToolbar = async () => {
 
             if (a11yModule) {
                 toolbar.registerApp(a11yModule.default, true);
+            }
+
+            if (inspectorModule) {
+                toolbar.registerApp(inspectorModule.default, true);
+            }
+
+            if (tailwindModule) {
+                toolbar.registerApp(tailwindModule.default, true);
             }
 
             // Always register more app

@@ -4,6 +4,7 @@ import { useEffect, useState } from "preact/hooks";
 
 import type { AppComponentProps } from "../../types/app";
 import cn from "../../utils/cn";
+import { Alert, AlertDescription, Button } from "../../ui";
 import { a11yStore, SEVERITY_ORDER } from "./a11y-store";
 import type { A11yIssue, A11yStoreState, Severity, Standard } from "./a11y-store";
 
@@ -200,19 +201,15 @@ const A11yApp = (_props: AppComponentProps): ComponentChildren => {
         <div class="flex flex-col h-full">
             {/* Toolbar */}
             <div class="shrink-0 flex items-center gap-2 px-4 py-2.5 border-b border-border bg-foreground/2 flex-wrap">
-                <button
-                    class={cn(
-                        "px-3 py-1.5 text-[0.7rem] font-medium border transition-colors cursor-pointer",
-                        isScanning
-                            ? "border-primary/30 text-primary/50 bg-primary/5 cursor-not-allowed"
-                            : "border-border text-foreground bg-transparent hover:bg-foreground/5",
-                    )}
+                <Button
+                    class={cn(isScanning ? "border-primary/30 text-primary/50 bg-primary/5" : "")}
                     disabled={isScanning}
                     onClick={handleScan}
-                    type="button"
+                    size="sm"
+                    variant="outline"
                 >
                     {isScanning ? "Scanning…" : "Scan page"}
-                </button>
+                </Button>
 
                 <label class="flex items-center gap-1.5 text-[0.7rem] text-muted-foreground">
                     Standard
@@ -248,25 +245,19 @@ const A11yApp = (_props: AppComponentProps): ComponentChildren => {
                     </select>
                 </label>
 
-                <button
-                    class={cn(
-                        "px-2.5 py-1.5 text-[0.7rem] border transition-colors cursor-pointer",
-                        showOverlays
-                            ? "border-primary/30 text-primary bg-primary/8"
-                            : "border-border text-muted-foreground bg-transparent hover:text-foreground",
-                    )}
+                <Button
+                    class={cn(showOverlays ? "border-primary/30 text-primary bg-primary/8" : "")}
                     onClick={() => a11yStore.setShowOverlays(!showOverlays)}
+                    size="sm"
                     title="Toggle visual highlights on affected elements"
-                    type="button"
+                    variant="outline"
                 >
                     Overlays
-                </button>
+                </Button>
 
                 {hasDone && issues.length > 0 && (
                     <>
-                        <button
-                            class="ml-auto px-2 py-1.5 text-[0.7rem] border border-border text-muted-foreground bg-transparent hover:text-foreground transition-colors cursor-pointer"
-                            onClick={() => {
+                        <Button class="ml-auto" onClick={() => {
                                 const blob = new Blob([JSON.stringify(issues, null, 2)], { type: "application/json" });
                                 const url = URL.createObjectURL(blob);
                                 const a = document.createElement("a");
@@ -274,15 +265,8 @@ const A11yApp = (_props: AppComponentProps): ComponentChildren => {
                                 a.download = "a11y-audit.json";
                                 a.click();
                                 URL.revokeObjectURL(url);
-                            }}
-                            title="Export audit results as JSON"
-                            type="button"
-                        >
-                            JSON
-                        </button>
-                        <button
-                            class="px-2 py-1.5 text-[0.7rem] border border-border text-muted-foreground bg-transparent hover:text-foreground transition-colors cursor-pointer"
-                            onClick={() => {
+                            }} size="sm" title="Export audit results as JSON" variant="outline">JSON</Button>
+                        <Button onClick={() => {
                                 const q = (s: string): string => `"${s.replaceAll('"', '""')}"`;
                                 const header = ["Rule ID", "Severity", "Message", "Selector", "HTML", "WCAG Tags"].join(",");
                                 const rows = issues.flatMap((issue) =>
@@ -299,12 +283,7 @@ const A11yApp = (_props: AppComponentProps): ComponentChildren => {
                                 a.download = "a11y-audit.csv";
                                 a.click();
                                 URL.revokeObjectURL(url);
-                            }}
-                            title="Export audit results as CSV"
-                            type="button"
-                        >
-                            CSV
-                        </button>
+                            }} size="sm" title="Export audit results as CSV" variant="outline">CSV</Button>
                     </>
                 )}
             </div>
@@ -313,9 +292,9 @@ const A11yApp = (_props: AppComponentProps): ComponentChildren => {
             <div class="flex-1 overflow-y-auto devtools-content-scroll">
                 {/* Error */}
                 {scanError && (
-                    <div class="p-4 bg-destructive/10 border-b border-destructive/30">
-                        <p class="text-[0.72rem] text-destructive font-medium">Scan failed: {scanError}</p>
-                    </div>
+                    <Alert class="rounded-none border-x-0 border-t-0" variant="destructive">
+                        <AlertDescription>Scan failed: {scanError}</AlertDescription>
+                    </Alert>
                 )}
 
                 {/* Idle state */}
@@ -324,13 +303,7 @@ const A11yApp = (_props: AppComponentProps): ComponentChildren => {
                         <p class="text-[0.8125rem] text-muted-foreground max-w-sm">
                             Run an accessibility audit using axe-core to detect WCAG violations on this page.
                         </p>
-                        <button
-                            class="px-4 py-2 text-[0.75rem] font-medium border border-border text-foreground bg-transparent hover:bg-foreground/5 transition-colors cursor-pointer"
-                            onClick={handleScan}
-                            type="button"
-                        >
-                            Start scan
-                        </button>
+                        <Button onClick={handleScan} variant="outline">Start scan</Button>
                     </div>
                 )}
 
@@ -377,13 +350,7 @@ const A11yApp = (_props: AppComponentProps): ComponentChildren => {
                                         {filterSeverity ? ` · ${SEVERITY_LABEL[filterSeverity]} only` : ""}
                                     </span>
                                     {filterSeverity && (
-                                        <button
-                                            class="text-[0.62rem] text-primary/70 hover:text-primary cursor-pointer bg-transparent border-0 p-0 transition-colors"
-                                            onClick={() => setFilterSeverity(null)}
-                                            type="button"
-                                        >
-                                            Clear ×
-                                        </button>
+                                        <Button class="h-auto p-0 text-[0.62rem]" onClick={() => setFilterSeverity(null)} variant="link">Clear ×</Button>
                                     )}
                                 </div>
                                 <div class="space-y-2">
@@ -405,13 +372,7 @@ const A11yApp = (_props: AppComponentProps): ComponentChildren => {
                                 <span>
                                     {disabledRules.length} rule{disabledRules.length !== 1 ? "s" : ""} disabled this session.
                                 </span>
-                                <button
-                                    class="text-primary/60 hover:text-primary cursor-pointer bg-transparent border-0 p-0 transition-colors"
-                                    onClick={() => setDisabledRules([])}
-                                    type="button"
-                                >
-                                    Reset
-                                </button>
+                                <Button class="h-auto p-0 text-[0.62rem]" onClick={() => setDisabledRules([])} variant="link">Reset</Button>
                             </div>
                         )}
                     </div>

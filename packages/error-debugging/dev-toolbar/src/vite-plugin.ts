@@ -54,10 +54,12 @@ export interface DevToolbarOptions {
     apps?: {
         [key: string]: boolean | undefined;
         a11y?: boolean;
+        inspector?: boolean;
         moduleGraph?: boolean;
         performance?: boolean;
         seo?: boolean;
         settings?: boolean;
+        tailwind?: boolean;
         timeline?: boolean;
         viteConfig?: boolean;
     };
@@ -184,10 +186,12 @@ export const devToolbar = (options: DevToolbarOptions = {}): Plugin => {
                 return `export default ${JSON.stringify({
                     apps: {
                         a11y: options.apps?.a11y ?? true,
+                        inspector: options.apps?.inspector ?? true,
                         moduleGraph: options.apps?.moduleGraph ?? true,
                         performance: options.apps?.performance ?? true,
                         seo: options.apps?.seo ?? true,
                         settings: options.apps?.settings ?? true,
+                        tailwind: options.apps?.tailwind ?? true,
                         timeline: options.apps?.timeline ?? true,
                         viteConfig: options.apps?.viteConfig ?? true,
                     },

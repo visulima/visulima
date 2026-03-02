@@ -3,6 +3,7 @@ import type { ComponentChildren } from "preact";
 import { useEffect, useState } from "preact/hooks";
 
 import type { AppComponentProps } from "../../types/app";
+import { Badge, Button } from "../../ui";
 import cn from "../../utils/cn";
 
 type ViteConfig = Record<string, any>;
@@ -18,19 +19,7 @@ const CopyButton = ({ text }: { text: string }): ComponentChildren => {
     };
 
     return (
-        <button
-            class={cn(
-                "px-2 py-0.5 text-[0.65rem] font-medium border cursor-pointer transition-colors duration-150",
-                copied
-                    ? "border-primary/40 text-primary bg-primary/8"
-                    : "border-border text-muted-foreground hover:text-foreground hover:border-foreground/30 bg-transparent",
-            )}
-            onClick={copy}
-            title="Copy to clipboard"
-            type="button"
-        >
-            {copied ? "Copied!" : "Copy"}
-        </button>
+        <Button class={cn(copied ? "border-primary/40 text-primary bg-primary/8" : "border-border text-muted-foreground hover:text-foreground hover:border-foreground/30", "text-[0.65rem]")} onClick={copy} size="sm" title="Copy to clipboard" variant="outline">{copied ? "Copied!" : "Copy"}</Button>
     );
 };
 
@@ -112,13 +101,7 @@ const ViteConfigApp = ({ helpers }: AppComponentProps): ComponentChildren => {
         return (
             <div class="flex flex-col items-center justify-center h-full gap-3 p-8 text-center">
                 <p class="text-[0.8rem] text-destructive">{error ?? "No config available"}</p>
-                <button
-                    class="px-3 py-1.5 text-[0.75rem] border border-border text-muted-foreground hover:text-foreground cursor-pointer bg-transparent"
-                    onClick={load}
-                    type="button"
-                >
-                    Retry
-                </button>
+                <Button onClick={load} size="sm" variant="outline">Retry</Button>
             </div>
         );
     }
@@ -128,9 +111,7 @@ const ViteConfigApp = ({ helpers }: AppComponentProps): ComponentChildren => {
             {/* Header badges */}
             <div class="flex items-center gap-2 flex-wrap">
                 {config.mode && (
-                    <span class="inline-flex items-center px-2.5 py-1 text-[0.7rem] font-bold uppercase tracking-wider bg-primary/10 text-primary border border-primary/20">
-                        {config.mode}
-                    </span>
+                    <Badge class="uppercase tracking-wider" variant="default">{config.mode}</Badge>
                 )}
                 {config.root && (
                     <code class="text-[0.7rem] font-mono text-muted-foreground bg-foreground/5 px-2 py-1 border border-border/50">
@@ -142,13 +123,7 @@ const ViteConfigApp = ({ helpers }: AppComponentProps): ComponentChildren => {
                         base: {config.base}
                     </code>
                 )}
-                <button
-                    class="ml-auto px-2.5 py-1 text-[0.725rem] border border-border text-muted-foreground hover:text-foreground cursor-pointer bg-transparent transition-colors"
-                    onClick={load}
-                    type="button"
-                >
-                    Refresh
-                </button>
+                <Button class="ml-auto" onClick={load} size="sm" variant="outline">Refresh</Button>
             </div>
 
             {/* Sections */}

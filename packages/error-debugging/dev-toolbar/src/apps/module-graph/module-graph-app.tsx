@@ -3,6 +3,7 @@ import type { ComponentChildren } from "preact";
 import { useEffect, useRef, useState } from "preact/hooks";
 
 import type { AppComponentProps } from "../../types/app";
+import { Button, Input } from "../../ui";
 import cn from "../../utils/cn";
 
 interface ModuleEntry {
@@ -108,9 +109,7 @@ const ModuleGraphApp = ({ helpers }: AppComponentProps): ComponentChildren => {
         return (
             <div class="flex flex-col items-center justify-center h-full gap-3 p-8 text-center">
                 <p class="text-[0.8rem] text-destructive">{error}</p>
-                <button class="px-3 py-1.5 text-[0.75rem] border border-border text-muted-foreground hover:text-foreground cursor-pointer bg-transparent" onClick={load} type="button">
-                    Retry
-                </button>
+                <Button onClick={load} size="sm" variant="outline">Retry</Button>
             </div>
         );
     }
@@ -119,26 +118,9 @@ const ModuleGraphApp = ({ helpers }: AppComponentProps): ComponentChildren => {
         <div class="flex flex-col h-full">
             {/* Search + refresh row */}
             <div class="flex items-center gap-2 px-4 py-2.5 border-b border-border shrink-0">
-                <input
-                    ref={searchRef}
-                    class={cn(
-                        "flex-1 bg-foreground/4 border border-border px-3 py-1.5",
-                        "text-[0.8rem] font-mono text-foreground placeholder:text-muted-foreground/50",
-                        "focus:outline-none focus:border-primary/50 transition-colors",
-                    )}
-                    onInput={(e) => setSearch((e.target as HTMLInputElement).value)}
-                    placeholder="Filter modules…"
-                    type="text"
-                    value={search}
-                />
+                <Input class="flex-1 bg-foreground/4 font-mono text-[0.8rem] placeholder:text-muted-foreground/50 focus-visible:border-primary/50 border-border" onInput={(e) => setSearch((e.target as HTMLInputElement).value)} placeholder="Filter modules…" ref={searchRef} type="text" value={search} />
                 <span class="text-[0.7rem] text-muted-foreground shrink-0">{filtered.length} / {modules.length}</span>
-                <button
-                    class="px-2.5 py-1.5 text-[0.725rem] border border-border text-muted-foreground hover:text-foreground cursor-pointer bg-transparent transition-colors"
-                    onClick={load}
-                    type="button"
-                >
-                    Refresh
-                </button>
+                <Button onClick={load} size="sm" variant="outline">Refresh</Button>
             </div>
 
             {/* Module list */}
@@ -177,14 +159,7 @@ const ModuleGraphApp = ({ helpers }: AppComponentProps): ComponentChildren => {
                     <div class="border-l border-border bg-background w-72 shrink-0 flex flex-col overflow-hidden">
                         <div class="flex items-center justify-between gap-2 px-4 py-3 border-b border-border shrink-0">
                             <span class="text-[0.7rem] font-semibold text-foreground uppercase tracking-wide">Module Info</span>
-                            <button
-                                aria-label="Close"
-                                class="text-muted-foreground hover:text-foreground cursor-pointer border-0 bg-transparent text-xs"
-                                onClick={() => { setSelectedId(null); setImportersList([]); }}
-                                type="button"
-                            >
-                                ✕
-                            </button>
+                            <Button aria-label="Close" class="h-6 w-6 text-xs" onClick={() => { setSelectedId(null); setImportersList([]); }} size="icon" variant="ghost">✕</Button>
                         </div>
                         <div class="flex-1 overflow-auto p-4 space-y-3">
                             <div>

@@ -1,6 +1,7 @@
 import type { ViteDevServer } from "vite";
 
 import type { SerializableModuleNode } from "../rpc/functions/module-graph";
+import type { TailwindConfigResult } from "../rpc/functions/tailwind-config";
 
 /**
  * Server-side RPC functions
@@ -16,6 +17,11 @@ export interface ServerFunctions {
      * Get module dependency graph
      */
     getModuleGraph: () => Promise<SerializableModuleNode[]>;
+
+    /**
+     * Get full Tailwind CSS theme (default + user overrides)
+     */
+    getTailwindConfig: () => Promise<TailwindConfigResult>;
 
     /**
      * Get Vite configuration

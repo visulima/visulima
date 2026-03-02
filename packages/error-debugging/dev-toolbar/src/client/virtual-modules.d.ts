@@ -6,10 +6,12 @@ declare module "virtual:visulima-dev-toolbar-options" {
     interface DevToolbarVirtualOptions {
         apps: {
             a11y: boolean;
+            inspector: boolean;
             moduleGraph: boolean;
             performance: boolean;
             seo: boolean;
             settings: boolean;
+            tailwind: boolean;
             timeline: boolean;
             viteConfig: boolean;
         };

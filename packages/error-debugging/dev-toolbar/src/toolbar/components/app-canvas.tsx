@@ -94,6 +94,200 @@ const AppContent = ({ app }: { app: DevToolbarAppState }): ComponentChildren => 
     return <div class="w-full h-full" ref={contentRef} />;
 };
 
+// ─── PiP full-panel component ─────────────────────────────────────────────────
+// Rendered inside the documentPictureInPicture window. Provides full sidebar
+// navigation + app content without depending on ToolbarContext or useFrameState.
+
+interface PipPanelProps {
+    apps: DevToolbarAppState[];
+    initialActiveAppId: string | null;
+    onClose: () => void;
+}
+
+const PipPanel = ({ apps, initialActiveAppId, onClose }: PipPanelProps): ComponentChildren => {
+    const [activeAppId, setActiveAppId] = useState(initialActiveAppId);
+    const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+    const activeApp = useMemo(() => apps.find((a) => a.id === activeAppId), [apps, activeAppId]);
+
+    return (
+        <div class="flex flex-row w-full h-full bg-background font-mono antialiased text-foreground">
+            {/* Sidebar */}
+            <nav
+                aria-label="DevTools apps"
+                class={cn(
+                    "flex flex-col shrink-0 bg-accent border-r border-border/60",
+                    "transition-[width] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]",
+                    sidebarCollapsed ? "w-12.5" : "w-62.5",
+                )}
+            >
+                <div
+                    class={cn(
+                        "flex items-center shrink-0 border-b border-border/50 h-12",
+                        sidebarCollapsed ? "justify-center px-2" : "px-3",
+                    )}
+                >
+                    {sidebarCollapsed ? (
+                        <span aria-hidden="true" class="text-primary font-black text-[0.8rem] select-none">
+                            V
+                        </span>
+                    ) : (
+                        <span class="text-[0.6rem] font-bold uppercase tracking-[0.14em] text-muted-foreground select-none">
+                            <span aria-hidden="true" class="text-primary/60 mr-1">
+                                //
+                            </span>
+                            DevTools
+                        </span>
+                    )}
+                </div>
+
+                <div class="flex flex-col flex-1 overflow-y-auto p-2 gap-1 scrollbar-thin-border">
+                    {apps.map((app) => (
+                        <div class="relative group/nav-item" key={app.id}>
+                            <button
+                                aria-label={app.name}
+                                aria-pressed={activeAppId === app.id}
+                                class={cn(
+                                    "relative flex items-center w-full h-10",
+                                    "border-0 border-l-2 cursor-pointer",
+                                    "transition-all duration-150",
+                                    sidebarCollapsed ? "justify-center px-0" : "gap-2.5 px-3",
+                                    activeAppId === app.id
+                                        ? "border-primary bg-primary/8 text-foreground"
+                                        : "border-transparent bg-transparent text-muted-foreground hover:bg-foreground/6 hover:text-foreground",
+                                )}
+                                onClick={() => setActiveAppId(app.id)}
+                                type="button"
+                            >
+                                {app.icon ? (
+                                    <span
+                                        class={cn(
+                                            "size-4 shrink-0 flex items-center justify-center [&_svg]:size-4",
+                                            activeAppId === app.id ? "opacity-100" : "opacity-65 group-hover/nav-item:opacity-100",
+                                        )}
+                                        /* Icon is a trusted static SVG imported from lucide-static */
+                                        // eslint-disable-next-line react/no-danger
+                                        dangerouslySetInnerHTML={{ __html: app.icon }}
+                                    />
+                                ) : (
+                                    <span class="size-4.5 shrink-0 flex items-center justify-center text-[0.65rem] font-bold uppercase select-none">
+                                        {app.name.slice(0, 2)}
+                                    </span>
+                                )}
+                                {!sidebarCollapsed && (
+                                    <span class="text-[0.8125rem] font-medium truncate leading-none tracking-[-0.01em]">
+                                        {app.name}
+                                    </span>
+                                )}
+                            </button>
+
+                            {app.notification.state && (
+                                <span
+                                    aria-hidden="true"
+                                    class={cn(
+                                        "pointer-events-none absolute top-1.5 rounded-full",
+                                        sidebarCollapsed ? "right-1.5" : "right-2.5",
+                                        "size-1.5",
+                                        app.notification.level === "error"
+                                            ? "bg-destructive"
+                                            : app.notification.level === "warning"
+                                              ? "bg-warning"
+                                              : "bg-info",
+                                    )}
+                                />
+                            )}
+
+                            {sidebarCollapsed && (
+                                <div
+                                    class={cn(
+                                        "absolute left-[calc(100%+0.5rem)] top-1/2 -translate-y-1/2",
+                                        "pointer-events-none z-50 whitespace-nowrap",
+                                        "opacity-0 -translate-x-1 group-hover/nav-item:opacity-100 group-hover/nav-item:translate-x-0",
+                                        "transition-all duration-200 ease-[cubic-bezier(0.23,1,0.32,1)]",
+                                    )}
+                                >
+                                    <div class="text-[0.7rem] font-medium bg-card/95 backdrop-blur-[0.625rem] text-foreground/80 px-2.5 py-1 border border-border shadow-md">
+                                        {app.name}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    ))}
+                </div>
+            </nav>
+
+            {/* Content area */}
+            <div class="flex-1 flex flex-col min-w-0 overflow-hidden bg-accent">
+                {/* Header */}
+                <div class="flex items-center justify-between gap-2 pr-2 min-h-12 shrink-0">
+                    <div class="flex items-center gap-3 min-w-0">
+                        <button
+                            aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+                            class={cn(
+                                "flex items-center justify-center size-7 shrink-0",
+                                "border-0 cursor-pointer bg-transparent",
+                                "text-muted-foreground hover:text-foreground hover:bg-foreground/7",
+                                "transition-colors duration-150",
+                            )}
+                            onClick={() => setSidebarCollapsed((c) => !c)}
+                            type="button"
+                        >
+                            <Icon
+                                class={cn("size-3.5 transition-transform duration-300", !sidebarCollapsed && "rotate-180")}
+                                size={14}
+                                src={chevronRightIcon}
+                            />
+                        </button>
+                        {activeApp?.icon && (
+                            /* Icon is a trusted static SVG imported from lucide-static */
+                            // eslint-disable-next-line react/no-danger
+                            <span
+                                class="size-5 flex items-center justify-center [&_svg]:size-5 shrink-0 text-foreground opacity-80"
+                                dangerouslySetInnerHTML={{ __html: activeApp.icon }}
+                            />
+                        )}
+                        <span class="flex items-center gap-1 text-[0.7rem] font-bold uppercase tracking-[0.06em] text-foreground truncate">
+                            <span aria-hidden="true" class="text-primary/50 shrink-0">
+                                [
+                            </span>
+                            {activeApp?.name ?? "DevTools"}
+                            <span aria-hidden="true" class="text-primary/50 shrink-0">
+                                ]
+                            </span>
+                        </span>
+                    </div>
+
+                    <button
+                        aria-label="Close floating window"
+                        class={cn(
+                            "flex items-center justify-center size-8",
+                            "cursor-pointer border-0 bg-transparent",
+                            "text-muted-foreground hover:text-foreground hover:bg-foreground/7",
+                            "transition-all duration-200 active:scale-90",
+                        )}
+                        onClick={onClose}
+                        title="Close floating window"
+                        type="button"
+                    >
+                        <Icon size={12} src={xIcon} />
+                    </button>
+                </div>
+
+                {/* Scrollable content */}
+                <div class="devtools-content-scroll scrollbar-thin-border flex-1 overflow-auto min-h-0 bg-background">
+                    {activeApp ? (
+                        <AppContent app={activeApp} key={activeApp.id} />
+                    ) : (
+                        <div class="flex flex-col items-center justify-center h-full gap-3 p-8 select-none text-muted-foreground">
+                            <p class="text-[0.8rem]">Select a tool from the sidebar</p>
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+};
+
 // ─── Panel size constraints ───────────────────────────────────────────────────
 const PANEL_MIN_PERCENT = 20;
 const PANEL_MAX_PERCENT = 95;
@@ -375,23 +569,27 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
             // (main page theme) — the toolbar manages its own theme independently.
             const container = pipWin.document.createElement("div");
 
-            container.style.cssText = "width:100%;height:100%;overflow:auto;";
+            container.style.cssText = "width:100%;height:100%;display:flex;";
             // Apply dark/light theme at the document level so :root CSS variables
             // (--color-background etc.) are overridden by the .dark block correctly.
             if (resolvedTheme === "dark") {
                 pipWin.document.documentElement.classList.add("dark");
                 container.classList.add("dark");
             }
-            pipWin.document.body.style.cssText = "margin:0;padding:0;";
+            pipWin.document.body.style.cssText = "margin:0;padding:0;height:100vh;";
             pipWin.document.body.append(container);
 
-            // Render the active app content into PiP window
-            const activeApp = apps.find((a) => a.id === activeAppId);
-
-            if (activeApp?.component) {
-                const helpers = createServerHelpers();
-                preactRender(<activeApp.component eventTarget={activeApp.eventTarget} helpers={helpers} />, container);
-            }
+            // Render the full panel (sidebar + navigation + content) into PiP window
+            preactRender(
+                <PipPanel
+                    apps={apps}
+                    initialActiveAppId={activeAppId}
+                    onClose={() => {
+                        pipWin.close();
+                    }}
+                />,
+                container,
+            );
 
             updateState({ isPip: true });
 
