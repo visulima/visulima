@@ -8,6 +8,7 @@ import sunIcon from "lucide-static/icons/sun.svg?data-uri&encoding=css";
 
 import type { AppComponentProps } from "../../types/app";
 import Icon from "../../ui/components/icon";
+import { Button } from "../../ui";
 import cn from "../../utils/cn";
 import { DEFAULT_KEYBINDINGS, useFrameState } from "../../toolbar/hooks/use-frame-state";
 import { useTheme } from "../../toolbar/hooks/use-theme";
@@ -208,29 +209,26 @@ const KeyCapture = ({
                     </span>
                 ))}
             </div>
-            <button
-                ref={buttonRef}
-                class={cn(
-                    "px-2 py-0.5 text-[0.7rem] font-medium border cursor-pointer transition-colors",
-                    capturing
-                        ? "border-primary text-primary bg-primary/8 animate-pulse"
-                        : "border-border text-muted-foreground hover:text-foreground bg-transparent",
-                )}
+            <Button
+                class={cn("text-[0.7rem]", capturing ? "border-primary text-primary bg-primary/8 animate-pulse" : "")}
                 onClick={() => setCapturing((c) => !c)}
-                type="button"
+                ref={buttonRef}
+                size="sm"
+                variant="outline"
             >
                 {capturing ? "Press keys…" : "Record"}
-            </button>
-            <button
-                class="px-2 py-0.5 text-[0.7rem] font-medium border border-border/50 text-muted-foreground/60 hover:text-foreground bg-transparent cursor-pointer transition-colors"
+            </Button>
+            <Button
+                class="text-[0.7rem]"
                 onClick={() => {
                     setCapturing(false);
                 }}
+                size="sm"
                 title="Cancel"
-                type="button"
+                variant="ghost"
             >
                 ✕
-            </button>
+            </Button>
         </div>
     );
 };
@@ -292,13 +290,13 @@ const SettingsApp = (_props: AppComponentProps): ComponentChildren => {
                                 onChange={(v) => updateState({ keybindings: { ...(state.keybindings ?? DEFAULT_KEYBINDINGS), toggle: v } })}
                             />
                             {state.keybindings?.toggle !== DEFAULT_KEYBINDINGS.toggle && (
-                                <button
-                                    class="text-[0.65rem] text-muted-foreground/50 hover:text-foreground underline cursor-pointer border-0 bg-transparent"
+                                <Button
+                                    class="h-auto p-0 text-[0.65rem]"
                                     onClick={() => updateState({ keybindings: { ...(state.keybindings ?? DEFAULT_KEYBINDINGS), toggle: DEFAULT_KEYBINDINGS.toggle } })}
-                                    type="button"
+                                    variant="link"
                                 >
                                     Reset
-                                </button>
+                                </Button>
                             )}
                         </div>
                     }
@@ -313,13 +311,13 @@ const SettingsApp = (_props: AppComponentProps): ComponentChildren => {
                                 onChange={(v) => updateState({ keybindings: { ...(state.keybindings ?? DEFAULT_KEYBINDINGS), close: v } })}
                             />
                             {state.keybindings?.close !== DEFAULT_KEYBINDINGS.close && (
-                                <button
-                                    class="text-[0.65rem] text-muted-foreground/50 hover:text-foreground underline cursor-pointer border-0 bg-transparent"
+                                <Button
+                                    class="h-auto p-0 text-[0.65rem]"
                                     onClick={() => updateState({ keybindings: { ...(state.keybindings ?? DEFAULT_KEYBINDINGS), close: DEFAULT_KEYBINDINGS.close } })}
-                                    type="button"
+                                    variant="link"
                                 >
                                     Reset
-                                </button>
+                                </Button>
                             )}
                         </div>
                     }

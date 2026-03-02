@@ -7,6 +7,7 @@ import type { TimelineEvent, TimelineGroup } from "../../types/timeline";
 import { DEFAULT_TIMELINE_GROUPS } from "../../types/timeline";
 import type { AppComponentProps } from "../../types/app";
 import cn from "../../utils/cn";
+import { Badge, Button } from "../../ui";
 
 const POLL_INTERVAL = 500;
 
@@ -17,21 +18,20 @@ const formatTime = (ms: number): string => {
     return d.toLocaleTimeString("en-US", { hour12: false, hour: "2-digit", minute: "2-digit", second: "2-digit", fractionalSecondDigits: 3 });
 };
 
-const LevelBadge = ({ level }: { level?: string }): ComponentChildren => {
+const LEVEL_VARIANT: Record<string, "destructive" | "info" | "warning"> = {
+    error: "destructive",
+    info: "info",
+    warning: "warning",
+};
+
+const LevelBadge = ({ level }: { level?: string }): ComponentChildren | null => {
     if (!level) {
         return null;
     }
-
-    const colors: Record<string, string> = {
-        error: "bg-destructive/15 text-destructive border-destructive/30",
-        info: "bg-info/15 text-info border-info/30",
-        warning: "bg-warning/15 text-warning border-warning/30",
-    };
-
     return (
-        <span class={cn("inline-flex items-center px-1.5 py-0.5 text-[0.6rem] font-bold uppercase tracking-wider border", colors[level] ?? colors.info)}>
+        <Badge class="text-[0.6rem] uppercase tracking-wider" variant={LEVEL_VARIANT[level] ?? "info"}>
             {level}
-        </span>
+        </Badge>
     );
 };
 
@@ -44,14 +44,9 @@ const EventDetail = ({ event, onClose }: EventDetailProps): ComponentChildren =>
     <div class="border-l border-border bg-background h-full flex flex-col min-w-0 w-80 shrink-0">
         <div class="flex items-center justify-between gap-2 px-4 py-3 border-b border-border shrink-0">
             <span class="text-[0.75rem] font-semibold text-foreground truncate">{event.title}</span>
-            <button
-                aria-label="Close detail"
-                class="size-5 flex items-center justify-center text-muted-foreground hover:text-foreground cursor-pointer border-0 bg-transparent shrink-0"
-                onClick={onClose}
-                type="button"
-            >
+            <Button aria-label="Close detail" class="h-5 w-5 shrink-0" onClick={onClose} size="icon" variant="ghost">
                 ✕
-            </button>
+            </Button>
         </div>
         <div class="flex-1 overflow-auto p-4 space-y-3">
             <div class="space-y-1">
@@ -158,18 +153,9 @@ const TimelineApp = (_props: AppComponentProps): ComponentChildren => {
                     ))}
                 </div>
 
-                <button
-                    class={cn(
-                        "px-2.5 py-1 text-[0.725rem] font-medium border border-border",
-                        "text-muted-foreground hover:text-foreground hover:border-foreground/30",
-                        "cursor-pointer bg-transparent transition-colors duration-150",
-                    )}
-                    onClick={clearAll}
-                    title="Clear all events"
-                    type="button"
-                >
+                <Button onClick={clearAll} size="sm" title="Clear all events" variant="outline">
                     Clear
-                </button>
+                </Button>
             </div>
 
             {/* Content area */}
