@@ -349,16 +349,8 @@ export const devToolbar = (options: DevToolbarOptions = {}): Plugin[] => {
 
         name: "@visulima/dev-toolbar:inject-source",
 
-        async transform(code, id, transformOptions) {
+        async transform(code, id) {
             if (!injectSourceEnabled || config.mode !== "development") {
-                return undefined;
-            }
-
-            // Skip SSR transforms — data-vdt-source is a client-only diagnostic attribute.
-            // SSR compilation pipelines (e.g. TanStack Start / Vinxi) may prepend server-
-            // specific imports that shift JSX line numbers, causing React hydration mismatches
-            // when the server-injected value differs from the client-injected value.
-            if (transformOptions?.ssr) {
                 return undefined;
             }
 
@@ -370,8 +362,30 @@ export const devToolbar = (options: DevToolbarOptions = {}): Plugin[] => {
                 return undefined;
             }
 
+            // Read the original source file from disk so that both the SSR build and the
+            // client build use the same JSX line/column positions.  SSR compilation pipelines
+            // (e.g. TanStack Start / Vinxi) are enforce:"pre" plugins that prepend
+            // server-specific imports before our transform runs, shifting line numbers in the
+            // received `code`.  By passing the unmodified on-disk content as `originalCode`,
+            // addSourceToJsx builds a position map from the real source and injects positions
+            // from that map into `code`'s AST — so both builds produce identical
+            // data-vdt-source values and React hydration never sees a mismatch.
+            const { readFile } = await import("node:fs/promises");
+
+            let originalCode: string | undefined;
+
+            try {
+                const diskContent = await readFile(id.split("?")[0] ?? id, "utf-8");
+
+                if (diskContent !== code) {
+                    originalCode = diskContent;
+                }
+            } catch {
+                // Virtual modules, generated code — fall through and transform code directly
+            }
+
             const { addSourceToJsx } = await import("./vite/inject-source.js");
-            const result = addSourceToJsx(code, id, options.injectSource?.ignore);
+            const result = addSourceToJsx(code, id, options.injectSource?.ignore, originalCode);
 
             if (!result) {
                 return undefined;
