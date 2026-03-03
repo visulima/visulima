@@ -18,8 +18,8 @@ const getOrCreateOverlay = (): HTMLDivElement => {
             "pointer-events:none",
             "z-index:2147483644",
             "box-sizing:border-box",
-            "border:1px solid rgba(124,58,237,0.8)",
-            "background:rgba(124,58,237,0.08)",
+            "border:1px solid rgba(196,181,253,0.7)",
+            "background:rgba(196,181,253,0.06)",
             "transition:top 60ms,left 60ms,width 60ms,height 60ms",
             "display:none",
         ].join(";");
@@ -31,14 +31,13 @@ const getOrCreateOverlay = (): HTMLDivElement => {
             "position:absolute",
             "bottom:calc(100% + 2px)",
             "left:0",
-            "background:#0f0f17",
-            "color:#a78bfa",
+            "background:#18181b",
+            "color:#c4b5fd",
             "font:11px/1.2 'JetBrains Mono',monospace",
             "padding:2px 6px",
-            "border-radius:3px",
             "white-space:nowrap",
             "pointer-events:none",
-            "border:1px solid rgba(124,58,237,0.4)",
+            "border:1px solid rgba(196,181,253,0.25)",
         ].join(";");
 
         overlay.append(label);
@@ -171,12 +170,11 @@ const createFloatingBadge = (onCancel: () => void): void => {
         "align-items:center",
         "gap:8px",
         "padding:6px 14px 6px 10px",
-        "background:#0f0f17",
-        "border:1px solid rgba(124,58,237,0.6)",
-        "border-radius:4px",
+        "background:#18181b",
+        "border:1px solid rgba(196,181,253,0.35)",
         "box-shadow:0 4px 24px rgba(0,0,0,.6)",
         "font:12px/1 'JetBrains Mono',monospace",
-        "color:#cdd6f4",
+        "color:#fafafa",
         "pointer-events:auto",
         "user-select:none",
         "white-space:nowrap",
@@ -185,7 +183,7 @@ const createFloatingBadge = (onCancel: () => void): void => {
     const dot = document.createElement("span");
 
     dot.style.cssText =
-        "display:inline-block;width:7px;height:7px;border-radius:50%;background:#7c3aed;" +
+        "display:inline-block;width:7px;height:7px;border-radius:50%;background:#c4b5fd;" +
         "animation:__vdt_pulse 1.4s ease-in-out infinite;flex-shrink:0;";
 
     const text = document.createElement("span");
@@ -194,14 +192,14 @@ const createFloatingBadge = (onCancel: () => void): void => {
 
     const sep = document.createElement("span");
 
-    sep.style.cssText = "color:rgba(124,58,237,.4);margin:0 4px;";
+    sep.style.cssText = "color:rgba(196,181,253,.35);margin:0 4px;";
     sep.textContent = "·";
 
     const cancelBtn = document.createElement("button");
 
     cancelBtn.textContent = "Cancel";
     cancelBtn.style.cssText =
-        "background:transparent;border:none;color:#a78bfa;cursor:pointer;padding:0;" +
+        "background:transparent;border:none;color:#c4b5fd;cursor:pointer;padding:0;" +
         "font:12px/1 'JetBrains Mono',monospace;text-decoration:underline;text-underline-offset:3px;";
     cancelBtn.addEventListener("click", (e) => {
         e.stopPropagation();
@@ -243,22 +241,21 @@ const makeActionBtn = (label: string, onClick: () => void): HTMLButtonElement =>
 
     b.textContent = label;
     b.style.cssText = [
-        "background:rgba(124,58,237,0.12)",
-        "border:1px solid rgba(124,58,237,0.35)",
-        "border-radius:4px",
-        "color:#a78bfa",
+        "background:rgba(196,181,253,0.08)",
+        "border:1px solid rgba(196,181,253,0.25)",
+        "color:#c4b5fd",
         "cursor:pointer",
         "font:11px/1 'JetBrains Mono',monospace",
         "padding:5px 10px",
         "white-space:nowrap",
     ].join(";");
     b.addEventListener("pointerover", () => {
-        b.style.background = "rgba(124,58,237,0.25)";
-        b.style.borderColor = "rgba(124,58,237,0.65)";
+        b.style.background = "rgba(196,181,253,0.16)";
+        b.style.borderColor = "rgba(196,181,253,0.5)";
     });
     b.addEventListener("pointerout", () => {
-        b.style.background = "rgba(124,58,237,0.12)";
-        b.style.borderColor = "rgba(124,58,237,0.35)";
+        b.style.background = "rgba(196,181,253,0.08)";
+        b.style.borderColor = "rgba(196,181,253,0.25)";
     });
     b.addEventListener("click", (e) => {
         e.stopPropagation();
@@ -277,12 +274,11 @@ const showResultPopup = (el: Element, rect: DOMRect, source: string | null): voi
     popup.style.cssText = [
         "position:fixed",
         "z-index:2147483646",
-        "background:#0f0f17",
-        "border:1px solid rgba(124,58,237,0.55)",
-        "border-radius:6px",
+        "background:#18181b",
+        "border:1px solid rgba(196,181,253,0.35)",
         "padding:10px 32px 10px 12px",
         "font:12px/1.4 'JetBrains Mono',monospace",
-        "color:#cdd6f4",
+        "color:#fafafa",
         "box-shadow:0 8px 32px rgba(0,0,0,.75)",
         "min-width:200px",
         "max-width:400px",
@@ -311,7 +307,7 @@ const showResultPopup = (el: Element, rect: DOMRect, source: string | null): voi
     const cls = el.classList.length > 0 ? `.${[...el.classList].slice(0, 3).join(".")}` : "";
     const header = document.createElement("div");
 
-    header.style.cssText = "color:#a78bfa;font-weight:bold;margin-bottom:4px;word-break:break-all;";
+    header.style.cssText = "color:#c4b5fd;font-weight:bold;margin-bottom:4px;word-break:break-all;";
     header.textContent = `${tag}${elId}${cls}`;
     popup.append(header);
 
@@ -319,7 +315,7 @@ const showResultPopup = (el: Element, rect: DOMRect, source: string | null): voi
     if (source) {
         const srcEl = document.createElement("div");
 
-        srcEl.style.cssText = "color:#6272a4;margin-bottom:10px;word-break:break-all;font-size:10px;";
+        srcEl.style.cssText = "color:#a1a1aa;margin-bottom:10px;word-break:break-all;font-size:10px;";
         srcEl.textContent = source;
         popup.append(srcEl);
     }
@@ -366,12 +362,15 @@ const showResultPopup = (el: Element, rect: DOMRect, source: string | null): voi
         "right:8px",
         "background:transparent",
         "border:none",
-        "color:#6272a4",
+        "color:#a1a1aa",
         "cursor:pointer",
-        "font:16px/1 monospace",
+        "font:16px/1 'JetBrains Mono',monospace",
         "padding:0",
         "line-height:1",
+        "transition:color 0.15s",
     ].join(";");
+    closeBtn.addEventListener("pointerover", () => { closeBtn.style.color = "#fafafa"; });
+    closeBtn.addEventListener("pointerout", () => { closeBtn.style.color = "#a1a1aa"; });
     closeBtn.addEventListener("click", (e) => {
         e.stopPropagation();
         removeResultPopup();

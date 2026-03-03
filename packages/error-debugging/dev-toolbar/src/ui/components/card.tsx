@@ -14,7 +14,7 @@ interface CardTitleProps extends JSX.HTMLAttributes<HTMLHeadingElement> {
 }
 
 const Card = ({ children, class: className, ...rest }: CardProps): JSX.Element => (
-    <div class={cn("bg-card text-card-foreground rounded-xl border shadow", className)} {...rest}>
+    <div class={cn("bg-card text-card-foreground rounded-none border shadow", className)} {...rest}>
         {children}
     </div>
 );

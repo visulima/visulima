@@ -44,7 +44,7 @@ const Switch = ({
         <button
             aria-checked={isChecked}
             class={cn(
-                "inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+                "inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-none border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
                 isChecked ? "bg-primary" : "bg-input",
                 className,
             )}
@@ -58,7 +58,7 @@ const Switch = ({
         >
             <span
                 class={cn(
-                    "pointer-events-none block h-4 w-4 rounded-full bg-background shadow-lg ring-0 transition-transform",
+                    "pointer-events-none block h-4 w-4 rounded-none bg-background shadow-lg ring-0 transition-transform",
                     isChecked ? "translate-x-4" : "translate-x-0",
                 )}
                 data-state={isChecked ? "checked" : "unchecked"}

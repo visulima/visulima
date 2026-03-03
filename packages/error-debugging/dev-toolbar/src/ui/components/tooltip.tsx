@@ -101,7 +101,7 @@ const TooltipContent = ({ children, class: className, side = "top", sideOffset =
     return (
         <div
             class={cn(
-                "z-50 rounded-md bg-primary px-3 py-1.5 text-xs text-primary-foreground animate-in fade-in-0 zoom-in-95",
+                "z-50 rounded-none bg-primary px-3 py-1.5 text-xs text-primary-foreground animate-in fade-in-0 zoom-in-95",
                 className,
             )}
             ref={contentRef}

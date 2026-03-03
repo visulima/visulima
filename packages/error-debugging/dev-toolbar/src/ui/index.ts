@@ -1,3 +1,4 @@
+export { default as cn } from "../utils/cn";
 export { Alert, AlertDescription, AlertTitle } from "./components/alert";
 export { default as Badge } from "./components/badge";
 export { default as Button } from "./components/button";
@@ -13,3 +14,4 @@ export { default as Switch } from "./components/switch";
 export { Tabs, TabsContent, TabsList, TabsTrigger } from "./components/tabs";
 export { default as Textarea } from "./components/textarea";
 export { Tooltip, TooltipContent, TooltipTrigger } from "./components/tooltip";
+export { clsx } from "clsx";
