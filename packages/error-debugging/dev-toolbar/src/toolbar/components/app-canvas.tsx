@@ -142,7 +142,7 @@ const PipPanel = ({ apps, initialActiveAppId, onClose }: PipPanelProps): Compone
                 </div>
 
                 <div class="flex flex-col flex-1 overflow-y-auto p-2 gap-1 scrollbar-thin-border">
-                    {apps.map((app) => (
+                    {apps.filter((app) => app.component ?? app.init).map((app) => (
                         <div class="relative group/nav-item" key={app.id}>
                             <button
                                 aria-label={app.name}
@@ -731,7 +731,7 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                         )}
                     </div>
                     <div class="flex flex-col flex-1 overflow-y-auto p-2 gap-1 scrollbar-thin-border">
-                        {apps.map((app) => (
+                        {apps.filter((app) => app.component ?? app.init).map((app) => (
                             <div class="relative group/nav-item" key={app.id}>
                                 <button
                                     aria-label={app.name}
