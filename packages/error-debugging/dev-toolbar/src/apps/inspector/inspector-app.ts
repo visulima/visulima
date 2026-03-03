@@ -5,44 +5,44 @@
 
 interface InspectorPalette {
     bg: string;
-    fg: string;
-    primary: string;
-    muted: string;
-    shadow: string;
-    overlayBorder: string;
-    overlayBg: string;
     btnBg: string;
     btnBgHover: string;
     btnBorder: string;
     btnBorderHover: string;
+    fg: string;
+    muted: string;
+    overlayBg: string;
+    overlayBorder: string;
+    primary: string;
+    shadow: string;
 }
 
 const PALETTE_DARK: InspectorPalette = {
     bg: "#18181b",
-    fg: "#fafafa",
-    primary: "#c4b5fd",
-    muted: "#a1a1aa",
-    shadow: "0 8px 32px rgba(0,0,0,.75)",
-    overlayBorder: "rgba(196,181,253,0.7)",
-    overlayBg: "rgba(196,181,253,0.06)",
     btnBg: "rgba(196,181,253,0.08)",
     btnBgHover: "rgba(196,181,253,0.16)",
     btnBorder: "rgba(196,181,253,0.25)",
     btnBorderHover: "rgba(196,181,253,0.5)",
+    fg: "#fafafa",
+    muted: "#a1a1aa",
+    overlayBg: "rgba(196,181,253,0.06)",
+    overlayBorder: "rgba(196,181,253,0.7)",
+    primary: "#c4b5fd",
+    shadow: "0 8px 32px rgba(0,0,0,.75)",
 };
 
 const PALETTE_LIGHT: InspectorPalette = {
     bg: "#ffffff",
-    fg: "#18181b",
-    primary: "#7c3aed",
-    muted: "#52525b",
-    shadow: "0 8px 32px rgba(0,0,0,.15)",
-    overlayBorder: "rgba(124,58,237,0.7)",
-    overlayBg: "rgba(124,58,237,0.06)",
     btnBg: "rgba(124,58,237,0.08)",
     btnBgHover: "rgba(124,58,237,0.16)",
     btnBorder: "rgba(124,58,237,0.25)",
     btnBorderHover: "rgba(124,58,237,0.5)",
+    fg: "#18181b",
+    muted: "#52525b",
+    overlayBg: "rgba(124,58,237,0.06)",
+    overlayBorder: "rgba(124,58,237,0.7)",
+    primary: "#7c3aed",
+    shadow: "0 8px 32px rgba(0,0,0,.15)",
 };
 
 const getThemePalette = (): InspectorPalette => {
@@ -116,11 +116,11 @@ const getOrCreateOverlay = (): HTMLDivElement => {
 };
 
 // Walk up the DOM to find the nearest element with data-vdt-source.
-const findSource = (el: Element): string | null => {
-    let node: Element | null = el;
+const findSource = (element: Element): string | null => {
+    let node: Element | null = element;
 
     while (node) {
-        const src = node.getAttribute("data-vdt-source");
+        const src = (node as HTMLElement).dataset.vdtSource;
 
         if (src) {
             return src;
@@ -147,14 +147,14 @@ const formatSourceShort = (source: string): string => {
     return `${fileName}:${line}`;
 };
 
-const updateOverlayPosition = (el: Element): void => {
+const updateOverlayPosition = (element: Element): void => {
     const overlay = document.getElementById(OVERLAY_ID) as HTMLDivElement | null;
 
     if (!overlay) {
         return;
     }
 
-    const rect = el.getBoundingClientRect();
+    const rect = element.getBoundingClientRect();
 
     overlay.style.display = "block";
     overlay.style.top = `${rect.top}px`;
@@ -165,12 +165,13 @@ const updateOverlayPosition = (el: Element): void => {
     const label = document.getElementById(LABEL_ID);
 
     if (label) {
-        const tag = el.tagName.toLowerCase();
-        const id = el.id ? `#${el.id}` : "";
-        const cls = el.classList.length > 0 ? `.${[...el.classList].slice(0, 3).join(".")}` : "";
+        const tag = element.tagName.toLowerCase();
+        const id = element.id ? `#${element.id}` : "";
+        const cls = element.classList.length > 0 ? `.${[...element.classList].slice(0, 3).join(".")}` : "";
         const base = `${tag}${id}${cls}`;
 
-        const source = findSource(el);
+        const source = findSource(element);
+
         label.textContent = source ? `${base}  ·  ${formatSourceShort(source)}` : base;
 
         if (rect.top < 28) {
@@ -184,10 +185,10 @@ const updateOverlayPosition = (el: Element): void => {
 };
 
 const hideOverlay = (): void => {
-    const el = document.getElementById(OVERLAY_ID) as HTMLDivElement | null;
+    const element = document.getElementById(OVERLAY_ID) as HTMLDivElement | null;
 
-    if (el) {
-        el.style.display = "none";
+    if (element) {
+        element.style.display = "none";
     }
 };
 
@@ -251,31 +252,31 @@ const createFloatingBadge = (onCancel: () => void): void => {
 
     const dot = document.createElement("span");
 
-    dot.style.cssText =
-        `display:inline-block;width:7px;height:7px;border-radius:50%;background:${c.primary};` +
-        "animation:__vdt_pulse 1.4s ease-in-out infinite;flex-shrink:0;";
+    dot.style.cssText
+        = `display:inline-block;width:7px;height:7px;border-radius:50%;background:${c.primary};`
+            + "animation:__vdt_pulse 1.4s ease-in-out infinite;flex-shrink:0;";
 
     const text = document.createElement("span");
 
     text.textContent = "Click any element to inspect";
 
-    const sep = document.createElement("span");
+    const separator = document.createElement("span");
 
-    sep.style.cssText = `color:${c.muted};margin:0 4px;`;
-    sep.textContent = "·";
+    separator.style.cssText = `color:${c.muted};margin:0 4px;`;
+    separator.textContent = "·";
 
-    const cancelBtn = document.createElement("button");
+    const cancelButton = document.createElement("button");
 
-    cancelBtn.textContent = "Cancel";
-    cancelBtn.style.cssText =
-        `background:transparent;border:none;color:${c.primary};cursor:pointer;padding:0;` +
-        "font:12px/1 'JetBrains Mono',monospace;text-decoration:underline;text-underline-offset:3px;";
-    cancelBtn.addEventListener("click", (e) => {
+    cancelButton.textContent = "Cancel";
+    cancelButton.style.cssText
+        = `background:transparent;border:none;color:${c.primary};cursor:pointer;padding:0;`
+            + "font:12px/1 'JetBrains Mono',monospace;text-decoration:underline;text-underline-offset:3px;";
+    cancelButton.addEventListener("click", (e) => {
         e.stopPropagation();
         onCancel();
     });
 
-    badge.append(dot, text, sep, cancelBtn);
+    badge.append(dot, text, separator, cancelButton);
     document.body.append(badge);
 };
 
@@ -305,7 +306,7 @@ const removeResultPopup = (): void => {
     document.getElementById(RESULT_ID)?.remove();
 };
 
-const makeActionBtn = (label: string, onClick: () => void): HTMLButtonElement => {
+const makeActionButton = (label: string, onClick: () => void): HTMLButtonElement => {
     const c = getThemePalette();
     const b = document.createElement("button");
 
@@ -335,7 +336,7 @@ const makeActionBtn = (label: string, onClick: () => void): HTMLButtonElement =>
     return b;
 };
 
-const showResultPopup = (el: Element, rect: DOMRect, source: string | null): void => {
+const showResultPopup = (element: Element, rect: DOMRect, source: string | null): void => {
     removeResultPopup();
 
     const c = getThemePalette();
@@ -363,7 +364,7 @@ const showResultPopup = (el: Element, rect: DOMRect, source: string | null): voi
         top = rect.top - 110 - 8;
     }
 
-    let left = rect.left;
+    let { left } = rect;
 
     if (left + 280 > window.innerWidth) {
         left = Math.max(8, window.innerWidth - 288);
@@ -373,22 +374,22 @@ const showResultPopup = (el: Element, rect: DOMRect, source: string | null): voi
     popup.style.left = `${left}px`;
 
     // Element label (tag + id + classes)
-    const tag = el.tagName.toLowerCase();
-    const elId = el.id ? `#${el.id}` : "";
-    const cls = el.classList.length > 0 ? `.${[...el.classList].slice(0, 3).join(".")}` : "";
+    const tag = element.tagName.toLowerCase();
+    const elementId = element.id ? `#${element.id}` : "";
+    const cls = element.classList.length > 0 ? `.${[...element.classList].slice(0, 3).join(".")}` : "";
     const header = document.createElement("div");
 
     header.style.cssText = `color:${c.primary};font-weight:bold;margin-bottom:4px;word-break:break-all;`;
-    header.textContent = `${tag}${elId}${cls}`;
+    header.textContent = `${tag}${elementId}${cls}`;
     popup.append(header);
 
     // Source location
     if (source) {
-        const srcEl = document.createElement("div");
+        const srcElement = document.createElement("div");
 
-        srcEl.style.cssText = `color:${c.muted};margin-bottom:10px;word-break:break-all;font-size:10px;`;
-        srcEl.textContent = source;
-        popup.append(srcEl);
+        srcElement.style.cssText = `color:${c.muted};margin-bottom:10px;word-break:break-all;font-size:10px;`;
+        srcElement.textContent = source;
+        popup.append(srcElement);
     }
 
     // Action buttons row
@@ -398,7 +399,7 @@ const showResultPopup = (el: Element, rect: DOMRect, source: string | null): voi
 
     if (source) {
         actions.append(
-            makeActionBtn("Open in editor", () => {
+            makeActionButton("Open in editor", () => {
                 openInEditor(source);
                 removeResultPopup();
             }),
@@ -406,15 +407,15 @@ const showResultPopup = (el: Element, rect: DOMRect, source: string | null): voi
     }
 
     actions.append(
-        makeActionBtn("Copy HTML", () => {
-            void navigator.clipboard.writeText(el.outerHTML);
+        makeActionButton("Copy HTML", () => {
+            void navigator.clipboard.writeText(element.outerHTML);
             removeResultPopup();
         }),
     );
 
     if (source) {
         actions.append(
-            makeActionBtn("Copy path", () => {
+            makeActionButton("Copy path", () => {
                 void navigator.clipboard.writeText(source);
                 removeResultPopup();
             }),
@@ -424,10 +425,10 @@ const showResultPopup = (el: Element, rect: DOMRect, source: string | null): voi
     popup.append(actions);
 
     // Close (×) button in top-right corner
-    const closeBtn = document.createElement("button");
+    const closeButton = document.createElement("button");
 
-    closeBtn.textContent = "×";
-    closeBtn.style.cssText = [
+    closeButton.textContent = "×";
+    closeButton.style.cssText = [
         "position:absolute",
         "top:6px",
         "right:8px",
@@ -440,13 +441,17 @@ const showResultPopup = (el: Element, rect: DOMRect, source: string | null): voi
         "line-height:1",
         "transition:color 0.15s",
     ].join(";");
-    closeBtn.addEventListener("pointerover", () => { closeBtn.style.color = c.fg; });
-    closeBtn.addEventListener("pointerout", () => { closeBtn.style.color = c.muted; });
-    closeBtn.addEventListener("click", (e) => {
+    closeButton.addEventListener("pointerover", () => {
+        closeButton.style.color = c.fg;
+    });
+    closeButton.addEventListener("pointerout", () => {
+        closeButton.style.color = c.muted;
+    });
+    closeButton.addEventListener("click", (e) => {
         e.stopPropagation();
         removeResultPopup();
     });
-    popup.append(closeBtn);
+    popup.append(closeButton);
 
     document.body.append(popup);
 
@@ -473,7 +478,6 @@ let _inspectionCleanup: (() => void) | null = null;
  * Start element inspection mode.
  * Attaches crosshair cursor, hover highlight overlay, and a floating badge.
  * Survives component unmounts — state lives at module level.
- *
  * @param onComplete Called when the user clicks an element (after cleanup).
  * @param onCancel Called when the user cancels via badge button or Escape.
  */
@@ -484,14 +488,14 @@ export const startGlobalInspection = (onComplete: () => void, onCancel: () => vo
     getOrCreateOverlay();
     setCrosshairCursor(true);
 
-    const badgeEl = (): Element | null => document.getElementById(BADGE_ID);
+    const badgeElement = (): Element | null => document.getElementById(BADGE_ID);
 
     const isOverBadge = (target: Element | null): boolean => {
         if (!target) {
             return false;
         }
 
-        const b = badgeEl();
+        const b = badgeElement();
 
         return !!(b && (target === b || b.contains(target)));
     };
