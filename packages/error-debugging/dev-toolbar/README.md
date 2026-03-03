@@ -28,7 +28,7 @@
 
 `@visulima/dev-toolbar` is a framework-agnostic development toolbar for **any Vite project** — React, Vue, Svelte, SolidJS, or plain HTML. Inspired by Astro DevToolbar, Vue DevTools, and Nuxt DevTools, it provides a consistent developer experience regardless of your framework.
 
-The toolbar renders inside a Shadow DOM custom element (zero style leakage), communicates with the Vite dev server over type-safe RPC, and ships **seven built-in apps** covering the most common development workflows.
+The toolbar renders inside a Shadow DOM custom element (zero style leakage), communicates with the Vite dev server over type-safe RPC, and ships **nine built-in apps** covering the most common development workflows.
 
 ## Install
 
@@ -71,6 +71,8 @@ Start your dev server and press **`Alt`+`Shift`+`D`** to open the toolbar.
 | **Timeline** | Chronological event log from your app and integrated libraries |
 | **Module Graph** | Browse and filter Vite's live module dependency graph |
 | **Vite Config** | Inspect the fully resolved Vite configuration |
+| **Inspector** | Click any element to jump to its JSX source in your editor |
+| **Tailwind** | Browse all resolved Tailwind CSS design tokens and their values |
 | **Settings** | Theme, toolbar behaviour, panel sizing, and custom keyboard shortcuts |
 
 All apps are enabled by default. Disable individual apps via plugin options:
@@ -97,6 +99,8 @@ devToolbar({
         settings: true,
         timeline: true,
         viteConfig: true,
+        inspector: true,
+        tailwind: true,
     },
 
     // Register custom apps
@@ -120,6 +124,18 @@ devToolbar({
 
     // Strip toolbar from production builds (default: true)
     removeDevtoolsOnBuild: true,
+
+    // Force a specific editor for "Open in editor" (auto-detected if omitted)
+    editor: "webstorm",
+
+    // JSX source injection for click-to-source in the inspector
+    injectSource: {
+        enabled: true,           // set false to opt out
+        ignore: {
+            files: ["**/generated/**"],      // glob patterns
+            components: ["StrictMode"],      // component names
+        },
+    },
 })
 ```
 
