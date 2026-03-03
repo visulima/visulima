@@ -15,41 +15,6 @@ import { sharedToolbarStylesheet } from "./stylesheet";
  * Dev Toolbar Web Component.
  */
 export class DevToolbar extends HTMLElement {
-    /**
-     * Injects the JetBrains Mono font into document.head once.
-     * The `@font-face` declared in the document is part of the global font registry and
-     * is accessible from within shadow DOM roots — no duplication needed.
-     */
-    private static injectFont(): void {
-        const id = "__v_dt__font";
-
-        if (document.querySelector(`#${id}`)) {
-            return;
-        }
-
-        // Preconnect hints reduce first-byte latency for the font CDN
-        const preconnect1 = document.createElement("link");
-
-        preconnect1.rel = "preconnect";
-        preconnect1.href = "https://fonts.googleapis.com";
-        document.head.append(preconnect1);
-
-        const preconnect2 = document.createElement("link");
-
-        preconnect2.rel = "preconnect";
-        preconnect2.href = "https://fonts.gstatic.com";
-        preconnect2.crossOrigin = "anonymous";
-        document.head.append(preconnect2);
-
-        const stylesheet = document.createElement("link");
-
-        stylesheet.id = id;
-        stylesheet.rel = "stylesheet";
-        // JetBrains Mono — monospace font designed for developers; terminal HUD aesthetic
-        stylesheet.href = "https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap";
-        document.head.append(stylesheet);
-    }
-
     private appManager: AppManager;
 
     private hasBeenInitialized = false;
@@ -99,10 +64,6 @@ export class DevToolbar extends HTMLElement {
         }
 
         this.hasBeenInitialized = true;
-
-        // Inject Geist font into document.head so @font-face registers globally
-        // (CSSStyleSheet.replaceSync strips @import, so fonts must live in <head>)
-        DevToolbar.injectFont();
 
         // Setup global hook
         const hook = setupGlobalHook(
