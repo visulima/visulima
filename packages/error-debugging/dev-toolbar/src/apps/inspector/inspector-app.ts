@@ -218,6 +218,22 @@ const removeFloatingBadge = (): void => {
 
 // ─── Result popup ─────────────────────────────────────────────────────────────
 
+// Parse "src/routes/index.tsx:44:17" → { file, line, col } and call the toolbar
+// RPC system (HMR WebSocket) to open the file in the editor.  This bypasses
+// Vite's HTTP endpoint, which is not reachable in frameworks (e.g. TanStack
+// Start) that run Nitro/Vinxi as the outer HTTP server.
+const openInEditor = (source: string): void => {
+    const parts = source.split(":");
+    const col = Number.parseInt(parts.at(-1) ?? "0", 10) || undefined;
+    const line = Number.parseInt(parts.at(-2) ?? "0", 10) || undefined;
+    const file = parts.slice(0, -2).join(":");
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const rpc = (globalThis as any).__VISULIMA_DEVTOOLS__?.rpc;
+
+    void rpc?.openInEditor?.(file, line, col);
+};
+
 const removeResultPopup = (): void => {
     document.getElementById(RESULT_ID)?.remove();
 };
@@ -316,7 +332,7 @@ const showResultPopup = (el: Element, rect: DOMRect, source: string | null): voi
     if (source) {
         actions.append(
             makeActionBtn("Open in editor", () => {
-                void fetch(`/__open_in_editor?file=${encodeURIComponent(source)}`);
+                openInEditor(source);
                 removeResultPopup();
             }),
         );
