@@ -1,3 +1,69 @@
+// ─── Theme palette ─────────────────────────────────────────────────────────────
+// These elements live in document.body (outside the shadow DOM), so CSS variables
+// from the toolbar's :host are not available. We resolve the theme from the same
+// localStorage key used by use-theme.ts and pick the matching palette.
+
+interface InspectorPalette {
+    bg: string;
+    fg: string;
+    primary: string;
+    muted: string;
+    shadow: string;
+    overlayBorder: string;
+    overlayBg: string;
+    btnBg: string;
+    btnBgHover: string;
+    btnBorder: string;
+    btnBorderHover: string;
+}
+
+const PALETTE_DARK: InspectorPalette = {
+    bg: "#18181b",
+    fg: "#fafafa",
+    primary: "#c4b5fd",
+    muted: "#a1a1aa",
+    shadow: "0 8px 32px rgba(0,0,0,.75)",
+    overlayBorder: "rgba(196,181,253,0.7)",
+    overlayBg: "rgba(196,181,253,0.06)",
+    btnBg: "rgba(196,181,253,0.08)",
+    btnBgHover: "rgba(196,181,253,0.16)",
+    btnBorder: "rgba(196,181,253,0.25)",
+    btnBorderHover: "rgba(196,181,253,0.5)",
+};
+
+const PALETTE_LIGHT: InspectorPalette = {
+    bg: "#ffffff",
+    fg: "#18181b",
+    primary: "#7c3aed",
+    muted: "#52525b",
+    shadow: "0 8px 32px rgba(0,0,0,.15)",
+    overlayBorder: "rgba(124,58,237,0.7)",
+    overlayBg: "rgba(124,58,237,0.06)",
+    btnBg: "rgba(124,58,237,0.08)",
+    btnBgHover: "rgba(124,58,237,0.16)",
+    btnBorder: "rgba(124,58,237,0.25)",
+    btnBorderHover: "rgba(124,58,237,0.5)",
+};
+
+const getThemePalette = (): InspectorPalette => {
+    try {
+        const stored = localStorage.getItem("__v_dt__theme");
+
+        if (stored === "light") {
+            return PALETTE_LIGHT;
+        }
+
+        if (stored === "dark") {
+            return PALETTE_DARK;
+        }
+    } catch {
+        // localStorage unavailable
+    }
+
+    // "system" or unset — fall back to matchMedia
+    return globalThis.window?.matchMedia("(prefers-color-scheme: dark)").matches ? PALETTE_DARK : PALETTE_LIGHT;
+};
+
 // ─── DOM overlay helpers ──────────────────────────────────────────────────────
 
 const OVERLAY_ID = "__vdt_inspector_overlay";
@@ -11,6 +77,8 @@ const getOrCreateOverlay = (): HTMLDivElement => {
     let overlay = document.getElementById(OVERLAY_ID) as HTMLDivElement | null;
 
     if (!overlay) {
+        const c = getThemePalette();
+
         overlay = document.createElement("div");
         overlay.id = OVERLAY_ID;
         overlay.style.cssText = [
@@ -18,8 +86,8 @@ const getOrCreateOverlay = (): HTMLDivElement => {
             "pointer-events:none",
             "z-index:2147483644",
             "box-sizing:border-box",
-            "border:1px solid rgba(196,181,253,0.7)",
-            "background:rgba(196,181,253,0.06)",
+            `border:1px solid ${c.overlayBorder}`,
+            `background:${c.overlayBg}`,
             "transition:top 60ms,left 60ms,width 60ms,height 60ms",
             "display:none",
         ].join(";");
@@ -31,13 +99,13 @@ const getOrCreateOverlay = (): HTMLDivElement => {
             "position:absolute",
             "bottom:calc(100% + 2px)",
             "left:0",
-            "background:#18181b",
-            "color:#c4b5fd",
+            `background:${c.bg}`,
+            `color:${c.primary}`,
             "font:11px/1.2 'JetBrains Mono',monospace",
             "padding:2px 6px",
             "white-space:nowrap",
             "pointer-events:none",
-            "border:1px solid rgba(196,181,253,0.25)",
+            `border:1px solid ${c.btnBorder}`,
         ].join(";");
 
         overlay.append(label);
@@ -157,6 +225,7 @@ const createFloatingBadge = (onCancel: () => void): void => {
 
     removeFloatingBadge();
 
+    const c = getThemePalette();
     const badge = document.createElement("div");
 
     badge.id = BADGE_ID;
@@ -170,11 +239,11 @@ const createFloatingBadge = (onCancel: () => void): void => {
         "align-items:center",
         "gap:8px",
         "padding:6px 14px 6px 10px",
-        "background:#18181b",
-        "border:1px solid rgba(196,181,253,0.35)",
-        "box-shadow:0 4px 24px rgba(0,0,0,.6)",
+        `background:${c.bg}`,
+        `border:1px solid ${c.btnBorder}`,
+        `box-shadow:${c.shadow}`,
         "font:12px/1 'JetBrains Mono',monospace",
-        "color:#fafafa",
+        `color:${c.fg}`,
         "pointer-events:auto",
         "user-select:none",
         "white-space:nowrap",
@@ -183,7 +252,7 @@ const createFloatingBadge = (onCancel: () => void): void => {
     const dot = document.createElement("span");
 
     dot.style.cssText =
-        "display:inline-block;width:7px;height:7px;border-radius:50%;background:#c4b5fd;" +
+        `display:inline-block;width:7px;height:7px;border-radius:50%;background:${c.primary};` +
         "animation:__vdt_pulse 1.4s ease-in-out infinite;flex-shrink:0;";
 
     const text = document.createElement("span");
@@ -192,14 +261,14 @@ const createFloatingBadge = (onCancel: () => void): void => {
 
     const sep = document.createElement("span");
 
-    sep.style.cssText = "color:rgba(196,181,253,.35);margin:0 4px;";
+    sep.style.cssText = `color:${c.muted};margin:0 4px;`;
     sep.textContent = "·";
 
     const cancelBtn = document.createElement("button");
 
     cancelBtn.textContent = "Cancel";
     cancelBtn.style.cssText =
-        "background:transparent;border:none;color:#c4b5fd;cursor:pointer;padding:0;" +
+        `background:transparent;border:none;color:${c.primary};cursor:pointer;padding:0;` +
         "font:12px/1 'JetBrains Mono',monospace;text-decoration:underline;text-underline-offset:3px;";
     cancelBtn.addEventListener("click", (e) => {
         e.stopPropagation();
@@ -237,25 +306,26 @@ const removeResultPopup = (): void => {
 };
 
 const makeActionBtn = (label: string, onClick: () => void): HTMLButtonElement => {
+    const c = getThemePalette();
     const b = document.createElement("button");
 
     b.textContent = label;
     b.style.cssText = [
-        "background:rgba(196,181,253,0.08)",
-        "border:1px solid rgba(196,181,253,0.25)",
-        "color:#c4b5fd",
+        `background:${c.btnBg}`,
+        `border:1px solid ${c.btnBorder}`,
+        `color:${c.primary}`,
         "cursor:pointer",
         "font:11px/1 'JetBrains Mono',monospace",
         "padding:5px 10px",
         "white-space:nowrap",
     ].join(";");
     b.addEventListener("pointerover", () => {
-        b.style.background = "rgba(196,181,253,0.16)";
-        b.style.borderColor = "rgba(196,181,253,0.5)";
+        b.style.background = c.btnBgHover;
+        b.style.borderColor = c.btnBorderHover;
     });
     b.addEventListener("pointerout", () => {
-        b.style.background = "rgba(196,181,253,0.08)";
-        b.style.borderColor = "rgba(196,181,253,0.25)";
+        b.style.background = c.btnBg;
+        b.style.borderColor = c.btnBorder;
     });
     b.addEventListener("click", (e) => {
         e.stopPropagation();
@@ -268,18 +338,19 @@ const makeActionBtn = (label: string, onClick: () => void): HTMLButtonElement =>
 const showResultPopup = (el: Element, rect: DOMRect, source: string | null): void => {
     removeResultPopup();
 
+    const c = getThemePalette();
     const popup = document.createElement("div");
 
     popup.id = RESULT_ID;
     popup.style.cssText = [
         "position:fixed",
         "z-index:2147483646",
-        "background:#18181b",
-        "border:1px solid rgba(196,181,253,0.35)",
+        `background:${c.bg}`,
+        `border:1px solid ${c.btnBorder}`,
         "padding:10px 32px 10px 12px",
         "font:12px/1.4 'JetBrains Mono',monospace",
-        "color:#fafafa",
-        "box-shadow:0 8px 32px rgba(0,0,0,.75)",
+        `color:${c.fg}`,
+        `box-shadow:${c.shadow}`,
         "min-width:200px",
         "max-width:400px",
         "pointer-events:auto",
@@ -307,7 +378,7 @@ const showResultPopup = (el: Element, rect: DOMRect, source: string | null): voi
     const cls = el.classList.length > 0 ? `.${[...el.classList].slice(0, 3).join(".")}` : "";
     const header = document.createElement("div");
 
-    header.style.cssText = "color:#c4b5fd;font-weight:bold;margin-bottom:4px;word-break:break-all;";
+    header.style.cssText = `color:${c.primary};font-weight:bold;margin-bottom:4px;word-break:break-all;`;
     header.textContent = `${tag}${elId}${cls}`;
     popup.append(header);
 
@@ -315,7 +386,7 @@ const showResultPopup = (el: Element, rect: DOMRect, source: string | null): voi
     if (source) {
         const srcEl = document.createElement("div");
 
-        srcEl.style.cssText = "color:#a1a1aa;margin-bottom:10px;word-break:break-all;font-size:10px;";
+        srcEl.style.cssText = `color:${c.muted};margin-bottom:10px;word-break:break-all;font-size:10px;`;
         srcEl.textContent = source;
         popup.append(srcEl);
     }
@@ -362,15 +433,15 @@ const showResultPopup = (el: Element, rect: DOMRect, source: string | null): voi
         "right:8px",
         "background:transparent",
         "border:none",
-        "color:#a1a1aa",
+        `color:${c.muted}`,
         "cursor:pointer",
         "font:16px/1 'JetBrains Mono',monospace",
         "padding:0",
         "line-height:1",
         "transition:color 0.15s",
     ].join(";");
-    closeBtn.addEventListener("pointerover", () => { closeBtn.style.color = "#fafafa"; });
-    closeBtn.addEventListener("pointerout", () => { closeBtn.style.color = "#a1a1aa"; });
+    closeBtn.addEventListener("pointerover", () => { closeBtn.style.color = c.fg; });
+    closeBtn.addEventListener("pointerout", () => { closeBtn.style.color = c.muted; });
     closeBtn.addEventListener("click", (e) => {
         e.stopPropagation();
         removeResultPopup();
