@@ -297,6 +297,8 @@ const ToolbarContainer = ({
     }, []);
 
     // Refs so toggleApp always reads the freshest values, avoiding stale-closure issues
+    const appsRef = useRef(apps);
+    appsRef.current = apps;
     const panelVisibleRef = useRef(panelVisible);
     panelVisibleRef.current = panelVisible;
     const activeAppIdRef = useRef(activeAppId);
@@ -315,6 +317,14 @@ const ToolbarContainer = ({
         async (appId: string) => {
             const currentPanelVisible = panelVisibleRef.current;
             const currentActiveAppId = activeAppIdRef.current;
+
+            // Action button (onClick/onDeactivate) — fire callback, never touch panel state
+            const app = appsRef.current.find((a) => a.id === appId);
+
+            if (app?.onClick ?? app?.onDeactivate) {
+                await onToggleAppRef.current(appId);
+                return;
+            }
 
             if (appId === currentActiveAppId && currentPanelVisible) {
                 // Clicking the active app while panel is open → deactivate app + close panel
