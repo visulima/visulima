@@ -52,8 +52,9 @@ export const createServerRPCContext = (server: ViteDevServer, customFunctions?: 
         }
 
         try {
-            // Call function (server is already bound in default functions)
-            const result = await function_(server, ...args);
+            // All registered functions already close over `server` via
+            // createDefaultServerFunctions, so just spread the RPC args.
+            const result = await function_(...args);
 
             client.send("dev-toolbar:rpc:response", { id, result });
         } catch (error) {
